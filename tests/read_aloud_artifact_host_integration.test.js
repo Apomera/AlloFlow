@@ -29,7 +29,11 @@ describe('read-aloud artifact host integration', () => {
     expect(helper).toContain("defaultVoice: options.defaultVoice || selectedVoice || 'Kore'");
     expect(helper).not.toMatch(/Puck/i);
     expect(host).toContain('handleSavePersonaChat: handleSavePrivatePersonaSession');
-    expect(host).toContain("source: 'persona-owner-save'");
+    expect(host).toContain('_alloHostHandlers().handleSavePrivatePersonaSession(...__a)');
+    // Persona saving moved to the extracted handler; the host supplies the
+    // shared audio preparer through its live dependency object.
+    const handlers = read('host_handlers_source.jsx');
+    expect(handlers.includes("source: 'persona-owner-save'")).toBe(true);
   });
 
   it('keeps private Persona artifacts outside student sharing and strips legacy inline transcripts', () => {

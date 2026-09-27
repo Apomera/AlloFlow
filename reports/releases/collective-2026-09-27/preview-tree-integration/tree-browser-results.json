@@ -1,0 +1,199 @@
+{
+  "checks": [
+    "Opening foregrounds a live tree with closed field tools",
+    "Season exploration leaves age, history and food unchanged",
+    "Keyboard invitation reaches the prediction; only an answer enables testing",
+    "Saved comparison survives view changes and evidence opens the closed notebook",
+    "Free exploration uses the real condition and annual growth handlers",
+    "Scheduled drought and dead trees disable misleading quick actions",
+    "Active experiments own their conditions and remain reachable",
+    "Camera disclosure and fullscreen preserve the canvas and restore focus",
+    "Printing expands and restores disclosures",
+    "Small-screen tabs support keyboard navigation",
+    "All grade bands retain a usable opening and camera controls",
+    "Older starting tree begins a fresh, truthful investigation",
+    "Text-spacing overrides reflow without sideways scrolling"
+  ],
+  "audits": [
+    {
+      "theme": "light",
+      "violations": []
+    },
+    {
+      "theme": "dark",
+      "violations": []
+    },
+    {
+      "theme": "contrast",
+      "violations": []
+    }
+  ],
+  "views": [
+    {
+      "width": 390,
+      "view": "grow",
+      "overflow": 0
+    },
+    {
+      "width": 390,
+      "view": "chem",
+      "overflow": 0
+    },
+    {
+      "width": 390,
+      "view": "transport",
+      "overflow": 0
+    },
+    {
+      "width": 390,
+      "view": "spread",
+      "overflow": 0
+    },
+    {
+      "width": 390,
+      "view": "grove",
+      "overflow": 0
+    },
+    {
+      "width": 390,
+      "view": "compare",
+      "overflow": 0
+    },
+    {
+      "width": 390,
+      "view": "quiz",
+      "overflow": 0
+    },
+    {
+      "width": 320,
+      "view": "grow",
+      "overflow": 0
+    },
+    {
+      "width": 320,
+      "view": "chem",
+      "overflow": 0
+    },
+    {
+      "width": 320,
+      "view": "transport",
+      "overflow": 0
+    },
+    {
+      "width": 320,
+      "view": "spread",
+      "overflow": 0
+    },
+    {
+      "width": 320,
+      "view": "grove",
+      "overflow": 0
+    },
+    {
+      "width": 320,
+      "view": "compare",
+      "overflow": 0
+    },
+    {
+      "width": 320,
+      "view": "quiz",
+      "overflow": 0
+    }
+  ],
+  "mobile": {
+    "viewport": {
+      "w": 390,
+      "h": 844
+    },
+    "height": 2510,
+    "width": 390,
+    "scene": {
+      "x": 14,
+      "y": 376.828125,
+      "width": 362,
+      "height": 328,
+      "top": 376.828125,
+      "right": 376,
+      "bottom": 704.828125,
+      "left": 14
+    },
+    "gl": {
+      "renders": 25,
+      "draws": 2735,
+      "hasScene": true,
+      "objects": 76,
+      "meshes": 62,
+      "visibleMeshes": 62,
+      "lines": 1,
+      "points": 0,
+      "sprites": 2,
+      "lights": 5
+    },
+    "buttons": [
+      "🌳GrowRun the life cycle",
+      "☀️ChemistryFind the bottleneck",
+      "↕️TransportTrace two flows",
+      "🌱SpreadBuild a forest",
+      "🌲Grove JourneySurvive and renew",
+      "⚖️CompareTest tree strategies",
+      "✓CheckShow your thinking",
+      "⤢ Full screen",
+      "◀",
+      "▶",
+      "▲",
+      "▼",
+      "+",
+      "−",
+      "Reset view",
+      "🌱 Spring",
+      "☀️ Summer",
+      "🍂 Autumn",
+      "❄️ Winter"
+    ],
+    "headings": [
+      {
+        "text": "🌳 Tree Life Lab",
+        "top": 13
+      },
+      {
+        "text": "Grow a tree through time",
+        "top": 227
+      },
+      {
+        "text": "What happens when rain stops?",
+        "top": 1161
+      },
+      {
+        "text": "One tree, three biological clocks",
+        "top": 2075
+      },
+      {
+        "text": "Run the clock",
+        "top": 2084
+      },
+      {
+        "text": "This year’s carbon budget",
+        "top": 2480
+      },
+      {
+        "text": "Tree Memory: a yearbook written in wood",
+        "top": 2916
+      },
+      {
+        "text": "🎯 A tree that made it",
+        "top": 3140
+      },
+      {
+        "text": "Conditions",
+        "top": 3449
+      },
+      {
+        "text": "Where does the surplus go?",
+        "top": 4017
+      }
+    ]
+  },
+  "errors": [],
+  "blocked": [],
+  "browser": "148.0.7778.96"
+}

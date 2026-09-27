@@ -1,0 +1,10 @@
+{
+  "view_simplified_source.jsx": "242d3a4ff4a7f30adb95551ac3573524b5b50c1075f667345f25f19b80af97b7",
+  "view_simplified_module.js": "fffab47ef3409646b10b18003ebfb0818b6a1474599e9186f30b8ece2751335d",
+  "desktop/web-app/public/view_simplified_module.js": "fffab47ef3409646b10b18003ebfb0818b6a1474599e9186f30b8ece2751335d",
+  "package.json": "e880a66350e09285d4a43457de9765b7a0ad107fa7aa8d2ef566583a4bfd1c77",
+  "tests/prepared_help_popup_layout.test.js": "890b235bedf0163926af051c327c3088faa552d32f4a564edfe9d97562755165",
+  "dev-tools/reader-prepared-help/run.cjs": "a907568b3d846e815cb74526b5b067a8dec51b21d87c9dc7d5a7a618e59d1cb8",
+  "dev-tools/reader-prepared-help/browser-check.cjs": "b315b85c4f000cc755d61293c511d57d2e1838fcfc7c0c719ca49451d175113b",
+  "dev-tools/reader-prepared-help/card-stress.cjs": "695963b31ecd0e3935a1e58ac41bce6aa9b42db740b14fc5ffd5387f8014043f"
+}

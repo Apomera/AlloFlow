@@ -1,0 +1,17 @@
+# Release staging review
+
+Read-only review of the staging plan captured at 2026-09-27T19:10:18.549Z (HEAD 1a5067ab673408d8bf33fc6998ab843696043859). The plan selects 499 existing files totaling 166,164,518 bytes. No Git, runtime, build or test changes were made by this review.
+
+No blocking path or credential finding was found in the selected set. Common private-key, Google API key, GitHub token, AWS access-key, Slack-token and bearer-JWT signatures were checked without displaying values; none matched. Selected JSON reports also had no suspicious populated credential metadata fields. This is a targeted static scan, not proof of the absence of every possible secret.
+
+No environment files, auth state, node_modules, build directories, generated backup/preimage directories or cache directories are selected. The 153 selected report files total 2,596,349 bytes. Largest selected file is 9,938,322 bytes, below the deploy gate's per-file size limit. No selected public mirror has an omitted dirty canonical root counterpart.
+
+Required new compiler dependency `dev-tools/lib/reader_compiler.cjs` is selected with `_build_view_simplified_module.js`. The selected package script's `dev-tools/reader-prepared-help/run.cjs` and local helpers are selected. Direct literal imports and file dependencies resolve to tracked or selected files; React dependencies under node_modules are intentionally installed dependencies. TypeScript GL/pixel harnesses are already tracked.
+
+One optional omission is recommended: `reports/own-source-citation-durability-2026-09-26/cache-fragment.js` is an old candidate implementation snapshot. `tests/own_source_citation_cache.test.js:6` declares its path in an unused variable; the test actually reads production `own_sources_module.js` by default at lines 7-8. It is not a required durable dependency. Keeping it is evidence retention rather than a runtime requirement; exclude it if the plan intends to omit candidate code snapshots.
+
+The new `.github/workflows/physics.yml` has read-only repository permissions, path-filtered pull-request execution and manual dispatch. It installs dependencies/Chromium and runs local numerical/browser tests using the tracked loopback harness. It has no deploy, secret use or external publish step. It does not trigger on push to main, so this release push will not itself run that workflow. Its npm install commands are not frozen-lock installs, and its timeout is 20 minutes; those are reproducibility/runtime limitations rather than a staging blocker.
+
+Normalization remains required before final content pins. Thirty-one selected text files contained CRLF at inspection, including both FirestoreSync copies, Anatomy, Water Worlds kernel and several tests/reports. `.gitattributes` specifies LF except explicit immutable/binary exceptions; preserve those exceptions. Compute content hashes and update affected pins only after normalization, then recheck source/output and root/public parity against committed bytes. In particular, do not retain the FirestoreSync raw-CRLF content pin after Git stores LF.
+
+The runtime patches deliberately deferred by the performance review are absent from this selected runtime set. Historical baseline/candidate JSON reports remain point-in-time evidence and must not be presented as validation of this assembled release. New browser results or source changes produced after this staging-plan snapshot need a final plan refresh.

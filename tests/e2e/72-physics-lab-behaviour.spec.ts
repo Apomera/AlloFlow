@@ -79,7 +79,7 @@ test('air drag shortens the flight instead of reversing it, and mass matters in 
   const heavy = await launchAndLand(page);
 
   expect(vacuum.landed).toBe(true);
-  // Closed form at 45°, 25 m/s, g=9.8 is 63.8 m; Euler at dt=0.035 lands just under.
+  // Closed form at 45°, 25 m/s, g=9.8 is 63.8 m.
   expect(vacuum.range).toBeGreaterThan(60);
   expect(vacuum.range).toBeLessThan(66);
 
@@ -262,18 +262,15 @@ test('a fair test of velocity derives the squared law from the student own runs'
   expect(dragText).not.toContain('range scales as');
 });
 
-test('the symmetry demo fires both complementary angles and they land together', async ({ page }) => {
-  // The tool teaches that complementary angles share a range, and this button is
-  // how it shows that. It chains two launches on real-time setTimeouts, so it only
-  // works if launching is reachable from code AND simulated time tracks wall time —
-  // when the sim ran at 2x, every wait in the chain was twice as long as it needed
-  // to be. Nothing covered the demo end to end before.
+test('the symmetry demo completes both complementary flights at the same range', async ({ page }) => {
+  // The second flight begins after the first lands; playback timing cannot
+  // overwrite a flight that is still running.
   await mountPhysics(page);
   await setState(page, { angle: 30, velocity: 25, gravity: 9.8, mass: 1, airResist: false, simSpeed: 1 });
 
-  await page.getByRole('button', { name: /Symmetry demo/i }).click();
+  await page.getByRole('button', { name: /Vacuum symmetry comparison/i }).click();
 
-  // Two flights of ~2.6s and ~4.4s plus the chain's own padding.
+  // Two flights of ~2.6s and ~4.4s.
   await page.waitForFunction(
     () => ((document.getElementById('physicsCanvas') as any)?._trails || []).filter((t: any) => t.length > 2).length >= 2,
     null,

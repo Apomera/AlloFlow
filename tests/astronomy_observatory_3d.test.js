@@ -938,7 +938,7 @@ describe('Observatory tab rendering', () => {
     expect(text).toContain('Deep-sky showpieces up');
     expect(doc.querySelectorAll('[aria-label="Jump to a moment of this day"] button').length).toBeGreaterThanOrEqual(4);
     expect(text).toMatch(/Sunset 20:\d\d/);
-    expect(text).toContain('refraction');
+    expect(text.toLowerCase()).toContain('refraction');
     const skymap = new DOMParser().parseFromString(renderTool('astronomy', { astronomy: { tab: 'skymap', observingList: [] } }), 'text/html');
     expect(skymap.body.textContent).toContain('Open in 3D Observatory');
   });
@@ -1023,13 +1023,20 @@ describe('Observatory tab rendering', () => {
     expect(doc.getElementById('astronomy-observatory-3d').getAttribute('tabindex')).toBe('0');
     expect(doc.querySelectorAll('[aria-label="Sky layers"] button')).toHaveLength(10);
     expect(doc.querySelector('[aria-label="Sky camera controls"]')).toBeTruthy();
-    expect(text).toContain('labelled simulations');
+    expect(text).toContain('Meteors and aurora are simulations.');
     expect(text).not.toContain('NaN');
   });
 
   it('shows coordinate inputs for a custom site and survives malformed state', () => {
     const doc = new DOMParser().parseFromString(render({ obsSite: 'custom', obsLat: 70, obsLon: 20, obsLayers: 'bad', obsAurora: 99, obsShower: 'nope', obsNoaa: 'garbage' }), 'text/html');
-    expect(doc.querySelector('input[type="number"][min="-89.9"]')).toBeTruthy();
+    const latitude = doc.querySelector('input[aria-label="Latitude (°, north positive)"]');
+    const longitude = doc.querySelector('input[aria-label="Longitude (°, east positive)"]');
+    expect(latitude).toBeTruthy();
+    expect(longitude).toBeTruthy();
+    expect(latitude.getAttribute('inputmode')).toBe('decimal');
+    expect(longitude.getAttribute('inputmode')).toBe('decimal');
+    expect(latitude.value).toBe('70');
+    expect(longitude.value).toBe('20');
     expect(doc.body.textContent).toContain('Simulated activity level 9');
     expect(doc.body.textContent).toContain('70.00°, 20.00°');
     expect(doc.body.textContent).not.toContain('NaN');

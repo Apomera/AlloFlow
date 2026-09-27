@@ -118,7 +118,7 @@ describe('Bridge Lab quiz rotation (index-graded)', () => {
     };
     expect(correctOf('suspension bridge')).toBe('Tension');
     expect(correctOf('Euler buckling')).toContain('1/L²');
-    expect(correctOf('triangles the basic unit')).toContain("can't change shape");
+    expect(correctOf('triangles the basic unit')).toContain('without changing at least one side length');
   });
 });
 

@@ -111,6 +111,9 @@ test('clipboard and download failures retain a selectable complete summary', asy
   const before = await evidence(page);
   await page.evaluate(() => {
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: () => Promise.reject(new Error('Clipboard denied')) } });
+    // The shared clipboard helper can recover through the shell or execCommand.
+    (window as any).alloCopyText = () => Promise.reject(new Error('Shell clipboard denied'));
+    document.execCommand = () => false;
     URL.createObjectURL = () => { throw new Error('Download unavailable'); };
   });
   const panel = page.locator('[data-observation-review]');

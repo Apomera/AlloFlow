@@ -53,6 +53,8 @@ describe('document passage citations', () => {
     expect(document.querySelector('blockquote').textContent).toBe(rows()[0].snippet);
     expect(document.activeElement.textContent).toBe('Close passage');
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
+    expect(document.activeElement).toBe(document.querySelector('blockquote'));
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
     expect(document.activeElement.textContent).toBe('Close passage');
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     expect(document.querySelector('[role="dialog"]')).toBe(null);
@@ -67,6 +69,30 @@ describe('document passage citations', () => {
   it('explains missing snapshots without pretending to have inspected the source', () => {
     E.show('unavailable-1');
     expect(document.querySelector('[role="dialog"]').textContent).toContain('does not have the saved citation snapshot');
+  });
+  it('supports reverse focus cycling through the scrollable passage and contains background focus', () => {
+    const items = E.snapshot(rows()); E.remember(items);
+    const outside = document.createElement('button'); outside.textContent = 'Outside'; document.body.appendChild(outside);
+    E.show(items[0].id, outside);
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }));
+    const region = document.querySelector('[role="region"][aria-label="Saved document passage"]');
+    expect(document.activeElement).toBe(region);
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }));
+    expect(document.activeElement.textContent).toBe('Close passage');
+    outside.focus();
+    expect(document.activeElement.textContent).toBe('Close passage');
+    document.querySelector('[role="dialog"] button').click();
+    expect(document.activeElement).toBe(outside);
+    const after = document.createElement('button'); document.body.appendChild(after); after.focus();
+    expect(document.activeElement).toBe(after);
+  });
+  it('retains a usable close control when the snapshot is missing and replaces an open viewer cleanly', () => {
+    E.show('missing-first'); E.show('missing-second');
+    expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1);
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }));
+    expect(document.activeElement.textContent).toBe('Close passage');
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(document.querySelector('[role="dialog"]')).toBe(null);
   });
 });
 

@@ -72,7 +72,7 @@ describe('Dino Lab field guide and notebook', () => {
     await fill(host.querySelector('#dino-note-question'), 'Why ');
     await fill(host.querySelector('#dino-note-observation'), '<img src=x onerror=alert(1)> curved teeth');
     expect(data.notebook.tyrannosaurus.question).toBe('Why ');
-    const select = host.querySelector('select');
+    const select = host.querySelector('#dino-notebook-specimen');
     await api.React.act(async () => { select.value = 'microraptor'; select.dispatchEvent(new Event('change', { bubbles: true })); });
     expect(host.querySelector('#dino-note-question').value).toBe('');
     await fill(host.querySelector('#dino-note-question'), 'How did it glide?');

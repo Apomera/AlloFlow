@@ -3,7 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const ROOT = path.resolve(__dirname, '../..');
-const BATCHES = { contract: { file: 'reader-contract-locales.json', keys: 66 }, recovery: { file: 'reader-recovery-locales.json', keys: 34 }, terms: { file: 'reader-terms-locales.json', keys: 17 } };
+const BATCHES = { contract: { file: 'reader-contract-locales.json', keys: 66 }, recovery: { file: 'reader-recovery-locales.json', keys: 34 }, terms: { file: 'reader-terms-locales.json', keys: 17 }, followup: { file: 'reader-followup-locales.json', keys: 70 } };
 const LOCALES = ['spanish_latin_america', 'spanish_castilian', 'arabic', 'chinese_simplified', 'thai'];
 const lookup = (object, key) => key.split('.').reduce((value, part) => value && value[part], object);
 const placeholders = value => [...String(value).matchAll(/\{(\w+)\}/g)].map(match => match[1]).sort();
@@ -37,7 +37,7 @@ function mergePack(pack, values) {
 }
 function run(apply = false, batch = 'contract') {
   const names = batch === 'all' ? Object.keys(BATCHES) : [batch];
-  if (names.some(name => !Object.hasOwn(BATCHES, name))) throw Error('Use --batch=contract, --batch=recovery, --batch=terms or --batch=all.');
+  if (names.some(name => !Object.hasOwn(BATCHES, name))) throw Error('Use --batch=contract, --batch=recovery, --batch=terms, --batch=followup or --batch=all.');
   const english = JSON.parse(fs.readFileSync(path.join(ROOT, 'ui_strings.js'), 'utf8'));
   const mirrorEnglish = JSON.parse(fs.readFileSync(path.join(ROOT, 'desktop/web-app/public/ui_strings.js'), 'utf8'));
   const keys = [], values = Object.fromEntries(LOCALES.map(locale => [locale, {}]));
@@ -74,8 +74,8 @@ function parseArgs(args) {
   let apply = false, mode, batch = 'contract', seenBatch = false;
   for (const arg of args) {
     if (arg === '--apply' || arg === '--check') { if (mode) throw Error('Choose one of --check or --apply.'); mode = arg; apply = arg === '--apply'; }
-    else if (/^--batch=(contract|recovery|terms|all)$/.test(arg) && !seenBatch) { batch = arg.slice(8); seenBatch = true; }
-    else throw Error('Use --check (default) or --apply, and --batch=contract|recovery|terms|all.');
+    else if (/^--batch=(contract|recovery|terms|followup|all)$/.test(arg) && !seenBatch) { batch = arg.slice(8); seenBatch = true; }
+    else throw Error('Use --check (default) or --apply, and --batch=contract|recovery|terms|followup|all.');
   }
   return { apply, batch };
 }

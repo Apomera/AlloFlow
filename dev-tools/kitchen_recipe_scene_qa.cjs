@@ -1,5 +1,5 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),{chromium}=require('@playwright/test');
-const out=path.resolve('reports/kitchen-spatial-2026-09-26');fs.mkdirSync(out,{recursive:true});
+const out=path.resolve(process.env.KITCHEN_QA_OUT||'reports/kitchen-spatial-2026-09-26');fs.mkdirSync(out,{recursive:true});
 const url=process.env.KITCHEN_RECIPE_URL||'http://127.0.0.1:53061/stem_lab/kitchen_studio/recipe_lab.html';
 const result={checks:[],accessibility:[],errors:[]};
 (async()=>{const browser=await chromium.launch({headless:true,args:['--enable-unsafe-swiftshader']});let page;

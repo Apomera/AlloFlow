@@ -245,8 +245,9 @@ test.describe('Astronomy constellation and Sky Map visuals - real Chromium', () 
       ['Planets', 'planets'],
       ['Sun and Moon', 'sun-moon'],
       ['Ecliptic', 'ecliptic'],
+      ['Catalogue star field', 'catalog-stars'],
     ] as const;
-    await expect(layers.getByRole('button')).toHaveCount(5);
+    await expect(layers.getByRole('button')).toHaveCount(6);
     for (const [label, dataLayer] of contracts) {
       const button = layers.getByRole('button', { name: label, exact: true });
       await expect(button).toHaveAttribute('aria-pressed', 'true');
@@ -350,7 +351,7 @@ test.describe('Astronomy constellation and Sky Map visuals - real Chromium', () 
     await expect(darkness).toHaveValue('9');
     await expect(darknessStatus).toHaveAttribute('data-bortle-class', '9');
     await expect(diagram).toHaveAttribute('data-bortle-class', '9');
-    await expect(page.getByRole('group', { name: 'Sky map layers' }).getByRole('button')).toHaveCount(5);
+    await expect(page.getByRole('group', { name: 'Sky map layers' }).getByRole('button')).toHaveCount(6);
     const selectedValue = await selectVisibleSkyTarget(page);
     expect(selectedValue).not.toBe('');
     await expect(page.locator('[data-sky-layer="target"]')).toHaveCount(1);
@@ -366,7 +367,7 @@ test.describe('Astronomy constellation and Sky Map visuals - real Chromium', () 
     await expect(page.locator('#astronomy-sky-darkness')).toHaveValue('1');
     await expect(page.locator('#astronomy-sky-darkness-status')).toHaveAttribute('data-bortle-class', '1');
     await expect(page.locator('#astronomy-sky-map-diagram')).toHaveAttribute('data-bortle-class', '1');
-    await expect(page.getByRole('group', { name: 'Sky map layers' }).getByRole('button')).toHaveCount(5);
+    await expect(page.getByRole('group', { name: 'Sky map layers' }).getByRole('button')).toHaveCount(6);
 
     await expectNoDocumentOverflow(page);
     await expectNoRuntimeIssues(page, issues);
@@ -444,7 +445,7 @@ test.describe('Astronomy constellation and Sky Map visuals - real Chromium', () 
     const issues = collectBrowserIssues(page);
     await mount(page, 'skymap');
 
-    await expect(page.getByRole('group', { name: 'Sky map layers' }).getByRole('button')).toHaveCount(5);
+    await expect(page.getByRole('group', { name: 'Sky map layers' }).getByRole('button')).toHaveCount(6);
     await expect(page.locator('#astronomy-sky-darkness')).toHaveCount(1);
     await expect(page.locator('#astronomy-sky-darkness-status')).toHaveCount(1);
     await selectVisibleSkyTarget(page);

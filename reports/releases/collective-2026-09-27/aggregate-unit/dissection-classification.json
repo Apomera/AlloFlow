@@ -1,0 +1,49 @@
+{
+  "classification": "The retained tray tick rendering is now gated by detailedCanvasHud; old comment and dark-frame CSS pins are superseded by the documented visual refinement. This isolated drawing-block check is separate from aggregate Vitest counts.",
+  "result": [
+    {
+      "file": "stem_lab/stem_tool_dissection.js",
+      "sourceSha256": "fcfd77742dbf92d9183ac7f1dbf9777205366e318f0f0ca1bd19dcf1ab5285ca",
+      "cases": [
+        {
+          "detailed": false,
+          "strokes": 0,
+          "labels": []
+        },
+        {
+          "detailed": true,
+          "strokes": 56,
+          "labels": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "sourceSha256": "fcfd77742dbf92d9183ac7f1dbf9777205366e318f0f0ca1bd19dcf1ab5285ca",
+      "cases": [
+        {
+          "detailed": false,
+          "strokes": 0,
+          "labels": []
+        },
+        {
+          "detailed": true,
+          "strokes": 56,
+          "labels": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5"
+          ]
+        }
+      ]
+    }
+  ]
+}

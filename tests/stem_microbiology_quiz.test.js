@@ -57,6 +57,57 @@ describe('quiz bank rotation (regression pins)', () => {
     expect(byQ('DOMAINS').choices[byQ('DOMAINS').answer]).toContain('Three');
     expect(byQ('antibiotic resistance evolve').choices[byQ('antibiotic resistance evolve').answer]).toContain('Random mutations');
     expect(byQ('1854 London cholera').choices[byQ('1854 London cholera').answer]).toContain('mapped');
+    expect(byQ('2016 reference-adult').choices[byQ('2016 reference-adult').answer]).toContain('38 trillion bacteria and 30 trillion human cells');
+    expect(byQ('2016 reference-adult').explain).toContain('not exact counts for every person');
+  });
+
+  it('keeps the Snow quiz and case study consistent with the limits of the historical evidence', () => {
+    const snow = rotated.find(q => q.q.includes('1854 London cholera'));
+    expect(raw.find(q => q.q.includes('1854 London cholera')).answer).toBe(1);
+    expect(snow.choices[snow.answer]).toContain('mapped where deaths occurred');
+    expect(snow.choices[snow.answer]).toContain('which water people drank');
+    expect(snow.explain).toContain('already declining before removal');
+    expect(snow.explain).toContain('decline alone does not measure');
+    expect(snow.explain).not.toMatch(/every cholera death|founded.*data visualization/);
+    const start = src.indexOf("id: 'snow', name:");
+    const card = src.slice(start, src.indexOf("id: 'penicillin', name:", start));
+    expect(card).toContain('attacks were already declining before the closure');
+    expect(card).toContain('households using other sources');
+    expect(card).not.toContain('mapped every death');
+    expect(card).not.toContain('map proved');
+  });
+
+  it('bounds fermentation preservation claims and retains the authored answer position', () => {
+    const question = raw.find(q => q.q.includes('lactic acid fermentation'));
+    const displayed = rotated.find(q => q.q === question.q);
+    expect(question.answer).toBe(1);
+    expect(displayed.choices[displayed.answer]).toContain('lower the pH');
+    expect(displayed.explain).toContain('does not sterilize food or guarantee safe storage');
+    expect(displayed.explain).toContain('refrigeration when required');
+    expect(displayed.q).not.toContain('even at room temperature');
+    expect(displayed.explain).not.toContain('preserved without refrigeration');
+  });
+
+  it('compares stated linear dimensions without inventing a volume or resolution limit', () => {
+    const question = raw.find(q => q.q.includes('2 µm long'));
+    const displayed = rotated.find(q => q.q === question.q);
+    expect(question.answer).toBe(1);
+    expect(displayed.q).toContain('20 µm across');
+    expect(displayed.choices[displayed.answer]).toContain('one-tenth');
+    expect(displayed.explain).toContain('does not by itself give a volume ratio');
+    expect(displayed.explain).toContain('Many bacteria can be resolved');
+    expect(displayed.explain).not.toMatch(/1000x less volume|Most bacteria are at the resolution limit/);
+  });
+
+  it('identifies organelles and evidence for endosymbiosis without claiming every cell has them', () => {
+    const question = raw.find(q => q.q.includes('organelles have bacterial ancestors'));
+    const displayed = rotated.find(q => q.q === question.q);
+    expect(question.answer).toBe(1);
+    expect(displayed.choices[displayed.answer]).toBe('Mitochondria and chloroplasts');
+    expect(displayed.explain).toContain('DNA and bacterial-like ribosomes');
+    expect(displayed.explain).toContain('most eukaryotic cells');
+    expect(displayed.explain).toContain('many algae');
+    expect(displayed.explain).not.toContain('in all eukaryotic cells');
   });
 });
 

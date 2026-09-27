@@ -22,7 +22,8 @@ describe('Astronomy UI state resilience', () => {
     expect(html).toContain('id="astronomy-tab-tonight" role="tab" aria-selected="true" tabindex="0"');
     expect(html).toContain('aria-controls="astronomy-main" aria-label="Tonight"');
     expect(html).toContain('id="astronomy-main" role="tabpanel" aria-labelledby="astronomy-tab-tonight"');
-    expect(html).toContain('Observation command · Tonight');
+    expect(html).toContain('id="astronomy-start-title"');
+    expect(html).toContain('Open 3D sky');
     expect(html).not.toContain('forged-section');
   });
 
@@ -341,8 +342,8 @@ describe('Astronomy eclipse simulator resilience', () => {
     expect(html).toContain('aria-valuetext="12%, approaching maximum alignment"');
     const source = readFileSync('stem_lab/stem_tool_astronomy.js', 'utf8');
     expect(source).toContain('var playing = d.eclipsePlaying === true;');
-    expect(source).toContain('window.__alloAstronomyEclipseTimer = setTimeout');
-    expect(source).toContain('clearTimeout(window.__alloAstronomyEclipseTimer)');
+    expect(source).toContain('h(AstronomyPlaybackClock, { React: React, playing: playing');
+    expect(source).toContain('active = false; clearInterval(timer);');
     expect(source).toContain("'aria-valuetext': opts.valueText || undefined");
   });
 });

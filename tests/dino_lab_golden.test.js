@@ -141,7 +141,8 @@ describe('Dino Lab — render per tab (golden master)', () => {
     expect(html).toMatch(/aria-label="Saved Dino Lab investigation"/);
     expect(html).toMatch(/Resume investigation/);
     expect(html).toMatch(/Clear saved progress/);
-    expect(html).toContain('T. rex · 1/3 evidence logged · 1/6 assembled');
+    expect(html).toContain('Resume Dino Lab investigation for T. rex');
+    expect(html).toContain('1/3 evidence logged · 1/6 assembled');
   });
   it('every tab renders deterministically (identical output twice)', () => {
     TABS.forEach(tab => {
@@ -254,7 +255,7 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/aria-atomic="true"/);
     expect(html).toMatch(/role="progressbar"/);
     expect(html).toMatch(/aria-label="Fossil assembly progress"/);
-    expect(html).toMatch(/aria-label="Claim strength"/);
+    expect(html).toMatch(/aria-label="Evidence route"/);
     expect(html).toMatch(/aria-label="Reconstruction challenge progress"/);
     expect(html).toMatch(/aria-valuenow="0"/);
     expect(html).toMatch(/Skull scan anchor, not logged, current focus/);
@@ -284,11 +285,11 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Teal halo and connector line mark the assembled fossil currently attached to the CER claim/);
     expect(html).toMatch(/Field claim builder/);
     expect(html).toMatch(/Function/);
-    expect(html).toMatch(/Claim strength 0\/5 \| Start scanning/);
-    expect(html).toMatch(/CER rehearsal \| Checklist 1\/5/);
+    expect(html).toMatch(/Evidence route 0\/5 \| Start scanning/);
+    expect(html).toMatch(/Worked example \| Preparation 1\/5/);
     expect(html).toMatch(/Log skull, shoulder, or hip anchors before citing evidence/);
-    expect(html).toMatch(/Log at least one anchor before writing a claim/);
-    expect(html).toMatch(/Scan more for a stronger claim/);
+    expect(html).toMatch(/not the quality of your explanation/);
+    expect(html).toMatch(/Continue collecting model observations/);
     expect(html).toMatch(/Claim/);
     expect(html).toMatch(/Evidence/);
     expect(html).toMatch(/Reasoning/);
@@ -519,8 +520,8 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Evidence log 1\/3/);
     expect(html).toMatch(/Logged 1\/3/);
     expect(html).toMatch(/Path 0\/2/);
-    expect(html).toMatch(/Claim strength 1\/5 \| Anchor evidence/);
-    expect(html).toMatch(/CER rehearsal \| Checklist 2\/5/);
+    expect(html).toMatch(/Evidence route 1\/5 \| Anchor evidence/);
+    expect(html).toMatch(/Worked example \| Preparation 2\/5/);
     expect(html).toMatch(/Logged anchors: Skull; evidence path 0\/2 linked/);
     expect(html).toMatch(/Next open: Shoulder/);
   });
@@ -532,8 +533,8 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Evidence log 2\/3/);
     expect(html).toMatch(/Logged 2\/3/);
     expect(html).toMatch(/Path 1\/2/);
-    expect(html).toMatch(/Claim strength 3\/5 \| Connected evidence/);
-    expect(html).toMatch(/CER rehearsal \| Checklist 3\/5/);
+    expect(html).toMatch(/Evidence route 3\/5 \| Connected evidence/);
+    expect(html).toMatch(/Worked example \| Preparation 3\/5/);
     expect(html).toMatch(/Logged anchors: Skull, Shoulder; evidence path 1\/2 linked/);
     expect(html).toMatch(/Evidence path 1\/2 linked/);
     expect(html).toMatch(/Next open: Hip/);
@@ -546,9 +547,9 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Evidence log 3\/3/);
     expect(html).toMatch(/Logged 3\/3/);
     expect(html).toMatch(/Path 2\/2/);
-    expect(html).toMatch(/Claim strength 5\/5 \| CER ready/);
-    expect(html).toMatch(/CER rehearsal \| Checklist 4\/5/);
-    expect(html).toMatch(/Done Reasoning backed/);
+    expect(html).toMatch(/Evidence route 5\/5 \| Scan complete/);
+    expect(html).toMatch(/Worked example \| Preparation 4\/5/);
+    expect(html).toMatch(/Done Scan complete/);
     expect(html).toMatch(/Evidence path 2\/2 linked/);
     expect(html).toMatch(/Field scan complete/);
     expect(html).toMatch(/Assembly 0\/6/);
@@ -558,7 +559,7 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Need Anatomy support/);
     expect(html).toMatch(/Assemble at least one fossil to add anatomy support/);
     expect(html).toMatch(/Place fossil/);
-    expect(html).toMatch(/Ready for CER/);
+    expect(html).toMatch(/Scan preparation complete/);
     expect(html).toMatch(/Observation logged/);
   });
   it('the 3D fossil assembly puzzle tracks placed anatomy pieces', () => {
@@ -589,7 +590,7 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Evidence trail: Shoulder scan -&gt; Spine fossil -&gt; Posture claim/);
     expect(html).toMatch(/trail shows how an observed scan anchor supports the named fossil evidence/);
     expect(html).toMatch(/Use in claim/);
-    expect(html).toMatch(/CER rehearsal \| Checklist 5\/5/);
+    expect(html).toMatch(/Worked example \| Preparation 5\/5/);
     expect(html).toMatch(/Done Anatomy support/);
     expect(html).toMatch(/Anatomy insights: Skull - feeding and senses; Spine - posture and balance/);
     expect(html).toMatch(/The assembled anatomy turns isolated bones into a connected body-system explanation/);
@@ -637,11 +638,11 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Teal halo and connector line mark the assembled fossil currently attached to the CER claim/);
     expect(html).toMatch(/Field claim builder/);
     expect(html).toMatch(/Function/);
-    expect(html).toMatch(/Claim strength 0\/5 \| Start scanning/);
-    expect(html).toMatch(/CER rehearsal \| Checklist 1\/5/);
+    expect(html).toMatch(/Evidence route 0\/5 \| Start scanning/);
+    expect(html).toMatch(/Worked example \| Preparation 1\/5/);
     expect(html).toMatch(/Log skull, shoulder, or hip anchors before citing evidence/);
-    expect(html).toMatch(/Log at least one anchor before writing a claim/);
-    expect(html).toMatch(/Scan more for a stronger claim/);
+    expect(html).toMatch(/not the quality of your explanation/);
+    expect(html).toMatch(/Continue collecting model observations/);
     expect(html).toMatch(/Claim/);
     expect(html).toMatch(/Evidence/);
     expect(html).toMatch(/Reasoning/);
@@ -736,11 +737,11 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Teal halo and connector line mark the assembled fossil currently attached to the CER claim/);
     expect(html).toMatch(/Field claim builder/);
     expect(html).toMatch(/Function/);
-    expect(html).toMatch(/Claim strength 0\/5 \| Start scanning/);
-    expect(html).toMatch(/CER rehearsal \| Checklist 1\/5/);
+    expect(html).toMatch(/Evidence route 0\/5 \| Start scanning/);
+    expect(html).toMatch(/Worked example \| Preparation 1\/5/);
     expect(html).toMatch(/Log skull, shoulder, or hip anchors before citing evidence/);
-    expect(html).toMatch(/Log at least one anchor before writing a claim/);
-    expect(html).toMatch(/Scan more for a stronger claim/);
+    expect(html).toMatch(/not the quality of your explanation/);
+    expect(html).toMatch(/Continue collecting model observations/);
     expect(html).toMatch(/Claim/);
     expect(html).toMatch(/Evidence/);
     expect(html).toMatch(/Reasoning/);

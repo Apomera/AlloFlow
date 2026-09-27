@@ -1,66 +1,30 @@
 #!/usr/bin/env node
-/**
- * Build view_simplified_module.js from view_simplified_source.jsx
- * Uses @babel/core with @babel/plugin-transform-react-jsx to match the
- * formatting of the legacy build (which was the original generator).
- *
- * Auto-migrated 2026-05-19 from legacy build_view_simplified.js (which read from
- * a c:/tmp/ file that no longer exists / was stale).
- */
-const babel = require('@babel/core');
-const fs = require('fs');
-
-const source = ['reader_place_store.js', 'reader_support_drafts.js', 'view_simplified_source.jsx'].map(file => fs.readFileSync(file, 'utf-8')).join('\n');
-
-const result = babel.transformSync(source, {
-  plugins: [['@babel/plugin-transform-react-jsx', { useBuiltIns: false }]],
-  babelrc: false,
-  configFile: false,
-  parserOpts: { sourceType: 'script', plugins: ['jsx'] },
-  generatorOpts: { jsescOption: { minimal: true } },
-});
-if (!result || !result.code) { console.error('Babel transform failed'); process.exit(1); }
-
-const moduleSrc = `/**
- * AlloFlow View - Simplified (Leveled Text) Renderer
- *
- * Extracted from AlloFlowANTI.txt activeView==='simplified' block.
- * Source range: 1,650 lines body (largest single extraction in the project).
- * Renders: leveled text reader with immersive mode, focus/chunk/crawl/karaoke
- * overlays, side-by-side bilingual layout, define/phonics/revise/cloze/
- * add-glossary interaction modes, level check + rigor report panels,
- * complexity slider, teacher edit mode with formatting toolbar, definition/
- * phonics/revision popups, line focus, theme switcher, immersive toolbar.
- */
-(function() {
-  'use strict';
-  if (window.AlloModules && window.AlloModules.SimplifiedView) {
-    console.log('[CDN] ViewSimplifiedModule already loaded, skipping');
-    return;
+// Canonical reader builder. --check compiles in memory and never writes files.
+// Requiring this entry point still builds for build_adapted_reader.cjs callers.
+const fs = require('node:fs');
+const path = require('node:path');
+const { INPUTS, OUTPUTS, renderReaderModule } = require('./dev-tools/lib/reader_compiler.cjs');
+const root = __dirname;
+const args = require.main === module ? process.argv.slice(2) : [];
+if (args.length && !(args.length === 1 && (args[0] === '--check' || args[0] === '--help'))) throw new Error('Usage: node _build_view_simplified_module.js [--check|--help]');
+if (args[0] === '--help') {
+  console.log('Builds the reader module pair. --check compares both to an in-memory build without writes. Host pins: node dev-tools/check_reader_release.cjs.');
+} else {
+  const moduleSrc = renderReaderModule(INPUTS.map(file => fs.readFileSync(path.join(root, file), 'utf8')));
+  if (args[0] === '--check') {
+    const stale = OUTPUTS.filter(file => !fs.existsSync(path.join(root, file)) || fs.readFileSync(path.join(root, file), 'utf8') !== moduleSrc);
+    if (stale.length) { console.error('Reader build differs from canonical source: ' + stale.join(', ')); process.exitCode = 1; }
+    else console.log('Both reader outputs match canonical source; no files written.');
+  } else {
+    for (const file of OUTPUTS) writeReaderBuildFile(file, moduleSrc);
+    console.log('Wrote view_simplified_module.js (' + moduleSrc.length + ' bytes)');
   }
-  var React = window.React;
-  if (!React) { console.error('[ViewSimplifiedModule] React not found on window'); return; }
-  var Fragment = React.Fragment;
-
-  ${result.code}
-
-  window.AlloModules = window.AlloModules || {};
-  window.AlloModules.SimplifiedView = SimplifiedView;
-  window.AlloModules.ViewSimplifiedModule = true;
-})();
-`;
-
-writeReaderBuildFile('view_simplified_module.js', moduleSrc);
-writeReaderBuildFile('desktop/web-app/public/view_simplified_module.js', moduleSrc);
-console.log('Wrote view_simplified_module.js (' + moduleSrc.length + ' bytes)');
-
-function writeReaderBuildFile(file, contents, encoding) {
-  const path = require('path');
-  const root = path.resolve(__dirname);
-  const target = path.resolve(file);
+}
+function writeReaderBuildFile(file, contents) {
+  const target = path.resolve(root, file);
   if (!target.startsWith(root + path.sep)) throw new Error('Build target outside workspace');
   if (fs.existsSync(target) && fs.readFileSync(target, 'utf8') === contents) return;
   const temporary = target + '.reader-build-' + process.pid + '.tmp';
-  try { fs.writeFileSync(temporary, contents, encoding); fs.renameSync(temporary, target); }
+  try { fs.writeFileSync(temporary, contents); fs.renameSync(temporary, target); }
   finally { if (fs.existsSync(temporary)) fs.unlinkSync(temporary); }
 }

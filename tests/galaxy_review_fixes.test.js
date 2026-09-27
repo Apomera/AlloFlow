@@ -340,18 +340,8 @@ describe('galaxy visuals', () => {
     expect(source).not.toContain('orb.r = 1.2;');
   });
 
-  it.each(GALAXY_PATHS)('%s releases a dropped object inside the frame', (filePath) => {
-    const source = readFileSync(filePath, 'utf8');
-    // The fall path used to start at radius 2.65 (6.2 horizon radii) on a launch arc of
-    // 0.42-1.04 rad. With the default camera 3.25 out at yaw 0.28 that point sits just
-    // past the right edge of the frustum, and the tidal zone only begins at 1.55 - so a
-    // learner pressed "Drop", read "watch the stretching", and saw nothing for ~1.5 s
-    // until the object drifted in from off-screen. Verified in frame from the first
-    // capture at 1.6 with the narrower, lower arc; end point and duration unchanged.
-    expect(source).toContain('radius=1.6-1.31*eased,');
-    expect(source).toContain('launchAngle:.6+Math.random()*.4,lift:.3+Math.random()*.25,');
-    expect(source).not.toContain('radius=2.65-2.36*eased,');
-  });
+  // Black-hole launch framing is exercised in galaxy_black_hole_qa.cjs with real camera projection.
+  // Trajectories are covered by galaxy_black_hole_physics.test.js.
 
   it.each(GALAXY_PATHS)('%s builds the cinematic tour from the galaxy on screen and the live home radius', (filePath) => {
     const source = readFileSync(filePath, 'utf8');
@@ -582,8 +572,8 @@ describe('galaxy visuals', () => {
     expect(source.match(/textContent\s*=\s*'[A-Z][^']{4,}'/g)).toBeNull();
     expect(source).not.toContain("?'Astronaut':type==='star'?'Star':'Probe'");
     expect(source).toContain("__alloT('stem.galaxy.bh_name_astronaut', 'Astronaut')");
-    expect(source).toContain("__alloT('stem.galaxy.bh_signal', 'Distant received signal: {percent}%')");
-    expect(source).toContain("__alloT('stem.galaxy.bh_readout_outside', '{object} | {radii} horizon radii | tidal stretch {stretch}x')");
+    expect(source).toContain("__alloT('stem.galaxy.bh_redshift_reference','Static-clock redshift factor: {value}')");
+    expect(source).toContain("__alloT('stem.galaxy.bh_experiment_readout', '{object} · {radii} horizon radii · visual stretch {stretch}×')");
     // Lowercasing a TRANSLATED noun is wrong wherever nouns are capitalised, so the
     // pack owns the casing of the object name.
     expect(source).not.toContain("item.label.toLowerCase()");

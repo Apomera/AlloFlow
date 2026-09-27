@@ -1,0 +1,18 @@
+# Prepared post-deployment verification
+
+These tools have only been syntax-checked. They were not executed during preparation. Run after the final generated release commit is pushed and the Pages build reports completion. Supply the full final commit SHA explicitly; HEAD or pluginCdnVersion alone does not prove deployed bytes.
+
+    node reports/releases/collective-2026-09-27/live-assets.cjs --commit FULL_FINAL_COMMIT_SHA
+    node reports/releases/collective-2026-09-27/live-browser.cjs --commit FULL_FINAL_COMMIT_SHA
+
+Both use live-release-lib.cjs in this directory and default to comparison base 452e7cd230b62f4e192f055826817653d5b997f4. The --base FULL_BASE_SHA option can explicitly replace that base. They read committed Git blobs; no working runtime file supplies expected bytes. Git history and runtime files are never changed.
+
+The publication map comes from build.js and deploy.sh: Pages serves canonical repository-root assets. build.js:91 publishes transformed hosted shell files to both app/ and desktop/web-app/public/app/; the live URL is https://alloflow-cdn.pages.dev/app/. The source shell desktop/web-app/public/index.html is not the deployed /app/ HTML. Its root counterpart index.html is the separate marketing page and is an intentional parity exception.
+
+live-assets.cjs selects changed canonical runtime files since the comparison base through root/public pairs and known runtime trees, always adds every committed app/ artifact, and resolves the asset manifest and service-worker precache entries. It first rejects root/public disagreement in the final commit. Every selected public URL is fetched twice: an ordinary GET and a GET with no-cache headers. It records SHA-256, byte length, response/cache headers, redirects and final URL. Redirects outside the official origin are refused. Any stale/missing body makes the result fail; HTTP 200 alone is insufficient. Deleted paths and skipped non-runtime changes are listed. The output is live-assets.json; four requests may run concurrently.
+
+live-browser.cjs first verifies /app/index.html, /app/sw.js and /app/asset-manifest.json with both GET modes. It then opens a new disposable browser context, navigates only to the normal app URL, waits for rendered React content and an active controlling worker, and reloads twice. It rejects page errors and fatal React/module errors, hashes observed official-origin response bodies against the same final commit, verifies expected service-worker cache identity and every precached body, and rejects a redirected cached navigation shell. No application button is clicked; no existing browser profile or saved application data is loaded. Non-GET/HEAD requests visible to Playwright routing are blocked. The context's own temporary cache/storage is discarded at close.
+
+The default browser is installed Microsoft Edge through Playwright; use ALLO_LIVE_BROWSER=chromium for its bundled Chromium. The output is live-browser.json. Browser response comparisons include whichever modules normal boot loads; the separate assets run covers changed assets that boot does not request. Third-party public dependencies are not compared to this repository. Exact reader loader pins remain the responsibility of dev-tools/check_deployed_reader.cjs with a fresh local manifest.
+
+These checks do not exercise feature flows, authenticated services, old user service-worker caches, desktop installers, latency or global edge propagation. The scripts write only their report JSON here. If any served body is stale, preserve the failed receipt and rerun after propagation; do not reinterpret HEAD or deployment status as a passing byte comparison.

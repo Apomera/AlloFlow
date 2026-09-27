@@ -1,0 +1,1025 @@
+{
+  "status": "candidate-baseline",
+  "baseline": "452e7cd230b62f4e192f055826817653d5b997f4",
+  "environment": {
+    "platform": "win32",
+    "arch": "arm64",
+    "node": "v24.11.1",
+    "os": "10.0.26200",
+    "cpu": "Snapdragon(R) X 10-core X1P64100 @ 3.40 GHz",
+    "logicalCPUs": 10
+  },
+  "harnessHashes": {
+    "fixtures.cjs": "256de8c22717e196684c39f1d1bc419f358018797b85844cbc33f70ffd444b7a",
+    "harness.jsx": "fe90ce5a054c91f1f0b912c8993e36152fdf2a2aaabb549ea8a4334dc9faff8b",
+    "instrumentation.js": "fce7b3c400a3fb6acbb72d68fc34f08ce8a64309426f5fc758805c9e1ff3cd68",
+    "run.cjs": "2da88eb51a93eda7012e888c5f39bd3524be3ed746a3653062a41d0ab600cc29"
+  },
+  "browser": "154.0.4258.37",
+  "sourceMode": "working-tree",
+  "instrumented": true,
+  "retentionProbe": true,
+  "sourceHashes": {
+    "view_simplified_source.jsx": "d953f735f98b5904d52203d0b028bf2a1968e6213df0be37b41e30baebb29b22",
+    "immersive_reader_source.jsx": "a6f102900550ddbbe47671eaddbb1911a49f41fcecd76b9b211a0a163685a91c",
+    "instructional_context_module.js": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2",
+    "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+    "phase_n_misc_helpers_module.js": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c",
+    "text_pipeline_helpers_module.js": "4e7ccd0d1ab0ece3750471cdb82e29ce79906760d2012d6c2672369056de9a48",
+    "reader_place_store.js": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9",
+    "reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5"
+  },
+  "css": {
+    "file": "main.99f5a409.css",
+    "sha256": "0d92bdedf7fdb333dfc4366d642df7c162556f0b814a3d99ca42520d72b82f0d"
+  },
+  "limitations": [
+    "Not the integrated host or deployed release.",
+    "Synthetic sweep updates, local audio route, and disposable browser storage; icon components are stubbed.",
+    "Timing budgets are unset until repeated baseline runs establish noise and device constraints.",
+    "DOM counters identify retention trends; detached-node retaining paths require a heap snapshot follow-up."
+  ],
+  "results": [
+    {
+      "name": "unique-navigation",
+      "inventory": {
+        "requestedSentences": 300,
+        "supports": 30,
+        "utf16Chars": 18698,
+        "words": 3000,
+        "paragraphs": 100,
+        "acceptedSupports": 30,
+        "canonicalSentences": 300
+      },
+      "updateToPaintMs": {
+        "count": 20,
+        "p50": 25.099999994039536,
+        "p95": 27.900000005960464,
+        "p99": 27.900000005960464,
+        "samples": [
+          25.5,
+          26.200000017881393,
+          20.69999998807907,
+          25.099999994039536,
+          26.700000017881393,
+          27.900000005960464,
+          23.30000001192093,
+          21.700000017881393,
+          23.5,
+          23.700000017881393,
+          25.5,
+          25.400000005960464,
+          24.5,
+          26.799999982118607,
+          27.69999998807907,
+          27,
+          21,
+          21,
+          23,
+          21.099999994039536
+        ]
+      },
+      "sweepMetrics": {
+        "longTasks": {
+          "count": 0,
+          "totalMs": 0,
+          "maxMs": 0
+        },
+        "audioStarts": 0,
+        "playingAudio": 0,
+        "counts": {
+          "getSourceSnapshot": 100,
+          "validateReadingSupports": 25,
+          "textContentReads": 25,
+          "textContentChars": 465000
+        },
+        "milliseconds": {
+          "getSourceSnapshot": 5.900000035762787,
+          "validateReadingSupports": 5.300000011920929
+        },
+        "commits": 25,
+        "commitMs": 97.40000012516975,
+        "outstandingTimers": 0,
+        "outstandingFrames": 0
+      },
+      "activityMetrics": {
+        "longTasks": {
+          "count": 200,
+          "totalMs": 14437,
+          "maxMs": 146
+        },
+        "audioStarts": 0,
+        "playingAudio": 0,
+        "counts": {
+          "getSourceSnapshot": 2500,
+          "validateReadingSupports": 625,
+          "textContentReads": 1025,
+          "textContentChars": 15886328,
+          "fingerprintSourceText": 400,
+          "validateAdaptedReadingSupports": 400,
+          "splitTextToSentences": 161600,
+          "getAdaptedSupportSnapshot": 200,
+          "treeWalkers": 200
+        },
+        "milliseconds": {
+          "getSourceSnapshot": 170.00000059604645,
+          "validateReadingSupports": 166.4999998509884,
+          "fingerprintSourceText": 15.400000244379044,
+          "validateAdaptedReadingSupports": 369.8999995291233,
+          "splitTextToSentences": 1214.799998730421,
+          "getAdaptedSupportSnapshot": 17.700000166893005
+        },
+        "commits": 625,
+        "commitMs": 10630.799997925758,
+        "outstandingTimers": 0,
+        "outstandingFrames": 0
+      },
+      "retained": [
+        {
+          "phase": "mounted",
+          "dom": {
+            "documents": 2,
+            "nodes": 20880,
+            "jsEventListeners": 3591
+          },
+          "heap": {
+            "usedSize": 27800528,
+            "totalSize": 29085696,
+            "embedderHeapUsedSize": 28515544,
+            "backingStorageSize": 11090638
+          },
+          "readingPlaces": {
+            "entries": 1,
+            "keyChars": 18948,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-10",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 43582944,
+            "totalSize": 46145536,
+            "embedderHeapUsedSize": 31257856,
+            "backingStorageSize": 11096300
+          },
+          "readingPlaces": {
+            "entries": 11,
+            "keyChars": 209019,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-20",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 43895004,
+            "totalSize": 45096960,
+            "embedderHeapUsedSize": 30485976,
+            "backingStorageSize": 11094856
+          },
+          "readingPlaces": {
+            "entries": 20,
+            "keyChars": 380171,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-30",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 43942928,
+            "totalSize": 45883392,
+            "embedderHeapUsedSize": 30797232,
+            "backingStorageSize": 11094856
+          },
+          "readingPlaces": {
+            "entries": 20,
+            "keyChars": 380200,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-40",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 43963636,
+            "totalSize": 45621248,
+            "embedderHeapUsedSize": 30808280,
+            "backingStorageSize": 11094856
+          },
+          "readingPlaces": {
+            "entries": 20,
+            "keyChars": 380200,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-50",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 43998220,
+            "totalSize": 46145536,
+            "embedderHeapUsedSize": 30198000,
+            "backingStorageSize": 11094856
+          },
+          "readingPlaces": {
+            "entries": 20,
+            "keyChars": 380200,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-60",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 44012932,
+            "totalSize": 45883392,
+            "embedderHeapUsedSize": 30166312,
+            "backingStorageSize": 11094856
+          },
+          "readingPlaces": {
+            "entries": 20,
+            "keyChars": 380200,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-70",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 44033384,
+            "totalSize": 45359104,
+            "embedderHeapUsedSize": 30336912,
+            "backingStorageSize": 11094856
+          },
+          "readingPlaces": {
+            "entries": 20,
+            "keyChars": 380200,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-80",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 44060780,
+            "totalSize": 45359104,
+            "embedderHeapUsedSize": 31707184,
+            "backingStorageSize": 11094856
+          },
+          "readingPlaces": {
+            "entries": 20,
+            "keyChars": 380200,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-90",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 44081904,
+            "totalSize": 45883392,
+            "embedderHeapUsedSize": 32118096,
+            "backingStorageSize": 11094856
+          },
+          "readingPlaces": {
+            "entries": 20,
+            "keyChars": 380200,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-100",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 44097584,
+            "totalSize": 45359104,
+            "embedderHeapUsedSize": 32632216,
+            "backingStorageSize": 11094888
+          },
+          "readingPlaces": {
+            "entries": 20,
+            "keyChars": 380201,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-110",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 44126808,
+            "totalSize": 45883392,
+            "embedderHeapUsedSize": 32929792,
+            "backingStorageSize": 11094889
+          },
+          "readingPlaces": {
+            "entries": 20,
+            "keyChars": 380231,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-120",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 44131900,
+            "totalSize": 45621248,
+            "embedderHeapUsedSize": 32654200,
+            "backingStorageSize": 11094889
+          },
+          "readingPlaces": {
+            "entries": 20,
+            "keyChars": 380260,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-130",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 44159528,
+            "totalSize": 45883392,
+            "embedderHeapUsedSize": 30148856,
+            "backingStorageSize": 11094889
+          },
+          "readingPlaces": {
+            "entries": 20,
+            "keyChars": 380260,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-140",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 44165292,
+            "totalSize": 45359104,
+            "embedderHeapUsedSize": 30605440,
+            "backingStorageSize": 11094889
+          },
+          "readingPlaces": {
+            "entries": 20,
+            "keyChars": 380260,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-150",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 44173660,
+            "totalSize": 45621248,
+            "embedderHeapUsedSize": 30783672,
+            "backingStorageSize": 11094889
+          },
+          "readingPlaces": {
+            "entries": 20,
+            "keyChars": 380260,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-160",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 44177952,
+            "totalSize": 45621248,
+            "embedderHeapUsedSize": 30588920,
+            "backingStorageSize": 11094889
+          },
+          "readingPlaces": {
+            "entries": 20,
+            "keyChars": 380260,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-170",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 44395760,
+            "totalSize": 45621248,
+            "embedderHeapUsedSize": 31645848,
+            "backingStorageSize": 11094889
+          },
+          "readingPlaces": {
+            "entries": 20,
+            "keyChars": 380260,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-180",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 44405760,
+            "totalSize": 46407680,
+            "embedderHeapUsedSize": 30187360,
+            "backingStorageSize": 11094889
+          },
+          "readingPlaces": {
+            "entries": 20,
+            "keyChars": 380260,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-190",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 44404620,
+            "totalSize": 46407680,
+            "embedderHeapUsedSize": 30528792,
+            "backingStorageSize": 11094889
+          },
+          "readingPlaces": {
+            "entries": 20,
+            "keyChars": 380260,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-200",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 44408936,
+            "totalSize": 45621248,
+            "embedderHeapUsedSize": 29942096,
+            "backingStorageSize": 11094889
+          },
+          "readingPlaces": {
+            "entries": 20,
+            "keyChars": 380260,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "unmounted",
+          "dom": {
+            "documents": 2,
+            "nodes": 30,
+            "jsEventListeners": 146
+          },
+          "heap": {
+            "usedSize": 21594408,
+            "totalSize": 23601152,
+            "embedderHeapUsedSize": 3433864,
+            "backingStorageSize": 10956281
+          },
+          "readingPlaces": {
+            "entries": 20,
+            "keyChars": 380260,
+            "authored": 0,
+            "recovery": 0
+          }
+        }
+      ],
+      "afterClose": {
+        "longTasks": {
+          "count": 200,
+          "totalMs": 14437,
+          "maxMs": 146
+        },
+        "audioStarts": 0,
+        "playingAudio": 0,
+        "counts": {
+          "getSourceSnapshot": 2500,
+          "validateReadingSupports": 625,
+          "textContentReads": 1025,
+          "textContentChars": 15886328,
+          "fingerprintSourceText": 400,
+          "validateAdaptedReadingSupports": 400,
+          "splitTextToSentences": 161600,
+          "getAdaptedSupportSnapshot": 200,
+          "treeWalkers": 200
+        },
+        "milliseconds": {
+          "getSourceSnapshot": 170.00000059604645,
+          "validateReadingSupports": 166.4999998509884,
+          "fingerprintSourceText": 15.400000244379044,
+          "validateAdaptedReadingSupports": 369.8999995291233,
+          "splitTextToSentences": 1214.799998730421,
+          "getAdaptedSupportSnapshot": 17.700000166893005
+        },
+        "commits": 625,
+        "commitMs": 10630.799997925758,
+        "outstandingTimers": 0,
+        "outstandingFrames": 0,
+        "highlightRanges": 0
+      },
+      "lifecycle": {
+        "cycles": 200,
+        "uniqueResources": 200,
+        "freshnessChecks": 200
+      }
+    },
+    {
+      "name": "overlay-cycles",
+      "inventory": {
+        "requestedSentences": 300,
+        "supports": 0,
+        "utf16Chars": 18698,
+        "words": 3000,
+        "paragraphs": 100,
+        "acceptedSupports": 0,
+        "canonicalSentences": 300
+      },
+      "updateToPaintMs": {
+        "count": 20,
+        "p50": 27.900000005960464,
+        "p95": 30.799999982118607,
+        "p99": 30.799999982118607,
+        "samples": [
+          27.19999998807907,
+          28.899999976158142,
+          26.799999982118607,
+          28.400000005960464,
+          30.799999982118607,
+          27.900000005960464,
+          23.69999998807907,
+          23.900000005960464,
+          30.19999998807907,
+          15.099999994039536,
+          20.69999998807907,
+          27.299999982118607,
+          28.299999982118607,
+          28.899999976158142,
+          29.400000005960464,
+          28.900000005960464,
+          28.80000001192093,
+          24.600000023841858,
+          23,
+          26.400000005960464
+        ]
+      },
+      "sweepMetrics": {
+        "longTasks": {
+          "count": 0,
+          "totalMs": 0,
+          "maxMs": 0
+        },
+        "audioStarts": 0,
+        "playingAudio": 0,
+        "counts": {
+          "getSourceSnapshot": 100,
+          "validateReadingSupports": 25
+        },
+        "milliseconds": {
+          "getSourceSnapshot": 5.400000065565109,
+          "validateReadingSupports": 4.89999994635582
+        },
+        "commits": 25,
+        "commitMs": 92.9000001847744,
+        "outstandingTimers": 0,
+        "outstandingFrames": 0
+      },
+      "activityMetrics": {
+        "longTasks": {
+          "count": 89,
+          "totalMs": 6752,
+          "maxMs": 144
+        },
+        "audioStarts": 0,
+        "playingAudio": 0,
+        "counts": {
+          "getSourceSnapshot": 500,
+          "validateReadingSupports": 125,
+          "splitTextToSentences": 15000
+        },
+        "milliseconds": {
+          "getSourceSnapshot": 37.000000059604645,
+          "validateReadingSupports": 37.99999985098839,
+          "splitTextToSentences": 147.2000000178814
+        },
+        "commits": 175,
+        "commitMs": 4355.100000619888,
+        "outstandingTimers": 0,
+        "outstandingFrames": 0
+      },
+      "retained": [
+        {
+          "phase": "mounted",
+          "dom": {
+            "documents": 2,
+            "nodes": 20351,
+            "jsEventListeners": 3496
+          },
+          "heap": {
+            "usedSize": 26917936,
+            "totalSize": 28037120,
+            "embedderHeapUsedSize": 24284840,
+            "backingStorageSize": 11059605
+          },
+          "readingPlaces": {
+            "entries": 1,
+            "keyChars": 18948,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-10",
+          "dom": {
+            "documents": 2,
+            "nodes": 20354,
+            "jsEventListeners": 3496
+          },
+          "heap": {
+            "usedSize": 29532252,
+            "totalSize": 30416896,
+            "embedderHeapUsedSize": 25643712,
+            "backingStorageSize": 11060315
+          },
+          "readingPlaces": {
+            "entries": 1,
+            "keyChars": 18948,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-20",
+          "dom": {
+            "documents": 2,
+            "nodes": 20354,
+            "jsEventListeners": 3496
+          },
+          "heap": {
+            "usedSize": 29595156,
+            "totalSize": 30416896,
+            "embedderHeapUsedSize": 26129384,
+            "backingStorageSize": 11059712
+          },
+          "readingPlaces": {
+            "entries": 1,
+            "keyChars": 18948,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-30",
+          "dom": {
+            "documents": 2,
+            "nodes": 20354,
+            "jsEventListeners": 3496
+          },
+          "heap": {
+            "usedSize": 29850512,
+            "totalSize": 30416896,
+            "embedderHeapUsedSize": 25040656,
+            "backingStorageSize": 11059712
+          },
+          "readingPlaces": {
+            "entries": 1,
+            "keyChars": 18948,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-40",
+          "dom": {
+            "documents": 2,
+            "nodes": 20354,
+            "jsEventListeners": 3496
+          },
+          "heap": {
+            "usedSize": 29858488,
+            "totalSize": 30416896,
+            "embedderHeapUsedSize": 25193216,
+            "backingStorageSize": 11059712
+          },
+          "readingPlaces": {
+            "entries": 1,
+            "keyChars": 18948,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "cycle-50",
+          "dom": {
+            "documents": 2,
+            "nodes": 20354,
+            "jsEventListeners": 3496
+          },
+          "heap": {
+            "usedSize": 29869196,
+            "totalSize": 30679040,
+            "embedderHeapUsedSize": 25362952,
+            "backingStorageSize": 11059712
+          },
+          "readingPlaces": {
+            "entries": 1,
+            "keyChars": 18948,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "unmounted",
+          "dom": {
+            "documents": 2,
+            "nodes": 28,
+            "jsEventListeners": 146
+          },
+          "heap": {
+            "usedSize": 19990108,
+            "totalSize": 21504000,
+            "embedderHeapUsedSize": 1947192,
+            "backingStorageSize": 10945092
+          },
+          "readingPlaces": {
+            "entries": 1,
+            "keyChars": 18948,
+            "authored": 0,
+            "recovery": 0
+          }
+        }
+      ],
+      "afterClose": {
+        "longTasks": {
+          "count": 89,
+          "totalMs": 6752,
+          "maxMs": 144
+        },
+        "audioStarts": 0,
+        "playingAudio": 0,
+        "counts": {
+          "getSourceSnapshot": 500,
+          "validateReadingSupports": 125,
+          "splitTextToSentences": 15000
+        },
+        "milliseconds": {
+          "getSourceSnapshot": 37.000000059604645,
+          "validateReadingSupports": 37.99999985098839,
+          "splitTextToSentences": 147.2000000178814
+        },
+        "commits": 175,
+        "commitMs": 4355.100000619888,
+        "outstandingTimers": 0,
+        "outstandingFrames": 0,
+        "highlightRanges": 0
+      },
+      "lifecycle": {
+        "cycles": 50,
+        "uniqueResources": null,
+        "freshnessChecks": 0
+      }
+    },
+    {
+      "name": "live-audio",
+      "inventory": {
+        "requestedSentences": 30,
+        "supports": 0,
+        "utf16Chars": 1868,
+        "words": 300,
+        "paragraphs": 10,
+        "acceptedSupports": 0,
+        "canonicalSentences": 30
+      },
+      "updateToPaintMs": {
+        "count": 20,
+        "p50": 29.700000017881393,
+        "p95": 34.900000005960464,
+        "p99": 34.900000005960464,
+        "samples": [
+          29.19999998807907,
+          26.400000005960464,
+          28.700000017881393,
+          30.200000017881393,
+          31.799999982118607,
+          32.69999998807907,
+          27.5,
+          20.400000005960464,
+          29,
+          28.099999994039536,
+          29.5,
+          30.099999994039536,
+          30.5,
+          29.700000017881393,
+          34.900000005960464,
+          26.299999982118607,
+          33.80000001192093,
+          18.200000017881393,
+          32,
+          30.799999982118607
+        ]
+      },
+      "sweepMetrics": {
+        "longTasks": {
+          "count": 0,
+          "totalMs": 0,
+          "maxMs": 0
+        },
+        "audioStarts": 0,
+        "playingAudio": 0,
+        "counts": {
+          "getSourceSnapshot": 100,
+          "validateReadingSupports": 25
+        },
+        "milliseconds": {
+          "getSourceSnapshot": 1.0999999940395355,
+          "validateReadingSupports": 0.5999999940395355
+        },
+        "commits": 25,
+        "commitMs": 30.79999989271164,
+        "outstandingTimers": 0,
+        "outstandingFrames": 0
+      },
+      "activityMetrics": {
+        "longTasks": {
+          "count": 0,
+          "totalMs": 0,
+          "maxMs": 0
+        },
+        "audioStarts": 1,
+        "playingAudio": 0,
+        "counts": {
+          "getSourceSnapshot": 108,
+          "validateReadingSupports": 27
+        },
+        "milliseconds": {
+          "getSourceSnapshot": 1.2999999821186066,
+          "validateReadingSupports": 0.699999988079071
+        },
+        "commits": 40,
+        "commitMs": 38.699999928474426,
+        "outstandingTimers": 0,
+        "outstandingFrames": 0
+      },
+      "retained": [
+        {
+          "phase": "mounted",
+          "dom": {
+            "documents": 2,
+            "nodes": 2441,
+            "jsEventListeners": 526
+          },
+          "heap": {
+            "usedSize": 19747624,
+            "totalSize": 20172800,
+            "embedderHeapUsedSize": 4243056,
+            "backingStorageSize": 10946796
+          },
+          "readingPlaces": {
+            "entries": 1,
+            "keyChars": 1937,
+            "authored": 0,
+            "recovery": 0
+          }
+        },
+        {
+          "phase": "unmounted",
+          "dom": {
+            "documents": 2,
+            "nodes": 28,
+            "jsEventListeners": 146
+          },
+          "heap": {
+            "usedSize": 19692940,
+            "totalSize": 20717568,
+            "embedderHeapUsedSize": 1622232,
+            "backingStorageSize": 1212032
+          },
+          "readingPlaces": {
+            "entries": 1,
+            "keyChars": 1937,
+            "authored": 0,
+            "recovery": 0
+          }
+        }
+      ],
+      "afterClose": {
+        "longTasks": {
+          "count": 0,
+          "totalMs": 0,
+          "maxMs": 0
+        },
+        "audioStarts": 1,
+        "playingAudio": 0,
+        "counts": {
+          "getSourceSnapshot": 108,
+          "validateReadingSupports": 27
+        },
+        "milliseconds": {
+          "getSourceSnapshot": 1.2999999821186066,
+          "validateReadingSupports": 0.699999988079071
+        },
+        "commits": 40,
+        "commitMs": 38.699999928474426,
+        "outstandingTimers": 0,
+        "outstandingFrames": 0,
+        "highlightRanges": 0
+      },
+      "lifecycle": {
+        "cycles": 0,
+        "uniqueResources": null,
+        "freshnessChecks": 0
+      }
+    }
+  ]
+}

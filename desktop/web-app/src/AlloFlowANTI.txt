@@ -14289,7 +14289,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // has not landed yet, so load order is not load-bearing.
     loadModule('AlloQuestContract', 'https://alloflow-cdn.pages.dev/allo_quest_contract_module.js?v=37bdb2883');
     loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=37bdb2883');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=4875db2b');
+    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=f71bd7eb');
     loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=37bdb2883');
     loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=37bdb2883');
     loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=37bdb2883');
@@ -14298,7 +14298,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=37bdb2883');
     loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=47162871');
     loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=a3fb7ab7');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=d89cec7e');
+    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=6e491279');
     loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=37bdb2883');
     loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=37bdb2883');
     loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=37bdb2883');
@@ -14511,7 +14511,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', 'https://alloflow-cdn.pages.dev/view_end_session_preview_module.js?v=37bdb2883'); }; })();
     window.__alloLazyAssignmentCenter = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AssignmentCenter', 'https://alloflow-cdn.pages.dev/view_assignment_center_module.js?v=37bdb2883'); }; })();
     window.__alloLazyMailboxScriptSource = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MailboxScriptSource', 'https://alloflow-cdn.pages.dev/mailbox_script_source_module.js?v=37bdb2883'); }; })();
-    window.__alloLazyLiveSessionDockView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LiveSessionDockView', 'https://alloflow-cdn.pages.dev/view_live_session_dock_module.js?v=9987a5cb'); }; })();
+    window.__alloLazyLiveSessionDockView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LiveSessionDockView', 'https://alloflow-cdn.pages.dev/view_live_session_dock_module.js?v=6d8b3d86'); }; })();
     window.__alloLazyFullPackRunView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FullPackRunView', 'https://alloflow-cdn.pages.dev/view_full_pack_run_module.js?v=c7e326f0'); }; })();
     window.__alloLazyShareSessionSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ShareSessionSurfaces', 'https://alloflow-cdn.pages.dev/view_share_session_surfaces_module.js?v=341e486b'); }; })();
     window.__alloLazyCanvasRecoveryDialogView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('CanvasRecoveryDialogView', 'https://alloflow-cdn.pages.dev/view_canvas_recovery_dialog_module.js?v=5f13b334'); }; })();
@@ -14586,14 +14586,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // its toggle, the Quick Start toggle and the import control. No
     // dependencies of its own: it reaches Lumen lazily, loading those STEM
     // plugins on demand when a teacher first imports outside STEM Lab.
-    loadModule('OwnSources', 'https://alloflow-cdn.pages.dev/own_sources_module.js?v=37bdb2883');
+    loadModule('OwnSources', 'https://alloflow-cdn.pages.dev/own_sources_module.js?v=1c5dc26a');
     loadModule('AppStyles', 'https://alloflow-cdn.pages.dev/app_styles_module.js?v=37bdb2883');
-    loadModule('LiveAac', 'https://alloflow-cdn.pages.dev/live_aac_module.js?v=37bdb2883');
+    loadModule('LiveAac', 'https://alloflow-cdn.pages.dev/live_aac_module.js?v=1ef3de4c');
     window.__alloLazySharedActivity = function() {
       if (window.AlloModules?.SharedActivity?.SharedAssignmentActivityPanel) return true;
       const entry = window.__alloModuleRegistry?.SharedActivity;
       if (entry?.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('SharedActivity');
-      loadModule('SharedActivity', 'https://alloflow-cdn.pages.dev/shared_activity_module.js?v=37bdb2883');
+      loadModule('SharedActivity', 'https://alloflow-cdn.pages.dev/shared_activity_module.js?v=02095910');
       return true;
     };
     window.__alloLazySharedActivity();
@@ -14622,10 +14622,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=718a3342');
+    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=eb2801b0');
     loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=37bdb2883');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=607cdf6e');
+    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=698fbbc6');
     loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=37bdb2883');
     loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=37bdb2883');
     // Capability index (dev-tools/build_tool_index.cjs): what each STEM tool
@@ -14700,7 +14700,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('SessionTransportModule', 'https://alloflow-cdn.pages.dev/session_transport_module.js?v=51e1ef84');
     loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=961229e6');
     loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=9a934766');
-    loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=f8a017fc');
+    loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=dda3cff2');
     loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=02102365');
     loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=46f32889');
     // File selection must promote intake ahead of deferred background tools.
@@ -14725,7 +14725,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=37bdb2883');
     loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=37bdb2883');
     loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=37bdb2883');
-    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=b8f7f57e'); }; })();
+    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=0614d6ba'); }; })();
     if (window.__alloSimplifiedViewRequested) window.__alloLazySimplifiedView();
     loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=37bdb2883');
     loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=37bdb2883');
@@ -14741,7 +14741,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js?v=a012c2fd');
     loadModule('AlloCommandContext', 'https://alloflow-cdn.pages.dev/allo_command_context_module.js?v=d9950c8d');
-    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=fbda9fa8');
+    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=50d53486');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
     loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=37bdb2883');
     loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=37bdb2883');
@@ -23500,6 +23500,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                         }
                     }
                 }
+                // Preserve explicit reading envelopes across local saves, including failed decodes.
+                const preserveReadingEnvelope = item.type === 'simplified' && item.dataEncoding === 'json-text/v1';
                 const serializedItem = {
                     id: item.id || Date.now().toString(),
                     unitId: item.unitId || null,
@@ -23507,9 +23509,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                     title: item.title || '',
                     meta: item.meta || '',
                     timestamp: item.timestamp || new Date(),
-                    data: JSON.stringify(parsedData) || "{}",
+                    data: preserveReadingEnvelope && typeof parsedData === 'string' ? parsedData : JSON.stringify(parsedData) || "{}",
                 };
-                if (typeof parsedData === 'string' && (item.type === 'simplified' || item.dataEncoding === 'text/v1')) serializedItem.dataEncoding = 'json-text/v1';
+                if (preserveReadingEnvelope || (typeof parsedData === 'string' && (item.type === 'simplified' || item.dataEncoding === 'text/v1'))) serializedItem.dataEncoding = 'json-text/v1';
                 if (item.sourceSnapshot) serializedItem.sourceSnapshot = item.sourceSnapshot;
                 if (item.sourceInstructionalText) serializedItem.sourceInstructionalText = item.sourceInstructionalText;
                 if (item.sourceFamilyId) serializedItem.sourceFamilyId = item.sourceFamilyId;
@@ -27990,6 +27992,25 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   useEffect(() => {
       if (!focusNarrationEnabled) return;
       let debounceTimer = null;
+      let focusRequest = 0, disposed = false, previewFocusTransition = false, previewTransitionVersion = 0;
+      let pendingFocusSpeech = null;
+      const cancelPendingFocusSpeech = () => {
+          const pending = pendingFocusSpeech;
+          pendingFocusSpeech = null;
+          pending?.abort();
+      };
+      const isFocusRequestCurrent = request => !disposed && request === focusRequest && !previewFocusTransition && !document.querySelector('[data-student-preview]') && !isGlobalMuted();
+      const handleReadingPreview = event => {
+          if (!event.detail || typeof event.detail.owner !== 'string' || typeof event.detail.active !== 'boolean') return;
+          ++focusRequest;
+          cancelPendingFocusSpeech();
+          clearTimeout(debounceTimer);
+          // Suppress automatic opener focus in the same close/cleanup turn.
+          // Only this unfinished focus request is aborted; playing host audio is untouched.
+          previewFocusTransition = true;
+          const transition = ++previewTransitionVersion;
+          Promise.resolve().then(() => { if (transition === previewTransitionVersion) previewFocusTransition = false; });
+      };
       const cancelCurrentAudio = () => {
           if (focusNarrationAudioRef.current) {
               try { focusNarrationAudioRef.current.pause(); focusNarrationAudioRef.current.currentTime = 0; } catch(e) {}
@@ -27997,11 +28018,15 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           }
           if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       };
-      const speakFocusAnnouncement = async (text) => {
+      const speakFocusAnnouncement = async (text, request) => {
+          if (!isFocusRequestCurrent(request)) return;
           cancelCurrentAudio();
           if (window._kokoroTTS?.ready) {
+              const controller = new AbortController();
+              pendingFocusSpeech = controller;
               try {
-                  const url = await window._kokoroTTS.speakStreaming(text, selectedVoice || 'af_heart', voiceSpeed || 1);
+                  const url = await window._kokoroTTS.speakStreaming(text, selectedVoice || 'af_heart', voiceSpeed || 1, { signal: controller.signal });
+                  if (!isFocusRequestCurrent(request)) { controller.abort(); return; }
                   if (url) {
                       const audio = new Audio(url);
                       audio.playbackRate = voiceSpeed || 1;
@@ -28011,7 +28036,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                       return;
                   }
               } catch(e) {}
+              finally { if (pendingFocusSpeech === controller) pendingFocusSpeech = null; }
           }
+          if (!isFocusRequestCurrent(request)) return;
           if ('speechSynthesis' in window) {
               const utter = new SpeechSynthesisUtterance(text);
               utter.rate = 1.1;
@@ -28021,12 +28048,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           }
       };
       const handleFocusIn = (e) => {
-          if (!focusNarrationEnabled) return;
-          if (isGlobalMuted()) return;
+          const request = ++focusRequest;
+          cancelPendingFocusSpeech();
           clearTimeout(debounceTimer);
+          if (!focusNarrationEnabled || !isFocusRequestCurrent(request)) return;
           debounceTimer = setTimeout(() => {
               const el = e.target;
-              if (!el) return;
+              if (!el?.isConnected || !isFocusRequestCurrent(request)) return;
               if (el.closest?.('[data-rtp-idx]') || el.closest?.('#rtp-read-all-btn')) return;
               const tag = el.tagName?.toLowerCase();
               const role = el.getAttribute('role') || '';
@@ -28049,11 +28077,17 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               if (helpText && helpText !== label && helpText.length < 200) {
                   announcement += '. ' + helpText;
               }
-              speakFocusAnnouncement(announcement);
+              speakFocusAnnouncement(announcement, request);
           }, 180); // 180ms debounce for rapid tabbing
       };
+      window.addEventListener('alloflow:reading-preview', handleReadingPreview);
       document.addEventListener('focusin', handleFocusIn);
       return () => {
+          disposed = true;
+          ++focusRequest;
+          cancelPendingFocusSpeech();
+          ++previewTransitionVersion;
+          window.removeEventListener('alloflow:reading-preview', handleReadingPreview);
           document.removeEventListener('focusin', handleFocusIn);
           clearTimeout(debounceTimer);
           cancelCurrentAudio();
@@ -33727,7 +33761,18 @@ const parseTaggedContent = (text) => {
           error.code = 'artifact-audio-unavailable';
           throw error;
       }
-      const preparer = moduleValue.create({ callTTS });
+      const preparer = moduleValue.create({
+          callTTS,
+          getRequestedProfile: ({ voice, language }) => {
+              const provider = String(_aiConfig.ttsProvider || 'auto').trim().toLowerCase();
+              const localEnglishVoice = /^(af_|am_|bf_|bm_)/i.test(voice) && /^(english\b|en(?:[-_]|$))/i.test(language);
+              return {
+                  requestedProvider: provider === 'auto' ? 'auto:' + String(_aiConfig.backend || 'gemini').toLowerCase() : provider,
+                  requestedModel: (provider === 'auto' || provider === 'gemini') && !localEnglishVoice
+                      ? String(_aiConfig.models?.tts || GEMINI_MODELS.tts || '') : '',
+              };
+          },
+      });
       const request = {
           ...options,
           defaultVoice: options.defaultVoice || selectedVoice || 'Kore',

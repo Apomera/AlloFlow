@@ -1,0 +1,667 @@
+{
+  "version": 1,
+  "panModel": 2,
+  "pieceModel": 1,
+  "id": "tomato",
+  "servings": 2,
+  "mode": "demonstrate",
+  "time": 630,
+  "log": [
+    {
+      "action": "wash",
+      "value": null,
+      "time": 0,
+      "accepted": true,
+      "observation": "Soap-and-water handwashing completed for at least 20 seconds in this model."
+    },
+    {
+      "action": "rinse",
+      "value": null,
+      "time": 0,
+      "accepted": true,
+      "observation": "Produce rinsed under running water."
+    },
+    {
+      "action": "cut",
+      "value": null,
+      "time": 0,
+      "accepted": true,
+      "observation": "Even 10 mm pieces prepared using the simplified control. This records a preparation choice, not knife dexterity."
+    },
+    {
+      "action": "dry",
+      "value": null,
+      "time": 0,
+      "accepted": true,
+      "observation": "Excess surface water removed."
+    },
+    {
+      "action": "garlicPrep",
+      "value": null,
+      "time": 0,
+      "accepted": true,
+      "observation": "Garlic peeled and minced."
+    },
+    {
+      "action": "measure",
+      "value": 160,
+      "time": 0,
+      "accepted": true,
+      "observation": "Measured 160 g of dry pasta. The recipe calls for 160 g."
+    },
+    {
+      "action": "fill",
+      "value": null,
+      "time": 0,
+      "accepted": true,
+      "observation": "Pot filled with 1200 mL of fresh water."
+    },
+    {
+      "action": "potHeat",
+      "value": 3,
+      "time": 0,
+      "accepted": true,
+      "observation": "Pot burner high. The water temperature changes gradually."
+    },
+    {
+      "action": "oil",
+      "value": null,
+      "time": 0,
+      "accepted": true,
+      "observation": "15 mL olive oil added."
+    },
+    {
+      "action": "panHeat",
+      "value": 2,
+      "time": 0,
+      "accepted": true,
+      "observation": "Pan burner medium. The pan retains heat after you turn it down."
+    },
+    {
+      "action": "advance",
+      "value": 30,
+      "time": 30,
+      "accepted": true,
+      "observation": "Both vessels advanced 30 simulated seconds. Water heating; Oil in the pan."
+    },
+    {
+      "action": "advance",
+      "value": 30,
+      "time": 60,
+      "accepted": true,
+      "observation": "Both vessels advanced 30 simulated seconds. Water heating; Oil in the pan."
+    },
+    {
+      "action": "advance",
+      "value": 30,
+      "time": 90,
+      "accepted": true,
+      "observation": "Both vessels advanced 30 simulated seconds. Near a simmer; Oil in the pan."
+    },
+    {
+      "action": "produce",
+      "value": null,
+      "time": 90,
+      "accepted": true,
+      "observation": "Produce added. Its moisture and mass affect the pan temperature. Each piece keeps its prepared width. Smaller pieces cook faster under matching conditions."
+    },
+    {
+      "action": "advance",
+      "value": 30,
+      "time": 120,
+      "accepted": true,
+      "observation": "Both vessels advanced 30 simulated seconds. Boiling water; Tomatoes still firm."
+    },
+    {
+      "action": "pasta",
+      "value": null,
+      "time": 120,
+      "accepted": true,
+      "observation": "Pasta added. The cooler pasta briefly lowers the water temperature."
+    },
+    {
+      "action": "stirPot",
+      "value": null,
+      "time": 120,
+      "accepted": true,
+      "observation": "Pasta stirred to separate the pieces."
+    },
+    {
+      "action": "advance",
+      "value": 30,
+      "time": 150,
+      "accepted": true,
+      "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Tomatoes still firm."
+    },
+    {
+      "action": "advance",
+      "value": 30,
+      "time": 180,
+      "accepted": true,
+      "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Tomatoes still firm."
+    },
+    {
+      "action": "stirPan",
+      "value": null,
+      "time": 180,
+      "accepted": true,
+      "observation": "Pan stirred to redistribute the pieces and sauce."
+    },
+    {
+      "action": "advance",
+      "value": 30,
+      "time": 210,
+      "accepted": true,
+      "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Tomatoes still firm."
+    },
+    {
+      "action": "advance",
+      "value": 30,
+      "time": 240,
+      "accepted": true,
+      "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Tomatoes still firm."
+    },
+    {
+      "action": "advance",
+      "value": 30,
+      "time": 270,
+      "accepted": true,
+      "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Tomatoes still firm."
+    },
+    {
+      "action": "stirPan",
+      "value": null,
+      "time": 270,
+      "accepted": true,
+      "observation": "Pan stirred to redistribute the pieces and sauce."
+    },
+    {
+      "action": "advance",
+      "value": 30,
+      "time": 300,
+      "accepted": true,
+      "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Tomatoes still firm."
+    },
+    {
+      "action": "advance",
+      "value": 30,
+      "time": 330,
+      "accepted": true,
+      "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+    },
+    {
+      "action": "garlic",
+      "value": null,
+      "time": 330,
+      "accepted": true,
+      "observation": "Garlic added. Watch its color as the pan heats."
+    },
+    {
+      "action": "panHeat",
+      "value": 1,
+      "time": 330,
+      "accepted": true,
+      "observation": "Pan burner low. The pan retains heat after you turn it down."
+    },
+    {
+      "action": "advance",
+      "value": 30,
+      "time": 360,
+      "accepted": true,
+      "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+    },
+    {
+      "action": "stirPan",
+      "value": null,
+      "time": 360,
+      "accepted": true,
+      "observation": "Pan stirred to redistribute the pieces and sauce."
+    },
+    {
+      "action": "advance",
+      "value": 30,
+      "time": 390,
+      "accepted": true,
+      "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+    },
+    {
+      "action": "advance",
+      "value": 30,
+      "time": 420,
+      "accepted": true,
+      "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+    },
+    {
+      "action": "advance",
+      "value": 30,
+      "time": 450,
+      "accepted": true,
+      "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+    },
+    {
+      "action": "stirPan",
+      "value": null,
+      "time": 450,
+      "accepted": true,
+      "observation": "Pan stirred to redistribute the pieces and sauce."
+    },
+    {
+      "action": "advance",
+      "value": 30,
+      "time": 480,
+      "accepted": true,
+      "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+    },
+    {
+      "action": "advance",
+      "value": 30,
+      "time": 510,
+      "accepted": true,
+      "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+    },
+    {
+      "action": "advance",
+      "value": 30,
+      "time": 540,
+      "accepted": true,
+      "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+    },
+    {
+      "action": "stirPan",
+      "value": null,
+      "time": 540,
+      "accepted": true,
+      "observation": "Pan stirred to redistribute the pieces and sauce."
+    },
+    {
+      "action": "advance",
+      "value": 30,
+      "time": 570,
+      "accepted": true,
+      "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+    },
+    {
+      "action": "advance",
+      "value": 30,
+      "time": 600,
+      "accepted": true,
+      "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+    },
+    {
+      "action": "sample",
+      "value": null,
+      "time": 600,
+      "accepted": true,
+      "observation": "Sample texture: Tender with a slight bite. Use the packet and a fresh sample in a real kitchen.",
+      "inspection": {
+        "kind": "pasta",
+        "time": 600,
+        "label": "Tender with a slight bite",
+        "coreFraction": 0.12,
+        "compression": 0.4,
+        "observation": "A tiny pale center remains. The sample yields with slight resistance."
+      }
+    },
+    {
+      "action": "reserve",
+      "value": null,
+      "time": 600,
+      "accepted": true,
+      "observation": "200 mL starchy cooking water reserved."
+    },
+    {
+      "action": "drain",
+      "value": null,
+      "time": 600,
+      "accepted": true,
+      "observation": "Pasta drained. Reserved water is available for the sauce."
+    },
+    {
+      "action": "potHeat",
+      "value": 0,
+      "time": 600,
+      "accepted": true,
+      "observation": "Pot burner off. The water temperature changes gradually."
+    },
+    {
+      "action": "advance",
+      "value": 30,
+      "time": 630,
+      "accepted": true,
+      "observation": "Both vessels advanced 30 simulated seconds. Pasta drained; Soft, coating tomato sauce."
+    },
+    {
+      "action": "water",
+      "value": null,
+      "time": 630,
+      "accepted": true,
+      "observation": "50 mL cooking water poured; 150 mL remains in the jug. Observe the sauce, then decide whether it needs another splash."
+    },
+    {
+      "action": "combine",
+      "value": null,
+      "time": 630,
+      "accepted": true,
+      "observation": "Drained pasta added and tossed through the sauce."
+    },
+    {
+      "action": "potHeat",
+      "value": 0,
+      "time": 630,
+      "accepted": true,
+      "observation": "Pot burner off. The water temperature changes gradually."
+    },
+    {
+      "action": "panHeat",
+      "value": 0,
+      "time": 630,
+      "accepted": true,
+      "observation": "Pan burner off. The pan retains heat after you turn it down."
+    },
+    {
+      "action": "taste",
+      "value": null,
+      "time": 630,
+      "accepted": true,
+      "observation": "Sauce check: Soft, coating tomato sauce. Pasta: Tender with a slight bite.",
+      "inspection": {
+        "kind": "sauce",
+        "time": 630,
+        "type": "coating",
+        "label": "Coating the spoon",
+        "closureSeconds": 1.8,
+        "observation": "The track closes gradually. A continuous layer stays on the spoon."
+      }
+    },
+    {
+      "action": "plate",
+      "value": null,
+      "time": 630,
+      "accepted": true,
+      "observation": "Dish plated. Review the texture, sauce, and choices you made."
+    }
+  ],
+  "hints": 0,
+  "plan": "",
+  "reflection": "",
+  "answers": [
+    0,
+    1
+  ],
+  "submitted": true,
+  "plated": true,
+  "feedback": "Dish plated. Review the texture, sauce, and choices you made.",
+  "prep": {
+    "hands": true,
+    "rinsed": true,
+    "cut": true,
+    "cuts": [
+      10,
+      10,
+      10,
+      10
+    ],
+    "cutMethod": "simplified",
+    "dry": true,
+    "garlic": true,
+    "pasta": 160
+  },
+  "pot": {
+    "heat": 0,
+    "temp": 94.36399193362702,
+    "water": 0,
+    "pasta": true,
+    "progress": 0.9928922094810546,
+    "stirred": true,
+    "reserve": 150,
+    "drained": true,
+    "sample": {
+      "time": 600,
+      "progress": 0.9928922094810546,
+      "texture": "Tender with a slight bite"
+    }
+  },
+  "pan": {
+    "pieces": [
+      {
+        "x": -0.15634969859648967,
+        "z": -0.08918952712503209,
+        "down": 1,
+        "faces": [
+          0,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 1.94140799999998,
+        "cutIndex": 0,
+        "width": 10
+      },
+      {
+        "x": 0.31206315881874974,
+        "z": -0.07082785404107478,
+        "down": 1,
+        "faces": [
+          0,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 2.001888000000002,
+        "cutIndex": 0,
+        "width": 10
+      },
+      {
+        "x": -0.26201571911637933,
+        "z": 0.37808433310033707,
+        "down": 1,
+        "faces": [
+          0,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 2.0018879999999983,
+        "cutIndex": 0,
+        "width": 10
+      },
+      {
+        "x": -0.024328683196856122,
+        "z": -0.1783482973675583,
+        "down": 1,
+        "faces": [
+          0,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 1.9701359999999892,
+        "cutIndex": 0,
+        "width": 10
+      },
+      {
+        "x": 0.2460578245022737,
+        "z": 0.2045862825343094,
+        "down": 1,
+        "faces": [
+          0,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 1.9701359999999877,
+        "cutIndex": 1,
+        "width": 10
+      },
+      {
+        "x": -0.4594709921591395,
+        "z": 0.022054644959644695,
+        "down": 1,
+        "faces": [
+          0,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 1.9383839999999888,
+        "cutIndex": 1,
+        "width": 10
+      },
+      {
+        "x": 0.12674892578919725,
+        "z": -0.12780731517125524,
+        "down": 1,
+        "faces": [
+          0,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 1.992815999999998,
+        "cutIndex": 1,
+        "width": 10
+      },
+      {
+        "x": -0.012683956844939934,
+        "z": 0.31974852187110375,
+        "down": 1,
+        "faces": [
+          0,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 1.9928159999999986,
+        "cutIndex": 2,
+        "width": 10
+      },
+      {
+        "x": -0.29702384502252477,
+        "z": -0.35125038859485297,
+        "down": 1,
+        "faces": [
+          0,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 1.9323359999999992,
+        "cutIndex": 2,
+        "width": 10
+      },
+      {
+        "x": 0.17854443443567494,
+        "z": 0.022844800985015585,
+        "down": 1,
+        "faces": [
+          0,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 1.9610640000000013,
+        "cutIndex": 2,
+        "width": 10
+      },
+      {
+        "x": -0.26149042814245255,
+        "z": 0.1844525846657532,
+        "down": 1,
+        "faces": [
+          0,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 1.961063999999995,
+        "cutIndex": 2,
+        "width": 10
+      },
+      {
+        "x": 0.09808129902538393,
+        "z": -0.44942191622293326,
+        "down": 1,
+        "faces": [
+          0,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 1.9928159999999944,
+        "cutIndex": 3,
+        "width": 10
+      },
+      {
+        "x": 0.09048655699352512,
+        "z": 0.1556026445901789,
+        "down": 1,
+        "faces": [
+          0,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 1.992815999999998,
+        "cutIndex": 3,
+        "width": 10
+      },
+      {
+        "x": -0.30547213455118655,
+        "z": -0.09532457717053759,
+        "down": 1,
+        "faces": [
+          0,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 1.9383839999999934,
+        "cutIndex": 3,
+        "width": 10
+      }
+    ],
+    "heat": 0,
+    "temp": 100.0011859327096,
+    "size": "standard",
+    "oil": true,
+    "produce": true,
+    "garlic": true,
+    "moisture": 83.93100711414579,
+    "brown": 0,
+    "soft": 1.9705679999999943,
+    "damage": 0,
+    "lastStir": 630,
+    "waterAdded": 50,
+    "combined": true,
+    "tasted": true,
+    "turns": 6
+  }
+}

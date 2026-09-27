@@ -1,0 +1,115 @@
+{
+  "observedAt": "2026-09-27T15:15:20.953Z",
+  "baseline": "af3c6b82ab76dad40a5d44f785bf828d1adea86c",
+  "finalObservedHEAD": "3752fe48d98ee8096e456d766427f3f513a11b25",
+  "tests": {
+    "files": 16,
+    "passed": 282,
+    "durationSeconds": 20.88
+  },
+  "browser": {
+    "scope": "Isolated fixture origin; real codecs/modules/Chromium. No live backend or deployed app.",
+    "results": [
+      {
+        "case": "first-open",
+        "passed": true
+      },
+      {
+        "case": "refresh",
+        "passed": true
+      },
+      {
+        "case": "offline-reopen",
+        "passed": true
+      },
+      {
+        "case": "received-original-arrival-role-and-removal",
+        "passed": true
+      },
+      {
+        "case": "mailbox-resource-cold-recipient",
+        "passed": true
+      },
+      {
+        "case": "saved-assignment-hydration",
+        "passed": true
+      },
+      {
+        "case": "saved-assignment-offline-failure",
+        "passed": true
+      },
+      {
+        "case": "damaged-received-reshare",
+        "passed": true
+      },
+      {
+        "case": "damaged-refresh",
+        "passed": true
+      },
+      {
+        "case": "damaged-offline-reopen",
+        "passed": true
+      },
+      {
+        "case": "damaged-saved-asset-hydration",
+        "passed": true
+      },
+      {
+        "case": "fresh-live-store-chromium-decode-and-play",
+        "passed": true
+      },
+      {
+        "case": "narrow-spanish_latin_america",
+        "passed": true
+      },
+      {
+        "case": "narrow-arabic",
+        "passed": true
+      },
+      {
+        "case": "narrow-chinese_simplified",
+        "passed": true
+      },
+      {
+        "case": "narrow-thai",
+        "passed": true
+      }
+    ],
+    "errors": []
+  },
+  "unchangedHostRegions": [
+    "codecs",
+    "savedAssignment",
+    "mailboxReceiver",
+    "recipientWrapper"
+  ],
+  "hydrationHostPatchIntegrated": false,
+  "hydrationHostPatchApplies": true,
+  "deployedReleaseVerified": false,
+  "files": [
+    {
+      "file": "shared_activity_source.jsx",
+      "sha256": "8aa41fe9591d9d612524b8ad97d720f808b9d24eeb65cfbfe7617995be324b41"
+    },
+    {
+      "file": "shared_activity_module.js",
+      "sha256": "020959103955319d5530e0cdfb4cd8a0069e03931372bcb2b1f6600eedc8d2f5"
+    },
+    {
+      "file": "desktop/web-app/public/shared_activity_module.js",
+      "sha256": "020959103955319d5530e0cdfb4cd8a0069e03931372bcb2b1f6600eedc8d2f5"
+    },
+    {
+      "file": "tests/connected_reading_delivery.test.js",
+      "sha256": "be0980b457ae3ead11e5684eb601db0f8a8a86cb849456746b4ad068c3f99efb"
+    },
+    {
+      "file": "tests/connected_delivery_followup.test.js",
+      "sha256": "c1968de3d75eef7e6ccfd304ac57d8d6cc8efb80488ec3e2496354bf4890c0e1"
+    },
+    {
+      "file": "reports/connected-delivery-track13/browser-recipients.cjs",
+      "sha256": "3c542021e2659e1c929630ba64b1d9067c895541e2c728e6b75d82ca6f249110"
+    }
+  ]
+}

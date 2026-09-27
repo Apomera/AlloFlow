@@ -232,7 +232,9 @@ describe('Anatomy explicit mobile 3D controls', () => {
     expect(controls).not.toBeNull();
     expect(controls?.getAttribute('aria-label')).toBe('Surface camera controls');
 
-    const labels = Array.from(controls.querySelectorAll('button')).map((button) => (
+    // Rotation lives in the disclosure; zoom/reset live in the always-visible viewer dock.
+    const viewer = root.querySelector('[data-anatomy-model-shell]');
+    const labels = Array.from(viewer.querySelectorAll('button')).map((button) => (
       button.getAttribute('aria-label') || button.textContent || ''
     ));
     ['rotate left', 'rotate right', 'tilt up', 'tilt down', 'zoom in', 'zoom out', 'reset'].forEach((action) => {

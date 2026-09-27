@@ -133,12 +133,15 @@ describe('Circuit Lab accessible confirmations', () => {
     await settleFocus();
 
     expect(host.querySelectorAll('[data-circuit-remove-id]')).toHaveLength(2);
+    expect(host.querySelector('#circuit-confirm-description').textContent).toContain('You can restore them with Undo.');
     await act(async () => buttonByText(host, 'Clear circuit').click());
     await settleFocus();
     expect(host.querySelector('[role="alertdialog"]')).toBeNull();
     expect(host.querySelectorAll('[data-circuit-remove-id]')).toHaveLength(0);
     expect(document.activeElement).toBe(clear);
     expect(announcements).toContain('Circuit cleared.');
+    await act(async () => buttonByText(host, 'Undo').click());
+    expect(host.querySelectorAll('[data-circuit-remove-id]')).toHaveLength(2);
   });
 
   it('confirms removal from a substantial circuit and restores focus nearby', async () => {

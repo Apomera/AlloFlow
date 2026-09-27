@@ -60,6 +60,8 @@
     }
   };
   if (typeof window.StemLab.registerTool !== 'function') return;
+  var atlasAssetBase = 'stem_lab/assets/astronomy/';
+  try { if (document.currentScript && document.currentScript.src) atlasAssetBase = new URL('assets/astronomy/', document.currentScript.src).href; } catch (_) {}
 
   // ── The ladder ────────────────────────────────────────────────────────
   // size: metres. dim: which dimension the size refers to.
@@ -412,6 +414,521 @@
     return { bg: '#0f172a', panel: '#1e293b', panel2: '#273449', line: '#334155', text: '#e2e8f0', dim: '#94a3b8', accent: '#38bdf8', accentBtn: '#0369a1', accentFg: '#ffffff', ok: '#4ade80', warn: '#fbbf24', selBg: '#0c4a6e', selFg: '#e0f2fe', stage: '#070b16', ring: '#38bdf8', ringHot: '#fbbf24', axis: '#64748b', stageFg: '#e2e8f0', stageDim: '#cbd5e1' };
   }
 
+  // The atlas uses local coordinates in metres / 10^exponent. Never put
+  // astronomical metre coordinates into the GPU's single-precision buffers.
+  var REALMS = [
+    { id: 'quantum', name: 'Inside matter', subtitle: 'Where familiar shapes give way to probability', at: 'carbon', max: -8.5, color: '#bda5ff', bg: '#100c22' },
+    { id: 'micro', name: 'Hidden life', subtitle: 'A living world beneath the reach of your eyes', at: 'rbc', max: -3, color: '#7ee7db', bg: '#061f23' },
+    { id: 'human', name: 'Our world', subtitle: 'Begin with a scale you can feel', at: 'human', max: 3, color: '#ffd294', bg: '#171c23' },
+    { id: 'planet', name: 'Worlds & landscapes', subtitle: 'From the shape of the land to the curve of a world', at: 'earth', max: 8.7, color: '#8dcaff', bg: '#071624' },
+    { id: 'stellar', name: 'Between the stars', subtitle: 'Stars, light and the enormous spaces between', at: 'sun', max: 19, color: '#ffc39b', bg: '#140f22' },
+    { id: 'cosmic', name: 'The cosmic ocean', subtitle: 'Galaxies become the building blocks', at: 'milkyway', max: Infinity, color: '#cbb7ff', bg: '#100c22' }
+  ];
+  function realmAt(e) { return REALMS.filter(function (r) { return e < r.max; })[0] || REALMS[5]; }
+
+  function createScaleAtlas(T, canvas, read, pick, fail) {
+    var renderer = new T.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'low-power' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.7));
+    renderer.outputEncoding = T.sRGBEncoding;
+    renderer.toneMapping = T.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = T.PCFSoftShadowMap;
+    var scene = new T.Scene(), camera = new T.PerspectiveCamera(43, 1, 0.05, 160);
+    var space = new T.Group(); scene.add(space);
+    var hemisphere = new T.HemisphereLight(0xd8e8f5, 0x505348, 0.75); scene.add(hemisphere);
+    var key = new T.DirectionalLight(0xfff2dc, 2.25); key.position.set(-3.8, 5.5, 5); scene.add(key);
+    key.castShadow = true; key.shadow.mapSize.set(1024, 1024);
+    key.shadow.camera.left = key.shadow.camera.bottom = -6;
+    key.shadow.camera.right = key.shadow.camera.top = 6;
+    key.shadow.camera.near = 0.1; key.shadow.camera.far = 24;
+    key.shadow.bias = -0.0003; key.shadow.normalBias = 0.012; key.shadow.radius = 3;
+    var rim = new T.DirectionalLight(0xb6d9ed, 1.15); rim.position.set(4, 2, -4); scene.add(rim);
+    var fill = new T.DirectionalLight(0xd9e6ef, 0.4); fill.position.set(3, 1, 5); scene.add(fill);
+    var resources = new Set(), models = {}, disposed = false, frame = 0, dirty = true, paintCount = 0;
+    var yaw = 0, pitch = 0.12, time = 0, last = 0, inView = true;
+    var sphere = track(new T.SphereGeometry(0.5, 48, 32));
+    var unitBox = track(new T.BoxGeometry(1, 1, 1));
+    var ray = new T.Raycaster(), pointer = new T.Vector2(), drag = null;
+    function track(v) { resources.add(v); return v; }
+    function material(color, options) { var mat = track(new T.MeshStandardMaterial(Object.assign({ color: color, roughness: 0.78, metalness: 0 }, options || {}))); mat.color.convertSRGBToLinear(); mat.emissive.convertSRGBToLinear(); return mat; }
+    function mesh(group, geo, mat, x, y, z, sx, sy, sz) {
+      var m = new T.Mesh(geo, mat); m.position.set(x || 0, y || 0, z || 0); m.scale.set(sx || 1, sy || sx || 1, sz || sx || 1); m.castShadow = !mat.transparent; m.receiveShadow = !mat.transparent; group.add(m); return m;
+    }
+    function ball(g, mat, x, y, z, sx, sy, sz) { return mesh(g, sphere, mat, x, y, z, sx, sy, sz); }
+    function box(g, mat, x, y, z, sx, sy, sz) { return mesh(g, unitBox, mat, x, y, z, sx, sy, sz); }
+    function tube(g, points, radius, mat) {
+      var curve = new T.CatmullRomCurve3(points.map(function (p) { return new T.Vector3(p[0], p[1], p[2]); }));
+      return mesh(g, track(new T.TubeGeometry(curve, Math.max(16, points.length * 4), radius, 10, false)), mat);
+    }
+    function rod(g, a, b, radius, mat) {
+      var av = new T.Vector3(a[0], a[1], a[2]), bv = new T.Vector3(b[0], b[1], b[2]);
+      var m = mesh(g, track(new T.CylinderGeometry(radius, radius, av.distanceTo(bv), 8)), mat);
+      m.position.copy(av).add(bv).multiplyScalar(0.5); m.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), bv.sub(av).normalize()); return m;
+    }
+    function ring(g, radius, color, rot) {
+      var m = mesh(g, track(new T.TorusGeometry(radius, 0.004, 5, 96)), material(color, { emissive: color, emissiveIntensity: 0.5 }));
+      m.rotation.x = rot === undefined ? Math.PI / 2 : rot; return m;
+    }
+    function random(seed) { var v = seed; return function () { v = (v * 1664525 + 1013904223) >>> 0; return v / 4294967296; }; }
+    // Smooth tapered anatomy. The path controls its centre; each cross-section
+    // has independent width and depth, unlike a chain of spheres/cylinders.
+    function organic(g, sections, mat, axis) {
+      var curve = new T.CatmullRomCurve3(sections.map(function(s){return new T.Vector3(s[0],s[1],s[2]);}));
+      var radii = new T.CatmullRomCurve3(sections.map(function(s){return new T.Vector3(s[3],s[4] || s[3],0);}));
+      var steps = Math.max(32, sections.length * 10), sides = 24, positions = [], uvs = [], indices = [];
+      for(var i=0;i<=steps;i++) {
+        var t=i/steps, p=curve.getPoint(t), r=radii.getPoint(t), tangent=curve.getTangent(t).normalize();
+        var up=new T.Vector3(axis==='x'?0:1,axis==='x'?1:0,0);
+        if(Math.abs(up.dot(tangent))>0.98)up.set(0,0,1);
+        var normal=new T.Vector3().crossVectors(tangent,up).normalize(), binormal=new T.Vector3().crossVectors(tangent,normal).normalize();
+        for(var n=0;n<=sides;n++) {
+          var th=n/sides*Math.PI*2, v=p.clone().addScaledVector(normal,Math.cos(th)*Math.max(.0001,r.x)).addScaledVector(binormal,Math.sin(th)*Math.max(.0001,r.y));
+          positions.push(v.x,v.y,v.z);uvs.push(n/sides,t);
+          if(i<steps&&n<sides){var q=i*(sides+1)+n;indices.push(q,q+1,q+sides+1,q+1,q+sides+2,q+sides+1);}
+        }
+      }
+      var geo=track(new T.BufferGeometry());geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geo.setIndex(indices);geo.computeVertexNormals();
+      return mesh(g,geo,mat);
+    }
+    function relief(seed, pattern) {
+      var cv=document.createElement('canvas');cv.width=cv.height=256;var c=cv.getContext('2d'),rng=random(seed),pixels=c.createImageData(256,256);
+      for(var y=0;y<256;y++)for(var x=0;x<256;x++){var n=rng(),v=pattern==='wrinkle'?128+34*Math.sin(x*.3+Math.sin(y*.075)*4)+n*40:pattern==='cloth'?110+35*(x%3===0||y%3===0)+n*40:110+n*90;var at=(y*256+x)*4;pixels.data[at]=pixels.data[at+1]=pixels.data[at+2]=v;pixels.data[at+3]=255;}
+      c.putImageData(pixels,0,0);var tex=track(new T.CanvasTexture(cv));tex.wrapS=tex.wrapT=T.RepeatWrapping;tex.repeat.set(3,3);return tex;
+    }
+    var grainTexture=relief(41,'grain'), wrinkleTexture=relief(63,'wrinkle');
+    // View-dependent, softly lit membrane / atmospheric rim. No wire cages.
+    function shell(g,color,scale,strength) {
+      var mat=track(new T.ShaderMaterial({uniforms:{tint:{value:new T.Color(color).convertSRGBToLinear()},strength:{value:strength}},transparent:true,depthWrite:false,side:T.FrontSide,blending:T.AdditiveBlending,
+        vertexShader:'varying vec3 n;varying vec3 v;void main(){vec4 p=modelViewMatrix*vec4(position,1.);n=normalize(normalMatrix*normal);v=-p.xyz;gl_Position=projectionMatrix*p;}',
+        fragmentShader:'uniform vec3 tint;uniform float strength;varying vec3 n;varying vec3 v;void main(){float edge=pow(1.-abs(dot(normalize(n),normalize(v))),3.);gl_FragColor=vec4(tint,edge*strength);\n#include <tonemapping_fragment>\n#include <encodings_fragment>\n}'}));
+      var m=ball(g,mat,0,0,0,scale);m.userData.unmeasured=true;return m;
+    }
+    function dots(g, count, place, color, size, seed) {
+      var r = random(seed || 7), pos = [], colors = [], c = new T.Color(color);
+      for (var i = 0; i < count; i++) { var p = place(r, i); pos.push(p[0], p[1], p[2]); var v = 0.5 + r() * 0.5; colors.push(c.r * v, c.g * v, c.b * v); }
+      var geo = track(new T.BufferGeometry()); geo.setAttribute('position', new T.Float32BufferAttribute(pos, 3)); geo.setAttribute('color', new T.Float32BufferAttribute(colors, 3));
+      var mat = track(new T.PointsMaterial({ size: size, map: glowTexture || null, vertexColors: true, transparent: true, opacity: 0.85, depthWrite: false, blending: T.AdditiveBlending }));
+      var cloud = new T.Points(geo, mat); g.add(cloud); return cloud;
+    }
+    // Soft light is generated locally; there are no image downloads or GPU
+    // post-processing buffers to delay a classroom's first frame.
+    var glowCanvas = document.createElement('canvas'); glowCanvas.width = glowCanvas.height = 128;
+    var gc = glowCanvas.getContext('2d'), gradient = gc.createRadialGradient(64, 64, 0, 64, 64, 64);
+    gradient.addColorStop(0, 'rgba(255,255,255,0.9)'); gradient.addColorStop(0.18, 'rgba(255,255,255,0.45)'); gradient.addColorStop(1, 'rgba(255,255,255,0)');
+    gc.fillStyle = gradient; gc.fillRect(0, 0, 128, 128);
+    var glowTexture = track(new T.CanvasTexture(glowCanvas));
+    function glow(g, color, size, opacity) {
+      var sprite = new T.Sprite(track(new T.SpriteMaterial({ map: glowTexture, color: color, transparent: true, opacity: opacity || 0.6, depthWrite: false, blending: T.AdditiveBlending })));
+      sprite.scale.set(size, size, 1); g.add(sprite); return sprite;
+    }
+    var haze = glow(scene, '#6086b8', 30, 0.13); haze.position.set(-6, 3, -18);
+    var haze2 = glow(scene, '#9475b8', 20, 0.1); haze2.position.set(7, -3, -14);
+    var motes = dots(scene, 700, function (r) { return [(r() - 0.5) * 65, (r() - 0.5) * 38, -8 - r() * 55]; }, '#b8d8ff', 0.045, 91);
+    var ground = new T.Group(); scene.add(ground); ground.position.y = -1.64;
+    var floor=mesh(ground,track(new T.PlaneGeometry(180,180)),material('#26302c',{roughness:1,bumpMap:grainTexture,bumpScale:0.01}));floor.rotation.x=-Math.PI/2;floor.castShadow=false;
+    var garden = new T.Group(); scene.add(garden);
+    var grassPositions=[],grassColors=[],grassRandom=random(77);
+    for(var gi=0;gi<750;gi++) {
+      var gx=(grassRandom()-.5)*23,gz=-2-grassRandom()*19,gh=.12+grassRandom()*.6;
+      if(Math.abs(gx)<2.3&&gz>-6)continue;
+      var bend=(grassRandom()-.5)*.3,w=.016+grassRandom()*.025;
+      grassPositions.push(gx-w,-1.65,gz,gx+w,-1.65,gz,gx+bend,-1.65+gh,gz-.07);
+      var green=.05+grassRandom()*.045;
+      grassColors.push(green*.7,green,green*.65,green*.7,green,green*.65,green*1.4,green*1.6,green*.8);
+    }
+    var grassGeo=track(new T.BufferGeometry());grassGeo.setAttribute('position',new T.Float32BufferAttribute(grassPositions,3));grassGeo.setAttribute('color',new T.Float32BufferAttribute(grassColors,3));grassGeo.computeVertexNormals();
+    mesh(garden,grassGeo,material('#ffffff',{vertexColors:true,side:T.DoubleSide,roughness:1}));
+    var microBackdrop = new T.Group(); scene.add(microBackdrop);
+    var membrane = material('#548b87', { transparent: true, opacity: 0.065, depthWrite: false, roughness:1 });
+    for (var mi = 0; mi < 9; mi++) {
+      var vesicle = ball(microBackdrop, membrane, Math.sin(mi * 2.4) * 9, Math.cos(mi * 1.7) * 6, -7 - mi, 2 + mi % 3, 1.5 + mi % 3, 2);
+      vesicle.rotation.set(mi, mi * 0.3, mi * 0.7);
+    }
+
+    function planetTexture(id) {
+      var cv = document.createElement('canvas'); cv.width = 512; cv.height = 256;
+      var c = cv.getContext('2d'), r = random(37), i;
+      c.fillStyle = id === 'earth' ? '#174b83' : id === 'moon' ? '#969b9f' : '#cbad82'; c.fillRect(0, 0, 512, 256);
+      if (id === 'earth') {
+        // Deliberately an illustrated globe. The object card says so; these
+        // hand-drawn silhouettes are not a geographic data layer.
+        var continents = [[[45,56],[77,30],[135,39],[153,69],[121,82],[105,119],[75,105],[60,77]],[[116,115],[157,132],[163,159],[145,186],[130,211],[119,167]],[[226,66],[255,59],[282,78],[287,120],[265,166],[251,147],[234,119]],[[262,46],[310,27],[371,33],[420,61],[400,101],[365,90],[347,126],[324,107],[302,80]],[[387,164],[424,152],[449,173],[428,190],[397,182]],[[211,23],[235,13],[246,33],[221,44]]];
+        continents.forEach(function (p) { c.beginPath(); p.forEach(function (v, j) { if (!j) c.moveTo(v[0],v[1]); else c.lineTo(v[0],v[1]); }); c.closePath(); c.fillStyle = '#628962'; c.fill(); c.strokeStyle = '#97ae7b'; c.lineWidth = 3; c.stroke(); });
+        c.fillStyle = '#dfe8ec'; c.fillRect(0, 0, 512, 12); c.fillRect(0, 241, 512, 15);
+        for (i=0;i<90;i++) { c.fillStyle='rgba(238,247,255,0.24)';c.beginPath();c.ellipse(r()*512,r()*256,7+r()*26,1+r()*3,-0.2,0,Math.PI*2);c.fill(); }
+      } else if (id === 'moon') {
+        for (i=0;i<650;i++) { var x=r()*512,y=r()*256,s=1+r()*12;c.fillStyle='rgba(39,46,58,0.19)';c.beginPath();c.arc(x,y,s,0,Math.PI*2);c.fill();c.strokeStyle='rgba(245,244,233,0.22)';c.lineWidth=1.5;c.stroke(); }
+      } else {
+        for (i=0;i<256;i+=3) { c.fillStyle=['#b28b6f','#e2caa1','#846654','#ead8b8','#c4a181'][Math.floor(r()*5)];c.fillRect(0,i,512,3+r()*7); }
+        c.fillStyle='#a76b55';c.beginPath();c.ellipse(350,159,35,12,0,0,Math.PI*2);c.fill();
+      }
+      var tex=track(new T.CanvasTexture(cv));tex.encoding=T.sRGBEncoding;return tex;
+    }
+    function loadHumanSurface(root) {
+      var g=root.userData.model;
+      var ready=T.GLTFLoader?Promise.resolve():window.StemLab.loadScriptResilient?window.StemLab.loadScriptResilient([new URL('../../../vendor/three-r128/GLTFLoader.js',atlasAssetBase).href],{cacheKey:'three-gltf-loader',check:function(){return !!T.GLTFLoader;}}):Promise.reject(new Error('Model loader unavailable'));
+      ready.then(function(){
+        if(disposed||g.userData.released)return;
+        new T.GLTFLoader().load(new URL('../anatomy/body-surface/makehuman-body-surface.glb',atlasAssetBase).href,function(asset){
+          if(disposed||g.userData.released){asset.scene.traverse(function(n){if(n.geometry)n.geometry.dispose();if(n.material)n.material.dispose();});return;}
+          var bounds=new T.Box3().setFromObject(asset.scene),height=bounds.max.y-bounds.min.y,center=bounds.getCenter(new T.Vector3());
+          g.clear();g.position.set(0,0,0);g.scale.setScalar(1);g.rotation.set(0,-.18,0);
+          var bronze=material('#a49b80',{metalness:.36,roughness:.52});root.userData.resources.push(bronze);
+          asset.scene.traverse(function(n){if(n.isMesh){
+            n.geometry.translate(-center.x,-center.y,-center.z);n.geometry.scale(1/height,1/height,1/height);
+            n.material.dispose();n.material=bronze;n.castShadow=n.receiveShadow=true;track(n.geometry);root.userData.resources.push(n.geometry);
+          }});
+          g.add(asset.scene);root.userData.floor=-.5;root.userData.materials=[];
+          g.traverse(function(n){if(n.material){n.userData.baseOpacity=n.material.opacity;n.userData.baseTransparent=n.material.transparent;root.userData.materials.push(n);}});
+          g.userData.surfaceReady=true;invalidate();
+        },undefined,function(){ /* Retain the procedural figure when the local asset is unavailable. */ });
+      }).catch(function(){ /* A loader failure leaves the atlas interactive. */ });
+    }
+    function model(item) {
+      var previousResources = new Set(resources);
+      var g=new T.Group(), id=item.id, a=material('#8cd9ce'), b=material('#d49b69'), dark=material('#293f4b'), white=material('#eceadf');
+      var j, k, theta, m;
+      if (item.dim === 'distance') {
+        var lineMat=material('#b8c8ff',{emissive:'#697ed0',emissiveIntensity:0.7});
+        rod(g,[-0.5,0,0],[0.5,0,0],0.006,lineMat);
+        for(j=0;j<=10;j++)rod(g,[-0.5+j/10,-0.035,0],[-0.5+j/10,0.035,0],0.003,lineMat);
+        ball(g,white,-0.5,0,0,0.024);ball(g,white,0.5,0,0,0.024);
+        glow(g,'#98b4ff',0.5,0.3);g.userData.dimension='x';
+      } else if (['earth','moon','jupiter'].indexOf(id)>=0) {
+        var planetMat=material('#ffffff',{map:planetTexture(id),roughness:id==='earth'?0.68:0.96});
+        ball(g,planetMat,0,0,0,1);
+        if(id==='earth'||id==='moon'||id==='jupiter') {
+          var texture=track(new T.TextureLoader().load(atlasAssetBase+(id==='earth'?'scale-earth-bluemarble-1k.png':id==='moon'?'moon-lroc-color-2k.jpg':'scale-jupiter-hubble-1k.jpg'),function(tex){
+            if(disposed||g.userData.released){tex.dispose();return;}tex.encoding=T.sRGBEncoding;tex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());planetMat.map=tex;planetMat.needsUpdate=true;g.userData.imageryReady=true;invalidate();
+          },undefined,function(){ /* The locally generated globe remains usable if an asset is unavailable. */ }));
+          texture.encoding=T.sRGBEncoding;
+        }
+        if(id==='moon') {
+          var heightMap=track(new T.TextureLoader().load(atlasAssetBase+'moon-lola-height-1k.jpg',function(tex){if(disposed||g.userData.released){tex.dispose();return;}planetMat.bumpMap=tex;planetMat.bumpScale=.008;planetMat.needsUpdate=true;invalidate();},undefined,function(){}));
+        }
+        if(id==='earth'){shell(g,'#549aff',1.025,.75);g.rotation.y=2.8;g.rotation.z=.12;}
+        if(id==='jupiter'){g.scale.y=.935;g.rotation.y=1.7;}
+      } else if(id==='sun'||id==='betelgeuse') {
+        var star=track(new T.ShaderMaterial({
+          uniforms:{uTime:{value:0},uRed:{value:id==='betelgeuse'?1:0}},
+          vertexShader:'varying vec3 vP;varying vec3 vN;varying vec3 vV;void main(){vP=position;vec4 p=modelViewMatrix*vec4(position,1.);vN=normalize(normalMatrix*normal);vV=-p.xyz;gl_Position=projectionMatrix*p;}',
+          fragmentShader:[
+            'uniform float uTime;uniform float uRed;varying vec3 vP;varying vec3 vN;varying vec3 vV;',
+            'float hash(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}',
+            'float noise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);}',
+            'void main(){vec3 p=vP*26.;float n=noise(p+uTime*.08)*.55+noise(p*2.1-uTime*.05)*.3+noise(p*5.4)*.15;float fine=noise(p*8.);float limb=.4+.6*pow(max(0.,dot(normalize(vN),normalize(vV))),.35);vec3 dark=vec3(.8,.085,.005);vec3 bright=mix(vec3(2.1,1.05,.16),vec3(1.5,.38,.065),uRed);vec3 col=mix(dark,bright,smoothstep(.23,.76,n))*(.8+fine*.35)*limb;gl_FragColor=vec4(col,1.);',
+            '#include <tonemapping_fragment>', '#include <encodings_fragment>', '}'
+          ].join('\n')
+        }));
+        var geo=track(new T.SphereGeometry(0.5,48,32)), arr=geo.attributes.position;
+        for(j=0;j<arr.count;j++){var x=arr.getX(j),y=arr.getY(j),z=arr.getZ(j),s=1+0.007*Math.sin(x*90+y*70)*Math.cos(z*95);arr.setXYZ(j,x*s,y*s,z*s);}geo.computeVertexNormals();
+        mesh(g,geo,star);glow(g,id==='sun'?'#ffac35':'#ff6941',2.2,0.65);
+        g.userData.starMaterial=star;
+      } else if(id==='milkyway') {
+        // Separate populations give the arms depth: warm central stars,
+        // young blue associations and faint dusty gaps between spiral arms.
+        var dust=track(new T.ShaderMaterial({transparent:true,depthWrite:false,side:T.DoubleSide,blending:T.AdditiveBlending,
+          vertexShader:'varying vec2 p;void main(){p=uv-.5;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+          fragmentShader:[
+            'varying vec2 p;float hash(vec2 q){return fract(sin(dot(q,vec2(127.1,311.7)))*43758.5453);}',
+            'float noise(vec2 q){vec2 i=floor(q),f=fract(q);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}',
+            'void main(){float r=length(p),a=atan(p.y,p.x);float n=noise(p*85.)*.55+noise(p*190.)*.3+noise(p*430.)*.15;float phase=(a-4.8*log(r+.075))*4.;float arms=pow(.5+.5*cos(phase+n*1.3),5.);float disk=(arms*.75+.07)*smoothstep(.5,.24,r)*smoothstep(.015,.1,r);float core=exp(-r*32.);float dust=pow(n,1.5);vec3 col=mix(vec3(.20,.29,.51),vec3(1.1,.73,.39),exp(-r*12.));gl_FragColor=vec4(col*(.65+dust),clamp((disk*(.2+dust)*1.5+core)*.85,0.,.92));',
+            '#include <tonemapping_fragment>','#include <encodings_fragment>','}'
+          ].join('\n')}));
+        var disk=mesh(g,track(new T.PlaneGeometry(1,1)),dust);disk.rotation.x=-Math.PI/2;disk.castShadow=disk.receiveShadow=false;
+        dots(g,12000,function(r,i){var rad=Math.pow(r(),.75)*.5,angle=4.8*Math.log(rad+.075)+(i%4)*Math.PI/2+(r()-.5)*(.24+rad*.8);return [Math.cos(angle)*rad,(r()-.5)*(.012+.065*Math.exp(-rad*15)),Math.sin(angle)*rad];},'#bbcdeb',.0035,31);
+        dots(g,2300,function(r){var th=r()*Math.PI*2,rad=Math.pow(r(),1.8)*.13;return [Math.cos(th)*rad,(r()-.5)*.055,Math.sin(th)*rad];},'#ffe0aa',.004,21);
+        dots(g,850,function(r,i){var rad=.10+r()*.39,th=4.8*Math.log(rad+.075)+(i%4)*Math.PI/2+(r()-.5)*.12;return [Math.cos(th)*rad,(r()-.5)*.013,Math.sin(th)*rad];},'#ecc6da',.012,13);
+        glow(g,'#ffce91',.23,.8);glow(g,'#7b8cbf',.8,.12);g.rotation.x=.68;g.rotation.z=-.22;
+      } else if(['universe','laniakea','virgo-sc'].indexOf(id)>=0) {
+        var rng=random(8), nodes=[];
+        for(j=0;j<44;j++)nodes.push([(rng()-0.5)*0.85,(rng()-0.5)*0.85,(rng()-0.5)*0.85]);
+        var lines=[], netMat=track(new T.LineBasicMaterial({color:'#8577c5',transparent:true,opacity:0.38}));
+        nodes.forEach(function(p,i){nodes.slice(i+1).forEach(function(q){if(new T.Vector3().fromArray(p).distanceTo(new T.Vector3().fromArray(q))<0.3)lines.push.apply(lines,p.concat(q));});});
+        var netGeo=track(new T.BufferGeometry());netGeo.setAttribute('position',new T.Float32BufferAttribute(lines,3));g.add(new T.LineSegments(netGeo,netMat));
+        dots(g,2700,function(r,i){var p=nodes[i%nodes.length];return [p[0]+(r()-0.5)*0.09,p[1]+(r()-0.5)*0.09,p[2]+(r()-0.5)*0.09];},'#d8c2ff',0.005,4);
+        glow(g,'#7960bb',1.3,0.16);
+      } else if(['solar-system','heliosphere','oort','local-bubble','orion-nebula'].indexOf(id)>=0) {
+        if(id==='solar-system') {
+          ball(g,material('#ffd69b',{emissive:'#ee9c35',emissiveIntensity:1}),0,0,0,0.025);glow(g,'#ffd998',0.1,0.7);
+          [0.05,0.09,0.15,0.24,0.34,0.5].forEach(function(r,i){ring(g,r,'#596985');theta=i*2.4;ball(g,a,Math.cos(theta)*r,0,Math.sin(theta)*r,0.012);});g.rotation.x=0.35;
+        } else {
+          dots(g,2000,function(r){var th=r()*Math.PI*2,u=r()*2-1,rad=id==='orion-nebula'?r()*0.5:0.4+r()*0.1;return [Math.cos(th)*Math.sqrt(1-u*u)*rad,u*rad*0.72,Math.sin(th)*Math.sqrt(1-u*u)*rad];},id==='orion-nebula'?'#ef9cd8':'#9bcbea',0.009,15);
+          glow(g,id==='orion-nebula'?'#d571c4':'#688acf',1.2,0.3);
+        }
+      } else if(id==='water') {
+        var oxygen=material('#f07674'), hydrogen=material('#eff6ff');ball(g,oxygen,0,0,0,0.56);
+        [-1,1].forEach(function(sign){ball(g,hydrogen,sign*0.33,-0.255,0,0.32);rod(g,[0,0,0],[sign*0.33,-0.255,0],0.035,white);});
+      } else if(id==='dna') {
+        var strand1=[],strand2=[],cyan=material('#73aab4',{roughness:.58}),pink=material('#d4b69b',{roughness:.6}),baseMats=[material('#849cbd'),material('#d6bd83'),material('#b58696'),material('#91b298')];
+        for(j=0;j<=84;j++){
+          theta=j/84*Math.PI*2.5;var yy=j/84*2.1-1.05,phase=theta+2.3;
+          strand1.push([Math.cos(theta)*.43,yy,Math.sin(theta)*.43]);strand2.push([Math.cos(phase)*.43,yy,Math.sin(phase)*.43]);
+          if(j%6===0){var p1=strand1[j],p2=strand2[j],mid=p1.map(function(v,k){return (v+p2[k])/2;});rod(g,p1,mid,.024,baseMats[j/6%4]);rod(g,mid,p2,.024,baseMats[(j/6+2)%4]);ball(g,white,p1[0],p1[1],p1[2],.075);ball(g,white,p2[0],p2[1],p2[2],.075);}
+        }
+        tube(g,strand1,.036,cyan);tube(g,strand2,.036,pink);g.userData.dimension='x';g.userData.frameHeight=2.2;
+      } else if(['carbon','hydrogen','nucleus','proton'].indexOf(id)>=0) {
+        var quantum=material('#bc93ec',{transparent:true,opacity:0.11,depthWrite:false,roughness:0.2});
+        if(id==='carbon'||id==='hydrogen') {
+          ball(g,quantum,0,0,0,1);dots(g,1500,function(r){var th=r()*Math.PI*2,u=r()*2-1,rad=Math.pow(r(),0.6)*0.5;return [Math.cos(th)*Math.sqrt(1-u*u)*rad,u*rad,Math.sin(th)*Math.sqrt(1-u*u)*rad];},'#beadff',0.007,61);
+          glow(g,'#b59aec',1.25,0.2);
+        } else if(id==='nucleus') {
+          for(j=0;j<56;j++){theta=j*2.39996;var yy=1-j/28,rr=Math.sqrt(Math.max(0,1-yy*yy))*0.36;ball(g,j%2?material('#e998b0'):a,Math.cos(theta)*rr,yy*0.36,Math.sin(theta)*rr,0.2);}
+        } else {ball(g,quantum,0,0,0,1);glow(g,'#d499ec',1,0.75);dots(g,900,function(r){return [(r()-0.5)*0.7,(r()-0.5)*0.7,(r()-0.5)*0.7];},'#e7baff',0.01,11);}
+      } else if(['light','xray','gamma'].indexOf(id)>=0) {
+        var wave=[];for(j=0;j<=64;j++)wave.push([j/64-0.5,Math.sin(j/64*Math.PI*2)*0.18,0]);tube(g,wave,0.015,material(id==='light'?'#90eca2':'#b9a0ff',{emissive:'#719888',emissiveIntensity:0.6}));g.userData.dimension='x';
+      } else if(id==='rbc') {
+        var disc=track(new T.SphereGeometry(.5,80,56)), p=disc.attributes.position, vertexColors=[];
+        for(j=0;j<p.count;j++){var xx=p.getX(j),zz=p.getZ(j),rad=Math.min(1,Math.sqrt(xx*xx+zz*zz)/.5),r2=rad*rad;
+          p.setY(j,Math.sign(p.getY(j))*.19*Math.sqrt(Math.max(0,1-r2))*(.32+2.4*r2-1.5*r2*r2));
+          var cellColor=new T.Color().setRGB(.24+rad*.14,.009+rad*.012,.018+rad*.025);vertexColors.push(cellColor.r,cellColor.g,cellColor.b);
+        }disc.setAttribute('color',new T.Float32BufferAttribute(vertexColors,3));disc.computeVertexNormals();
+        mesh(g,disc,material('#ffffff',{vertexColors:true,roughness:.52,bumpMap:grainTexture,bumpScale:.004}));g.rotation.x=1.0;g.rotation.z=-.18;
+      } else if(['ecoli','mitochondrion','paramecium','ribosome','virus','pollen'].indexOf(id)>=0) {
+        var microColor=id==='virus'?'#b1a0b8':id==='pollen'?'#dfb36a':id==='mitochondrion'?'#bc7f65':'#72aba0';
+        var skin=material(microColor,{roughness:.6,bumpMap:grainTexture,bumpScale:.016});
+        if(id==='mitochondrion') {
+          // Open upper membrane exposes the folded inner membrane (cutaway).
+          var envelope=track(new T.SphereGeometry(.5,64,40,0,Math.PI*2,Math.PI*.42,Math.PI*.58));
+          mesh(g,envelope,material('#b77658',{side:T.DoubleSide,roughness:.7,bumpMap:grainTexture,bumpScale:.008}),0,0,0,1,.48,.58);
+          var inner=material('#d69b7f',{side:T.DoubleSide,roughness:.72});
+          for(j=0;j<10;j++){var fx=-.39+j*.087,fw=Math.sqrt(Math.max(0,1-Math.pow(fx/.48,2)))*.21,fold=[];
+            var sheet=[];
+            for(k=0;k<=20;k++){var fz=-fw+k/20*fw*2;fold.push([fx+Math.sin(k*.32)*.025,.02+Math.sin(k/20*Math.PI)*.08,fz]);
+              if(k){var prev=fold[k-1],cur=fold[k];sheet.push(prev[0],prev[1],prev[2],prev[0]-.015,-.08,prev[2],cur[0],cur[1],cur[2],cur[0],cur[1],cur[2],prev[0]-.015,-.08,prev[2],cur[0]-.015,-.08,cur[2]);}
+            }
+            var foldGeo=track(new T.BufferGeometry());foldGeo.setAttribute('position',new T.Float32BufferAttribute(sheet,3));foldGeo.computeVertexNormals();mesh(g,foldGeo,inner);tube(g,fold,.008,inner);
+          }g.rotation.x=.65;g.rotation.z=-.24;
+        } else if(id==='virus'||id==='pollen') {
+          mesh(g,track(new T.IcosahedronGeometry(.4,4)),skin);
+          var spike=material(id==='virus'?'#a86b72':'#c49143',{roughness:.7});
+          for(j=0;j<94;j++){theta=j*2.39996;var v=1-(j+.5)/47,s=Math.sqrt(Math.max(0,1-v*v)),unit=[Math.cos(theta)*s,v,Math.sin(theta)*s],end=unit.map(function(x){return x*.51;});
+            rod(g,unit.map(function(x){return x*.39;}),end,id==='virus'?.009:.017,spike);
+            if(id==='virus'){var cap=ball(g,spike,end[0],end[1],end[2],.054,.026,.054);cap.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),new T.Vector3().fromArray(unit));}
+          }
+        } else {
+          organic(g,[[-.5,0,0,.002],[-.39,0,0,.15],[-.17,.02,0,.18],[.15,0,0,.16],[.39,-.02,0,.12],[.5,0,0,.002]],skin,'x');
+          var hairs=material('#a4c4a0',{roughness:1});
+          for(j=0;j<(id==='paramecium'?90:16);j++){theta=j*2.39996;var hx=-.42+(j%15)/14*.84,hy=Math.cos(theta)*.155,hz=Math.sin(theta)*.155;
+            tube(g,[[hx,hy,hz],[hx+.03,hy*1.4,hz*1.4],[hx+.07,hy*1.6,hz*1.6]],.0025,hairs);
+          }
+          if(id==='ecoli'){for(j=0;j<4;j++){var flag=[];for(k=0;k<32;k++)flag.push([.42+k*.016,Math.sin(k*.35+j)*.07,Math.cos(k*.35+j)*.07]);tube(g,flag,.003,hairs);}g.userData.extent=1;}
+          if(id==='ribosome'){for(j=0;j<28;j++){theta=j*2.4;ball(g,j%3?skin:b,Math.cos(theta)*.22,(j/28-.5)*.36,Math.sin(theta)*.17,.16,.19,.14);}}
+          g.rotation.z=-.25;
+        }
+      } else if(id==='human'||id==='liberty') {
+        var suit=material(id==='liberty'?'#7c9c87':'#a49b80',{roughness:.55,metalness:.3});
+        ball(g,suit,0,.414,0,.113,.145,.116);rod(g,[0,.30,0],[0,.36,0],.027,suit);
+        organic(g,[[0,-.055,0,.055,.09],[0,.015,0,.068,.09],[0,.13,0,.05,.079],[0,.24,0,.064,.117],[0,.3,0,.03,.08]],suit,'y');
+        [-1,1].forEach(function(s){
+          organic(g,[[s*.054,.02,0,.047],[s*.067,-.12,.008,.045],[s*.076,-.25,.01,.028],[s*.075,-.35,0,.034],[s*.077,-.45,0,.02]],suit,'y');
+          ball(g,suit,s*.079,-.472,.026,.055,.046,.12);
+          organic(g,[[s*.096,.269,0,.038],[s*.145,.20,0,.035],[s*.175,.10,0,.023],[s*.2,.035,.01,.025],[s*.213,-.045,.015,.013]],suit,'y');
+          ball(g,suit,s*.219,-.078,.017,.032,.067,.022);
+        });
+        if(id==='liberty'){box(g,b,0,-0.64,0,0.5,0.25,0.4);rod(g,[0.15,0.27,0],[0.3,0.63,0],0.03,suit);ball(g,b,0.3,0.68,0,0.1);}
+      } else if(id==='door') {
+        box(g,b,-0.24,0,0,0.035,1,0.065);box(g,b,0.24,0,0,0.035,1,0.065);box(g,b,0,0.48,0,0.51,0.04,0.065);
+        box(g,material('#5a8f91'),-0.035,-0.01,-0.045,0.41,0.94,0.028);ball(g,white,0.12,-0.025,0,0.025);
+      } else if(id==='basketball') {
+        ball(g,material('#be692c',{roughness:0.95,bumpMap:grainTexture,bumpScale:.015}),0,0,0,1);
+        for(j=0;j<3;j++){m=ring(g,0.502,'#4a3630',j*Math.PI/2);if(j===2)m.rotation.y=Math.PI/2;}
+      } else if(id==='sequoia') {
+        var bark=material('#82604b',{roughness:1,bumpMap:wrinkleTexture,bumpScale:.007});
+        organic(g,[[0,-.5,0,.064],[0,-.45,0,.04],[0,-.24,0,.026],[.004,.02,0,.019],[0,.3,0,.01],[.008,.5,0,.0005]],bark,'y');
+        var needleCanvas=document.createElement('canvas');needleCanvas.width=needleCanvas.height=128;var nc=needleCanvas.getContext('2d');
+        nc.strokeStyle='#9da57a';nc.lineWidth=2;nc.beginPath();nc.moveTo(64,124);nc.lineTo(64,5);nc.stroke();
+        for(j=0;j<28;j++){var ny=8+j*4,nw=Math.sin(j/28*Math.PI)*48+4;nc.strokeStyle=j%3?'#bac3a0':'#748e68';nc.lineWidth=2.2;[-1,1].forEach(function(s){nc.beginPath();nc.moveTo(64,ny+12);nc.lineTo(64+s*nw,ny-5);nc.stroke();});}
+        var needleMap=track(new T.CanvasTexture(needleCanvas));needleMap.encoding=T.sRGBEncoding;
+        var needles=material('#6b8553',{roughness:1,map:needleMap,alphaTest:.28,side:T.DoubleSide}),rngTree=random(91),leafPos=[],leafUv=[];
+        for(j=0;j<3;j++){var angle=j*Math.PI/3;[[-.5,-.5,0,0],[.5,-.5,1,0],[.5,.5,1,1],[-.5,-.5,0,0],[.5,.5,1,1],[-.5,.5,0,1]].forEach(function(v){leafPos.push(v[0]*Math.cos(angle),v[1],v[0]*Math.sin(angle));leafUv.push(v[2],v[3]);});}
+        var foliageGeo=track(new T.BufferGeometry());foliageGeo.setAttribute('position',new T.Float32BufferAttribute(leafPos,3));foliageGeo.setAttribute('uv',new T.Float32BufferAttribute(leafUv,2));foliageGeo.computeVertexNormals();
+        var foliage=track(new T.InstancedMesh(foliageGeo,needles,420)),transform=new T.Object3D();foliage.castShadow=foliage.receiveShadow=true;g.add(foliage);
+        for(j=0;j<35;j++) {
+          var by=-.22+j/35*.68,br=(.52-by)*.22,ba=j*2.4;
+          var end=[Math.cos(ba)*br,by+.025,Math.sin(ba)*br];
+          tube(g,[[0,by-.035,0],[end[0]*.55,by,end[2]*.55],end],.004,bark);
+          for(k=0;k<12;k++){var frac=.15+k*.077;transform.position.set(end[0]*frac+(rngTree()-.5)*.04,by+(rngTree()-.5)*.055,end[2]*frac+(rngTree()-.5)*.04);transform.scale.set(br*.55,.06+br*.2,br*.55);transform.rotation.set(rngTree()*2,ba,rngTree()*2);transform.updateMatrix();foliage.setMatrixAt(j*12+k,transform.matrix);}
+        }foliage.instanceMatrix.needsUpdate=true;g.userData.extent=1;
+      } else if(id==='eiffel') {
+        var iron=material('#cfaa7c',{metalness:0.65});
+        for(j=0;j<4;j++){theta=j*Math.PI/2+Math.PI/4;rod(g,[Math.cos(theta)*0.27,-0.5,Math.sin(theta)*0.27],[0,0.5,0],0.012,iron);}
+        for(j=0;j<7;j++){var ht=-0.42+j*0.13,rr=(0.5-ht)*0.24;box(g,iron,0,ht,0,rr*2,0.013,rr*2);}
+        for(j=0;j<6;j++)for(k=0;k<4;k++){theta=k*Math.PI/2;var y0=-0.42+j*0.13,r0=(0.5-y0)*0.18,r1=(0.37-y0)*0.18;rod(g,[Math.cos(theta)*r0-Math.sin(theta)*r0,y0,Math.sin(theta)*r0+Math.cos(theta)*r0],[Math.cos(theta)*r1+Math.sin(theta)*r1,y0+0.13,Math.sin(theta)*r1-Math.cos(theta)*r1],0.005,iron);}
+      } else if(id==='pyramid') {
+        mesh(g,track(new T.ConeGeometry(0.707,0.64,4)),material('#ceac74'),0,0,0).rotation.y=Math.PI/4;g.userData.dimension='x';
+      } else if(id==='football-pitch') {
+        box(g,material('#368568'),0,0,0,1,0.014,0.65);var chalk=material('#e3e8dc');
+        [-0.47,0,0.47].forEach(function(x){rod(g,[x,0.013,-0.29],[x,0.013,0.29],0.002,chalk);});[-0.29,0.29].forEach(function(z){rod(g,[-0.47,0.013,z],[0.47,0.013,z],0.002,chalk);});ring(g,0.085,'#e3e8dc');g.rotation.x=0.25;
+      } else if(['everest','grand-canyon','reef','chicxulub'].indexOf(id)>=0) {
+        var terrain=track(new T.PlaneGeometry(1,1,100,100)), pos=terrain.attributes.position,landColors=[];
+        for(j=0;j<pos.count;j++){var tx=pos.getX(j),ty=pos.getY(j),d=Math.sqrt(tx*tx+ty*ty),hgt;
+          if(id==='everest')hgt=Math.max(0,0.7-d*1.5)*(0.85+0.15*Math.sin(tx*23)*Math.cos(ty*18));
+          else if(id==='chicxulub')hgt=0.12*Math.exp(-Math.pow((d-0.3)*24,2));
+          else if(id==='grand-canyon')hgt=0.2-0.16*Math.exp(-Math.pow((tx+Math.sin(ty*9)*0.08)*13,2));
+          else hgt=0.035+0.04*Math.sin(tx*50)*Math.cos(ty*38);
+          var detail=(Math.sin(tx*74+ty*31)+Math.sin(ty*137-tx*59))*.003;
+          hgt+=detail;pos.setZ(j,hgt);
+          var lc=new T.Color(id==='reef'?'#477c73':id==='everest'?'#655e55':'#945c3c').convertSRGBToLinear();
+          if(id==='everest')lc.lerp(new T.Color('#ecf1ed').convertSRGBToLinear(),clamp((hgt-.22+Math.sin(tx*60)*.028)*8,0,1));
+          else if(id==='grand-canyon')lc.multiplyScalar(.7+.3*Math.sin(hgt*220));
+          else if(id==='reef')lc.lerp(new T.Color('#a7a177').convertSRGBToLinear(),clamp(hgt*9,0,1));
+          landColors.push(lc.r,lc.g,lc.b);
+        }
+        terrain.setAttribute('color',new T.Float32BufferAttribute(landColors,3));terrain.computeVertexNormals();m=mesh(g,terrain,material('#ffffff',{vertexColors:true,side:T.DoubleSide,roughness:.95,bumpMap:grainTexture,bumpScale:.008}));m.rotation.x=-Math.PI/2;g.rotation.x=.32;g.rotation.y=-.35;
+      } else if(['blue-whale','mouse','trex','giraffe','elephant'].indexOf(id)>=0) {
+        var coat=material(id==='blue-whale'?'#667f88':id==='giraffe'?'#c7a16b':'#62645c',{roughness:id==='blue-whale'?.58:.92,bumpMap:wrinkleTexture,bumpScale:id==='elephant'?.0025:.001});
+        if(id==='blue-whale') {
+          organic(g,[[-.5,.015,0,.001],[-.43,.015,0,.065,.047],[-.29,.01,0,.094,.08],[-.08,0,0,.091,.095],[.18,.01,0,.058,.06],[.38,.035,0,.018,.025],[.46,.052,0,.013,.013]],coat,'x');
+          var belly=material('#a5b0ad',{roughness:.74});
+          for(j=0;j<9;j++){var zz=(j-4)*.012;tube(g,[[-.44,-.016,zz*.4],[-.30,-.061,zz],[-.12,-.083,zz*.8],[.05,-.057,zz*.35]],.0015,belly);}
+          tube(g,[[-.48,.008,.025],[-.37,-.024,.065],[-.25,-.02,.086]],.002,dark);
+          [-1,1].forEach(function(s){organic(g,[[.40,.04,0,.01],[.44,.057,s*.07,.014,.045],[.46,.065,s*.145,.005,.029],[.49,.072,s*.22,.0005]],coat,'y');
+            organic(g,[[-.14,-.032,s*.072,.008],[-.05,-.076,s*.15,.009,.033],[.06,-.11,s*.23,.0005]],coat,'y');ball(g,dark,-.365,.007,s*.06,.008);});
+          organic(g,[[.24,.055,0,.023,.023],[.28,.102,0,.009,.014],[.30,.10,0,.0005]],coat,'y');
+          g.rotation.y=-.35;g.rotation.z=-.06;
+        } else {
+          organic(g,[[-.36,.09,0,.03],[-.27,.04,0,.14,.17],[-.04,.035,0,.18,.19],[.20,.02,0,.15,.17],[.31,.00,0,.02]],coat,'x');
+          ball(g,coat,-.34,.12,0,.245,.28,.245);
+          [-1,1].forEach(function(s){[-1,1].forEach(function(z){organic(g,[[s*.19,-.03,z*.095,.066],[s*.20,-.17,z*.102,.052],[s*.22,-.29,z*.105,.035],[s*.22,-.35,z*.11,.043]],coat,'y');
+            ball(g,coat,s*.22,-.35,z*.108,.09,.052,.085);
+          });});
+          organic(g,[[.29,.05,0,.018],[.36,-.01,0,.013],[.40,-.15,0,.008],[.43,-.22,.02,.002]],coat,'y');
+        }
+        if(id==='giraffe'){organic(g,[[-.20,.06,0,.07],[-.28,.3,0,.05],[-.33,.62,0,.038]],coat,'y');ball(g,coat,-.36,.67,0,.2,.11,.12);}
+        if(id==='elephant'){
+          organic(g,[[-.40,.17,0,.061],[-.46,.06,0,.053],[-.49,-.10,0,.037],[-.48,-.26,.01,.026],[-.42,-.29,.025,.013]],coat,'y');
+          var ivory=material('#d1c6a6',{roughness:.48});
+          [-1,1].forEach(function(s){
+            var ear=ball(g,coat,-.245,.13,s*.15,.21,.33,.037);ear.rotation.y=s*.5;ear.rotation.z=-.18;
+            organic(g,[[-.4,.04,s*.07,.016],[-.46,-.04,s*.085,.014],[-.51,-.047,s*.09,.007],[-.54,-.018,s*.09,.0005]],ivory,'x');
+            ball(g,dark,-.397,.173,s*.092,.012);
+            for(j=0;j<3;j++)ball(g,ivory,-.235+j*.02,-.363,s*.14,.014,.017,.009);
+          });g.rotation.y=-.32;
+        }
+        if(id==='mouse')[-1,1].forEach(function(s){ball(g,b,-0.31,0.18,s*0.09,0.13,0.14,0.04);});
+        if(id!=='blue-whale'&&id!=='elephant')ball(g,dark,-0.41,0.1,0.11,0.018);g.userData.dimension=item.dim==='tall'?'y':'x';
+      } else if(['honeybee','ladybird','flea','dust-mite'].indexOf(id)>=0) {
+        var insect=material(id==='ladybird'?'#d96762':id==='honeybee'?'#d6b26b':'#b69e88');
+        ball(g,insect,0.08,0,0,0.7,0.4,0.4);ball(g,dark,-0.36,0,0,0.28);
+        for(j=0;j<3;j++)[-1,1].forEach(function(s){tube(g,[[-0.2+j*0.2,-0.08,s*0.1],[-0.27+j*0.23,-0.21,s*0.28],[-0.3+j*0.24,-0.29,s*0.39]],0.017,dark);});
+        if(id==='honeybee'){[-1,1].forEach(function(s){m=ball(g,material('#c7e2ef',{transparent:true,opacity:0.48,depthWrite:false}),-0.05,0.17,s*0.3,0.5,0.026,0.32);m.rotation.x=s*0.4;});for(j=0;j<3;j++)ball(g,dark,0.02+j*0.14,0,0,0.05,0.39-j*0.04,0.39-j*0.04);}
+        if(id==='ladybird')for(j=0;j<6;j++)ball(g,dark,-0.1+j%3*0.16,0.17,(j<3?-1:1)*0.09,0.055,0.025,0.055);
+      } else if(id==='hair') {mesh(g,track(new T.CylinderGeometry(0.5,0.5,3,32)),material('#a98a66'));g.userData.dimension='x';}
+      else if(id==='egg'||id==='rice') {ball(g,white,0,0,0,id==='egg'?0.74:0.3,1,id==='egg'?0.74:0.3);g.userData.dimension='y';}
+      else {mesh(g,track(new T.IcosahedronGeometry(0.5,1)),material('#dab990',{flatShading:true,roughness:0.8}));}
+      // Normalize the stated dimension, not the bounding box's longest side:
+      // DNA and hair are widths; a height remains a height.
+      g.updateMatrixWorld(true);var bounds=new T.Box3().setFromObject(g), size=new T.Vector3();bounds.getSize(size);
+      var axis=g.userData.dimension || (item.dim==='tall'?'y':'x');
+      // Glows describe illumination, not the object's measured surface.
+      var extent=g.userData.extent||(['earth','moon','jupiter','sun','betelgeuse','carbon','hydrogen','proton','milkyway','universe','laniakea','virgo-sc','oort','heliosphere','local-bubble','orion-nebula'].indexOf(id)>=0?1:size[axis]);
+      g.scale.multiplyScalar(1/Math.max(0.001,extent));
+      var measuredCenter=(bounds.min[axis]+bounds.max[axis])/2;
+      g.position[axis]=-measuredCenter/Math.max(.001,extent);
+      var root=new T.Group();root.add(g);root.userData.itemId=id;root.userData.model=g;root.userData.initialYaw=g.rotation.y;
+      root.userData.floor=bounds.min.y/extent+(axis==='y'?g.position.y:0);
+      var ruler=new T.Group(), rulerMat=material('#91b9c8',{emissive:'#446e83',emissiveIntensity:0.25});
+      if(axis==='y') {
+        var rulerX=bounds.max.x/extent+.16;
+        rod(ruler,[rulerX,-0.5,0],[rulerX,0.5,0],0.0015,rulerMat);
+        [-0.5,0.5].forEach(function(y){rod(ruler,[rulerX-.04,y,0],[rulerX+.04,y,0],0.0015,rulerMat);});
+      } else {
+        var rulerY=bounds.min.y/extent-.16;
+        rod(ruler,[-0.5,rulerY,0],[0.5,rulerY,0],0.0015,rulerMat);
+        [-0.5,0.5].forEach(function(x){rod(ruler,[x,rulerY-.04,0],[x,rulerY+.04,0],0.0015,rulerMat);});
+      }
+      ruler.traverse(function(n){n.castShadow=n.receiveShadow=false;});
+      root.add(ruler);root.userData.ruler=ruler;
+      root.userData.materials=[];g.traverse(function(n){if(n.material){n.userData.baseOpacity=n.material.opacity;n.userData.baseTransparent=n.material.transparent;root.userData.materials.push(n);}});
+      root.userData.resources=Array.from(resources).filter(function(r){return !previousResources.has(r);});
+      space.add(root);models[id]=root;if(id==='human')loadHumanSurface(root);return root;
+    }
+    function paint() {
+      if(disposed)return;
+      var state=read(), e=state.exp, realm=realmAt(e), width=canvas.clientWidth,height=canvas.clientHeight;
+      if(!width||!height)return;
+      var ratio=renderer.getPixelRatio();if(canvas.width!==Math.floor(width*ratio)||canvas.height!==Math.floor(height*ratio)){renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();}
+      scene.background=new T.Color(state.contrast?'#000000':realm.bg);haze.material.color.set(realm.color);haze2.material.color.set(realm.color);
+      motes.visible=!state.contrast&&realm.id!=='human';motes.rotation.y=e*0.027+(state.motion?time*0.001:0);
+      motes.material.size = realm.id === 'micro' ? 0.1 : 0.045;
+      motes.material.color.set(realm.id === 'micro' ? '#79dfc6' : '#ffffff');
+      ground.visible = garden.visible = realm.id === 'human';
+      microBackdrop.visible = realm.id === 'micro';
+      scene.fog=realm.id==='human'?new T.Fog(realm.bg,9,33):null;
+      var cosmic=realm.id==='planet'||realm.id==='stellar'||realm.id==='cosmic';
+      hemisphere.intensity=cosmic?.065:.36;rim.intensity=cosmic?.08:.55;fill.intensity=cosmic?.025:.12;
+      key.intensity=cosmic?2.6:1.25;key.castShadow=ground.visible;
+      haze.material.opacity=cosmic?.065:.08;haze2.material.opacity=cosmic?.045:.04;
+      var candidates=state.items.filter(function(it){return Math.abs(log10(it.size)-e)<1.9;}).sort(function(a,b){return Math.abs(log10(a.size)-e)-Math.abs(log10(b.size)-e);});
+      if(!state.neighbors)candidates=candidates.slice(0,1);
+      var focal=candidates[0],close=focal?1-clamp(Math.abs(log10(focal.size)-e)*3,0,1):0;
+      if(focal&&focal.id==='blue-whale'){
+        ground.visible=garden.visible=false;key.castShadow=false;scene.background.set(state.contrast?'#000000':'#071d28');scene.fog=null;
+        motes.visible=!state.contrast;motes.material.color.set('#78aab8');motes.material.size=.06;hemisphere.intensity=.4;
+      }
+      var distance=6.8+(focal&&focal.id==='dna'?6.7*close:focal&&focal.id==='hair'?7.5*close:0);
+      // Leave a quiet band for the heading and fit narrow portrait screens.
+      distance*=Math.max(1,.95/camera.aspect);
+      var cameraPitch=ground.visible?Math.max(-.1,pitch):pitch;
+      camera.position.set(Math.sin(yaw)*Math.cos(cameraPitch)*distance,Math.sin(cameraPitch)*distance+.2,Math.cos(yaw)*Math.cos(cameraPitch)*distance);camera.lookAt(0,.2,0);
+      var occupied=[], visible=[];paintCount++;
+      Object.keys(models).forEach(function(id){models[id].visible=false;});
+      candidates.forEach(function(it){
+        var delta=log10(it.size)-e;
+        if(occupied.some(function(d){return Math.abs(d-delta)<0.27;}))return;
+        occupied.push(delta);var root=models[it.id]||model(it), scale=3*Math.pow(10,delta);
+        root.visible=true;root.userData.lastSeen=paintCount;root.scale.setScalar(scale);root.userData.ruler.visible=occupied.length===1&&state.measure;
+        if(it.group==='cosmic' && it.dim!=='distance')root.userData.model.rotation.y=root.userData.initialYaw+time*0.018;
+        if(root.userData.model.userData.starMaterial)root.userData.model.userData.starMaterial.uniforms.uTime.value=time;
+        var shoulder = Math.sign(delta) * scale * 0.65 * Math.min(1, Math.abs(delta) * 5);
+        root.position.set(delta*8.5+shoulder,Math.sin(delta*2)*0.3,-Math.abs(delta)*0.75-scale*0.25*Math.min(1,Math.abs(delta)*5));
+        // Keep the measured geometry proportional; only visibility changes at
+        // the edge of the current scale neighborhood.
+        var opacity=clamp((1.9-Math.abs(delta))*2,0,1);
+        root.userData.materials.forEach(function(n){var transparent=n.userData.baseTransparent||opacity<1;if(n.material.transparent!==transparent){n.material.transparent=transparent;n.material.needsUpdate=true;}n.material.opacity=n.userData.baseOpacity*opacity;});
+        if(occupied.length===1&&ground.visible){ground.position.y=root.position.y+root.userData.floor*scale-.008;garden.position.y=ground.position.y+1.64;}
+        visible.push(root);
+      });
+      // Keep only the recent neighborhood. In particular, a tour through the
+      // whole catalog must not retain every model, shader, and texture on GPU.
+      var cached=Object.keys(models), evict=cached.filter(function(id){return !models[id].visible;}).sort(function(a,b){return models[a].userData.lastSeen-models[b].userData.lastSeen;});
+      while(cached.length>10&&evict.length){var oldId=evict.shift(),old=models[oldId];old.userData.model.userData.released=true;space.remove(old);old.userData.resources.forEach(function(r){r.dispose();resources.delete(r);});delete models[oldId];cached.pop();}
+      renderer.render(scene,camera);
+      canvas.dataset.atlasReady='true';canvas.dataset.atlasObjects=visible.map(function(o){return o.userData.itemId;}).join(',');
+      canvas.dataset.atlasExponent=e.toFixed(4);canvas.dataset.atlasYaw=yaw.toFixed(4);
+      canvas.dataset.atlasTarget=state.target.toFixed(4);
+      canvas.dataset.atlasSurface=visible[0]&&visible[0].userData.model.userData.surfaceReady?'detailed':'procedural';
+      dirty=false;
+    }
+    function schedule(){if(!disposed&&!frame&&inView&&!document.hidden)frame=requestAnimationFrame(tick);}
+    function tick(ts){frame=0;if(disposed||document.hidden||!inView)return;var state=read();if(state.motion)time+=last?Math.min(0.05,(ts-last)/1000):0;last=ts;if(dirty||state.motion)paint();if(state.motion)schedule();}
+    function invalidate(){dirty=true;schedule();}
+    function down(ev){if(ev.button!==0)return;drag={id:ev.pointerId,x:ev.clientX,y:ev.clientY,startX:ev.clientX,startY:ev.clientY,moved:false};canvas.setPointerCapture(ev.pointerId);canvas.focus({preventScroll:true});}
+    function turnAngle(angle){return Math.atan2(Math.sin(angle),Math.cos(angle));}
+    function move(ev){if(!drag||drag.id!==ev.pointerId)return;var dx=ev.clientX-drag.x,dy=ev.clientY-drag.y;if(Math.hypot(ev.clientX-drag.startX,ev.clientY-drag.startY)>5)drag.moved=true;yaw=turnAngle(yaw-dx*.005);pitch=clamp(pitch+dy*.005,-1.1,1.1);drag.x=ev.clientX;drag.y=ev.clientY;invalidate();}
+    function up(ev){if(!drag||drag.id!==ev.pointerId)return;var didMove=drag.moved;drag=null;if(canvas.hasPointerCapture(ev.pointerId))canvas.releasePointerCapture(ev.pointerId);if(didMove)return;
+      var rect=canvas.getBoundingClientRect();pointer.set((ev.clientX-rect.left)/rect.width*2-1,-(ev.clientY-rect.top)/rect.height*2+1);ray.setFromCamera(pointer,camera);
+      var hits=ray.intersectObjects(Object.keys(models).map(function(id){return models[id];}).filter(function(m){return m.visible;}),true);
+      for(var i=0;i<hits.length;i++){if(!hits[i].object.isMesh)continue;var obj=hits[i].object;while(obj&&!obj.userData.itemId)obj=obj.parent;if(obj){pick(obj.userData.itemId);break;}}
+    }
+    function cancel(){drag=null;}
+    function visibility(){last=0;if(document.hidden){if(frame)cancelAnimationFrame(frame);frame=0;}else invalidate();}
+    function lost(ev){ev.preventDefault();if(!disposed)fail();}
+    canvas.addEventListener('pointerdown',down);canvas.addEventListener('pointermove',move);canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',cancel);canvas.addEventListener('lostpointercapture',cancel);canvas.addEventListener('webglcontextlost',lost);
+    document.addEventListener('visibilitychange',visibility);
+    var resize=window.ResizeObserver?new ResizeObserver(invalidate):null;if(resize)resize.observe(canvas.parentElement);
+    var intersection=window.IntersectionObserver?new IntersectionObserver(function(entries){inView=entries[0].isIntersecting;if(inView)invalidate();else {if(frame)cancelAnimationFrame(frame);frame=0;last=0;}}):null;if(intersection)intersection.observe(canvas);
+    try { paint(); } catch(err) { dispose(); throw err; }
+    schedule();
+    function dispose(){if(disposed)return;disposed=true;cancelAnimationFrame(frame);if(resize)resize.disconnect();if(intersection)intersection.disconnect();document.removeEventListener('visibilitychange',visibility);
+      canvas.removeEventListener('pointerdown',down);canvas.removeEventListener('pointermove',move);canvas.removeEventListener('pointerup',up);canvas.removeEventListener('pointercancel',cancel);canvas.removeEventListener('lostpointercapture',cancel);canvas.removeEventListener('webglcontextlost',lost);
+      resources.forEach(function(r){r.dispose();});if(key.shadow.map)key.shadow.map.dispose();renderer.dispose();renderer.forceContextLoss();delete canvas.dataset.atlasReady;
+    }
+    return { update:invalidate, orbit:function(x,y){yaw=turnAngle(yaw+x);pitch=clamp(pitch+y,-1.1,1.1);invalidate();}, reset:function(){yaw=0;pitch=0.12;invalidate();}, dispose:dispose };
+  }
+
   window.StemLab.registerTool('scaleExplorer', {
     icon: '🪆',
     label: 'Scale Explorer',
@@ -510,7 +1027,7 @@
       var filmSpeedRef = React.useRef(filmSpeed); filmSpeedRef.current = filmSpeed;
       var FILM_RATE = { slow: 0.35, normal: 0.7, fast: 1.4 }; // powers of ten per second
       var journeyDirRef = React.useRef(0);
-      var _showLadder = React.useState(true); var showLadder = _showLadder[0], setShowLadder = _showLadder[1];
+      var _showLadder = React.useState(false); var showLadder = _showLadder[0], setShowLadder = _showLadder[1];
       var _sci = React.useState(!!slice.sci); var sci = _sci[0], setSci = _sci[1];
       // Guided tour: which tour, and which stop (-1 = not started).
       var _tour = React.useState(start.tour || ''); var tourId = _tour[0], setTourId = _tour[1];
@@ -524,6 +1041,15 @@
       var _revealed = React.useState(false); var revealed = _revealed[0], setRevealed = _revealed[1];
 
       var canvasRef = React.useRef(null);
+      var atlasCanvasRef = React.useRef(null);
+      var atlasRef = React.useRef(null);
+      var _viewMode = React.useState('atlas'); var viewMode = _viewMode[0], setViewMode = _viewMode[1];
+      var viewModeRef = React.useRef(viewMode); viewModeRef.current = viewMode;
+      var _atlasStatus = React.useState('loading'); var atlasStatus = _atlasStatus[0], setAtlasStatus = _atlasStatus[1];
+      var _ambient = React.useState(slice.ambient !== false); var ambient = _ambient[0], setAmbient = _ambient[1];
+      var _neighbors = React.useState(slice.atlasNeighbors === true); var neighbors = _neighbors[0], setNeighbors = _neighbors[1];
+      var _measure = React.useState(true); var measure = _measure[0], setMeasure = _measure[1];
+      var _search = React.useState(''); var search = _search[0], setSearch = _search[1];
       var readoutRef = React.useRef(null);
       var scrubRef = React.useRef(null);
       // Guarding the repaint on FOCUS was wrong: a slider keeps focus long after
@@ -535,6 +1061,7 @@
       var targetRef = React.useRef(start.exp);
       var expRef = React.useRef(start.exp);
       var rafRef = React.useRef(0);
+      var cameraMoveRef = React.useRef({ from: start.exp, at: 0 });
       var lastDecadeRef = React.useRef(Math.round(start.exp));
       var nearestRef = React.useRef(start.focusId || 'human');
       // Read through a ref, not the render closure: the animation loop outlives
@@ -574,13 +1101,51 @@
       }
 
       // ── Camera ──────────────────────────────────────────────────────────
-      var reduceMotion = React.useMemo(function () {
+      var _reduceMotion = React.useState(function () {
         try { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) { return false; }
+      }); var reduceMotion = _reduceMotion[0], setReduceMotion = _reduceMotion[1];
+      var atlasState = React.useRef(null);
+      atlasState.current = { items: sorted, exp: expRef.current, motion: ambient && !reduceMotion, contrast: theme === 'contrast', neighbors: neighbors, measure: measure };
+      var atlasActions = React.useRef(null);
+      atlasActions.current = { pick: function (id) { if (byId[id]) openItem(byId[id]); }, zoom: zoomBy };
+      React.useEffect(function () {
+        var mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+        if (!mq) return;
+        function change() { setReduceMotion(mq.matches); if (mq.matches) stopJourney(); }
+        if (mq.addEventListener) mq.addEventListener('change', change);
+        return function () { if (mq.removeEventListener) mq.removeEventListener('change', change); };
       }, []);
+      React.useEffect(function () {
+        if (viewMode !== 'atlas') { draw(); return; }
+        var alive = true, cv = atlasCanvasRef.current, timeout;
+        if (!cv) return;
+        setAtlasStatus('loading');
+        function failed() {
+          if (!alive) return;
+          clearTimeout(timeout); setAtlasStatus('failed'); setViewMode('chart');
+          say(S('atlas_failed', 'The 3D view is unavailable. The scale chart and all destinations are ready to explore.'));
+        }
+        function wheel(ev) { ev.preventDefault(); atlasActions.current.zoom(clamp(-ev.deltaY * (ev.deltaMode === 1 ? 0.02 : 0.002), -0.6, 0.6)); }
+        cv.addEventListener('wheel', wheel, { passive: false });
+        timeout = setTimeout(failed, 15000);
+        var loading = window.THREE ? Promise.resolve(window.THREE) : window.StemLab.ensureThree
+          ? window.StemLab.ensureThree({ orbit: false }) : Promise.reject(new Error('Three.js loader unavailable'));
+        loading.then(function () {
+          if (!alive) return;
+          clearTimeout(timeout);
+          atlasRef.current = createScaleAtlas(window.THREE, cv, function () {
+            return Object.assign({}, atlasState.current, { exp: expRef.current, target: targetRef.current });
+          }, function (id) { atlasActions.current.pick(id); }, failed);
+          setAtlasStatus('ready');
+        }).catch(failed);
+        return function () { alive = false; clearTimeout(timeout); cv.removeEventListener('wheel', wheel); if (atlasRef.current) { atlasRef.current.dispose(); atlasRef.current = null; } };
+      }, [viewMode]);
+      React.useEffect(function () { if (atlasRef.current) atlasRef.current.update(); }, [ambient, reduceMotion, theme, items, neighbors, measure]);
       function goTo(nextExp, opts) {
         opts = opts || {};
         var target = clamp(nextExp, MIN_EXP, MAX_EXP);
         targetRef.current = target;
+        cameraMoveRef.current = { from: expRef.current, at: performance.now() };
         if (reduceMotion || opts.instant) { expRef.current = target; settleExp(target); draw(); afterMove(); return; }
         if (!rafRef.current) rafRef.current = requestAnimationFrame(step);
       }
@@ -603,11 +1168,13 @@
       // stays correct without paying for the frames in between.
       function settleExp(v) { intentRef.current = null; setExp(v); paintReadout(); }
       function step() {
+        var ts = performance.now();
         rafRef.current = 0;
         var cur = expRef.current, target = targetRef.current;
         var d = target - cur;
-        if (Math.abs(d) < 0.0015) { expRef.current = target; settleExp(target); draw(); afterMove(); return; }
-        expRef.current = cur + d * 0.18;
+        var progress = clamp((ts - cameraMoveRef.current.at) / 650, 0, 1);
+        if (Math.abs(d) < 0.0015 || progress >= 1) { expRef.current = target; settleExp(target); draw(); afterMove(); return; }
+        expRef.current = cameraMoveRef.current.from + (target - cameraMoveRef.current.from) * (1 - Math.pow(1 - progress, 3));
         paintReadout();
         draw();
         afterMove();
@@ -735,6 +1302,7 @@
 
       // ── Drawing ─────────────────────────────────────────────────────────
       function draw() {
+        if (viewModeRef.current === 'atlas') { if (atlasRef.current) atlasRef.current.update(); return; }
         var cv = canvasRef.current; if (!cv) return;
         var parent = cv.parentElement; if (!parent) return;
         var cssW = Math.max(200, parent.clientWidth), cssH = Math.max(220, parent.clientHeight);
@@ -956,6 +1524,12 @@
       // ── Keyboard on the canvas ──────────────────────────────────────────
       function onCanvasKey(ev) {
         var k = ev.key;
+        if (atlasRef.current && /^(a|d|w|s|r)$/i.test(k)) {
+          ev.preventDefault();
+          if (k.toLowerCase() === 'r') atlasRef.current.reset();
+          else atlasRef.current.orbit(k.toLowerCase() === 'a' ? -0.12 : k.toLowerCase() === 'd' ? 0.12 : 0, k.toLowerCase() === 'w' ? -0.1 : k.toLowerCase() === 's' ? 0.1 : 0);
+          return;
+        }
         var big = ev.shiftKey ? 1 : 0.25;
         if (k === 'ArrowRight' || k === 'ArrowUp' || k === '+' || k === '=') { ev.preventDefault(); zoomBy(big); return; }
         if (k === 'ArrowLeft' || k === 'ArrowDown' || k === '-' || k === '_') { ev.preventDefault(); zoomBy(-big); return; }
@@ -1014,7 +1588,7 @@
         var big = a.size >= b.size ? a : b, small = a.size >= b.size ? b : a;
         var ratio = big.size / small.size;
         return { big: big, small: small, ratio: ratio, decades: log10(ratio) };
-      }, [cmpA, cmpB]);
+      }, [cmpA, cmpB, byId]);
       // ── Estimate first ──────────────────────────────────────────────────
       // Every other tool in this lab makes the student commit to a guess before
       // it shows an answer. Browsing alone does not build a feel for orders of
@@ -1049,7 +1623,7 @@
         var big = byId[pair.big], small = byId[pair.small];
         if (!big || !small) return null;
         return { big: big, small: small, decades: log10(big.size / small.size), ratio: big.size / small.size };
-      }, [pair]);
+      }, [pair, byId]);
       function estimateVerdict(n) {
         if (!challenge) return '';
         var off = Math.abs(n - challenge.decades);
@@ -1083,9 +1657,11 @@
         if (tour) goToStop(tour, 0); else setStopIdx(-1);
       }
       var cmpSecondRef = React.useRef(null);
+      var cmpDetailsRef = React.useRef(null);
       // From the focus card: put what you are looking at into the first slot and
       // hand focus to the second, so the next keystroke picks the other thing.
       function compareFocused() {
+        if (cmpDetailsRef.current) cmpDetailsRef.current.open = true;
         var item = focused;
         setCmpA(item.id);
         if (cmpB === item.id) setCmpB(item.id === 'human' ? 'rbc' : 'human');
@@ -1258,17 +1834,32 @@
         return sorted.map(function (i) { return h('option', { key: i.id, value: i.id }, itemText(i, 'name') + ' — ' + lengthText(i.size)); });
       }
 
-      return h('div', { ref: wrapRef, className: 'flex flex-col gap-3 animate-in fade-in duration-300',
+      var realm = realmAt(log10(focused.size));
+      var focusIndex = sorted.findIndex(function (i) { return i.id === focused.id; });
+      var smaller = sorted[focusIndex + 1], larger = sorted[focusIndex - 1];
+      function adjacent(item, direction) {
+        if (!item) return null;
+        return h('button', { type: 'button', className: 'sx-destination', onClick: function () { openItem(item); }, style: { borderColor: P.line, background: P.panel, color: P.text } },
+          h('span', { style: { fontSize: '0.6875rem', color: P.dim, display: 'block', marginBottom: 4 } }, direction < 0 ? S('atlas_smaller', '← Next smaller') : S('atlas_larger', 'Next larger →')),
+          h('strong', null, itemText(item, 'name')),
+          h('span', { style: { fontSize: '0.75rem', color: P.dim, display: 'block', marginTop: 4 } }, lengthText(item.size)));
+      }
+
+      return h('div', { ref: wrapRef, className: 'sx-explorer flex flex-col gap-3 animate-in fade-in duration-300',
         // The fullscreen target the button below resolves with closest().
         'data-allo-fs-stage': 'true',
         // The host card is white in both themes and these inks assume slate.
         style: { background: P.bg, color: P.text, borderRadius: 14, padding: 14, minWidth: 0 } },
 
+        h('style', null, '.sx-explorer{font-family:ui-sans-serif,system-ui,sans-serif;display:flex;flex-direction:column;gap:14px}.sx-explorer *{box-sizing:border-box}.sx-explorer button,.sx-explorer select{min-height:40px}.sx-explorer button:disabled{opacity:.45;cursor:default}.sx-explorer button:focus-visible,.sx-explorer input:focus-visible,.sx-explorer select:focus-visible,.sx-explorer canvas:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}.sx-regions{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}.sx-regions button{text-align:left;padding:12px;border:1px solid;border-radius:10px;font:inherit;cursor:pointer}.sx-stage{height:clamp(410px,62vh,690px);position:relative;isolation:isolate;border-radius:16px;overflow:hidden;border:1px solid #334155;background:#0b1421}.sx-stage canvas{position:absolute;inset:0;width:100%;height:100%}.sx-hud{position:absolute;pointer-events:none;left:24px;right:24px;top:22px;color:#eef5fc;text-shadow:0 2px 10px #020713}.sx-hud h3{font-family:Georgia,serif;font-size:clamp(26px,3vw,44px);line-height:1.08;margin:7px 0;font-weight:400;max-width:75%}.sx-hud p{font-size:12px;letter-spacing:.07em;margin:0;color:#c5d7e4}.sx-stage-note{position:absolute;left:20px;right:20px;bottom:18px;pointer-events:none;display:flex;gap:12px;justify-content:space-between;align-items:flex-end;color:#deebf6;font-size:11px;line-height:1.5}.sx-stage-note span{padding:6px 9px;background:rgba(4,12,24,.86);border-radius:6px;max-width:60%}.sx-destination{flex:1 1 140px;text-align:left;border:1px solid;border-radius:10px;padding:12px;cursor:pointer;font-size:13px}.sx-flight-controls{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.sx-panel{flex:0 1 310px;min-width:0;width:100%}.sx-search{width:100%;padding:10px 12px;border:1px solid;border-radius:8px;font:inherit;font-size:13px}.sx-explorer:fullscreen{overflow:auto;padding:20px!important}.sx-explorer:fullscreen .sx-stage{height:72vh}@media(max-width:700px){.sx-regions{grid-template-columns:repeat(3,minmax(0,1fr))}.sx-regions button{padding:9px;font-size:12px}.sx-stage{height:440px}.sx-hud{left:16px;right:16px;top:18px}.sx-hud h3{max-width:100%;font-size:30px}.sx-panel{flex:1 1 100%}.sx-stage-note{left:12px;right:12px}.sx-stage-note span{max-width:70%}}@media(prefers-reduced-motion:reduce){.sx-explorer{animation:none!important;scroll-behavior:auto}}'),
+
         h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' } },
           typeof setStemLabTool === 'function' && h('button', { onClick: function () { setStemLabTool(null); say(S('returned_sr', 'Returned to the STEAM Lab tools.')); }, type: 'button', style: btn },
             ArrowLeft ? h(ArrowLeft, { size: 14, style: { display: 'inline', verticalAlign: '-2px', marginRight: 4 } }) : null,
             S('back_to_tools', 'Back to STEAM Lab tools')),
-          h('h2', { style: { margin: 0, fontSize: '1.0625rem', fontWeight: 700, flex: '1 1 auto' } }, S('title', '🪆 Scale Explorer — powers of ten')),
+          h('div', { style: { flex: '1 1 auto' } },
+            h('p', { style: { margin: '0 0 3px', fontSize: '0.625rem', letterSpacing: '0.22em', textTransform: 'uppercase', color: P.dim } }, S('atlas_eyebrow', 'An atlas of everything')),
+            h('h2', { style: { margin: 0, fontSize: '1.5rem', fontWeight: 650, letterSpacing: '-0.035em' } }, S('atlas_title', 'Scale Explorer'))),
           // The shared binder owns the click AND keeps the accessible name, the
           // pressed state and the glyph in step with the real fullscreen state --
           // including an Escape exit, which never reaches a click handler. Before
@@ -1288,19 +1879,56 @@
         ),
 
         h('p', { style: { margin: 0, fontSize: '0.8125rem', color: P.dim, lineHeight: 1.55 } },
-          S('blurb', 'Every step across the screen is one power of ten, so the same distance always means the same ratio. Zoom out far enough and the Earth is a dot; zoom in far enough and an atom fills the view.')),
+          S('atlas_blurb', 'Travel from the familiar to the almost unimaginable. Orbit a world, find your next destination, and feel what a power of ten changes.')),
+
+        h('style', null, '.sx-panel{align-self:flex-start}.sx-stage:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(3,9,17,.38),transparent 29%,transparent 82%,rgba(3,9,17,.45))}.sx-hud,.sx-stage-note{z-index:1}.sx-hud h3{letter-spacing:-.025em}.sx-stage canvas:active{cursor:grabbing!important}'),
+        h('nav', { className: 'sx-regions', 'aria-label': S('atlas_realms', 'Scale destinations') }, REALMS.map(function (r, i) {
+          var active = realm.id === r.id;
+          return h('button', { key: r.id, type: 'button', 'aria-current': active ? 'true' : undefined, onClick: function () { openItem(byId[r.at]); },
+            style: { background: active ? P.selBg : P.panel, borderColor: active ? P.accent : P.line, color: active ? P.selFg : P.text } },
+            h('span', { style: { display: 'block', color: active ? P.selFg : P.dim, fontSize: '0.625rem', letterSpacing: '0.12em', marginBottom: 4 } }, '0' + (i + 1)),
+            h('strong', { style: { fontSize: '0.75rem' } }, S('atlas_realm_' + r.id, r.name)));
+        })),
 
         h('div', { style: { display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'stretch' } },
 
           // ── Stage ──
           h('div', { style: { flex: '1 1 520px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 } },
-            h('div', { style: { position: 'relative', flex: '1 1 auto', minHeight: 'min(56vh, 420px)', maxHeight: 'max(420px, 78vh)', borderRadius: 12, border: '1px solid ' + P.line, overflow: 'hidden', background: P.stage } },
+            h('label', { style: { display: 'flex', gap: 10, alignItems: 'center', fontSize: '0.75rem', color: P.dim } },
+              S('atlas_fly_to', 'Fly to'),
+              h('select', { 'aria-label': S('atlas_destination', 'Choose a destination'), value: focusId, onChange: function (e) { openItem(byId[e.target.value]); }, style: Object.assign({}, sel, { flex: 1, minWidth: 0, fontWeight: 600 }) }, itemOptions())),
+            h('div', { className: 'sx-flight-controls', role: 'group', 'aria-label': S('atlas_view_controls', 'View controls') },
+              h('button', { type: 'button', style: viewMode === 'atlas' ? goBtn : btn, 'aria-pressed': viewMode === 'atlas', onClick: function () { setViewMode('atlas'); } }, S('atlas_view', 'Immersive 3D')),
+              h('button', { type: 'button', style: viewMode === 'chart' ? goBtn : btn, 'aria-pressed': viewMode === 'chart', onClick: function () { setViewMode('chart'); } }, S('atlas_chart', 'Scale chart')),
+              viewMode === 'atlas' ? h('button', { type: 'button', style: btn, onClick: function () { if (atlasRef.current) atlasRef.current.reset(); } }, S('atlas_reset', 'Reset camera')) : null,
+              viewMode === 'atlas' ? h('button', { type: 'button', style: btn, 'aria-pressed': ambient && !reduceMotion, disabled: reduceMotion, onClick: function () { setAmbient(!ambient); updateSlice(function (cur) { cur.ambient = !ambient; }); } }, reduceMotion ? S('atlas_still', 'Reduced motion') : ambient ? S('atlas_motion_pause', 'Pause ambience') : S('atlas_motion_play', 'Resume ambience')) : null),
+            atlasStatus === 'failed' ? h('p', { role: 'status', style: { margin: 0, color: P.dim, fontSize: '0.8125rem' } }, S('atlas_failed', 'The 3D view is unavailable. The scale chart and all destinations are ready to explore.')) : null,
+            h('div', { className: 'sx-stage' },
+              viewMode === 'atlas' ? h('canvas', { ref: atlasCanvasRef, tabIndex: 0, role: 'application',
+                'aria-label': S('atlas_canvas_aria', 'Interactive scale atlas. Scroll or use arrow keys to travel through scale. Drag to orbit, or use W A S D. R resets the camera. Home returns to human scale. Space plays or pauses the journey.'),
+                'aria-describedby': descId, onKeyDown: onCanvasKey, style: { touchAction: 'none', cursor: 'grab', outlineOffset: '-4px' } }) : null,
               h('canvas', { ref: canvasRef, tabIndex: 0, role: 'application',
                 'aria-label': S('canvas_aria', 'Scale view. Left and right arrows zoom by a quarter of a power of ten, hold shift for a whole one, Page Up and Page Down jump three, Home returns to human scale, space plays or pauses the zoom.'),
                 'aria-describedby': descId,
                 onKeyDown: onCanvasKey, onWheel: onWheel,
-                style: { display: 'block', width: '100%', height: '100%', outlineOffset: '-3px' } })
+                style: { display: viewMode === 'chart' ? 'block' : 'none', width: '100%', height: '100%', outlineOffset: '-3px' } }),
+              viewMode === 'atlas' ? h('div', { className: 'sx-hud', 'aria-hidden': 'true' },
+                h('p', { style: { color: theme === 'contrast' ? '#ffffff' : realm.color, textTransform: 'uppercase', fontWeight: 700 } }, S('atlas_realm_' + realm.id, realm.name)),
+                h('h3', null, itemText(focused, 'name')),
+                h('p', null, lengthText(focused.size) + ' ' + S('dim_' + focused.dim.replace(/\s+/g, '_'), focused.dim)),
+                atlasStatus === 'loading' ? h('p', { style: { marginTop: 20 } }, S('atlas_loading', 'Preparing your observatory…')) : null) : null,
+              viewMode === 'atlas' ? h('div', { className: 'sx-stage-note', 'aria-hidden': 'true' },
+                h('span', null, S('atlas_gesture', 'Drag to orbit · Scroll to change scale')),
+                h('span', null, S('atlas_model_tag', 'Illustrated models / measured dimensions'))) : null
             ),
+            viewMode === 'atlas' ? h('div', { className: 'sx-flight-controls', role: 'group', 'aria-label': S('atlas_orbit_controls', 'Orbit the 3D scene') },
+              h('button', { type: 'button', style: btn, onClick: function () { if (atlasRef.current) atlasRef.current.orbit(-0.2, 0); } }, S('atlas_orbit_left', 'Orbit left')),
+              h('button', { type: 'button', style: btn, onClick: function () { if (atlasRef.current) atlasRef.current.orbit(0.2, 0); } }, S('atlas_orbit_right', 'Orbit right')),
+              h('button', { type: 'button', style: neighbors ? goBtn : btn, 'aria-pressed': neighbors, onClick: function () { setNeighbors(!neighbors); updateSlice(function(cur){cur.atlasNeighbors=!neighbors;}); } }, S('atlas_show_neighbors', 'Size neighbors')),
+              h('button', { type: 'button', style: measure ? goBtn : btn, 'aria-pressed': measure, onClick: function () { setMeasure(!measure); } }, S('atlas_measure', 'Measurement')),
+              h('button', { type: 'button', style: btn, onClick: function () { zoomBy(-1); } }, S('atlas_shrink', 'Explore 10× smaller')),
+              h('button', { type: 'button', style: btn, onClick: function () { zoomBy(1); } }, S('atlas_grow', 'Explore 10× larger'))) : null,
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' }, 'aria-label': S('atlas_neighbors', 'Nearby destinations') }, adjacent(smaller, -1), adjacent(larger, 1)),
             h('p', { id: descId, ref: readoutRef, style: { margin: 0, fontSize: '0.8125rem', color: P.text, fontWeight: 600 } }, viewLine),
             edge ? h('p', { role: 'status', style: Object.assign({}, card, { margin: 0, borderColor: P.accent, fontSize: '0.78125rem' }) }, '🛑 ' + edge) : null,
             h('label', { style: { display: 'block', fontSize: '0.71875rem', color: P.dim } },
@@ -1368,15 +1996,26 @@
           ),
 
           // ── Side panel ──
-          h('aside', { 'aria-label': S('panel_aria', 'Scale details'), style: { flex: '0 1 320px', minWidth: 250, background: P.panel, border: '1px solid ' + P.line, borderRadius: 12, padding: 12, display: 'flex', flexDirection: 'column', gap: 10 } },
+          h('aside', { className: 'sx-panel', 'aria-label': S('panel_aria', 'Scale details'), style: { background: P.panel, border: '1px solid ' + P.line, borderRadius: 12, padding: 12, display: 'flex', flexDirection: 'column', gap: 10 } },
 
             h('div', null,
               h('h3', { style: { margin: '0 0 4px', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: P.dim } }, S('focus_heading', 'In focus')),
               h('div', { style: card },
-                h('div', { style: { fontWeight: 700, marginBottom: 2 } }, focused.emoji + ' ' + itemText(focused, 'name')),
+                h('div', { style: { fontWeight: 700, marginBottom: 2 } }, itemText(focused, 'name')),
                 h('div', { style: { color: P.dim, fontSize: '0.75rem', marginBottom: 6 } },
                   S('size_line', '{len} {dim}', { len: lengthText(focused.size), dim: S('dim_' + focused.dim.replace(/\s+/g, '_'), focused.dim) })),
                 h('p', { style: { margin: 0 } }, itemText(focused, 'describe')),
+                viewMode === 'atlas' ? h('p', { style: { margin: '10px 0 0', color: P.dim, fontSize: '0.71875rem', lineHeight: 1.5 } },
+                  focused.dim === 'distance' ? S('atlas_distance_note', 'This is a gap, shown as a ruler. Endpoint markers are illustrative, not scaled objects.') :
+                  focused.id === 'solar-system' ? S('atlas_solar_note', 'The outer orbit sets the measured width. Inner orbits and planet markers are enlarged and spaced for visibility.') :
+                  focused.id === 'carbon' || focused.id === 'hydrogen' || focused.id === 'proton' ? S('atlas_quantum_note', 'A conceptual probability or charge cloud, not a solid surface. Colors are illustrative; an atomic nucleus would be too small to see here.') :
+                  focused.id === 'everest' ? S('atlas_everest_note', 'The stated height is measured above sea level. The mountain terrain is an illustration, not a surveyed height map.') :
+                  focused.id === 'earth' ? S('atlas_earth_note', 'Earth imagery: NASA/Goddard Space Flight Center Scientific Visualization Studio, Blue Marble. A satellite mosaic, not a live view. Neighboring objects are arranged by size, not orbital distance.') :
+                  focused.id === 'moon' ? S('atlas_moon_note', 'Lunar surface imagery: NASA/GSFC/Arizona State University, Lunar Reconnaissance Orbiter. Lighting here is illustrative.') :
+                  focused.id === 'jupiter' ? S('atlas_jupiter_note', 'Jupiter surface: NASA/GSFC and Space Telescope Science Institute, Hubble global map from 2015. A historical observation with simulated lighting.') :
+                  focused.id === 'human' ? S('atlas_human_note', 'A sculptural body study using the MakeHuman Community surface (CC0), with a procedural fallback. A generic adult figure, scaled to the stated height.') :
+                  focused.id === 'mitochondrion' ? S('atlas_mito_note', 'A cutaway reveals the folds of the inner membrane, called cristae. Shape and colors illustrate its structure; this is not a microscopy reconstruction.') :
+                  S('atlas_illustration_note', 'A stylized model, with illustrative colors and details. Travel changes its size by powers of ten. Positions arrange the atlas; they are not real locations.')) : null,
                 focused.note ? h('p', { style: { margin: '6px 0 0', fontSize: '0.71875rem', color: P.dim, lineHeight: 1.45 } }, '⚖️ ' + itemText(focused, 'note')) : null,
                 h('div', { style: { marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' } },
                   speakBtn('focus', itemText(focused, 'describe') + (focused.note ? ' ' + itemText(focused, 'note') : '')),
@@ -1413,8 +2052,8 @@
 
             // Estimate first, then check: the house Predict → Explore → Explain
             // shape. The reveal is never withheld and never scored.
-            challenge ? h('div', null,
-              h('h3', { style: { margin: '0 0 4px', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: P.dim } }, S('est_heading', 'Estimate first')),
+            challenge ? h('details', null,
+              h('summary', { style: { padding: '10px 0', cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 700, color: P.text } }, S('est_heading', 'Estimate first')),
               h('div', { style: Object.assign({}, card, { display: 'flex', flexDirection: 'column', gap: 8 }) },
                 h('p', { style: { margin: 0 } },
                   S('est_question', 'How many powers of ten bigger across is {big} than {small}?',
@@ -1433,8 +2072,8 @@
                   estimateVerdict(parseFloat(guess)) + ' ' + challengeReveal()) : null)) : null,
 
             // Compare
-            h('div', null,
-              h('h3', { style: { margin: '0 0 4px', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: P.dim } }, S('cmp_heading', 'Compare two sizes')),
+            h('details', { ref: cmpDetailsRef },
+              h('summary', { style: { padding: '10px 0', cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 700, color: P.text } }, S('cmp_heading', 'Compare two sizes')),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                 h('label', { style: { fontSize: '0.71875rem', color: P.dim } }, S('cmp_a', 'First thing'),
                   h('select', { value: cmpA, onChange: function (e) { setCmpA(e.target.value); }, style: Object.assign({}, sel, { width: '100%', marginTop: 2 }) }, itemOptions())),
@@ -1453,14 +2092,15 @@
             h('div', { style: { minHeight: 0, display: 'flex', flexDirection: 'column' } },
               h('button', { type: 'button', onClick: function () { setShowLadder(!showLadder); }, 'aria-expanded': showLadder ? 'true' : 'false', 'aria-controls': 'sx-ladder', style: btn },
                 (showLadder ? '▾ ' : '▸ ') + S('ladder_heading', 'Everything, largest first')),
+              showLadder ? h('input', { className: 'sx-search', type: 'search', value: search, onChange: function (e) { setSearch(e.target.value); }, 'aria-label': S('atlas_search', 'Find an object'), placeholder: S('atlas_search', 'Find an object'), style: { background: P.bg, color: P.text, borderColor: P.line, marginTop: 8 } }) : null,
               h('ul', { id: 'sx-ladder', hidden: !showLadder, style: { listStyle: 'none', margin: '6px 0 0', padding: 0, maxHeight: 220, overflowY: 'auto', border: '1px solid ' + P.line, borderRadius: 8 } },
-                sorted.map(function (i) {
+                sorted.filter(function (i) { return itemText(i, 'name').toLocaleLowerCase().indexOf(search.toLocaleLowerCase().trim()) !== -1; }).map(function (i) {
                   var on = i.id === focusId;
                   return h('li', { key: i.id },
                     h('button', { type: 'button', onClick: function () { openItem(i); },
                       'aria-current': on ? 'true' : undefined,
                       style: { display: 'block', width: '100%', textAlign: 'left', border: 'none', borderBottom: '1px solid ' + P.line, background: on ? P.selBg : P.panel, color: on ? P.selFg : P.text, padding: '6px 9px', fontSize: '0.75rem', cursor: 'pointer', font: 'inherit' } },
-                      h('span', { style: { fontWeight: on ? 700 : 500 } }, i.emoji + ' ' + itemText(i, 'name')),
+                      h('span', { style: { fontWeight: on ? 700 : 500 } }, itemText(i, 'name')),
                       h('span', { style: { color: on ? P.selFg : P.dim, float: 'right', fontSize: '0.6875rem' } }, lengthText(i.size))));
                 })))
           )

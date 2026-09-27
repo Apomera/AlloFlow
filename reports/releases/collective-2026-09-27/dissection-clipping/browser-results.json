@@ -1,0 +1,370 @@
+{
+  "at": "2026-09-27T19:45:45.669Z",
+  "ok": true,
+  "stagedSha256": "78753c4b0e111a1b581c8292c596a16f2fa80a1e5ed2b8b85f71c9ef675ee319",
+  "currentSha256": "91cb6877d757768b5c9002d5119a3b875330966ae62b4f8e8b6635f86869df8a",
+  "mirrorSha256": "91cb6877d757768b5c9002d5119a3b875330966ae62b4f8e8b6635f86869df8a",
+  "inputsBefore": {
+    "stem_lab/stem_tool_dissection.js": "91cb6877d757768b5c9002d5119a3b875330966ae62b4f8e8b6635f86869df8a",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "91cb6877d757768b5c9002d5119a3b875330966ae62b4f8e8b6635f86869df8a",
+    "stem_lab/stem_lab_module.js": "109c99f3814d196373b0f20083a0d6eda59e2cb123a09b10110f87de0f5be3d7",
+    "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+  },
+  "cases": [
+    {
+      "variant": "staged-before",
+      "specimen": "frog",
+      "traceName": "traceFrogTorso",
+      "ok": true,
+      "pageErrors": [],
+      "renderErrors": [
+        "[DissectionLab] render error: ReferenceError: traceFrogTorso is not defined\n    at clipSpecimenSurface (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13793:48)\n    at drawDissectionFrame (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13871:17)\n    at canvasRef (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:15419:13)\n    at Lf (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:165:287)\n    at Ji (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:181:339)\n    at Hi (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:179:278)\n    at Hk (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:178:329)\n    at Rk (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:197:312)\n    at xb (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:196:166)\n    at Ni (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:187:246)",
+        "[DissectionLab] render error: ReferenceError: traceFrogTorso is not defined\n    at clipSpecimenSurface (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13793:48)\n    at drawDissectionFrame (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13871:17)\n    at ResizeObserver.onDissectionResize (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:7232:15)",
+        "[DissectionLab] render error: ReferenceError: traceFrogTorso is not defined\n    at clipSpecimenSurface (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13793:48)\n    at drawDissectionFrame (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13871:17)\n    at canvas._drawDissectionNow (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:7131:145)\n    at eval (eval at evaluate (:302:30), <anonymous>:3:14)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+      ],
+      "externalRequests": [],
+      "routeErrors": [],
+      "beforeExplicitRedraw": 0,
+      "observation": {
+        "additionalSurfaceClips": 0,
+        "totalSurfaceClips": 0,
+        "colors": 1002,
+        "drawState": {
+          "specimen": "frog",
+          "condition": "dehydrated",
+          "sceneDetail": true,
+          "visualRealism": "realistic"
+        }
+      },
+      "expectedFailureReproduced": true
+    },
+    {
+      "variant": "staged-before",
+      "specimen": "earthworm",
+      "traceName": "traceEarthwormBody",
+      "ok": true,
+      "pageErrors": [],
+      "renderErrors": [
+        "[DissectionLab] render error: ReferenceError: traceEarthwormBody is not defined\n    at clipSpecimenSurface (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13794:53)\n    at drawDissectionFrame (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13871:17)\n    at canvasRef (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:15419:13)\n    at Lf (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:165:287)\n    at Ji (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:181:339)\n    at Hi (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:179:278)\n    at Hk (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:178:329)\n    at Rk (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:197:312)\n    at xb (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:196:166)\n    at Ni (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:187:246)",
+        "[DissectionLab] render error: ReferenceError: traceEarthwormBody is not defined\n    at clipSpecimenSurface (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13794:53)\n    at drawDissectionFrame (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13871:17)\n    at ResizeObserver.onDissectionResize (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:7232:15)",
+        "[DissectionLab] render error: ReferenceError: traceEarthwormBody is not defined\n    at clipSpecimenSurface (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13794:53)\n    at drawDissectionFrame (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13871:17)\n    at canvas._drawDissectionNow (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:7131:145)\n    at eval (eval at evaluate (:302:30), <anonymous>:3:14)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+      ],
+      "externalRequests": [],
+      "routeErrors": [],
+      "beforeExplicitRedraw": 0,
+      "observation": {
+        "additionalSurfaceClips": 0,
+        "totalSurfaceClips": 0,
+        "colors": 576,
+        "drawState": {
+          "specimen": "earthworm",
+          "condition": "dehydrated",
+          "sceneDetail": true,
+          "visualRealism": "realistic"
+        }
+      },
+      "expectedFailureReproduced": true
+    },
+    {
+      "variant": "staged-before",
+      "specimen": "pig",
+      "traceName": "tracePigBody",
+      "ok": true,
+      "pageErrors": [],
+      "renderErrors": [
+        "[DissectionLab] render error: ReferenceError: tracePigBody is not defined\n    at clipSpecimenSurface (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13795:52)\n    at drawDissectionFrame (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13871:17)\n    at canvasRef (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:15419:13)\n    at Lf (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:165:287)\n    at Ji (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:181:339)\n    at Hi (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:179:278)\n    at Hk (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:178:329)\n    at Rk (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:197:312)\n    at xb (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:196:166)\n    at Ni (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:187:246)",
+        "[DissectionLab] render error: ReferenceError: tracePigBody is not defined\n    at clipSpecimenSurface (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13795:52)\n    at drawDissectionFrame (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13871:17)\n    at ResizeObserver.onDissectionResize (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:7232:15)",
+        "[DissectionLab] render error: ReferenceError: tracePigBody is not defined\n    at clipSpecimenSurface (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13795:52)\n    at drawDissectionFrame (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13871:17)\n    at canvas._drawDissectionNow (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:7131:145)\n    at eval (eval at evaluate (:302:30), <anonymous>:3:14)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+      ],
+      "externalRequests": [],
+      "routeErrors": [],
+      "beforeExplicitRedraw": 0,
+      "observation": {
+        "additionalSurfaceClips": 0,
+        "totalSurfaceClips": 0,
+        "colors": 721,
+        "drawState": {
+          "specimen": "pig",
+          "condition": "dehydrated",
+          "sceneDetail": true,
+          "visualRealism": "realistic"
+        }
+      },
+      "expectedFailureReproduced": true
+    },
+    {
+      "variant": "staged-before",
+      "specimen": "perch",
+      "traceName": "tracePerchBody",
+      "ok": true,
+      "pageErrors": [],
+      "renderErrors": [
+        "[DissectionLab] render error: ReferenceError: tracePerchBody is not defined\n    at clipSpecimenSurface (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13796:53)\n    at drawDissectionFrame (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13871:17)\n    at canvasRef (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:15419:13)\n    at Lf (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:165:287)\n    at Ji (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:181:339)\n    at Hi (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:179:278)\n    at Hk (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:178:329)\n    at Rk (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:197:312)\n    at xb (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:196:166)\n    at Ni (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:187:246)",
+        "[DissectionLab] render error: ReferenceError: tracePerchBody is not defined\n    at clipSpecimenSurface (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13796:53)\n    at drawDissectionFrame (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13871:17)\n    at ResizeObserver.onDissectionResize (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:7232:15)",
+        "[DissectionLab] render error: ReferenceError: tracePerchBody is not defined\n    at clipSpecimenSurface (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13796:53)\n    at drawDissectionFrame (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13871:17)\n    at canvas._drawDissectionNow (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:7131:145)\n    at eval (eval at evaluate (:302:30), <anonymous>:3:14)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+      ],
+      "externalRequests": [],
+      "routeErrors": [],
+      "beforeExplicitRedraw": 0,
+      "observation": {
+        "additionalSurfaceClips": 0,
+        "totalSurfaceClips": 0,
+        "colors": 878,
+        "drawState": {
+          "specimen": "perch",
+          "condition": "dehydrated",
+          "sceneDetail": true,
+          "visualRealism": "realistic"
+        }
+      },
+      "expectedFailureReproduced": true
+    },
+    {
+      "variant": "staged-before",
+      "specimen": "crayfish",
+      "traceName": "traceCrayfishCarapace",
+      "ok": true,
+      "pageErrors": [],
+      "renderErrors": [
+        "[DissectionLab] render error: ReferenceError: traceCrayfishCarapace is not defined\n    at clipSpecimenSurface (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13797:57)\n    at drawDissectionFrame (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13871:17)\n    at canvasRef (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:15419:13)\n    at Lf (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:165:287)\n    at Ji (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:181:339)\n    at Hi (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:179:278)\n    at Hk (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:178:329)\n    at Rk (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:197:312)\n    at xb (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:196:166)\n    at Ni (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:187:246)",
+        "[DissectionLab] render error: ReferenceError: traceCrayfishCarapace is not defined\n    at clipSpecimenSurface (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13797:57)\n    at drawDissectionFrame (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13871:17)\n    at ResizeObserver.onDissectionResize (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:7232:15)",
+        "[DissectionLab] render error: ReferenceError: traceCrayfishCarapace is not defined\n    at clipSpecimenSurface (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13797:57)\n    at drawDissectionFrame (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13871:17)\n    at canvas._drawDissectionNow (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:7131:145)\n    at eval (eval at evaluate (:302:30), <anonymous>:3:14)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+      ],
+      "externalRequests": [],
+      "routeErrors": [],
+      "beforeExplicitRedraw": 0,
+      "observation": {
+        "additionalSurfaceClips": 0,
+        "totalSurfaceClips": 0,
+        "colors": 903,
+        "drawState": {
+          "specimen": "crayfish",
+          "condition": "dehydrated",
+          "sceneDetail": true,
+          "visualRealism": "realistic"
+        }
+      },
+      "expectedFailureReproduced": true
+    },
+    {
+      "variant": "staged-before",
+      "specimen": "sheepEye",
+      "traceName": "traceSheepEyeGlobe",
+      "ok": true,
+      "pageErrors": [],
+      "renderErrors": [
+        "[DissectionLab] render error: ReferenceError: traceSheepEyeGlobe is not defined\n    at clipSpecimenSurface (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13798:52)\n    at drawDissectionFrame (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13871:17)\n    at canvasRef (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:15419:13)\n    at Lf (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:165:287)\n    at Ji (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:181:339)\n    at Hi (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:179:278)\n    at Hk (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:178:329)\n    at Rk (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:197:312)\n    at xb (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:196:166)\n    at Ni (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:187:246)",
+        "[DissectionLab] render error: ReferenceError: traceSheepEyeGlobe is not defined\n    at clipSpecimenSurface (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13798:52)\n    at drawDissectionFrame (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13871:17)\n    at ResizeObserver.onDissectionResize (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:7232:15)",
+        "[DissectionLab] render error: ReferenceError: traceSheepEyeGlobe is not defined\n    at clipSpecimenSurface (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13798:52)\n    at drawDissectionFrame (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13871:17)\n    at canvas._drawDissectionNow (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:7131:145)\n    at eval (eval at evaluate (:302:30), <anonymous>:3:14)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+      ],
+      "externalRequests": [],
+      "routeErrors": [],
+      "beforeExplicitRedraw": 0,
+      "observation": {
+        "additionalSurfaceClips": 0,
+        "totalSurfaceClips": 0,
+        "colors": 795,
+        "drawState": {
+          "specimen": "sheepEye",
+          "condition": "dehydrated",
+          "sceneDetail": true,
+          "visualRealism": "realistic"
+        }
+      },
+      "expectedFailureReproduced": true
+    },
+    {
+      "variant": "staged-before",
+      "specimen": "sheepHeart",
+      "traceName": "traceSheepHeartBody",
+      "ok": true,
+      "pageErrors": [],
+      "renderErrors": [
+        "[DissectionLab] render error: ReferenceError: traceSheepHeartBody is not defined\n    at clipSpecimenSurface (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13799:54)\n    at drawDissectionFrame (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13871:17)\n    at canvasRef (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:15419:13)\n    at Lf (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:165:287)\n    at Ji (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:181:339)\n    at Hi (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:179:278)\n    at Hk (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:178:329)\n    at Rk (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:197:312)\n    at xb (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:196:166)\n    at Ni (http://dissection-clipping.test/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js:187:246)",
+        "[DissectionLab] render error: ReferenceError: traceSheepHeartBody is not defined\n    at clipSpecimenSurface (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13799:54)\n    at drawDissectionFrame (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13871:17)\n    at ResizeObserver.onDissectionResize (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:7232:15)",
+        "[DissectionLab] render error: ReferenceError: traceSheepHeartBody is not defined\n    at clipSpecimenSurface (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13799:54)\n    at drawDissectionFrame (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:13871:17)\n    at canvas._drawDissectionNow (http://dissection-clipping.test/stem_lab/stem_tool_dissection.js:7131:145)\n    at eval (eval at evaluate (:302:30), <anonymous>:3:14)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+      ],
+      "externalRequests": [],
+      "routeErrors": [],
+      "beforeExplicitRedraw": 0,
+      "observation": {
+        "additionalSurfaceClips": 0,
+        "totalSurfaceClips": 0,
+        "colors": 937,
+        "drawState": {
+          "specimen": "sheepHeart",
+          "condition": "dehydrated",
+          "sceneDetail": true,
+          "visualRealism": "realistic"
+        }
+      },
+      "expectedFailureReproduced": true
+    },
+    {
+      "variant": "current",
+      "specimen": "frog",
+      "traceName": "traceFrogTorso",
+      "ok": true,
+      "pageErrors": [],
+      "renderErrors": [],
+      "externalRequests": [],
+      "routeErrors": [],
+      "beforeExplicitRedraw": 6,
+      "observation": {
+        "additionalSurfaceClips": 3,
+        "totalSurfaceClips": 9,
+        "colors": 1179,
+        "drawState": {
+          "specimen": "frog",
+          "condition": "dehydrated",
+          "sceneDetail": true,
+          "visualRealism": "realistic"
+        }
+      }
+    },
+    {
+      "variant": "current",
+      "specimen": "earthworm",
+      "traceName": "traceEarthwormBody",
+      "ok": true,
+      "pageErrors": [],
+      "renderErrors": [],
+      "externalRequests": [],
+      "routeErrors": [],
+      "beforeExplicitRedraw": 6,
+      "observation": {
+        "additionalSurfaceClips": 3,
+        "totalSurfaceClips": 9,
+        "colors": 687,
+        "drawState": {
+          "specimen": "earthworm",
+          "condition": "dehydrated",
+          "sceneDetail": true,
+          "visualRealism": "realistic"
+        }
+      }
+    },
+    {
+      "variant": "current",
+      "specimen": "pig",
+      "traceName": "tracePigBody",
+      "ok": true,
+      "pageErrors": [],
+      "renderErrors": [],
+      "externalRequests": [],
+      "routeErrors": [],
+      "beforeExplicitRedraw": 6,
+      "observation": {
+        "additionalSurfaceClips": 3,
+        "totalSurfaceClips": 9,
+        "colors": 844,
+        "drawState": {
+          "specimen": "pig",
+          "condition": "dehydrated",
+          "sceneDetail": true,
+          "visualRealism": "realistic"
+        }
+      }
+    },
+    {
+      "variant": "current",
+      "specimen": "perch",
+      "traceName": "tracePerchBody",
+      "ok": true,
+      "pageErrors": [],
+      "renderErrors": [],
+      "externalRequests": [],
+      "routeErrors": [],
+      "beforeExplicitRedraw": 6,
+      "observation": {
+        "additionalSurfaceClips": 3,
+        "totalSurfaceClips": 9,
+        "colors": 925,
+        "drawState": {
+          "specimen": "perch",
+          "condition": "dehydrated",
+          "sceneDetail": true,
+          "visualRealism": "realistic"
+        }
+      }
+    },
+    {
+      "variant": "current",
+      "specimen": "crayfish",
+      "traceName": "traceCrayfishCarapace",
+      "ok": true,
+      "pageErrors": [],
+      "renderErrors": [],
+      "externalRequests": [],
+      "routeErrors": [],
+      "beforeExplicitRedraw": 6,
+      "observation": {
+        "additionalSurfaceClips": 3,
+        "totalSurfaceClips": 9,
+        "colors": 1003,
+        "drawState": {
+          "specimen": "crayfish",
+          "condition": "dehydrated",
+          "sceneDetail": true,
+          "visualRealism": "realistic"
+        }
+      }
+    },
+    {
+      "variant": "current",
+      "specimen": "sheepEye",
+      "traceName": "traceSheepEyeGlobe",
+      "ok": true,
+      "pageErrors": [],
+      "renderErrors": [],
+      "externalRequests": [],
+      "routeErrors": [],
+      "beforeExplicitRedraw": 6,
+      "observation": {
+        "additionalSurfaceClips": 3,
+        "totalSurfaceClips": 9,
+        "colors": 990,
+        "drawState": {
+          "specimen": "sheepEye",
+          "condition": "dehydrated",
+          "sceneDetail": true,
+          "visualRealism": "realistic"
+        }
+      }
+    },
+    {
+      "variant": "current",
+      "specimen": "sheepHeart",
+      "traceName": "traceSheepHeartBody",
+      "ok": true,
+      "pageErrors": [],
+      "renderErrors": [],
+      "externalRequests": [],
+      "routeErrors": [],
+      "beforeExplicitRedraw": 6,
+      "observation": {
+        "additionalSurfaceClips": 3,
+        "totalSurfaceClips": 9,
+        "colors": 1115,
+        "drawState": {
+          "specimen": "sheepHeart",
+          "condition": "dehydrated",
+          "sceneDetail": true,
+          "visualRealism": "realistic"
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Both source variants are served with a strict-mode prefix to expose the lexical-scope defect; classic-script Annex B compatibility can mask the old code.",
+    "Actual Canvas2D rendering and native clipping are exercised through the existing STEM harness. The clip wrapper records stack ownership and calls the original native clip unchanged.",
+    "This narrow regression checks seven body-shape clip paths and render errors; it is not broad visual, accessibility, deployed-app or performance acceptance."
+  ],
+  "browser": "148.0.7778.96",
+  "inputsAfter": {
+    "stem_lab/stem_tool_dissection.js": "91cb6877d757768b5c9002d5119a3b875330966ae62b4f8e8b6635f86869df8a",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "91cb6877d757768b5c9002d5119a3b875330966ae62b4f8e8b6635f86869df8a",
+    "stem_lab/stem_lab_module.js": "109c99f3814d196373b0f20083a0d6eda59e2cb123a09b10110f87de0f5be3d7",
+    "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+  }
+}

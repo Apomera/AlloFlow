@@ -1,0 +1,228 @@
+{
+  "at": "2026-09-27T19:20:57.175Z",
+  "fixedValues": 80,
+  "changed": [
+    {
+      "file": "AGENT_HANDOFF.md",
+      "reason": "Git LF policy",
+      "before": "4e0ff79daf3c5b2a624990e1ee123eb880f2714146dd4545db94d7b0a05a78d7",
+      "after": "2187e32983eaba5b1e543dab8d6bae5a74a061caf22b5464a89d580f7cdadc8f"
+    },
+    {
+      "file": "desktop/web-app/public/firestore_sync_module.js",
+      "reason": "Git LF policy",
+      "before": "316cfb0d2c14661e94698289a2af21c32df98f841255b42e5396a9d8a5797027",
+      "after": "f71bd7eb0083026a08c5202fdaf1105547c35575dd4240c1b4fb76f54036c24f"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab.html",
+      "reason": "Git LF policy",
+      "before": "7b827da26582c918141cbf2632b0b0304af7497ddfaca8bd10491b8bd84228f4",
+      "after": "a0eeac3052b15a5929ad5bee7f052f75751224111b72f3ef3164ed571f16ebcc"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_hands.css",
+      "reason": "Git LF policy",
+      "before": "8f8bd8f8c2579f3d15431708b314383907f6933d75c720d970820bbbb3362bdf",
+      "after": "6e30f8509cf331c3cc17d0712457255cae159d769056e778a5105ef3ed18530a"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_anatomy.js",
+      "reason": "Git LF policy",
+      "before": "707d6abae8e3d1e0e83d9304b233c5a95272f2f27281724c4aa3acb93664f017",
+      "after": "a38f114b566e79838b449b1b53455092b793489addfd3e76b2cfa1fef7392ee1"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "reason": "Git LF policy",
+      "before": "fcfd77742dbf92d9183ac7f1dbf9777205366e318f0f0ca1bd19dcf1ab5285ca",
+      "after": "78753c4b0e111a1b581c8292c596a16f2fa80a1e5ed2b8b85f71c9ef675ee319"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_microbiology.js",
+      "reason": "Git LF policy",
+      "before": "d8706ea7905d791039547dec2e0b67d2a6fa9328fbb150702e81133b1e10a7f5",
+      "after": "7876204ca5dfdc52d96cb8d40e060327190f85ceedfda94df7de2a963a58bf71"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/water_worlds_kernel.js",
+      "reason": "Git LF policy",
+      "before": "932eec8669b1db2aef7dd63a5f4fc5f1b6d960155bec536c3b679d628e614187",
+      "after": "dd43663a803d97f6debfe24976a442f212bf6890c6bbe2ac35a9f8e741cf885f"
+    },
+    {
+      "file": "dev-tools/kitchen_recipe_scale_qa.cjs",
+      "reason": "Git LF policy",
+      "before": "dd31c81f77f595f3e3822b07aec3233ba64b4fbd4d56265d48872d5c9081e890",
+      "after": "451327c338dcc8274e5a69027991fafb7b430c27ab295abbf4e3e47f67a38219"
+    },
+    {
+      "file": "firestore_sync_module.js",
+      "reason": "Git LF policy",
+      "before": "316cfb0d2c14661e94698289a2af21c32df98f841255b42e5396a9d8a5797027",
+      "after": "f71bd7eb0083026a08c5202fdaf1105547c35575dd4240c1b4fb76f54036c24f"
+    },
+    {
+      "file": "live_aac_source.jsx",
+      "reason": "Git LF policy",
+      "before": "8ecc546e656916793ac1b9cc04ea2c54e21c77860bf94373a9e4fd3c7fedca01",
+      "after": "6d84fe492415baa399814654d904eff83f0e43e1a000e39e0c2f9bec58375e63"
+    },
+    {
+      "file": "reports/connected-delivery-track13/README.md",
+      "reason": "Git LF policy",
+      "before": "d74acd50b47b30b80dc93ee9ef7f4aa585e9202f9e1d5512598269f864678cff",
+      "after": "e5abbd0cfb2b1518f6a5cfdb14458874d22b73ef80461491c7f9804fbfab601e"
+    },
+    {
+      "file": "reports/releases/collective-2026-09-27/duplicate-cleanup.json",
+      "reason": "Git LF policy",
+      "before": "bc00a30594cfd540d5ceae5719403e736e67ee6c1d3612e03f878c25ad7000a7",
+      "after": "384bb63eef5e91d378a3c3b617ca34652e96cdc86b4055b50876c22d90f39bdf"
+    },
+    {
+      "file": "stem_lab/kitchen_studio/recipe_lab.html",
+      "reason": "Git LF policy",
+      "before": "7b827da26582c918141cbf2632b0b0304af7497ddfaca8bd10491b8bd84228f4",
+      "after": "a0eeac3052b15a5929ad5bee7f052f75751224111b72f3ef3164ed571f16ebcc"
+    },
+    {
+      "file": "stem_lab/kitchen_studio/recipe_lab_hands.css",
+      "reason": "Git LF policy",
+      "before": "8f8bd8f8c2579f3d15431708b314383907f6933d75c720d970820bbbb3362bdf",
+      "after": "6e30f8509cf331c3cc17d0712457255cae159d769056e778a5105ef3ed18530a"
+    },
+    {
+      "file": "stem_lab/stem_tool_anatomy.js",
+      "reason": "Git LF policy",
+      "before": "707d6abae8e3d1e0e83d9304b233c5a95272f2f27281724c4aa3acb93664f017",
+      "after": "a38f114b566e79838b449b1b53455092b793489addfd3e76b2cfa1fef7392ee1"
+    },
+    {
+      "file": "stem_lab/stem_tool_dissection.js",
+      "reason": "Git LF policy",
+      "before": "fcfd77742dbf92d9183ac7f1dbf9777205366e318f0f0ca1bd19dcf1ab5285ca",
+      "after": "78753c4b0e111a1b581c8292c596a16f2fa80a1e5ed2b8b85f71c9ef675ee319"
+    },
+    {
+      "file": "stem_lab/stem_tool_microbiology.js",
+      "reason": "Git LF policy",
+      "before": "d8706ea7905d791039547dec2e0b67d2a6fa9328fbb150702e81133b1e10a7f5",
+      "after": "7876204ca5dfdc52d96cb8d40e060327190f85ceedfda94df7de2a963a58bf71"
+    },
+    {
+      "file": "stem_lab/water_worlds_kernel.js",
+      "reason": "Git LF policy",
+      "before": "932eec8669b1db2aef7dd63a5f4fc5f1b6d960155bec536c3b679d628e614187",
+      "after": "dd43663a803d97f6debfe24976a442f212bf6890c6bbe2ac35a9f8e741cf885f"
+    },
+    {
+      "file": "tests/anatomy_search_render_controls.test.js",
+      "reason": "Git LF policy",
+      "before": "391fc93fe9e9d9158e0adf94d8aa039a93fb9d97db95ed4b5ef5f47aba8b06c2",
+      "after": "560da1d0bfaeb8f8b946aae97fb5b515c5f503432c3fde70d7d595bdac4af3a2"
+    },
+    {
+      "file": "tests/astronomy_constellation_skymap_visual.test.js",
+      "reason": "Git LF policy",
+      "before": "201426b0cf90f61177ed71a9a555c161cb547ea13010b975fdc4dab9a12af5ae",
+      "after": "82c199134a9e91b9177d7fbf432c1b5930339e4eca6877c337168f20c1a47e2b"
+    },
+    {
+      "file": "tests/circuit_passive_time.test.js",
+      "reason": "Git LF policy",
+      "before": "c721bb513c44b50ad08d05bc5d14028107eb3d0cddfc34657e5103a1b4278d46",
+      "after": "1f8036cc3413b7856da76ea586d8f601029b32feb0d65a358e423759619fd342"
+    },
+    {
+      "file": "tests/dissection_workspace_bands.test.js",
+      "reason": "Git LF policy",
+      "before": "b96df637da389960e3dca9e474013d6fceeef3240aee1c316d34daca926ef57e",
+      "after": "101667437476100a8ddaefde91d3a6e1171849805e2354880a4653a913b8a76a"
+    },
+    {
+      "file": "tests/e2e/anatomy-explorer-visual.spec.ts",
+      "reason": "Git LF policy",
+      "before": "2abf603028b891d15c329e84d74ec5a392048e053fcc083d1c72955c8f405ac0",
+      "after": "06f5cf7c0805bd8eab825e3cd7be0a1e31872b106c4611a5cf7d58658c97f760"
+    },
+    {
+      "file": "tests/e2e/dissection-observation-review.spec.ts",
+      "reason": "Git LF policy",
+      "before": "e056e793a3806f3dd84ff7ab3c34181e353d6e7ef92673c0763c9d554e805fc1",
+      "after": "361393c5d3e6c31915b120c539738914c8274447670f3025dca179c880590c8e"
+    },
+    {
+      "file": "tests/firstresponse_body_3d.test.js",
+      "reason": "Git LF policy",
+      "before": "88ef74927564be0e0e8561decc5b22224061a5dd6d10f0d1132c1b7bd2052641",
+      "after": "960718aceca43bc365cee4f8491de570a91079cfc0cd6078127c397c45d7d70d"
+    },
+    {
+      "file": "tests/helpers/dino_lab_harness.js",
+      "reason": "Git LF policy",
+      "before": "2b2648974f56f920910435f62aee1cf21149b330d875e8bc43f0e58fe2c274c7",
+      "after": "6547255238cdcdb186b51495ff3455333da3b789d622558fbdada3ab46394a86"
+    },
+    {
+      "file": "tests/microbiology_microscope.test.js",
+      "reason": "Git LF policy",
+      "before": "2b8ba9f8714104d3fdf9d11d934d377814cc9a84c664cef7af043b871f990c5b",
+      "after": "dc935d9ed86d12030f27a2964051de516849fd3dd521354dd306e36e48b09183"
+    },
+    {
+      "file": "tests/read_aloud_artifact_audio.test.js",
+      "reason": "Git LF policy",
+      "before": "1c9200a884b14fda3b0438d884381b7ec750da89e26f0e0a55797f5d91ad4932",
+      "after": "5a4aff17a1643b3fbdf158315d0dd9de12433521be51df9e36c53d282f65822d"
+    },
+    {
+      "file": "tests/stem_raptor_body_contours.test.js",
+      "reason": "Git LF policy",
+      "before": "259af9d74218381ad8be1d5c075206d3408432551b32e5a1c9a149bcf08dd1bc",
+      "after": "6ccdad97c42e5f5ac492f4af1df5c21b5c1194f3e7d9d0b2b6bce36f36ad1107"
+    },
+    {
+      "file": "tests/water_worlds_observations.test.js",
+      "reason": "Git LF policy",
+      "before": "f5c25d19b64f1905bd019e975e52e072e23a663a0d8cbe91b0d4d6b1d4a13196",
+      "after": "8c8195b691f874c74f151352de22a27dc5d475d785db18dfc51abff6e4f946fb"
+    },
+    {
+      "file": "ui_strings.js",
+      "reason": "Repair 80 literal escape values",
+      "before": "08ce75fcc5188da0add9551cb01b79954721190242809638405008bea4b62df6",
+      "after": "3b237ed39ab377d095176321abb1c49d16ffc822d785e5302f93682e8ba347b9"
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "reason": "Canonical catalog mirror",
+      "before": "08ce75fcc5188da0add9551cb01b79954721190242809638405008bea4b62df6",
+      "after": "3b237ed39ab377d095176321abb1c49d16ffc822d785e5302f93682e8ba347b9"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab_module.js",
+      "reason": "Restore canonical circuit snapshot bridge",
+      "before": "615824e91db5809e8530cc2502585d3a64bab5e6d646b4de12b33c6e165cbc1d",
+      "after": "109c99f3814d196373b0f20083a0d6eda59e2cb123a09b10110f87de0f5be3d7"
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "reason": "Refresh normalized content pins",
+      "before": "9f15b1048154675e88ad304ccd448b16abfda3a3539dd2fe9441a03f256889bd",
+      "after": "1b1c4ee421d7277e0fec63007383ed860a7674ec0f95d1656d935eb1cfdc3d56"
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "reason": "Refresh normalized content pins",
+      "before": "9f15b1048154675e88ad304ccd448b16abfda3a3539dd2fe9441a03f256889bd",
+      "after": "1b1c4ee421d7277e0fec63007383ed860a7674ec0f95d1656d935eb1cfdc3d56"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "reason": "Refresh normalized content pins",
+      "before": "9f15b1048154675e88ad304ccd448b16abfda3a3539dd2fe9441a03f256889bd",
+      "after": "1b1c4ee421d7277e0fec63007383ed860a7674ec0f95d1656d935eb1cfdc3d56"
+    }
+  ]
+}

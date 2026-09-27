@@ -1,0 +1,36 @@
+{
+  "unit": {
+    "passed": 127,
+    "files": 5,
+    "focused": 64,
+    "generatedReader": 63
+  },
+  "chromium": {
+    "interactionGroups": 16,
+    "previewChecks": 8,
+    "listLayoutCases": 6,
+    "cardStressCases": 10
+  },
+  "webkit": {
+    "interactionGroups": 16,
+    "previewChecks": 8,
+    "listLayoutCases": 6,
+    "cardStressCases": 10,
+    "nativeCreditLinkTraversal": "unverified; plain HTML control also skips native links"
+  },
+  "before": {
+    "geometryCasesPassed": 2,
+    "geometryCasesFailed": 4,
+    "highZoomFirstLineVisible": false,
+    "cardHeight": 104.5
+  },
+  "after": {
+    "highZoomFirstLineVisible": true,
+    "cardHeight": 209
+  },
+  "readerSourceSha256": "242d3a4ff4a7f30adb95551ac3573524b5b50c1075f667345f25f19b80af97b7",
+  "generatedReaderSha256": "fffab47ef3409646b10b18003ebfb0818b6a1474599e9186f30b8ece2751335d",
+  "sharedRuntimeChanged": false,
+  "integrated": false,
+  "deployed": false
+}

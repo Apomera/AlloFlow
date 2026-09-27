@@ -1,0 +1,34 @@
+{
+  "inspectedAt": "2026-09-26T22:14:48.384Z",
+  "head": "fd4044c862ed9b345b340d69cb1411a19c09dafb",
+  "files": {
+    "content_engine_source.jsx": {
+      "testedSourceSha256": "2b0f6c548230a0afc7736a7904f506bdeaf48edbf607ecf4c0ddf173412997a3",
+      "currentSourceSha256": "2b0f6c548230a0afc7736a7904f506bdeaf48edbf607ecf4c0ddf173412997a3",
+      "currentMatchesTestedSource": true,
+      "patchAppliesToCurrentSource": true
+    },
+    "dictionary_loader.js": {
+      "testedSourceSha256": "a7cd103d5fac9dcee6b673fb6638835df3c802f2973262b059f591a902343d22",
+      "currentSourceSha256": "a7cd103d5fac9dcee6b673fb6638835df3c802f2973262b059f591a902343d22",
+      "currentMatchesTestedSource": true,
+      "patchAppliesToCurrentSource": true
+    },
+    "view_simplified_source.jsx": {
+      "testedSourceSha256": "81698f13afb1646174693fb63dc7f6921b694dfd6bb433737cc0474938b0f296",
+      "currentSourceSha256": "68569266435f5204bde22938ddf5f0358f61e7dd08df8163451984fa91d4e1f9",
+      "currentMatchesTestedSource": false,
+      "patchAppliesToCurrentSource": true
+    }
+  },
+  "candidates": {
+    "content_engine_module.candidate.js": "fba470716cdfc53da3e29150b0b3ef1097b6c31dbc131bbc306d3e5700837c21",
+    "view_simplified_module.candidate.js": "1b122156ac8402d3f0a27d004573d99122b36ee039fb40a5aa8f36acc7adf1b9"
+  },
+  "tests": {
+    "passed": 199,
+    "failed": 0,
+    "success": true,
+    "files": 11
+  }
+}

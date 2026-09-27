@@ -1,0 +1,34 @@
+{
+  "browser": "148.0.7778.96",
+  "results": [
+    "original: explanation and picture survive actual host mutation, serializer, verified IndexedDB write, hydration and reload",
+    "adapted: explanation and picture survive actual host mutation, serializer, verified IndexedDB write, hydration and reload",
+    "Original and adapted pin changes survive verified storage and reload",
+    "Equal-length replacement pictures with identical alt text survive reload for both reading types",
+    "Injected quota rejection preserves previous durable bytes; a successful verified retry restores the newer pin state",
+    "original: confirmed removal and exact-occurrence suppression survive verified storage and reload",
+    "adapted: confirmed removal and exact-occurrence suppression survive verified storage and reload"
+  ],
+  "pageErrors": [],
+  "limitation": "Production host callback, resource handler, serializer, storage wrapper, verifier and hydrator are exercised in a disposable fixture. Full application autosave scheduling, cloud sync and deployed release are not exercised.",
+  "inputsBefore": {
+    "AlloFlowANTI.txt": "1b1c4ee421d7277e0fec63007383ed860a7674ec0f95d1656d935eb1cfdc3d56",
+    "view_simplified_source.jsx": "13bba84ebfcdf57277650f136e6fbfafd37f63c714539a5e9514932b55b2db82",
+    "reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+    "view_simplified_module.js": "0614d6ba7156182f664136025ac10fa42ef74ad66e2f468c8b1309499e6ed6e2",
+    "instructional_context_module.js": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2",
+    "host_handlers_module.js": "50d534862ec23a3bbd94f0716e337818d61d28ede842c58629e0953c1c526f88",
+    "utils_pure_module.js": "aa4eebe11a0fc0acf558d03212cecce6662402234d73a244e4f43933bbc4be11",
+    "firestore_sync_module.js": "f71bd7eb0083026a08c5202fdaf1105547c35575dd4240c1b4fb76f54036c24f"
+  },
+  "inputsAfter": {
+    "AlloFlowANTI.txt": "1b1c4ee421d7277e0fec63007383ed860a7674ec0f95d1656d935eb1cfdc3d56",
+    "view_simplified_source.jsx": "13bba84ebfcdf57277650f136e6fbfafd37f63c714539a5e9514932b55b2db82",
+    "reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+    "view_simplified_module.js": "0614d6ba7156182f664136025ac10fa42ef74ad66e2f468c8b1309499e6ed6e2",
+    "instructional_context_module.js": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2",
+    "host_handlers_module.js": "50d534862ec23a3bbd94f0716e337818d61d28ede842c58629e0953c1c526f88",
+    "utils_pure_module.js": "aa4eebe11a0fc0acf558d03212cecce6662402234d73a244e4f43933bbc4be11",
+    "firestore_sync_module.js": "f71bd7eb0083026a08c5202fdaf1105547c35575dd4240c1b4fb76f54036c24f"
+  }
+}

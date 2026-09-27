@@ -394,13 +394,15 @@ function _alloReadingDeliveryCapabilities(item, items, options = {}) {
     return Object.fromEntries(keys.map(key => [key, state('unknown', unresolved && options.assetStatus === 'failed' ? 'unavailable' : 'unverified', reason)]));
   }
   const snapshot = api.getSourceSnapshot(item);
-  const intact = value => value && value.syncTruncated !== true && value.readingSourceAvailability?.status !== 'unavailable' && api.isSupportedOriginal?.(value);
+  const intact = value => value && !value.__alloResourceRef && !value.__alloResourcesManifestRef && value.syncTruncated !== true && value.readingSourceAvailability?.status !== 'unavailable' && api.isSupportedOriginal?.(value);
   const original = intact(item);
   const paired = original ? item : snapshot && items.find(candidate => intact(candidate) && api.sameReadingSourceFamily(candidate, item) && candidate.data === snapshot.text);
   const profile = api.getInstructionalText(item);
   const adapted = profile.form === 'adapted';
   const hasBody = typeof item.data === 'string' && item.syncTruncated !== true;
-  const hasSource = !!snapshot && item.readingSourceAvailability?.status !== 'unavailable';
+  // A validated original in this received bundle is direct evidence, even if
+  // the adaptation still carries an older unavailable marker for its copy.
+  const hasSource = !!paired || !!snapshot && item.readingSourceAvailability?.status !== 'unavailable';
   const originalOwner = paired || item;
   const supports = hasSource && originalOwner.readingSupports ? api.validateReadingSupports(originalOwner, originalOwner.readingSupports) : null;
   const adaptedValidationUnavailable = adapted && item.adaptedReadingSupports && typeof api.validateAdaptedReadingSupports !== 'function';
@@ -460,7 +462,7 @@ function _alloReadingDeliveryCapabilities(item, items, options = {}) {
     }),
     instructionalRoles: state('included', 'ready', null, {
       reading: profile.role,
-      original: api.getSourceInstructionalText?.(item)?.role || 'unspecified',
+      original: api.getSourceInstructionalText?.(paired || item)?.role || 'unspecified',
       sourceFamilyId: api.getReadingSourceFamilyId?.(item) || null,
       unitId: item.unitId ?? null
     }),
@@ -504,7 +506,7 @@ function _alloDescribeAssignmentDelivery(resources, currentResourceId, selectedR
     invalidReadingBodies.add(unreadable);
     return unreadable;
   });
-  const intact = item => !!api && typeof api.isSupportedOriginal === 'function' && item.syncTruncated !== true && item.readingSourceAvailability?.status !== 'unavailable' && api.isSupportedOriginal(item);
+  const intact = item => !!api && typeof api.isSupportedOriginal === 'function' && !item.__alloResourceRef && !item.__alloResourcesManifestRef && item.syncTruncated !== true && item.readingSourceAvailability?.status !== 'unavailable' && api.isSupportedOriginal(item);
   const readings = readableItems.filter(item => item.type === 'simplified').map(item => {
     const unresolvedBody = !!(item.__alloResourceRef || item.__alloResourcesManifestRef);
     const bodyIssue = invalidReadingBodies.has(item) ? 'invalid-text-envelope' : null;

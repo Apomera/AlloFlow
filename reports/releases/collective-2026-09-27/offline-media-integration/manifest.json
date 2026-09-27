@@ -1,0 +1,71 @@
+{
+  "head": "1a5067ab673408d8bf33fc6998ab843696043859",
+  "createdAt": "2026-09-27T18:58:25.620Z",
+  "scope": "Candidate report files only; runtime sources and Git unmodified.",
+  "outcomes": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "status": "prepared",
+      "preimageSha256": "59d730d3a05c2afd20af23464b62ccd2f5bf326853c412c763e8ae76056f620f",
+      "normalizedPreimageSha256": "59d730d3a05c2afd20af23464b62ccd2f5bf326853c412c763e8ae76056f620f",
+      "candidateSha256": "b2adc280a1555fc3b2c09a9650190eb3a6c6fa3371a940f18e68e5d7c80f3185",
+      "originalIncrement": "8b26a875a..8bc25aeb"
+    },
+    {
+      "file": "read_aloud_artifact_audio_source.jsx",
+      "status": "prepared",
+      "preimageSha256": "d7bb1b09fc1287978ad21367e110ae9742fc0922c657e503f3400216fc4ab8af",
+      "normalizedPreimageSha256": "d7bb1b09fc1287978ad21367e110ae9742fc0922c657e503f3400216fc4ab8af",
+      "candidateSha256": "999355fb1f136c6ef71afd3097cd931a46258304f9a545c91a29253b1cad3008",
+      "originalIncrement": "8b26a875a..8bc25aeb"
+    },
+    {
+      "file": "export_source.jsx",
+      "status": "prepared",
+      "preimageSha256": "d10603e1b2068af2c264d31878ccf3410edebcda8dceb9b4d1d413fc2d2d17a8",
+      "normalizedPreimageSha256": "d10603e1b2068af2c264d31878ccf3410edebcda8dceb9b4d1d413fc2d2d17a8",
+      "candidateSha256": "3e2ca37ac8e030544632dff0b732842c36507b53abf727ae99b3cdca0f9c9482",
+      "originalIncrement": "8b26a875a..8bc25aeb"
+    },
+    {
+      "file": "tests/adventure_storybook_read_aloud_export.test.js",
+      "status": "prepared",
+      "preimageSha256": "e7bc1226d7a5f492bbd58a68a06be20761b0d5e68abe8960bc0bbc41947bf274",
+      "normalizedPreimageSha256": "e7bc1226d7a5f492bbd58a68a06be20761b0d5e68abe8960bc0bbc41947bf274",
+      "candidateSha256": "ad4f3730c23f26ade7a79398b74a06dcc27e2fe92850792c9a0bd6d16d068c02",
+      "originalIncrement": "8b26a875a..8bc25aeb"
+    },
+    {
+      "file": "tests/read_aloud_artifact_audio.test.js",
+      "status": "prepared",
+      "preimageSha256": "f485f4a6034e4a51aab502a7c3b9504513a1bf9ab7f18b0d440e2c911bc2b3cb",
+      "normalizedPreimageSha256": "5ae66693efd5f54cd88a3c7133a8d3ddfc7203f1c010d7a128c24675a689ecc8",
+      "candidateSha256": "5a4aff17a1643b3fbdf158315d0dd9de12433521be51df9e36c53d282f65822d",
+      "originalIncrement": "8b26a875a..8bc25aeb"
+    },
+    {
+      "file": "tests/read_aloud_artifact_host_integration.test.js",
+      "status": "prepared",
+      "preimageSha256": "d9a8bfd097d24a3b2045992642326a667921ba6769d5a41d47c8a449a0a34af4",
+      "normalizedPreimageSha256": "d9a8bfd097d24a3b2045992642326a667921ba6769d5a41d47c8a449a0a34af4",
+      "candidateSha256": "87679430dd40214c0e751e502f24842c9530d9c5a97625cd1c462066c24784b6",
+      "originalIncrement": "8b26a875a..8bc25aeb"
+    },
+    {
+      "file": "dev-tools/check_offline_storybook_recovery.cjs",
+      "status": "prepared",
+      "preimageSha256": "b8b0a116df53063c28466f81a542b9740cd653371a782caff2fcaaf9cf52be15",
+      "normalizedPreimageSha256": "b8b0a116df53063c28466f81a542b9740cd653371a782caff2fcaaf9cf52be15",
+      "candidateSha256": "34a131ac7233a02b0619642acc5af74d9bfe911ed789bb1266f5e7f6011f5df6",
+      "originalIncrement": "8b26a875a..8bc25aeb"
+    }
+  ],
+  "translation": {
+    "newKey": "export.storybook.pictures_recovery_detail",
+    "englishFallback": "{omitted} omitted; {external} require their original source. Keep this export and retry when the missing pictures are available.",
+    "existingKeyPreserved": "export.storybook.pictures_not_embedded",
+    "catalogsChanged": false
+  },
+  "validation": "No tests or builds run; exact patch application verified in memory only.",
+  "packagingCorrection": "Initial report candidate used a string replacement that expanded literal $& inside the new test into its anchor. The root integrator corrected the two literals in production tests; this report candidate and patch were then corrected without touching production. All seven final candidates pass static syntax parsing; no tests run by this audit."
+}

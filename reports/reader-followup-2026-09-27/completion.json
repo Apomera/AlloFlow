@@ -1,0 +1,96 @@
+{
+  "at": "2026-09-27T03:48:35.383Z",
+  "head": "3620ec1fee7589d4b81e0223a7fa572460a03e88",
+  "initialHead": "452e7cd230b62f4e192f055826817653d5b997f4",
+  "files": {
+    "reader_place_store.js": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9",
+    "reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+    "view_simplified_source.jsx": "dd5f57089b3e9beb79922c8afbd494f7bca56b33607094abcebfa55edaa29a31",
+    "view_simplified_module.js": "bb06f8ddaf2c86fba6bb6be58ccee888c24ecda4714ff6de61a12dfb2ee8c412",
+    "desktop/web-app/public/view_simplified_module.js": "bb06f8ddaf2c86fba6bb6be58ccee888c24ecda4714ff6de61a12dfb2ee8c412",
+    "AlloFlowANTI.txt": "2630d0976a3f6b784a3545e6ac37a8ed8966eccd45a59d3acdae94475d3a900e",
+    "desktop/web-app/src/AlloFlowANTI.txt": "2630d0976a3f6b784a3545e6ac37a8ed8966eccd45a59d3acdae94475d3a900e",
+    "desktop/web-app/src/App.jsx": "2630d0976a3f6b784a3545e6ac37a8ed8966eccd45a59d3acdae94475d3a900e",
+    "ui_strings.js": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2",
+    "desktop/web-app/public/ui_strings.js": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2",
+    "translations/reader-followup-locales.json": "3777036f53ff0bdca05602d5457900fd3069a03bb3e353e42c229fbcce7d3825",
+    "dev-tools/i18n/apply_reader_contract_locales.cjs": "3645cd6b97c836ca42979b3fe9b6f0319ee577673866e66c92c73adac054f57e",
+    "lang/spanish_latin_america.js": "4649a67dec9ad6e9f2b45c9d15d9139a3daf84b13bf8ba59089097262fb06379",
+    "desktop/web-app/public/lang/spanish_latin_america.js": "4649a67dec9ad6e9f2b45c9d15d9139a3daf84b13bf8ba59089097262fb06379",
+    "lang/spanish_castilian.js": "dc9f44627a5f9bd50fec8d439b0b1b9df1bb5715ca61ab6cc76d7929bf6da996",
+    "desktop/web-app/public/lang/spanish_castilian.js": "dc9f44627a5f9bd50fec8d439b0b1b9df1bb5715ca61ab6cc76d7929bf6da996",
+    "lang/arabic.js": "72d7b5cdd5718e46d564a276aa6b3003509a5cbae936f360a857c4c052c54436",
+    "desktop/web-app/public/lang/arabic.js": "72d7b5cdd5718e46d564a276aa6b3003509a5cbae936f360a857c4c052c54436",
+    "lang/chinese_simplified.js": "cdaa1a7436e530b0b6e007f4926c557491564982f995e7bfac6ecbfff733c58b",
+    "desktop/web-app/public/lang/chinese_simplified.js": "cdaa1a7436e530b0b6e007f4926c557491564982f995e7bfac6ecbfff733c58b",
+    "lang/thai.js": "7e46e871a3e0e2f14a7da85c5f53ee2ec4a5d8482af6f378f23d215c92b8f35d",
+    "desktop/web-app/public/lang/thai.js": "7e46e871a3e0e2f14a7da85c5f53ee2ec4a5d8482af6f378f23d215c92b8f35d",
+    "tests/reader_place_retention.test.js": "c528caf3c935aaa8d00b4779cd48ae3eefeea2246c73b14d714dd3f4a06f0cbe",
+    "tests/reader_followup_locales.test.js": "b34b39395e6983d80d1d8eed9a88afd7cd975865bde67cc81f330ce7d034bbaa",
+    "tests/reading_support_draft_transitions.test.js": "cf22f253d3b7d6fca598c45ab6c9e6d8e267d8dd10e257236e5140273acdd5b3",
+    "dev-tools/reader-performance/run.cjs": "2da88eb51a93eda7012e888c5f39bd3524be3ed746a3653062a41d0ab600cc29",
+    "_build_view_simplified_module.js": "6ce1d000f200ef5d446c330dd35d1b3a9adb240030ec114179fd5f016f00a21f"
+  },
+  "localeDrift": [],
+  "locales": {
+    "batches": [
+      "contract",
+      "recovery",
+      "terms",
+      "followup"
+    ],
+    "keys": 187,
+    "locales": 5,
+    "changedFiles": 0,
+    "mode": "check"
+  },
+  "readerPin": "bb06f8dd",
+  "tests": {
+    "locale-final-tests.json": {
+      "passed": 16,
+      "failed": 0,
+      "files": 1
+    },
+    "generated-reader-final-tests.json": {
+      "passed": 120,
+      "failed": 0,
+      "files": 4
+    },
+    "partial-save-final-tests.json": {
+      "passed": 80,
+      "failed": 0,
+      "files": 3
+    }
+  },
+  "browser": {
+    "recovery": 9,
+    "partialSave": 14,
+    "pageErrors": []
+  },
+  "performanceSource": "d953f735f98b5904d52203d0b028bf2a1968e6213df0be37b41e30baebb29b22",
+  "performanceNote": "Measured before the separate partial-save patch. Retention helper bytes are unchanged; no timing claim for the new editor code.",
+  "outsidePairs": [
+    {
+      "file": "own_sources_module.js",
+      "root": "1c5dc26a858ecf69f0e44dc28e0198d770816a27d44c9fa6ddcecc21b06db96a",
+      "public": "1c5dc26a858ecf69f0e44dc28e0198d770816a27d44c9fa6ddcecc21b06db96a"
+    },
+    {
+      "file": "stem_lab/stem_tool_cephalopodlab.js",
+      "root": "302dd73b770cbfce108249b46722ed6334146bf2f6abfc7453e3c729d6e82e5c",
+      "public": "302dd73b770cbfce108249b46722ed6334146bf2f6abfc7453e3c729d6e82e5c"
+    },
+    {
+      "file": "stem_lab/stem_tool_raptorhunt.js",
+      "root": "81ec26f74020e63d9b4068705f2de2e1f3ba983fb0c519410b2a8402c85dfd03",
+      "public": "81ec26f74020e63d9b4068705f2de2e1f3ba983fb0c519410b2a8402c85dfd03"
+    }
+  ],
+  "fullMirror": {
+    "Files checked": 8227,
+    "Matched": 8227,
+    "Drifted": 0,
+    "Excluded": 4
+  },
+  "globalMirrorNote": "The initial three concurrent owner mismatches resolved. The final full scan passed 8227 pairs with four documented exclusions; no deployment claim."
+}

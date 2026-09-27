@@ -223,3 +223,26 @@ describe('image receipt revision identity', () => {
     expect(api.mailboxResourceImages({...resource(png(100)),mailboxImageReport:{omitted:1}}).revision).not.toBe(a.revision);
   });
 });
+
+
+describe('delivered scene image evidence',()=>{
+  const adventure=image=>({id:'story',type:'adventure',data:{scene:'A forest clearing',sceneImage:image}});
+  it('checks scene art that survives real mailbox preparation and reports a failed decode',async()=>{
+    const original=adventure(png(100)),prepared=await api.prepareMailboxResource(original,win);
+    expect(prepared.resource.data.sceneImage).toBe(png(100));
+    const manifest=api.mailboxResourceImages(prepared.resource),loadImage=vi.fn(async()=>false);
+    expect(manifest.sources).toEqual([png(100)]);
+    expect(await api.checkMailboxImages(manifest,{loadImage})).toMatchObject({status:'failed',ready:0,total:1});
+    expect(loadImage).toHaveBeenCalledOnce();
+  });
+  it('invalidates an old ready receipt when only the delivered scene artwork changes',()=>{
+    const before=api.mailboxResourceImages(adventure(png(100))),after=api.mailboxResourceImages(adventure(png(200)));
+    expect(after.revision).not.toBe(before.revision);
+    const receipt={version:1,resourceId:api.mailboxImageReceiptId('story',before.revision),status:'ready',loaded:1,total:1,omitted:0,assignmentAt:100,at:200};
+    expect(api.mailboxImageReceiptState({entry:{imageDelivery:receipt},resourceId:'story',resourceAt:100,mediaRevision:after.revision}).status).toBe('waiting');
+  });
+  it('does not inspect scene art nested in private recording or backup containers',()=>{
+    const manifest=api.mailboxResourceImages({...adventure(null),karaokeStudentAudio:{sceneImage:png(100)},originalImage:{sceneImage:png(200)}});
+    expect(manifest.sources).toEqual([]);
+  });
+});

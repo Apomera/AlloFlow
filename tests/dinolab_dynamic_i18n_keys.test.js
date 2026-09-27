@@ -36,6 +36,13 @@ function bodyParts() {
 
 function expectedKeys() {
   const need = new Set();
+  for (const match of SRC.matchAll(/\bat\('([^']+)',/g)) need.add('stem.dinolab.atlas_' + match[1]);
+  const atlas = SRC.slice(SRC.indexOf('var ANATOMY = ['), SRC.indexOf('// Evidence workbench:'));
+  for (const match of atlas.matchAll(/\{ id: '([^']+)'/g)) for (const field of ['name', 'tag', 'what', 'tells', 'limit', 'question', 'diagram', 'source']) need.add('stem.dinolab.atlas_' + match[1] + '_' + field);
+  for (const match of SRC.matchAll(/\b(?:bt|et)\('([^']+)',/g)) need.add('stem.dinolab.bench_' + match[1]);
+  for (const match of SRC.matchAll(/\bdt\('([^']+)',/g)) need.add('stem.dinolab.dig_' + match[1]);
+  for (const match of SRC.matchAll(/\bclueLabel\('([^']+)',/g)) need.add('stem.dinolab.dig_clue_' + match[1]);
+  for (const key of ['nav_discover', 'nav_investigate', 'nav_explain', 'nav_practice']) need.add('stem.dinolab.' + key);
   for (const p of bodyParts()) {
     need.add('stem.dinolab.body_part_' + p.id);
     // The suffix comes from skeletalProfile.weightBearingForelimbs, which is a

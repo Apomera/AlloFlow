@@ -1,0 +1,20 @@
+{
+  "baseline": "3752fe48d98ee8096e456d766427f3f513a11b25",
+  "files": [
+    {
+      "file": "live_aac_source.jsx",
+      "sha256": "3bb95f6372fdf24d9d6ac52a9acd4d84a06af51d85a9fdd147383e1b72e9b140"
+    },
+    {
+      "file": "view_live_session_dock_source.jsx",
+      "sha256": "77f00a410ffa13f90e7292de0d08d8501fd2bf1e91c8f1c5060c72a9e588043d"
+    }
+  ],
+  "reproduced": {
+    "dockFailed": 2,
+    "dockPassed": 1,
+    "sceneSuiteFailed": 2,
+    "sceneSuitePassed": 29
+  },
+  "initialRunnerWorkerStartTimeout": true
+}

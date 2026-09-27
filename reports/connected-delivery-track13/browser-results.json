@@ -1,0 +1,78 @@
+{
+  "scope": "Isolated fixture origin; real codecs/modules/Chromium. No live backend or deployed app.",
+  "results": [
+    {
+      "case": "first-open",
+      "passed": true
+    },
+    {
+      "case": "refresh",
+      "passed": true
+    },
+    {
+      "case": "offline-reopen",
+      "passed": true
+    },
+    {
+      "case": "received-original-arrival-role-and-removal",
+      "passed": true
+    },
+    {
+      "case": "mailbox-resource-cold-recipient",
+      "passed": true
+    },
+    {
+      "case": "saved-assignment-hydration",
+      "passed": true
+    },
+    {
+      "case": "saved-assignment-offline-failure",
+      "passed": true
+    },
+    {
+      "case": "damaged-received-reshare",
+      "passed": true
+    },
+    {
+      "case": "damaged-refresh",
+      "passed": true
+    },
+    {
+      "case": "damaged-offline-reopen",
+      "passed": true
+    },
+    {
+      "case": "damaged-saved-asset-hydration",
+      "passed": true
+    },
+    {
+      "case": "fresh-live-store-chromium-decode-and-play",
+      "passed": true
+    },
+    {
+      "case": "scene-image-decode-success",
+      "passed": true
+    },
+    {
+      "case": "changed-scene-image-decode-failure",
+      "passed": true
+    },
+    {
+      "case": "narrow-spanish_latin_america",
+      "passed": true
+    },
+    {
+      "case": "narrow-arabic",
+      "passed": true
+    },
+    {
+      "case": "narrow-chinese_simplified",
+      "passed": true
+    },
+    {
+      "case": "narrow-thai",
+      "passed": true
+    }
+  ],
+  "errors": []
+}

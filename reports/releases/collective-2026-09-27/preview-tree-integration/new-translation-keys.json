@@ -1,0 +1,18 @@
+{
+  "stem.treelab.field_specimen_ready": "Model-grown starting tree ready. Age: ",
+  "stem.treelab.field_seasons": "Explore the seasons",
+  "stem.treelab.field_season_note": "Season selection does not advance the clock.",
+  "stem.treelab.field_play": "What will you change next?",
+  "stem.treelab.field_play_note": "Change one condition. Watch the response, then grow another ring.",
+  "stem.treelab.field_scheduled_drought": "A scheduled drought is overriding soil water. End it in Field tools to use your water setting.",
+  "stem.treelab.field_read_rings": "Read the rings",
+  "stem.treelab.field_view_controls": "View & anatomy controls",
+  "stem.treelab.field_specimen_choice": "Want a bigger tree to investigate?",
+  "stem.treelab.field_specimen_note": "Start with a 40-year tree grown by this model in usual conditions. This starts a fresh investigation; its earlier rings are a simulated history.",
+  "stem.treelab.field_specimen_start": "Use a 40-year starting tree",
+  "stem.treelab.field_next": "Follow your curiosity",
+  "stem.treelab.field_grove": "Care for a whole grove",
+  "stem.treelab.field_invitation": "Your investigation: what happens when rain stops?",
+  "stem.treelab.field_tools": "Field tools",
+  "stem.treelab.field_tools_hint": "Clock, conditions, carbon budget and tree memory"
+}

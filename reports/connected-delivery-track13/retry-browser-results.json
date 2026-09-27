@@ -1,0 +1,38 @@
+{
+  "scope": "Isolated intercepted origin; generated LiveAac and LiveSessionDockView; no live backend or saved app state.",
+  "results": [
+    {
+      "case": "keyboard-retry-resource-change",
+      "passed": true
+    },
+    {
+      "case": "keyboard-retry-revision-change",
+      "passed": true
+    },
+    {
+      "case": "keyboard-retry-assignment-change",
+      "passed": true
+    },
+    {
+      "case": "keyboard-retry-session-change",
+      "passed": true
+    },
+    {
+      "case": "keyboard-retry-school-change",
+      "passed": true
+    },
+    {
+      "case": "confirmed-receipt-retires-late-retry-failure",
+      "passed": true
+    },
+    {
+      "case": "failed-resend-keyboard-retry-without-optimistic-delivery",
+      "passed": true
+    },
+    {
+      "case": "reopened-dock-ignores-retired-failure",
+      "passed": true
+    }
+  ],
+  "errors": []
+}

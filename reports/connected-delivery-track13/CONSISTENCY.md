@@ -1,5 +1,7 @@
 # Track 13 — received capability consistency
 
+> 2026-09-27 follow-up: [HYDRATION.md](HYDRATION.md) closes the module hydration/resharing gap and supplies a separately tested local-autosave host patch. Validation: 273 runtime tests, 15 isolated browser cases, 9 host-candidate tests. The new host patch is pending integration.
+
 2026-09-26. Local baseline and final observed HEAD: `6b63e76e862125e87422f02a54ed60beac68e8fb`. The checkout contains concurrent changes. This is local implementation and fixture evidence, not identification or validation of the deployed release. No applicable AGENTS.md was found in the workspace/ancestor scans.
 
 ## Result

@@ -16,6 +16,8 @@ node dev-tools/reader-performance/run.cjs --deps C:/Users/cabba/OneDrive/Desktop
 
 The runner bundles JSX in memory, uses the checked-in CSS, starts an ephemeral loopback server, opens a new browser context per case, then closes the browser and server in `finally`. JSON reports record source/CSS hashes, hardware and browser versions, and hashes of the four harness files. There is no app build or generated-module mutation in this command.
 
+`--retention` adds a fixture-only probe for the reading-place cache: entry count, total exact-text key characters, and counts of authored/recovery entries. It does not expose text or add a production API. Use it with `--case unique-navigation --instrument` to compare pristine-cache growth. Only never-saved, empty, position-free entries are disposable; authored work, saved baselines, positions, pending writes, removal markers and recovery evidence stay in page memory. The default pristine-entry limit is 20, not a limit on total session memory or bytes. Compare equal instrumentation modes and source hashes; residual heap growth is not proof of a leak or a lifetime memory bound.
+
 ## Scenarios and measurements
 
 The 14 cases cover 30/300/3,000 sentences; 0/30/200/1,000 anchored supports; a closed outline; bilingual comparison; 320px layout with large text; 50 preview cycles; 100 alternating resource/learner/text/support changes; 50 immersive open/close cycles; native Audio playback through the karaoke overlay; and reading-place scrolling. Fixture generation is deterministic and every support anchor is checked against the exact source substring. The runtime records accepted supports and canonical sentence counts.

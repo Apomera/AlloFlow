@@ -329,6 +329,18 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
   const stripUndefined = deps && deps.stripUndefined;
   if (!item || typeof item !== 'object' || !item.id || !item.type) return null;
   const referenceAudioSource = item;
+  // Hydrated or not, explicit reading text is decoded exactly once. Invalid
+  // envelopes retain their marker so packing cannot turn them into ready prose.
+  if (item.type === 'simplified' && item.dataEncoding === 'json-text/v1') {
+    try {
+      const decoded = typeof item.data === 'string' ? JSON.parse(item.data) : null;
+      if (typeof decoded === 'string') item = {
+        ...item,
+        data: decoded,
+        dataEncoding: 'text/v1'
+      };
+    } catch (_) {/* retain the invalid explicit envelope through sanitization */}
+  }
   // Student packs are an independent egress boundary. A lesson or import
   // can wrap Memory Aids several levels down, so both the shared helper and
   // this fail-closed local gate inspect the entire resource graph. Evidence
@@ -435,7 +447,7 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
   // Chunked packs retain only validated reading leaves after BOTH privacy
   // sanitizers run. All other sanitized fields, including audio, stay as-is.
   const readingContract = typeof window !== 'undefined' && window.AlloModules?.InstructionalContext;
-  const readingSnapshot = item.type === 'simplified' && typeof item.data === 'string' && readingContract?.getSourceSnapshot?.(item);
+  const readingSnapshot = item.type === 'simplified' && typeof item.data === 'string' && item.dataEncoding !== 'json-text/v1' && readingContract?.getSourceSnapshot?.(item);
   if (readingSnapshot && cleaned && typeof cleaned === 'object') {
     cleaned.data = item.data;
     cleaned.dataEncoding = 'text/v1';
@@ -788,7 +800,7 @@ const _alloMailboxResourceImages = resource => {
     if (value.type === 'simplified' && value.readingDelivery?.version === 1) {
       omittedReadingPictures += Math.max(0, Math.min(10000, Math.trunc(Number(value.readingDelivery.pictures?.omittedCount) || 0)));
     }
-    for (const key of ['image', 'imageUrl', 'visualImage']) add(value[key]);
+    for (const key of ['image', 'imageUrl', 'visualImage', 'sceneImage']) add(value[key]);
     // Reading word-support pictures are objects with a validated src leaf.
     // They need the same recipient load check as string-valued pictures.
     if (value.image && typeof value.image === 'object') add(value.image.src);
@@ -1371,25 +1383,56 @@ const _alloMailboxImageReceiptState = ({
     retry: missing > 0
   };
 };
-const MailboxImageStatus = ({
-  entry,
-  resourceId,
-  resourceAt,
-  mediaRevision,
-  now,
-  onRetry,
-  mailboxVersion
-}) => {
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-  const status = _alloMailboxImageReceiptState({
+// Retry feedback belongs to a delivery target, not to the lifetime of a roster row.
+// A keyed child also retires pending callbacks across an A -> B -> A transition.
+const MailboxImageStatus = props => {
+  const {
     entry,
     resourceId,
     resourceAt,
     mediaRevision,
-    now,
-    mailboxVersion
+    mailboxVersion,
+    sessionKey,
+    recipientId
+  } = props;
+  const status = _alloMailboxImageReceiptState(props);
+  const retryKey = JSON.stringify([sessionKey || '', recipientId || entry?.uid || '', resourceId || '', Number(resourceAt) || 0, [mediaRevision !== undefined, mediaRevision ?? null], mailboxVersion ?? 23, status.retry]);
+  return /*#__PURE__*/React.createElement(MailboxImageStatusFeedback, {
+    key: retryKey,
+    entry: entry,
+    status: status,
+    onRetry: props.onRetry
   });
+};
+const MailboxImageStatusFeedback = ({
+  entry,
+  status,
+  onRetry
+}) => {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const pendingRef = useRef(null);
+  useEffect(() => () => {
+    pendingRef.current = null;
+  }, []);
+  const retry = async () => {
+    // React state may not have rendered between two activation events.
+    if (pendingRef.current || !status.retry) return;
+    const attempt = {};
+    pendingRef.current = attempt;
+    setBusy(true);
+    setError('');
+    try {
+      await onRetry();
+    } catch (_) {
+      if (pendingRef.current === attempt) setError('Could not resend. Try again.');
+    } finally {
+      if (pendingRef.current === attempt) {
+        pendingRef.current = null;
+        setBusy(false);
+      }
+    }
+  };
   return /*#__PURE__*/React.createElement("span", {
     style: {
       display: 'inline-flex',
@@ -1403,17 +1446,7 @@ const MailboxImageStatus = ({
     type: "button",
     disabled: busy,
     "aria-label": 'Retry images for ' + (entry?.name || 'student'),
-    onClick: async () => {
-      setBusy(true);
-      setError('');
-      try {
-        await onRetry();
-      } catch (_) {
-        setError('Could not resend. Try again.');
-      } finally {
-        setBusy(false);
-      }
-    },
+    onClick: retry,
     style: {
       minHeight: 44,
       padding: '4px 8px',

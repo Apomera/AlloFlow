@@ -1,0 +1,120 @@
+{
+  "observedAt": "2026-09-27T14:59:29.480Z",
+  "baseline": "af3c6b82ab76dad40a5d44f785bf828d1adea86c",
+  "finalObservedHEAD": "af3c6b82ab76dad40a5d44f785bf828d1adea86c",
+  "runtimeTests": {
+    "files": 16,
+    "passed": 273,
+    "durationSeconds": 117.14
+  },
+  "candidateHostTests": {
+    "files": 1,
+    "passed": 9,
+    "durationSeconds": 20.63,
+    "baselineFailed": 8,
+    "baselinePassed": 1
+  },
+  "browser": {
+    "scope": "Isolated fixture origin; real codecs/modules/Chromium. No live backend or deployed app.",
+    "results": [
+      {
+        "case": "first-open",
+        "passed": true
+      },
+      {
+        "case": "refresh",
+        "passed": true
+      },
+      {
+        "case": "offline-reopen",
+        "passed": true
+      },
+      {
+        "case": "mailbox-resource-cold-recipient",
+        "passed": true
+      },
+      {
+        "case": "saved-assignment-hydration",
+        "passed": true
+      },
+      {
+        "case": "saved-assignment-offline-failure",
+        "passed": true
+      },
+      {
+        "case": "damaged-received-reshare",
+        "passed": true
+      },
+      {
+        "case": "damaged-refresh",
+        "passed": true
+      },
+      {
+        "case": "damaged-offline-reopen",
+        "passed": true
+      },
+      {
+        "case": "damaged-saved-asset-hydration",
+        "passed": true
+      },
+      {
+        "case": "fresh-live-store-chromium-decode-and-play",
+        "passed": true
+      },
+      {
+        "case": "narrow-spanish_latin_america",
+        "passed": true
+      },
+      {
+        "case": "narrow-arabic",
+        "passed": true
+      },
+      {
+        "case": "narrow-chinese_simplified",
+        "passed": true
+      },
+      {
+        "case": "narrow-thai",
+        "passed": true
+      }
+    ],
+    "errors": []
+  },
+  "hostPatchIntegrated": false,
+  "hostPatchApplies": true,
+  "deployedVerified": false,
+  "files": [
+    {
+      "file": "firestore_sync_module.js",
+      "sha256": "316cfb0d2c14661e94698289a2af21c32df98f841255b42e5396a9d8a5797027"
+    },
+    {
+      "file": "desktop/web-app/public/firestore_sync_module.js",
+      "sha256": "316cfb0d2c14661e94698289a2af21c32df98f841255b42e5396a9d8a5797027"
+    },
+    {
+      "file": "live_aac_source.jsx",
+      "sha256": "3bb95f6372fdf24d9d6ac52a9acd4d84a06af51d85a9fdd147383e1b72e9b140"
+    },
+    {
+      "file": "live_aac_module.js",
+      "sha256": "17afd53f0cca5a81895aedadd69be44c08a1f6b768c3e40d2e014b4c99f58ae2"
+    },
+    {
+      "file": "desktop/web-app/public/live_aac_module.js",
+      "sha256": "17afd53f0cca5a81895aedadd69be44c08a1f6b768c3e40d2e014b4c99f58ae2"
+    },
+    {
+      "file": "tests/connected_reading_delivery.test.js",
+      "sha256": "dc08b8afbf67ee4c62435d3a0e3b2d436680a152f0f1055558ef29723ebecd29"
+    },
+    {
+      "file": "tests/connected_delivery_offline_envelope.test.js",
+      "sha256": "f0e9dc6d05f6d6281b0770f66a4cb95f5b9b7298be3669f952eec7c60982ad07"
+    },
+    {
+      "file": "reports/connected-delivery-track13/hydration-host-integration.patch",
+      "sha256": "f27edb905bc54ddd04c6868079a161c98bf930b5853526aa97dcb28762569a02"
+    }
+  ]
+}

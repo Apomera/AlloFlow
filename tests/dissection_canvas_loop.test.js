@@ -102,7 +102,7 @@ describe('dissection canvas animation loop', () => {
       expect(source).toContain('function fillReadableSpecimenText(text, x, y)');
       expect(source).toContain('ctx.scale(1 / (specimenScale.x || 1), 1 / (specimenScale.y || 1));');
       expect(source).toContain('var guidedCallout = currentGuided && currentGuided.organId === org.id;');
-      expect(source).toContain('fillReadableSpecimenText(layout.displayLabel');
+      expect(source).toContain('fillReadableSpecimenText(line, labelTextX');
       expect(source).toContain("var screenLayerLabel = screenLayerDef.icon + ' ' + screenLayerDef.name + ' Layer';");
       expect(source).toContain('ctx.fillText(screenLayerLabel, 25, layerPillY + 18 * screenGuideScale);');
       expect(source).toContain("canvasCoarsePointer ? 'select to expand' : 'hover to expand'");
@@ -189,7 +189,7 @@ describe('dissection canvas animation loop', () => {
       expect(source).toContain("var frogBreath = (!livingFunctionEnabled || dissMotionReduced) ? 1 : breathScale;");
       expect(source).toContain("var adaptiveHotspotLayout = organs.filter(function (org) { return !d.quizMode || structureExposureState(org, currentProcedure) === 'visible'; })");
       expect(source).toContain('opticalPlaneMapActive = inspectionLens || lensPinned;');
-      expect(source).toMatch(/ctx\.save\(\);\s*ctx\.beginPath\(\); ctx\.ellipse\(materialCX, materialCY, materialRX \* 1\.08, materialRY \* 1\.08,[^\n]+\n\s*\/\/ Keep adjustable specimen lighting on anatomy/);
+      expect(source).toMatch(/ctx\.save\(\);\s*clipSpecimenSurface\(\);\s*\/\/ Keep adjustable specimen lighting on anatomy/);
       const lightingStart = source.indexOf('// Keep adjustable specimen lighting on anatomy');
       const finalGuidanceHelper = source.indexOf('function drawFinalSpecimenGuidanceOverlay()', lightingStart);
       const finalGuidanceInvocation = source.indexOf('drawFinalSpecimenGuidanceOverlay();', finalGuidanceHelper + 1);

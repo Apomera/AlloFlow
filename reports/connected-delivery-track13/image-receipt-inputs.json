@@ -1,0 +1,54 @@
+[
+  {
+    "file": "live_aac_source.jsx",
+    "sha256": "8747439e3bcfd0a7e149f4c3048d4406e89640a09fd5ad207f0cddab1e8bb575"
+  },
+  {
+    "file": "live_aac_module.js",
+    "sha256": "587c6842bfe556952ff05de35350d93c02d40d0e04d96cf188465afc0f8ffd5d"
+  },
+  {
+    "file": "view_live_session_dock_source.jsx",
+    "sha256": "cbecc2c04d826dd3a36543fee2b1db5336b2143a2818faa22d48937c8411b6ed"
+  },
+  {
+    "file": "view_live_session_dock_module.js",
+    "sha256": "2294881db72ee9152f9a574e5f9c56c7e2a7b35211e3e2b0cd5a44b6ebf0298c"
+  },
+  {
+    "file": "shared_activity_source.jsx",
+    "sha256": "8aa41fe9591d9d612524b8ad97d720f808b9d24eeb65cfbfe7617995be324b41"
+  },
+  {
+    "file": "shared_activity_module.js",
+    "sha256": "020959103955319d5530e0cdfb4cd8a0069e03931372bcb2b1f6600eedc8d2f5"
+  },
+  {
+    "file": "firestore_sync_module.js",
+    "sha256": "316cfb0d2c14661e94698289a2af21c32df98f841255b42e5396a9d8a5797027"
+  },
+  {
+    "file": "instructional_context_module.js",
+    "sha256": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2"
+  },
+  {
+    "file": "session_transport_module.js",
+    "sha256": "51e1ef84618a6f83f701493a08abcd656c4e86298d765300ae91350b2b6c065b"
+  },
+  {
+    "file": "module_scope_extras_module.js",
+    "sha256": "a3fc2aa9f8e61772e29281811ff1d9413de8700900508384c9afcacd3769157d"
+  },
+  {
+    "file": "text_pipeline_helpers_module.js",
+    "sha256": "4e7ccd0d1ab0ece3750471cdb82e29ce79906760d2012d6c2672369056de9a48"
+  },
+  {
+    "file": "karaoke_audio_store_module.js",
+    "sha256": "9b9d88b8f07e695d5a7efb7f4a148b660a5e63c48c9df5823e6d6d85845194df"
+  },
+  {
+    "file": "reports/connected-delivery-track13/browser-recipients.cjs",
+    "sha256": "0d24f9d5596da79722bc7dbfd32144311d33e1da25196769e920391e02e91422"
+  }
+]

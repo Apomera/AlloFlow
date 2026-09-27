@@ -1,0 +1,187 @@
+{
+  "source": "NASA/JPL Horizons observer ephemerides, Moon (301), DE441",
+  "retrievedAt": "2026-09-27T17:48:16.115Z",
+  "documentation": "https://ssd.jpl.nasa.gov/horizons/manual.html",
+  "notes": [
+    "Observer at sea level on Earth; east-positive longitude and geodetic latitude.",
+    "Airless apparent target-center positions: no atmospheric refraction.",
+    "Horizons includes light-time, aberration, nutation and Earth-orientation corrections beyond the educational Schlyter model.",
+    "Frozen data: tests do not require internet access."
+  ],
+  "samples": [
+    {
+      "site": "Portland, Maine",
+      "lat": 43.66,
+      "lon": -70.26,
+      "elevationKm": 0,
+      "requestUrl": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27301%27&OBJ_DATA=%27NO%27&CENTER=%27coord%40399%27&COORD_TYPE=%27GEODETIC%27&TIME_TYPE=%27UT%27&TLIST_TYPE=%27JD%27&QUANTITIES=%272%2C4%2C20%27&APPARENT=%27AIRLESS%27&ANG_FORMAT=%27DEG%27&CSV_FORMAT=%27YES%27&EXTRA_PREC=%27YES%27&RANGE_UNITS=%27KM%27&SITE_COORD=%27-70.26%2C43.66%2C0%27&TLIST=%272461310.5%27%2C%272461310.6666666665%27%2C%272461310.9791666665%27%2C%272461311.0833333335%27%2C%272461311.25%27%2C%272461311.4479166665%27",
+      "ephemeris": "Target body name: Moon (301)                      {source: DE441}",
+      "rows": [
+        {
+          "utc": "2026-09-27T00:00:00Z",
+          "raDeg": 6.452023347,
+          "decDeg": 5.358930678,
+          "azDeg": 99.487465253,
+          "altDeg": 17.460595031,
+          "distanceKm": 376325.47247
+        },
+        {
+          "utc": "2026-09-27T04:00:00Z",
+          "raDeg": 7.974945353,
+          "decDeg": 6.459955448,
+          "azDeg": 160.276042136,
+          "altDeg": 51.270852361,
+          "distanceKm": 372673.20546
+        },
+        {
+          "utc": "2026-09-27T11:30:00Z",
+          "raDeg": 10.983144137,
+          "decDeg": 8.314569878,
+          "azDeg": 281.19527516,
+          "altDeg": 0.344433724,
+          "distanceKm": 376486.08234
+        },
+        {
+          "utc": "2026-09-27T14:00:00Z",
+          "raDeg": 12.473921605,
+          "decDeg": 8.894511859,
+          "azDeg": 309.175937981,
+          "altDeg": -22.740051338,
+          "distanceKm": 378650.70222
+        },
+        {
+          "utc": "2026-09-27T18:00:00Z",
+          "raDeg": 15.225891959,
+          "decDeg": 9.870086395,
+          "azDeg": 13.423690226,
+          "altDeg": -35.533145411,
+          "distanceKm": 379358.76495
+        },
+        {
+          "utc": "2026-09-27T22:45:00Z",
+          "raDeg": 18.314439928,
+          "decDeg": 11.160527069,
+          "azDeg": 74.663503127,
+          "altDeg": 0.183931078,
+          "distanceKm": 374987.16028
+        }
+      ]
+    },
+    {
+      "site": "Sydney, Australia",
+      "lat": -33.87,
+      "lon": 151.21,
+      "elevationKm": 0,
+      "requestUrl": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27301%27&OBJ_DATA=%27NO%27&CENTER=%27coord%40399%27&COORD_TYPE=%27GEODETIC%27&TIME_TYPE=%27UT%27&TLIST_TYPE=%27JD%27&QUANTITIES=%272%2C4%2C20%27&APPARENT=%27AIRLESS%27&ANG_FORMAT=%27DEG%27&CSV_FORMAT=%27YES%27&EXTRA_PREC=%27YES%27&RANGE_UNITS=%27KM%27&SITE_COORD=%27151.21%2C-33.87%2C0%27&TLIST=%272461055.5%27%2C%272461055.6666666665%27%2C%272461055.8333333335%27%2C%272461056%27%2C%272461056.1666666665%27%2C%272461056.3333333335%27",
+      "ephemeris": "Target body name: Moon (301)                      {source: DE441}",
+      "rows": [
+        {
+          "utc": "2026-01-15T00:00:00Z",
+          "raDeg": 249.60947889,
+          "decDeg": -27.200719931,
+          "azDeg": 291.470161154,
+          "altDeg": 74.666631991,
+          "distanceKm": 398578.44306
+        },
+        {
+          "utc": "2026-01-15T04:00:00Z",
+          "raDeg": 251.240222308,
+          "decDeg": -27.212991677,
+          "azDeg": 253.864106094,
+          "altDeg": 26.807570687,
+          "distanceKm": 401613.09386
+        },
+        {
+          "utc": "2026-01-15T08:00:00Z",
+          "raDeg": 253.655376852,
+          "decDeg": -27.103236232,
+          "azDeg": 222.721727797,
+          "altDeg": -14.120532584,
+          "distanceKm": 405811.65897
+        },
+        {
+          "utc": "2026-01-15T12:00:00Z",
+          "raDeg": 256.661267587,
+          "decDeg": -27.171909672,
+          "azDeg": 170.397088762,
+          "altDeg": -28.296344598,
+          "distanceKm": 407034.19824
+        },
+        {
+          "utc": "2026-01-15T16:00:00Z",
+          "raDeg": 259.552738204,
+          "decDeg": -27.51851492,
+          "azDeg": 125.368974648,
+          "altDeg": -1.883582943,
+          "distanceKm": 403928.70283
+        },
+        {
+          "utc": "2026-01-15T20:00:00Z",
+          "raDeg": 261.728386416,
+          "decDeg": -27.963169631,
+          "azDeg": 98.516268161,
+          "altDeg": 42.804365834,
+          "distanceKm": 399103.87809
+        }
+      ]
+    },
+    {
+      "site": "Equator, Ecuador",
+      "lat": 0,
+      "lon": -78.47,
+      "elevationKm": 0,
+      "requestUrl": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27301%27&OBJ_DATA=%27NO%27&CENTER=%27coord%40399%27&COORD_TYPE=%27GEODETIC%27&TIME_TYPE=%27UT%27&TLIST_TYPE=%27JD%27&QUANTITIES=%272%2C4%2C20%27&APPARENT=%27AIRLESS%27&ANG_FORMAT=%27DEG%27&CSV_FORMAT=%27YES%27&EXTRA_PREC=%27YES%27&RANGE_UNITS=%27KM%27&SITE_COORD=%27-78.47%2C0%2C0%27&TLIST=%272460408.5%27%2C%272460408.6666666665%27%2C%272460408.8333333335%27%2C%272460409%27%2C%272460409.1666666665%27%2C%272460409.3333333335%27",
+      "ephemeris": "Target body name: Moon (301)                      {source: DE441}",
+      "rows": [
+        {
+          "utc": "2024-04-08T00:00:00Z",
+          "raDeg": 6.593813239,
+          "decDeg": 2.464348693,
+          "azDeg": 272.651699877,
+          "altDeg": -21.659764666,
+          "distanceKm": 361208.44271
+        },
+        {
+          "utc": "2024-04-08T04:00:00Z",
+          "raDeg": 9.564582072,
+          "decDeg": 3.616860812,
+          "azDeg": 288.13769323,
+          "altDeg": -78.308234809,
+          "distanceKm": 365252.62567
+        },
+        {
+          "utc": "2024-04-08T08:00:00Z",
+          "raDeg": 12.719663911,
+          "decDeg": 4.814158384,
+          "azDeg": 83.309109959,
+          "altDeg": -43.92081752,
+          "distanceKm": 363561.38224
+        },
+        {
+          "utc": "2024-04-08T12:00:00Z",
+          "raDeg": 15.2116455,
+          "decDeg": 6.084278395,
+          "azDeg": 83.74273329,
+          "altDeg": 13.4779979,
+          "distanceKm": 357834.42697
+        },
+        {
+          "utc": "2024-04-08T16:00:00Z",
+          "raDeg": 16.769165497,
+          "decDeg": 7.356348623,
+          "azDeg": 67.146191974,
+          "altDeg": 70.750873741,
+          "distanceKm": 353605.03747
+        },
+        {
+          "utc": "2024-04-08T20:00:00Z",
+          "raDeg": 18.027095044,
+          "decDeg": 8.507712775,
+          "azDeg": 282.827332679,
+          "altDeg": 48.212728185,
+          "distanceKm": 355160.25382
+        }
+      ]
+    }
+  ]
+}

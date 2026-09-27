@@ -1,0 +1,48 @@
+/* Spoon sweeps act on visible groups; clicks and stationary holds do no work. */
+(function(root){
+  'use strict';
+  function inside(p){return p&&Number.isFinite(p.x)&&Number.isFinite(p.z)&&Math.hypot(p.x,p.z)<=.53;}
+  function start(p){return {last:inside(p)?{x:p.x,z:p.z}:null,work:Array(6).fill(0),hits:[]};}
+  function chord(a,b,c){
+    var dx=b.x-a.x,dz=b.z-a.z,x=a.x-c.x,z=a.z-c.z,A=dx*dx+dz*dz;
+    if(A<1e-10)return 0;var B=2*(x*dx+z*dz),C=x*x+z*z-.12*.12,D=B*B-4*A*C;if(D<=0)return 0;
+    var lo=Math.max(0,(-B-Math.sqrt(D))/(2*A)),hi=Math.min(1,(-B+Math.sqrt(D))/(2*A));return Math.max(0,hi-lo)*Math.sqrt(A);
+  }
+  function move(trace,p,groups){
+    if(!trace||!trace.last||!inside(p)||Math.hypot(p.x-trace.last.x,p.z-trace.last.z)>.4)return start(p);
+    var next={last:{x:p.x,z:p.z},work:trace.work.slice(),hits:[]};
+    groups.forEach(function(g){if(g.separated)return;next.work[g.index]+=chord(trace.last,p,g);if(next.work[g.index]>=.16){next.hits.push(g.index);next.work[g.index]=0;}});return next;
+  }
+  function mount(host){
+    var R=root.KitchenRecipes,$=function(id){return document.getElementById(id);},ns='http://www.w3.org/2000/svg',view=null,locked=true,gesture=null,applying=false,selected=0;
+    var panel=document.createElement('details');panel.id='pastaStirTools';panel.className='pasta-stir-tools';panel.hidden=true;
+    panel.innerHTML='<summary>Separate the pasta strands <span id="pastaClumpCount"></span></summary><p id="pastaStirHelp">Press inside the pot, then sweep the spoon through each numbered clump. Cover different areas; circling empty water will not separate the strands.</p><svg id="pastaStirSvg" viewBox="0 0 360 300" role="group" aria-label="Six representative pasta groups in a pot" aria-describedby="pastaStirHelp pastaStirKeyboard"><rect x="17" y="134" width="326" height="24" rx="8" fill="#537060"/><circle cx="180" cy="145" r="125" fill="#607b70"/><circle cx="180" cy="145" r="114" fill="#c2d9d3" stroke="#eff5e7" stroke-width="3"/><g id="pastaStirGroups"></g><g id="pastaSpoon" pointer-events="none" visibility="hidden"><ellipse rx="10" ry="16" fill="#a8753c" stroke="#4a3822" stroke-width="2"/><path d="M0 -12V-68" stroke="#81562f" stroke-width="9" stroke-linecap="round"/></g><text x="180" y="290" text-anchor="middle" fill="#304b3d" font-size="12">Sweep through the strands · 6 representative groups</text></svg><p id="pastaStirReading"></p><label for="pastaGroupChoice">Choose a pasta group</label><select id="pastaGroupChoice"></select><div class="pasta-stir-buttons"><button id="separatePastaGroup" type="button">Separate selected group</button><button id="separateAllPasta" type="button">Stir all · simplified</button></div><p id="pastaStirKeyboard" class="hands-note">Keyboard: Tab to a group, then press Enter or Space to separate it. The controls below the pot have the same effect. Handling pauses cooking time.</p><p id="pastaStirStatus" role="status" aria-live="polite" aria-atomic="true"></p><p id="pastaStirEffect" class="hands-note"></p>';
+    $('benchObservation').after(panel);var svg=$('pastaStirSvg'),spoon=$('pastaSpoon'),nodes=[];
+    for(var i=0;i<6;i++){var g=document.createElementNS(ns,'g');g.dataset.pastaGroup=String(i);g.setAttribute('role','button');g.innerHTML='<circle r="27" fill="transparent"/><circle class="pasta-selection" r="25" fill="none" stroke="#304b3d" stroke-width="2"/><g class="pasta-strands" fill="none" stroke="#80521e" stroke-width="3" stroke-linecap="round"></g><text y="37" text-anchor="middle" fill="#19372b" font-size="13">'+(i+1)+'</text>';for(var j=0;j<5;j++)g.querySelector('.pasta-strands').append(document.createElementNS(ns,'path'));$('pastaStirGroups').append(g);nodes.push(g);$('pastaGroupChoice').append(new Option('Group '+(i+1),String(i)));}
+    function say(message){$('pastaStirStatus').textContent=message;}
+    function cancel(message){var g=gesture;gesture=null;spoon.setAttribute('visibility','hidden');if(g&&svg.hasPointerCapture(g.id))svg.releasePointerCapture(g.id);if(message)say(message);}
+    function ready(){var s=host.getState();return !locked&&s.pastaModel===1&&s.pot.pasta&&!s.pot.drained&&s.pot.water>0;}
+    function action(index,method){if(!ready())return;host.pause();applying=true;try{host.apply(index==='all'?'stirPot':'separatePasta',index==='all'?undefined:index,method);}finally{applying=false;}say(host.getState().feedback);}
+    function highlight(){nodes.forEach(function(g,i){g.querySelector('.pasta-selection').setAttribute('visibility',i===selected?'visible':'hidden');});$('separatePastaGroup').disabled=!ready()||!!R.pastaSurface(host.getState()).groups[selected]?.separated;}
+    function choose(i){selected=i;$('pastaGroupChoice').value=String(i);highlight();}
+    function point(e){var b=svg.getBoundingClientRect();return {x:((e.clientX-b.left)*360/b.width-180)/210,z:((e.clientY-b.top)*300/b.height-145)/210};}
+    function pose(p){spoon.setAttribute('visibility',inside(p)?'visible':'hidden');spoon.setAttribute('transform','translate('+(180+p.x*210)+' '+(145+p.z*210)+') rotate(25)');}
+    svg.addEventListener('pointerdown',function(e){if(gesture){cancel();return;}if(!ready()||e.button!==0||!e.isPrimary)return;var p=point(e);if(!inside(p))return;e.preventDefault();host.pause();var group=e.target.closest('[data-pasta-group]');if(group){choose(Number(group.dataset.pastaGroup));group.focus({preventScroll:true});}gesture={id:e.pointerId,trace:start(p)};svg.setPointerCapture(e.pointerId);pose(p);say('Sweep through a clump to loosen its strands.');});
+    svg.addEventListener('pointermove',function(e){if(!gesture||gesture.id!==e.pointerId)return;var p=point(e),g=gesture;g.trace=move(g.trace,p,R.pastaSurface(host.getState()).groups);g.trace.hits.forEach(function(index){action(index,'pot-sweep');});if(gesture)pose(p);});
+    svg.addEventListener('pointerup',function(e){if(gesture&&gesture.id===e.pointerId)cancel('Spoon lifted. Separated strands stay separated.');});
+    ['pointercancel','lostpointercapture'].forEach(function(type){svg.addEventListener(type,function(e){if(gesture&&gesture.id===e.pointerId)cancel('Sweep stopped. Completed separation is kept.');});});
+    svg.addEventListener('keydown',function(e){var g=e.target.closest('[data-pasta-group]');if(!g||locked)return;var index=Number(g.dataset.pastaGroup),delta={ArrowLeft:-1,ArrowRight:1,ArrowUp:-1,ArrowDown:1}[e.key];if(delta){e.preventDefault();choose((index+delta+6)%6);nodes[selected].focus();}else if((e.key===' '||e.key==='Enter')&&!e.repeat){e.preventDefault();cancel();action(index,'keyboard');}});
+    svg.addEventListener('focusin',function(e){var g=e.target.closest('[data-pasta-group]');if(g)choose(Number(g.dataset.pastaGroup));});
+    $('pastaGroupChoice').addEventListener('change',function(){cancel();choose(Number(this.value));});$('separatePastaGroup').addEventListener('click',function(){cancel();action(selected,'keyboard');});$('separateAllPasta').addEventListener('click',function(){cancel();action('all','keyboard');});
+    panel.addEventListener('toggle',function(){if(!panel.open)cancel();});window.addEventListener('blur',function(){cancel();});window.addEventListener('pagehide',function(){cancel();});document.addEventListener('visibilitychange',function(){if(document.hidden)cancel();});window.addEventListener('keydown',function(e){if(e.key==='Escape'&&gesture){e.preventDefault();cancel('Sweep cancelled. Completed separation is kept.');}});
+    function render(s,zone,historical){
+      if(zone!=='pot'||historical||host.ended()||(view!==s&&!applying))cancel();view=s;locked=historical||host.ended()||s.pastaModel!==1||!s.pot.pasta||s.pot.drained||!s.pot.water;panel.hidden=zone!=='pot';var surface=R.pastaSurface(s);
+      nodes.forEach(function(g,i){var p=surface.groups[i];g.style.display=p?'':'none';if(!p)return;g.setAttribute('transform','translate('+(180+p.x*210)+' '+(145+p.z*210)+')');g.setAttribute('tabindex',locked?'-1':'0');g.setAttribute('aria-disabled',String(locked||p.separated));g.setAttribute('aria-label','Group '+(i+1)+(p.separated?', strands separated':', clumped. Press Enter to separate.'));g.querySelectorAll('path').forEach(function(path,j){var x=(j-2)*(p.separated?9:3),bend=p.separated?(j-2)*3:3;path.setAttribute('d','M'+x+' -14 Q'+(x+bend)+' 0 '+x+' 14');});$('pastaGroupChoice').options[i].textContent='Group '+(i+1)+' · '+(p.separated?'separated':'clumped');});
+      $('pastaGroupChoice').disabled=locked;$('separateAllPasta').disabled=locked||!surface.clumped;highlight();$('pastaClumpCount').textContent=s.pot.pasta&&!s.pot.drained&&surface.enabled?' · '+surface.clumped+' clumped':'';$('pastaStirReading').textContent=surface.summary;
+      $('pastaStirEffect').textContent=surface.enabled?'Clumped strands cook more slowly in this model. Separate them early, then use a fresh fork sample to compare texture. Late stirring cannot undo uneven cooking.':'This saved cook keeps its original pasta behavior. Start a fresh cook to explore strand separation.';
+      if(historical)say('Recorded pasta arrangement. Tools are locked in replay.');else if(locked)say(s.pot.drained?'The pot is drained.':'Add weighed pasta to boiling water before using the spoon.');else if(!applying&&!gesture)say(surface.clumped?'Move through each group; a tap or a stationary spoon does no work.':'Strands separated. Let them cook and check a fresh sample.');
+    }
+    return {render:render,cancel:cancel,open:function(){panel.open=true;$('pastaGroupChoice').focus();panel.scrollIntoView({block:'nearest'});}};
+  }
+  var api={start:start,move:move,mount:mount};root.KitchenPasta=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
+})(typeof window!=='undefined'?window:globalThis);

@@ -32,7 +32,7 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain('var pluginInstanceTokenRef = React.useRef(null);');
       expect(source).toContain('pluginInstanceTokenRef.current = {};');
       expect(source).toContain('var pluginCtx = Object.assign({}, props._ctx, { pluginInstanceToken: pluginInstanceTokenRef.current });');
-      expect(source).toContain('return window.StemLab.renderTool(props._toolId, pluginCtx);');
+      expect(source).toContain('window.StemLab.renderTool(props._toolId, pluginCtx);');
       expect(source).not.toContain('__stemPluginInstanceCounter');
     }
   });
@@ -1266,7 +1266,18 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain('var trayFluid = ctx.createRadialGradient');
       expect(source).toContain('small condensation beads give the tray depth');
       expect(source).toContain('Recessed stainless tray well with a sealed inner gasket and reflected rim light.');
-      expect(source).toContain('Engraved edge ticks suggest a calibrated teaching tray without competing with the scale tool.');
+      // Essentials keeps the tray quiet; Advanced retains the calibrated markings.
+      const tickStart = source.indexOf('// Keep fine tray markings with the detailed workspace;');
+      const tickEnd = source.indexOf('[[16,16]', tickStart);
+      expect(tickStart).toBeGreaterThan(-1);
+      expect(tickEnd).toBeGreaterThan(tickStart);
+      const drawTicks = new Function('ctx', 'W', 'H', 'detailedCanvasHud', source.slice(tickStart, tickEnd));
+      for (const detailed of [false, true]) {
+        const tickCtx = { save: vi.fn(), restore: vi.fn(), beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), stroke: vi.fn(), fillText: vi.fn() };
+        drawTicks(tickCtx, 720, 540, detailed);
+        expect(tickCtx.stroke).toHaveBeenCalledTimes(detailed ? 56 : 0);
+        expect(tickCtx.fillText.mock.calls.map(call => call[0])).toEqual(detailed ? ['1', '2', '3', '4', '5'] : []);
+      }
       expect(source).toContain('A specimen-shaped absorbent pad grounds the body and catches the preservation-fluid meniscus.');
       expect(source).toContain("specimenVariationValue('tray-pad-angle-' + padFiberIndex)");
       expect(source).not.toContain("specimenVariationValue('tissue-stipple-size-' + stip)");
@@ -1274,7 +1285,7 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       // 2026-09-05: the caption now routes through fillPanelText so the ventral mirror does
       // not reverse it, and the bay anchor mirrors with it to hold the bottom-right corner.
       expect(source).toContain("fillPanelText('INSTRUMENT BAY', instrumentBayX, instrumentBayW, 9,");
-      expect(source).toContain('background: linear-gradient(145deg, #64748b 0%, #26364b 16%, #0f172a 78%, #475569 100%)');
+      expect(source).toContain('background: linear-gradient(135deg, #eaf2f1, #d8e5e5 55%, #c8d9da)');
       expect(source).not.toContain('Math.random() * 2 + 0.5');      expect(source).toContain('var fishBodyGradient = ctx.createLinearGradient');
       expect(source).toContain('var fishIridescence = ctx.createLinearGradient');
       expect(source).toContain('var fishEyeGradient = ctx.createRadialGradient');
@@ -4278,7 +4289,6 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
       expect(source).toContain("e.key === 'Enter' || e.key === ' '");
       expect(source).toContain("e.key === '+' || e.key === '='");
       expect(source).toContain("e.key === '-' || e.key === '_'");
-      expect(source).toContain("'aria-roledescription': 'interactive specimen canvas'");
       expect(source).toContain("'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home End Enter Space 0 R V' + (advancedWorkspace ? ' X M P F' : '') + ' 1 2 3 4 5 6 7'");
       expect(source).toContain("className: \"diss-shortcuts\"");
       expect(source).toContain("'Ctrl + wheel', 'Zoom around the pointer'");

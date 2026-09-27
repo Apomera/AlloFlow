@@ -1,0 +1,108 @@
+{
+  "observedAt": "2026-09-27T15:34:37.800Z",
+  "baseline": "3752fe48d98ee8096e456d766427f3f513a11b25",
+  "finalObservedHEAD": "3752fe48d98ee8096e456d766427f3f513a11b25",
+  "tests": {
+    "files": 18,
+    "passed": 292,
+    "durationSeconds": 119.83
+  },
+  "focused": {
+    "files": 3,
+    "passed": 38
+  },
+  "browser": {
+    "scope": "Isolated fixture origin; real codecs/modules/Chromium. No live backend or deployed app.",
+    "results": [
+      {
+        "case": "first-open",
+        "passed": true
+      },
+      {
+        "case": "refresh",
+        "passed": true
+      },
+      {
+        "case": "offline-reopen",
+        "passed": true
+      },
+      {
+        "case": "received-original-arrival-role-and-removal",
+        "passed": true
+      },
+      {
+        "case": "mailbox-resource-cold-recipient",
+        "passed": true
+      },
+      {
+        "case": "saved-assignment-hydration",
+        "passed": true
+      },
+      {
+        "case": "saved-assignment-offline-failure",
+        "passed": true
+      },
+      {
+        "case": "damaged-received-reshare",
+        "passed": true
+      },
+      {
+        "case": "damaged-refresh",
+        "passed": true
+      },
+      {
+        "case": "damaged-offline-reopen",
+        "passed": true
+      },
+      {
+        "case": "damaged-saved-asset-hydration",
+        "passed": true
+      },
+      {
+        "case": "fresh-live-store-chromium-decode-and-play",
+        "passed": true
+      },
+      {
+        "case": "scene-image-decode-success",
+        "passed": true
+      },
+      {
+        "case": "changed-scene-image-decode-failure",
+        "passed": true
+      },
+      {
+        "case": "narrow-spanish_latin_america",
+        "passed": true
+      },
+      {
+        "case": "narrow-arabic",
+        "passed": true
+      },
+      {
+        "case": "narrow-chinese_simplified",
+        "passed": true
+      },
+      {
+        "case": "narrow-thai",
+        "passed": true
+      }
+    ],
+    "errors": []
+  },
+  "recordedInputsUnchanged": 13,
+  "modules": [
+    {
+      "file": "live_aac_module.js",
+      "sha256": "587c6842bfe556952ff05de35350d93c02d40d0e04d96cf188465afc0f8ffd5d",
+      "publicMirrorSha256": "587c6842bfe556952ff05de35350d93c02d40d0e04d96cf188465afc0f8ffd5d"
+    },
+    {
+      "file": "view_live_session_dock_module.js",
+      "sha256": "2294881db72ee9152f9a574e5f9c56c7e2a7b35211e3e2b0cd5a44b6ebf0298c",
+      "publicMirrorSha256": "2294881db72ee9152f9a574e5f9c56c7e2a7b35211e3e2b0cd5a44b6ebf0298c"
+    }
+  ],
+  "hydrationHostPatchIntegrated": false,
+  "hydrationHostPatchApplies": true,
+  "deployedReleaseVerified": false
+}

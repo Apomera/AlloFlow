@@ -1,0 +1,56 @@
+{
+  "completed": "2026-09-27T18:30:14.500Z",
+  "status": "complete-locally",
+  "sharedHeadAtVerification": "cbdace49bcacebd6d1693dced3d5d3fd75e9f36e",
+  "isolatedImplementationCommit": "d6d055b0c931bb4f2659bf0fd6562040934c4556",
+  "previousViewportCommit": "bbf4bb81f5ab9239d2080a7470a4f36a74d51f5e",
+  "normalImplementationCommitHooksPassed": true,
+  "readerSourceSha256": "c9625901a41c5a48c86faf6255bc1e3b867607f7c8c953d8b656c65a3a8f0121",
+  "readerModuleSha256": "8f2dd725870ef19789fbf158bafec389506d3c0075159ce5cd1f7293ce970dcb",
+  "runtimeIntegrated": true,
+  "ownershipReleased": true,
+  "sharedIndexChangedByThisTask": false,
+  "deployed": false,
+  "validation": {
+    "distinctUnitTestsPassed": 237,
+    "suites": 7,
+    "focused": {
+      "passed": 66,
+      "total": 66
+    },
+    "adjacent": {
+      "passedInitially": 170,
+      "total": 171,
+      "unchangedRetryPassed": 1,
+      "retrySeconds": 1.44
+    },
+    "chromium": {
+      "passed": true,
+      "interactionGroups": 16,
+      "activationCases": 4,
+      "previewChecks": 8,
+      "listLayouts": 6,
+      "cardStressCases": 10
+    },
+    "webkit": {
+      "passed": true,
+      "interactionGroups": 16,
+      "activationCases": 4,
+      "previewChecks": 8,
+      "listLayouts": 6,
+      "cardStressCases": 10
+    },
+    "retainedFailures": [
+      "One adjacent case exceeded its normal five-second timeout; the unchanged isolated retry passed.",
+      "The first WebKit fixture navigation timed out before interactions; the unchanged full WebKit retry passed."
+    ],
+    "browserInputDrift": [],
+    "localReaderSourceOutputAndHostPins": "passed",
+    "releaseReceipt": "completion-release-check.json"
+  },
+  "limits": [
+    "Real assistive technology and live speech providers were not exercised.",
+    "Native WebKit credit-link Tab traversal is unverified; plain HTML links are skipped by this installed engine too.",
+    "Real-device zoom, complete app/installer builds and deployed bytes were not verified."
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "file": "tests/__snapshots__/stem_sim_tools_golden.test.js.snap",
+  "preRunSha256": "483383e32f0ab6009db050fc1adfd3d1369da160609286f07427336381f4cc38",
+  "invalidRunSha256": "4b2cf8c8125db34494b262f9a1f0bcb2a162d634a09c347d2acbf36f731a4323",
+  "restoredSha256": "483383e32f0ab6009db050fc1adfd3d1369da160609286f07427336381f4cc38",
+  "indexMatchedPreRun": true,
+  "method": "Wrote exact verified index byte buffer to only the snapshot path; no Git mutation.",
+  "restoredAt": "2026-09-27T19:28:43.454Z",
+  "invalidEvidence": [
+    "sim-golden.json",
+    "sim-golden.stdout.log",
+    "sim-golden-receipt.json"
+  ],
+  "vitestVersion": "4.1.5"
+}

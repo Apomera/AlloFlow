@@ -120,16 +120,22 @@ function LiveSessionDockView(props) {
   const reviewLabel = reviewApi?.organizerReviewText?.(props.t, 'review_title', 'Review organizer reflections') || 'Review organizer reflections';
   const imageApi = window.AlloModules?.LiveAac;
   const MailboxImageStatus = imageApi?.MailboxImageStatus;
-  const imageRevisionFor = id => {
-    // A teacher original may differ from resized/filtered media on the wire.
+  // Resolve each displayed resource once per render. Preparation can finish
+  // without replacing History, and only its filtered payload defines receipts.
+  const imageEvidenceById = new Map();
+  const imageEvidenceFor = id => {
+    if (imageEvidenceById.has(id)) return imageEvidenceById.get(id);
     const source = (history || []).find(item => item?.id === id);
     const prepared = source && props.getPreparedMailboxResource?.(source);
-    return prepared ? imageApi?.mailboxResourceImages?.(prepared)?.revision || null : null;
+    const manifest = imageApi?.mailboxResourceImages?.(prepared || source);
+    const evidence = {
+      hasImages: !!(manifest && (manifest.sources.length || manifest.omitted)),
+      // Originals can indicate pending work, never establish a delivered revision.
+      revision: prepared ? manifest?.revision || null : null
+    };
+    imageEvidenceById.set(id, evidence);
+    return evidence;
   };
-  const resourcesWithImages = React.useMemo(() => new Set((history || []).filter(resource => {
-    const manifest = imageApi?.mailboxResourceImages?.(resource);
-    return manifest && (manifest.sources.length || manifest.omitted);
-  }).map(resource => resource.id)), [history, imageApi]);
   return /*#__PURE__*/React.createElement("div", {
     ref: liveDockPanelRef,
     tabIndex: -1,
@@ -1820,10 +1826,12 @@ function LiveSessionDockView(props) {
           borderRadius: 6,
           padding: '0.05rem 0.3rem'
         }
-      }, organizerProgressLabel) : null, MailboxImageStatus && _alloMbBridgeActive() && resourcesWithImages.has(targetId || viewing) && /*#__PURE__*/React.createElement(MailboxImageStatus, {
+      }, organizerProgressLabel) : null, MailboxImageStatus && _alloMbBridgeActive() && imageEvidenceFor(targetId || viewing).hasImages && /*#__PURE__*/React.createElement(MailboxImageStatus, {
+        sessionKey: JSON.stringify([activeSessionAppId || '', activeSessionCode || '']),
+        recipientId: uid,
         entry: entry,
         resourceId: targetId || viewing,
-        mediaRevision: imageRevisionFor(targetId || viewing),
+        mediaRevision: imageEvidenceFor(targetId || viewing).revision,
         resourceAt: targetAt,
         now: dockNow,
         mailboxVersion: mailboxImageVersion,

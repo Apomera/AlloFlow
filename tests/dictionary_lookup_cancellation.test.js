@@ -1,13 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 
-// Exercise the staged loader delta against current source without writing the
-// shared loader or its public mirror. The transform is a no-op after integration.
-const require = createRequire(import.meta.url);
-const { applyDictionaryRecovery } = require('../dev-tools/prepare_reading_lookup_resilience.cjs');
-const source = process.env.ALLO_DICT_CANDIDATE ? readFileSync(process.env.ALLO_DICT_CANDIDATE, 'utf8')
-  : applyDictionaryRecovery(readFileSync('dictionary_loader.js', 'utf8').replace(/\r\n/g, '\n'));
+const source = readFileSync(process.env.ALLO_DICT_CANDIDATE || 'dictionary_loader.js', 'utf8');
 const rows = [{ word: 'bank', meanings: [{ partOfSpeech: 'noun', definitions: [{ definition: 'The edge of a river.' }] }] }];
 const deferred = () => { let resolve; const promise = new Promise(done => { resolve = done; }); return { promise, resolve }; };
 beforeEach(() => {
@@ -111,5 +105,84 @@ describe('dictionary detailed outcomes preserve the legacy entry-or-null API', (
     expect(await window.AlloDictionary.lookupDetailed('river bank', null)).toEqual({ entry: null, reason: 'unsupported_word' }); expect(fetch).not.toHaveBeenCalled();
     vi.stubGlobal('fetch', undefined);
     expect(await window.AlloDictionary.lookupDetailed('bank')).toEqual({ entry: null, reason: 'not_available' });
+  });
+});
+
+describe('dictionary cache integrity and partial provider recovery', () => {
+  it('bypasses a structurally invalid cached entry and repairs it from the provider', async () => {
+    const broken = JSON.stringify({ word: 'bank', meanings: { definition: 'wrong shape' } }); localStorage.setItem('allo_dict_bank', broken);
+    expect(window.AlloDictionary.getCached('bank')).toBeUndefined(); expect(window.AlloDictionary.hasOffline('bank')).toBe(false);
+    expect(localStorage.getItem('allo_dict_bank')).toBe(broken); // Reads do not rewrite persisted data.
+    const fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => rows }); vi.stubGlobal('fetch', fetch);
+    expect(await window.AlloDictionary.lookupDetailed('bank')).toMatchObject({ entry: { word: 'bank', meanings: rows[0].meanings }, reason: null });
+    expect(fetch).toHaveBeenCalledTimes(1); expect(window.AlloDictionary.getCached('bank').meanings[0].definitions[0].definition).toBe('The edge of a river.');
+  });
+  it.each(['{broken', 'false', '42', '"a definition"', '[]', '{"meanings":[null,{}]}'])('treats malformed cache %s as uncached, without converting it to a miss', async raw => {
+    localStorage.setItem('allo_dict_bank', raw); vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Offline')));
+    expect(window.AlloDictionary.getCached('bank')).toBeUndefined();
+    expect(await window.AlloDictionary.lookupDetailed('bank')).toEqual({ entry: null, reason: 'request_failed' });
+    expect(localStorage.getItem('allo_dict_bank')).toBe(raw);
+  });
+  it('rejects a cached entry for a different word and uses the selected word for recovery', async () => {
+    localStorage.setItem('allo_dict_bank', JSON.stringify({ word: 'tree', meanings: rows[0].meanings }));
+    const fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => rows }); vi.stubGlobal('fetch', fetch);
+    expect(window.AlloDictionary.getCached('bank')).toBeUndefined();
+    expect((await window.AlloDictionary.lookup('bank')).word).toBe('bank'); expect(fetch.mock.calls[0][0]).toBe('https://api.dictionaryapi.dev/api/v2/entries/en/bank');
+  });
+  it('preserves useful legacy cached help offline without inventing pronunciation pairs', async () => {
+    const legacy = { phonetic: '/bank/', audio: 'legacy.wav', meanings: rows[0].meanings, source: 'Wiktionary (via dictionaryapi.dev)' };
+    localStorage.setItem('allo_dict_bank', JSON.stringify(legacy)); const fetch = vi.fn().mockRejectedValue(new Error('Offline')); vi.stubGlobal('fetch', fetch);
+    const result = await window.AlloDictionary.lookupDetailed('bank');
+    expect(result).toMatchObject({ reason: null, entry: { word: 'bank', phonetic: '/bank/', audio: 'legacy.wav', pronunciations: [], meanings: rows[0].meanings } });
+    expect(fetch).not.toHaveBeenCalled(); expect(JSON.parse(localStorage.getItem('allo_dict_bank'))).toEqual(legacy);
+  });
+  it('recovers valid cached fields while dropping malformed siblings and render-unsafe scalar values', async () => {
+    const cached = { word: 'Bank', source: {}, sourceUrl: [], phonetic: {}, audio: {},
+      pronunciations: [null, { phonetic: '/bank/', audio: 'bank.wav' }, { phonetic: '/bank/', audio: 'bank.wav' }, { phonetic: {}, audio: [] }],
+      meanings: [null, { definitions: {} }, { partOfSpeech: {}, definitions: [null, {}, { definition: {} }, { definition: '  The edge of a river.  ', example: {} }] }],
+      synonyms: [null, {}, ' Shore ', 'shore', 4] };
+    const raw = JSON.stringify(cached); localStorage.setItem('allo_dict_bank', raw); vi.stubGlobal('fetch', vi.fn());
+    const result = await window.AlloDictionary.lookupDetailed('bank');
+    expect(result.reason).toBeNull(); expect(result.entry).toMatchObject({ word: 'bank', phonetic: '/bank/', audio: 'bank.wav', pronunciations: [{ phonetic: '/bank/', audio: 'bank.wav' }],
+      meanings: [{ partOfSpeech: '', definitions: [{ definition: 'The edge of a river.', example: '' }], pronunciations: [] }], synonyms: ['shore'], sourceUrl: 'https://en.wiktionary.org/wiki/bank' });
+    expect(window.AlloDictionary.hasOffline('bank')).toBe(true); expect(fetch).not.toHaveBeenCalled(); expect(localStorage.getItem('allo_dict_bank')).toBe(raw);
+  });
+  it('keeps per-meaning pronunciation records separate when reading the offline cache', () => {
+    const cached = { word: 'lead', phonetic: '/wrong/', audio: 'wrong.wav', pronunciations: [{ phonetic: '/liːd/', audio: 'verb.wav' }, { phonetic: '/lɛd/', audio: 'metal.wav' }],
+      meanings: [{ definitions: [{ definition: 'To guide.' }], pronunciations: [{ phonetic: '/liːd/', audio: 'verb.wav' }] }, { definitions: [{ definition: 'A heavy metal.' }], pronunciations: [{ phonetic: '/lɛd/', audio: 'metal.wav' }] }] };
+    localStorage.setItem('allo_dict_lead', JSON.stringify(cached));
+    const entry = window.AlloDictionary.getCached('lead');
+    expect(entry).toMatchObject({ phonetic: '/liːd/', audio: 'verb.wav' }); expect(entry.meanings[1].pronunciations).toEqual([{ phonetic: '/lɛd/', audio: 'metal.wav' }]);
+  });
+  it('preserves the cached-miss sentinel and its explicit retry behavior', async () => {
+    localStorage.setItem('allo_dict_bank', 'null'); const fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => rows }); vi.stubGlobal('fetch', fetch);
+    expect(window.AlloDictionary.getCached('bank')).toBeNull(); expect(window.AlloDictionary.hasOffline('bank')).toBe(true);
+    expect(await window.AlloDictionary.lookupDetailed('bank')).toEqual({ entry: null, reason: 'not_found' }); expect(fetch).not.toHaveBeenCalled();
+    expect(await window.AlloDictionary.lookupDetailed('bank', { bypassMissingCache: true })).toMatchObject({ entry: { word: 'bank' }, reason: null });
+  });
+  it('retains useful provider records alongside malformed rows, meanings, and definitions', async () => {
+    const mixed = [null, 7, {}, { meanings: {} }, { phonetics: [null, { text: '/bank/', audio: 'bank.wav' }], meanings: [null, { definitions: {} }, { definitions: [null, {}, { definition: {} }, ...rows[0].meanings[0].definitions], synonyms: {} }] }];
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => mixed }));
+    const result = await window.AlloDictionary.lookupDetailed('bank');
+    expect(result).toMatchObject({ reason: null, entry: { word: 'bank', pronunciations: [{ phonetic: '/bank/', audio: 'bank.wav' }], meanings: [{ definitions: [{ definition: 'The edge of a river.' }] }] } });
+    expect(window.AlloDictionary.getCached('bank')).toEqual(result.entry);
+  });
+  it('keeps an entirely unusable provider response retryable instead of caching a miss', async () => {
+    const fetch = vi.fn().mockResolvedValueOnce({ ok: true, json: async () => [null, {}, { meanings: [{ definitions: [null, { definition: {} }, { definition: 12 }] }] }] }).mockResolvedValueOnce({ ok: true, json: async () => rows }); vi.stubGlobal('fetch', fetch);
+    expect(await window.AlloDictionary.lookupDetailed('bank')).toEqual({ entry: null, reason: 'invalid_response' }); expect(window.AlloDictionary.getCached('bank')).toBeUndefined();
+    expect(await window.AlloDictionary.lookupDetailed('bank')).toMatchObject({ entry: { word: 'bank' }, reason: null });
+  });
+  it('returns usable provider data when storage is inaccessible', async () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('Storage unavailable'); });
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('Storage full'); });
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => rows }));
+    expect(await window.AlloDictionary.lookupDetailed('bank')).toMatchObject({ reason: null, entry: { word: 'bank' } });
+    expect(window.AlloDictionary.getCached('bank')).toBeUndefined();
+  });
+  it('bounds recovered cache collections after removing malformed records', () => {
+    const cached = { meanings: [null, ...Array.from({ length: 7 }, (_, mi) => ({ definitions: [null, ...Array.from({ length: 5 }, (_, di) => ({ definition: 'Meaning ' + mi + '-' + di }))] }))],
+      pronunciations: [null, ...Array.from({ length: 20 }, (_, i) => ({ phonetic: '/' + i + '/', audio: i + '.wav' }))], synonyms: [null, ...Array.from({ length: 15 }, (_, i) => 'synonym' + i)] };
+    localStorage.setItem('allo_dict_bank', JSON.stringify(cached)); const entry = window.AlloDictionary.getCached('bank');
+    expect(entry.meanings).toHaveLength(4); expect(entry.meanings[0].definitions).toHaveLength(3); expect(entry.pronunciations).toHaveLength(12); expect(entry.synonyms).toHaveLength(8);
   });
 });

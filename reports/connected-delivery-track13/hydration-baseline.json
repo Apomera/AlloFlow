@@ -1,0 +1,29 @@
+{
+  "baseline": "af3c6b82ab76dad40a5d44f785bf828d1adea86c",
+  "reproduced": {
+    "passed": 17,
+    "failed": 9
+  },
+  "inputs": [
+    {
+      "file": "firestore_sync_module.js",
+      "sha256": "4875db2bf39477695026ecb46b51d3073e9ae06b480af4886bb20e02096ed619"
+    },
+    {
+      "file": "desktop/web-app/public/firestore_sync_module.js",
+      "sha256": "4875db2bf39477695026ecb46b51d3073e9ae06b480af4886bb20e02096ed619"
+    },
+    {
+      "file": "live_aac_source.jsx",
+      "sha256": "a1a26a9e23a447fd30c0bcaefd7a946426c1861f6b819ce0a9b9605d8757c537"
+    },
+    {
+      "file": "live_aac_module.js",
+      "sha256": "0ae0268ed505682f8b8f23117eb7b6c52945df29af9223a1fac3f0be4fe7a473"
+    },
+    {
+      "file": "desktop/web-app/public/live_aac_module.js",
+      "sha256": "0ae0268ed505682f8b8f23117eb7b6c52945df29af9223a1fac3f0be4fe7a473"
+    }
+  ]
+}

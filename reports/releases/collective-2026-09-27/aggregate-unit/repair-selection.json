@@ -1,0 +1,31 @@
+{
+  "selected": [
+    "tests/galaxy_review_fixes.test.js",
+    "tests/dissection_lab_improvements.test.js",
+    "tests/dissection_workspace_bands.test.js",
+    "tests/circuit_snapshots.test.js",
+    "tests/firestore_sync.test.js",
+    "tests/connected_delivery_offline_envelope.test.js",
+    "tests/reader_followup_locales.test.js",
+    "tests/reader_release_verification.test.js"
+  ],
+  "args": [
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/galaxy_review_fixes.test.js",
+    "tests/dissection_lab_improvements.test.js",
+    "tests/dissection_workspace_bands.test.js",
+    "tests/circuit_snapshots.test.js",
+    "tests/firestore_sync.test.js",
+    "tests/connected_delivery_offline_envelope.test.js",
+    "tests/reader_followup_locales.test.js",
+    "tests/reader_release_verification.test.js",
+    "--maxWorkers=1",
+    "--testTimeout=30000",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\releases\\collective-2026-09-27\\aggregate-unit\\repair-recheck.json"
+  ],
+  "timeoutBasis": "Root requested30s where needed; Dissection retains its existing60s suite declaration.",
+  "startedAt": "2026-09-27T19:22:43.941Z"
+}

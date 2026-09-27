@@ -1,0 +1,25 @@
+{
+  "at": "2026-09-27T17:54:42.945Z",
+  "regions": [
+    {
+      "start": "function _alloBase64UrlEncode(value)",
+      "end": "function _alloValidFirebaseConfig(config)",
+      "sha256": "40e850926812a15eb1bfcd9b2fae2c9ba0b82727a5595ea5eef615839563daaa"
+    },
+    {
+      "start": "          const loadAssignment = async () => {",
+      "end": "          loadAssignment();",
+      "sha256": "cb18f24633f6ff8d73f0488e4ef758e6e5e418db27bfed579483db9f0c8e46a8"
+    },
+    {
+      "start": "  const applyMbDownPayload = useCallback(",
+      "end": "  const createHomeworkAssignmentLink = useCallback(",
+      "sha256": "f87288a71e913d18cefe318edb01452e1c0c396f552b952ff628aeede06e29c4"
+    },
+    {
+      "start": "  const reportMailboxImageProgress = useCallback(",
+      "end": "  const toggleMbHand = useCallback(",
+      "sha256": "d5a4182a24650fb835e7fffd64c1f9c6fa0d58d4f686177ee19b24e3c39287df"
+    }
+  ]
+}

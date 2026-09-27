@@ -1,0 +1,29 @@
+{
+  "at": "2026-09-27T17:58:37.862Z",
+  "baselineHead": "c4c8d6f8bffc88e5e1549b2f84448f15184b2fe8",
+  "observedHead": "a63e347b7d193cbc95b5fc3a9fec844322f1f455",
+  "tests": {
+    "passed": 56,
+    "failed": 0,
+    "files": 4
+  },
+  "hostRecheck": {
+    "passed": 31,
+    "failed": 0
+  },
+  "changedWholeFiles": [
+    "AlloFlowANTI.txt"
+  ],
+  "stableDeliveryInputs": 21,
+  "hostDeliveryRegionsStable": 4,
+  "moduleHashes": {
+    "live_aac_module.js": "1ef3de4c33d1c88c34905ba56e9fdab0af41a83b857c55d5fff541c9c6603449",
+    "view_live_session_dock_module.js": "6d8b3d8693905bbb841a6222af81772f6167ba95b421793c05c1218b09a8d3f8"
+  },
+  "autosaveHostPatchPending": true,
+  "browser": {
+    "retry": 8,
+    "recipient": 18,
+    "errors": []
+  }
+}

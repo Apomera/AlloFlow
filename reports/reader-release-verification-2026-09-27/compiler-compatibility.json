@@ -1,0 +1,12 @@
+{
+  "at": "2026-09-27T17:20:16.411Z",
+  "identical": true,
+  "legacySha256": "8427e01f26b053270933ed76f3e16279d12274fd24d2371db88eaff0f6513966",
+  "newSha256": "8427e01f26b053270933ed76f3e16279d12274fd24d2371db88eaff0f6513966",
+  "inputs": {
+    "reader_place_store.js": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9",
+    "reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+    "view_simplified_source.jsx": "99df6e01099efcb7206bc8ac6657b5edc4cdc9c7d9b24f73c825a64aa13f3450"
+  },
+  "note": "Legacy filesystem writes intercepted in memory; no generated file written."
+}

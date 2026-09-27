@@ -1,0 +1,91 @@
+{
+  "at": "2026-09-27T17:22:41.214Z",
+  "outsideCwd": "C:\\Users\\cabba\\AppData\\Local\\Temp",
+  "before": {
+    "reader_place_store.js": {
+      "sha256": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9",
+      "mtimeMs": 1790479079491.4392
+    },
+    "reader_support_drafts.js": {
+      "sha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+      "mtimeMs": 1790460742648.577
+    },
+    "view_simplified_source.jsx": {
+      "sha256": "99df6e01099efcb7206bc8ac6657b5edc4cdc9c7d9b24f73c825a64aa13f3450",
+      "mtimeMs": 1790529499031.0906
+    },
+    "view_simplified_module.js": {
+      "sha256": "8427e01f26b053270933ed76f3e16279d12274fd24d2371db88eaff0f6513966",
+      "mtimeMs": 1790529500117.9749
+    },
+    "desktop/web-app/public/view_simplified_module.js": {
+      "sha256": "8427e01f26b053270933ed76f3e16279d12274fd24d2371db88eaff0f6513966",
+      "mtimeMs": 1790529500121.8906
+    },
+    "AlloFlowANTI.txt": {
+      "sha256": "7b4aa51104cf24b062e0dfca520675ce7c00e29e41bf0e1751984e8c7e39929e",
+      "mtimeMs": 1790529554162.468
+    },
+    "desktop/web-app/src/AlloFlowANTI.txt": {
+      "sha256": "7b4aa51104cf24b062e0dfca520675ce7c00e29e41bf0e1751984e8c7e39929e",
+      "mtimeMs": 1790529554229.555
+    },
+    "desktop/web-app/src/App.jsx": {
+      "sha256": "7b4aa51104cf24b062e0dfca520675ce7c00e29e41bf0e1751984e8c7e39929e",
+      "mtimeMs": 1790529554309.198
+    }
+  },
+  "after": {
+    "reader_place_store.js": {
+      "sha256": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9",
+      "mtimeMs": 1790479079491.4392
+    },
+    "reader_support_drafts.js": {
+      "sha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+      "mtimeMs": 1790460742648.577
+    },
+    "view_simplified_source.jsx": {
+      "sha256": "99df6e01099efcb7206bc8ac6657b5edc4cdc9c7d9b24f73c825a64aa13f3450",
+      "mtimeMs": 1790529499031.0906
+    },
+    "view_simplified_module.js": {
+      "sha256": "8427e01f26b053270933ed76f3e16279d12274fd24d2371db88eaff0f6513966",
+      "mtimeMs": 1790529500117.9749
+    },
+    "desktop/web-app/public/view_simplified_module.js": {
+      "sha256": "8427e01f26b053270933ed76f3e16279d12274fd24d2371db88eaff0f6513966",
+      "mtimeMs": 1790529500121.8906
+    },
+    "AlloFlowANTI.txt": {
+      "sha256": "7b4aa51104cf24b062e0dfca520675ce7c00e29e41bf0e1751984e8c7e39929e",
+      "mtimeMs": 1790529554162.468
+    },
+    "desktop/web-app/src/AlloFlowANTI.txt": {
+      "sha256": "7b4aa51104cf24b062e0dfca520675ce7c00e29e41bf0e1751984e8c7e39929e",
+      "mtimeMs": 1790529554229.555
+    },
+    "desktop/web-app/src/App.jsx": {
+      "sha256": "7b4aa51104cf24b062e0dfca520675ce7c00e29e41bf0e1751984e8c7e39929e",
+      "mtimeMs": 1790529554309.198
+    }
+  },
+  "changed": [],
+  "runs": [
+    {
+      "file": "_build_view_simplified_module.js",
+      "args": [
+        "--check"
+      ],
+      "status": 0,
+      "stdout": "Both reader outputs match canonical source; no files written.\n",
+      "stderr": "[BABEL] Note: The code generator has deoptimised the styling of undefined as it exceeds the max of 500KB.\n"
+    },
+    {
+      "file": "dev-tools/check_reader_release.cjs",
+      "args": [],
+      "status": 0,
+      "stdout": "PASS local reader release consistency; HEAD c4c8d6f8bffc88e5e1549b2f84448f15184b2fe8\nCanonical reader SHA-256: 8427e01f26b053270933ed76f3e16279d12274fd24d2371db88eaff0f6513966\nRead-only local check; deployed bytes and runtime behavior remain separate checks.\n",
+      "stderr": "[BABEL] Note: The code generator has deoptimised the styling of undefined as it exceeds the max of 500KB.\n"
+    }
+  ]
+}

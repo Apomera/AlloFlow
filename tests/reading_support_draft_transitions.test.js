@@ -91,6 +91,71 @@ const transitions = {
   'outside navigation': async h => h.outside(),
   'student role': async h => h.role(false)
 };
+function replaceHelp(h, help) {
+  const item = { ...h.state.item, adaptedReadingSupports: help };
+  h.force({ item, history: h.state.history.map(value => value.id === item.id ? item : value) });
+}
+
+describe('current support data across editor transitions', () => {
+  it('keeps a confirmed save while parent props acknowledge it later', async () => {
+    const h = fixture(); await dirtyExplanation(); let accepted;
+    h.onUpdate.mockImplementationOnce(async (owner, action) => { accepted = contract.upsertAdaptedReadingSupport(owner, owner.adaptedReadingSupports, action.annotation); return accepted; });
+    await click(byText('Save word support')); h.rerender();
+    expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.'); expect(h.session.hasChanges()).toBe(false);
+    replaceHelp(h, accepted); expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.'); expect(h.session.hasChanges()).toBe(false);
+  });
+  it.each(['mounted', 'recovered'])('updates an unchanged %s draft from its current exact occurrence', async lifecycle => {
+    const h = fixture({ image: IMAGE }); await edit();
+    if (lifecycle === 'recovered') h.force({ view: 'other' });
+    replaceHelp(h, { ...h.state.item.adaptedReadingSupports, annotations: h.state.item.adaptedReadingSupports.annotations.map(entry => ({ ...entry, id: 'refreshed-heron', text: 'Current saved meaning.', priority: 'essential', image: { ...IMAGE, src: 'data:image/png;base64,REVG' } })) });
+    if (lifecycle === 'recovered') h.force({ view: 'simplified' });
+    expect(draft().querySelector('textarea').value).toBe('Current saved meaning.');
+    expect(draft().querySelector('select').value).toBe('essential'); expect(draft().querySelector('img').getAttribute('src')).toBe('data:image/png;base64,REVG');
+    expect(h.session.hasChanges()).toBe(false); await transitions.Both(h); expect(h.state.compare).toBe(true); expect(prompt()).toBeNull();
+  });
+  it.each(['mounted', 'recovered'])('closes an unchanged %s draft when its support was removed', async lifecycle => {
+    const h = fixture(); await edit();
+    if (lifecycle === 'recovered') h.force({ view: 'other' });
+    replaceHelp(h, contract.removeAdaptedReadingSupport(h.state.item, h.state.item.adaptedReadingSupports, 'heron'));
+    if (lifecycle === 'recovered') h.force({ view: 'simplified' });
+    expect(draft()).toBeNull(); expect(h.session.hasChanges()).toBe(false); expect(host.textContent).toContain('no longer available');
+    expect(h.onUpdate).not.toHaveBeenCalled(); expect(document.activeElement).toBe(byText('Add a word or phrase'));
+  });
+  it.each(['dirty', 'picker'])('retains %s work when the saved exact occurrence changes', async work => {
+    const h = fixture({ image: IMAGE }); await edit();
+    if (work === 'dirty') type(draft().querySelector('textarea'), 'Keep my unsaved meaning.');
+    else await click(byText('Choose a different picture'));
+    replaceHelp(h, { ...h.state.item.adaptedReadingSupports, annotations: h.state.item.adaptedReadingSupports.annotations.map(entry => ({ ...entry, text: 'New saved meaning.', image: null })) });
+    expect(draft().querySelector('textarea').value).toBe(work === 'dirty' ? 'Keep my unsaved meaning.' : 'A wading bird.');
+    expect(draft().querySelector('img').getAttribute('src')).toBe(IMAGE.src); expect(h.session.hasChanges()).toBe(true);
+    if (work === 'picker') expect(byText('Cancel')).toBeTruthy();
+    await transitions.Both(h); expect(prompt()).toBeTruthy(); await click(byText('Keep editing')); expect(h.state.compare).toBe(false);
+  });
+  for (const decision of ['Discard changes', 'Save and continue']) {
+    it.each(['refreshed', 'removed'])(`resolves a %s deferred edit target after ${decision}`, async change => {
+      const h = fixture(); const start = PASSAGE.indexOf('water');
+      replaceHelp(h, contract.upsertAdaptedReadingSupport(h.state.item, h.state.item.adaptedReadingSupports, { id: 'water', start, end: start + 5, quote: 'water', text: 'Older water meaning.' }));
+      await dirtyExplanation(); await click(host.querySelector('button[aria-label^="Edit gloss for water"]'));
+      const saveResult = deferred();
+      if (decision === 'Save and continue') { h.persist.mockReturnValueOnce(saveResult.promise); await click(byText(decision)); }
+      const help = h.state.item.adaptedReadingSupports;
+      replaceHelp(h, change === 'removed' ? contract.removeAdaptedReadingSupport(h.state.item, help, 'water')
+        : { ...help, annotations: help.annotations.map(entry => entry.quote === 'water' ? { ...entry, id: 'refreshed-water', text: 'Current water meaning.' } : entry) });
+      if (decision === 'Save and continue') await act(async () => saveResult.resolve(contract.upsertAdaptedReadingSupport(h.state.item, h.state.item.adaptedReadingSupports, h.onUpdate.mock.calls[0][1].annotation)));
+      else await click(byText(decision));
+      expect(prompt()).toBeNull(); expect(h.state.compare).toBe(false);
+      if (change === 'refreshed') {
+        expect(draft().querySelector('textarea').value).toBe('Current water meaning.');
+        type(draft().querySelector('textarea'), 'My water meaning.'); await click(byText('Save word support'));
+        expect(h.onUpdate.mock.lastCall[1].annotation.id).toBe('refreshed-water');
+      } else {
+        expect(host.textContent).toContain('no longer available'); expect(draft()?.querySelector('input[type="text"]').value).not.toBe('water');
+        expect(h.state.item.adaptedReadingSupports.annotations.some(entry => entry.quote === 'water')).toBe(false);
+      }
+    });
+  }
+});
+
 describe('deferred reader transitions', () => {
   it.each(['Discard changes', 'Save and continue'])('does not re-prompt when an approved asynchronous opener continues after %s', async decision => {
     const h = fixture({ asyncNavigation: true }); await dirtyExplanation(); await transitions.Both(h); await click(byText(decision));

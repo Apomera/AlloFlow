@@ -116,10 +116,10 @@
     $('handsJug').addEventListener('keyup',function(e){if(e.code==='Space'){e.preventDefault();stopPour();}});$('handsJug').addEventListener('blur',stopPour);
     window.addEventListener('blur',cancel);document.addEventListener('visibilitychange',function(){if(document.hidden)cancel();});window.addEventListener('pagehide',cancel);
     function render(next,nextZone,historical){
-      var changed=nextZone!==zone||(view&&view.log.length>0&&next.log[0]!==view.log[0]);view=next;zone=nextZone;locked=historical||host.ended();
+      var changed=nextZone!==zone||(view&&view.log.length>0&&next.log[0]!==view.log[0]);view=next;zone=nextZone;locked=historical||host.ended()||R.serving(next).started;
       if(changed||locked)cancel();
       panel.hidden=zone==='prep';dials.hidden=zone==='prep';dialHelp.hidden=zone==='prep';shortcuts.hidden=zone==='prep';
-      var p=view.pot,n=view.pan,v=view.prep,disabled={water:p.water>0||p.pasta,oil:n.oil,produce:n.produce,garlic:n.garlic,pasta:p.pasta,cup:p.reserve+n.waterAdded>0||p.drained,pot:p.drained||!p.pasta,cooked:!p.drained||n.combined,pan:!n.combined||view.plated,spoon:view.plated};
+      var p=view.pot,n=view.pan,v=view.prep,disabled={water:p.water>0||p.pasta,oil:n.oil,produce:n.produce,garlic:n.garlic,pasta:p.pasta,cup:p.reserve+n.waterAdded>=200*view.servings/2||p.drained,pot:p.drained||!p.pasta,cooked:!p.drained||n.combined,pan:!n.combined||view.plated,spoon:view.plated};
       var states={water:R.ingredients(view).water+' mL',oil:R.ingredients(view).oil+' mL',produce:v.cut?(v.dry?'Cut & dried':'Cut; still wet'):'Needs cutting',garlic:v.garlic?'Minced':'Needs mincing',pasta:v.pasta+' g weighed',cup:p.reserve?'Water saved':'Save before draining',spoon:zone==='pot'?'Sample the pasta':'Check the dish',pot:p.sample?'Sample taken':'Sample before draining',cooked:p.drained?'Ready to transfer':'Still in the pot',pan:n.tasted?'Checked; turn heat off':'Check before serving'};
       items.forEach(function(item){var b=sourceNodes[item[0]];b.hidden=!item[3].split(' ').includes(zone);b.disabled=locked||!!disabled[item[0]];b.querySelector('.hands-item-state').textContent=states[item[0]];if(item[0]==='produce')b.querySelector('strong').textContent=R.recipe(view.id).produce;if(selected===item[0]&&(b.hidden||b.disabled))pick(null);});
       Object.keys(targetNodes).forEach(function(k){targetNodes[k].disabled=locked;});

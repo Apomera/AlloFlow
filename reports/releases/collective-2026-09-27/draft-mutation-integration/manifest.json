@@ -1,0 +1,52 @@
+{
+  "head": "1a5067ab673408d8bf33fc6998ab843696043859",
+  "createdAt": "2026-09-27T19:04:12.274Z",
+  "sourcePatch": "C:\\Users\\cabba\\AppData\\Local\\Temp\\alloflow-reader-drafts-04\\reports\\reader-drafts-04\\combined-integration.patch",
+  "scope": "Three source/test candidate files, report browser tools; no runtime/generated/Git writes.",
+  "outcomes": [
+    {
+      "file": "view_simplified_source.jsx",
+      "exists": true,
+      "preimageSha256": "c9625901a41c5a48c86faf6255bc1e3b867607f7c8c953d8b656c65a3a8f0121",
+      "normalizedPreimageSha256": "c9625901a41c5a48c86faf6255bc1e3b867607f7c8c953d8b656c65a3a8f0121",
+      "candidateSha256": "7aba802493a025560c2d2d44a670d21fb6585bdc12365a028dee7764a23e4986"
+    },
+    {
+      "file": "tests/reading_support_draft_transitions.test.js",
+      "exists": true,
+      "preimageSha256": "cf22f253d3b7d6fca598c45ab6c9e6d8e267d8dd10e257236e5140273acdd5b3",
+      "normalizedPreimageSha256": "cf22f253d3b7d6fca598c45ab6c9e6d8e267d8dd10e257236e5140273acdd5b3",
+      "candidateSha256": "a43e209c6972614926d0680a7f88cc651f9c79cb1751fedf86d36f6010b6c792"
+    },
+    {
+      "file": "tests/reading_support_mutation_confirmation.test.js",
+      "exists": false,
+      "preimageSha256": null,
+      "normalizedPreimageSha256": null,
+      "candidateSha256": "2813e335205bc9b71914eaf14c2d085ed83b7c7df1c3aa6bef83ce72102ebe1a"
+    }
+  ],
+  "tools": [
+    {
+      "file": "draft-browser.cjs",
+      "source": "C:\\Users\\cabba\\AppData\\Local\\Temp\\alloflow-reader-drafts-04\\reports\\reader-drafts-04\\combined\\reports\\draft-browser\\browser-check.cjs",
+      "sha256": "a36341428b6386a2e304f956e279c82dcf9f3904ac81f9d66fa28406f94ac677",
+      "changes": [
+        "root now resolves current shared checkout",
+        "distinct output receipt",
+        "current input hashes before and after; drift rejected"
+      ]
+    },
+    {
+      "file": "host-browser.cjs",
+      "source": "C:\\Users\\cabba\\AppData\\Local\\Temp\\alloflow-reader-drafts-04\\reports\\reader-drafts-04\\combined\\reports\\host-browser\\check.cjs",
+      "sha256": "e28a692a0693e493b4a12a336c9965078fb024f148b374211f0ca8e19c409793",
+      "changes": [
+        "root now resolves current shared checkout",
+        "distinct output receipt",
+        "current input hashes before and after; drift rejected"
+      ]
+    }
+  ],
+  "validation": "Strict in-memory patch application only. No tests, builds or browser tools executed."
+}

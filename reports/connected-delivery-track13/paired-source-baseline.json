@@ -1,0 +1,7 @@
+{
+  "baseline": "af3c6b82ab76dad40a5d44f785bf828d1adea86c",
+  "beforeSourceSha256": "11afe5c929be9fe7f115bad6837a5405f442fbbe1de4b0a111c50c59e6b57487",
+  "newCases": 8,
+  "initialFailed": 4,
+  "initialPassed": 30
+}

@@ -1,0 +1,665 @@
+Index: AlloFlowANTI.txt
+===================================================================
+--- AlloFlowANTI.txt	current shared source
++++ AlloFlowANTI.txt	rebased offline-media increment
+@@ -33729,7 +33729,18 @@
+           error.code = 'artifact-audio-unavailable';
+           throw error;
+       }
+-      const preparer = moduleValue.create({ callTTS });
++      const preparer = moduleValue.create({
++          callTTS,
++          getRequestedProfile: ({ voice, language }) => {
++              const provider = String(_aiConfig.ttsProvider || 'auto').trim().toLowerCase();
++              const localEnglishVoice = /^(af_|am_|bf_|bm_)/i.test(voice) && /^(english\b|en(?:[-_]|$))/i.test(language);
++              return {
++                  requestedProvider: provider === 'auto' ? 'auto:' + String(_aiConfig.backend || 'gemini').toLowerCase() : provider,
++                  requestedModel: (provider === 'auto' || provider === 'gemini') && !localEnglishVoice
++                      ? String(_aiConfig.models?.tts || GEMINI_MODELS.tts || '') : '',
++              };
++          },
++      });
+       const request = {
+           ...options,
+           defaultVoice: options.defaultVoice || selectedVoice || 'Kore',
+
+Index: read_aloud_artifact_audio_source.jsx
+===================================================================
+--- read_aloud_artifact_audio_source.jsx	current shared source
++++ read_aloud_artifact_audio_source.jsx	rebased offline-media increment
+@@ -29,6 +29,8 @@
+             if (typeof fetch === 'function') return fetch(...args);
+             throw artifactAudioError('fetch-unavailable', 'Audio bytes cannot be loaded in this environment.');
+         };
++    const getRequestedProfile = typeof dependencies.getRequestedProfile === 'function'
++        ? dependencies.getRequestedProfile : () => ({});
+ 
+     function artifactAudioError(code, message, detail) {
+         const error = new Error(message);
+@@ -117,6 +119,7 @@
+             seen.add(segmentId);
+             const voice = cleanToken(raw && raw.voice, defaults.voice, 160);
+             const language = cleanToken(raw && raw.language, defaults.language, 100);
++            const requested = getRequestedProfile({ voice, language }) || {};
+             const speedValue = Number(raw && (raw.synthesisRate == null ? raw.speed : raw.synthesisRate));
+             const speed = Number.isFinite(speedValue) && speedValue > 0 && speedValue <= 4
+                 ? speedValue
+@@ -128,6 +131,8 @@
+                 language,
+                 speed,
+                 provider: cleanToken(raw && raw.provider, defaults.provider, 80),
++                requestedProvider: cleanToken(raw && raw.requestedProvider, defaults.requestedProvider || requested.requestedProvider || '', 240),
++                requestedModel: cleanToken(raw && raw.requestedModel, defaults.requestedModel || requested.requestedModel || '', 240),
+                 directionFingerprint: cleanToken(raw && raw.directionFingerprint, '', 240),
+                 voiceResolverVersion: Number(raw && raw.voiceResolverVersion) > 0
+                     ? Math.floor(Number(raw.voiceResolverVersion))
+@@ -152,7 +157,11 @@
+             speed: Number.isFinite(requestedSpeed) && requestedSpeed > 0 && requestedSpeed <= 4
+                 ? requestedSpeed
+                 : 1,
+-            provider: cleanToken(options.provider, 'tts-resolver', 80),
++            // Requested routing and actual engine provenance differ on fallback.
++            // An invented provider here would make a valid fallback look stale.
++            provider: cleanToken(options.provider, '', 80),
++            requestedProvider: cleanToken(options.requestedProvider, '', 240),
++            requestedModel: cleanToken(options.requestedModel, '', 240),
+             voiceResolverVersion: Number(options.voiceResolverVersion) > 0
+                 ? Math.floor(Number(options.voiceResolverVersion))
+                 : 2,
+@@ -205,6 +214,8 @@
+                 voice: segment.voice || defaults.voice,
+                 language: segment.language || defaults.language,
+                 provider: segment.provider || defaults.provider,
++                requestedProvider: segment.requestedProvider || undefined,
++                requestedModel: segment.requestedModel || undefined,
+                 speed: segment.speed || defaults.speed,
+                 synthesisRate: segment.speed || defaults.speed,
+                 directionFingerprint: segment.directionFingerprint || undefined,
+@@ -214,12 +225,16 @@
+                 const voice = cleanToken(profile && profile.voice, defaults.voice, 160);
+                 const language = cleanToken(profile && profile.language, defaults.language, 100);
+                 const speed = Number(profile && (profile.synthesisRate == null ? profile.speed : profile.synthesisRate)) || defaults.speed;
++                let resolvedProfile = {};
+                 const audio = await callTTS(text, voice, speed, {
+                     maxRetries: Number(options.maxRetries) >= 0 ? Number(options.maxRetries) : 2,
+                     language,
+                     signal,
++                    onResolvedProfile: value => { resolvedProfile = value || {}; },
+                 });
+-                return normalizeSynthesizedAudio(audio, signal);
++                const normalized = await normalizeSynthesizedAudio(audio, signal);
++                const encoded = typeof Blob !== 'undefined' && normalized instanceof Blob ? { blob: normalized } : normalized;
++                return { ...encoded, provenance: { ...(encoded.provenance || {}), ...resolvedProfile } };
+             },
+         }).forResource({
+             resourceId,
+@@ -242,6 +257,8 @@
+                     voice: segment.voice,
+                     language: segment.language,
+                     provider: segment.provider,
++                    requestedProvider: segment.requestedProvider,
++                    requestedModel: segment.requestedModel,
+                     speed: segment.speed,
+                     synthesisRate: segment.speed,
+                     directionFingerprint: segment.directionFingerprint || undefined,
+@@ -291,7 +308,7 @@
+                     synthesisProfile: {
+                         voice: cleanToken(profile.voice, defaults.voice, 160),
+                         language: cleanToken(profile.language, defaults.language, 100),
+-                        provider: cleanToken(profile.provider, defaults.provider, 80),
++                        provider: cleanToken(profile.provider, defaults.provider || 'tts-resolver', 80),
+                         synthesisRate: Number(profile.synthesisRate == null ? profile.speed : profile.synthesisRate) || defaults.speed,
+                         voiceResolverVersion: Number(profile.voiceResolverVersion) > 0
+                             ? Math.floor(Number(profile.voiceResolverVersion))
+
+Index: export_source.jsx
+===================================================================
+--- export_source.jsx	current shared source
++++ export_source.jsx	rebased offline-media increment
+@@ -343,6 +343,46 @@
+         try { options.onProgress(Object.assign({ phase: 'export', completed: 0, total: 0 }, update || {})); }
+         catch (_) {}
+     };
++    const _storybookImageSource = value => typeof value === 'string' && /^(?:data:image\/(?:png|jpeg|jpg|gif|webp);base64,|blob:|https?:\/\/)/i.test(value) ? value : '';
++    const _storybookPictureId = entry => entry?.imageId == null ? '' : String(entry.imageId).trim();
++    const _recoverStorybookPictures = async (story, cache, hydrate, options, checkCancelled) => {
++        // Only attach recovered media to this export's copy of the journey.
++        // A failed lookup must not discard text or pictures recovered earlier.
++        if (!options.includeImages || typeof hydrate !== 'function') return;
++        const known = new Map();
++        story.forEach(entry => {
++            const id = _storybookPictureId(entry);
++            if (entry.type === 'scene' && id && _storybookImageSource(entry.image)) known.set(id, entry.image);
++        });
++        const missing = story.filter(entry => entry.type === 'scene' && !entry.image && _storybookPictureId(entry));
++        const localCache = Array.isArray(cache) ? cache : [];
++        for (let index = 0; index < missing.length; index++) {
++            checkCancelled();
++            const entry = missing[index], id = _storybookPictureId(entry);
++            _storybookProgress(options, { phase: 'pictures', completed: index, total: missing.length,
++                message: `Checking picture ${index + 1} of ${missing.length}…` });
++            checkCancelled();
++            if (!known.has(id)) {
++                let image = '';
++                try {
++                    const hydrated = await hydrate([{ ...entry }], localCache);
++                    const recovered = Array.isArray(hydrated) ? hydrated[0] : null;
++                    if (recovered && _storybookPictureId(recovered) === id) image = _storybookImageSource(recovered.image);
++                } catch (error) {
++                    if (error?.name === 'AbortError') throw error;
++                    if (typeof warnLog === 'function') warnLog('Storybook picture unavailable', error);
++                }
++                checkCancelled();
++                // Remember failures for this attempt, so repeated references do
++                // not repeat a failed network request. A later export can retry.
++                known.set(id, image);
++            }
++            if (known.get(id)) entry.image = known.get(id);
++            _storybookProgress(options, { phase: 'pictures', completed: index + 1, total: missing.length,
++                message: `Checked ${index + 1} of ${missing.length} pictures.` });
++        }
++        checkCancelled();
++    };
+     const _normalizeStorybookScenes = (fullStory, summary, labels) => {
+         const scenes = [];
+         const addSegment = (scene, kind, rawText, speaker) => {
+@@ -378,6 +418,7 @@
+                     order: scenes.length,
+                     title: `${labels.sceneTitle} ${turnNumber}`,
+                     image: entry.image || null,
++                    pictureExpected: !!entry.image || !!_storybookPictureId(entry),
+                     segments: [],
+                 };
+                 addSegment(currentScene, 'scene', text, '');
+@@ -2215,14 +2256,14 @@
+             if (typeof setIsProcessing === 'function') setIsProcessing(true);
+             if (typeof addToast === 'function') addToast(t('adventure.storybook_toast_writing'), "info");
+             _storybookProgress(options, { phase: 'story', message: 'Preparing your Storybook…' });
+-            const hydrated = typeof rehydrateHistoryWithImages === 'function'
+-                ? await rehydrateHistoryWithImages(adventureState.history || [], adventureState.imageCache || {})
+-                : (adventureState.history || []).slice();
+-            const fullStory = Array.isArray(hydrated) ? hydrated.slice() : [];
+-            checkCancelled();
++            const fullStory = (Array.isArray(adventureState.history) ? adventureState.history : [])
++                .filter(entry => entry && typeof entry === 'object').map(entry => ({ ...entry }));
+             if (adventureState.currentScene) {
+-                fullStory.push({ type: 'scene', text: adventureState.currentScene.text, image: adventureState.sceneImage });
++                fullStory.push({ type: 'scene', text: adventureState.currentScene.text, image: adventureState.sceneImage,
++                    imageId: adventureState.currentScene.imageId });
+             }
++            await _recoverStorybookPictures(fullStory, adventureState.imageCache, rehydrateHistoryWithImages, options, checkCancelled);
++            checkCancelled();
+             const historyText = fullStory.map((entry) => (
+                 entry.type === 'scene' ? `Scene: ${entry.text}` :
+                 entry.type === 'choice' ? `Student Action: ${entry.text}` :
+@@ -2437,10 +2478,8 @@
+             let chaptersHtml = '';
+             let embeddedPictureCount = 0, externalPictureCount = 0, omittedPictureCount = 0;
+             journeyScenes.forEach((scene, sceneIndex) => {
+-                const safeImage = /^(?:data:image\/(?:png|jpeg|jpg|gif|webp);base64,|blob:|https?:\/\/)/i.test(String(scene.image || ''))
+-                    ? String(scene.image)
+-                    : '';
+-                if (includeImages && scene.image) {
++                const safeImage = _storybookImageSource(scene.image);
++                if (includeImages && scene.pictureExpected) {
+                     if (!safeImage) omittedPictureCount++;
+                     else if (safeImage.startsWith('data:')) embeddedPictureCount++;
+                     else externalPictureCount++;
+@@ -2458,6 +2497,7 @@
+                 chaptersHtml += `
+                   <div class="chapter" data-scene-id="${_escapeExportText(scene.sceneId)}">
+                       ${includeImages && safeImage ? `<img loading="lazy" src="${_escapeExportText(safeImage)}" class="scene-img" alt="Scene visualization" />` : ''}
++                      ${includeImages && scene.pictureExpected && !safeImage ? '<p class="picture-unavailable">Picture unavailable in this export.</p>' : ''}
+                       ${segmentHtml}
+                   </div>
+                   ${sceneIndex < journeyScenes.length - 1 ? `<div class="chapter-separator">${safeSeparator}</div>` : ''}
+@@ -2471,7 +2511,9 @@
+                 : '';
+             const pictureSummary = includeImages ? `Pictures embedded: ${embeddedPictureCount}. Pictures requiring the original source: ${externalPictureCount}. Pictures omitted: ${omittedPictureCount}.` : '';
+             if (includeImages && (externalPictureCount || omittedPictureCount) && typeof addToast === 'function') {
+-                addToast(__alloT('export.storybook.pictures_not_embedded', 'Some Storybook pictures are not embedded. Their availability on another device is not verified.'), 'warning');
++                const recoveryDetail = __alloT('export.storybook.pictures_recovery_detail', '{omitted} omitted; {external} require their original source. Keep this export and retry when the missing pictures are available.')
++                    .replace(/\{(omitted|external)\}/g, (_, key) => String(key === 'omitted' ? omittedPictureCount : externalPictureCount));
++                addToast(`${__alloT('export.storybook.pictures_not_embedded', 'Some Storybook pictures are not embedded. Their availability on another device is not verified.')} ${recoveryDetail}`, 'warning');
+             }
+             const storyHtml = `
+               <!DOCTYPE html>
+@@ -2530,7 +2572,7 @@
+                     segment.kind === 'choice' ? 'Student choice' :
+                     segment.kind === 'feedback' ? 'Outcome' : scene.title,
+                 text: segment.text,
+-                image: includeImages && segment.kind === 'scene' ? scene.image || null : null,
++                image: includeImages && segment.kind === 'scene' ? _storybookImageSource(scene.image) || null : null,
+                 toolLabel: 'Adventure Mode',
+                 privacy: 'full',
+             }))).filter((item) => item.text.trim());
+
+Index: tests/adventure_storybook_read_aloud_export.test.js
+===================================================================
+--- tests/adventure_storybook_read_aloud_export.test.js	current shared source
++++ tests/adventure_storybook_read_aloud_export.test.js	rebased offline-media increment
+@@ -125,6 +125,108 @@
+ });
+ 
+ describe('Adventure narrated Storybook artifact export', () => {
++  it('does not load pictures for a text-only export', async () => {
++    window.AlloModules.StudentArtifactStore = { save: vi.fn() };
++    window.callGemini = vi.fn().mockResolvedValue('Complete journey.');
++    const rehydrateHistoryWithImages = vi.fn().mockRejectedValue(new Error('Pictures offline'));
++    const write = vi.fn(); vi.spyOn(window, 'open').mockReturnValue({ document: { write, close: vi.fn() } });
++    const live = storyLive({ adventureState: { history: [{ type: 'scene', text: 'Keep this scene.', imageId: '7' }] }, rehydrateHistoryWithImages });
++    expect(await createExport(live).handleExportStorybook({ includeImages: false })).toBe(true);
++    expect(rehydrateHistoryWithImages).not.toHaveBeenCalled();
++    expect(write).toHaveBeenCalledWith(expect.stringContaining('Keep this scene.'));
++  });
++
++  it('counts a saved picture that cannot be recovered and identifies its scene in the export', async () => {
++    const downloads = installDownloadCapture(), save = vi.fn(); window.AlloModules.StudentArtifactStore = { save };
++    window.callGemini = vi.fn().mockResolvedValue('Complete journey.');
++    const live = storyLive({ adventureState: { history: [{ type: 'scene', text: 'Picture lost after eviction.', imageId: '7' }] } });
++    expect(await createExport(live).handleExportStorybook({ includeImages: true, includeNarration: true })).toBe(true);
++    const html = downloads.find(item => item.filename.endsWith('.html')).blob.content;
++    expect(html.includes('Pictures omitted: 1.')).toBe(true);
++    expect(html.includes('Picture unavailable in this export.')).toBe(true);
++    expect(save.mock.calls[0][0].artifact.readAloudReference.pictures).toMatchObject({ embedded: 0, omitted: 1 });
++    expect(live.addToast).toHaveBeenCalledWith(expect.stringContaining('retry'), 'warning');
++  });
++
++  it('isolates picture-loading failures, retains successful pictures, and retries missing references without changing source history', async () => {
++    const downloads = installDownloadCapture(); window.AlloModules.StudentArtifactStore = { save: vi.fn() };
++    window.callGemini = vi.fn().mockResolvedValue('Complete journey.');
++    const image = 'data:image/png;base64,cGljdHVyZQ==';
++    const history = [{ type: 'scene', text: 'First scene.', imageId: '1' }, { type: 'scene', text: 'Second scene.', imageId: '2' },
++      { type: 'scene', text: 'Second view.', imageId: '2' }, { type: 'scene', text: 'Already available.', image }];
++    const before = JSON.stringify(history), calls = [];
++    let failed = true;
++    const rehydrateHistoryWithImages = vi.fn(async (entries, cache) => {
++      expect(Array.isArray(cache)).toBe(true);
++      return entries.map(entry => { calls.push(entry.imageId); if (failed && entry.imageId === '1') throw new Error('Connection lost'); return { ...entry, image, text: 'Loader must not replace story text.' }; });
++    });
++    const live = storyLive({ adventureState: { history, imageCache: {} }, rehydrateHistoryWithImages });
++    const api = createExport(live);
++    expect(await api.handleExportStorybook({ includeImages: true, includeNarration: true })).toBe(true);
++    const html = downloads.find(item => item.filename.endsWith('.html')).blob.content;
++    expect(html.includes('Pictures embedded: 3.')).toBe(true); expect(html.includes('Pictures omitted: 1.')).toBe(true);
++    expect(html.includes('First scene.')).toBe(true); expect(html.includes('Loader must not')).toBe(false);
++    expect(calls).toEqual(['1', '2']); expect(JSON.stringify(history)).toBe(before);
++    failed = false; calls.length = 0; downloads.length = 0;
++    expect(await api.handleExportStorybook({ includeImages: true, includeNarration: true })).toBe(true);
++    expect(downloads.find(item => item.filename.endsWith('.html')).blob.content.includes('Pictures omitted: 0.')).toBe(true);
++    expect(calls).toEqual(['1', '2']); expect(JSON.stringify(history)).toBe(before);
++  });
++
++  it('stops after cancellation during a picture lookup without requesting narration, saving a manifest, or downloading', async () => {
++    const downloads = installDownloadCapture(), save = vi.fn(), controller = new AbortController();
++    window.AlloModules.StudentArtifactStore = { save }; window.callGemini = vi.fn().mockResolvedValue('Complete journey.');
++    let finish;
++    const rehydrateHistoryWithImages = vi.fn().mockImplementationOnce(entries => new Promise(resolve => { finish = () => resolve(entries.map(entry => ({ ...entry, image: 'data:image/png;base64,cGljdHVyZQ==' }))); }))
++      .mockImplementation(async entries => entries);
++    const prepareReadAloudArtifactAudio = vi.fn(async () => ({}));
++    const history = [{ type: 'scene', text: 'First.', imageId: '1' }, { type: 'scene', text: 'Second.', imageId: '2' }];
++    const api = createExport(storyLive({ adventureState: { history }, rehydrateHistoryWithImages, prepareReadAloudArtifactAudio }));
++    const pending = api.handleExportStorybook({ includeImages: true, includeNarration: true, signal: controller.signal });
++    await vi.waitFor(() => expect(finish).toBeTypeOf('function')); controller.abort(); finish();
++    expect(await pending).toBe(false); expect(rehydrateHistoryWithImages).toHaveBeenCalledOnce();
++    expect(window.callGemini).not.toHaveBeenCalled(); expect(prepareReadAloudArtifactAudio).not.toHaveBeenCalled();
++    expect(save).not.toHaveBeenCalled(); expect(downloads).toHaveLength(0); expect(history[0].image).toBeUndefined();
++    expect(await api.handleExportStorybook({ includeImages: true, includeNarration: true })).toBe(true);
++  });
++
++  it('reuses an available picture with the same reference and deduplicates failed references within the attempt', async () => {
++    const downloads = installDownloadCapture(); window.AlloModules.StudentArtifactStore = { save: vi.fn() };
++    window.callGemini = vi.fn().mockResolvedValue('Complete journey.');
++    const rehydrateHistoryWithImages = vi.fn().mockRejectedValue(new Error('Missing picture'));
++    const history = [{ type: 'scene', text: 'Early reference.', imageId: 0 },
++      { type: 'scene', text: 'Available later.', imageId: '0', image: 'data:image/png;base64,cGljdHVyZQ==' },
++      { type: 'scene', text: 'Missing first.', imageId: '2' }, { type: 'scene', text: 'Missing again.', imageId: '2' }];
++    expect(await createExport(storyLive({ adventureState: { history }, rehydrateHistoryWithImages })).handleExportStorybook({ includeImages: true, includeNarration: true })).toBe(true);
++    expect(rehydrateHistoryWithImages).toHaveBeenCalledOnce(); expect(rehydrateHistoryWithImages.mock.calls[0][0][0].imageId).toBe('2');
++    const html = downloads.find(item => item.filename.endsWith('.html')).blob.content;
++    expect(html.includes('Pictures embedded: 2.')).toBe(true); expect(html.includes('Pictures omitted: 2.')).toBe(true);
++  });
++
++  it.each(['foreign-reference', 'invalid-image', 'empty-response'])('preserves scene text when picture recovery returns %s', async mode => {
++    const downloads = installDownloadCapture(), save = vi.fn(); window.AlloModules.StudentArtifactStore = { save };
++    window.callGemini = vi.fn().mockResolvedValue('Complete journey.');
++    const rehydrateHistoryWithImages = vi.fn(async entries => mode === 'empty-response' ? null :
++      [{ ...entries[0], text: 'Unexpected replacement.', imageId: mode === 'foreign-reference' ? 'other' : '3',
++        image: mode === 'invalid-image' ? 'javascript:alert(1)' : 'data:image/png;base64,cGljdHVyZQ==' }]);
++    const live = storyLive({ adventureState: { history: [], currentScene: { text: 'Current scene.', imageId: '3' } }, rehydrateHistoryWithImages });
++    expect(await createExport(live).handleExportStorybook({ includeImages: true, includeNarration: true })).toBe(true);
++    const html = downloads.find(item => item.filename.endsWith('.html')).blob.content;
++    expect(html.includes('Current scene.')).toBe(true); expect(html.includes('Unexpected replacement.')).toBe(false);
++    expect(html.includes('Pictures omitted: 1.')).toBe(true);
++    expect(save.mock.calls[0][0].items.find(item => item.title !== 'Epilogue').image).toBeNull();
++  });
++
++  it('keeps missing-picture counts when the hydration module is unavailable and distinguishes them from scenes without pictures', async () => {
++    const downloads = installDownloadCapture(); window.AlloModules.StudentArtifactStore = { save: vi.fn() };
++    window.callGemini = vi.fn().mockResolvedValue('Complete journey.');
++    const live = storyLive({ adventureState: { history: [{ type: 'scene', text: 'No picture requested.' }, { type: 'scene', text: 'Picture missing.', imageId: '4' }] },
++      rehydrateHistoryWithImages: undefined });
++    expect(await createExport(live).handleExportStorybook({ includeImages: true, includeNarration: true })).toBe(true);
++    const html = downloads.find(item => item.filename.endsWith('.html')).blob.content;
++    expect(html.includes('Pictures omitted: 1.')).toBe(true); expect(html.match(/class="picture-unavailable"/g)).toHaveLength(1);
++  });
++
+   it('does not opt text-only exports into the narration recovery cache', async () => {
+     window.AlloModules.StudentArtifactStore = { save: vi.fn() };
+     window.callGemini = vi.fn().mockResolvedValue('Text-only summary.');
+@@ -223,10 +325,19 @@
+     const html = downloads.find(item => item.filename.endsWith('.html')).blob.content;
+     expect(html).toContain('Pictures requiring the original source: 1');
+     expect(live.t).toHaveBeenCalledWith(pictureWarningKey);
+-    expect(live.addToast).toHaveBeenCalledWith(expectedWarning, 'warning');
++    expect(live.addToast).toHaveBeenCalledWith(`${expectedWarning} 0 omitted; 1 require their original source. Keep this export and retry when the missing pictures are available.`, 'warning');
+     expect(save.mock.calls[0][0].artifact.readAloudReference.pictures).toMatchObject({ external: 1, decoding: 'unverified' });
+     expect(live.addToast.mock.calls.some(([text]) => text.includes('self-contained'))).toBe(false);
+   });
++  it('translates picture recovery counts while preserving literal translation content', async () => {
++    installDownloadCapture(); window.AlloModules.StudentArtifactStore = { save: vi.fn() };
++    window.callGemini = vi.fn().mockResolvedValue('Complete journey.');
++    const live = storyLive({ adventureState: { history: [{ type: 'scene', text: 'Scene.', imageId: 'missing' }] },
++      t: vi.fn(key => key === pictureWarningKey ? 'Translated warning.' : key === 'export.storybook.pictures_recovery_detail'
++        ? 'Retry: {omitted} missing, {external} external. Literal $&.' : key) });
++    expect(await createExport(live).handleExportStorybook({ includeImages: true, includeNarration: true })).toBe(true);
++    expect(live.addToast).toHaveBeenCalledWith('Translated warning. Retry: 1 missing, 0 external. Literal $&.', 'warning');
++  });
+   it('does not save a manifest or download after cancellation during story preparation', async () => {
+     const downloads = installDownloadCapture(), controller = new AbortController();
+     const save = vi.fn(); window.AlloModules.StudentArtifactStore = { save };
+
+Index: tests/read_aloud_artifact_audio.test.js
+===================================================================
+--- tests/read_aloud_artifact_audio.test.js	current shared source
++++ tests/read_aloud_artifact_audio.test.js	rebased offline-media increment
+@@ -1,4 +1,5 @@
+ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
++import { readFileSync } from 'node:fs';
+ import { loadAlloModule } from './setup.js';
+ import { validAudioBase64 } from './lib/audio_fixtures.js';
+ 
+@@ -6,6 +7,13 @@
+ let Contract;
+ 
+ const audioB64 = (text) => validAudioBase64(192, 65 + (String(text).length % 20));
++function hostPreparer(callTTS, config, voice, language) {
++  const source = readFileSync('AlloFlowANTI.txt', 'utf8');
++  const start = source.indexOf('const artifactAudioRecoveryRef = useRef(null);');
++  const wrapper = source.slice(start, source.indexOf('  const _getPrivatePersonaArtifactStorage', start));
++  return new Function('useRef', 'callTTS', 'storageDB', 'selectedVoice', 'leveledTextLanguage', 'currentUiLanguage', 'voiceSpeed', '_aiConfig', 'GEMINI_MODELS',
++    wrapper + '; return prepareReadAloudArtifactAudio;')(() => ({ current: null }), callTTS, {}, voice, language, 'English', 1, config, { tts: 'default-model' });
++}
+ 
+ beforeAll(() => {
+   loadAlloModule('karaoke_audio_store_module.js');
+@@ -32,6 +40,135 @@
+ });
+ 
+ describe('explicit-save read-aloud artifact audio', () => {
++  it.each([
++    ['Kore', 'English', true],
++    ['af_heart', 'English', false],
++    ['af_heart', 'en-US', false],
++    ['af_heart', 'Spanish', true],
++  ])('uses the host model only when relevant for %s in %s', async (voice, language, cloudModelApplies) => {
++    const callTTS = vi.fn(async text => ({ b64: audioB64(text), mime: 'audio/wav' }));
++    const config = { ttsProvider: 'auto', backend: 'gemini', models: { tts: 'model-a' } };
++    const prepare = hostPreparer(callTTS, config, voice, language);
++    const options = { ownerApproved: true, segments: [{ segmentId: 'one', text: 'Current narration.' }] };
++    const first = await prepare(options); config.models.tts = 'model-b'; callTTS.mockClear();
++    const next = await prepare({ ...options, checkpoint: first.checkpoint });
++    expect(next.available).toBe(1); expect(callTTS).toHaveBeenCalledTimes(cloudModelApplies ? 1 : 0);
++    const profile = Object.values(next.checkpoint.payload.entries)[0].synthesisProfile;
++    expect(profile.requestedProvider).toBe('auto:gemini');
++    expect(profile.requestedModel).toBe(cloudModelApplies ? 'model-b' : undefined);
++  });
++
++  it('uses live host provider settings, ignores an irrelevant local model, and detects returning to the default cloud model', async () => {
++    const callTTS = vi.fn(async text => ({ b64: audioB64(text), mime: 'audio/wav' }));
++    const config = { ttsProvider: 'local', backend: 'gemini', models: { tts: 'model-a' } };
++    const prepare = hostPreparer(callTTS, config, 'Kore', 'English');
++    const options = { ownerApproved: true, segments: [{ segmentId: 'one', text: 'Current narration.' }] };
++    const first = await prepare(options); config.models.tts = 'model-b'; callTTS.mockClear();
++    expect(await prepare({ ...options, checkpoint: first.checkpoint })).toMatchObject({ skipped: 1 }); expect(callTTS).not.toHaveBeenCalled();
++    config.ttsProvider = 'auto'; config.models.tts = '';
++    const next = await prepare({ ...options, checkpoint: first.checkpoint }); expect(callTTS).toHaveBeenCalledOnce();
++    expect(Object.values(next.checkpoint.payload.entries)[0].synthesisProfile).toMatchObject({ requestedProvider: 'auto:gemini', requestedModel: 'default-model' });
++  });
++
++  it('reuses unchanged settings and replaces only AI clips after a requested provider or model change', async () => {
++    const callTTS = vi.fn(async text => ({ b64: audioB64(text), mime: 'audio/wav' }));
++    const helper = createArtifactAudio({ callTTS });
++    const options = { ownerApproved: true, resourceId: 'settings-story', requestedProvider: 'auto:gemini', requestedModel: 'model-a',
++      segments: [{ segmentId: 'ai', text: 'Generated narration.' }, { segmentId: 'teacher', text: 'Teacher narration.' }] };
++    const first = await helper.prepare(options);
++    const teacher = Object.values(first.checkpoint.payload.entries).find(entry => entry.identity.segmentId === 'teacher');
++    teacher.source = 'human-teacher';
++    const teacherBytes = teacher.audio;
++    callTTS.mockClear();
++    const unchanged = await helper.prepare({ ...options, checkpoint: first.checkpoint });
++    expect(unchanged).toMatchObject({ skipped: 2, available: 2 }); expect(callTTS).not.toHaveBeenCalled();
++    const changedModel = await helper.prepare({ ...options, requestedModel: 'model-b', checkpoint: unchanged.checkpoint });
++    expect(callTTS.mock.calls.map(([text]) => text)).toEqual(['Generated narration.']);
++    expect(changedModel.audioBySegmentId.teacher.base64).toBe(teacherBytes);
++    callTTS.mockClear();
++    await helper.prepare({ ...options, requestedProvider: 'local', requestedModel: '', checkpoint: changedModel.checkpoint });
++    expect(callTTS.mock.calls.map(([text]) => text)).toEqual(['Generated narration.']);
++  });
++
++  it('keeps actual fallback provenance separate from the selected provider and reuses it offline', async () => {
++    const callTTS = vi.fn(async (text, _voice, _speed, options) => {
++      options.onResolvedProfile?.({ provider: 'local', engine: 'kokoro', model: 'kokoro-v1', resolvedVoice: 'af_heart' });
++      return { b64: audioB64(text), mime: 'audio/wav' };
++    });
++    const helper = createArtifactAudio({ callTTS });
++    const options = { ownerApproved: true, requestedProvider: 'auto:gemini', requestedModel: 'cloud-model',
++      segments: [{ segmentId: 'one', text: 'Offline fallback.' }] };
++    const first = await helper.prepare(options);
++    expect(first).toMatchObject({ available: 1, failed: 0 });
++    expect(Object.values(first.checkpoint.payload.entries)[0].synthesisProfile).toMatchObject({
++      requestedProvider: 'auto:gemini', requestedModel: 'cloud-model', provider: 'local', engine: 'kokoro', model: 'kokoro-v1',
++    });
++    expect(first.audioBySegmentId.one.synthesisProfile.provider).toBe('local');
++    callTTS.mockClear(); callTTS.mockRejectedValue(new Error('offline'));
++    const resumed = await helper.prepare({ ...options, checkpoint: first.checkpoint });
++    expect(resumed).toMatchObject({ available: 1, skipped: 1 }); expect(callTTS).not.toHaveBeenCalled();
++  });
++
++  it('keeps the prior bytes when replacement fails and retries only the remaining current-profile clip', async () => {
++    const callTTS = vi.fn(async text => ({ b64: audioB64(text), mime: 'audio/wav' }));
++    const helper = createArtifactAudio({ callTTS });
++    const options = { ownerApproved: true, requestedProvider: 'auto:gemini', requestedModel: 'model-a',
++      segments: [{ segmentId: 'one', text: 'First clip.' }, { segmentId: 'two', text: 'Second clip.' }] };
++    const first = await helper.prepare(options);
++    const prior = Object.values(first.checkpoint.payload.entries).find(entry => entry.identity.segmentId === 'two');
++    callTTS.mockImplementation(async text => { if (text === 'Second clip.') throw new Error('network lost'); return { b64: audioB64(text), mime: 'audio/wav' }; });
++    const partial = await helper.prepare({ ...options, requestedModel: 'model-b', checkpoint: first.checkpoint });
++    expect(partial).toMatchObject({ available: 1, remaining: 1, failed: 1 });
++    expect(partial.audioBySegmentId.two).toBeUndefined();
++    expect(Object.values(partial.checkpoint.payload.entries).find(entry => entry.identity.segmentId === 'two')).toEqual(prior);
++    callTTS.mockImplementation(async text => ({ b64: audioB64(text), mime: 'audio/wav' })); callTTS.mockClear();
++    const resumed = await helper.prepare({ ...options, requestedModel: 'model-b', checkpoint: partial.checkpoint });
++    expect(resumed).toMatchObject({ available: 2, skipped: 1 }); expect(callTTS.mock.calls.map(([text]) => text)).toEqual(['Second clip.']);
++  });
++
++  it('uses per-segment requested profiles so a cloud model change preserves an independent local voice', async () => {
++    let model = 'model-a';
++    const getRequestedProfile = vi.fn(({ voice }) => voice === 'af_heart'
++      ? { requestedProvider: 'local' } : { requestedProvider: 'auto:gemini', requestedModel: model });
++    const callTTS = vi.fn(async text => ({ b64: audioB64(text), mime: 'audio/wav' }));
++    const helper = createArtifactAudio({ callTTS, getRequestedProfile });
++    const options = { ownerApproved: true, segments: [{ segmentId: 'cloud', text: 'Cloud narration.' }, { segmentId: 'local', text: 'Local narration.', voice: 'af_heart' }] };
++    const first = await helper.prepare(options); callTTS.mockClear(); model = 'model-b';
++    const second = await helper.prepare({ ...options, checkpoint: first.checkpoint });
++    expect(second).toMatchObject({ available: 2, skipped: 1 });
++    expect(callTTS.mock.calls.map(([text]) => text)).toEqual(['Cloud narration.']);
++    expect(getRequestedProfile).toHaveBeenCalledWith({ voice: 'af_heart', language: 'English' });
++  });
++
++  it('preserves URL synthesis provenance while keeping private request fields out of the portable schema', async () => {
++    const bytes = Uint8Array.from(atob(audioB64('url')), char => char.charCodeAt(0));
++    const fetch = vi.fn(async () => ({ ok: true, blob: async () => ({ type: 'audio/wav', arrayBuffer: async () => bytes.buffer }) }));
++    const callTTS = vi.fn(async (_text, _voice, _speed, options) => {
++      options.onResolvedProfile({ provider: 'gemini', engine: 'gemini', model: 'model-a', apiKey: 'must-not-persist' });
++      return 'blob:provider-audio';
++    });
++    const result = await createArtifactAudio({ callTTS, fetch }).prepare({ ownerApproved: true, requestedProvider: 'auto:gemini', requestedModel: 'model-a',
++      segments: [{ segmentId: 'one', text: 'URL narration.' }] });
++    expect(fetch).toHaveBeenCalledWith('blob:provider-audio', undefined);
++    const profile = Object.values(result.checkpoint.payload.entries)[0].synthesisProfile;
++    expect(profile).toMatchObject({ provider: 'gemini', engine: 'gemini', model: 'model-a', requestedProvider: 'auto:gemini', requestedModel: 'model-a' });
++    expect(JSON.stringify(result)).not.toContain('must-not-persist');
++    expect(result.audioBySegmentId.one.synthesisProfile).not.toHaveProperty('requestedModel');
++    const artifact = Contract.buildAdventureStorybookArtifact({ storyId: 'url-story', title: 'Story', language: 'English',
++      scenes: [{ sceneId: 'scene', segments: [{ segmentId: 'one', text: 'URL narration.', audio: result.audioBySegmentId.one }] }] });
++    expect(Contract.validateReadAloudArtifact(artifact).ok).toBe(true);
++  });
++
++  it('preserves legacy accepted clips with unknown request identity instead of invalidating an offline library', async () => {
++    const callTTS = vi.fn(async text => ({ b64: audioB64(text), mime: 'audio/wav' }));
++    const helper = createArtifactAudio({ callTTS });
++    const options = { ownerApproved: true, segments: [{ segmentId: 'one', text: 'Previously prepared.' }] };
++    const first = await helper.prepare(options); callTTS.mockClear(); callTTS.mockRejectedValue(new Error('offline'));
++    expect(await helper.prepare({ ...options, requestedProvider: 'auto:gemini', requestedModel: 'model-a', checkpoint: first.checkpoint }))
++      .toMatchObject({ available: 1, skipped: 1 });
++    expect(callTTS).not.toHaveBeenCalled();
++  });
++
+   it('uses Kore by default and preserves an explicitly selected segment voice', async () => {
+     const calls = [];
+     const callTTS = vi.fn(async (text, voice, speed, options) => {
+
+Index: tests/read_aloud_artifact_host_integration.test.js
+===================================================================
+--- tests/read_aloud_artifact_host_integration.test.js	current shared source
++++ tests/read_aloud_artifact_host_integration.test.js	rebased offline-media increment
+@@ -29,7 +29,11 @@
+     expect(helper).toContain("defaultVoice: options.defaultVoice || selectedVoice || 'Kore'");
+     expect(helper).not.toMatch(/Puck/i);
+     expect(host).toContain('handleSavePersonaChat: handleSavePrivatePersonaSession');
+-    expect(host).toContain("source: 'persona-owner-save'");
++    expect(host).toContain('_alloHostHandlers().handleSavePrivatePersonaSession(...__a)');
++    // Persona saving moved to the extracted handler; the host supplies the
++    // shared audio preparer through its live dependency object.
++    const handlers = read('host_handlers_source.jsx');
++    expect(handlers.includes("source: 'persona-owner-save'")).toBe(true);
+   });
+ 
+   it('keeps private Persona artifacts outside student sharing and strips legacy inline transcripts', () => {
+
+Index: dev-tools/check_offline_storybook_recovery.cjs
+===================================================================
+--- dev-tools/check_offline_storybook_recovery.cjs	current shared source
++++ dev-tools/check_offline_storybook_recovery.cjs	rebased offline-media increment
+@@ -22,8 +22,8 @@
+   for (let n = 0; n < frames; n++) data.writeInt16LE(Math.round(2000 * Math.sin(n * Math.PI * 440 / 4000)), 44 + n * 2);
+   return data.toString('base64');
+ }
+-async function exportFixture(page, failScene, offlineProviders = false) {
+-  return page.evaluate(async ({ hostWrapper, writer, wave, failScene, offlineProviders }) => {
++async function exportFixture(page, failScene, offlineProviders = false, requestedModel = 'fixture-model-a') {
++  return page.evaluate(async ({ hostWrapper, writer, wave, failScene, offlineProviders, requestedModel }) => {
+     const database = await new Promise((resolve, reject) => {
+       const request = indexedDB.open('disposable-storybook', 1); request.onupgradeneeded = () => request.result.createObjectStore('checkpoints');
+       request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error);
+@@ -33,31 +33,38 @@
+       set: (key, value) => new Promise((resolve, reject) => { const tx = database.transaction('checkpoints', 'readwrite'); tx.objectStore('checkpoints').put(value, key); tx.oncomplete = () => resolve(true); tx.onerror = () => reject(tx.error); }),
+     };
+     window.AlloModules.UtilsPure = { writeVerifiedStorageSnapshot: new Function(writer + '; return writeVerifiedStorageSnapshot;')() };
+-    const synthesis = [], summaries = [], batches = [], warnings = [], downloads = [], urls = new Map();
++    const synthesis = [], summaries = [], pictureLookups = [], batches = [], warnings = [], downloads = [], urls = new Map();
+     const originalCreate = URL.createObjectURL.bind(URL);
+     URL.createObjectURL = blob => { const url = originalCreate(blob); urls.set(url, blob); return url; };
+     HTMLAnchorElement.prototype.click = function () { downloads.push({ filename: this.download, blob: urls.get(this.href) }); };
+-    const prepare = new Function('useRef', 'callTTS', 'storageDB', 'selectedVoice', 'leveledTextLanguage', 'currentUiLanguage', 'voiceSpeed',
+-      hostWrapper + '; return { audio: prepareReadAloudArtifactAudio, summary: prepareStorybookSummary };')(() => ({ current: null }), async text => {
++    const prepare = new Function('useRef', 'callTTS', 'storageDB', 'selectedVoice', 'leveledTextLanguage', 'currentUiLanguage', 'voiceSpeed', '_aiConfig', 'GEMINI_MODELS',
++      hostWrapper + '; return { audio: prepareReadAloudArtifactAudio, summary: prepareStorybookSummary };')(() => ({ current: null }), async (text, _voice, _speed, options) => {
+         synthesis.push(text); if (offlineProviders || (failScene && text === 'First scene.')) throw new Error('Simulated network loss');
+-        return { b64: wave, mime: 'audio/wav' };
+-      }, storage, 'Kore', 'English', 'English', 1);
++        options.onResolvedProfile?.({ provider: 'local', engine: 'kokoro', model: 'fixture-local-fallback' });
++        // Match the host resolver's normal transport, including copying URL
++        // bytes into the checkpoint while retaining its resolved provenance.
++        return URL.createObjectURL(new Blob([Uint8Array.from(atob(wave), char => char.charCodeAt(0))], { type: 'audio/wav' }));
++      }, storage, 'Kore', 'English', 'English', 1, { ttsProvider: 'auto', backend: 'gemini', models: { tts: requestedModel } }, { tts: 'fixture-default-model' });
+     const canvas = document.createElement('canvas'); canvas.width = 32; canvas.height = 32; const paint = canvas.getContext('2d'); paint.fillStyle = '#15803d'; paint.fillRect(0, 0, 32, 32);
+     const escape = text => String(text || '').replace(/[<>&"]/g, char => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[char]));
+     window.callGemini = async prompt => { summaries.push(prompt); if (offlineProviders) throw new Error('Summary provider offline'); return 'You completed the journey.'; };
+-    const live = { adventureState: { history: [{ type: 'scene', text: 'First scene.', image: canvas.toDataURL('image/png') }], level: 3 },
++    const live = { adventureState: { history: [{ type: 'scene', text: 'First scene.', image: canvas.toDataURL('image/png') },
++      { type: 'scene', text: 'Your story continues even when this picture is unavailable.', imageId: 'missing-picture' }], level: 3 },
+       generatedContent: { id: 'disposable-story' }, sourceTopic: 'A Safe Journey', selectedVoice: 'Kore', voiceSpeed: 1, currentUiLanguage: 'English',
+-      setShowStorybookExportModal() {}, setIsProcessing() {}, rehydrateHistoryWithImages: async values => values,
++      setShowStorybookExportModal() {}, setIsProcessing() {}, rehydrateHistoryWithImages: async values => {
++        pictureLookups.push(...values.map(value => value.imageId)); throw new Error('Simulated picture unavailable after cache eviction');
++      },
+       parseMarkdownToHTML: text => '<p>' + escape(text) + '</p>', addToast: (text, tone) => { if (tone === 'warning') warnings.push(text); },
+       prepareStorybookSummary: prepare.summary,
+-      prepareReadAloudArtifactAudio: async options => { const batch = await prepare.audio(options); batches.push({ available: batch.available, skipped: batch.skipped, recovery: batch.recovery }); return batch; },
++      prepareReadAloudArtifactAudio: async options => { const batch = await prepare.audio(options); batches.push({ available: batch.available, skipped: batch.skipped, recovery: batch.recovery,
++        profiles: Object.values(batch.checkpoint.payload.entries).map(entry => entry.synthesisProfile) }); return batch; },
+       t: key => ({ 'export.storybook.page_title': 'A Safe Journey', 'export.storybook.epilogue_badge': 'Epilogue', 'export.storybook.log_header': 'Your journey', 'export.storybook.print_button': 'Print Storybook' }[key] || '') };
+     const api = window.AlloModules.createExport({ liveRef: { current: live }, warnLog: (...args) => warnings.push(args.map(value => value?.message || String(value)).join(' ')), debugLog() {}, escapeXml: escape, generateUUID: () => 'disposable-story' });
+     const ok = await api.handleExportStorybook({ includeImages: true, includeNarration: true, keepModalOpen: true });
+     const files = await Promise.all(downloads.map(async item => ({ filename: item.filename, contents: await item.blob.text() })));
+     database.close();
+-    return { ok, synthesis, summaries: summaries.length, batches, warnings, files };
+-  }, { hostWrapper, writer, wave: wave(), failScene, offlineProviders });
++    return { ok, synthesis, summaries: summaries.length, pictureLookups, batches, warnings, files };
++  }, { hostWrapper, writer, wave: wave(), failScene, offlineProviders, requestedModel });
+ }
+ async function verifyRecipient(page) {
+   await page.locator('.scene-img').scrollIntoViewIfNeeded();
+@@ -68,6 +75,7 @@
+     const images = Array.from(document.querySelectorAll('.scene-img')); await Promise.all(images.map(image => image.decode()));
+     const artifact = JSON.parse(document.querySelector('#alloflow-read-aloud-artifact').textContent);
+     return { durations, pictureWidths: images.map(image => image.naturalWidth), mediaSummary: document.querySelector('.media-availability').textContent,
++      missingPictureNotices: document.querySelectorAll('.picture-unavailable').length,
+       artifactSegments: artifact.scenes.flatMap(scene => scene.segments).length };
+   });
+ }
+@@ -82,16 +90,20 @@
+     author.on('pageerror', error => console.error('Author fixture error: ' + error.message));
+     await author.goto(`http://127.0.0.1:${server.address().port}/`);
+     const interrupted = await exportFixture(author, true);
+-    if (!interrupted.ok || interrupted.batches[0]?.available !== 1 || interrupted.batches[0]?.recovery.state !== 'saved') throw Error('Partial checkpoint was not saved: ' + JSON.stringify({ ok: interrupted.ok, batches: interrupted.batches, warnings: interrupted.warnings }));
++    if (!interrupted.ok || interrupted.batches[0]?.available !== 2 || interrupted.batches[0]?.recovery.state !== 'saved' || interrupted.pictureLookups.join('|') !== 'missing-picture') throw Error('Partial checkpoint was not saved: ' + JSON.stringify({ ok: interrupted.ok, batches: interrupted.batches, warnings: interrupted.warnings }));
+     await author.reload();
+     const resumed = await exportFixture(author, false);
+-    if (!resumed.ok || resumed.summaries !== 0 || resumed.synthesis.join('|') !== 'First scene.' || resumed.batches[0].available !== 2 || resumed.batches[0].skipped !== 1) throw Error('Reload did not reuse current accepted epilogue and narration');
++    if (!resumed.ok || resumed.summaries !== 0 || resumed.synthesis.join('|') !== 'First scene.' || resumed.batches[0].available !== 3 || resumed.batches[0].skipped !== 2) throw Error('Reload did not reuse current accepted epilogue and narration');
++    await author.reload();
++    const changedModel = await exportFixture(author, false, false, 'fixture-model-b');
++    if (!changedModel.ok || changedModel.summaries || changedModel.synthesis.length !== 3 || changedModel.batches[0]?.available !== 3 ||
++      changedModel.batches[0].profiles.some(profile => profile.requestedModel !== 'fixture-model-b' || profile.provider !== 'local')) throw Error('Changed model did not refresh current narration while retaining actual fallback provenance');
+     await author.reload(); // Destroy all in-memory recovery, but retain disposable device storage.
+     const authorNetworkRequests = [];
+     author.on('request', request => { if (/^https?:/.test(request.url())) authorNetworkRequests.push(request.url()); });
+     await authorContext.setOffline(true);
+-    const offlineExport = await exportFixture(author, false, true);
+-    if (!offlineExport.ok || offlineExport.summaries || offlineExport.synthesis.length || offlineExport.batches[0]?.available !== 2 || authorNetworkRequests.length) throw Error('Prepared Storybook could not export offline after reload: ' + JSON.stringify({ ...offlineExport, files: undefined }));
++    const offlineExport = await exportFixture(author, false, true, 'fixture-model-b');
++    if (!offlineExport.ok || offlineExport.summaries || offlineExport.synthesis.length || offlineExport.batches[0]?.available !== 3 || authorNetworkRequests.length || offlineExport.pictureLookups.join('|') !== 'missing-picture') throw Error('Prepared Storybook could not export offline after reload: ' + JSON.stringify({ ...offlineExport, files: undefined }));
+     const portable = path.join(temporary, 'actual-storybook.html');
+     fs.writeFileSync(portable, offlineExport.files.find(file => file.filename.endsWith('.html')).contents);
+     await authorContext.close();
+@@ -103,12 +115,14 @@
+     await recipient.evaluate(() => { const button = document.createElement('button'); button.id = 'fixture-play'; button.textContent = 'Verify narration playback'; button.onclick = async () => { const audio = document.querySelector('audio'); audio.onended = () => window.fixturePlayed = true; await audio.play(); }; document.body.prepend(button); });
+     await recipient.click('#fixture-play'); await recipient.waitForFunction(() => window.fixturePlayed === true);
+     await recipient.reload(); const reloaded = await verifyRecipient(recipient);
+-    if ([received, reloaded].some(value => value.durations.length !== 2 || value.durations.some(time => time <= 0) || value.pictureWidths[0] !== 32) || networkRequests.length || errors.length) throw Error('Actual exported Storybook failed offline verification');
++    if ([received, reloaded].some(value => value.durations.length !== 3 || value.durations.some(time => time <= 0) || value.pictureWidths[0] !== 32 ||
++      value.missingPictureNotices !== 1 || !value.mediaSummary.includes('Pictures omitted: 1.')) || networkRequests.length || errors.length) throw Error('Actual exported Storybook failed offline verification');
+     const output = path.join(root, 'reports/offline-media-recovery');
+     await recipient.screenshot({ path: path.join(output, 'storybook-offline-390.png'), fullPage: true });
+     const report = { status: 'passed', initial: { summaries: interrupted.summaries, synthesis: interrupted.synthesis.length, available: interrupted.batches[0].available }, resumed: { summaries: resumed.summaries, synthesis: resumed.synthesis.length, ...resumed.batches[0] },
+-      offlineAuthor: { summaries: offlineExport.summaries, synthesis: offlineExport.synthesis.length, ...offlineExport.batches[0], networkRequests: authorNetworkRequests },
+-      received, reloaded, actualPlayback: true, networkRequests, errors, scope: 'Actual Storybook export and host recovery wrapper, real disposable IndexedDB reload, export offline with both providers unavailable, then a fresh offline recipient; no deployed app data.' };
++      changedModel: { summaries: changedModel.summaries, synthesis: changedModel.synthesis.length, ...changedModel.batches[0] },
++      offlineAuthor: { summaries: offlineExport.summaries, synthesis: offlineExport.synthesis.length, pictureLookups: offlineExport.pictureLookups, ...offlineExport.batches[0], networkRequests: authorNetworkRequests },
++      received, reloaded, actualPlayback: true, synthesisTransport: 'blob-url', networkRequests, errors, scope: 'Actual Storybook export and host recovery wrapper, real disposable IndexedDB reload, changed requested model with local fallback provenance, simulated missing picture after eviction, export offline with both providers unavailable, then a fresh offline recipient; no deployed app data.' };
+     fs.writeFileSync(path.join(output, 'storybook-browser-verification.json'), JSON.stringify(report, null, 2) + '\n'); console.log(JSON.stringify(report, null, 2));
+     await recipientContext.close();
+   } finally {

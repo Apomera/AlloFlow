@@ -173,6 +173,28 @@ describe('Astronomy geometric solar-day profile', () => {
 });
 
 describe('Astronomy Seasons observer Sun path', () => {
+  it('uses a carried southern observer and keeps its custom option when comparing preset locations', () => {
+    const custom = { name: 'Cape Town observing site', lat: -34.5, lon: 18.42, timeZone: 'Africa/Johannesburg' };
+    const shared = { tab: 'seasons', skyLoc: 'custom', skyCustomLocation: custom, seasonMonth: 6 };
+    const june = parseMarkup(renderAstronomy(shared));
+    const december = parseMarkup(renderAstronomy({ ...shared, seasonMonth: 12 }));
+    const juneFigure = june.querySelector('#astronomy-season-sun-path');
+    const decemberFigure = december.querySelector('#astronomy-season-sun-path');
+    expect(june.querySelector('#astronomy-season-observer').value).toBe('custom');
+    expect(june.querySelector('option[value="custom"]').textContent).toBe(custom.name);
+    expect(june.querySelector('#astronomy-season-sun-status').textContent).toContain(custom.name);
+    expect(Number(juneFigure.getAttribute('data-daylight-hours'))).toBeLessThan(10);
+    expect(Number(decemberFigure.getAttribute('data-daylight-hours'))).toBeGreaterThan(14);
+    expect(Number(juneFigure.getAttribute('data-noon-altitude'))).toBeLessThan(40);
+    const compared = parseMarkup(renderAstronomy({ ...shared, skyLoc: 'portland' }));
+    expect(compared.querySelector('#astronomy-season-observer').value).toBe('portland');
+    expect(compared.querySelector('option[value="custom"]').textContent).toBe(custom.name);
+    const invalid = parseMarkup(renderAstronomy({ ...shared, skyCustomLocation: { ...custom, lat: -200 } }));
+    expect(invalid.querySelector('#astronomy-season-observer').value).toBe('portland');
+    expect(invalid.querySelector('option[value="custom"]')).toBeNull();
+    expect(invalid.querySelector('#astronomy-season-sun-status').textContent).not.toContain(custom.name);
+  });
+
   it('renders a named geometric Sun path for the shared observer location', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-08-13T16:00:00.000Z'));

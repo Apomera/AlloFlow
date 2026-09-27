@@ -1,0 +1,36 @@
+{
+  "at": "2026-09-27T19:04:30.201Z",
+  "scope": "correctness-only immersive playback and diagnostics lifecycle",
+  "files": {
+    "immersive_reader_source.jsx": {
+      "preimageSha256": "a6f102900550ddbbe47671eaddbb1911a49f41fcecd76b9b211a0a163685a91c",
+      "normalizedPreimageSha256": "a6f102900550ddbbe47671eaddbb1911a49f41fcecd76b9b211a0a163685a91c",
+      "candidateSha256": "8c3d4943fcbbfe2e1fc3dbd0102de787879bfc1075aedaf578ca11368b4493ca"
+    },
+    "tests/immersive_reader_review_runtime.test.js": {
+      "preimageSha256": "c7d010e1a7a76fc7621408474a923d7ab88d26a7ede0c721bd343864de4a3b7d",
+      "normalizedPreimageSha256": "c7d010e1a7a76fc7621408474a923d7ab88d26a7ede0c721bd343864de4a3b7d",
+      "candidateSha256": "e22311dab97d5abf9e8748fc7a30aaadd78d98a432f6e3df999e34a3a71dfbaa"
+    }
+  },
+  "patches": {
+    "source.patch": "ad6379564020b8d32fe6633539e75be7f1e56d866cd76b4d0078ef45f4ea81fb",
+    "tests.patch": "790c6d83918268f363ec019bd624d3196f6e15275c348071a509425c034f0803"
+  },
+  "checks": {
+    "exactContextApplies": true,
+    "parseOnly": true,
+    "testsRun": false,
+    "buildRun": false,
+    "sharedFilesChanged": false
+  },
+  "regressions": 8,
+  "ownerRegressions": 7,
+  "reviewerAddedRegressions": 1,
+  "excluded": [
+    "crawl memoization",
+    "reader source/support caches",
+    "word-help MutationObserver cache",
+    "duplicate-position storage writes and recency policy"
+  ]
+}

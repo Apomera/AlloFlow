@@ -8,8 +8,8 @@ const html=`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta nam
 <script src="/stem_lab/stem_lab_module.js"></script><script src="/stem_lab/stem_tool_watercycle.js"></script>
 <script>
 const Icons=new Proxy({},{get:()=>()=>React.createElement('span',{'aria-hidden':true})});
-window.mountWaterWorlds=function(seed,dark=false){function Host(){const [data,setData]=React.useState({waterCycle:seed||{wcMode:'worlds'}});window.waterWorldsData=data.waterCycle;window.waterWorldsSet=setData;const noop=()=>{};
-return StemLab._registry.waterCycle.render({React,toolData:data,setToolData:setData,isDark:dark,isContrast:false,gradeBand:'6-8',gradeLevel:'7th Grade',icons:Icons,
+window.mountWaterWorlds=function(seed,dark=false,contrast=false){function Host(){const [data,setData]=React.useState({waterCycle:seed||{wcMode:'worlds'}});window.waterWorldsData=data.waterCycle;window.waterWorldsSet=setData;const noop=()=>{};
+return StemLab._registry.waterCycle.render({React,toolData:data,setToolData:setData,isDark:dark,isContrast:contrast,gradeBand:'6-8',gradeLevel:'7th Grade',icons:Icons,
 setStemLabTool:noop,setStemLabTab:noop,setToolSnapshots:noop,toolSnapshots:[],addToast:noop,announceToSR:noop,awardXP:noop,getXP:()=>0,beep:noop,celebrate:noop,canvasNarrate:noop,canvasA11yDesc:noop,a11yClick:f=>({onClick:f}),t:(k,f)=>f==null?k:f,props:{},srOnly:{},callGemini:null});}
 document.documentElement.classList.toggle('dark',dark);ReactDOM.unmountComponentAtNode(document.getElementById('slot'));ReactDOM.render(React.createElement(Host),document.getElementById('slot'));};mountWaterWorlds();
 </script></body></html>`;
@@ -24,14 +24,26 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
  const browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:1440,height:1000},acceptDownloads:true});
  const errors=[],checks=[];page.on('pageerror',e=>errors.push(String(e)));page.setDefaultTimeout(30000);
  const check=(name)=>{checks.push(name);console.log('PASS '+name);};
- const click=async name=>{await page.getByRole('button',{name,exact:true}).click();await state();};
  const state=()=>page.evaluate(async()=>{await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));return JSON.parse(JSON.stringify(waterWorldsData.waterWorlds));});
+ const applyButton=()=>page.getByRole('button',{name:/^Apply .* to \d+ cell/});
+ const choose=async(cover,scope='patch')=>{await page.getByLabel('Edit area',{exact:true}).selectOption(scope);await page.getByRole('button',{name:'Choose '+cover,exact:true}).click();await state();};
+ const click=async name=>{if(typeof name==='string'&&name.startsWith('Patch: ')){await choose(name.slice(7));await applyButton().click();}else await page.getByRole('button',{name,exact:true}).click();await state();};
+ const evidenceSnapshot=()=>page.evaluate(()=>JSON.stringify(WaterWorldsKernel.evidence(waterWorldsData.waterWorlds)));
+ const plannedCells=async()=>{const value=await page.locator('.ww canvas').getAttribute('data-planned-cells');assert(value!==null,'Canvas exposes the pending edit count');return Number(value);};
+ const previewCount=async()=>{const value=await page.locator('.ww-edit-preview').getAttribute('data-change-count');assert(value!==null,'Edit summary exposes the pending change count');return Number(value);};
  async function audit(label){const violations=await page.evaluate(async()=> (await axe.run(document.querySelector('.ww'),{rules:{region:{enabled:false}}})).violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>({html:n.html,summary:n.failureSummary}))})));fs.writeFileSync(path.join(out,'axe-'+label+'.json'),JSON.stringify(violations,null,2));assert.deepEqual(violations,[],label+' accessibility including contrast');}
  try{
   await page.goto(url);await page.waitForSelector('.ww canvas');await page.waitForFunction(()=>waterWorldsData.waterWorlds);
   await page.addScriptTag({url:url+'desktop/web-app/node_modules/axe-core/axe.min.js'});
   assert(await page.getByRole('button',{name:'Differences',exact:true}).isDisabled());
   assert.equal(await page.locator('script[src*="water_worlds_kernel.js"]').count(),1);check('Cold sibling-module loading');
+  const canvasTop=(await page.locator('.ww canvas').boundingBox()).y;
+  for(const label of ['Choose an investigation','My prediction']){const box=await page.getByLabel(label,{exact:true}).boundingBox();assert(box&&box.y+box.height<=canvasTop,'Inquiry field precedes the landscape: '+label);}
+  const runbar=page.locator('.ww-runbar'),runbarBox=await runbar.boundingBox();assert(runbarBox&&runbarBox.y+runbarBox.height<=canvasTop,'Run controls precede the landscape');
+  assert(await runbar.getByRole('button',{name:'Start storm',exact:true}).isVisible());
+  assert.equal(await page.locator('.ww-inquiry').getByLabel('My prediction',{exact:true}).count(),1);
+  assert.equal(await page.getByRole('button',{name:/^Choose (Meadow|Woodland|Paving|Retention garden)$/}).count(),4);
+  check('Inquiry, prediction, and primary play controls lead into the landscape');
   await page.screenshot({path:path.join(out,'worlds-desktop-ready.png'),fullPage:true});await audit('light');
   const beforeGrid=JSON.stringify((await state()).world),pictureBeforeGrid=await page.locator('.ww canvas').evaluate(c=>c.toDataURL());
   await page.getByRole('checkbox',{name:'Show ground-cell grid',exact:true}).check();await state();
@@ -41,13 +53,30 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
   await page.getByRole('checkbox',{name:'Show ground-cell grid',exact:true}).uncheck();await state();
   assert.equal(await page.locator('.ww canvas').evaluate(c=>c.toDataURL()),pictureBeforeGrid);
   check('Optional ground grid changes only rendering and restores the identical landscape');
+  const previewWorld=JSON.stringify((await state()).world),previewEvidence=await evidenceSnapshot();
+  await page.getByLabel('Ground cell',{exact:true}).selectOption('0');await choose('Paving','cell');
+  assert.equal(await previewCount(),1);assert.equal(await plannedCells(),1);
+  await choose('Paving','patch');assert.equal(await previewCount(),4);assert.equal(await plannedCells(),4);
+  await choose('Woodland','patch');assert.equal(await previewCount(),0);assert.equal(await plannedCells(),0);assert(await applyButton().isDisabled());
+  await page.getByLabel('Ground cell',{exact:true}).selectOption('5');await choose('Paving','patch');
+  assert.equal(await previewCount(),2);assert.equal(await plannedCells(),2);
+  assert.equal(JSON.stringify((await state()).world),previewWorld);assert.equal(await evidenceSnapshot(),previewEvidence);
+  await applyButton().click();await state();const streamPatch=(await state()).world;
+  const originalWorld=JSON.parse(previewWorld);
+  assert.deepEqual(streamPatch.cells.filter(c=>c.cover==='stream'),originalWorld.cells.filter(c=>c.cover==='stream'));
+  assert.equal(streamPatch.cells.filter((c,i)=>c.cover!==originalWorld.cells[i].cover).length,2);
+  assert.equal(await previewCount(),0);assert.equal(await plannedCells(),0);assert(await applyButton().isDisabled());
+  await click('Undo land edit');assert.equal(JSON.stringify((await state()).world),previewWorld);assert.equal(await evidenceSnapshot(),previewEvidence);
+  assert.equal(await previewCount(),2);assert.equal(await plannedCells(),2);
+  check('Land choices are pure previews; edge patches clip, stream beds stay intact, and Apply/Undo restores evidence');
   await page.getByLabel('Ground cell',{exact:true}).selectOption('45');
   const unedited=(await state()).world;await click('Patch: Paving');const initial=await state();assert(initial.world.cells.filter(c=>c.cover==='paved').length>0);
   await click('Undo land edit');assert.deepEqual((await state()).world,unedited);
   await click('Patch: Paving');check('Undo restores edited cover without changing water');
+  await choose('Woodland');assert((await plannedCells())>0);
   await click('Start storm');await page.waitForFunction(()=>waterWorldsData.waterWorlds.world.minutes>=3);
   await click('Pause');const paused=(await state()).world.minutes;await page.waitForTimeout(550);assert.equal((await state()).world.minutes,paused);
-  assert(await page.getByRole('button',{name:'Patch: Woodland',exact:true}).isDisabled());
+  assert(await applyButton().isDisabled());assert.equal(await plannedCells(),0);
   await click('Advance 15 min');assert.equal((await state()).world.minutes,paused+15);
   await click('Flow paths');assert(Number(await page.locator('.ww canvas').getAttribute('data-flow-arrows'))>0);
   await page.getByText('What happens next?',{exact:true}).click();
@@ -67,12 +96,13 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
   assert.equal(Number(await page.locator('.ww canvas').getAttribute('data-changed-cells')),9);
   const completedEvidence=await page.evaluate(()=>JSON.stringify(WaterWorldsKernel.evidence(waterWorldsData.waterWorlds)));
   const scrub=async minute=>{const slider=page.getByLabel('Inspection minute',{exact:true});await slider.focus();await slider.press('Home');for(let i=0;i<minute;i++)await slider.press('ArrowRight');await page.waitForFunction(t=>Number(document.querySelector('.ww canvas').dataset.modelTime)===t,compared.run.start.minutes+minute);};
-  await scrub(20);assert(await page.getByRole('button',{name:'Patch: Woodland',exact:true}).isDisabled());
+  await choose('Retention garden');assert((await previewCount())>0);assert((await plannedCells())>0);
+  await scrub(20);assert(await applyButton().isDisabled());assert.equal(await plannedCells(),0);
   const expectedPast=await page.evaluate(()=>WaterWorldsKernel.measure(WaterWorldsKernel.atTime(waterWorldsData.waterWorlds.run,20)).surfaceM3);
   assert(Math.abs(Number(await page.locator('.ww canvas').getAttribute('data-water-volume'))-expectedPast)<.0001);
   assert.equal(await page.evaluate(()=>JSON.stringify(WaterWorldsKernel.evidence(waterWorldsData.waterWorlds))),completedEvidence);
   await page.screenshot({path:path.join(out,'worlds-inspection.png'),fullPage:true});await audit('inspection');
-  await click('Differences');assert.equal(await page.locator('.ww canvas').getAttribute('data-difference-minute'),'20');
+  await click('Differences');assert.equal(await page.locator('.ww canvas').getAttribute('data-difference-minute'),'20');assert.equal(await plannedCells(),0);
   await page.getByLabel('Compare water store',{exact:true}).selectOption('soil');await state();
   const expectedDifference=await page.evaluate(()=>WaterWorldsKernel.spatialDifference(waterWorldsData.waterWorlds,20).cells[waterWorldsData.waterWorlds.selected].soil.differenceMm);
   assert.equal(Number(await page.locator('[data-ww-cell-difference]').getAttribute('data-ww-cell-difference')),expectedDifference);
@@ -83,7 +113,8 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
   assert.equal(await page.evaluate(()=>JSON.stringify(WaterWorldsKernel.evidence(waterWorldsData.waterWorlds))),completedEvidence);
   check('Synchronized difference map, signed cell readings, table, and immutable export');
   await click('When rain stops');assert.equal(await page.getByLabel('Inspection minute',{exact:true}).inputValue(),'40');
-  await click('Return to final state');assert(!(await page.getByRole('button',{name:'Patch: Woodland',exact:true}).isDisabled()));
+  await click('Return to final state');assert(!(await applyButton().isDisabled()));assert.equal(await plannedCells(),0,'Difference map hides pending edit outlines');
+  await click('Surface water');assert((await plannedCells())>0);assert.equal(await evidenceSnapshot(),completedEvidence);
   check('Recorded-time inspection and changed-cover overlays preserve completed evidence');
   const beforeGuidance=JSON.stringify((await state()).world);
   await page.getByLabel('Choose an investigation',{exact:true}).selectOption('memory');
@@ -105,8 +136,15 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
   await page.getByLabel('Ground cell',{exact:true}).selectOption('12');await page.locator('.ww canvas').focus();await page.keyboard.press('ArrowLeft');assert.equal((await state()).selected,12);
   await page.getByLabel('Ground cell',{exact:true}).selectOption('23');await page.locator('.ww canvas').focus();await page.keyboard.press('ArrowRight');assert.equal((await state()).selected,23);
   await page.getByRole('button',{name:'Soil moisture',exact:true}).click();await audit('keyboard');check('Keyboard location selection and soil lens');
-  for(const width of [390,320]){await page.setViewportSize({width,height:844});const nav=await page.locator('.wc-mode-tab').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return {left:r.left,right:r.right,height:r.height};}));assert.equal(nav.length,5);assert(nav.every(r=>r.left>=0&&r.right<=width+1&&r.height>=44),'All five modes visible at '+width);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No overflow at '+width);await page.screenshot({path:path.join(out,'worlds-'+width+'.png'),fullPage:true});}
+  const narrowEvidence=await evidenceSnapshot();await choose('Retention garden');assert((await plannedCells())>0);
+  for(const width of [390,320]){await page.setViewportSize({width,height:844});const nav=await page.locator('.wc-mode-tab').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return {left:r.left,right:r.right,height:r.height};}));assert.equal(nav.length,5);assert(nav.every(r=>r.left>=0&&r.right<=width+1&&r.height>=44),'All five modes visible at '+width);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No overflow at '+width);assert((await previewCount())>0);assert.equal(await plannedCells(),await previewCount());await page.screenshot({path:path.join(out,'worlds-'+width+'.png'),fullPage:true});}
+  await audit('pending-patch-320');assert.equal(await evidenceSnapshot(),narrowEvidence);
   await page.emulateMedia({reducedMotion:'reduce'});await page.getByRole('button',{name:'Surface water',exact:true}).click();const imageBefore=await page.locator('.ww canvas').evaluate(c=>c.toDataURL());await page.waitForTimeout(450);assert.equal(await page.locator('.ww canvas').evaluate(c=>c.toDataURL()),imageBefore);check('Narrow layouts and a stable paused canvas under reduced motion');
+  await page.evaluate(snapshot=>mountWaterWorlds({wcMode:'worlds',waterWorlds:snapshot},false,true),saved);await page.waitForSelector('.ww');await choose('Retention garden');
+  assert((await plannedCells())>0);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  await audit('high-contrast-pending-320');await page.screenshot({path:path.join(out,'worlds-high-contrast-320.png'),fullPage:true});
+  await page.setViewportSize({width:1440,height:1000});await audit('high-contrast-pending');await page.screenshot({path:path.join(out,'worlds-high-contrast.png'),fullPage:true});
+  check('Pending patch controls remain accessible in high contrast and at 320px');
   await page.setViewportSize({width:1440,height:1000});await page.evaluate(saved=>mountWaterWorlds({wcMode:'worlds',waterWorlds:saved},true),saved);await page.waitForSelector('.ww');await audit('dark');await page.screenshot({path:path.join(out,'worlds-dark.png'),fullPage:true});
   await page.evaluate(snapshot=>mountWaterWorlds({wcMode:'worlds',waterWorlds:{...snapshot,lens:'difference',differenceStore:'ground'}},true),compared);await page.waitForSelector('[data-ww-cell-difference]');await state();
   await audit('dark-differences');await page.setViewportSize({width:320,height:844});

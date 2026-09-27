@@ -610,7 +610,7 @@ window.StemLab = window.StemLab || {
       var alpha=R/(2*L),w02=1/(L*C),delta=alpha*alpha-w02,qEq=C*u,q0=mode==='release'?C*amplitude:0,A=q0-qEq,qh,ih;
       if(Math.abs(delta)<w02*1e-10){var B=alpha*A,E=Math.exp(-alpha*t);qh=E*(A+B*t);ih=E*(-alpha*B*t);}
       else if(delta<0){var beta=Math.sqrt(-delta),B=alpha*A/beta,E=Math.exp(-alpha*t),ct=Math.cos(beta*t),st=Math.sin(beta*t);qh=E*(A*ct+B*st);ih=E*((B*beta-alpha*A)*ct-(A*beta+alpha*B)*st);}
-      else {var root=Math.sqrt(delta),r1=-w02/(alpha+root),r2=-alpha-root,a=-r2*A/(r1-r2),b=A-a,e1=Math.exp(r1*t),e2=Math.exp(r2*t);qh=a*e1+b*e2;ih=r1*a*e1+r2*b*e2;}
+      else {var root=Math.sqrt(delta),r1=-w02/(alpha+root),r2=-alpha-root,a=-r2*A/(r1-r2),b=r1*A/(r1-r2),e1=Math.exp(r1*t),e2=Math.exp(r2*t);qh=a*e1+b*e2;ih=r1*a*e1+r2*b*e2;}
       vc=(qEq+qh)/C;i=ih;vl=u-R*i-vc;
     }else if(C){
       var initial=mode==='release'?amplitude:0;
@@ -784,14 +784,11 @@ window.StemLab = window.StemLab || {
   }
 
   // Translator for the module-scope Circuit* components (2026-09-20).
-  // The file's only __alloT lives inside render() (≈3750-8334); these components
-  // are declared ABOVE it, so that binding is out of scope and a bare __alloT()
-  // here is a ReferenceError. The three workbench roots are handed `ctx`, so they
-  // derive `t` from it and thread it down beside React; every component resolves
-  // it through this helper, keeping the English fallback as the contract.
-  // Same shape as rnEnergyT() in stem_tool_renewables.js.
+  // Workbench roots receive `ctx`; nested components receive `t` beside React.
+  // Resolve the current translator on each render so language changes update
+  // labels while the circuit and its editors keep their state.
   function circuitToolT(props){
-    var fn=(props&&typeof props.t==='function')?props.t:null;
+    var fn=(props&&typeof props.t==='function')?props.t:(props&&props.ctx&&typeof props.ctx.t==='function')?props.ctx.t:null;
     return function(key,fallback){
       var value=null;
       if(fn){try{value=fn(key,fallback);}catch(e){value=null;}}
@@ -1093,6 +1090,62 @@ window.StemLab = window.StemLab || {
   }
   function circuitNetworkOpAmpLaw(p,input){var m=p.opamp||circuitNetworkOpAmpModel(p),requested=p.value*input;return {output:Math.max(m.lower,Math.min(m.upper,requested)),requested:requested,region:requested<=m.lower?'lower':requested>=m.upper?'upper':'linear'};}
   function circuitNetworkOpAmpStatus(row){return row.voltage==null||row.opampRegion==='unknown'?'Undetermined':row.opampRegion==='upper'?'Upper limit':row.opampRegion==='lower'?'Lower limit':row.opampRegion==='slew-up'?'Slewing up':row.opampRegion==='slew-down'?'Slewing down':row.opampRegion==='tracking'?'Responding':'Linear range';}
+  // With the amplifier outputs held at specified voltages, a linear network
+  // gives input = offset + transfer * output. Check every output region in
+  // that smaller system, then recover currents with the full nodal equations.
+  // Exact zero transfer entries separate independent groups; small couplings
+  // are never discarded. Any unresolved or conflicting reduction falls back
+  // to the full search, including its multiple-equilibrium diagnostic.
+  function circuitNetworkLinearOpAmps(matrix,rhs,parts,index,constraints,nodeCount,amps,profiles,cache){
+    if(amps.length<2||parts.some(function(p){return p.diode||p.bjt;}))return null;
+    var positions=amps.map(function(p){return nodeCount+constraints.indexOf(p);});
+    var terms=amps.map(function(p){return [[index(p.control.positive),1],[index(p.control.negative),-1]];});
+    var key=cache?JSON.stringify([matrix,positions,terms]):null,reduction=cache&&cache.key===key?cache.reduction:undefined;
+    if(reduction===undefined){
+      var transfer=amps.map(function(){return [];});
+      for(var column=0;column<amps.length;column++){
+        var excitation=rhs.map(function(){return 0;});excitation[positions[column]]=1;
+        var response=circuitNetworkLinear(matrix,excitation);if(!response.ok){reduction=null;break;}
+        for(var row=0;row<amps.length;row++){var value=response.measure(terms[row]);if(value==null){reduction=null;break;}transfer[row][column]=value;}
+        if(reduction===null)break;
+      }
+      if(reduction!==null){
+        var groups=[],visited={};
+        amps.forEach(function(_,start){if(visited[start])return;var group=[start];visited[start]=true;
+          for(var at=0;at<group.length;at++)amps.forEach(function(_,next){var current=group[at];if(!visited[next]&&(transfer[current][next]!==0||transfer[next][current]!==0)){visited[next]=true;group.push(next);}});
+          groups.push(group);
+        });
+        reduction={transfer:transfer,groups:groups};
+      }
+      if(cache){cache.key=key;cache.reduction=reduction;}
+    }
+    if(!reduction)return null;
+    var zero=circuitNetworkLinear(matrix,rhs);if(!zero.ok)return null;
+    var offsets=terms.map(function(t){return zero.measure(t);});if(offsets.some(function(v){return v==null;}))return null;
+    var output=Array(amps.length),regions=0;
+    for(var groupIndex=0;groupIndex<reduction.groups.length;groupIndex++){
+      var group=reduction.groups[groupIndex],accepted=null,acceptedInputs=null,candidates=Math.pow(3,group.length);
+      for(var candidate=0;candidate<candidates;candidate++){
+        var code=candidate,modes=[],a=[],b=[];regions++;
+        group.forEach(function(global,i){var profile=profiles[global],mode=code%3;code=Math.floor(code/3);modes.push(mode);
+          a.push(group.map(function(other,j){return (i===j?1:0)-(mode===0?profile.gain*reduction.transfer[global][other]:0);}));
+          b.push(mode===0?profile.offset+profile.gain*offsets[global]:mode===1?profile.lower:profile.upper);
+        });
+        var solved=circuitNetworkLinear(a,b);if(!solved.ok)continue;
+        var values=group.map(function(_,i){return solved.measure([[i,1]]);});if(values.some(function(v){return v==null;}))return null;
+        var inputs=[],valid=group.every(function(global,i){var profile=profiles[global],input=offsets[global]+group.reduce(function(sum,other,j){return sum+reduction.transfer[global][other]*values[j];},0),unlimited=profile.offset+profile.gain*input,target=Math.max(profile.lower,Math.min(profile.upper,unlimited));inputs.push(input);return !(modes[i]===0&&(unlimited<profile.lower||unlimited>profile.upper))&&Math.abs(values[i]-target)<=1e-7+1e-8*Math.max(Math.abs(values[i]),Math.abs(target));});
+        if(!valid)continue;
+        if(accepted&&values.some(function(v,i){return Math.abs(v-accepted[i])>1e-7+1e-8*Math.max(Math.abs(v),Math.abs(accepted[i]))||Math.abs(inputs[i]-acceptedInputs[i])>1e-7+1e-8*Math.max(Math.abs(inputs[i]),Math.abs(acceptedInputs[i]));}))return null;
+        if(!accepted){accepted=values;acceptedInputs=inputs;}
+      }
+      if(!accepted)return null;
+      group.forEach(function(global,i){output[global]=accepted[i];});
+    }
+    var finalRhs=rhs.slice();positions.forEach(function(position,i){finalRhs[position]=output[i];});
+    var final=circuitNetworkLinear(matrix,finalRhs);if(!final.ok)return null;
+    if(amps.some(function(p,i){var input=final.measure(terms[i]),voltage=final.measure([[index(p.a),1],[index(p.b),-1]]),profile=profiles[i];if(input==null||voltage==null)return true;var target=Math.max(profile.lower,Math.min(profile.upper,profile.offset+profile.gain*input));return Math.abs(voltage-target)>1e-7+1e-8*Math.max(Math.abs(voltage),Math.abs(target));}))return null;
+    return Object.assign({},final,{opampRegionsTried:regions,nonlinearIterations:0});
+  }
   // Test each piecewise-linear output region against the actual clamped law.
   // This avoids Newton cycling at a hard limit and diagnoses multiple equilibria
   // rather than inventing a stable latch state for this memoryless teaching model.
@@ -1101,6 +1154,7 @@ window.StemLab = window.StemLab || {
     if(amps.length>4)return {ok:false,message:'This op-amp model supports up to four amplifiers per network. Reduce the number of op-amps to keep output-region checking bounded.'};
     var bad=amps.find(function(p){return p.opamp.lower>=p.opamp.upper;});if(bad)return {ok:false,message:circuitNetworkLabel(bad)+' needs a lower output limit below its upper limit. Edit the output window; no limits were silently swapped.'};
     var profiles=amps.map(function(p){return circuitNetworkOpAmpProfile(p,dynamic);});if(profiles.some(function(profile){return profile.invalid;}))return {ok:false,message:'A timed op-amp starting or carried output lies outside its output window. Set a starting output within the configured limits. DC equilibrium ignores this starting setting.'};
+    var reduced=circuitNetworkLinearOpAmps(matrix,rhs,parts,index,constraints,nodeCount,amps,profiles,dynamic&&dynamic.opampCache);if(reduced)return reduced;
     var candidates=Math.pow(3,amps.length),accepted=null,acceptedValues=null,unknown=false,iterations=0;
     for(var candidate=0;candidate<candidates;candidate++){
       var a=matrix.map(function(row){return row.slice();}),b=rhs.slice(),code=candidate,modes=[];
@@ -1123,6 +1177,86 @@ window.StemLab = window.StemLab || {
     return {components:parts};
   }
   function circuitNetworkLabel(p){return CIRCUIT_NETWORK_TYPES[p.type].prefix+p.id;}
+  // Portable designs contain editable model parameters, never calculated
+  // samples, history, reflections, or arbitrary tool state. Version 1 is strict:
+  // an unfamiliar field or out-of-range setting must not change silently.
+  function circuitNetworkDesignDocument(state){
+    state=state||{};var parts=circuitNetworkDesign(state).components;
+    var components=parts.map(function(p){var out={id:p.id,type:p.type,a:p.a,b:p.b,value:p.value};
+      if(p.waveform)out.waveform=Object.assign({},p.waveform);
+      if(p.type==='switch'){out.closed=p.closed;out.switching={enabled:p.switching.enabled,events:p.switching.events.map(function(e){return Object.assign({},e);})};}
+      if(p.type==='capacitor'||p.type==='inductor')out.initial=p.initial;
+      if(p.control)out.control=Object.assign({},p.control);
+      if(p.diode){out.diode={model:p.diode.model,seriesResistance:p.diode.seriesResistance||0};if(p.diode.model==='zener'){out.diode.breakdownVoltage=p.diode.breakdownVoltage;out.diode.breakdownResistance=p.diode.breakdownResistance;}}
+      if(p.bjt)out.bjt={polarity:p.bjt.polarity,base:p.bjt.base,betaForward:p.bjt.betaForward,betaReverse:p.bjt.betaReverse,saturationCurrent:p.bjt.saturationCurrent};
+      if(p.opamp){out.opamp={lower:p.opamp.lower,upper:p.opamp.upper};if(p.opamp.timing)out.opamp.timing=Object.assign({},p.opamp.timing);}
+      return out;
+    });
+    var view={probeRed:CIRCUIT_NETWORK_NODES.includes(state.probeRed)?state.probeRed:'B',probeBlack:CIRCUIT_NETWORK_NODES.includes(state.probeBlack)?state.probeBlack:'C'};
+    if(parts.length)view.selected=parts.some(function(p){return p.id===state.selected;})?state.selected:parts[0].id;
+    var doc={format:'alloflow-connected-circuit',version:1,design:{components:components,analysis:state.analysis==='time'?'time':'dc',duration:circuitNetworkDuration(state),integration:circuitNetworkIntegration(state)},view:view};
+    parseCircuitNetworkDesign(JSON.stringify(doc));return doc;
+  }
+  function parseCircuitNetworkDesign(text){
+    if(typeof text!=='string'||text.length>65536||typeof TextEncoder==='function'&&new TextEncoder().encode(text).length>65536)throw Error('Choose a connected design JSON file no larger than 64 KB.');
+    var doc;try{doc=JSON.parse(text);}catch(e){throw Error('This file is not valid JSON. Choose a saved connected design.');}
+    var object=function(value,keys,label){if(!value||typeof value!=='object'||Array.isArray(value))throw Error(label+' must be an object.');Object.keys(value).forEach(function(key){if(!keys.includes(key))throw Error(label+': unsupported field '+key+'.');});};
+    var number=function(value,min,max,label){if(typeof value!=='number'||!Number.isFinite(value)||value<min||value>max)throw Error(label+' must be a finite number from '+min+' to '+max+'.');};
+    var id=function(value,label){number(value,1,1000000,label);if(!Number.isSafeInteger(value))throw Error(label+' must be a whole number.');};
+    var choice=function(value,values,label){if(!values.includes(value))throw Error(label+' is unsupported.');};
+    var bool=function(value,label){if(typeof value!=='boolean')throw Error(label+' must be true or false.');};
+    var node=function(value,label){choice(value,CIRCUIT_NETWORK_NODES,label);};
+    object(doc,['format','version','design','view'],'File');
+    if(doc.format!=='alloflow-connected-circuit')throw Error('This is not a connected circuit design file.');
+    if(doc.version!==1)throw Error('This connected design version is unsupported. Expected version 1.');
+    var design=doc.design;object(design,['components','analysis','duration','integration'],'Design');
+    choice(design.analysis,['dc','time'],'Analysis');number(design.duration,.000001,60,'Duration');choice(design.integration,['backward-euler','trapezoidal'],'Integration');
+    if(!Array.isArray(design.components)||design.components.length>16)throw Error('A connected design accepts up to 16 components.');
+    var used={},amps=0;
+    design.components.forEach(function(p,i){
+      var label='Part '+(i+1);object(p,['id','type','a','b','value','waveform','closed','switching','initial','control','diode','bjt','opamp'],label);
+      if(!Object.prototype.hasOwnProperty.call(CIRCUIT_NETWORK_TYPES,p.type))throw Error(label+': unsupported component type.');
+      id(p.id,label+' ID');if(used[p.id])throw Error(label+': duplicate component ID.');used[p.id]=p;
+      node(p.a,label+' terminal A');node(p.b,label+' terminal B');var spec=CIRCUIT_NETWORK_TYPES[p.type];number(p.value,spec.min==null?0:spec.min,spec.max==null?0:spec.max,label+' value');
+      var allowed=['id','type','a','b','value'];
+      if(p.type==='voltage'||p.type==='current'){
+        allowed.push('waveform');var w=p.waveform;object(w,['shape','amplitude','frequency','phase','duty','edge'],label+' waveform');choice(w.shape,Object.keys(CIRCUIT_NETWORK_WAVES),label+' waveform shape');number(w.amplitude,0,p.type==='voltage'?24:.1,label+' amplitude');number(w.frequency,.01,100000,label+' frequency');number(w.phase,0,360,label+' phase');number(w.duty,1,99,label+' pulse width');number(w.edge,.01,Math.min(w.duty,100-w.duty)/2,label+' pulse edge');
+      }
+      if(p.type==='capacitor'||p.type==='inductor'){allowed.push('initial');number(p.initial,p.type==='capacitor'?-24:-.1,p.type==='capacitor'?24:.1,label+' initial state');}
+      if(p.type==='switch'){
+        allowed.push('closed','switching');bool(p.closed,label+' switch state');var sw=p.switching;object(sw,['enabled','events'],label+' switch timing');bool(sw.enabled,label+' switch timing enabled');
+        if(!Array.isArray(sw.events)||sw.events.length>8)throw Error(label+': use at most eight switch events.');
+        var events={};sw.events.forEach(function(e,j){var name=label+' event '+(j+1);object(e,['id','time','closed'],name);id(e.id,name+' ID');if(events[e.id])throw Error(name+': duplicate event ID.');events[e.id]=true;number(e.time,.000001,60,name+' time');bool(e.closed,name+' switch state');});
+      }
+      if(['vcvs','vccs','cccs','ccvs','opamp'].includes(p.type)){
+        allowed.push('control');var current=p.type==='cccs'||p.type==='ccvs',control=p.control;object(control,current?['source']:['positive','negative'],label+' control');if(current)id(control.source,label+' current-sense source');else{node(control.positive,label+' positive input');node(control.negative,label+' negative input');}
+      }
+      if(p.type==='diode'){
+        allowed.push('diode');var diode=p.diode;object(diode,['model','seriesResistance','breakdownVoltage','breakdownResistance'],label+' diode');choice(diode.model,Object.keys(CIRCUIT_NETWORK_DIODE_MODELS),label+' diode model');number(diode.seriesResistance,0,1000,label+' diode series resistance');if(Math.round(diode.seriesResistance*1000)/1000!==diode.seriesResistance)throw Error(label+': diode series resistance supports 0.001 ohm precision.');
+        if(diode.model==='zener'){number(diode.breakdownVoltage,1.8,24,label+' Zener voltage');number(diode.breakdownResistance,1,1000,label+' Zener slope resistance');}else if('breakdownVoltage' in diode||'breakdownResistance' in diode)throw Error(label+': breakdown settings require a Zener diode.');
+      }
+      if(p.type==='bjt'){
+        allowed.push('bjt');var bjt=p.bjt;object(bjt,['polarity','base','betaForward','betaReverse','saturationCurrent'],label+' transistor');choice(bjt.polarity,['npn','pnp'],label+' transistor polarity');node(bjt.base,label+' transistor base');number(bjt.betaForward,1,1000,label+' forward gain');number(bjt.betaReverse,.1,100,label+' reverse gain');number(bjt.saturationCurrent,1e-18,1e-9,label+' saturation current');
+      }
+      if(p.type==='opamp'){
+        amps++;allowed.push('opamp');var op=p.opamp;object(op,['lower','upper','timing'],label+' op-amp');number(op.lower,-24,24,label+' lower output limit');number(op.upper,-24,24,label+' upper output limit');if(op.lower>=op.upper)throw Error(label+': the lower output limit must be below the upper limit.');
+        if('timing' in op){var timing=op.timing;object(timing,['enabled','gbw','slew','initial'],label+' op-amp timing');bool(timing.enabled,label+' timing enabled');number(timing.gbw,10,100000000,label+' gain-bandwidth');number(timing.slew,.000001,1000,label+' slew rate');number(timing.initial,-24,24,label+' starting output');}
+      }
+      Object.keys(p).forEach(function(key){if(!allowed.includes(key))throw Error(label+': '+key+' does not apply to '+p.type+'.');});
+    });
+    if(amps>4)throw Error('A connected design supports up to four op-amps.');
+    design.components.forEach(function(p){if(p.type==='cccs'||p.type==='ccvs'){var sensed=used[p.control.source];if(!sensed||!circuitNetworkVoltageOutput(sensed))throw Error('Part '+p.id+': current sensing requires an existing voltage-output source.');}});
+    if('view' in doc)object(doc.view,['selected','probeRed','probeBlack'],'View');var view=doc.view||{};
+    if('selected' in view){id(view.selected,'Selected component');if(!used[view.selected])throw Error('The selected component does not exist.');}
+    if('probeRed' in view)node(view.probeRed,'Red probe');if('probeBlack' in view)node(view.probeBlack,'Black probe');
+    var result={components:circuitNetworkDesign(design).components,analysis:design.analysis,duration:design.duration,integration:design.integration};
+    result.selected='selected' in view?view.selected:result.components.length?result.components[0].id:null;result.probeRed=view.probeRed||'B';result.probeBlack=view.probeBlack||'C';return result;
+  }
+  function circuitNetworkHistoryState(state){
+    state=state||{};return {components:circuitNetworkDesign(state).components,analysis:state.analysis,duration:state.duration,integration:state.integration,selected:state.selected,probeRed:state.probeRed,probeBlack:state.probeBlack,scopeSource:state.scopeSource,loadedExample:state.loadedExample};
+  }
+  window.StemLab.circuitNetworkDesignDocument=circuitNetworkDesignDocument;
+  window.StemLab.parseCircuitNetworkDesign=parseCircuitNetworkDesign;
   function circuitNetworkValue(p,closed){if(p.bjt)return p.bjt.polarity.toUpperCase()+' · βF '+p.bjt.betaForward;if(p.opamp)return p.opamp.lower+'…'+p.opamp.upper+' V output';if(p.control)return Number(p.value.toPrecision(4))+' '+CIRCUIT_NETWORK_TYPES[p.type].unit;if(p.diode)return p.diode.model==='zener'?p.diode.breakdownVoltage+' V Zener':p.diode.name; if(p.waveform&&p.waveform.shape!=='dc')return CIRCUIT_NETWORK_WAVES[p.waveform.shape]+' · '+Number(p.waveform.frequency.toPrecision(4))+' Hz';return p.type==='switch'?((closed==null?p.closed:closed)?'Closed':'Open'):p.type==='wire'?'Ideal wire':p.type==='capacitor'||p.type==='inductor'?Number(p.value.toPrecision(5))+' '+CIRCUIT_NETWORK_TYPES[p.type].unit:p.type==='current'?circuitCurrentText(p.value):p.type==='voltage'?circuitPreciseVoltageText(p.value):circuitActiveResistanceText(p.value);}
   function circuitNetworkLinear(matrix,rhs) {
     var n=rhs.length,a=matrix.map(function(row,i){var scale=Math.max.apply(null,row.map(Math.abs));return row.concat(rhs[i]).map(function(v){return scale?v/scale:v;});}),pivots=[],rank=0,rhsMagnitude=a.map(function(row){return Math.abs(row[n]);});
@@ -1180,7 +1314,8 @@ window.StemLab = window.StemLab || {
   // Step doubling estimates local state error. Accepted half steps retain
   // their own times; rejected candidates never change state or history.
   function circuitNetworkTransient(state){
-    var integration=circuitNetworkIntegration(state),integrationSteps={trapezoidal:0,backwardEuler:0,restarts:0},design=circuitNetworkDesign(state),duration=circuitNetworkDuration(state),reactive=design.components.filter(circuitNetworkStateful),initial=solveNetworkCircuit(design,{initial:true,time:0}),plan=circuitNetworkSignalPlan(design,duration),switchPlan=circuitNetworkSwitchPlan(design,duration),switchStates={},switchIndex=0,steps=0,rejected=0,eventIndex=0;
+    var integration=circuitNetworkIntegration(state),integrationSteps={trapezoidal:0,backwardEuler:0,restarts:0},design=circuitNetworkDesign(state),duration=circuitNetworkDuration(state),opampCache={},reactive=design.components.filter(circuitNetworkStateful),initial=solveNetworkCircuit(design,{initial:true,time:0,opampCache:opampCache}),plan=circuitNetworkSignalPlan(design,duration),switchPlan=circuitNetworkSwitchPlan(design,duration),switchStates={},switchIndex=0,steps=0,rejected=0,eventIndex=0;
+    var algebraicLinear=!reactive.length&&!design.components.some(function(p){return p.diode||p.bjt;});
     design.components.forEach(function(p){if(p.type==='switch')switchStates[p.id]=p.closed;});
     var fail=function(message){return {ok:false,design:design,duration:duration,integration:integration,integrationSteps:integrationSteps,frames:[],events:[],steps:steps,rejected:rejected,message:message};};
     if(!plan.ok)return fail(plan.message);
@@ -1198,9 +1333,11 @@ window.StemLab = window.StemLab || {
       var switchEvent=switchPlan.events[switchIndex],boundary=Math.min(eventIndex<plan.events.length?plan.events[eventIndex]:duration,switchEvent?switchEvent.time:duration),endTime=Math.min(time+dt,boundary,duration);if(boundary-endTime<duration*1e-12)endTime=boundary;if(boundary===duration&&duration-endTime<duration*1e-12)endTime=duration;dt=endTime-time;
       if(!(dt>duration*1e-12)||time+dt===time)return fail('The response cannot meet its numerical tolerance at this time scale. Shorten the time window or reduce extreme component-value ratios.');
       var restartReason=restart||(!storage.every(function(p){return Number.isFinite(history[p.id]);})?'unknown_history':null),trap=integration==='trapezoidal'&&storage.length>0&&!restartReason,method=trap?'trapezoidal':'backward-euler',secondOrder=trap&&!timedAmps.length;
-      var full=solveNetworkCircuit(design,{dt:dt,states:states,history:history,integration:method,time:endTime,switchStates:switchStates,diodeVoltages:diodeVoltages}),half=solveNetworkCircuit(design,{dt:dt/2,states:states,history:history,integration:method,time:time+dt/2,switchStates:switchStates,diodeVoltages:diodeVoltages}),middle=statesOf(half);
+      var full=solveNetworkCircuit(design,{dt:dt,states:states,history:history,integration:method,time:endTime,switchStates:switchStates,diodeVoltages:diodeVoltages,opampCache:opampCache}),half=solveNetworkCircuit(design,{dt:dt/2,states:states,history:history,integration:method,time:time+dt/2,switchStates:switchStates,diodeVoltages:diodeVoltages,opampCache:opampCache}),middle=statesOf(half);
       if(!full.ok||!half.ok||!known(middle))return fail((!full.ok?full.message:!half.ok?half.message:'')+' The time-step equations could not be solved reliably. Check return paths and reduce extreme component-value ratios.');
-      var fine=solveNetworkCircuit(design,{dt:dt/2,states:middle,history:circuitNetworkIntegrationHistory(half),integration:method,time:endTime,switchStates:switchStates,diodeVoltages:half.diodeVoltages}),next=statesOf(fine),coarse=statesOf(full);
+      // Without stored state or semiconductor iteration, both end-time solves
+      // have identical equations. Reuse the full solve and keep the midpoint.
+      var fine=algebraicLinear?full:solveNetworkCircuit(design,{dt:dt/2,states:middle,history:circuitNetworkIntegrationHistory(half),integration:method,time:endTime,switchStates:switchStates,diodeVoltages:half.diodeVoltages,opampCache:opampCache}),next=statesOf(fine),coarse=statesOf(full);
       if(!fine.ok||!known(next)||!known(coarse))return fail((!fine.ok?fine.message:'')+' A capacitor, inductor, or timed op-amp state could not be resolved reliably. Check the network connections and component-value ratios.');
       var error=reactive.reduce(function(max,p){var absolute=p.type==='inductor'?1e-10:1e-7,scale=Math.max(stateScale[p.id],Math.abs(next[p.id]),Math.abs(middle[p.id]));return Math.max(max,Math.abs(next[p.id]-coarse[p.id])/((secondOrder?3:1)*(absolute+2e-5*scale)));},0);
       timedAmps.forEach(function(p){var excursion=Math.max(Math.abs(middle[p.id]-states[p.id]),Math.abs(next[p.id]-middle[p.id]));error=Math.max(error,excursion/((p.opamp.upper-p.opamp.lower)/64));});
@@ -1209,7 +1346,7 @@ window.StemLab = window.StemLab || {
         if(switchEvent&&time===switchEvent.time){
           // Every action at this instant is applied before solving the new topology.
           switchEvent.changes.forEach(function(c){switchStates[c.id]=c.closed;});
-          var after=solveNetworkCircuit(design,{initial:true,time:time,states:states,switchStates:switchStates,diodeVoltages:diodeVoltages}),carriedStates=statesOf(after);
+          var after=solveNetworkCircuit(design,{initial:true,time:time,states:states,switchStates:switchStates,diodeVoltages:diodeVoltages,opampCache:opampCache}),carriedStates=statesOf(after);
           if(!after.ok||!known(carriedStates))return fail('Switch event at '+circuitTimeText(time)+' ('+circuitNetworkSwitchText(switchEvent)+') has no consistent finite solution. Capacitor voltage, inductor current, and timed op-amp output must carry through continuously. Check for a shorted charged capacitor, an inductor without a return path, or conflicting ideal sources. Add a compatible return path or change the schedule.');
           frames[frames.length-1].side='before';frames[frames.length-1].event=switchEvent;
           var afterFrame=circuitNetworkSnapshot(after,time);afterFrame.side='after';afterFrame.event=switchEvent;frames.push(afterFrame);states=carriedStates;diodeVoltages=after.diodeVoltages;history=circuitNetworkIntegrationHistory(after);restart='switch_event';switchIndex++;
@@ -2217,6 +2354,27 @@ window.StemLab = window.StemLab || {
     {id:'bjt-mirror',name:'Two transistors: a current mirror',selected:4,probeRed:'C',probeBlack:'0',question:'Q3 has its collector tied to its base. Q4 shares that base voltage. Compare their collector currents, then change the output load. Why is the reference-resistor current slightly larger than either collector current?',components:[{id:1,type:'voltage',a:'A',b:'0',value:5},{id:2,type:'resistor',a:'A',b:'B',value:1000},{id:3,type:'bjt',a:'B',b:'0',bjt:{base:'B'}},{id:4,type:'bjt',a:'C',b:'0',bjt:{base:'B'}},{id:5,type:'resistor',a:'A',b:'C',value:1000}]}
   );
 
+  function CircuitNetworkFileTools(props){
+    var React=props.React,h=React.createElement,t=circuitToolT(props),pending=React.useState(null),candidate=pending[0],feedback=React.useState(''),error=React.useState(false),reading=React.useState(false),generation=React.useRef(0),input=React.useRef(null),fileId='circuit-network-design-'+React.useId();
+    React.useEffect(function(){return function(){generation.current++;};},[]);
+    var cancel=function(){generation.current++;pending[1](null);reading[1](false);error[1](false);feedback[1](t('stem.circuit.connected_import_cancelled','Import cancelled. The connected circuit is unchanged.'));if(input.current){input.current.value='';input.current.focus({preventScroll:true});}};
+    var read=function(e){var file=e.target.files&&e.target.files[0],request=++generation.current;pending[1](null);error[1](false);feedback[1]('');reading[1](false);if(!file)return;
+      if(file.size>65536){error[1](true);feedback[1](t('stem.circuit.connected_design_file_size','Choose a connected design JSON file no larger than 64 KB.'));return;}
+      reading[1](true);Promise.resolve().then(function(){return file.text();}).then(function(text){if(generation.current!==request)return;try{pending[1](parseCircuitNetworkDesign(text));feedback[1](t('stem.circuit.connected_design_preview_ready','Preview ready. Review the design, then choose Load design.'));}catch(err){error[1](true);feedback[1](err.message);}}).catch(function(){if(generation.current===request){error[1](true);feedback[1](t('stem.circuit.connected_design_read_failed','The file could not be read. Choose it again.'));}}).finally(function(){if(generation.current===request)reading[1](false);});
+    };
+    var save=function(){var url;try{var document=circuitNetworkDesignDocument(props.state);url=URL.createObjectURL(new Blob([JSON.stringify(document,null,2)],{type:'application/json'}));var link=window.document.createElement('a');link.href=url;link.download='connected-circuit-design.json';link.click();setTimeout(function(){URL.revokeObjectURL(url);},1000);error[1](false);feedback[1](t('stem.circuit.connected_design_saved','Connected design saved.'));}catch(err){if(url)URL.revokeObjectURL(url);error[1](true);feedback[1](err.message||t('stem.circuit.connected_design_save_failed','The connected design could not be saved.'));}};
+    return h('details',{className:'circuit-file-tools'},h('summary',null,t('stem.circuit.connected_design_file_tools','Save or open a connected design')),
+      h('p',{className:'circuit-help'},t('stem.circuit.connected_design_file_help','Save component connections, model settings, and analysis options. Opening a file shows a preview; Load design applies it as one undoable edit.')),
+      h('div',{className:'circuit-action-row'},h('button',{type:'button',onClick:save},t('stem.circuit.save_connected_design','Save connected design')),h('label',{htmlFor:fileId},t('stem.circuit.open_connected_design_file','Open connected design file')),h('input',{id:fileId,ref:input,type:'file',accept:'.json,application/json','aria-describedby':fileId+'-status',onChange:read})),
+      h('p',{id:fileId+'-status',role:error[0]?'alert':'status',className:error[0]?'circuit-file-error':'circuit-help'},reading[0]?t('stem.circuit.reading_connected_design','Reading connected design…'):feedback[0]),
+      candidate&&h('section',{className:'circuit-file-preview','aria-label':t('stem.circuit.connected_design_preview','Connected design preview')},
+        h('h4',null,candidate.components.length+' '+t('stem.circuit.connected_design_components','components')+' · '+(candidate.analysis==='time'?t('stem.circuit.connected_design_time','Time response'):t('stem.circuit.connected_design_dc','DC equilibrium'))),
+        h('p',null,t('stem.circuit.connected_design_duration','Time window')+': '+circuitTimeText(candidate.duration)+' · '+(candidate.integration==='trapezoidal'?'Trapezoidal':'Backward Euler')+' · '+t('stem.circuit.connected_design_probes','Probes')+': '+candidate.probeRed+' − '+candidate.probeBlack),
+        h('ol',null,candidate.components.map(function(p){return h('li',{key:p.id},circuitNetworkLabel(p)+' · '+CIRCUIT_NETWORK_TYPES[p.type].name+' · '+(p.bjt?'C '+p.a+' / B '+p.bjt.base+' / E '+p.b:p.a+' → '+p.b)+' · '+circuitNetworkValue(p));})),
+        !candidate.components.length&&h('p',null,t('stem.circuit.connected_design_empty','This design opens an empty connected circuit.')),
+        h('button',{type:'button',onClick:function(){props.load(candidate);generation.current++;pending[1](null);error[1](false);feedback[1](t('stem.circuit.connected_design_loaded','Connected design loaded. Undo restores the previous circuit and analysis settings.'));if(input.current){input.current.value='';input.current.focus({preventScroll:true});}}},t('stem.circuit.load_connected_design','Load design'))),
+      (candidate||reading[0])&&h('button',{type:'button',onClick:cancel},t('stem.circuit.cancel_connected_import','Cancel import')));
+  }
   function CircuitNetworkWorkbench(props) {
     var ctx=props.ctx,React=ctx.React,h=React.createElement,state=(ctx.toolData||{})._circuitNetwork||{},timed=state.analysis==='time',dc=React.useMemo(function(){return solveNetworkCircuit(state);},[state.components]),run=React.useMemo(function(){return timed?circuitNetworkTransient(state):null;},[timed,state.components,state.duration,state.integration]),s=timed?circuitNetworkFrame(run,state.time,state.timeSide):dc;
     var __alloT=circuitToolT(props);
@@ -2227,8 +2385,8 @@ window.StemLab = window.StemLab || {
     var held=React.useMemo(function(){return circuitNetworkHeld(run,state.boardReference);},[run,state.boardReference]),holdNotice=React.useState({reference:null,text:''});
     var energyReference=React.useMemo(function(){return circuitNetworkEnergyReference(d,timed?(run.ok?run.frames:[]):dc.ok?[dc]:[]);},[timed,run,dc]);
     var voltageScale=React.useMemo(function(){return (timed&&run.ok?run.frames:[dc]).reduce(function(max,frame){return frame.nodes.reduce(function(value,node){return node.voltage==null?value:Math.max(value,Math.abs(node.voltage));},max);},1);},[timed,run,dc]);
-    var patch=function(values,electrical){if(electrical||values.analysis!=null||values.duration!=null||values.integration!=null){setPlaying(false);values=Object.assign({},values,{time:0,timeSide:null});}ctx.setToolData(function(prev){var old=prev._circuitNetwork||{},next=Object.assign({},old,values);if(electrical){var before=circuitNetworkDesign(old),after=circuitNetworkDesign(next);next.components=after.components;if(JSON.stringify(before)!==JSON.stringify(after)){next.undo=(old.undo||[]).slice(-29).concat([before]);next.redo=[];}}return Object.assign({},prev,{_circuitNetwork:next});});};
-    var history=function(key){setPlaying(false);ctx.setToolData(function(prev){var old=prev._circuitNetwork||{},stack=old[key]||[];if(!stack.length)return prev;var next=Object.assign({},old,stack[stack.length-1],{time:0,timeSide:null});next[key]=stack.slice(0,-1);next[key==='undo'?'redo':'undo']=(old[key==='undo'?'redo':'undo']||[]).slice(-29).concat([circuitNetworkDesign(old)]);return Object.assign({},prev,{_circuitNetwork:next});});};
+    var patch=function(values,electrical,wholeDesign){if(electrical||values.analysis!=null||values.duration!=null||values.integration!=null){setPlaying(false);values=Object.assign({},values,{time:0,timeSide:null});}ctx.setToolData(function(prev){var old=prev._circuitNetwork||{},next=Object.assign({},old,values);if(electrical){var before=circuitNetworkDesign(old),after=circuitNetworkDesign(next);next.components=after.components;if(wholeDesign||JSON.stringify(before)!==JSON.stringify(after)){next.undo=(old.undo||[]).slice(-29).concat([wholeDesign?circuitNetworkHistoryState(old):before]);next.redo=[];}}return Object.assign({},prev,{_circuitNetwork:next});});};
+    var history=function(key){setPlaying(false);ctx.setToolData(function(prev){var old=prev._circuitNetwork||{},stack=old[key]||[];if(!stack.length)return prev;var next=Object.assign({},old,stack[stack.length-1],{time:0,timeSide:null,boardReference:null});next[key]=stack.slice(0,-1);next[key==='undo'?'redo':'undo']=(old[key==='undo'?'redo':'undo']||[]).slice(-29).concat([circuitNetworkHistoryState(old)]);return Object.assign({},prev,{_circuitNetwork:next});});};
     React.useEffect(function(){if(!playing||!timed||!run.ok)return;var from=circuitNumber(state.time,0,0,run.duration),started=performance.now();
       var advance=function(){if(document.hidden){setPlaying(false);return;}var time=Math.min(run.duration,from+(performance.now()-started)/6000*run.duration);ctx.setToolData(function(prev){return Object.assign({},prev,{_circuitNetwork:Object.assign({},prev._circuitNetwork,{time:time,timeSide:null})});});if(time>=run.duration)setPlaying(false);};
       var hidden=function(){if(document.hidden)setPlaying(false);},timer=setInterval(advance,125);document.addEventListener('visibilitychange',hidden);return function(){clearInterval(timer);document.removeEventListener('visibilitychange',hidden);};
@@ -2246,6 +2404,7 @@ window.StemLab = window.StemLab || {
     return h('section',{'data-circuit-builder-root':'true',className:'circuit-active-root circuit-network-root',ref:rootRef,'aria-label':__alloT('stem.circuit.connected_circuit_workbench','Connected circuit workbench')},
       h('header',{className:'circuit-active-hero'},h('span',{className:'circuit-eyebrow'},'CONNECTED NETWORKS · DC + TIME'),h('h2',null,'Build beyond branches.'),h('p',null,'Connect components through shared nodes. Explore bridges, rectifiers, amplifiers, feedback, and shared loads. Watch stored energy and switch events change the response over time.')),
       h('div',{className:'circuit-network-examples'},h('label',null,'Start an investigation',h('select',{'aria-label':__alloT('stem.circuit.connected_circuit_example','Connected circuit example'),value:example.id,onChange:function(e){patch({exampleId:e.target.value});}},CIRCUIT_NETWORK_EXAMPLES.map(function(p){return h('option',{key:p.id,value:p.id},p.name);}))),h('button',{type:'button',onClick:function(){patch({components:example.components,loadedExample:example.id,scopeSource:example.scopeSource||0,scopeSpectrum:example.scopeSpectrum||state.scopeSpectrum,analysis:example.duration?'time':'dc',duration:example.duration||.5,integration:example.integration||circuitNetworkIntegration(state),selected:example.selected||(example.duration?example.components[example.components.length-1].id:example.components[0].id),probeRed:example.probeRed|| (example.duration?example.components[example.components.length-1].a:example.id==='bridge'?'B':'A'),probeBlack:example.probeBlack|| (example.duration?example.components[example.components.length-1].b:example.id==='bridge'?'C':'0')},true);}},'Load network example'),h('button',{type:'button',disabled:!(state.undo||[]).length,onClick:function(){history('undo');}},'Undo network edit'),h('button',{type:'button',disabled:!(state.redo||[]).length,onClick:function(){history('redo');}},'Redo network edit')),
+      h(CircuitNetworkFileTools,{React:React,t:cktT,state:state,load:function(design){patch(Object.assign({},design,{boardReference:null,scopeSource:0,loadedExample:'custom-design'}),true,true);holdNotice[1]({reference:null,text:''});}}),
       h('div',{className:'circuit-network-mode',role:'group','aria-label':__alloT('stem.circuit.connected_analysis_mode','Connected analysis mode')},h('button',{type:'button','aria-pressed':!timed,onClick:function(){patch({analysis:'dc'});}},'DC equilibrium'),h('button',{type:'button','aria-pressed':timed,onClick:function(){patch({analysis:'time'});}},'Time response'),h('span',null,timed?'Starting energy + signals + switch events → response':'DC levels only · capacitors open · inductors shorted')),
       h('div',{className:'circuit-network-status','data-ok':s.ok,role:'status','aria-live':playing?'off':'polite'},h('strong',null,!s.ok?'Check the connections':s.floating.length||s.ambiguous.length?'Some readings are undetermined':'Network solved'),h('p',null,!s.ok?s.message:timed?run.message:s.message)),
       timed&&h(CircuitNetworkIntegrationControls,{React:React,t:cktT,run:run,patch:patch}),
@@ -3569,25 +3728,26 @@ window.StemLab = window.StemLab || {
     var wrong1 = parseFloat((gen.a * (1.5 + Math.random())).toFixed(decimals));
     var wrong2 = parseFloat((gen.a * (0.2 + Math.random() * 0.5)).toFixed(decimals));
     var wrong3 = parseFloat((gen.a + (Math.random() > 0.5 ? 1 : -1) * (gen.a * 0.3 + 5)).toFixed(decimals));
-    if (wrong2 <= 0) wrong2 = parseFloat((gen.a * 2.5).toFixed(decimals));
-    // Distractors must be positive and distinct from the correct answer AND each other, else a negative
-    // option could appear (~21% of questions) or a distractor within tolerance would score as correct
-    // (inflating XP). Repair any bad option with deterministic fallback multipliers.
-    var _qTol = 0.01;
-    var _qFallback = [2.5, 0.4, 1.7, 3.3, 0.6, 1.25];
-    var _qSeen = {}; _qSeen[gen.a.toFixed(decimals)] = true;
+    // Work in displayed units so every option stays positive and visibly distinct,
+    // even for small current answers and coincident random distractors.
+    var _qScale = Math.pow(10, decimals), _qAnswer = Math.round(gen.a * _qScale);
+    var _qStep = Math.max(1, Math.round(_qAnswer * 0.3));
+    var _qSeen = {}; _qSeen[_qAnswer] = true;
     var _fixOpt = function (w) {
-      var fi = 0;
-      while ((!(w > 0) || Math.abs(w - gen.a) < _qTol || _qSeen[w.toFixed(decimals)]) && fi < _qFallback.length) {
-        w = parseFloat((gen.a * _qFallback[fi]).toFixed(decimals)); fi++;
-      }
-      _qSeen[w.toFixed(decimals)] = true;
-      return w;
+      var units = Math.round(w * _qScale), offset = 1;
+      while (!(units > 0) || _qSeen[units]) units = _qAnswer + _qStep * offset++;
+      _qSeen[units] = true;
+      return units / _qScale;
     };
     wrong1 = _fixOpt(wrong1); wrong2 = _fixOpt(wrong2); wrong3 = _fixOpt(wrong3);
-    var opts = [gen.a, wrong1, wrong2, wrong3].sort(function() { return Math.random() - 0.5; });
+    var opts = [gen.a, wrong1, wrong2, wrong3];
+    for (var oi = opts.length - 1; oi > 0; oi--) {
+      var swap = Math.floor(Math.random() * (oi + 1)), held = opts[oi];
+      opts[oi] = opts[swap]; opts[swap] = held;
+    }
     return { text: gen.q, answer: gen.a, unit: gen.unit, formula: gen.formula, opts: opts, answered: false };
   }
+  window.StemLab.circuitOhmQuestion = makeOhmQuestion;
 
   // ══════════════════════════════════════════════════
   // Register the Circuit Builder tool
@@ -3766,7 +3926,7 @@ window.StemLab = window.StemLab || {
     var title = isRemove ? 'Remove component?' : 'Clear circuit?';
     var description = isRemove
       ? 'Remove this ' + props.action.componentName + '? You can add it back from the toolbox.'
-      : 'Clear all ' + props.action.count + ' components from the circuit? This cannot be undone.';
+      : 'Clear all ' + props.action.count + ' components from the circuit? You can restore them with Undo.';
     var confirmLabel = isRemove ? 'Remove component' : 'Clear circuit';
 
     return h('div', {
@@ -3823,6 +3983,8 @@ window.StemLab = window.StemLab || {
       if (!this._CircuitComponent) {
         this._CircuitComponent = function CircuitLab(props) {
           var ctx = props.ctx;
+          var __alloT = circuitToolT(props);
+          var cktT = typeof ctx.t === 'function' ? ctx.t : null;
           var React = ctx.React;
           var h = React.createElement;
           var ArrowLeft = ctx.icons.ArrowLeft;
@@ -3892,8 +4054,8 @@ window.StemLab = window.StemLab || {
           var solved = React.useMemo(function(){return solveCircuit(d);},[d.components,d.mode,d.voltage]);
           // Keep static solid geometry out of animation-only React updates.
           var spatialView = React.useMemo(function(){
-            return d.benchView==='3d'?h(CircuitBench3D,{React:React,solved:solved,state:d,update:upd,updateMany:updMulti}):null;
-          },[React,solved,d.benchView,d.cameraYaw,d.cameraTilt,d.cameraZoom,d.cameraPanX,d.cameraPanY,d.cameraDragMode,d.sceneLabels,d.sceneCloseup,d.sceneCurrent,d.sceneCompare,d.sceneProbes,d.probeRed,d.probeBlack,d.probePractice,d.selectedPart,ctx.setToolData]);
+            return d.benchView==='3d'?h(CircuitBench3D,{React:React,t:cktT,solved:solved,state:d,update:upd,updateMany:updMulti}):null;
+          },[React,cktT,solved,d.benchView,d.cameraYaw,d.cameraTilt,d.cameraZoom,d.cameraPanX,d.cameraPanY,d.cameraDragMode,d.sceneLabels,d.sceneCloseup,d.sceneCurrent,d.sceneCompare,d.sceneProbes,d.probeRed,d.probeBlack,d.probePractice,d.selectedPart,ctx.setToolData]);
 
           var mode = solved.mode;
           var components = solved.components;
@@ -3907,6 +4069,37 @@ window.StemLab = window.StemLab || {
           var aiQuestion = d.aiQuestion || '';
           var aiResponse = d._aiResponse || '';
           var aiLoading = d._aiLoading || false;
+          var aiGeneration = React.useRef(0), aiPending = React.useRef(null), aiMounted = React.useRef(false);
+          // This key stays local; it only prevents an outdated reply from replacing newer work.
+          var aiStateKey = function(state, grade) { return JSON.stringify([grade, String(state.aiQuestion || '').trim(), circuitDesignDocument(state)]); };
+          var aiContextKey = React.useMemo(function() { return aiStateKey(d, band); }, [band, aiQuestion, solved]);
+          var aiContext = React.useRef(null);
+          aiContext.current = { key: aiContextKey, grade: band };
+          var aiChangedMessage = __alloT('stem.circuit.ai_request_changed', 'The circuit or question changed. Ask again for the current circuit.');
+          React.useEffect(function() {
+            aiMounted.current = true;
+            // A saved busy flag has no corresponding request after a remount.
+            ctx.setToolData(function(prev) {
+              var prior = prev._circuit || {};
+              return prior._aiLoading ? Object.assign({}, prev, { _circuit: Object.assign({}, prior, { _aiLoading: false }) }) : prev;
+            });
+            return function() {
+              aiMounted.current = false;
+              aiGeneration.current++;
+              if (!aiPending.current) return;
+              aiPending.current = null;
+              ctx.setToolData(function(prev) {
+                var prior = prev._circuit || {};
+                return Object.assign({}, prev, { _circuit: Object.assign({}, prior, { _aiLoading: false, _aiResponse: '' }) });
+              });
+            };
+          }, [ctx.setToolData]);
+          React.useEffect(function() {
+            if (!aiPending.current || aiPending.current.key === aiContextKey) return;
+            aiGeneration.current++;
+            aiPending.current = null;
+            updMulti({ _aiLoading: false, _aiResponse: aiChangedMessage });
+          }, [aiContextKey]);
 
           // Badge tracking state
           var compAdded = d.compAdded || 0;
@@ -4230,24 +4423,66 @@ window.StemLab = window.StemLab || {
           };
 
           // ── AI Tutor ──
+          var stopAI = function() {
+            if (!aiPending.current) return;
+            aiGeneration.current++;
+            aiPending.current = null;
+            updMulti({ _aiLoading: false, _aiResponse: __alloT('stem.circuit.ai_request_stopped', 'Stopped waiting for that reply. You can ask again.') });
+          };
           var askAI = function() {
-            if (aiLoading) return;
+            if (aiPending.current || !aiMounted.current) return;
             if (!aiQuestion || !aiQuestion.trim()) return;
+            var request = { generation: ++aiGeneration.current, key: aiContextKey };
+            aiPending.current = request;
             updMulti({ _aiLoading: true, _aiResponse: '' });
-            var prompt = 'You are a friendly electronics tutor. ' +
-              'The student is building ' + mode + ' circuits in the Circuit Builder. ' +
-              'Current circuit: ' + components.length + ' components, ' + voltage + 'V. ' +
-              'Their question: "' + aiQuestion + '"\n\n' +
-              'Give a clear explanation appropriate for grade level (' + band + '). Use Ohm\'s Law examples. Keep under 150 words.';
-            if (typeof callGemini === 'function') {
-              callGemini(prompt, false, false, 0.7).then(function(resp) {
-                updMulti({ _aiResponse: resp, _aiLoading: false });
-              }).catch(function() {
-                updMulti({ _aiResponse: 'Sorry, could not connect to the AI tutor.', _aiLoading: false });
+            var finish = function(response) {
+              if (!aiMounted.current || aiGeneration.current !== request.generation) return;
+              aiPending.current = null;
+              ctx.setToolData(function(prev) {
+                if (!aiMounted.current || aiGeneration.current !== request.generation) return prev;
+                var prior = prev._circuit || {}, matches = aiStateKey(prior, aiContext.current.grade) === request.key;
+                return Object.assign({}, prev, { _circuit: Object.assign({}, prior, { _aiLoading: false, _aiResponse: matches ? response : aiChangedMessage }) });
               });
-            } else {
-              updMulti({ _aiResponse: 'AI tutor is not available in this environment.', _aiLoading: false });
+            };
+            var finite = function(value) { return Number.isFinite(value) ? value : null; };
+            var snapshot = {
+              connection: mode, supplyVoltageV: voltage, sourceCurrentA: finite(current), sourcePowerW: finite(power),
+              equivalentResistanceOhm: finite(totalR), openCircuit: isOpen, shortCircuit: isShort,
+              ambiguousVoltages: !!solved.voltageAmbiguous, ledOvercurrent: !!solved.ledOvercurrent,
+              parts: solved.rows.map(function(row, index) {
+                var c = row.component, settings = {};
+                if (c.type === 'resistor' || c.type === 'bulb') settings.resistanceOhm = c.value;
+                if (c.type === 'capacitor') settings.capacitanceMicrofarad = c.value;
+                if (c.type === 'switch') settings.position = c.closed ? 'closed' : 'open';
+                if (c.type === 'led') { settings.polarity = c.reversed ? 'reversed' : 'forward'; settings.color = c.ledColor || '#ef4444'; settings.forwardVoltageV = circuitForwardVoltage(c); }
+                return { position: index + 1, type: c.type, settings: settings, voltageV: finite(row.voltage), currentA: finite(row.current), powerW: finite(row.power) };
+              })
+            };
+            var prompt = 'You are an electronics tutor helping a student investigate the Circuit Builder. ' +
+              'Explain the current simulated circuit using the supplied solver readings; null means undetermined, not zero. ' +
+              'In series, the listed parts share one path. In parallel, each listed part is its own branch across the supply.\n\n' +
+              'Circuit snapshot:\n' + JSON.stringify(snapshot, null, 2) + '\n\n' +
+              'Model limits: This is ideal steady DC, not a transient simulation. Bulbs have fixed resistance. ' +
+              'Closed switches and ammeters use 0.001 ohm; voltmeters use 1 billion ohms; capacitors are open at DC equilibrium. ' +
+              'LEDs use a color-dependent forward drop plus a 10 ohm slope resistance. The ideal source has no current limit. ' +
+              'Heating, device failure, source limits, leakage, and startup transients are not modeled. ' +
+              'The illustrative signal sketch is not calculated time data. Mixed and Connected circuits provide calculated time responses. ' +
+              'Explain any open path, short path, or ambiguous reading relevant to the question without inventing measurements.\n\n' +
+              'Student question: ' + JSON.stringify(aiQuestion.trim()) + '\n' +
+              'Give an explanation appropriate for grade band ' + band + '. Use the actual part values where useful. Keep under 150 words.';
+            if (typeof callGemini !== 'function') {
+              finish(__alloT('stem.circuit.ai_unavailable', 'The AI tutor is unavailable here. Your circuit and readings are still available.'));
+              return;
             }
+            Promise.resolve().then(function() {
+              if (!aiMounted.current || aiGeneration.current !== request.generation) return null;
+              return callGemini(prompt, false, false, 0.7);
+            }).then(function(response) {
+              if (typeof response !== 'string' || !response.trim()) throw new Error('Empty tutor response');
+              finish(response.trim());
+            }).catch(function() {
+              finish(__alloT('stem.circuit.ai_request_failed', 'The AI tutor could not answer. Your circuit is unchanged. Try asking again.'));
+            });
           };
 
           // ── LED glow color helper ──
@@ -4918,7 +5153,7 @@ window.StemLab = window.StemLab || {
             var before = snapshot ? solveCircuit(snapshot.circuit) : null;
             var selectedIndex = Math.min(Math.max(0,d.selectedPart||0),Math.max(0,components.length-1));
             var selected = solved.rows[selectedIndex];
-            var fmt = function(n) { return n.toFixed(3)+' A'; };
+            var fmt = circuitCurrentText;
             var describeCircuit = function(c) { return c.mode+' at '+c.voltage+' V: '+c.components.map(function(p,i) {return (i+1)+'. '+p.type+(p.type==='resistor'||p.type==='bulb'?' '+p.value+' Ω':p.type==='switch'?(p.closed?' closed':' open'):p.type==='led'?(p.reversed?' reversed':' forward'):'');}).join(', '); };
             return h(React.Fragment,null,
               h('section',{className:'circuit-lab-workflow','aria-labelledby':'circuit-investigation-title'},
@@ -4963,7 +5198,7 @@ window.StemLab = window.StemLab || {
                   ].map(function(p){return h('button',{key:p.label,type:'button',onClick:function(){updMulti({mode:p.mode,voltage:p.voltage,components:p.components,experimentBaseline:null,experimentResult:null});}},p.label);})))
               ),
               ),
-              h(CircuitGuidedLab,{React:React,state:d,update:upd,updateMany:updMulti}),
+              h(CircuitGuidedLab,{React:React,t:cktT,state:d,update:upd,updateMany:updMulti}),
               h('section',{className:'circuit-view-toolbar','aria-label':__alloT('stem.circuit.circuit_view_and_editing_controls','Circuit view and editing controls')},
                 h('span',{className:'circuit-eyebrow'},'02 / BUILD & MEASURE'),
                 h('div',{className:'circuit-action-row'},
@@ -4972,7 +5207,7 @@ window.StemLab = window.StemLab || {
                   h('button',{type:'button',disabled:!(d.redo||[]).length,onClick:function(){travelHistory('redo');}},'Redo'),
                   h('button',{type:'button','aria-pressed':!!d.pauseMotion,onClick:function(){upd('pauseMotion',!d.pauseMotion);}},d.pauseMotion?'Resume motion':'Pause motion')),
                 h('p',{className:'circuit-help'},mode==='series'?'One continuous path: every part carries the same current.':'Each part is a separate branch across the battery. A switch here controls only its own branch.')),
-              h(CircuitFileTools,{React:React,state:d,updateMany:updMulti}),
+              h(CircuitFileTools,{React:React,t:cktT,state:d,updateMany:updMulti}),
               renderPartsShelf(),
               spatialView,
               d.benchView!=='3d'&&renderSchematic(),
@@ -4989,7 +5224,7 @@ window.StemLab = window.StemLab || {
                   h('div',null,h('dt',null,'Current through'),h('dd',null,circuitCurrentText(selected.current))),
                   h('div',null,h('dt',null,'Power transferred'),h('dd',null,circuitPowerText(selected.power)))),
                 selected&&['resistor','bulb','capacitor'].indexOf(selected.component.type)!==-1&&h(CircuitValueEditor,{
-                  key:selectedIndex+'-'+selected.component.id+'-'+selected.component.type,React:React,value:selected.component.value,
+                  key:selectedIndex+'-'+selected.component.id+'-'+selected.component.type,React:React,t:cktT,value:selected.component.value,
                   label:selected.component.type==='capacitor'?'Capacitance (µF)':'Resistance (Ω)',
                   unit:selected.component.type==='capacitor'?'µF':'Ω',quantity:selected.component.type==='capacitor'?'capacitance':'resistance',
                   onApply:function(value){upd('components',components.map(function(c,i){return i===selectedIndex?Object.assign({},c,{value:value}):c;}));}}),
@@ -5193,7 +5428,7 @@ window.StemLab = window.StemLab || {
             // ══════════════════════════════════════
             // Readout cards (4 metrics)
             // ══════════════════════════════════════
-            h(CircuitTimeLab,{React:React,state:d,update:upd,updateMany:updMulti,loadStarter:function(){updMulti({mode:'series',voltage:9,components:[{id:1,type:'resistor',value:1000},{id:2,type:'capacitor',value:1000}],rcTime:0,rcPhase:'charge',showTimeLab:true});}}),
+            h(CircuitTimeLab,{React:React,t:cktT,state:d,update:upd,updateMany:updMulti,loadStarter:function(){updMulti({mode:'series',voltage:9,components:[{id:1,type:'resistor',value:1000},{id:2,type:'capacitor',value:1000}],rcTime:0,rcPhase:'charge',showTimeLab:true});}}),
 
             h('div', { className: 'mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2', role: 'status', 'aria-live': 'polite' },
               [
@@ -5604,7 +5839,7 @@ window.StemLab = window.StemLab || {
                     ohmQuiz.opts.map(function(opt, oi) {
                       return h('button', { key: oi,
                         onClick: function() {
-                          var correct = Math.abs(opt - ohmQuiz.answer) < 0.01;
+                          var correct = opt === ohmQuiz.answer;
                           var newScore = ohmScore + (correct ? 1 : 0);
                           var newStreak = correct ? ohmStreak + 1 : 0;
                           updMulti({
@@ -5630,11 +5865,11 @@ window.StemLab = window.StemLab || {
 
                 // Answered question (feedback)
                 ohmQuiz && ohmQuiz.answered && h('div', {
-                  className: 'p-3 rounded-lg text-sm font-bold ' + (Math.abs(ohmQuiz.chosen - ohmQuiz.answer) < 0.01 ? 'bg-emerald-950/20 text-emerald-400 border border-emerald-900/30' : 'bg-red-950/20 text-red-400 border border-red-900/30')
+                  className: 'p-3 rounded-lg text-sm font-bold ' + (ohmQuiz.chosen === ohmQuiz.answer ? 'bg-emerald-950/20 text-emerald-400 border border-emerald-900/30' : 'bg-red-950/20 text-red-400 border border-red-900/30')
                 },
-                  Math.abs(ohmQuiz.chosen - ohmQuiz.answer) < 0.01 ? '\u2705 ' + __alloT('stem.circuit.quiz_correct', 'Correct!') : '\u274C Answer: ' + ohmQuiz.answer + ohmQuiz.unit,
+                  ohmQuiz.chosen === ohmQuiz.answer ? '\u2705 ' + __alloT('stem.circuit.quiz_correct', 'Correct!') : '\u274C Answer: ' + ohmQuiz.answer + ohmQuiz.unit,
                   h('p', {
-                    className: 'text-xs font-normal mt-1 ' + (Math.abs(ohmQuiz.chosen - ohmQuiz.answer) < 0.01 ? 'text-emerald-500' : 'text-red-500')
+                    className: 'text-xs font-normal mt-1 ' + (ohmQuiz.chosen === ohmQuiz.answer ? 'text-emerald-500' : 'text-red-500')
                   }, '\uD83D\uDD0D ' + ohmQuiz.formula)
                 )
               );
@@ -5675,17 +5910,19 @@ window.StemLab = window.StemLab || {
                   placeholder: __alloT('stem.circuit.placeholder_ask', 'Ask about circuits, Ohm\'s Law, components...'),
                   value: aiQuestion,
                   onChange: function(e) { upd('aiQuestion', e.target.value); },
-                  onKeyDown: function(e) { if (e.key === 'Enter') askAI(); },
+                  onKeyDown: function(e) { if (e.key === 'Enter' && !e.nativeEvent.isComposing) { e.preventDefault(); askAI(); } },
                   className: 'flex-1 px-3 py-2 text-xs border border-blue-800 bg-slate-950/80 text-slate-100 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500'
                 }),
                 h('button', { 'aria-label': aiLoading ? __alloT('stem.circuit.aria_ai_thinking', 'AI is thinking') : __alloT('stem.circuit.aria_ask_ai_tutor', 'Ask the AI tutor'), 'aria-busy': aiLoading,
                   onClick: askAI,
-                  disabled: aiLoading,
+                  disabled: aiLoading || !aiQuestion.trim(),
                   className: 'px-4 py-2 text-xs font-bold rounded-lg transition-all ' + (aiLoading ? 'bg-slate-800 text-slate-300' : 'transition-colors bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-600/10 active:scale-[0.97]')
                 }, aiLoading ? __alloT('stem.circuit.thinking_ellipsis', 'Thinking...') : __alloT('stem.circuit.ask_btn', 'Ask'))
               ),
-              aiLoading && h('div', { className: 'mt-2 text-xs text-blue-400 animate-pulse motion-reduce:animate-none' }, __alloT('stem.circuit.ai_is_thinking', 'AI is thinking...')),
-              aiResponse && h('div', { role: 'status', 'aria-live': 'polite', className: 'mt-2 bg-slate-950/80 rounded-lg p-3 border border-blue-900/50 text-xs text-blue-200 whitespace-pre-wrap leading-relaxed' }, aiResponse),
+              aiLoading && h('div', { className: 'mt-2 flex items-center gap-3' },
+                h('span', { role: 'status', className: 'text-xs text-blue-300 animate-pulse motion-reduce:animate-none' }, __alloT('stem.circuit.ai_is_thinking', 'AI is thinking...')),
+                h('button', { type: 'button', 'data-circuit-ai-stop': true, onClick: stopAI, className: 'min-h-11 rounded-lg border border-blue-700 px-3 py-2 text-xs text-blue-100' }, __alloT('stem.circuit.ai_stop_waiting', 'Stop waiting'))),
+              aiResponse && h('div', { 'data-circuit-ai-response': true, role: 'status', 'aria-live': 'polite', className: 'mt-2 bg-slate-950/80 rounded-lg p-3 border border-blue-900/50 text-xs text-blue-200 whitespace-pre-wrap leading-relaxed' }, aiResponse),
               // Quick-ask suggestions
               h('div', { className: 'flex flex-wrap gap-1.5 mt-2' },
                 [__alloT('stem.circuit.qa_ohms_law', 'What is Ohm\'s Law?'), __alloT('stem.circuit.qa_series_parallel', 'Series vs parallel?'), __alloT('stem.circuit.qa_short_circuit', 'What is a short circuit?'), __alloT('stem.circuit.qa_capacitors', 'How do capacitors work?'), __alloT('stem.circuit.qa_ammeter', 'What does an ammeter measure?')].map(function(q) {
@@ -5775,8 +6012,8 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'px-3 py-2 flex items-center gap-2 border-b border-slate-800 bg-slate-950/60' },
                 h('div', { className: 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse motion-reduce:animate-none' }),
                 h('span', { className: 'text-[0.625rem] font-bold text-emerald-400 uppercase tracking-wider font-mono' }, __alloT('stem.circuit.signal_sketch_label', 'Signal sketch · illustrative')),
-                h('span', { className: 'ml-auto text-[0.625rem] text-slate-500 font-mono' },
-                  voltage.toFixed(1) + 'V  ' + current.toFixed(3) + 'A  ' + totalR.toFixed(1) + '\u03A9')
+                h('span', { className: 'ml-auto text-[0.625rem] text-slate-300 font-mono' },
+                  voltage.toFixed(1) + 'V  ' + circuitCurrentText(current) + '  ' + totalR.toFixed(1) + '\u03A9')
               ),
               h('canvas', { role: 'img', tabIndex: 0, 'aria-label': __alloT('stem.circuit.aria_oscilloscope', 'Illustrative voltage, current, and capacitor charge sketch, not calculated time samples. Use the mixed workbench oscilloscope for measurements.'),
                 ref: function(canvas) {
@@ -6027,7 +6264,7 @@ window.StemLab = window.StemLab || {
                         id: 'ci-' + Date.now(),
                         tool: 'circuit',
                         label: components.length + ' parts ' + voltage + 'V ' + mode,
-                        data: (function () { var _s = Object.assign({}, d, { mode: mode }); delete _s.tick; delete _s._aiLoading; delete _s._aiResponse; return _s; })(),
+                        data: (function () { var _s = Object.assign({}, d, { mode: mode }); delete _s.tick; delete _s._aiLoading; delete _s._aiResponse; delete _s.confirmAction; return JSON.parse(JSON.stringify(_s)); })(),
                         timestamp: Date.now()
                       }]);
                     });
@@ -6055,6 +6292,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-[0.625rem] text-center text-slate-400 mt-4 mb-2 font-mono font-bold' }, '\uD83D\uDD0C ' + __alloT('stem.circuit.circuit_builder', 'Circuit Builder') + ' \u2022 ' + __alloT('stem.circuit.footer_ohm', 'Ohm\'s Law: V = IR') + ' \u2022 ' + __alloT('stem.circuit.footer_power', 'Power: P = IV')),
             confirmationAction && h(CircuitConfirmationDialog, {
               React: React,
+              t: cktT,
               action: confirmationAction,
               onCancel: function() { upd('confirmAction', null); },
               onConfirm: confirmCircuitAction
@@ -6067,7 +6305,7 @@ window.StemLab = window.StemLab || {
         h('div',{'data-circuit-builder-root':'true',className:'circuit-workspace-switch',role:'group','aria-label':__alloT('stem.circuit.circuit_workbench_coverage','Circuit workbench coverage')},
           ['Simple circuits','Mixed circuits','Active electronics','Connected circuits'].map(function(label,i){return h('button',{key:label,type:'button','aria-pressed':(networkActive?3:activeElectronics?2:mixedActive?1:0)===i,onClick:function(){ctx.setToolData(function(prev){return Object.assign({},prev,{_circuit:Object.assign({},prev._circuit,{mixedWorkbench:i===1,activeWorkbench:i===2,networkWorkbench:i===3})});});}},label);}),
           h('span',null,networkActive?'Bridges, shared loads, and multiple sources':activeElectronics?'Transistors, sensors, and control':mixedActive?'Series paths across parallel branches':'Learn the foundations')),
-        networkActive?h(CircuitNetworkWorkbench,{ctx:ctx}):activeElectronics?h(CircuitActiveWorkbench,{ctx:ctx}):mixedActive?h(CircuitMixedWorkbench,{ctx:ctx}):h(this._CircuitComponent, { ctx: ctx }));
+        networkActive?h(CircuitNetworkWorkbench,{ctx:ctx,t:ctx.t}):activeElectronics?h(CircuitActiveWorkbench,{ctx:ctx,t:ctx.t}):mixedActive?h(CircuitMixedWorkbench,{ctx:ctx,t:ctx.t}):h(this._CircuitComponent, { ctx: ctx, t: ctx.t }));
 
       // ═══════════════════════════════════════════════════════════════════
       // CIRCUIT EXPANSION SECTIONS — interactive electronics reference (2026-05-31)
@@ -6496,7 +6734,20 @@ window.StemLab = window.StemLab || {
         var inquiryComplete = Object.keys(state.stage || {}).filter(function(scenarioId) {
           return state.stage[scenarioId] && state.stage[scenarioId].complete === true;
         }).length;
-        // Tiny SVG schematic generator — kept lightweight so the lesson stays the focus
+        function tryScenario(scenario) {
+          setLabToolData(function(prev) {
+            var prior=(prev&&prev._circuit)||{},s=scenario.svg;
+            var previous={mode:prior.mode||'series',voltage:prior.voltage==null?9:prior.voltage,components:(prior.components||[]).map(function(part){return Object.assign({},part);})};
+            var next=Object.assign({},prior,{mode:s.topology==='parallel'?'parallel':'series',voltage:s.battery,
+              components:s.bulbs.map(function(part,index){return {id:index+1,type:part.isBulb===false?'resistor':'bulb',value:part.R};}),
+              networkWorkbench:false,activeWorkbench:false,mixedWorkbench:false,benchView:'schematic',selectedPart:0,probeRed:0,probeBlack:s.topology==='parallel'?1:s.bulbs.length,
+              undo:(prior.undo||[]).concat([previous]).slice(-30),redo:[],confirmAction:null,experimentResult:null});
+            return Object.assign({},prev,{_circuit:next,circuit:Object.assign({},prev&&prev.circuit,{workspaceTab:'build'})});
+          });
+          if(typeof ctx.announceToSR==='function')ctx.announceToSR('Opened '+scenario.title+' in Simple circuits. Undo restores your previous build.');
+          requestAnimationFrame(function(){var tab=document.getElementById('circuit-workspace-tab-build');if(tab)tab.focus();});
+        }
+        // Wires stop at symbol terminals; the battery plates remain separated.
         function drawSchematic(scenario) {
           var s = scenario.svg;
           var bulbs = s.bulbs;
@@ -6504,61 +6755,49 @@ window.StemLab = window.StemLab || {
             return (part.isBulb === false ? 'resistor ' : 'bulb ') + (index + 1) + ', ' + part.R + (part.R === 1 ? ' ohm' : ' ohms');
           }).join('; ');
           var schematicLabel = scenario.title + '. ' + s.battery + ' volt battery with ' + schematicParts + ' in ' + (s.topology === 'simple' ? 'a single-load closed circuit' : s.topology) + '.';
-          var svgChildren = [];
-          // Battery
-          svgChildren.push(h('line', { x1: 20, y1: 50, x2: 20, y2: 70, stroke: '#fbbf24', strokeWidth: 3 }));
-          svgChildren.push(h('line', { x1: 14, y1: 53, x2: 26, y2: 53, stroke: '#fbbf24', strokeWidth: 3 }));
-          svgChildren.push(h('line', { x1: 17, y1: 67, x2: 23, y2: 67, stroke: '#fbbf24', strokeWidth: 2 }));
-          svgChildren.push(h('text', { x: 30, y: 64, fill: '#fbbf24', fontSize: 10, fontWeight: 'bold' }, s.battery + ' V'));
-          // Wire connections vary by topology
-          if (s.topology === 'simple') {
-            svgChildren.push(h('line', { x1: 20, y1: 70, x2: 20, y2: 110, stroke: '#cbd5e1', strokeWidth: 2 }));
-            svgChildren.push(h('line', { x1: 20, y1: 110, x2: 180, y2: 110, stroke: '#cbd5e1', strokeWidth: 2 }));
-            svgChildren.push(h('line', { x1: 180, y1: 110, x2: 180, y2: 60, stroke: '#cbd5e1', strokeWidth: 2 }));
-            svgChildren.push(h('line', { x1: 180, y1: 60, x2: 145, y2: 60, stroke: '#cbd5e1', strokeWidth: 2 }));
-            svgChildren.push(h('line', { x1: 20, y1: 50, x2: 95, y2: 50, stroke: '#cbd5e1', strokeWidth: 2 }));
-            svgChildren.push(h('line', { x1: 95, y1: 50, x2: 95, y2: 60, stroke: '#cbd5e1', strokeWidth: 2 }));
-            svgChildren.push(h('circle', { cx: 120, cy: 60, r: 14, fill: '#fde047', stroke: '#facc15', strokeWidth: 2 }));
-            svgChildren.push(h('text', { x: 120, y: 63, textAnchor: 'middle', fontSize: 9, fill: '#92400e', fontWeight: 'bold' }, bulbs[0].R + 'Ω'));
-          } else if (s.topology === 'series') {
-            svgChildren.push(h('line', { x1: 20, y1: 70, x2: 20, y2: 110, stroke: '#cbd5e1', strokeWidth: 2 }));
-            svgChildren.push(h('line', { x1: 20, y1: 110, x2: 220, y2: 110, stroke: '#cbd5e1', strokeWidth: 2 }));
-            svgChildren.push(h('line', { x1: 220, y1: 110, x2: 220, y2: 60, stroke: '#cbd5e1', strokeWidth: 2 }));
-            svgChildren.push(h('line', { x1: 220, y1: 60, x2: 195, y2: 60, stroke: '#cbd5e1', strokeWidth: 2 }));
-            svgChildren.push(h('line', { x1: 165, y1: 60, x2: 115, y2: 60, stroke: '#cbd5e1', strokeWidth: 2 }));
-            svgChildren.push(h('line', { x1: 85, y1: 60, x2: 20, y2: 60, stroke: '#cbd5e1', strokeWidth: 2 }));
-            svgChildren.push(h('line', { x1: 20, y1: 60, x2: 20, y2: 50, stroke: '#cbd5e1', strokeWidth: 2 }));
-            // bulb 1
-            svgChildren.push(h('circle', { cx: 100, cy: 60, r: 14, fill: '#fde047', stroke: '#facc15', strokeWidth: 2 }));
-            svgChildren.push(h('text', { x: 100, y: 63, textAnchor: 'middle', fontSize: 9, fill: '#92400e', fontWeight: 'bold' }, bulbs[0].R + 'Ω'));
-            // bulb / resistor 2
-            if (bulbs[1].isBulb === false) {
-              svgChildren.push(h('rect', { x: 165, y: 53, width: 30, height: 14, fill: '#94a3b8', stroke: '#475569', strokeWidth: 2 }));
-              svgChildren.push(h('text', { x: 180, y: 63, textAnchor: 'middle', fontSize: 9, fill: 'white', fontWeight: 'bold' }, bulbs[1].R + 'Ω'));
-            } else {
-              svgChildren.push(h('circle', { cx: 180, cy: 60, r: 14, fill: '#fde047', stroke: '#facc15', strokeWidth: 2 }));
-              svgChildren.push(h('text', { x: 180, y: 63, textAnchor: 'middle', fontSize: 9, fill: '#92400e', fontWeight: 'bold' }, bulbs[1].R + 'Ω'));
-            }
-          } else if (s.topology === 'parallel') {
-            // Top + bottom wires
-            svgChildren.push(h('line', { x1: 20, y1: 50, x2: 200, y2: 50, stroke: '#cbd5e1', strokeWidth: 2 }));
-            svgChildren.push(h('line', { x1: 20, y1: 70, x2: 200, y2: 70, stroke: '#cbd5e1', strokeWidth: 2 }));
-            svgChildren.push(h('line', { x1: 100, y1: 50, x2: 100, y2: 38, stroke: '#cbd5e1', strokeWidth: 2 }));
-            svgChildren.push(h('line', { x1: 100, y1: 70, x2: 100, y2: 82, stroke: '#cbd5e1', strokeWidth: 2 }));
-            svgChildren.push(h('line', { x1: 170, y1: 50, x2: 170, y2: 38, stroke: '#cbd5e1', strokeWidth: 2 }));
-            svgChildren.push(h('line', { x1: 170, y1: 70, x2: 170, y2: 82, stroke: '#cbd5e1', strokeWidth: 2 }));
-            svgChildren.push(h('circle', { cx: 100, cy: 28, r: 12, fill: '#fde047', stroke: '#facc15', strokeWidth: 2 }));
-            svgChildren.push(h('text', { x: 100, y: 31, textAnchor: 'middle', fontSize: 9, fill: '#92400e', fontWeight: 'bold' }, bulbs[0].R + 'Ω'));
-            svgChildren.push(h('circle', { cx: 100, cy: 92, r: 12, fill: '#fde047', stroke: '#facc15', strokeWidth: 2 }));
-            svgChildren.push(h('text', { x: 100, y: 95, textAnchor: 'middle', fontSize: 9, fill: '#92400e', fontWeight: 'bold' }, bulbs[1].R + 'Ω'));
-            // close circuit via battery
+          var parallel = s.topology === 'parallel', svgChildren = [];
+          var description = parallel ? 'Two complete branches. Each bulb connects between the same positive and negative battery rails.' : bulbs.length > 1 ? 'One complete loop. Follow the positive battery terminal through both components in order and back to the negative terminal.' : 'One complete loop. The bulb connects from the positive battery terminal back to the negative terminal.';
+          var wire = function(x1,y1,x2,y2) { svgChildren.push(h('line', { key:'wire-'+svgChildren.length, 'data-circuit-poe-wire':true, x1:x1,y1:y1,x2:x2,y2:y2,stroke:'#cbd5e1',strokeWidth:2.5 })); };
+          var symbol = function(part,index,x,y) {
+            var resistor=part.isBulb===false, a=parallel?[x,y-16]:[x-16,y], b=parallel?[x,y+16]:[x+16,y];
+            svgChildren.push(h('g', {key:'part-'+index,'data-circuit-poe-part':index+1,'data-part-type':resistor?'resistor':'bulb','data-resistance':part.R,'data-terminal-a':a.join(','),'data-terminal-b':b.join(',')},
+              resistor?h('rect', {x:x-(parallel?10:16),y:y-(parallel?16:10),width:parallel?20:32,height:parallel?32:20,fill:'#0f172a',stroke:'#cbd5e1',strokeWidth:2.5}):h(React.Fragment,null,
+                h('circle', {cx:x,cy:y,r:16,fill:'#0f172a',stroke:'#facc15',strokeWidth:2.5}),
+                h('path', {d:'M '+(x-10)+' '+(y-10)+' L '+(x+10)+' '+(y+10)+' M '+(x-10)+' '+(y+10)+' L '+(x+10)+' '+(y-10),fill:'none',stroke:'#facc15',strokeWidth:2})),
+              h('text', {x:parallel?x+23:x,y:parallel?y-3:y+36,textAnchor:parallel?'start':'middle',fill:'#e2e8f0',fontSize:12,fontWeight:700},(resistor?'R':'Bulb ')+(index+1)),
+              h('text', {x:parallel?x+23:x,y:parallel?y+14:y+52,textAnchor:parallel?'start':'middle',fill:'#e2e8f0',fontSize:12},part.R+' Ω')));
+            return {a:a,b:b};
+          };
+          svgChildren.push(h('desc', {key:'description',id:'circuit-poe-diagram-'+scenario.id},description));
+          svgChildren.push(h('g', {key:'battery','data-circuit-poe-source':true,'data-voltage':s.battery,'data-terminal-a':'44,80','data-terminal-b':'44,100'},
+            h('line', {x1:28,y1:80,x2:60,y2:80,stroke:'#facc15',strokeWidth:3}),
+            h('line', {x1:36,y1:100,x2:52,y2:100,stroke:'#facc15',strokeWidth:3}),
+            h('text', {x:17,y:78,fill:'#fde68a',fontSize:15,fontWeight:700},'+'),
+            h('text', {x:17,y:108,fill:'#fde68a',fontSize:15,fontWeight:700},'−'),
+            h('text', {x:44,y:167,textAnchor:'middle',fill:'#fde68a',fontSize:13,fontWeight:700},s.battery+' V')));
+          wire(44,35,44,80); wire(44,100,44,145);
+          if(parallel) {
+            wire(44,35,260,35); wire(44,145,260,145);
+            bulbs.forEach(function(part,index) {
+              var x=160+index*100,terminals=symbol(part,index,x,90);
+              wire(x,35,terminals.a[0],terminals.a[1]); wire(terminals.b[0],terminals.b[1],x,145);
+              [35,145].forEach(function(y) {svgChildren.push(h('circle',{key:'junction-'+index+'-'+y,cx:x,cy:y,r:4,fill:'#cbd5e1'}));});
+            });
+          } else {
+            var previous=[44,35];
+            bulbs.forEach(function(part,index) {
+              var terminals=symbol(part,index,bulbs.length===1?210:150+index*110,35);
+              wire(previous[0],previous[1],terminals.a[0],terminals.a[1]); previous=terminals.b;
+            });
+            wire(previous[0],previous[1],304,35); wire(304,35,304,145); wire(304,145,44,145);
           }
-          return h('svg', { viewBox: '0 0 250 130', width: '100%', role: 'img', 'aria-label': schematicLabel, style: { maxWidth: 280, height: 'auto', background: 'var(--allo-stem-deeper, rgba(15,23,42,0.85))', borderRadius: 8, padding: 4 } }, svgChildren);
+          return h('svg', { viewBox:'0 0 340 180',width:'100%',role: 'img','aria-label':schematicLabel,'aria-describedby':'circuit-poe-diagram-'+scenario.id,'data-circuit-poe-schematic':scenario.id,'data-mode':parallel?'parallel':'series',style:{maxWidth:380,height:'auto',background:'#0f172a',borderRadius:8,padding:4} },svgChildren);
         }
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '💡 Predict, test, and revise with electrical evidence'),
           h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' },
             'Use the labeled voltage and resistance to predict a measurable result ', h('em', null, 'before'), ' revealing the model evidence. Prediction accuracy is not graded; each completed comparison and evidence-based revision earns inquiry credit. Power is this model\'s brightness proxy; real perceived brightness also depends on the bulb.'),
+          h('p', {className:'text-[0.75rem] text-slate-700 mb-3 leading-relaxed'},'A crossed circle represents a bulb; a rectangle represents a resistor. The separate long (+) and short (−) battery lines mark its two terminals. Bulb symbols show connections, not brightness.'),
           POE_SCENARIOS.map(function(scenario, i) {
             var stg = Object.assign({ picked: null, revealed: false, revision: '', reason: '', complete: false }, state.stage[scenario.id] || {});
             var reflectionReady = !!stg.revision && String(stg.reason || '').trim().length >= 12;
@@ -6606,7 +6845,9 @@ window.StemLab = window.StemLab || {
                   scenario.answerIndex === stg.picked ? 'Evidence supported your estimate' : 'The model produced a different result')
               ),
               stg.revealed && h('div', { className: 'mt-2 p-2 rounded bg-amber-50 border-l-4 border-l-amber-400 text-[0.6875rem] text-slate-700 leading-relaxed' },
-                h('strong', { className: 'text-amber-900' }, 'Evidence and reasoning: '), __alloT('stem.circuit.' + (scenario.id) + '_explanation', scenario.explanation)),
+                h('strong', { className: 'text-amber-900' }, 'Evidence and reasoning: '), __alloT('stem.circuit.' + (scenario.id) + '_explanation', scenario.explanation),
+                h('div', {className:'mt-2'},h('button', {type:'button','aria-label':'Try this circuit: '+scenario.title,'data-circuit-poe-try':scenario.id,onClick:function(){tryScenario(scenario);},className:'rounded-md bg-cyan-800 px-3 py-2 text-xs font-bold text-white focus:ring-2 focus:ring-cyan-500 focus:outline-none'},'Try this circuit'),
+                  h('p', {className:'mt-1'},'Opens this example in Simple circuits. Undo restores your previous build; your notebook and lesson progress stay saved.'))),
               stg.revealed && h('fieldset', { className: 'mt-2 rounded-lg border border-violet-500 bg-white p-2', 'data-circuit-poe-revision': scenario.id },
                 h('legend', { className: 'px-1 text-[0.625rem] font-black uppercase tracking-wide text-violet-800' }, 'Revise from the evidence'),
                 h('p', { className: 'text-[0.625rem] leading-relaxed text-slate-600' }, 'Choose the honest reflection; no option is scored as correct.'),
@@ -6632,7 +6873,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[0.6875rem] text-slate-700 flex flex-wrap items-center gap-2', 'data-circuit-inquiry-credit': 'completion-revision' },
             h('span', null, '🎯'),
             h('strong', null, 'Inquiry progress: ' + inquiryComplete + ' / ' + POE_SCENARIOS.length),
-            h('span', { className: 'text-slate-500 ml-2 italic' }, 'Credit comes from comparing evidence and revising your reasoning, regardless of whether the initial prediction matched.')
+            h('span', { className: 'text-slate-600 ml-2 italic' }, 'Credit comes from comparing evidence and revising your reasoning, regardless of whether the initial prediction matched.')
           )
         );
       }

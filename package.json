@@ -4,6 +4,7 @@
     "build:performance": "node dev-tools/build_performance_release.cjs",
     "verify:performance-artifacts": "node dev-tools/build_performance_release.cjs --check",
     "test": "vitest run",
+    "test:reader:prepared": "node dev-tools/reader-prepared-help/run.cjs",
     "cdn:cache-bust": "node dev-tools/cache_bust_module_urls.cjs",
     "build:portable-remediation": "node dev-tools/build_alloflow_portable_packages.cjs",
     "verify:portable-remediation": "node dev-tools/build_alloflow_portable_packages.cjs --check && vitest run tests/portable_skill_contract.test.js tests/portable_remediation_core.test.js tests/portable_benchmark.test.js --maxWorkers=1 --testTimeout=30000",

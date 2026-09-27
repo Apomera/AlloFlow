@@ -30,8 +30,27 @@ describe('Raptor body and species contours',()=>{
   });
   it('gives the great horned owl a warmer disc with a darker feather rim without changing its attachment',()=>{
     const plain=disc(),horned=disc('greatHorned');expect(Array.from(horned.attributes.position.array)).toEqual(Array.from(plain.attributes.position.array));
-    const color=horned.attributes.color,center=color.getX(0),rim=color.getX(120);expect(center).toBeGreaterThan(rim*1.5);expect(center).toBeLessThan(plain.attributes.color.getX(0));expect(color.getX(0)).toBeGreaterThan(color.getZ(0));
+    const color=horned.attributes.color,uv=horned.attributes.uv,center=color.getX(0);let rim=1;
+    for(let i=0;i<uv.count;i++)if(uv.getY(i)<0.02)rim=Math.min(rim,color.getX(i));
+    expect(center).toBeGreaterThan(rim*1.5);expect(center).toBeLessThan(plain.attributes.color.getX(0));expect(color.getX(0)).toBeGreaterThan(color.getZ(0));
     expect(Array.from(color.array).every(v=>Number.isFinite(v)&&v>=0&&v<=1)).toBe(true);plain.dispose();horned.dispose();
+  });
+  for(const quality of ['low','high'])it('keeps entire facial triangles outside the head and snowy facial feathers white: '+quality,()=>{
+    const g=disc('snowyOwl',quality),p=g.attributes.position,n=g.attributes.normal,color=g.attributes.color,uv=g.attributes.uv,ids=g.index.array;
+    const tri=new THREE.Triangle(),origin=new THREE.Vector3(),nearest=new THREE.Vector3(),normal=new THREE.Vector3();
+    for(const attr of [p,n,color,uv])expect(Array.from(attr.array).every(Number.isFinite)).toBe(true);
+    for(let i=0;i<ids.length;i+=3){
+      tri.a.fromBufferAttribute(p,ids[i]);tri.b.fromBufferAttribute(p,ids[i+1]);tri.c.fromBufferAttribute(p,ids[i+2]);
+      expect(tri.getArea()).toBeGreaterThan(1e-8);
+      expect(tri.closestPointToPoint(origin,nearest).length()).toBeGreaterThan(0.2205);
+      expect(tri.getNormal(normal).dot(tri.a)).toBeGreaterThan(0);
+    }
+    for(let i=0;i<p.count;i++){
+      expect(Math.hypot(n.getX(i),n.getY(i),n.getZ(i))).toBeCloseTo(1,5);
+      expect(Math.min(color.getX(i),color.getY(i),color.getZ(i))).toBeGreaterThan(0.75);
+      expect(Math.max(color.getX(i),color.getY(i),color.getZ(i))-Math.min(color.getX(i),color.getY(i),color.getZ(i))).toBeLessThan(0.06);
+    }
+    expect(p.count).toBeLessThanOrEqual(1800);g.dispose();
   });
 });
 

@@ -1,0 +1,42 @@
+{
+  "at": "2026-09-27T19:27:57.590Z",
+  "ok": false,
+  "inputsBefore": {
+    "immersive_reader_source.jsx": "8c3d4943fcbbfe2e1fc3dbd0102de787879bfc1075aedaf578ca11368b4493ca",
+    "immersive_reader_module.js": "eb2801b095442323becfd86b1eceb49c694a35abb3a35c83886ad4b8fe6833b0",
+    "desktop/web-app/public/immersive_reader_module.js": "eb2801b095442323becfd86b1eceb49c694a35abb3a35c83886ad4b8fe6833b0",
+    "_build_immersive_reader_module.js": "478fd0f0ff49f049830248d58fd4cccbb876e9569f45bf6ee6ac9a1880949ab0",
+    "desktop/web-app/package-lock.json": "1db071fc944f9314b19598fccb7f391a92b7370b58f2f76ad49672c77760951f",
+    "AlloFlowANTI.txt": "1b1c4ee421d7277e0fec63007383ed860a7674ec0f95d1656d935eb1cfdc3d56",
+    "desktop/web-app/src/AlloFlowANTI.txt": "1b1c4ee421d7277e0fec63007383ed860a7674ec0f95d1656d935eb1cfdc3d56",
+    "desktop/web-app/src/App.jsx": "1b1c4ee421d7277e0fec63007383ed860a7674ec0f95d1656d935eb1cfdc3d56"
+  },
+  "runnerSha256": "b7b274173d7c4407f466d45690d0e8d598f00e122711a82538a36c9befec1b58",
+  "cases": [
+    {
+      "name": "native PCM ends; queued advance is cancelled immediately on unmount",
+      "ok": false,
+      "error": "page.goto: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"https://immersive-lifecycle.test/\", waiting until \"load\"\u001b[22m\n",
+      "pageErrors": [],
+      "externalRequests": []
+    }
+  ],
+  "limitations": [
+    "Current generated module in a disposable browser origin; full host, cloud services and deployed bytes are not exercised.",
+    "Generated route uses native local PCM playback. Device voice, resolver and clipboard responses are deterministic stubs.",
+    "Checks lifecycle correctness and immediate timer/frame cleanup; no latency, heap, cache or general performance acceptance.",
+    "The React fixture bundle is compiled only in memory; production module source is served unchanged."
+  ],
+  "browser": "148.0.7778.96",
+  "error": "page.goto: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"https://immersive-lifecycle.test/\", waiting until \"load\"\u001b[22m\n\n    at run (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\releases\\collective-2026-09-27\\immersive-lifecycle-integration\\browser-current.cjs:155:18)\n    at async main (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\releases\\collective-2026-09-27\\immersive-lifecycle-integration\\browser-current.cjs:168:5)",
+  "inputsAfter": {
+    "immersive_reader_source.jsx": "8c3d4943fcbbfe2e1fc3dbd0102de787879bfc1075aedaf578ca11368b4493ca",
+    "immersive_reader_module.js": "eb2801b095442323becfd86b1eceb49c694a35abb3a35c83886ad4b8fe6833b0",
+    "desktop/web-app/public/immersive_reader_module.js": "eb2801b095442323becfd86b1eceb49c694a35abb3a35c83886ad4b8fe6833b0",
+    "_build_immersive_reader_module.js": "478fd0f0ff49f049830248d58fd4cccbb876e9569f45bf6ee6ac9a1880949ab0",
+    "desktop/web-app/package-lock.json": "1db071fc944f9314b19598fccb7f391a92b7370b58f2f76ad49672c77760951f",
+    "AlloFlowANTI.txt": "1b1c4ee421d7277e0fec63007383ed860a7674ec0f95d1656d935eb1cfdc3d56",
+    "desktop/web-app/src/AlloFlowANTI.txt": "1b1c4ee421d7277e0fec63007383ed860a7674ec0f95d1656d935eb1cfdc3d56",
+    "desktop/web-app/src/App.jsx": "1b1c4ee421d7277e0fec63007383ed860a7674ec0f95d1656d935eb1cfdc3d56"
+  }
+}

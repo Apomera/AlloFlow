@@ -1,0 +1,52 @@
+{
+  "at": "2026-09-27T03:33:38.564Z",
+  "browser": "Chromium",
+  "tests": [
+    {
+      "name": "two real tabs merge independent fields and receive storage events",
+      "passed": true,
+      "milliseconds": 12750
+    },
+    {
+      "name": "two real tabs preserve competing drafts and reject stale conflict choices",
+      "passed": true,
+      "milliseconds": 3137
+    },
+    {
+      "name": "actual reload prompt protects failed work; accepted reload restores only durable work",
+      "passed": true,
+      "milliseconds": 8132
+    },
+    {
+      "name": "queued real Web Lock save is guarded until the lock is released",
+      "passed": true,
+      "milliseconds": 3307
+    },
+    {
+      "name": "denied reads and malformed records keep local text and durable bytes unchanged",
+      "passed": true,
+      "milliseconds": 632
+    },
+    {
+      "name": "native Chromium quota exhaustion retains the latest answer and the previous durable bytes",
+      "passed": true,
+      "milliseconds": 1043
+    },
+    {
+      "name": "legacy direct writes are detected on retry without migrating a bookmark to revised text",
+      "passed": true,
+      "milliseconds": 11644
+    },
+    {
+      "name": "real reader downloads readable anonymous recovery and keeps reload protection",
+      "passed": true,
+      "milliseconds": 10695
+    },
+    {
+      "name": "real reader restores a copy as a draft and saves only after explicit confirmation",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ '{\"learner|Blue Fox|adapted-1|source-utf16-v1-487536e2-169\":{\"at\":1790479936720,\"sourceText\":\"## Herons\\\\n\\\\nThe heron walked slowly in the shallow water.\\\\n\\\\n## Food\\\\n\\\\nIt waited for a fish near the reeds. Then it struck fast.\\\\n\\\\n## Nests\\\\n\\\\nHerons build nests high in trees.\",\"responses\":{\"0\":{\"mainIdea\":\"Current answer\"}},\"paragraph\":0,\"snippet\":\"Herons\",\"resume\":false,\"revision\":2}}'\n- '{\"learner|Blue Fox|adapted-1|source-utf16-v1-487536e2-169\":{\"at\":1790479936231,\"sourceText\":\"## Herons\\\\n\\\\nThe heron walked slowly in the shallow water.\\\\n\\\\n## Food\\\\n\\\\nIt waited for a fish near the reeds. Then it struck fast.\\\\n\\\\n## Nests\\\\n\\\\nHerons build nests high in trees.\",\"responses\":{\"0\":{\"mainIdea\":\"Current answer\"}},\"revision\":1}}'\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\reader-followup-2026-09-27\\place-browser.cjs:150:113\n    at async test (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\reader-followup-2026-09-27\\place-browser.cjs:42:9)\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\reader-followup-2026-09-27\\place-browser.cjs:139:3"
+    }
+  ],
+  "limitation": "Legacy tabs do not participate in Web Locks. Detection on retry is tested; atomic safety against arbitrary legacy writers is not claimed."
+}

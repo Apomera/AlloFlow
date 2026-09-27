@@ -1,0 +1,81 @@
+{
+  "baseline": "fd4044c862ed9b345b340d69cb1411a19c09dafb",
+  "tests": {
+    "files": 13,
+    "passed": 175
+  },
+  "browser": {
+    "scope": "Isolated fixture origin; real codecs/modules/Chromium. No live backend or deployed app.",
+    "results": [
+      {
+        "case": "first-open",
+        "passed": true
+      },
+      {
+        "case": "refresh",
+        "passed": true
+      },
+      {
+        "case": "offline-reopen",
+        "passed": true
+      },
+      {
+        "case": "mailbox-resource-cold-recipient",
+        "passed": true
+      },
+      {
+        "case": "saved-assignment-hydration",
+        "passed": true
+      },
+      {
+        "case": "saved-assignment-offline-failure",
+        "passed": true
+      },
+      {
+        "case": "fresh-live-store-chromium-decode-and-play",
+        "passed": true
+      },
+      {
+        "case": "narrow-spanish_latin_america",
+        "passed": true
+      },
+      {
+        "case": "narrow-arabic",
+        "passed": true
+      },
+      {
+        "case": "narrow-chinese_simplified",
+        "passed": true
+      },
+      {
+        "case": "narrow-thai",
+        "passed": true
+      }
+    ],
+    "errors": []
+  },
+  "modules": [
+    {
+      "file": "live_aac_module.js",
+      "sha256": "0ae0268ed505682f8b8f23117eb7b6c52945df29af9223a1fac3f0be4fe7a473"
+    },
+    {
+      "file": "shared_activity_module.js",
+      "sha256": "5ca1dfe5ba3dc606bcca45861dd838944cbece8c857da303451bd2d0f9e8979d"
+    },
+    {
+      "file": "view_share_session_surfaces_module.js",
+      "sha256": "abc55e09de78b9c7762c4e8db3b9209a2825449369a9fd249962029f97e74cec"
+    },
+    {
+      "file": "view_live_session_dock_module.js",
+      "sha256": "9987a5cb96b53c267ad98c155b4e4b865484b048d3c20b1dd7b0a2484d039a8f"
+    }
+  ],
+  "hostPatchIntegrated": false,
+  "finalObservedHEAD": "6b63e76e862125e87422f02a54ed60beac68e8fb",
+  "afterBaselineMove": {
+    "validatedModuleBytesUnchanged": true,
+    "recipientPatchApplies": true
+  }
+}

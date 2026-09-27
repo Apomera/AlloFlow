@@ -1,0 +1,32 @@
+{
+  "at": "2026-09-27T18:03:54.777Z",
+  "head": "a63e347b7d193cbc95b5fc3a9fec844322f1f455",
+  "files": {
+    "dev-tools/check_deployed_reader.cjs": {
+      "sha256": "3a55d45f00ca9914497a98e0823e2f0344fec83be80e2df2e62e0ab1e89628e1",
+      "bytes": 10366
+    },
+    "tests/deployed_reader_verification.test.js": {
+      "sha256": "930a91fca6f524a875b9ea987a5460c91758822a72b457dd7635fc013771e40a",
+      "bytes": 13350
+    },
+    "docs/reader-release-verification.md": {
+      "sha256": "13d9842c4c36e485cb64f595c5cdb7308baf3874193dbe5ab85db118869e5db7",
+      "bytes": 6784
+    },
+    "reports/reader-served-verification-2026-09-27/README.md": {
+      "sha256": "8976b1dc8bd03528089681aa0db89f90bbc7186f8f69d53589ca4bed81894694",
+      "bytes": 9902
+    }
+  },
+  "toolTests": {
+    "passed": 48,
+    "failed": 0
+  },
+  "autosaveCandidate": {
+    "passed": 9,
+    "failed": 0
+  },
+  "runtimeChangesByThisPass": false,
+  "deployed": false
+}

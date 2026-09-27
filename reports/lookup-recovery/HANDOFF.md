@@ -1,9 +1,40 @@
 # Track 11: dictionary, phonics, and lookup recovery
 
-**Latest handoff:** [resilience/README.md](resilience/README.md) contains three incremental
-patches and a recorded **270-test** pass: AI cancellation/deadlines, detailed dictionary
-outcomes, picture retry, and accurate popup announcements. The four prior enhancements
-are now present in shared source; do not reapply the older cumulative patches.
+**Latest handoff:** [dictionary-failure-recovery/README.md](dictionary-failure-recovery/README.md)
+records recovery from late dictionary provider failures using useful same-word cache.
+**496 tests across 17 files passed**, including 31 speech checks rerun after an ENOSPC
+suite-load error. Root/public dictionary copies match; shared runtime modules unchanged.
+
+**Previous handoff:** [prompt-window/README.md](prompt-window/README.md) records the integrated
+long-selection fix: complete selected text, validated relative offsets, and intact
+surrogate pairs at excerpt edges. **463 tests in 16 files and 11 Chromium cases passed.**
+Engine source/modules/mirrors and its three host pins are synchronized (`698fbbc6`).
+No Git commit, merge, push or deployment was performed. Earlier integration remains intact.
+
+**Previous integration handoff:** [integration/README.md](integration/README.md) records the completed
+local integration into production source, modules, mirrors and host pins. **444 tests
+in 16 files and 10 Chromium cases passed.** The language dependency's remaining RTL
+paragraph/table override was corrected. Production test loaders, module parity and
+scoped drift checks pass. No Git commit, merge, push or deployment was performed.
+Do not reapply the older candidate patches; preserve concurrent work during commit review.
+
+**Previous candidate handoff:** [context/README.md](context/README.md) adds consistent passage projection
+for word clicks and container-boundary selections, preserving line/cell boundaries and
+excluding reader-only text. Five baseline cases failed by assertion; **394 tests passed
+in 14 files** against refreshed candidates preserving concurrent reader changes. Use the
+four cumulative patches in `context/`, or its engine-only increment after the preceding
+availability bundle. Shared integration remains pending. The sections below are historical.
+
+**Previous handoff:** [availability/README.md](availability/README.md) adds explicit retry
+when AI becomes available again and clean display of partial phonics. Three failures
+were reproduced against unchanged source; the final combined run passed **368 tests in
+13 files**. Fresh cumulative patches include pending media recovery and dictionary
+cache/race fixes against the current engine/reader baseline. Incremental engine/reader
+patches and a two-key copy delta are also provided. Shared integration remains pending.
+The [cache-race](cache-race/README.md), [cache](cache/README.md), and [media](media/README.md)
+artifacts remain historical evidence; do not stack their cumulative patches with the new
+cumulative set. See the latest handoff for exact baselines, ownership, and test scope.
+The earlier resilience batch is integrated in shared source; do not reapply those older patches.
 The remainder of this file is historical context.
 
 **Current follow-up:** the first reader adapter below was subsequently integrated by

@@ -360,7 +360,7 @@ describe('body 3D — 30:2 timing and breath coach', () => {
     expect(SRC).toContain('Repeat 5 back blows + 5 chest thrusts');
     expect(SRC).not.toContain('current AHA guidance is abdominal thrusts first');
     expect(SRC).not.toContain('you have a minute or so');
-    expect(SRC).toContain('start conventional CPR with breaths now');
+    expect(SRC).toMatch(/(?:start conventional CPR with breaths now|Begin CPR with rescue breaths as trained)/);
     expect(SRC).toContain('Pregnant or large person: 5 back blows + 5 chest thrusts');
     expect(SRC).not.toContain('Start hands-only CPR if trained');
     expect(SRC).toContain('If they are not breathing normally, start CPR or rescue breathing');

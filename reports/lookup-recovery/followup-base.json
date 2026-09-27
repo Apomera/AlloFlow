@@ -1,0 +1,13 @@
+{
+  "head": "fd4044c862ed9b345b340d69cb1411a19c09dafb",
+  "files": {
+    "content_engine_source.jsx": {
+      "sourceSha256": "2b0f6c548230a0afc7736a7904f506bdeaf48edbf607ecf4c0ddf173412997a3",
+      "normalizedSourceSha256": "cdc91c82403988849ca00e44eb303bf3e5fa589ab76826b37e77663949a9b53e"
+    },
+    "dictionary_loader.js": {
+      "sourceSha256": "a7cd103d5fac9dcee6b673fb6638835df3c802f2973262b059f591a902343d22",
+      "normalizedSourceSha256": "a7cd103d5fac9dcee6b673fb6638835df3c802f2973262b059f591a902343d22"
+    }
+  }
+}

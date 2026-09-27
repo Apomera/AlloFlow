@@ -23,7 +23,7 @@ const deferred = () => { let resolve, reject; const promise = new Promise((yes, 
 const settle = async () => { await Promise.resolve(); await Promise.resolve(); };
 const entry = { word: 'bank', phonetic: '/bæŋk/', audio: 'https://example.test/bank.wav', meanings: [{ definitions: [{ definition: 'The land beside a river.' }] }] };
 const phonics = JSON.stringify({ ipa: 'bæŋk', phoneticSpelling: 'bank', syllables: ['bank'] });
-function fixture() {
+function fixture({ providerUnavailable = false } = {}) {
   let state = { activeView: 'simplified', interactionMode: 'define', gradeLevel: '9', sourceTopic: 'Unrelated ambient topic', leveledTextLanguage: 'French', selectedVoice: 'Kore', voiceSpeed: 1,
     generatedContent: { id: 'saved', type: 'simplified', data: 'El banco.\n--- ENGLISH TRANSLATION ---\nThe river bank.', config: { grade: '3', language: 'Spanish' } } };
   for (const key of ['definitionData', 'phonicsData', 'selectionMenu']) state['set' + key[0].toUpperCase() + key.slice(1)] = value => { state[key] = typeof value === 'function' ? value(state[key]) : value; };
@@ -31,7 +31,7 @@ function fixture() {
   const callGemini = vi.fn(() => { const request = deferred(); requests.push(request); return request.promise; });
   const callTTS = vi.fn().mockResolvedValue(null), addToast = vi.fn();
   window.AlloDictionary = { lookup: vi.fn(() => dictionary.promise) };
-  const engine = () => window.AlloModules.createContentEngine({ getState: () => state, callGemini, callTTS, addToast, t: key => key });
+  const engine = () => window.AlloModules.createContentEngine({ getState: () => state, callGemini: providerUnavailable ? undefined : callGemini, callTTS, addToast, t: key => key });
   const result = { get state() { return state; }, rerender: () => { state = { ...state }; return engine(); }, engine, requests, dictionary, callGemini, callTTS, addToast };
   fixtures.push(result); return result;
 }
@@ -43,6 +43,41 @@ function selectedWord(language = 'English', word = 'bank', before = 'The river '
 }
 const start = (f, kind, event) => kind === 'definition' ? f.engine().handleWordClick('bank', event) : f.engine().handlePhonicsClick('bank', event, { audioPlayback: 'reader' });
 const popup = (f, kind) => f.state[kind === 'definition' ? 'definitionData' : 'phonicsData'];
+
+describe.each(['definition', 'phonics'])('%s live AI availability', kind => {
+  it('classifies a missing provider separately and retries the captured request when it returns', async () => {
+    const f = fixture({ providerUnavailable: true });
+    await start(f, kind, selectedWord().event); f.dictionary.resolve(entry); await settle();
+    const initial = popup(f, kind), request = initial.lookupRequest;
+    expect(initial).toMatchObject({ aiStatus: 'error', aiErrorReason: 'not_available', dictionary: entry });
+    expect(initial.getAiAvailability()).toBe('unavailable'); expect(f.callGemini).not.toHaveBeenCalled();
+    window.callGemini = f.callGemini;
+    f.state.gradeLevel = '12'; f.state.leveledTextLanguage = 'German'; document.body.replaceChildren();
+    expect(initial.getAiAvailability()).toBe('ready');
+    const pending = initial.retry();
+    expect(popup(f, kind).lookupRequest).toBe(request); expect(popup(f, kind).dictionary).toBe(entry);
+    expect(f.callGemini.mock.calls[0][0]).toContain('The river bank is steep.');
+    if (kind === 'definition') expect(f.callGemini.mock.calls[0][0]).toContain('for a 3 student');
+    f.requests[0].resolve(kind === 'definition' ? 'A river edge.' : phonics); await pending;
+    expect(popup(f, kind).aiStatus).toBe('ready'); expect(window.AlloDictionary.lookup).toHaveBeenCalledTimes(1);
+  });
+  it.each(['state-policy', 'provider-guard'])('rechecks %s before starting or retrying AI work', async guard => {
+    const f = fixture(), blocked = vi.fn(); blocked._alloQrBlocked = true;
+    if (guard === 'state-policy') f.state.studentAiFeaturesHidden = true; else window.callGemini = blocked;
+    await start(f, kind, selectedWord().event);
+    const initial = popup(f, kind), request = initial.lookupRequest;
+    expect(initial.aiStatus).toBe('disabled'); expect(f.callGemini).not.toHaveBeenCalled(); expect(blocked).not.toHaveBeenCalled();
+    f.state.studentAiFeaturesHidden = false; window.callGemini = f.callGemini;
+    expect(initial.getAiAvailability()).toBe('ready');
+    const pending = initial.retry(); f.requests[0].reject(new Error('Offline')); await pending;
+    f.state.studentAiFeaturesHidden = true;
+    await initial.retry(); expect(f.callGemini).toHaveBeenCalledTimes(1);
+    expect(popup(f, kind)).toMatchObject({ aiStatus: 'disabled', lookupRequest: request });
+    f.engine()[kind === 'definition' ? 'closeDefinition' : 'closePhonics']();
+    f.state.studentAiFeaturesHidden = false; await initial.retry();
+    expect(popup(f, kind)).toBeNull(); expect(f.callGemini).toHaveBeenCalledTimes(1);
+  });
+});
 
 describe('reading lookup keeps artifact and selected occurrence context', () => {
   it.each(['English', 'Spanish'])('recovers %s from the clicked pane while ambient settings differ', async language => {
@@ -347,4 +382,21 @@ it('classifies a missing dictionary loader as unavailable rather than a missing 
   const f = fixture(); delete window.AlloDictionary; window.__alloStudentAiDisabled = true;
   await start(f, 'definition', selectedWord().event); await settle();
   expect(f.state.definitionData).toMatchObject({ dictionaryStatus: 'unavailable', dictionaryReason: 'not_available' });
+});
+
+describe.each(['definition', 'phonics'])('%s media lifetime', kind => {
+  it('keeps one lifetime across AI retry, then aborts it on close', async () => {
+    const f = fixture(), first = start(f, kind, selectedWord().event), lifetime = popup(f, kind).lookupRequest.signal;
+    f.requests[0].reject(new Error('Unavailable')); await first;
+    expect(lifetime.aborted).toBe(false);
+    const retry = popup(f, kind).retry(); expect(popup(f, kind).lookupRequest.signal).toBe(lifetime);
+    f.requests[1].resolve(kind === 'definition' ? 'Meaning' : phonics); await retry;
+    expect(lifetime.aborted).toBe(false); f.rerender()[kind === 'definition' ? 'closeDefinition' : 'closePhonics'](); expect(lifetime.aborted).toBe(true);
+  });
+  it('aborts the old occurrence lifetime when a new pane is selected', async () => {
+    const f = fixture(), first = start(f, kind, selectedWord().event), oldSignal = popup(f, kind).lookupRequest.signal;
+    const second = start(f, kind, selectedWord('Spanish').event), newSignal = popup(f, kind).lookupRequest.signal;
+    await first; expect(oldSignal.aborted).toBe(true); expect(newSignal.aborted).toBe(false); expect(newSignal).not.toBe(oldSignal);
+    f.requests[1].resolve(kind === 'definition' ? 'Meaning' : phonics); await second;
+  });
 });

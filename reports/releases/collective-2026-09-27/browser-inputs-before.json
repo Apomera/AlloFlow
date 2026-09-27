@@ -1,0 +1,191 @@
+{
+  "at": "2026-09-27T19:22:11.822Z",
+  "head": "1a5067ab673408d8bf33fc6998ab843696043859",
+  "files": [
+    {
+      "path": "AlloFlowANTI.txt",
+      "bytes": 2795172,
+      "sha256": "1b1c4ee421d7277e0fec63007383ed860a7674ec0f95d1656d935eb1cfdc3d56"
+    },
+    {
+      "path": "view_simplified_source.jsx",
+      "bytes": 530995,
+      "sha256": "13bba84ebfcdf57277650f136e6fbfafd37f63c714539a5e9514932b55b2db82"
+    },
+    {
+      "path": "reader_place_store.js",
+      "bytes": 24489,
+      "sha256": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9"
+    },
+    {
+      "path": "reader_support_drafts.js",
+      "bytes": 1768,
+      "sha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5"
+    },
+    {
+      "path": "view_simplified_module.js",
+      "bytes": 511008,
+      "sha256": "0614d6ba7156182f664136025ac10fa42ef74ad66e2f468c8b1309499e6ed6e2"
+    },
+    {
+      "path": "instructional_context_module.js",
+      "bytes": 88201,
+      "sha256": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2"
+    },
+    {
+      "path": "pure_helpers_module.js",
+      "bytes": 30550,
+      "sha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9"
+    },
+    {
+      "path": "alt_text_module.js",
+      "bytes": 50696,
+      "sha256": "944109d0ab087d02f00c51af4f5905eaef0e9a916a02dd93324eaafeaca024c2"
+    },
+    {
+      "path": "host_handlers_module.js",
+      "bytes": 500218,
+      "sha256": "50d534862ec23a3bbd94f0716e337818d61d28ede842c58629e0953c1c526f88"
+    },
+    {
+      "path": "utils_pure_module.js",
+      "bytes": 91845,
+      "sha256": "aa4eebe11a0fc0acf558d03212cecce6662402234d73a244e4f43933bbc4be11"
+    },
+    {
+      "path": "utils_pure_source.jsx",
+      "bytes": 91495,
+      "sha256": "92e64bf18f65f7b6476df70be5bf714e141572096345b2eab0a9b289ccc6de2e"
+    },
+    {
+      "path": "firestore_sync_module.js",
+      "bytes": 40059,
+      "sha256": "f71bd7eb0083026a08c5202fdaf1105547c35575dd4240c1b4fb76f54036c24f"
+    },
+    {
+      "path": "karaoke_audio_store_module.js",
+      "bytes": 55366,
+      "sha256": "9b9d88b8f07e695d5a7efb7f4a148b660a5e63c48c9df5823e6d6d85845194df"
+    },
+    {
+      "path": "read_aloud_audio_service_module.js",
+      "bytes": 82717,
+      "sha256": "961229e6ff3b2f0b330153520935616dac4b7a36f119011f29c1fbc92f34c047"
+    },
+    {
+      "path": "read_aloud_artifact_audio_module.js",
+      "bytes": 24668,
+      "sha256": "dda3cff2cae7f0a03364ff953e4e5592198107d45eb744b3c220bd72d4a14e6a"
+    },
+    {
+      "path": "read_aloud_artifact_contract_module.js",
+      "bytes": 39323,
+      "sha256": "9a93476647d646a7c559372b54fa3206354600374170732a38112aa062a02ae6"
+    },
+    {
+      "path": "export_module.js",
+      "bytes": 191905,
+      "sha256": "6e49127931f08d46637b51797dea3d13cef985aac9d0756856776c9c5beb1af9"
+    },
+    {
+      "path": "stem_lab/stem_tool_treelab.js",
+      "bytes": 1019371,
+      "sha256": "aa705710be17482a10fd922ba0dde7bbe8e4bc99be8328310519d99195271063"
+    },
+    {
+      "path": "stem_lab/stem_lab_module.js",
+      "bytes": 637524,
+      "sha256": "109c99f3814d196373b0f20083a0d6eda59e2cb123a09b10110f87de0f5be3d7"
+    },
+    {
+      "path": "ui_strings.js",
+      "bytes": 9938219,
+      "sha256": "3b237ed39ab377d095176321abb1c49d16ffc822d785e5302f93682e8ba347b9"
+    },
+    {
+      "path": "tests/helpers/reader_focus_effect.cjs",
+      "bytes": 570,
+      "sha256": "d216dc723dbac744ab67e42f813afab026f341432993f01373dd625f3b3c58e5"
+    },
+    {
+      "path": "tests/e2e/helpers/stem_gl_harness.ts",
+      "bytes": 36899,
+      "sha256": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+    },
+    {
+      "path": "desktop/web-app/node_modules/react/umd/react.development.js",
+      "bytes": 109931,
+      "sha256": "28348fef6cb0ed8b2ceeb22deaf824428fd13875d84c73d38f77dd216fc24e7f"
+    },
+    {
+      "path": "desktop/web-app/node_modules/react-dom/umd/react-dom.development.js",
+      "bytes": 1080227,
+      "sha256": "f9044a5e9c39db8bb1a204dff924e526ec0a621e695bb69de1035811be8709e4"
+    },
+    {
+      "path": "node_modules/axe-core/axe.min.js",
+      "bytes": 572599,
+      "sha256": "66a8aaa95a8b044a7fd74a5435873bf04ff65a1ca75567c921b7509742085a14"
+    },
+    {
+      "path": "vendor/three-r128/OrbitControls.js",
+      "bytes": 26375,
+      "sha256": "02bb4ade710f3e607329e37a21f098bc3ac70eb6e33daf8a65e79f4db785e7b2"
+    },
+    {
+      "path": "reports/releases/collective-2026-09-27/preview-tree-integration/focus-browser.cjs",
+      "bytes": 5734,
+      "sha256": "ea104558c241d5a0818ed8fee1c05e76a5cb4d405890fbd1d09677999cd65cb3"
+    },
+    {
+      "path": "reports/releases/collective-2026-09-27/preview-tree-integration/focus-mount-fixture.cjs",
+      "bytes": 2831,
+      "sha256": "c1e848fe21ee803144f4abbe7ae5ef461804ecbf868c05e8310dcfafa4d83001"
+    },
+    {
+      "path": "reports/releases/collective-2026-09-27/preview-tree-integration/scroll-browser.cjs",
+      "bytes": 4487,
+      "sha256": "dd878f1472c36b3c761fcaec2ed6e15f2accabeb90475318290756dbae70dc9e"
+    },
+    {
+      "path": "reports/releases/collective-2026-09-27/preview-tree-integration/scroll-mount-fixture.cjs",
+      "bytes": 2831,
+      "sha256": "c1e848fe21ee803144f4abbe7ae5ef461804ecbf868c05e8310dcfafa4d83001"
+    },
+    {
+      "path": "reports/releases/collective-2026-09-27/preview-tree-integration/tree-browser.cjs",
+      "bytes": 12177,
+      "sha256": "737feae78aea143459084cb3900a79140dceff292c087bcf31aa677a226941a7"
+    },
+    {
+      "path": "reports/releases/collective-2026-09-27/preview-tree-integration/tree-browser-fixture.cjs",
+      "bytes": 4646,
+      "sha256": "ec41833177b9f309bbdc5042b5d0478eeb917941b7db92ca0f3de483677ba946"
+    },
+    {
+      "path": "reports/releases/collective-2026-09-27/draft-mutation-integration/draft-browser.cjs",
+      "bytes": 19397,
+      "sha256": "a36341428b6386a2e304f956e279c82dcf9f3904ac81f9d66fa28406f94ac677"
+    },
+    {
+      "path": "reports/releases/collective-2026-09-27/draft-mutation-integration/host-browser.cjs",
+      "bytes": 8900,
+      "sha256": "e28a692a0693e493b4a12a336c9965078fb024f148b374211f0ca8e19c409793"
+    },
+    {
+      "path": "dev-tools/check_offline_storybook_recovery.cjs",
+      "bytes": 14254,
+      "sha256": "d005e55d3cfccc09506387dfef4727c91427349b5e6b2c839e067340d6b239a5"
+    },
+    {
+      "path": "app/static/css/main.99f5a409.css",
+      "bytes": 624235,
+      "sha256": "0d92bdedf7fdb333dfc4366d642df7c162556f0b814a3d99ca42520d72b82f0d"
+    }
+  ],
+  "chromiumInstalled": true,
+  "appCss": [
+    "app/static/css/main.99f5a409.css"
+  ],
+  "browsersStarted": false
+}

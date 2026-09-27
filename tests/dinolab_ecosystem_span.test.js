@@ -80,7 +80,7 @@ describe('the tab now says something true', () => {
   });
 
   it('states the span in millions of years', () => {
-    expect(SRC).toContain("' million years, so not every animal here met the others.'");
+    expect(SRC).toContain("' million years. A formation is a stack of rock");
     expect(SRC).toMatch(/A formation is a stack of rock, not a single moment/);
   });
 
@@ -93,9 +93,9 @@ describe('the tab now says something true', () => {
     expect(decl, 'ecoSpan is computed before myaHi/myaLo are known').toBeGreaterThan(calc);
   });
 
-  it('still allows the honest positive case', () => {
-    // A genuinely tight formation should not be told its animals never met.
-    expect(SRC).toContain('These layers formed over a short enough span that these animals could have met.');
-    expect(SRC).toMatch(/ecoSpan > 5 \?/);
+  it('does not turn a short aggregate age span into evidence of cohabitation', () => {
+    expect(SRC).toContain('Even overlapping age ranges do not establish that animals shared a habitat.');
+    expect(SRC).not.toContain('These layers formed over a short enough span');
+    expect(SRC).not.toContain('Each rock formation is a snapshot');
   });
 });

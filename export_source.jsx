@@ -343,6 +343,46 @@ const createExport = (deps) => {
         try { options.onProgress(Object.assign({ phase: 'export', completed: 0, total: 0 }, update || {})); }
         catch (_) {}
     };
+    const _storybookImageSource = value => typeof value === 'string' && /^(?:data:image\/(?:png|jpeg|jpg|gif|webp);base64,|blob:|https?:\/\/)/i.test(value) ? value : '';
+    const _storybookPictureId = entry => entry?.imageId == null ? '' : String(entry.imageId).trim();
+    const _recoverStorybookPictures = async (story, cache, hydrate, options, checkCancelled) => {
+        // Only attach recovered media to this export's copy of the journey.
+        // A failed lookup must not discard text or pictures recovered earlier.
+        if (!options.includeImages || typeof hydrate !== 'function') return;
+        const known = new Map();
+        story.forEach(entry => {
+            const id = _storybookPictureId(entry);
+            if (entry.type === 'scene' && id && _storybookImageSource(entry.image)) known.set(id, entry.image);
+        });
+        const missing = story.filter(entry => entry.type === 'scene' && !entry.image && _storybookPictureId(entry));
+        const localCache = Array.isArray(cache) ? cache : [];
+        for (let index = 0; index < missing.length; index++) {
+            checkCancelled();
+            const entry = missing[index], id = _storybookPictureId(entry);
+            _storybookProgress(options, { phase: 'pictures', completed: index, total: missing.length,
+                message: `Checking picture ${index + 1} of ${missing.length}…` });
+            checkCancelled();
+            if (!known.has(id)) {
+                let image = '';
+                try {
+                    const hydrated = await hydrate([{ ...entry }], localCache);
+                    const recovered = Array.isArray(hydrated) ? hydrated[0] : null;
+                    if (recovered && _storybookPictureId(recovered) === id) image = _storybookImageSource(recovered.image);
+                } catch (error) {
+                    if (error?.name === 'AbortError') throw error;
+                    if (typeof warnLog === 'function') warnLog('Storybook picture unavailable', error);
+                }
+                checkCancelled();
+                // Remember failures for this attempt, so repeated references do
+                // not repeat a failed network request. A later export can retry.
+                known.set(id, image);
+            }
+            if (known.get(id)) entry.image = known.get(id);
+            _storybookProgress(options, { phase: 'pictures', completed: index + 1, total: missing.length,
+                message: `Checked ${index + 1} of ${missing.length} pictures.` });
+        }
+        checkCancelled();
+    };
     const _normalizeStorybookScenes = (fullStory, summary, labels) => {
         const scenes = [];
         const addSegment = (scene, kind, rawText, speaker) => {
@@ -378,6 +418,7 @@ const createExport = (deps) => {
                     order: scenes.length,
                     title: `${labels.sceneTitle} ${turnNumber}`,
                     image: entry.image || null,
+                    pictureExpected: !!entry.image || !!_storybookPictureId(entry),
                     segments: [],
                 };
                 addSegment(currentScene, 'scene', text, '');
@@ -2215,14 +2256,14 @@ const createExport = (deps) => {
             if (typeof setIsProcessing === 'function') setIsProcessing(true);
             if (typeof addToast === 'function') addToast(t('adventure.storybook_toast_writing'), "info");
             _storybookProgress(options, { phase: 'story', message: 'Preparing your Storybook…' });
-            const hydrated = typeof rehydrateHistoryWithImages === 'function'
-                ? await rehydrateHistoryWithImages(adventureState.history || [], adventureState.imageCache || {})
-                : (adventureState.history || []).slice();
-            const fullStory = Array.isArray(hydrated) ? hydrated.slice() : [];
-            checkCancelled();
+            const fullStory = (Array.isArray(adventureState.history) ? adventureState.history : [])
+                .filter(entry => entry && typeof entry === 'object').map(entry => ({ ...entry }));
             if (adventureState.currentScene) {
-                fullStory.push({ type: 'scene', text: adventureState.currentScene.text, image: adventureState.sceneImage });
+                fullStory.push({ type: 'scene', text: adventureState.currentScene.text, image: adventureState.sceneImage,
+                    imageId: adventureState.currentScene.imageId });
             }
+            await _recoverStorybookPictures(fullStory, adventureState.imageCache, rehydrateHistoryWithImages, options, checkCancelled);
+            checkCancelled();
             const historyText = fullStory.map((entry) => (
                 entry.type === 'scene' ? `Scene: ${entry.text}` :
                 entry.type === 'choice' ? `Student Action: ${entry.text}` :
@@ -2437,10 +2478,8 @@ const createExport = (deps) => {
             let chaptersHtml = '';
             let embeddedPictureCount = 0, externalPictureCount = 0, omittedPictureCount = 0;
             journeyScenes.forEach((scene, sceneIndex) => {
-                const safeImage = /^(?:data:image\/(?:png|jpeg|jpg|gif|webp);base64,|blob:|https?:\/\/)/i.test(String(scene.image || ''))
-                    ? String(scene.image)
-                    : '';
-                if (includeImages && scene.image) {
+                const safeImage = _storybookImageSource(scene.image);
+                if (includeImages && scene.pictureExpected) {
                     if (!safeImage) omittedPictureCount++;
                     else if (safeImage.startsWith('data:')) embeddedPictureCount++;
                     else externalPictureCount++;
@@ -2458,6 +2497,7 @@ const createExport = (deps) => {
                 chaptersHtml += `
                   <div class="chapter" data-scene-id="${_escapeExportText(scene.sceneId)}">
                       ${includeImages && safeImage ? `<img loading="lazy" src="${_escapeExportText(safeImage)}" class="scene-img" alt="Scene visualization" />` : ''}
+                      ${includeImages && scene.pictureExpected && !safeImage ? '<p class="picture-unavailable">Picture unavailable in this export.</p>' : ''}
                       ${segmentHtml}
                   </div>
                   ${sceneIndex < journeyScenes.length - 1 ? `<div class="chapter-separator">${safeSeparator}</div>` : ''}
@@ -2471,7 +2511,9 @@ const createExport = (deps) => {
                 : '';
             const pictureSummary = includeImages ? `Pictures embedded: ${embeddedPictureCount}. Pictures requiring the original source: ${externalPictureCount}. Pictures omitted: ${omittedPictureCount}.` : '';
             if (includeImages && (externalPictureCount || omittedPictureCount) && typeof addToast === 'function') {
-                addToast(__alloT('export.storybook.pictures_not_embedded', 'Some Storybook pictures are not embedded. Their availability on another device is not verified.'), 'warning');
+                const recoveryDetail = __alloT('export.storybook.pictures_recovery_detail', '{omitted} omitted; {external} require their original source. Keep this export and retry when the missing pictures are available.')
+                    .replace(/\{(omitted|external)\}/g, (_, key) => String(key === 'omitted' ? omittedPictureCount : externalPictureCount));
+                addToast(`${__alloT('export.storybook.pictures_not_embedded', 'Some Storybook pictures are not embedded. Their availability on another device is not verified.')} ${recoveryDetail}`, 'warning');
             }
             const storyHtml = `
               <!DOCTYPE html>
@@ -2530,7 +2572,7 @@ const createExport = (deps) => {
                     segment.kind === 'choice' ? 'Student choice' :
                     segment.kind === 'feedback' ? 'Outcome' : scene.title,
                 text: segment.text,
-                image: includeImages && segment.kind === 'scene' ? scene.image || null : null,
+                image: includeImages && segment.kind === 'scene' ? _storybookImageSource(scene.image) || null : null,
                 toolLabel: 'Adventure Mode',
                 privacy: 'full',
             }))).filter((item) => item.text.trim());

@@ -8,16 +8,22 @@ function LiveSessionDockView(props) {
   const reviewLabel = reviewApi?.organizerReviewText?.(props.t, 'review_title', 'Review organizer reflections') || 'Review organizer reflections';
   const imageApi = window.AlloModules?.LiveAac;
   const MailboxImageStatus = imageApi?.MailboxImageStatus;
-  const imageRevisionFor = id => {
-    // A teacher original may differ from resized/filtered media on the wire.
+  // Resolve each displayed resource once per render. Preparation can finish
+  // without replacing History, and only its filtered payload defines receipts.
+  const imageEvidenceById = new Map();
+  const imageEvidenceFor = id => {
+    if (imageEvidenceById.has(id)) return imageEvidenceById.get(id);
     const source = (history || []).find(item => item?.id === id);
     const prepared = source && props.getPreparedMailboxResource?.(source);
-    return prepared ? imageApi?.mailboxResourceImages?.(prepared)?.revision || null : null;
+    const manifest = imageApi?.mailboxResourceImages?.(prepared || source);
+    const evidence = {
+      hasImages: !!(manifest && (manifest.sources.length || manifest.omitted)),
+      // Originals can indicate pending work, never establish a delivered revision.
+      revision: prepared ? manifest?.revision || null : null
+    };
+    imageEvidenceById.set(id, evidence);
+    return evidence;
   };
-  const resourcesWithImages = React.useMemo(() => new Set((history || []).filter(resource => {
-    const manifest = imageApi?.mailboxResourceImages?.(resource);
-    return manifest && (manifest.sources.length || manifest.omitted);
-  }).map(resource => resource.id)), [history, imageApi]);
   return (
 <div ref={liveDockPanelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={t('live_dock.title') || 'Live Dashboard'} style={{width:'min(1180px, calc(100vw - 2rem))',maxHeight:'calc(100dvh - 2rem)',boxSizing:'border-box',overflowY:'auto',background:'white',borderRadius:16,border:'1px solid #cbd5e1',boxShadow:'0 24px 72px rgba(15,23,42,0.42)',padding:'1.1rem'}}>
                 <div style={{position:'sticky',top:'-1.1rem',zIndex:4,display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,margin:'-1.1rem -1.1rem 0.7rem',padding:'0.9rem 1.1rem',background:'rgba(255,255,255,0.97)',borderBottom:'1px solid #e2e8f0',borderRadius:'16px 16px 0 0'}}>
@@ -778,8 +784,8 @@ function LiveSessionDockView(props) {
                                   style={{whiteSpace:'nowrap',fontWeight:800,fontSize:'0.68rem',color:organizerProgress.status === 'complete'?'#15803d':organizerProgress.status === 'attempted'?'#9a3412':organizerProgress.status === 'failed'?'#b91c1c':organizerProgress.status === 'loading'?'#475569':'#3730a3',background:organizerProgress.status === 'complete'?'#dcfce7':organizerProgress.status === 'attempted'?'#ffedd5':organizerProgress.status === 'failed'?'#fee2e2':organizerProgress.status === 'loading'?'#f1f5f9':'#e0e7ff',border:'1px solid '+(organizerProgress.status === 'complete'?'#86efac':organizerProgress.status === 'attempted'?'#fdba74':organizerProgress.status === 'failed'?'#fca5a5':organizerProgress.status === 'loading'?'#cbd5e1':'#a5b4fc'),borderRadius:6,padding:'0.05rem 0.3rem'}}
                                 >{organizerProgressLabel}</span>
                               ) : null}
-                              {MailboxImageStatus && _alloMbBridgeActive() && resourcesWithImages.has(targetId || viewing) && (
-                                <MailboxImageStatus entry={entry} resourceId={targetId || viewing} mediaRevision={imageRevisionFor(targetId || viewing)} resourceAt={targetAt} now={dockNow} mailboxVersion={mailboxImageVersion} onRetry={() => retryMailboxImagesForStudent(uid, targetId || viewing)} />
+                              {MailboxImageStatus && _alloMbBridgeActive() && imageEvidenceFor(targetId || viewing).hasImages && (
+                                <MailboxImageStatus sessionKey={JSON.stringify([activeSessionAppId || '', activeSessionCode || ''])} recipientId={uid} entry={entry} resourceId={targetId || viewing} mediaRevision={imageEvidenceFor(targetId || viewing).revision} resourceAt={targetAt} now={dockNow} mailboxVersion={mailboxImageVersion} onRetry={() => retryMailboxImagesForStudent(uid, targetId || viewing)} />
                               )}
                               {entry.wsProgress && wsAudioNeedsAttention ? (
                                 <span style={{display:'inline-flex',alignItems:'center',gap:4}}>

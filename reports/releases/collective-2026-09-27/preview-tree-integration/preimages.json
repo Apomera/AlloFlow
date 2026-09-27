@@ -1,0 +1,76 @@
+{
+  "at": "2026-09-27T19:03:19.811Z",
+  "head": "1a5067ab673408d8bf33fc6998ab843696043859",
+  "evidence": [
+    {
+      "path": "reports/reader-preview-focus/host-focus.patch",
+      "sha256": "c40392777323ea428be9b8dbfa9a4c2b5b8bc4a9a99ddd55ca51570df4e51479"
+    },
+    {
+      "path": "reports/reader-preview-scroll/reader-scroll.patch",
+      "sha256": "531b7866be0fda682b24c026661927fc6193c01a75ef8274fecf5ff110798abe"
+    },
+    {
+      "path": "reports/tree-lab-experience/tree-lab-experience.patch",
+      "sha256": "3c947fb52b37b29e2722ecb8efd783deb80f1da7f842e97cf0671f96a7d7b943"
+    },
+    {
+      "path": "reports/tree-lab-experience/validation.patch",
+      "sha256": "e066ef95992fc98623babd201e6e30baa0c895f033db0cd6798407d933ecc1c2"
+    }
+  ],
+  "files": [
+    {
+      "path": "AlloFlowANTI.txt",
+      "beforeSha256": "b2adc280a1555fc3b2c09a9650190eb3a6c6fa3371a940f18e68e5d7c80f3185",
+      "beforeLfSha256": "b2adc280a1555fc3b2c09a9650190eb3a6c6fa3371a940f18e68e5d7c80f3185",
+      "afterLfSha256": "aba473acf0c6e188e1aa7932a808c5235887b55f840b06db7e31231b95b25370",
+      "added": false
+    },
+    {
+      "path": "view_simplified_source.jsx",
+      "beforeSha256": "c9625901a41c5a48c86faf6255bc1e3b867607f7c8c953d8b656c65a3a8f0121",
+      "beforeLfSha256": "c9625901a41c5a48c86faf6255bc1e3b867607f7c8c953d8b656c65a3a8f0121",
+      "afterLfSha256": "8c989d10bcb987899377d1c4b9103b475629d9ce602d0968e123e8ccc0274ac1",
+      "added": false
+    },
+    {
+      "path": "stem_lab/stem_tool_treelab.js",
+      "beforeSha256": "f39cb2c647fa070ee9cfe1aaa2a145eb08054ce90e941997a30bc96d55cd261e",
+      "beforeLfSha256": "f39cb2c647fa070ee9cfe1aaa2a145eb08054ce90e941997a30bc96d55cd261e",
+      "afterLfSha256": "aa705710be17482a10fd922ba0dde7bbe8e4bc99be8328310519d99195271063",
+      "added": false
+    },
+    {
+      "path": "tests/tree_lab_field_guide.test.js",
+      "beforeSha256": null,
+      "beforeLfSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "afterLfSha256": "cfd09e40021ce220aadcb283035424e484feb70e39b3e0c510d9d9a6b19c7f65",
+      "added": true
+    },
+    {
+      "path": "tests/reader_preview_focus_narration.test.js",
+      "beforeSha256": null,
+      "beforeLfSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "afterLfSha256": "f73db405921e734eed0b4dff08e323405285a102872953e0215b167282a7e9e0",
+      "added": true
+    },
+    {
+      "path": "tests/helpers/reader_focus_effect.cjs",
+      "beforeSha256": null,
+      "beforeLfSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "afterLfSha256": "d216dc723dbac744ab67e42f813afab026f341432993f01373dd625f3b3c58e5",
+      "added": true
+    },
+    {
+      "path": "ui_strings.js",
+      "beforeSha256": "cfa2847311ec415e595d3f235b12eeabb97b7934ab4062cac576c34e1b93fa6e",
+      "beforeLfSha256": "cfa2847311ec415e595d3f235b12eeabb97b7934ab4062cac576c34e1b93fa6e",
+      "afterLfSha256": "d436605c3c2a21304de1fe4d0f42eb3344d799b7c262cac0735f4b0d6c7147f1",
+      "added": false
+    }
+  ],
+  "englishKeysAdded": 16,
+  "strictPatchRoundTrip": true,
+  "syntaxParsed": true
+}

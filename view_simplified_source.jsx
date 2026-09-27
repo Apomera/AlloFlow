@@ -1247,7 +1247,7 @@
     return roots.map(materialize);
   }
 
-  function simplifiedPopupStyle(point, widthRem) {
+  function simplifiedPopupStyle(point, widthRem, expandOnShortViewport) {
     var fontSize = 16;
     try { fontSize = parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16; } catch (_) {}
     var viewport = window.visualViewport;
@@ -1256,23 +1256,26 @@
     var offsetLeft = viewport && Number.isFinite(viewport.offsetLeft) ? viewport.offsetLeft : 0;
     var offsetTop = viewport && Number.isFinite(viewport.offsetTop) ? viewport.offsetTop : 0;
     var width = Math.min(widthRem * fontSize, Math.max(0, viewportWidth - 16));
-    var top = Math.max(offsetTop + 8, Math.min(offsetTop + Math.max(8, (viewportHeight - 16) / 2), (Number(point.y) || 0) + 10));
+    // A half-height card below 14rem can show only its title and picture.
+    // Prepared explanations may use the visible height on short/zoomed screens.
+    var expanded = expandOnShortViewport && viewportHeight < 28 * fontSize;
+    var top = expanded ? offsetTop + 8 : Math.max(offsetTop + 8, Math.min(offsetTop + Math.max(8, (viewportHeight - 16) / 2), (Number(point.y) || 0) + 10));
     return {
       width: width + 'px', maxWidth: Math.max(0, viewportWidth - 16) + 'px',
       left: Math.max(offsetLeft + 8, Math.min(offsetLeft + viewportWidth - width - 8, (Number(point.x) || 0) - 20)) + 'px',
       top: top + 'px',
-      maxHeight: Math.max(0, Math.min(viewportHeight / 2 - 8, offsetTop + viewportHeight - top - 8)) + 'px', overflowY: 'auto', overflowWrap: 'anywhere'
+      maxHeight: Math.max(0, expanded ? viewportHeight - 16 : Math.min(viewportHeight / 2 - 8, offsetTop + viewportHeight - top - 8)) + 'px', overflowY: 'auto', overflowWrap: 'anywhere'
     };
   }
 
-  function useSimplifiedPopupViewport(ref, point, widthRem) {
+  function useSimplifiedPopupViewport(ref, point, widthRem, expandOnShortViewport) {
     React.useLayoutEffect(function () {
       if (!point) return undefined;
       var frame = null;
       var viewport = window.visualViewport;
       function position() {
         frame = null;
-        if (ref.current) Object.assign(ref.current.style, simplifiedPopupStyle(point, widthRem));
+        if (ref.current) Object.assign(ref.current.style, simplifiedPopupStyle(point, widthRem, expandOnShortViewport));
       }
       function schedule() {
         if (frame == null) frame = window.requestAnimationFrame(position);
@@ -1289,7 +1292,7 @@
         viewport?.removeEventListener('resize', schedule);
         viewport?.removeEventListener('scroll', schedule);
       };
-    }, [ref, !!point, point?.x, point?.y, widthRem]);
+    }, [ref, !!point, point?.x, point?.y, widthRem, expandOnShortViewport]);
   }
 
   // Sections for the reading outline and section prompts, addressed by the
@@ -1523,14 +1526,17 @@
     const editRefs = React.useRef({});
     const panelId = 'reading-gloss-editor-' + String(item?.id || 'current').replace(/[^a-z0-9_-]/gi, '-');
     const entries = supports?.annotations || [];
+    const entriesRef = React.useRef(entries); entriesRef.current = entries;
+    const seenEntryRef = React.useRef();
     const signature = value => value ? JSON.stringify({ query: value.query, start: value.start, text: value.text, priority: value.priority, pinned: value.pinned, image: readingSupportImageSignature(value.image) }) : '';
     const [pickingPicture, setPickingPicture] = React.useState(false);
     const [preparingPicture, setPreparingPicture] = React.useState(false);
     const pictureEpoch = React.useRef(0), mutationEpoch = React.useRef(0), mountedRef = React.useRef(true), ownerRef = React.useRef(ownerKey), pendingRef = React.useRef(null), focusRef = React.useRef(null), focusRequested = React.useRef(false), sectionRef = React.useRef(null);
     const pictureCallbackEpoch = pictureEpoch.current;
+    const ownerChanged = ownerRef.current !== ownerKey;
     pendingRef.current = pendingAction;
     // Removing, choosing or cancelling a picture removes the focused button; land on the picture button instead.
-    const pictureButtonRef = React.useRef(null), refocusPicture = React.useRef(false);
+    const pictureButtonRef = React.useRef(null), refocusPicture = React.useRef(false), refocusAdd = React.useRef(false);
     React.useEffect(() => { if (refocusPicture.current && pictureButtonRef.current) focusRequested.current = true; });
     const dirty = !!draft && signature(draft) !== baseline;
     const unresolvedRef = React.useRef(false);
@@ -1543,7 +1549,7 @@
     React.useLayoutEffect(() => {
       if (ownerRef.current !== ownerKey) {
         const saved = draftSession?.records.get(ownerKey);
-        ownerRef.current = ownerKey; cancelPicture(); dismissPending();
+        ownerRef.current = ownerKey; mutationEpoch.current++; seenEntryRef.current = undefined; cancelPicture(); dismissPending();
         setDraft(saved?.draft || null); setBaseline(saved?.baseline || ''); setDraftSource(saved?.sourceText || sourceText);
         setOpen(!!saved?.draft); setPickingPicture(false); setNotice(''); setError(''); setBusy(false);
         return;
@@ -1567,14 +1573,33 @@
     const sameAnchor = (left, right) => !!left && !!right && left.start === right.start && left.end === right.end && left.quote === right.quote;
     const contextFor = entry => readingGlossContext(sourceText, entry.start, entry.end).text;
     const anchorFor = entry => ({ start: entry.start, end: entry.end, quote: entry.quote });
-    const replaceDraft = value => { unresolvedRef.current = false; mutationEpoch.current++; cancelPicture(); dismissPending(); if (!value) draftSession?.records.delete(ownerKey); setDraft(value); setDraftSource(sourceText); setBaseline(signature(value)); setNotice(''); setError(''); setPickingPicture(false); };
-    const clearDraft = () => replaceDraft(null);
-    const applyEdit = entry => {
+    const draftFor = entry => {
       const value = { id: entry.id, anchor: anchorFor(entry), query: entry.quote, start: String(entry.start),
         text: entry.definition || entry.explanation || entry.text || '', priority: entry.priority || 'helpful', pinned: entry.pinned === true, image: entry.image || null };
       value.originalTextLength = value.text.length;
-      setOpen(true); replaceDraft(value);
+      return value;
     };
+    const entryVersion = entry => entry ? JSON.stringify([entry.id, signature(draftFor(entry))]) : null;
+    const replaceDraft = value => { unresolvedRef.current = false; mutationEpoch.current++; cancelPicture(); dismissPending(); if (!value) draftSession?.records.delete(ownerKey); seenEntryRef.current = entryVersion(entriesRef.current.find(entry => sameAnchor(entry, value?.anchor))); setDraft(value); setDraftSource(sourceText); setBaseline(signature(value)); setNotice(''); setError(''); setPickingPicture(false); };
+    const clearDraft = () => replaceDraft(null);
+    const applyEdit = entry => { setOpen(true); replaceDraft(draftFor(entry)); };
+    const unavailable = () => { reveal(); setNotice(''); setError(simplifiedText('simplified.gloss_support_no_longer_available', 'This word support is no longer available. Review the current supports.')); addRef.current?.focus(); };
+    const mutationSupports = result => {
+      const value = Array.isArray(result?.annotations) ? result : adapted ? result?.adaptedReadingSupports : result?.readingSupports;
+      return Array.isArray(value?.annotations) && value.sourceFingerprint === snapshot?.fingerprint ? value : null;
+    };
+    React.useLayoutEffect(() => {
+      if (ownerChanged || !draft?.anchor || dirty || busy || pickingPicture || preparingPicture || pendingAction || staleDraft || supportsStale) return;
+      const current = entries.find(entry => sameAnchor(entry, draft.anchor));
+      const version = entryVersion(current);
+      if (seenEntryRef.current === version) return;
+      seenEntryRef.current = version;
+      if (!current) { clearDraft(); refocusAdd.current = true; unavailable(); return; }
+      const value = draftFor(current);
+      if (draft.id !== value.id || signature(draft) !== signature(value)) {
+        setDraft(value); setBaseline(signature(value)); setDraftSource(sourceText); setNotice(''); setError('');
+      }
+    });
     const mutate = async (action, success) => {
       if (disabled || busy || typeof onUpdate !== 'function') return null;
       const key = sourceKeyRef.current;
@@ -1597,7 +1622,11 @@
       pendingRef.current = null;
       setPendingAction(null);
       if (action.type === 'transition') { clearDraft(); action.run(); return; }
-      if (action.type === 'edit') { applyEdit(action.entry); return; }
+      if (action.type === 'edit') {
+        const current = entriesRef.current.find(entry => sameAnchor(entry, action.entry));
+        if (current) applyEdit(current); else unavailable();
+        return;
+      }
       if (action.type === 'add') { setOpen(true); replaceDraft({ id: null, query: '', start: '', text: '', priority: 'essential', pinned: false }); return; }
       if (action.type === 'close' || action.type === 'finish') {
         const id = draft?.id; clearDraft();
@@ -1606,10 +1635,14 @@
         return;
       }
       if (action.type === 'remove') {
-        const current = entries.find(entry => sameAnchor(entry, action.entry));
+        const current = entriesRef.current.find(entry => sameAnchor(entry, action.entry));
         if (!current) { setNotice(''); setError(simplifiedText('simplified.gloss_this_word_support_is_no_longer', 'This word support is no longer available. Review the current supports before removing it.')); return; }
         const saved = await mutate({ type: 'remove', id: current.id }, 'Word support removed. It will stay removed when suggestions are refreshed.');
         if (saved) {
+          const confirmed = mutationSupports(saved);
+          if (!confirmed || confirmed.annotations.some(entry => sameAnchor(entry, current)) || !Array.isArray(confirmed.suppressedAnnotations) || !confirmed.suppressedAnnotations.some(entry => sameAnchor(entry, current))) {
+            setNotice(''); setError(simplifiedText('simplified.gloss_remove_unconfirmed', 'The save did not confirm this removal. Review the support and try again.')); return;
+          }
           if (sameAnchor(draft?.anchor, action.entry)) { setDraft(null); setBaseline(''); }
           addRef.current?.focus();
         }
@@ -1641,6 +1674,7 @@
       else if (draft) focusRequested.current = true;
     }, [!!draft, draft?.anchor?.start, pendingAction]);
     React.useEffect(() => {
+      if (refocusAdd.current && !draft && !busy && !disabled && !pendingAction) { addRef.current?.focus(); refocusAdd.current = false; }
       if (!focusRequested.current || pendingAction || busy || disabled || !draft) return;
       const previous = focusRef.current;
       const target = refocusPicture.current ? pictureButtonRef.current : previous?.isConnected && !previous.matches(':disabled') ? previous
@@ -1672,12 +1706,14 @@
       const saved = await mutate({ type: 'upsert', annotation }, 'Word support saved. Your wording will be kept when suggestions are refreshed.');
       // A matching anchor alone does not confirm the submitted values. Keep
       // unaccepted edits dirty against the actual save result so retry is safe.
-      const savedSupports = saved && (Array.isArray(saved.annotations) ? saved : adapted ? saved.adaptedReadingSupports : saved.readingSupports);
-      const accepted = savedSupports?.annotations?.find(entry => entry.id === id && sameAnchor(entry, selected));
+      const savedSupports = mutationSupports(saved);
+      const accepted = savedSupports?.annotations.find(entry => entry?.id === id && sameAnchor(entry, selected));
       if (!accepted) { if (saved) { setNotice(''); setError('The save did not confirm this word support. Your draft is retained.'); } return false; }
       const next = { ...draft, id, anchor: anchorFor(selected), start: String(selected.start), text: annotation.text };
       const confirmed = { ...next, text: accepted.definition || accepted.explanation || accepted.text || '',
         priority: accepted.priority === 'essential' ? 'essential' : 'helpful', pinned: accepted.pinned === true, image: accepted.image || null };
+      // Parent props may acknowledge this save on a later render.
+      seenEntryRef.current = entryVersion(entriesRef.current.find(entry => sameAnchor(entry, selected)));
       setBaseline(signature(confirmed)); setDraftSource(sourceText); setDraft(next);
       if (signature(next) !== signature(confirmed)) {
         const pictureOmitted = next.image && !confirmed.image && next.text === confirmed.text && next.priority === confirmed.priority && next.pinned === confirmed.pinned;
@@ -1691,6 +1727,9 @@
     const saveAndContinue = async () => { const action = pendingRef.current; if (await save()) { if (mountedRef.current && action && pendingRef.current === action) performAction(action); } };
     const pin = async (entry, pinned) => {
       const saved = await mutate({ type: 'pin', id: entry.id, pinned }, pinned ? 'This support will stay visible in lighter view.' : 'This support now follows the lighter-view selection.');
+      if (saved && !mutationSupports(saved)?.annotations.some(value => value?.id === entry.id && sameAnchor(value, entry) && value.pinned === pinned)) {
+        setNotice(''); setError(simplifiedText('simplified.gloss_pin_unconfirmed', 'The save did not confirm the pin change. Review the support and try again.')); return;
+      }
       if (saved && sameAnchor(draft?.anchor, entry)) {
         setDraft(previous => previous && ({ ...previous, pinned }));
         setBaseline(previous => previous ? JSON.stringify({ ...JSON.parse(previous), pinned }) : previous);
@@ -3506,6 +3545,8 @@
     var stopHelpAudio = function (reset) {
       helpAudioTokenRef.current += 1;
       var current = helpAudioRef.current;helpAudioRef.current = null;
+      clearTimeout(current?.timer);
+      current?.cancel?.();
       if (current?.audio) { current.audio.onended = null;current.audio.onerror = null;current.audio.pause(); }
       if (current?.ownedUrl) releaseHelpUrl(current.ownedUrl);
       if (reset !== false) setHelpAudioState({ key: null, status: 'idle' });
@@ -3515,25 +3556,33 @@
       stopHelpAudio();
       if (typeof stopPlayback === 'function') stopPlayback();
       var token = helpAudioTokenRef.current;
-      var current = { key: key, audio: null, ownedUrl: null };helpAudioRef.current = current;
+      var current = { key: key, audio: null, ownedUrl: null, timer: null, cancel: null };helpAudioRef.current = current;
+      var cancelled = new Promise(resolve => { current.cancel = resolve; });
+      var configuredMs = Number(window.AlloFlowConfig?.timeouts?.readingAudioStartupMs);
+      var timeoutMs = Number.isFinite(configuredMs) && configuredMs > 0 ? Math.min(120000, Math.max(1000, configuredMs)) : 30000;
+      var fail = function (reason) {
+        if (token !== helpAudioTokenRef.current) return;
+        stopHelpAudio(false);setHelpAudioState({ key: key, status: 'error', reason: reason });
+      };
       setHelpAudioState({ key: key, status: 'loading' });
+      current.timer = setTimeout(() => fail('timeout'), timeoutMs);
       try {
-        var url = recordingUrl || await callTTS(word, selectedVoice, voiceSpeed || 1, 2, language || generatedContent?.config?.language || leveledTextLanguage || 'English');
-        if (token !== helpAudioTokenRef.current) { if (!recordingUrl) releaseHelpUrl(url);return; }
-        if (!url) throw new Error(viewText('simplified.word_audio_no_pronunciation_audio', 'No pronunciation audio'));
-        if (!recordingUrl) current.ownedUrl = url;
-        var audio = new Audio(url);current.audio = audio;audio.playbackRate = voiceSpeed || 1;
-        var fail = function () {
-          if (token !== helpAudioTokenRef.current) return;
-          stopHelpAudio(false);setHelpAudioState({ key: key, status: 'error' });
-        };
-        audio.onended = function () { if (token === helpAudioTokenRef.current) stopHelpAudio(); };
-        audio.onerror = fail;
-        await audio.play();
-        if (token === helpAudioTokenRef.current) setHelpAudioState({ key: key, status: 'playing' });
-      } catch (_) {
-        if (token === helpAudioTokenRef.current) { stopHelpAudio(false);setHelpAudioState({ key: key, status: 'error' }); }
-      }
+        // Keep the shared TTS cache/API contract. Only this popup's wait is cancelled.
+        var work = (async function () {
+          var url = recordingUrl || await callTTS(word, selectedVoice, voiceSpeed || 1, 2, language || generatedContent?.config?.language || leveledTextLanguage || 'English');
+          if (token !== helpAudioTokenRef.current) { if (!recordingUrl) releaseHelpUrl(url);return; }
+          if (!url) throw new Error(viewText('simplified.word_audio_no_pronunciation_audio', 'No pronunciation audio'));
+          if (!recordingUrl) current.ownedUrl = url;
+          var audio = new Audio(url);current.audio = audio;audio.playbackRate = voiceSpeed || 1;
+          audio.onended = function () { if (token === helpAudioTokenRef.current) stopHelpAudio(); };
+          audio.onerror = function () { fail('playback'); };
+          await audio.play();
+          if (token !== helpAudioTokenRef.current) { audio.pause();return; }
+          clearTimeout(current.timer);current.timer = null;
+          setHelpAudioState({ key: key, status: 'playing' });
+        })();
+        await Promise.race([work, cancelled]);
+      } catch (_) { fail('failed'); }
     };
     React.useEffect(function () {
       setHelpAudioState({ key: null, status: 'idle' });
@@ -3546,11 +3595,11 @@
       var active = current && (helpAudioState.status === 'loading' || helpAudioState.status === 'playing');
       var label = active ? helpText('simplified.word_audio_stop', 'Stop audio') : current && helpAudioState.status === 'error' ? helpText('simplified.word_audio_retry', 'Try audio again') : recordingUrl ? helpText('simplified.word_recording', 'Hear recording') : helpText('simplified.word_audio_listen', 'Hear word');
       if (idleLabel && !active && !(current && helpAudioState.status === 'error')) label = idleLabel;
-      return <button key={key} type="button" data-word-help-audio={key} aria-label={label} onClick={() => playHelpAudio(key, recordingUrl, word, language)} className="min-h-11 inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-white px-3 py-2 text-sm font-semibold text-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{active ? <StopCircle size={16} aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />}<span>{label}</span></button>;
+      return <button key={key} type="button" data-word-help-audio={key} aria-busy={current && helpAudioState.status === 'loading'} aria-label={label} onClick={() => playHelpAudio(key, recordingUrl, word, language)} className="min-h-11 inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-white px-3 py-2 text-sm font-semibold text-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{active ? <StopCircle size={16} aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />}<span>{label}</span></button>;
     };
     var renderHelpAudioNotice = function (prefix) {
       if (!helpAudioState.key?.startsWith(prefix) || !['loading', 'error'].includes(helpAudioState.status)) return null;
-      return <p role="status" className="mb-3 text-sm text-slate-700">{helpAudioState.status === 'loading' ? helpText('simplified.word_audio_loading', 'Preparing audio…') : helpText('simplified.word_audio_error', 'Audio could not play. Try again when you are ready.')}</p>;
+      return <p role="status" className="mb-3 text-sm text-slate-700">{helpAudioState.status === 'loading' ? helpText('simplified.word_audio_loading', 'Preparing audio…') : helpAudioState.reason === 'timeout' ? helpText('simplified.word_audio_timeout', 'Audio took too long to start. You can try again.') : helpText('simplified.word_audio_error', 'Audio could not play. Try again when you are ready.')}</p>;
     };
     // Read-aloud for the Define and Explain popups. Both go through the host's
     // handleSpeak, the same path the sentence reader, the immersive word
@@ -3577,12 +3626,17 @@
     var renderLookupStatus = function (data, kind) {
       var preparedText = simplifiedAiText(data.preparedText);
       var status = data.aiStatus || (kind === 'definition' ? data.text ? 'ready' : 'loading' : data.isLoading ? 'loading' : data.data ? 'ready' : 'error');
-      var blocked = status === 'disabled' || studentAiFeaturesHidden;
+      // A past attempt does not determine today's policy or provider availability.
+      var lookupAvailability = typeof data.getAiAvailability === 'function' ? data.getAiAvailability() : null;
+      var blocked = studentAiFeaturesHidden || window.__alloStudentAiDisabled === true
+        || lookupAvailability === 'disabled' || (lookupAvailability == null && status === 'disabled');
+      var canRetry = !blocked && lookupAvailability !== 'unavailable' && (status === 'error' || status === 'disabled');
+      var availabilityRestored = lookupAvailability === 'ready' && (status === 'disabled' || data.aiErrorReason === 'not_available');
       return <div data-lookup-status={kind}>
         <p role="status" className="sr-only">{status === 'ready' ? helpText('simplified.lookup_ready', 'Word help ready') : ''}{data.dictionaryStatus === 'ready' ? ' ' + helpText('simplified.lookup_dictionary_ready', 'Dictionary entry ready') : ''}</p>
         {preparedText && <div className="mb-3 rounded-lg border border-indigo-200 bg-indigo-50 p-3"><p className="text-xs font-bold">{helpText('simplified.word_help_card_prepared', 'Word help from your teacher')}</p><p>{preparedText}</p></div>}
-        {(blocked || status === 'error' || status === 'loading') && <p role="status" className="my-2 text-sm text-slate-700">{blocked ? helpText('simplified.lookup_ai_disabled', 'AI explanations are off. You can still use any available word help.') : status === 'loading' ? helpText('simplified.lookup_loading', 'Preparing word help…') : data.aiErrorReason === 'timeout' ? helpText('simplified.lookup_ai_timeout', 'AI word help took too long. Any available help is still shown. You can try again.') : helpText('simplified.lookup_ai_failed', 'AI word help could not load. Any available help is still shown.')}</p>}
-        {!blocked && (status === 'error' || data.aiRetryAvailable) && typeof data.retry === 'function' && <button type="button" data-lookup-retry={kind} aria-disabled={status !== 'error'} aria-busy={status === 'loading'} onClick={() => { if (status !== 'error') return; stopHelpAudio(); data.retry(); }} className="min-h-11 rounded-lg border border-indigo-300 px-3 py-2 text-sm text-indigo-900">{status === 'loading' ? helpText('simplified.lookup_retrying', 'Trying again…') : status === 'ready' ? helpText('simplified.lookup_ready', 'Word help ready') : helpText('simplified.lookup_retry', 'Try word help again')}</button>}
+        {(blocked || status === 'error' || status === 'loading' || status === 'disabled') && <p role="status" className="my-2 text-sm text-slate-700">{blocked ? helpText('simplified.lookup_ai_disabled', 'AI explanations are off. You can still use any available word help.') : status === 'loading' ? helpText('simplified.lookup_loading', 'Preparing word help…') : availabilityRestored ? helpText('simplified.lookup_ai_available', 'AI word help is available. You can try again.') : data.aiErrorReason === 'not_available' ? helpText('simplified.lookup_ai_unavailable', 'AI word help is unavailable right now. Any available help is still shown.') : data.aiErrorReason === 'timeout' ? helpText('simplified.lookup_ai_timeout', 'AI word help took too long. Any available help is still shown. You can try again.') : helpText('simplified.lookup_ai_failed', 'AI word help could not load. Any available help is still shown.')}</p>}
+        {!blocked && (status === 'error' || status === 'disabled' || data.aiRetryAvailable) && typeof data.retry === 'function' && <button type="button" data-lookup-retry={kind} aria-disabled={!canRetry} aria-busy={status === 'loading'} onClick={() => { if (!canRetry) return; stopHelpAudio(); data.retry(); }} className="min-h-11 rounded-lg border border-indigo-300 px-3 py-2 text-sm text-indigo-900">{status === 'loading' ? helpText('simplified.lookup_retrying', 'Trying again…') : status === 'ready' ? helpText('simplified.lookup_ready', 'Word help ready') : helpText('simplified.lookup_retry', 'Try word help again')}</button>}
         {data.dictionaryStatus === 'loading' && <p role="status" className="my-2 text-sm text-slate-700">{helpText('simplified.lookup_dictionary_loading', 'Looking for a dictionary entry…')}</p>}
         {data.dictionaryStatus === 'unavailable' && <p role="status" className="my-2 text-sm text-slate-700">{dictionaryFailureText(data)}</p>}
         {data.dictionaryStatus === 'unsupported' && <p className="my-2 text-sm text-slate-700">{helpText('simplified.lookup_dictionary_english_words', 'Dictionary entries are available for individual English words. Any other available word help is still shown.')}</p>}
@@ -3598,7 +3652,7 @@
         : helpText('glossary.popups.show_picture', 'Show picture');
       return <div data-lookup-picture>
         {ready && <img src={data.imageUrl} alt={data.word} className="h-32 w-full rounded-lg border border-slate-400 object-contain" />}
-        <p role="status" className="my-1 text-xs text-slate-700">{ready ? helpText('simplified.lookup_picture_ready', 'Picture ready') : busy ? helpText('simplified.lookup_picture_loading', 'Preparing picture…') : blocked ? helpText('simplified.lookup_picture_disabled', 'New AI pictures are off.') : data.imageError ? helpText('glossary.popups.image_error', 'Could not load picture.') : ''}</p>
+        <p role="status" className="my-1 text-xs text-slate-700">{ready ? helpText('simplified.lookup_picture_ready', 'Picture ready') : busy ? helpText('simplified.lookup_picture_loading', 'Preparing picture…') : blocked ? helpText('simplified.lookup_picture_disabled', 'New AI pictures are off.') : data.imageError ? data.imageErrorReason === 'timeout' ? helpText('simplified.lookup_picture_timeout', 'The picture took too long to load. You can try again.') : helpText('glossary.popups.image_error', 'Could not load picture.') : ''}</p>
         {!blocked && typeof handleFetchWordImage === 'function' && <button type="button" data-lookup-picture-retry aria-disabled={busy || ready} aria-busy={busy} onClick={() => { if (!busy && !ready) handleFetchWordImage(data.word); }} className="min-h-11 w-full rounded-lg border border-indigo-300 px-3 py-2 text-sm text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{label}</button>}
       </div>;
     };
@@ -4037,13 +4091,14 @@
     var wordHelpOwnerRef = React.useRef(null), wordHelpSequenceRef = React.useRef(0);
     var wordHelpStopRef = React.useRef(stopPlayback); wordHelpStopRef.current = stopPlayback;
     var wordHelpCardRef = React.useRef(null), wordHelpCardOpener = React.useRef(null);
-    useSimplifiedPopupViewport(wordHelpCardRef, wordHelpCard, 20);
+    useSimplifiedPopupViewport(wordHelpCardRef, wordHelpCard, 20, true);
     useSimplifiedPopupViewport(definitionDialogRef, definitionData, 16);
     useSimplifiedPopupViewport(phonicsDialogRef, phonicsData, 18);
     useSimplifiedPopupViewport(selectionDialogRef, selectionMenu, 20);
     useSimplifiedPopupViewport(revisionDialogRef, revisionData, 18);
     React.useEffect(() => () => { stopPreparedCardAudio(wordHelpOwnerRef.current); }, []);
-    React.useEffect(function () { if (wordHelpCard && wordHelpCardRef.current) wordHelpCardRef.current.focus(); }, [wordHelpCard]);
+    // Each activation owns a fresh keyed card; playback updates keep its scroll.
+    React.useLayoutEffect(function () { if (wordHelpCard && wordHelpCardRef.current) wordHelpCardRef.current.focus(); }, [wordHelpCard]);
     function stopPreparedCardAudio(owner) {
       if (!owner || owner.closed) return;
       owner.closed = true;
@@ -4715,6 +4770,7 @@
     function renderStudentPreview() {
       if (!studentPreview) return null;
       return <div ref={studentPreviewRef} role="dialog" aria-modal="true" aria-labelledby={readerId('simplified-student-preview-title')} data-student-preview data-help-ignore
+        style={{ overscrollBehavior: 'contain' }}
         onClick={event => event.stopPropagation()} onDoubleClick={event => event.stopPropagation()}
         onPointerDown={event => event.stopPropagation()} onMouseMove={event => event.stopPropagation()}
         onWheel={event => event.stopPropagation()} onTouchStart={event => event.stopPropagation()} onTouchMove={event => event.stopPropagation()}
@@ -5146,7 +5202,7 @@
         return section.paragraphs.map(function (paragraph, paragraphIndex) {
           var paragraphId = section.key === 'mono' ? paragraphIndex : section.key + '-' + paragraphIndex;
           if (/^\[\[CHART:/.test(paragraph.trim())) return <div key={paragraphId} data-reading-chart="true" className="my-4 max-w-full overflow-x-auto">{renderFormattedText(paragraph, false)}</div>;
-          if (paragraph.trim().startsWith('|') || paragraph.includes('\n|')) return <div key={paragraphId} data-reading-table="true" lang={simplifiedLanguageTag(section.label)} dir={section.key === 'tgt' ? 'ltr' : getContentDirection(section.label)} className="my-4 max-w-full overflow-x-auto" tabIndex={0} role="region" aria-label={readerText('simplified.table_label', 'Reading table')}>{renderFormattedText(paragraph, false)}</div>;
+          if (paragraph.trim().startsWith('|') || paragraph.includes('\n|')) return <div key={paragraphId} data-reading-table="true" lang={simplifiedLanguageTag(section.label)} dir={getContentDirection(section.label)} className="my-4 max-w-full overflow-x-auto" tabIndex={0} role="region" aria-label={readerText('simplified.table_label', 'Reading table')}>{renderFormattedText(paragraph, false)}</div>;
           var startIdx = sentenceCursor;
           var blocks = simplifiedParagraphBlocks(paragraph).map(function (block) {
             block.start = sentenceCursor;
@@ -5272,7 +5328,7 @@
             if (block.type === 'heading') { style.fontWeight = 750; style.fontSize = block.level === 1 ? '1.5em' : block.level === 2 ? '1.3em' : '1.15em'; style.marginBlock = '0.9em 0.45em'; }
             return <Tag key={key} style={style} className={block.type === 'quote' ? 'border-l-4 border-indigo-200 pl-4 my-3 italic' : block.type === 'p' ? 'my-3' : undefined}>{content}</Tag>;
           };
-          return <div key={paragraphId} data-reading-paragraph={paragraphId} data-reading-focused={!!shouldFocus} data-reading-language={section.label} lang={simplifiedLanguageTag(section.label)} dir={section.key === 'tgt' ? 'ltr' : getContentDirection(section.label)} {...lineFocusParagraphProps(paragraphId)} onMouseUp={isSelectionMode || interactionMode === 'define' ? handleTextMouseUp : undefined} className={`mb-4 rounded-xl transition-opacity motion-reduce:transition-none ${isLineFocusMode ? shouldFocus ? 'opacity-100 bg-slate-800 p-4 text-white' : 'opacity-20 blur-[1px]' : section.key === 'tgt' ? 'text-slate-700' : 'text-slate-800'}`}>{simplifiedNestLists(blocks, renderBlock)}</div>;
+          return <div key={paragraphId} data-reading-paragraph={paragraphId} data-reading-focused={!!shouldFocus} data-reading-language={section.label} lang={simplifiedLanguageTag(section.label)} dir={getContentDirection(section.label)} {...lineFocusParagraphProps(paragraphId)} onMouseUp={isSelectionMode || interactionMode === 'define' ? handleTextMouseUp : undefined} className={`mb-4 rounded-xl transition-opacity motion-reduce:transition-none ${isLineFocusMode ? shouldFocus ? 'opacity-100 bg-slate-800 p-4 text-white' : 'opacity-20 blur-[1px]' : section.key === 'tgt' ? 'text-slate-700' : 'text-slate-800'}`}>{simplifiedNestLists(blocks, renderBlock)}</div>;
         });
       });
       var sourceDirection = getContentDirection(readingLanguage);
@@ -5493,7 +5549,7 @@
             handleWordClick(card.entry.quote, { stopPropagation: () => {}, currentTarget: opener, clientX: card.x, clientY: card.y }, context);
           };
           var showAll = () => { var list = (readerSurfaceRef.current || document).querySelector('[data-adapted-word-help]'); closeWordHelpCard(!list); if (!list) return; if (!list.hasAttribute('tabindex')) list.setAttribute('tabindex', '-1'); scrollReadingTarget(list, { block: 'start' }); list.focus(); };
-          return <div ref={wordHelpCardRef} id={wordHelpDialogId} role="dialog" aria-labelledby={wordHelpDialogId + '-title'} tabIndex={-1} data-word-help-card onKeyDown={e => { if (e.key !== 'Escape') return; e.preventDefault(); e.stopPropagation(); closeWordHelpCard(); }} className={`fixed ${_popupZ} rounded-xl border-2 border-indigo-200 bg-white p-4 text-slate-900 shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600`} style={simplifiedPopupStyle(wordHelpCard, 20)}>
+          return <div key={wordHelpCard.audioIds.word} ref={wordHelpCardRef} id={wordHelpDialogId} role="dialog" aria-labelledby={wordHelpDialogId + '-title'} tabIndex={-1} data-word-help-card onKeyDown={e => { if (e.key !== 'Escape') return; e.preventDefault(); e.stopPropagation(); closeWordHelpCard(); }} className={`fixed ${_popupZ} rounded-xl border-2 border-indigo-200 bg-white p-4 text-slate-900 shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600`} style={simplifiedPopupStyle(wordHelpCard, 20, true)}>
             <div className="mb-2 flex items-start justify-between gap-2"><div className="min-w-0"><h5 id={wordHelpDialogId + '-title'} lang={simplifiedLanguageTag(cardLanguage)} dir={cardDirection} className="break-words text-lg font-bold text-indigo-900">{entry.quote}</h5><p className="text-xs font-semibold text-indigo-700">{viewText('simplified.word_help_card_prepared', 'Word help from your teacher')}</p></div><button type="button" onClick={() => closeWordHelpCard()} aria-label={viewText('common.close', 'Close')} className="min-h-11 min-w-11 shrink-0 rounded-full bg-slate-100 p-2 text-slate-600 hover:bg-slate-200 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"><X size={14} /></button></div>
             {entry.image && <img src={entry.image.src} alt={entry.image.alt || ''} data-word-help-card-picture className="mb-2 h-24 w-full rounded-lg bg-white object-contain" />}
             <p data-word-help-card-text lang={simplifiedLanguageTag(cardLanguage)} dir={cardDirection} className="break-words text-base leading-relaxed">{explanation}</p>
@@ -5507,7 +5563,7 @@
             </div>
             {renderPictureCredits([entry])}
           </div>;
-        })()}{definitionData && <div ref={definitionDialogRef} role="dialog" aria-modal="true" aria-labelledby={readerId("simplified-definition-title")} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, definitionDialogRef.current, closeDefinition)} className={`fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-64 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none fade-in zoom-in-75 duration-300 ease-out motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(definitionData, 16)}>{!definitionData.aiStatus && <SimplifiedPopupStatus message={definitionData.text || definitionData.preparedText ? viewText('common.ready', 'Ready') : definitionData.status === 'error' || definitionData.status === 'disabled' ? viewText('glossary.popups.failed', 'Definition unavailable.') : viewText('glossary.popups.finding', 'Finding a definition…')} />}<div className="flex flex-wrap justify-between items-start gap-2 mb-2"><h5 id={readerId("simplified-definition-title")} className="min-w-0 break-words font-bold text-indigo-900 text-lg capitalize">{definitionData.word}</h5><div className="flex flex-wrap items-center justify-end gap-1">{renderDefinitionSpeech(definitionData)}<button ref={definitionCloseRef} type="button" onClick={closeDefinition} className="min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={14} /></button></div></div>{renderHelpAudioNotice('definition-')}{renderLookupStatus(definitionData, 'definition')}{definitionData.text && renderReadingLevelExplanation(definitionData, t, renderFormattedText)}{definitionData.dictionary && renderDictionaryPanel(definitionData.dictionary, t, renderHelpAudioButton, definitionData)}{definitionData.text && <div className="mt-3 pt-3 border-t border-slate-100">{renderLookupPicture(definitionData)}</div>}<div className="absolute -top-2 left-6 w-4 h-4 bg-white border-t border-l border-indigo-200 transform rotate-45" /></div>}{definitionData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ}`} onClick={closeDefinition} />}{phonicsData && <div ref={phonicsDialogRef} role="dialog" aria-modal="true" aria-labelledby={readerId("phonics-popup-title")} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, phonicsDialogRef.current, closePhonics)} className={`fixed ${_popupZ} bg-white allo-popover-solid p-5 rounded-xl shadow-2xl border-2 border-emerald-200 w-72 animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(phonicsData, 18)}>{!phonicsData.aiStatus && <SimplifiedPopupStatus message={phonicsData.isLoading ? viewText('glossary.popups.analyzing', 'Analyzing…') : phonicsData.data ? viewText('common.ready', 'Ready') : viewText('glossary.popups.failed', 'Unable to load word sounds.')} />}<div className="flex justify-between items-start mb-3"><h5 id={readerId("phonics-popup-title")} className="min-w-0 break-words font-black text-emerald-900 text-2xl capitalize tracking-tight">{phonicsData.word}</h5><button ref={phonicsCloseRef} type="button" onClick={closePhonics} className="min-h-11 min-w-11 shrink-0 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" aria-label={t('common.close')}><X size={14} /></button></div>{renderHelpAudioNotice('phonics-')}{renderLookupStatus(phonicsData, 'phonics')}<div className="mb-3 flex flex-wrap gap-2">{renderHelpAudioButton('phonics-word', null, phonicsData.word, phonicsData.language)}{phonicsData.lookupRequest?.passageText && renderHelpAudioButton('phonics-context', null, phonicsData.lookupRequest.passageText, phonicsData.language, helpText('simplified.lookup_hear_passage', 'Hear in passage'))}</div>{renderPhonicsDictRow(phonicsData, t, renderHelpAudioButton)}{phonicsData.data ? <div className="space-y-4"><div className="flex flex-wrap items-center justify-between gap-2 bg-emerald-50 p-3 rounded-lg border border-emerald-100"><div><div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">{t('glossary.phonetic_spelling')}</div><div className="text-lg font-serif italic text-slate-700">/{phonicsData.data.phoneticSpelling}/</div></div></div><div className="space-y-3"><div className="bg-slate-50 p-3 rounded border border-slate-100"><div className="text-xs font-bold text-slate-600 mb-2">{t('glossary.popups.syllables')}</div><div className="flex flex-wrap items-center gap-1">{Array.isArray(phonicsData.data.syllables) && phonicsData.data.syllables.some(syl => typeof syl === 'string' && syl.trim()) ? phonicsData.data.syllables.filter(syl => typeof syl === 'string' && syl.trim()).map((syl, i) => <React.Fragment key={i}>{i > 0 && <span className="text-emerald-700 font-bold px-0.5" aria-hidden="true">•</span>}<span className="bg-white px-1.5 rounded border border-slate-400 text-sm font-bold text-slate-700 shadow-sm">{syl}</span></React.Fragment>) : <span className="text-sm text-slate-700">{helpText('simplified.word_parts_unavailable', 'Word parts are unavailable. You can still listen to the word.')}</span>}</div></div>{phonicsData.data.ipa && <details className="bg-slate-50 p-3 rounded border border-slate-100"><summary className="min-h-11 cursor-pointer py-2 text-sm font-semibold text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{helpText('simplified.word_ipa_details', 'Pronunciation symbols (IPA)')}</summary><p className="mt-2 font-mono text-sm text-slate-700">{phonicsData.data.ipa}</p></details>}</div></div> : null}<div className="allo-popover-solid absolute -top-2 left-6 w-4 h-4 bg-white border-t-2 border-l-2 border-emerald-200 transform rotate-45" /></div>}{phonicsData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ}`} onClick={closePhonics} />}{selectionMenu && <div ref={selectionDialogRef} role="dialog" aria-modal="true" aria-label={readerText('simplified.selected_passage', 'Selected passage')} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, selectionDialogRef.current, () => { setSelectionMenu(null); setIsCustomReviseOpen(false); })} className={`fixed ${_popupZ} flex flex-col gap-1 items-center animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2 duration-200`} style={simplifiedPopupStyle(selectionMenu, 20)}><button type="button" data-selection-close onClick={() => { setSelectionMenu(null); setIsCustomReviseOpen(false); }} className="min-h-11 self-end rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600">{viewText('common.close', 'Close')}</button><div className="bg-slate-900/90 text-white text-[11px] px-2 py-0.5 rounded-full mb-1 whitespace-nowrap shadow-sm max-w-[150px] truncate border border-slate-700">"{selectionMenu.text.length > 20 ? selectionMenu.text.substring(0, 20) + '...' : selectionMenu.text}"</div><div className="max-w-full bg-slate-800 text-white rounded-2xl shadow-xl p-1 flex flex-wrap items-center justify-center gap-1">{isCustomReviseOpen ? <div className="flex w-full min-w-0 flex-wrap items-center gap-1 px-1 animate-in motion-reduce:animate-none slide-in-from-right-2 duration-200"><input aria-label={t('common.enter_custom_revise_instruction')} autoFocus={true} type="text" value={customReviseInstruction} onChange={e => setCustomReviseInstruction(e.target.value)} onKeyDown={e => {
+        })()}{definitionData && <div ref={definitionDialogRef} role="dialog" aria-modal="true" aria-labelledby={readerId("simplified-definition-title")} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, definitionDialogRef.current, closeDefinition)} className={`fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-64 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none fade-in zoom-in-75 duration-300 ease-out motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(definitionData, 16)}>{!definitionData.aiStatus && <SimplifiedPopupStatus message={definitionData.text || definitionData.preparedText ? viewText('common.ready', 'Ready') : definitionData.status === 'error' || definitionData.status === 'disabled' ? viewText('glossary.popups.failed', 'Definition unavailable.') : viewText('glossary.popups.finding', 'Finding a definition…')} />}<div className="flex flex-wrap justify-between items-start gap-2 mb-2"><h5 id={readerId("simplified-definition-title")} className="min-w-0 break-words font-bold text-indigo-900 text-lg capitalize">{definitionData.word}</h5><div className="flex flex-wrap items-center justify-end gap-1">{renderDefinitionSpeech(definitionData)}<button ref={definitionCloseRef} type="button" onClick={closeDefinition} className="min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={14} /></button></div></div>{renderHelpAudioNotice('definition-')}{renderLookupStatus(definitionData, 'definition')}{definitionData.text && renderReadingLevelExplanation(definitionData, t, renderFormattedText)}{definitionData.dictionary && renderDictionaryPanel(definitionData.dictionary, t, renderHelpAudioButton, definitionData)}{definitionData.text && <div className="mt-3 pt-3 border-t border-slate-100">{renderLookupPicture(definitionData)}</div>}<div className="absolute -top-2 left-6 w-4 h-4 bg-white border-t border-l border-indigo-200 transform rotate-45" /></div>}{definitionData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ}`} onClick={closeDefinition} />}{phonicsData && <div ref={phonicsDialogRef} role="dialog" aria-modal="true" aria-labelledby={readerId("phonics-popup-title")} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, phonicsDialogRef.current, closePhonics)} className={`fixed ${_popupZ} bg-white allo-popover-solid p-5 rounded-xl shadow-2xl border-2 border-emerald-200 w-72 animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(phonicsData, 18)}>{!phonicsData.aiStatus && <SimplifiedPopupStatus message={phonicsData.isLoading ? viewText('glossary.popups.analyzing', 'Analyzing…') : phonicsData.data ? viewText('common.ready', 'Ready') : viewText('glossary.popups.failed', 'Unable to load word sounds.')} />}<div className="flex justify-between items-start mb-3"><h5 id={readerId("phonics-popup-title")} className="min-w-0 break-words font-black text-emerald-900 text-2xl capitalize tracking-tight">{phonicsData.word}</h5><button ref={phonicsCloseRef} type="button" onClick={closePhonics} className="min-h-11 min-w-11 shrink-0 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" aria-label={t('common.close')}><X size={14} /></button></div>{renderHelpAudioNotice('phonics-')}{renderLookupStatus(phonicsData, 'phonics')}<div className="mb-3 flex flex-wrap gap-2">{renderHelpAudioButton('phonics-word', null, phonicsData.word, phonicsData.language)}{phonicsData.lookupRequest?.passageText && renderHelpAudioButton('phonics-context', null, phonicsData.lookupRequest.passageText, phonicsData.language, helpText('simplified.lookup_hear_passage', 'Hear in passage'))}</div>{renderPhonicsDictRow(phonicsData, t, renderHelpAudioButton)}{phonicsData.data ? <div className="space-y-4">{phonicsData.data.phoneticSpelling && <div className="flex flex-wrap items-center justify-between gap-2 bg-emerald-50 p-3 rounded-lg border border-emerald-100"><div><div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">{t('glossary.phonetic_spelling')}</div><div className="text-lg font-serif italic text-slate-700">/{phonicsData.data.phoneticSpelling}/</div></div></div>}<div className="space-y-3"><div className="bg-slate-50 p-3 rounded border border-slate-100"><div className="text-xs font-bold text-slate-600 mb-2">{t('glossary.popups.syllables')}</div><div className="flex flex-wrap items-center gap-1">{Array.isArray(phonicsData.data.syllables) && phonicsData.data.syllables.some(syl => typeof syl === 'string' && syl.trim()) ? phonicsData.data.syllables.filter(syl => typeof syl === 'string' && syl.trim()).map((syl, i) => <React.Fragment key={i}>{i > 0 && <span className="text-emerald-700 font-bold px-0.5" aria-hidden="true">•</span>}<span className="bg-white px-1.5 rounded border border-slate-400 text-sm font-bold text-slate-700 shadow-sm">{syl}</span></React.Fragment>) : <span className="text-sm text-slate-700">{helpText('simplified.word_parts_unavailable', 'Word parts are unavailable. You can still listen to the word.')}</span>}</div></div>{phonicsData.data.ipa && <details className="bg-slate-50 p-3 rounded border border-slate-100"><summary className="min-h-11 cursor-pointer py-2 text-sm font-semibold text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{helpText('simplified.word_ipa_details', 'Pronunciation symbols (IPA)')}</summary><p className="mt-2 font-mono text-sm text-slate-700">{phonicsData.data.ipa}</p></details>}</div></div> : null}<div className="allo-popover-solid absolute -top-2 left-6 w-4 h-4 bg-white border-t-2 border-l-2 border-emerald-200 transform rotate-45" /></div>}{phonicsData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ}`} onClick={closePhonics} />}{selectionMenu && <div ref={selectionDialogRef} role="dialog" aria-modal="true" aria-label={readerText('simplified.selected_passage', 'Selected passage')} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, selectionDialogRef.current, () => { setSelectionMenu(null); setIsCustomReviseOpen(false); })} className={`fixed ${_popupZ} flex flex-col gap-1 items-center animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2 duration-200`} style={simplifiedPopupStyle(selectionMenu, 20)}><button type="button" data-selection-close onClick={() => { setSelectionMenu(null); setIsCustomReviseOpen(false); }} className="min-h-11 self-end rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600">{viewText('common.close', 'Close')}</button><div className="bg-slate-900/90 text-white text-[11px] px-2 py-0.5 rounded-full mb-1 whitespace-nowrap shadow-sm max-w-[150px] truncate border border-slate-700">"{selectionMenu.text.length > 20 ? selectionMenu.text.substring(0, 20) + '...' : selectionMenu.text}"</div><div className="max-w-full bg-slate-800 text-white rounded-2xl shadow-xl p-1 flex flex-wrap items-center justify-center gap-1">{isCustomReviseOpen ? <div className="flex w-full min-w-0 flex-wrap items-center gap-1 px-1 animate-in motion-reduce:animate-none slide-in-from-right-2 duration-200"><input aria-label={t('common.enter_custom_revise_instruction')} autoFocus={true} type="text" value={customReviseInstruction} onChange={e => setCustomReviseInstruction(e.target.value)} onKeyDown={e => {
                 if (e.key === 'Enter') handleReviseSelection('custom', customReviseInstruction);
                 if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setIsCustomReviseOpen(false); selectionDialogRef.current?.querySelector('[data-selection-close]')?.focus(); }
               }} placeholder={t('text_tools.menu_placeholder')} className="text-xs bg-slate-700 border-none rounded-full px-3 py-1.5 focus:ring-1 focus:ring-indigo-400 outline-none text-white w-full min-w-0 placeholder:text-slate-300" /><button type="button" aria-label={t('common.continue')} onClick={() => handleReviseSelection('custom', customReviseInstruction)} className="p-1.5 bg-indigo-600 hover:bg-indigo-600 rounded-full text-white transition-colors" disabled={!customReviseInstruction.trim()}><ArrowRight size={12} /></button><button type="button" aria-label={t('common.close_revision_panel')} onClick={() => { handleSetIsCustomReviseOpenToFalse(); selectionDialogRef.current?.querySelector('[data-selection-close]')?.focus(); }} className="p-1.5 text-slate-600 hover:text-white rounded-full transition-colors"><X size={12} /></button></div> : <>{interactionMode === 'explain' && <button ref={selectionActionRef} type="button" aria-label={readerText('simplified.explain_mode', 'Explain')} onClick={() => handleReviseSelection('explain')} className="px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"><HelpCircle size={12} className="text-teal-700" /> {t('text_tools.explain')}</button>}{interactionMode === 'revise' && <><button type="button" onClick={() => handleReviseSelection('simplify')} className="px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"><Sparkles size={12} className="text-yellow-700" /> {t('text_tools.simplify')}</button><div className="w-px h-3 bg-slate-600" /><button type="button" onClick={() => handleReviseSelection('custom-input')} className="px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"><PenTool size={12} className="text-indigo-600" /> {t('text_tools.custom')}</button></>}{interactionMode === 'define' && <button type="button" onClick={handleDefineSelection} className="px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"><Search size={12} className="text-yellow-700" /> {t('text_tools.define')}</button>}{interactionMode === 'add-glossary' && <button type="button" onClick={() => {

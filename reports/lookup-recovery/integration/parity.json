@@ -1,0 +1,21 @@
+{
+  "checks": {
+    "content_engine_module.js": {
+      "sourceMatchesRoot": true,
+      "sourceMatchesPublic": true,
+      "sha256": "014df264c4ea1059e48f1e01750e95eaacc69a47a778058899f1f5f952c9c44e"
+    },
+    "host_handlers_module.js": {
+      "sourceMatchesRoot": true,
+      "sourceMatchesPublic": true,
+      "sha256": "50d534862ec23a3bbd94f0716e337818d61d28ede842c58629e0953c1c526f88"
+    },
+    "view_simplified_module.js": {
+      "sourceMatchesRoot": true,
+      "sourceMatchesPublic": true,
+      "sha256": "413cd330fe9734c50eb50c9104a346733c2554c6907f30ba5eed911ea5dbace9"
+    }
+  },
+  "copyReady": true,
+  "passed": true
+}

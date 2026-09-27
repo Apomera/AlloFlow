@@ -1,0 +1,59 @@
+{
+  "status": "passed",
+  "initial": {
+    "summaries": 1,
+    "synthesis": 2,
+    "available": 1
+  },
+  "resumed": {
+    "summaries": 0,
+    "synthesis": 1,
+    "available": 2,
+    "skipped": 1,
+    "recovery": {
+      "state": "saved",
+      "verifiedAt": "2026-09-26T23:57:27.558Z",
+      "code": null,
+      "resumed": true
+    }
+  },
+  "offlineAuthor": {
+    "summaries": 0,
+    "synthesis": 0,
+    "available": 2,
+    "skipped": 2,
+    "recovery": {
+      "state": "saved",
+      "verifiedAt": "2026-09-26T23:57:27.600Z",
+      "code": null,
+      "resumed": true
+    },
+    "networkRequests": []
+  },
+  "received": {
+    "durations": [
+      0.1,
+      0.1
+    ],
+    "pictureWidths": [
+      32
+    ],
+    "mediaSummary": "2 of 2 narration clips included. Pictures embedded: 1. Pictures requiring the original source: 0. Pictures omitted: 0.",
+    "artifactSegments": 2
+  },
+  "reloaded": {
+    "durations": [
+      0.1,
+      0.1
+    ],
+    "pictureWidths": [
+      32
+    ],
+    "mediaSummary": "2 of 2 narration clips included. Pictures embedded: 1. Pictures requiring the original source: 0. Pictures omitted: 0.",
+    "artifactSegments": 2
+  },
+  "actualPlayback": true,
+  "networkRequests": [],
+  "errors": [],
+  "scope": "Actual Storybook export and host recovery wrapper, real disposable IndexedDB reload, export offline with both providers unavailable, then a fresh offline recipient; no deployed app data."
+}

@@ -4,8 +4,10 @@ Water Worlds is an open-ended watershed investigation inside the Water Cycle too
 
 ## Try the first investigation
 
+Start with **Choose an investigation** and **My prediction** above the landscape. A three-step pathway follows the experiment from a question to evidence; writing is optional. Storm playback sits directly above the scene, and stream comparisons sit below it.
+
 1. Select a ground cell in the valley, with the ground-cell selector, or using the canvas arrow keys.
-2. Set a cell or its surrounding patch to paving, meadow, woodland, or a retention garden. Stream beds stay connected.
+2. Choose a cover card to read how it affects infiltration and surface storage. Select **Edit area** to target one cell or the surrounding 3 × 3 patch. Amber dashed outlines preview only cells that would change; the readout gives their count and area. Choose **Apply** to change the ground. Edge patches clip to the valley, and stream beds stay connected.
 3. Choose rainfall intensity and duration, then start a storm. Pause, advance 15 model minutes, or finish the run.
 4. Pin the completed run as a baseline.
 5. Change ground cover and choose **Replay baseline weather**. This restores the baseline's initial water stores and rainfall while retaining the new ground cover.
@@ -17,7 +19,13 @@ Up to eight land edits can be undone before starting a storm or leaving the view
 
 Changing cover after a completed run clears its current-run display while preserving the pinned baseline. Pin a result before changing the design if it should remain available for comparison. Baseline records are detached copies; later runs and edits cannot rewrite their evidence. Pausing an active run does not permit land editing; finish it first to keep the run's inputs interpretable.
 
+Choosing a card or edit area only previews a design; it does not alter water, recorded results, or the baseline. Apply is disabled during a run, while inspecting recorded time, or when no cells would change. The Differences view keeps its analytical map clear and directs learners to Surface water to see the planned footprint. **Look inside this ground** reveals the three water stores; **How these covers behave** explains the selected cover’s model parameters. Cover-card explanations are also available to screen readers.
+
+For the consecutive-storm investigation, the pathway only moves to explanation after a completed later storm with the same recorded rainfall and ground cover as the baseline. If those also changed, it explains why the learner cannot attribute the result only to water left by the earlier storm.
+
 ## Revisit and explain a storm
+
+The playback bar separates **Rainfall** from the following **60 minutes of drainage**. Its progress and explanation follow the displayed minute, including recorded-time inspection. Reaching the end means the observation window has ended; water still in the valley can keep moving. **Highest sampled flow** jumps to the earliest highest outlet reading in the saved minute samples. The peak gauge includes the solver's smaller time steps, so it can differ from the sampled value. The shortcut is disabled when no positive outlet flow was sampled.
 
 After a run finishes, **Revisit this storm** lets learners inspect any whole model minute, including the moment rain stops. The landscape, gauges, and selected-cell readings show that time. The graph adds an inspection cursor and shades the rainfall period. The comparison and exported evidence continue to describe the completed run.
 
@@ -28,6 +36,20 @@ With a baseline pinned, **Highlight changed land** marks cells whose cover diffe
 **Choose an investigation** offers ground-cover comparisons, retention gardens, consecutive storms, or a learner’s own question. Prompts adapt to Notice, Investigate, and Model without changing conditions or writing. Consecutive-storm prompts explicitly distinguish changed initial water from a controlled land-cover comparison.
 
 **Download readable report** produces a plain-text report with learner writing, current/baseline results, units, observation durations, model boundaries, and current-run minute samples. The JSON export remains available and includes the chosen question, learning level, and number of changed land-cover cells.
+
+## Keep field observations
+
+**Follow this patch** shows the selected cell's surface water, soil water, and delayed storage. Add an optional note and save the reading. During playback, **Pause and save observation** freezes the run and captures the actual model time. Inspection of a completed run can also be saved without changing its result.
+
+Each observation preserves its cell, ground cover, elapsed/model minute, weather, local depths, valley totals, and stream flow. Up to six observations remain available through new storms, land edits, resets, and mode changes. The count is visible; reaching the limit requires removing an observation before adding another. Observation numbers stay fixed when an earlier one is removed. Notes remain editable.
+
+Select **Compare** on two cards to see the second selected reading minus the first. The explanation distinguishes the same place over time, different places in the same setup, and different storm setups. Surface, soil, and delayed-water differences are depths over one cell; stream-flow differences describe the valley outlet. A difference alone does not establish a cause.
+
+**Revisit** is available after the current run finishes, when its recorded starting world and weather exactly match the observation and the minute has been reached. It restores the selected cell and inspection minute without rewinding the actual world. Observations from other setups keep their readings even when they cannot be revisited in the current scene.
+
+Both downloads include saved observations, their notes, units, and recorded conditions. Exports stay available when only observations remain. Restoring a saved session recomputes readings from the recorded starting state and weather; legacy sessions without observations open with an empty notebook.
+
+The section-navigation buttons move keyboard focus between the valley, storm settings, ground inspector, and field notes. **See saved observations** and **Return to the valley** support the same route from the capture area and notebook.
 
 ## Compare water across the landscape
 
@@ -52,6 +74,16 @@ The learning selector offers Notice, Investigate, and Model. Notice emphasizes d
 The scene has surface-water, soil-moisture, and flow-path views. Flow arrows show each cell’s strongest outgoing transfer, with all routes drawn for the selected cell. Transfers are calculated by the kernel for the next 15-second model step under current forcing; they are not decorative particles or velocity measurements. Very small transfers are hidden in the picture, while the selected-cell transfer text includes all outgoing routes. The water-store inspector explains remaining soil capacity, finite retention thresholds, and delayed release to streams. The selected-cell inspector reports surface depth, soil fill, and optional below-ground storage readings. Pointer interaction has an equivalent native selector, and arrow keys select cells while the canvas is focused. All mode destinations remain visible on narrow phones. Pause freezes the model and picture; step controls support self-paced observation without camera motion.
 
 The notebook records a prediction and explanation without grading either. Export is JSON containing the terrain/model version, physical units, starting/final water states, forcing, minute samples, baseline, result, and learner writing. This first release uses English interface text; the two new mode-navigation strings are registered in the English source and desktop mirror. It does not add translated language packs.
+
+## Follow water through a patch
+
+Open **What happens next?** in the ground inspector. **Across ground**, **Into soil**, **Delayed water**, and **To air** highlight and explain the selected pathway. The pathways operate together; choosing one changes only what the inspector emphasizes.
+
+The layered diagram compares current surface, soil, and delayed storage with the values after the next **15 model seconds**. Transfer depths come from the same solver step. Small nonzero transfers use a less-than label instead of appearing to be exactly zero. The preview uses rain reaching the valley at the displayed minute, including recorded-time inspection. Before a storm, or after the observation window, it uses no new rain. It never advances the live world or changes saved evidence.
+
+Surface connections show all calculated inflows and outflows for the cell, including flows too small for the landscape arrows. Choose a connection to inspect its source or destination. The explorer stays open, keyboard focus returns to its heading, and the new location is announced. Water leaving through the valley outlet has no destination-cell button.
+
+**Check this cell’s water balance** accounts for initial storage, rain, surface inflow/outflow, delayed-water exchange, and losses to air. Infiltration and soil drainage move water between stores within the cell and cancel from its total. Delayed release is pooled and shared among stream cells; the diagram does not imply a resolved underground route. All values are water depths spread over an equal-area cell, rather than soil-layer thickness or water-table height.
 
 ## Landscape visuals
 

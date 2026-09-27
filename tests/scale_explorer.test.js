@@ -632,7 +632,7 @@ describe('Scale Explorer shows orders of magnitude, not just names them', () => 
   });
 
   it('the stage no longer stretches to a long side panel', () => {
-    expect(src).toMatch(/minHeight: 'min\(56vh, 420px\)', maxHeight: 'max\(420px, 78vh\)'/);
+    expect(src).toContain('.sx-stage{height:clamp(410px,62vh,690px)');
   });
 });
 

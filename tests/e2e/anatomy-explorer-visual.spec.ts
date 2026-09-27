@@ -9,7 +9,7 @@ test('Anatomy explorer responsive controls, structure browsing and accessible fo
  await harness.mount(page,{anatomy:{_bodyView3d:false,_activeTab:'explore',system:'skeletal',view:'anterior',complexity:3,_structuresViewed:{skull:true},_structureNotes:{skull:'My skull note'},_structureConfidence:{skull:'practice'}}},undefined,{expectCanvas:false});
  await page.addStyleTag({content:'#wrap{height:auto;min-height:100%;max-width:100%;}'});await mkdir('reports/anatomy-explorer-visual',{recursive:true});
  const shell=page.locator('[data-anatomy-tool]');const nav=page.locator('[data-anatomy-explorer-nav]');
- await expect(nav).toBeVisible();await expect(page.locator('#anatomy-explorer-system')).toBeHidden();
+ await expect(nav).toBeVisible();await expect(page.locator('#anatomy-explorer-system')).toBeVisible();
  await page.screenshot({path:'reports/anatomy-explorer-visual/explorer-desktop.png'});
  const originalCanvasWidth=(await page.locator('.anatomy-canvas-frame').boundingBox())!.width;
  await page.locator('[data-anatomy-model-focus-toggle]').click();await expect(nav).toBeHidden();expect((await page.locator('.anatomy-canvas-frame').boundingBox())!.width).toBeGreaterThan(originalCanvasWidth+70);

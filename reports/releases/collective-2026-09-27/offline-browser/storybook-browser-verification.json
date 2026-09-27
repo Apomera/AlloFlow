@@ -1,0 +1,184 @@
+{
+  "status": "passed",
+  "initial": {
+    "summaries": 1,
+    "synthesis": 3,
+    "available": 2
+  },
+  "resumed": {
+    "summaries": 0,
+    "synthesis": 1,
+    "available": 3,
+    "skipped": 2,
+    "recovery": {
+      "state": "saved",
+      "verifiedAt": "2026-09-27T19:27:38.252Z",
+      "code": null,
+      "resumed": true
+    },
+    "profiles": [
+      {
+        "voice": "Kore",
+        "language": "English",
+        "provider": "local",
+        "engine": "kokoro",
+        "model": "fixture-local-fallback",
+        "requestedProvider": "auto:gemini",
+        "requestedModel": "fixture-model-a",
+        "synthesisRate": 1,
+        "voiceResolverVersion": 2
+      },
+      {
+        "voice": "Kore",
+        "language": "English",
+        "provider": "local",
+        "engine": "kokoro",
+        "model": "fixture-local-fallback",
+        "requestedProvider": "auto:gemini",
+        "requestedModel": "fixture-model-a",
+        "synthesisRate": 1,
+        "voiceResolverVersion": 2
+      },
+      {
+        "voice": "Kore",
+        "language": "English",
+        "provider": "local",
+        "engine": "kokoro",
+        "model": "fixture-local-fallback",
+        "requestedProvider": "auto:gemini",
+        "requestedModel": "fixture-model-a",
+        "synthesisRate": 1,
+        "voiceResolverVersion": 2
+      }
+    ]
+  },
+  "changedModel": {
+    "summaries": 0,
+    "synthesis": 3,
+    "available": 3,
+    "skipped": 0,
+    "recovery": {
+      "state": "saved",
+      "verifiedAt": "2026-09-27T19:27:38.309Z",
+      "code": null,
+      "resumed": true
+    },
+    "profiles": [
+      {
+        "voice": "Kore",
+        "language": "English",
+        "provider": "local",
+        "engine": "kokoro",
+        "model": "fixture-local-fallback",
+        "requestedProvider": "auto:gemini",
+        "requestedModel": "fixture-model-b",
+        "synthesisRate": 1,
+        "voiceResolverVersion": 2
+      },
+      {
+        "voice": "Kore",
+        "language": "English",
+        "provider": "local",
+        "engine": "kokoro",
+        "model": "fixture-local-fallback",
+        "requestedProvider": "auto:gemini",
+        "requestedModel": "fixture-model-b",
+        "synthesisRate": 1,
+        "voiceResolverVersion": 2
+      },
+      {
+        "voice": "Kore",
+        "language": "English",
+        "provider": "local",
+        "engine": "kokoro",
+        "model": "fixture-local-fallback",
+        "requestedProvider": "auto:gemini",
+        "requestedModel": "fixture-model-b",
+        "synthesisRate": 1,
+        "voiceResolverVersion": 2
+      }
+    ]
+  },
+  "offlineAuthor": {
+    "summaries": 0,
+    "synthesis": 0,
+    "pictureLookups": [
+      "missing-picture"
+    ],
+    "available": 3,
+    "skipped": 3,
+    "recovery": {
+      "state": "saved",
+      "verifiedAt": "2026-09-27T19:27:38.350Z",
+      "code": null,
+      "resumed": true
+    },
+    "profiles": [
+      {
+        "voice": "Kore",
+        "language": "English",
+        "provider": "local",
+        "engine": "kokoro",
+        "model": "fixture-local-fallback",
+        "requestedProvider": "auto:gemini",
+        "requestedModel": "fixture-model-b",
+        "synthesisRate": 1,
+        "voiceResolverVersion": 2
+      },
+      {
+        "voice": "Kore",
+        "language": "English",
+        "provider": "local",
+        "engine": "kokoro",
+        "model": "fixture-local-fallback",
+        "requestedProvider": "auto:gemini",
+        "requestedModel": "fixture-model-b",
+        "synthesisRate": 1,
+        "voiceResolverVersion": 2
+      },
+      {
+        "voice": "Kore",
+        "language": "English",
+        "provider": "local",
+        "engine": "kokoro",
+        "model": "fixture-local-fallback",
+        "requestedProvider": "auto:gemini",
+        "requestedModel": "fixture-model-b",
+        "synthesisRate": 1,
+        "voiceResolverVersion": 2
+      }
+    ],
+    "networkRequests": []
+  },
+  "received": {
+    "durations": [
+      0.1,
+      0.1,
+      0.1
+    ],
+    "pictureWidths": [
+      32
+    ],
+    "mediaSummary": "3 of 3 narration clips included. Pictures embedded: 1. Pictures requiring the original source: 0. Pictures omitted: 1.",
+    "missingPictureNotices": 1,
+    "artifactSegments": 3
+  },
+  "reloaded": {
+    "durations": [
+      0.1,
+      0.1,
+      0.1
+    ],
+    "pictureWidths": [
+      32
+    ],
+    "mediaSummary": "3 of 3 narration clips included. Pictures embedded: 1. Pictures requiring the original source: 0. Pictures omitted: 1.",
+    "missingPictureNotices": 1,
+    "artifactSegments": 3
+  },
+  "actualPlayback": true,
+  "synthesisTransport": "blob-url",
+  "networkRequests": [],
+  "errors": [],
+  "scope": "Actual Storybook export and host recovery wrapper, real disposable IndexedDB reload, changed requested model with local fallback provenance, simulated missing picture after eviction, export offline with both providers unavailable, then a fresh offline recipient; no deployed app data."
+}

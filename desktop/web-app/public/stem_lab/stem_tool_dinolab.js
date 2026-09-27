@@ -4934,15 +4934,167 @@ window.StemLab = window.StemLab || {
 
   // ── How we know: the evidence paleontologists read ──
   var ANATOMY = [
-    { id: 'bones', icon: '🦴', name: 'Bones', what: 'Fossilized bone, where minerals replaced the original over time.', tells: 'Size, posture, age, injuries, and how an animal moved. Growth rings inside bones reveal how fast it grew and how old it was.' },
-    { id: 'teeth', icon: '🦷', name: 'Teeth', what: 'The hardest, most common fossils, often found even when bones are not.', tells: 'Diet. Bladed serrated teeth slice meat; flat teeth grind plants; cone teeth grab fish.' },
-    { id: 'tracks', icon: '👣', name: 'Trackways', what: 'Fossil footprints pressed into mud that later hardened.', tells: 'Behavior frozen in time: speed from stride length, group movement, and posture. Tracks record what the animal did.' },
-    { id: 'eggs', icon: '🥚', name: 'Eggs and nests', what: 'Fossil eggs, sometimes with embryos, and the nests they were laid in.', tells: 'How dinosaurs reproduced and cared for young. Nesting colonies show parental care.' },
-    { id: 'skin', icon: '🪶', name: 'Skin and feathers', what: 'Rare impressions of scales, skin, or feathers in fine-grained rock.', tells: 'Body covering and even color, when fossil pigment structures (melanosomes) survive.' },
-    { id: 'coprolites', icon: '💩', name: 'Coprolites', what: 'Fossilized dung.', tells: 'What an animal actually ate. Crushed bone, plant fibers, or fish scales inside reveal real meals.' },
-    { id: 'gastroliths', icon: '🪨', name: 'Gastroliths', what: 'Smooth stones swallowed to help grind food in the gut.', tells: 'Digestion strategy. Found with some plant-eaters and birds.' },
-    { id: 'softtissue', icon: '🔬', name: 'Soft tissue and chemistry', what: 'Very rare traces of original proteins, blood-vessel shapes, or pigments.', tells: 'Fine biological detail and links to living animals. These finds are carefully checked because contamination is easy.' }
+    { id: 'bones', icon: '🦴', name: 'Bones', tag: 'Body and movement',
+      what: 'Preserved skeletal parts. Minerals may fill pores or replace material; fossil bone is not always a complete mineral replacement.',
+      tells: 'Body size, joint arrangement, and possible movement from the shapes and connections of bones.',
+      limit: 'A skeleton alone does not show an exact living pose or every movement. Missing parts and soft tissues require reconstruction.',
+      question: 'Which parts of a reconstructed skeleton are preserved, and which are inferred?',
+      diagram: 'Schematic long bone with a cutaway showing pores; not a particular specimen or a scale drawing.',
+      source: 'National Park Service · Body fossils', url: 'https://www.nps.gov/subjects/fossils/body-fossils.htm', more: 'https://www.nhm.ac.uk/discover/what-can-scientists-learn-about-dinosaurs-and-how.html' },
+    { id: 'teeth', icon: '🦷', name: 'Teeth', tag: 'Feeding',
+      what: 'Preserved teeth, sometimes with microscopic scratches and worn surfaces.',
+      tells: 'Likely feeding habits from tooth shape, how teeth fit together, and patterns of wear.',
+      limit: 'A tooth shape alone does not identify a complete menu. Wear, jaw mechanics, and other dietary evidence strengthen the interpretation.',
+      question: 'Would tooth shape or preserved food remains tell you more about a particular meal?',
+      diagram: 'Schematic pointed and broad tooth crowns shown side by side; not a particular species or a scale drawing.',
+      source: 'Natural History Museum · Reading dinosaur evidence', url: 'https://www.nhm.ac.uk/discover/what-can-scientists-learn-about-dinosaurs-and-how.html' },
+    { id: 'tracks', icon: '👣', name: 'Trackways', tag: 'Activity',
+      what: 'Sequences of footprints preserved in sediment that became rock.',
+      tells: 'How an animal placed its feet and moved across a surface. Track spacing can support estimates of speed.',
+      limit: 'An estimated speed is not a direct measurement of the living animal. A track records an activity, not an entire life history.',
+      question: 'What assumptions would you need to turn the spacing between prints into a speed estimate?',
+      diagram: 'Schematic alternating three-toed prints on a sediment surface; no distance or speed is measured.',
+      source: 'Natural History Museum · Reading dinosaur evidence', url: 'https://www.nhm.ac.uk/discover/what-can-scientists-learn-about-dinosaurs-and-how.html' },
+    { id: 'eggs', icon: '🥚', name: 'Eggs and nests', tag: 'Reproduction',
+      what: 'Fossil eggs and nesting arrangements, occasionally with embryos or associated adults.',
+      tells: 'Egg laying and nesting behavior. An adult preserved over a nest can support a brooding interpretation.',
+      limit: 'A nesting colony alone does not establish parental care. An embryo or other close association may be needed to identify who laid the eggs.',
+      question: 'How would an embryo or a brooding adult change your interpretation of a nest?',
+      diagram: 'Schematic cluster of eggs in sediment, without an adult or embryo; not a particular fossil nest.',
+      source: 'American Museum of Natural History · Dinosaur eggs', url: 'https://www.amnh.org/dinosaurs/dinosaur-eggs', more: 'https://www.amnh.org/explore/videos/dinosaurs-and-fossils/dinosaur-eggs-101' },
+    { id: 'skin', icon: '🪶', name: 'Skin and feathers', tag: 'Body covering',
+      what: 'Preserved skin textures, feather traces, or other remains of body coverings.',
+      tells: 'Scales or feathers in preserved regions. In some fossils, microscopic pigment evidence helps reconstruct color patterns.',
+      limit: 'A preserved patch does not map the whole animal. Most fossils do not preserve the evidence needed to infer original colors.',
+      question: 'Which parts of an illustrated dinosaur are supported by preserved covering evidence?',
+      diagram: 'Schematic feather impression beside a textured skin patch; their colors are illustrative, not reconstructed fossil colors.',
+      source: 'Natural History Museum · Dinosaur color evidence', url: 'https://www.nhm.ac.uk/discover/how-to-bring-a-dinosaur-to-life-in-technicolour.html' },
+    { id: 'coprolites', icon: '💩', name: 'Coprolites', tag: 'Past meals',
+      what: 'Fossilized dung, sometimes containing recognizable food fragments.',
+      tells: 'Evidence of eaten material, such as bones or teeth preserved inside the dung.',
+      limit: 'The remains can reveal prey while the animal that produced the dung remains uncertain. One sample does not describe its whole diet.',
+      question: 'Can you identify a food item without being sure which animal ate it?',
+      diagram: 'Schematic section through fossilized dung with small internal fragments; not a particular specimen.',
+      source: 'National Park Service · Coprolites', url: 'https://www.nps.gov/fobu/learn/nature/coprolites.htm' },
+    { id: 'gastroliths', icon: '🪨', name: 'Gastroliths', tag: 'Gut contents',
+      what: 'Hard objects retained in an animal’s digestive tract; fossil examples can include swallowed stones.',
+      tells: 'Possible digestive behavior when stones have a convincing association with the gut. Grinding and mixing food are possible functions.',
+      limit: 'A smooth pebble alone is not enough to identify a stomach stone. The association and possible function need separate evidence.',
+      question: 'What context would help distinguish a swallowed stone from a nearby ordinary pebble?',
+      diagram: 'Schematic cluster of rounded stones inside a dashed contextual boundary; smoothness alone does not identify gastroliths.',
+      source: 'Wings (2007) · Gastrolith function and identification', url: 'https://www.app.pan.pl/article/item/app52-001.html' },
+    { id: 'softtissue', icon: '🔬', name: 'Soft tissue and chemistry', tag: 'Microscopic traces',
+      what: 'Microscopic structures and chemical signals investigated with laboratory techniques.',
+      tells: 'Possible traces of original biological materials when structural and chemical evidence agree.',
+      limit: 'A cell-like shape alone does not identify an original cell or protein. Alteration and contamination must be tested.',
+      question: 'Which independent chemical test would help check a claim based on a microscopic shape?',
+      diagram: 'Schematic microscope field with fibers and rounded structures; shapes alone do not identify their chemical composition.',
+      source: 'Bertazzo and colleagues (2015) · Microscopic fossil structures', url: 'https://doi.org/10.1038/ncomms8352' }
   ];
+
+  // Evidence workbench: published observations stay separate from learner work.
+  // Diagrams are explanatory schematics, never photographs or measurements.
+  function evidenceCases(translate) {
+    var tx = typeof translate === 'function' ? translate : function (_, fallback) { return fallback; };
+    function et(key, fallback) { return tx('stem.dinolab.bench_' + key, fallback); }
+    return [
+      { id: 'quills', species: 'velociraptor', name: 'Velociraptor',
+        title: et('quills_title', 'Do feathers mean flight?'),
+        question: et('quills_question', 'What can attachment marks on a forearm tell us?'),
+        source: 'Turner, Makovicky & Norell (2007)', url: 'https://doi.org/10.1126/science.1145076',
+        diagram: et('quills_diagram', 'Schematic forearm bone with a row of raised attachment marks. The drawing simplifies the reported fossil feature; feathers are not drawn as preserved remains.'),
+        evidence: [
+          { id: 'fossil', label: et('quills_fossil_label', 'Fossil observation'), text: et('quills_fossil', 'Researchers reported quill knobs on a Velociraptor forearm bone.') },
+          { id: 'comparison', label: et('quills_comparison_label', 'Living comparison'), text: et('quills_comparison', 'In living birds, these knobs anchor large feathers through ligaments.') }
+        ],
+        statements: [
+          { id: 'marks', text: et('quills_marks', 'The fossil forearm has quill knobs.'), kind: 'observation', feedback: et('quills_marks_feedback', 'This describes a reported feature of the fossil, before explaining its function.') },
+          { id: 'flight', text: et('quills_flight', 'Those knobs prove that Velociraptor could fly.'), kind: 'overreach', feedback: et('quills_flight_feedback', 'Feather attachment is not a test of flight. A claim about flight needs additional anatomical and biomechanical evidence.') },
+          { id: 'feathers', text: et('quills_feathers', 'Velociraptor had large feathers on its forearms.'), kind: 'inference', feedback: et('quills_feathers_feedback', 'The fossil marks, interpreted using living birds, support feathers. An inference can be strongly supported.') }
+        ],
+        example: et('quills_example', 'The forearm probably carried large feathers: its quill knobs resemble attachment sites in living birds. This supports a feather covering, but does not establish powered flight.'),
+        next: et('quills_next', 'Try the T. rex case: can a few preserved patches tell us about the whole animal?')
+      },
+      { id: 'scales', species: 'tyrannosaurus', name: 'Tyrannosaurus',
+        title: et('scales_title', 'Can a patch tell the whole story?'),
+        question: et('scales_question', 'How far can we extend evidence from preserved skin?'),
+        source: 'Bell and colleagues (2017)', url: 'https://doi.org/10.1098/rsbl.2017.0092',
+        diagram: et('scales_diagram', 'Schematic skin patch with a polygonal scale pattern inside a broken boundary. The boundary represents the limited preserved sample, not the outline of an entire animal.'),
+        evidence: [
+          { id: 'fossil', label: et('scales_fossil_label', 'Fossil observation'), text: et('scales_fossil', 'T. rex skin impressions preserve small scales in sampled neck, hip, and tail regions.') },
+          { id: 'coverage', label: et('scales_coverage_label', 'Sample coverage'), text: et('scales_coverage', 'These patches do not preserve the entire skin surface of the animal.') }
+        ],
+        statements: [
+          { id: 'everywhere', text: et('scales_everywhere', 'Every T. rex had scales everywhere throughout its life.'), kind: 'overreach', feedback: et('scales_everywhere_feedback', 'This extends a limited sample to every body region, individual, and age. The patches do not test all of those claims.') },
+          { id: 'regions', text: et('scales_regions', 'The sampled parts of this animal had scaly skin.'), kind: 'inference', feedback: et('scales_regions_feedback', 'This interpretation stays within the body regions represented by the impressions.') },
+          { id: 'pattern', text: et('scales_pattern', 'The preserved impressions show a scale pattern.'), kind: 'observation', feedback: et('scales_pattern_feedback', 'This describes the fossil surface. Extending it to unpreserved skin would require another step of reasoning.') }
+        ],
+        example: et('scales_example', 'The preserved impressions support scaly skin in the sampled regions. Because the sample is incomplete, I cannot use these patches alone to describe every unpreserved area or every growth stage.'),
+        next: et('scales_next', 'Compare with the feather case: both support a covering, while leaving other questions open.')
+      }
+    ];
+  }
+  function evidenceWorkbenchState(raw) {
+    function object(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
+    raw = object(raw);
+    var out = { caseId: raw.caseId === 'scales' ? 'scales' : 'quills', cases: {} };
+    evidenceCases().forEach(function (c) {
+      var value = object(object(raw.cases)[c.id]);
+      function snapshot(v) {
+        v = object(v);
+        var s = { citations: c.evidence.filter(function (e) { return Array.isArray(v.citations) && v.citations.indexOf(e.id) >= 0; }).map(function (e) { return e.id; }) };
+        ['claim', 'reasoning', 'limit'].forEach(function (key) { s[key] = typeof v[key] === 'string' ? v[key].slice(0, 1000) : ''; });
+        return s;
+      }
+      function choices(v) {
+        var result = {}; v = object(v);
+        c.statements.forEach(function (s) { if (['observation', 'inference', 'overreach'].indexOf(v[s.id]) >= 0) result[s.id] = v[s.id]; });
+        return result;
+      }
+      var entry = snapshot(value), firstSort = choices(value.firstSort);
+      entry.sort = choices(value.sort);
+      entry.checked = value.checked === true && Object.keys(entry.sort).length === c.statements.length;
+      entry.firstSort = Object.keys(firstSort).length === c.statements.length ? firstSort : null;
+      entry.step = value.step === 1 && entry.firstSort ? 1 : 0;
+      entry.review = {};
+      ['link', 'scope', 'question'].forEach(function (key) { entry.review[key] = object(value.review)[key] === true; });
+      var first = snapshot(value.first), record = snapshot(value.record);
+      entry.first = evidenceDraftReady(first) ? first : null;
+      entry.record = evidenceDraftReady(record) ? record : null;
+      out.cases[c.id] = entry;
+    });
+    return out;
+  }
+  function evidenceDraftReady(entry) {
+    return !!(entry.citations.length && entry.claim.trim() && entry.reasoning.trim() && entry.limit.trim());
+  }
+  function evidenceDraft(entry) {
+    return { citations: entry.citations.slice(), claim: entry.claim, reasoning: entry.reasoning, limit: entry.limit };
+  }
+  function evidenceHasWork(entry) {
+    return !!(entry.citations.length || entry.claim || entry.reasoning || entry.limit || entry.firstSort || entry.record || Object.keys(entry.sort).length);
+  }
+  function evidenceWorkbenchText(raw) {
+    var state = evidenceWorkbenchState(raw), lines = [];
+    evidenceCases().forEach(function (c) {
+      var entry = state.cases[c.id]; if (!evidenceHasWork(entry)) return;
+      lines.push('', 'EVIDENCE WORKBENCH | ' + c.name, c.question, 'Source: ' + c.source + ' | ' + c.url, 'Illustration: schematic, not a fossil photograph or a measurement.', 'Student writing is recorded without automatic assessment.');
+      function draft(label, value) {
+        lines.push(label, 'Cited evidence:');
+        value.citations.forEach(function (id) { var e = c.evidence.filter(function (item) { return item.id === id; })[0]; lines.push(e.label + ': ' + e.text); });
+        lines.push('My claim: ' + (value.claim || '(not recorded)'), 'How the evidence supports it: ' + (value.reasoning || '(not recorded)'), 'A limit and a next question: ' + (value.limit || '(not recorded)'));
+      }
+      if (entry.firstSort) {
+        lines.push('First classification attempt (not a mastery score):');
+        c.statements.forEach(function (s) { lines.push(s.text + ' | Learner: ' + entry.firstSort[s.id] + ' | Reference: ' + s.kind); });
+      }
+      if (entry.first) draft('First recorded explanation', entry.first);
+      if (entry.record && JSON.stringify(entry.record) !== JSON.stringify(entry.first)) draft('Latest recorded explanation', entry.record);
+      if (!entry.record || JSON.stringify(evidenceDraft(entry)) !== JSON.stringify(entry.record)) draft('Current draft (not yet recorded)', entry);
+      lines.push('Self-review: ' + ['link', 'scope', 'question'].map(function (id) { return id + '=' + (entry.review[id] ? 'checked by learner' : 'not checked'); }).join('; '), '---');
+    });
+    return lines.join('\n');
+  }
 
   // ── Common myths, corrected ──
   var MYTHS = [
@@ -6242,6 +6394,91 @@ window.StemLab = window.StemLab || {
     return lines.join('\n');
   }
 
+  // Restored activity data is untrusted. Progress follows recorded responses,
+  // and text is bounded independently of the textarea's browser limit.
+  function timeInquiryState(raw) {
+    raw = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+    function choice(key, allowed) { return allowed.indexOf(raw[key]) >= 0 ? raw[key] : ''; }
+    var out = {
+      started: raw.started === true,
+      prediction: choice('prediction', ['yes', 'no', 'unsure']),
+      evidence: choice('evidence', ['size', 'time', 'diet']),
+      explanation: typeof raw.explanation === 'string' ? raw.explanation.slice(0, 2000) : '',
+      transfer: choice('transfer', ['proves', 'possible', 'never'])
+    };
+    var unlocked = !out.prediction ? 0 : out.evidence !== 'time' ? 1 : !out.explanation.trim() ? 2 : out.transfer !== 'possible' ? 3 : 4;
+    out.step = Math.min(unlocked, Number.isInteger(raw.step) ? Math.max(0, Math.min(4, raw.step)) : 0);
+    return out;
+  }
+  function timeInquiryText(raw) {
+    var q = timeInquiryState(raw);
+    if (!q.started) return '';
+    var a = byId('tyrannosaurus'), b = byId('stegosaurus'), c = byId('triceratops');
+    var evidenceLabels = { size: 'Their body sizes differ.', time: 'Their known age ranges do not overlap.', diet: 'One ate meat and the other ate plants.' };
+    var transferLabels = { proves: 'Overlapping dates prove they hunted each other.', possible: 'Overlap makes an encounter possible in time, but does not prove hunting.', never: 'Overlapping dates mean they could never meet.' };
+    return '\nTIME INVESTIGATION | Could T. rex have hunted Stegosaurus?\n' +
+      'Initial prediction: ' + (q.prediction || '(not recorded)') + '\n' +
+      'Catalog age estimates: ' + a.common + ' ' + fmtMya(a) + '; ' + b.common + ' ' + fmtMya(b) + '\n' +
+      'Selected evidence: ' + (evidenceLabels[q.evidence] || '(not recorded)') + '\n' +
+      'My explanation: ' + (q.explanation || '(not recorded)') + '\n' +
+      'Transfer pair: ' + a.common + ' and ' + c.common + ' (' + fmtMya(c) + ')\n' +
+      'My transfer conclusion: ' + (transferLabels[q.transfer] || '(not recorded)') + '\n' +
+      'Status: ' + (q.step === 4 ? 'Investigation recorded' : 'In progress') + '. Written reasoning has not been automatically assessed.\n';
+  }
+
+  function digRevealedCells(value) {
+    var cells = [];
+    if (Array.isArray(value)) value.forEach(function (i) { if (Number.isInteger(i) && i >= 0 && i < 24 && cells.indexOf(i) < 0) cells.push(i); });
+    return cells;
+  }
+  function digCluesFor(dn, translate) {
+    function clueLabel(key, fallback) { return translate ? translate('stem.dinolab.dig_clue_' + key, fallback) : fallback; }
+    return [
+      { at: 1, id: 'period', label: clueLabel('period', 'Time'), value: periodName(dn.period) + ' · ' + dn.epoch },
+      { at: 2, id: 'diet', label: clueLabel('diet', 'Diet'), value: cap(dn.diet) },
+      { at: 3, id: 'group', label: clueLabel('group', 'Group'), value: GROUP_LABEL[dn.group] || cap(dn.group) },
+      { at: 4, id: 'length', label: clueLabel('length', 'Estimated length'), value: fmtLength(dn.lengthM) },
+      { at: 6, id: 'region', label: clueLabel('region', 'Fossil region'), value: dn.region },
+      { at: 8, id: 'trait', label: clueLabel('trait', 'Catalog trait'), value: dn.traits[0] || '' }
+    ].map(function (clue) { clue.text = clue.label + ': ' + clue.value; return clue; });
+  }
+  function digSiteFor(value, translate) {
+    var numeric = Number(value), seed = Number.isFinite(numeric) ? Math.max(1, Math.min(1000000000, Math.floor(numeric))) : 1;
+    var rng = mulberry32(seed * 2654435761 % 4294967296);
+    var pool = DINOS.filter(function (dn) { return dn.group !== 'other'; });
+    var chosen = pool[Math.floor(rng() * pool.length)];
+    // Preserve the original site layout for saved games.
+    var boneCells = {}, boneCount = 8 + Math.floor(rng() * 5), placed = 0, guardLoop = 0;
+    while (placed < boneCount && guardLoop < 500) { var idx = Math.floor(rng() * 24); if (!boneCells[idx]) { boneCells[idx] = true; placed++; } guardLoop++; }
+    var clueList = digCluesFor(chosen, translate);
+    var shuffle = mulberry32(seed ^ 0x63a7bd12);
+    var ranked = pool.filter(function (dn) { return dn.id !== chosen.id; }).map(function (dn) {
+      var values = digCluesFor(dn);
+      var same = values.reduce(function (n, clue, i) { return n + (clue.value === clueList[i].value ? 1 : 0); }, 0);
+      return { animal: dn, same: same, tie: shuffle() };
+    }).filter(function (record) { return record.same < clueList.length; });
+    ranked.sort(function (a, b) { return b.same - a.same || a.tie - b.tie; });
+    // Three close alternatives keep early clues ambiguous; two broader contrasts
+    // give learners useful opportunities to rule a candidate out.
+    var candidates = [chosen].concat(ranked.slice(0, 3).map(function (r) { return r.animal; }), ranked.slice(-2).map(function (r) { return r.animal; }));
+    for (var i = candidates.length - 1; i > 0; i--) { var j = Math.floor(shuffle() * (i + 1)), temp = candidates[i]; candidates[i] = candidates[j]; candidates[j] = temp; }
+    return { seed: seed, chosen: chosen, boneCells: boneCells, clues: clueList, candidates: candidates };
+  }
+  function digEvidenceCheck(site, state) {
+    var dugBones = digRevealedCells(state.digRevealed).filter(function (i) { return site.boneCells[i]; }).length;
+    var cited = Array.isArray(state.digCitedClues) ? state.digCitedClues : [];
+    var used = site.clues.filter(function (clue) { return dugBones >= clue.at && cited.indexOf(clue.id) >= 0; });
+    var pick = site.candidates.filter(function (dn) { return dn.id === state.digGuess; })[0];
+    if (!pick || used.length < 2) return { kind: 'missing', used: used, conflicts: [], matches: [] };
+    function conflictsFor(dn) {
+      var values = digCluesFor(dn);
+      return used.filter(function (clue) { return values.some(function (v) { return v.id === clue.id && v.value !== clue.value; }); });
+    }
+    var conflicts = conflictsFor(pick);
+    var matches = site.candidates.filter(function (dn) { return !conflictsFor(dn).length; });
+    return { kind: conflicts.length ? 'conflict' : matches.length > 1 ? 'ambiguous' : 'match', used: used, conflicts: conflicts, matches: matches };
+  }
+
   // Monotone cubic radii keep a smooth slope through loft stations without overshoot.
   function dinoLoftRadius(radii, station, axis) {
     function value(i) { var r = radii[Math.max(0, Math.min(radii.length - 1, i))]; return Array.isArray(r) ? r[axis] : r; }
@@ -7387,13 +7624,17 @@ window.StemLab = window.StemLab || {
         );
       }
       function catalogGlyph(dn) {
-        var shape = dn.group === 'sauropod' ? 'M8 52 Q34 48 48 34 Q65 25 84 36 Q96 42 105 19 L108 8 Q112 3 124 8 L127 14 L116 17 Q116 41 101 49 L99 64 L92 64 L89 49 L64 49 L60 64 L52 64 L53 45 Q33 53 8 52Z' :
-          dn.group === 'ornithischian' ? 'M8 42 L42 33 Q62 19 90 29 L110 36 L128 33 L142 43 L130 48 L112 46 L102 48 L101 63 L93 63 L90 47 L66 47 L61 63 L53 63 L52 44Z' :
-          dn.group === 'other' ? 'M8 44 Q37 30 69 34 L85 26 L108 30 L139 39 L113 42 L98 40 L89 47 L99 55 L90 58 L76 47 L59 46 L42 58 L34 54 L44 42 Q22 42 8 44Z' :
-          'M8 27 Q32 38 55 37 L72 25 L95 17 L100 9 L126 10 L134 17 L132 26 L111 28 L99 37 L110 42 L104 46 L92 39 L82 46 L86 56 L99 62 L83 64 L73 55 L69 45 L59 47 L54 59 L64 64 L46 64 L45 56 L49 42 Q23 37 8 27Z';
-        return el('svg', { viewBox: '0 0 150 72', width: '100%', height: 66, 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', color: T.text, opacity: 0.85 } },
+        // Group silhouettes remain schematic; smooth contours improve legibility
+        // at card size without suggesting these are specimen reconstructions.
+        var shape = dn.id === 'stegosaurus' ? 'M6 47Q25 46 39 40L34 30L45 35L43 22L53 15L60 29L59 12L71 6L79 25L84 8L94 13L96 30L106 20L113 27L111 39Q121 42 131 45Q139 43 143 49L140 53L127 54L112 49L109 51L107 65L99 65L98 51Q84 55 68 50L63 65L54 65L55 48Q32 46 6 47Z' :
+          dn.group === 'sauropod' ? 'M5 54Q31 50 44 38Q61 23 82 32Q96 37 103 20L107 8Q110 2 119 5L129 10Q130 15 124 16L117 16Q117 35 107 46L102 51L101 65L94 65L91 51Q78 54 64 49L60 65L52 65L52 47Q29 57 5 54Z' :
+          dn.group === 'ornithischian' ? 'M5 46Q24 44 42 35Q60 20 86 28Q99 31 111 39L126 34Q135 35 140 42L144 46L135 50L122 48L110 50L105 65L97 65L96 49Q79 54 64 49L60 65L51 65L52 46Q32 49 5 46Z' :
+          dn.group === 'other' ? 'M5 47Q28 32 61 34L79 28Q95 26 109 33L143 41L131 44L113 42L102 43L91 49L99 57L89 61L76 48L60 47L41 61L32 57L44 43Q22 43 5 47Z' :
+          'M5 28Q27 39 53 37Q65 26 83 23L95 18L98 11Q99 5 108 6L125 8Q135 11 139 18L136 26L118 29L112 33L101 34L94 39L103 43L101 47L94 46L87 42L79 48L83 57L97 63L95 66L82 65L72 58L68 47L59 49L55 60L63 63L62 66L49 66L45 61L49 44Q23 38 5 28Z';
+        return el('svg', { className: 'dinolab-catalog-glyph', viewBox: '0 0 150 78', width: '100%', height: 76, 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', color: T.text } },
+          el('ellipse', { cx: 79, cy: 69, rx: 53, ry: 3, fill: 'currentColor', opacity: .08 }),
           el('path', { d: shape, fill: 'currentColor' }),
-          el('path', { d: 'M8 68H142', stroke: pColor(dn.period), strokeWidth: 2, strokeDasharray: '3 4' })
+          el('path', { d: 'M8 73H142', stroke: pColor(dn.period), strokeWidth: 1.2, opacity: .7 })
         );
       }
 
@@ -7569,16 +7810,17 @@ window.StemLab = window.StemLab || {
         event.preventDefault();
         focusTabAt(nextIndex);
       }
-      var tabBar = el('div', { className: 'dinolab-tablist', role: 'tablist', 'aria-label': t('stem.dinolab.dino_lab_sections', 'Dino Lab sections'), 'aria-orientation': 'horizontal', style: { display: 'flex', flexWrap: 'wrap', gap: 4, padding: '10px 12px', borderBottom: '1px solid ' + T.border, background: T.deeper } }, TABS.map(function (tb, tabIndex) {
+      var tabBar = el('div', { className: 'dinolab-tablist', role: 'tablist', 'aria-label': t('stem.dinolab.dino_lab_sections', 'Dino Lab sections'), 'aria-orientation': 'horizontal', style: { display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', gap: 4, padding: '10px 12px', borderBottom: '1px solid ' + T.border, background: T.deeper } }, TABS.map(function (tb, tabIndex) {
         var active = tab === tb.id;
-        return el('button', { key: tb.id, id: 'dinotab-' + tb.id, role: 'tab', 'data-tab-group': tabGroupFor(tb.id), title: tabGroupFor(tb.id) + ': ' + tb.label, tabIndex: active ? 0 : -1, 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'dinopanel', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', onKeyDown: function (event) { handleTabKeyDown(event, tabIndex); }, onClick: function () { upd('tab', tb.id); announceToSR(tb.label + ' tab'); }, style: { padding: '7px 11px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: active ? 700 : 500, boxShadow: active ? '0 1px 4px rgba(21,128,61,0.45)' : 'none', background: active ? '#15803d' : 'transparent', color: active ? '#fff' : T.soft, whiteSpace: 'nowrap' } }, tb.icon + ' ' + tb.label);
+        return el('button', { key: tb.id, id: 'dinotab-' + tb.id, role: 'tab', 'data-tab-group': tabGroupFor(tb.id), title: tabGroupFor(tb.id) + ': ' + tb.label, tabIndex: active ? 0 : -1, 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'dinopanel', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', onKeyDown: function (event) { handleTabKeyDown(event, tabIndex); }, onClick: function () { upd('tab', tb.id); announceToSR(tb.label + ' tab'); }, style: { flexShrink: 0, minHeight: 44, padding: '7px 11px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: active ? 700 : 500, boxShadow: active ? '0 1px 4px rgba(21,128,61,0.45)' : 'none', background: active ? '#15803d' : 'transparent', color: active ? '#fff' : T.soft, whiteSpace: 'nowrap' } }, tb.icon + ' ' + tb.label);
       }));
       var tabNavigation = el('nav', { 'aria-label': __alloT('stem.dinolab.a11y_dino_lab_section_navigation', 'Dino Lab section navigation'), style: { background: T.deeper } },
-        el('div', { className: 'dinolab-section-cue', style: { display: 'flex', alignItems: 'center', gap: 7, padding: '7px 12px 0', color: T.soft, fontSize: 11.5 } },
+        el('div', { className: 'dinolab-section-cue', style: { display: 'flex', alignItems: 'center', gap: 10, padding: '7px 12px 0', color: T.soft, fontSize: 11.5 } },
           el('span', { style: { textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 900, color: dinoCueInk } }, activeTabGroup),
-          el('span', { 'aria-hidden': 'true' }, '›'),
-          el('span', { style: { fontWeight: 800, color: T.text } }, activeTabMeta.label),
-          el('span', { style: { marginLeft: 'auto' } }, (TABS.indexOf(activeTabMeta) + 1) + ' of ' + TABS.length)
+          el('select', { id: 'dino-section-picker', 'aria-label': __alloT('stem.dinolab.jump_to_section', 'Jump to a lab section'), value: tab, onChange: function (event) { var target = event.target.value; if (!TABS.some(function (tb) { return tb.id === target; })) return; upd('tab', target); focusSoon('dinotab-' + target); }, style: { marginLeft: 'auto', flex: '0 1 260px', minWidth: 0, maxWidth: '70%', minHeight: 44, padding: '7px 10px', borderRadius: 8, border: '1px solid ' + T.border, background: T.panel, color: T.text, fontSize: 13, fontWeight: 700 } },
+            [['Discover', 'nav_discover'], ['Investigate', 'nav_investigate'], ['Explain', 'nav_explain'], ['Practice and teach', 'nav_practice']].map(function (group) {
+              return el('optgroup', { key: group[0], label: t('stem.dinolab.' + group[1], group[0]) }, TABS.filter(function (tb) { return tabGroupFor(tb.id) === group[0]; }).map(function (tb) { return el('option', { key: tb.id, value: tb.id }, tb.label); }));
+            }))
         ),
         tabBar
       );
@@ -7659,7 +7901,7 @@ window.StemLab = window.StemLab || {
         var grid = el('div', { className: 'dinolab-species-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(155px,1fr))', gap: 10 } },
           visible.map(function (dn) {
             return el('button', { key: dn.id, type: 'button', 'data-dino-card': dn.id, onClick: function () { choose(dn); }, 'aria-label': 'Open ' + dn.common + (savedSpecimens[dn.id] ? ', saved' : '') + (seen[dn.id] ? ', explored' : ''), 'aria-pressed': selected === dn.id, style: { textAlign: 'left', cursor: 'pointer', minWidth: 0, background: T.panel, border: (selected === dn.id ? '2px solid #22c55e' : '1px solid ' + T.border), borderRadius: 12, padding: 12, color: T.text, overflowWrap: 'anywhere' } },
-              el('div', { style: { background: 'linear-gradient(135deg,' + pColor(dn.period) + '20,transparent)', borderRadius: 8, marginBottom: 8 } }, catalogGlyph(dn)),
+              el('div', { className: 'dinolab-specimen-portrait', style: { '--dino-period': pColor(dn.period), background: 'linear-gradient(135deg,' + pColor(dn.period) + '20,transparent)', borderRadius: 8, marginBottom: 8 } }, catalogGlyph(dn)),
               el('div', { style: { fontSize: 9, color: T.soft, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 5 } }, (GROUP_LABEL[dn.group] || dn.group) + ' · ' + __alloT('stem.dinolab.group_icon', 'group silhouette')),
               el('div', { style: { fontSize: 14, fontWeight: 800, marginBottom: 6 } }, dn.common),
               el('div', { style: { fontSize: 11, color: T.soft, marginBottom: 6 } }, fmtMya(dn) + ' · ' + fmtLength(dn.lengthM)),
@@ -11590,9 +11832,9 @@ var evidenceRoute = [
         var scanStatusText = 'Evidence log ' + scanLoggedCount + '/' + scanTargets.length + (scanComplete ? ' | Field scan complete' : (nextOpenTarget ? ' | Next open: ' + nextOpenTarget.label : ''));
         var claimReadinessScore = Math.min(5, scanLoggedCount + scanPathCount);
         var claimReadinessPct = Math.round((claimReadinessScore / 5) * 100);
-        var claimReadinessLabel = scanComplete ? 'CER ready' : (scanPathCount > 0 ? 'Connected evidence' : (scanLoggedCount > 0 ? 'Anchor evidence' : 'Start scanning'));
-        var claimReadinessText = 'Claim strength ' + claimReadinessScore + ' of 5. ' + claimReadinessLabel + '.';
-        var claimReadinessHint = scanComplete ? 'All anchors and path links are logged. Build a claim with evidence and reasoning.' : (scanPathCount > 0 ? 'A linked path connects anchors. Finish the scan for the strongest claim.' : (scanLoggedCount > 0 ? 'One or more anchors are logged. Link neighboring anchors for stronger reasoning.' : 'Log at least one anchor before writing a claim.'));
+        var claimReadinessLabel = scanComplete ? 'Scan complete' : (scanPathCount > 0 ? 'Connected evidence' : (scanLoggedCount > 0 ? 'Anchor evidence' : 'Start scanning'));
+        var claimReadinessText = 'Evidence route ' + claimReadinessScore + ' of 5. ' + claimReadinessLabel + '.';
+        var claimReadinessHint = 'This tracks three model anchors and two links, not the quality of your explanation. ' + (scanComplete ? 'Now explain what the evidence supports and what remains uncertain.' : 'Log anchors and connect neighboring bones to prepare your explanation.');
         var assemblyPieces = [
           { id: 'skull', label: 'Skull', role: 'feeding and senses', scan: 'skull', insight: 'diet and sensory evidence', claimId: 'function', claimLabel: 'Function', claimHint: 'Skull evidence is strongest for function claims about feeding, bite style, and sensory placement.', detail: 'Teeth, jaw joints, and eye sockets help scientists infer diet, bite style, and how the head was carried.', why: 'Assembled skull evidence gives the claim a named anatomy anchor: it shows which structures support the inference and which soft tissues remain reconstructed.' },
           { id: 'spine', label: 'Spine', role: 'posture and balance', scan: 'shoulder', insight: 'posture chain evidence', claimId: 'posture', claimLabel: 'Posture', claimHint: 'Spine evidence links shoulder to hip, so it is strongest for posture and balance claims.', detail: 'Backbones connect the shoulder and hip, setting the body line used for posture and balance claims.', why: 'The spine turns separate shoulder and hip observations into a connected body line, making the posture claim traceable rather than impressionistic.' },
@@ -11967,7 +12209,7 @@ var evidenceRoute = [
           {
             id: 'scale',
             label: 'Scale',
-            claim: dn.common + ' was a large animal at about ' + fmtLength(dn.lengthM) + ' long.',
+            claim: dn.common + ' had an estimated length of about ' + fmtLength(dn.lengthM) + '.',
             evidence: 'Use the length guide, human scale figure, and logged skull-to-hip anchors to support the size estimate.',
             reasoning: 'Size claims are strongest when measurements are connected to fossil anchors instead of just a number.', why: 'Measurements anchor the estimate, but body mass, posture, and exact soft-tissue dimensions still carry uncertainty.'
           },
@@ -12010,7 +12252,7 @@ var evidenceRoute = [
           { label: 'Anchor logged', done: scanLoggedCount > 0 },
           { label: 'Path linked', done: scanPathCount > 0 },
           { label: 'Anatomy support', done: assemblySupportReady },
-          { label: 'Reasoning backed', done: scanComplete }
+          { label: 'Scan complete', done: scanComplete }
         ];
         var cerChecklistCount = cerChecklist.reduce(function (n, item) { return n + (item.done ? 1 : 0); }, 0);
         var cerDraftEvidence = scanLoggedCount ? 'Logged anchors: ' + loggedAnchorText + '; evidence path ' + scanPathCount + '/' + scanPathLinks.length + ' linked.' : 'Log skull, shoulder, or hip anchors before citing evidence.';
@@ -12099,11 +12341,12 @@ var evidenceRoute = [
         }
         var claimBuilderPanel = panel([
           el('div', { key: 'h', style: { fontSize: 13, fontWeight: 900, marginBottom: 5 } }, 'Field claim builder'),
-          el('div', { key: 'status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 11.5, color: T.soft, fontWeight: 800, marginBottom: 7 } }, 'Using ' + scanLoggedCount + '/' + scanTargets.length + ' logged anchors' + (scanComplete ? ' | Ready for CER' : ' | Scan more for a stronger claim')),
-          el('div', { key: 'readiness', style: { fontSize: 12, color: T.text, fontWeight: 900, marginBottom: 5 } }, 'Claim strength ' + claimReadinessScore + '/5 | ' + claimReadinessLabel),
-          el('div', { key: 'readinessMeter', role: 'progressbar', 'aria-label': __alloT('stem.dinolab.a11y_claim_strength', 'Claim strength'), 'aria-valuemin': 0, 'aria-valuemax': 5, 'aria-valuenow': claimReadinessScore, 'aria-valuetext': claimReadinessText, style: { height: 7, borderRadius: 999, background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.18)', overflow: 'hidden', marginBottom: 6 } }, el('div', { style: { height: '100%', width: claimReadinessPct + '%', background: 'linear-gradient(90deg, #f59e0b, #14b8a6, #22c55e)' } })),
+          el('div', { key: 'status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 11.5, color: T.soft, fontWeight: 800, marginBottom: 7 } }, 'Using ' + scanLoggedCount + '/' + scanTargets.length + ' logged anchors' + (scanComplete ? ' | Scan preparation complete' : ' | Continue collecting model observations')),
+          el('div', { key: 'readiness', style: { fontSize: 12, color: T.text, fontWeight: 900, marginBottom: 5 } }, 'Evidence route ' + claimReadinessScore + '/5 | ' + claimReadinessLabel),
+          el('div', { key: 'readinessMeter', role: 'progressbar', 'aria-label': __alloT('stem.dinolab.a11y_evidence_route', 'Evidence route'), 'aria-valuemin': 0, 'aria-valuemax': 5, 'aria-valuenow': claimReadinessScore, 'aria-valuetext': claimReadinessText, style: { height: 7, borderRadius: 999, background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.18)', overflow: 'hidden', marginBottom: 6 } }, el('div', { style: { height: '100%', width: claimReadinessPct + '%', background: 'linear-gradient(90deg, #f59e0b, #14b8a6, #22c55e)' } })),
           el('div', { key: 'readinessHint', style: { fontSize: 11.5, color: T.soft, lineHeight: 1.45, marginBottom: 8 } }, claimReadinessHint),
-          el('div', { key: 'cerTitle', style: { paddingTop: 8, borderTop: '1px solid ' + T.border, fontSize: 12, color: T.text, fontWeight: 900, marginBottom: 6 } }, 'CER rehearsal | Checklist ' + cerChecklistCount + '/' + cerChecklist.length),
+          el('div', { key: 'cerTitle', style: { paddingTop: 8, borderTop: '1px solid ' + T.border, fontSize: 12, color: T.text, fontWeight: 900, marginBottom: 6 } }, 'Worked example | Preparation ' + cerChecklistCount + '/' + cerChecklist.length),
+          el('p', { key: 'cerScope', style: { fontSize: 12, color: T.soft, lineHeight: 1.5 } }, __alloT('stem.dinolab.cer_example_scope', 'The explanation below is a generated example. Completing the scan does not assess your reasoning. Write your own explanation in Field Notes.')),
           el('div', { key: 'cerChecks', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: 5, marginBottom: 7 } }, cerChecklist.map(function (item) {
             return el('span', { key: item.label, style: { fontSize: 11, fontWeight: 900, color: item.done ? '#bbf7d0' : T.soft, padding: '4px 6px', borderRadius: 7, border: '1px solid ' + (item.done ? 'rgba(34,197,94,0.42)' : T.border), background: item.done ? 'rgba(34,197,94,0.12)' : 'rgba(15,23,42,0.24)' } }, (item.done ? 'Done ' : 'Need ') + item.label);
           })),
@@ -12301,7 +12544,7 @@ var evidenceRoute = [
         ], { marginBottom: 12, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.32)' });
         return el('div', null,
           focusMode ? null : sectionTitle('3D', 'Field Station', 'A lightweight reconstruction lab. The model is procedural and scale-aware: it visualizes evidence and uncertainty instead of pretending we know every detail.'),
-          el('div', { className: 'dinolab-field-stage' + (focusMode ? ' dinolab-field-stage-focus' : ''), 'data-allo-fs-stage': 'dinolab-field', 'aria-label': focusMode ? 'Focused 3D Field Station' : '3D Field Station', onKeyDown: function (e) { if (e.key !== 'Escape') return; if (drawerOpen) { e.preventDefault(); closeFieldDrawer(); } else if (focusMode) { e.preventDefault(); toggleFieldFocus(); } }, style: { position: 'relative' } },
+          el('div', { className: 'dinolab-field-stage' + (focusMode ? ' dinolab-field-stage-focus' : ''), 'data-allo-fs-stage': 'dinolab-field', 'aria-label': focusMode ? 'Focused 3D Field Station' : '3D Field Station', onKeyDown: function (e) { if (e.key !== 'Escape') return; if (drawerOpen) { e.preventDefault(); closeFieldDrawer(); } else if (focusMode) { e.preventDefault(); toggleFieldFocus(); } }, style: { position: 'relative', background: T.canvas, color: T.text, overflowY: focusMode ? 'auto' : undefined } },
             el('div', { key: 'viewer' },
               el('div', { className: 'dinolab-field-toolbar', style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10, alignItems: 'center' } },
                 focusMode ? el('div', { className: 'dinolab-field-focus-label', 'aria-label': 'Focused species: ' + dn.common, style: { flex: '1 1 240px', minWidth: 0, display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', columnGap: 8, rowGap: 2, color: T.text } }, el('span', { style: { fontSize: 11.5, fontWeight: 800, color: T.soft, letterSpacing: '0.04em', textTransform: 'uppercase' } }, '3D Field Station'), el('span', { style: { fontSize: 14, fontWeight: 900 } }, dn.common), el('span', { style: { fontSize: 11.5, color: T.soft, fontStyle: 'italic' } }, dn.name)) : el('select', { value: dn.id, 'aria-label': __alloT('stem.dinolab.a11y_choose_species_for_3d_field_station', 'Choose species for 3D field station'), onChange: function (e) { upd({ field3dSelected: e.target.value, selected: e.target.value, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: e.target.value, field3dAssemblyPlaced: {}, field3dAssemblySpecies: e.target.value, field3dAssemblyFocusIdx: 0, field3dClaimBone: null, field3dClaimBoneSpecies: e.target.value }); announceToSR('3D field station showing ' + (byId(e.target.value) || {}).common); }, style: { flex: '1 1 240px', minWidth: 220, padding: '9px 10px', borderRadius: 9, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 13 } }, options),
@@ -12536,40 +12779,38 @@ var evidenceRoute = [
           content);
       }
       function renderDig() {
-        var seed = Math.max(1, Math.floor(numVal(d.digSeed, 1)));
-        var revealed = arrVal(d.digRevealed);
-        var guess = d.digGuess || null;
+        function dt(key, fallback) { return t('stem.dinolab.dig_' + key, fallback); }
+        var site = digSiteFor(d.digSeed == null ? 1 : d.digSeed, t), seed = site.seed, chosen = site.chosen;
+        var revealed = digRevealedCells(d.digRevealed), boneCells = site.boneCells;
         var solved = d.digSolvedFor === seed;
-        var rng = mulberry32(seed * 2654435761 % 4294967296);
-        var pool = DINOS.filter(function (dn) { return dn.group !== 'other'; });
-        var chosen = pool[Math.floor(rng() * pool.length)];
+        var guess = solved ? chosen.id : (site.candidates.some(function (dn) { return dn.id === d.digGuess; }) ? d.digGuess : null);
         var COLS = 6, ROWS = 4, CELLS = COLS * ROWS;
-        var boneCells = {}, boneCount = 8 + Math.floor(rng() * 5), placed = 0, guardLoop = 0;
-        while (placed < boneCount && guardLoop < 500) { var idx = Math.floor(rng() * CELLS); if (!boneCells[idx]) { boneCells[idx] = true; placed++; } guardLoop++; }
         var dugBones = revealed.filter(function (i) { return boneCells[i]; }).length;
         var totalBones = Object.keys(boneCells).length;
-        var clueList = [
-          { at: 1, text: 'Period: ' + periodName(chosen.period) + ' (' + chosen.epoch + ').' },
-          { at: 2, text: 'Diet: ' + cap(chosen.diet) + ' ' + (DIET_ICON[chosen.diet] || '') + '.' },
-          { at: 3, text: 'Group: ' + (GROUP_LABEL[chosen.group] || cap(chosen.group)) + '.' },
-          { at: 4, text: 'Length: about ' + fmtLength(chosen.lengthM) + '.' },
-          { at: 6, text: 'Found in: ' + chosen.region + '.' },
-          { at: 8, text: 'Trait: ' + (chosen.traits[0] || 'distinctive build') + '.' }
-        ];
-        // Clues are bought with BONES, not with clicks. The grid already placed
-        // 8-12 bones and counted them, then used the count for nothing: every
-        // clue unlocked on revealed.length, so a left-to-right sweep earned the
-        // same six clues as a real search and finding a bone had no consequence.
-        // The top threshold is 8 because the sparsest site holds exactly 8
-        // bones (checked across 40 seeds), so every site stays fully solvable.
+        var clueList = site.clues;
         var clues = clueList.filter(function (c) { return dugBones >= c.at; });
+        var cited = clues.filter(function (clue) { return arrVal(d.digCitedClues).indexOf(clue.id) >= 0; }).map(function (clue) { return clue.id; });
         var nextClue = clueList.filter(function (c) { return dugBones < c.at; })[0] || null;
         var digStatusText = 'Site #' + seed + ' | bones found: ' + dugBones + '/' + totalBones + ' | cells dug: ' + revealed.length + '/' + CELLS
           + (nextClue ? ' | next clue at ' + nextClue.at + ' bones' : ' | all clues found');
         var digGridDesc = 'Dig grid with ' + ROWS + ' rows and ' + COLS + ' columns. Revealed cells stay focusable so bone and rock results can be reviewed.';
+        var check = digEvidenceCheck(site, Object.assign({}, d, { digGuess: guess }));
+        var focusCell = Number.isInteger(d.digFocus) ? Math.max(0, Math.min(23, d.digFocus)) : 0;
         function dig(i) { if (revealed.indexOf(i) !== -1) return; upd('digRevealed', revealed.concat([i])); announceToSR(boneCells[i] ? 'Bone found' : 'Just rock'); }
-        function newDig() { upd({ digSeed: seed + 1, digRevealed: [], digGuess: null, digSolvedFor: null }); announceToSR(__alloT('stem.dinolab.sr_new_dig_site_loaded', 'New dig site loaded')); }
-        function makeGuess(id) { var correct = id === chosen.id; var patch = { digGuess: id }; if (correct && !solved) { patch.digSolvedFor = seed; patch.digsSolved = (d.digsSolved || 0) + 1; } upd(patch); announceToSR(correct ? 'Correct identification' : 'Not quite, keep digging'); }
+        function newDig() { upd({ digSeed: seed >= 1000000000 ? 1 : seed + 1, digRevealed: [], digGuess: null, digSolvedFor: null, digCitedClues: [], digChecked: false, digFocus: 0 }); focusSoon('dino-dig-cell-0'); announceToSR(__alloT('stem.dinolab.sr_new_dig_site_loaded', 'New dig site loaded')); }
+        function makeGuess(id) { if (solved) return; upd({ digGuess: id, digChecked: false }); }
+        function cite(id) { if (solved) return; upd({ digCitedClues: cited.indexOf(id) < 0 ? cited.concat([id]) : cited.filter(function (key) { return key !== id; }), digChecked: false }); }
+        function checkEvidence() {
+          if (solved || check.kind === 'missing') return;
+          var patch = { digChecked: true };
+          if (check.kind === 'match') { patch.digSolvedFor = seed; patch.digsSolved = Math.max(0, numVal(d.digsSolved, 0)) + 1; }
+          upd(patch); focusSoon('dino-dig-feedback');
+        }
+        function gridKey(event, cell) {
+          var next = event.key === 'ArrowRight' ? Math.min(23, cell + 1) : event.key === 'ArrowLeft' ? Math.max(0, cell - 1) : event.key === 'ArrowDown' ? Math.min(23, cell + 6) : event.key === 'ArrowUp' ? Math.max(0, cell - 6) : event.key === 'Home' ? 0 : event.key === 'End' ? 23 : null;
+          if (next == null) return;
+          event.preventDefault(); focusSoon('dino-dig-cell-' + next);
+        }
         var gridCells = [];
         for (var c = 0; c < CELLS; c++) {
           (function (cellIdx) {
@@ -12577,20 +12818,53 @@ var evidenceRoute = [
             var row = Math.floor(cellIdx / COLS) + 1, col = (cellIdx % COLS) + 1;
             var cellState = isDug ? (hasBone ? 'bone fragment uncovered' : 'empty rock uncovered') : 'unopened rock';
             var cellLabel = 'Cell ' + (cellIdx + 1) + ', row ' + row + ', column ' + col + ', ' + cellState + (isDug ? '.' : '. Press to dig.');
-            gridCells.push(el('button', { key: 'cell' + cellIdx, onClick: function () { dig(cellIdx); }, 'aria-label': cellLabel, 'aria-disabled': isDug ? 'true' : 'false', style: { aspectRatio: '1 / 1', borderRadius: 8, cursor: isDug ? 'default' : 'pointer', border: '1px solid ' + T.border, background: isDug ? (hasBone ? 'rgba(245,158,11,0.55)' : 'rgba(120,113,108,0.30)') : '#7c5e3b', color: T.text, fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, isDug ? (hasBone ? '\uD83E\uDDB4' : '\u00b7') : ''));
+            gridCells.push(el('button', { key: 'cell' + cellIdx, id: 'dino-dig-cell-' + cellIdx, type: 'button', tabIndex: cellIdx === focusCell ? 0 : -1, onFocus: function () { if (focusCell !== cellIdx) upd('digFocus', cellIdx); }, onKeyDown: function (event) { gridKey(event, cellIdx); }, onClick: function () { dig(cellIdx); }, 'aria-label': cellLabel, 'aria-disabled': isDug ? 'true' : 'false', style: { aspectRatio: '1 / 1', minHeight: 38, borderRadius: 8, cursor: isDug ? 'default' : 'pointer', border: '1px solid ' + T.border, background: isDug ? (hasBone ? 'rgba(245,158,11,0.55)' : 'rgba(120,113,108,0.30)') : '#7c5e3b', color: T.text, fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, isDug ? (hasBone ? '\uD83E\uDDB4' : '\u00b7') : ''));
           })(c);
         }
-        var guessGrid = pool.slice().sort(function (x, y) { return x.common < y.common ? -1 : 1; }).map(function (dn) {
+        var feedback = null;
+        if (solved) feedback = (check.kind === 'match' ? dt('matched', 'Your cited clues identify one catalog candidate: ') : dt('previously_identified', 'Previously identified in this activity: ')) + chosen.common + '. ' + dt('match_limit', 'This solves the catalog exercise. Real fossil identification needs diagnostic anatomy and geological context.');
+        else if (d.digChecked && check.kind === 'conflict') feedback = dt('conflict', 'This candidate conflicts with your cited evidence: ') + check.conflicts.map(function (clue) { return clue.text; }).join('; ') + '. ' + dt('compare_again', 'Compare those values on the candidate cards, then revise your choice or citations.');
+        else if (d.digChecked && check.kind === 'ambiguous') feedback = dt('ambiguous', 'Your cited clues still fit several candidates: ') + check.matches.map(function (dn) { return dn.common; }).join(', ') + '. ' + dt('more_evidence', 'Use another uncovered clue or collect more evidence before identifying the find.');
+        var candidateCards = site.candidates.map(function (dn) {
           var picked = guess === dn.id, isAnswer = solved && dn.id === chosen.id;
-          var guessState = isAnswer ? 'correct answer' : (picked ? 'selected guess' : 'not selected');
-          return el('button', { key: 'g' + dn.id, onClick: function () { makeGuess(dn.id); }, 'aria-label': 'Guess ' + dn.common + ', ' + guessState, 'aria-pressed': (picked || isAnswer) ? 'true' : 'false', style: { fontSize: 11.5, padding: '6px 8px', borderRadius: 8, cursor: 'pointer', textAlign: 'left', border: '1px solid ' + (isAnswer ? '#22c55e' : (picked ? '#ef4444' : T.border)), background: isAnswer ? 'rgba(34,197,94,0.18)' : (picked && !solved ? 'rgba(239,68,68,0.15)' : T.deeper), color: T.text } }, dn.common);
+          var rows = digCluesFor(dn, t).filter(function (clue) { return clues.length ? clues.some(function (known) { return known.id === clue.id; }) : clue.id === 'period' || clue.id === 'group'; });
+          return el('article', { key: dn.id, 'data-dig-candidate': dn.id, style: { minWidth: 0, borderRadius: 12, padding: 12, border: '2px solid ' + (picked ? T.text : T.border), background: T.panel } },
+            el('button', { type: 'button', onClick: function () { makeGuess(dn.id); }, 'aria-label': dt('choose_candidate', 'Choose candidate: ') + dn.common, 'aria-pressed': (picked || isAnswer) ? 'true' : 'false', 'aria-disabled': solved ? 'true' : 'false', style: Object.assign({}, actionStyle, { width: '100%', minHeight: 44, textAlign: 'left', fontSize: 14, marginBottom: 8 }) }, (picked ? '● ' : '○ ') + dn.common),
+            el('dl', { style: { margin: 0, fontSize: 12, lineHeight: 1.6 } }, rows.map(function (clue) { return el('div', { key: clue.id, style: { marginBottom: 5 } }, el('dt', { style: { fontWeight: 800, color: T.soft } }, clue.label), el('dd', { style: { margin: 0, overflowWrap: 'anywhere' } }, clue.value)); })));
         });
-        return el('div', null, sectionTitle('⛏️', 'Excavate a fossil', 'Dig cells to uncover bones. Clues appear as you go. Then identify what you found.'),
-          el('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 1fr)', gap: 16 } },
-            el('div', { key: 'left' }, el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 } }, el('span', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 12.5, color: T.soft } }, digStatusText), el('button', { onClick: newDig, style: { fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: 'transparent', color: T.text, cursor: 'pointer' } }, '🔄 New dig')), el('div', { role: 'group', 'aria-label': digGridDesc, style: { display: 'grid', gridTemplateColumns: 'repeat(' + COLS + ', 1fr)', gap: 6 } }, gridCells), solved ? panel([el('div', { key: 's', style: { fontWeight: 800, color: T.text, marginBottom: 4 } }, '✅ It is ' + chosen.common + '!'), el('div', { key: 'b', style: { fontSize: 12.5, color: T.soft } }, chosen.blurb)], { marginTop: 12, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.35)' }) : null),
-            el('div', { key: 'right' }, panel([el('div', { key: 't', style: { fontWeight: 700, marginBottom: 6 } }, '🔎 Field clues'), clues.length ? el('ul', { key: 'u', style: { margin: 0, paddingLeft: 18, fontSize: 12.5, lineHeight: 1.6 } }, clues.map(function (cl, i) { return el('li', { key: i }, cl.text); })) : el('div', { key: 'n', style: { fontSize: 12.5, color: T.soft } }, 'Dig at least two cells to reveal your first clue.')]), el('div', { style: { marginTop: 12, fontSize: 12, fontWeight: 700, color: T.soft, marginBottom: 6 } }, 'Identify the find'), el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_identify_the_find_choices', 'Identify the find choices'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 6, maxHeight: 280, overflowY: 'auto' } }, guessGrid))
-          )
-        );
+        return el('div', null,
+          sectionTitle('⛏️', dt('title', 'Excavate and compare evidence'), dt('intro', 'Uncover clues, compare six candidates, and decide whether the evidence is enough.')),
+          el('p', { style: { fontSize: 12, color: T.soft, lineHeight: 1.6, margin: '0 0 16px' } }, dt('scope', 'This is a catalog mystery. Grid fragments are symbolic, and unlocked clues come from the catalog. The activity does not simulate identifying a real fossil from a bone fragment.')),
+          el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 } },
+            el('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 12, color: T.soft, flex: '1 1 240px' } }, digStatusText),
+            el('button', { type: 'button', onClick: newDig, style: actionStyle }, dt('new_site', 'New dig'))),
+          el('div', { className: 'dinolab-dig-workspace', style: { display: 'grid', gridTemplateColumns: 'minmax(0,0.8fr) minmax(0,1.2fr)', gap: 18, alignItems: 'start' } },
+            el('section', { 'aria-label': dt('excavation_area', 'Excavation area'), style: { maxWidth: 420 } },
+              el('div', { role: 'group', 'aria-label': digGridDesc, 'aria-describedby': 'dino-dig-keyboard', style: { display: 'grid', gridTemplateColumns: 'repeat(' + COLS + ', minmax(0,1fr))', gap: 6 } }, gridCells),
+              el('p', { id: 'dino-dig-keyboard', style: { fontSize: 12, color: T.soft, lineHeight: 1.6 } }, dt('keyboard', 'Use arrow keys to move between cells; Enter or Space digs. Bone and empty-rock results remain available to review.')),
+              el('button', { type: 'button', style: actionStyle, disabled: clues.length === clueList.length, onClick: function () { var prepared = digRevealedCells(revealed.concat(Object.keys(boneCells).slice(0, 8).map(Number))); upd('digRevealed', prepared); announceToSR(dt('prepared_ready', 'Prepared sample ready. All six catalog clues are available.')); } }, dt('prepared_sample', 'Use a prepared sample')),
+              el('p', { style: { fontSize: 12, color: T.soft, lineHeight: 1.6 } }, dt('prepared_hint', 'Prefer to focus on the evidence? A prepared sample opens the clues so you can begin comparing.'))),
+            el('section', { 'aria-labelledby': 'dino-dig-clues-title', style: { border: '1px solid ' + T.border, borderRadius: 12, padding: 16, background: T.panel } },
+              el('h2', { id: 'dino-dig-clues-title', style: { fontSize: 18, margin: '0 0 8px' } }, dt('clues_title', '1. Collect and cite clues')),
+              el('p', { style: { fontSize: 13, lineHeight: 1.6, color: T.soft } }, dt('cite_hint', 'Select at least two uncovered clues to support your identification. Useful evidence must also distinguish your candidate from the alternatives.')),
+              clues.length ? el('div', { style: { display: 'grid', gap: 8 } }, clues.map(function (clue) { return el('label', { key: clue.id, style: { display: 'flex', gap: 10, alignItems: 'center', minHeight: 44, padding: '6px 10px', border: '1px solid ' + T.border, borderRadius: 8, background: T.deeper, fontSize: 13, lineHeight: 1.5 } },
+                el('input', { type: 'checkbox', checked: cited.indexOf(clue.id) >= 0, disabled: solved, onChange: function () { cite(clue.id); }, 'data-dig-clue': clue.id, style: { width: 18, height: 18, flexShrink: 0, accentColor: '#15803d' } }), clue.text); })) : el('p', { style: { fontSize: 13, color: T.soft } }, dt('first_bone', 'Find one bone to unlock the first clue, or use a prepared sample.')))),
+          el('section', { 'aria-labelledby': 'dino-dig-candidates-title', style: { marginTop: 20 } },
+            el('h2', { id: 'dino-dig-candidates-title', style: { fontSize: 18, margin: '0 0 6px' } }, dt('candidates_title', '2. Compare the candidates')),
+            el('p', { style: { fontSize: 13, lineHeight: 1.6, color: T.soft } }, dt('candidates_hint', 'These are catalog reference values. Compare each one with the clues you have uncovered; several candidates may fit early evidence.')),
+            el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_identify_the_find_choices', 'Identify the find choices'), className: solved ? undefined : 'dinolab-dig-candidates', style: { display: 'grid', gridTemplateColumns: solved ? 'minmax(0,1fr)' : 'repeat(3,minmax(0,1fr))', gap: 12, maxWidth: solved ? 600 : undefined } }, solved ? candidateCards.filter(function (_, i) { return site.candidates[i].id === chosen.id; }) : candidateCards),
+            solved ? el('details', { style: { marginTop: 12, padding: 12, border: '1px solid ' + T.border, borderRadius: 10, background: T.deeper } },
+              el('summary', { style: { minHeight: 32, cursor: 'pointer', fontSize: 13, fontWeight: 800 } }, dt('review_alternatives', 'Review the five alternatives')),
+              el('div', { className: 'dinolab-dig-candidates', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 12, marginTop: 10 } }, candidateCards.filter(function (_, i) { return site.candidates[i].id !== chosen.id; }))) : null),
+          el('section', { 'aria-labelledby': 'dino-dig-check-title', style: { marginTop: 18, padding: 16, border: '1px solid ' + T.border, borderRadius: 12, background: T.panel } },
+            el('h2', { id: 'dino-dig-check-title', style: { fontSize: 18, margin: '0 0 8px' } }, dt('check_title', '3. Check your evidence')),
+            el('p', { style: { fontSize: 13, color: T.soft, lineHeight: 1.6 } }, (guess ? byId(guess).common : dt('no_candidate', 'No candidate selected')) + ' · ' + cited.length + ' ' + dt('cited_count', 'clues cited')),
+            el('button', { type: 'button', disabled: solved || check.kind === 'missing', style: Object.assign({}, actionStyle, { minHeight: 44, background: '#15803d', borderColor: '#15803d', color: '#fff' }), onClick: checkEvidence }, dt('check_evidence', 'Check my evidence')),
+            el('p', { id: 'dino-dig-feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', tabIndex: -1, style: { fontSize: 14, lineHeight: 1.7, marginBottom: 0 } }, feedback || dt('check_hint', 'Choose one candidate and cite at least two clues before checking.')),
+            solved ? el('div', { style: { marginTop: 14, paddingTop: 12, borderTop: '1px solid ' + T.border } },
+              el('p', { style: { fontSize: 13, lineHeight: 1.6 } }, dt('reflection', 'Which clue ruled out your closest alternative? What would you still need to identify a real fossil? Explain your reasoning in your notebook.')),
+              el('button', { type: 'button', style: actionStyle, onClick: function () { upd({ tab: 'notes', notebookSpecies: chosen.id, digNotebookContext: { seed: seed, clues: cited } }); focusSoon('dino-note-inference'); } }, dt('write_reasoning', 'Explain in my notebook')),
+              el('button', { type: 'button', style: Object.assign({}, actionStyle, { marginLeft: 8, marginTop: 8 }), onClick: function () { upd({ tab: 'explore', selected: chosen.id }); focusSoon('dino-specimen-heading'); } }, __alloT('stem.dinolab.open_species_file', 'Open species file'))) : null));
       }
 
       function renderClassify() {
@@ -12638,9 +12912,197 @@ var evidenceRoute = [
         return el('div', null, sectionTitle('☄️', 'The five great extinctions', 'One of them cleared the way for dinosaurs; another ended their reign.'), panel(rows), kpgEvidence, survived);
       }
 
+      function renderEvidenceWorkbench() {
+        function bt(key, fallback) { return t('stem.dinolab.bench_' + key, fallback); }
+        var cases = evidenceCases(t), state = evidenceWorkbenchState(d.evidenceWorkbench);
+        var c = cases.filter(function (item) { return item.id === state.caseId; })[0], entry = state.cases[c.id];
+        var kinds = [
+          { id: 'observation', label: bt('observation', 'Observation'), hint: bt('observation_hint', 'A feature reported in the fossil.') },
+          { id: 'inference', label: bt('inference', 'Supported inference'), hint: bt('inference_hint', 'An explanation connected to evidence.') },
+          { id: 'overreach', label: bt('overreach', 'Overreach'), hint: bt('overreach_hint', 'A claim that goes beyond this evidence.') }
+        ];
+        function change(patch) {
+          var next = Object.assign({}, state.cases); next[c.id] = Object.assign({}, entry, patch);
+          upd('evidenceWorkbench', { caseId: c.id, cases: next });
+        }
+        function chooseCase(id) { upd('evidenceWorkbench', Object.assign({}, state, { caseId: id })); focusSoon('dino-bench-heading'); }
+        var textStyle = { margin: '0 0 12px', fontSize: 13, lineHeight: 1.65, color: T.soft };
+        var headingStyle = { fontSize: 19, margin: '0 0 10px', lineHeight: 1.4 };
+        var boxStyle = { padding: 14, border: '1px solid ' + T.border, borderRadius: 12, background: T.panel, minWidth: 0 };
+        var recorded = entry.record && JSON.stringify(evidenceDraft(entry)) === JSON.stringify(entry.record);
+        function benchMark(kind) {
+          var paths = { observation: 'M2 12Q12 0 22 12Q12 24 2 12ZM15 12A3 3 0 1 1 9 12A3 3 0 1 1 15 12', inference: 'M9 15L15 9M9 8L12 5A5 5 0 0 1 19 12L16 15M8 9L5 12A5 5 0 0 0 12 19L15 16', overreach: 'M4 8V4H8M16 4H20V8M20 16V20H16M8 20H4V16M8 12H16' };
+          return el('svg', { viewBox: '0 0 24 24', width: 21, height: 21, 'aria-hidden': 'true', focusable: 'false' }, el('path', { d: paths[kind], fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' }));
+        }
+        function specimenPlate(item, miniature) {
+          var bone = 'M49 166Q32 155 40 139Q47 123 65 126L90 131Q192 119 331 89Q348 68 366 77Q384 80 385 95Q388 111 371 119Q357 126 341 112Q206 137 96 148Q85 167 67 170Q56 172 49 166Z';
+          return el('svg', { className: 'dinolab-fossil-plate', viewBox: miniature ? (item.id === 'quills' ? '20 75 380 110' : '80 20 260 220') : '0 0 440 260', role: miniature ? undefined : 'img', 'aria-label': miniature ? undefined : item.diagram, 'aria-hidden': miniature ? 'true' : undefined, focusable: 'false', style: { width: '100%', display: 'block', color: 'var(--dino-ink)' } },
+            !miniature ? el('g', { opacity: .12, stroke: 'currentColor', strokeWidth: .7 }, [60, 100, 140, 180, 220].map(function (y) { return el('path', { key: y, d: 'M24 ' + y + 'H416' }); }), [60, 100, 140, 180, 220, 260, 300, 340, 380].map(function (x) { return el('path', { key: x, d: 'M' + x + ' 24V236' }); })) : null,
+            el('path', { d: 'M24 42V24H42M398 24H416V42M24 218V236H42M398 236H416V218', stroke: 'currentColor', strokeWidth: 1.2, fill: 'none', opacity: .45 }),
+            item.id === 'quills' ? el('g', null,
+              el('path', { d: bone, transform: 'translate(2,6)', fill: 'currentColor', opacity: .09 }),
+              el('path', { d: bone, fill: 'var(--dino-fossil)', stroke: 'currentColor', strokeWidth: 2 }),
+              el('path', { d: 'M49 140Q58 132 72 140L94 139Q221 123 338 99Q355 83 370 90M92 145Q222 133 341 108M54 160Q69 164 82 148M359 114Q369 117 377 108', stroke: 'currentColor', strokeWidth: 1.3, fill: 'none', opacity: .35 }),
+              [115, 151, 187, 223, 259, 295].map(function (x) { var y = 140 - (x - 90) * .16; return el('g', { key: x, transform: 'translate(' + x + ',' + y + ') rotate(-9)' }, el('ellipse', { rx: 6, ry: 4, fill: 'var(--dino-fossil-shadow)', stroke: 'currentColor', strokeWidth: 1 }), el('path', { d: 'M-4 -1Q0 -5 4 -1', stroke: 'var(--dino-paper)', strokeWidth: 2, fill: 'none' })); }),
+              !miniature ? el('g', null,
+                el('circle', { cx: 223, cy: 119, r: 15, stroke: 'var(--dino-accent)', strokeWidth: 2, fill: 'none' }),
+                el('path', { d: 'M236 128L304 176', stroke: 'var(--dino-accent)', strokeWidth: 1.3, strokeDasharray: '4 4', fill: 'none' }),
+                el('circle', { cx: 335, cy: 197, r: 40, fill: 'var(--dino-paper)', stroke: 'var(--dino-accent)', strokeWidth: 1.5 }),
+                el('path', { d: 'M304 203Q318 190 339 193Q355 194 365 186M306 214Q333 203 365 205', fill: 'none', stroke: 'currentColor', strokeWidth: 1.3, opacity: .4 }),
+                el('ellipse', { cx: 335, cy: 195, rx: 12, ry: 8, fill: 'var(--dino-fossil)', stroke: 'currentColor', strokeWidth: 2 }),
+                el('path', { d: 'M327 192Q335 183 343 191', fill: 'none', stroke: 'var(--dino-paper)', strokeWidth: 2 }),
+                el('path', { d: 'M223 104V61H161', fill: 'none', stroke: 'var(--dino-accent)', strokeWidth: 1.5 }),
+                el('circle', { cx: 145, cy: 61, r: 14, fill: 'var(--dino-accent)' }), el('text', { x: 145, y: 66, textAnchor: 'middle', fill: 'var(--dino-on-accent)', fontSize: 14, fontWeight: 800 }, 'A')) : null) : el('g', null,
+              el('path', { d: 'M111 39L156 31L199 42L238 29L283 40L308 67L323 106L310 142L321 178L284 216L245 224L203 213L161 226L116 207L96 171L105 135L91 95Z', fill: 'var(--dino-fossil)', stroke: 'currentColor', strokeWidth: 1.6, strokeDasharray: '4 3' }),
+              [0, 1, 2, 3, 4, 5].map(function (row) { return [0, 1, 2, 3, 4, 5, 6].map(function (col) {
+                var x = 121 + col * 25 + row % 2 * 7, y = 58 + row * 27, n = (row * 7 + col * 3) % 5;
+                return el('path', { key: row + '-' + col, d: 'M' + x + ' ' + y + 'l' + (9 + n) + ' -4l' + (11 - n) + ' 7l-1 ' + (13 + n) + 'l-12 4l-10 -9Z', fill: n % 2 ? 'var(--dino-fossil-shadow)' : 'var(--dino-paper)', fillOpacity: .45, stroke: 'currentColor', strokeWidth: 1.1, strokeLinejoin: 'round' }); }); }),
+              !miniature ? el('g', null, el('circle', { cx: 236, cy: 101, r: 22, fill: 'none', stroke: 'var(--dino-accent)', strokeWidth: 2 }), el('path', { d: 'M254 88L346 60', fill: 'none', stroke: 'var(--dino-accent)', strokeWidth: 1.5 }), el('circle', { cx: 361, cy: 55, r: 14, fill: 'var(--dino-accent)' }), el('text', { x: 361, y: 60, textAnchor: 'middle', fill: 'var(--dino-on-accent)', fontSize: 14, fontWeight: 800 }, 'A')) : null));
+        }
+        var illustration = specimenPlate(c, false);
+        var reference = el('aside', { className: 'dinolab-evidence-reference', 'aria-label': bt('case_file', 'Evidence case file'), style: boxStyle },
+          el('div', { style: { fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', marginBottom: 5 } }, bt('published_case', 'PUBLISHED FOSSIL CASE')),
+          el('h3', { style: headingStyle }, c.name),
+          el('figure', { className: 'dinolab-evidence-figure', style: { margin: '0 0 12px', padding: 8, borderRadius: 10, background: T.deeper, border: '1px solid ' + T.border } }, illustration,
+            el('figcaption', { style: { fontSize: 11, lineHeight: 1.6, color: T.soft, padding: '0 8px 8px' } }, bt('schematic', 'Teaching schematic · not a fossil photograph · not to scale'))),
+          el('fieldset', { style: { margin: 0, padding: 0, border: 0, minWidth: 0 } },
+            el('legend', { style: { fontWeight: 800, fontSize: 14, marginBottom: 8 } }, bt('cite', 'Choose evidence to cite')),
+            c.evidence.map(function (e, i) { return el('label', { key: e.id, className: 'dinolab-evidence-citation' + (entry.citations.indexOf(e.id) >= 0 ? ' is-cited' : ''), style: { display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 8px', borderTop: '1px solid ' + T.border, cursor: 'pointer', fontSize: 13, lineHeight: 1.6 } },
+              el('input', { type: 'checkbox', 'data-bench-citation': e.id, checked: entry.citations.indexOf(e.id) >= 0, style: { marginTop: 5, flexShrink: 0 }, onChange: function (event) { change({ citations: event.target.checked ? entry.citations.concat(e.id) : entry.citations.filter(function (id) { return id !== e.id; }), review: {} }); } }),
+              el('span', null, el('strong', { style: { display: 'block', marginBottom: 4 } }, String.fromCharCode(65 + i) + ' · ' + e.label), e.text)); })),
+          el('a', { href: c.url, target: '_blank', rel: 'noopener noreferrer', style: { display: 'block', marginTop: 12, fontSize: 12, color: T.text, lineHeight: 1.6, textDecoration: 'underline' } }, bt('source', 'Read the research: ') + c.source),
+          el('p', { style: Object.assign({}, textStyle, { margin: '10px 0 0', fontSize: 11 }) }, bt('source_scope', 'The paper supplies the observations. The statements and drawings here are teaching materials.')));
+        var sortPanel = el('section', { className: 'dinolab-evidence-task', 'aria-labelledby': 'dino-bench-task', style: boxStyle },
+          el('h3', { id: 'dino-bench-task', tabIndex: -1, style: headingStyle }, bt('sort_title', 'What does each statement do?')),
+          el('p', { style: textStyle }, bt('sort_intro', 'Read the case file, then distinguish a description from an explanation and a claim that reaches too far. You can revise your choices after feedback.')),
+          el('dl', { className: 'dinolab-evidence-key', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 8, margin: '0 0 16px' } }, kinds.map(function (kind) { return el('div', { key: kind.id, style: { padding: 10, background: T.deeper, border: '1px solid ' + T.border, borderRadius: 8 } }, el('dt', { style: { fontWeight: 800, fontSize: 12 } }, benchMark(kind.id), kind.label), el('dd', { style: { margin: '4px 0 0', color: T.soft, fontSize: 12, lineHeight: 1.5 } }, kind.hint)); })),
+          c.statements.map(function (s, index) {
+            var label = kinds.filter(function (kind) { return kind.id === s.kind; })[0].label;
+            return el('div', { key: s.id, className: 'dinolab-evidence-statement', style: { padding: '12px 0', borderTop: '1px solid ' + T.border } },
+              el('label', { htmlFor: 'dino-bench-sort-' + s.id, style: { display: 'block', fontWeight: 700, fontSize: 14, lineHeight: 1.6, marginBottom: 7 } }, (index + 1) + '. ' + s.text),
+              el('select', { id: 'dino-bench-sort-' + s.id, value: entry.sort[s.id] || '', 'aria-describedby': entry.checked ? 'dino-bench-response-' + s.id : undefined, onChange: function (event) { var next = Object.assign({}, entry.sort); next[s.id] = event.target.value; change({ sort: next, checked: false }); }, style: Object.assign({}, actionStyle, { width: '100%', minHeight: 44, boxSizing: 'border-box' }) },
+                el('option', { value: '' }, bt('choose_kind', 'Choose a statement type')), kinds.map(function (kind) { return el('option', { key: kind.id, value: kind.id }, kind.label); })),
+              entry.checked ? el('p', { id: 'dino-bench-response-' + s.id, className: 'dinolab-evidence-feedback', style: { fontSize: 13, lineHeight: 1.6, margin: '8px 0 0', color: T.text } }, el('strong', null, entry.sort[s.id] === s.kind ? bt('fits', 'Fits: ') : bt('reconsider', 'Reconsider: ')), label + '. ' + s.feedback) : null);
+          }),
+          el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 } },
+            el('button', { type: 'button', className: 'dinolab-evidence-primary', style: actionStyle, disabled: Object.keys(entry.sort).length !== c.statements.length, onClick: function () { change({ checked: true, firstSort: entry.firstSort || Object.assign({}, entry.sort) }); focusSoon('dino-bench-feedback'); } }, bt('check', 'Check my distinctions')),
+            entry.firstSort ? el('button', { type: 'button', style: actionStyle, onClick: function () { change({ step: 1 }); focusSoon('dino-bench-task'); } }, bt('write', 'Write my explanation →')) : null),
+          entry.checked ? el('p', { id: 'dino-bench-feedback', tabIndex: -1, role: 'status', style: Object.assign({}, textStyle, { margin: '12px 0 0' }) }, bt('feedback', 'Feedback is shown beneath each statement. Use it to revise, or carry these distinctions into your explanation.')) : null);
+        var fields = [
+          { id: 'claim', label: bt('claim', 'My claim'), hint: bt('claim_hint', 'What does this evidence support? Keep the claim as specific as the sample.') },
+          { id: 'reasoning', label: bt('reasoning', 'How the evidence supports it'), hint: bt('reasoning_hint', 'Refer to evidence A or B and explain the connection, rather than just repeating it.') },
+          { id: 'limit', label: bt('limit', 'A limit and a next question'), hint: bt('limit_hint', 'What remains unknown? What additional evidence would help answer it?') }
+        ];
+        var reviews = [
+          { id: 'link', label: bt('review_link', 'I explained how my cited evidence supports the claim.') },
+          { id: 'scope', label: bt('review_scope', 'My claim stays within what the evidence can show.') },
+          { id: 'question', label: bt('review_question', 'I named an uncertainty and evidence that could help.') }
+        ];
+        var writingPanel = el('section', { className: 'dinolab-evidence-task', 'aria-labelledby': 'dino-bench-task', style: boxStyle },
+          el('h3', { id: 'dino-bench-task', tabIndex: -1, style: headingStyle }, bt('explain_title', 'Build an explanation worth revising')),
+          el('p', { style: textStyle }, bt('writing_intro', 'Cite at least one item in the case file. Write, dictate with your device, or use brief bullet points. Drafts stay with this activity; recording keeps your first explanation and latest revision.')),
+          fields.map(function (field) { return el('div', { key: field.id, className: 'dinolab-evidence-writing', style: { marginBottom: 14 } },
+            el('label', { htmlFor: 'dino-bench-' + field.id, style: { display: 'block', fontWeight: 800, fontSize: 14, marginBottom: 5 } }, field.label),
+            el('p', { id: 'dino-bench-hint-' + field.id, style: Object.assign({}, textStyle, { fontSize: 12, marginBottom: 7 }) }, field.hint),
+            el('textarea', { id: 'dino-bench-' + field.id, value: entry[field.id], maxLength: 1000, rows: field.id === 'claim' ? 2 : 3, 'aria-describedby': 'dino-bench-hint-' + field.id, onChange: function (event) { var patch = { review: {} }; patch[field.id] = event.target.value.slice(0, 1000); change(patch); }, style: { width: '100%', boxSizing: 'border-box', resize: 'vertical', padding: 10, borderRadius: 8, border: '1px solid ' + T.border, color: T.text, background: T.deeper, font: 'inherit', fontSize: 13, lineHeight: 1.6 } })); }),
+          el('details', { style: { marginBottom: 14, padding: 12, borderRadius: 9, border: '1px solid ' + T.border, background: T.deeper } },
+            el('summary', { style: { cursor: 'pointer', fontSize: 13, fontWeight: 800 } }, bt('support', 'Sentence starters and a worked example')),
+            el('p', { style: Object.assign({}, textStyle, { marginTop: 10 }) }, bt('starters', '“I claim… because evidence A/B shows… This supports my idea because… It does not tell us… To investigate that, I would look for…”')),
+            el('p', { style: { fontSize: 13, lineHeight: 1.7 } }, c.example),
+            el('p', { style: Object.assign({}, textStyle, { margin: 0, fontSize: 12 }) }, bt('example_limit', 'This is one worked example, not an answer key for your writing. Compare the reasoning, then explain in your own words.'))),
+          el('fieldset', { style: { border: 0, padding: 0, margin: '0 0 14px' } },
+            el('legend', { style: { fontSize: 14, fontWeight: 800, marginBottom: 6 } }, bt('self_review', 'Optional self-review')),
+            reviews.map(function (review) { return el('label', { key: review.id, style: { display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, lineHeight: 1.6, padding: '8px 0', cursor: 'pointer' } }, el('input', { type: 'checkbox', checked: entry.review[review.id] === true, onChange: function (event) { var next = Object.assign({}, entry.review); next[review.id] = event.target.checked; change({ review: next }); }, style: { marginTop: 4 } }), review.label); })),
+          el('p', { id: 'dino-bench-record-help', style: Object.assign({}, textStyle, { fontSize: 12 }) }, bt('record_help', 'To record: cite evidence and add a claim, a connection, and a limit. These are completeness checks; your writing is not automatically assessed.')),
+          el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+            el('button', { type: 'button', className: 'dinolab-evidence-primary', 'aria-describedby': 'dino-bench-record-help', disabled: !evidenceDraftReady(entry) || !!recorded, style: actionStyle, onClick: function () { if (!evidenceDraftReady(entry)) return; var draft = evidenceDraft(entry); change({ first: entry.first || draft, record: draft }); focusSoon('dino-bench-record-status'); } }, entry.first ? bt('record_revision', 'Record my revision') : bt('record', 'Record my explanation')),
+            el('button', { type: 'button', style: actionStyle, onClick: function () { upd('tab', 'notes'); focusSoon('dino-bench-notebook'); } }, bt('notebook', 'View in field notebook'))),
+          el('p', { id: 'dino-bench-record-status', tabIndex: -1, role: 'status', style: Object.assign({}, textStyle, { margin: '12px 0' }) }, recorded ? bt('recorded_status', 'Explanation recorded. You can still edit it; your first explanation is kept for comparison.') : entry.record ? bt('revision_status', 'You have an unrecorded revision. Your current draft is kept as you type.') : bt('draft_status', 'Draft kept in this activity. Download the field notebook to keep a separate copy.')),
+          entry.first ? el('details', { style: { marginBottom: 14 } }, el('summary', { style: { cursor: 'pointer', fontSize: 13, fontWeight: 800 } }, bt('first', 'Compare with my first recorded explanation')), fields.map(function (field) { return el('div', { key: field.id, style: { marginTop: 10 } }, el('strong', { style: { fontSize: 12 } }, field.label), el('p', { style: { margin: '4px 0', fontSize: 13, lineHeight: 1.6, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, entry.first[field.id])); })) : null,
+          entry.record ? el('div', { style: { borderTop: '1px solid ' + T.border, paddingTop: 12 } }, el('p', { style: textStyle }, c.next), el('button', { type: 'button', style: actionStyle, onClick: function () { chooseCase(c.id === 'quills' ? 'scales' : 'quills'); } }, bt('other_case', 'Try the other case →'))) : null);
+        return el('section', { 'data-evidence-workbench': c.id, 'aria-labelledby': 'dino-bench-heading', style: { marginBottom: 16 } },
+          el('header', { className: 'dinolab-evidence-heading' },
+          el('p', { style: { fontSize: 11, letterSpacing: '0.09em', fontWeight: 800, margin: '0 0 6px' } }, bt('eyebrow', 'OBSERVE · EXPLAIN · REVISE')),
+          el('h2', { id: 'dino-bench-heading', tabIndex: -1, style: { margin: '0 0 8px', fontSize: 27, lineHeight: 1.25 } }, bt('title', 'Evidence workbench')),
+          el('p', { style: Object.assign({}, textStyle, { maxWidth: 780 }) }, bt('intro', 'A fossil can support a powerful explanation without answering every question. Investigate two real cases and practice saying how far the evidence goes.'))),
+          el('div', { className: 'dinolab-evidence-cases', role: 'group', 'aria-label': bt('choose_case', 'Choose an evidence case'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,240px),1fr))', gap: 10, marginBottom: 18 } }, cases.map(function (item, index) { var saved = state.cases[item.id]; return el('button', { key: item.id, type: 'button', 'aria-pressed': item.id === c.id, onClick: function () { chooseCase(item.id); }, style: Object.assign({}, actionStyle, { padding: 14, textAlign: 'left', borderWidth: 1, borderColor: item.id === c.id ? T.text : T.border, background: item.id === c.id ? T.deeper : T.panel }) },
+            el('span', { className: 'dinolab-evidence-thumb', 'aria-hidden': 'true' }, specimenPlate(item, true)),
+            el('span', { className: 'dinolab-evidence-case-copy' }, el('span', { className: 'dinolab-evidence-case-meta' }, (index + 1) + ' · ' + item.name), el('span', { className: 'dinolab-evidence-case-title' }, item.title), el('span', { className: 'dinolab-evidence-case-state' }, saved.record ? bt('recorded', 'Recorded') : evidenceHasWork(saved) ? bt('draft', 'In progress') : bt('new', 'Ready to investigate')))); })),
+          el('p', { style: { fontWeight: 800, fontSize: 17, lineHeight: 1.5, margin: '0 0 12px' } }, c.question),
+          el('div', { className: 'dinolab-evidence-steps', role: 'group', 'aria-label': bt('steps', 'Workbench steps'), style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 } },
+            el('button', { type: 'button', 'aria-current': entry.step === 0 ? 'step' : undefined, style: Object.assign({}, actionStyle, { textDecoration: entry.step === 0 ? 'underline' : 'none' }), onClick: function () { change({ step: 0 }); focusSoon('dino-bench-task'); } }, bt('step_read', '1 · Read and distinguish')),
+            el('button', { type: 'button', disabled: !entry.firstSort, 'aria-current': entry.step === 1 ? 'step' : undefined, style: Object.assign({}, actionStyle, { textDecoration: entry.step === 1 ? 'underline' : 'none' }), onClick: function () { change({ step: 1 }); focusSoon('dino-bench-task'); } }, bt('step_write', '2 · Explain and revise'))),
+          el('div', { key: c.id, className: 'dinolab-evidence-workspace', style: { display: 'grid', gridTemplateColumns: 'minmax(0,0.85fr) minmax(0,1.3fr)', gap: 16, alignItems: 'start' } }, reference, entry.step === 0 ? sortPanel : writingPanel));
+      }
+
+      function fossilText(item, field) { return t('stem.dinolab.atlas_' + item.id + '_' + field, item[field]); }
+      function fossilDrawing(item, miniature) {
+        function path(shape, extra) { return el('path', Object.assign({ d: shape, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, extra || {})); }
+        var art;
+        if (item.id === 'bones') art = el('g', null,
+          path('M31 84Q20 77 29 66Q39 57 49 67L119 45Q123 30 139 38Q153 39 151 51Q151 64 137 65L54 85Q43 98 31 84Z', { fill: 'var(--dino-fossil)' }),
+          path('M58 76L116 58', { opacity: .45 }), el('ellipse', { cx: 106, cy: 62, rx: 17, ry: 9, transform: 'rotate(-18 106 62)', fill: 'var(--dino-paper)', stroke: 'currentColor', strokeWidth: 1.5 }),
+          [0, 1, 2, 3, 4].map(function (n) { return el('circle', { key: n, cx: 95 + n * 5, cy: 64 - n % 2 * 4, r: 2, fill: 'currentColor', opacity: .6 }); }));
+        else if (item.id === 'teeth') art = el('g', null,
+          path('M37 88Q28 53 62 22Q51 59 66 83L63 101L47 96Z', { fill: 'var(--dino-fossil)' }), path('M43 79L50 49M47 86L62 84', { opacity: .45 }),
+          path('M102 52Q118 41 145 49L148 68L142 78L143 99L130 93L116 99L115 78L104 70Z', { fill: 'var(--dino-fossil)' }), path('M106 66L140 64M116 55L114 61M128 51L126 61M140 54L137 61', { opacity: .6 }));
+        else if (item.id === 'tracks') art = el('g', null,
+          path('M40 102Q58 65 117 21', { opacity: .2, strokeDasharray: '4 5' }),
+          [[45, 91, -20], [83, 68, 10], [95, 39, -20], [133, 20, 10]].map(function (p, i) { return el('g', { key: i, transform: 'translate(' + p[0] + ' ' + p[1] + ') rotate(' + p[2] + ')' }, path('M0 15Q-7 9 -5 1L-15 -9L-9 -12L-2 -5L0 -21L5 -20L5 -5L15 -14L19 -9L9 3Q8 13 0 15Z', { fill: 'var(--dino-fossil)', strokeWidth: 1.3 })); }));
+        else if (item.id === 'eggs') art = el('g', null,
+          el('ellipse', { cx: 91, cy: 74, rx: 70, ry: 32, fill: 'var(--dino-fossil)', fillOpacity: .25, stroke: 'currentColor', strokeWidth: 1.2 }),
+          [[48, 72, -32], [70, 52, -20], [103, 50, 20], [133, 69, 34], [73, 87, 70], [108, 87, -60]].map(function (p, i) { return el('g', { key: i, transform: 'translate(' + p[0] + ' ' + p[1] + ') rotate(' + p[2] + ')' }, path('M0 -17C18 -17 16 21 0 21C-16 21 -18 -17 0 -17Z', { fill: 'var(--dino-paper)', strokeWidth: 1.5 }), path('M-5 -9Q-10 -1 -7 8', { opacity: .35, strokeWidth: 1 })); }));
+        else if (item.id === 'skin') art = el('g', null,
+          path('M30 100Q52 46 100 22Q117 64 59 89Z', { fill: 'var(--dino-fossil)', fillOpacity: .5 }), path('M28 106L97 28'),
+          [0, 1, 2, 3, 4].map(function (i) { return path('M' + (42 + i * 9) + ' ' + (91 - i * 12) + 'l-1 -14M' + (48 + i * 9) + ' ' + (87 - i * 11) + 'l17 -1', { key: i, strokeWidth: 1 }); }),
+          path('M110 62L149 56L164 73L155 104L120 107L104 89Z', { fill: 'var(--dino-fossil)' }), [0, 1, 2].map(function (r) { return [0, 1, 2].map(function (col) { return path('M' + (116 + col * 13 + r % 2 * 3) + ' ' + (70 + r * 12) + 'l6 -3l6 4l-2 7l-7 1Z', { key: r + '-' + col, strokeWidth: 1 }); }); }));
+        else if (item.id === 'coprolites') art = el('g', null,
+          path('M33 85Q19 71 34 54Q37 35 58 35Q75 20 96 32Q119 28 130 48Q149 55 148 76Q137 100 108 98Q70 108 33 85Z', { fill: 'var(--dino-fossil)' }),
+          path('M99 33Q84 66 108 98', { strokeDasharray: '3 4' }), path('M111 56l12 -4l4 4l-6 8ZM115 80l13 -6M126 77l2 5M52 58l8 7M64 81l8 -5', { strokeWidth: 2 }),
+          el('circle', { cx: 70, cy: 48, r: 3, fill: 'currentColor', opacity: .35 }));
+        else if (item.id === 'gastroliths') art = el('g', null,
+          el('ellipse', { cx: 90, cy: 66, rx: 69, ry: 42, fill: 'none', stroke: 'currentColor', strokeDasharray: '4 5', strokeWidth: 1.5 }),
+          [[53, 62, 18, 13], [87, 47, 15, 12], [121, 64, 17, 14], [84, 83, 20, 12]].map(function (p, i) { return el('g', { key: i }, el('ellipse', { cx: p[0], cy: p[1], rx: p[2], ry: p[3], fill: 'var(--dino-fossil)', stroke: 'currentColor', strokeWidth: 1.5 }), path('M' + (p[0] - 8) + ' ' + p[1] + 'q3 -6 10 -5', { opacity: .3, strokeWidth: 1.2 })); }));
+        else art = el('g', null,
+          el('circle', { cx: 90, cy: 65, r: 46, fill: 'var(--dino-paper)', stroke: 'currentColor', strokeWidth: 1.5 }),
+          path('M57 50Q84 32 115 57M56 60Q84 42 116 67M58 70Q86 52 116 77', { stroke: 'var(--dino-accent)', strokeWidth: 3 }),
+          [[75, 84], [108, 42], [111, 91]].map(function (p, i) { return el('ellipse', { key: i, cx: p[0], cy: p[1], rx: 8, ry: 5, fill: 'var(--dino-fossil)', stroke: 'currentColor', strokeWidth: 1.2 }); }));
+        return el('svg', { viewBox: '0 0 180 130', role: miniature ? undefined : 'img', 'aria-label': miniature ? undefined : fossilText(item, 'diagram'), 'aria-hidden': miniature ? 'true' : undefined, focusable: 'false', className: 'dinolab-atlas-drawing' }, art);
+      }
+      function renderFossilAtlas() {
+        function at(key, fallback) { return t('stem.dinolab.atlas_' + key, fallback); }
+        var active = ANATOMY.filter(function (item) { return item.id === d.fossilReference; })[0] || ANATOMY[0];
+        var routes = [
+          { id: 'bones', title: at('route_minerals', 'Minerals in hard parts'), text: at('route_minerals_text', 'After burial, minerals can fill tiny pores or replace material. Filling pores and replacing material are different processes.') },
+          { id: 'skin', title: at('route_impressions', 'Impressions and compressions'), text: at('route_impressions_text', 'A body part can leave its shape in sediment. A compression may also retain a thin film of material.') },
+          { id: 'tracks', title: at('route_traces', 'Preserved traces of activity'), text: at('route_traces_text', 'An animal leaves a track or other mark. Burial and preservation of that surface can keep the trace in rock.') }
+        ];
+        return el('section', { 'aria-labelledby': 'dino-atlas-heading', className: 'dinolab-atlas' },
+          el('div', { className: 'dinolab-atlas-intro' },
+            el('p', { className: 'dinolab-atlas-eyebrow' }, at('eyebrow', 'EIGHT WAYS TO READ THE PAST')),
+            el('h2', { id: 'dino-atlas-heading', tabIndex: -1 }, at('title', 'The fossil evidence atlas')),
+            el('p', null, at('intro', 'Choose a fossil type to explore what it preserves, what it can support, and where the evidence stops.'))),
+          el('div', { className: 'dinolab-atlas-layout' },
+            el('div', { role: 'group', 'aria-label': at('choose', 'Choose a fossil type'), className: 'dinolab-atlas-selector' }, ANATOMY.map(function (item) {
+              return el('button', { key: item.id, type: 'button', 'data-fossil-type': item.id, 'aria-pressed': item.id === active.id, 'aria-controls': 'dino-atlas-detail', onClick: function () { upd('fossilReference', item.id); focusSoon('dino-atlas-detail-heading'); } },
+                el('span', { className: 'dinolab-atlas-preview' }, fossilDrawing(item, true)), el('span', { className: 'dinolab-atlas-name' }, fossilText(item, 'name')), el('span', { className: 'dinolab-atlas-tag' }, fossilText(item, 'tag')));
+            })),
+            el('article', { id: 'dino-atlas-detail', 'aria-labelledby': 'dino-atlas-detail-heading', 'data-fossil-detail': active.id, className: 'dinolab-atlas-detail' },
+              el('div', { className: 'dinolab-atlas-detail-top' }, el('figure', null, fossilDrawing(active, false), el('figcaption', null, at('schematic', 'Teaching schematic · not to scale'))),
+                el('div', null, el('p', { className: 'dinolab-atlas-eyebrow' }, fossilText(active, 'tag')), el('h3', { id: 'dino-atlas-detail-heading', tabIndex: -1 }, fossilText(active, 'name')), el('p', null, fossilText(active, 'what')))),
+              el('div', { className: 'dinolab-atlas-inference' }, el('h4', null, at('supports', 'Can help us infer')), el('p', null, fossilText(active, 'tells'))),
+              el('div', { className: 'dinolab-atlas-limit' }, el('h4', null, at('limits', 'Does not establish by itself')), el('p', null, fossilText(active, 'limit'))),
+              el('div', { className: 'dinolab-atlas-question' }, el('h4', null, at('question', 'A question to investigate')), el('p', null, fossilText(active, 'question'))),
+              el('div', { className: 'dinolab-atlas-sources' }, el('a', { href: active.url, target: '_blank', rel: 'noopener noreferrer' }, fossilText(active, 'source')), active.more ? el('a', { href: active.more, target: '_blank', rel: 'noopener noreferrer' }, at('more', 'More about interpreting this evidence')) : null),
+              el('button', { type: 'button', style: actionStyle, onClick: function () { upd({ evidenceIdx: ANATOMY.indexOf(active), evidencePicked: null, evidenceAnswered: false, fossilMatchingOpen: true }); focusSoon('dino-evidence-question'); } }, at('practice', 'Practice recognizing this evidence')))),
+          el('section', { 'aria-labelledby': 'dino-atlas-preservation', className: 'dinolab-atlas-preservation' },
+            el('h3', { id: 'dino-atlas-preservation' }, at('preservation', 'Not every fossil forms the same way')),
+            el('div', { className: 'dinolab-atlas-routes' }, routes.map(function (route) { var item = ANATOMY.filter(function (fossil) { return fossil.id === route.id; })[0]; return el('div', { key: route.id }, fossilDrawing(item, true), el('h4', null, route.title), el('p', null, route.text)); })),
+            el('p', null, at('preservation_limits', 'These routes can overlap. Rapid burial and durable parts improve the odds of preservation; the fossil record remains an incomplete sample of past life.')),
+            el('a', { href: 'https://www.nps.gov/subjects/fossils/how-fossils-form.htm', target: '_blank', rel: 'noopener noreferrer' }, at('preservation_source', 'National Park Service · How fossils form'))));
+      }
+
       function renderAnatomy() {
-        var cards = ANATOMY.map(function (a) { return panel([el('div', { key: 'h', style: { fontSize: 22, marginBottom: 4 } }, a.icon + ' ', el('span', { style: { fontSize: 15, fontWeight: 800, verticalAlign: 'middle' } }, a.name)), el('div', { key: 'w', style: { fontSize: 12.5, color: T.text, marginBottom: 6, lineHeight: 1.5 } }, a.what), el('div', { key: 't', style: { fontSize: 12, color: T.text, fontWeight: 700, marginBottom: 2 } }, 'What it tells us'), el('div', { key: 'tt', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5 } }, a.tells)], { key: a.id }); });
-        var fossilSteps = [{ n: 1, t: 'Death and burial', d: 'An animal dies and is quickly buried by mud or sand, before scavengers or weather destroy it.' }, { n: 2, t: 'Mineral replacement', d: 'Over ages, groundwater minerals seep in and replace the bone, turning it to stone.' }, { n: 3, t: 'Rock and uplift', d: 'Layers pile up and harden into rock. Earth movements lift them toward the surface.' }, { n: 4, t: 'Erosion and discovery', d: 'Wind and water wear the rock away and expose the fossil, where someone might spot it.' }];
         var evQ = ANATOMY[modIndex(d.evidenceIdx, ANATOMY.length)];
         var evPicked = d.evidencePicked == null ? null : String(d.evidencePicked);
         var evAnswered = !!d.evidenceAnswered;
@@ -12657,10 +13119,10 @@ var evidenceRoute = [
         }
         var evChoices = ANATOMY.map(function (a) { return a.id; });
         var evChallenge = panel([
-          el('div', { key: 'h', style: { fontWeight: 800, fontSize: 14, marginBottom: 6 } },
+          el('div', { key: 'h', id: 'dino-evidence-question', tabIndex: -1, style: { fontWeight: 800, fontSize: 14, marginBottom: 6 } },
             '🔍 Read the evidence'),
           el('p', { key: 'p', style: { margin: '0 0 10px', color: T.soft, fontSize: 13, lineHeight: 1.5 } },
-            'A field team brings you one kind of fossil. Which one answers this question?'),
+            __alloT('stem.dinolab.atlas_matching_prompt', 'Which fossil type best matches this description? Several kinds of evidence can contribute to a scientific explanation.')),
           el('div', {
             key: 'q', role: 'status',
             style: {
@@ -12668,7 +13130,7 @@ var evidenceRoute = [
               border: '1px solid ' + T.border, marginBottom: 10,
               fontSize: 14, color: T.text, lineHeight: 1.5
             }
-          }, '“' + evQ.tells + '”'),
+          }, '“' + fossilText(evQ, 'tells') + '”'),
           el('div', {
             key: 'c',
             style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 }
@@ -12682,7 +13144,7 @@ var evidenceRoute = [
             return el('button', {
               key: id, type: 'button',
               'aria-disabled': evAnswered ? 'true' : undefined,
-              'aria-label': a.name + (evAnswered
+              'aria-label': fossilText(a, 'name') + (evAnswered
                 ? (isRight ? '. Correct answer.' : (isPicked ? '. You chose this. Not the best fit.' : ''))
                 : '. Choose this fossil.'),
               onClick: function () { evPick(id); },
@@ -12692,16 +13154,18 @@ var evidenceRoute = [
                 background: bg, color: T.text, fontSize: 13, fontWeight: 700,
                 cursor: evAnswered ? 'default' : 'pointer', textAlign: 'left'
               }
-            }, a.icon + ' ' + a.name);
+            }, a.icon + ' ' + fossilText(a, 'name'));
           })),
           evAnswered ? el('div', {
             key: 'f', role: 'status',
             style: { marginTop: 10, fontSize: 13, color: T.soft, lineHeight: 1.55 }
           },
             (evPicked === evQ.id
-              ? '✓ ' + evQ.name + '. '
-              : '→ ' + evQ.name + ' is the one that answers it. '),
-            evQ.what,
+              ? '✓ ' + fossilText(evQ, 'name') + '. '
+              : '→ ' + fossilText(evQ, 'name') + __alloT('stem.dinolab.atlas_best_match', ' is the best match here. ')),
+            fossilText(evQ, 'what'),
+            el('p', null, fossilText(evQ, 'limit')),
+            el('button', { type: 'button', style: actionStyle, onClick: function () { upd({ fossilReference: evQ.id, fossilLibraryOpen: true }); focusSoon('dino-atlas-detail-heading'); } }, __alloT('stem.dinolab.atlas_inspect', 'Inspect this fossil type')),
             el('div', { style: { marginTop: 8 } },
               el('button', {
                 type: 'button', onClick: evNext,
@@ -12714,10 +13178,13 @@ var evidenceRoute = [
           ) : null
         ], { marginBottom: 12 });
 
-        return el('div', null, sectionTitle('🦴', 'How we know what we know', 'Paleontologists are detectives. Every fossil is a clue, and different clues answer different questions.'),
-          evChallenge,
-          panel([el('div', { key: 't', style: { fontWeight: 800, fontSize: 14, marginBottom: 8 } }, '🪨 How a fossil forms'), el('div', { key: 's', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } }, fossilSteps.map(function (st) { return el('div', { key: st.n, style: { padding: 10, borderRadius: 8, background: T.deeper, border: '1px solid ' + T.border } }, el('div', { style: { fontSize: 12, fontWeight: 800, color: T.text, marginBottom: 3 } }, 'Step ' + st.n + ': ' + st.t), el('div', { style: { fontSize: 12, color: T.soft, lineHeight: 1.5 } }, st.d)); })), el('div', { key: 'r', style: { fontSize: 11.5, color: T.soft, fontStyle: 'italic', marginTop: 8 } }, 'Most living things never fossilize at all. The fossil record is a tiny, lucky sample of past life.')], { marginBottom: 14 }),
-          el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 } }, cards)
+        return el('div', { className: 'dinolab-anatomy-page' }, renderEvidenceWorkbench(),
+          el('details', { id: 'dino-fossil-library', className: 'dinolab-atlas-disclosure', open: d.fossilLibraryOpen === true, onToggle: function (event) { var open = event.currentTarget.open; if (open !== (d.fossilLibraryOpen === true)) upd('fossilLibraryOpen', open); }, style: { padding: 14, border: '1px solid ' + T.border, borderRadius: 12, marginBottom: 14, background: T.panel } },
+            el('summary', { style: { cursor: 'pointer', fontWeight: 800, fontSize: 15 } }, __alloT('stem.dinolab.bench_library', 'Fossil reference library')),
+            renderFossilAtlas()),
+          el('details', { id: 'dino-fossil-matching', open: d.fossilMatchingOpen === true, onToggle: function (event) { var open = event.currentTarget.open; if (open !== (d.fossilMatchingOpen === true)) upd('fossilMatchingOpen', open); }, style: { padding: 14, border: '1px solid ' + T.border, borderRadius: 12, marginBottom: 14, background: T.panel } },
+            el('summary', { style: { cursor: 'pointer', fontWeight: 800, fontSize: 15 } }, __alloT('stem.dinolab.bench_matching', 'Practice matching fossil types')),
+            el('div', { style: { marginTop: 14 } }, evChallenge))
         );
       }
 
@@ -12915,7 +13382,14 @@ var evidenceRoute = [
       }
 
       function renderNotes() {
+        var inquiry = timeInquiryState(d.timeInquiry);
+        var bench = evidenceWorkbenchState(d.evidenceWorkbench);
+        var benchCases = evidenceCases(t).filter(function (c) { return evidenceHasWork(bench.cases[c.id]); });
         var dn = byId(d.notebookSpecies) || byId(selected) || DINOS[0];
+        var digContext = d.digNotebookContext;
+        var digReference = digContext && Number.isInteger(digContext.seed) && digContext.seed >= 1 && digContext.seed <= 1000000000 ? digSiteFor(digContext.seed, t) : null;
+        var digReferenceClues = digReference ? digReference.clues.filter(function (clue) { return arrVal(digContext.clues).indexOf(clue.id) >= 0; }) : [];
+        var digReferenceText = digReference && notebook[digReference.chosen.id] ? '\nREFERENCE CONTEXT | Catalog excavation exercise #' + digReference.seed + '\nCandidate: ' + digReference.chosen.common + '\nCited catalog clues:\n' + digReferenceClues.map(function (clue) { return clue.text; }).join('\n') + '\nPrompt: Which clue ruled out your closest alternative? What would you still need to identify a real fossil?\nThe grid fragments are symbolic. These clues are catalog information, not observations of an actual fossil.\n' : '';
         var entry = notebook[dn.id] || {};
         var noteIds = DINO_CATALOG_ORDER.filter(function (animal) { return notebook[animal.id]; });
         function edit(field, value) {
@@ -12928,7 +13402,7 @@ var evidenceRoute = [
         function downloadNotebook() {
           var url = null;
           try {
-            url = URL.createObjectURL(new Blob([notebookText(notebook)], { type: 'text/plain;charset=utf-8' }));
+            url = URL.createObjectURL(new Blob([notebookText(notebook) + timeInquiryText(d.timeInquiry) + digReferenceText + evidenceWorkbenchText(d.evidenceWorkbench)], { type: 'text/plain;charset=utf-8' }));
             var link = document.createElement('a'); link.href = url; link.download = 'dino-lab-field-notebook.txt';
             document.body.appendChild(link); link.click(); link.remove();
             window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
@@ -12939,12 +13413,16 @@ var evidenceRoute = [
           }
         }
         var form = el('section', { 'aria-labelledby': 'dino-notebook-heading', style: { background: T.panel, border: '1px solid ' + T.border, borderRadius: 14, padding: 16, minWidth: 0 } },
-          el('h2', { id: 'dino-notebook-heading', style: { margin: '0 0 5px', fontSize: 20 } }, __alloT('stem.dinolab.my_field_notebook', 'My field notebook')),
+          el('h2', { id: 'dino-notebook-heading', tabIndex: -1, style: { margin: '0 0 5px', fontSize: 20 } }, __alloT('stem.dinolab.my_field_notebook', 'My field notebook')),
           el('p', { style: { margin: '0 0 14px', fontSize: 12.5, lineHeight: 1.6, color: T.soft } }, __alloT('stem.dinolab.notebook_intro', 'Separate what you notice from what you infer. Notes stay with this activity; download a copy to keep independently.')),
           el('div', { style: { display: 'grid', gap: 5, fontSize: 12, fontWeight: 700, marginBottom: 12 } }, el('label', { htmlFor: 'dino-notebook-specimen' }, __alloT('stem.dinolab.notebook_specimen', 'Notebook specimen')),
             el('select', { id: 'dino-notebook-specimen', value: dn.id, onChange: function (event) { upd('notebookSpecies', event.target.value); }, style: Object.assign({}, actionStyle, { width: '100%' }) },
               DINO_CATALOG_ORDER.map(function (animal) { return el('option', { key: animal.id, value: animal.id }, animal.common + (notebook[animal.id] ? ' •' : '')); }))),
           el('div', { style: { fontSize: 12, color: T.soft, marginBottom: 12 } }, dn.name + ' · ' + fmtMya(dn)),
+          digReference && digReference.chosen.id === dn.id ? el('section', { 'aria-label': __alloT('stem.dinolab.dig_notebook_context', 'Excavation exercise context'), style: { padding: 12, marginBottom: 14, background: T.deeper, border: '1px solid ' + T.border, borderRadius: 10, fontSize: 13, lineHeight: 1.6 } },
+            el('h3', { style: { fontSize: 14, margin: '0 0 8px' } }, __alloT('stem.dinolab.dig_notebook_title', 'Your catalog excavation evidence') + ' · #' + digReference.seed),
+            el('ul', { style: { paddingLeft: 20, margin: '0 0 10px' } }, digReferenceClues.map(function (clue) { return el('li', { key: clue.id }, clue.text); })),
+            el('p', { style: { margin: 0, color: T.soft } }, __alloT('stem.dinolab.dig_notebook_prompt', 'Explain which clue ruled out an alternative and what additional fossil evidence you would need in real fieldwork. Your writing is recorded without automatic grading.'))) : null,
           el('details', { style: { padding: 12, marginBottom: 14, border: '1px solid ' + T.border, background: T.deeper, borderRadius: 10 } },
             el('summary', { style: { cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, __alloT('stem.dinolab.reference_evidence', 'Reference evidence and uncertainty')),
             el('p', { style: { fontSize: 12, lineHeight: 1.6 } }, el('strong', null, __alloT('stem.dinolab.catalog_evidence', 'Catalog evidence: ')), dn.howKnow),
@@ -12958,7 +13436,7 @@ var evidenceRoute = [
               el('div', { style: { textAlign: 'right', fontSize: 10, color: T.soft } }, (entry[field.id] || '').length + ' / 2000'));
           }),
           el('p', { style: { fontSize: 11, color: T.soft } }, __alloT('stem.dinolab.notes_retained', 'Changes are kept in the activity as you type.')),
-          el('button', { type: 'button', disabled: !noteIds.length, style: actionStyle, onClick: downloadNotebook }, __alloT('stem.dinolab.download_notebook', 'Download notebook')));
+          el('button', { type: 'button', disabled: !noteIds.length && !inquiry.started && !benchCases.length, style: actionStyle, onClick: downloadNotebook }, __alloT('stem.dinolab.download_notebook', 'Download notebook')));
         var collection = el('aside', { 'aria-label': __alloT('stem.dinolab.notebook_entries', 'Notebook entries'), style: { minWidth: 0 } },
           panel([
             el('h3', { key: 'h', style: { margin: '0 0 5px', fontSize: 16 } }, __alloT('stem.dinolab.your_investigations', 'Your investigations')),
@@ -12976,6 +13454,22 @@ var evidenceRoute = [
           ])));
         var cards = MYTHS.map(function (m) { return panel([el('div', { key: 'm', style: { fontSize: 13.5, fontWeight: 800, color: T.text, marginBottom: 6 } }, '❌ Myth: ' + m.myth), el('div', { key: 'r', style: { fontSize: 13, marginBottom: 6, lineHeight: 1.5 } }, el('strong', { style: { color: T.text } }, '✅ Reality: '), m.reality), el('div', { key: 'w', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5 } }, m.why)], { key: m.id }); });
         return el('div', null,
+          benchCases.length ? el('section', { 'aria-labelledby': 'dino-bench-notebook', style: { padding: 16, border: '1px solid ' + T.border, borderRadius: 12, background: T.panel, marginBottom: 16 } },
+            el('h2', { id: 'dino-bench-notebook', tabIndex: -1, style: { margin: '0 0 8px', fontSize: 19 } }, __alloT('stem.dinolab.bench_notebook_title', 'My evidence workbench')),
+            el('p', { style: { fontSize: 13, color: T.soft, lineHeight: 1.6 } }, __alloT('stem.dinolab.bench_notebook_intro', 'Your drafts, cited sources, first explanations, and latest revisions are included in the notebook download. Writing is not automatically assessed.')),
+            el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,260px),1fr))', gap: 12 } }, benchCases.map(function (c) {
+              var entry = bench.cases[c.id], saved = entry.record && JSON.stringify(evidenceDraft(entry)) === JSON.stringify(entry.record);
+              return el('article', { key: c.id, style: { padding: 12, borderRadius: 9, border: '1px solid ' + T.border, background: T.deeper, minWidth: 0 } },
+                el('h3', { style: { margin: '0 0 8px', fontSize: 16 } }, c.name + ' · ' + (saved ? __alloT('stem.dinolab.bench_recorded', 'Recorded') : __alloT('stem.dinolab.bench_draft', 'In progress'))),
+                el('p', { style: { fontSize: 13, lineHeight: 1.6 } }, c.question),
+                entry.claim ? el('blockquote', { style: { margin: '10px 0', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontSize: 13, lineHeight: 1.7 } }, entry.claim) : null,
+                el('button', { type: 'button', style: actionStyle, onClick: function () { upd({ tab: 'anatomy', evidenceWorkbench: Object.assign({}, bench, { caseId: c.id }) }); focusSoon('dino-bench-heading'); } }, __alloT('stem.dinolab.bench_resume', 'Resume this evidence case')));
+            }))) : null,
+          inquiry.started ? el('section', { 'aria-label': __alloT('stem.dinolab.inquiry_notebook_label', 'Time investigation record'), style: { padding: 16, border: '1px solid ' + T.border, borderRadius: 12, background: T.panel, marginBottom: 16 } },
+            el('h2', { style: { margin: '0 0 8px', fontSize: 18 } }, __alloT('stem.dinolab.inquiry_title', 'Could T. rex have hunted Stegosaurus?')),
+            el('p', { style: { fontSize: 13, color: T.soft, lineHeight: 1.6 } }, inquiry.step === 4 ? __alloT('stem.dinolab.inquiry_notebook_complete', 'Investigation recorded. Your explanation is included in the notebook download; it has not been automatically assessed.') : __alloT('stem.dinolab.inquiry_notebook_partial', 'Investigation in progress. Your responses are kept here and included in the notebook download.')),
+            inquiry.explanation ? el('blockquote', { style: { margin: '12px 0', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: 1.6 } }, inquiry.explanation) : null,
+            el('button', { type: 'button', style: actionStyle, onClick: function () { upd('tab', 'explore'); focusSoon('dino-inquiry-heading'); } }, __alloT('stem.dinolab.inquiry_return', 'Return to my investigation'))) : null,
           el('div', { className: 'dinolab-notebook-layout', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.7fr) minmax(0,1fr)', gap: 16, alignItems: 'start' } }, form, collection),
           el('details', { className: 'dinolab-myth-notes', style: { marginTop: 18, padding: 14, border: '1px solid ' + T.border, borderRadius: 12, background: T.panel } },
             el('summary', { style: { cursor: 'pointer', fontSize: 16, fontWeight: 800 } }, __alloT('stem.dinolab.myths_corrected', 'Field notes: myths, corrected')),
@@ -13002,30 +13496,35 @@ var evidenceRoute = [
           { icon: '🤚', title: t('stem.dinolab.a_wrist_that_folds', 'A wrist that folds'), text: t('stem.dinolab.birds_fold_their_wings_using_a_special', 'Birds fold their wings using a special half-moon wrist bone. The same bone let some dinosaurs tuck their arms against the body.') },
           { icon: '📈', title: t('stem.dinolab.fast_growth_warm_bodies', 'Fast growth, warm bodies'), text: t('stem.dinolab.growth_rings_in_dinosaur_bones_show_ma', 'Growth rings in dinosaur bones show many grew quickly and ran warm, more like birds and mammals than like modern reptiles.') }
         ];
-        var feathered = DINOS.filter(function (dn) {
-          if (dn.group === 'other') return false; // never list the non-dino foils (Pteranodon's "wing" matched) on the "feathered dinosaurs" panel
-          var s = (dn.blurb + ' ' + dn.traits.join(' ')).toLowerCase();
-          return dn.clade === 'Avialae' || s.indexOf('feather') !== -1 || s.indexOf('plumage') !== -1 || s.indexOf('quill') !== -1 || s.indexOf('filament') !== -1 || s.indexOf('fuzz') !== -1 || s.indexOf('wing') !== -1;
-        }).sort(function (a, b) { return a.common < b.common ? -1 : 1; });
+        // Curated fossil cases, never inferred from words in a description.
+        // Absence from this selection does not imply absence of feathers.
+        var feathered = ['anchiornis', 'caudipteryx', 'microraptor', 'sinosauropteryx', 'velociraptor', 'yutyrannus'].map(byId);
         var evCards = el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 } }, evidence.map(function (ev) {
           return panel([el('div', { key: 'h', style: { fontSize: 15, fontWeight: 800, marginBottom: 4 } }, ev.icon + ' ' + ev.title), el('div', { key: 't', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5 } }, ev.text)], { key: ev.title });
         }));
-        var fchips = el('div', { key: 'chips', style: { display: 'flex', flexWrap: 'wrap', gap: 5 } }, feathered.map(function (dn) {
-          return el('button', { key: dn.id, onClick: function () { upd({ tab: 'explore', selected: dn.id }); }, 'aria-label': 'Open ' + dn.common, style: { fontSize: 11, padding: '3px 9px', borderRadius: 999, cursor: 'pointer', border: '1px solid ' + T.border, background: T.deeper, color: T.text } }, dn.common);
+        var fchips = el('div', { key: 'chips', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,260px),1fr))', gap: 12 } }, feathered.map(function (dn) {
+          var record = coveringEvidenceFor(dn, skeletalAnatomyProfileFor(dn));
+          return el('article', { key: dn.id, 'data-feather-case': dn.id, style: { padding: 14, background: T.deeper, border: '1px solid ' + T.border, borderRadius: 12 } },
+            el('h3', { style: { margin: '0 0 8px', fontSize: 16 } }, dn.common),
+            el('div', { style: { fontSize: 12, fontWeight: 800, color: T.text } }, dn.id === 'velociraptor' ? __alloT('stem.dinolab.feather_attachment', 'Evidence: feather attachment marks') : __alloT('stem.dinolab.feather_preserved', 'Evidence: preserved feathers or filaments')),
+            el('p', { style: { fontSize: 13, lineHeight: 1.6 } }, record.supported),
+            el('p', { style: { fontSize: 12, color: T.soft, lineHeight: 1.6 } }, __alloT('stem.dinolab.feather_limits', 'Still uncertain: ') + record.uncertain),
+            el('a', { href: record.source.url, target: '_blank', rel: 'noopener noreferrer', style: { display: 'block', fontSize: 12, color: T.text, textDecoration: 'underline', marginBottom: 10 } }, record.source.label),
+            el('button', { type: 'button', onClick: function () { upd({ tab: 'explore', selected: dn.id }); }, 'aria-label': 'Open ' + dn.common, style: actionStyle }, __alloT('stem.dinolab.open_species_file', 'Open species file')));
         }));
         return el('div', null,
           sectionTitle('🐦', 'The bird connection', 'The single most important idea in this lab: birds are living dinosaurs.'),
           panel([el('div', { key: 'big', style: { fontSize: 16, fontWeight: 800, color: T.text, marginBottom: 6 } }, 'Birds ARE dinosaurs.'), el('div', { key: 'b', style: { fontSize: 13, lineHeight: 1.55 } }, 'One branch of small, feathered, meat-eating dinosaurs survived the asteroid 66 million years ago. We call its living members birds. There are more than 10,000 species of them today, so by that count dinosaurs are still among the most successful land animals on Earth.')], { marginBottom: 14, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.35)' }),
           el('div', { style: { fontSize: 13.5, fontWeight: 800, margin: '0 0 8px' } }, 'Seven clues that link them'),
           evCards,
-          panel([el('div', { key: 'h', style: { fontSize: 14, fontWeight: 800, marginBottom: 4 } }, '🪶 Archaeopteryx: caught in between'), el('div', { key: 't', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.55 } }, 'Archaeopteryx, from about 150 million years ago, had wings and feathers like a bird but teeth, clawed fingers, and a long bony tail like a dinosaur. It is one of the clearest transitional fossils ever found, sitting right on the line between the two.')], { marginTop: 14, marginBottom: 14, background: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.30)' }),
-          panel([el('div', { key: 'h', style: { fontSize: 14, fontWeight: 800, marginBottom: 6 } }, '🦖 Meet the feathered dinosaurs (' + feathered.length + ')'), el('div', { key: 's', style: { fontSize: 12, color: T.soft, marginBottom: 8 } }, 'Each of these is preserved with feathers, fuzz, quill knobs, or wings, or sits on the branch that leads to birds. Tap one to open its file.'), fchips])
+          panel([el('div', { key: 'h', style: { fontSize: 14, fontWeight: 800, marginBottom: 4 } }, __alloT('stem.dinolab.archaeopteryx_title', 'Archaeopteryx: bird evolution in the fossil record')), el('div', { key: 't', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.55 } }, __alloT('stem.dinolab.archaeopteryx_evidence', 'Archaeopteryx, from about 150 million years ago, was a feathered dinosaur with wings, teeth, clawed fingers, and a long bony tail. Its combination of traits helps us study the origin of birds within the dinosaur family tree.'), el('a', { href: 'https://www.nhm.ac.uk/discover/dino-directory/archaeopteryx.html', target: '_blank', rel: 'noopener noreferrer', style: { display: 'block', color: T.text, textDecoration: 'underline', marginTop: 8 } }, __alloT('stem.dinolab.archaeopteryx_source', 'Fossil reference: Natural History Museum')))], { marginTop: 14, marginBottom: 14, background: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.30)' }),
+          panel([el('h2', { key: 'h', style: { fontSize: 18, margin: '0 0 8px' } }, __alloT('stem.dinolab.feather_cases', 'Featured feather evidence')), el('p', { key: 's', style: { fontSize: 13, color: T.soft, lineHeight: 1.6, marginBottom: 14 } }, __alloT('stem.dinolab.feather_cases_scope', 'Six fossil case studies connect a claim to a source and its limits. This is a selection, not a complete list of feathered dinosaurs. Being related to birds is different from having feathers preserved in a fossil.')), fchips])
         );
       }
 
       function renderEcosystem() {
         var byFormation = {};
-        DINOS.forEach(function (dn) { if (dn.group === 'other') return; (byFormation[dn.formation] = byFormation[dn.formation] || []).push(dn); });
+        DINOS.forEach(function (dn) { if (dn.group === 'other' || !dn.formation || /^(various|unknown|unspecified)$/i.test(dn.formation.trim())) return; (byFormation[dn.formation] = byFormation[dn.formation] || []).push(dn); });
         var formations = Object.keys(byFormation).filter(function (f) { return byFormation[f].length >= 3; });
         formations.sort(function (a, b) { return byFormation[b].length - byFormation[a].length; });
         if (!formations.length) return el('div', null, sectionTitle('🌍', 'Ancient ecosystems', 'Not enough species share a formation yet.'));
@@ -13052,27 +13551,25 @@ var evidenceRoute = [
         var card = panel([
           el('div', { key: 'h', style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } }, el('div', { style: { fontSize: 17, fontWeight: 800 } }, '🏞️ ' + openF + ' Formation'), el('div', { style: { fontSize: 12, color: T.soft } }, list.length + ' species')),
           el('div', { key: 'bd', style: { margin: '4px 0 10px' } }, badge(periodName(period) + ' · ' + myaHi + '–' + myaLo + ' mya', pColor(period)), badge(region, '#38bdf8')),
-          el('div', { key: 'eco', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5, marginBottom: 12 } }, 'These animals are all found in the same rock formation. Here, ' + (plants.length + omnis.length) + ' plant-eaters and omnivores are listed alongside ' + hunters.length + ' hunters, biggest first.' + (ecoSpan > 5 ? ' A formation is a stack of rock, not a single moment: this one spans about ' + ecoSpan + ' million years, so not every animal here met the others.' : ' These layers formed over a short enough span that these animals could have met.')),
+          el('div', { key: 'eco', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.6, marginBottom: 12 } }, 'These animals are all found in the same rock formation. The catalog age ranges shown here span about ' + ecoSpan + ' million years. A formation is a stack of rock, not a single moment. Even overlapping age ranges do not establish that animals shared a habitat. Counts below are catalog entries, not population sizes or a complete community.'),
           tier('🥩 Hunters', hunters, '#ef4444'),
           tier('🍴 Omnivores', omnis, '#f59e0b'),
           tier('🌿 Plant-eaters', plants, '#22c55e')
         ]);
-        var primaryN = plants.length + omnis.length;
-        var apex = hunters.length ? hunters[0] : null;
         function plevel(widthPct, fill, label, sub) {
           return el('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 6 } }, el('div', { style: { width: widthPct + '%', minWidth: 140, maxWidth: '100%', boxSizing: 'border-box', background: fill, borderRadius: 8, padding: '8px 12px', textAlign: 'center', color: '#fff', fontWeight: 700, fontSize: 12.5 } }, label), sub ? el('div', { style: { fontSize: 11, color: T.soft, margin: '1px 0' } }, sub) : null);
         }
         var pyramid = panel([
-          el('div', { key: 'h', style: { fontWeight: 800, fontSize: 14, marginBottom: 2 } }, '🔺 Energy pyramid'),
-          el('div', { key: 's', style: { fontSize: 12, color: T.soft, marginBottom: 10, lineHeight: 1.5 } }, 'Energy flows up from the sun. Some is lost at every step, so each level can feed fewer animals than the one below it. Bar width shows energy, not exact numbers.'),
+          el('div', { key: 'h', style: { fontWeight: 800, fontSize: 14, marginBottom: 2 } }, '🔺 Energy pyramid · conceptual model'),
+          el('div', { key: 's', style: { fontSize: 12, color: T.soft, marginBottom: 10, lineHeight: 1.6 } }, 'Plants capture sunlight. Only part of the energy taken in at one feeding level becomes available to the next. These illustrative widths show decreasing energy; they are not measurements of this formation.'),
           el('div', { key: 'p' },
-            plevel(34, '#b91c1c', '🥩 Hunters · ' + hunters.length, apex ? 'apex predator here: ' + apex.common : 'no hunters found here'),
-            plevel(64, '#c2410c', '🦕 Plant-eaters + omnivores · ' + primaryN, 'the primary consumers'),
-            plevel(100, '#15803d', '🌿 Plants (producers)', 'ferns, cycads, and conifers — the green base that fed it all')
+            plevel(34, '#b91c1c', 'Animal consumers', 'feeding on other consumers'),
+            plevel(64, '#c2410c', 'Plant consumers', 'feeding directly on producers'),
+            plevel(100, '#15803d', 'Plants (producers)', 'capturing energy from sunlight')
           ),
-          el('div', { key: 'n', style: { fontSize: 11.5, color: T.soft, marginTop: 8, fontStyle: 'italic' } }, primaryN + ' kinds of plant-eater and omnivore shared this rock unit with ' + hunters.length + ' kind' + (hunters.length === 1 ? '' : 's') + ' of hunter. That few-predators-on-top shape is what an energy pyramid predicts.')
+          el('div', { key: 'n', style: { fontSize: 12, color: T.soft, marginTop: 8, lineHeight: 1.6 } }, 'Omnivores can feed at more than one level. Decomposers use material from every level. Energy flow does not predict the number of species in this catalog, and body size alone does not identify an apex predator.')
         ], { marginTop: 14, background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.28)' });
-        return el('div', null, sectionTitle('🌍', 'Ancient ecosystems', 'Not all dinosaurs lived together. Each rock formation is a snapshot of one place and time. Pick a site to meet its whole community.'), selector, note, card, pyramid);
+        return el('div', null, sectionTitle('🌍', 'Ancient ecosystems', 'Explore animals recorded from the same rock formation, then consider the limits of reconstructing a community.'), selector, note, card, pyramid);
       }
 
       var content;
@@ -13113,90 +13610,137 @@ var evidenceRoute = [
         );
       }
 
-      function renderMissionDeck() {
-        var savedProgress = fieldProgressIsValid(d.field3dProgress) ? d.field3dProgress : fieldProgressRecordFor(d);
-        var hasSavedProgress = fieldProgressIsValid(savedProgress);
-        var savedSpecies = hasSavedProgress ? (byId(savedProgress.speciesId) || DINOS[0]) : null;
-        var savedScanCount = hasSavedProgress ? Object.keys(savedProgress.scanLogged || {}).length : 0;
-        var savedAssemblyCount = hasSavedProgress ? Object.keys(savedProgress.assemblyPlaced || {}).length : 0;
-        function resumeFieldInvestigation() {
-          upd(fieldProgressRestorePatch(savedProgress));
-          announceToSR('Resumed Dino Lab investigation for ' + savedSpecies.common + '.');
+      function renderTimeInquiry() {
+        var q = timeInquiryState(d.timeInquiry);
+        function ti(key, fallback) { return t('stem.dinolab.inquiry_' + key, fallback); }
+        function change(patch, moveFocus) {
+          upd('timeInquiry', Object.assign({}, q, patch));
+          if (moveFocus) focusSoon('dino-inquiry-heading');
         }
-        function clearSavedInvestigation() {
-          upd(fieldProgressClearPatch());
-          announceToSR(__alloT('stem.dinolab.sr_saved_dino_lab_investigation_cleared', 'Saved Dino Lab investigation cleared.'));
+        var title = ti('title', 'Could T. rex have hunted Stegosaurus?');
+        var stages = [ti('predict', 'Predict'), ti('inspect', 'Inspect'), ti('explain', 'Explain'), ti('transfer', 'Try another pair'), ti('recorded', 'Recorded')];
+        var copyStyle = { fontSize: 14, lineHeight: 1.65, color: T.soft, margin: '8px 0 14px' };
+        var primary = Object.assign({}, actionStyle, { minHeight: 44, background: '#15803d', borderColor: '#15803d', color: '#fff' });
+        function next(label, step, disabled) { return el('button', { type: 'button', style: primary, disabled: disabled, onClick: function () { change({ step: step }, true); } }, label); }
+        function choices(field, label, options) {
+          return el('div', { role: 'group', 'aria-label': label, style: { display: 'grid', gap: 8, margin: '12px 0' } }, options.map(function (option) {
+            var chosen = q[field] === option[0];
+            return el('button', { key: option[0], type: 'button', 'aria-pressed': chosen, style: Object.assign({}, actionStyle, { minHeight: 44, textAlign: 'left', lineHeight: 1.5, border: '2px solid ' + (chosen ? T.text : T.border), background: chosen ? T.panel : T.deeper }), onClick: function () { var patch = {}; patch[field] = option[0]; change(patch); } }, (chosen ? '● ' : '○ ') + option[1]);
+          }));
         }
-        var seenCount = Object.keys(seen || {}).length;
-        var quizCount = d.quizCorrect || 0;
-        var activeTab = (TABS.filter(function (tb) { return tb.id === tab; })[0] || TABS[0]).label;
-        var routeCards = [
-          { id: 'field', title: 'Start with the field guide', body: 'Search, filter, and open species cards before moving into deeper evidence work.', tab: 'explore', accent: '#22c55e' },
-          { id: 'time', title: 'Build the time story', body: 'Use the timeline and deep-time scale to connect periods, climate, and extinction.', tab: 'timeline', accent: '#38bdf8' },
-          { id: 'model', title: 'Inspect a 3D reconstruction', body: 'Use the field station to compare skeleton, body outline, scale, and uncertainty layers.', tab: 'field3d', accent: '#14b8a6' },
-          { id: 'evidence', title: 'Think like a paleontologist', body: 'Compare traits, excavate a fossil, classify a specimen, then check uncertainty notes.', tab: 'dig', accent: '#f59e0b' },
-          { id: 'practice', title: 'Lock in understanding', body: 'Use quiz, records, glossary, and classroom printables when students are ready to review.', tab: 'quiz', accent: '#a78bfa' }
-        ];
-        return el('section', {
-          'data-dinolab-command': 'true',
-          'aria-label': __alloT('stem.dinolab.a11y_dino_lab_mission_control', 'Dino Lab mission control'),
-          style: { margin: '0 0 16px', padding: 16, borderRadius: 16, border: '1px solid rgba(34,197,94,0.34)', background: 'linear-gradient(135deg, #0b3b2e, #0f172a)', boxShadow: '0 18px 38px rgba(0,0,0,0.24)' }
-        },
-          el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14, alignItems: 'stretch' } },
-            el('div', { style: { borderRadius: 14, padding: 14, background: 'rgba(2,6,23,0.34)', border: '1px solid rgba(148,163,184,0.20)' } },
-              el('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0, marginBottom: 6 } }, 'Dino field station'),
-              el('h2', { style: { fontSize: 22, lineHeight: 1.15, margin: '0 0 8px', color: '#f1f5f9' } }, 'Every fossil starts a question.'),
-              el('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } }, 'Explore ' + DINOS.length + ' prehistoric animals. Collect specimens, inspect the evidence, and build your own field notebook.'),
-              hasSavedProgress ? el('div', { className: 'dinolab-resume-card', role: 'region', 'aria-label': __alloT('stem.dinolab.a11y_saved_dino_lab_investigation', 'Saved Dino Lab investigation'), style: { marginTop: 12, padding: 10, borderRadius: 10, border: '1px solid rgba(94,234,212,0.42)', background: 'rgba(20,184,166,0.10)' } },
-                el('div', { style: { fontSize: 11, fontWeight: 900, color: '#99f6e4', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 } }, 'Saved investigation'),
-                el('div', { style: { fontSize: 13, fontWeight: 900, color: '#f8fafc', marginBottom: 3 } }, savedSpecies.common + ' · ' + savedScanCount + '/3 evidence logged · ' + savedAssemblyCount + '/6 assembled'),
-                el('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.4, marginBottom: 8 } }, 'Your evidence path is saved. Continue where you left off or clear it for a fresh investigation.'),
-                el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
-                  el('button', { type: 'button', onClick: resumeFieldInvestigation, 'aria-label': 'Resume Dino Lab investigation for ' + savedSpecies.common, style: { padding: '7px 10px', borderRadius: 7, border: '1px solid #5eead4', background: '#0f766e', color: '#f8fafc', cursor: 'pointer', fontSize: 11.5, fontWeight: 900 } }, 'Resume investigation'),
-                  el('button', { type: 'button', onClick: clearSavedInvestigation, 'aria-label': __alloT('stem.dinolab.a11y_clear_saved_dino_lab_investigation', 'Clear saved Dino Lab investigation'), style: { padding: '7px 10px', borderRadius: 7, border: '1px solid rgba(148,163,184,0.42)', background: 'transparent', color: '#cbd5e1', cursor: 'pointer', fontSize: 11.5, fontWeight: 800 } }, 'Clear saved progress')
-                )
-              ) : null,
-              el('div', { className: 'dinolab-mission-stats', style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8, marginTop: 14 } },
-                [
-                  ['Species opened', seenCount + '/' + DINOS.length, '#86efac'],
-                  ['Quiz correct', quizCount + '/' + (d.quizDone || 0), '#facc15'],
-                  ['Active section', activeTab, '#67e8f9']
-                ].map(function (item) {
-                  return el('div', { key: item[0], style: { padding: 9, borderRadius: 10, background: 'rgba(15,23,42,0.58)', border: '1px solid rgba(148,163,184,0.18)' } },
-                    el('div', { style: { fontSize: 10, fontWeight: 800, color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: 0 } }, item[0]),
-                    el('div', { style: { marginTop: 3, fontSize: 15, fontWeight: 900, color: item[2], wordBreak: 'break-word' } }, item[1])
-                  );
-                })
-              )
-            ),
-            el('details', { className: 'dinolab-investigation-paths', style: { alignSelf: 'start', padding: 14, borderRadius: 14, border: '1px solid rgba(148,163,184,0.25)', color: '#f1f5f9' } },
-              el('summary', { style: { cursor: 'pointer', fontSize: 15, fontWeight: 800, padding: 4 } }, __alloT('stem.dinolab.choose_path', 'Choose an investigation path')),
-              el('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, __alloT('stem.dinolab.path_hint', 'Start with a species below, or choose a route through time, fossils, and reconstruction.')),
-              routeCards.map(function (card) {
-                var active = tab === card.tab;
-                return el('button', {
-                  key: card.id,
-                  onClick: function () { upd('tab', card.tab); announceToSR(card.title); },
-                  style: { textAlign: 'left', cursor: 'pointer', width: '100%', marginBottom: 8, minHeight: 80, padding: 13, borderRadius: 13, border: '1px solid ' + (active ? card.accent : 'rgba(148,163,184,0.20)'), background: active ? 'rgba(255,255,255,0.10)' : 'rgba(15,23,42,0.50)', color: '#f1f5f9', boxShadow: active ? '0 10px 22px rgba(0,0,0,0.22)' : 'none' }
-                },
-                  el('div', { style: { width: 34, height: 5, borderRadius: 99, background: card.accent, marginBottom: 10 } }),
-                  el('div', { style: { fontSize: 14, fontWeight: 900, marginBottom: 5 } }, card.title),
-                  el('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.45 } }, card.body),
-                  el('div', { style: { marginTop: 10, fontSize: 11, fontWeight: 800, color: card.accent } }, active ? 'Open now' : 'Open path')
-                );
-              })
-            )
-          )
-        );
+        function timeEvidence(ids) {
+          var animals = ids.map(byId), hi = Math.ceil(Math.max.apply(null, animals.map(function (a) { return a.myaHi; })) / 5) * 5 + 5;
+          var lo = Math.floor(Math.min.apply(null, animals.map(function (a) { return a.myaLo; })) / 5) * 5 - 5;
+          return el('figure', { style: { margin: '16px 0', padding: 14, background: T.deeper, border: '1px solid ' + T.border, borderRadius: 12 } },
+            el('figcaption', { style: { fontSize: 13, fontWeight: 800, marginBottom: 14 } }, ti('axis_title', 'Fossil age estimates · one shared time scale')),
+            el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: T.soft, marginBottom: 10 } }, el('span', null, hi + ' mya'), el('span', null, lo + ' mya')),
+            animals.map(function (animal, i) { return el('div', { key: animal.id, style: { marginBottom: 12 } },
+              el('div', { style: { fontSize: 13, fontWeight: 700, marginBottom: 6 } }, animal.common + ' · ' + fmtMya(animal)),
+              el('div', { 'aria-hidden': 'true', style: { position: 'relative', height: 18, border: '1px solid ' + T.border, borderRadius: 4 } }, el('div', { style: { position: 'absolute', left: (hi - animal.myaHi) / (hi - lo) * 100 + '%', width: (animal.myaHi - animal.myaLo) / (hi - lo) * 100 + '%', height: '100%', background: i === 0 ? '#0e7490' : '#b45309', borderRadius: 3 } })));
+            }),
+            el('div', { style: { fontSize: 12, color: T.soft, lineHeight: 1.6 } }, ti('axis_hint', 'mya = million years ago. Older is on the left. Bars show estimated age ranges in this catalog, not exact dates for every individual.')));
+        }
+        var body;
+        if (!q.started) {
+          body = el('div', { className: 'dinolab-inquiry-intro', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.4fr) minmax(0,1fr)', gap: 20, alignItems: 'center' } },
+            el('div', null,
+              el('p', { style: copyStyle }, ti('invitation', 'Make a prediction. Read the fossil dates. Build an explanation you can defend.')),
+              el('button', { type: 'button', style: primary, onClick: function () { change({ started: true }, true); } }, ti('start', 'Start the investigation')),
+              el('p', { style: { fontSize: 12, color: T.soft, margin: '12px 0 0' } }, ti('free_explore', 'Or explore a specimen in the field guide below.'))),
+            el('div', { 'aria-hidden': 'true', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, background: T.deeper, padding: 12, borderRadius: 12 } },
+              ['tyrannosaurus', 'stegosaurus'].map(function (id) { var animal = byId(id); return el('div', { key: id, style: { textAlign: 'center', minWidth: 0 } }, catalogGlyph(animal), el('div', { style: { fontSize: 12, fontWeight: 800 } }, animal.common)); }),
+              el('div', { style: { gridColumn: '1 / -1', textAlign: 'center', fontSize: 11, color: T.soft } }, ti('schematic', 'Schematic silhouettes · not to scale'))));
+        } else if (q.step === 0) {
+          body = el('div', null,
+            el('p', { style: copyStyle }, ti('prediction_prompt', 'What do you think before looking at the dates? A prediction is a starting idea, not a score.')),
+            choices('prediction', ti('prediction_label', 'My prediction'), [['yes', ti('yes', 'Yes')], ['no', ti('no', 'No')], ['unsure', ti('unsure', 'Not sure yet')]]),
+            next(ti('inspect_dates', 'Inspect the dates'), 1, !q.prediction));
+        } else if (q.step === 1) {
+          body = el('div', null, timeEvidence(['stegosaurus', 'tyrannosaurus']),
+            el('p', { style: copyStyle }, ti('evidence_prompt', 'Which observation rules out this encounter?')),
+            choices('evidence', ti('evidence_label', 'Choose the relevant evidence'), [['size', ti('size', 'Their body sizes differ.')], ['time', ti('time', 'Their known age ranges do not overlap.')], ['diet', ti('diet', 'One ate meat and the other ate plants.')]]),
+            el('p', { role: 'status', style: copyStyle }, q.evidence === 'time' ? ti('time_feedback', 'Yes. In these fossil records, Stegosaurus lived millions of years before T. rex.') : q.evidence === 'size' ? ti('size_feedback', 'Size can affect an encounter, but it cannot tell you whether the animals lived at the same time. Compare the dates.') : q.evidence === 'diet' ? ti('diet_feedback', 'Diet suggests what an animal might eat. It does not establish that these two animals lived together. Compare the dates.') : ''),
+            next(ti('build_explanation', 'Build my explanation'), 2, q.evidence !== 'time'));
+        } else if (q.step === 2) {
+          body = el('div', null, timeEvidence(['stegosaurus', 'tyrannosaurus']),
+            el('label', { htmlFor: 'dino-inquiry-explanation', style: { display: 'block', fontSize: 14, fontWeight: 800 } }, ti('explanation_label', 'My explanation')),
+            el('p', { id: 'dino-inquiry-help', style: copyStyle }, ti('explanation_hint', 'Say whether an encounter was possible, cite the dates, and explain why the time gap matters. You can start: “I first thought… The dates show… So…”')),
+            el('textarea', { id: 'dino-inquiry-explanation', value: q.explanation, maxLength: 2000, rows: 4, 'aria-describedby': 'dino-inquiry-help', onChange: function (event) { change({ explanation: event.target.value.slice(0, 2000) }); }, style: { boxSizing: 'border-box', width: '100%', resize: 'vertical', padding: 12, font: 'inherit', fontSize: 14, lineHeight: 1.6, border: '1px solid ' + T.border, borderRadius: 10, background: T.deeper, color: T.text, marginBottom: 10 } }),
+            el('p', { style: { fontSize: 12, color: T.soft } }, ti('writing_scope', 'Your words are kept as you type. Recording an explanation does not automatically assess its quality.')),
+            next(ti('test_new_pair', 'Test the idea on another pair'), 3, !q.explanation.trim()));
+        } else if (q.step === 3) {
+          body = el('div', null,
+            el('h3', { style: { fontSize: 18 } }, ti('transfer_title', 'What about T. rex and Triceratops?')),
+            timeEvidence(['tyrannosaurus', 'triceratops']),
+            choices('transfer', ti('transfer_prompt', 'What can these dates tell us?'), [['proves', ti('proves', 'Overlapping dates prove they hunted each other.')], ['possible', ti('possible', 'An encounter was possible in time, but the dates do not prove hunting.')], ['never', ti('never', 'They could never have met.')]]),
+            el('p', { role: 'status', style: copyStyle }, q.transfer === 'possible' ? ti('possible_feedback', 'Exactly: overlapping time ranges allow an encounter. Local fossil context and evidence of feeding would be needed to investigate hunting.') : q.transfer === 'proves' ? ti('proves_feedback', 'Overlap tells us when animals lived. It does not, by itself, show where they met or what one ate. Try a more limited conclusion.') : q.transfer === 'never' ? ti('never_feedback', 'Look where the two time bars overlap. Unlike the first pair, time alone does not rule out an encounter.') : ''),
+            next(ti('record', 'Record my investigation'), 4, q.transfer !== 'possible'));
+        } else {
+          body = el('div', null,
+            el('p', { style: copyStyle }, ti('finish', 'Investigation recorded. You used time to rule out one encounter and recognized the limits of overlapping dates.')),
+            el('h3', { style: { fontSize: 14 } }, ti('explanation_label', 'My explanation')),
+            el('blockquote', { style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: 1.7, margin: '12px 0', padding: '10px 14px', borderLeft: '3px solid #15803d', background: T.deeper } }, q.explanation),
+            el('p', { style: copyStyle }, ti('self_check', 'Self-check: did you include the dates and explain why they matter? Share your reasoning with a partner or teacher.')),
+            el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+              el('button', { type: 'button', style: primary, onClick: function () { upd('tab', 'notes'); focusSoon('dino-notebook-heading'); } }, ti('open_notebook', 'Open my notebook')),
+              el('button', { type: 'button', style: actionStyle, onClick: function () { change({ step: 2 }, true); } }, ti('revise', 'Revise my explanation'))));
+        }
+        return el('section', { 'aria-labelledby': 'dino-inquiry-heading', 'data-time-inquiry': q.started ? q.step : 'intro', style: { background: T.panel, border: '1px solid ' + T.border, borderTop: '4px solid #15803d', borderRadius: 14, padding: 20, marginBottom: 14, minWidth: 0 } },
+          el('div', { style: { fontSize: 11, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: T.soft, marginBottom: 8 } }, ti('eyebrow', 'Investigate a prehistoric encounter')),
+          el('h2', { id: 'dino-inquiry-heading', tabIndex: -1, style: { fontSize: 'clamp(22px,3vw,30px)', lineHeight: 1.2, margin: 0, maxWidth: 680 } }, title),
+          q.started ? el('ol', { 'aria-label': ti('steps', 'Investigation steps'), style: { display: 'flex', flexWrap: 'wrap', gap: '6px 18px', padding: 0, margin: '16px 0', listStyle: 'none', fontSize: 12 } }, stages.map(function (stage, i) { return el('li', { key: i, 'aria-current': i === q.step ? 'step' : undefined, style: { color: i === q.step ? T.text : T.soft, fontWeight: i === q.step ? 900 : 400, borderBottom: i === q.step ? '2px solid #15803d' : '2px solid transparent', paddingBottom: 4 } }, (i + 1) + '. ' + stage); })) : null,
+          q.started && q.step > 0 ? el('p', { style: { fontSize: 12, color: T.soft, margin: '8px 0' } }, ti('initial_prediction', 'My initial prediction: ') + (q.prediction === 'yes' ? ti('yes', 'Yes') : q.prediction === 'no' ? ti('no', 'No') : ti('unsure', 'Not sure yet'))) : null,
+          body);
       }
 
-      var accessibilityStyles = '@media(max-width:720px){.dinolab-root .dinolab-3d-evidence-route{grid-template-columns:repeat(3,minmax(0,1fr))!important}.dinolab-root .dinolab-3d-evidence-route>div:first-child,.dinolab-root .dinolab-3d-evidence-route>div:last-child,.dinolab-root .dinolab-3d-evidence-route>button:last-child{grid-column:1/-1}.dinolab-root .dinolab-3d-evidence-route>div[role=listitem]{margin-top:0!important}.dinolab-root .dinolab-3d-evidence-route>div[role=listitem]>button{grid-template-columns:18px minmax(0,1fr)!important;row-gap:2px!important;min-height:44px}.dinolab-root .dinolab-3d-evidence-route>div[role=listitem]>button>span:last-child{grid-column:2}.dinolab-root .dinolab-3d-camera-readout{max-width:calc(100% - 170px);font-size:9px!important}.dinolab-root .dinolab-3d-readouts>.dinolab-3d-chip:nth-child(n+3){display:none}.dinolab-root .dinolab-fit-model{font-size:10px!important;padding:7px!important;bottom:55px!important}}' +
+      function renderMissionDeck() {
+        var savedProgress = fieldProgressIsValid(d.field3dProgress) ? d.field3dProgress : fieldProgressRecordFor(d);
+        var savedSpecies = fieldProgressIsValid(savedProgress) ? byId(savedProgress.speciesId) : null;
+        return el('div', { 'data-dinolab-command': 'true' },
+          renderTimeInquiry(),
+          savedSpecies ? el('section', { className: 'dinolab-resume-card', 'aria-label': __alloT('stem.dinolab.a11y_saved_dino_lab_investigation', 'Saved Dino Lab investigation'), style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, padding: 12, marginBottom: 14, borderRadius: 10, background: T.deeper, border: '1px solid ' + T.border } },
+            el('div', { style: { flex: '1 1 180px', fontSize: 13, lineHeight: 1.6 } },
+              el('strong', null, savedSpecies.common),
+              el('div', { style: { color: T.soft } }, Object.keys(savedProgress.scanLogged || {}).length + '/3 evidence logged · ' + Object.keys(savedProgress.assemblyPlaced || {}).length + '/6 assembled')),
+            el('button', { type: 'button', style: actionStyle, 'aria-label': 'Resume Dino Lab investigation for ' + savedSpecies.common, onClick: function () { upd(fieldProgressRestorePatch(savedProgress)); announceToSR('Resumed Dino Lab investigation for ' + savedSpecies.common + '.'); } }, __alloT('stem.dinolab.resume_investigation', 'Resume investigation')),
+            el('button', { type: 'button', style: actionStyle, 'aria-label': __alloT('stem.dinolab.a11y_clear_saved_dino_lab_investigation', 'Clear saved Dino Lab investigation'), onClick: function () { upd(fieldProgressClearPatch()); announceToSR(__alloT('stem.dinolab.sr_saved_dino_lab_investigation_cleared', 'Saved Dino Lab investigation cleared.')); } }, __alloT('stem.dinolab.clear_progress', 'Clear saved progress'))) : null,
+          (d.quizDone > 0) ? el('p', { style: { fontSize: 12, color: T.soft } }, __alloT('stem.dinolab.quiz_progress', 'Quiz answers correct: ') + (d.quizCorrect || 0) + '/' + d.quizDone) : null);
+      }
+
+      var accessibilityStyles = '.dinolab-root .dinolab-dig-workspace>*,.dinolab-root .dinolab-dig-candidates>*{min-width:0}@media(max-width:850px){.dinolab-root .dinolab-dig-candidates{grid-template-columns:repeat(2,minmax(0,1fr))!important}}@media(max-width:650px){.dinolab-root .dinolab-dig-workspace{grid-template-columns:minmax(0,1fr)!important}}@media(max-width:360px){.dinolab-root .dinolab-dig-candidates{grid-template-columns:minmax(0,1fr)!important}}' + '@media(max-width:720px){.dinolab-root .dinolab-inquiry-intro{grid-template-columns:minmax(0,1fr)!important}.dinolab-root [data-time-inquiry]{padding:16px!important}}' + '@media(max-width:720px){.dinolab-root .dinolab-3d-evidence-route{grid-template-columns:repeat(3,minmax(0,1fr))!important}.dinolab-root .dinolab-3d-evidence-route>div:first-child,.dinolab-root .dinolab-3d-evidence-route>div:last-child,.dinolab-root .dinolab-3d-evidence-route>button:last-child{grid-column:1/-1}.dinolab-root .dinolab-3d-evidence-route>div[role=listitem]{margin-top:0!important}.dinolab-root .dinolab-3d-evidence-route>div[role=listitem]>button{grid-template-columns:18px minmax(0,1fr)!important;row-gap:2px!important;min-height:44px}.dinolab-root .dinolab-3d-evidence-route>div[role=listitem]>button>span:last-child{grid-column:2}.dinolab-root .dinolab-3d-camera-readout{max-width:calc(100% - 170px);font-size:9px!important}.dinolab-root .dinolab-3d-readouts>.dinolab-3d-chip:nth-child(n+3){display:none}.dinolab-root .dinolab-fit-model{font-size:10px!important;padding:7px!important;bottom:55px!important}}' +
         '.dinolab-root button:disabled{opacity:.5;cursor:not-allowed!important}.dinolab-root summary:focus-visible{outline:3px solid #0f766e;outline-offset:4px}.dinolab-root .dinolab-compare-grid>div{min-width:0}.dinolab-root .dinolab-notebook-layout select{box-sizing:border-box;max-width:100%}@media(max-width:720px){.dinolab-root .dinolab-specimen-file{position:static!important;max-height:none!important;overflow:visible!important}.dinolab-root .dinolab-specimen-file.is-open{order:-1}.dinolab-root .dinolab-notebook-layout{grid-template-columns:minmax(0,1fr)!important}}@media(max-width:380px){.dinolab-root .dinolab-species-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.dinolab-root .dinolab-species-grid button{padding:9px!important}.dinolab-root .dinolab-species-grid span{white-space:normal!important}}' +
         '.dinolab-root button:focus-visible,.dinolab-root input:focus-visible,.dinolab-root select:focus-visible,.dinolab-root textarea:focus-visible,.dinolab-root [tabindex]:focus-visible{outline:3px solid #f8fafc!important;outline-offset:2px;box-shadow:0 0 0 5px #0f766e!important}' +
         '@media(max-width:980px){.dinolab-root .dinolab-field-drawer{position:static!important;width:100%!important;max-height:none!important;margin-top:12px!important}.dinolab-root .dinolab-field-workflow{grid-template-columns:repeat(2,minmax(0,1fr))!important}}' +
         '@media(max-width:720px){.dinolab-root .dinolab-explore-layout{grid-template-columns:minmax(0,1fr)!important}.dinolab-root .dinolab-mission-stats{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))!important}.dinolab-root .dinolab-compare-grid,.dinolab-root .dinolab-compare-pickers{grid-template-columns:minmax(0,1fr)!important}.dinolab-root .dinolab-map-stats{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))!important}.dinolab-root .dinolab-field-toolbar-actions{width:100%!important;display:grid!important;grid-template-columns:repeat(auto-fit,minmax(108px,1fr))!important;margin-left:0!important}.dinolab-root .dinolab-field-toolbar-actions>button{width:100%!important}.dinolab-root .dinolab-3d-viewer{min-height:380px!important}.dinolab-root .dinolab-3d-canvas{height:380px!important}.dinolab-root .dinolab-3d-readouts{max-height:88px;overflow:hidden}.dinolab-root .dinolab-3d-chip{font-size:10px!important;padding:4px 7px!important}}' +
         '@media(max-width:720px){.dinolab-root .dinolab-field-drawer{padding:14px!important;border-radius:14px 14px 10px 10px!important;box-shadow:0 -8px 24px rgba(0,0,0,0.24)!important;border-top:2px solid rgba(20,184,166,0.42)!important}.dinolab-root .dinolab-field-drawer-handle{display:block!important}}' +
         '@media(max-width:480px){.dinolab-root #dinopanel{padding:10px!important}.dinolab-root .dinolab-tablist{padding:8px!important;flex-wrap:nowrap!important;overflow-x:auto!important;scrollbar-width:thin}.dinolab-root .dinolab-section-cue{padding-left:10px!important;padding-right:10px!important}.dinolab-root .dinolab-3d-viewer{min-height:340px!important}.dinolab-root .dinolab-3d-canvas{height:340px!important}.dinolab-root .dinolab-3d-readouts{left:7px!important;right:7px!important;top:7px!important;gap:4px!important;max-height:70px}.dinolab-root .dinolab-3d-camera-readout{right:7px!important;bottom:58px!important;font-size:10px!important}.dinolab-root .dinolab-3d-status{left:7px!important;right:7px!important;bottom:7px!important;font-size:10px!important;padding:6px 8px!important}.dinolab-root .dinolab-3d-view-controls{align-items:stretch!important}.dinolab-root .dinolab-3d-view-controls>button{flex:1 1 72px}}';
+      accessibilityStyles += '.dinolab-root .dinolab-evidence-workspace>*{min-width:0}.dinolab-root [data-evidence-workbench] select{max-width:100%}@media(max-width:760px){.dinolab-root .dinolab-evidence-workspace{grid-template-columns:minmax(0,1fr)!important}}';
+      accessibilityStyles += [
+        '.dinolab-root{--dino-accent:color-mix(in srgb,var(--allo-stem-text,#f1f5f9) 72%,#0d9488);--dino-on-accent:var(--allo-stem-canvas,#0f172a);--dino-tint:color-mix(in srgb,var(--allo-stem-panel,#1e293b) 92%,#14b8a6);--dino-paper:color-mix(in srgb,var(--allo-stem-panel,#1e293b) 89%,#c9ac7d);--dino-ink:var(--allo-stem-text,#f1f5f9);--dino-fossil:color-mix(in srgb,var(--allo-stem-panel,#1e293b) 42%,#b89864);--dino-fossil-shadow:color-mix(in srgb,var(--allo-stem-text,#f1f5f9) 22%,#9a774a)}',
+        '.dinolab-root .dinolab-anatomy-page,.dinolab-root [data-evidence-workbench]{max-width:1240px;margin-inline:auto}.dinolab-root .dinolab-evidence-heading{padding:18px 22px;margin-bottom:16px;border:1px solid var(--allo-stem-border,#334155);border-left:4px solid var(--dino-accent);border-radius:4px 16px 16px 4px;background:linear-gradient(110deg,var(--dino-tint),var(--allo-stem-panel,#1e293b))}.dinolab-root .dinolab-evidence-heading>p:first-child{color:var(--dino-accent)}.dinolab-root .dinolab-evidence-heading h2{font-family:Georgia,Times,serif;font-size:clamp(28px,3vw,37px)!important;letter-spacing:-.025em;line-height:1.2!important}.dinolab-root .dinolab-evidence-heading>p:last-child{margin-bottom:0!important}',
+        '.dinolab-root .dinolab-evidence-cases>button{display:flex;align-items:center;gap:14px;border-radius:14px!important;background:var(--allo-stem-panel,#1e293b)!important;box-shadow:0 2px 5px #00000008}.dinolab-root .dinolab-evidence-cases>button[aria-pressed=true]{border-color:var(--dino-accent)!important;box-shadow:inset 0 0 0 1px var(--dino-accent);background:var(--dino-tint)!important}.dinolab-root .dinolab-evidence-thumb{display:flex;align-items:center;justify-content:center;flex:0 0 88px;height:68px;padding:7px;border:1px solid var(--allo-stem-border,#334155);border-radius:10px;background:var(--dino-paper);box-sizing:border-box;overflow:hidden}.dinolab-root .dinolab-evidence-thumb svg{max-height:100%}.dinolab-root .dinolab-evidence-case-copy{min-width:0;display:block}.dinolab-root .dinolab-evidence-case-meta{display:block;font-size:11px;font-weight:600;color:var(--allo-stem-text-soft,#94a3b8);margin-bottom:5px}.dinolab-root .dinolab-evidence-case-title{display:block;font-size:16px;font-weight:800;line-height:1.4}.dinolab-root .dinolab-evidence-case-state{display:inline-block;margin-top:7px;font-size:10px;font-weight:700;color:var(--dino-accent)}',
+        '.dinolab-root .dinolab-evidence-steps{gap:0!important;border-bottom:1px solid var(--allo-stem-border,#334155);padding-bottom:1px;margin-bottom:18px!important}.dinolab-root .dinolab-evidence-steps>button{background:transparent!important;border:0!important;border-bottom:3px solid transparent!important;border-radius:0!important;min-height:46px;text-decoration:none!important;margin-bottom:-2px}.dinolab-root .dinolab-evidence-steps>button[aria-current=step]{border-bottom-color:var(--dino-accent)!important;color:var(--dino-accent)!important}',
+        '.dinolab-root .dinolab-evidence-reference,.dinolab-root .dinolab-evidence-task{padding:20px!important;border-radius:16px!important;box-shadow:0 4px 16px #00000006}.dinolab-root .dinolab-evidence-reference>div:first-child{color:var(--dino-accent);font-size:10px!important}.dinolab-root .dinolab-evidence-reference>h3{font-family:Georgia,Times,serif;font-style:italic;font-size:26px!important}.dinolab-root .dinolab-evidence-figure{padding:0!important;overflow:hidden;background:var(--dino-paper)!important}.dinolab-root .dinolab-evidence-figure>svg{max-height:260px}.dinolab-root .dinolab-evidence-figure figcaption{padding:9px 12px!important;border-top:1px solid var(--allo-stem-border,#334155);font-size:10px!important}.dinolab-root .dinolab-evidence-citation{border:1px solid var(--allo-stem-border,#334155)!important;border-radius:10px;margin-top:8px;padding:12px!important;background:var(--allo-stem-canvas,#0f172a)}.dinolab-root .dinolab-evidence-citation.is-cited{border-color:var(--dino-accent)!important;background:var(--dino-tint)}.dinolab-root [data-evidence-workbench] input[type=checkbox]{accent-color:var(--dino-accent);width:16px;height:16px;flex-shrink:0}',
+        '.dinolab-root .dinolab-evidence-key>div{background:transparent!important;border:0!important;border-left:2px solid var(--allo-stem-border,#334155)!important;border-radius:0!important;padding:6px 10px!important}.dinolab-root .dinolab-evidence-key dt{display:flex;align-items:center;gap:7px;line-height:1.45}.dinolab-root .dinolab-evidence-key dt svg{color:var(--dino-accent);flex-shrink:0}.dinolab-root .dinolab-evidence-key dd{padding-top:3px}.dinolab-root .dinolab-evidence-statement{padding:14px!important;margin:10px 0;background:var(--allo-stem-canvas,#0f172a);border:1px solid var(--allo-stem-border,#334155)!important;border-radius:12px}.dinolab-root .dinolab-evidence-statement select{font-weight:500!important;background:var(--allo-stem-panel,#1e293b)!important}.dinolab-root .dinolab-evidence-feedback{border-left:3px solid var(--dino-accent);padding:8px 10px;background:var(--dino-tint);border-radius:0 6px 6px 0}',
+        '.dinolab-root .dinolab-evidence-primary:not(:disabled){background:var(--dino-accent)!important;color:var(--dino-on-accent)!important;border-color:var(--dino-accent)!important}.dinolab-root [data-evidence-workbench] button{min-height:44px}.dinolab-root .dinolab-evidence-writing{padding:0 0 12px;border-bottom:1px solid var(--allo-stem-border,#334155)}.dinolab-root .dinolab-evidence-writing textarea{background:var(--allo-stem-canvas,#0f172a)!important;font-size:14px!important}.dinolab-root .dinolab-evidence-writing:focus-within label{color:var(--dino-accent)}.dinolab-root [data-evidence-workbench] :is(button,select,textarea,summary,input,a):focus-visible{outline:3px solid var(--dino-accent)!important;outline-offset:3px}',
+        '.dinolab-root .dinolab-species-grid [data-dino-card]{border-radius:14px!important;border-width:1px!important;box-shadow:0 2px 8px #00000008}.dinolab-root .dinolab-species-grid [data-dino-card][aria-pressed=true]{border-color:var(--dino-accent)!important;box-shadow:inset 0 0 0 1px var(--dino-accent);background:var(--dino-tint)!important}.dinolab-root .dinolab-specimen-portrait{padding:6px 3px;background:linear-gradient(155deg,color-mix(in srgb,var(--allo-stem-panel,#1e293b) 87%,var(--dino-period)),var(--allo-stem-panel,#1e293b))!important;border:1px solid color-mix(in srgb,var(--allo-stem-border,#334155) 75%,var(--dino-period));border-radius:10px!important}.dinolab-root .dinolab-specimen-portrait svg{color:var(--dino-accent)!important}.dinolab-root .dinolab-catalog-controls{box-shadow:0 4px 16px #00000006}.dinolab-root .dinolab-catalog-controls h2{font-family:Georgia,Times,serif;font-size:25px!important}',
+        '@media(hover:hover){.dinolab-root .dinolab-evidence-cases>button:hover,.dinolab-root .dinolab-species-grid [data-dino-card]:hover{border-color:var(--dino-accent)!important;box-shadow:0 5px 14px #00000014}.dinolab-root .dinolab-evidence-citation:hover{border-color:var(--dino-accent)!important}}',
+        '@media(prefers-reduced-motion:no-preference){.dinolab-root .dinolab-evidence-cases>button,.dinolab-root .dinolab-species-grid [data-dino-card]{transition:box-shadow 150ms ease,border-color 150ms ease,background-color 150ms ease}}',
+        '@media(min-width:901px) and (min-height:900px){.dinolab-root .dinolab-evidence-reference{position:sticky;top:16px}}',
+        '@media(max-width:760px){.dinolab-root .dinolab-evidence-heading{padding:15px 16px}.dinolab-root .dinolab-evidence-reference,.dinolab-root .dinolab-evidence-task{padding:15px!important}.dinolab-root .dinolab-evidence-figure>svg{max-height:220px}.dinolab-root .dinolab-evidence-key{grid-template-columns:minmax(0,1fr)!important;gap:6px!important}.dinolab-root .dinolab-evidence-key>div{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:9px}.dinolab-root .dinolab-evidence-key dd{padding:0;margin:0!important}.dinolab-root .dinolab-evidence-cases>button{padding:12px!important;gap:12px}.dinolab-root .dinolab-evidence-thumb{flex-basis:68px;height:58px}.dinolab-root .dinolab-evidence-case-title{font-size:14px}.dinolab-root .dinolab-evidence-steps>button{flex:1 1 135px;text-align:left;font-size:11px!important;padding:8px!important}.dinolab-root .dinolab-evidence-statement{padding:12px!important}}',
+        '@media(max-width:360px){.dinolab-root .dinolab-evidence-thumb{flex-basis:53px}.dinolab-root .dinolab-evidence-key>div{grid-template-columns:minmax(0,1fr)}.dinolab-root .dinolab-evidence-case-meta{font-size:10px}}',
+        '.theme-contrast .dinolab-root{--dino-accent:var(--allo-stem-text,#ffff00);--dino-on-accent:var(--allo-stem-canvas,#000);--dino-tint:var(--allo-stem-panel,#000);--dino-paper:var(--allo-stem-panel,#000);--dino-fossil:var(--allo-stem-panel,#000);--dino-fossil-shadow:var(--allo-stem-panel,#000)}.theme-contrast .dinolab-root .dinolab-evidence-heading,.theme-contrast .dinolab-root .dinolab-specimen-portrait{background:var(--allo-stem-panel,#000)!important}.theme-contrast .dinolab-root .dinolab-evidence-cases>button[aria-pressed=true]{border-width:3px!important;box-shadow:none}.theme-contrast .dinolab-root .dinolab-evidence-thumb{border-color:currentColor}',
+        '@media(forced-colors:active){.dinolab-root{--dino-accent:CanvasText;--dino-on-accent:Canvas;--dino-paper:Canvas;--dino-ink:CanvasText;--dino-fossil:Canvas;--dino-fossil-shadow:Canvas;--dino-tint:Canvas}.dinolab-root .dinolab-evidence-cases>button[aria-pressed=true],.dinolab-root .dinolab-species-grid [data-dino-card][aria-pressed=true]{outline:2px solid Highlight}.dinolab-root .dinolab-evidence-steps>button[aria-current=step]{border-bottom-color:Highlight!important}}'
+      ].join('');
+      accessibilityStyles += [
+        '.dinolab-root .dinolab-atlas{padding-top:24px;color:var(--dino-ink)}.dinolab-root .dinolab-atlas p{font-size:14px;line-height:1.65;margin:8px 0 0}.dinolab-root .dinolab-atlas-intro{margin-bottom:22px;max-width:680px}.dinolab-root .dinolab-atlas .dinolab-atlas-eyebrow{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--dino-accent);margin:0 0 6px}.dinolab-root .dinolab-atlas h2,.dinolab-root .dinolab-atlas h3{font-family:Georgia,Times,serif;font-weight:700;line-height:1.2;margin:0}.dinolab-root .dinolab-atlas h2{font-size:clamp(27px,3vw,36px);letter-spacing:-.025em}.dinolab-root .dinolab-atlas h3{font-size:27px}.dinolab-root .dinolab-atlas h4{font-size:13px;line-height:1.5;margin:0;font-weight:800}.dinolab-root .dinolab-atlas a{color:var(--dino-ink);text-decoration:underline;text-underline-offset:3px;font-size:12px;line-height:1.6}.dinolab-root .dinolab-atlas button,.dinolab-root .dinolab-atlas a{overflow-wrap:anywhere}',
+        '.dinolab-root .dinolab-atlas-layout{display:grid;grid-template-columns:minmax(235px,.72fr) minmax(0,1.7fr);gap:22px;align-items:start}.dinolab-root .dinolab-atlas-layout>*{min-width:0}.dinolab-root .dinolab-atlas-selector{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.dinolab-root .dinolab-atlas-selector button{min-width:0;display:flex;flex-direction:column;align-items:stretch;text-align:left;font-family:inherit;cursor:pointer;padding:10px;border:1px solid var(--allo-stem-border,#334155);border-radius:10px;color:var(--dino-ink);background:var(--allo-stem-canvas,#0f172a)}.dinolab-root .dinolab-atlas-preview{display:block;background:var(--dino-paper);border-radius:6px;margin-bottom:9px}.dinolab-root .dinolab-atlas-drawing{display:block;width:100%;height:auto;color:var(--dino-ink)}.dinolab-root .dinolab-atlas-preview svg{height:70px}.dinolab-root .dinolab-atlas-name{font-size:13px;line-height:1.45;font-weight:800}.dinolab-root .dinolab-atlas-tag{font-size:10px;line-height:1.5;margin-top:3px}.dinolab-root .dinolab-atlas-selector button[aria-pressed=true]{border-color:var(--dino-accent);box-shadow:inset 0 0 0 1px var(--dino-accent);background:var(--dino-tint)}.dinolab-root .dinolab-atlas-selector button[aria-pressed=true] .dinolab-atlas-name{text-decoration:underline;text-underline-offset:4px}',
+        '.dinolab-root .dinolab-atlas-detail{padding:22px;border:1px solid var(--allo-stem-border,#334155);border-top:3px solid var(--dino-accent);border-radius:4px 4px 14px 14px;background:var(--allo-stem-canvas,#0f172a)}.dinolab-root .dinolab-atlas-detail-top{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1fr);gap:20px;align-items:center;margin-bottom:22px}.dinolab-root .dinolab-atlas-detail-top>*{min-width:0}.dinolab-root .dinolab-atlas-detail figure{margin:0;background:var(--dino-paper);border:1px solid var(--allo-stem-border,#334155);border-radius:10px;overflow:hidden}.dinolab-root .dinolab-atlas-detail figure svg{max-height:190px;padding:12px;box-sizing:border-box}.dinolab-root .dinolab-atlas figcaption{font-size:10px;line-height:1.5;padding:8px 10px;border-top:1px solid var(--allo-stem-border,#334155)}.dinolab-root .dinolab-atlas-inference,.dinolab-root .dinolab-atlas-limit,.dinolab-root .dinolab-atlas-question{padding:12px 14px;margin:10px 0;border-left:3px solid var(--dino-accent);background:var(--dino-tint);border-radius:0 8px 8px 0}.dinolab-root .dinolab-atlas-limit{background:var(--dino-paper);border-left-style:double;border-left-width:4px}.dinolab-root .dinolab-atlas-question{background:transparent;border-left:1px solid var(--allo-stem-border,#334155)}.dinolab-root .dinolab-atlas-sources{display:flex;flex-direction:column;gap:7px;padding:12px 0 16px}.dinolab-root .dinolab-atlas-detail>button{width:100%;background:var(--dino-accent)!important;color:var(--dino-on-accent)!important;border-color:var(--dino-accent)!important;min-height:44px}',
+        '.dinolab-root .dinolab-atlas-preservation{margin-top:28px;padding-top:24px;border-top:1px solid var(--allo-stem-border,#334155)}.dinolab-root .dinolab-atlas-preservation>h3{font-size:24px}.dinolab-root .dinolab-atlas-routes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:16px 0}.dinolab-root .dinolab-atlas-routes>div{padding:14px;border:1px solid var(--allo-stem-border,#334155);border-radius:10px}.dinolab-root .dinolab-atlas-routes svg{height:75px;background:var(--dino-paper);border-radius:6px;margin-bottom:12px}.dinolab-root .dinolab-atlas-routes p{font-size:13px}.dinolab-root .dinolab-atlas-preservation>a{display:inline-block;margin-top:10px}.dinolab-root .dinolab-atlas :is(button,a,[tabindex]):focus-visible{outline:3px solid var(--dino-accent)!important;outline-offset:3px;box-shadow:none!important}',
+        '@media(hover:hover){.dinolab-root .dinolab-atlas-selector button:hover{border-color:var(--dino-accent);background:var(--dino-tint)}}@media(prefers-reduced-motion:no-preference){.dinolab-root .dinolab-atlas-selector button{transition:border-color 150ms ease,background-color 150ms ease}}',
+        '@media(max-width:900px){.dinolab-root .dinolab-atlas-layout{grid-template-columns:minmax(0,1fr)}.dinolab-root .dinolab-atlas-selector{grid-template-columns:repeat(4,minmax(0,1fr))}.dinolab-root .dinolab-atlas-preview svg{height:60px}}@media(max-width:560px){.dinolab-root .dinolab-atlas-selector{grid-template-columns:repeat(2,minmax(0,1fr))}.dinolab-root .dinolab-atlas-selector button{padding:9px}.dinolab-root .dinolab-atlas-preview svg{height:54px}.dinolab-root .dinolab-atlas-detail{padding:16px}.dinolab-root .dinolab-atlas-detail-top{grid-template-columns:minmax(0,1fr);gap:15px}.dinolab-root .dinolab-atlas-detail figure svg{max-height:155px}.dinolab-root .dinolab-atlas-routes{grid-template-columns:minmax(0,1fr);gap:10px}.dinolab-root .dinolab-atlas-routes svg{width:85px;height:60px;float:right;margin:0 0 8px 12px}.dinolab-root .dinolab-atlas-routes>div{display:flow-root}.dinolab-root .dinolab-atlas-layout{gap:16px}}',
+        '.theme-contrast .dinolab-root .dinolab-atlas-selector button[aria-pressed=true]{outline:2px solid currentColor;outline-offset:-3px}.theme-contrast .dinolab-root .dinolab-atlas-preview{border:1px solid currentColor}@media(forced-colors:active){.dinolab-root .dinolab-atlas-selector button[aria-pressed=true]{outline:2px solid Highlight;outline-offset:-3px}.dinolab-root .dinolab-atlas-detail>button,.dinolab-root .dinolab-evidence-primary:not(:disabled){border:2px solid ButtonText!important;background:ButtonFace!important;color:ButtonText!important}.dinolab-root .dinolab-atlas-preview{border:1px solid CanvasText}}'
+      ].join('');
       var fieldFocusActive = tab === 'field3d' && d.field3dFocusMode === true;
       return el('div', { className: 'dinolab-root', style: { minHeight: '100%', background: T.canvas, color: T.text } }, el('style', null, accessibilityStyles), fieldFocusActive ? null : tabNavigation, el('div', { id: 'dinopanel', role: fieldFocusActive ? 'region' : 'tabpanel', 'aria-labelledby': fieldFocusActive ? null : 'dinotab-' + tab, 'aria-label': fieldFocusActive ? '3D Field Station focused workspace' : null, style: { padding: fieldFocusActive ? 10 : 16 } }, tab === 'explore' ? renderMissionDeck() : null, content));
     }

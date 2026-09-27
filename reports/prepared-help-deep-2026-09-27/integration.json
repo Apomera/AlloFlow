@@ -1,0 +1,47 @@
+{
+  "started": "2026-09-27T17:47:41.015Z",
+  "head": "a63e347b7d193cbc95b5fc3a9fec844322f1f455",
+  "before": {
+    "view_simplified_source.jsx": "dad283e6c541dc1fa8bd7d116fd9ecb51c83a69c874dd951cbecc1656d28e878",
+    "view_simplified_module.js": "413cd330fe9734c50eb50c9104a346733c2554c6907f30ba5eed911ea5dbace9",
+    "desktop/web-app/public/view_simplified_module.js": "413cd330fe9734c50eb50c9104a346733c2554c6907f30ba5eed911ea5dbace9",
+    "reader_place_store.js": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9",
+    "reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+    "_build_view_simplified_module.js": "48eb897aca9572b99df1c1e0bd95231bbcb7503ad0001240fb0edfe8b27857df",
+    "dev-tools/lib/reader_compiler.cjs": "841513185ccf65337a8eed7b69a951937eb581700345f39381560d81399d345a",
+    "package.json": "ed145399195f3bca18adcb900e76ad8785abf2048d2457333b6dedf1f08c675e",
+    "tests/prepared_word_help_regressions.test.js": "76718a18fddd29fac374406b9c92918edbf72021e81d0d851b05f8d329a352b5",
+    "AlloFlowANTI.txt": "3fc492e303317be4876203d693a17fa72fc67e9715cf7cbf7a4844bdf973e7ba",
+    "desktop/web-app/src/AlloFlowANTI.txt": "3fc492e303317be4876203d693a17fa72fc67e9715cf7cbf7a4844bdf973e7ba",
+    "desktop/web-app/src/App.jsx": "3fc492e303317be4876203d693a17fa72fc67e9715cf7cbf7a4844bdf973e7ba"
+  },
+  "sourceCheckpoint": "bbf4bb81f5ab9239d2080a7470a4f36a74d51f5e",
+  "preservedOwners": [
+    "track07 vocabulary/cache/drafts",
+    "track11 lookup recovery",
+    "track01 compiler",
+    "reader localization"
+  ],
+  "sharedIndexChangedByThisTask": false,
+  "mergedSourceSha256": "2dbccb0f3d4d193e5242ea430bf9077d51bf8f136aa083cc4730d6d5b01c21f9",
+  "applied": "2026-09-27T17:47:41.176Z",
+  "after": {
+    "view_simplified_source.jsx": "c9625901a41c5a48c86faf6255bc1e3b867607f7c8c953d8b656c65a3a8f0121",
+    "view_simplified_module.js": "8f2dd725870ef19789fbf158bafec389506d3c0075159ce5cd1f7293ce970dcb",
+    "desktop/web-app/public/view_simplified_module.js": "8f2dd725870ef19789fbf158bafec389506d3c0075159ce5cd1f7293ce970dcb",
+    "reader_place_store.js": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9",
+    "reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+    "_build_view_simplified_module.js": "48eb897aca9572b99df1c1e0bd95231bbcb7503ad0001240fb0edfe8b27857df",
+    "dev-tools/lib/reader_compiler.cjs": "841513185ccf65337a8eed7b69a951937eb581700345f39381560d81399d345a",
+    "package.json": "e880a66350e09285d4a43457de9765b7a0ad107fa7aa8d2ef566583a4bfd1c77",
+    "tests/prepared_word_help_regressions.test.js": "8eaaecbf3b7ff0dea4d67747e0d4dbdefa8b9b0e45bb5b13e9fbd546f0766173",
+    "tests/prepared_help_popup_layout.test.js": "890b235bedf0163926af051c327c3088faa552d32f4a564edfe9d97562755165",
+    "dev-tools/reader-prepared-help/run.cjs": "0c71bdafd0bf82284b2c57ec15280bc26b767c1dbd063e87ab58ebd9dc89a880",
+    "dev-tools/reader-prepared-help/browser-check.cjs": "5dfd3897e0b50163a34379fcf1ae2c4b8d3d74a9d85cfb7f095262923160cd3b",
+    "dev-tools/reader-prepared-help/activation-check.cjs": "2c7a5592234e26bf4c5eea9987f83bb719bc9bafe127fdb5ff7b8144509a8a2f",
+    "dev-tools/reader-prepared-help/card-stress.cjs": "695963b31ecd0e3935a1e58ac41bce6aa9b42db740b14fc5ffd5387f8014043f"
+  },
+  "finalReaderPin": "8f2dd725",
+  "runtimeIntegrated": true,
+  "deployed": false
+}

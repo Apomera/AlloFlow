@@ -15,13 +15,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for a11yA
 
 exports[`science-sim + studio render goldens > renders + pins a digest for anatomy [ssr] 1`] = `
 {
-  "buttons": 91,
+  "buttons": 86,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 268,
+  "lengthBucket": 261,
   "paths": 0,
-  "selects": 5,
-  "sha": "b2d06bed44e80ae6",
+  "selects": 4,
+  "sha": "da73124c3031c73b",
   "svgs": 0,
 }
 `;
@@ -54,14 +54,14 @@ exports[`science-sim + studio render goldens > renders + pins a digest for artSt
 
 exports[`science-sim + studio render goldens > renders + pins a digest for astronomy [mount] 1`] = `
 {
-  "buttons": 20,
+  "buttons": 22,
   "canvases": 0,
   "inputs": 0,
-  "lengthBucket": 85,
-  "paths": 0,
-  "selects": 0,
-  "sha": "1c6aee7c91924f97",
-  "svgs": 0,
+  "lengthBucket": 125,
+  "paths": 1,
+  "selects": 1,
+  "sha": "b2113c76a36570d6",
+  "svgs": 1,
 }
 `;
 
@@ -80,13 +80,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for bakin
 
 exports[`science-sim + studio render goldens > renders + pins a digest for bridgeLab [mount] 1`] = `
 {
-  "buttons": 26,
+  "buttons": 31,
   "canvases": 0,
   "inputs": 8,
-  "lengthBucket": 281,
+  "lengthBucket": 377,
   "paths": 6,
-  "selects": 0,
-  "sha": "e15fea4289890946",
+  "selects": 1,
+  "sha": "94559ad3e686f22f",
   "svgs": 2,
 }
 `;
@@ -236,13 +236,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for kitch
 
 exports[`science-sim + studio render goldens > renders + pins a digest for microbiology [mount] 1`] = `
 {
-  "buttons": 14,
+  "buttons": 16,
   "canvases": 0,
   "inputs": 0,
-  "lengthBucket": 228,
+  "lengthBucket": 234,
   "paths": 0,
   "selects": 0,
-  "sha": "713a92812bead04f",
+  "sha": "4cd7295b5ec573b8",
   "svgs": 0,
 }
 `;
@@ -265,23 +265,23 @@ exports[`science-sim + studio render goldens > renders + pins a digest for moonM
   "buttons": 14,
   "canvases": 1,
   "inputs": 4,
-  "lengthBucket": 140,
+  "lengthBucket": 141,
   "paths": 0,
   "selects": 0,
-  "sha": "f93955845d05216a",
+  "sha": "c64721f289a18d04",
   "svgs": 0,
 }
 `;
 
 exports[`science-sim + studio render goldens > renders + pins a digest for physics [mount] 1`] = `
 {
-  "buttons": 37,
+  "buttons": 41,
   "canvases": 1,
   "inputs": 9,
-  "lengthBucket": 123,
+  "lengthBucket": 154,
   "paths": 0,
-  "selects": 0,
-  "sha": "60c9e3685d8ab184",
+  "selects": 1,
+  "sha": "11c6138864e539a6",
   "svgs": 0,
 }
 `;

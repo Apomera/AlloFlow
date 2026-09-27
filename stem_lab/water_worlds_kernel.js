@@ -4,7 +4,7 @@
  */
 (function (root) {
   'use strict';
-  var VERSION = 1, COLS = 12, ROWS = 8, AREA = 400, STEP = 0.25;
+  var VERSION = 1, COLS = 12, ROWS = 8, AREA = 400, STEP = 0.25, OBSERVATION_LIMIT = 6;
   var COVERS = {
     grass: { label: 'Meadow', infiltration: 18, depression: 1.5, color: '#80ad68' },
     forest: { label: 'Woodland', infiltration: 35, depression: 3, color: '#397f60' },
@@ -73,7 +73,7 @@
       var evap = Math.min(c.surface, 0.10 * dt / 60); c.surface -= evap;
       var transpire = Math.min(c.soil, (c.cover === 'forest' ? 0.18 : c.cover === 'paved' ? 0.01 : 0.08) * dt / 60);
       c.soil -= transpire; vapor += evap + transpire;
-      if (trace) trace.cells.push({ infiltrationMm: infiltration, drainageMm: drain, releaseMm: release, evaporationMm: evap + transpire });
+      if (trace) trace.cells.push({ infiltrationMm: infiltration, drainageMm: drain, releaseMm: release, surfaceEvaporationMm: evap, soilEvapotranspirationMm: transpire, evaporationMm: evap + transpire });
     });
     // Equal-cell transfers: delayed drainage feeds stream cells, conserving mass.
     n.cells.forEach(function (c) { if (c.cover === 'stream') c.surface += released / (ROWS * 2); });
@@ -100,7 +100,30 @@
   }
   // Probe the next fixed step using the same equations, without changing the world.
   function diagnose(w, rain) { var trace = {}; step(w, rain, STEP, { trace: trace }); return trace; }
-  function initial() { return { version: VERSION, world: create(35), settings: settings(), level: 'investigate', selected: 44, lens: 'water', running: false, run: null, baseline: null, prediction: '', reflection: '', question: 'free', differenceStore: 'surface', editHistory: [] }; }
+  // Account for one cell over the next fixed step. Every transfer is a depth
+  // over the same 400 m² cell, so surface routes can be added directly.
+  function cellBudget(w, rain, selected) {
+    if (!validWorld(w) || typeof selected !== 'number' || !isFinite(selected) || Math.floor(selected) !== selected || selected < 0 || selected >= w.cells.length) return null;
+    rain = number(rain, 0, 150, 0);
+    var trace = {}, next = step(w, rain, STEP, { trace: trace }), local = trace.cells[selected];
+    var incoming = trace.routes.filter(function (route) { return route.to === selected; });
+    var outgoing = trace.routes.filter(function (route) { return route.from === selected; });
+    function stores(c) { return { surface: c.surface, soil: c.soil, ground: c.ground }; }
+    function depth(routes) { return routes.reduce(function (value, route) { return value + route.depthMm; }, 0); }
+    function stored(c) { return c.surface + c.soil + c.ground; }
+    // The model pools delayed subsurface releases across the whole valley and
+    // shares them evenly among stream cells; it does not resolve aquifer paths.
+    var receipt = w.cells[selected].cover === 'stream' ? trace.cells.reduce(function (value, cell) { return value + cell.releaseMm; }, 0) / (ROWS * 2) : 0;
+    var transfers = { rainMm: rain * STEP / 60, infiltrationMm: local.infiltrationMm, drainageMm: local.drainageMm,
+      releaseMm: local.releaseMm, surfaceEvaporationMm: local.surfaceEvaporationMm, soilEvapotranspirationMm: local.soilEvapotranspirationMm,
+      incomingSurfaceMm: depth(incoming), outgoingSurfaceMm: depth(outgoing), streamReceiptMm: receipt };
+    var before = stores(w.cells[selected]), after = stores(next.cells[selected]);
+    var inputs = transfers.rainMm + transfers.incomingSurfaceMm + transfers.streamReceiptMm;
+    var outputs = transfers.outgoingSurfaceMm + transfers.releaseMm + transfers.surfaceEvaporationMm + transfers.soilEvapotranspirationMm;
+    return { selected: selected, minutes: STEP, before: before, after: after, transfers: transfers, incoming: incoming, outgoing: outgoing,
+      balance: { beforeMm: stored(before), inputsMm: inputs, outputsMm: outputs, afterMm: stored(after), errorMm: stored(before) + inputs - outputs - stored(after) } };
+  }
+  function initial() { return { version: VERSION, world: create(35), settings: settings(), level: 'investigate', selected: 44, lens: 'water', running: false, run: null, baseline: null, prediction: '', reflection: '', question: 'free', differenceStore: 'surface', editHistory: [], observations: [], observationSequence: 0 }; }
   function validRun(run, world) { return !!(run && validWorld(run.start) && Array.isArray(run.samples) && run.samples.length > 0 && run.samples.length <= 241 && run.samples[0] && run.samples[0].t === 0 &&
     typeof run.complete === 'boolean' && typeof run.paired === 'boolean' &&
     run.samples.every(function (sample, i) { return sample && (!i || sample.t > run.samples[i - 1].t); }) &&
@@ -119,6 +142,11 @@
     s.prediction = typeof s.prediction === 'string' ? s.prediction.slice(0, 1000) : '';
     s.reflection = typeof s.reflection === 'string' ? s.reflection.slice(0, 2000) : '';
     if (!['free','cover','retention','memory','timing'].includes(s.question)) s.question = 'free';
+    var seenObservations = {};
+    s.observations = (Array.isArray(s.observations) ? s.observations.slice(0, OBSERVATION_LIMIT) : []).map(restoreObservation).filter(function (entry) {
+      if (!entry || seenObservations[entry.id]) return false; seenObservations[entry.id] = true; return true;
+    });
+    s.observationSequence = Math.max(Math.floor(number(s.observationSequence, 0, 1e12, 0)), s.observations.reduce(function (highest, entry) { return Math.max(highest, Number(entry.id.slice(12))); }, 0));
     s.editHistory = []; // Undo is scoped to edits since opening this view or starting a storm.
     if (!validRun(s.run, s.world)) s.run = null;
     if (!s.baseline || !validWorld(s.baseline.world) || !validRun(s.baseline.run, s.baseline.world) || !s.baseline.run.complete) s.baseline = null;
@@ -153,13 +181,37 @@
     run.complete = w.minutes >= end - 1e-8;
     return Object.assign({}, s, { world: w, run: run, running: run.complete ? false : s.running });
   }
+  // Use one plan for the design preview and the actual edit so clipped patches,
+  // protected stream cells, and already-matching cover have identical meanings.
+  function editPlan(s, requested, cover) {
+    var targets = [], changes = [], streams = 0;
+    var validCover = Object.prototype.hasOwnProperty.call(COVERS, cover) && cover !== 'stream';
+    s.world.cells.forEach(function (c, i) {
+      if (!Array.isArray(requested) || requested.indexOf(i) < 0) return;
+      targets.push(i);
+      if (c.cover === 'stream') streams++;
+      else if (validCover && c.cover !== cover) changes.push(i);
+    });
+    var reason = !validCover ? 'invalid-cover' : !targets.length ? 'invalid-selection' :
+      s.run && !s.run.complete ? 'active-run' : !changes.length ? (streams === targets.length ? 'stream-only' : 'unchanged') : null;
+    return { targetIndices: targets, indices: changes, changeCount: changes.length, excludedStreams: streams,
+      areaM2: changes.length * AREA, canApply: reason === null, reason: reason };
+  }
+  function landPlan(s, selected, cover, patch) {
+    var indices = [];
+    if (typeof selected === 'number' && isFinite(selected) && Math.floor(selected) === selected && selected >= 0 && selected < COLS * ROWS) {
+      var cx = selected % COLS, cy = Math.floor(selected / COLS), radius = patch ? 1 : 0;
+      for (var y = Math.max(0, cy - radius); y <= Math.min(ROWS - 1, cy + radius); y++)
+        for (var x = Math.max(0, cx - radius); x <= Math.min(COLS - 1, cx + radius); x++) indices.push(y * COLS + x);
+    }
+    return editPlan(s, indices, cover);
+  }
   function edit(s, indices, cover) {
-    if (!COVERS[cover] || cover === 'stream' || (s.run && !s.run.complete)) return s;
-    var changed = s.world.cells.some(function (c, i) { return indices.indexOf(i) >= 0 && c.cover !== 'stream' && c.cover !== cover; });
-    if (!changed) return s;
+    var plan = editPlan(s, indices, cover);
+    if (!plan.canApply) return s;
     var history = (s.editHistory || []).slice(-7); history.push({ covers: s.world.cells.map(function (c) { return c.cover; }), run: s.run });
     var w = Object.assign({}, s.world, { cells: s.world.cells.map(function (c, i) {
-      return indices.indexOf(i) >= 0 && c.cover !== 'stream' ? Object.assign({}, c, { cover: cover }) : c;
+      return plan.indices.indexOf(i) >= 0 ? Object.assign({}, c, { cover: cover }) : c;
     }) });
     return Object.assign({}, s, { world: w, run: null, running: false, editHistory: history });
   }
@@ -181,6 +233,57 @@
     var session = initial(); session.world = copy(run.start);
     session.run = Object.assign({}, run, { complete: false, samples: [copy(run.samples[0])] });
     return advance(session, number(minutes, 0, run.forcing.duration + 60, 0)).world;
+  }
+  // Saved readings are detached from the evolving world and carry the full initial
+  // conditions. Equal model times alone cannot identify the same experiment.
+  function observationNote(note) { return typeof note === 'string' ? note.slice(0, 600) : ''; }
+  function observationSnapshot(run, selected, minute, note, id) {
+    var world = atTime(run, minute);
+    return { id: id, minute: minute, modelMinute: world.minutes, selected: selected,
+      cell: copy(world.cells[selected]), totals: measure(world), result: result(world, run), note: observationNote(note),
+      provenance: { start: copy(run.start), forcing: copy(settings(run.forcing)) } };
+  }
+  function observe(s, minute, note) {
+    var entries = s.observations || [];
+    if (!s.run || entries.length >= OBSERVATION_LIMIT) return s;
+    var elapsed = Math.max(0, s.world.minutes - s.run.start.minutes), time = number(minute, 0, elapsed, elapsed);
+    var selected = Math.floor(number(s.selected, 0, COLS * ROWS - 1, 44));
+    var sequence = Math.floor(number(s.observationSequence, 0, 1e12, 0)) + 1;
+    while (entries.some(function (entry) { return entry.id === 'observation-' + sequence; })) sequence++;
+    var entry = observationSnapshot(s.run, selected, time, note, 'observation-' + sequence);
+    return Object.assign({}, s, { observations: entries.concat([entry]), observationSequence: sequence });
+  }
+  function removeObservation(s, id) {
+    var entries = s.observations || [], kept = entries.filter(function (entry) { return entry.id !== id; });
+    return kept.length === entries.length ? s : Object.assign({}, s, { observations: kept });
+  }
+  function updateObservationNote(s, id, note) {
+    var clean = observationNote(note), changed = false;
+    var entries = (s.observations || []).map(function (entry) {
+      if (entry.id !== id || entry.note === clean) return entry;
+      changed = true; return Object.assign({}, entry, { note: clean });
+    });
+    return changed ? Object.assign({}, s, { observations: entries }) : s;
+  }
+  function observationContext(s, entry) {
+    var same = !!(s.run && entry && entry.provenance &&
+      JSON.stringify(s.run.start) === JSON.stringify(entry.provenance.start) &&
+      JSON.stringify(settings(s.run.forcing)) === JSON.stringify(entry.provenance.forcing));
+    var reached = !!(same && entry.minute <= s.world.minutes - s.run.start.minutes + 1e-8);
+    return { canRevisit: reached, reason: !s.run ? 'no-run' : !same ? 'different-run' : !reached ? 'not-yet-reached' : null,
+      minute: entry ? entry.minute : null, selected: entry ? entry.selected : null };
+  }
+  function restoreObservation(entry) {
+    if (!entry || typeof entry.id !== 'string' || !/^observation-[1-9]\d{0,12}$/.test(entry.id) || !entry.provenance || !validWorld(entry.provenance.start)) return null;
+    var forcing = entry.provenance.forcing, clean = settings(forcing);
+    if (!forcing || forcing.rain !== clean.rain || forcing.duration !== clean.duration || forcing.wetness !== clean.wetness || forcing.pattern !== clean.pattern ||
+      typeof entry.minute !== 'number' || !isFinite(entry.minute) || entry.minute < 0 || entry.minute > clean.duration + 60 ||
+      typeof entry.selected !== 'number' || entry.selected !== Math.floor(entry.selected) || entry.selected < 0 || entry.selected >= COLS * ROWS) return null;
+    // Rebuild measurements from saved initial conditions; imported cached readings
+    // are never trusted as experimental evidence.
+    var start = entry.provenance.start, first = measure(start);
+    var run = { start: start, forcing: clean, samples: [{ t: 0, q: 0, surface: first.surfaceM3, soil: first.soilM3 }] };
+    return observationSnapshot(run, entry.selected, entry.minute, entry.note, entry.id);
   }
   function comparison(s) {
     var a=s.run&&s.run.start,b=s.baseline&&s.baseline.run.start;
@@ -206,6 +309,20 @@
     var e=evidence(s),lines=[e.title,'Learning lens: '+s.level,'Investigation focus: '+({free:'My own question',cover:'Changing ground cover',retention:'Retention gardens',memory:'Consecutive storms',timing:'Rainfall timing'}[s.question]||'My own question'),'','Prediction: '+(s.prediction||'(not recorded)'),'Explanation: '+(s.reflection||'(not recorded)'),''];
     function runLines(label,run,result){if(!run)return;lines.push(label+(run.complete?' — completed':' — in progress'),'Mean rainfall: '+run.forcing.rain+' mm/h for '+run.forcing.duration+' min','Pattern: '+PATTERNS[pattern(run.forcing)],'First / second half: '+rainAt(run.forcing,0)+' / '+rainAt(run.forcing,run.forcing.duration/2)+' mm/h','Observation: '+result.elapsedMinutes.toFixed(1)+' min','Rain in: '+result.rainfallM3.toFixed(2)+' m³','Outflow: '+result.outflowM3.toFixed(2)+' m³','Peak flow: '+result.peakM3s.toFixed(4)+' m³/s','Storage change: '+result.storageChangeM3.toFixed(2)+' m³','Evaporation: '+result.evaporationM3.toFixed(2)+' m³','');}
     runLines('Current run',s.run,e.result);if(s.baseline)runLines('Pinned baseline',s.baseline.run,e.baselineResult);
+    if (e.observations.length) {
+      lines.push('Saved observations (cell depths in mm; valley volumes in m³)');
+      e.observations.forEach(function (entry) {
+        var c = entry.cell, m = entry.totals, r = entry.result, context = observationContext(s, entry);
+        lines.push('Observation ' + entry.id.slice(12) + ' — elapsed minute ' + entry.minute + '; model minute ' + entry.modelMinute,
+          'Experiment: ' + (context.reason === 'different-run' || context.reason === 'no-run' ? 'saved from another run' : 'same starting world and rainfall as current run'),
+          'Recorded rainfall: ' + entry.provenance.forcing.rain + ' mm/h mean for ' + entry.provenance.forcing.duration + ' min; ' + PATTERNS[pattern(entry.provenance.forcing)],
+          'Cell: column ' + (c.x + 1) + ', row ' + (c.y + 1) + '; ' + COVERS[c.cover].label,
+          'Cell water: surface ' + c.surface.toFixed(3) + ' mm; soil ' + c.soil.toFixed(3) + ' mm; delayed storage ' + c.ground.toFixed(3) + ' mm',
+          'Valley water: surface ' + m.surfaceM3.toFixed(3) + ' m³; soil ' + m.soilM3.toFixed(3) + ' m³; delayed storage ' + m.groundM3.toFixed(3) + ' m³',
+          'Since run start: rain ' + r.rainfallM3.toFixed(3) + ' m³; outflow ' + r.outflowM3.toFixed(3) + ' m³; flow now ' + m.discharge.toFixed(4) + ' m³/s',
+          'Learner note: ' + (entry.note || '(not recorded)'), '');
+      });
+    }
     lines.push(e.comparison,'Changed land-cover cells: '+e.designChanges,'','Model: Water Worlds v'+VERSION+'; 12 × 8 cells, 400 m² per cell.',e.boundary,'','Minute samples for current run (minute, flow m³/s, surface m³, soil m³)');
     if(s.run)s.run.samples.forEach(function(v){lines.push([v.t,v.q,v.surface,v.soil].map(function(n){return n.toFixed(4);}).join(', '));});
     if(e.spatialDifference){lines.push('','Spatial water differences at '+e.spatialDifference.minute+' min (current minus baseline)','Column, row, surface difference mm, soil difference mm, delayed difference mm');e.spatialDifference.cells.forEach(function(c){lines.push([c.column,c.row,c.surface.differenceMm.toFixed(4),c.soil.differenceMm.toFixed(4),c.ground.differenceMm.toFixed(4)].join(', '));});}
@@ -215,6 +332,7 @@
     return { title: 'Water Worlds investigation', modelVersion: VERSION, terrain: 'valley-12x8-v1', cellAreaM2: AREA,
       boundary: 'Process-based teaching model; prescribed rain, mild constant evaporative demand, head-gradient surface routing, and delayed subsurface storage. Not a flood or aquifer forecast. Weather and exported water cross the domain boundary.',
       question: s.question, learningLevel: s.level, designChanges: comparison(s).changedCells,
+      observations: copy(s.observations || []),
       prediction: s.prediction, explanation: s.reflection, run: s.run ? copy(s.run) : null,
       finalWorld: copy(s.world), result: s.run ? result(s.world, s.run) : null,
       baseline: s.baseline ? copy(s.baseline) : null,
@@ -223,6 +341,7 @@
       comparison: timingComparison(s) ? 'Timing test: same initial water, ground cover, mean rainfall, and duration; rainfall pattern may differ.' : comparison(s).fair ? 'Same initial water stores and recorded rainfall; only land cover can differ.' : 'Exploratory run. Starting conditions may differ.' };
   }
   root.WaterWorldsKernel = { version: VERSION, cols: COLS, rows: ROWS, area: AREA, covers: COVERS, patterns: PATTERNS, rainAt: rainAt, rainDuring: rainDuring, timingComparison: timingComparison,
-    create: create, validWorld: validWorld, total: total, measure: measure, step: step, diagnose: diagnose, settings: settings,
-    initial: initial, restore: restore, begin: begin, advance: advance, edit: edit, undo: undo, record: record, result: result, atTime: atTime, comparison: comparison, spatialDifference: spatialDifference, report: report, evidence: evidence };
+    create: create, validWorld: validWorld, total: total, measure: measure, step: step, diagnose: diagnose, cellBudget: cellBudget, settings: settings,
+    observationLimit: OBSERVATION_LIMIT, observe: observe, removeObservation: removeObservation, updateObservationNote: updateObservationNote, observationContext: observationContext,
+    initial: initial, restore: restore, begin: begin, advance: advance, landPlan: landPlan, edit: edit, undo: undo, record: record, result: result, atTime: atTime, comparison: comparison, spatialDifference: spatialDifference, report: report, evidence: evidence };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -125,6 +125,108 @@ const contractAudio = (base64) => ({
 });
 
 describe('Adventure narrated Storybook artifact export', () => {
+  it('does not load pictures for a text-only export', async () => {
+    window.AlloModules.StudentArtifactStore = { save: vi.fn() };
+    window.callGemini = vi.fn().mockResolvedValue('Complete journey.');
+    const rehydrateHistoryWithImages = vi.fn().mockRejectedValue(new Error('Pictures offline'));
+    const write = vi.fn(); vi.spyOn(window, 'open').mockReturnValue({ document: { write, close: vi.fn() } });
+    const live = storyLive({ adventureState: { history: [{ type: 'scene', text: 'Keep this scene.', imageId: '7' }] }, rehydrateHistoryWithImages });
+    expect(await createExport(live).handleExportStorybook({ includeImages: false })).toBe(true);
+    expect(rehydrateHistoryWithImages).not.toHaveBeenCalled();
+    expect(write).toHaveBeenCalledWith(expect.stringContaining('Keep this scene.'));
+  });
+
+  it('counts a saved picture that cannot be recovered and identifies its scene in the export', async () => {
+    const downloads = installDownloadCapture(), save = vi.fn(); window.AlloModules.StudentArtifactStore = { save };
+    window.callGemini = vi.fn().mockResolvedValue('Complete journey.');
+    const live = storyLive({ adventureState: { history: [{ type: 'scene', text: 'Picture lost after eviction.', imageId: '7' }] } });
+    expect(await createExport(live).handleExportStorybook({ includeImages: true, includeNarration: true })).toBe(true);
+    const html = downloads.find(item => item.filename.endsWith('.html')).blob.content;
+    expect(html.includes('Pictures omitted: 1.')).toBe(true);
+    expect(html.includes('Picture unavailable in this export.')).toBe(true);
+    expect(save.mock.calls[0][0].artifact.readAloudReference.pictures).toMatchObject({ embedded: 0, omitted: 1 });
+    expect(live.addToast).toHaveBeenCalledWith(expect.stringContaining('retry'), 'warning');
+  });
+
+  it('isolates picture-loading failures, retains successful pictures, and retries missing references without changing source history', async () => {
+    const downloads = installDownloadCapture(); window.AlloModules.StudentArtifactStore = { save: vi.fn() };
+    window.callGemini = vi.fn().mockResolvedValue('Complete journey.');
+    const image = 'data:image/png;base64,cGljdHVyZQ==';
+    const history = [{ type: 'scene', text: 'First scene.', imageId: '1' }, { type: 'scene', text: 'Second scene.', imageId: '2' },
+      { type: 'scene', text: 'Second view.', imageId: '2' }, { type: 'scene', text: 'Already available.', image }];
+    const before = JSON.stringify(history), calls = [];
+    let failed = true;
+    const rehydrateHistoryWithImages = vi.fn(async (entries, cache) => {
+      expect(Array.isArray(cache)).toBe(true);
+      return entries.map(entry => { calls.push(entry.imageId); if (failed && entry.imageId === '1') throw new Error('Connection lost'); return { ...entry, image, text: 'Loader must not replace story text.' }; });
+    });
+    const live = storyLive({ adventureState: { history, imageCache: {} }, rehydrateHistoryWithImages });
+    const api = createExport(live);
+    expect(await api.handleExportStorybook({ includeImages: true, includeNarration: true })).toBe(true);
+    const html = downloads.find(item => item.filename.endsWith('.html')).blob.content;
+    expect(html.includes('Pictures embedded: 3.')).toBe(true); expect(html.includes('Pictures omitted: 1.')).toBe(true);
+    expect(html.includes('First scene.')).toBe(true); expect(html.includes('Loader must not')).toBe(false);
+    expect(calls).toEqual(['1', '2']); expect(JSON.stringify(history)).toBe(before);
+    failed = false; calls.length = 0; downloads.length = 0;
+    expect(await api.handleExportStorybook({ includeImages: true, includeNarration: true })).toBe(true);
+    expect(downloads.find(item => item.filename.endsWith('.html')).blob.content.includes('Pictures omitted: 0.')).toBe(true);
+    expect(calls).toEqual(['1', '2']); expect(JSON.stringify(history)).toBe(before);
+  });
+
+  it('stops after cancellation during a picture lookup without requesting narration, saving a manifest, or downloading', async () => {
+    const downloads = installDownloadCapture(), save = vi.fn(), controller = new AbortController();
+    window.AlloModules.StudentArtifactStore = { save }; window.callGemini = vi.fn().mockResolvedValue('Complete journey.');
+    let finish;
+    const rehydrateHistoryWithImages = vi.fn().mockImplementationOnce(entries => new Promise(resolve => { finish = () => resolve(entries.map(entry => ({ ...entry, image: 'data:image/png;base64,cGljdHVyZQ==' }))); }))
+      .mockImplementation(async entries => entries);
+    const prepareReadAloudArtifactAudio = vi.fn(async () => ({}));
+    const history = [{ type: 'scene', text: 'First.', imageId: '1' }, { type: 'scene', text: 'Second.', imageId: '2' }];
+    const api = createExport(storyLive({ adventureState: { history }, rehydrateHistoryWithImages, prepareReadAloudArtifactAudio }));
+    const pending = api.handleExportStorybook({ includeImages: true, includeNarration: true, signal: controller.signal });
+    await vi.waitFor(() => expect(finish).toBeTypeOf('function')); controller.abort(); finish();
+    expect(await pending).toBe(false); expect(rehydrateHistoryWithImages).toHaveBeenCalledOnce();
+    expect(window.callGemini).not.toHaveBeenCalled(); expect(prepareReadAloudArtifactAudio).not.toHaveBeenCalled();
+    expect(save).not.toHaveBeenCalled(); expect(downloads).toHaveLength(0); expect(history[0].image).toBeUndefined();
+    expect(await api.handleExportStorybook({ includeImages: true, includeNarration: true })).toBe(true);
+  });
+
+  it('reuses an available picture with the same reference and deduplicates failed references within the attempt', async () => {
+    const downloads = installDownloadCapture(); window.AlloModules.StudentArtifactStore = { save: vi.fn() };
+    window.callGemini = vi.fn().mockResolvedValue('Complete journey.');
+    const rehydrateHistoryWithImages = vi.fn().mockRejectedValue(new Error('Missing picture'));
+    const history = [{ type: 'scene', text: 'Early reference.', imageId: 0 },
+      { type: 'scene', text: 'Available later.', imageId: '0', image: 'data:image/png;base64,cGljdHVyZQ==' },
+      { type: 'scene', text: 'Missing first.', imageId: '2' }, { type: 'scene', text: 'Missing again.', imageId: '2' }];
+    expect(await createExport(storyLive({ adventureState: { history }, rehydrateHistoryWithImages })).handleExportStorybook({ includeImages: true, includeNarration: true })).toBe(true);
+    expect(rehydrateHistoryWithImages).toHaveBeenCalledOnce(); expect(rehydrateHistoryWithImages.mock.calls[0][0][0].imageId).toBe('2');
+    const html = downloads.find(item => item.filename.endsWith('.html')).blob.content;
+    expect(html.includes('Pictures embedded: 2.')).toBe(true); expect(html.includes('Pictures omitted: 2.')).toBe(true);
+  });
+
+  it.each(['foreign-reference', 'invalid-image', 'empty-response'])('preserves scene text when picture recovery returns %s', async mode => {
+    const downloads = installDownloadCapture(), save = vi.fn(); window.AlloModules.StudentArtifactStore = { save };
+    window.callGemini = vi.fn().mockResolvedValue('Complete journey.');
+    const rehydrateHistoryWithImages = vi.fn(async entries => mode === 'empty-response' ? null :
+      [{ ...entries[0], text: 'Unexpected replacement.', imageId: mode === 'foreign-reference' ? 'other' : '3',
+        image: mode === 'invalid-image' ? 'javascript:alert(1)' : 'data:image/png;base64,cGljdHVyZQ==' }]);
+    const live = storyLive({ adventureState: { history: [], currentScene: { text: 'Current scene.', imageId: '3' } }, rehydrateHistoryWithImages });
+    expect(await createExport(live).handleExportStorybook({ includeImages: true, includeNarration: true })).toBe(true);
+    const html = downloads.find(item => item.filename.endsWith('.html')).blob.content;
+    expect(html.includes('Current scene.')).toBe(true); expect(html.includes('Unexpected replacement.')).toBe(false);
+    expect(html.includes('Pictures omitted: 1.')).toBe(true);
+    expect(save.mock.calls[0][0].items.find(item => item.title !== 'Epilogue').image).toBeNull();
+  });
+
+  it('keeps missing-picture counts when the hydration module is unavailable and distinguishes them from scenes without pictures', async () => {
+    const downloads = installDownloadCapture(); window.AlloModules.StudentArtifactStore = { save: vi.fn() };
+    window.callGemini = vi.fn().mockResolvedValue('Complete journey.');
+    const live = storyLive({ adventureState: { history: [{ type: 'scene', text: 'No picture requested.' }, { type: 'scene', text: 'Picture missing.', imageId: '4' }] },
+      rehydrateHistoryWithImages: undefined });
+    expect(await createExport(live).handleExportStorybook({ includeImages: true, includeNarration: true })).toBe(true);
+    const html = downloads.find(item => item.filename.endsWith('.html')).blob.content;
+    expect(html.includes('Pictures omitted: 1.')).toBe(true); expect(html.match(/class="picture-unavailable"/g)).toHaveLength(1);
+  });
+
   it('does not opt text-only exports into the narration recovery cache', async () => {
     window.AlloModules.StudentArtifactStore = { save: vi.fn() };
     window.callGemini = vi.fn().mockResolvedValue('Text-only summary.');
@@ -223,9 +325,18 @@ describe('Adventure narrated Storybook artifact export', () => {
     const html = downloads.find(item => item.filename.endsWith('.html')).blob.content;
     expect(html).toContain('Pictures requiring the original source: 1');
     expect(live.t).toHaveBeenCalledWith(pictureWarningKey);
-    expect(live.addToast).toHaveBeenCalledWith(expectedWarning, 'warning');
+    expect(live.addToast).toHaveBeenCalledWith(`${expectedWarning} 0 omitted; 1 require their original source. Keep this export and retry when the missing pictures are available.`, 'warning');
     expect(save.mock.calls[0][0].artifact.readAloudReference.pictures).toMatchObject({ external: 1, decoding: 'unverified' });
     expect(live.addToast.mock.calls.some(([text]) => text.includes('self-contained'))).toBe(false);
+  });
+  it('translates picture recovery counts while preserving literal translation content', async () => {
+    installDownloadCapture(); window.AlloModules.StudentArtifactStore = { save: vi.fn() };
+    window.callGemini = vi.fn().mockResolvedValue('Complete journey.');
+    const live = storyLive({ adventureState: { history: [{ type: 'scene', text: 'Scene.', imageId: 'missing' }] },
+      t: vi.fn(key => key === pictureWarningKey ? 'Translated warning.' : key === 'export.storybook.pictures_recovery_detail'
+        ? 'Retry: {omitted} missing, {external} external. Literal $&.' : key) });
+    expect(await createExport(live).handleExportStorybook({ includeImages: true, includeNarration: true })).toBe(true);
+    expect(live.addToast).toHaveBeenCalledWith('Translated warning. Retry: 1 missing, 0 external. Literal $&.', 'warning');
   });
   it('does not save a manifest or download after cancellation during story preparation', async () => {
     const downloads = installDownloadCapture(), controller = new AbortController();

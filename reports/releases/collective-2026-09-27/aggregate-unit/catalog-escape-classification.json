@@ -1,0 +1,44 @@
+[
+  {
+    "file": "ui_strings.js",
+    "currentCount": 80,
+    "baselineCount": 80,
+    "added": [],
+    "removed": [],
+    "examples": [
+      {
+        "key": "all_three_scenarios",
+        "value": "\\\\uD83D\\\\uDCCA All three scenarios"
+      },
+      {
+        "key": "budget_needs_within_goal",
+        "value": "\\\\u2705 Needs are within the 50% goal. That leaves room for wants and savings to do their job."
+      },
+      {
+        "key": "crossover_note",
+        "value": "\\\\uD83D\\\\uDCA1 Neither plan wins everywhere. The cheap-premium plan is better while you stay healthy; the expensive one pays off once bills get large. That switch is the whole decision."
+      }
+    ]
+  },
+  {
+    "file": "desktop/web-app/public/ui_strings.js",
+    "currentCount": 80,
+    "baselineCount": 80,
+    "added": [],
+    "removed": [],
+    "examples": [
+      {
+        "key": "all_three_scenarios",
+        "value": "\\\\uD83D\\\\uDCCA All three scenarios"
+      },
+      {
+        "key": "budget_needs_within_goal",
+        "value": "\\\\u2705 Needs are within the 50% goal. That leaves room for wants and savings to do their job."
+      },
+      {
+        "key": "crossover_note",
+        "value": "\\\\uD83D\\\\uDCA1 Neither plan wins everywhere. The cheap-premium plan is better while you stay healthy; the expensive one pays off once bills get large. That switch is the whole decision."
+      }
+    ]
+  }
+]

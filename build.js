@@ -1631,6 +1631,8 @@ const COMPANION_ASSET_DIRS = [
     'life_skills_repair',
     'life_skills_kitchen',
     'stem_lab/kitchen_studio',
+      'stem_lab/assets/astronomy',
+      'stem_lab/assets/anatomy/body-surface',
     'vendor/three-r128',
     'life_skills_laundry',
     'life_skills_transit',

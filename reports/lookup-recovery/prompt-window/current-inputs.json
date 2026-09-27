@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-09-27T17:57:27.684Z",
+  "files": {
+    "content_engine_source.jsx": "8fa5072e5c60a31541fd5e1ff8e49d650b1965cdd1ba40f67dec41f6eb003e80",
+    "desktop/web-app/src/content_engine_source.jsx": "8fa5072e5c60a31541fd5e1ff8e49d650b1965cdd1ba40f67dec41f6eb003e80",
+    "content_engine_module.js": "698fbbc618e58f8702e3fe559458afe3675f4134d74150ddf6d6e373ca302e0b",
+    "desktop/web-app/public/content_engine_module.js": "698fbbc618e58f8702e3fe559458afe3675f4134d74150ddf6d6e373ca302e0b",
+    "AlloFlowANTI.txt": "bee7bd183381e82e6c497b02b64ccf3c76f08a0198e2e86acdb5df0040340c66",
+    "desktop/web-app/src/AlloFlowANTI.txt": "bee7bd183381e82e6c497b02b64ccf3c76f08a0198e2e86acdb5df0040340c66",
+    "desktop/web-app/src/App.jsx": "bee7bd183381e82e6c497b02b64ccf3c76f08a0198e2e86acdb5df0040340c66",
+    "desktop/web-app/node_modules/react/umd/react.development.js": "28348fef6cb0ed8b2ceeb22deaf824428fd13875d84c73d38f77dd216fc24e7f",
+    "desktop/web-app/node_modules/react-dom/umd/react-dom.development.js": "f9044a5e9c39db8bb1a204dff924e526ec0a621e695bb69de1035811be8709e4",
+    "instructional_context_module.js": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2",
+    "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+    "phase_n_misc_helpers_module.js": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c",
+    "text_pipeline_helpers_module.js": "50f47633a8c535cfd277b6bf5f7fede4355791637191826c49103d7a9518ef93",
+    "module_scope_extras_module.js": "a3fc2aa9f8e61772e29281811ff1d9413de8700900508384c9afcacd3769157d",
+    "alt_text_module.js": "944109d0ab087d02f00c51af4f5905eaef0e9a916a02dd93324eaafeaca024c2",
+    "view_simplified_module.js": "8f2dd725870ef19789fbf158bafec389506d3c0075159ce5cd1f7293ce970dcb",
+    "tests/reading_lookup_browser_fixture.js": "2c88c2497104aff03feae9424cdc534215713813cdbcf93c2a9db8ffabe00708",
+    "view_simplified_source.jsx": "c9625901a41c5a48c86faf6255bc1e3b867607f7c8c953d8b656c65a3a8f0121",
+    "reader_place_store.js": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9",
+    "reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5"
+  }
+}

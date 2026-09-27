@@ -31,6 +31,8 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
             if (typeof fetch === 'function') return fetch(...args);
             throw artifactAudioError('fetch-unavailable', 'Audio bytes cannot be loaded in this environment.');
         };
+    const getRequestedProfile = typeof dependencies.getRequestedProfile === 'function'
+        ? dependencies.getRequestedProfile : () => ({});
 
     function artifactAudioError(code, message, detail) {
         const error = new Error(message);
@@ -119,6 +121,7 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
             seen.add(segmentId);
             const voice = cleanToken(raw && raw.voice, defaults.voice, 160);
             const language = cleanToken(raw && raw.language, defaults.language, 100);
+            const requested = getRequestedProfile({ voice, language }) || {};
             const speedValue = Number(raw && (raw.synthesisRate == null ? raw.speed : raw.synthesisRate));
             const speed = Number.isFinite(speedValue) && speedValue > 0 && speedValue <= 4
                 ? speedValue
@@ -130,6 +133,8 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
                 language,
                 speed,
                 provider: cleanToken(raw && raw.provider, defaults.provider, 80),
+                requestedProvider: cleanToken(raw && raw.requestedProvider, defaults.requestedProvider || requested.requestedProvider || '', 240),
+                requestedModel: cleanToken(raw && raw.requestedModel, defaults.requestedModel || requested.requestedModel || '', 240),
                 directionFingerprint: cleanToken(raw && raw.directionFingerprint, '', 240),
                 voiceResolverVersion: Number(raw && raw.voiceResolverVersion) > 0
                     ? Math.floor(Number(raw.voiceResolverVersion))
@@ -154,7 +159,11 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
             speed: Number.isFinite(requestedSpeed) && requestedSpeed > 0 && requestedSpeed <= 4
                 ? requestedSpeed
                 : 1,
-            provider: cleanToken(options.provider, 'tts-resolver', 80),
+            // Requested routing and actual engine provenance differ on fallback.
+            // An invented provider here would make a valid fallback look stale.
+            provider: cleanToken(options.provider, '', 80),
+            requestedProvider: cleanToken(options.requestedProvider, '', 240),
+            requestedModel: cleanToken(options.requestedModel, '', 240),
             voiceResolverVersion: Number(options.voiceResolverVersion) > 0
                 ? Math.floor(Number(options.voiceResolverVersion))
                 : 2,
@@ -207,6 +216,8 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
                 voice: segment.voice || defaults.voice,
                 language: segment.language || defaults.language,
                 provider: segment.provider || defaults.provider,
+                requestedProvider: segment.requestedProvider || undefined,
+                requestedModel: segment.requestedModel || undefined,
                 speed: segment.speed || defaults.speed,
                 synthesisRate: segment.speed || defaults.speed,
                 directionFingerprint: segment.directionFingerprint || undefined,
@@ -216,12 +227,16 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
                 const voice = cleanToken(profile && profile.voice, defaults.voice, 160);
                 const language = cleanToken(profile && profile.language, defaults.language, 100);
                 const speed = Number(profile && (profile.synthesisRate == null ? profile.speed : profile.synthesisRate)) || defaults.speed;
+                let resolvedProfile = {};
                 const audio = await callTTS(text, voice, speed, {
                     maxRetries: Number(options.maxRetries) >= 0 ? Number(options.maxRetries) : 2,
                     language,
                     signal,
+                    onResolvedProfile: value => { resolvedProfile = value || {}; },
                 });
-                return normalizeSynthesizedAudio(audio, signal);
+                const normalized = await normalizeSynthesizedAudio(audio, signal);
+                const encoded = typeof Blob !== 'undefined' && normalized instanceof Blob ? { blob: normalized } : normalized;
+                return { ...encoded, provenance: { ...(encoded.provenance || {}), ...resolvedProfile } };
             },
         }).forResource({
             resourceId,
@@ -244,6 +259,8 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
                     voice: segment.voice,
                     language: segment.language,
                     provider: segment.provider,
+                    requestedProvider: segment.requestedProvider,
+                    requestedModel: segment.requestedModel,
                     speed: segment.speed,
                     synthesisRate: segment.speed,
                     directionFingerprint: segment.directionFingerprint || undefined,
@@ -293,7 +310,7 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
                     synthesisProfile: {
                         voice: cleanToken(profile.voice, defaults.voice, 160),
                         language: cleanToken(profile.language, defaults.language, 100),
-                        provider: cleanToken(profile.provider, defaults.provider, 80),
+                        provider: cleanToken(profile.provider, defaults.provider || 'tts-resolver', 80),
                         synthesisRate: Number(profile.synthesisRate == null ? profile.speed : profile.synthesisRate) || defaults.speed,
                         voiceResolverVersion: Number(profile.voiceResolverVersion) > 0
                             ? Math.floor(Number(profile.voiceResolverVersion))

@@ -1,0 +1,41 @@
+{
+  "created": "2026-09-27T17:21:52.303Z",
+  "candidateCommit": "bbf4bb81f5ab9239d2080a7470a4f36a74d51f5e",
+  "branch": "codex/prepared-help-context",
+  "normalCommitHooksPassed": true,
+  "isolatedCheckoutClean": true,
+  "sharedHead": "c4c8d6f8bffc88e5e1549b2f84448f15184b2fe8",
+  "sharedInputs": {
+    "view_simplified_source.jsx": "99df6e01099efcb7206bc8ac6657b5edc4cdc9c7d9b24f73c825a64aa13f3450",
+    "view_simplified_module.js": "8427e01f26b053270933ed76f3e16279d12274fd24d2371db88eaff0f6513966",
+    "desktop/web-app/public/view_simplified_module.js": "8427e01f26b053270933ed76f3e16279d12274fd24d2371db88eaff0f6513966",
+    "reader_place_store.js": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9",
+    "reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+    "package.json": "ed145399195f3bca18adcb900e76ad8785abf2048d2457333b6dedf1f08c675e",
+    "_build_view_simplified_module.js": "48eb897aca9572b99df1c1e0bd95231bbcb7503ad0001240fb0edfe8b27857df"
+  },
+  "sharedRuntimeIntegrated": true,
+  "deployed": false,
+  "waitingFor": null,
+  "sharedChangesByThisTask": [
+    "reports/prepared-card-height-2026-09-27",
+    "AGENT_HANDOFF.md owned status row"
+  ],
+  "ownershipRecheck": {
+    "at": "2026-09-27T17:23:32.662Z",
+    "sharedHead": "c4c8d6f8bffc88e5e1549b2f84448f15184b2fe8",
+    "releasedTrack07": "c4c8d6f8bffc88e5e1549b2f84448f15184b2fe8",
+    "activeOwners": [
+      "track11 lookup reader/module/host integration",
+      "track01 reader compiler/builder"
+    ],
+    "sourceSha256": "99df6e01099efcb7206bc8ac6657b5edc4cdc9c7d9b24f73c825a64aa13f3450",
+    "noSharedRuntimeWrites": true
+  },
+  "integrationCompletion": {
+    "at": "2026-09-27T18:30:14.500Z",
+    "sharedHead": "cbdace49bcacebd6d1693dced3d5d3fd75e9f36e",
+    "readerSha256": "8f2dd725870ef19789fbf158bafec389506d3c0075159ce5cd1f7293ce970dcb",
+    "evidence": "../prepared-help-deep-2026-09-27/completion.json"
+  }
+}

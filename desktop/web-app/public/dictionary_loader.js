@@ -35,11 +35,53 @@
     return String(w == null ? '' : w).toLowerCase().trim().replace(/^[^\p{L}]+|[^\p{L}'-]+$/gu, '');
   }
 
+  function dictionaryText(value) { return typeof value === 'string' ? value.trim() : ''; }
+  function dictionaryRecord(value) { return !!value && typeof value === 'object' && !Array.isArray(value); }
+  function dictionaryList(value) { return Array.isArray(value) ? value : []; }
+  function dictionarySourceUrl(value) {
+    var url = dictionaryText(value), lower = url.toLowerCase();
+    return lower.startsWith('https://') || lower.startsWith('http://') ? url : '';
+  }
+  function dictionaryPronunciations(value) {
+    var variants = [];
+    dictionaryList(value).filter(dictionaryRecord).forEach(function (record) {
+      var pair = { phonetic: dictionaryText(record.phonetic), audio: dictionaryText(record.audio) };
+      if ((pair.phonetic || pair.audio) && !variants.some(p => p.phonetic === pair.phonetic && p.audio === pair.audio)) variants.push(pair);
+    });
+    return variants.slice(0, 12);
+  }
+  // Cache data crosses a persistence boundary. Recover useful fields without
+  // trusting a stale/corrupt shape, mutating storage, or inventing pronunciation pairs.
+  function normalizeCachedEntry(value, word) {
+    if (value === null) return null; // Preserve the legacy real-404 cache sentinel.
+    if (!dictionaryRecord(value)) return undefined;
+    if (value.word != null && (typeof value.word !== 'string' || normalizeWord(value.word) !== word)) return undefined;
+    var meanings = dictionaryList(value.meanings).filter(dictionaryRecord).map(function (meaning) {
+      var definitions = dictionaryList(meaning.definitions).filter(dictionaryRecord).map(function (definition) {
+        return { definition: dictionaryText(definition.definition), example: dictionaryText(definition.example) };
+      }).filter(d => d.definition).slice(0, 3);
+      return { partOfSpeech: dictionaryText(meaning.partOfSpeech), definitions: definitions, pronunciations: dictionaryPronunciations(meaning.pronunciations) };
+    }).filter(m => m.definitions.length).slice(0, 4);
+    if (!meanings.length) return undefined;
+    var pronunciations = dictionaryPronunciations(value.pronunciations);
+    var primary = pronunciations.find(p => p.phonetic && p.audio) || pronunciations[0];
+    return {
+      word: word,
+      // Legacy independent fields stay separate when no per-record variants exist.
+      phonetic: primary ? primary.phonetic : dictionaryText(value.phonetic),
+      audio: primary ? primary.audio : dictionaryText(value.audio),
+      pronunciations: pronunciations, meanings: meanings,
+      synonyms: Array.from(new Set(dictionaryList(value.synonyms).map(dictionaryText).filter(Boolean).map(s => s.toLowerCase()))).slice(0, 8),
+      source: dictionaryText(value.source) || 'Wiktionary (via dictionaryapi.dev)',
+      sourceUrl: dictionarySourceUrl(value.sourceUrl) || 'https://en.wiktionary.org/wiki/' + encodeURIComponent(word)
+    };
+  }
+
   function readCache(word) {
     try {
       var raw = localStorage.getItem(CACHE_PREFIX + word);
       if (!raw) return undefined; // undefined = not cached; null = cached "not found"
-      return JSON.parse(raw);
+      return normalizeCachedEntry(JSON.parse(raw), word);
     } catch (_) { return undefined; }
   }
   function writeCache(word, value) {
@@ -55,45 +97,24 @@
   // dictionaryapi.dev entry[] → the popup-friendly shape.
   function normalizeEntry(rows, word) {
     if (!Array.isArray(rows) || !rows.length) return null;
-    var phonetic = '', audio = '', sourceUrl = '';
-    var pronunciations = [];
-    var addPronunciation = function (list, value) { if ((value.phonetic || value.audio) && !list.some(p => p.phonetic === value.phonetic && p.audio === value.audio)) list.push(value); };
-    var meanings = [];
-    var synSet = {};
-    rows.forEach(function (row) {
-      if (!sourceUrl && Array.isArray(row.sourceUrls)) {
-        row.sourceUrls.some(function (u) {
-          if (typeof u === 'string' && /^https?:\/\//i.test(u)) { sourceUrl = u; return true; }
-          return false;
-        });
-      }
-      var rowPronunciations = [];
-      (Array.isArray(row.phonetics) ? row.phonetics : []).forEach(function (p) {
-        if (!p || typeof p !== 'object') return;
-        addPronunciation(rowPronunciations, { phonetic: typeof p.text === 'string' ? p.text.trim() : '', audio: typeof p.audio === 'string' ? p.audio.trim() : '' });
-      });
-      if (typeof row.phonetic === 'string' && row.phonetic.trim() && !rowPronunciations.some(p => p.phonetic === row.phonetic.trim())) {
-        addPronunciation(rowPronunciations, { phonetic: row.phonetic.trim(), audio: '' });
-      }
-      rowPronunciations.forEach(p => addPronunciation(pronunciations, p));
-      (row.meanings || []).forEach(function (m) {
-        var defs = (m.definitions || []).slice(0, 3).map(function (d) {
-          return { definition: String(d.definition || '').trim(), example: (d.example ? String(d.example).trim() : '') };
-        }).filter(function (d) { return d.definition; });
-        (m.synonyms || []).forEach(function (s) { if (s) synSet[String(s).toLowerCase()] = 1; });
-        (m.definitions || []).forEach(function (d) { (d.synonyms || []).forEach(function (s) { if (s) synSet[String(s).toLowerCase()] = 1; }); });
-        if (defs.length) meanings.push({ partOfSpeech: String(m.partOfSpeech || '').trim(), definitions: defs, pronunciations: rowPronunciations });
+    var meanings = [], pronunciations = [], synonyms = [], sourceUrl = '';
+    rows.filter(dictionaryRecord).forEach(function (row) {
+      if (!sourceUrl) sourceUrl = dictionaryList(row.sourceUrls).map(dictionarySourceUrl).find(Boolean) || '';
+      var rowPronunciations = dictionaryPronunciations(dictionaryList(row.phonetics).filter(dictionaryRecord).map(function (p) {
+        return { phonetic: p.text, audio: p.audio };
+      }));
+      var phonetic = dictionaryText(row.phonetic);
+      if (phonetic && !rowPronunciations.some(p => p.phonetic === phonetic)) rowPronunciations.push({ phonetic: phonetic, audio: '' });
+      pronunciations.push(...rowPronunciations);
+      dictionaryList(row.meanings).filter(dictionaryRecord).forEach(function (meaning) {
+        var definitions = dictionaryList(meaning.definitions).filter(dictionaryRecord);
+        meanings.push({ partOfSpeech: meaning.partOfSpeech, definitions: definitions, pronunciations: rowPronunciations });
+        synonyms.push(...dictionaryList(meaning.synonyms));
+        definitions.forEach(d => synonyms.push(...dictionaryList(d.synonyms)));
       });
     });
-    if (!meanings.length) return null;
-    var primary = pronunciations.find(p => p.phonetic && p.audio) || pronunciations[0] || {};
-    phonetic = primary.phonetic || ''; audio = primary.audio || '';
-    return {
-      word: word, phonetic: phonetic, audio: audio, pronunciations: pronunciations.slice(0, 12), meanings: meanings.slice(0, 4),
-      synonyms: Object.keys(synSet).slice(0, 8),
-      source: 'Wiktionary (via dictionaryapi.dev)',
-      sourceUrl: sourceUrl || ('https://en.wiktionary.org/wiki/' + encodeURIComponent(word))
-    };
+    return normalizeCachedEntry({ word: word, meanings: meanings, pronunciations: pronunciations, synonyms: synonyms,
+      source: 'Wiktionary (via dictionaryapi.dev)', sourceUrl: sourceUrl }, word) || null;
   }
 
   // Content-word tokens (drops stopwords + short words) for lightweight sense matching.
@@ -164,21 +185,34 @@
     const cached = readCache(w);
     if (cached !== undefined && !(cached === null && options.bypassMissingCache)) return result(cached, cached ? null : 'not_found');
     if (typeof fetch !== 'function') return result(null, 'not_available');
+    // Another request can save useful help while this one is awaiting the provider.
+    // Revalidate that same-word entry on failure; cancellation must still win.
+    const recoverFailure = reason => {
+      if (options.signal?.aborted) return result(null, 'cancelled');
+      const recovered = readCache(w);
+      return result(recovered || null, recovered ? null : reason);
+    };
     try {
       const response = await fetch(API + encodeURIComponent(w), { signal: options.signal });
       if (options.signal?.aborted) return result(null, 'cancelled');
-      if (response.status === 404) { writeCache(w, null); return result(null, 'not_found'); }
-      if (!response.ok) return result(null, 'request_failed');
+      // A concurrent caller may have cached a usable entry while this request waited.
+      // readCache validates it; a late miss must not erase successful offline help.
+      if (response.status === 404) {
+        const recovered = readCache(w);
+        if (recovered) return result(recovered);
+        writeCache(w, null); return result(null, 'not_found');
+      }
+      if (!response.ok) return recoverFailure('request_failed');
       let rows;
       try { rows = await response.json(); }
-      catch (_) { return result(null, options.signal?.aborted ? 'cancelled' : 'invalid_response'); }
+      catch (_) { return recoverFailure('invalid_response'); }
       if (options.signal?.aborted) return result(null, 'cancelled');
       let entry;
-      try { entry = normalizeEntry(rows, w); } catch (_) { return result(null, 'invalid_response'); }
-      if (!entry) return result(null, 'invalid_response');
+      try { entry = normalizeEntry(rows, w); } catch (_) { return recoverFailure('invalid_response'); }
+      if (!entry) return recoverFailure('invalid_response');
       writeCache(w, entry);
       return result(entry);
-    } catch (_) { return result(null, options.signal?.aborted ? 'cancelled' : 'request_failed'); }
+    } catch (_) { return recoverFailure('request_failed'); }
   }
 
   window.AlloDictionary = {

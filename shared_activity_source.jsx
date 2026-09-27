@@ -309,13 +309,16 @@ function _alloReadingDeliveryCapabilities(item, items, options = {}) {
         return Object.fromEntries(keys.map(key => [key, state('unknown', unresolved && options.assetStatus === 'failed' ? 'unavailable' : 'unverified', reason)]));
     }
     const snapshot = api.getSourceSnapshot(item);
-    const intact = value => value && value.syncTruncated !== true && value.readingSourceAvailability?.status !== 'unavailable' && api.isSupportedOriginal?.(value);
+    const intact = value => value && !value.__alloResourceRef && !value.__alloResourcesManifestRef
+        && value.syncTruncated !== true && value.readingSourceAvailability?.status !== 'unavailable' && api.isSupportedOriginal?.(value);
     const original = intact(item);
     const paired = original ? item : snapshot && items.find(candidate => intact(candidate) && api.sameReadingSourceFamily(candidate, item) && candidate.data === snapshot.text);
     const profile = api.getInstructionalText(item);
     const adapted = profile.form === 'adapted';
     const hasBody = typeof item.data === 'string' && item.syncTruncated !== true;
-    const hasSource = !!snapshot && item.readingSourceAvailability?.status !== 'unavailable';
+    // A validated original in this received bundle is direct evidence, even if
+    // the adaptation still carries an older unavailable marker for its copy.
+    const hasSource = !!paired || (!!snapshot && item.readingSourceAvailability?.status !== 'unavailable');
     const originalOwner = paired || item;
     const supports = hasSource && originalOwner.readingSupports ? api.validateReadingSupports(originalOwner, originalOwner.readingSupports) : null;
     const adaptedValidationUnavailable = adapted && item.adaptedReadingSupports && typeof api.validateAdaptedReadingSupports !== 'function';
@@ -362,7 +365,7 @@ function _alloReadingDeliveryCapabilities(item, items, options = {}) {
             adaptedValidationUnavailable ? 'validator-unavailable' : omittedPictures ? 'invalid-or-over-budget' : unavailablePictureSupports ? 'supports-unavailable' : pictures.length ? 'decode-not-checked' : 'not-provided',
             { includedCount: pictures.length, omittedCount: omittedPictures }),
         referenceAudio: audioEntries.length ? state('included', 'unverified', 'playback-not-checked', { includedCount: audioEntries.length }) : state('omitted', 'unavailable', audioReason, { includedCount: 0 }),
-        instructionalRoles: state('included', 'ready', null, { reading: profile.role, original: api.getSourceInstructionalText?.(item)?.role || 'unspecified', sourceFamilyId: api.getReadingSourceFamilyId?.(item) || null, unitId: item.unitId ?? null }),
+        instructionalRoles: state('included', 'ready', null, { reading: profile.role, original: api.getSourceInstructionalText?.(paired || item)?.role || 'unspecified', sourceFamilyId: api.getReadingSourceFamilyId?.(item) || null, unitId: item.unitId ?? null }),
         citations: references ? state('included', 'ready', null, { basis: 'resource-owned-text', verification: 'not-assessed' }) : state('unknown', 'unverified', !hasBody ? options.bodyIssue || 'body-unavailable' : references === null ? 'validator-unavailable' : 'no-owned-reference-list')
     };
 }
@@ -395,6 +398,7 @@ function _alloDescribeAssignmentDelivery(resources, currentResourceId, selectedR
         return unreadable;
     });
     const intact = item => !!api && typeof api.isSupportedOriginal === 'function'
+        && !item.__alloResourceRef && !item.__alloResourcesManifestRef
         && item.syncTruncated !== true && item.readingSourceAvailability?.status !== 'unavailable'
         && api.isSupportedOriginal(item);
     const readings = readableItems.filter(item => item.type === 'simplified').map(item => {

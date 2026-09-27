@@ -141,13 +141,13 @@ describe('Astronomy featured constellation figures', () => {
 });
 
 describe('Astronomy Sky Map visual controls', () => {
-  it('exposes five plainly named independent layer toggles, including the ecliptic', () => {
+  it('exposes six plainly named independent layer toggles, including the bundled catalog', () => {
     var document = parseMarkup(renderAstronomy({ tab: 'skymap', skyLoc: 'portland' }));
     var group = document.querySelector('[role="group"][aria-label="Sky map layers"]');
     expect(group).toBeTruthy();
 
     var buttons = Array.from(group.querySelectorAll('button'));
-    var expectedNames = ['Stars', 'Constellation lines', 'Planets', 'Sun and Moon', 'Ecliptic'];
+    var expectedNames = ['Stars', 'Constellation lines', 'Planets', 'Sun and Moon', 'Ecliptic', 'Catalogue star field'];
     expect(buttons.map(controlName)).toEqual(expectedNames);
     buttons.forEach(function(button) {
       expect(button.type).toBe('button');
@@ -333,7 +333,7 @@ describe('Astronomy Sky Map visual controls', () => {
       var previewCopy = status.textContent + ' ' + diagram.getAttribute('aria-label');
       expect(previewCopy).not.toMatch(/limiting magnitude|magnitude limit|effective magnitude/i);
       expect(previewCopy).not.toMatch(/\b\d+\s+(?:curated\s+)?(?:bright\s+)?reference stars?[^.]{0,48}\b(?:visible|seen|detectable)\b/i);
-      expect(document.querySelectorAll('[role="group"][aria-label="Sky map layers"] button')).toHaveLength(5);
+      expect(document.querySelectorAll('[role="group"][aria-label="Sky map layers"] button')).toHaveLength(6);
       return {
         document: document, selector: selector, status: status, diagram: diagram,
         dome: dome, stars: stars, markers: markers, atmosphere: atmosphere,
@@ -446,7 +446,7 @@ describe('Astronomy Sky Map visual controls', () => {
     expect(hazeSignature(dayOne)).toEqual(hazeSignature(dayNine));
   }, 120000);
 
-  it('renders passive horizon haze and altitude extinction without creating a sixth layer', () => {
+  it('renders passive horizon haze and altitude extinction without adding another layer', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-01-15T05:00:00.000Z'));
     var document = parseMarkup(renderAstronomy({ tab: 'skymap', skyLoc: 'portland' }));
@@ -466,7 +466,7 @@ describe('Astronomy Sky Map visual controls', () => {
       return layer.getAttribute('data-sky-layer');
     });
     expect(layerNames.slice().sort()).toEqual(['constellation-lines', 'ecliptic', 'planets', 'stars', 'sun-moon']);
-    expect(document.querySelectorAll('[role="group"][aria-label="Sky map layers"] button')).toHaveLength(5);
+    expect(document.querySelectorAll('[role="group"][aria-label="Sky map layers"] button')).toHaveLength(6);
 
     expect(typeof astronomy.atmosphericVisibility).toBe('function');
     var nearHorizon = astronomy.atmosphericVisibility(2, 1);
@@ -568,7 +568,7 @@ describe('Astronomy Sky Map visual controls', () => {
       expect(Math.hypot(x - 190, y - 190)).toBeLessThanOrEqual(178.01);
     });
 
-    expect(document.querySelectorAll('[role="group"][aria-label="Sky map layers"] button')).toHaveLength(5);
+    expect(document.querySelectorAll('[role="group"][aria-label="Sky map layers"] button')).toHaveLength(6);
     expect(document.querySelector('#astronomy-sky-map-help').textContent).toMatch(/solid gold arc[^.]*next 12 hours/i);
     expect(document.querySelector('#astronomy-sky-focus-legend').textContent).toMatch(/solid gold arc[^.]*next 12 hours/i);
     expect(diagram.getAttribute('aria-label')).toMatch(/solid gold motion arc[^.]*next 12 hours/i);
@@ -601,8 +601,8 @@ describe('Astronomy Sky Map visual controls', () => {
     expect(below.querySelector('#astronomy-sky-target').value).toBe(belowTargetId);
     expect(below.querySelector('[data-sky-target-track]')).toBeNull();
     expect(below.querySelector('#astronomy-sky-target-status').textContent).toContain('below the horizon');
-    expect(overview.querySelectorAll('[role="group"][aria-label="Sky map layers"] button')).toHaveLength(5);
-    expect(below.querySelectorAll('[role="group"][aria-label="Sky map layers"] button')).toHaveLength(5);
+    expect(overview.querySelectorAll('[role="group"][aria-label="Sky map layers"] button')).toHaveLength(6);
+    expect(below.querySelectorAll('[role="group"][aria-label="Sky map layers"] button')).toHaveLength(6);
   }, 60000);
   it('offers an accessible target selector populated from the computed sky', () => {
     vi.useFakeTimers();
@@ -961,7 +961,7 @@ describe('Astronomy Sky Map visual controls', () => {
     shownMinutes.forEach(function(minutes) { expect(['00', '30']).toContain(minutes); });
 
     Object.keys(documents).forEach(function(key) {
-      expect(documents[key].querySelectorAll('[role="group"][aria-label="Sky map layers"] button')).toHaveLength(5);
+      expect(documents[key].querySelectorAll('[role="group"][aria-label="Sky map layers"] button')).toHaveLength(6);
     });
 
     var bortleOne = renderFixture(starFixture, 1);

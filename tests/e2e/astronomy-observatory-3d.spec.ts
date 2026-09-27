@@ -119,6 +119,63 @@ const expect = baseExpect.configure({ timeout: 60000 });
 // A fixed Maine summer evening: dark enough for stars, Moon and Milky Way.
 const EVENING = { obsLive: false, obsDate: '2026-07-04', obsTime: '23:30' };
 
+test('observing workflow preserves the instant across clocks, places and both sky views', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const { errors } = await mountObservatory(page, { obsSite: 'portland', obsLive: false, obsDate: '2026-12-21', obsTime: '22:00', obsBortle: 2 });
+  const instant = await page.evaluate(() => (window as any).__alloAstroPure.observatoryResolve((window as any).__toolData.astronomy).utcMs);
+  await page.getByLabel('Clock time zone', { exact: true }).selectOption('UTC');
+  await expect(page.getByLabel('Local time', { exact: true })).toHaveValue('03:00');
+  await expect(page.getByLabel('Date', { exact: true })).toHaveValue('2026-12-22');
+  await page.getByLabel('Observing site', { exact: true }).selectOption('sydney');
+  await expect(page.getByLabel('Local time', { exact: true })).toHaveValue('14:00');
+  await expect.poll(() => page.evaluate(() => (window as any).__alloAstroPure.observatoryResolve((window as any).__toolData.astronomy).utcMs)).toBe(instant);
+  await page.getByLabel('Observing site', { exact: true }).selectOption('custom');
+  const latitude = page.getByLabel('Latitude (°, north positive)', { exact: true });
+  await latitude.fill('');
+  const retainedLatitude = await page.evaluate(() => (window as any).__alloAstroPure.observatoryResolve((window as any).__toolData.astronomy).lat);
+  await latitude.pressSequentially('-');
+  await expect(latitude).toHaveValue('-');
+  await expect.poll(() => page.evaluate(() => (window as any).__alloAstroPure.observatoryResolve((window as any).__toolData.astronomy).lat)).toBe(retainedLatitude);
+  await latitude.pressSequentially('33.86');
+  await page.getByLabel('Longitude (°, east positive)', { exact: true }).fill('151.20');
+  await page.getByRole('button', { name: 'Open this place and time in the Sky Map', exact: true }).click();
+  await expect(page.getByLabel('Hours from selected time', { exact: true })).toBeVisible();
+  await expect(page.locator('#astronomy-sky-carried-place')).toContainText('-33.86°, 151.20°');
+  await expect(page.getByLabel('Sky darkness (Bortle class)', { exact: true })).toHaveValue('2');
+  await expect.poll(() => page.evaluate(() => (window as any).__toolData.astronomy.skyAnchorUtc)).toBe(instant);
+  await page.getByRole('button', { name: 'day ▶', exact: true }).click();
+  await page.getByRole('button', { name: 'Open this place and time in the 3D Observatory', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => (window as any).__alloAstroPure.observatoryResolve((window as any).__toolData.astronomy).utcMs)).toBe(instant + 86400000);
+  await expect(latitude).toHaveValue('-33.86');
+  await expect(page.getByLabel('Longitude (°, east positive)', { exact: true })).toHaveValue('151.2');
+  expect(errors).toEqual([]);
+});
+
+test('observing workflow keeps valid sky while local time or coordinates are incomplete', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const { errors } = await mountObservatory(page, { obsSite: 'custom', obsLat: 45, obsLon: -69, obsTz: 'America/New_York', obsLive: false, obsDate: '2026-03-08', obsTime: '01:30' });
+  const instant = await page.evaluate(() => (window as any).__alloAstroPure.observatoryResolve((window as any).__toolData.astronomy).utcMs);
+  const time = page.getByLabel('Local time', { exact: true });
+  await time.fill('02:30');
+  await expect(time).toHaveValue('02:30');
+  await expect(time).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator('#astronomy-clock-error')).toContainText('The sky keeps the last valid time');
+  await expect.poll(() => page.evaluate(() => (window as any).__alloAstroPure.observatoryResolve((window as any).__toolData.astronomy).utcMs)).toBe(instant);
+  await time.fill('03:30');
+  await expect(page.locator('#astronomy-clock-error')).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => (window as any).__alloAstroPure.observatoryResolve((window as any).__toolData.astronomy).utcMs)).toBe(instant + 3600000);
+  const latitude = page.getByLabel('Latitude (°, north positive)', { exact: true });
+  await latitude.fill('-999');
+  await latitude.press('Tab');
+  await expect(latitude).toHaveAttribute('aria-invalid', 'true');
+  await expect.poll(() => page.evaluate(() => (window as any).__alloAstroPure.observatoryResolve((window as any).__toolData.astronomy).lat)).toBe(45);
+  await latitude.press('Escape');
+  await expect(latitude).toHaveValue('45');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  expect(errors).toEqual([]);
+});
+
 async function mountObservatory(page, state = {}) {
   const errors: string[] = [];
   page.on('pageerror', e => errors.push(e.message));
@@ -162,7 +219,7 @@ test('computes a real catalog sky from local assets for a fixed place and time',
   expect(requests.some(url => /cdnjs|jsdelivr|unpkg|noaa\.gov/.test(url))).toBe(false);
   await expect(page.locator('#astronomy-observatory-summary')).toContainText('2026-07-04 23:30 (UTC-04:00)');
   await expect(page.locator('#astronomy-observatory-summary')).toContainText('Fully dark sky');
-  await page.screenshot({ path: 'scratch/observatory-lake-evening.png', clip: (await sky.boundingBox())! });
+  await sky.screenshot({ path: 'scratch/observatory-lake-evening.png' });
   expect(errors).toEqual([]);
 });
 
@@ -177,7 +234,7 @@ test('thins the sky near the horizon by atmospheric extinction', async ({ page }
   expect(info.starsVisible).toBeGreaterThan(500);
   expect(info.starsVisible).toBeLessThan(info.starsUp);
   await sky.evaluate((el: any) => el.__observatoryLookAt(180, 4));
-  await page.screenshot({ path: 'scratch/observatory-horizon-murk.png', clip: (await sky.boundingBox())! });
+  await sky.screenshot({ path: 'scratch/observatory-horizon-murk.png' });
 
   // The same air reddens a setting Sun. Jump to sunset and face it.
   await page.getByRole('button', { name: /^Jump to Sunset \d\d:\d\d$/ }).click();
@@ -186,7 +243,7 @@ test('thins the sky near the horizon by atmospheric extinction', async ({ page }
   expect(low.sunExt).toBeGreaterThan(4);
   await sky.evaluate((el: any, az: number) => el.__observatoryLookAt(az, 3), low.sun.az);
   await sky.scrollIntoViewIfNeeded();
-  await page.screenshot({ path: 'scratch/observatory-low-sun.png', clip: (await sky.boundingBox())! });
+  await sky.screenshot({ path: 'scratch/observatory-low-sun.png' });
   expect(errors).toEqual([]);
 });
 
@@ -205,13 +262,14 @@ test('steps around the sky from the keyboard and identifies what it lands on', a
     if (heard.length) await expect.poll(async () => (await spoken.textContent()) !== heard[heard.length - 1]).toBe(true);
     heard.push(text);
     const picked = (await debug(sky)).picked;
-    if (picked) picks.push(picked.name);
+    expect(picked, 'the stepper identifies the object it just centred').toBeTruthy();
+    expect(text.startsWith(picked.name), 'the spoken object matches the selected object').toBe(true);
+    picks.push(picked.name);
   }
   // Four presses, four different objects, each with its bearing and altitude spoken.
   expect(new Set(heard).size).toBe(4);
   for (const line of heard) expect(line).toMatch(/, -?\d+\u00B0 [NEWS]/);
-  // Most steps land on something the identify path recognises.
-  expect(picks.length).toBeGreaterThanOrEqual(2);
+  expect(new Set(picks).size).toBe(4);
   // Going back returns to the object before it.
   await page.keyboard.press('p');
   await expect.poll(async () => (await spoken.textContent())).toBe(heard[heard.length - 2]);
@@ -225,6 +283,9 @@ test('steps around the sky from the keyboard and identifies what it lands on', a
 test('paints the observatory catalogue behind the flat sky map', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', e => errors.push(e.message));
+  // The +6 h preview must land at night regardless of when this test runs.
+  // Fix only Date; animation frames and asset-loading timers remain live.
+  await page.clock.setFixedTime(new Date('2026-07-04T21:30:00.000Z'));
   await page.goto(`${base}/__harness`);
   await page.evaluate(() => (window as any).__mount({ tab: 'skymap', skyLoc: 'portland', skyHourOffset: 6, bortleClass: 3 }));
   const field = page.locator('[data-sky-layer="catalog-stars"]');
@@ -252,7 +313,8 @@ test('place, hemisphere, daylight and time steps change the computed sky', async
   await page.getByLabel('Observing site', { exact: true }).selectOption('sydney');
   await expect.poll(async () => (await debug(sky)).camera.yaw).toBe(0);
   const sydney = await debug(sky);
-  expect(sydney.utc).not.toBe(maine.utc);
+  // Changing observing site preserves the instant and changes the local sky.
+  expect(sydney.utc).toBe(maine.utc);
   expect(Math.abs(sydney.sun.alt - maine.sun.alt)).toBeGreaterThan(5);
   await expect(page.locator('#astronomy-observatory-summary')).toContainText('Sydney, Australia');
   await page.getByLabel('Observing site', { exact: true }).selectOption('portland');
@@ -261,7 +323,7 @@ test('place, hemisphere, daylight and time steps change the computed sky', async
   const noon = await debug(sky);
   expect(noon.limit).toBeLessThanOrEqual(0);
   await expect(page.locator('#astronomy-observatory-summary')).toContainText('Daylight');
-  await page.screenshot({ path: 'scratch/observatory-daylight.png', clip: (await sky.boundingBox())! });
+  await sky.screenshot({ path: 'scratch/observatory-daylight.png' });
   await page.getByRole('button', { name: 'Shift time +1 d', exact: true }).click();
   await expect.poll(() => page.evaluate(() => (window as any).__toolData.astronomy.obsDate)).toBe('2026-07-05');
   expect((await debug(sky)).utc).toBe('2026-07-05T17:00:00.000Z');
@@ -275,7 +337,7 @@ test('landscapes swap without leaking GPU resources and aurora appears only wher
   expect(first.env).toContain('arctic');
   expect(first.auroraVisible).toBe(true);
   expect(first.aurora.level).toBe(5);
-  await page.screenshot({ path: 'scratch/observatory-arctic-aurora.png', clip: (await sky.boundingBox())! });
+  await sky.screenshot({ path: 'scratch/observatory-arctic-aurora.png' });
   await openSettings(page);
   for (const env of ['coast', 'desert', 'forest', 'lake', 'arctic']) {
     await page.getByLabel('Landscape (representative)', { exact: true }).selectOption(env);
@@ -283,7 +345,7 @@ test('landscapes swap without leaking GPU resources and aurora appears only wher
     await expect(sky.locator('canvas')).toHaveCount(1);
     const info = await debug(sky);
     expect(info.geometries).toBeLessThanOrEqual(first.geometries + 6);
-    if (env === 'coast' || env === 'desert') await page.screenshot({ path: `scratch/observatory-${env}.png`, clip: (await sky.boundingBox())! });
+    if (env === 'coast' || env === 'desert') await sky.screenshot({ path: `scratch/observatory-${env}.png` });
   }
   await page.getByLabel('Observing site', { exact: true }).selectOption('quito');
   await page.getByLabel(/Simulated aurora activity/).fill('9');
@@ -306,7 +368,7 @@ test('shower layer places the radiant from real coordinates and only shows meteo
   const found = await debug(sky);
   expect(Math.abs(found.camera.yaw - info.radiant.az)).toBeLessThan(1);
   expect(found.labels.some(l => /Radiant .* simulated/.test(l))).toBe(true);
-  await page.screenshot({ path: 'scratch/observatory-perseids.png', clip: (await sky.boundingBox())! });
+  await sky.screenshot({ path: 'scratch/observatory-perseids.png' });
   await page.getByLabel('Local time', { exact: true }).fill('14:00');
   await expect.poll(async () => (await debug(sky)).sun.alt).toBeGreaterThan(0);
   expect((await debug(sky)).rate).toBe(0);
@@ -319,6 +381,8 @@ test('time-lapse advances inside the renderer and commits the reached time on pa
   await expect.poll(async () => (await debug(sky)).catalog).toBeGreaterThan(8000);
   const before = await debug(sky);
   await page.getByRole('button', { name: 'Play time-lapse', exact: true }).click();
+  // Play brings the scene into view because rendering pauses offscreen.
+  await expect(sky).toBeInViewport({ ratio: 0.5 });
   await expect.poll(async () => (await debug(sky)).playMs).toBeGreaterThan(600000);
   expect(await page.evaluate(() => (window as any).__toolData.astronomy.obsTime)).toBe('23:30');
   const during = await debug(sky);
@@ -370,6 +434,22 @@ test('keyboard, pointer, find and layer controls work at 320px', async ({ page }
   expect(errors).toEqual([]);
 });
 
+test('observing workflow commits and pauses time-lapse when leaving the section', async ({ page }) => {
+  const { sky, errors } = await mountObservatory(page, { ...EVENING, obsRate: '1h' });
+  await page.getByRole('button', { name: 'Play time-lapse', exact: true }).click();
+  await expect.poll(async () => (await debug(sky)).playMs).toBeGreaterThan(600000);
+  const during = await debug(sky);
+  await page.getByLabel('Explore a section', { exact: true }).selectOption('skymap');
+  await expect.poll(() => page.evaluate(() => (window as any).__toolData.astronomy.obsPlaying)).toBe(false);
+  const reached = await page.evaluate(() => (window as any).__toolData.astronomy.obsUtcMs);
+  expect(reached).toBeGreaterThanOrEqual(Date.parse(during.utc));
+  await page.getByLabel('Explore a section', { exact: true }).selectOption('observatory');
+  await expect.poll(async () => (await debug(sky)).ready).toBe(true);
+  expect((await debug(sky)).playing).toBe(false);
+  expect((await debug(sky)).utc).toBe(new Date(reached).toISOString());
+  expect(errors).toEqual([]);
+});
+
 test('falls back to built-in bright stars when the catalog asset is unavailable, and disposes on navigation', async ({ page }) => {
   await page.route('**/hyg-v41-naked-eye.json', route => route.fulfill({ status: 500, body: 'nope' }));
   const { sky, errors } = await mountObservatory(page, EVENING);
@@ -417,7 +497,7 @@ test('click-to-identify names a real star, guides and pole appear, deep-sky glow
   expect(north.poleVisible).toBe(true);
   expect(Math.abs(north.camera.yaw)).toBeLessThan(1);
   expect(north.labels).toContain('Celestial pole');
-  await page.screenshot({ path: 'scratch/observatory-guides-pole.png', clip: (await sky.boundingBox())! });
+  await sky.screenshot({ path: 'scratch/observatory-guides-pole.png' });
   // Enter identifies what sits at the centre of the view (pole marker is not an object, so aim at the Moon if up).
   if (north.moon.alt > 5) {
     await sky.evaluate((el: any, m: any) => el.__observatoryLookAt(m.az, m.alt), north.moon);
@@ -441,7 +521,7 @@ test('jump buttons land on the computed sunset, and the Sky Map hands its place 
   expect(atSunset.sun.alt).toBeLessThan(0.3);
   // A Sun on the horizon is seen through tens of airmasses, and is drawn accordingly.
   expect(atSunset.sunExt).toBeGreaterThan(2);
-  await page.screenshot({ path: 'scratch/observatory-sunset.png', clip: (await sky.boundingBox())! });
+  await sky.screenshot({ path: 'scratch/observatory-sunset.png' });
   // Sky Map → Observatory hand-off.
   await page.evaluate(() => (window as any).__destroy());
   await page.evaluate(() => (window as any).__mount({ tab: 'skymap', skyLoc: 'sydney', skyHourOffset: 3 }));
@@ -487,7 +567,7 @@ test('tour steps aim the camera, describe-view names what is in front of it, and
   await expect.poll(async () => (await debug(sky)).picked?.name).toBe(target);
   await expect.poll(() => page.evaluate(() => (window as any).__toolData.astronomy.obsHighlight)).toBe('orion');
   await expect(page.locator('#astronomy-observatory-picked')).toContainText('Part of Orion');
-  await page.screenshot({ path: 'scratch/observatory-identify-orion.png', clip: (await sky.boundingBox())! });
+  await sky.screenshot({ path: 'scratch/observatory-identify-orion.png' });
   expect(errors).toEqual([]);
 });
 
@@ -501,7 +581,7 @@ test('deep time moves the real star field and withholds the solar system', async
   expect(before.drift).toBe(0);
   const namedBefore = before.spots.byName;
   expect(Object.keys(namedBefore).length).toBeGreaterThan(2);
-  await page.screenshot({ path: 'scratch/observatory-drift-today.png', clip: (await sky.boundingBox())! });
+  await sky.screenshot({ path: 'scratch/observatory-drift-today.png' });
 
   await openSettings(page);
   await page.getByLabel(/Deep time: star motion/).fill('100000');
@@ -524,7 +604,7 @@ test('deep time moves the real star field and withholds the solar system', async
   expect(after.skySunAlt).toBe(-90);
   await expect(page.getByText('Deep-time view')).toBeVisible();
   await expect(page.locator('#astronomy-observatory-tour')).toContainText('The sky in 100,000 years');
-  await page.screenshot({ path: 'scratch/observatory-drift-100k.png', clip: (await sky.boundingBox())! });
+  await sky.screenshot({ path: 'scratch/observatory-drift-100k.png' });
 
   await page.getByRole('button', { name: 'Back to today', exact: true }).click();
   await expect.poll(async () => (await debug(sky)).drift).toBe(0);
@@ -547,12 +627,12 @@ test('star trails draw computed arcs, lengthen with the span, and stay off in da
   expect(four.trailStars).toBeGreaterThan(20);
   // Face the pole: the arcs should be visibly concentric there.
   await page.getByRole('button', { name: 'Face north', exact: true }).click();
-  await page.screenshot({ path: 'scratch/observatory-trails-pole.png', clip: (await sky.boundingBox())! });
+  await sky.screenshot({ path: 'scratch/observatory-trails-pole.png' });
   await page.getByLabel('Trail length', { exact: true }).selectOption('8');
   await expect.poll(async () => (await debug(sky)).trailHours).toBe(8);
   expect((await debug(sky)).trailStars).toBeGreaterThan(20);
   await sky.evaluate((el: any) => el.__observatoryLookAt(180, 35));
-  await page.screenshot({ path: 'scratch/observatory-trails-south.png', clip: (await sky.boundingBox())! });
+  await sky.screenshot({ path: 'scratch/observatory-trails-south.png' });
   // Daylight washes the trails out along with the stars.
   await page.getByLabel('Local time', { exact: true }).fill('12:00');
   await expect.poll(async () => (await debug(sky)).sun.alt).toBeGreaterThan(0);
@@ -601,5 +681,57 @@ test('reduced motion keeps the scene still and disables time-lapse', async ({ pa
   expect(info.raf).toBe(false);
   await expect(page.getByRole('button', { name: 'Play time-lapse', exact: true })).toBeDisabled();
   await expect(page.getByText('Reduced motion is on')).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+
+test('catalog finder selects the exact HIP star with the keyboard and refreshes its details', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const { sky, errors } = await mountObservatory(page, { obsLive: false, obsDate: '2026-12-21', obsTime: '22:00' });
+  await expect.poll(async () => (await debug(sky)).catalog).toBeGreaterThan(8000);
+  const search = page.getByRole('searchbox', { name: 'Find an object', exact: true });
+  await search.fill('HIP 32349');
+  await expect(page.getByRole('button', { name: 'Select Sirius', exact: true })).toBeVisible();
+  await search.press('Enter');
+  await expect.poll(async () => (await debug(sky)).picked?.name).toBe('Sirius');
+  await expect(page.locator('#astronomy-observatory-described')).toContainText('Centered and selected');
+  const selected = await page.evaluate(() => (window as any).__toolData.astronomy.obsPicked);
+  expect(selected.hip).toBe(32349);
+  expect((await debug(sky)).camera.yaw).toBeCloseTo(selected.az, 3);
+  const next = { obsTime: '23:00' };
+  await page.evaluate(next => { Object.assign((window as any).__toolData.astronomy, next); (window as any).__bump(); }, next);
+  await expect.poll(() => page.evaluate(() => (window as any).__toolData.astronomy.obsPicked.alt)).not.toBe(selected.alt);
+  await search.press('Escape');
+  await expect(search).toHaveValue('');
+  await expect(page.getByRole('button', { name: 'Select Sirius', exact: true })).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+test('catalog finder explains hidden targets and stays inside a narrow mobile viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 740 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const { sky, errors } = await mountObservatory(page, { obsLive: false, obsDate: '2026-12-21', obsTime: '22:00', obsLayers: { stars: false } });
+  await expect.poll(async () => (await debug(sky)).catalog).toBeGreaterThan(8000);
+  const camera = (await debug(sky)).camera;
+  const search = page.getByRole('searchbox', { name: 'Find an object', exact: true });
+  await search.fill('Sirius');
+  const sirius = page.getByRole('button', { name: 'Select Sirius', exact: true });
+  await expect(sirius).toContainText('Layer is turned off');
+  await sirius.click();
+  await expect.poll(async () => (await debug(sky)).picked?.name).toBe('Sirius');
+  expect((await debug(sky)).camera).toEqual(camera);
+  await expect(page.locator('#astronomy-observatory-described')).toContainText('camera stayed in place');
+  await search.fill('Canopus');
+  const canopus = page.getByRole('button', { name: 'Select Canopus', exact: true });
+  await expect(canopus).toContainText('Below the horizon');
+  await canopus.click();
+  const selected = await page.evaluate(() => (window as any).__toolData.astronomy.obsPicked);
+  expect(selected.name).toBe('Canopus');
+  expect(selected.alt).toBeLessThan(0);
+  expect((await debug(sky)).camera).toEqual(camera);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  const row = await canopus.boundingBox();
+  expect(row!.height).toBeGreaterThanOrEqual(44);
+  await page.getByRole('region', { name: 'Find an object', exact: true }).screenshot({ path: 'reports/sky-lab-review-2026-09-27/finder-mobile.png' });
   expect(errors).toEqual([]);
 });

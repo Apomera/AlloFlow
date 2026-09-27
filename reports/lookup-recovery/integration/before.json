@@ -1,0 +1,28 @@
+{
+  "head": "c4c8d6f8bffc88e5e1549b2f84448f15184b2fe8",
+  "files": {
+    "content_engine_source.jsx": "f6c49b768835626a70cf22f94890133d064309571edc46b02b19513594686678",
+    "view_simplified_source.jsx": "765383768168dec45902855ce4e18eeee66f0e0df0830f92c53e16f4ed8b388f",
+    "host_handlers_source.jsx": "11d835c875612e986d08407a7aec22ec68640dc99879a719704786ebe0475848",
+    "dictionary_loader.js": "2f6cfa948fadef07d97c5705dc412e062bc070cf2a031bef9067169bf82bfd91",
+    "desktop/web-app/src/content_engine_source.jsx": "f6c49b768835626a70cf22f94890133d064309571edc46b02b19513594686678",
+    "content_engine_module.js": "607cdf6e9f17ea786efe13838b1bdaa9a194e14851e8b22844bd9d591951b6e4",
+    "view_simplified_module.js": "b8f7f57e57260f7c3b292b5b6e4d6686e4b1999a4a3cbda10fd3465f59c344f0",
+    "host_handlers_module.js": "fbda9fa8fe52b085a138bcb2f581ee127c34f1f8cec5991df8f44244237dd132",
+    "ui_strings.js": "ebf9c9898f8d631ce17646da5aebc6a554e9e0294d392a27570820ba457e5d90",
+    "desktop/web-app/public/content_engine_module.js": "607cdf6e9f17ea786efe13838b1bdaa9a194e14851e8b22844bd9d591951b6e4",
+    "desktop/web-app/public/view_simplified_module.js": "b8f7f57e57260f7c3b292b5b6e4d6686e4b1999a4a3cbda10fd3465f59c344f0",
+    "desktop/web-app/public/host_handlers_module.js": "fbda9fa8fe52b085a138bcb2f581ee127c34f1f8cec5991df8f44244237dd132",
+    "desktop/web-app/public/dictionary_loader.js": "2f6cfa948fadef07d97c5705dc412e062bc070cf2a031bef9067169bf82bfd91",
+    "desktop/web-app/public/ui_strings.js": "ebf9c9898f8d631ce17646da5aebc6a554e9e0294d392a27570820ba457e5d90",
+    "AlloFlowANTI.txt": "14c59a16f3a88b0e304d0be30d323d8e4439fc81dfd4aaafc168ed5551531fde",
+    "desktop/web-app/src/AlloFlowANTI.txt": "14c59a16f3a88b0e304d0be30d323d8e4439fc81dfd4aaafc168ed5551531fde",
+    "desktop/web-app/src/App.jsx": "14c59a16f3a88b0e304d0be30d323d8e4439fc81dfd4aaafc168ed5551531fde",
+    "reader_place_store.js": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9",
+    "reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+    "instructional_context_module.js": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2",
+    "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+    "phase_n_misc_helpers_module.js": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c",
+    "text_pipeline_helpers_module.js": "50f47633a8c535cfd277b6bf5f7fede4355791637191826c49103d7a9518ef93"
+  }
+}

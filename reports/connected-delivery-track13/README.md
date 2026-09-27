@@ -1,5 +1,13 @@
 # Track 13 — connected delivery integration handoff
 
+> Latest retry follow-up: [RETRY_LIFECYCLE.md](RETRY_LIFECYCLE.md). Retry feedback is isolated by delivery target, stale completions are ignored, and rapid duplicate sends are suppressed. 56 tests and 26 isolated Chromium cases passed. Earlier autosave host integration remains pending.
+
+> Latest image-receipt follow-up: [IMAGE_RECEIPTS.md](IMAGE_RECEIPTS.md). Scene artwork now participates in decode/revision checks, and dock status follows the prepared payload. 292 tests and 18 isolated Chromium cases passed. Earlier autosave host integration remains pending.
+
+> Latest received-pair follow-up: [PAIRED_SOURCE.md](PAIRED_SOURCE.md). Matching-original text, supports and roles now use validated received evidence; unresolved candidates are excluded. 282 tests and 16 isolated Chromium cases passed. The earlier autosave host patch remains pending.
+
+> 2026-09-27 follow-up: [HYDRATION.md](HYDRATION.md) closes the module hydration/resharing gap and supplies a separately tested local-autosave host patch. Validation: 273 runtime tests, 15 isolated browser cases, 9 host-candidate tests. The new host patch is pending integration.
+
 > Current status: see [CONSISTENCY.md](CONSISTENCY.md) and consistency-validation.json. Both historical host patches are now integrated locally. Latest validation: 183 tests in 13 files and 11 isolated Chromium cases passed. The historical pending-integration statements below are superseded.
 
 

@@ -1,0 +1,21 @@
+{
+  "moduleHash": "9fa57df1752d5464a02de46c62a1f7e2678d15f292aa81729f2d98b0c11ea135",
+  "pin": "9fa57df1",
+  "hosts": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "before": "64bbad9a3b19e8c01dda90416c35ff355fb79d5d380ac962626e90fb66148b81",
+      "after": "5dca71fc6ee9cee776d5b65522a728099632604418f02a3d7fd9eca1216d0d54"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "before": "64bbad9a3b19e8c01dda90416c35ff355fb79d5d380ac962626e90fb66148b81",
+      "after": "5dca71fc6ee9cee776d5b65522a728099632604418f02a3d7fd9eca1216d0d54"
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "before": "64bbad9a3b19e8c01dda90416c35ff355fb79d5d380ac962626e90fb66148b81",
+      "after": "5dca71fc6ee9cee776d5b65522a728099632604418f02a3d7fd9eca1216d0d54"
+    }
+  ]
+}

@@ -165,3 +165,43 @@ it('starts Crawl without animation for reduced-motion users and toggles once on 
 it('changing capture and auto-advance settings does not restart the current audio',async()=>{karaoke();click(button('Play'));await flush();karaoke({captureOn:true});await flush();expect(audios).toHaveLength(1);const auto=[...host.querySelectorAll('input[type=checkbox]')].find(el=>el.parentElement.textContent.includes('Auto-advance'));click(auto);await flush();expect(audios).toHaveLength(1);expect(audios[0].paused).toBe(false);});
 
 it('keeps arrow navigation available on the keyboard-focused reading surface',()=>{render('FocusReaderOverlay',{text:passage});surface().focus();key(surface(),'ArrowRight');expect(progress()).toBe(50);key(surface(),'ArrowLeft');expect(progress()).toBe(25);});
+
+describe('reader playback and diagnostics cleanup',()=>{
+ it.each(['generated','device'])('cancels queued %s advancement on unmount immediately',async route=>{
+  // jsdom may already own a zero-delay task; reader teardown must add none.
+  const initialTimers=vi.getTimerCount();
+  karaoke(route==='device'?{getAudioUrl:null}:{});click(button('Play'));await flush();
+  act(()=>route==='device'?utterances[0].onend():audios[0].dispatchEvent(new Event('ended')));
+  expect(vi.getTimerCount()).toBeGreaterThan(initialTimers);act(()=>root.unmount());root=null;await flush();expect(vi.getTimerCount()).toBe(initialTimers);
+ });
+ it('settles a hung audio watchdog on close and ignores a late result',async()=>{
+  let resolve;const getAudioUrl=()=>new Promise(done=>{resolve=done;});karaoke({getAudioUrl});click(button('Play'));await flush();
+  expect(vi.getTimerCount()).toBeGreaterThan(0);karaoke({getAudioUrl,isOpen:false});await flush();expect(vi.getTimerCount()).toBe(0);
+  resolve('blob:late');await flush();expect(audios).toHaveLength(0);expect(utterances).toHaveLength(0);
+ });
+ it('does not schedule diagnostics feedback after a late clipboard completion',async()=>{
+  let done;Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:()=>new Promise(resolve=>{done=resolve;})}});
+  karaoke();click([...host.querySelectorAll('button')].find(el=>el.textContent.includes('Diagnostics')));
+  act(()=>root.unmount());root=null;done();await flush();expect(vi.getTimerCount()).toBe(0);
+ });
+ it('cancels diagnostics feedback when closed',async()=>{
+  Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{}}});karaoke();
+  click([...host.querySelectorAll('button')].find(el=>el.textContent.includes('Diagnostics')));await flush();
+  expect(host.textContent).toContain('Copied');act(()=>root.unmount());root=null;await flush();expect(vi.getTimerCount()).toBe(0);
+ });
+});
+it('clears copied feedback when the narration scope changes',async()=>{
+ Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{}}});karaoke();click([...host.querySelectorAll('button')].find(el=>el.textContent.includes('Diagnostics')));await flush();expect(host.textContent).toContain('Copied');
+ karaoke({sentenceList:['Replacement sentence.']});await flush();expect(host.textContent).not.toContain('Copied');
+});
+it('removes the temporary diagnostics field even when fallback copying throws',async()=>{
+ Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw Error('denied');}}});
+ const original=document.execCommand;document.execCommand=()=>{throw Error('unavailable');};
+ try{karaoke();click([...host.querySelectorAll('button')].find(el=>el.textContent.includes('Diagnostics')));await flush();expect(document.querySelectorAll('textarea')).toHaveLength(0);}finally{document.execCommand=original;}
+});
+
+it('does not fall back to legacy copying after a late clipboard rejection on close',async()=>{
+ let rejectClipboard;Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:()=>new Promise((_resolve,reject)=>{rejectClipboard=reject;})}});
+ const original=document.execCommand;const legacyCopy=vi.fn(()=>true);document.execCommand=legacyCopy;
+ try{karaoke();click([...host.querySelectorAll('button')].find(el=>el.textContent.includes('Diagnostics')));karaoke({isOpen:false});rejectClipboard(Error('clipboard denied'));await flush();expect(legacyCopy).not.toHaveBeenCalled();expect(document.querySelectorAll('textarea')).toHaveLength(0);expect(vi.getTimerCount()).toBe(0);}finally{document.execCommand=original;}
+});

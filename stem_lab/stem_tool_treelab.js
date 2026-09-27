@@ -5660,7 +5660,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         srSay(__alloT('stem.treelab.drought_over', 'The rains return.'));
       }
 
-      function resetTree(newSpeciesId) {
+      function resetTree(newSpeciesId, preparedTree) {
         var sid = newSpeciesId || sp.id;
         // Committed carbon and the last result belong to the OLD species. Left in
         // place, a student who set up an aspen root-sucker run and then switched to
@@ -5668,7 +5668,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         // have — the Spread list would offer three routes while the results reported
         // a fourth. Reproduction carbon is reset with the tree anyway.
         updMulti({
-          tree: newTree(sid), speciesId: sid, spend: {}, lastSpread: null, playing: false,
+          tree: preparedTree || newTree(sid), speciesId: sid, spend: {}, lastSpread: null, playing: false,
           selectedPart: null,
           historyFocusYear: null,
           historyReplay: null,
@@ -5688,9 +5688,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           }
         });
         CLOCK.stop();
-        srSay(__alloT('stem.treelab.say_reset_pre', 'Reset to a new ')
-          + __alloT('stem.treelab.species_' + sid, speciesById(sid).name)
-          + __alloT('stem.treelab.say_reset_post', ' seedling.'));
+        srSay(preparedTree
+          ? __alloT('stem.treelab.field_specimen_ready', 'Model-grown starting tree ready. Age: ') + preparedTree.age
+          : __alloT('stem.treelab.say_reset_pre', 'Reset to a new ')
+            + __alloT('stem.treelab.species_' + sid, speciesById(sid).name)
+            + __alloT('stem.treelab.say_reset_post', ' seedling.'));
       }
 
       // ── 3D panel. TREE3D.attach is a stable module-scope function, so React mounts
@@ -6500,6 +6502,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           ]);
         }));
       }
+      // Season selection changes the illustration, never the annual model.
+      function fieldSeasonPicker() {
+        return h('div', { key: 'field-seasons', className: 'allo-tree-field-seasons' }, [
+          h('div', { key: 'choices', role: 'group', 'aria-label': __alloT('stem.treelab.field_seasons', 'Explore the seasons') },
+            SEASONS.map(function (choice) {
+              return btn('field-season-' + choice.id, choice.emoji + ' ' + __alloT('stem.treelab.season_' + choice.id, choice.label), function () {
+                upd('season', choice.id);
+                srSay(__alloT('stem.treelab.season_' + choice.id, choice.label) + '. ' + seasonNote(choice.id));
+              }, { small: true, pressed: season === choice.id, disabled: playing && speed.seasonal });
+            })),
+          h('p', { key: 'note' }, playing && speed.seasonal
+            ? __alloT('stem.treelab.season_driven_short', 'Playback is choosing')
+            : __alloT('stem.treelab.field_season_note', 'Season selection does not advance the clock.'))
+        ]);
+      }
+
+      // Reveal a real destination, including through closed field-tool disclosures.
+      function revealFieldSection(id) {
+        setTimeout(function () {
+          var node = document.getElementById(id);
+          if (!node) return;
+          var parent = node.parentElement;
+          while (parent && !parent.classList.contains('allo-tree-lab')) {
+            if (parent.tagName === 'DETAILS') parent.open = true;
+            parent = parent.parentElement;
+          }
+          node.focus({ preventScroll: true });
+          node.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' });
+        }, 0);
+      }
+
+      function fieldWorkbench() {
+        if (d.discoveryMode !== 'free' || experimentActive) return null;
+        return h('section', { key: 'field-play', className: 'allo-tree-field-play', 'aria-labelledby': 'treelab-field-play-title' }, [
+          h('h3', { key: 'title', id: 'treelab-field-play-title', tabIndex: -1 }, __alloT('stem.treelab.field_play', 'What will you change next?')),
+          h('p', { key: 'note' }, __alloT('stem.treelab.field_play_note', 'Change one condition. Watch the response, then grow another ring.')),
+          h('div', { key: 'sliders', className: 'allo-tree-field-inputs' }, [
+            slider('field-light', __alloT('stem.treelab.light', 'Light'), envCfg.light, 0, 1, 0.05,
+              function (v) { changeCondition('light', v, 'light'); }, function (v) { return Math.round(v * 100) + '%'; }, !tree.alive, tone(FACTOR_HUE('light'))),
+            slider('field-water', __alloT('stem.treelab.soil_water', 'Soil water'), envCfg.soilWater, 0, 1, 0.05,
+              function (v) { changeCondition('soilWater', v, 'water'); }, function (v) { return Math.round(v * 100) + '%'; }, !tree.alive || inDrought, tone(FACTOR_HUE('water')))
+          ]),
+          inDrought ? h('p', { key: 'drought' }, __alloT('stem.treelab.field_scheduled_drought', 'A scheduled drought is overriding soil water. End it in Field tools to use your water setting.')) : null,
+          h('div', { key: 'run', className: 'allo-tree-field-actions' }, [
+            btn('field-year', __alloT('stem.treelab.plus_1', '+1 year'), function () { stepYears(1); }, { primary: true, disabled: !tree.alive }),
+            btn('field-decade', __alloT('stem.treelab.plus_10', '+10 years'), function () { stepYears(10); }, { disabled: !tree.alive }),
+            btn('field-evidence', __alloT('stem.treelab.field_read_rings', 'Read the rings'), function () { revealFieldSection('grow-sec-memory'); }, { tone: 'ghost' })
+          ]),
+          !tree.alive ? h('p', { key: 'dead' }, __alloT('stem.treelab.discovery_dead', 'Start a new seedling to try this discovery.')) : null
+        ]);
+      }
+
       function viewerPanel() {
         var status = d.viewerStatus || 'idle';
         var full = !!d.viewerFull;
@@ -6553,7 +6607,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 ? __alloT('stem.treelab.limiting_now_short', 'Limiting now: ') + viewerLimit
                 : __alloT('stem.treelab.dead_chip', 'This tree has died'))
           ]),
-          full ? null : habitatRibbon(),
           h('div', {
             id: 'treelab-full-stage',
             'data-tree-fullstage': full ? 'true' : undefined,
@@ -6576,7 +6629,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               key: 'full-description', id: 'treelab-full-description', className: 'allo-tree-sr-only'
             }, __alloT('stem.treelab.full_description', 'Explore the tree with the controls below. Press Escape to leave full screen.')) : null,
             h('div', {
-              key: 'canvas', ref: TREE3D.attach,
+              key: 'canvas', className: 'allo-tree-field-canvas', ref: TREE3D.attach,
               role: 'img',
               'aria-label': sceneAlt,
               style: full
@@ -6635,7 +6688,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             ]) : null,
             full ? fullConditionsPanel() : null,
             h('div', {
-              key: 'ctl',
+              key: 'ctl', className: 'allo-tree-camera-controls',
               // The page's own playback controls stay mounted behind the stage, so
               // "the Play button" is ambiguous without this. Named so a test can say
               // which one it means rather than relying on document order.
@@ -6693,6 +6746,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 key: 'viewsep', 'aria-hidden': 'true',
                 style: { display: 'inline-block', width: 1, height: 22, background: T.border, margin: '0 8px 6px' }
               }) : null,
+              h(full ? 'div' : 'details', { key: 'camera-details', className: 'allo-tree-view-controls' }, [
+                full ? null : h('summary', { key: 'summary' }, __alloT('stem.treelab.field_view_controls', 'View & anatomy controls')),
+                h('div', { key: 'body', className: 'allo-tree-view-control-body' }, [
               btn('l', '◀', function () { TREE3D.nudge(-0.25, 0); }, { small: true, ariaLabel: __alloT('stem.treelab.rotate_left', 'Rotate view left') }),
               btn('r', '▶', function () { TREE3D.nudge(0.25, 0); }, { small: true, ariaLabel: __alloT('stem.treelab.rotate_right', 'Rotate view right') }),
               btn('u', '▲', function () { TREE3D.nudge(0, -0.12); }, { small: true, ariaLabel: __alloT('stem.treelab.tilt_up', 'Tilt view up') }),
@@ -6749,10 +6805,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                   paddingLeft: 12, whiteSpace: 'nowrap'
                 }
               }, __alloT('stem.treelab.full_hint', 'Drag to orbit · Escape to leave')) : null
+                ])
+              ])
             ])
           ]),
           status === 'failed' ? h('div', { key: 'fb', style: { fontSize: 12, color: T.warn, marginTop: 8, lineHeight: 1.5 } },
             __alloT('stem.treelab.threed_failed', 'The 3D engine could not load, which school network filters sometimes cause. Every number and control on this page still works.')) : null,
+          full ? null : fieldSeasonPicker(),
+          full ? null : habitatRibbon(),
+          full ? null : fieldWorkbench(),
           full ? null : causeEffectPanel(),
           full ? null : foldPanel('seasons', __alloT('stem.treelab.explore_seasons', 'Explore seasons and leaves'), seasonRow())
         ], undefined, 'allo-tree-viewer-card');
@@ -7694,6 +7755,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         }, 0);
       }
 
+      function startFieldSpecimen() {
+        // This is a simulated history, not a size multiplier or a growth reward.
+        // It is offered only on a new seedling before a prediction or trial.
+        if (tree.age !== 1 || tree.rings.length || experimentActive || advancedHasEvidence || (Array.isArray(d.fieldNotes) && d.fieldNotes.length) ||
+          (d.discovery && (d.discovery.prediction || d.discovery.record))) return;
+        var usual = { tempC: 22, light: 0.8, soilWater: 0.7, co2ppm: 420 };
+        var shares = normaliseAlloc();
+        var specimen = newTree(sp.id);
+        while (specimen.age < 40 && specimen.alive) specimen = simulateYear(specimen, sp, usual, shares);
+        updMulti(Object.assign({}, usual, { alloc: shares, experimentTrials: {} }));
+        resetTree(sp.id, specimen);
+        focusDiscovery();
+      }
+
       function discoveryPanel() {
         var raw = d.discovery && typeof d.discovery === 'object' ? d.discovery : {};
         var prediction = ['less', 'same', 'more'].indexOf(raw.prediction) >= 0 ? raw.prediction : null;
@@ -7739,6 +7814,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         if (!record) {
           content.push(h('p', { key: 'prompt' }, __alloT('stem.treelab.discovery_prompt',
             'Predict how three dry years will change the food left for growth. We will compare two copies of this tree. Only water changes.')));
+          if (tree.age === 1 && !tree.rings.length && !prediction && !advancedHasEvidence && !(Array.isArray(d.fieldNotes) && d.fieldNotes.length)) content.push(
+            h('details', { key: 'starting-tree', className: 'allo-tree-starting-tree' }, [
+              h('summary', { key: 'summary' }, __alloT('stem.treelab.field_specimen_choice', 'Want a bigger tree to investigate?')),
+              h('p', { key: 'note' }, __alloT('stem.treelab.field_specimen_note', 'Start with a 40-year tree grown by this model in usual conditions. This starts a fresh investigation; its earlier rings are a simulated history.')),
+              btn('specimen', __alloT('stem.treelab.field_specimen_start', 'Use a 40-year starting tree'), startFieldSpecimen, { small: true })
+            ]));
           content.push(choices('predict', prediction, function (value) {
             CLOCK.stop();
             updMulti({ playing: false, discovery: { prediction: value } });
@@ -7803,7 +7884,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             updMulti({ discoveryMode: 'free', missionReflection: answer, discoveries: Object.assign({}, d.discoveries, { recovery: true }) });
           }, { disabled: !tree.alive, primary: true }));
         }
-        content.push(btn('free', __alloT('stem.treelab.discovery_free', 'Explore freely'), function () { upd('discoveryMode', 'free'); }, { tone: 'ghost' }));
+        content.push(btn('free', __alloT('stem.treelab.discovery_free', 'Explore freely'), function () {
+          upd('discoveryMode', 'free');
+          revealFieldSection('treelab-field-play-title');
+        }, { tone: 'ghost' }));
+        if (finished) content.push(h('div', { key: 'next', className: 'allo-tree-discovery-next' }, [
+          h('strong', { key: 'title' }, __alloT('stem.treelab.field_next', 'Follow your curiosity')),
+          btn('rings', __alloT('stem.treelab.field_read_rings', 'Read the rings'), function () { revealFieldSection('grow-sec-memory'); }, { tone: 'ghost' }),
+          btn('grove', __alloT('stem.treelab.field_grove', 'Care for a whole grove'), function () { activateChapter('grove', 'heading'); }, { tone: 'ghost' })
+        ]));
         content.push(discoveryNotebook());
         return h('section', { className: 'allo-tree-discovery', 'data-discovery-phase': record ? (finished ? 'complete' : 'explain') : 'predict' }, card(content));
       }
@@ -9641,11 +9730,25 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           id: 'treelab-advanced-work', className: 'allo-tree-advanced-work', hidden: !advancedOpen,
           'aria-label': __alloT('stem.treelab.advanced_workspace', 'Advanced evidence workspace')
         }, advancedKids), 'grow-advanced-work');
-        return h('div', { key: 'workbench', className: 'allo-tree-workbench' }, [
-          h('div', { key: 'mission', className: 'allo-tree-workbench-mission' }, mission),
-          h('div', { key: 'scene', className: 'allo-tree-workbench-scene' },
-            h('div', { key: 'sticky', className: 'allo-tree-workbench-sticky' }, scene)),
-          h('div', { key: 'controls', className: 'allo-tree-workbench-controls' }, kids)
+        return h('div', { key: 'field', className: 'allo-tree-field' }, [
+          h('div', { key: 'workbench', className: 'allo-tree-workbench' }, [
+            h('div', { key: 'scene', className: 'allo-tree-workbench-scene' }, [
+              d.discoveryMode !== 'free' && !experimentActive ? h('a', {
+                key: 'jump', className: 'allo-tree-field-invitation', href: '#treelab-discovery-heading',
+                onClick: function (e) { e.preventDefault(); revealFieldSection('treelab-discovery-heading'); }
+              }, __alloT('stem.treelab.field_invitation', 'Your investigation: what happens when rain stops?') + ' →') : null,
+              scene
+            ]),
+            h('div', { key: 'mission', className: 'allo-tree-workbench-mission' }, mission)
+          ]),
+          h('details', { key: 'tools', className: 'allo-tree-field-tools',
+            open: d.discoveryMode === 'free' || experimentActive || advancedOpen }, [
+            h('summary', { key: 'summary' }, [
+              h('span', { key: 'title' }, __alloT('stem.treelab.field_tools', 'Field tools')),
+              h('span', { key: 'hint' }, __alloT('stem.treelab.field_tools_hint', 'Clock, conditions, carbon budget and tree memory'))
+            ]),
+            h('div', { key: 'controls', className: 'allo-tree-workbench-controls' }, kids)
+          ])
         ]);
       }
 
@@ -13555,8 +13658,79 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
       ].join('\n');
 
 
+      var fieldGuideCss = [
+        ".allo-tree-lab.is-field-guide{--field-paper:#f7f6ef;--field-surface:#fffef8;--field-line:#cfdbcc;--field-ink:#173d2e;--field-muted:#4d6255;--field-soft:#edf1e6;padding:20px!important;border-radius:16px!important;background:var(--field-paper)!important;box-shadow:none!important}",
+        ".is-field-guide[data-tree-theme=dark]{--field-paper:#101d19;--field-surface:#182b24;--field-line:#436452;--field-ink:#e7f1e8;--field-muted:#b5caba;--field-soft:#23382d}",
+        ".is-field-guide[data-tree-theme=contrast]{--field-paper:#000;--field-surface:#000;--field-line:#fff;--field-ink:#fff;--field-muted:#fff;--field-soft:#000}",
+        ".is-field-guide:before,.is-field-guide .allo-tree-hero:before,.is-field-guide .allo-tree-hero:after{display:none}",
+        ".is-field-guide .allo-tree-hero{border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;padding:0 0 18px!important;margin:0!important;gap:12px!important}",
+        ".is-field-guide .allo-tree-hero-title{font:700 clamp(28px,3vw,38px)/1.1 Georgia,serif!important;letter-spacing:-.04em!important;color:var(--field-ink)!important}",
+        ".is-field-guide .allo-tree-hero-stats{display:none}",
+        ".is-field-guide .allo-tree-hero-controls{padding:8px 12px!important;background:var(--field-surface)!important;border-color:var(--field-line)!important}",
+        ".is-field-guide .allo-tree-tabs{border:0!important;border-bottom:1px solid var(--field-line)!important;border-radius:0!important;background:none!important;padding:0 0 10px!important;margin:0!important;box-shadow:none!important;gap:4px!important}",
+        ".is-field-guide .allo-tree-tab{min-height:46px!important;border-radius:8px!important;padding:7px 10px!important;box-shadow:none!important;flex:1 1 0!important}",
+        ".is-field-guide .allo-tree-tab:not([aria-selected=true]){border-color:transparent!important;background:transparent!important}",
+        ".is-field-guide .allo-tree-tab-icon{width:24px;height:24px;flex-basis:24px;background:none;border-radius:0;font-size:18px}",
+        ".is-field-guide .allo-tree-tab-hint{font-size:10px}",
+        ".is-field-guide .allo-tree-chapter{padding:12px 0!important;margin-bottom:10px!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:none!important;min-height:0!important}",
+        ".is-field-guide .allo-tree-chapter-number{width:auto;min-width:38px;height:28px;font-size:11px;border-radius:5px;box-shadow:none}",
+        ".is-field-guide .allo-tree-chapter-title{color:var(--field-ink)}",
+        ".is-field-guide .allo-tree-workbench{grid-template-columns:minmax(0,1.6fr) minmax(300px,1fr);grid-template-areas:\"scene mission\";grid-template-rows:auto;gap:24px}",
+        ".is-field-guide .allo-tree-workbench-mission{padding-top:32px}",
+        ".is-field-guide .allo-tree-workbench-scene>.allo-tree-card{padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important}",
+        ".allo-tree-field-invitation{display:block;font-size:12px;line-height:1.5;font-weight:700;color:var(--field-ink);text-decoration:underline;text-underline-offset:3px;margin-bottom:12px}",
+        ".is-field-guide .allo-tree-viewer-head{padding:0 0 10px;border:0;background:none}",
+        ".is-field-guide .allo-tree-viewer-name{font-size:16px;color:var(--field-ink)}",
+        ".is-field-guide .allo-tree-viewer-limit{font-size:10px}",
+        ".is-field-guide:not(.is-full) .allo-tree-field-canvas{height:clamp(350px,49vh,550px)!important;border-radius:18px!important;border:1px solid var(--field-line)!important}",
+        ".is-field-guide .allo-tree-discovery>.allo-tree-card{padding:24px!important;border-radius:16px!important;border:1px solid var(--field-line)!important;background:var(--field-surface)!important;box-shadow:0 8px 26px rgba(16,44,27,.045)!important}",
+        ".is-field-guide .allo-tree-discovery h3{font:700 clamp(26px,2.6vw,36px)/1.12 Georgia,serif;letter-spacing:-.035em;color:var(--field-ink);margin:12px 0 18px}",
+        ".is-field-guide .allo-tree-discovery p{color:var(--field-muted);line-height:1.65}",
+        ".is-field-guide .allo-tree-discovery-steps{gap:6px;margin-bottom:20px}",
+        ".is-field-guide .allo-tree-discovery-steps li{border-radius:5px;font-size:11px}",
+        ".is-field-guide .allo-tree-discovery-choices{display:grid;grid-template-columns:1fr;gap:8px}",
+        ".is-field-guide .allo-tree-discovery-choices button{margin:0!important;min-height:44px!important;text-align:left;padding:10px 14px!important;border-radius:8px!important}",
+        ".is-field-guide .allo-tree-discovery-choices button[aria-pressed=true]{box-shadow:inset 4px 0 currentColor}",
+        ".is-field-guide .allo-tree-discovery>.allo-tree-card>.is-primary{width:100%;margin:6px 0 12px!important;min-height:46px}",
+        ".is-field-guide .allo-tree-discovery-next{border-top:1px solid var(--field-line);padding-top:14px;margin-top:14px;display:flex;flex-wrap:wrap;gap:6px}",
+        ".allo-tree-discovery-next>strong{display:block;flex-basis:100%;font-size:13px;margin-bottom:4px;color:var(--field-ink)}",
+        ".allo-tree-field-seasons{margin:12px 0}",
+        ".allo-tree-field-seasons>div{display:flex;flex-wrap:wrap;gap:4px}",
+        ".allo-tree-field-seasons button{flex:1 1 90px;min-height:40px!important;margin:0!important}",
+        ".allo-tree-field-seasons p{font-size:11px;color:var(--field-muted);margin:6px 0}",
+        ".is-field-guide .allo-tree-camera-controls{gap:2px}",
+        ".is-field-guide .allo-tree-camera-controls button{min-height:36px!important;font-size:11px!important;margin-right:2px!important}",
+        ".is-field-guide .allo-tree-habitat-ribbon{box-shadow:none;border-radius:10px;margin-top:12px}",
+        ".allo-tree-field-tools{border-top:1px solid var(--field-line);margin:24px 0 18px}",
+        ".allo-tree-field-tools>summary{cursor:pointer;padding:20px 0;font-size:18px;font-weight:750;color:var(--field-ink);min-height:44px}",
+        ".allo-tree-field-tools>summary>span+span{display:inline-block;font-size:12px;font-weight:400;color:var(--field-muted);margin-left:16px}",
+        ".allo-tree-field-tools .allo-tree-workbench-controls{max-width:1020px;margin:auto}",
+        ".allo-tree-field-play{margin-top:16px;padding:16px;border-radius:12px;background:var(--field-surface);border:1px solid var(--field-line)}",
+        ".allo-tree-field-play h3{font-size:17px;font-weight:750;color:var(--field-ink);margin:0 0 5px}",
+        ".allo-tree-field-play p{font-size:12px;line-height:1.6;color:var(--field-muted);margin:5px 0 12px}",
+        ".allo-tree-field-inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}",
+        ".allo-tree-field-actions{display:flex;flex-wrap:wrap;gap:4px}",
+        ".allo-tree-field-invitation:focus-visible,.allo-tree-field-tools>summary:focus-visible{outline:3px solid var(--tree-focus);outline-offset:4px;border-radius:4px}",
+        ".is-field-guide [tabindex=\"-1\"]:focus-visible{outline:3px solid var(--tree-focus);outline-offset:4px}",
+        "@media(max-width:960px){.is-field-guide .allo-tree-workbench{grid-template-columns:minmax(0,1fr);grid-template-areas:\"scene\" \"mission\";gap:10px}.is-field-guide .allo-tree-workbench-mission{padding-top:0}.is-field-guide .allo-tree-discovery-choices{grid-template-columns:repeat(3,minmax(0,1fr))}.is-field-guide .allo-tree-discovery-choices button{text-align:center}.is-field-guide .allo-tree-tab{flex:0 0 auto!important;min-width:100px!important}}",
+        "@media(max-width:600px){.allo-tree-lab.is-field-guide{padding:12px!important}.is-field-guide .allo-tree-hero{padding-bottom:12px!important;gap:8px!important}.is-field-guide .allo-tree-hero-controls{padding:6px 8px!important}.is-field-guide .allo-tree-hero-copy>div:not(.allo-tree-hero-stats){font-size:12px!important;margin-top:4px!important}.is-field-guide .allo-tree-tab-hint{display:none}.is-field-guide .allo-tree-tab{min-height:44px!important;min-width:auto!important}.is-field-guide .allo-tree-tab-icon{width:20px;flex-basis:20px}.is-field-guide .allo-tree-chapter{padding:10px 0!important;margin:0!important}.is-field-guide:not(.is-full) .allo-tree-field-canvas{height:330px!important}.is-field-guide .allo-tree-discovery>.allo-tree-card{padding:18px!important}.is-field-guide .allo-tree-discovery-choices{grid-template-columns:1fr}.allo-tree-field-tools>summary>span+span{display:block;margin:6px 0 0}.allo-tree-field-inputs{grid-template-columns:1fr}}",
+        "@media print{.allo-tree-field-invitation,.allo-tree-field-seasons,.allo-tree-field-play,.allo-tree-camera-controls{display:none!important}.allo-tree-field-tools{border:0}.is-field-guide .allo-tree-workbench{display:block}}",
+        "",
+        ".allo-tree-view-controls>summary{cursor:pointer;min-height:36px;box-sizing:border-box;padding:8px 12px;font-size:12px;font-weight:700;color:var(--field-ink)}",
+        ".allo-tree-view-controls>summary:focus-visible{outline:3px solid var(--tree-focus);outline-offset:2px}",
+        ".allo-tree-view-control-body{display:flex;flex-wrap:wrap;padding:8px 0;gap:2px}",
+        ".is-full .allo-tree-view-controls,.is-full .allo-tree-view-control-body{display:contents}",
+        ".is-field-guide .allo-tree-viewer-card:before{display:none}",
+        "",
+        ".allo-tree-starting-tree{margin:12px 0;border-bottom:1px solid var(--field-line);padding-bottom:8px}",
+        ".allo-tree-starting-tree>summary{font-size:12px;line-height:1.5;min-height:32px;cursor:pointer;font-weight:700;color:var(--field-ink)}",
+        ".allo-tree-starting-tree>summary:focus-visible{outline:3px solid var(--tree-focus);outline-offset:3px}"
+      ].join('');
+
       return h('div', {
-        className: 'allo-tree-lab is-discovery-layout' + (band === 'k2' ? ' is-young' : '') + (d.viewerFull ? ' is-full' : '') + (reduceMotion ? ' is-reduced-motion' : ''),
+        'data-tree-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'),
+        'data-tree-view': view,
+        className: 'allo-tree-lab is-discovery-layout is-field-guide' + (band === 'k2' ? ' is-young' : '') + (d.viewerFull ? ' is-full' : '') + (reduceMotion ? ' is-reduced-motion' : ''),
         style: {
           '--tree-glow': isContrast ? 'transparent' : (isDark ? 'rgba(52,211,153,.11)' : 'rgba(16,185,129,.14)'),
           '--sun-glow': isContrast ? 'transparent' : (isDark ? 'rgba(251,191,36,.07)' : 'rgba(250,204,21,.13)'),
@@ -13598,7 +13772,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           background: isContrast ? T.bg : (isDark ? 'linear-gradient(180deg,#0b1f1c 0,#0f172a 390px,#0f172a 100%)' : 'linear-gradient(180deg,#eefaf4 0,#f8fafc 390px,#f8fafc 100%)'), color: T.text, padding: 16, borderRadius: 20, minHeight: 400, boxShadow: isContrast ? 'none' : (isDark ? '0 26px 70px rgba(2,6,23,.28)' : '0 26px 70px rgba(15,23,42,.08)')
         }
       }, [
-        h('style', { key: 'visual-css' }, visualCss + discoveryCss),
+        h('style', { key: 'visual-css' }, visualCss + discoveryCss + fieldGuideCss),
         h('div', {
           key: 'top', className: 'allo-tree-hero',
           style: {

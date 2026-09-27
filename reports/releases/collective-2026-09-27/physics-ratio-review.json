@@ -1,0 +1,30 @@
+{
+  "at": "2026-09-27T19:46:43.192Z",
+  "claim": "about 6 times",
+  "source": "stem_lab/stem_tool_physics.js:3852",
+  "model": {
+    "angle": 45,
+    "speed": 25,
+    "airDrag": false,
+    "launchAndLandingHeight": 0,
+    "earthGravity": 9.8,
+    "moonGravity": 1.6
+  },
+  "earth": {
+    "status": "landed",
+    "range": 63.77551020408161,
+    "maxH": 15.943877551020432,
+    "time": 3.6076876591150464,
+    "apexT": 1.8038438295575172
+  },
+  "moon": {
+    "status": "landed",
+    "range": 390.62499999999926,
+    "maxH": 97.65625000000104,
+    "time": 22.097086912079845,
+    "apexT": 11.048543456039893
+  },
+  "ratio": 6.12499999999999,
+  "derivation": "R=v^2 sin(2 theta)/g; R_moon/R_earth=9.8/1.6=6.125, approximately six",
+  "fixture": "DOM style registration skipped; actual pure model API executed"
+}

@@ -30,6 +30,61 @@ window.StemLab = window.StemLab || {
 (function() {
   'use strict';
 
+  // BEGIN BLACK HOLE EXPERIMENT MODEL
+  // Timelike Schwarzschild geodesics, r in Schwarzschild radii, c = 1.
+  // d²r/dτ² = -1/(2r²) + L²/r³ - 3L²/(2r⁴); dφ/dτ = L/r².
+  // Spin belongs to the illustrative disk only. This orbit model is nonrotating.
+  // Fixed proper-time RK4 samples make playback, scrubbing and replay identical.
+  function blackHoleTrajectory(options) {
+    options = options || {};
+    var finite = function(value, fallback, min, max) { return typeof value === 'number' && isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback; };
+    var releaseRadius = finite(options.radius, 5, 4, 8);
+    var sideways = finite(options.sideways, 0, 0, 1.6);
+    var angularMomentum = sideways * releaseRadius / Math.sqrt(2 * releaseRadius - 3);
+    var energySquared = (1 - 1 / releaseRadius) * (1 + angularMomentum * angularMomentum / (releaseRadius * releaseRadius));
+    var state = [releaseRadius, 0, 0], tau = 0, h = 1 / 120, samples = [], outcome = 'bound';
+    function derivative(s) {
+      var r = Math.max(.95, s[0]), l2 = angularMomentum * angularMomentum;
+      return [s[1], -.5 / (r*r) + l2 / (r*r*r) - 1.5*l2 / (r*r*r*r), angularMomentum / (r*r)];
+    }
+    function shifted(s, k, scale) { return s.map(function(v, i) { return v + k[i]*scale; }); }
+    function sample() { return { radius: state[0], radialVelocity: state[1], angle: state[2], time: tau / 2.5 }; }
+    samples.push(sample());
+    for (var step = 0; step < 36000; step++) {
+      var previous = state.slice(), k1 = derivative(state), k2 = derivative(shifted(state,k1,h/2));
+      var k3 = derivative(shifted(state,k2,h/2)), k4 = derivative(shifted(state,k3,h));
+      state = state.map(function(v,i) { return v + h*(k1[i]+2*k2[i]+2*k3[i]+k4[i])/6; });
+      tau += h;
+      if (state[0] <= 1) {
+        var fraction = (previous[0]-1)/(previous[0]-state[0]);
+        state = previous.map(function(v,i) { return v+(state[i]-v)*fraction; });
+        state[0] = 1; tau -= h*(1-fraction); outcome = 'captured'; samples.push(sample()); break;
+      }
+      samples.push(sample());
+      if (energySquared >= 1 && state[0] >= releaseRadius * 1.8 && state[1] > 0) { outcome = 'escaped'; break; }
+      if (state[2] >= Math.PI * 2 && energySquared < 1) { outcome = Math.abs(sideways-1)<.0001 ? 'orbit' : 'bound'; break; }
+    }
+    return { samples: samples, duration: samples[samples.length-1].time, outcome: outcome, releaseRadius: releaseRadius, sideways: sideways, angularMomentum: angularMomentum, energySquared: energySquared };
+  }
+  function blackHoleSample(trajectory, time) {
+    var samples = trajectory.samples, at = Math.max(0, Math.min(trajectory.duration, isFinite(time) ? time : 0));
+    var lo = 0, hi = samples.length - 1;
+    while (hi-lo > 1) { var mid = (lo+hi) >> 1; if (samples[mid].time > at) hi = mid; else lo = mid; }
+    var a = samples[lo], b = samples[hi], f = b.time === a.time ? 0 : (at-a.time)/(b.time-a.time);
+    return { radius: a.radius+(b.radius-a.radius)*f, angle: a.angle+(b.angle-a.angle)*f, radialVelocity: a.radialVelocity+(b.radialVelocity-a.radialVelocity)*f, time: at };
+  }
+  function blackHoleTides(radius, massMode, objectType) {
+    var solarMass = massMode === 'supermassive' ? 4000000 : 10;
+    var rs = 2953.34 * solarMass, r = Math.max(1, radius);
+    var gradient = 89875517873681764 / (rs*rs*r*r*r);
+    // Deformation is deliberately compressed for visibility, not a material model.
+    // Solar-type stars can disrupt outside even a supermassive hole; small probes
+    // have vastly weaker differential acceleration at the same r/Rs in that case.
+    var visualLoad = objectType === 'star' ? gradient * 695700000 / 274 : gradient / 2500000;
+    return { gradient: gradient, stretch: 1 + Math.min(7, Math.log(1+visualLoad)*2), disrupted: visualLoad > (objectType === 'star' ? 1 : 4) };
+  }
+  // END BLACK HOLE EXPERIMENT MODEL
+
   // Scoped observatory styling: scene colours and scientific controls remain independent.
   (function () {
     if (document.getElementById('galaxy-observatory-design')) return;
@@ -37,6 +92,21 @@ window.StemLab = window.StemLab || {
     style.id = 'galaxy-observatory-design';
     style.textContent = `
       [data-galaxy-root] { padding: 16px; border: 1px solid #dce3ef; border-radius: 24px; background: #f4f6fb; }
+      [data-bh-workspace] { align-items: start; }
+      [data-bh-stage] { align-self: start; position: sticky; top: 12px; min-width: 0; }
+      [data-bh-header] { padding: 14px 16px; color: #e2e8f0; border-bottom: 1px solid #ffffff22; }
+      [data-bh-viewport] { position: relative; }
+      [data-bh-marker] { position: absolute; pointer-events: none; transform: translate(-50%, -50%); width: 32px; height: 32px; border: 1px solid #a5f3fc; border-radius: 50%; box-shadow: 0 0 0 4px #02061766; }
+      [data-bh-marker] span { position: absolute; top: -27px; left: 50%; transform: translateX(-50%); white-space: nowrap; color: #cffafe; background: #07111ee8; border: 1px solid #67e8f966; border-radius: 5px; padding: 3px 6px; font: 600 11px system-ui; }
+      [data-bh-transport] { padding: 14px 16px; background: #0c162b; color: #e2e8f0; border-top: 1px solid #ffffff22; }
+      [data-bh-transport] button { min-height: 44px; border: 1px solid #526889; border-radius: 8px; padding: 8px 12px; color: #e2e8f0; background: #243550; font-size: 12px; font-weight: 700; }
+      [data-bh-transport] button:disabled { opacity: .45; }
+      [data-bh-transport] input { width: 100%; min-height: 28px; accent-color: #67e8f9; }
+      [data-bh-workspace] > aside { display: flex; flex-direction: column; gap: 12px; }
+      [data-bh-workspace] > aside > * { margin: 0; }
+      [data-bh-experiment] { order: -1; }
+      @media (min-width: 1024px) { [data-bh-workspace] { grid-template-columns: minmax(0,1fr) 320px; } }
+      @media (max-width: 1023px) { [data-bh-stage] { position: relative; top: auto; } }
       [data-galaxy-header] { padding: 20px; border: 1px solid #344568; border-radius: 18px; background: radial-gradient(ellipse at 85% 0%, #263c63 0%, transparent 55%), #0c162b; box-shadow: 0 8px 24px #0f172a12; }
       [data-galaxy-header] #galaxy-tool-title { color: #f8fafc; font-size: clamp(21px, 2.3vw, 29px); letter-spacing: -.035em; line-height: 1.25; display: flex; align-items: center; gap: 12px; }
       [data-galaxy-header] > button { color: #e2e8f0; background: #ffffff0d; border: 1px solid #ffffff26; }
@@ -750,14 +820,17 @@ if (!window._galaxyHasLoadedOnce) {
 
           var simMode = ALLOWED_GALAXY_MODES[d.simMode] ? d.simMode : 'galaxy';
 
-          var blackHoleSpin = (typeof d.blackHoleSpin === 'number' && isFinite(d.blackHoleSpin)) ? d.blackHoleSpin : 0.72;
-          var blackHoleDisk = (typeof d.blackHoleDisk === 'number' && isFinite(d.blackHoleDisk)) ? d.blackHoleDisk : 0.78;
+          var blackHoleSpin = (typeof d.blackHoleSpin === 'number' && isFinite(d.blackHoleSpin)) ? Math.max(0, Math.min(.99, d.blackHoleSpin)) : 0.72;
+          var blackHoleDisk = (typeof d.blackHoleDisk === 'number' && isFinite(d.blackHoleDisk)) ? Math.max(.2, Math.min(1, d.blackHoleDisk)) : 0.78;
           var blackHolePaused = !!d.blackHolePaused;
           var blackHoleReducedMotion = galaxyPrefersReducedMotion;
           var blackHoleMotionAllowed = d.blackHoleMotionAllowed === true || !blackHoleReducedMotion;
           var blackHoleEffectivePaused = blackHolePaused || !blackHoleMotionAllowed;
           var blackHoleDropObject = d.blackHoleDropObject || 'probe';
           var blackHoleMassMode = d.blackHoleMassMode || 'stellar';
+          var blackHoleReleaseRadius = typeof d.blackHoleReleaseRadius === 'number' && isFinite(d.blackHoleReleaseRadius) ? Math.max(4, Math.min(8, d.blackHoleReleaseRadius)) : 5;
+          var blackHoleSideways = typeof d.blackHoleSideways === 'number' && isFinite(d.blackHoleSideways) ? Math.max(0, Math.min(1.6, d.blackHoleSideways)) : 0;
+          var blackHolePlayback = [.25,.5,1,2,4].indexOf(d.blackHolePlayback) >= 0 ? d.blackHolePlayback : .5;
 
           var rotMode = d.rotMode || 'flat';
 
@@ -2378,6 +2451,8 @@ if (!window._galaxyHasLoadedOnce) {
 
 
           var blackHoleCanvasActive = React.useRef(null);
+          var blackHoleReadyState = React.useState(false), blackHoleReady = blackHoleReadyState[0], setBlackHoleReady = blackHoleReadyState[1];
+          var blackHoleRunState = React.useState(false), blackHoleHasRun = blackHoleRunState[0], setBlackHoleHasRun = blackHoleRunState[1];
           // Holds the Real Sky container across renders so its Aladin Lite instance
           // can be disposed when the node genuinely unmounts. Declared here, with the
           // other refs, to keep the hook budget fixed and unconditional.
@@ -2394,15 +2469,15 @@ if (!window._galaxyHasLoadedOnce) {
           var realSkyCapabilityRevision = realSkyCapabilityRevisionState[0];
           var setRealSkyCapabilityRevision = realSkyCapabilityRevisionState[1];
           var blackHoleRefCb = React.useCallback(function(canvas) {
-            if (!canvas) { if (blackHoleCanvasActive.current && blackHoleCanvasActive.current._blackHoleCleanup) blackHoleCanvasActive.current._blackHoleCleanup(); blackHoleCanvasActive.current = null; return; }
+            if (!canvas) { if (blackHoleCanvasActive.current && blackHoleCanvasActive.current._blackHoleCleanup) blackHoleCanvasActive.current._blackHoleCleanup(); blackHoleCanvasActive.current = null; setBlackHoleReady(false); setBlackHoleHasRun(false); return; }
             if (canvas._blackHoleInit) return;
             blackHoleCanvasActive.current = canvas;
             canvas._blackHoleInit = true;
-            var stopped = false, frame = 0, renderer, scene, camera, disk, stars, photonRing, lensRing, corona, lensArcA, lensArcB, coreGlow, fallingObjects = [], lastFrameTime = 0, updateFalling = function(){}, disposeFalling = function(){};
+            var stopped = false, frame = 0, renderer, scene, camera, disk, stars, photonRing, lensRing, corona, lensArcA, lensArcB, coreGlow, jetGroup, fallingObjects = [], lastFrameTime = 0, sceneTime = 0, contextLost = false, updateFalling = function(){}, disposeFalling = function(){}, updateMarker = function(){};
             var spin = parseFloat(canvas.getAttribute('data-spin')); if (isNaN(spin)) spin = 0.72;
             var diskPower = parseFloat(canvas.getAttribute('data-disk')); if (isNaN(diskPower)) diskPower = 0.78;
             var paused = canvas.getAttribute('data-paused') === 'true';
-            var drag = false, lastX = 0, lastY = 0, yaw = 0.28, pitch = 0.28, distance = 3.25, inView = true, pageHidden = !!document.hidden, observer = null;
+            var drag = false, lastX = 0, lastY = 0, yaw = 0.28, pitch = 0.38, distance = 4.6, inView = true, pageHidden = !!document.hidden, observer = null;
 
             function init() {
               if (stopped || !window.THREE) return;
@@ -2445,25 +2520,25 @@ if (!window._galaxyHasLoadedOnce) {
               horizon.renderOrder = 5; scene.add(horizon);
               var shadow = new THREE.Mesh(new THREE.SphereGeometry(0.49, 96, 64), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 1, side: THREE.BackSide })); scene.add(shadow);
 
-              var ringMat = new THREE.MeshBasicMaterial({ color: 0xffe8a3, transparent: true, opacity: 0.52, blending: THREE.AdditiveBlending, depthWrite: false });
-              photonRing = new THREE.Mesh(new THREE.TorusGeometry(0.525, 0.007, 12, 192), ringMat); photonRing.renderOrder = 6; scene.add(photonRing);
+              var ringMat = new THREE.MeshBasicMaterial({ color: 0xffe8a3, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending, depthWrite: false });
+              photonRing = new THREE.Mesh(new THREE.TorusGeometry(0.505, 0.004, 12, 192), ringMat); photonRing.renderOrder = 6; scene.add(photonRing);
               // Was a HORIZONTAL torus at 0.62 - a second band around the horizon's waist.
               // Together with the photon ring that made the black hole read as a planet
               // with rings. Higher-order photon paths show up as a faint halo just
               // outside the main ring IN THE SKY PLANE, so this is now camera-facing
               // and concentric with the shadow (oriented in updateCamera).
-              lensRing = new THREE.Mesh(new THREE.TorusGeometry(0.555, 0.026, 10, 192), new THREE.MeshBasicMaterial({ color: 0xffd9a0, transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false })); lensRing.renderOrder = 6; scene.add(lensRing);
+              lensRing = new THREE.Mesh(new THREE.TorusGeometry(0.515, 0.009, 10, 192), new THREE.MeshBasicMaterial({ color: 0xffd9a0, transparent: true, opacity: 0.08, blending: THREE.AdditiveBlending, depthWrite: false })); lensRing.renderOrder = 6; scene.add(lensRing);
 
               var diskMat = new THREE.ShaderMaterial({ transparent: true, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending,
-                uniforms: { uTime: { value: 0 }, uSpin: { value: spin }, uPower: { value: diskPower }, uObserverAngle: { value: 0 } },
+                uniforms: { uTime: { value: 0 }, uSpin: { value: spin }, uPower: { value: diskPower }, uObserverAngle: { value: 0 }, uInclination: { value: 1 } },
                 vertexShader: 'varying vec2 vUv; void main(){vUv=uv; vec3 p=position; float r=length(p.xy); p.z += sin(atan(p.y,p.x)*7.0+r*12.0)*0.012; gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);}',
-                fragmentShader: "varying vec2 vUv;\nuniform float uTime; uniform float uSpin; uniform float uPower; uniform float uObserverAngle;\nfloat hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}\nfloat noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}\nvoid main(){\n vec2 p=(vUv-.5)*2.; float r=length(p); if(r<.335||r>1.)discard;\n float a=atan(p.y,p.x); float omega=(.25+uSpin*.75)/pow(max(r,.335),1.5);\n float flowAngle=a-uTime*omega; vec2 flow=vec2(cos(flowAngle),sin(flowAngle))*r;\n float broad=noise(flow*12.); float medium=noise(flow*33.+broad*2.); float fine=noise(flow*91.);\n float turbulence=broad*.5+medium*.32+fine*.18;\n float ribbons=.5+.5*sin(r*172.+broad*5.+sin(a*9.-uTime*.2)*1.4);\n float filaments=pow(.5+.5*sin(r*330.+medium*5.),5.);\n float edge=smoothstep(.335,.375,r)*(1.-smoothstep(.82,1.,r));\n float heat=clamp((1.-r)/.665,0.,1.);\n vec3 c=mix(vec3(.48,.085,.025),vec3(1.,.46,.13),smoothstep(.05,.6,heat));\n c=mix(c,vec3(.86,.94,1.),pow(heat,2.8));\n float approaching=.5+.5*sin(a-uObserverAngle);\n float beaming=mix(.48,1.28,approaching)*(1.+uSpin*.2*approaching);\n c=mix(c,c*vec3(.78,.91,1.12),uSpin*approaching*.4);\n float structure=.28+.42*turbulence+.2*ribbons+.1*filaments;\n float hotKnot=pow(max(0.,noise(flow*23.)-.55)*2.22,3.)*heat;\n c+=vec3(1.,.79,.42)*hotKnot*.42;\n c=c/(vec3(1.)+c*.18);\n float alpha=min(.95,edge*structure*beaming*uPower);\n gl_FragColor=vec4(c,alpha);\n}"
+                fragmentShader: "varying vec2 vUv;\nuniform float uTime; uniform float uSpin; uniform float uPower; uniform float uObserverAngle; uniform float uInclination;\nfloat hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}\nfloat noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}\nvoid main(){\n vec2 p=(vUv-.5)*2.; float r=length(p); if(r<.335||r>1.)discard;\n float a=atan(p.y,p.x); float omega=(.25+uSpin*.75)/pow(max(r,.335),1.5);\n float flowAngle=a-uTime*omega; vec2 flow=vec2(cos(flowAngle),sin(flowAngle))*r;\n float broad=noise(flow*12.); float medium=noise(flow*33.+broad*2.); float fine=noise(flow*91.);\n float turbulence=broad*.5+medium*.32+fine*.18;\n float ribbons=.5+.5*sin(r*172.+broad*5.+sin(a*9.-uTime*.2)*1.4);\n float filaments=pow(.5+.5*sin(r*330.+medium*5.),5.);\n float edge=smoothstep(.335,.375,r)*(1.-smoothstep(.82,1.,r));\n float heat=clamp((1.-r)/.665,0.,1.);\n vec3 c=mix(vec3(.48,.085,.025),vec3(1.,.46,.13),smoothstep(.05,.6,heat));\n c=mix(c,vec3(.86,.94,1.),pow(heat,2.8));\n float approaching=.5+.5*sin(a-uObserverAngle)*uInclination;\n float beaming=mix(.48,1.28,approaching)*(1.+uSpin*.2*approaching);\n c=mix(c,c*vec3(.78,.91,1.12),uSpin*approaching*.4);\n float structure=.28+.42*turbulence+.2*ribbons+.1*filaments;\n float hotKnot=pow(max(0.,noise(flow*23.)-.55)*2.22,3.)*heat;\n c+=vec3(1.,.79,.42)*hotKnot*.42;\n c=c/(vec3(1.)+c*.18);\n float alpha=min(.95,edge*structure*beaming*uPower);\n gl_FragColor=vec4(c,alpha);\n}"
               });
-              disk = new THREE.Mesh(new THREE.RingGeometry(0.72, 2.15, 256, 8), diskMat); disk.rotation.x = -Math.PI / 2.45; scene.add(disk);
+              disk = new THREE.Mesh(new THREE.RingGeometry(0.72, 2.15, 256, 8), diskMat); disk.rotation.x = -Math.PI / 2; scene.add(disk);
               // The ISCO rim is the hot inner edge of the disk, not an outline around
               // it; at 0.82 on a 0.018 tube it drew a hard cream hoop that fought the
               // photon ring for attention.
-              var rimMat = new THREE.MeshBasicMaterial({ color: 0xfff0bd, transparent: true, opacity: 0.34, blending: THREE.AdditiveBlending, depthWrite: false });
+              var rimMat = new THREE.MeshBasicMaterial({ color: 0xfff0bd, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false });
               var innerRim = new THREE.Mesh(new THREE.TorusGeometry(0.735, 0.011, 12, 256), rimMat); innerRim.rotation.x = disk.rotation.x; scene.add(innerRim);
 
               var glowCanvas = document.createElement('canvas'); glowCanvas.setAttribute('aria-hidden', 'true'); glowCanvas.width = glowCanvas.height = 256;
@@ -2473,13 +2548,16 @@ if (!window._galaxyHasLoadedOnce) {
 
               var arcMatA = new THREE.MeshBasicMaterial({ color:0xffd98a, transparent:true, opacity:.15, blending:THREE.AdditiveBlending, depthWrite:false, side:THREE.DoubleSide });
               var arcMatB = new THREE.MeshBasicMaterial({ color:0x72b7ff, transparent:true, opacity:.1, blending:THREE.AdditiveBlending, depthWrite:false, side:THREE.DoubleSide });
-              lensArcA = new THREE.Mesh(new THREE.TorusGeometry(.69,.014,10,144,Math.PI*1.36),arcMatA); lensArcA.rotation.z=-.52; lensArcA.position.set(0,0,0); scene.add(lensArcA);
-              lensArcB = new THREE.Mesh(new THREE.TorusGeometry(.76,.01,8,128,Math.PI*1.05),arcMatB); lensArcB.rotation.z=2.42; lensArcB.position.set(0,0,0); scene.add(lensArcB);
+              // A textured, flattened far-side image communicates bent disk light
+              // without the old disconnected hoops. Still an illustration, not ray tracing.
+              lensArcA = new THREE.Mesh(new THREE.RingGeometry(.51,.82,128,8,0,Math.PI),diskMat.clone()); lensArcA.scale.y=.85; scene.add(lensArcA);
+              lensArcB = new THREE.Mesh(new THREE.RingGeometry(.51,.65,128,8,Math.PI,Math.PI),diskMat.clone()); lensArcB.scale.y=.65; scene.add(lensArcB);
+              arcMatA.dispose(); arcMatB.dispose();
 
               var coronaCount=900, coronaGeo=new THREE.BufferGeometry(), coronaPos=new Float32Array(coronaCount*3), coronaCol=new Float32Array(coronaCount*3);
               for(var ci=0;ci<coronaCount;ci++){ var ca=Math.random()*Math.PI*2, cr=.58+Math.pow(Math.random(),1.7)*1.7, cy=(Math.random()-.5)*.075*(1+cr); coronaPos[ci*3]=Math.cos(ca)*cr; coronaPos[ci*3+1]=Math.sin(ca)*cr; coronaPos[ci*3+2]=cy; var ch=1-(cr-.58)/1.7; coronaCol[ci*3]=.45+.55*ch; coronaCol[ci*3+1]=.18+.7*ch; coronaCol[ci*3+2]=.35+.65*(1-ch); }
               coronaGeo.setAttribute('position',new THREE.BufferAttribute(coronaPos,3)); coronaGeo.setAttribute('color',new THREE.BufferAttribute(coronaCol,3));
-              corona=new THREE.Points(coronaGeo,new THREE.PointsMaterial({size:.018,map:bhDotTex,vertexColors:true,transparent:true,opacity:.46,blending:THREE.AdditiveBlending,depthWrite:false})); corona.rotation.x=-Math.PI/2.45; scene.add(corona);
+              corona=new THREE.Points(coronaGeo,new THREE.PointsMaterial({size:.014,map:bhDotTex,vertexColors:true,transparent:true,opacity:.2,blending:THREE.AdditiveBlending,depthWrite:false})); corona.rotation.x=-Math.PI/2; scene.add(corona);
 
               // These cones are 4.2 and 4.8 units tall around a horizon of radius 0.43,
               // so they cross the entire frame. Untextured they paint that as flat,
@@ -2517,46 +2595,153 @@ if (!window._galaxyHasLoadedOnce) {
               jetGeo.setAttribute('position',new THREE.BufferAttribute(jetPos,3));
               jetGeo.setAttribute('color',new THREE.BufferAttribute(jetCol,3));
               var jetParticles=new THREE.Points(jetGeo,new THREE.PointsMaterial({vertexColors:true,map:bhDotTex,size:.025,transparent:true,opacity:.48,blending:THREE.AdditiveBlending,depthWrite:false})); scene.add(jetParticles);
-              function makeDropMaterial(color){ return new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:1,depthWrite:false}); }
-              disposeFalling=function(item){ scene.remove(item.group); scene.remove(item.trail); item.group.traverse(function(node){if(node.geometry)node.geometry.dispose();if(node.material)node.material.dispose();}); item.trail.geometry.dispose(); item.trail.material.dispose(); };
-              canvas._dropIntoBlackHole=function(type,massMode){
-                if(fallingObjects.length>=4)disposeFalling(fallingObjects.shift());
-                var group=new THREE.Group(), mainMat, mesh;
-                if(type==='astronaut'){
-                  mainMat=makeDropMaterial(0x72d7ff); mesh=new THREE.Mesh(new THREE.CylinderGeometry(.05,.06,.18,16),mainMat); mesh.rotation.x=Math.PI/2; group.add(mesh);
-                  var helmet=new THREE.Mesh(new THREE.SphereGeometry(.065,16,12),makeDropMaterial(0xe8f7ff)); helmet.position.z=.14; group.add(helmet);
-                  var pack=new THREE.Mesh(new THREE.BoxGeometry(.09,.055,.13),makeDropMaterial(0x7c8da8)); pack.position.y=-.055; group.add(pack);
-                }else if(type==='star'){
-                  mainMat=makeDropMaterial(0xffc35a); mesh=new THREE.Mesh(new THREE.SphereGeometry(.115,24,18),mainMat); group.add(mesh);
-                  var starHalo=new THREE.Mesh(new THREE.SphereGeometry(.16,20,14),new THREE.MeshBasicMaterial({color:0xff5a18,transparent:true,opacity:.18,blending:THREE.AdditiveBlending,depthWrite:false})); group.add(starHalo);
-                }else{
-                  mainMat=makeDropMaterial(0xd7e3f4); mesh=new THREE.Mesh(new THREE.CylinderGeometry(.045,.065,.2,16),mainMat); mesh.rotation.x=Math.PI/2; group.add(mesh);
-                  var panelMat=makeDropMaterial(0x4f8fff), panelGeo=new THREE.BoxGeometry(.23,.055,.012);
-                  var panelA=new THREE.Mesh(panelGeo,panelMat); panelA.position.x=.14; group.add(panelA); var panelB=panelA.clone(); panelB.position.x=-.14; group.add(panelB);
-                }
-                var trailArray=new Float32Array(96*3), trailGeo=new THREE.BufferGeometry(); trailGeo.setAttribute('position',new THREE.BufferAttribute(trailArray,3)); trailGeo.setDrawRange(0,0);
-                var trail=new THREE.Line(trailGeo,new THREE.LineBasicMaterial({color:massMode==='stellar'?0xff9b55:0x77bfff,transparent:true,opacity:.52,blending:THREE.AdditiveBlending,depthWrite:false})); scene.add(group); scene.add(trail);
-                var item={group:group,trail:trail,trailArray:trailArray,trailCount:0,progress:0,phase:0,launchAngle:.6+Math.random()*.4,lift:.3+Math.random()*.25,strength:massMode==='stellar'?1:.23,label:type==='astronaut'?__alloT('stem.galaxy.bh_name_astronaut', 'Astronaut'):type==='star'?__alloT('stem.galaxy.bh_name_star', 'Star'):__alloT('stem.galaxy.bh_name_probe', 'Probe')}; fallingObjects.push(item);
-                var signalBar=document.getElementById('black-hole-signal-bar'),signalLabel=document.getElementById('black-hole-signal-label');if(signalBar){signalBar.style.width='100%';signalBar.style.backgroundColor='#38bdf8';}if(signalLabel)signalLabel.textContent=__alloT('stem.galaxy.bh_signal', 'Distant received signal: {percent}%').replace('{percent}','100'); var status=document.getElementById('black-hole-status'); if(status)status.textContent=(paused?__alloT('stem.galaxy.bh_status_ready', '{object} is ready to fall. Start animation to begin.'):__alloT('stem.galaxy.bh_status_released', '{object} released. Watch radial stretching and sideways compression increase toward the horizon.')).replace('{object}',item.label);
-              };
-              updateFalling=function(dt){
-                for(var fi=fallingObjects.length-1;fi>=0;fi--){
-                  var item=fallingObjects[fi]; item.progress=Math.min(1,item.progress+dt*.19); var p=item.progress, eased=1-Math.pow(1-p,1.55), radius=1.6-1.31*eased, angle=item.launchAngle+p*2.55;
-                  item.group.position.set(Math.cos(angle)*radius,item.lift*(1-p),Math.sin(angle)*radius); item.group.lookAt(0,0,0);
-                  var close=Math.max(0,(1.55-radius)/1.18), stretch=1+item.strength*close*close*10; item.group.scale.set(1/Math.sqrt(stretch),1/Math.sqrt(stretch),stretch);
-                  var fade=Math.max(0,Math.min(1,(radius-.3)/.34)); item.group.traverse(function(node){if(node.material){node.material.opacity=Math.min(node.material.opacity,fade);}});
-                  if(item.trailCount<96 && p>=item.trailCount/95){var ti=item.trailCount++;item.trailArray[ti*3]=item.group.position.x;item.trailArray[ti*3+1]=item.group.position.y;item.trailArray[ti*3+2]=item.group.position.z;item.trail.geometry.attributes.position.needsUpdate=true;item.trail.geometry.setDrawRange(0,item.trailCount);}
-                  if(fi===fallingObjects.length-1){var readout=document.getElementById('black-hole-drop-readout');if(readout)readout.textContent=(radius>.43?__alloT('stem.galaxy.bh_readout_outside', '{object} | {radii} horizon radii | tidal stretch {stretch}x').replace('{radii}',(radius/.43).toFixed(1)):__alloT('stem.galaxy.bh_readout_inside', '{object} | inside horizon | tidal stretch {stretch}x')).replace('{object}',item.label).replace('{stretch}',stretch.toFixed(1)); var signalRate=Math.max(0,Math.min(1,(radius-.43)/1.6)),signalBar=document.getElementById('black-hole-signal-bar'),signalLabel=document.getElementById('black-hole-signal-label');if(signalBar){signalBar.style.width=(signalRate*100).toFixed(0)+'%';signalBar.style.backgroundColor=signalRate>.55?'#38bdf8':signalRate>.2?'#f59e0b':'#ef4444';}if(signalLabel)signalLabel.textContent=__alloT('stem.galaxy.bh_signal', 'Distant received signal: {percent}%').replace('{percent}',(signalRate*100).toFixed(0));}
-                  if(close>.08&&item.phase<1){item.phase=1;if(fi===fallingObjects.length-1){var status=document.getElementById('black-hole-status');if(status)status.textContent=__alloT('stem.galaxy.bh_status_stretching', 'Tidal forces are now visibly stretching the {object} radially and squeezing it sideways.').replace('{object}',item.label);}}
-                  if(radius<.75&&item.phase<2){item.phase=2;if(fi===fallingObjects.length-1){var status=document.getElementById('black-hole-status');if(status)status.textContent=__alloT('stem.galaxy.bh_status_approaching', '{object} is approaching the event horizon. Its light is fading from the distant observer view.').replace('{object}',item.label);}}
-                  if(radius<=.43&&item.phase<3){item.phase=3;if(fi===fallingObjects.length-1){var status=document.getElementById('black-hole-status');if(status)status.textContent=__alloT('stem.galaxy.bh_status_crossed', '{object} crossed the event horizon. No signal from it can return.').replace('{object}',item.label);}}
-                  if(p>=1){if(fi===fallingObjects.length-1){var readout=document.getElementById('black-hole-drop-readout');if(readout)readout.textContent=__alloT('stem.galaxy.bh_readout_complete', 'Drop complete | object no longer visible');var signalBar=document.getElementById('black-hole-signal-bar'),signalLabel=document.getElementById('black-hole-signal-label');if(signalBar)signalBar.style.width='0%';if(signalLabel)signalLabel.textContent=__alloT('stem.galaxy.bh_signal', 'Distant received signal: {percent}%').replace('{percent}','0');}disposeFalling(item);fallingObjects.splice(fi,1);}
-                }
+              jetGroup=new THREE.Group();[jet1,jet2,jetCore1,jetCore2,jetParticles].forEach(function(jet){jetGroup.add(jet);});scene.add(jetGroup);
+              function makeDropMaterial(color) {
+                var material = new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:1,depthWrite:false});
+                material.userData.originalColor = material.color.clone();
+                material.userData.originalOpacity = 1;
+                return material;
               }
-
+              function setText(id, text) { var el=document.getElementById(id); if(el && el.textContent!==text)el.textContent=text; }
+              function announce(text) { setText('black-hole-status',text); }
+              var configuration = '', experiment = null, experimentTime = 0, released = false, lastPhase = '', previewPath = null;
+              var launchAngle = .72, scratch = new THREE.Vector3(), radialAxis = new THREE.Vector3();
+              function place(position, sample) { position.set(Math.cos(launchAngle+sample.angle)*sample.radius*.43,0,Math.sin(launchAngle+sample.angle)*sample.radius*.43); }
+              disposeFalling=function(item) {
+                scene.remove(item.group); scene.remove(item.trail); scene.remove(item.debris);
+                var geometries=new Set(),materials=new Set();
+                [item.group,item.trail,item.debris].forEach(function(root){root.traverse(function(node){
+                  if(node.geometry&&!geometries.has(node.geometry)){geometries.add(node.geometry);node.geometry.dispose();}
+                  if(node.material&&!materials.has(node.material)){materials.add(node.material);node.material.dispose();}
+                });});
+              };
+              function clearExperiment() {
+                while(fallingObjects.length)disposeFalling(fallingObjects.pop());
+                if(previewPath){scene.remove(previewPath);previewPath.geometry.dispose();previewPath.material.dispose();previewPath=null;}
+              }
+              function buildObject(type, massMode) {
+                var group=new THREE.Group(), mesh;
+                if(type==='astronaut'){
+                  mesh=new THREE.Mesh(new THREE.CylinderGeometry(.055,.065,.18,16),makeDropMaterial(0xe2edf9)); mesh.rotation.x=Math.PI/2; group.add(mesh);
+                  var helmet=new THREE.Mesh(new THREE.SphereGeometry(.072,20,16),makeDropMaterial(0xf5cf74)); helmet.position.z=.15; group.add(helmet);
+                  [-1,1].forEach(function(side){
+                    var arm=new THREE.Mesh(new THREE.CylinderGeometry(.021,.026,.15,10),makeDropMaterial(0xd4e6ff));arm.rotation.x=Math.PI/2;arm.rotation.z=side*.35;arm.position.set(side*.1,0,.01);group.add(arm);
+                    var leg=new THREE.Mesh(new THREE.CylinderGeometry(.026,.031,.16,10),makeDropMaterial(0xd4e6ff));leg.rotation.x=Math.PI/2;leg.position.set(side*.038,0,-.15);group.add(leg);
+                  });
+                  var pack=new THREE.Mesh(new THREE.BoxGeometry(.09,.07,.14),makeDropMaterial(0x6486aa));pack.position.y=-.06;group.add(pack);
+                }else if(type==='star'){
+                  mesh=new THREE.Mesh(new THREE.SphereGeometry(.14,28,20),makeDropMaterial(0xffce7a));group.add(mesh);
+                  var haloMat=makeDropMaterial(0xff8d32);haloMat.opacity=.15;haloMat.userData.originalOpacity=.15;haloMat.blending=THREE.AdditiveBlending;
+                  group.add(new THREE.Mesh(new THREE.SphereGeometry(.19,24,16),haloMat));
+                }else{
+                  mesh=new THREE.Mesh(new THREE.CylinderGeometry(.055,.07,.2,16),makeDropMaterial(0xe5edf9));mesh.rotation.x=Math.PI/2;group.add(mesh);
+                  [-1,1].forEach(function(side){
+                    var panel=new THREE.Mesh(new THREE.BoxGeometry(.22,.018,.14),makeDropMaterial(0x328ad5));panel.position.x=side*.18;group.add(panel);
+                    for(var strip=0;strip<3;strip++){var rail=new THREE.Mesh(new THREE.BoxGeometry(.009,.021,.14),makeDropMaterial(0x9ce8ff));rail.position.set(side*.18+(strip-1)*.062,0,0);group.add(rail);}
+                  });
+                  var antenna=new THREE.Mesh(new THREE.ConeGeometry(.07,.045,16),makeDropMaterial(0xf5cc78));antenna.rotation.x=Math.PI/2;antenna.position.z=.15;group.add(antenna);
+                }
+                var trailArray=new Float32Array(384*3),trailGeo=new THREE.BufferGeometry();trailGeo.setAttribute('position',new THREE.BufferAttribute(trailArray,3));trailGeo.setDrawRange(0,0);
+                var trail=new THREE.Line(trailGeo,new THREE.LineBasicMaterial({color:0x67e8f9,transparent:true,opacity:.75,depthWrite:false}));
+                var debrisGeo=new THREE.BufferGeometry(),debrisArray=new Float32Array(72*3);debrisGeo.setAttribute('position',new THREE.BufferAttribute(debrisArray,3));
+                var debris=new THREE.Points(debrisGeo,new THREE.PointsMaterial({color:type==='star'?0xffbf67:0xbcecff,map:bhDotTex,size:.024,transparent:true,opacity:.8,depthWrite:false}));debris.visible=false;
+                scene.add(group);scene.add(trail);scene.add(debris);
+                return {group:group,trail:trail,trailArray:trailArray,debris:debris,debrisArray:debrisArray,type:type,massMode:massMode,
+                  label:type==='astronaut'?__alloT('stem.galaxy.bh_name_astronaut', 'Astronaut'):type==='star'?__alloT('stem.galaxy.bh_name_star', 'Star'):__alloT('stem.galaxy.bh_name_probe', 'Probe')};
+              }
+              function paintExperiment() {
+                if(!experiment||!fallingObjects.length)return;
+                var item=fallingObjects[0],sample=blackHoleSample(experiment,experimentTime),tides=blackHoleTides(sample.radius,item.massMode,item.type);
+                var complete=released&&experimentTime>=experiment.duration, captured=complete&&experiment.outcome==='captured';
+                place(item.group.position,sample); item.group.lookAt(0,0,0);
+                var stretch=released?tides.stretch:1;
+                item.group.scale.set(1/Math.sqrt(stretch),1/Math.sqrt(stretch),stretch);
+                // Static-clock gravitational redshift reference; it excludes Doppler
+                // and photon travel time and is labelled as such in the UI.
+                var shift=Math.sqrt(Math.max(0,1-1/sample.radius));
+                var opacity=captured?0:Math.max(.08,shift);
+                item.group.visible=!captured;
+                item.group.traverse(function(node){if(node.material){var m=node.material;m.opacity=m.userData.originalOpacity*opacity;
+                  m.color.copy(m.userData.originalColor).lerp(new THREE.Color(0xef583f),released?(1-shift)*.8:0);
+                }});
+                var trailCount=released?Math.min(384,Math.ceil(experimentTime*24)+1):0;
+                for(var ti=0;ti<trailCount;ti++){place(scratch,blackHoleSample(experiment,experimentTime*ti/Math.max(1,trailCount-1)));item.trailArray[ti*3]=scratch.x;item.trailArray[ti*3+1]=scratch.y;item.trailArray[ti*3+2]=scratch.z;}
+                item.trail.geometry.attributes.position.needsUpdate=true;item.trail.geometry.setDrawRange(0,trailCount);
+                // Deterministic illustrative debris, stretched along the tidal axis.
+                // Debris is clipped at the horizon; it is not an interior view.
+                item.debris.visible=released&&tides.disrupted&&!captured;
+                radialAxis.copy(item.group.position).normalize();
+                for(var di=0;di<72;di++){
+                  var along=(di/71-.5)*Math.min(1.1,(stretch-1)*.2),width=.035/Math.sqrt(stretch),phase=di*2.39996;
+                  scratch.copy(item.group.position).addScaledVector(radialAxis,along);
+                  scratch.y+=Math.sin(phase)*width;scratch.x+=Math.cos(phase)*width;
+                  if(scratch.length()<.44)scratch.normalize().multiplyScalar(.44);
+                  item.debrisArray[di*3]=scratch.x;item.debrisArray[di*3+1]=scratch.y;item.debrisArray[di*3+2]=scratch.z;
+                }
+                item.debris.geometry.attributes.position.needsUpdate=true;item.debris.material.opacity=opacity*.8;
+                if(previewPath)previewPath.visible=!released;
+                var phase=!released?'ready':complete?experiment.outcome:tides.disrupted?'disrupted':sample.radius<1.7?'horizon':sample.radialVelocity>.01?'outward':'falling';
+                var messages={
+                  ready:__alloT('stem.galaxy.bh_experiment_ready','Ready at the launch marker. Choose sideways motion, then release.'),
+                  falling:__alloT('stem.galaxy.bh_experiment_falling','Object released. The cyan trail records its path; gravity changes its motion.'),
+                  outward:__alloT('stem.galaxy.bh_experiment_outward','The object is moving outward. Sideways motion can carry it past the black hole.'),
+                  disrupted:__alloT('stem.galaxy.bh_experiment_disrupted','Strong tidal stretching. The debris illustrates disruption; object sizes and deformation are exaggerated.'),
+                  horizon:__alloT('stem.galaxy.bh_experiment_horizon','Approaching the horizon. The redshift reference falls toward zero.'),
+                  captured:__alloT('stem.galaxy.bh_experiment_captured','Captured: the modeled path reaches the horizon. No light emitted inside can escape. Replay or add sideways motion to compare.'),
+                  escaped:__alloT('stem.galaxy.bh_experiment_escaped','Escape: this unbound trajectory is moving away. A black hole does not pull in everything nearby.'),
+                  orbit:__alloT('stem.galaxy.bh_experiment_orbit','One orbit traced. The object remains outside the horizon. Lower sideways motion to test capture.'),
+                  bound:__alloT('stem.galaxy.bh_experiment_bound','Observation complete: this bound path remains outside the horizon during the modeled interval.')
+                };
+                if(phase!==lastPhase){lastPhase=phase;announce(messages[phase]);}
+                var readout=captured?__alloT('stem.galaxy.bh_experiment_horizon_stop','Horizon reached · path ends here'):__alloT('stem.galaxy.bh_experiment_readout', '{object} · {radii} horizon radii · visual stretch {stretch}×').replace('{object}',item.label).replace('{radii}',sample.radius.toFixed(2)).replace('{stretch}',stretch.toFixed(1));
+                setText('black-hole-drop-readout',readout);
+                setText('black-hole-run-readout',readout);
+                setText('black-hole-tidal-value',__alloT('stem.galaxy.bh_tidal_gradient','Tidal gradient: {value} s⁻²').replace('{value}',tides.gradient.toExponential(2)));
+                setText('black-hole-signal-label',__alloT('stem.galaxy.bh_redshift_reference','Static-clock redshift factor: {value}').replace('{value}',shift.toFixed(2)));
+                var signalBar=document.getElementById('black-hole-signal-bar');if(signalBar){signalBar.style.width=(shift*100).toFixed(1)+'%';signalBar.style.backgroundColor=shift>.6?'#0284c7':shift>.25?'#b45309':'#dc2626';}
+                var scrub=document.getElementById('black-hole-timeline');if(scrub){scrub.value=String(experimentTime/experiment.duration*100);scrub.setAttribute('aria-valuetext',Math.round(experimentTime/experiment.duration*100)+'%');}
+                setText('black-hole-timeline-label',__alloT('stem.galaxy.bh_timeline_value','Playback: {percent}%').replace('{percent}',String(Math.round(experimentTime/experiment.duration*100))));
+              }
+              canvas._configureBlackHoleExperiment=function(force){
+                var type=canvas.getAttribute('data-object')||'probe',massMode=canvas.getAttribute('data-mass')||'stellar';
+                var radius=Number(canvas.getAttribute('data-release-radius')),sideways=Number(canvas.getAttribute('data-sideways'));
+                var key=[type,massMode,radius,sideways].join(':');if(!force&&configuration===key)return;
+                configuration=key;clearExperiment();experiment=blackHoleTrajectory({radius:radius,sideways:sideways});experimentTime=0;released=false;lastPhase='';setBlackHoleHasRun(false);
+                fallingObjects.push(buildObject(type,massMode));
+                var pathArray=new Float32Array(240*3);
+                for(var pi=0;pi<240;pi++){place(scratch,blackHoleSample(experiment,experiment.duration*pi/239));pathArray[pi*3]=scratch.x;pathArray[pi*3+1]=scratch.y;pathArray[pi*3+2]=scratch.z;}
+                var previewGeo=new THREE.BufferGeometry();previewGeo.setAttribute('position',new THREE.BufferAttribute(pathArray,3));
+                previewPath=new THREE.Line(previewGeo,new THREE.LineDashedMaterial({color:0x67e8f9,transparent:true,opacity:.55,dashSize:.045,gapSize:.055,depthWrite:false}));previewPath.computeLineDistances();scene.add(previewPath);
+                distance=Math.max(4.6,experiment.releaseRadius*.43*2.15);
+                paintExperiment();
+              };
+              canvas._dropIntoBlackHole=function(){
+                canvas._configureBlackHoleExperiment();experimentTime=0;released=true;lastPhase='';setBlackHoleHasRun(true);paintExperiment();
+                var bounds=canvas.getBoundingClientRect();if(bounds.bottom<0||bounds.top>window.innerHeight||bounds.top< -bounds.height*.5)canvas.scrollIntoView({block:'center',behavior:'auto'});
+                if(paused)announce(__alloT('stem.galaxy.bh_experiment_paused_release','Object released at the marker. Use Step forward or Start animation to move it.'));
+              };
+              canvas._resetBlackHoleExperiment=function(){canvas._configureBlackHoleExperiment(true);};
+              canvas._seekBlackHoleExperiment=function(fraction){if(!experiment||!released)return;experimentTime=Math.max(0,Math.min(1,fraction))*experiment.duration;paintExperiment();};
+              canvas._stepBlackHoleExperiment=function(){if(!experiment||!released)return;experimentTime=Math.min(experiment.duration,experimentTime+.25);paintExperiment();};
+              canvas._blackHoleExperimentState=function(){return experiment?Object.assign(blackHoleSample(experiment,experimentTime),{releaseRadius:experiment.releaseRadius,duration:experiment.duration,outcome:experiment.outcome,released:released,paused:paused,complete:released&&experimentTime>=experiment.duration}):null;};
+              updateFalling=function(dt){if(!released||!experiment||experimentTime>=experiment.duration)return;var rate=Number(canvas.getAttribute('data-playback'))||.5;experimentTime=Math.min(experiment.duration,experimentTime+dt*rate);paintExperiment();};
+              updateMarker=function(){
+                var marker=document.getElementById('black-hole-object-marker');if(!marker||!fallingObjects.length||!experiment)return;
+                var item=fallingObjects[0];scratch.copy(item.group.position).project(camera);
+                var visible=item.group.visible&&scratch.z<1&&Math.abs(scratch.x)<.9&&Math.abs(scratch.y)<.88;
+                // Hide the marker when the solid horizon occludes the center.
+                var toObject=item.group.position.clone().sub(camera.position),along=camera.position.clone().negate().dot(toObject)/toObject.lengthSq();
+                var nearest=camera.position.clone().addScaledVector(toObject,Math.max(0,Math.min(1,along)));
+                if(along>0&&along<1&&nearest.length()<.49)visible=false;
+                marker.hidden=!visible;
+                if(visible){marker.style.left=((scratch.x+1)*50)+'%';marker.style.top=((1-scratch.y)*50)+'%';var label=marker.firstChild;if(label)label.textContent=item.label;}
+              };
               canvas._setBlackHoleSpin = function(v) { spin = v; diskMat.uniforms.uSpin.value = v; };
               canvas._setBlackHoleDisk = function(v) { diskPower = v; diskMat.uniforms.uPower.value = v; };
-              canvas._setBlackHolePaused = function(v) { paused = v; };
+              canvas._setBlackHolePaused = function(v) { paused = v; lastFrameTime=0; };
+              canvas._setBlackHoleCamera = function(view) { yaw=.28;pitch=view==='top'?1.5:view==='edge'?.08:.38;distance=Math.max(4.6,(experiment?experiment.releaseRadius:5)*.43*2.15); };
+              canvas._configureBlackHoleExperiment(true);
+              setBlackHoleReady(true);
               resize(); animate();
             }
             function resize() { if (!renderer) return; var w = canvas.clientWidth || 800, h = canvas.clientHeight || 540;
@@ -2564,25 +2749,43 @@ if (!window._galaxyHasLoadedOnce) {
               // draw into, so ignore it and wait for the next observation.
               if (w < 2 || h < 2) return;
               renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
-            function updateCamera() { pitch = Math.max(-1.05, Math.min(1.05, pitch)); camera.position.set(Math.sin(yaw)*Math.cos(pitch)*distance, Math.sin(pitch)*distance, Math.cos(yaw)*Math.cos(pitch)*distance); camera.lookAt(0,0,0); if(disk && disk.material.uniforms.uObserverAngle) disk.material.uniforms.uObserverAngle.value = Math.atan2(camera.position.y * Math.cos(disk.rotation.x) + camera.position.z * Math.sin(disk.rotation.x), camera.position.x); if(photonRing){photonRing.quaternion.copy(camera.quaternion);} if(lensRing){lensRing.quaternion.copy(camera.quaternion);} if(lensArcA){lensArcA.quaternion.copy(camera.quaternion);lensArcA.rotateZ(-.52);} if(lensArcB){lensArcB.quaternion.copy(camera.quaternion);lensArcB.rotateZ(2.42);} if(coreGlow)coreGlow.position.copy(camera.position).normalize().multiplyScalar(-.16); }
-            function animate(t) { if (stopped) return; frame = requestAnimationFrame(animate); if (!renderer || !inView) return; var delta=lastFrameTime?Math.min(.04,((t||0)-lastFrameTime)/1000):0; lastFrameTime=t||0; if (!paused && !pageHidden) { updateFalling(delta); disk.material.uniforms.uTime.value = (t || 0) * .001; stars.rotation.y += .00012; photonRing.rotation.z += .001 + spin*.002; if(corona)corona.rotation.z += .0015 + spin*.003; if(lensArcA)lensArcA.material.opacity=.13+Math.sin((t||0)*.0017)*.03; if(lensArcB)lensArcB.material.opacity=.08+Math.cos((t||0)*.0013)*.02; if(coreGlow)coreGlow.material.opacity=.64+Math.sin((t||0)*.002)*.06; } updateCamera(); renderer.render(scene,camera); }
+            function updateCamera() {
+              pitch=Math.max(-1.5,Math.min(1.5,pitch));
+              var fitDistance=distance/Math.min(1,Math.max(.35,camera.aspect));
+              camera.position.set(Math.sin(yaw)*Math.cos(pitch)*fitDistance,Math.sin(pitch)*fitDistance,Math.cos(yaw)*Math.cos(pitch)*fitDistance);camera.lookAt(0,0,0);
+              if(disk&&disk.material.uniforms.uObserverAngle)disk.material.uniforms.uObserverAngle.value=Math.atan2(camera.position.y*Math.cos(disk.rotation.x)+camera.position.z*Math.sin(disk.rotation.x),camera.position.x);
+              if(disk)disk.material.uniforms.uInclination.value=Math.abs(Math.cos(pitch));
+              if(photonRing)photonRing.quaternion.copy(camera.quaternion);
+              if(lensRing)lensRing.quaternion.copy(camera.quaternion);
+              [lensArcA,lensArcB].forEach(function(arc,index){if(!arc)return;arc.quaternion.copy(camera.quaternion);arc.material.uniforms.uTime.value=sceneTime;arc.material.uniforms.uInclination.value=Math.abs(Math.cos(pitch));arc.material.uniforms.uSpin.value=spin;arc.material.uniforms.uObserverAngle.value=disk.material.uniforms.uObserverAngle.value;arc.material.uniforms.uPower.value=diskPower*(index?.24:.48)*Math.cos(pitch);});
+              if(coreGlow)coreGlow.position.copy(camera.position).normalize().multiplyScalar(-.16);
+              if(jetGroup)jetGroup.visible=canvas.getAttribute('data-jets')==='true';
+              updateMarker();
+            }
+            function animate(t) {
+              if(stopped)return;frame=requestAnimationFrame(animate);
+              var now=t||0,delta=lastFrameTime?Math.max(0,Math.min(.05,(now-lastFrameTime)/1000)):0;lastFrameTime=now;
+              if(!renderer||!inView||pageHidden||contextLost)return;
+              if(!paused){sceneTime+=delta;updateFalling(delta);disk.material.uniforms.uTime.value=sceneTime;if(corona)corona.rotation.z=sceneTime*(.04+spin*.08);}
+              updateCamera();renderer.render(scene,camera);
+            }
             // Named so cleanup can detach them (anonymous listeners could never be removed).
             function onBhDown(e){ drag=true; lastX=e.clientX; lastY=e.clientY; try { canvas.setPointerCapture(e.pointerId); } catch(captureError) {} }
             function onBhMove(e){ if(!drag)return; yaw-=(e.clientX-lastX)*.006; pitch+=(e.clientY-lastY)*.006; lastX=e.clientX; lastY=e.clientY; }
             function onBhUp(){ drag=false; }
-            function onBhWheel(e){ e.preventDefault(); distance=Math.max(1.6,Math.min(6,distance+e.deltaY*.002)); }
-            function onBhKey(e){ var handled=true; if(e.key==='ArrowLeft')yaw-=.1; else if(e.key==='ArrowRight')yaw+=.1; else if(e.key==='ArrowUp')pitch+=.1; else if(e.key==='ArrowDown')pitch-=.1; else if(e.key==='+'||e.key==='=')distance=Math.max(1.6,distance-.2); else if(e.key==='-')distance=Math.min(6,distance+.2); else if(e.key==='Home'){yaw=.28;pitch=.28;distance=3.25; var status=document.getElementById('black-hole-status'); if(status)status.textContent=__alloT('stem.galaxy.bh_status_camera_reset', 'Camera reset to the starting view.');} else handled=false; if(handled)e.preventDefault(); }
+            function onBhWheel(e){ e.preventDefault(); distance=Math.max(2.8,Math.min(12,distance+e.deltaY*.004)); }
+            function onBhKey(e){ var handled=true; if(e.key==='ArrowLeft')yaw-=.1; else if(e.key==='ArrowRight')yaw+=.1; else if(e.key==='ArrowUp')pitch+=.1; else if(e.key==='ArrowDown')pitch-=.1; else if(e.key==='+'||e.key==='=')distance=Math.max(2.8,distance-.3); else if(e.key==='-')distance=Math.min(12,distance+.3); else if(e.key==='Home'){canvas._setBlackHoleCamera('angled'); var status=document.getElementById('black-hole-status'); if(status)status.textContent=__alloT('stem.galaxy.bh_status_camera_reset', 'Camera reset to the starting view.');} else handled=false; if(handled)e.preventDefault(); }
             canvas.addEventListener('pointerdown', onBhDown);
             canvas.addEventListener('pointermove', onBhMove);
             canvas.addEventListener('pointerup', onBhUp);
             canvas.addEventListener('pointercancel', onBhUp);
             canvas.addEventListener('wheel', onBhWheel, {passive:false});
             canvas.addEventListener('keydown', onBhKey);
-            function onContextLost(e){ e.preventDefault(); paused=true; var status=document.getElementById('black-hole-status'); if(status)status.textContent=__alloT('stem.galaxy.bh_status_context_lost', 'The 3-D graphics context was interrupted. The simulation is paused while it recovers.'); }
-            function onContextRestored(){ paused=canvas.getAttribute('data-paused')==='true'; var status=document.getElementById('black-hole-status'); if(status)status.textContent=paused?__alloT('stem.galaxy.bh_status_recovered_paused', 'The 3-D view recovered and remains paused.'):__alloT('stem.galaxy.bh_status_recovered_running', 'The 3-D view recovered and is running.'); }
+            function onContextLost(e){ e.preventDefault(); contextLost=true; setBlackHoleReady(false); var status=document.getElementById('black-hole-status'); if(status)status.textContent=__alloT('stem.galaxy.bh_status_context_lost', 'The 3-D graphics context was interrupted. The simulation is paused while it recovers.'); }
+            function onContextRestored(){ contextLost=false; lastFrameTime=0; setBlackHoleReady(true); paused=canvas.getAttribute('data-paused')==='true'; var status=document.getElementById('black-hole-status'); if(status)status.textContent=paused?__alloT('stem.galaxy.bh_status_recovered_paused', 'The 3-D view recovered and remains paused.'):__alloT('stem.galaxy.bh_status_recovered_running', 'The 3-D view recovered and is running.'); }
             canvas.addEventListener('webglcontextlost',onContextLost,false);
             canvas.addEventListener('webglcontextrestored',onContextRestored,false);
-            function onVisibilityChange(){ pageHidden=!!document.hidden; }
+            function onVisibilityChange(){ pageHidden=!!document.hidden; lastFrameTime=0; }
             document.addEventListener('visibilitychange', onVisibilityChange);
             if (window.IntersectionObserver) { observer=new IntersectionObserver(function(entries){ inView=!!(entries[0]&&entries[0].isIntersecting); },{rootMargin:'100px'}); observer.observe(canvas); }
             window.addEventListener('resize', resize);
@@ -2634,14 +2837,26 @@ if (!window._galaxyHasLoadedOnce) {
                 // immediately instead of waiting for browser garbage collection.
                 if(renderer.forceContextLoss)renderer.forceContextLoss();
               }
+              ['_dropIntoBlackHole','_configureBlackHoleExperiment','_resetBlackHoleExperiment','_seekBlackHoleExperiment','_stepBlackHoleExperiment','_blackHoleExperimentState','_setBlackHoleSpin','_setBlackHoleDisk','_setBlackHolePaused','_setBlackHoleCamera'].forEach(function(key){delete canvas[key];});
               canvas._blackHoleInit=false;
             };
-            if (window.THREE) init(); else { window.StemLab.ensureThree({ orbit: false }).then(init).catch(function(){ var fallback=document.getElementById('black-hole-status'); if(fallback)fallback.textContent=__alloT('stem.galaxy.bh_three_failed', 'The 3-D library could not load. The labeled black-hole explanation remains available.'); }); }
+            if (window.THREE) init(); else { window.StemLab.ensureThree({ orbit: false }).then(init).catch(function(){ var fallback=document.getElementById('black-hole-status'); if(!stopped&&fallback)fallback.textContent=__alloT('stem.galaxy.bh_three_failed', 'The 3-D library could not load. The labeled black-hole explanation remains available.'); }); }
           }, []);
           React.useEffect(function () {
             var activeBlackHoleCanvas = blackHoleCanvasActive.current;
             if (activeBlackHoleCanvas && activeBlackHoleCanvas._setBlackHolePaused) activeBlackHoleCanvas._setBlackHolePaused(blackHoleEffectivePaused);
           }, [blackHoleEffectivePaused]);
+          React.useEffect(function () {
+            var cv=blackHoleCanvasActive.current;if(!cv||!blackHoleReady)return;
+            if(cv._configureBlackHoleExperiment)cv._configureBlackHoleExperiment();
+            if(cv._setBlackHoleSpin)cv._setBlackHoleSpin(blackHoleSpin);
+            if(cv._setBlackHoleDisk)cv._setBlackHoleDisk(blackHoleDisk);
+          }, [blackHoleReady,blackHoleDropObject,blackHoleMassMode,blackHoleReleaseRadius,blackHoleSideways,blackHoleSpin,blackHoleDisk]);
+          function pauseBlackHoleForInspection() {
+            upd('blackHolePaused',true);
+            var cv=blackHoleCanvasActive.current;if(cv&&cv._setBlackHolePaused)cv._setBlackHolePaused(true);
+          }
+
           // All irregular-galaxy layers reuse these associations. Sharing the
           // anchors keeps visible stars, warm dust, and H I recognizably aligned.
           var irregularMorphologyAnchors = [
@@ -11565,60 +11780,72 @@ if (!window._galaxyHasLoadedOnce) {
 
             // ══════════════════════════════════════════════
 
-            !d.quizMode && simMode === 'blackHole' && React.createElement("div", { className: "animate-in fade-in duration-300 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_280px] gap-4" },
-              React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-indigo-300/30 bg-[#010208] shadow-2xl shadow-indigo-500/10", style: { minHeight: 'clamp(420px, 65vw, 590px)' } },
-                React.createElement("canvas", { "data-black-hole-canvas": "true", "data-spin": blackHoleSpin, "data-disk": blackHoleDisk, "data-paused": blackHoleEffectivePaused ? "true" : "false", ref: blackHoleRefCb, tabIndex: 0, role: "application", "aria-label": __alloT('stem.galaxy.aria_blackhole_canvas', 'Interactive model of a rotating black hole with an event horizon, photon ring, accretion disk, polar jets, and a tidal-forces object-drop experiment.'), "aria-describedby": "black-hole-instructions black-hole-description black-hole-status", "aria-keyshortcuts": "ArrowLeft ArrowRight ArrowUp ArrowDown + - Home", className: 'focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-[-4px] focus-visible:outline-indigo-300', style: { width: '100%', height: 'clamp(420px, 65vw, 590px)', display: 'block', cursor: 'grab', touchAction: 'none' } }),
-                React.createElement("div", { className: "absolute top-3 left-3 rounded-xl border border-white/15 bg-slate-950/75 px-3 py-2 text-white backdrop-blur-md pointer-events-none" },
-                  React.createElement("div", { className: "text-xs uppercase tracking-widest font-black text-violet-300" }, __alloT('stem.galaxy.blackhole_lab_title', 'Black Hole Lab')),
-                  React.createElement("div", { className: "text-xs text-slate-300 mt-0.5" }, __alloT('stem.galaxy.blackhole_drag_hint', 'Drag or use arrow keys to orbit - scroll or use plus and minus to zoom'))),
-                React.createElement("div", { id: "black-hole-drop-readout", "aria-hidden": true, className: "absolute top-3 right-3 max-w-[55%] rounded-xl border border-orange-200/30 bg-slate-950/75 px-3 py-2 text-right text-xs font-bold text-orange-100 backdrop-blur-md pointer-events-none" }, __alloT('stem.galaxy.blackhole_drop_begin', 'Drop an object to begin')),
-                React.createElement("p", { id: "black-hole-instructions", className: "sr-only" }, __alloT('stem.galaxy.blackhole_keyboard_help', 'Keyboard controls: use the arrow keys to orbit, plus and minus to zoom, and Home to reset the camera. Animation can be paused with the button after the canvas.')),
-                React.createElement("div", { className: "absolute bottom-3 left-3 right-3 flex flex-wrap gap-2 pointer-events-none" },
-                  [__alloT('stem.galaxy.bh_badge_event_horizon', 'Event horizon'), __alloT('stem.galaxy.bh_badge_photon_ring', 'Photon ring'), __alloT('stem.galaxy.bh_badge_accretion_disk', 'Accretion disk'), __alloT('stem.galaxy.bh_badge_polar_jets', 'Polar jets')].map(function(label, i){ return React.createElement("span", { key: label, className: "rounded-full border border-white/15 bg-slate-950/75 px-2 py-1 text-xs font-bold text-slate-200 backdrop-blur-md" }, (i===0?'\u25cf ':i===1?'\u25cb ':i===2?'\u2248 ':'\u2195 ') + label); }))
-              ),
+            !d.quizMode && simMode === 'blackHole' && React.createElement("div", { "data-bh-workspace": "true", className: "grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-4" },
+              React.createElement("div", { "data-bh-stage": "true", className: "rounded-2xl overflow-hidden border border-indigo-300/30 bg-[#010208] shadow-xl" },
+                React.createElement("div", { "data-bh-header": "true" },
+                  React.createElement("div", { className: "text-xs uppercase tracking-widest font-black text-cyan-200" }, __alloT('stem.galaxy.blackhole_lab_title', 'Black Hole Lab')),
+                  React.createElement("p", { className: "mt-1 text-xs text-slate-300" }, __alloT('stem.galaxy.bh_experiment_intro','Choose a path. Release an object. Explore what changes.'))),
+                React.createElement("div", { "data-bh-viewport": "true" },
+                  React.createElement("canvas", { "data-black-hole-canvas": "true", "data-spin": blackHoleSpin, "data-disk": blackHoleDisk, "data-paused": blackHoleEffectivePaused ? "true" : "false", "data-object": blackHoleDropObject, "data-mass": blackHoleMassMode, "data-release-radius": blackHoleReleaseRadius, "data-sideways": blackHoleSideways, "data-playback": blackHolePlayback, "data-jets": d.blackHoleShowJets ? "true" : "false", ref: blackHoleRefCb, tabIndex: 0, role: "application", "aria-label": __alloT('stem.galaxy.aria_blackhole_canvas', 'Interactive model of a rotating black hole with an event horizon, photon ring, accretion disk, polar jets, and a tidal-forces object-drop experiment.'), "aria-describedby": "black-hole-instructions black-hole-description black-hole-status", "aria-keyshortcuts": "ArrowLeft ArrowRight ArrowUp ArrowDown + - Home", className: 'focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-[-4px] focus-visible:outline-indigo-300', style: { width: '100%', height: 'clamp(300px, 48vw, 500px)', display: 'block', cursor: 'grab', touchAction: 'none' } }),
+                  React.createElement("div", { id: "black-hole-object-marker", "data-bh-marker": "true", hidden: true, "aria-hidden": true }, React.createElement("span", null)),
+                  React.createElement("div", { id: "black-hole-drop-readout", "aria-hidden": true, className: "absolute bottom-3 left-3 right-3 rounded-lg border border-cyan-200/20 bg-slate-950/90 px-3 py-2 text-xs font-semibold text-cyan-100 pointer-events-none" }, __alloT('stem.galaxy.blackhole_drop_begin', 'Drop an object to begin'))),
+                React.createElement("div", { "data-bh-transport": "true" },
+                  React.createElement("div", { className: "flex flex-wrap gap-2" },
+                    React.createElement("button", { type: "button", disabled: !blackHoleReady, onClick: function(){var next=!blackHoleEffectivePaused;patchGalaxy({blackHoleMotionAllowed:true,blackHolePaused:next});var cv=blackHoleCanvasActive.current;if(cv&&cv._setBlackHolePaused)cv._setBlackHolePaused(next);}, "aria-label": blackHoleEffectivePaused ? __alloT('stem.galaxy.bh_start_anim','Start animation') : __alloT('stem.galaxy.bh_pause_anim','Pause animation'), "aria-pressed": !blackHoleEffectivePaused }, blackHoleEffectivePaused ? '▶ '+__alloT('stem.galaxy.bh_start_anim','Start animation') : 'Ⅱ '+__alloT('stem.galaxy.bh_pause_anim','Pause animation')),
+                    React.createElement("button", { type: "button", disabled: !blackHoleReady||!blackHoleHasRun, onClick: function(){pauseBlackHoleForInspection();var cv=blackHoleCanvasActive.current;if(cv&&cv._stepBlackHoleExperiment)cv._stepBlackHoleExperiment();} }, __alloT('stem.galaxy.bh_step','Step forward')),
+                    React.createElement("button", { type: "button", disabled: !blackHoleReady||!blackHoleHasRun, onClick: function(){var cv=blackHoleCanvasActive.current;if(cv&&cv._dropIntoBlackHole)cv._dropIntoBlackHole();} }, __alloT('stem.galaxy.bh_replay','Replay experiment')),
+                    React.createElement("button", { type: "button", disabled: !blackHoleReady||!blackHoleHasRun, onClick: function(){var cv=blackHoleCanvasActive.current;if(cv&&cv._resetBlackHoleExperiment)cv._resetBlackHoleExperiment();} }, __alloT('stem.galaxy.bh_reset_experiment','Reset experiment'))),
+                  React.createElement("label", { htmlFor: "black-hole-timeline", id: "black-hole-timeline-label", className: "mt-3 block text-xs font-semibold" }, __alloT('stem.galaxy.bh_timeline_value','Playback: {percent}%').replace('{percent}','0')),
+                  React.createElement("input", { id: "black-hole-timeline", type: "range", min: 0, max: 100, step: .1, defaultValue: 0, disabled: !blackHoleReady||!blackHoleHasRun, "aria-valuetext": "0%", "aria-describedby": "black-hole-timeline-help", onChange: function(e){pauseBlackHoleForInspection();var cv=blackHoleCanvasActive.current;if(cv&&cv._seekBlackHoleExperiment)cv._seekBlackHoleExperiment(Number(e.target.value)/100);} }),
+                  React.createElement("p", { id: "black-hole-timeline-help", className: "text-xs text-slate-300" }, __alloT('stem.galaxy.bh_timeline_help','Scrub to inspect any moment. Step forward works while paused, including with reduced motion.')),
+                  React.createElement("div", { className: "mt-3 flex flex-wrap items-center gap-2" },
+                    React.createElement("label", { htmlFor: "black-hole-playback", className: "text-xs font-bold" }, __alloT('stem.galaxy.bh_playback_speed','Playback speed')),
+                    React.createElement("select", { id: "black-hole-playback", value: blackHolePlayback, onChange: function(e){upd('blackHolePlayback',Number(e.target.value));}, className: "min-h-[44px] rounded-lg border border-slate-400 bg-slate-800 px-2 text-xs text-white" }, [.25,.5,1,2,4].map(function(rate){return React.createElement("option",{key:rate,value:rate},rate+'×');})),
+                    ['angled','top','edge'].map(function(view){var label=view==='top'?__alloT('stem.galaxy.bh_view_top','Above disk'):view==='edge'?__alloT('stem.galaxy.bh_view_edge','Edge of disk'):__alloT('stem.galaxy.bh_view_reset','Reset view');return React.createElement("button",{type:'button',key:view,disabled:!blackHoleReady,onClick:function(){var cv=blackHoleCanvasActive.current;if(cv&&cv._setBlackHoleCamera)cv._setBlackHoleCamera(view);}},label);})),
+                  React.createElement("p", { id: "black-hole-instructions", className: "mt-3 text-xs text-slate-300" }, __alloT('stem.galaxy.blackhole_keyboard_help', 'Keyboard controls: use the arrow keys to orbit, plus and minus to zoom, and Home to reset the camera. Animation can be paused with the button after the canvas.')),
+                  React.createElement("p", { className: "mt-2 text-xs text-slate-400" }, __alloT('stem.galaxy.bh_scene_key','Cyan: object and path · Orange: hot disk · Dark center: black hole. Dashed path previews the release.')))),
               React.createElement("aside", { className: "space-y-3" },
-                React.createElement("div", { className: "rounded-2xl border border-slate-200 bg-white p-4 shadow-sm" },
-                  React.createElement("h4", { className: "text-sm font-black text-slate-800" }, __alloT('stem.galaxy.relativistic_controls_title', 'Relativistic controls')),
-                  React.createElement("p", { id: "black-hole-description", className: "mt-1 text-xs leading-relaxed text-slate-600" }, __alloT('stem.galaxy.blackhole_description', 'A teaching model near a rotating black hole. Distances are visual, not to scale.')),
-                  React.createElement("p", { id: "black-hole-status", role: "status", "aria-live": "polite", "aria-atomic": "true", className: "mt-2 text-xs font-semibold text-indigo-800" }, blackHoleEffectivePaused ? (blackHoleReducedMotion && !blackHoleMotionAllowed ? __alloT('stem.galaxy.bh_status_reduced_motion', 'Animation paused to honor your reduced-motion preference.') : __alloT('stem.galaxy.bh_status_paused', 'Simulation paused.')) : __alloT('stem.galaxy.bh_status_running', 'Simulation running.')),
-                  React.createElement("label", { htmlFor: "black-hole-spin", className: "mt-4 block text-xs font-bold text-slate-700" }, __alloT('stem.galaxy.bh_spin_label', 'Spin: '), React.createElement("span", { className: "font-mono text-indigo-700" }, blackHoleSpin.toFixed(2))),
-                  React.createElement("input", { id: "black-hole-spin", type: "range", min: 0, max: 0.99, step: 0.01, value: blackHoleSpin, "aria-valuetext": blackHoleSpin.toFixed(2) + " of 0.99", className: "w-full h-6 accent-indigo-600", onChange: function(e){ var v=parseFloat(e.target.value); upd('blackHoleSpin',v); var cv=blackHoleCanvasActive.current; if(cv&&cv._setBlackHoleSpin)cv._setBlackHoleSpin(v); } }),
-                  React.createElement("p", { className: "text-xs text-slate-600" }, __alloT('stem.galaxy.bh_spin_desc', 'Higher spin speeds the inner disk and strengthens its bright approaching side.')),
-                  React.createElement("label", { htmlFor: "black-hole-disk", className: "mt-3 block text-xs font-bold text-slate-700" }, __alloT('stem.galaxy.bh_disk_label', 'Disk brightness: '), React.createElement("span", { className: "font-mono text-indigo-700" }, Math.round(blackHoleDisk*100) + "%")),
-                  React.createElement("input", { id: "black-hole-disk", type: "range", min: 0.2, max: 1, step: 0.01, value: blackHoleDisk, "aria-valuetext": Math.round(blackHoleDisk*100) + " percent", className: "w-full h-6 accent-indigo-600", onChange: function(e){ var v=parseFloat(e.target.value); upd('blackHoleDisk',v); var cv=blackHoleCanvasActive.current; if(cv&&cv._setBlackHoleDisk)cv._setBlackHoleDisk(v); } }),
-                  React.createElement("button", { type: "button", className: "mt-4 min-h-[44px] w-full rounded-lg bg-indigo-600 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-700", onClick: function(){ var next; if (!blackHoleMotionAllowed) { upd('blackHoleMotionAllowed',true); upd('blackHolePaused',false); next=false; } else { next=!blackHolePaused; upd('blackHolePaused',next); } var cv=blackHoleCanvasActive.current; if(cv&&cv._setBlackHolePaused)cv._setBlackHolePaused(next); }, "aria-label": blackHoleEffectivePaused ? __alloT('stem.galaxy.bh_start_anim', 'Start animation') : __alloT('stem.galaxy.bh_pause_anim', 'Pause animation'), "aria-pressed": !blackHoleEffectivePaused }, blackHoleEffectivePaused ? "\u25b6 " + __alloT('stem.galaxy.bh_start_anim', 'Start animation') : "\u23f8 " + __alloT('stem.galaxy.bh_pause_anim', 'Pause animation'))
-                ),
-                React.createElement("div", { className: "rounded-2xl border border-orange-200 bg-orange-50 p-4" },
-                  React.createElement("h4", { className: "text-sm font-black text-orange-950" }, __alloT('stem.galaxy.tidal_forces_title', 'Tidal forces experiment')),
-                  React.createElement("p", { id: "black-hole-drop-help", className: "mt-1 text-xs leading-relaxed text-orange-950" }, __alloT('stem.galaxy.tidal_forces_desc', 'Release an object and observe spaghettification: gravity pulls harder on its near side, stretching it radially while compressing it sideways.')),
-                  React.createElement("div", { className: "mt-3 rounded-xl border border-orange-300/60 bg-white/70 p-3" },
-                    React.createElement("p", { className: "text-xs font-black text-orange-950" }, __alloT('stem.galaxy.two_views_title', 'Two views of time and light')),
-                    React.createElement("div", { className: "mt-2 space-y-2", "aria-hidden": true },
-                      React.createElement("div", null,
-                        React.createElement("div", { className: "flex justify-between gap-2 text-xs font-bold text-slate-700" }, React.createElement("span", null, __alloT('stem.galaxy.bh_traveler_clock', "Traveler's local clock")), React.createElement("span", null, __alloT('stem.galaxy.bh_steady', 'steady'))),
-                        React.createElement("div", { className: "mt-1 h-2 overflow-hidden rounded-full bg-slate-200" }, React.createElement("div", { className: "h-full w-full rounded-full bg-indigo-500" }))),
-                      React.createElement("div", null,
-                        React.createElement("div", { className: "flex justify-between gap-2 text-xs font-bold text-slate-700" }, React.createElement("span", { id: "black-hole-signal-label" }, __alloT('stem.galaxy.bh_signal', 'Distant received signal: {percent}%').replace('{percent}','100')), React.createElement("span", null, __alloT('stem.galaxy.bh_delayed_redshifted', 'delayed + redshifted'))),
-                        React.createElement("div", { className: "mt-1 h-2 overflow-hidden rounded-full bg-slate-200" }, React.createElement("div", { id: "black-hole-signal-bar", className: "h-full w-full rounded-full bg-sky-400 transition-all duration-300" })))
-                    ),
-                    React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-orange-900" }, __alloT('stem.galaxy.bh_observer_view_desc', 'Illustrative observer view: the traveler experiences their own clock normally, while a distant observer receives increasingly delayed and redshifted light signals.'))
-                  ),                  React.createElement("label", { htmlFor: "black-hole-object", className: "mt-3 block text-xs font-bold text-orange-950" }, __alloT('stem.galaxy.bh_object_label', 'Object')),
-                  React.createElement("select", { id: "black-hole-object", value: blackHoleDropObject, onChange: function(e){upd('blackHoleDropObject',e.target.value);}, className: "mt-1 min-h-[44px] w-full rounded-lg border border-orange-600 bg-white px-2 py-2 text-xs text-slate-900" },
-                    React.createElement("option", { value: "probe" }, __alloT('stem.galaxy.bh_obj_probe', 'Space probe')), React.createElement("option", { value: "astronaut" }, __alloT('stem.galaxy.bh_obj_astronaut', 'Astronaut model')), React.createElement("option", { value: "star" }, __alloT('stem.galaxy.bh_obj_star', 'Star'))),
-                  React.createElement("label", { htmlFor: "black-hole-mass", className: "mt-3 block text-xs font-bold text-orange-950" }, __alloT('stem.galaxy.bh_mass_label', 'Black hole mass')),
-                  React.createElement("select", { id: "black-hole-mass", value: blackHoleMassMode, onChange: function(e){upd('blackHoleMassMode',e.target.value);}, className: "mt-1 min-h-[44px] w-full rounded-lg border border-orange-600 bg-white px-2 py-2 text-xs text-slate-900", "aria-describedby": "black-hole-mass-note" },
-                    React.createElement("option", { value: "stellar" }, __alloT('stem.galaxy.bh_mass_stellar', 'Stellar-mass')), React.createElement("option", { value: "supermassive" }, __alloT('stem.galaxy.bh_mass_supermassive', 'Supermassive'))),
-                  React.createElement("p", { id: "black-hole-mass-note", className: "mt-1 text-xs leading-relaxed text-orange-900" }, blackHoleMassMode==='stellar'?__alloT('stem.galaxy.bh_mass_note_stellar', 'Stronger tidal gradient: disruption begins farther outside the horizon.'):__alloT('stem.galaxy.bh_mass_note_supermassive', 'Gentler at the horizon: a compact object can cross before extreme stretching develops.')),
-                  React.createElement("button", { type: "button", className: "mt-3 min-h-[44px] w-full rounded-lg bg-orange-700 px-3 py-2 text-xs font-bold text-white hover:bg-orange-800", onClick: function(){var cv=blackHoleCanvasActive.current;if(cv&&cv._dropIntoBlackHole)cv._dropIntoBlackHole(blackHoleDropObject,blackHoleMassMode);}, "aria-describedby": "black-hole-drop-help" }, __alloT('stem.galaxy.bh_drop_btn', 'Drop object into black hole'))
-                ),
-                React.createElement("div", { className: "rounded-2xl border border-violet-200 bg-violet-50 p-4" },
-                  React.createElement("h4", { className: "text-sm font-black text-violet-900" }, __alloT('stem.galaxy.bh_what_seeing_title', 'What you are seeing')),
-                  React.createElement("ul", { className: "mt-2 space-y-2 text-xs leading-relaxed text-violet-950" },
-                    React.createElement("li", null, React.createElement("strong", null, __alloT('stem.galaxy.bh_li_event_horizon_label', 'Event horizon:')), __alloT('stem.galaxy.bh_li_event_horizon_text', ' the boundary beyond which light cannot escape.')),
-                    React.createElement("li", null, React.createElement("strong", null, __alloT('stem.galaxy.bh_li_photon_ring_label', 'Photon ring:')), __alloT('stem.galaxy.bh_li_photon_ring_text', ' light bent into repeated paths around the shadow.')),
-                    React.createElement("li", null, React.createElement("strong", null, __alloT('stem.galaxy.bh_li_doppler_label', 'Doppler beaming:')), __alloT('stem.galaxy.bh_li_doppler_text', ' the disk side moving toward us appears brighter.')),
-                    React.createElement("li", null, React.createElement("strong", null, __alloT('stem.galaxy.bh_li_jets_label', 'Jets:')), __alloT('stem.galaxy.bh_li_jets_text', ' energized matter guided away from the disk along magnetic poles.')))
-                )
+                React.createElement("div", { "data-bh-experiment": "true", className: "rounded-2xl border border-cyan-200 bg-white p-4 shadow-sm" },
+                  React.createElement("h4", { className: "text-sm font-black text-slate-900" }, __alloT('stem.galaxy.tidal_forces_title','Tidal forces experiment')),
+                  React.createElement("p", { id: "black-hole-drop-help", className: "mt-1 text-xs leading-relaxed text-slate-700" }, __alloT('stem.galaxy.bh_release_help','The object is waiting at the cyan marker. Change its sideways motion to compare falling, orbiting, and escaping.')),
+                  React.createElement("label", { htmlFor: "black-hole-object", className: "mt-3 block text-xs font-bold text-slate-800" }, __alloT('stem.galaxy.bh_object_label','Object')),
+                  React.createElement("select", { id: "black-hole-object", value: blackHoleDropObject, onChange: function(e){upd('blackHoleDropObject',e.target.value);}, className: "mt-1 min-h-[44px] w-full rounded-lg border border-slate-400 bg-white px-2 text-xs text-slate-900" },
+                    React.createElement("option", { value: "probe" }, __alloT('stem.galaxy.bh_obj_probe','Space probe')),React.createElement("option", { value: "astronaut" }, __alloT('stem.galaxy.bh_obj_astronaut','Astronaut model')),React.createElement("option", { value: "star" }, __alloT('stem.galaxy.bh_obj_star','Star'))),
+                  React.createElement("label", { htmlFor: "black-hole-mass", className: "mt-3 block text-xs font-bold text-slate-800" }, __alloT('stem.galaxy.bh_mass_label','Black hole mass')),
+                  React.createElement("select", { id: "black-hole-mass", value: blackHoleMassMode, onChange: function(e){upd('blackHoleMassMode',e.target.value);}, className: "mt-1 min-h-[44px] w-full rounded-lg border border-slate-400 bg-white px-2 text-xs text-slate-900", "aria-describedby": "black-hole-mass-note" },
+                    React.createElement("option", { value: "stellar" }, __alloT('stem.galaxy.bh_mass_stellar_number','Stellar · 10 solar masses')),React.createElement("option", { value: "supermassive" }, __alloT('stem.galaxy.bh_mass_supermassive_number','Supermassive · 4 million solar masses'))),
+                  React.createElement("p", { id: "black-hole-mass-note", className: "mt-1 text-xs leading-relaxed text-slate-600" }, blackHoleMassMode==='stellar'?__alloT('stem.galaxy.bh_mass_compare_stellar','At the same number of horizon radii, small black holes have much stronger tidal gradients.'):__alloT('stem.galaxy.bh_mass_compare_supermassive','A compact probe has little stretching here. A star spans a much larger distance and can still be disrupted.')),
+                  React.createElement("div", { className: "mt-3 flex gap-1", role: "group", "aria-label": __alloT('stem.galaxy.bh_path_presets','Release presets') },
+                    [{value:0,label:__alloT('stem.galaxy.bh_preset_drop','Direct fall')},{value:1,label:__alloT('stem.galaxy.bh_preset_orbit','Orbit')},{value:1.5,label:__alloT('stem.galaxy.bh_preset_escape','Escape')}].map(function(preset){return React.createElement("button",{type:'button',key:preset.value,'aria-pressed':blackHoleSideways===preset.value,onClick:function(){upd('blackHoleSideways',preset.value);},className:'min-h-[44px] flex-1 rounded-lg border px-1 text-xs font-bold '+(blackHoleSideways===preset.value?'border-cyan-800 bg-cyan-800 text-white':'border-slate-300 bg-slate-50 text-slate-700')},preset.label);})),
+                  React.createElement("details", { className: "mt-3 rounded-lg border border-slate-200 p-2" },
+                    React.createElement("summary", { className: "min-h-[44px] cursor-pointer py-3 text-xs font-bold text-slate-800" }, __alloT('stem.galaxy.bh_fine_tune','Fine-tune release')),
+                    React.createElement("label", { htmlFor: "black-hole-radius", className: "block text-xs font-bold text-slate-800" }, __alloT('stem.galaxy.bh_release_radius','Release distance: {value} horizon radii').replace('{value}',blackHoleReleaseRadius.toFixed(1))),
+                    React.createElement("input", { id: "black-hole-radius", type: "range", min: 4, max: 8, step: .25, value: blackHoleReleaseRadius, onChange:function(e){upd('blackHoleReleaseRadius',Number(e.target.value));},className:'h-8 w-full accent-cyan-700','aria-valuetext':blackHoleReleaseRadius.toFixed(1)+' Rs' }),
+                    React.createElement("label", { htmlFor: "black-hole-sideways", className: "mt-2 block text-xs font-bold text-slate-800" }, __alloT('stem.galaxy.bh_sideways','Sideways motion: {value}% of circular orbit').replace('{value}',String(Math.round(blackHoleSideways*100)))),
+                    React.createElement("input", { id: "black-hole-sideways", type: "range", min: 0, max: 1.6, step: .05, value: blackHoleSideways, onChange:function(e){upd('blackHoleSideways',Number(e.target.value));},className:'h-8 w-full accent-cyan-700','aria-valuetext':Math.round(blackHoleSideways*100)+'%' })),
+                  React.createElement("button", { type: "button", disabled: !blackHoleReady, className: "mt-3 min-h-[44px] w-full rounded-lg bg-cyan-800 px-3 py-2 text-xs font-bold text-white hover:bg-cyan-900 disabled:opacity-50", onClick:function(){var cv=blackHoleCanvasActive.current;if(cv&&cv._dropIntoBlackHole)cv._dropIntoBlackHole();},'aria-describedby':'black-hole-drop-help' },__alloT('stem.galaxy.bh_drop_btn','Drop object into black hole')),
+                  React.createElement("p", { id: "black-hole-status", role: "status", "aria-live": "polite", "aria-atomic": "true", className: "mt-3 rounded-lg bg-cyan-50 p-3 text-xs leading-relaxed font-semibold text-cyan-950" }, __alloT('stem.galaxy.bh_loading','Preparing the 3-D experiment…')),
+                  React.createElement("p", { id: "black-hole-run-readout", className: "mt-2 text-xs leading-relaxed text-slate-700" }, __alloT('stem.galaxy.blackhole_drop_begin','Drop an object to begin')),
+                  React.createElement("p", { id: "black-hole-tidal-value", className: "mt-1 text-xs text-slate-700" }),
+                  React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-slate-600" }, __alloT('stem.galaxy.bh_run_scope','Changing release settings resets the experiment. Sizes, stretching, debris, and playback time are illustrative.'))),
+                React.createElement("details", { className: "rounded-2xl border border-slate-200 bg-white p-4" },
+                  React.createElement("summary", { className: "min-h-[44px] cursor-pointer py-3 text-sm font-black text-slate-800" },__alloT('stem.galaxy.relativistic_controls_title','Relativistic controls')),
+                  React.createElement("p", { id: "black-hole-description", className: "mt-1 text-xs leading-relaxed text-slate-600" },__alloT('stem.galaxy.bh_model_scope','Paths use a nonrotating black hole model. The disk and lensing are stylized. Disk spin changes the appearance, not the object trajectory.')),
+                  React.createElement("label", {htmlFor:'black-hole-spin',className:'mt-3 block text-xs font-bold text-slate-700'},__alloT('stem.galaxy.bh_spin_label','Spin: ')+blackHoleSpin.toFixed(2)),
+                  React.createElement("input",{id:'black-hole-spin',type:'range',min:0,max:.99,step:.01,value:blackHoleSpin,'aria-valuetext':blackHoleSpin.toFixed(2)+' of 0.99',className:'w-full h-8 accent-indigo-600',onChange:function(e){upd('blackHoleSpin',Number(e.target.value));}}),
+                  React.createElement("label",{htmlFor:'black-hole-disk',className:'mt-3 block text-xs font-bold text-slate-700'},__alloT('stem.galaxy.bh_disk_label','Disk brightness: ')+Math.round(blackHoleDisk*100)+'%'),
+                  React.createElement("input",{id:'black-hole-disk',type:'range',min:.2,max:1,step:.01,value:blackHoleDisk,'aria-valuetext':Math.round(blackHoleDisk*100)+' percent',className:'w-full h-8 accent-indigo-600',onChange:function(e){upd('blackHoleDisk',Number(e.target.value));}}),
+                  React.createElement("label",{className:'mt-2 flex min-h-[44px] items-center gap-2 text-xs font-bold text-slate-700'},React.createElement("input",{type:'checkbox',checked:!!d.blackHoleShowJets,onChange:function(e){upd('blackHoleShowJets',e.target.checked);}}),__alloT('stem.galaxy.bh_show_jets','Show illustrative polar jets')),
+                  React.createElement("p",{className:'text-xs leading-relaxed text-slate-600'},__alloT('stem.galaxy.bh_jets_optional','Jets arise from the surrounding accretion flow. Many black holes have no visible jets.'))),
+                React.createElement("details", {className:'rounded-2xl border border-slate-200 bg-white p-4'},
+                  React.createElement("summary",{className:'min-h-[44px] cursor-pointer py-3 text-sm font-black text-slate-800'},__alloT('stem.galaxy.two_views_title','Two views of time and light')),
+                  React.createElement("p",{className:'text-xs leading-relaxed text-slate-700'},__alloT('stem.galaxy.bh_time_model','Playback follows the modeled traveler to the horizon in finite proper time. A distant observer receives increasingly delayed, redshifted light; this scene does not simulate that optical view.')),
+                  React.createElement("p",{id:'black-hole-signal-label',className:'mt-3 text-xs font-bold text-slate-800'},__alloT('stem.galaxy.bh_redshift_reference','Static-clock redshift factor: {value}').replace('{value}','—')),
+                  React.createElement("div",{className:'mt-1 h-2 overflow-hidden rounded-full bg-slate-200','aria-hidden':true},React.createElement("div",{id:'black-hole-signal-bar',className:'h-full rounded-full bg-sky-600'})),
+                  React.createElement("p",{className:'mt-2 text-xs leading-relaxed text-slate-600'},__alloT('stem.galaxy.bh_redshift_scope','Reference: √(1 − 1/r), with r in horizon radii. This compares stationary clocks and excludes the falling object’s Doppler shift and light travel time.'))),
+                React.createElement("details", {className:'rounded-2xl border border-violet-200 bg-violet-50 p-4'},
+                  React.createElement("summary",{className:'min-h-[44px] cursor-pointer py-3 text-sm font-black text-violet-900'},__alloT('stem.galaxy.bh_what_seeing_title','What you are seeing')),
+                  React.createElement("p",{className:'text-xs leading-relaxed text-violet-950'},__alloT('stem.galaxy.bh_visual_scope','The glowing disk is gas outside the black hole. The arcs suggest light bending from its far side; they are not ray traced. The dark center marks the horizon schematically, not the measured size of a black hole shadow.')))
               ),
               React.createElement("section", { className: "lg:col-span-2 overflow-hidden rounded-2xl border border-cyan-300/25 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 p-4 text-slate-100 shadow-xl", role: "region", "aria-labelledby": "black-hole-evidence-title" },
                 React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },

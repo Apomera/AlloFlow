@@ -41,10 +41,25 @@ describe('Anatomy compact study controls', () => {
       for (const id of controls.querySelector('button').getAttribute('aria-controls').split(' ')) expect(root.querySelector(`[id="${id}"]`)).not.toBeNull();
     }
   });
-  it.each(paths)('offers compact controls for Explore, Quiz, Cards, and Homeostasis in %s', file => {
+  it.each(paths)('keeps Explore settings separate from compact study controls in %s', file => {
     for (const _activeTab of ['quiz', 'flashcards', 'explore', 'homeoHunt', 'tour', 'spotter']) {
       const s = session(file, { _activeTab }); const root = s.html();
-      expect(!!root.querySelector('[data-anatomy-study-controls]')).toBe(['quiz', 'flashcards', 'explore', 'homeoHunt'].includes(_activeTab));
+      expect(!!root.querySelector('[data-anatomy-study-controls]')).toBe(['quiz', 'flashcards', 'homeoHunt'].includes(_activeTab));
+      expect(!!root.querySelector('#anatomy-explorer-system')).toBe(_activeTab === 'explore');
+      expect(!!root.querySelector('#anatomy-explorer-level')).toBe(_activeTab === 'explore');
     }
+  });
+  it.each(paths)('changes Explore level and system without losing notes or confidence in %s', file => {
+    const s = session(file, { _activeTab: 'explore', _structureNotes: { skull: 'Saved note' }, _structureConfidence: { skull: 'learning' } });
+    s.change('anatomy-explorer-level', '1');
+    expect(s.data().complexity).toBe(1);
+    s.change('anatomy-explorer-system', 'respiratory');
+    expect(s.data().system).toBe('respiratory');
+    expect(s.data()._structureNotes.skull).toBe('Saved note');
+    expect(s.data()._structureConfidence.skull).toBe('learning');
+    const saved = { ...s.data() };
+    s.change('anatomy-explorer-level', 'bogus');
+    s.change('anatomy-explorer-system', 'bogus');
+    expect(s.data()).toEqual(saved);
   });
 });

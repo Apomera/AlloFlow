@@ -29,6 +29,9 @@
       '--allo-stem-text:#e2e8f0;' +
       '--allo-stem-text-soft:#94a3b8;' +
       '--allo-stem-border:#334155;}' +
+      '.selh-bridgelab,.selh-bridgelab *{box-sizing:border-box;}' +
+      '.selh-bridgelab button:focus-visible,.selh-bridgelab select:focus-visible,.selh-bridgelab input:focus-visible,.selh-bridgelab summary:focus-visible{outline:3px solid #7dd3fc;outline-offset:3px;}' +
+      '.selh-bridgelab button:disabled{opacity:.5;cursor:default;}' +
       // Let the tall design brief and tab panel share normal document flow
       // whenever a fixed-height immersive layout would collapse the panel.
       '@media (max-width:640px),(max-height:500px){' +
@@ -136,15 +139,17 @@
       id: 'millennium', name: 'Millennium Bridge (London)', year: 2000, kind: 'failure', icon: '🚶',
       what: 'A new pedestrian suspension bridge opened on June 10 2000. Within seconds of opening to the public, it began swaying side-to-side dramatically. The bridge was closed two days later + remained closed for nearly two years for engineering retrofit.',
       why: 'PEDESTRIAN-INDUCED LATERAL VIBRATION. Pedestrians naturally walked at ~2 Hz vertical step rate, producing a 1 Hz lateral motion. When the bridge began to sway slightly, pedestrians instinctively adjusted their gait to compensate — locking in synchrony with the sway. The synchrony amplified the motion → more synchrony → bigger motion. Positive feedback loop, similar in principle to Tacoma but driven by pedestrians instead of wind.',
-      lesson: 'Pedestrian crowds can synchronize their footfalls to bridge motion, producing forces orders of magnitude larger than the structural design assumed. Lateral pedestrian damping is now a code requirement for new pedestrian bridges in many jurisdictions. The case is the canonical 21st-century structural-dynamics teaching example.',
-      memory: 'The Foster + Arup design team retrofitted ~37 tuned mass dampers + ~50 viscous dampers across the bridge\'s spans. Reopened February 2002. Has worked perfectly since. Still nicknamed the "wobbly bridge" by Londoners. The investigation paper (Dallard et al., 2001) is one of the most-cited papers in structural dynamics.'
+      lesson: 'Crowd loading and bridge motion can interact. Engineers must check pedestrian comfort and dynamic response as well as strength. Adding damping helped control the motion; passing a static load check alone would not have identified this problem.',
+      memory: 'The retrofit combined tuned mass dampers with 37 viscous dampers supplied by Taylor Devices. The bridge reopened in 2002. Inspection and testing remain part of maintaining the damping system.',
+      source: { label: 'Taylor Devices: Millennium Bridge damping', url: 'https://www.taylordevices.com/structural/millennium-bridge-london-england/' }
     },
     {
       id: 'tacoma', name: 'Tacoma Narrows Bridge', year: 1940, kind: 'failure', icon: '💨',
       what: 'Suspension bridge over Puget Sound in Washington. Span 853 m. Collapsed in moderate (~64 km/h) wind after only 4 months in service.',
-      why: 'Aerodynamic flutter — the open H-shaped deck cross-section allowed wind to create alternating lift forces. The deck began twisting, the twisting created bigger forces, the forces created bigger twisting. A positive feedback loop. The bridge oscillated to destruction.',
-      lesson: 'Bridge design now requires wind-tunnel testing. Decks use closed box-girder cross-sections (or stiffening trusses) that don\'t flutter. Aerodynamics is now central to bridge engineering.',
-      memory: 'Iconic black-and-white film of "Galloping Gertie" twisting. The lone car abandoned on the bridge belonged to Leonard Coatsworth. His cocker spaniel Tubby was the only casualty.'
+      why: 'Aerodynamic flutter: motion of the flexible deck changed the aerodynamic forces acting on it, feeding energy into growing torsional oscillation. The deck geometry and low torsional stiffness made this interaction dangerous.',
+      lesson: 'Long suspension bridges need aerodynamic assessment, often including wind-tunnel models. Deck shape, stiffness, and damping all matter. A box section or stiffening truss helps only when its behavior has been checked for the design conditions.',
+      memory: 'Iconic black-and-white film of "Galloping Gertie" twisting. The lone car abandoned on the bridge belonged to Leonard Coatsworth. His cocker spaniel Tubby was the only casualty.',
+      source: { label: 'WSDOT: lessons from Tacoma Narrows', url: 'https://www.wsdot.wa.gov/TNBhistory/bridges-failure.htm' }
     },
     {
       id: 'tay', name: 'Tay Bridge', year: 1879, kind: 'failure', icon: '🌬️',
@@ -163,9 +168,10 @@
     {
       id: 'silver', name: 'Silver Bridge', year: 1967, kind: 'failure', icon: '🔗',
       what: 'Eyebar chain suspension bridge over the Ohio River. Collapsed during rush-hour traffic, killing 46.',
-      why: 'A single eyebar had a 2.5 mm defect (a hidden crack from manufacturing 40 years earlier). The crack grew via stress-corrosion to a critical size, then snapped. Because each eyebar was load-bearing with no redundancy, one failure meant total collapse.',
-      lesson: 'No fracture-critical member can be allowed without redundancy in modern bridge codes. The federal bridge inspection program began directly because of Silver Bridge.',
-      memory: 'The disaster led to the creation of the National Bridge Inspection Standards (1971). Every public bridge in the US is now inspected every 2 years.'
+      why: 'A small crack in an eyebar grew in a corroded, highly stressed connection and initiated a brittle fracture. The suspension system lacked an alternate load path sufficient to prevent collapse after that failure.',
+      lesson: 'Redundancy, fracture resistance, and inspection access all matter. Nonredundant steel tension members still exist; they require specific inspection attention. A hidden crack can be critical even when the rest of a structure appears sound.',
+      memory: 'The collapse helped prompt the national bridge inspection program established in 1971. Under the US highway bridge rules, routine inspection intervals depend on condition and risk; they are not identical for every bridge.',
+      source: { label: 'FHWA: National Bridge Inspection Standards', url: 'https://www.fhwa.dot.gov/bridge/nbis.cfm' }
     },
     {
       id: 'brooklyn', name: 'Brooklyn Bridge', year: 1883, kind: 'success', icon: '🌉',
@@ -179,14 +185,16 @@
       what: 'Suspension bridge over the Golden Gate strait, San Francisco. Span 1,280 m. Held the world record for longest span for 27 years.',
       why: 'Chief Engineer Joseph Strauss; Charles Ellis did most of the actual structural calculations. Used a safety net during construction (innovative for the time) that saved 19 lives. The iconic "International Orange" color was chosen for visibility in fog.',
       lesson: 'Construction safety, structural innovation, and aesthetics all in one project. The safety net itself was a major engineering innovation.',
-      memory: 'The bridge\'s natural sway in wind is built-in. It can move up to 8.4 m horizontally and 3.4 m vertically. This is feature, not bug — rigidity would break it.'
+      memory: 'Design movement limits at midspan include 8.4 m sideways, 3.3 m downward, and 1.8 m upward under different specified combinations of wind, traffic, and temperature. These are design limits rather than everyday motion.',
+      source: { label: 'Golden Gate Bridge: design and construction statistics', url: 'https://www.goldengate.org/bridge/history-research/statistics-data/design-construction-stats/' }
     },
     {
       id: 'akashi', name: 'Akashi-Kaikyō Bridge', year: 1998, kind: 'success', icon: '🗾',
       what: 'Currently the second-longest suspension bridge in the world (the 1915 Çanakkale in Turkey took the record in 2022). Main span 1,991 m. Connects Awaji Island to Honshu, Japan.',
       why: 'Built across an earthquake zone with major tidal currents. During the 1995 Kobe earthquake (mid-construction), the two towers moved 1 m further apart from each other — the bridge was redesigned mid-construction to accommodate this. Withstood the earthquake.',
-      lesson: 'Engineering for active hazards (earthquakes, typhoons, tides) is now standard for major infrastructure. The bridge\'s real-time tuned mass dampers actively counteract sway.',
-      memory: 'A bridge that grew 1 meter longer than its original design during construction. The Kobe earthquake event is one of the most photographed in modern engineering history.'
+      lesson: 'The towers use tuned mass dampers to reduce wind-induced vibration. Tower shape was also developed for aerodynamic stability. Engineers checked the structure during construction as well as in its completed form.',
+      memory: 'The main span grew about 1 meter beyond its original design during construction after the Kobe earthquake shifted the foundations.',
+      source: { label: 'JSCE: vibration control of the Akashi Kaikyo towers', url: 'https://doi.org/10.2208/jscej.1995.507_279' }
     },
     {
       id: 'millau', name: 'Millau Viaduct', year: 2004, kind: 'success', icon: '⛰️',
@@ -214,19 +222,19 @@
   // ──────────────────────────────────────────────────────────────────
   var QUIZ_QUESTIONS = [
     { q: 'In a simply supported beam bridge under a load in the middle, which side of the beam is in tension?', choices: ['Top', 'Bottom', 'Both sides equally', 'Neither, only the supports'], answer: 1, explain: 'The bottom of the beam stretches (tension); the top compresses. This is why I-beams have flanges concentrating material at top and bottom — that\'s where the stress lives.' },
-    { q: 'Why are triangles the basic unit of trusses?', choices: ['They look more elegant than rectangles in a finished bridge', 'A triangle can\'t change shape without breaking a member', 'Triangles always distribute any load equally to all three sides', 'Building codes require triangles'], answer: 1, explain: 'A triangle is rigid — you cannot deform it without changing the length of at least one side. Squares and rectangles can shear into parallelograms. Triangles can\'t. This rigidity is what makes trusses work.' },
+    { q: 'Why are triangles the basic unit of trusses?', choices: ['They look more elegant than rectangles in a finished bridge', 'A triangle cannot change shape without changing at least one side length', 'Triangles always distribute any load equally to all three sides', 'Building codes require triangles'], answer: 1, explain: 'An ideal triangle with fixed side lengths is geometrically stable. A pin-jointed rectangle can shear into a parallelogram without changing its side lengths. Real truss members stretch or shorten slightly under load, so a stable truss can still deform without breaking.' },
     { q: 'What kind of forces are the cables of a suspension bridge under?', choices: ['Compression', 'Tension', 'Shear', 'Torsion'], answer: 1, explain: 'Cables can only carry tension. They hang in a curve (technically a catenary modified by deck loading) and pull on the towers and anchorages.' },
-    { q: 'Why did the Tacoma Narrows Bridge collapse in 1940?', choices: ['An earthquake along the Sound', 'Overloading by heavy traffic', 'Wind-induced aerodynamic flutter', 'A hidden manufacturing defect in the steel'], answer: 2, explain: 'The open H-shaped deck cross-section allowed wind to create alternating lift forces. The deck began oscillating, the oscillation grew, and the structure tore itself apart. Now all major bridges must pass wind-tunnel tests; deck cross-sections are designed to avoid flutter.' },
+    { q: 'Why did the Tacoma Narrows Bridge collapse in 1940?', choices: ['An earthquake along the Sound', 'Overloading by heavy traffic', 'Wind-induced aerodynamic flutter', 'A hidden manufacturing defect in the steel'], answer: 2, explain: 'Deck motion changed the wind forces, which fed energy into growing torsional oscillations. This interaction is aerodynamic flutter. Long suspension bridges require careful study of deck shape, stiffness, damping, and wind response, often using wind-tunnel models.', source: { label: 'WSDOT: lessons from Tacoma Narrows', url: 'https://www.wsdot.wa.gov/TNBhistory/bridges-failure.htm' } },
     { q: 'Which material is strong in compression but weak in tension, requiring reinforcement?', choices: ['Structural steel', 'Laminated wood', 'Plain concrete', 'Composite'], answer: 2, explain: 'Plain concrete handles compression well but tension poorly. Adding steel rebar (which handles tension well) gives reinforced concrete — using each material for what it does best. Pre-stressed concrete adds another layer: putting the concrete in compression before it ever sees load.' },
     { q: 'In a Pratt truss bridge with the load on top, are the bottom chord members under tension or compression?', choices: ['Tension', 'Compression', 'Shear', 'Bending'], answer: 0, explain: 'Picture the bridge as a giant beam. The bottom of the beam wants to stretch — that\'s tension. So the bottom chord of any simply-supported truss is in tension; the top is in compression. This is true regardless of truss style (Warren, Pratt, Howe).' },
     { q: 'What is "buckling"?', choices: ['A sudden failure of the bolted joints that connect truss members', 'A long compression member bending sideways before crushing', 'A wind-driven oscillation of the whole deck', 'Cracking that spreads through a concrete pier'], answer: 1, explain: 'A long, thin member in compression can bend sideways at a load far below its actual crushing strength. This is buckling, described by Euler. It is why compression members are stocky (think squat columns) rather than long and thin.' },
     { q: 'Why was the Hyatt Regency walkway collapse (1981) an "ethics" failure as well as an engineering one?', choices: ['The walkways were built without the required city permits', 'A design change doubled the load on a connection and no one re-checked the calculations', 'The walkways were overloaded by far more visitors than any hotel could reasonably have expected', 'The steel used in the walkways turned out to be counterfeit'], answer: 1, explain: 'A late design change split a single long rod into two shorter rods, doubling the load on the upper connection. The change was made for ease of construction but no one re-engineered it. Engineer of record carries final responsibility. The case is required reading in engineering ethics.' },
-    { q: 'What is the "safety factor" in bridge design?', choices: ['A measure of how quickly emergency crews could reach the bridge after a failure is reported', 'A multiplier on expected load so the bridge can handle much more than it ever should see', 'A legal waiver that limits the designer of the bridge from liability', 'The share of the budget reserved for safety equipment'], answer: 1, explain: 'Safety factor = ultimate capacity / expected design load. Typically 2-4 for buildings, 2-6 for bridges. It accounts for material variability, construction quality, unexpected loads, deterioration over time. The Brooklyn Bridge was designed with a safety factor of 6.' },
+    { q: 'What does a safety factor describe in this bridge model?', choices: ['A measure of how quickly emergency crews could reach the bridge after a failure is reported', 'The ratio of modeled capacity to the force demand for a particular check', 'A legal waiver that limits the designer of the bridge from liability', 'The share of the budget reserved for safety equipment'], answer: 1, explain: 'A capacity-to-demand ratio of 2 means twice the modeled demand for that check. This lab compares material strength and elastic buckling and uses 2 as a classroom target. Real bridge design checks multiple limit states and uses specified load and resistance factors; there is no single universal bridge safety factor.', source: { label: 'FHWA: Load and Resistance Factor Design', url: 'https://www.fhwa.dot.gov/bridge/lrfd/' } },
     { q: 'What is the longest span for a SUSPENSION bridge in service today?', choices: ['~500 m', '~1,000 m', '~2,000 m', '~5,000 m'], answer: 2, explain: 'The 1915 Çanakkale Bridge in Turkey opened in 2022 with a main span of 2,023 m. Before that, Akashi-Kaikyō in Japan held the record at 1,991 m for 24 years. Suspension is still the way to go for the very longest spans.' },
-    { q: 'Why do bridges have expansion joints?', choices: ['To give the deck a cleaner, more finished appearance', 'So the deck can expand and contract with temperature changes without breaking', 'To give bridge inspectors easier access to the structure underneath the roadway deck', 'To drain rainwater off the surface of the deck'], answer: 1, explain: 'A steel bridge can expand and contract by several centimeters between hot summer and cold winter. Without expansion joints, this would create enormous forces and crack the structure. The Golden Gate Bridge\'s deck can shift by over a meter due to temperature alone.' },
+    { q: 'Why do bridges have expansion joints?', choices: ['To give the deck a cleaner, more finished appearance', 'So the deck can expand and contract with temperature changes without breaking', 'To give bridge inspectors easier access to the structure underneath the roadway deck', 'To drain rainwater off the surface of the deck'], answer: 1, explain: 'Temperature changes alter member lengths. Expansion joints and bearings can accommodate that movement and limit restraint forces. Some bridges use integral designs instead of deck joints. The Golden Gate Bridge also moves vertically as temperature and traffic loading change cable geometry.', source: { label: 'Golden Gate Bridge: movement and loading conditions', url: 'https://www.goldengate.org/bridge/history-research/statistics-data/design-construction-stats/' } },
     { q: 'Which is the LEAST appropriate use of stone as a bridge material?', choices: ['The arch ring of a Roman aqueduct carrying water', 'A medieval bridge over a stream', 'The tension members of a long modern bridge', 'A short pedestrian arch bridge'], answer: 2, explain: 'Stone is great in compression but weak in tension. The tension members of a long bridge need a tensile material like steel. Arches (which are entirely in compression) work beautifully in stone — Roman arches from 100 BCE are still in use. Putting stone in tension is asking for failure.' },
     { q: 'In a Pratt truss bridge, which members are typically in TENSION?', choices: ['Only the vertical members, top to bottom', 'The diagonals only', 'The diagonals AND the bottom chord', 'Everything is in compression'], answer: 2, explain: 'A Pratt truss is designed so the diagonals slope toward the center, putting them in tension. The bottom chord is also in tension (like any simply-supported beam\'s bottom). The verticals carry compression, the top chord carries compression. Pratt uses tension-friendly steel for the diagonals + bottom — economical.' },
-    { q: 'What is the Euler buckling load proportional to?', choices: ['Length L (P_cr increases with longer members)', '1/L² (P_cr decreases with the square of length)', 'L² (P_cr increases with the square of length)', 'It does not depend on the length of the member at all'], answer: 1, explain: 'P_cr = π²EI / L². Doubling the length quarters the buckling capacity. Long thin compression members buckle long before they reach yield. This is why compression members are short and stocky, why interior bracing is added to long chords, and what brought down the Quebec Bridge in 1907.' },
+    { q: 'For fixed material, cross-section, and end restraint, what is the Euler buckling load proportional to?', choices: ['Length L (P_cr increases with longer members)', '1/L² (P_cr decreases with the square of length)', 'L² (P_cr increases with the square of length)', 'It does not depend on the length of the member at all'], answer: 1, explain: 'P_cr = π²EI / (KL)², where K describes the end restraint. With E, I, and K unchanged, doubling the unbraced length quarters the elastic buckling capacity. This lab assumes pinned ends (K = 1) and an ideal straight member; actual design must also account for imperfections and inelastic behavior.' },
     { q: 'The "slenderness ratio" L/r of a compression member is critical to buckling. What does a HIGH slenderness ratio mean?', choices: ['The member is short + stocky (low buckling risk)', 'The member is long + thin (high buckling risk)', 'The member is wide + flat', 'It only applies to tension members'], answer: 1, explain: 'Slenderness ratio L/r = length divided by radius of gyration. High slenderness = long relative to its width = prone to buckling. Steel design codes typically limit slenderness to about 200 for compression members; structural designers will add bracing or change cross-section to keep it lower.' }
   ];
 
@@ -242,33 +250,86 @@
   });
 
   // ──────────────────────────────────────────────────────────────────
+  // Normalize restored/imported settings before any geometry loops or division.
+  // Preserve auxiliary fields (notes, quiz, investigation history) verbatim.
+  function bridgeNormalizeSettings(input) {
+    var d = Object.assign({}, input || {});
+    function bounded(key, fallback, min, max, integer) {
+      var raw = d[key];
+      var value = (typeof raw === 'number' || (typeof raw === 'string' && raw.trim() !== '')) ? Number(raw) : NaN;
+      if (!isFinite(value)) value = fallback;
+      value = Math.max(min, Math.min(max, value));
+      d[key] = integer ? Math.round(value) : value;
+    }
+    bounded('span', 30, 10, 80);
+    bounded('height', 6, 2, 15);
+    bounded('nBays', 4, 3, 8, true);
+    bounded('crossSectionMm2', 5000, 1000, 30000);
+    bounded('loadPerJoint', 50, 0, 200);
+    bounded('vehicleLoad', 150, 0, 500);
+    bounded('vehiclePos', 0.5, 0, 1);
+    bounded('lateralBraceEvery', 1, 1, d.nBays, true);
+    bounded('optTargetSF', 2, 1.5, 6);
+    bounded('zoom3d', 1, 0.45, 3.2);
+    if (['warren', 'pratt', 'howe', 'ktruss'].indexOf(d.trussStyle) < 0) d.trussStyle = 'warren';
+    if (['uniform', 'vehicle'].indexOf(d.loadMode) < 0) d.loadMode = 'uniform';
+    if (['build', 'types', 'materials', 'forces', 'cases', 'cycle', 'quiz', 'print', 'inquiry'].indexOf(d.tab) < 0) d.tab = 'build';
+    if (!MATERIALS.some(function(material) { return material.id === d.materialId; })) d.materialId = 'steel';
+    if (typeof d.designName !== 'string') d.designName = '';
+    if (typeof d.designNotes !== 'string') d.designNotes = '';
+    var rotation = d.rot3d || {};
+    d.rot3d = {
+      rotY: (typeof rotation.rotY === 'number' && isFinite(rotation.rotY)) ? rotation.rotY % 360 : 26,
+      rotX: (typeof rotation.rotX === 'number' && isFinite(rotation.rotX)) ? Math.max(-72, Math.min(78, rotation.rotX)) : 14
+    };
+    return d;
+  }
+
   // Truss force analysis — simplified deep-beam approximation
   // ──────────────────────────────────────────────────────────────────
-  // For a Warren-style truss with bay width a, height h, span L = n*a,
-  // loaded with point load P at each of (n-1) interior top joints:
-  //   Total load W = (n-1) * P
-  //   Max bending moment at center (deep beam) ≈ W*L/8
-  //   Max top chord compression ≈ Max bottom chord tension ≈ M_max / h
-  //   Max diagonal shear = (W/2) / sin(theta), where theta = atan(2h/a)
+  // Loads and material quantities are summed from actual geometry. The
+  // deep-beam estimate uses M/h for chord force and V/sin(theta) for webs.
+  function bridgeSummarizeTruss(spec, span) {
+    var jointById = Object.create(null), totalLen = 0, W = 0, moment = 0, loadJointCount = 0;
+    spec.joints.forEach(function(joint) { jointById[joint.id] = joint; });
+    spec.members.forEach(function(member) {
+      var p1 = jointById[member.j1], p2 = jointById[member.j2];
+      totalLen += Math.hypot(p2.x - p1.x, p2.y - p1.y);
+    });
+    Object.keys(spec.loads).forEach(function(id) {
+      var down = -(spec.loads[id].fy || 0);
+      W += down;
+      moment += down * jointById[id].x;
+      if (down !== 0) loadJointCount++;
+    });
+    var right = moment / span, left = W - right, Mmax = 0;
+    // A piecewise-linear bending-moment diagram reaches its peak at a load
+    // point (or over a zero-shear panel); evaluating every joint is exact.
+    spec.joints.forEach(function(joint) {
+      var bending = left * joint.x;
+      Object.keys(spec.loads).forEach(function(id) {
+        var arm = joint.x - jointById[id].x;
+        if (arm > 0) bending += (spec.loads[id].fy || 0) * arm;
+      });
+      Mmax = Math.max(Mmax, Math.abs(bending));
+    });
+    return { W: W, Mmax: Mmax, totalLen: totalLen, reactions: W / 2,
+      reactionsLeft: left, reactionsRight: right, loadJointCount: loadJointCount };
+  }
+
   function analyzeTruss(span, height, nBays, loadPerJoint) {
     var a = span / nBays;
     var h = height;
-    var nLoads = nBays - 1; // interior top joints
-    var W = nLoads * loadPerJoint;
-    var L = span;
-    var Mmax = W * L / 8; // deep-beam approximation
-    var maxChord = Mmax / h; // either top compression or bottom tension
+    var spec = buildTrussSpec('warren', span, nBays, height, loadPerJoint);
+    var summary = bridgeSummarizeTruss(spec, span);
+    var maxChord = summary.Mmax / h;
     var theta = Math.atan2(2 * h, a); // diagonal angle from horizontal
-    var maxDiag = (W / 2) / Math.sin(theta);
-    // Total weight of truss assumed proportional to total member length
-    // Approximate: bottom chord = L, top chord = L*(n-1)/n, verticals = n*h, diagonals = 2*n*sqrt((a/2)^2 + h^2)
-    var totalLen = L + L * (nBays - 1) / nBays + nBays * h + 2 * nBays * Math.sqrt(a * a / 4 + h * h);
-    return {
-      a: a, h: h, theta: theta, W: W, Mmax: Mmax,
-      maxChord: maxChord, maxDiag: maxDiag, totalLen: totalLen,
-      reactions: W / 2,
+    var maxDiag = Math.max(summary.reactionsLeft, summary.reactionsRight) / Math.sin(theta);
+    return Object.assign(summary, {
+      a: a, h: h, theta: theta,
+      maxChord: maxChord, maxDiag: maxDiag, maxForce: Math.max(maxChord, maxDiag),
       diagAngleDeg: theta * 180 / Math.PI
-    };
+    });
   }
 
   // ──────────────────────────────────────────────────────────────────
@@ -280,19 +341,61 @@
   // Inputs:
   //   joints   : [{id, x, y}]
   //   members  : [{id, j1, j2}]
-  //   loads    : { jointId: {fx, fy} }   (kN; +y down for loads)
+  //   loads    : { jointId: {fx, fy} }   (kN; +y up, gravity loads negative)
   //   supports : { jointId: 'pin' | 'roller' }  (roller resists +y only)
   //
   // Returns: { memberForces: { mid: F_kN_tension_positive }, reactions: { jid: {fx, fy} }, ok: bool }
   // ──────────────────────────────────────────────────────────────────
   function solveTrussMOJ(joints, members, loads, supports) {
+    function invalid(reason) { return { ok: false, reason: reason }; }
+    function finite(value) { return typeof value === 'number' && isFinite(value); }
+    if (!Array.isArray(joints) || !Array.isArray(members) || joints.length < 2 || joints.length > 500 || members.length > 1500) {
+      return invalid('Invalid truss: provide 2–500 joints and at most 1500 members.');
+    }
+    loads = loads || {};
+    supports = supports || {};
     var j = joints.length;
     var m = members.length;
-    var jointById = {};
-    for (var i = 0; i < j; i++) jointById[joints[i].id] = joints[i];
+    var jointById = Object.create(null);
+    var memberIds = Object.create(null);
+    var memberPairs = Object.create(null);
+    for (var i = 0; i < j; i++) {
+      var joint = joints[i];
+      if (!joint || typeof joint.id !== 'string' || !joint.id || jointById[joint.id] || !finite(joint.x) || !finite(joint.y)) {
+        return invalid('Invalid joint: IDs must be unique and coordinates finite.');
+      }
+      jointById[joint.id] = joint;
+    }
+    for (var vm = 0; vm < m; vm++) {
+      var checkedMember = members[vm];
+      if (!checkedMember || typeof checkedMember.id !== 'string' || !checkedMember.id || memberIds[checkedMember.id] ||
+          !jointById[checkedMember.j1] || !jointById[checkedMember.j2]) {
+        return invalid('Invalid member: IDs must be unique and both joints must exist.');
+      }
+      var start = jointById[checkedMember.j1], end = jointById[checkedMember.j2];
+      var length = Math.hypot(end.x - start.x, end.y - start.y);
+      var pair = JSON.stringify([checkedMember.j1, checkedMember.j2].sort());
+      if (!(length > 0) || !isFinite(length) || memberPairs[pair]) return invalid('Invalid member: zero length or duplicate connection.');
+      memberIds[checkedMember.id] = true;
+      memberPairs[pair] = true;
+    }
+    var loadIds = Object.keys(loads);
+    for (var vl = 0; vl < loadIds.length; vl++) {
+      var checkedLoad = loads[loadIds[vl]];
+      if (!jointById[loadIds[vl]] || !checkedLoad ||
+          (checkedLoad.fx != null && !finite(checkedLoad.fx)) || (checkedLoad.fy != null && !finite(checkedLoad.fy))) {
+        return invalid('Invalid load: use finite force components at an existing joint.');
+      }
+    }
+    var supportIds = Object.keys(supports);
+    for (var vs = 0; vs < supportIds.length; vs++) {
+      if (!jointById[supportIds[vs]] || ['pin', 'roller'].indexOf(supports[supportIds[vs]]) < 0) {
+        return invalid('Invalid support: use a pin or vertical roller at an existing joint.');
+      }
+    }
 
     // Reaction columns: pin -> 2 unknowns (Rx, Ry), roller -> 1 (Ry)
-    var reactionCols = {};
+    var reactionCols = Object.create(null);
     var nR = 0;
     for (var ji = 0; ji < j; ji++) {
       var jid = joints[ji].id;
@@ -336,9 +439,13 @@
       if (reactionCols[jt.id + '_fy'] != null) rowY[reactionCols[jt.id + '_fy']] = 1;
       // Loads to RHS (move to other side -> negate)
       var load = loads[jt.id] || { fx: 0, fy: 0 };
-      A.push(rowX); b.push(-load.fx);
-      A.push(rowY); b.push(-load.fy);
+      A.push(rowX); b.push(-(load.fx == null ? 0 : load.fx));
+      A.push(rowY); b.push(-(load.fy == null ? 0 : load.fy));
     }
+
+    // Keep the original equations for an independent equilibrium residual.
+    var originalA = A.map(function(row) { return row.slice(); });
+    var originalB = b.slice();
 
     // Gaussian elimination with partial pivoting
     for (var k = 0; k < n; k++) {
@@ -365,19 +472,34 @@
       var sum = 0;
       for (var jj = k2 + 1; jj < n; jj++) sum += A[k2][jj] * x[jj];
       x[k2] = (b[k2] - sum) / A[k2][k2];
+      if (!isFinite(x[k2])) return invalid('The equilibrium solution is not finite.');
+    }
+
+    var maxResidualKN = 0, forceScale = 0;
+    for (var ri = 0; ri < n; ri++) {
+      var residual = -originalB[ri];
+      forceScale = Math.max(forceScale, Math.abs(originalB[ri]));
+      for (var rj = 0; rj < n; rj++) residual += originalA[ri][rj] * x[rj];
+      maxResidualKN = Math.max(maxResidualKN, Math.abs(residual));
+    }
+    if (maxResidualKN > Math.max(1, forceScale) * 1e-7) return invalid('The equilibrium residual is too large for a reliable result.');
+    // Elimination leaves tiny signed round-off at theoretically unloaded
+    // members/supports. Remove that noise so a support-only load has no demand.
+    for (var zi = 0; zi < n; zi++) {
+      if (Math.abs(x[zi]) <= forceScale * 1e-12) x[zi] = 0;
     }
 
     // Extract
-    var memberForces = {};
+    var memberForces = Object.create(null);
     for (var mi2 = 0; mi2 < members.length; mi2++) memberForces[members[mi2].id] = x[mi2];
-    var reactions = {};
+    var reactions = Object.create(null);
     for (var ji3 = 0; ji3 < j; ji3++) {
       var jid3 = joints[ji3].id;
       var rx = reactionCols[jid3 + '_fx'] != null ? x[reactionCols[jid3 + '_fx']] : 0;
       var ry = reactionCols[jid3 + '_fy'] != null ? x[reactionCols[jid3 + '_fy']] : 0;
-      if (rx || ry) reactions[jid3] = { fx: rx, fy: ry };
+      if (supports[jid3]) reactions[jid3] = { fx: rx, fy: ry };
     }
-    return { ok: true, memberForces: memberForces, reactions: reactions };
+    return { ok: true, memberForces: memberForces, reactions: reactions, maxResidualKN: maxResidualKN };
   }
 
   // Build the truss geometry (joints + members + loads + supports) for a given style + parameters.
@@ -386,21 +508,31 @@
   // loadOpts:
   //   { mode: 'uniform', loadPerJoint: kN }            — load on every top joint
   //   { mode: 'vehicle', position: 0..1, totalKN: kN } — single vehicle, distributed
-  //     to nearest two TOP joints by linear-interpolation (lever rule); reduces to
-  //     a single joint when exactly over it.
+  //     to adjacent deck panel points by the lever rule; end segments include
+  //     the supports, preserving both total force and moment across the span.
   function buildTrussSpec(style, span, nBays, height, loadOpts) {
     var n = nBays, a = span / n, hh = height;
     var joints = [], members = [], loads = {}, supports = {};
+    if (!isFinite(span) || !(span > 0) || !isFinite(height) || !(height > 0) ||
+        !Number.isInteger(nBays) || nBays < 2 || nBays > 100 || ['warren', 'pratt', 'howe', 'ktruss'].indexOf(style) < 0) {
+      return { joints: joints, members: members, loads: loads, supports: supports, ok: false, reason: 'Invalid geometry or truss style.' };
+    }
 
     // Default to uniform for back-compat (loadOpts can be a number)
-    var opts = (typeof loadOpts === 'number') ? { mode: 'uniform', loadPerJoint: loadOpts } : (loadOpts || { mode: 'uniform', loadPerJoint: 50 });
+    var opts = Object.assign({}, (typeof loadOpts === 'number') ? { mode: 'uniform', loadPerJoint: loadOpts } : (loadOpts || {}));
+    opts.mode = opts.mode === 'vehicle' ? 'vehicle' : 'uniform';
+    opts.loadPerJoint = (typeof opts.loadPerJoint === 'number' && isFinite(opts.loadPerJoint)) ? Math.max(0, opts.loadPerJoint) : 50;
+    opts.totalKN = (typeof opts.totalKN === 'number' && isFinite(opts.totalKN)) ? Math.max(0, opts.totalKN) : 150;
+    opts.position = (typeof opts.position === 'number' && isFinite(opts.position)) ? Math.max(0, Math.min(1, opts.position)) : 0.5;
 
     function vehicleLoadsForTops(topJoints, topX) {
-      // Distribute opts.totalKN at vehicle position (0..1 along span) to the nearest two top joints
+      // Include the approach panel from each support to the first top joint.
+      topJoints = ['B0'].concat(topJoints, ['B' + n]);
+      topX = [0].concat(topX, [span]);
       var pos = Math.max(0, Math.min(1, opts.position));
       var vx = pos * span;
       // Find the bracketing top joints
-      var lows = [], result = {};
+      var result = {};
       for (var ti = 0; ti < topJoints.length; ti++) result[topJoints[ti]] = 0;
       // Edge cases: vehicle to the LEFT of leftmost top → put all load on leftmost.
       if (topX.length === 0) return result;
@@ -435,17 +567,24 @@
           if (vehLoads[tk] > 0) loads[tk] = { fx: 0, fy: -vehLoads[tk] };
         }
       } else {
-        for (var lt = 0; lt < n; lt++) loads['T' + lt] = { fx: 0, fy: -(opts.loadPerJoint || 50) };
+        for (var lt = 0; lt < n; lt++) loads['T' + lt] = { fx: 0, fy: -opts.loadPerJoint };
       }
     } else {
-      // pratt / howe (skip ktruss here — MOJ for ktruss is more complex)
+      // Pratt / Howe / K-truss. The K geometry is available for load and
+      // length accounting; its redundant web is not solved by this MOJ solver.
       for (var ii = 0; ii <= n; ii++) joints.push({ id: 'B' + ii, x: ii * a, y: 0 });
       for (var ij = 1; ij < n; ij++) joints.push({ id: 'T' + (ij - 1), x: ij * a, y: hh });
       for (var ic = 0; ic < n; ic++) members.push({ id: 'BC' + ic, j1: 'B' + ic, j2: 'B' + (ic + 1) });
       var topCount = n - 1;
       for (var iT = 0; iT < topCount - 1; iT++) members.push({ id: 'TC' + iT, j1: 'T' + iT, j2: 'T' + (iT + 1) });
       // Verticals
-      for (var iv = 0; iv < topCount; iv++) members.push({ id: 'V' + iv, j1: 'B' + (iv + 1), j2: 'T' + iv });
+      for (var iv = 0; iv < topCount; iv++) {
+        if (style === 'ktruss') {
+          joints.push({ id: 'M' + iv, x: (iv + 1) * a, y: hh / 2 });
+          members.push({ id: 'VL' + iv, j1: 'B' + (iv + 1), j2: 'M' + iv });
+          members.push({ id: 'VU' + iv, j1: 'M' + iv, j2: 'T' + iv });
+        } else members.push({ id: 'V' + iv, j1: 'B' + (iv + 1), j2: 'T' + iv });
+      }
       // End diagonals from support corners up to first/last top joint
       members.push({ id: 'ED0', j1: 'B0', j2: 'T0' });
       members.push({ id: 'ED1', j1: 'B' + n, j2: 'T' + (topCount - 1) });
@@ -463,6 +602,17 @@
           if (ih < mid2) members.push({ id: 'ID' + ih, j1: 'B' + (ih + 1), j2: 'T' + (ih + 1) });
           else members.push({ id: 'ID' + ih, j1: 'T' + ih, j2: 'B' + (ih + 2) });
         }
+      } else if (style === 'ktruss') {
+        for (var ik = 0; ik < topCount; ik++) {
+          if (ik > 0) {
+            members.push({ id: 'KL' + ik, j1: 'M' + ik, j2: 'T' + (ik - 1) });
+            members.push({ id: 'KBL' + ik, j1: 'M' + ik, j2: 'B' + ik });
+          }
+          if (ik < topCount - 1) {
+            members.push({ id: 'KR' + ik, j1: 'M' + ik, j2: 'T' + (ik + 1) });
+            members.push({ id: 'KBR' + ik, j1: 'M' + ik, j2: 'B' + (ik + 2) });
+          }
+        }
       }
       // Loads
       if (opts.mode === 'vehicle') {
@@ -473,7 +623,7 @@
           if (vehLoads2[tk2] > 0) loads[tk2] = { fx: 0, fy: -vehLoads2[tk2] };
         }
       } else {
-        for (var lt2 = 0; lt2 < topCount; lt2++) loads['T' + lt2] = { fx: 0, fy: -(opts.loadPerJoint || 50) };
+        for (var lt2 = 0; lt2 < topCount; lt2++) loads['T' + lt2] = { fx: 0, fy: -opts.loadPerJoint };
       }
     }
     // Pin support at B0, roller at Bn
@@ -521,32 +671,52 @@
   // settings object and returns numbers, so the design brief and the Stress Test tab
   // can render the same verdict without either one re-deriving it. They used to, and
   // they disagreed — see the note at the top of this change.
+  var BRIDGE_MODEL_VERSION = 'bridge-crossing-v2';
+
   function bridgeGoverningAnalysis(d, mat) {
+    d = bridgeNormalizeSettings(d);
+    if (!mat || !(mat.yieldMPa > 0) || !isFinite(mat.yieldMPa) || !(mat.modulusGPa > 0) || !isFinite(mat.modulusGPa)) {
+      mat = MATERIALS.filter(function(material) { return material.id === d.materialId; })[0];
+    }
     var analysis = analyzeTruss(d.span, d.height, d.nBays, d.loadPerJoint);
     var trussStyle = d.trussStyle || 'warren';
     var supportsMOJ = trussStyle !== 'ktruss';
     var loadMode = d.loadMode || 'uniform';
     var loadOpts = loadMode === 'vehicle'
-      ? { mode: 'vehicle', position: (typeof d.vehiclePos === 'number' && isFinite(d.vehiclePos)) ? d.vehiclePos : 0.5, totalKN: d.vehicleLoad || 150 }
+      ? { mode: 'vehicle', position: d.vehiclePos, totalKN: d.vehicleLoad }
       : { mode: 'uniform', loadPerJoint: d.loadPerJoint };
-    var spec = supportsMOJ ? buildTrussSpec(trussStyle, d.span, d.nBays, d.height, loadOpts) : null;
-    var moj = spec ? solveTrussMOJ(spec.joints, spec.members, spec.loads, spec.supports) : { ok: false };
+    var spec = buildTrussSpec(trussStyle, d.span, d.nBays, d.height, loadOpts);
+    var moj = supportsMOJ ? solveTrussMOJ(spec.joints, spec.members, spec.loads, spec.supports) : { ok: false, reason: 'K-truss internal forces use a deep-beam approximation.' };
+    Object.assign(analysis, bridgeSummarizeTruss(spec, d.span));
+    analysis.theta = Math.atan2(trussStyle === 'warren' ? 2 * d.height : d.height, analysis.a);
+    analysis.diagAngleDeg = analysis.theta * 180 / Math.PI;
+    analysis.maxChord = analysis.Mmax / d.height;
+    var netLeftShear = analysis.reactionsLeft + ((spec.loads.B0 || {}).fy || 0);
+    var netRightShear = analysis.reactionsRight + ((spec.loads['B' + d.nBays] || {}).fy || 0);
+    analysis.maxDiag = Math.max(Math.abs(netLeftShear), Math.abs(netRightShear)) / Math.sin(analysis.theta);
+    var governingStrength = { id: 'none (no demand)', forceKN: 0 };
     // If MOJ succeeded, replace approximate maxChord + maxDiag with exact values
     if (moj.ok) {
       var maxAbsForce = 0;
       var maxChordExact = 0, maxDiagExact = 0;
       for (var fk in moj.memberForces) {
         var fv = Math.abs(moj.memberForces[fk]);
-        if (fv > maxAbsForce) maxAbsForce = fv;
+        if (fv > maxAbsForce) {
+          maxAbsForce = fv;
+          governingStrength = { id: fk, forceKN: fv };
+        }
         if (fk.indexOf('BC') === 0 || fk.indexOf('TC') === 0) {
           if (fv > maxChordExact) maxChordExact = fv;
         } else if (fk.indexOf('DL') === 0 || fk.indexOf('DR') === 0 || fk.indexOf('ED') === 0 || fk.indexOf('ID') === 0 || fk.indexOf('V') === 0) {
           if (fv > maxDiagExact) maxDiagExact = fv;
         }
       }
-      if (maxChordExact > 0) analysis.maxChord = maxChordExact;
-      if (maxDiagExact > 0) analysis.maxDiag = maxDiagExact;
+      analysis.maxChord = maxChordExact;
+      analysis.maxDiag = maxDiagExact;
+      analysis.reactionsLeft = moj.reactions.B0.fy;
+      analysis.reactionsRight = moj.reactions['B' + d.nBays].fy;
     }
+    analysis.maxForce = Math.max(analysis.maxChord, analysis.maxDiag);
     var stressChord = analysis.maxChord * 1000 / d.crossSectionMm2; // MPa
     var stressDiag = analysis.maxDiag * 1000 / d.crossSectionMm2; // MPa
     var maxStress = Math.max(stressChord, stressDiag);
@@ -556,14 +726,15 @@
     var I_mm4 = (sideMm * sideMm * sideMm * sideMm) / 12;
     var E_MPa = mat.modulusGPa * 1000;
     var braceEvery = Math.max(1, Math.min(d.nBays, d.lateralBraceEvery || 1));
-    var unbracedLenM = bridgeUnbracedLenM(d.span, d.nBays, braceEvery);
+    var lateralBracing = bridgeLateralBracing(spec.joints, braceEvery);
+    var unbracedLenM = lateralBracing.intervals.reduce(function(maximum, interval) { return Math.max(maximum, interval.lengthM); }, 0);
     var compressionCases = [];
     if (moj.ok && spec) {
       var jointByIdBuckling = {};
       spec.joints.forEach(function(joint) { jointByIdBuckling[joint.id] = joint; });
       spec.members.forEach(function(member) {
         var forceKN = moj.memberForces[member.id];
-        if (!(forceKN < -0.001)) return;
+        if (!(forceKN < 0)) return;
         var j1 = jointByIdBuckling[member.j1];
         var j2 = jointByIdBuckling[member.j2];
         if (!j1 || !j2) return;
@@ -571,30 +742,43 @@
         var dy = j2.y - j1.y;
         var ownLenM = Math.sqrt(dx * dx + dy * dy);
         var isTopChord = member.id.indexOf('TC') === 0;
-        var effLenM = isTopChord ? Math.max(ownLenM, unbracedLenM) : ownLenM;
+        // Each chord member belongs to one actual brace interval. The final
+        // interval can be shorter than the others; assigning the longest
+        // interval to every member hides the benefit of that end restraint.
+        var interval = isTopChord ? lateralBracing.intervals.filter(function(candidate) {
+          return Math.min(j1.x, j2.x) >= candidate.startM - 1e-9 && Math.max(j1.x, j2.x) <= candidate.endM + 1e-9;
+        })[0] : null;
+        var effLenM = interval ? Math.max(ownLenM, interval.lengthM) : ownLenM;
         compressionCases.push({
           id: member.id, forceKN: Math.abs(forceKN), lengthMm: effLenM * 1000,
+          ownLengthMm: ownLenM * 1000,
+          braceStartM: interval ? interval.startM : null, braceEndM: interval ? interval.endM : null,
           outOfPlane: isTopChord && effLenM > ownLenM + 1e-9
         });
       });
     }
-    if (!compressionCases.length) {
-      compressionCases.push({ id: 'top chord (approx.)', forceKN: Math.max(0.001, analysis.maxChord), lengthMm: (d.span / d.nBays) * 1000 });
+    if (!moj.ok && analysis.maxChord > 0) {
+      compressionCases.push({ id: 'top chord (approx.)', forceKN: analysis.maxChord, lengthMm: unbracedLenM * 1000, outOfPlane: braceEvery > 1 });
     }
+    if (!moj.ok && analysis.maxForce > 0) governingStrength = { id: 'member (approx.)', forceKN: analysis.maxForce };
     var governingCompression = null;
     compressionCases.forEach(function(memberCase) {
       var pcr = (Math.PI * Math.PI * E_MPa * I_mm4) / (memberCase.lengthMm * memberCase.lengthMm) / 1000;
-      var margin = pcr / Math.max(0.001, memberCase.forceKN);
+      var margin = pcr / memberCase.forceKN;
       if (!governingCompression || margin < governingCompression.margin) {
-        governingCompression = { id: memberCase.id, forceKN: memberCase.forceKN, lengthMm: memberCase.lengthMm, pcrKN: pcr, margin: margin, outOfPlane: !!memberCase.outOfPlane };
+        governingCompression = Object.assign({}, memberCase, { pcrKN: pcr, margin: margin, outOfPlane: !!memberCase.outOfPlane });
       }
     });
+    if (!governingCompression) {
+      governingCompression = { id: 'none (no compression)', forceKN: 0, lengthMm: 0, pcrKN: 0, margin: Infinity, outOfPlane: false };
+    }
     var bucklingMargin = governingCompression.margin;
     var buckles = bucklingMargin < 1;
     var bucklingMarginal = bucklingMargin >= 1 && bucklingMargin < 2;
     var yieldStatus = safetyFactor >= 2 ? 'safe' : safetyFactor >= 1 ? 'marginal' : 'failed';
     var bucklingStatus = !buckles && !bucklingMarginal ? 'safe' : bucklingMarginal ? 'marginal' : 'failed';
     return {
+      settings: d,
       analysis: analysis, spec: spec, moj: moj, trussStyle: trussStyle,
       // The cost optimiser sweeps material and cross-section over these same member
       // forces and lengths, so it needs the list, not just the winner.
@@ -602,7 +786,8 @@
       supportsMOJ: supportsMOJ, loadMode: loadMode,
       maxStress: maxStress, safetyFactor: safetyFactor,
       sideMm: sideMm, braceEvery: braceEvery, unbracedLenM: unbracedLenM,
-      governingCompression: governingCompression,
+      lateralBracing: lateralBracing,
+      governingCompression: governingCompression, governingStrength: governingStrength,
       pcrKN: governingCompression.pcrKN, bucklingMargin: bucklingMargin,
       buckles: buckles, bucklingMarginal: bucklingMarginal,
       governingLengthMm: governingCompression.lengthMm,
@@ -615,6 +800,98 @@
       // as strong as its first failure mode, and for slender members that is buckling.
       governingSF: Math.min(safetyFactor, bucklingMargin)
     };
+  }
+
+  // Shared by the Euler model and the 3D bracing geometry. The first and last
+  // top joints are always restrained, even when the last interval is shorter.
+  function bridgeLateralBracing(joints, braceEvery) {
+    var every = Math.max(1, Math.floor(Number(braceEvery) || 1));
+    var topStations = joints.filter(function(joint) { return joint.id.indexOf('T') === 0; })
+      .map(function(joint) { return joint.x; }).sort(function(a, b) { return a - b; });
+    var stations = topStations.filter(function(_, index) { return index % every === 0; });
+    if (topStations.length && stations[stations.length - 1] !== topStations[topStations.length - 1]) stations.push(topStations[topStations.length - 1]);
+    var intervals = [];
+    for (var index = 1; index < stations.length; index++) {
+      intervals.push({ startM: stations[index - 1], endM: stations[index], lengthM: stations[index] - stations[index - 1] });
+    }
+    return { stations: stations, intervals: intervals };
+  }
+
+  // A moving point load is transferred linearly between adjacent panel
+  // points. Exact truss forces therefore vary linearly on each interval, so
+  // their tension/compression extrema occur at the load-transfer points.
+  // Capacity is fixed for this design, making these positions sufficient for
+  // the full-crossing strength and Euler checks. Extra 2% samples only smooth
+  // the chart; they are not needed to establish the force envelope.
+  function bridgeCrossingAnalysis(input, mat, options) {
+    var d = bridgeNormalizeSettings(input);
+    var result = { ok: false, samples: [], worst: null, maxForce: 0, compressionCases: [], memberExtremes: [], criticalPositions: [] };
+    if (d.trussStyle === 'ktruss') {
+      result.reason = 'A full-crossing member envelope requires an exact truss solution. Choose Warren, Pratt, or Howe.';
+      return result;
+    }
+    var spec = buildTrussSpec(d.trussStyle, d.span, d.nBays, d.height, { mode: 'vehicle', totalKN: d.vehicleLoad, position: 0 });
+    var positions = [0, 1];
+    spec.joints.forEach(function(joint) { if (joint.id.indexOf('T') === 0) positions.push(joint.x / d.span); });
+    positions.sort(function(a, b) { return a - b; });
+    result.criticalPositions = positions.slice();
+    if (options && options.includeSamples) {
+      for (var step = 0; step <= 50; step++) positions.push(step / 50);
+      positions.sort(function(a, b) { return a - b; });
+      positions = positions.filter(function(position, index) { return !index || position - positions[index - 1] > 1e-10; });
+    }
+    var extremesById = Object.create(null), compressionById = Object.create(null);
+    spec.members.forEach(function(member) {
+      var extreme = { id: member.id, tensionKN: 0, tensionPosition: null, compressionKN: 0, compressionPosition: null,
+        worstSF: null, worstPosition: null, governingMode: 'none' };
+      extremesById[member.id] = extreme;
+      result.memberExtremes.push(extreme);
+    });
+    for (var positionIndex = 0; positionIndex < positions.length; positionIndex++) {
+      var position = positions[positionIndex];
+      var gov = bridgeGoverningAnalysis(Object.assign({}, d, { loadMode: 'vehicle', vehiclePos: position }), mat);
+      if (!gov.moj.ok) {
+        result.reason = gov.moj.reason || 'The truss force calculation could not be completed.';
+        return result;
+      }
+      var hasDemand = gov.analysis.maxForce > 0;
+      var mode = !hasDemand ? 'none' : gov.bucklingMargin <= gov.safetyFactor ? 'buckling' : 'strength';
+      var sample = { position: position, sf: hasDemand && isFinite(gov.governingSF) ? gov.governingSF : null,
+        member: mode === 'buckling' ? gov.governingCompression.id : mode === 'strength' ? gov.governingStrength.id : null,
+        mode: mode, status: gov.status };
+      result.samples.push(sample);
+      if (sample.sf != null && (!result.worst || sample.sf < result.worst.sf - 1e-10)) result.worst = sample;
+      result.maxForce = Math.max(result.maxForce, gov.analysis.maxForce);
+      var currentCompression = Object.create(null);
+      gov.compressionCases.forEach(function(memberCase) {
+        currentCompression[memberCase.id] = memberCase;
+        var oldCase = compressionById[memberCase.id];
+        if (!oldCase || memberCase.forceKN > oldCase.forceKN + 1e-10) {
+          compressionById[memberCase.id] = Object.assign({}, memberCase, { position: position });
+        }
+      });
+      spec.members.forEach(function(member) {
+        var force = gov.moj.memberForces[member.id], extreme = extremesById[member.id];
+        if (force > extreme.tensionKN + 1e-10) { extreme.tensionKN = force; extreme.tensionPosition = position; }
+        if (-force > extreme.compressionKN + 1e-10) { extreme.compressionKN = -force; extreme.compressionPosition = position; }
+        if (!force) return;
+        var strengthSF = gov.safetyFactor * gov.analysis.maxForce / Math.abs(force);
+        var compressed = currentCompression[member.id];
+        // E and I are shared for all members, so scale the governing Euler
+        // margin by force and length ratios without re-resolving material.
+        var bucklingSF = compressed ? gov.bucklingMargin * gov.governingCompression.forceKN / compressed.forceKN *
+          Math.pow(gov.governingCompression.lengthMm / compressed.lengthMm, 2) : Infinity;
+        var sf = Math.min(strengthSF, bucklingSF);
+        if (isFinite(sf) && (extreme.worstSF == null || sf < extreme.worstSF - 1e-10)) {
+          extreme.worstSF = sf;
+          extreme.worstPosition = position;
+          extreme.governingMode = bucklingSF <= strengthSF ? 'buckling' : 'strength';
+        }
+      });
+    }
+    spec.members.forEach(function(member) { if (compressionById[member.id]) result.compressionCases.push(compressionById[member.id]); });
+    result.ok = true;
+    return result;
   }
 
   function bridgeUnbracedLenM(span, nBays, braceEvery) {
@@ -644,7 +921,7 @@
    * mode the elevation could never show), and otherwise it bows within the
    * plane, perpendicular to its own axis.
    */
-  function bridgeAddBowedMember(THREE, group, p1, p2, colorHex, thick, amp, outOfPlane) {
+  function bridgeAddBowedMember(THREE, group, p1, p2, colorHex, thick, amp, outOfPlane, interval) {
     var SEG = 12;
     var pts = [];
     var bow;
@@ -659,7 +936,8 @@
     for (var i = 0; i <= SEG; i++) {
       var t = i / SEG;
       var base = new THREE.Vector3().lerpVectors(p1, p2, t);
-      base.addScaledVector(bow, amp * Math.sin(Math.PI * t));
+      var phase = interval ? Math.max(0, Math.min(1, (base.x - interval.startX) / (interval.endX - interval.startX))) : t;
+      base.addScaledVector(bow, amp * Math.sin(Math.PI * phase));
       pts.push(base);
     }
     var curve = new THREE.CatmullRomCurve3(pts);
@@ -703,6 +981,9 @@
         trussPlanes: S.trussPlanes || 0,
         bowedMember: S.bowedMember || null,
         bowedAxis: S.bowedAxis || null,
+        bowedInterval: S.bowedInterval || null,
+        bowedMembers: S.bowedMembers || [],
+        braceStations: S.braceStations || [],
         extent: S.extent || null
       };
     },
@@ -719,6 +1000,33 @@
       var jointById = {};
       for (i = 0; i < m.joints.length; i++) jointById[m.joints[i].id] = m.joints[i];
 
+      var every = Math.max(1, Math.min(nBays, m.braceEvery || 1));
+      var lateralBracing = bridgeLateralBracing(m.joints, every);
+      var bowedMember = m.members.filter(function(member) { return member.id === m.bowedId; })[0];
+      var bowedInterval = null;
+      if (m.bowOutOfPlane && bowedMember && bowedMember.id.indexOf('TC') === 0) {
+        var bowedStart = jointById[bowedMember.j1], bowedEnd = jointById[bowedMember.j2];
+        if (bowedStart && bowedEnd) {
+          // The model supplies its governing interval. Match it to real braces;
+          // older callers can still derive the interval from the same helper.
+          var candidateIntervals = lateralBracing.intervals.filter(function(interval) {
+            return Math.min(bowedStart.x, bowedEnd.x) >= interval.startM - 1e-9
+              && Math.max(bowedStart.x, bowedEnd.x) <= interval.endM + 1e-9;
+          });
+          bowedInterval = candidateIntervals.filter(function(interval) {
+            return Math.abs(interval.startM - m.braceStartM) < 1e-9 && Math.abs(interval.endM - m.braceEndM) < 1e-9;
+          })[0] || candidateIntervals[0] || null;
+          if (bowedInterval && !(bowedInterval.lengthM > Math.abs(bowedEnd.x - bowedStart.x) + 1e-9)) bowedInterval = null;
+        }
+      }
+      var lateralAmplitude = halfW * 0.55;
+      function moveTopJoint(point, joint) {
+        if (!bowedInterval || joint.id.indexOf('T') !== 0 || joint.x < bowedInterval.startM || joint.x > bowedInterval.endM) return;
+        var fraction = (joint.x - bowedInterval.startM) / bowedInterval.lengthM;
+        point.z += (point.z >= 0 ? 1 : -1) * lateralAmplitude * Math.sin(Math.PI * fraction);
+      }
+      var bowedMembers = [];
+
       for (var pi = 0; pi < planes.length; pi++) {
         var z = planes[pi];
         for (i = 0; i < m.members.length; i++) {
@@ -728,18 +1036,36 @@
           var f = m.forces[mem.id];
           var isTension = f == null ? true : f > 0;
           var ratio = f == null ? 0.4 : Math.max(0.22, Math.min(1, Math.abs(f) / maxF));
-          var rgb = isTension ? BRIDGE_TENSION_RGB : BRIDGE_COMPRESSION_RGB;
+          var rgb = f == null || Math.abs(f) < 0.001 ? [148, 163, 184] : isTension ? BRIDGE_TENSION_RGB : BRIDGE_COMPRESSION_RGB;
           // Fade toward the deep background at low force so loaded members read.
           var mix = 0.35 + 0.65 * ratio;
           var hex = (Math.round(rgb[0] * mix) << 16) | (Math.round(rgb[1] * mix) << 8) | Math.round(rgb[2] * mix);
           var thick = (0.06 + 0.10 * ratio) * Math.max(1, span / 30);
           var a = new THREE.Vector3(j1.x - span / 2, j1.y, z);
           var b = new THREE.Vector3(j2.x - span / 2, j2.y, z);
-          if (m.bowedId && mem.id === m.bowedId) {
+          var intervalChord = bowedInterval && mem.id.indexOf('TC') === 0
+            && Math.min(j1.x, j2.x) >= bowedInterval.startM - 1e-9 && Math.max(j1.x, j2.x) <= bowedInterval.endM + 1e-9;
+          var mesh;
+          if (intervalChord) {
+            // One continuous, deliberately exaggerated half-wave spans the
+            // unbraced chord. Its intermediate joints move together, so the
+            // attached web members remain connected. This is a mode sketch,
+            // not a post-buckling displacement or force solution.
+            mesh = bridgeAddBowedMember(THREE, S.model, a, b, 0xfbbf24, thick * 1.5, lateralAmplitude, true,
+              { startX: bowedInterval.startM - span / 2, endX: bowedInterval.endM - span / 2 });
+          } else if (m.bowedId && mem.id === m.bowedId) {
             var amp = m.bowOutOfPlane ? halfW * 0.55 : Math.max(0.35, height * 0.16);
-            bridgeAddBowedMember(THREE, S.model, a, b, 0xfbbf24, thick * 1.5, amp, m.bowOutOfPlane);
+            mesh = bridgeAddBowedMember(THREE, S.model, a, b, 0xfbbf24, thick * 1.5, amp, m.bowOutOfPlane);
           } else {
-            bridgeAddMember(THREE, S.model, a, b, hex, thick);
+            moveTopJoint(a, j1);
+            moveTopJoint(b, j2);
+            mesh = bridgeAddMember(THREE, S.model, a, b, hex, thick);
+          }
+          if (mesh) {
+            mesh.userData.bridgeMemberId = mem.id;
+            mesh.userData.trussPlane = pi;
+            mesh.userData.illustrativeBow = !!(intervalChord || (m.bowedId && mem.id === m.bowedId));
+            if (mesh.userData.illustrativeBow && bowedMembers.indexOf(mem.id) === -1) bowedMembers.push(mem.id);
           }
           memberCount++;
         }
@@ -748,20 +1074,23 @@
       S.memberCount = memberCount;
       S.bowedMember = m.bowedId || null;
       S.bowedAxis = m.bowedId ? (m.bowOutOfPlane ? 'out-of-plane' : 'in-plane') : null;
+      S.bowedMembers = bowedMembers;
+      S.bowedInterval = bowedInterval ? { startM: bowedInterval.startM, endM: bowedInterval.endM } : null;
 
       // Lateral bracing across the top chords, every `braceEvery` panel points.
       // This is the member the failure text keeps telling students to add.
       var braceCount = 0;
       var bay = span / Math.max(1, nBays);
-      var every = Math.max(1, Math.min(nBays, m.braceEvery || 1));
+      var braceStations = lateralBracing.stations;
+      S.braceStations = braceStations.slice();
       // Cool grey, not amber: the palette is red = tension, blue = compression,
       // grey = bracing, and amber reserved for the one member that has actually
       // failed. Sharing a hue between "here is your bracing" and "here is your
       // failure" would undo the point of drawing either.
       var braceThick = 0.10 * Math.max(1, span / 30);
-      for (var bx = 0; bx + every <= nBays; bx += every) {
-        var x0 = bx * bay - span / 2;
-        var x1 = (bx + every) * bay - span / 2;
+      for (var bx = 0; bx < braceStations.length - 1; bx++) {
+        var x0 = braceStations[bx] - span / 2;
+        var x1 = braceStations[bx + 1] - span / 2;
         bridgeAddMember(THREE, S.model, new THREE.Vector3(x0, height, -halfW), new THREE.Vector3(x1, height, halfW), 0xcbd5e1, braceThick);
         bridgeAddMember(THREE, S.model, new THREE.Vector3(x0, height, halfW), new THREE.Vector3(x1, height, -halfW), 0xcbd5e1, braceThick);
         // The transverse strut that actually shortens the unbraced length.
@@ -769,8 +1098,11 @@
         braceCount += 3;
       }
       // The first transverse strut, at the left portal, so both ends read as held.
-      bridgeAddMember(THREE, S.model, new THREE.Vector3(-span / 2, height, -halfW), new THREE.Vector3(-span / 2, height, halfW), 0xe2e8f0, braceThick * 1.35);
-      braceCount += 1;
+      if (braceStations.length) {
+        var firstBraceX = braceStations[0] - span / 2;
+        bridgeAddMember(THREE, S.model, new THREE.Vector3(firstBraceX, height, -halfW), new THREE.Vector3(firstBraceX, height, halfW), 0xe2e8f0, braceThick * 1.35);
+        braceCount += 1;
+      }
       S.braceCount = braceCount;
 
       // Floor beams at every bottom panel point, then the deck slab.
@@ -783,6 +1115,32 @@
       S.deck = new THREE.Mesh(deckGeo, deckMat);
       S.deck.position.set(0, 0.08, 0);
       S.model.add(S.deck);
+
+      // Keep the moving point-load location visible in the default 3D view.
+      // This is a marker for the prescribed load, not a vehicle dynamics model.
+      if (m.loadMode === 'vehicle') {
+        var truckScale = Math.max(0.65, span / 35);
+        var truck = new THREE.Group();
+        var body = new THREE.Mesh(new THREE.BoxGeometry(1.5 * truckScale, 0.65 * truckScale, 0.75 * truckScale),
+          new THREE.MeshLambertMaterial({ color: 0x10b981 }));
+        body.position.set(-0.2 * truckScale, 0.7 * truckScale, 0);
+        truck.add(body);
+        var cab = new THREE.Mesh(new THREE.BoxGeometry(0.65 * truckScale, 0.55 * truckScale, 0.75 * truckScale),
+          new THREE.MeshLambertMaterial({ color: 0x7dd3fc }));
+        cab.position.set(0.85 * truckScale, 0.65 * truckScale, 0);
+        truck.add(cab);
+        [-0.65, 0.8].forEach(function(wx) {
+          [-0.4, 0.4].forEach(function(wz) {
+            var wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.22 * truckScale, 0.22 * truckScale, 0.12 * truckScale, 10),
+              new THREE.MeshLambertMaterial({ color: 0x94a3b8 }));
+            wheel.rotation.x = Math.PI / 2;
+            wheel.position.set(wx * truckScale, 0.3 * truckScale, wz * truckScale);
+            truck.add(wheel);
+          });
+        });
+        truck.position.set((m.vehiclePos - 0.5) * span, 0.15, 0);
+        S.model.add(truck);
+      }
 
       S.extent = { w: span, h: height, d: halfW * 2 };
       S.target = new THREE.Vector3(0, height * 0.45, 0);
@@ -837,6 +1195,8 @@
       // (Rules of Hooks — otherwise React throws "Rendered more hooks than
       // during the previous render" the first time the lab opens).
       var _bridgeACRef = React.useRef ? React.useRef(null) : { current: null };
+      var _bridgeDemandRef = React.useRef ? React.useRef(null) : { current: null };
+      var _bridgeInspectRef = React.useRef ? React.useRef(null) : { current: null };
 
       var DEFAULT_BRIDGE_LAB_STATE = {
         tab: 'build',
@@ -879,7 +1239,98 @@
           }});
         });
       }
-      var d = Object.assign({}, DEFAULT_BRIDGE_LAB_STATE, (labToolData && labToolData.bridgeLab) || {});
+      var d = bridgeNormalizeSettings(Object.assign({}, DEFAULT_BRIDGE_LAB_STATE, (labToolData && labToolData.bridgeLab) || {}));
+
+      // Playback belongs to this mounted lab. Restoring a saved design must not
+      // start motion, and leaving the test must release its timer immediately.
+      var bridgeDriveArmed = React.useRef(false);
+      var bridgeViewerRoot = React.useRef(null);
+      var bridgeFallbackFocus = React.useRef(false);
+      var bridgeHadViewFailure = React.useRef(BridgeGL.status() === 'failed');
+      var bridgeViewerState = React.useState(BridgeGL.status());
+      React.useEffect(function() {
+        if (d.tab !== 'build') return;
+        function viewStatusChanged(next) {
+          if (next === 'failed') {
+            var stage = bridgeViewerRoot.current && bridgeViewerRoot.current.querySelector('[data-allo-fs-stage]');
+            bridgeFallbackFocus.current = !!(stage && stage.contains(document.activeElement));
+            bridgeHadViewFailure.current = true;
+            bridgeDriveArmed.current = false;
+            setLabToolData(function(prev) {
+              var saved = prev && prev.bridgeLab;
+              if (!saved || (saved.bridgeView === '2d' && !saved.autoDriving)) return prev;
+              return Object.assign({}, prev, { bridgeLab: Object.assign({}, saved, { bridgeView: '2d', autoDriving: false }) });
+            });
+          }
+          bridgeViewerState[1](next);
+        }
+        BridgeGL.onStatusChange(viewStatusChanged);
+        viewStatusChanged(BridgeGL.status());
+        return function() { BridgeGL.onStatusChange(null); };
+      }, [d.tab, setLabToolData]);
+      React.useEffect(function() {
+        if (d.tab !== 'build' || !bridgeFallbackFocus.current || !bridgeViewerRoot.current) return;
+        var elevation = bridgeViewerRoot.current.querySelector('[data-bridge-elevation]');
+        if (elevation) {
+          bridgeFallbackFocus.current = false;
+          elevation.focus();
+        }
+      }, [d.tab, d.bridgeView, bridgeViewerState[0]]);
+      React.useEffect(function() {
+        return function() {
+          bridgeDrag.current = null;
+          var liveRegion = document.getElementById('allo-live-bridgelab');
+          if (liveRegion) liveRegion.remove();
+        };
+      }, []);
+      var bridgeMotionState = React.useState(function() {
+        try { return !!window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; }
+      });
+      var bridgeReducedMotion = bridgeMotionState[0];
+      React.useEffect(function() {
+        var media;
+        try { media = window.matchMedia('(prefers-reduced-motion: reduce)'); } catch (e) { return; }
+        function changed() { bridgeMotionState[1](!!media.matches); }
+        changed();
+        if (media.addEventListener) media.addEventListener('change', changed);
+        else if (media.addListener) media.addListener(changed);
+        return function() {
+          if (media.removeEventListener) media.removeEventListener('change', changed);
+          else if (media.removeListener) media.removeListener(changed);
+        };
+      }, []);
+      React.useEffect(function() {
+        if (!d.autoDriving) return;
+        function stopDrive() {
+          bridgeDriveArmed.current = false;
+          setLabToolData(function(prev) {
+            var saved = prev && prev.bridgeLab;
+            if (!saved || !saved.autoDriving) return prev;
+            return Object.assign({}, prev, { bridgeLab: Object.assign({}, saved, { autoDriving: false }) });
+          });
+        }
+        if (!bridgeDriveArmed.current || d.tab !== 'build' || d.loadMode !== 'vehicle' || bridgeReducedMotion || document.hidden) {
+          stopDrive();
+          return;
+        }
+        var timer = setInterval(function() {
+          setLabToolData(function(prev) {
+            var saved = prev && prev.bridgeLab;
+            if (!saved || !saved.autoDriving || (saved.tab || 'build') !== 'build' || saved.loadMode !== 'vehicle') return prev;
+            var current = (typeof saved.vehiclePos === 'number' && isFinite(saved.vehiclePos)) ? saved.vehiclePos : 0;
+            var position = Math.min(1, Math.max(0, current) + 0.02);
+            return Object.assign({}, prev, { bridgeLab: Object.assign({}, saved, {
+              vehiclePos: position, autoDriving: position < 1
+            }) });
+          });
+        }, 120);
+        function onVisibility() { if (document.hidden) stopDrive(); }
+        document.addEventListener('visibilitychange', onVisibility);
+        return function() {
+          clearInterval(timer);
+          document.removeEventListener('visibilitychange', onVisibility);
+        };
+      }, [d.autoDriving, d.tab, d.loadMode, bridgeReducedMotion, setLabToolData]);
 
       // ── Web Audio API Sound Effects Engine ──
       // (_bridgeACRef is declared above the loading gate — Rules of Hooks.)
@@ -1016,7 +1467,7 @@
       // The GOVERNING factor, not the yield factor: whichever mode fails first.
       var bridgeBriefSF = bridgeBriefGov.governingSF;
       var bridgeBriefStatus = bridgeBriefGov.status;
-      var bridgeBriefStatusCopy = bridgeBriefStatus === 'safe'
+      var bridgeBriefStatusCopy = bridgeBriefGov.analysis.maxForce < 1e-9 ? __alloT('stem.bridgelab.no_member_demand', 'No member demand') : bridgeBriefStatus === 'safe'
         ? __alloT('stem.bridgelab.brief_safe', 'Ready for testing')
         : bridgeBriefStatus === 'marginal'
           ? __alloT('stem.bridgelab.brief_marginal', 'Needs revision')
@@ -1045,9 +1496,330 @@
 
       function sectionCard(title, children, accent) {
         accent = accent || AMBER;
-        return h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + accent, marginBottom: 12 } },
-          title ? h('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, title) : null,
+        return h('section', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + accent, marginBottom: 12 } },
+          title ? h('h3', { style: { marginTop: 0, fontSize: 14, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, title) : null,
           children
+        );
+      }
+
+      // Trials recalculate the current-position verdict from their editable inputs.
+      // A completed crossing is retained separately as versioned test evidence.
+      var bridgeDesignKeys = ['span', 'height', 'nBays', 'materialId', 'crossSectionMm2',
+        'trussStyle', 'loadMode', 'loadPerJoint', 'vehicleLoad', 'vehiclePos', 'lateralBraceEvery'];
+      function bridgeDesignInputs(settings) {
+        var result = {};
+        bridgeDesignKeys.forEach(function(key) { result[key] = settings[key]; });
+        return result;
+      }
+      function bridgeFactor(value) { return isFinite(value) ? value.toFixed(2) : __alloT('stem.bridgelab.no_demand', 'No demand'); }
+      function bridgeSweepSignature(settings) {
+        var inputs = bridgeDesignInputs(bridgeNormalizeSettings(settings));
+        delete inputs.vehiclePos;
+        if (inputs.loadMode === 'vehicle') delete inputs.loadPerJoint;
+        return JSON.stringify({ version: BRIDGE_MODEL_VERSION, inputs: inputs });
+      }
+      function bridgeSampleValid(sample) {
+        return sample && typeof sample.position === 'number' && isFinite(sample.position)
+          && sample.position >= 0 && sample.position <= 1
+          && ['buckling', 'strength', 'none'].indexOf(sample.mode) !== -1
+          && ['safe', 'marginal', 'failed'].indexOf(sample.status) !== -1
+          && (sample.sf === null ? sample.mode === 'none' && sample.member === null
+            : sample.mode !== 'none' && typeof sample.member === 'string' && sample.member.length > 0
+              && typeof sample.sf === 'number' && isFinite(sample.sf) && sample.sf >= 0);
+      }
+      function bridgeExpectedCrossingPositions(settings) {
+        var inputs = bridgeNormalizeSettings(settings);
+        var spec = buildTrussSpec(inputs.trussStyle, inputs.span, inputs.nBays, inputs.height,
+          { mode: 'vehicle', totalKN: inputs.vehicleLoad, position: 0 });
+        var positions = spec.joints.filter(function(joint) { return joint.id.indexOf('T') === 0; })
+          .map(function(joint) { return joint.x / inputs.span; });
+        for (var step = 0; step <= 50; step++) positions.push(step / 50);
+        positions.sort(function(a, b) { return a - b; });
+        return positions.filter(function(position, index) { return !index || Math.abs(position - positions[index - 1]) > 1e-10; });
+      }
+      function bridgeValidCrossingSummary(settings, value) {
+        return !!(value && value.version === BRIDGE_MODEL_VERSION && value.signature === bridgeSweepSignature(settings)
+          && Number.isInteger(value.sampleCount) && value.sampleCount === bridgeExpectedCrossingPositions(settings).length
+          && (value.worst === null ? bridgeNormalizeSettings(settings).vehicleLoad === 0 : bridgeSampleValid(value.worst) && value.worst.sf !== null));
+      }
+      function bridgeValidSweep(settings, value) {
+        if (!value || value.version !== BRIDGE_MODEL_VERSION || value.signature !== bridgeSweepSignature(settings)
+          || !Array.isArray(value.samples) || value.samples.length < 2 || value.samples.length > 100
+          || value.samples[0]?.position !== 0 || value.samples[value.samples.length - 1]?.position !== 1) return false;
+        var expectedPositions = bridgeExpectedCrossingPositions(settings);
+        if (value.samples.length !== expectedPositions.length) return false;
+        var minimum = null;
+        for (var index = 0; index < value.samples.length; index++) {
+          var sample = value.samples[index];
+          if (!bridgeSampleValid(sample) || Math.abs(sample.position - expectedPositions[index]) > 1e-10
+            || (index && sample.position <= value.samples[index - 1].position)) return false;
+          if (sample.sf !== null && (!minimum || sample.sf < minimum.sf - 1e-10)) minimum = sample;
+        }
+        if (!minimum) return value.worst === null && bridgeNormalizeSettings(settings).vehicleLoad === 0;
+        return bridgeSampleValid(value.worst) && value.worst.position === minimum.position
+          && value.worst.sf === minimum.sf && value.worst.member === minimum.member && value.worst.mode === minimum.mode;
+      }
+      function bridgeCreateSweep(settings, mat) {
+        var result = bridgeCrossingAnalysis(settings, mat, { includeSamples: true });
+        if (!result.ok) return null;
+        return Object.assign({}, result, { version: BRIDGE_MODEL_VERSION, signature: bridgeSweepSignature(settings) });
+      }
+      function bridgeInspectPosition(position, member) {
+        _bridgeInspectRef.current = true;
+        upd({ vehiclePos: position, inspectedMember: member || d.inspectedMember, bridgeView: '2d', autoDriving: false });
+      }
+      // Called unconditionally, like the five useEffect calls above it. The
+      // `if (React.useEffect)` guard this replaces made the hook conditional, which
+      // is the minified React #310 class the hook-order gate blocks: a stem tool's
+      // render(ctx) runs inline in the host, so a hook that only runs on some passes
+      // changes the host's hook count. React.useEffect is always present here, so the
+      // guard bought nothing and only moved the call into a branch.
+      React.useEffect(function() {
+        if (!_bridgeInspectRef.current) return;
+        _bridgeInspectRef.current = false;
+        var select = document.getElementById('bridge-member-select');
+        if (select) { select.focus(); if (typeof select.scrollIntoView === 'function') select.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+      });
+      var bridgeActionStyle = { padding: '9px 12px', minHeight: 40, borderRadius: 8,
+        border: '1px solid #64748b', background: '#0f172a', color: '#e2e8f0',
+        fontSize: 12, fontWeight: 700, cursor: 'pointer' };
+      var bridgeCellStyle = { padding: '8px 10px', textAlign: 'left', borderBottom: '1px solid #334155', verticalAlign: 'top' };
+
+      function renderBridgeTrials(gov, mat) {
+        var trials = Array.isArray(d.designTrials) ? d.designTrials.filter(function(trial) {
+          return trial && typeof trial === 'object' && trial.inputs && typeof trial.inputs === 'object';
+        }).slice(0, 4) : [];
+        var currentCost = gov.analysis.totalLen * d.crossSectionMm2 / 1e6 * mat.costPerM3;
+        return sectionCard(__alloT('stem.bridgelab.trials_title', 'Design notebook'),
+          h('div', { 'data-bridge-notebook': true },
+            h('p', { style: { margin: '0 0 10px', fontSize: 12, lineHeight: 1.6 } },
+              __alloT('stem.bridgelab.trials_evidence_hint', 'Predict what will happen, change one variable, then record what you observed. Save up to four trials with the design, your explanation, and any completed crossing test.')),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,240px),1fr))', gap: 10, marginBottom: 12 } },
+              h('label', { style: { fontSize: 12, fontWeight: 700 } },
+                __alloT('stem.bridgelab.trial_prediction_label', 'Prediction — before the change'),
+                h('textarea', { 'aria-label': __alloT('stem.bridgelab.trial_prediction_input', 'Design prediction'), rows: 3,
+                  value: typeof d.designPrediction === 'string' ? d.designPrediction : '',
+                  onChange: function(e) { upd({ designPrediction: e.target.value }); },
+                  placeholder: __alloT('stem.bridgelab.trial_prediction_placeholder', 'I predict that changing… will… because…'),
+                  style: { display: 'block', boxSizing: 'border-box', width: '100%', marginTop: 6, padding: 8, borderRadius: 6, border: '1px solid #64748b', background: '#0f172a', color: '#e2e8f0', font: 'inherit', fontWeight: 400, resize: 'vertical' } })),
+              h('label', { style: { fontSize: 12, fontWeight: 700 } },
+                __alloT('stem.bridgelab.trial_observation_label', 'Observation — after the test'),
+                h('textarea', { 'aria-label': __alloT('stem.bridgelab.trial_observation_input', 'Design observation'), rows: 3,
+                  value: typeof d.designObservation === 'string' ? d.designObservation : '',
+                  onChange: function(e) { upd({ designObservation: e.target.value }); },
+                  placeholder: __alloT('stem.bridgelab.trial_observation_placeholder', 'The result was… My evidence is… Next I would…'),
+                  style: { display: 'block', boxSizing: 'border-box', width: '100%', marginTop: 6, padding: 8, borderRadius: 6, border: '1px solid #64748b', background: '#0f172a', color: '#e2e8f0', font: 'inherit', fontWeight: 400, resize: 'vertical' } }))
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 12 } },
+              h('button', { type: 'button', style: bridgeActionStyle, disabled: trials.length >= 4,
+                onClick: function() {
+                  if (trials.length >= 4) return;
+                  var trialNumber = 1;
+                  while (trials.some(function(trial) { return trial.name === 'Trial ' + trialNumber; })) trialNumber++;
+                  var crossing = bridgeValidSweep(d, d.vehicleSweep) ? { version: d.vehicleSweep.version,
+                    signature: d.vehicleSweep.signature, sampleCount: d.vehicleSweep.samples.length,
+                    worst: d.vehicleSweep.worst ? Object.assign({}, d.vehicleSweep.worst) : null } : null;
+                  upd({ designTrials: trials.concat([{ name: String(d.designName || '').trim() || 'Trial ' + trialNumber,
+                    notes: String(d.designNotes || ''), prediction: typeof d.designPrediction === 'string' ? d.designPrediction : '',
+                    observation: typeof d.designObservation === 'string' ? d.designObservation : '',
+                    inputs: bridgeDesignInputs(d), crossing: crossing }]), autoDriving: false });
+                  announceStatus(__alloT('stem.bridgelab.trial_saved', 'Design saved to the notebook.'));
+                }
+              }, __alloT('stem.bridgelab.save_trial', 'Save current design')),
+              h('span', { style: { fontSize: 12, color: '#94a3b8' } }, trials.length + ' / 4'),
+              trials.length >= 4 ? h('span', { style: { fontSize: 12 } }, __alloT('stem.bridgelab.trials_full', 'Remove a trial to save another.')) : null,
+              h('button', { type: 'button', style: bridgeActionStyle, onClick: function() { upd({ tab: 'print', autoDriving: false }); } },
+                __alloT('stem.bridgelab.open_report', 'Open design report'))
+            ),
+            trials.length ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,240px),1fr))', gap: 10 } },
+              trials.map(function(trial, index) {
+                var inputs = bridgeNormalizeSettings(trial.inputs);
+                var trialMat = MATERIALS.find(function(m) { return m.id === inputs.materialId; }) || MATERIALS[3];
+                var result = bridgeGoverningAnalysis(inputs, trialMat);
+                var cost = result.analysis.totalLen * inputs.crossSectionMm2 / 1e6 * trialMat.costPerM3;
+                var savedCrossing = bridgeValidCrossingSummary(inputs, trial.crossing) ? trial.crossing : null;
+                var comparable = ['span', 'nBays', 'trussStyle', 'loadMode', 'loadPerJoint', 'vehicleLoad', 'vehiclePos'].every(function(key) {
+                  if (key === 'loadPerJoint' && inputs.loadMode === 'vehicle') return true;
+                  if ((key === 'vehicleLoad' || key === 'vehiclePos') && inputs.loadMode === 'uniform') return true;
+                  return inputs[key] === d[key];
+                });
+                return h('article', { key: index, style: { minWidth: 0, padding: 12, borderRadius: 8, background: '#0f172a', border: '1px solid #475569', overflowWrap: 'anywhere' } },
+                  h('h4', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 14 } }, String(trial.name || 'Trial ' + (index + 1))),
+                  h('p', { style: { margin: '0 0 8px', fontSize: 12, lineHeight: 1.6 } },
+                    inputs.trussStyle + ' · ' + inputs.span + ' m × ' + inputs.height + ' m · ' + inputs.nBays + ' bays · ' + trialMat.name + ' · ' + inputs.crossSectionMm2 + ' mm²'),
+                  h('p', { style: { margin: '0 0 8px', fontSize: 12 } },
+                    (inputs.loadMode === 'vehicle' ? inputs.vehicleLoad + ' kN at ' + Math.round(inputs.vehiclePos * 100) + '% of span' : inputs.loadPerJoint + ' kN per top joint') + ' · bracing every ' + inputs.lateralBraceEvery + ' panels'),
+                  h('strong', { style: { fontSize: 13, color: result.status === 'safe' ? '#86efac' : result.status === 'marginal' ? '#fbbf24' : '#fca5a5' } },
+                    (isFinite(result.governingSF) ? result.status.toUpperCase() : 'NO MEMBER DEMAND') + ' · SF ' + bridgeFactor(result.governingSF) + ' · $' + cost.toFixed(0)),
+                  h('p', { style: { fontSize: 12, lineHeight: 1.5 } }, inputs.loadMode === 'vehicle'
+                    ? (savedCrossing ? (savedCrossing.worst ? 'Saved crossing: SF ' + bridgeFactor(savedCrossing.worst.sf) + ' at ' + (savedCrossing.worst.position * 100).toFixed(1) + '% of span; ' + savedCrossing.worst.mode + '. ' : 'Saved crossing: no member demand. ') + savedCrossing.sampleCount + ' tested positions.'
+                      : 'Current-position result only. No matching crossing test was saved.')
+                    : 'Uniform loads applied at all top joints.'),
+                  h('p', { style: { fontSize: 12, lineHeight: 1.5 } }, comparable
+                    ? __alloT('stem.bridgelab.same_load_comparison', 'Same span and applied load. Current material cost change: ') + (currentCost - cost >= 0 ? '+' : '−') + '$' + Math.abs(currentCost - cost).toFixed(0)
+                    : __alloT('stem.bridgelab.different_load_comparison', 'Geometry or loading differs. Match the span, layout and applied load before comparing efficiency.')),
+                  trial.notes ? h('p', { style: { fontSize: 12, whiteSpace: 'pre-wrap', lineHeight: 1.5 } }, String(trial.notes)) : null,
+                  trial.prediction ? h('p', { style: { fontSize: 12, whiteSpace: 'pre-wrap', lineHeight: 1.5 } }, h('strong', null, 'Prediction: '), String(trial.prediction)) : null,
+                  trial.observation ? h('p', { style: { fontSize: 12, whiteSpace: 'pre-wrap', lineHeight: 1.5 } }, h('strong', null, 'Observation: '), String(trial.observation)) : null,
+                  h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                    h('button', { type: 'button', style: bridgeActionStyle, 'aria-label': 'Restore ' + String(trial.name || 'trial ' + (index + 1)),
+                      onClick: function() { upd(Object.assign({}, bridgeDesignInputs(inputs), { designName: String(trial.name || ''), designNotes: String(trial.notes || ''),
+                        designPrediction: String(trial.prediction || ''), designObservation: String(trial.observation || ''), autoDriving: false, vehicleSweep: null })); announceStatus(__alloT('stem.bridgelab.trial_restored', 'Saved design restored.')); }
+                    }, __alloT('stem.bridgelab.restore_trial', 'Restore')),
+                    h('button', { type: 'button', style: bridgeActionStyle, 'aria-label': 'Remove ' + String(trial.name || 'trial ' + (index + 1)),
+                      onClick: function() { upd({ designTrials: trials.filter(function(_, i) { return i !== index; }) }); announceStatus(__alloT('stem.bridgelab.trial_removed', 'Trial removed.')); }
+                    }, __alloT('stem.bridgelab.remove_trial', 'Remove'))
+                  )
+                );
+              })
+            ) : h('p', { style: { fontSize: 12, color: '#94a3b8', margin: 0 } }, __alloT('stem.bridgelab.no_trials', 'No trials yet. Save this design before your next change.'))
+          )
+        );
+      }
+
+      function renderBridgeInspector(gov, mat) {
+        if (!gov.moj.ok || !gov.spec) return null;
+        var joints = {};
+        gov.spec.joints.forEach(function(j) { joints[j.id] = j; });
+        var selected = gov.spec.members.find(function(m) { return m.id === d.inspectedMember; })
+          || gov.spec.members.find(function(m) { return m.id === gov.governingCompression.id; }) || gov.spec.members[0];
+        if (!selected) return null;
+        function memberValues(member) {
+          var force = gov.moj.memberForces[member.id];
+          var j1 = joints[member.j1], j2 = joints[member.j2];
+          var length = Math.hypot(j2.x - j1.x, j2.y - j1.y);
+          var stress = Math.abs(force) * 1000 / d.crossSectionMm2;
+          var compressed = gov.compressionCases.find(function(c) { return c.id === member.id; });
+          var strengthSF = stress > 1e-9 ? mat.yieldMPa / stress : Infinity;
+          var bucklingSF = compressed ? Math.PI * Math.PI * mat.modulusGPa * 1000 * d.crossSectionMm2 * d.crossSectionMm2 / 12 / (compressed.lengthMm * compressed.lengthMm) / 1000 / compressed.forceKN : Infinity;
+          return { force: force, length: length, stress: stress, sf: Math.min(strengthSF, bucklingSF),
+            kind: Math.abs(force) < 0.001 ? __alloT('stem.bridgelab.zero_force', 'Zero force') : force > 0 ? __alloT('stem.bridgelab.tension', 'Tension') : __alloT('stem.bridgelab.compression', 'Compression'), compressed: compressed };
+        }
+        var value = memberValues(selected);
+        var crossing = d.loadMode === 'vehicle' && bridgeValidSweep(d, d.vehicleSweep) ? d.vehicleSweep : null;
+        var extreme = crossing && Array.isArray(crossing.memberExtremes) ? crossing.memberExtremes.find(function(member) {
+          return member && member.id === selected.id && typeof member.tensionKN === 'number' && isFinite(member.tensionKN) && member.tensionKN >= 0
+            && typeof member.compressionKN === 'number' && isFinite(member.compressionKN) && member.compressionKN >= 0
+            && (member.tensionKN === 0 || typeof member.tensionPosition === 'number' && member.tensionPosition >= 0 && member.tensionPosition <= 1)
+            && (member.compressionKN === 0 || typeof member.compressionPosition === 'number' && member.compressionPosition >= 0 && member.compressionPosition <= 1);
+        }) : null;
+        function peakButton(label, force, position) {
+          return h('div', { style: { marginTop: 8 } },
+            h('span', null, label + ': ' + force.toFixed(2) + ' kN'),
+            force > 0 ? h('button', { type: 'button', style: Object.assign({}, bridgeActionStyle, { margin: '6px 0 0 8px' }),
+              onClick: function() { bridgeInspectPosition(position, selected.id); }
+            }, __alloT('stem.bridgelab.inspect_position_prefix', 'Inspect position') + ' ' + (position * 100).toFixed(1) + '%') : null
+          );
+        }
+        return sectionCard(__alloT('stem.bridgelab.inspector_title', 'Follow the load'),
+          h('div', { 'data-bridge-inspector': true },
+            h('p', { style: { margin: '0 0 10px', fontSize: 12, lineHeight: 1.6 } },
+              __alloT('stem.bridgelab.inspector_hint', 'Choose a member to inspect its force and margin. In the labelled 2D view, its identifier marks the same member. Positive forces pull; negative forces compress.')),
+            h('label', { htmlFor: 'bridge-member-select', style: { display: 'block', marginBottom: 6, fontWeight: 700, fontSize: 12 } }, __alloT('stem.bridgelab.inspect_member', 'Inspect member')),
+            h('select', { id: 'bridge-member-select', value: selected.id,
+              onChange: function(event) { upd({ inspectedMember: event.target.value, bridgeView: '2d', autoDriving: false }); },
+              style: Object.assign({}, bridgeActionStyle, { width: '100%', marginBottom: 10 })
+            }, gov.spec.members.map(function(member) { return h('option', { key: member.id, value: member.id }, member.id + ' · ' + member.j1 + ' → ' + member.j2); })),
+            h('div', { role: 'status', 'aria-live': d.autoDriving ? 'off' : 'polite', 'aria-atomic': true, style: { padding: 12, border: '1px solid #64748b', borderRadius: 8, lineHeight: 1.7, fontSize: 12 } },
+              h('strong', { style: { color: '#fbbf24' } }, selected.id + ' · ' + value.kind + ' · ' + value.force.toFixed(2) + ' kN'),
+              h('div', null, __alloT('stem.bridgelab.member_length', 'Member length: ') + value.length.toFixed(2) + ' m · ' + __alloT('stem.bridgelab.member_stress', 'Stress: ') + value.stress.toFixed(2) + ' MPa'),
+              h('div', null, __alloT('stem.bridgelab.member_margin', 'Governing safety factor: ') + bridgeFactor(value.sf)),
+              value.compressed ? h('div', null, __alloT('stem.bridgelab.member_buckling_length', 'Buckling length: ') + (value.compressed.lengthMm / 1000).toFixed(2) + ' m' + (value.compressed.outOfPlane ? ' · ' + __alloT('stem.bridgelab.lateral_length', 'between lateral braces') : '')) : null
+            ),
+            extreme ? h('div', { 'data-bridge-member-crossing': true, style: { padding: 12, marginTop: 10, border: '1px solid #475569', borderRadius: 8, fontSize: 12, lineHeight: 1.6 } },
+              h('strong', null, __alloT('stem.bridgelab.member_crossing_title', 'This member across the crossing')),
+              peakButton(__alloT('stem.bridgelab.member_peak_tension', 'Maximum tension'), extreme.tensionKN, extreme.tensionPosition),
+              peakButton(__alloT('stem.bridgelab.member_peak_compression', 'Maximum compression'), extreme.compressionKN, extreme.compressionPosition),
+              extreme.tensionKN > 1e-9 && extreme.compressionKN > 1e-9 ? h('p', { style: { marginBottom: 0, color: '#fde68a' } },
+                __alloT('stem.bridgelab.member_force_reversal', 'Force reversal: this member changes between tension and compression as the vehicle moves. Check both strength and buckling.')) : null,
+              typeof extreme.worstSF === 'number' && isFinite(extreme.worstSF) && extreme.worstSF >= 0
+                && typeof extreme.worstPosition === 'number' && extreme.worstPosition >= 0 && extreme.worstPosition <= 1 ? h('p', { style: { marginBottom: 0 } },
+                __alloT('stem.bridgelab.member_crossing_margin', 'Lowest member safety factor across the crossing: ') + bridgeFactor(extreme.worstSF) + ' · ' + (extreme.worstPosition * 100).toFixed(1) + '%') : null
+            ) : d.loadMode === 'vehicle' ? h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } },
+              __alloT('stem.bridgelab.member_crossing_hint', 'Run “Test all positions” to see this member’s largest tension and compression during the crossing.')) : null,
+            h('p', { style: { fontSize: 12, lineHeight: 1.6 } },
+              __alloT('stem.bridgelab.support_balance', 'Support balance: ') + gov.analysis.reactionsLeft.toFixed(2) + ' + ' + gov.analysis.reactionsRight.toFixed(2) + ' = ' + gov.analysis.W.toFixed(2) + ' kN ' + __alloT('stem.bridgelab.applied_total', 'total applied load.')),
+            h('details', null,
+              h('summary', { style: { cursor: 'pointer', minHeight: 32, fontWeight: 700, fontSize: 12 } }, __alloT('stem.bridgelab.all_members', 'All member forces')),
+              h('div', { role: 'region', tabIndex: 0, 'aria-label': __alloT('stem.bridgelab.member_table', 'Member force table'), style: { overflowX: 'auto', marginTop: 8 } },
+                h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12 } },
+                  h('caption', { style: { textAlign: 'left', padding: 8 } }, __alloT('stem.bridgelab.member_table_caption', 'One truss plane. SF is the smaller strength or buckling margin.')),
+                  h('thead', null, h('tr', null, ['Member', 'Force (kN)', 'Action', 'Length (m)', 'SF'].map(function(label) { return h('th', { key: label, scope: 'col', style: bridgeCellStyle }, label); }))),
+                  h('tbody', null, gov.spec.members.map(function(member) {
+                    var val = memberValues(member);
+                    return h('tr', { key: member.id },
+                      h('th', { scope: 'row', style: bridgeCellStyle }, member.id),
+                      h('td', { style: bridgeCellStyle }, val.force.toFixed(2)),
+                      h('td', { style: bridgeCellStyle }, val.kind),
+                      h('td', { style: bridgeCellStyle }, val.length.toFixed(2)),
+                      h('td', { style: bridgeCellStyle }, bridgeFactor(val.sf))
+                    );
+                  }))
+                )
+              )
+            )
+          ), '#7dd3fc'
+        );
+      }
+
+      function renderBridgeSweep(gov, mat) {
+        if (d.loadMode !== 'vehicle' || !gov.moj.ok) return null;
+        var sweep = d.vehicleSweep;
+        var ready = bridgeValidSweep(d, sweep);
+        return sectionCard(__alloT('stem.bridgelab.sweep_title', 'Test the whole crossing'),
+          h('div', { 'data-bridge-sweep': true },
+            h('p', { style: { fontSize: 12, lineHeight: 1.6, margin: '0 0 10px' } }, __alloT('stem.bridgelab.sweep_hint', 'A passing result at one position can hide a weaker position elsewhere. Test the vehicle at every load-transfer joint and at 2% intervals across the span.')),
+            h('button', { type: 'button', style: bridgeActionStyle, onClick: function() {
+              var next = bridgeCreateSweep(d, mat);
+              upd({ autoDriving: false, vehicleSweep: next });
+              if (next && next.worst) announceStatus(__alloT('stem.bridgelab.sweep_complete', 'Crossing test complete. Worst position: ') + (next.worst.position * 100).toFixed(1) + '%; ' + next.worst.member + '; SF ' + bridgeFactor(next.worst.sf));
+              else announceStatus(__alloT('stem.bridgelab.crossing_no_demand', 'No member demand across the crossing. Add vehicle weight to test the structure.'));
+            } }, __alloT('stem.bridgelab.run_sweep', 'Test all positions')),
+            !ready && sweep ? h('p', { role: 'status', style: { fontSize: 12, color: '#fbbf24' } }, __alloT('stem.bridgelab.sweep_stale', 'The design changed. Run the crossing test again to update the result.')) : null,
+            ready ? h('div', { style: { marginTop: 12 } },
+              h('p', { role: 'status', style: { fontSize: 13, fontWeight: 700, lineHeight: 1.6 } },
+                sweep.worst ? __alloT('stem.bridgelab.worst_crossing', 'Lowest safety factor across the crossing: ') + bridgeFactor(sweep.worst.sf) + ' · ' + (sweep.worst.position * 100).toFixed(1) + '% · ' + sweep.worst.member
+                  : __alloT('stem.bridgelab.crossing_no_demand', 'No member demand across the crossing. Add vehicle weight to test the structure.')),
+              h('svg', { viewBox: '0 0 600 130', role: 'img', 'aria-label': __alloT('stem.bridgelab.sweep_chart_alt', 'Safety factor by vehicle position. Dashed line marks the learning target of 2. Values above 6 are clipped.'), style: { width: '100%', display: 'block', background: '#0f172a', borderRadius: 8 } },
+                h('line', { x1: 30, y1: 75, x2: 570, y2: 75, stroke: '#fbbf24', strokeDasharray: '5 4' }),
+                h('text', { x: 35, y: 69, fill: '#fbbf24', fontSize: 11 }, 'SF 2'),
+                h('polyline', { fill: 'none', stroke: '#7dd3fc', strokeWidth: 3, points: sweep.samples.map(function(sample) { return (30 + sample.position * 540) + ',' + (105 - Math.min(6, sample.sf == null ? 6 : sample.sf) * 15); }).join(' ') }),
+                h('line', { x1: 30 + d.vehiclePos * 540, x2: 30 + d.vehiclePos * 540, y1: 10, y2: 105, stroke: '#f8fafc', strokeWidth: 1, strokeDasharray: '3 3' }),
+                h('circle', { cx: 30 + d.vehiclePos * 540, cy: 105 - Math.min(6, gov.governingSF) * 15, r: 5, fill: '#fbbf24', stroke: '#0f172a', strokeWidth: 2 }),
+                h('text', { x: 30, y: 123, fill: '#cbd5e1', fontSize: 11 }, '0%'),
+                h('text', { x: 300, y: 123, fill: '#cbd5e1', fontSize: 11, textAnchor: 'middle' }, '50%'),
+                h('text', { x: 570, y: 123, fill: '#cbd5e1', fontSize: 11, textAnchor: 'end' }, '100%')
+              ),
+              h('label', { htmlFor: 'bridge-crossing-position', style: { display: 'block', fontSize: 12, marginTop: 10, lineHeight: 1.6 } },
+                __alloT('stem.bridgelab.inspect_crossing_position', 'Inspect vehicle position (%)') + ': ' + (d.vehiclePos * 100).toFixed(1) + '% · SF ' + bridgeFactor(gov.governingSF)),
+              h('input', { id: 'bridge-crossing-position', type: 'range', min: 0, max: 100, step: 1, value: d.vehiclePos * 100,
+                'aria-valuetext': (d.vehiclePos * 100).toFixed(1) + '%; SF ' + bridgeFactor(gov.governingSF),
+                onChange: function(event) { upd({ vehiclePos: Number(event.target.value) / 100, autoDriving: false }); }, style: { width: '100%', accentColor: AMBER } }),
+              sweep.worst ? h('button', { type: 'button', style: Object.assign({}, bridgeActionStyle, { marginTop: 10 }), onClick: function() { bridgeInspectPosition(sweep.worst.position, sweep.worst.member); } },
+                __alloT('stem.bridgelab.inspect_worst', 'Inspect worst position')) : null,
+              h('p', { style: { fontSize: 11, lineHeight: 1.6, color: '#94a3b8' } }, sweep.samples.length + ' ' + __alloT('stem.bridgelab.sweep_scope', 'static positions tested using the current vehicle load. Does not include impact, vibration, fatigue or multiple vehicles.')),
+              h('details', null,
+                h('summary', { style: { cursor: 'pointer', padding: '8px 0', fontSize: 12, fontWeight: 700 } }, __alloT('stem.bridgelab.crossing_table_title', 'Crossing results by position')),
+                h('div', { role: 'region', tabIndex: 0, 'aria-label': __alloT('stem.bridgelab.crossing_table_region', 'Crossing results table'), style: { overflowX: 'auto' } },
+                  h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12 } },
+                    h('caption', { style: { textAlign: 'left', padding: 8 } }, __alloT('stem.bridgelab.crossing_table_hint', 'Inspect any tested position to focus its governing member in the 2D view.')),
+                    h('thead', null, h('tr', null, [__alloT('stem.bridgelab.position_column', 'Position'), 'SF', __alloT('stem.bridgelab.member_column', 'Member'), __alloT('stem.bridgelab.check_column', 'Check')].map(function(label) { return h('th', { key: label, scope: 'col', style: bridgeCellStyle }, label); }))),
+                    h('tbody', null, sweep.samples.map(function(sample) {
+                      return h('tr', { key: sample.position },
+                        h('th', { scope: 'row', style: bridgeCellStyle }, h('button', { type: 'button', style: bridgeActionStyle,
+                          'aria-label': __alloT('stem.bridgelab.inspect_position_prefix', 'Inspect position') + ' ' + (sample.position * 100).toFixed(1) + '%',
+                          onClick: function() { bridgeInspectPosition(sample.position, sample.mode === 'none' ? null : sample.member); }
+                        }, (sample.position * 100).toFixed(1) + '%')),
+                        h('td', { style: bridgeCellStyle }, bridgeFactor(sample.sf === null ? Infinity : sample.sf)),
+                        h('td', { style: bridgeCellStyle }, sample.mode === 'none' ? '—' : sample.member),
+                        h('td', { style: bridgeCellStyle }, sample.mode === 'buckling' ? __alloT('stem.bridgelab.buckling_column', 'Buckling') : sample.mode === 'strength' ? __alloT('stem.bridgelab.strength_column', 'Strength') : __alloT('stem.bridgelab.no_demand', 'No demand'))
+                      );
+                    }))
+                  )
+                )
+              )
+            ) : null
+          ), '#7dd3fc'
         );
       }
 
@@ -1174,6 +1946,22 @@
           // For Warren: BC0..BCn-1 (bottom chord), TC0..TC{n-2} (top chord), DL0..DL{n-1} + DR0..DR{n-1} (diagonals).
           // For Pratt/Howe: BC, TC, V (verticals), ED0/ED1 (end diagonals), ID (interior diagonals).
           var useExact = moj && moj.ok && spec;
+          if (useExact) {
+            // Draw the solver's actual members. Independently authored Pratt/Howe
+            // loops previously assigned ID forces to different diagonals.
+            var drawJoints = {};
+            spec.joints.forEach(function(j) { drawJoints[j.id] = j; });
+            bottoms = spec.joints.filter(function(j) { return j.id.indexOf('B') === 0; });
+            tops = spec.joints.filter(function(j) { return j.id.indexOf('T') === 0; });
+            bottomChord = []; topChord = []; verticals = []; diagonals = [];
+            spec.members.forEach(function(member) {
+              var drawn = { id: member.id, j1: drawJoints[member.j1], j2: drawJoints[member.j2], kind: moj.memberForces[member.id] > 0 ? 'tension' : 'compression' };
+              if (member.id.indexOf('BC') === 0) bottomChord.push(drawn);
+              else if (member.id.indexOf('TC') === 0) topChord.push(drawn);
+              else if (member.id.indexOf('V') === 0) verticals.push(drawn);
+              else diagonals.push(drawn);
+            });
+          }
           // Find max absolute force for normalization
           var globalMaxF = 1;
           if (useExact) {
@@ -1184,6 +1972,7 @@
           }
 
           function stressColor(forceKn, fallbackKind, ratio) {
+            if (forceKn != null && Math.abs(forceKn) < 0.001) return '#94a3b8';
             // tension red, compression blue. Saturation by ratio.
             var alpha = 0.35 + 0.65 * ratio;
             // If we have an exact force, sign tells us tension/compression
@@ -1206,6 +1995,7 @@
           }
 
           var renderMember = function(m, idx, allLen, kindForStress, mid) {
+            mid = m.id || mid;
             var ratio, forceKn = null;
             if (useExact && mid && moj.memberForces[mid] != null) {
               forceKn = moj.memberForces[mid];
@@ -1217,13 +2007,21 @@
             } else ratio = 0.4;
             var stroke = stressColor(forceKn, m.kind, ratio);
             var sw = 2 + ratio * 4;
-            var ariaLabel = forceKn != null ? (forceKn > 0 ? 'Tension ' : 'Compression ') + Math.abs(forceKn).toFixed(0) + ' kN' : '';
-            return h('line', { key: kindForStress + '_' + idx,
+            var ariaLabel = forceKn != null ? mid + ': ' + (Math.abs(forceKn) < 0.001 ? 'Zero force ' : forceKn > 0 ? 'Tension ' : 'Compression ') + Math.abs(forceKn).toFixed(2) + ' kN' : '';
+            var selectedId = d.inspectedMember && spec && spec.members.some(function(member) { return member.id === d.inspectedMember; }) ? d.inspectedMember : governingCompression.id;
+            if (useExact && !spec.members.some(function(member) { return member.id === selectedId; })) selectedId = spec.members[0].id;
+            var selected = useExact && mid === selectedId;
+            return h('g', { key: kindForStress + '_' + idx, 'data-bridge-member': mid || undefined },
+              selected ? h('line', { x1: tx(m.j1.x), y1: ty(m.j1.y), x2: tx(m.j2.x), y2: ty(m.j2.y), stroke: '#f8fafc', strokeWidth: sw + 5, strokeLinecap: 'round', opacity: 0.8 }) : null,
+              h('line', {
               x1: tx(m.j1.x), y1: ty(m.j1.y), x2: tx(m.j2.x), y2: ty(m.j2.y),
               stroke: stroke, strokeWidth: sw, strokeLinecap: 'round',
               style: useExact && ratio >= 0.999 ? { filter: 'drop-shadow(0 0 4px ' + stroke + ')' } : undefined
             },
               ariaLabel ? h('title', null, ariaLabel) : null
+              ),
+              selected ? h('text', { x: (tx(m.j1.x) + tx(m.j2.x)) / 2, y: (ty(m.j1.y) + ty(m.j2.y)) / 2 - 10,
+                textAnchor: 'middle', fill: '#fff', stroke: '#0f172a', strokeWidth: 4, paintOrder: 'stroke', fontSize: 12, fontWeight: 800 }, mid) : null
             );
           };
           var styleLabel = { warren: 'Warren', pratt: 'Pratt', howe: 'Howe', ktruss: 'K-truss' }[style] || 'Warren';
@@ -1312,7 +2110,7 @@
                 // Load Badge
                 h('g', null,
                   h('rect', { x: vxScreen - 30, y: vTop - 28, width: 60, height: 16, rx: 8, fill: 'rgba(16,185,129,0.9)', stroke: '#34d399', strokeWidth: 1 }),
-                  h('text', { x: vxScreen, y: vTop - 16, textAnchor: 'middle', fill: '#ffffff', fontSize: 10, fontWeight: 800 }, (d.vehicleLoad || 150) + ' kN')
+                  h('text', { x: vxScreen, y: vTop - 16, textAnchor: 'middle', fill: '#ffffff', fontSize: 10, fontWeight: 800 }, d.vehicleLoad + ' kN')
                 )
               );
             })() : tops.map(function(j, i) {
@@ -1338,7 +2136,7 @@
             h('ol', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               h('li', null, __alloT('stem.bridgelab.intro_step1', "Read the verdict card below the picture: is this bridge SAFE, MARGINAL, or FAILED, and why?")),
               h('li', null, __alloT('stem.bridgelab.intro_step2', "Drag any slider and watch the verdict, the colors, and the numbers respond instantly. Breaking it on purpose is a great way to learn.")),
-              h('li', null, __alloT('stem.bridgelab.intro_step3', "Your goal: a \\u2713 SAFE bridge for the LOWEST material cost. That trade-off is the whole job of a structural engineer."))
+              h('li', null, __alloT('stem.bridgelab.intro_compare', 'Save your starting design in the notebook. Improve its safety margin, then compare material cost under the same applied load.'))
             ),
             h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '0 0 10px 0', lineHeight: 1.6 } },
               __alloT('stem.bridgelab.intro_colors', "In every picture: red pieces are being STRETCHED (tension), blue pieces are being SQUEEZED (compression), and thicker means working harder.")),
@@ -1362,17 +2160,20 @@
           // hidden with visibility (never display:none) so its DOM stays
           // measurable and exportable when the 3D layer is live.
           (function () {
-            var glLive = BridgeGL.status() === 'ready';
-            BridgeGL.onStatusChange(function () { upd({ glTick: (d.glTick || 0) + 1 }); });
-            var bowedId = buckles && governingCompression ? governingCompression.id : null;
+            var glReady = BridgeGL.status() === 'ready';
+            var show3d = d.bridgeView !== '2d' && !!spec && BridgeGL.status() !== 'failed';
+            var glLive = glReady && show3d;
+            var bowedId = buckles && moj.ok && governingCompression ? governingCompression.id : null;
             var bridgeGlAlt = ({ warren: 'Warren', pratt: 'Pratt', howe: 'Howe', ktruss: 'K-truss' }[trussStyle] || 'Warren')
               + ' truss bridge in 3D: two parallel trusses '
               + d.span + ' metres long and ' + d.height + ' metres deep, carrying a deck between them, '
               + 'with lateral bracing across the top chords every '
               + (braceEvery === 1 ? 'panel point' : braceEvery + ' panel points')
-              + '. Members are coloured red in tension and blue in compression.'
+              + (moj.ok ? '. Members are coloured red in tension and blue in compression; grey indicates zero force.' : '. Member geometry is shown in grey; individual forces are not solved for this approximation.')
+              + (loadMode === 'vehicle' ? ' Vehicle load ' + d.vehicleLoad + ' kN at ' + Math.round(d.vehiclePos * 100) + ' percent of the span.' : '')
               + (bowedId ? ' Member ' + bowedId + ' has failed its buckling check and is drawn bowed '
-                  + (governingCompression.outOfPlane ? 'sideways, out of the plane of its truss.' : 'within the plane of its truss.') : '');
+                  + (governingCompression.outOfPlane ? 'sideways, out of the plane of its truss.' : 'within the plane of its truss.')
+                  + ' Buckling deformation is exaggerated to show the mode; it is not a displacement prediction.' : '');
             BridgeGL.push({
               // A still life: nothing in this scene moves on its own (no S.tick), so the
               // viewer must not re-arm requestAnimationFrame after every frame. It still
@@ -1381,23 +2182,40 @@
               static: true,
               sig: [trussStyle, d.span, d.height, d.nBays, braceEvery, loadMode,
                     d.loadPerJoint, d.vehiclePos, d.vehicleLoad, bowedId,
+                    governingCompression.braceStartM, governingCompression.braceEndM,
                     moj.ok ? Object.keys(moj.memberForces).map(function (k) {
                       return k + ':' + moj.memberForces[k].toFixed(1);
                     }).join(',') : 'approx'].join('|'),
               span: d.span, height: d.height, nBays: d.nBays,
+              loadMode: loadMode, vehiclePos: d.vehiclePos, vehicleLoad: d.vehicleLoad,
               joints: spec ? spec.joints : [], members: spec ? spec.members : [],
               forces: moj.ok ? moj.memberForces : {},
               braceEvery: braceEvery, bowedId: bowedId,
+              braceStartM: governingCompression.braceStartM, braceEndM: governingCompression.braceEndM,
               bowOutOfPlane: !!(bowedId && governingCompression.outOfPlane),
               rotY: d.rot3d ? d.rot3d.rotY : 26,
               rotX: d.rot3d ? d.rot3d.rotX : 14,
               zoom: d.zoom3d || 1
             });
-            return h('div', { style: { marginBottom: 8 } },
+            return h('div', { ref: bridgeViewerRoot, style: { marginBottom: 8 } },
+              h('div', { role: 'group', 'aria-label': __alloT('stem.bridgelab.view_controls', 'Bridge view'), style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 } },
+                h('button', { type: 'button', 'aria-pressed': show3d, disabled: !spec || BridgeGL.status() === 'failed', style: bridgeActionStyle,
+                  onClick: function() { bridgeHadViewFailure.current = false; upd({ bridgeView: '3d' }); } }, __alloT('stem.bridgelab.view_3d', '3D structure')),
+                h('button', { type: 'button', 'aria-pressed': !show3d, style: bridgeActionStyle,
+                  onClick: function() { upd({ bridgeView: '2d' }); } }, __alloT('stem.bridgelab.view_2d', 'Labelled 2D view')),
+                show3d ? h('button', { type: 'button', style: bridgeActionStyle, onClick: function() { upd({ rot3d: { rotY: 26, rotX: 14 }, zoom3d: 1 }); } }, __alloT('stem.bridgelab.reset_view', 'Reset view')) : null
+              ),
+              bridgeHadViewFailure.current ? h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': true,
+                'data-bridge-view-status': true,
+                style: { marginBottom: 10, padding: 10, border: '1px solid #64748b', borderRadius: 8, fontSize: 12, lineHeight: 1.6, color: '#e2e8f0', background: '#1e293b' }
+              }, BridgeGL.status() === 'ready'
+                ? __alloT('stem.bridgelab.gl_restored_v2', '3D is available again. The labelled 2D view stays open so you can continue your work. Choose 3D structure when you are ready.')
+                : __alloT('stem.bridgelab.gl_fallback_v2', '3D is unavailable. The labelled 2D view and all analysis controls remain available.')) : null,
               h('div', {
                 'data-allo-fs-stage': 'true',
+                'aria-hidden': !show3d,
                 style: {
-                  position: 'relative', height: 340, borderRadius: 12, overflow: 'hidden',
+                  position: 'relative', height: show3d ? 340 : 0, visibility: show3d ? 'visible' : 'hidden', borderRadius: 12, overflow: 'hidden',
                   background: 'var(--allo-stem-deeper, #0a0e1a)',
                   border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 8
                 }
@@ -1425,7 +2243,7 @@
                   // Keyboard parity with drag/scroll (2026-08-23): arrows orbit,
                   // plus/minus zoom. Mouse-only 3D controls are a dead end for
                   // keyboard and switch users.
-                  tabIndex: 0,
+                  tabIndex: show3d ? 0 : -1,
                   onKeyDown: function (ev) {
                     var rotY = d.rot3d ? d.rot3d.rotY : 26;
                     var rotX = d.rot3d ? d.rot3d.rotX : 14;
@@ -1484,6 +2302,7 @@
               ),
               // The elevation. Always rendered; hidden, not removed, when 3D is up.
               h('div', {
+                'data-bridge-elevation': true,
                 role: glLive ? undefined : 'region',
                 'aria-label': glLive ? undefined : __alloT('stem.bridgelab.bridge_side_elevation_scroll_region', 'Bridge side elevation horizontal scroll region'),
                 tabIndex: glLive ? -1 : 0,
@@ -1495,7 +2314,9 @@
                   padding: glLive ? 0 : 12,
                   border: glLive ? 'none' : '1px solid var(--allo-stem-border, #334155)'
                 }
-              }, trussSvg())
+              }, trussSvg()),
+              bowedId ? h('p', { style: { fontSize: 11, lineHeight: 1.6, color: '#cbd5e1', margin: '8px 0' } },
+                __alloT('stem.bridgelab.buckling_visual_scope', 'Buckling deformation is exaggerated to show the mode; it is not a displacement prediction.')) : null
             );
           })(),
 
@@ -1516,8 +2337,8 @@
                   { id: 'vehicle', name: __alloT('stem.bridgelab.moving_vehicle', 'Moving vehicle'), sub: 'single point load you can drag across the span' }
                 ].map(function(o) {
                   var active = loadMode === o.id;
-                  return h('button', { key: o.id,
-                    onClick: function() { upd({ loadMode: o.id }); },
+                  return h('button', { key: o.id, type: 'button', 'aria-pressed': active,
+                    onClick: function() { bridgeDriveArmed.current = false; upd({ loadMode: o.id, autoDriving: false }); },
                     style: { padding: '8px 12px', borderRadius: 8, background: active ? 'rgba(245,158,11,0.20)' : '#0f172a', border: '1px solid ' + (active ? AMBER : '#334155'), color: active ? '#fbbf24' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer', textAlign: 'left' }
                   },
                     h('div', null, o.name),
@@ -1529,9 +2350,14 @@
                 ? h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.6, padding: 8, background: 'rgba(245,158,11,0.10)', borderRadius: 6, border: '1px solid rgba(245,158,11,0.3)' } },
                     h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 6 } },
                       h('strong', null, __alloT('stem.bridgelab.moving_load_analysis', 'Moving-load analysis: ')),
-                      h('button', {
+                      h('button', { type: 'button', 'aria-pressed': bridgeReducedMotion ? undefined : !!d.autoDriving,
                         onClick: function() {
+                          if (bridgeReducedMotion) {
+                            upd({ autoDriving: false, vehiclePos: d.vehiclePos >= 1 ? 0 : Math.min(1, Math.round((d.vehiclePos + 0.1) * 100) / 100) });
+                            return;
+                          }
                           var next = !d.autoDriving;
+                          bridgeDriveArmed.current = next;
                           upd({ autoDriving: next, vehiclePos: next ? 0 : d.vehiclePos });
                           if (next) {
                             playBridgeSound('drive');
@@ -1539,11 +2365,12 @@
                           }
                         },
                         style: { padding: '5px 12px', borderRadius: 6, background: d.autoDriving ? '#dc2626' : '#10b981', border: 'none', color: '#ffffff', fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }
-                      }, d.autoDriving ? '⏸ Stop Drive' : '🚗 Auto-Drive Vehicle Across Bridge')
+                      }, bridgeReducedMotion ? __alloT('stem.bridgelab.vehicle_step', 'Advance vehicle 10%') : d.autoDriving ? '⏸ Stop Drive' : '🚗 Auto-Drive Vehicle Across Bridge')
                     ),
+                    bridgeReducedMotion && h('p', { style: { margin: '0 0 6px' } }, __alloT('stem.bridgelab.vehicle_reduced_motion', 'Reduced motion is on. Advance the vehicle in steps or use the position slider.')),
                     __alloT('stem.bridgelab.real_bridges_are_designed_by_sliding_t', 'real bridges are designed by sliding the worst possible vehicle across every point on the span and recording the maximum force in each member. The "influence line" of a member is how its force varies with the load\'s position. Each member has its own worst case — usually NOT in the same place as the worst case for any other member.')
                   )
-                : h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, padding: 8 } }, __alloT('stem.bridgelab.uniform_mode_treats_the_load_as_equall', 'Uniform mode treats the load as equally distributed across all top joints — useful for studying the bridge under its own weight + typical dead loads.'))
+                : h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, padding: 8 } }, __alloT('stem.bridgelab.uniform_applied_load_scope', 'Uniform mode applies the entered load at every top joint. Total applied load changes when the number of top joints changes. Member self-weight is not added automatically.'))
             )
           ),
 
@@ -1556,15 +2383,15 @@
             sliderControl(__alloT('stem.bridgelab.label_bays', "Bays (triangle sections)"), d.nBays, 3, 8, 1, function(v) { upd({ nBays: v }); }, AMBER,
               __alloT('stem.bridgelab.hint_bays', "How many triangles the truss is divided into. More bays = shorter, sturdier pieces, but more joints to build.")),
             loadMode === 'vehicle'
-              ? sliderControl('Vehicle position (0=left, 1=right)', (typeof d.vehiclePos === 'number' && isFinite(d.vehiclePos)) ? d.vehiclePos : 0.5, 0, 1, 0.02, function(v) { upd({ vehiclePos: v }); }, AMBER,
+              ? sliderControl('Vehicle position (0=left, 1=right)', (typeof d.vehiclePos === 'number' && isFinite(d.vehiclePos)) ? d.vehiclePos : 0.5, 0, 1, 0.02, function(v) { bridgeDriveArmed.current = false; upd({ vehiclePos: v, autoDriving: false }); }, AMBER,
               __alloT('stem.bridgelab.hint_vehiclepos', "Slide the truck across the bridge and watch the forces chase it."))
-              : sliderControl('Load per joint (kN)', d.loadPerJoint, 10, 200, 10, function(v) { upd({ loadPerJoint: v }); }, AMBER,
+              : sliderControl('Load per joint (kN)', d.loadPerJoint, 0, 200, 10, function(v) { upd({ loadPerJoint: v }); }, AMBER,
               __alloT('stem.bridgelab.hint_load', "The weight pressing down at each top joint. Imagine trucks parked all along the deck.")),
             loadMode === 'vehicle'
-              ? sliderControl('Vehicle weight (kN)', d.vehicleLoad || 150, 50, 500, 10, function(v) { upd({ vehicleLoad: v }); }, AMBER)
-              : sliderControl('Member cross-section (mm²)', d.crossSectionMm2, 1000, 20000, 500, function(v) { upd({ crossSectionMm2: v }); }, AMBER),
+              ? sliderControl('Vehicle weight (kN)', d.vehicleLoad, 0, 500, 10, function(v) { upd({ vehicleLoad: v }); }, AMBER)
+              : sliderControl('Member cross-section (mm²)', d.crossSectionMm2, 1000, 30000, 500, function(v) { upd({ crossSectionMm2: v }); }, AMBER),
             loadMode === 'vehicle'
-              ? sliderControl('Member cross-section (mm²)', d.crossSectionMm2, 1000, 20000, 500, function(v) { upd({ crossSectionMm2: v }); }, AMBER)
+              ? sliderControl('Member cross-section (mm²)', d.crossSectionMm2, 1000, 30000, 500, function(v) { upd({ crossSectionMm2: v }); }, AMBER)
               : null,
             // The failure text tells students to "add lateral bracing" and
             // "shorten the unbraced length". Until this control existed that was
@@ -1585,6 +2412,7 @@
                 ].map(function(s) {
                   var active = (d.trussStyle || 'warren') === s.id;
                   return h('button', { key: s.id,
+                    type: 'button', 'aria-pressed': active,
                     onClick: function() { upd({ trussStyle: s.id }); },
                     style: { padding: '8px 12px', borderRadius: 8, background: active ? 'rgba(245,158,11,0.25)' : '#0f172a', border: '1px solid ' + (active ? AMBER : '#334155'), color: active ? '#fbbf24' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer', textAlign: 'left' }
                   },
@@ -1611,6 +2439,7 @@
                 var active = d.materialId === m.id;
                 return h('button', {
                   key: m.id,
+                  type: 'button', 'aria-pressed': active,
                   onClick: function() { upd({ materialId: m.id }); },
                   style: { padding: '6px 12px', borderRadius: 8, background: active ? 'rgba(245,158,11,0.25)' : '#0f172a', border: '1px solid ' + (active ? AMBER : '#334155'), color: active ? '#fbbf24' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                 }, m.name);
@@ -1618,32 +2447,35 @@
             )
           ),
 
+          ['stone', 'iron', 'concrete'].indexOf(d.materialId) !== -1 ? h('p', { role: 'note', style: { padding: 12, border: '1px solid #f59e0b', borderRadius: 8, fontSize: 12, lineHeight: 1.6, color: '#fde68a' } },
+            __alloT('stem.bridgelab.material_model_limit', 'Material comparison only: this model uses the same nominal strength for tension and compression. Stone, cast iron and reinforced concrete need separate tensile, brittle-failure or reinforcement checks. The calculated verdict cannot establish their suitability for a truss.')) : null,
+
           // Analysis results — combined yield + buckling
-          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 14, borderRadius: 12, background: status === 'safe' ? 'rgba(34,197,94,0.10)' : status === 'marginal' ? 'rgba(245,158,11,0.15)' : 'rgba(220,38,38,0.15)', border: '1px solid ' + (status === 'safe' ? 'rgba(34,197,94,0.4)' : status === 'marginal' ? 'rgba(245,158,11,0.4)' : 'rgba(220,38,38,0.4)'), borderLeft: '4px solid ' + (status === 'safe' ? '#22c55e' : status === 'marginal' ? '#f59e0b' : '#dc2626'), marginBottom: 12 } },
+          h('div', { role: 'status', 'aria-live': d.autoDriving ? 'off' : 'polite', 'aria-atomic': 'true', style: { padding: 14, borderRadius: 12, background: status === 'safe' ? 'rgba(34,197,94,0.10)' : status === 'marginal' ? 'rgba(245,158,11,0.15)' : 'rgba(220,38,38,0.15)', border: '1px solid ' + (status === 'safe' ? 'rgba(34,197,94,0.4)' : status === 'marginal' ? 'rgba(245,158,11,0.4)' : 'rgba(220,38,38,0.4)'), borderLeft: '4px solid ' + (status === 'safe' ? '#22c55e' : status === 'marginal' ? '#f59e0b' : '#dc2626'), marginBottom: 12 } },
             h('div', { style: { fontSize: 16, fontWeight: 900, color: status === 'safe' ? '#86efac' : status === 'marginal' ? '#fbbf24' : '#fca5a5', marginBottom: 4 } },
-              status === 'safe' ? '✓ SAFE — passes both yield and buckling checks' :
-              status === 'marginal' ? '⚠ MARGINAL — passes but below code-recommended safety factor (2.0)' :
+              analysis.maxForce < 1e-9 ? 'NO MEMBER DEMAND — apply a load within the span to test the structure' : status === 'safe' ? '✓ SAFE — passes both yield and buckling checks' :
+              status === 'marginal' ? '⚠ MARGINAL — below the learning target safety factor (2.0)' :
               '✗ FAILED — at least one failure mode reached'
             ),
             // One sentence a first-time learner can act on, before any numbers.
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10, lineHeight: 1.55 } },
-              status === 'safe'
+              analysis.maxForce < 1e-9 ? __alloT('stem.bridgelab.no_demand_hint', 'There is no internal member force in this load case. A vehicle directly over a support transfers its load into that support. Move it into the span to assess member strength.') : status === 'safe'
                 ? __alloT('stem.bridgelab.verdict_safe_plain', "Two different checks, both passed: the material is strong enough (yield), and no piece is so long and thin that it would snap sideways (buckling).")
                 : status === 'marginal'
-                  ? __alloT('stem.bridgelab.verdict_marginal_plain', "It holds, but with less spare strength than real bridge codes demand (a safety factor of at least 2). An engineer would strengthen it before letting traffic on.")
+                  ? __alloT('stem.bridgelab.verdict_marginal_model', 'The calculated capacity exceeds the applied demand, but the margin is below this lab’s target of 2. Try increasing the cross-section or revising the geometry.')
                   : buckles
                     ? __alloT('stem.bridgelab.verdict_failed_buckle_plain', "A long, thin piece would snap SIDEWAYS before the material itself ever failed. That is buckling, and it happens suddenly, with no warning creak.")
                     : __alloT('stem.bridgelab.verdict_failed_yield_plain', "The material itself would be crushed or torn apart. That is a yield failure: too much force through too little material.")
             ),
             // Yield row
-            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6, fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)' } },
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: 8, marginBottom: 6, fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)' } },
               h('strong', { style: { color: yieldStatus === 'safe' ? '#86efac' : yieldStatus === 'marginal' ? '#fbbf24' : '#fca5a5', minWidth: 150 } },
                 (yieldStatus === 'safe' ? '✓ ' : yieldStatus === 'marginal' ? '⚠ ' : '✗ ') + __alloT('stem.bridgelab.check_strength', "Strength (yield)")
               ),
-              h('span', null, 'Safety factor ' + safetyFactor.toFixed(2) + ' (max stress ' + maxStress.toFixed(0) + ' MPa vs yield ' + mat.yieldMPa + ' MPa)')
+              h('span', null, 'Safety factor ' + bridgeFactor(safetyFactor) + ' (max stress ' + maxStress.toFixed(0) + ' MPa vs nominal strength ' + mat.yieldMPa + ' MPa)')
             ),
             // Buckling row
-            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8, fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)' } },
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: 8, marginBottom: 8, fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)' } },
               h('strong', { style: { color: bucklingStatus === 'safe' ? '#86efac' : bucklingStatus === 'marginal' ? '#fbbf24' : '#fca5a5', minWidth: 150 } },
                 (bucklingStatus === 'safe' ? '✓ ' : bucklingStatus === 'marginal' ? '⚠ ' : '✗ ') + __alloT('stem.bridgelab.check_stability', "Stability (buckling)")
               ),
@@ -1652,13 +2484,13 @@
             h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
               buckles ? 'BUCKLING FAILURE: member ' + governingCompression.id + ' reaches its Euler buckling load before material yield. Long, thin compression members can buckle far below crushing strength. '
                 + (governingCompression.outOfPlane
-                    ? 'It is buckling SIDEWAYS, out of the plane of its own truss, over the ' + unbracedLenM.toFixed(1) + ' m between lateral braces — watch it bow in the 3D view. Tighten the bracing slider, thicken the section, or revise the geometry.'
+                    ? 'It is buckling SIDEWAYS, out of the plane of its own truss, over the ' + (governingLengthMm / 1000).toFixed(1) + ' m between lateral braces. Tighten the bracing slider, thicken the section, or revise the geometry.'
                     : 'Thicken the section, shorten the unbraced length, add bracing, or revise the geometry.') :
               bucklingMarginal ? 'Buckling margin is thin. A real engineer would add lateral bracing or thicken the chord'
-                + (governingCompression.outOfPlane ? ' — the governing length here is the ' + unbracedLenM.toFixed(1) + ' m of unbraced top chord between lateral braces' : '')
+                + (governingCompression.outOfPlane ? ' — the governing length here is the ' + (governingLengthMm / 1000).toFixed(1) + ' m of unbraced top chord between lateral braces' : '')
                 + '. Buckling sneaks up on long slender members and is the failure mode that brought down the Quebec Bridge in 1907.' :
-              yieldStatus !== 'safe' ? 'The top chord buckles fine, but stress exceeds yield. Increase cross-section, decrease load, increase truss height, or pick a stronger material.' :
-              'Both yield and buckling have adequate margin. Code typically requires safety factor 2-4 for buildings and 2-6 for bridges. Brooklyn Bridge was designed with 6x for yield.'
+              yieldStatus !== 'safe' ? 'The strength check governs. Increase cross-section, decrease load, increase truss height, or pick a stronger material.' :
+              'Both checks meet this lab’s target for the current applied load. A safety factor of 2 is a learning target, not a bridge code approval.'
             )
           ),
 
@@ -1680,7 +2512,7 @@
             statBox(__alloT('stem.bridgelab.label_reaction', "Push-back at each support"), analysis.reactions.toFixed(0) + ' kN', '#94a3b8',
               __alloT('stem.bridgelab.hint_reaction', "How hard each end pushes back up. The two ends together carry the whole load.")),
             statBox('Diagonal angle', analysis.diagAngleDeg.toFixed(0) + '\u00B0', '#94a3b8',
-              __alloT('stem.bridgelab.hint_angle', "About 45\\u201360\\u00B0 is the sweet spot: steep enough to be short, shallow enough to share the load.")),
+              __alloT('stem.bridgelab.hint_angle_model', 'Changing the angle changes both the member length and force. Compare designs under the same load to see the trade-off.')),
             statBox('Total member length', analysis.totalLen.toFixed(1) + ' m', '#94a3b8',
               __alloT('stem.bridgelab.hint_length', "All the pieces laid end to end. More length = more material = more cost.")),
             statBox('Estimated mass', massKg.toFixed(0) + ' kg', '#94a3b8',
@@ -1703,7 +2535,7 @@
                 [__alloT('stem.bridgelab.gl_member', "Member / chord / diagonal"), __alloT('stem.bridgelab.gl_member_d', "Any single piece is a member. The long top and bottom pieces are chords; the zig-zags are diagonals.")],
                 [__alloT('stem.bridgelab.gl_yield', "Yield"), __alloT('stem.bridgelab.gl_yield_d', "The point where a material stops springing back and permanently bends or tears. Passing it is a strength failure.")],
                 [__alloT('stem.bridgelab.gl_buckling', "Buckling"), __alloT('stem.bridgelab.gl_buckling_d', "When a long thin piece under squeeze suddenly snaps sideways, far below its crushing strength. Press a spaghetti noodle from both ends to feel it.")],
-                [__alloT('stem.bridgelab.gl_sf', "Safety factor"), __alloT('stem.bridgelab.gl_sf_d', "How many times stronger than needed. 1.0 = barely holds; 2.0 = holds twice the load. Real bridge codes demand 2\\u20136.")],
+                [__alloT('stem.bridgelab.gl_sf', "Safety factor"), __alloT('stem.bridgelab.gl_sf_model_v2', 'Calculated capacity divided by the current demand. At 1.0 the model reaches a limit. This lab uses 2.0 as a learning target; real design uses code-specific load and resistance factors.')],
                 [__alloT('stem.bridgelab.gl_governing', "Governing"), __alloT('stem.bridgelab.gl_governing_d', "Engineer-speak for \"the one that decides\". The governing member is the weakest link; the governing check is whichever fails first.")],
                 [__alloT('stem.bridgelab.gl_kn', "kN (kilonewton)"), __alloT('stem.bridgelab.gl_kn_d', "A unit of force. 1 kN is roughly the weight of a washing machine; a car weighs about 15 kN.")],
                 [__alloT('stem.bridgelab.gl_mpa', "MPa (megapascal)"), __alloT('stem.bridgelab.gl_mpa_d', "Pressure: force concentrated on an area. The same push hurts more through a thumbtack than a book cover; that is higher MPa.")],
@@ -1717,6 +2549,10 @@
               })
             )
           ),
+
+          renderBridgeSweep(gov, mat),
+          renderBridgeInspector(gov, mat),
+          renderBridgeTrials(gov, mat),
 
           // Design notes
           sectionCard('Design notes (optional, included on print)',
@@ -1737,19 +2573,38 @@
             )
           ),
 
-          // Cost optimization: sweep across all materials × cross-sections + pick cheapest passing SF≥2
+          // Cost optimization uses the same member demands as the selected test scope.
           sectionCard('💰 Cost optimization — what\'s the cheapest design that passes?',
             (function() {
-              // Use current geometry (span, height, nBays, loadMode) but sweep material × cross-section
               var targetSF = (typeof d.optTargetSF === 'number' && isFinite(d.optTargetSF)) ? d.optTargetSF : 2.0;
+              var canTestCrossing = d.loadMode === 'vehicle' && gov.moj.ok;
+              var wholeCrossing = canTestCrossing && d.optScope !== 'position';
+              var optimizationForce = analysis.maxForce;
+              var compressionCases = gov.compressionCases;
+              var demandReady = true;
+              if (wholeCrossing) {
+                // Equilibrium forces depend on geometry and loads, not section or material.
+                // Cache the demand envelope so playback and note-taking do not re-solve it.
+                var demandInputs = bridgeDesignInputs(bridgeNormalizeSettings(d));
+                delete demandInputs.vehiclePos;
+                delete demandInputs.materialId;
+                delete demandInputs.crossSectionMm2;
+                delete demandInputs.loadPerJoint;
+                var demandKey = JSON.stringify({ version: BRIDGE_MODEL_VERSION, inputs: demandInputs });
+                if (!_bridgeDemandRef.current || _bridgeDemandRef.current.key !== demandKey) {
+                  _bridgeDemandRef.current = { key: demandKey, value: bridgeCrossingAnalysis(d, mat) };
+                }
+                var demands = _bridgeDemandRef.current.value;
+                demandReady = demands.ok;
+                optimizationForce = demands.maxForce;
+                compressionCases = demands.compressionCases;
+              }
               var sectionRange = [];
               for (var cs = 1000; cs <= 30000; cs += 500) sectionRange.push(cs);
               var results = [];
-              MATERIALS.forEach(function(matCandidate) {
+              MATERIALS.filter(function(candidate) { return ['wood', 'steel', 'composite'].indexOf(candidate.id) !== -1; }).forEach(function(matCandidate) {
                 sectionRange.forEach(function(crossMm2) {
-                  // Compute peak chord force using current MOJ or approximation. We'll re-use analysis but
-                  // just substitute cross-section + material for the safety calc.
-                  var stress = analysis.maxChord * 1000 / crossMm2; // MPa
+                  var stress = optimizationForce * 1000 / crossMm2; // MPa, every member in the selected scope
                   // Buckling: evaluate every compressed member with its own force and length.
                   var side = Math.sqrt(crossMm2);
                   var I = (side * side * side * side) / 12;
@@ -1781,10 +2636,21 @@
               results.sort(function(a, b) { return a.cost - b.cost; });
               var top5 = results.slice(0, 5);
 
-              return h('div', null,
+              return h('div', { 'data-bridge-optimizer': true },
                 h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-                  __alloT('stem.bridgelab.real_engineering_is_not_just_does_it_w', 'Real engineering is not just "does it work?" — it is "what\'s the cheapest design that works?" This optimizer sweeps every combination of material + cross-section, keeps only those that pass your target safety factor for BOTH yield AND buckling, and ranks them by material cost. Span, height, number of bays, and load remain at your current settings.')
+                  __alloT('stem.bridgelab.optimizer_model_scope_v2', 'Compare wood, structural steel and FRP sections against the chosen strength and buckling margin. Geometry and loads use your current settings. Stone, cast iron and reinforced concrete are excluded because this simple axial model does not represent their tensile or reinforcement behavior.')
                 ),
+                canTestCrossing ? h('label', { htmlFor: 'bridge-optimization-scope', style: { display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 10 } },
+                  __alloT('stem.bridgelab.optimizer_scope_label', 'Positions to optimize'),
+                  h('select', { id: 'bridge-optimization-scope', value: wholeCrossing ? 'crossing' : 'position', style: Object.assign({}, bridgeActionStyle, { display: 'block', width: '100%', marginTop: 6 }),
+                    onChange: function(event) { upd({ optScope: event.target.value, autoDriving: false }); }
+                  }, h('option', { value: 'crossing' }, __alloT('stem.bridgelab.optimizer_whole_crossing', 'Whole crossing')),
+                    h('option', { value: 'position' }, __alloT('stem.bridgelab.optimizer_current_position', 'Current position')))
+                ) : null,
+                h('p', { 'data-bridge-optimizer-scope': true, style: { fontSize: 12, lineHeight: 1.6, color: '#cbd5e1' } },
+                  wholeCrossing ? __alloT('stem.bridgelab.optimizer_crossing_scope', 'Every vehicle position is covered by the force extremes at the load-transfer joints. Applying a design also runs and saves its crossing test.')
+                    : d.loadMode === 'vehicle' ? __alloT('stem.bridgelab.optimizer_position_scope', 'Results cover the current vehicle position only. A different position may need a larger section.')
+                    : __alloT('stem.bridgelab.optimizer_uniform_scope', 'Results cover the current uniform load at every loaded joint.')),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 12 } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                     h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, __alloT('stem.bridgelab.target_safety_factor', 'Target safety factor')),
@@ -1797,12 +2663,13 @@
                   }),
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2 } },
                     h('span', null, __alloT('stem.bridgelab.1_5_very_thin_margin', '1.5 (very thin margin)')),
-                    h('span', null, __alloT('stem.bridgelab.2_0_code_minimum', '2.0 (code minimum)')),
+                    h('span', null, __alloT('stem.bridgelab.target_two', '2.0 (learning target)')),
                     h('span', null, __alloT('stem.bridgelab.4_0_conservative', '4.0+ (conservative)')),
                     h('span', null, __alloT('stem.bridgelab.6_0_brooklyn_bridge', '6.0 (Brooklyn Bridge)'))
                   )
                 ),
-                top5.length === 0
+                !demandReady ? h('p', { role: 'status' }, __alloT('stem.bridgelab.optimizer_solver_unavailable', 'The crossing could not be solved for this design. Review the geometry before applying a result.'))
+                  : optimizationForce < 1e-9 ? h('p', { role: 'status', style: { fontSize: 12, lineHeight: 1.6, color: '#fbbf24' } }, __alloT('stem.bridgelab.optimizer_needs_demand', 'Apply a nonzero load within the span before optimizing. An unloaded design cannot establish the capacity needed for a crossing.')) : top5.length === 0
                   ? h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(220,38,38,0.10)', border: '1px solid rgba(220,38,38,0.3)', color: '#fca5a5', fontSize: 13, lineHeight: 1.65 } },
                       'NO combination at SF≥' + targetSF + ' works for this geometry + load. Either lower the target safety factor, increase truss height, reduce span, or reduce load.'
                     )
@@ -1822,8 +2689,8 @@
                                 h('td', { style: { padding: 6, fontWeight: 800, color: isWinner ? '#86efac' : '#cbd5e1' } }, isWinner ? '🏆 1' : String(i + 1)),
                                 h('td', { style: { padding: 6, color: 'var(--allo-stem-text, #e2e8f0)' } }, r.material.name),
                                 h('td', { style: { padding: 6, color: 'var(--allo-stem-text, #cbd5e1)' } }, r.crossMm2.toLocaleString() + ' mm²'),
-                                h('td', { style: { padding: 6, color: r.sfYield >= 2 ? '#86efac' : '#fbbf24' } }, r.sfYield.toFixed(2)),
-                                h('td', { style: { padding: 6, color: r.sfBuck >= 2 ? '#86efac' : '#fbbf24' } }, r.sfBuck.toFixed(2)),
+                                h('td', { style: { padding: 6, color: r.sfYield >= 2 ? '#86efac' : '#fbbf24' } }, bridgeFactor(r.sfYield)),
+                                h('td', { style: { padding: 6, color: r.sfBuck >= 2 ? '#86efac' : '#fbbf24' } }, bridgeFactor(r.sfBuck)),
                                 h('td', { style: { padding: 6, color: 'var(--allo-stem-text, #cbd5e1)' } }, r.mass.toFixed(0) + ' kg'),
                                 h('td', { style: { padding: 6, fontWeight: 800, color: isWinner ? '#86efac' : '#fbbf24' } }, '$' + r.cost.toFixed(0))
                               );
@@ -1838,7 +2705,14 @@
                       h('div', { style: { marginTop: 8, padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.6 } },
                         h('strong', null, __alloT('stem.bridgelab.click_the_winner', 'Click the winner: ')),
                         h('button', {
-                          onClick: function() { upd({ materialId: top5[0].material.id, crossSectionMm2: top5[0].crossMm2 }); },
+                          type: 'button',
+                          onClick: function() {
+                            var changes = { materialId: top5[0].material.id, crossSectionMm2: top5[0].crossMm2, autoDriving: false };
+                            if (wholeCrossing) changes.vehicleSweep = bridgeCreateSweep(Object.assign({}, d, changes), top5[0].material);
+                            upd(changes);
+                            announceStatus(wholeCrossing ? __alloT('stem.bridgelab.optimizer_crossing_applied', 'Design applied. Its crossing test is ready to inspect and save in the notebook.')
+                              : __alloT('stem.bridgelab.optimizer_position_applied', 'Design applied for the current load.'));
+                          },
                           style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #fbbf24', background: 'rgba(245,158,11,0.20)', color: '#fbbf24', fontSize: 11, fontWeight: 700, cursor: 'pointer', marginLeft: 6 }
                         }, __alloT('stem.bridgelab.apply_this_design_to_my_bridge', 'Apply this design to my bridge'))
                       )
@@ -1852,6 +2726,7 @@
             var useExact = moj && moj.ok && spec;
             return sectionCard('A note on this analysis',
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } },
+                h('p', { style: { margin: '0 0 10px' } }, __alloT('stem.bridgelab.model_scope_v2', 'Model scope: one idealized truss plane with pin joints and solid square members. Quantities cover that plane only; the second truss, deck, lateral bracing, connections and labor are excluded. Only the entered loads are applied; self-weight is not added automatically. All materials use a single nominal strength in both tension and compression, which cannot represent brittle stone, cast iron, grain direction or reinforced-concrete behavior.')),
                 useExact
                   ? h('span', null,
                       h('strong', { style: { color: '#86efac' } }, __alloT('stem.bridgelab.exact_analysis_method_of_joints', '✓ Exact analysis (Method of Joints). ')),
@@ -4327,7 +5202,7 @@
           h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
             CASES.map(function(c) {
               var active = d.selectedCase === c.id;
-              return h('button', { key: c.id,
+              return h('button', { key: c.id, type: 'button', 'aria-pressed': active,
                 onClick: function() { upd({ selectedCase: c.id }); },
                 style: { padding: '8px 12px', borderRadius: 8, background: active ? (c.kind === 'failure' ? 'rgba(220,38,38,0.25)' : 'rgba(34,197,94,0.20)') : '#1e293b', border: '1px solid ' + (active ? (c.kind === 'failure' ? '#dc2626' : '#22c55e') : '#334155'), color: active ? (c.kind === 'failure' ? '#fca5a5' : '#86efac') : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer', textAlign: 'left' }
               },
@@ -4343,6 +5218,8 @@
             sectionInfo(selected.kind === 'failure' ? 'Why it failed' : 'Why it succeeded', selected.why, selected.kind === 'failure' ? '#dc2626' : '#22c55e'),
             sectionInfo('Engineering lesson', selected.lesson, '#f59e0b'),
             sectionInfo('Worth remembering', selected.memory, '#a78bfa'),
+            selected.source ? h('p', { style: { fontSize: 12, lineHeight: 1.6 } },
+              h('a', { href: selected.source.url, target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, selected.source.label)) : null,
             // Interactive flutter demo, only on Tacoma case
             selected.id === 'tacoma' ? tacomaFlutterDemo() : null,
             // Pedestrian dynamic-loading panel — only on Millennium case
@@ -4834,28 +5711,35 @@
       // QUIZ
       // ──────────────────────────────────────────────────────────────
       function renderQuiz() {
-        var answers = d.quizAnswers || [];
+        var answers = Array.isArray(d.quizAnswers) ? d.quizAnswers : [];
         var done = d.quizSubmitted;
+        function hasAnswer(i) { return Number.isInteger(answers[i]) && answers[i] >= 0 && answers[i] < QUIZ_QUESTIONS[i].choices.length; }
+        var answeredCount = QUIZ_QUESTIONS.filter(function(_, i) { return hasAnswer(i); }).length;
+        var allAnswered = answeredCount === QUIZ_QUESTIONS.length;
         function select(qIdx, cIdx) {
           var na = answers.slice(); na[qIdx] = cIdx;
           upd({ quizAnswers: na });
         }
         function submit() {
+          if (done || !allAnswered) return;
           var c = 0;
           QUIZ_QUESTIONS.forEach(function(q, i) { if (answers[i] === q.answer) c++; });
           upd({ quizSubmitted: true, quizCorrect: c });
           if (addToast) addToast('Quiz: ' + c + '/' + QUIZ_QUESTIONS.length, c >= 9 ? 'success' : 'info');
+          announceStatus(__alloT('stem.bridgelab.quiz_result_v2', 'Quiz result: ') + c + ' / ' + QUIZ_QUESTIONS.length);
           if (awardXP) awardXP(c * 5);
         }
         function reset() { upd({ quizIdx: 0, quizAnswers: [], quizSubmitted: false, quizCorrect: 0 }); }
 
         if (done) {
-          var correct = d.quizCorrect || 0;
+          var correct = QUIZ_QUESTIONS.filter(function(q, i) { return answers[i] === q.answer; }).length;
           var pct = Math.round(correct / QUIZ_QUESTIONS.length * 100);
           return h('div', { style: { padding: 16 } },
             h('div', { style: { padding: 20, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', textAlign: 'center', marginBottom: 16 } },
               h('div', { style: { fontSize: 36, marginBottom: 4 } }, pct >= 80 ? '🏆' : pct >= 60 ? '🌉' : '🔧'),
-              h('h2', { style: { margin: '0 0 4px', color: '#fbbf24', fontSize: 22 } }, correct + ' / ' + QUIZ_QUESTIONS.length),
+              h('h2', { id: 'bridge-quiz-result', tabIndex: -1,
+                ref: function(node) { if (node && !node.getAttribute('data-focused')) { node.setAttribute('data-focused', 'true'); node.focus(); } },
+                style: { margin: '0 0 4px', color: '#fbbf24', fontSize: 22 } }, __alloT('stem.bridgelab.quiz_result_v2', 'Quiz result: ') + correct + ' / ' + QUIZ_QUESTIONS.length),
               h('div', { style: { fontSize: 14, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, pct + '%')
             ),
             QUIZ_QUESTIONS.map(function(q, i) {
@@ -4864,26 +5748,26 @@
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: got ? '#86efac' : '#fca5a5', marginBottom: 4 } }, (got ? '✓ ' : '✗ ') + 'Q' + (i + 1)),
                 h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6 } }, q.q),
                 h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, 'Correct: ', h('strong', null, q.choices[q.answer])),
-                !got ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, __alloT('stem.bridgelab.your_answer', 'Your answer: '), q.choices[answers[i] != null ? answers[i] : 0]) : null,
-                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, fontStyle: 'italic' } }, q.explain)
+                !got ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, __alloT('stem.bridgelab.your_answer', 'Your answer: '), hasAnswer(i) ? q.choices[answers[i]] : __alloT('stem.bridgelab.quiz_no_answer_v2', 'No answer recorded')) : null,
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, fontStyle: 'italic' } }, q.explain),
+                q.source ? h('a', { href: q.source.url, target: '_blank', rel: 'noopener noreferrer', style: { display: 'inline-block', marginTop: 6, color: '#7dd3fc', fontSize: 12 } }, q.source.label) : null
               );
             }),
             h('button', { onClick: reset, style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: AMBER, color: '#0f172a', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.bridgelab.retake_quiz', 'Retake quiz'))
           );
         }
 
-        var allAnswered = QUIZ_QUESTIONS.every(function(_, i) { return answers[i] != null; });
         return h('div', { style: { padding: 16 } },
           h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12 } }, QUIZ_QUESTIONS.length + ' questions covering bridge engineering and structural mechanics.'),
           QUIZ_QUESTIONS.map(function(q, i) {
-            return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 10 } },
-              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8, lineHeight: 1.55 } }, h('strong', { style: { color: '#fbbf24' } }, 'Q' + (i + 1) + '. '), q.q),
+            return h('fieldset', { key: i, style: { minWidth: 0, padding: 12, borderRadius: 10, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', margin: '0 0 10px' } },
+              h('legend', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8, lineHeight: 1.55 } }, h('strong', { style: { color: '#fbbf24' } }, 'Q' + (i + 1) + '. '), q.q),
               q.choices.map(function(c, ci) {
                 var picked = answers[i] === ci;
-                return h('button', { key: ci,
-                  onClick: function() { select(i, ci); },
-                  style: { display: 'block', width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 6, marginBottom: 4, background: picked ? 'rgba(245,158,11,0.20)' : '#0f172a', border: '1px solid ' + (picked ? AMBER : '#334155'), color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12.5, cursor: 'pointer', lineHeight: 1.5 }
-                }, c);
+                return h('label', { key: ci,
+                  style: { display: 'flex', alignItems: 'baseline', gap: 8, textAlign: 'left', padding: '8px 10px', borderRadius: 6, marginBottom: 4, background: picked ? 'rgba(245,158,11,0.20)' : '#0f172a', border: '1px solid ' + (picked ? AMBER : '#334155'), color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12.5, cursor: 'pointer', lineHeight: 1.5 }
+                }, h('input', { type: 'radio', name: 'bridge-quiz-question-' + i, value: ci, checked: picked,
+                  onChange: function() { select(i, ci); }, style: { accentColor: AMBER, flexShrink: 0 } }), h('span', null, c));
               })
             );
           }),
@@ -4891,7 +5775,7 @@
             onClick: submit,
             disabled: !allAnswered,
             style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: allAnswered ? AMBER : '#475569', color: allAnswered ? '#0f172a' : '#fff', fontWeight: 800, fontSize: 14, cursor: allAnswered ? 'pointer' : 'not-allowed' }
-          }, allAnswered ? 'Submit quiz' : 'Answer all questions (' + answers.filter(function(a) { return a != null; }).length + '/' + QUIZ_QUESTIONS.length + ')')
+          }, allAnswered ? 'Submit quiz' : 'Answer all questions (' + answeredCount + '/' + QUIZ_QUESTIONS.length + ')')
         );
       }
 
@@ -4901,46 +5785,82 @@
       // hypothesis + opt-in open questions + self-mark. No scoring.
       // ──────────────────────────────────────────────────────────────
       function renderInquiry() {
-        var iq = d.inquiry || { spanM: 18, areaMm2: 1500, materialId: d.materialId || 'steel', hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-        function setIQ(patch) { upd({ inquiry: Object.assign({}, iq, patch) }); }
+        var iq = Object.assign({ spanM: 18, areaMm2: 1500, materialId: d.materialId || 'steel', hypothesis: '', observation: '', stuckRevealed: false, understood: false, explanation: '', log: [] }, d.inquiry || {});
+        var settings = bridgeNormalizeSettings(Object.assign({}, d, { span: iq.spanM, crossSectionMm2: iq.areaMm2, materialId: iq.materialId }));
+        iq.spanM = settings.span;
+        iq.areaMm2 = settings.crossSectionMm2;
+        iq.materialId = settings.materialId;
+        var observations = Array.isArray(iq.log) ? iq.log.filter(function(o) { return o && typeof o === 'object'; }) : [];
+        function setIQ(patch) {
+          setLabToolData(function(prev) {
+            var previousBridge = (prev && prev.bridgeLab) || {};
+            var current = Object.assign({}, iq, previousBridge.inquiry || {});
+            var changes = typeof patch === 'function' ? patch(current) : patch;
+            return Object.assign({}, prev, { bridgeLab: Object.assign({}, previousBridge, { inquiry: Object.assign({}, current, changes) }) });
+          });
+        }
         var mat = MATERIALS.find(function(m) { return m.id === iq.materialId; }) || MATERIALS[3];
-        // Use existing analyzeTruss with this inquiry's spans
-        var nBays = 4, height = 3, loadPerJoint = 50; // fixed defaults for inquiry simplicity
-        var a = analyzeTruss(iq.spanM, height, nBays, loadPerJoint);
-        var stressMax = Math.max(a.maxChord, a.maxDiag) * 1000 / iq.areaMm2;
-        var sf = mat.yieldMPa / stressMax;
-        var status = sf >= 2 ? 'safe' : sf >= 1 ? 'marginal' : 'failed';
+        var gov = bridgeGoverningAnalysis(settings, mat);
+        var a = gov.analysis;
+        var sf = gov.governingSF;
+        var hasDemand = isFinite(sf);
+        var status = hasDemand ? gov.status : 'no-demand';
+        var governingCheck = hasDemand ? (gov.bucklingMargin < gov.safetyFactor ? 'Euler buckling' : 'Material yield') : 'No member demand';
+        var volumeM3 = a.totalLen * settings.crossSectionMm2 / 1e6;
+        var massKg = volumeM3 * mat.densityKgM3;
+        var costUsd = volumeM3 * mat.costPerM3;
+        var method = gov.moj.ok ? 'Method of joints' : 'Deep-beam approximation';
+        var loadDescription = gov.loadMode === 'vehicle'
+          ? settings.vehicleLoad + ' kN vehicle at ' + (settings.vehiclePos * 100).toFixed(1) + '% of span'
+          : settings.loadPerJoint + ' kN per top joint';
         var stateColor = status === 'safe' ? '#34d399' : status === 'marginal' ? '#f59e0b' : '#fca5a5';
         var stateBg = status === 'safe' ? '#064e3b' : status === 'marginal' ? '#78350f' : '#7f1d1d';
-        var stateLabel = status === 'safe' ? '🟢 SAFE' : status === 'marginal' ? '🟡 MARGINAL' : '🔴 FAILS';
+        var stateLabel = !hasDemand ? 'NO MEMBER DEMAND' : status === 'safe' ? '🟢 SAFE' : status === 'marginal' ? '🟡 MARGINAL' : '🔴 FAILS';
+        if (!hasDemand) { stateColor = '#cbd5e1'; stateBg = '#334155'; }
+        function recordedNumber(value) { return isFinite(value) ? Number(value.toFixed(2)) : null; }
         function logObs() {
-          var obs = { span: iq.spanM, area: iq.areaMm2, mat: mat.id, sf: parseFloat(sf.toFixed(2)), state: status };
-          setIQ({ log: (iq.log || []).concat([obs]).slice(-8) });
+          var obs = {
+            version: 2, recordedAt: new Date().toISOString(), span: settings.span, area: settings.crossSectionMm2,
+            mat: mat.id, sf: recordedNumber(sf), state: status,
+            yieldSF: recordedNumber(gov.safetyFactor), bucklingSF: recordedNumber(gov.bucklingMargin),
+            governingCheck: governingCheck, member: gov.governingCompression.id,
+            trussStyle: settings.trussStyle, height: settings.height, nBays: settings.nBays,
+            braceEvery: gov.braceEvery, loadMode: gov.loadMode, loadPerJoint: settings.loadPerJoint,
+            vehicleLoad: settings.vehicleLoad, vehiclePos: settings.vehiclePos, totalLoadKN: a.W,
+            loadDescription: loadDescription, massKg: recordedNumber(massKg), costUsd: recordedNumber(costUsd),
+            method: method, observation: String(iq.observation || '').trim(), hypothesis: String(iq.hypothesis || '').trim()
+          };
+          setIQ(function(current) { return { log: (Array.isArray(current.log) ? current.log : []).concat([obs]), observation: '' }; });
         }
         return h('div', { style: { padding: 16 } },
           h('div', { style: { background: '#0a1525', borderRadius: 12, padding: 16, border: '1px solid rgba(245,158,11,0.3)' } },
             h('h3', { style: { margin: '0 0 6px 0', color: '#fbbf24', fontSize: 16, fontWeight: 800 } }, __alloT('stem.bridgelab.load_bearing_discovery', '🔬 Load-bearing discovery')),
             h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 14 } },
-              'You are designing a truss bridge. Adjust span, cross-section area, and material. The bridge will show you whether it SAFE, MARGINAL, or FAILS (three discrete states — no numeric score). There is no right answer and no reveal. Sweep the sliders. Log observations. Type what you discover about the trade-offs.'),
+              __alloT('stem.bridgelab.inquiry_shared_model_v2', 'Change one variable at a time: span, cross-section area, or material. This investigation uses the truss type, height, bays, bracing, and load selected in Stress Test. Record a prediction, compare yield and buckling, and log what changed. Your investigation sliders are saved separately from the main design.')),
             // Discrete state badge — large, prominent
             h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 12 } },
-              h('div', { style: { padding: '12px 24px', borderRadius: 8, background: stateBg, border: '2px solid ' + stateColor, color: stateColor, fontSize: 18, fontWeight: 900, letterSpacing: '0.05em' } }, stateLabel)),
+              h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: '12px 24px', borderRadius: 8, background: stateBg, border: '2px solid ' + stateColor, color: stateColor, fontSize: 18, fontWeight: 900, letterSpacing: '0.05em' } }, stateLabel,
+                h('div', { style: { fontSize: 12, fontWeight: 600, letterSpacing: 'normal', marginTop: 4 } }, 'Governing check: ' + governingCheck))),
+            h('p', { style: { margin: '0 0 12px', fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } },
+              settings.trussStyle + ' truss · ' + settings.nBays + ' bays · height ' + settings.height + ' m · bracing every ' + gov.braceEvery + ' bay' + (gov.braceEvery === 1 ? '' : 's') + '. ',
+              loadDescription + '; total applied load ' + a.W.toFixed(1) + ' kN. ' + method + '. ',
+              'Estimated material cost $' + costUsd.toFixed(0) + ' and mass ' + massKg.toFixed(0) + ' kg for one planar truss.'),
             // Quick stats
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 14, fontSize: 11, color: '#94a3b8' } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginBottom: 14, fontSize: 11, color: '#94a3b8' } },
               h('div', { style: { background: '#1e293b', padding: 6, borderRadius: 4, textAlign: 'center' } }, 'Span: ', h('span', { style: { color: '#fbbf24', fontFamily: 'monospace', fontWeight: 700 } }, iq.spanM + ' m')),
               h('div', { style: { background: '#1e293b', padding: 6, borderRadius: 4, textAlign: 'center' } }, 'Area: ', h('span', { style: { color: '#fbbf24', fontFamily: 'monospace', fontWeight: 700 } }, iq.areaMm2 + ' mm²')),
               h('div', { style: { background: '#1e293b', padding: 6, borderRadius: 4, textAlign: 'center' } }, 'Material: ', h('span', { style: { color: '#fbbf24', fontWeight: 700 } }, mat.name))
             ),
             // Sliders
-            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 14 } },
               h('div', null,
                 h('label', { htmlFor: 'iq-span', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } }, __alloT('stem.bridgelab.span_length', 'Span length: '), h('span', { style: { color: '#fbbf24', fontFamily: 'monospace' } }, iq.spanM + ' m')),
-                h('input', { id: 'iq-span', type: 'range', 'aria-valuetext': iq.spanM + ' meters', min: 6, max: 60, step: 1, value: iq.spanM,
+                h('input', { id: 'iq-span', type: 'range', 'aria-valuetext': iq.spanM + ' meters', min: 10, max: 80, step: 1, value: iq.spanM,
                   onChange: function(e) { setIQ({ spanM: parseInt(e.target.value, 10) }); },
                   style: { width: '100%' }, 'aria-label': __alloT('stem.bridgelab.span_length_in_meters', 'Span length in meters') })),
               h('div', null,
                 h('label', { htmlFor: 'iq-area', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } }, __alloT('stem.bridgelab.cross_section_area', 'Cross-section area: '), h('span', { style: { color: '#fbbf24', fontFamily: 'monospace' } }, iq.areaMm2 + ' mm²')),
-                h('input', { id: 'iq-area', type: 'range', 'aria-valuetext': iq.areaMm2 + ' square millimeters', min: 200, max: 8000, step: 100, value: iq.areaMm2,
+                h('input', { id: 'iq-area', type: 'range', 'aria-valuetext': iq.areaMm2 + ' square millimeters', min: 1000, max: 30000, step: 100, value: iq.areaMm2,
                   onChange: function(e) { setIQ({ areaMm2: parseInt(e.target.value, 10) }); },
                   style: { width: '100%' }, 'aria-label': __alloT('stem.bridgelab.cross_section_area_in_square_millimete', 'Cross-section area in square millimeters') }))
             ),
@@ -4950,35 +5870,48 @@
               h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
                 MATERIALS.map(function(m) {
                   var active = iq.materialId === m.id;
-                  return h('button', { key: m.id,
+                  return h('button', { key: m.id, 'aria-pressed': active,
                     onClick: function() { setIQ({ materialId: m.id }); },
                     style: { padding: '4px 10px', borderRadius: 4, border: '1px solid ' + (active ? '#fbbf24' : 'rgba(100,116,139,0.4)'), background: active ? 'rgba(245,158,11,0.25)' : 'transparent', color: active ? '#fbbf24' : '#94a3b8', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, m.name);
                 })
               )
             ),
+            h('div', { style: { marginBottom: 12 } },
+              h('label', { htmlFor: 'iq-observation', style: { display: 'block', color: '#cbd5e1', fontSize: 12, fontWeight: 700, marginBottom: 4 } }, __alloT('stem.bridgelab.inquiry_observation_label', 'Observation for this trial')),
+              h('textarea', { id: 'iq-observation', value: iq.observation || '', rows: 2,
+                onChange: function(e) { setIQ({ observation: e.target.value }); },
+                placeholder: __alloT('stem.bridgelab.inquiry_observation_placeholder', 'What did you change, and what happened to the governing check or cost?'),
+                style: { width: '100%', boxSizing: 'border-box', padding: 8, background: '#0a1525', color: '#e2e8f0', border: '1px solid #64748b', borderRadius: 4, fontSize: 12, fontFamily: 'inherit' } })),
             // Log + reset
-            h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 } },
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 12 } },
               h('button', { onClick: logObs, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.bridgelab.log_observation', '📋 Log observation')),
-              h('button', { onClick: function() { setIQ({ spanM: 18, areaMm2: 1500, materialId: 'steel', log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-                style: { padding: '4px 10px', background: '#0a1525', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 600, cursor: 'pointer' } }, __alloT('stem.bridgelab.reset', '↺ Reset')),
-              (iq.log || []).length > 0 && h('span', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, (iq.log || []).length + ' observations logged')
+              h('button', { onClick: function() { setIQ({ spanM: 18, areaMm2: 1500, materialId: 'steel' }); },
+                style: { padding: '4px 10px', background: '#0a1525', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 600, cursor: 'pointer' } }, __alloT('stem.bridgelab.inquiry_reset_controls', '↺ Reset controls')),
+              observations.length > 0 && h('span', { role: 'status', style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, observations.length + ' observations logged')
             ),
             // Log table
-            (iq.log || []).length > 0 && h('div', { style: { overflowX: 'auto', marginBottom: 12 } },
+            observations.length > 0 && h('div', { style: { overflowX: 'auto', marginBottom: 12 } },
               h('table', { style: { fontSize: 10, width: '100%', borderCollapse: 'collapse', color: '#cbd5e1' } },
+                h('caption', { style: { textAlign: 'left', color: '#cbd5e1', padding: '6px 0', fontSize: 11 } }, __alloT('stem.bridgelab.inquiry_log_scope_v2', 'Saved observations. Earlier records retain their original yield-only result; their missing load and cost details were not recorded.')),
                 h('thead', null, h('tr', { style: { background: '#1e293b' } },
-                  ['span', 'area', 'material', 'safety factor', 'state'].map(function(c, i) {
+                  ['span (m)', 'area (mm²)', 'material', 'model', 'load', 'governing safety factor', 'governing check', 'state', 'material cost', 'observation'].map(function(c, i) {
                     return h('th', { key: 'h' + i, scope: 'col', style: { padding: '4px 8px', borderBottom: '1px solid rgba(100,116,139,0.4)', textAlign: 'left' } }, c);
                   })
                 )),
-                h('tbody', null, iq.log.map(function(o, idx) {
+                h('tbody', null, observations.map(function(o, idx) {
                   var bg = o.state === 'safe' ? 'rgba(16,185,129,0.08)' : (o.state === 'marginal' ? 'rgba(245,158,11,0.08)' : 'rgba(239,68,68,0.10)');
                   return h('tr', { key: 'lr' + idx, style: { background: bg } },
                     h('td', { style: { padding: '4px 8px', fontFamily: 'monospace' } }, o.span),
                     h('td', { style: { padding: '4px 8px', fontFamily: 'monospace' } }, o.area),
                     h('td', { style: { padding: '4px 8px' } }, o.mat),
-                    h('td', { style: { padding: '4px 8px', fontFamily: 'monospace' } }, o.sf),
-                    h('td', { style: { padding: '4px 8px' } }, o.state));
+                    h('td', { style: { padding: '4px 8px', minWidth: 130 } }, o.version === 2 ? o.trussStyle + ', ' + o.nBays + ' bays, height ' + o.height + ' m; bracing every ' + o.braceEvery + ' bays; ' + o.method : 'Not recorded'),
+                    h('td', { style: { padding: '4px 8px' } }, o.loadDescription || 'Not recorded'),
+                    h('td', { style: { padding: '4px 8px', fontFamily: 'monospace' } }, o.sf == null ? 'No demand' : o.sf,
+                      o.version === 2 && h('div', { style: { fontSize: 10, marginTop: 3 } }, 'Yield: ' + (o.yieldSF == null ? 'No demand' : o.yieldSF) + '; buckling: ' + (o.bucklingSF == null ? 'No demand' : o.bucklingSF))),
+                    h('td', { style: { padding: '4px 8px' } }, o.governingCheck || 'Earlier yield-only record'),
+                    h('td', { style: { padding: '4px 8px' } }, o.state),
+                    h('td', { style: { padding: '4px 8px' } }, typeof o.costUsd === 'number' && isFinite(o.costUsd) ? '$' + o.costUsd.toFixed(0) : 'Not recorded'),
+                    h('td', { style: { padding: '4px 8px', minWidth: 160, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, o.observation || '—'));
                 }))
               )
             ),
@@ -4999,11 +5932,11 @@
               iq.stuckRevealed && h('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
                 h('div', { style: { fontWeight: 700, color: '#fbbf24', marginBottom: 4 } }, __alloT('stem.bridgelab.open_questions_investigate_by_manipula', 'Open questions — investigate by manipulating:')),
                 h('ul', { style: { margin: 0, paddingLeft: 18 } },
-                  h('li', null, __alloT('stem.bridgelab.hold_material_and_area_fixed_sweep_spa', 'Hold material and area fixed. Sweep span from 6 to 60 m. At what span does the state flip from SAFE to MARGINAL? Now change material — does the flip-point move?')),
+                  h('li', null, __alloT('stem.bridgelab.inquiry_span_question_v2', 'Hold material and area fixed. Sweep span from 10 to 80 m. At what span does the state change? Is yield or buckling governing?')),
                   h('li', null, __alloT('stem.bridgelab.pick_a_span_where_the_bridge_fails_wha', 'Pick a span where the bridge FAILS. What is cheaper: doubling the cross-section area, or switching to a stronger material? Test both and compare.')),
-                  h('li', null, __alloT('stem.bridgelab.some_materials_have_very_high_strength', 'Some materials have very high strength but are heavy or expensive in real life. The simulation does not penalize this. What would change about your hypotheses if cost mattered?')),
+                  h('li', null, __alloT('stem.bridgelab.inquiry_cost_question_v2', 'Compare the logged material costs and masses. Does a stronger material always produce a lighter or cheaper design with the same safety state?')),
                   h('li', null, __alloT('stem.bridgelab.log_4_5_safe_configurations_look_at_th', 'Log 4-5 SAFE configurations. Look at the safety factor column. What range do they share? Is there a single threshold or a band?')),
-                  h('li', null, __alloT('stem.bridgelab.in_real_engineering_the_rule_of_thumb_', 'In real engineering, the rule of thumb is safety factor ≥ 1.5 for steel structures. Why might the simulation show MARGINAL at sf 1-2 but SAFE only at sf ≥ 2?'))),
+                  h('li', null, __alloT('stem.bridgelab.inquiry_margin_question_v2', 'The classroom model uses a margin of 2.0 for both yield and buckling. Why must a design pass both checks? What other checks would a real bridge need?'))),
                 h('div', { style: { fontSize: 10, fontStyle: 'italic', color: '#94a3b8', marginTop: 6 } }, __alloT('stem.bridgelab.no_answers_will_be_revealed_investigat', 'No answers will be revealed. Investigate.')))
             ),
             // Self-mark
@@ -5020,7 +5953,7 @@
                 __alloT('stem.bridgelab.saved_notice_nobody_checked_your_answe', '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.'))
             ),
             h('div', { style: { marginTop: 12, padding: 8, background: 'rgba(10,21,37,0.5)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#94a3b8' } },
-              __alloT('stem.bridgelab.design_note_no_numeric_safety_factor_t', 'Design note: no numeric safety-factor target, no reveal button, no quiz validation. Safety is shown as a discrete 3-state marker (SAFE / MARGINAL / FAILS), not a continuous gradient — by design, to discourage optimization-gaming behavior. The point is the inquiry, not the number.'))
+              __alloT('stem.bridgelab.inquiry_model_scope_v2', 'Each observation saves the current inputs, governing result, estimated material cost, and your note. Cost and mass cover one planar truss; the deck, second truss, bracing members, and connections are excluded. Dead weight is not included in the applied load. A vehicle observation covers only its recorded position. These are classroom checks, not approval to build a bridge.'))
           )
         );
       }
@@ -5030,73 +5963,109 @@
       // ──────────────────────────────────────────────────────────────
       function renderPrint() {
         var mat = MATERIALS.find(function(m) { return m.id === d.materialId; }) || MATERIALS[3];
-        var a = analyzeTruss(d.span, d.height, d.nBays, d.loadPerJoint);
-        var stressMax = Math.max(a.maxChord, a.maxDiag) * 1000 / d.crossSectionMm2;
-        var sf = mat.yieldMPa / stressMax;
-        var status = sf >= 2 ? 'safe' : sf >= 1 ? 'marginal' : 'failed';
-        var areaM2 = d.crossSectionMm2 / 1e6;
+        var gov = bridgeGoverningAnalysis(d, mat);
+        var settings = gov.settings || d;
+        var a = gov.analysis;
+        var sf = gov.governingSF;
+        var status = gov.status;
+        var method = gov.moj.ok ? 'Method of joints (ideal pin-jointed truss)' : 'Deep-beam approximation';
+        var governs = gov.bucklingMargin < gov.safetyFactor ? 'Euler buckling' : 'material yield';
+        var hasDemand = a.W > 0;
+        var areaM2 = settings.crossSectionMm2 / 1e6;
         var massKg = a.totalLen * areaM2 * mat.densityKgM3;
         var costUsd = a.totalLen * areaM2 * mat.costPerM3;
+        var trials = Array.isArray(d.designTrials) ? d.designTrials.filter(function(trial) {
+          return trial && typeof trial === 'object' && trial.inputs && typeof trial.inputs === 'object';
+        }).slice(0, 4) : [];
+        var inquiry = d.inquiry && typeof d.inquiry === 'object' ? d.inquiry : {};
+        var observations = Array.isArray(inquiry.log) ? inquiry.log.filter(function(item) { return item && typeof item === 'object'; }) : [];
+        var currentCrossing = bridgeValidSweep(d, d.vehicleSweep) ? d.vehicleSweep : null;
+        var evidenceStyle = { padding: 12, border: '1px solid #94a3b8', borderRadius: 8, marginBottom: 12, fontSize: 12, lineHeight: 1.6 };
+        function evidenceText(label, value) {
+          return typeof value === 'string' && value.trim() ? h('p', { style: { margin: '6px 0', whiteSpace: 'pre-wrap' } }, h('strong', null, label + ': '), value) : null;
+        }
+        function recordedValue(value, unit) {
+          return typeof value === 'number' && isFinite(value) ? String(value) + (unit || '') : 'Not recorded';
+        }
+        function recordedFactor(value) {
+          return value === null ? 'No demand' : typeof value === 'number' && isFinite(value) ? value.toFixed(2) : 'Not recorded';
+        }
+        function crossingText(crossing) {
+          return crossing.worst ? 'Lowest safety factor ' + formatSF(crossing.worst.sf) + ' at ' + (crossing.worst.position * 100).toFixed(1) + '% of span; ' + crossing.worst.mode + ' governs' + (crossing.worst.member ? ' at ' + crossing.worst.member : '') + '.' : 'No member demand at the tested positions.';
+        }
         return h('div', { style: { padding: 16 } },
           h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid ' + AMBER, marginBottom: 12, fontSize: 12.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
             h('strong', null, __alloT('stem.bridgelab.bridge_design_specification_sheet', '🖨 Bridge design specification sheet. ')),
-            __alloT('stem.bridgelab.a_one_page_artifact_for_engineering_po', 'A one-page artifact for engineering portfolios, design competitions, classroom presentations, or maker-faire submissions. Contains the design parameters, the stress analysis result, the material properties, and your design notes.')
+            __alloT('stem.bridgelab.print_evidence_portfolio', 'An engineering portfolio with the current design, saved trial comparisons, and your Inquiry evidence. Print or save as PDF to keep the inputs, calculations, predictions, observations, and explanations together.')
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
             h('button', { onClick: function() { try { window.print(); } catch (e) {} },
               style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #b45309 0%, #c2410c 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, __alloT('stem.bridgelab.print_save_as_pdf', '🖨 Print / Save as PDF'))
           ),
           h('style', null,
-            '@media print { body * { visibility: hidden !important; } ' +
+            '@media print { html, body { background: #fff !important; color: #0f172a !important; } body * { visibility: hidden !important; } ' +
             '#bridge-print-region, #bridge-print-region * { visibility: visible !important; } ' +
             '#bridge-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #fff !important; color: #0f172a !important; } ' +
             '#bridge-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
+            '#bridge-print-region tr { break-inside: avoid; } ' +
+            '#bridge-print-region h3, #bridge-print-region h4 { break-after: avoid; } ' +
             '.no-print { display: none !important; } }'
           ),
-          h('div', { id: 'bridge-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
-            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
+          h('div', { id: 'bridge-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0', overflowWrap: 'anywhere' } },
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
               h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, d.designName || 'My Bridge Design'),
               h('div', { style: { fontSize: 11, color: '#475569' } }, __alloT('stem.bridgelab.ngss_ms_ets1_hs_ets1_hs_ps2', 'NGSS MS-ETS1 · HS-ETS1 · HS-PS2'))
             ),
 
             h('div', { style: { padding: 10, background: status === 'safe' ? '#ecfdf5' : status === 'marginal' ? '#fffbeb' : '#fef2f2', border: '1px solid ' + (status === 'safe' ? '#6ee7b7' : status === 'marginal' ? '#fcd34d' : '#fecaca'), borderRadius: 8, marginBottom: 14, fontSize: 12, color: status === 'safe' ? '#065f46' : status === 'marginal' ? '#78350f' : '#7f1d1d' } },
               h('strong', null, 'Status: '),
-              status === 'safe' ? '✓ SAFE — safety factor ' + sf.toFixed(2) + ' (adequate margin)' :
-              status === 'marginal' ? '⚠ MARGINAL — safety factor ' + sf.toFixed(2) + ' (below recommended 2.0)' :
-              '✗ FAILED — safety factor ' + sf.toFixed(2) + ' (material yield exceeded)'
+              !hasDemand ? 'NO APPLIED LOAD — no member demand in this model; apply a load to compare safety margins.' :
+              !isFinite(sf) ? 'NO MEMBER DEMAND — the applied load acts at the supports in this model; move the vehicle onto the span to compare safety margins.' :
+              status === 'safe' ? '✓ SAFE — governing safety factor ' + formatSF(sf) + ' (' + governs + '; both modeled checks ≥ 2.0)' :
+              status === 'marginal' ? '⚠ MARGINAL — governing safety factor ' + formatSF(sf) + ' (' + governs + '; below the classroom target of 2.0)' :
+              '✗ FAILED — governing safety factor ' + formatSF(sf) + ' (' + governs + ' limit exceeded)'
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, __alloT('stem.bridgelab.design_parameters', 'Design parameters')),
               h('table', { style: { width: '100%', fontSize: 12, color: '#0f172a', borderCollapse: 'collapse' } },
                 h('tbody', null,
-                  printRow('Bridge type', ({ warren: 'Warren', pratt: 'Pratt', howe: 'Howe', ktruss: 'K-truss' }[d.trussStyle] || 'Warren') + ' truss, ' + d.nBays + ' bays'),
-                  printRow('Span', d.span + ' m'),
-                  printRow('Height', d.height + ' m'),
-                  printRow('Load per top joint', d.loadPerJoint + ' kN'),
-                  printRow('Total applied load (W)', a.W.toFixed(0) + ' kN'),
-                  printRow('Member cross-section', d.crossSectionMm2 + ' mm² (' + (d.crossSectionMm2 / 100).toFixed(0) + ' cm²)'),
+                  printRow('Bridge type', ({ warren: 'Warren', pratt: 'Pratt', howe: 'Howe', ktruss: 'K-truss' }[settings.trussStyle] || 'Warren') + ' truss, ' + settings.nBays + ' bays'),
+                  printRow('Span', settings.span + ' m'),
+                  printRow('Height', settings.height + ' m'),
+                  printRow('Load mode', gov.loadMode === 'vehicle' ? 'Moving vehicle — current position' : 'Uniform top-joint loads'),
+                  gov.loadMode === 'vehicle'
+                    ? printRow('Vehicle load and position', settings.vehicleLoad + ' kN at ' + (settings.vehiclePos * 100).toFixed(1) + '% of span (' + (settings.vehiclePos * settings.span).toFixed(2) + ' m from the left support)')
+                    : printRow('Load per top joint', settings.loadPerJoint + ' kN'),
+                  printRow('Total applied load (W)', a.W.toFixed(1) + ' kN'),
+                  printRow('Member cross-section', settings.crossSectionMm2 + ' mm² (' + (settings.crossSectionMm2 / 100).toFixed(0) + ' cm²), solid square'),
+                  printRow('Lateral bracing', 'Every ' + gov.braceEvery + ' bay' + (gov.braceEvery === 1 ? '' : 's') + '; longest top-chord unbraced interval ' + gov.unbracedLenM.toFixed(2) + ' m'),
                   printRow('Material', mat.name + ' (yield ' + mat.yieldMPa + ' MPa, E = ' + mat.modulusGPa + ' GPa)')
                 )
               )
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, __alloT('stem.bridgelab.stress_analysis_deep_beam_approximatio', 'Stress analysis (deep-beam approximation)')),
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, __alloT('stem.bridgelab.print_stress_buckling_v2', 'Stress and buckling analysis')),
               h('table', { style: { width: '100%', fontSize: 12, color: '#0f172a', borderCollapse: 'collapse' } },
                 h('tbody', null,
-                  printRow('Reaction at each support', a.reactions.toFixed(0) + ' kN'),
-                  printRow('Maximum bending moment', a.Mmax.toFixed(0) + ' kN·m'),
-                  printRow('Max chord force', a.maxChord.toFixed(0) + ' kN (top in compression, bottom in tension)'),
-                  printRow('Max diagonal force', a.maxDiag.toFixed(0) + ' kN'),
-                  printRow('Max stress (force / area)', stressMax.toFixed(1) + ' MPa'),
-                  printRow('Safety factor (yield / stress)', sf.toFixed(2))
+                  printRow('Analysis method', method),
+                  printRow('Left support reaction', a.reactionsLeft.toFixed(1) + ' kN upward'),
+                  printRow('Right support reaction', a.reactionsRight.toFixed(1) + ' kN upward'),
+                  printRow('Maximum bending moment', a.Mmax.toFixed(1) + ' kN·m'),
+                  printRow('Max absolute chord force', a.maxChord.toFixed(1) + ' kN'),
+                  printRow('Max absolute web-member force', a.maxDiag.toFixed(1) + ' kN'),
+                  printRow('Max stress (force / area)', gov.maxStress.toFixed(1) + ' MPa'),
+                  printRow('Yield safety factor', formatSF(gov.safetyFactor)),
+                  printRow('Buckling safety factor', formatSF(gov.bucklingMargin)),
+                  printRow('Governing safety factor', formatSF(sf)),
+                  printRow('Governing compression member', hasDemand && gov.compressionCases.length ? gov.governingCompression.id + '; effective length ' + (gov.governingLengthMm / 1000).toFixed(2) + ' m; Euler capacity ' + gov.pcrKN.toFixed(1) + ' kN (pinned ends, K = 1)' : 'No compression demand')
                 )
               )
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, __alloT('stem.bridgelab.quantities', 'Quantities')),
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, __alloT('stem.bridgelab.print_quantities_scope_v2', 'Quantities — one planar truss')),
               h('table', { style: { width: '100%', fontSize: 12, color: '#0f172a', borderCollapse: 'collapse' } },
                 h('tbody', null,
                   printRow('Total member length', a.totalLen.toFixed(1) + ' m'),
@@ -5111,9 +6080,75 @@
               h('div', { style: { fontSize: 12.5, color: '#0f172a', whiteSpace: 'pre-wrap', lineHeight: 1.6 } }, d.designNotes)
             ) : null,
 
+            (d.designPrediction || d.designObservation) ? h('section', { style: evidenceStyle, 'data-bridge-print-current-evidence': true },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 14 } }, 'Current design reasoning'),
+              evidenceText('Prediction', d.designPrediction), evidenceText('Observation', d.designObservation)
+            ) : null,
+
+            currentCrossing ? h('section', { style: evidenceStyle, 'data-bridge-print-crossing': true },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 14 } }, 'Current design crossing test'),
+              h('p', { style: { margin: 0 } }, crossingText(currentCrossing)),
+              h('p', { style: { margin: '6px 0 0' } }, currentCrossing.samples.length + ' static vehicle positions tested with ' + settings.vehicleLoad + ' kN. This records the crossing test separately from the current-position analysis above. Vehicle dynamics and deflection are not checked.')
+            ) : null,
+
+            trials.length ? h('section', { 'data-bridge-print-notebook': true },
+              h('h3', { style: { fontSize: 16, margin: '18px 0 6px', borderBottom: '2px solid #0f172a', paddingBottom: 6 } }, 'Saved design comparison'),
+              h('p', { style: { fontSize: 12, lineHeight: 1.6 } }, 'Saved inputs are recalculated with the current classroom model. Material cost and mass cover one planar truss. Each vehicle safety factor describes the saved position; completed crossing evidence is listed separately.'),
+              trials.map(function(trial, index) {
+                var inputs = bridgeNormalizeSettings(trial.inputs);
+                var trialMat = MATERIALS.find(function(item) { return item.id === inputs.materialId; }) || MATERIALS[3];
+                var result = bridgeGoverningAnalysis(inputs, trialMat);
+                var trialCost = result.analysis.totalLen * inputs.crossSectionMm2 / 1e6 * trialMat.costPerM3;
+                var trialMass = result.analysis.totalLen * inputs.crossSectionMm2 / 1e6 * trialMat.densityKgM3;
+                var savedCrossing = bridgeValidCrossingSummary(inputs, trial.crossing) ? trial.crossing : null;
+                var comparable = ['span', 'nBays', 'trussStyle', 'loadMode', 'loadPerJoint', 'vehicleLoad', 'vehiclePos'].every(function(key) {
+                  if (key === 'loadPerJoint' && inputs.loadMode === 'vehicle') return true;
+                  if ((key === 'vehicleLoad' || key === 'vehiclePos') && inputs.loadMode === 'uniform') return true;
+                  return inputs[key] === settings[key];
+                });
+                var difference = costUsd - trialCost;
+                return h('article', { key: index, style: evidenceStyle, 'data-bridge-print-trial': index },
+                  h('h4', { style: { fontSize: 14, margin: '0 0 8px' } }, String(trial.name || 'Trial ' + (index + 1))),
+                  h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12 } }, h('tbody', null,
+                    printRow('Saved geometry', inputs.trussStyle + ' truss; ' + inputs.span + ' m span × ' + inputs.height + ' m height; ' + inputs.nBays + ' bays'),
+                    printRow('Saved material and bracing', trialMat.name + '; ' + inputs.crossSectionMm2 + ' mm²; bracing every ' + inputs.lateralBraceEvery + ' bays'),
+                    printRow('Saved applied load', (inputs.loadMode === 'vehicle' ? inputs.vehicleLoad + ' kN vehicle at ' + (inputs.vehiclePos * 100).toFixed(1) + '% of span' : inputs.loadPerJoint + ' kN per top joint') + '; total ' + result.analysis.W.toFixed(1) + ' kN'),
+                    printRow('Recalculated result', (isFinite(result.governingSF) ? result.status.toUpperCase() : 'NO MEMBER DEMAND') + '; governing SF ' + formatSF(result.governingSF) + '; yield ' + formatSF(result.safetyFactor) + '; buckling ' + formatSF(result.bucklingMargin)),
+                    printRow('Saved design quantities', '$' + trialCost.toFixed(0) + '; ' + trialMass.toFixed(0) + ' kg; ' + (result.moj.ok ? 'Method of joints' : 'Deep-beam approximation')),
+                    printRow('Comparison with current design', comparable ? 'Same span, layout, and applied load. Current material cost change: ' + (difference >= 0 ? '+' : '−') + '$' + Math.abs(difference).toFixed(0) + '. Compare safety margins before choosing a design.' : 'Geometry or loading differs. Match the span, layout, and applied load before comparing efficiency.'),
+                    inputs.loadMode === 'vehicle' ? printRow('Saved crossing evidence', savedCrossing ? crossingText(savedCrossing) + ' ' + savedCrossing.sampleCount + ' positions tested.' : 'No matching crossing test was saved. Test this design across the span before judging vehicle-load capacity.') : null
+                  )),
+                  evidenceText('Design notes', trial.notes), evidenceText('Prediction', trial.prediction), evidenceText('Observation', trial.observation)
+                );
+              })
+            ) : null,
+
+            (observations.length || inquiry.hypothesis || inquiry.explanation || inquiry.observation) ? h('section', { 'data-bridge-print-inquiry': true },
+              h('h3', { style: { fontSize: 16, margin: '18px 0 6px', borderBottom: '2px solid #0f172a', paddingBottom: 6 } }, 'Inquiry evidence'),
+              h('p', { style: { fontSize: 12, lineHeight: 1.6 } }, 'Inquiry uses its own span, area, and material controls. Logged observations retain the inputs and results recorded at that time. They may differ from the current design and from each other.'),
+              h('div', { style: { fontSize: 12, lineHeight: 1.6 } }, evidenceText('Current hypothesis', inquiry.hypothesis), evidenceText('Pending observation (not yet logged)', inquiry.observation), evidenceText('Learner explanation', inquiry.explanation)),
+              observations.map(function(observation, index) {
+                var modern = observation.version === 2;
+                var savedMaterial = MATERIALS.find(function(item) { return item.id === observation.mat; });
+                return h('article', { key: index, style: evidenceStyle, 'data-bridge-print-observation': index },
+                  h('h4', { style: { fontSize: 14, margin: '0 0 8px' } }, 'Observation ' + (index + 1)),
+                  h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12 } }, h('tbody', null,
+                    printRow('Recorded inputs', recordedValue(observation.span, ' m span') + '; ' + recordedValue(observation.area, ' mm²') + '; ' + (savedMaterial ? savedMaterial.name : String(observation.mat || 'Not recorded'))),
+                    printRow('Recorded model', modern ? String(observation.trussStyle || 'Not recorded') + '; ' + recordedValue(observation.nBays, ' bays') + '; ' + recordedValue(observation.height, ' m height') + '; bracing every ' + recordedValue(observation.braceEvery, ' bays') + '; ' + String(observation.method || 'Not recorded') : 'Earlier yield-only record; geometry, loading, and buckling were not recorded.'),
+                    printRow('Recorded load', modern ? String(observation.loadDescription || 'Not recorded') + '; total ' + recordedValue(observation.totalLoadKN, ' kN') : 'Not recorded'),
+                    printRow(modern ? 'Recorded governing factor' : 'Recorded yield factor', recordedFactor(observation.sf) + '; ' + String(observation.state || 'Not recorded') + (modern ? '; ' + String(observation.governingCheck || 'Not recorded') : ' (earlier yield-only result)')),
+                    modern ? printRow('Recorded checks', 'Yield ' + recordedFactor(observation.yieldSF) + '; buckling ' + recordedFactor(observation.bucklingSF)) : null,
+                    modern ? printRow('Recorded quantities', (typeof observation.costUsd === 'number' && isFinite(observation.costUsd) ? '$' + observation.costUsd.toFixed(0) : 'Not recorded') + '; ' + recordedValue(observation.massKg, ' kg')) : null
+                  )),
+                  evidenceText('Prediction at recording', observation.hypothesis), evidenceText('Observation', observation.observation)
+                );
+              })
+            ) : null,
+
             h('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 12, fontSize: 11.5, color: '#78350f', lineHeight: 1.55 } },
               h('strong', null, __alloT('stem.bridgelab.honest_limit_of_this_analysis', 'Honest limit of this analysis: ')),
-              __alloT('stem.bridgelab.a_deep_beam_approximation_real_bridge_', 'A deep-beam approximation. Real bridge design uses method of joints, method of sections, or matrix structural analysis to get exact member forces, then checks every individual member for yield, buckling, fatigue, and connection limits. This tool is for learning, not for actually building a bridge.')
+              (gov.moj.ok ? __alloT('stem.bridgelab.print_exact_method_scope_v2', 'Member forces are solved for an ideal planar, pin-jointed truss. ') : __alloT('stem.bridgelab.print_approx_method_scope_v2', 'Internal member forces use a deep-beam approximation; K-truss forces are not solved member by member. ')),
+              __alloT('stem.bridgelab.print_model_scope_v3', 'Yield and Euler buckling use solid square sections and pinned ends. Quantities cover one planar truss and exclude the deck, second truss, lateral-bracing members, connections, and waste. Material dead weight is not added to the applied load. Vehicle results describe only the current position unless an explicitly labeled crossing test is included. Deflection, fatigue, dynamics, and connection capacity are not checked. This classroom model is for learning, not construction.')
             ),
 
             h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5 } },
@@ -5121,10 +6156,13 @@
             )
           )
         );
+        function formatSF(value) {
+          return isFinite(value) ? value.toFixed(2) : 'No demand';
+        }
         function printRow(label, value) {
           return h('tr', null,
-            h('td', { style: { padding: 4, borderBottom: '1px dashed var(--allo-stem-border, #cbd5e1)', fontWeight: 700, width: '40%' } }, label),
-            h('td', { style: { padding: 4, borderBottom: '1px dashed var(--allo-stem-border, #cbd5e1)' } }, value)
+            h('th', { scope: 'row', style: { padding: 4, borderBottom: '1px dashed var(--allo-stem-border, #cbd5e1)', fontWeight: 700, width: '40%', textAlign: 'left', verticalAlign: 'top' } }, label),
+            h('td', { style: { padding: 4, borderBottom: '1px dashed var(--allo-stem-border, #cbd5e1)', verticalAlign: 'top' } }, value)
           );
         }
       }
@@ -5182,7 +6220,7 @@
                   h('div', { style: { fontSize: 11, fontWeight: 900, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 3 } }, __alloT('stem.bridgelab.design_readiness', 'Design readiness')),
                   h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } },
                     h('strong', { style: { fontSize: 17, color: bridgeBriefStatusColor } }, bridgeBriefStatusCopy),
-                    h('span', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 800 } }, 'SF ' + bridgeBriefSF.toFixed(2))
+                    h('span', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 800 } }, 'SF ' + bridgeFactor(bridgeBriefSF))
                   ),
                   h('div', { style: { marginTop: 4, fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.45 } },
                     bridgeBriefStyle + ' truss, ' + d.nBays + ' bays, ' + bridgeBriefMat.name)
@@ -5194,7 +6232,7 @@
                   h('path', { d: 'M24 62 H144', stroke: bridgeBriefStatusColor, strokeWidth: 5, strokeLinecap: 'round' }),
                   h('circle', { cx: 24, cy: 62, r: 6, fill: '#e2e8f0' }),
                   h('circle', { cx: 144, cy: 62, r: 6, fill: '#e2e8f0' }),
-                  h('text', { x: 80, y: 18, textAnchor: 'middle', fill: bridgeBriefStatusColor, fontSize: 13, fontWeight: 900 }, bridgeBriefStatus.toUpperCase())
+                  h('text', { x: 80, y: 18, textAnchor: 'middle', fill: bridgeBriefStatusColor, fontSize: 11, fontWeight: 900 }, bridgeBriefGov.analysis.maxForce < 1e-9 ? __alloT('stem.bridgelab.no_demand', 'No demand') : bridgeBriefStatus.toUpperCase())
                 )
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 } },

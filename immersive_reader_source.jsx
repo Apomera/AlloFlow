@@ -749,6 +749,22 @@ function writeCrawlPreference(key, value) {
     try { if (localStorage.getItem(key) !== value) localStorage.setItem(key, value); } catch (_) {}
 }
 
+// Pending callbacks belong to this overlay session, including watchdog races.
+function useImmersiveTimeouts() {
+    const pending = useRef(new Map());
+    const cancel = useCallback(id => { clearTimeout(id); pending.current.delete(id); }, []);
+    const clear = useCallback(() => {
+        const callbacks = [...pending.current.entries()]; pending.current.clear();
+        callbacks.forEach(([id, onCancel]) => { clearTimeout(id); if (onCancel) onCancel(); });
+    }, []);
+    const schedule = useCallback((callback, delay, onCancel) => {
+        const id = setTimeout(() => { pending.current.delete(id); callback(); }, delay);
+        pending.current.set(id, onCancel); return id;
+    }, []);
+    useEffect(() => clear, [clear]);
+    return useMemo(() => ({ schedule, cancel, clear }), [schedule, cancel, clear]);
+}
+
 const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     const { t } = useContext(LanguageContext);
     const dialogRef = useOverlayDialogFocus(isOpen);
@@ -1185,6 +1201,9 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
     const getAudioUrlRef = useRef(getAudioUrl);
     getAudioUrlRef.current = getAudioUrl;
     const audioRequestAbortRef = useRef(null);
+    const playbackTimeouts = useImmersiveTimeouts();
+    const diagnosticsTimeouts = useImmersiveTimeouts();
+    const diagnosticsSessionRef = useRef(0);
     // Sentences whose audio has already been pre-warmed this session (indices).
     // callTTS caches on the shared urlCache, so a warmed sentence is an instant
     // cache hit when the player later requests it — zero perceived latency.
@@ -1236,7 +1255,12 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
     // lists as a dep — a deps array reads its values at render time, so a
     // later-declared useState would be a TDZ render crash.
     const [diagnosticsCopied, setDiagnosticsCopied] = useState(false);
+    useEffect(() => {
+        setDiagnosticsCopied(false);
+        return () => { diagnosticsSessionRef.current++; diagnosticsTimeouts.clear(); };
+    }, [isOpen, text, sentenceList, diagnosticsTimeouts]);
     const copyDiagnostics = useCallback(async () => {
+        const session = diagnosticsSessionRef.current;
         let payload;
         try {
             payload = JSON.stringify({
@@ -1271,9 +1295,10 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
                 copied = true;
             }
         } catch (e) {}
-        if (!copied) {
+        if (!copied && session === diagnosticsSessionRef.current) {
+            let scratch;
             try {
-                const scratch = document.createElement('textarea');
+                scratch = document.createElement('textarea');
                 scratch.setAttribute('aria-label', 'Temporary field for copying read-aloud diagnostics');
                 scratch.value = payload;
                 scratch.setAttribute('readonly', '');
@@ -1282,12 +1307,12 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
                 document.body.appendChild(scratch);
                 scratch.select();
                 copied = document.execCommand('copy');
-                scratch.remove();
-            } catch (e) {}
+            } catch (e) {} finally { scratch?.remove(); }
         }
-        if (copied) {
+        if (copied && session === diagnosticsSessionRef.current) {
             setDiagnosticsCopied(true);
-            setTimeout(() => setDiagnosticsCopied(false), 2000);
+            diagnosticsTimeouts.clear();
+            diagnosticsTimeouts.schedule(() => setDiagnosticsCopied(false), 2000);
         }
     }, [sentenceIdx, sentences, isPlaying, audioLoadPhase, playbackFallbackNotice, captureOn, captureSaveState, currentAudioReadyIdx]);
     const reducedMotion = typeof window !== 'undefined' && window.matchMedia
@@ -1295,6 +1320,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
         : false;
     const hardStop = useCallback(() => {
         playTokenRef.current++;
+        playbackTimeouts.clear();
         try { if (audioRequestAbortRef.current) audioRequestAbortRef.current.abort(); } catch (e) {}
         audioRequestAbortRef.current = null;
         clearAudioLoad();
@@ -1302,7 +1328,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
         try { if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; } } catch (e) {}
         if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
         try { if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
-    }, [clearAudioLoad]);
+    }, [clearAudioLoad, playbackTimeouts]);
 
 
     // Capture is not teacher-gated: a student's played clips persist only into
@@ -1592,6 +1618,8 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
         if (!isOpen) {
             // Bump the play token so any pending getAudioUrl resolution is ignored.
             playTokenRef.current++;
+            playbackTimeouts.clear();
+            setDiagnosticsCopied(false);
             try { if (audioRequestAbortRef.current) audioRequestAbortRef.current.abort(); } catch (e) {}
             audioRequestAbortRef.current = null;
             try { if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; } } catch (e) {}
@@ -1605,6 +1633,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
         }
         return () => {
             playTokenRef.current++;
+            playbackTimeouts.clear();
             audioLoadOwnerRef.current += 1;
             try { if (audioRequestAbortRef.current) audioRequestAbortRef.current.abort(); } catch (e) {}
             audioRequestAbortRef.current = null;
@@ -1612,7 +1641,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
             try { if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
         };
-    }, [isOpen, clearAudioLoad]);
+    }, [isOpen, clearAudioLoad, playbackTimeouts]);
 
     // Scroll the active sentence into view
     useEffect(() => {
@@ -1624,6 +1653,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
     const playSentence = useCallback(async (idx) => {
         if (idx < 0 || idx >= sentences.length) return;
         // Stop anything already playing and invalidate any in-flight audio fetch
+        playbackTimeouts.clear();
         try { if (audioRequestAbortRef.current) audioRequestAbortRef.current.abort(); } catch (e) {}
         audioRequestAbortRef.current = null;
         try { if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; } } catch (e) {}
@@ -1643,7 +1673,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
         const resolver = getAudioUrlRef.current;
         if (typeof resolver === 'function') {
             audioLoadOwner = beginAudioLoad('generating');
-            let requestController = null;
+            let requestController = null, watchdogTimer = null;
             try {
                 const warmEntry = warmPromisesRef.current.get(idx);
                 let resolution;
@@ -1677,18 +1707,17 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
                 // window, fall back to the device voice, and clear the warm
                 // bookkeeping so the NEXT Play issues a fresh request rather
                 // than re-joining the hung promise.
-                let watchdogTimer = null;
                 url = await Promise.race([
                     Promise.resolve(resolution),
                     new Promise((resolveLater) => {
-                        watchdogTimer = setTimeout(() => {
+                        watchdogTimer = playbackTimeouts.schedule(() => {
                             resolveTimedOut = true;
                             try { requestController?.abort(); } catch (_) {}
                             resolveLater(null);
-                        }, KARAOKE_RESOLVE_WATCHDOG_MS);
+                        }, KARAOKE_RESOLVE_WATCHDOG_MS, () => resolveLater(null));
                     })
                 ]);
-                if (watchdogTimer) clearTimeout(watchdogTimer);
+
                 if (resolveTimedOut && !url) {
                     warmedRef.current.delete(idx);
                     warmPromisesRef.current.delete(idx);
@@ -1702,6 +1731,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
                 karaokeTrace('karaoke:resolve-error', { idx, error: String(e?.message || e).substring(0, 140) });
                 console.warn('[Karaoke] Generated audio request failed; using browser fallback.', e?.message || e);
             } finally {
+                if (watchdogTimer) playbackTimeouts.cancel(watchdogTimer);
                 if (audioRequestAbortRef.current === requestController) audioRequestAbortRef.current = null;
                 if (token === playTokenRef.current) {
                     if (url) {
@@ -1789,7 +1819,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
                 stopGeneratedSweepClock();
                 setSweepPct(100);
                 if (autoAdvanceRef.current && idx < sentences.length - 1) {
-                    setTimeout(() => { if (token === playTokenRef.current) setSentenceIdx(idx + 1); }, 250);
+                    playbackTimeouts.schedule(() => { if (token === playTokenRef.current) setSentenceIdx(idx + 1); }, 250);
                 } else {
                     setIsPlaying(false);
                 }
@@ -1905,14 +1935,14 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
                     setSweepPct(100);
                     finishAudioLoad(audioLoadOwner);
                     if (autoAdvanceRef.current && idx < sentences.length - 1) {
-                        setTimeout(() => { if (token === playTokenRef.current) setSentenceIdx(idx + 1); }, 250);
+                        playbackTimeouts.schedule(() => { if (token === playTokenRef.current) setSentenceIdx(idx + 1); }, 250);
                     } else {
                         setIsPlaying(false);
                     }
                 };
                 u.onerror = () => { if (token !== playTokenRef.current) return; finishAudioLoad(audioLoadOwner); if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; } setIsPlaying(false); };
                 window.speechSynthesis.speak(u);
-                setTimeout(() => finishAudioLoad(audioLoadOwner), 2000);
+                playbackTimeouts.schedule(() => finishAudioLoad(audioLoadOwner), 2000);
             } catch (e) { finishAudioLoad(audioLoadOwner); setIsPlaying(false); }
             return;
         }
@@ -1921,7 +1951,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
         finishAudioLoad(audioLoadOwner);
         setPlaybackFallbackNotice('Audio is unavailable on this device. Try again when a generated voice or browser voice is available.');
         setIsPlaying(false);
-    }, [sentences, language, sentenceLanguages, reducedMotion, scheduleCaptureForStorage, beginAudioLoad, transitionAudioLoad, finishAudioLoad, clearAudioLoad, occurrenceForIndex]);
+    }, [sentences, language, sentenceLanguages, reducedMotion, scheduleCaptureForStorage, beginAudioLoad, transitionAudioLoad, finishAudioLoad, clearAudioLoad, occurrenceForIndex, playbackTimeouts]);
 
     // ── Teacher vetting handlers ────────────────────────────────────────
     // Regenerate the CURRENT sentence's audio, then replay so the teacher hears

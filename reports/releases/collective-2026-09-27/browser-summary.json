@@ -1,0 +1,63 @@
+{
+  "at": "2026-09-27T19:31:24.042Z",
+  "status": "passed",
+  "tools": 7,
+  "initialToolsPassed": 6,
+  "browser": "148.0.7778.96",
+  "stableInputs": 36,
+  "inputDrift": [],
+  "checks": {
+    "focus": {
+      "combinations": 4,
+      "seconds": 11.0996
+    },
+    "scroll": {
+      "configurations": 6,
+      "nativeInputProbes": 30,
+      "seconds": 28.1736
+    },
+    "tree": {
+      "behaviors": 13,
+      "reflowCases": 14,
+      "themeAudits": 3,
+      "violations": 0,
+      "seconds": 45.8253
+    },
+    "draft": {
+      "behaviors": 22,
+      "pageErrors": [],
+      "seconds": 30.4675
+    },
+    "host": {
+      "behaviors": 7,
+      "pageErrors": [],
+      "seconds": 1.2108
+    },
+    "offlineStorybook": {
+      "passed": true,
+      "actualPlayback": true,
+      "offlineAuthorNetworkRequests": 0,
+      "recipientNetworkRequests": 0,
+      "seconds": 1.9042
+    },
+    "immersive": {
+      "cases": 8,
+      "passed": 8,
+      "inputDrift": false,
+      "seconds": 5.3442
+    }
+  },
+  "initialFailure": {
+    "tool": "immersive-lifecycle",
+    "classification": "fixture transport failure before first runtime case",
+    "evidence": "immersive-lifecycle-integration/browser-current-initial-results.json",
+    "reproduction": "immersive-lifecycle-integration/transport-probe.json",
+    "change": "Convert in-memory esbuild Uint8Array to Buffer for route.fulfill; add request/route diagnostics; runtime and assertions unchanged"
+  },
+  "limits": [
+    "Fresh local fixture contexts with current canonical code/modules; full application shell, cloud sync and deployed bytes are not exercised.",
+    "Native browser wheel/keyboard/focus/unload, disposable localStorage/IndexedDB, WebGL/axe, exported WAV playback, and immersive PCM completion are exercised.",
+    "Focus speech, provider synthesis, device voice, hung resolver, clipboard outcomes, image picker and selected save/quota outcomes are deterministic stubs.",
+    "No physical touch/GPU, screen-reader speech, cache/latency/heap or broad performance acceptance claim."
+  ]
+}

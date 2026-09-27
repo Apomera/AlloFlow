@@ -545,6 +545,104 @@ const d = labToolData.artStudio || {};
           const ART_STUDIO_MAX_ANIM_KEYFRAMES = 12;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, artStudio: { ...prev.artStudio, [key]: val } }));
           const updMany = (values) => setLabToolData(prev => ({ ...prev, artStudio: { ...prev.artStudio, ...values } }));
+          const pixelHistoryRef = React.useRef({ undo: [], redo: [] });
+          const pixelViewportRef = React.useRef(null);
+          const pixelZoomAnchorRef = React.useRef(null);
+          const [pixelZoom, setPixelZoom] = React.useState(1);
+          const [pixelFit, setPixelFit] = React.useState(512);
+          const watercolorPaperRef = React.useRef(null);
+          const [watercolorFit, setWatercolorFit] = React.useState(512);
+          const pixelGridSize = [8, 16, 24, 32, 48, 64].indexOf(Number(d.pixelGrid)) >= 0 ? Number(d.pixelGrid) : 16;
+          const pixelBrushSize = [1, 2, 3, 4, 6, 8].indexOf(Number(d.pixelBrushSize)) >= 0 ? Number(d.pixelBrushSize) : 1;
+          const pixelBrushPattern = [25, 50, 75].indexOf(Number(d.pixelBrushPattern)) >= 0 ? Number(d.pixelBrushPattern) : 100;
+          function zoomPixelCanvas(zoom) {
+            var viewport = pixelViewportRef.current, canvas = document.getElementById('pixelCanvas');
+            if (viewport && canvas) {
+              var view = viewport.getBoundingClientRect(), rect = canvas.getBoundingClientRect();
+              pixelZoomAnchorRef.current = {
+                x: Math.max(0, Math.min(1, (view.left + viewport.clientWidth / 2 - rect.left) / Math.max(1, rect.width))),
+                y: Math.max(0, Math.min(1, (view.top + viewport.clientHeight / 2 - rect.top) / Math.max(1, rect.height)))
+              };
+            }
+            setPixelZoom(zoom);
+          }
+          React.useLayoutEffect(function () {
+            var anchor = pixelZoomAnchorRef.current, viewport = pixelViewportRef.current;
+            var canvas = viewport && viewport.querySelector('canvas');
+            if (!anchor || !canvas) return;
+            var view = viewport.getBoundingClientRect(), rect = canvas.getBoundingClientRect();
+            viewport.scrollLeft += rect.left + anchor.x * rect.width - view.left - viewport.clientWidth / 2;
+            viewport.scrollTop += rect.top + anchor.y * rect.height - view.top - viewport.clientHeight / 2;
+            pixelZoomAnchorRef.current = null;
+          }, [pixelZoom]);
+          function pixelCheckpoint(data, size) {
+            return { pixelData: Object.assign({}, data || {}), pixelGrid: size || pixelGridSize };
+          }
+          function rememberPixelArtwork(snapshot) {
+            var history = pixelHistoryRef.current;
+            history.undo.push(snapshot || pixelCheckpoint(d.pixelData));
+            if (history.undo.length > 40) history.undo.shift();
+            history.redo = [];
+          }
+          function changePixelHistory(redo) {
+            var canvas = document.getElementById('pixelCanvas');
+            if (canvas && canvas._pixelCancelGesture) canvas._pixelCancelGesture();
+            var history = pixelHistoryRef.current;
+            var from = redo ? history.redo : history.undo;
+            if (!from.length) return;
+            (redo ? history.undo : history.redo).push(pixelCheckpoint(d.pixelData));
+            updMany(from.pop());
+          }
+          function resizePixelArtwork(size) {
+            var canvas = document.getElementById('pixelCanvas');
+            if (canvas && canvas._pixelCancelGesture) canvas._pixelCancelGesture();
+            // Nearest-neighbor resampling preserves the composition; Undo also
+            // restores the original resolution and every original cell.
+            rememberPixelArtwork();
+            var next = {}, current = d.pixelData || {};
+            for (var y = 0; y < size; y++) for (var x = 0; x < size; x++) {
+              var color = current[Math.floor(x * pixelGridSize / size) + ',' + Math.floor(y * pixelGridSize / size)];
+              if (color) next[x + ',' + y] = color;
+            }
+            updMany({ pixelGrid: size, pixelData: next });
+          }
+          function transformPixelArtwork(operation) {
+            var canvas = document.getElementById('pixelCanvas');
+            if (canvas && canvas._pixelCancelGesture) canvas._pixelCancelGesture();
+            var current = d.pixelData || {}, next = {};
+            if (!Object.keys(current).length) return;
+            rememberPixelArtwork();
+            Object.keys(current).forEach(function (key) {
+              var point = key.split(',').map(Number), x = point[0], y = point[1];
+              if (!Number.isInteger(x) || !Number.isInteger(y) || x < 0 || y < 0 || x >= pixelGridSize || y >= pixelGridSize) return;
+              var nx = operation === 'rotate' || operation === 'flipX' ? pixelGridSize - 1 - (operation === 'rotate' ? y : x) : x;
+              var ny = operation === 'rotate' ? x : operation === 'flipY' ? pixelGridSize - 1 - y : y;
+              next[nx + ',' + ny] = current[key];
+            });
+            upd('pixelData', next);
+          }
+          React.useEffect(function () {
+            var viewport = pixelViewportRef.current;
+            if (!viewport) return;
+            var measure = function () {
+              setPixelFit(Math.max(64, Math.floor(Math.min(viewport.clientWidth - 24, viewport.clientHeight - 24))));
+            };
+            measure();
+            var observer = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null;
+            if (observer) observer.observe(viewport);
+            window.addEventListener('resize', measure);
+            return function () { if (observer) observer.disconnect(); window.removeEventListener('resize', measure); };
+          }, [d.tab, d.studioHome]);
+          React.useEffect(function () {
+            var paper=watercolorPaperRef.current;
+            if(!paper)return;
+            var measure=function(){setWatercolorFit(Math.max(64,Math.floor(Math.min(paper.clientWidth-20,paper.clientHeight-20))));};
+            measure();
+            var observer=typeof ResizeObserver==='function'?new ResizeObserver(measure):null;
+            if(observer)observer.observe(paper);
+            window.addEventListener('resize',measure);
+            return function(){if(observer)observer.disconnect();window.removeEventListener('resize',measure);};
+          }, [d.tab, d.studioHome]);
           const normalizeThreadKitColor = function (color) {
             if (!color || typeof color !== 'object') return null;
             var h = Number(color.h), s = Number(color.s), l = Number(color.l);
@@ -773,6 +871,10 @@ const d = labToolData.artStudio || {};
           const studioArchiveUndo = _studioArchiveUndoState[0];
           const setStudioArchiveUndo = _studioArchiveUndoState[1];
           const studioPersistenceScope = resolveArtStudioPersistenceScope(ctx);
+          const pixelArtworkOwner = studioPersistenceScope + '|' + (d.pixelRestoreToken || '');
+          if (pixelHistoryRef.current.owner !== pixelArtworkOwner) {
+            pixelHistoryRef.current = { owner: pixelArtworkOwner, undo: [], redo: [] };
+          }
           // A queued capture belongs to one uninterrupted learner session. Object
           // identity also invalidates A -> B -> A changes before an image decodes.
           const studioCaptureOwnerRef = React.useRef({ scope: studioPersistenceScope });
@@ -1909,7 +2011,7 @@ const d = labToolData.artStudio || {};
                 ? canvas._watercolorEngine.captureSnapshot()
                 : canvas._symExportAction ? canvas._symExportAction()
                   : canvas._spinExportAction ? canvas._spinExportAction()
-                    : canvas._genExportAction ? canvas._genExportAction() : canvas.toDataURL('image/png');
+                    : canvas._genExportAction ? canvas._genExportAction() : canvas._pixelExport ? canvas._pixelExport() : canvas.toDataURL('image/png');
             } catch (_) { return null; }
             if (!src || src === 'data:,') return null;
             var label = ART_STUDIO_TAB_LABELS[tab] || 'Art Studio artwork';
@@ -2382,6 +2484,7 @@ const d = labToolData.artStudio || {};
               scopedPayload.watercolorStateIsCheckpoint = true;
             }
             if (savedTab === 'symmetry') scopedPayload.symmetryRestoreToken = restoreToken;
+            if (savedTab === 'pixel') scopedPayload.pixelRestoreToken = restoreToken;
             if (savedTab === 'spinArt') scopedPayload.spinReset = restoreToken;
             if (savedTab === 'generative') {
               scopedPayload.genPaused = true;
@@ -2648,6 +2751,12 @@ const d = labToolData.artStudio || {};
           // the display canvas. Keeping the hot loop here (rather than in
           // React state) makes wet-on-wet diffusion inexpensive and keeps
           // session snapshots from filling up with per-frame pixel data.
+          function watercolorHistoryButtonRef(button) {
+            if(!button)return;
+            button.disabled=true;
+            var canvas=document.getElementById('watercolorCanvas');
+            if(canvas && canvas._watercolorEngine && canvas._watercolorEngine.refreshHistoryControls)canvas._watercolorEngine.refreshHistoryControls();
+          }
           const watercolorRef = function (canvas) {
             if (!canvas) return;
 
@@ -2731,7 +2840,7 @@ const d = labToolData.artStudio || {};
             // device pixel ratio, so a 512px bitmap of a 192-cell grid showed
             // every cell as a soft block. Brush maths and stored snapshots keep
             // using the logical 512 size.
-            var LOGICAL_W = canvas.width || 512, LOGICAL_H = canvas.height || 512;
+            var LOGICAL_W = 512, LOGICAL_H = 512;
             var DISPLAY_SCALE = 2;
             try { canvas.width = LOGICAL_W * DISPLAY_SCALE; canvas.height = LOGICAL_H * DISPLAY_SCALE; } catch (eSize) {}
             // Fine paper grain at display resolution, multiplied over the wash so
@@ -2798,9 +2907,12 @@ const d = labToolData.artStudio || {};
               var n00 = seededNoise(lx0 * 17.13 + ly0 * 31.71 + 8.4), n10 = seededNoise((lx0 + 1) * 17.13 + ly0 * 31.71 + 8.4);
               var n01 = seededNoise(lx0 * 17.13 + (ly0 + 1) * 31.71 + 8.4), n11 = seededNoise((lx0 + 1) * 17.13 + (ly0 + 1) * 31.71 + 8.4);
               var cluster = (n00 * (1 - fx) + n10 * fx) * (1 - fy) + (n01 * (1 - fx) + n11 * fx) * fy;
+              // Correlated paper valleys guide both water uptake and pigment
+              // settlement; fine grain is added only at display resolution.
+              paperNoise[pi] = grain * 0.28 + cluster * 0.72;
               var microCluster = seededNoise(pi * 0.73 + 17.2);
               granulationNoise[pi] = clamp(cluster * 0.78 + microCluster * 0.22, 0, 1);
-              var tone = 247 + Math.round((grain - 0.5) * 7 + (fiber - 0.5) * 2);
+              var tone = 250 + Math.round((cluster - 0.5) * 4 + (fiber - 0.5) * 1.5);
               var po = pi * 4;
               paperImage.data[po] = clamp(tone + 2, 0, 255);
               paperImage.data[po + 1] = clamp(tone + 1, 0, 255);
@@ -2874,6 +2986,7 @@ const d = labToolData.artStudio || {};
             var lastTilt = 0;
             var lastBrushAngle = 0;
             var keyboardX = SIM_W / 2, keyboardY = SIM_H / 2;
+            var brushCursor = null;
             var reservoirWater = 1;
             var reservoirPigment = 1;
             var strokeSeed = 1;
@@ -3359,27 +3472,44 @@ const d = labToolData.artStudio || {};
                 var dryCell = clamp(1 - water[i] * 0.86, 0, 1);
                 var localGranulation = clamp((pigmentGranulationMass[i] + stainGranulationMass[i]) / Math.max(0.0001, mass), 0, 1);
                 var granuleTone = (granulationNoise[i] - 0.5) * localGranulation * dryCell;
-                var transparentLayering = mobileMass * 0.30 + stainMass * 0.43;
-                var density = clamp(transparentLayering * (0.88 + params.pigment * 0.78) *
-                  (0.84 + dryCell * 0.20) * (1 + bloom[i] * 0.42 + Math.max(0, granuleTone) * 0.46), 0, 3.2);
+                // Paint settings affect the next brush load, never the optical
+                // density of marks already on paper. Wet pigment is slightly
+                // darker, then lightens as the water evaporates.
+                var wetDepth = 1 + Math.min(1, water[i]) * 0.12;
+                var toothDepth = 1 + granuleTone * 0.85;
+                // A narrow concentration ridge becomes visible as a wash dries.
+                // Use the actual paint boundary so interiors do not acquire a
+                // uniform dark outline around every brush stamp.
+                var ix = i % SIM_W;
+                var edgeLeft = ix > 0 ? i - 1 : i, edgeRight = ix < SIM_W - 1 ? i + 1 : i;
+                var edgeUp = i >= SIM_W ? i - SIM_W : i, edgeDown = i < COUNT - SIM_W ? i + SIM_W : i;
+                var surroundingMass = (pigmentDensity[edgeLeft] + stainDensity[edgeLeft] + pigmentDensity[edgeRight] + stainDensity[edgeRight] + pigmentDensity[edgeUp] + stainDensity[edgeUp] + pigmentDensity[edgeDown] + stainDensity[edgeDown]) * 0.25;
+                var tideLine = clamp((mass - surroundingMass) / Math.max(0.025, mass), 0, 1) * dryCell;
+                var density = clamp(mass * 0.82 * wetDepth * toothDepth * (1 + bloom[i] * 0.25 + tideLine * 0.8), 0, 5);
                 var averageR = clamp(r / Math.max(0.0001, mass), 0, 1);
                 var averageG = clamp(g / Math.max(0.0001, mass), 0, 1);
                 var averageB = clamp(b / Math.max(0.0001, mass), 0, 1);
                 var localOpacity = clamp((pigmentOpacityMass[i] + stainOpacityMass[i]) / Math.max(0.0001, mass), 0, 1);
-                // Beer-Lambert-style channel absorption gives overlapping
-                // washes subtractive depth without making light glazes opaque.
-                var opticalR = Math.exp(-density * (0.07 + (1 - averageR) * 0.28));
-                var opticalG = Math.exp(-density * (0.07 + (1 - averageG) * 0.28));
-                var opticalB = Math.exp(-density * (0.07 + (1 - averageB) * 0.28));
-                var grainTone = clamp(0.95 + (paperNoise[i] - 0.5) * 0.13 * params.paper - Math.max(0, granuleTone) * 0.08, 0.82, 1.08);
-                var alpha = clamp(1 - Math.exp(-density * (0.68 + localOpacity * 0.50)) + bloom[i] * 0.045, 0.02, 0.97);
-                var renderedR = clamp(averageR * 255 * opticalR * grainTone, 0, 255);
-                var renderedG = clamp(averageG * 255 * opticalG * grainTone, 0, 255);
-                var renderedB = clamp(averageB * 255 * opticalB * grainTone, 0, 255);
-                var scattering = clamp(localOpacity * dryCell * (0.035 + stainMass * 0.025), 0, 0.18);
-                renderedR = renderedR * (1 - scattering) + averageR * 255 * scattering;
-                renderedG = renderedG * (1 - scattering) + averageG * 255 * scattering;
-                renderedB = renderedB * (1 - scattering) + averageB * 255 * scattering;
+                // Two-layer RGB absorption approximation: light passes through
+                // the wet glaze and the settled pigment separately. Averaging
+                // both layers first turns glazing into an opaque pastel mixture.
+                // This follows the translucent-glaze principle of Curtis et al.
+                // (1997), without claiming a spectral Kubelka-Munk solver.
+                var mobileWeight = mobileMass / Math.max(0.0001, mass);
+                var stainWeight = stainMass / Math.max(0.0001, mass);
+                var opticalR = Math.exp(density * (mobileWeight * Math.log(0.025 + 0.975 * clamp(pigmentR[i] / Math.max(0.0001, mobileMass), 0, 1)) + stainWeight * Math.log(0.025 + 0.975 * clamp(stainR[i] / Math.max(0.0001, stainMass), 0, 1))));
+                var opticalG = Math.exp(density * (mobileWeight * Math.log(0.025 + 0.975 * clamp(pigmentG[i] / Math.max(0.0001, mobileMass), 0, 1)) + stainWeight * Math.log(0.025 + 0.975 * clamp(stainG[i] / Math.max(0.0001, stainMass), 0, 1))));
+                var opticalB = Math.exp(density * (mobileWeight * Math.log(0.025 + 0.975 * clamp(pigmentB[i] / Math.max(0.0001, mobileMass), 0, 1)) + stainWeight * Math.log(0.025 + 0.975 * clamp(stainB[i] / Math.max(0.0001, stainMass), 0, 1))));
+                var scattering = localOpacity * dryCell * (1 - Math.exp(-mass * 0.3)) * 0.24;
+                opticalR = opticalR * (1 - scattering) + averageR * scattering;
+                opticalG = opticalG * (1 - scattering) + averageG * scattering;
+                opticalB = opticalB * (1 - scattering) + averageB * scattering;
+                // Recover a transparent source-over layer with the desired
+                // transmission. Paper highlights remain visible through washes.
+                var alpha = clamp(1 - Math.min(opticalR, opticalG, opticalB), 0.001, 1);
+                var renderedR = clamp((opticalR - 1 + alpha) / alpha * 255, 0, 255);
+                var renderedG = clamp((opticalG - 1 + alpha) / alpha * 255, 0, 255);
+                var renderedB = clamp((opticalB - 1 + alpha) / alpha * 255, 0, 255);
                 var maskFilm = maskAmount * 0.58;
                 data[offset] = Math.round(renderedR * (1 - maskFilm) + 196 * maskFilm);
                 data[offset + 1] = Math.round(renderedG * (1 - maskFilm) + 218 * maskFilm);
@@ -3414,7 +3544,7 @@ const d = labToolData.artStudio || {};
               updateStatus();
             }
 
-            function captureCleanSnapshot() {
+            function captureCleanSnapshot(fullSize) {
               if (restoringArtwork && incomingArtwork) return incomingArtwork.snapshot || '';
               var snapshot = '';
               render(false);
@@ -3424,7 +3554,7 @@ const d = labToolData.artStudio || {};
                 var snapCanvas = document.createElement('canvas');
                 snapCanvas.width = LOGICAL_W; snapCanvas.height = LOGICAL_H;
                 var snapCtx = snapCanvas.getContext && snapCanvas.getContext('2d');
-                if (snapCtx && typeof snapCtx.drawImage === 'function' && canvas.width !== LOGICAL_W) {
+                if (!fullSize && snapCtx && typeof snapCtx.drawImage === 'function' && canvas.width !== LOGICAL_W) {
                   snapCtx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, LOGICAL_W, LOGICAL_H);
                   snapshot = snapCanvas.toDataURL('image/png');
                 } else snapshot = canvas.toDataURL('image/png');
@@ -3434,146 +3564,129 @@ const d = labToolData.artStudio || {};
               return snapshot;
             }
 
+            // Conservative transport: each transfer is subtracted from its
+            // source and added to its neighbor. Slow and fast mobility pools
+            // reuse the stored mobility masses, so existing paintings restore
+            // without a new state format. Every pool carries its own RGB mass.
             function stepSimulation() {
-              var flow = params.surface === 'wet' ? 0.16 + params.bleed * 0.22 : 0.08 + params.bleed * 0.10;
-              flow *= 0.82 + params.sizing * 0.34;
-              var evaporation = params.surface === 'wet'
-                ? 0.0036 + (1 - params.bleed) * 0.0018
-                : 0.007 + (1 - params.bleed) * 0.0025;
-              evaporation *= 0.45 + params.drying * 1.10;
-              evaporation *= (1.30 - params.humidity * 0.82) * (0.78 + params.airflow * 0.78);
-              var pigmentFlow = params.surface === 'wet' ? 0.10 + params.bleed * 0.16 : 0.035 + params.bleed * 0.07;
-              pigmentFlow *= 0.80 + params.sizing * 0.32;
-              var gravityStrength = params.surface === 'wet' ? 0.028 + params.bleed * 0.072 : 0.012 + params.bleed * 0.035;
-              gravityStrength *= 0.10 + params.flowStrength * 1.50;
+              var wetSurface = params.surface === 'wet';
+              var flow = (wetSurface ? 0.16 + params.bleed * 0.22 : 0.08 + params.bleed * 0.10) * (0.82 + params.sizing * 0.34);
+              var evaporation = (wetSurface ? 0.0036 + (1 - params.bleed) * 0.0018 : 0.007 + (1 - params.bleed) * 0.0025) *
+                (0.45 + params.drying * 1.10) * (1.30 - params.humidity * 0.82) * (0.78 + params.airflow * 0.78);
+              var pigmentFlow = (wetSurface ? 0.10 + params.bleed * 0.16 : 0.035 + params.bleed * 0.07) * (0.80 + params.sizing * 0.32);
+              var gravityStrength = (wetSurface ? 0.028 + params.bleed * 0.072 : 0.012 + params.bleed * 0.035) * params.flowStrength * 1.50;
               var effectiveAbsorption = params.absorption * (1 - params.sizing * 0.62);
-              var absorptionStrength = params.surface === 'wet' ? 0.001 + effectiveAbsorption * 0.004 : 0.002 + effectiveAbsorption * 0.006;
-              var nextWetCells = 0;
-              var nextWaterTotal = 0;
+              var absorptionStrength = wetSurface ? 0.001 + effectiveAbsorption * 0.004 : 0.002 + effectiveAbsorption * 0.006;
+              var direction = params.flowDirection;
+              var separation = clamp(params.separation,0,1);
+              nextWater.set(water);
+              nextR.set(pigmentR); nextG.set(pigmentG); nextB.set(pigmentB);
+              nextDensity.set(pigmentDensity);
+              nextStainingMass.set(pigmentStainingMass); nextOpacityMass.set(pigmentOpacityMass);
+              nextGranulationMass.set(pigmentGranulationMass); nextMobilityMass.set(pigmentMobilityMass);
+              nextMobilityRMass.set(pigmentMobilityRMass); nextMobilityGMass.set(pigmentMobilityGMass); nextMobilityBMass.set(pigmentMobilityBMass);
 
-              for (var y = 0; y < SIM_H; y++) {
-                for (var x = 0; x < SIM_W; x++) {
-                  var i = y * SIM_W + x;
-                  var left = x > 0 ? i - 1 : i;
-                  var right = x < SIM_W - 1 ? i + 1 : i;
-                  var up = y > 0 ? i - SIM_W : i;
-                  var down = y < SIM_H - 1 ? i + SIM_W : i;
-                  var barrier = clamp(mask[i], 0, 1);
-                  var access = 1 - barrier;
-                  var w0 = water[i];
-                  var wl = water[left] * (1 - mask[left] * 0.98);
-                  var wr = water[right] * (1 - mask[right] * 0.98);
-                  var wu = water[up] * (1 - mask[up] * 0.98);
-                  var wd = water[down] * (1 - mask[down] * 0.98);
-                  var neighborWater = (wl + wr + wu + wd) * 0.25;
-                  var gradient = clamp(Math.abs(w0 - neighborWater) * 3.2, 0, 1);
-                  var upstream = i;
-                  if (params.flowDirection === 'down') upstream = up;
-                  else if (params.flowDirection === 'up') upstream = down;
-                  else if (params.flowDirection === 'right') upstream = left;
-                  else if (params.flowDirection === 'left') upstream = right;
-                  var gravity = params.flowDirection === 'none' ? 0 : (water[upstream] * (1 - mask[upstream] * 0.98) - w0) * gravityStrength * access;
-                  var paperPull = absorptionStrength * (0.45 + paperNoise[i] * 0.55) * w0 * access;
-                  var nw = clamp(w0 + (neighborWater - w0) * flow * access + gravity -
-                    evaporation * (0.25 + w0) * (0.18 + access * 0.82) - paperPull, 0, 1.5);
-
-                  var totalWater = w0 + wl + wr + wu + wd + 0.0001;
-                  var neighborR = (pigmentR[i] * w0 + pigmentR[left] * wl + pigmentR[right] * wr + pigmentR[up] * wu + pigmentR[down] * wd) / totalWater;
-                  var neighborG = (pigmentG[i] * w0 + pigmentG[left] * wl + pigmentG[right] * wr + pigmentG[up] * wu + pigmentG[down] * wd) / totalWater;
-                  var neighborB = (pigmentB[i] * w0 + pigmentB[left] * wl + pigmentB[right] * wr + pigmentB[up] * wu + pigmentB[down] * wd) / totalWater;
-                  var neighborDensity = (pigmentDensity[i] * w0 + pigmentDensity[left] * wl + pigmentDensity[right] * wr + pigmentDensity[up] * wu + pigmentDensity[down] * wd) / totalWater;
-                  var neighborStainingMass = (pigmentStainingMass[i] * w0 + pigmentStainingMass[left] * wl + pigmentStainingMass[right] * wr + pigmentStainingMass[up] * wu + pigmentStainingMass[down] * wd) / totalWater;
-                  var neighborOpacityMass = (pigmentOpacityMass[i] * w0 + pigmentOpacityMass[left] * wl + pigmentOpacityMass[right] * wr + pigmentOpacityMass[up] * wu + pigmentOpacityMass[down] * wd) / totalWater;
-                  var neighborGranulationMass = (pigmentGranulationMass[i] * w0 + pigmentGranulationMass[left] * wl + pigmentGranulationMass[right] * wr + pigmentGranulationMass[up] * wu + pigmentGranulationMass[down] * wd) / totalWater;
-                  var neighborMobilityMass = (pigmentMobilityMass[i] * w0 + pigmentMobilityMass[left] * wl + pigmentMobilityMass[right] * wr + pigmentMobilityMass[up] * wu + pigmentMobilityMass[down] * wd) / totalWater;
-                  var neighborMobilityRMass = (pigmentMobilityRMass[i] * w0 + pigmentMobilityRMass[left] * wl + pigmentMobilityRMass[right] * wr + pigmentMobilityRMass[up] * wu + pigmentMobilityRMass[down] * wd) / totalWater;
-                  var neighborMobilityGMass = (pigmentMobilityGMass[i] * w0 + pigmentMobilityGMass[left] * wl + pigmentMobilityGMass[right] * wr + pigmentMobilityGMass[up] * wu + pigmentMobilityGMass[down] * wd) / totalWater;
-                  var neighborMobilityBMass = (pigmentMobilityBMass[i] * w0 + pigmentMobilityBMass[left] * wl + pigmentMobilityBMass[right] * wr + pigmentMobilityBMass[up] * wu + pigmentMobilityBMass[down] * wd) / totalWater;
-                  var wetFactor = clamp((w0 + neighborWater) * 0.5, 0, 1);
-                  var cellGranulation = pigmentDensity[i] > 0.0001 ? clamp(pigmentGranulationMass[i] / pigmentDensity[i], 0, 1) : params.granulation;
-                  var cellMobility = pigmentDensity[i] > 0.0001 ? clamp(pigmentMobilityMass[i] / pigmentDensity[i], 0, 1) : params.mobility;
-                  var settling = cellGranulation * (1 - wetFactor) * (0.004 + granulationNoise[i] * 0.018);
-                  var cellOpacity = pigmentDensity[i] > 0.0001 ? clamp(pigmentOpacityMass[i] / pigmentDensity[i], 0, 1) : params.opacity;
-                  var mobilityCarrierR = pigmentR[i] + neighborR;
-                  var mobilityCarrierG = pigmentG[i] + neighborG;
-                  var mobilityCarrierB = pigmentB[i] + neighborB;
-                  var channelMobilityR = mobilityCarrierR > 0.0001 ? clamp((pigmentMobilityRMass[i] + neighborMobilityRMass) / mobilityCarrierR, 0, 1) : cellMobility;
-                  var channelMobilityG = mobilityCarrierG > 0.0001 ? clamp((pigmentMobilityGMass[i] + neighborMobilityGMass) / mobilityCarrierG, 0, 1) : cellMobility;
-                  var channelMobilityB = mobilityCarrierB > 0.0001 ? clamp((pigmentMobilityBMass[i] + neighborMobilityBMass) / mobilityCarrierB, 0, 1) : cellMobility;
-                  var effectiveMobilityR = cellMobility + (channelMobilityR - cellMobility) * params.separation;
-                  var effectiveMobilityG = cellMobility + (channelMobilityG - cellMobility) * params.separation;
-                  var effectiveMobilityB = cellMobility + (channelMobilityB - cellMobility) * params.separation;
-                  var pigmentMixBase = pigmentFlow * (1.08 - cellOpacity * 0.20) * (0.25 + wetFactor * 0.75) * (1 - cellGranulation * (1 - wetFactor) * 0.18) * (1 - effectiveAbsorption * (1 - wetFactor) * 0.22) * access;
-                  var pigmentMix = pigmentMixBase * (0.56 + cellMobility * 0.80);
-                  var pigmentMixR = pigmentMixBase * (0.56 + effectiveMobilityR * 0.80);
-                  var pigmentMixG = pigmentMixBase * (0.56 + effectiveMobilityG * 0.80);
-                  var pigmentMixB = pigmentMixBase * (0.56 + effectiveMobilityB * 0.80);
-                  var bloomResponse = (0.35 + params.bloomSensitivity * 1.05) * (0.80 + params.sizing * 0.36);
-                  var bloomAmount = gradient * w0 * (0.012 + paperNoise[i] * params.paper * 0.045) * (0.72 + params.bleed * 0.86) * bloomResponse * access;
-                  var granuleShift = (granulationNoise[i] - 0.5) * settling;
-                  var mixedR = clamp(pigmentR[i] + (neighborR - pigmentR[i]) * pigmentMixR + pigmentR[i] * (bloomAmount + granuleShift), 0, 2.5);
-                  var mixedG = clamp(pigmentG[i] + (neighborG - pigmentG[i]) * pigmentMixG + pigmentG[i] * (bloomAmount + granuleShift), 0, 2.5);
-                  var mixedB = clamp(pigmentB[i] + (neighborB - pigmentB[i]) * pigmentMixB + pigmentB[i] * (bloomAmount + granuleShift), 0, 2.5);
-                  var mixedDensity = clamp(pigmentDensity[i] + (neighborDensity - pigmentDensity[i]) * pigmentMix + pigmentDensity[i] * (bloomAmount + granuleShift), 0, 2.5);
-                  var mixedStainingMass = clamp(pigmentStainingMass[i] + (neighborStainingMass - pigmentStainingMass[i]) * pigmentMix + pigmentStainingMass[i] * (bloomAmount + granuleShift), 0, 2.5);
-                  var mixedOpacityMass = clamp(pigmentOpacityMass[i] + (neighborOpacityMass - pigmentOpacityMass[i]) * pigmentMix + pigmentOpacityMass[i] * (bloomAmount + granuleShift), 0, 2.5);
-                  var mixedGranulationMass = clamp(pigmentGranulationMass[i] + (neighborGranulationMass - pigmentGranulationMass[i]) * pigmentMix + pigmentGranulationMass[i] * (bloomAmount + granuleShift), 0, 2.5);
-                  var mixedMobilityMass = clamp(pigmentMobilityMass[i] + (neighborMobilityMass - pigmentMobilityMass[i]) * pigmentMix + pigmentMobilityMass[i] * (bloomAmount + granuleShift), 0, 2.5);
-                  var mixedMobilityRMass = clamp(pigmentMobilityRMass[i] + (neighborMobilityRMass - pigmentMobilityRMass[i]) * pigmentMixR + pigmentMobilityRMass[i] * (bloomAmount + granuleShift), 0, 2.5);
-                  var mixedMobilityGMass = clamp(pigmentMobilityGMass[i] + (neighborMobilityGMass - pigmentMobilityGMass[i]) * pigmentMixG + pigmentMobilityGMass[i] * (bloomAmount + granuleShift), 0, 2.5);
-                  var mixedMobilityBMass = clamp(pigmentMobilityBMass[i] + (neighborMobilityBMass - pigmentMobilityBMass[i]) * pigmentMixB + pigmentMobilityBMass[i] * (bloomAmount + granuleShift), 0, 2.5);
-                  var localStaining = mixedDensity > 0.0001 ? clamp(mixedStainingMass / mixedDensity, 0, 1) : params.staining;
-                  var fiberFix = clamp(settling + effectiveAbsorption * (1 - wetFactor) *
-                    (0.002 + paperNoise[i] * 0.006), 0, 0.065) * (0.65 + localStaining * 0.70);
-                  fiberFix = clamp(fiberFix, 0, 0.085);
-
-                  nextWater[i] = nw;
-                  nextR[i] = mixedR * (1 - fiberFix);
-                  nextG[i] = mixedG * (1 - fiberFix);
-                  nextB[i] = mixedB * (1 - fiberFix);
-                  nextDensity[i] = mixedDensity * (1 - fiberFix);
-                  nextStainingMass[i] = mixedStainingMass * (1 - fiberFix);
-                  nextOpacityMass[i] = mixedOpacityMass * (1 - fiberFix);
-                  nextGranulationMass[i] = mixedGranulationMass * (1 - fiberFix);
-                  nextMobilityMass[i] = mixedMobilityMass * (1 - fiberFix);
-                  nextMobilityRMass[i] = mixedMobilityRMass * (1 - fiberFix);
-                  nextMobilityGMass[i] = mixedMobilityGMass * (1 - fiberFix);
-                  nextMobilityBMass[i] = mixedMobilityBMass * (1 - fiberFix);
-                  stainR[i] = clamp(stainR[i] + mixedR * fiberFix, 0, 2.5);
-                  stainG[i] = clamp(stainG[i] + mixedG * fiberFix, 0, 2.5);
-                  stainB[i] = clamp(stainB[i] + mixedB * fiberFix, 0, 2.5);
-                  stainDensity[i] = clamp(stainDensity[i] + mixedDensity * fiberFix, 0, 3.5);
-                  stainStainingMass[i] = clamp(stainStainingMass[i] + mixedStainingMass * fiberFix, 0, 3.5);
-                  stainOpacityMass[i] = clamp(stainOpacityMass[i] + mixedOpacityMass * fiberFix, 0, 3.5);
-                  stainGranulationMass[i] = clamp(stainGranulationMass[i] + mixedGranulationMass * fiberFix, 0, 3.5);
-                  stainMobilityMass[i] = clamp(stainMobilityMass[i] + mixedMobilityMass * fiberFix, 0, 3.5);
-                  stainMobilityRMass[i] = clamp(stainMobilityRMass[i] + mixedMobilityRMass * fiberFix, 0, 3.5);
-                  stainMobilityGMass[i] = clamp(stainMobilityGMass[i] + mixedMobilityGMass * fiberFix, 0, 3.5);
-                  stainMobilityBMass[i] = clamp(stainMobilityBMass[i] + mixedMobilityBMass * fiberFix, 0, 3.5);
-                  var bloomPersistence = (0.34 + params.humidity * 0.18) * (1 - params.airflow * 0.10);
-                  var bloomGradient = gradient * (0.26 + params.bloomSensitivity * 0.80) * (0.82 + params.sizing * 0.30);
-                  nextBloom[i] = clamp(bloomGradient + bloom[i] * bloomPersistence, 0, 1);
-                  nextWaterTotal += nw;
-                  if (nw > 0.004) nextWetCells++;
-                }
+              function moveAcross(from,to,downhill) {
+                var access = (1 - mask[from]) * (1 - mask[to]);
+                if (access <= 0.0001) return;
+                var donorWater = water[from], receiverWater = water[to];
+                var gravity = downhill ? gravityStrength : 0;
+                var waterTransfer = Math.min(donorWater * 0.20,
+                  Math.max(0, donorWater - receiverWater) * flow * 0.25 + donorWater * gravity) * access;
+                waterTransfer = Math.min(waterTransfer, Math.max(0, 1.5 - nextWater[to]));
+                nextWater[from] -= waterTransfer; nextWater[to] += waterTransfer;
+                var mass = pigmentDensity[from];
+                if (mass <= 0.0000001 || donorWater <= 0.0001) return;
+                var wetContact = Math.min(1, donorWater * 3) * (0.12 + Math.min(1, receiverWater * 3) * 0.88);
+                var granulation = clamp(pigmentGranulationMass[from] / mass,0,1);
+                var opacity = clamp(pigmentOpacityMass[from] / mass,0,1);
+                var rate = (pigmentFlow * 0.25 * wetContact * (1 - opacity * 0.18) * (1 - granulation * 0.22) +
+                  waterTransfer / Math.max(0.001, donorWater) * 0.42) * access;
+                // Bounded outgoing fractions prevent negative concentrations,
+                // even at maximum water, flow, and separation settings.
+                var fastRate = Math.min(0.19,rate * (1 + separation * 0.85));
+                var slowRate = Math.min(0.19,rate * (1 - separation * 0.85));
+                var fastMass = clamp(pigmentMobilityMass[from],0,mass);
+                var parcel = fastMass * fastRate + (mass - fastMass) * slowRate;
+                if (parcel <= 0) return;
+                var capacity = Math.min(1,Math.max(0,2.5-nextDensity[to]) / parcel);
+                fastRate *= capacity; slowRate *= capacity; parcel *= capacity;
+                var traitRate = parcel / mass;
+                var fastR = clamp(pigmentMobilityRMass[from],0,pigmentR[from]);
+                var fastG = clamp(pigmentMobilityGMass[from],0,pigmentG[from]);
+                var fastB = clamp(pigmentMobilityBMass[from],0,pigmentB[from]);
+                var r = fastR * fastRate + (pigmentR[from]-fastR) * slowRate;
+                var g = fastG * fastRate + (pigmentG[from]-fastG) * slowRate;
+                var b = fastB * fastRate + (pigmentB[from]-fastB) * slowRate;
+                nextR[from]-=r; nextR[to]+=r; nextG[from]-=g; nextG[to]+=g; nextB[from]-=b; nextB[to]+=b;
+                nextDensity[from]-=parcel; nextDensity[to]+=parcel;
+                var amount = fastMass * fastRate; nextMobilityMass[from]-=amount; nextMobilityMass[to]+=amount;
+                amount = fastR * fastRate; nextMobilityRMass[from]-=amount; nextMobilityRMass[to]+=amount;
+                amount = fastG * fastRate; nextMobilityGMass[from]-=amount; nextMobilityGMass[to]+=amount;
+                amount = fastB * fastRate; nextMobilityBMass[from]-=amount; nextMobilityBMass[to]+=amount;
+                amount = pigmentStainingMass[from] * traitRate; nextStainingMass[from]-=amount; nextStainingMass[to]+=amount;
+                amount = pigmentOpacityMass[from] * traitRate; nextOpacityMass[from]-=amount; nextOpacityMass[to]+=amount;
+                amount = pigmentGranulationMass[from] * traitRate; nextGranulationMass[from]-=amount; nextGranulationMass[to]+=amount;
               }
-
+              for (var y=0;y<SIM_H;y++) for (var x=0;x<SIM_W;x++) {
+                var i=y*SIM_W+x;
+                if (water[i] <= 0.0001) continue;
+                if (x>0) moveAcross(i,i-1,direction==='left');
+                if (x<SIM_W-1) moveAcross(i,i+1,direction==='right');
+                if (y>0) moveAcross(i,i-SIM_W,direction==='up');
+                if (y<SIM_H-1) moveAcross(i,i+SIM_W,direction==='down');
+              }
+              var nextWetCells=0, nextWaterTotal=0;
+              var mobile = [nextR,nextG,nextB,nextDensity,nextStainingMass,nextOpacityMass,nextGranulationMass,nextMobilityMass,nextMobilityRMass,nextMobilityGMass,nextMobilityBMass];
+              var settled = [stainR,stainG,stainB,stainDensity,stainStainingMass,stainOpacityMass,stainGranulationMass,stainMobilityMass,stainMobilityRMass,stainMobilityGMass,stainMobilityBMass];
+              for (var index=0;index<COUNT;index++) {
+                var access=1-mask[index], w0=Math.max(0,nextWater[index]);
+                var paperPull=absorptionStrength * (0.45+paperNoise[index]*0.55) * w0 * access;
+                var nw=Math.max(0,w0-evaporation*(0.25+w0)*(0.18+access*0.82)-paperPull);
+                // Finish the last traces of moisture before the idle cutoff;
+                // otherwise paint can stay mobile forever after RAF stops.
+                if (nw <= 0.004) nw = 0;
+                nextWater[index]=nw;
+                nextWaterTotal+=nw;
+                if(nw>0.004) nextWetCells++;
+                var mass=nextDensity[index];
+                var wetFactor=clamp(w0,0,1);
+                if(mass>0.0000001) {
+                  var cellGranulation=clamp(nextGranulationMass[index]/mass,0,1);
+                  var staining=clamp(nextStainingMass[index]/mass,0,1);
+                  var settling=cellGranulation*(1-wetFactor)*(0.004+granulationNoise[index]*0.018);
+                  var fiberFix=clamp((settling+effectiveAbsorption*(1-wetFactor)*(0.002+paperNoise[index]*0.006))*(0.65+staining*0.70),0,0.085);
+                  // Once the water has gone, the remaining wash is deposited.
+                  // Capacity is shared by the parcel: clipping channels one at a
+                  // time would silently change the color and pigment budget.
+                  if(nw<=0.0001) fiberFix=1;
+                  for(var field=0;field<mobile.length;field++) {
+                    if(mobile[field][index]>0) fiberFix=Math.min(fiberFix,Math.max(0,(field<3?2.5:3.5)-settled[field][index])/mobile[field][index]);
+                  }
+                  for(var field=0;field<mobile.length;field++) {
+                    var fixed=mobile[field][index]*fiberFix;
+                    mobile[field][index]-=fixed; settled[field][index]+=fixed;
+                  }
+                }
+                var cx=index%SIM_W;
+                var neighbor=(water[cx>0?index-1:index]+water[cx<SIM_W-1?index+1:index]+water[index>=SIM_W?index-SIM_W:index]+water[index<COUNT-SIM_W?index+SIM_W:index])*0.25;
+                var gradient=clamp(Math.abs(water[index]-neighbor)*3.2,0,1);
+                var persistence=(0.34+params.humidity*0.18)*(1-params.airflow*0.10);
+                nextBloom[index]=clamp(gradient*(0.26+params.bloomSensitivity*0.80)*(0.82+params.sizing*0.30)+bloom[index]*persistence,0,1);
+              }
               var swap;
-              swap = water; water = nextWater; nextWater = swap;
-              swap = pigmentR; pigmentR = nextR; nextR = swap;
-              swap = pigmentG; pigmentG = nextG; nextG = swap;
-              swap = pigmentB; pigmentB = nextB; nextB = swap;
-              swap = pigmentDensity; pigmentDensity = nextDensity; nextDensity = swap;
-              swap = pigmentStainingMass; pigmentStainingMass = nextStainingMass; nextStainingMass = swap;
-              swap = pigmentOpacityMass; pigmentOpacityMass = nextOpacityMass; nextOpacityMass = swap;
-              swap = pigmentGranulationMass; pigmentGranulationMass = nextGranulationMass; nextGranulationMass = swap;
-              swap = pigmentMobilityMass; pigmentMobilityMass = nextMobilityMass; nextMobilityMass = swap;
-              swap = pigmentMobilityRMass; pigmentMobilityRMass = nextMobilityRMass; nextMobilityRMass = swap;
-              swap = pigmentMobilityGMass; pigmentMobilityGMass = nextMobilityGMass; nextMobilityGMass = swap;
-              swap = pigmentMobilityBMass; pigmentMobilityBMass = nextMobilityBMass; nextMobilityBMass = swap;
-              swap = bloom; bloom = nextBloom; nextBloom = swap;
-              wetCells = nextWetCells;
-              waterTotal = nextWaterTotal;
+              swap=water;water=nextWater;nextWater=swap;
+              swap=pigmentR;pigmentR=nextR;nextR=swap; swap=pigmentG;pigmentG=nextG;nextG=swap; swap=pigmentB;pigmentB=nextB;nextB=swap;
+              swap=pigmentDensity;pigmentDensity=nextDensity;nextDensity=swap;
+              swap=pigmentStainingMass;pigmentStainingMass=nextStainingMass;nextStainingMass=swap;
+              swap=pigmentOpacityMass;pigmentOpacityMass=nextOpacityMass;nextOpacityMass=swap;
+              swap=pigmentGranulationMass;pigmentGranulationMass=nextGranulationMass;nextGranulationMass=swap;
+              swap=pigmentMobilityMass;pigmentMobilityMass=nextMobilityMass;nextMobilityMass=swap;
+              swap=pigmentMobilityRMass;pigmentMobilityRMass=nextMobilityRMass;nextMobilityRMass=swap;
+              swap=pigmentMobilityGMass;pigmentMobilityGMass=nextMobilityGMass;nextMobilityGMass=swap;
+              swap=pigmentMobilityBMass;pigmentMobilityBMass=nextMobilityBMass;nextMobilityBMass=swap;
+              swap=bloom;bloom=nextBloom;nextBloom=swap;
+              wetCells=nextWetCells;waterTotal=nextWaterTotal;
             }
 
             function tick(now) {
@@ -3590,7 +3703,12 @@ const d = labToolData.artStudio || {};
               }
               if (steps > 0) render();
               if (running && (wetCells > 0 || drawing)) frameId = requestAnimationFrame(tick);
-              else { running = false; render(); }
+              else {
+                running = false; accumulator = 0;
+                if (steps === 0) stepSimulation();
+                render();
+                scheduleDurablePersistence(250);
+              }
             }
 
             function ensureLoop() {
@@ -3638,10 +3756,39 @@ const d = labToolData.artStudio || {};
               return transferFraction;
             }
 
+            function brushFootprint(pressure, tilt, angle) {
+              var scale = { wash:1.55, dry:0.72, flat:1.05, mop:1.52, rigger:0.52, water:1.18, lift:0.92, splatter:1.75, salt:1.08, mask:0.88, peel:1.02 }[params.brush] || 1;
+              var radius = Math.max(1.5, params.size * (SIM_W / LOGICAL_W) * scale * (0.20 + 0.98 * Math.sqrt(clamp(pressure,0.05,1))));
+              var aspect = 1 + tilt * (params.brush === 'wash' ? 1.05 : 0.72);
+              var major = radius * aspect, minor = radius / (1 + tilt * 0.18);
+              if (params.brush === 'flat') { major = radius * (1.42 + tilt * 0.42); minor = radius * (0.44 - tilt * 0.08); }
+              else if (params.brush === 'mop') { major = radius * (1 + tilt * 0.26); minor = radius * (1 - tilt * 0.10); }
+              else if (params.brush === 'rigger') { major = radius * (1.86 + tilt * 0.32); minor = Math.max(0.9, radius * (0.34 - tilt * 0.06)); }
+              return {major:major,minor:minor,angle:angle};
+            }
+            function hideBrushCursor() {
+              brushCursor = null;
+              var cursor = document.getElementById('artstudio-watercolor-cursor');
+              if (cursor) cursor.style.display = 'none';
+            }
+            function showBrushCursor(x, y, dynamics, keyboard) {
+              brushCursor = {x:x,y:y,dynamics:dynamics,keyboard:!!keyboard};
+              var cursor = document.getElementById('artstudio-watercolor-cursor');
+              if (!cursor || !canvas.parentElement) return;
+              var rect = canvas.getBoundingClientRect(), parent = canvas.parentElement.getBoundingClientRect();
+              var shape = brushFootprint(dynamics.pressure, dynamics.tilt, dynamics.angle);
+              cursor.style.display = 'block';
+              cursor.style.left = (rect.left - parent.left - canvas.parentElement.clientLeft + x * rect.width / SIM_W) + 'px';
+              cursor.style.top = (rect.top - parent.top - canvas.parentElement.clientTop + y * rect.height / SIM_H) + 'px';
+              cursor.style.width = Math.max(3,shape.major * 2 * rect.width / SIM_W) + 'px';
+              cursor.style.height = Math.max(3,shape.minor * 2 * rect.height / SIM_H) + 'px';
+              cursor.style.borderRadius = params.brush === 'flat' ? '18%' : '50%';
+              cursor.style.transform = 'translate(-50%,-50%) rotate(' + shape.angle + 'rad)';
+            }
             function addDab(x, y, dynamics) {
               if (typeof dynamics === 'number') dynamics = { pressure: dynamics };
               dynamics = dynamics || {};
-              var brushScale = 1, waterScale = 1, pigmentScale = 1, softness = 1;
+              var waterScale = 1, pigmentScale = 1, softness = 1;
               var clearWater = params.brush === 'water';
               var liftPigment = params.brush === 'lift';
               var splatter = params.brush === 'splatter';
@@ -3651,17 +3798,17 @@ const d = labToolData.artStudio || {};
               var flatBrush = params.brush === 'flat';
               var mopBrush = params.brush === 'mop';
               var riggerBrush = params.brush === 'rigger';
-              if (params.brush === 'wash') { brushScale = 1.55; waterScale = 1.38; pigmentScale = 0.42; softness = 1.24; }
-              if (params.brush === 'dry') { brushScale = 0.72; waterScale = 0.22; pigmentScale = 1.15; softness = 0.72; }
-              if (flatBrush) { brushScale = 1.05; waterScale = 0.82; pigmentScale = 0.92; softness = 0.68; }
-              if (mopBrush) { brushScale = 1.52; waterScale = 1.58; pigmentScale = 0.48; softness = 1.48; }
-              if (riggerBrush) { brushScale = 0.52; waterScale = 0.70; pigmentScale = 0.94; softness = 0.82; }
-              if (clearWater) { brushScale = 1.18; waterScale = 1.62; pigmentScale = 0; softness = 1.32; }
-              if (liftPigment) { brushScale = 0.92; waterScale = 0.78; pigmentScale = 0; softness = 1.05; }
-              if (splatter) { brushScale = 1.75; waterScale = 0.78; pigmentScale = 0.82; softness = 0.68; }
-              if (saltTexture) { brushScale = 1.08; waterScale = 0; pigmentScale = 0; softness = 0.9; }
-              if (maskingFluid) { brushScale = 0.88; waterScale = 0; pigmentScale = 0; softness = 1.12; }
-              if (peelMask) { brushScale = 1.02; waterScale = 0; pigmentScale = 0; softness = 0.94; }
+              if (params.brush === 'wash') { waterScale = 1.38; pigmentScale = 0.42; softness = 1.24; }
+              if (params.brush === 'dry') { waterScale = 0.22; pigmentScale = 1.15; softness = 0.72; }
+              if (flatBrush) { waterScale = 0.82; pigmentScale = 0.92; softness = 0.68; }
+              if (mopBrush) { waterScale = 1.58; pigmentScale = 0.48; softness = 1.48; }
+              if (riggerBrush) { waterScale = 0.70; pigmentScale = 0.94; softness = 0.82; }
+              if (clearWater) { waterScale = 1.62; pigmentScale = 0; softness = 1.32; }
+              if (liftPigment) { waterScale = 0.78; pigmentScale = 0; softness = 1.05; }
+              if (splatter) { waterScale = 0.78; pigmentScale = 0.82; softness = 0.68; }
+              if (saltTexture) { waterScale = 0; pigmentScale = 0; softness = 0.9; }
+              if (maskingFluid) { waterScale = 0; pigmentScale = 0; softness = 1.12; }
+              if (peelMask) { waterScale = 0; pigmentScale = 0; softness = 0.94; }
               if (params.surface === 'wet') waterScale *= 1.18;
               else { waterScale *= 0.62; pigmentScale *= 1.08; }
 
@@ -3669,19 +3816,14 @@ const d = labToolData.artStudio || {};
               var speed = clamp(Number(dynamics.speed) || 0, 0, 1);
               var tilt = clamp(Number(dynamics.tilt) || 0, 0, 1);
               var brushAngle = Number(dynamics.angle) || 0;
-              var depositScale = clamp(isFinite(Number(dynamics.depositScale)) ? Number(dynamics.depositScale) : 1, 0.2, 1.4);
+              var depositScale = clamp(isFinite(Number(dynamics.depositScale)) ? Number(dynamics.depositScale) : 1, 0.001, 1.4);
               var speedDeposit = 1 - speed * 0.46;
               waterScale *= 0.78 + speedDeposit * 0.28;
               pigmentScale *= 0.72 + speedDeposit * 0.36;
               var waterLoad = clamp(0.56 + reservoirWater * 0.44, 0.32, 1);
               var pigmentLoad = clamp(0.48 + reservoirPigment * 0.52, 0.28, 1);
-              var radius = Math.max(1.5, params.size * (SIM_W / Math.max(1, LOGICAL_W)) * brushScale * (0.72 + safePressure * 0.46));
-              var aspect = 1 + tilt * (params.brush === 'wash' ? 1.05 : 0.72);
-              var majorRadius = radius * aspect;
-              var minorRadius = radius / (1 + tilt * 0.18);
-              if (flatBrush) { majorRadius = radius * (1.42 + tilt * 0.42); minorRadius = radius * (0.44 - tilt * 0.08); }
-              else if (mopBrush) { majorRadius = radius * (1 + tilt * 0.26); minorRadius = radius * (1 - tilt * 0.10); }
-              else if (riggerBrush) { majorRadius = radius * (1.86 + tilt * 0.32); minorRadius = Math.max(0.9, radius * (0.34 - tilt * 0.06)); }
+              var footprint = brushFootprint(safePressure, tilt, brushAngle);
+              var majorRadius = footprint.major, minorRadius = footprint.minor;
               var extent = Math.max(majorRadius, minorRadius);
               var angleCos = Math.cos(brushAngle), angleSin = Math.sin(brushAngle);
               var minX = Math.max(0, Math.floor(x - extent - 1));
@@ -3689,6 +3831,7 @@ const d = labToolData.artStudio || {};
               var minY = Math.max(0, Math.floor(y - extent - 1));
               var maxY = Math.min(SIM_H - 1, Math.ceil(y + extent + 1));
               var color = params.color;
+              var saltFields = saltTexture ? [pigmentR,pigmentG,pigmentB,pigmentDensity,pigmentStainingMass,pigmentOpacityMass,pigmentGranulationMass,pigmentMobilityMass,pigmentMobilityRMass,pigmentMobilityGMass,pigmentMobilityBMass] : null;
 
               for (var yy = minY; yy <= maxY; yy++) {
                 for (var xx = minX; xx <= maxX; xx++) {
@@ -3701,12 +3844,22 @@ const d = labToolData.artStudio || {};
                     var flatY = Math.abs(rotatedY) / minorRadius;
                     normalizedDistance = Math.pow(Math.pow(flatX, 6) + Math.pow(flatY, 6), 1 / 6);
                   } else normalizedDistance = Math.sqrt((rotatedX * rotatedX) / (majorRadius * majorRadius) + (rotatedY * rotatedY) / (minorRadius * minorRadius));
-                  if (normalizedDistance > 1) continue;
-                  var falloff = Math.pow(1 - normalizedDistance, softness);
                   var index = yy * SIM_W + xx;
+                  // A loaded brush leaves a wash with a body and a broken,
+                  // fibrous perimeter, rather than a stack of airbrush cones.
+                  var edgeTooth = (granulationNoise[index] - 0.5) * params.paper * 0.14;
+                  normalizedDistance /= 1 + edgeTooth;
+                  if (normalizedDistance > 1) continue;
+                  var body = Math.max(0, 1 - Math.pow(normalizedDistance, flatBrush || riggerBrush ? 3 : 2.6));
+                  // Paper already wet before this dab softens its edge. A fresh
+                  // glaze on dry paper keeps a crisp perimeter even while the
+                  // brush itself carries water.
+                  var contactWetness = clamp(water[index] * 1.8, 0, 1);
+                  var falloff = Math.pow(body, softness * (0.30 + contactWetness * 0.90));
                   var dropletNoise = seededNoise(index * 0.91 + strokeSeed * 37.4);
                   if (splatter && dropletNoise < 0.73) continue;
-                  if (params.brush === 'dry' && seededNoise(index * 0.23 + strokeSeed * 11.8) < 0.10 + speed * 0.18 + params.paper * 0.08) continue;
+                  var dryTooth = seededNoise(index + 11.7) * 0.72 + paperNoise[index] * 0.28;
+                  if (params.brush === 'dry' && dryTooth < 0.22 + speed * 0.10 + params.paper * 0.22 - safePressure * 0.10) continue;
                   if (flatBrush && seededNoise(Math.floor((rotatedY + minorRadius) * 4.2) + strokeSeed * 19.7) < 0.035 + speed * 0.045) continue;
                   var texture = 0.78 + paperNoise[index] * (0.24 + params.paper * 0.26);
                   var deposit = falloff * texture * speedDeposit * depositScale * (splatter ? 0.42 + dropletNoise * 0.88 : 1);
@@ -3723,42 +3876,47 @@ const d = labToolData.artStudio || {};
                   if (resist <= 0.01) continue;
                   deposit *= resist;
                   if (saltTexture) {
-                    var saltCenter = clamp(1 - normalizedDistance, 0, 1);
-                    var saltRing = clamp(1 - Math.abs(normalizedDistance - 0.72) * 5.5, 0, 1);
-                    var saltPreDensity = pigmentDensity[index] + stainDensity[index];
-                    var saltGranulation = saltPreDensity > 0.0001
-                      ? clamp((pigmentGranulationMass[index] + stainGranulationMass[index]) / saltPreDensity, 0, 1)
-                      : params.granulation;
-                    var saltLift = clamp(deposit * (0.10 + saltGranulation * 0.24) * saltCenter, 0, 0.58);
-                    pigmentR[index] *= 1 - saltLift;
-                    pigmentG[index] *= 1 - saltLift;
-                    pigmentB[index] *= 1 - saltLift;
-                    pigmentDensity[index] *= 1 - saltLift;
-                    pigmentStainingMass[index] *= 1 - saltLift;
-                    pigmentOpacityMass[index] *= 1 - saltLift;
-                    pigmentGranulationMass[index] *= 1 - saltLift;
-                    pigmentMobilityMass[index] *= 1 - saltLift;
-                    pigmentMobilityRMass[index] *= 1 - saltLift;
-                    pigmentMobilityGMass[index] *= 1 - saltLift;
-                    pigmentMobilityBMass[index] *= 1 - saltLift;
-                    var saltCellDensity = pigmentDensity[index] + stainDensity[index];
-                    var saltCellStaining = saltCellDensity > 0.0001
-                      ? clamp((pigmentStainingMass[index] + stainStainingMass[index]) / saltCellDensity, 0, 1)
-                      : params.staining;
-                    var fixedSaltLift = saltLift * (0.14 - saltCellStaining * 0.12);
-                    stainR[index] *= 1 - fixedSaltLift;
-                    stainG[index] *= 1 - fixedSaltLift;
-                    stainB[index] *= 1 - fixedSaltLift;
-                    stainDensity[index] *= 1 - fixedSaltLift;
-                    stainStainingMass[index] *= 1 - fixedSaltLift;
-                    stainOpacityMass[index] *= 1 - fixedSaltLift;
-                    stainGranulationMass[index] *= 1 - fixedSaltLift;
-                    stainMobilityMass[index] *= 1 - fixedSaltLift;
-                    stainMobilityRMass[index] *= 1 - fixedSaltLift;
-                    stainMobilityGMass[index] *= 1 - fixedSaltLift;
-                    stainMobilityBMass[index] *= 1 - fixedSaltLift;
-                    setCellWater(index, water[index] * (1 - saltLift * 0.22));
-                    bloom[index] = clamp(bloom[index] + saltRing * deposit * 0.34, 0, 1);
+                    // Salt acts on damp, mobile washes. Preserve fixed dry
+                    // glazes and move whole pigment parcels into irregular
+                    // crystal rims instead of deleting color from the sheet.
+                    var dampResponse = clamp((water[index] - 0.015) / 0.18, 0, 1) *
+                      (1 - clamp((water[index] - 0.65) / 0.85, 0, 1) * 0.65);
+                    if (dampResponse <= 0 || pigmentDensity[index] <= 0.0001) continue;
+                    var saltTileX = Math.floor(xx / 10), saltTileY = Math.floor(yy / 10);
+                    var crystalSeed = saltTileX * 17.3 + saltTileY * 71.9 + strokeSeed * 3.7;
+                    var crystalX = saltTileX * 10 + 2 + seededNoise(crystalSeed) * 6;
+                    var crystalY = saltTileY * 10 + 2 + seededNoise(crystalSeed + 14.1) * 6;
+                    var crystalRadius = 2.4 + seededNoise(crystalSeed + 29.6) * 1.8;
+                    var crystalDX = xx - crystalX, crystalDY = yy - crystalY;
+                    var crystalDistance = Math.sqrt(crystalDX * crystalDX + crystalDY * crystalDY);
+                    if (crystalDistance >= crystalRadius * 0.8) continue;
+                    var crystalAngle = Math.atan2(crystalDY, crystalDX);
+                    var rimRadius = crystalRadius * (0.94 + seededNoise(index + crystalSeed) * 0.22);
+                    var targetX = Math.round(crystalX + Math.cos(crystalAngle) * rimRadius);
+                    var targetY = Math.round(crystalY + Math.sin(crystalAngle) * rimRadius);
+                    if (targetX < 0 || targetY < 0 || targetX >= SIM_W || targetY >= SIM_H) continue;
+                    var targetIndex = targetY * SIM_W + targetX;
+                    // A crystal cannot carry paint through masking fluid or
+                    // across a dry gap. Check the short path, not just its end.
+                    var pathSteps = Math.max(Math.abs(targetX - xx), Math.abs(targetY - yy));
+                    var saltAccess = 1;
+                    for (var pathStep = 1; pathStep <= pathSteps; pathStep++) {
+                      var pathX = Math.round(xx + (targetX - xx) * pathStep / pathSteps);
+                      var pathY = Math.round(yy + (targetY - yy) * pathStep / pathSteps);
+                      var pathIndex = pathY * SIM_W + pathX;
+                      saltAccess = Math.min(saltAccess, 1 - mask[pathIndex], clamp((water[pathIndex] - 0.015) / 0.08, 0, 1));
+                    }
+                    var saltFraction = clamp(deposit * dampResponse * saltAccess *
+                      (1 - crystalDistance / crystalRadius) * (0.45 + safePressure * 0.35), 0, 0.65);
+                    saltFraction = Math.min(saltFraction, Math.max(0, 2.5 - pigmentDensity[targetIndex]) / pigmentDensity[index]);
+                    if (saltFraction <= 0 || targetIndex === index) continue;
+                    for (var saltField = 0; saltField < saltFields.length; saltField++) {
+                      var movedPigment = saltFields[saltField][index] * saltFraction;
+                      saltFields[saltField][index] -= movedPigment;
+                      saltFields[saltField][targetIndex] += movedPigment;
+                    }
+                    setCellWater(index, water[index] * (1 - saltFraction * 0.18));
+                    bloom[targetIndex] = clamp(bloom[targetIndex] + saltFraction * 0.35, 0, 1);
                     continue;
                   }
                   var waterAmount = deposit * params.water * waterScale * 0.62 * waterLoad;
@@ -3805,6 +3963,10 @@ const d = labToolData.artStudio || {};
                     stainMobilityBMass[index] *= 1 - fixedLift;
                     bloom[index] *= 1 - liftAmount * 0.55;
                   } else {
+                    // Saturation must limit the entire pigment parcel together.
+                    // Clipping each RGB mass independently bleaches a repeatedly
+                    // worked stroke toward white as density reaches its ceiling.
+                    pigmentAmount = Math.min(pigmentAmount, Math.max(0, 2.5 - pigmentDensity[index]));
                     pigmentR[index] = clamp(pigmentR[index] + color.r * pigmentAmount, 0, 2.5);
                     pigmentG[index] = clamp(pigmentG[index] + color.g * pigmentAmount, 0, 2.5);
                     pigmentB[index] = clamp(pigmentB[index] + color.b * pigmentAmount, 0, 2.5);
@@ -3822,7 +3984,7 @@ const d = labToolData.artStudio || {};
               }
               var waterDrain = params.brush === 'wash' ? 0.026 : (mopBrush ? 0.034 : (riggerBrush ? 0.009 : 0.014));
               var pigmentDrain = (clearWater || liftPigment || saltTexture || maskingFluid || peelMask) ? 0 : (params.brush === 'dry' ? 0.022 : (riggerBrush ? 0.009 : (flatBrush ? 0.019 : 0.016)));
-              if (!maskingFluid && !peelMask) reservoirWater = clamp(reservoirWater - waterDrain * depositScale * (0.55 + params.water * 0.7), 0.04, 1);
+              if (!maskingFluid && !peelMask && !saltTexture) reservoirWater = clamp(reservoirWater - waterDrain * depositScale * (0.55 + params.water * 0.7), 0.04, 1);
               reservoirPigment = clamp(reservoirPigment - pigmentDrain * depositScale * (0.55 + params.pigment * 0.7), 0.04, 1);
               updateStatus();
             }
@@ -3846,6 +4008,7 @@ const d = labToolData.artStudio || {};
                   reservoirWater = 1;
                   reservoirPigment = 1;
                 }
+                if (brushCursor) showBrushCursor(brushCursor.x, brushCursor.y, brushCursor.dynamics, brushCursor.keyboard);
                 updateA11y();
                 if (typeof snapshotUrl !== 'string') { render(); return; }
                 if (snapshotUrl !== ignoredFlatSnapshot) {
@@ -3872,21 +4035,20 @@ const d = labToolData.artStudio || {};
               dry: function () {
                 localRevision += 1;
                 pushHistory();
+                var mobile = [pigmentR,pigmentG,pigmentB,pigmentDensity,pigmentStainingMass,pigmentOpacityMass,pigmentGranulationMass,pigmentMobilityMass,pigmentMobilityRMass,pigmentMobilityGMass,pigmentMobilityBMass];
+                var settled = [stainR,stainG,stainB,stainDensity,stainStainingMass,stainOpacityMass,stainGranulationMass,stainMobilityMass,stainMobilityRMass,stainMobilityGMass,stainMobilityBMass];
                 for (var di = 0; di < COUNT; di++) {
-                  stainR[di] = clamp(stainR[di] + pigmentR[di], 0, 2.5);
-                  stainG[di] = clamp(stainG[di] + pigmentG[di], 0, 2.5);
-                  stainB[di] = clamp(stainB[di] + pigmentB[di], 0, 2.5);
-                  stainDensity[di] = clamp(stainDensity[di] + pigmentDensity[di], 0, 3.5);
-                  stainStainingMass[di] = clamp(stainStainingMass[di] + pigmentStainingMass[di], 0, 3.5);
-                  stainOpacityMass[di] = clamp(stainOpacityMass[di] + pigmentOpacityMass[di], 0, 3.5);
-                  stainGranulationMass[di] = clamp(stainGranulationMass[di] + pigmentGranulationMass[di], 0, 3.5);
-                  stainMobilityMass[di] = clamp(stainMobilityMass[di] + pigmentMobilityMass[di], 0, 3.5);
-                  stainMobilityRMass[di] = clamp(stainMobilityRMass[di] + pigmentMobilityRMass[di], 0, 3.5);
-                  stainMobilityGMass[di] = clamp(stainMobilityGMass[di] + pigmentMobilityGMass[di], 0, 3.5);
-                  stainMobilityBMass[di] = clamp(stainMobilityBMass[di] + pigmentMobilityBMass[di], 0, 3.5);
+                  var fraction = 1;
+                  for (var field=0;field<mobile.length;field++) if(mobile[field][di]>0) {
+                    fraction=Math.min(fraction,Math.max(0,(field<3?2.5:3.5)-settled[field][di])/mobile[field][di]);
+                  }
+                  for (var field=0;field<mobile.length;field++) {
+                    var amount=mobile[field][di]*fraction;
+                    mobile[field][di]-=amount; settled[field][di]+=amount;
+                  }
                 }
-                pigmentR.fill(0); pigmentG.fill(0); pigmentB.fill(0); pigmentDensity.fill(0); pigmentStainingMass.fill(0); pigmentOpacityMass.fill(0); pigmentGranulationMass.fill(0); pigmentMobilityMass.fill(0); pigmentMobilityRMass.fill(0); pigmentMobilityGMass.fill(0); pigmentMobilityBMass.fill(0);
-                nextR.fill(0); nextG.fill(0); nextB.fill(0); nextDensity.fill(0); nextStainingMass.fill(0); nextOpacityMass.fill(0); nextGranulationMass.fill(0); nextMobilityMass.fill(0); nextMobilityRMass.fill(0); nextMobilityGMass.fill(0); nextMobilityBMass.fill(0);
+                // A saturated paper cell can retain pigment on its dry surface.
+                // It stays immobile until rewetted instead of being discarded.
                 water.fill(0); nextWater.fill(0); wetCells = 0; waterTotal = 0;
                 lastStatusKey = '';
                 render();
@@ -3898,6 +4060,20 @@ const d = labToolData.artStudio || {};
                 lastStatusKey = '';
                 updateStatus();
                 scheduleDurablePersistence(500);
+              },
+              wetPaper: function () {
+                localRevision += 1;
+                pushHistory();
+                for (var wi = 0; wi < COUNT; wi++) {
+                  var addedWater = Math.max(0, 0.65 * (1 - mask[wi]) - water[wi]);
+                  if (addedWater <= 0) continue;
+                  setCellWater(wi, water[wi] + addedWater);
+                  if (stainDensity[wi] > 0.0001) {
+                    var stainStrength = clamp(stainStainingMass[wi] / stainDensity[wi], 0, 1);
+                    remobilizeStain(wi, addedWater * params.rewetting * 0.12 * (1 - stainStrength * 0.82));
+                  }
+                }
+                render(); ensureLoop(); scheduleDurablePersistence(300);
               },
               removeMask: function () {
                 if (maskedCells === 0) return false;
@@ -3928,10 +4104,12 @@ const d = labToolData.artStudio || {};
               dabAt: function (x, y, pressure) { localRevision += 1; pushHistory(); strokeSeed += 1; addDab(x, y, { pressure: pressure || 0.7, speed: 0.12, tilt: 0, angle: 0 }); ensureLoop(); scheduleDurablePersistence(650); },
               undo: undoState,
               redo: redoState,
+              refreshHistoryControls: updateHistoryControls,
               captureState: captureState,
               captureStudyState: captureStudyState,
               restoreState: restoreState,
               captureSnapshot: captureCleanSnapshot,
+              captureExport: function () { return captureCleanSnapshot(true); },
               advanceSimulation: function (steps) {
                 var count = Math.max(0, Math.min(300, Math.floor(Number(steps) || 0)));
                 for (var simulationStep = 0; simulationStep < count; simulationStep++) stepSimulation();
@@ -3947,7 +4125,8 @@ const d = labToolData.artStudio || {};
 
             function dynamicsForEvent(event) {
               var pressure = Number(event.pressure);
-              if (!isFinite(pressure) || pressure <= 0) pressure = event.pointerType === 'pen' ? 0.35 : 0.68;
+              if (pressure === 0 && event.pointerType === 'pen' && event.type === 'pointerup') pressure = 0.05;
+              else if (!isFinite(pressure) || pressure <= 0) pressure = event.pointerType === 'pen' ? 0.35 : 0.68;
               var tiltX = Number(event.tiltX) || 0;
               var tiltY = Number(event.tiltY) || 0;
               var tilt = clamp(Math.sqrt(tiltX * tiltX + tiltY * tiltY) / 90, 0, 1);
@@ -3971,6 +4150,7 @@ const d = labToolData.artStudio || {};
               else {
                 var dx = x - lastX, dy = y - lastY;
                 var distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < 0.001) return;
                 if (targetTilt < 0.02 && distance > 0.001 && (params.brush === 'flat' || params.brush === 'rigger')) {
                   targetAngle = Math.atan2(dy, dx) + (params.brush === 'flat' ? Math.PI / 2 : 0);
                 }
@@ -3979,7 +4159,7 @@ const d = labToolData.artStudio || {};
                 var spacingFactor = params.brush === 'dry' ? 0.34 : (params.brush === 'flat' ? 0.27 : (params.brush === 'rigger' ? 0.23 : (params.brush === 'mop' ? 0.40 : 0.46)));
                 var spacing = Math.max(0.65, radius * spacingFactor);
                 var count = Math.max(1, Math.ceil(distance / spacing));
-                var sampleScale = clamp(distance / Math.max(0.001, spacing), 0.22, 1);
+                var sampleScale = clamp(distance / Math.max(0.001, count * spacing), 0.001, 1);
                 for (var step = 1; step <= count; step++) {
                   var amount = step / count;
                   addDab(lastX + dx * amount, lastY + dy * amount, {
@@ -4007,11 +4187,14 @@ const d = labToolData.artStudio || {};
                 var point = pointFor(sample);
                 strokeTo(point.x, point.y, dynamicsForEvent(sample));
               }
+              if (lastX !== null) showBrushCursor(lastX, lastY, {pressure:lastPressure,tilt:lastTilt,angle:lastBrushAngle}, false);
             }
 
             canvas.onpointerdown = function (event) {
+              if ((event.button !== undefined && event.button !== 0) || event.isPrimary === false || drawing) return;
               if (event.pointerType === 'touch' && params.touchMode !== 'draw') return;
               event.preventDefault(); drawing = true; lastX = null; lastY = null;
+              canvas._watercolorPointerId = event.pointerId;
               lastStrokeTime = 0; lastPressure = 0.7; lastTilt = 0; lastBrushAngle = 0;
               localRevision += 1;
               pushHistory();
@@ -4020,11 +4203,20 @@ const d = labToolData.artStudio || {};
               paintPointerSamples(event);
             };
             canvas.onpointermove = function (event) {
-              if (!drawing) return;
+              if (!drawing) {
+                if (event.pointerType !== 'touch') {
+                  var point = pointFor(event), hoverDynamics = dynamicsForEvent(event);
+                  hoverDynamics.pressure = 0.7;
+                  showBrushCursor(point.x, point.y, hoverDynamics, false);
+                }
+                return;
+              }
+              if (event.pointerId !== undefined && event.pointerId !== canvas._watercolorPointerId) return;
               event.preventDefault();
               paintPointerSamples(event);
             };
             function finishWatercolorPointer(event, cancelled) {
+              if (!drawing || (event && event.pointerId !== undefined && event.pointerId !== canvas._watercolorPointerId)) return;
               // A fast release can contain a point never delivered by pointermove.
               // Complete the existing stroke, without creating another history entry
               // or depositing an extra dab when that endpoint was already painted.
@@ -4033,10 +4225,17 @@ const d = labToolData.artStudio || {};
                 if (releasePoint.x !== lastX || releasePoint.y !== lastY) paintPointerSamples(event);
               }
               drawing = false; lastX = null; lastY = null; lastStrokeTime = 0;
+              if (cancelled) hideBrushCursor();
+              try { if (event && event.pointerId !== undefined) canvas.releasePointerCapture(event.pointerId); } catch (_) {}
               scheduleDurablePersistence(650);
             }
             canvas.onpointerup = function (event) { finishWatercolorPointer(event, false); };
             canvas.onpointercancel = function (event) { finishWatercolorPointer(event, true); };
+            canvas.onlostpointercapture = function (event) { finishWatercolorPointer(event, true); };
+            canvas.onpointerenter = function (event) { if (!drawing && event.pointerType !== 'touch') canvas.onpointermove(event); };
+            canvas.onpointerleave = function () { if (!drawing) hideBrushCursor(); };
+            canvas.onfocus = function () { showBrushCursor(keyboardX, keyboardY, {pressure:0.7,tilt:0,angle:0}, true); };
+            canvas.onblur = hideBrushCursor;
             canvas.onkeydown = function (event) {
               var historyKey = String(event.key || '').toLowerCase();
               if (!event.ctrlKey && !event.metaKey && !event.altKey && historyKey === 'p') {
@@ -4067,12 +4266,14 @@ const d = labToolData.artStudio || {};
               else if (event.key === 'End') { keyboardX = SIM_W - 1; keyboardY = SIM_H - 1; moved = true; }
               if (moved) {
                 event.preventDefault();
+                showBrushCursor(keyboardX, keyboardY, {pressure:0.7,tilt:0,angle:0}, true);
                 if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_watercolor_cursor_at_column_row', 'Watercolor cursor at column {value1}, row {value2}.'), { value1: Math.round(keyboardX + 1), value2: Math.round(keyboardY + 1) }));
                 return;
               }
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
                 engine.dabAt(keyboardX, keyboardY, 0.7);
+                showBrushCursor(keyboardX, keyboardY, {pressure:0.7,tilt:0,angle:0}, true);
                 if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_watercolor_dab_placed_at_column_row', 'Watercolor dab placed at column {value1}, row {value2}.'), { value1: Math.round(keyboardX + 1), value2: Math.round(keyboardY + 1) }));
               }
             };
@@ -4086,179 +4287,436 @@ const d = labToolData.artStudio || {};
           // Pixel Art Canvas
 
           const pixelRef = function (canvas) {
-
             if (!canvas) return;
-
             canvas.dataset.touchMode = d.pixelTouchMode === 'draw' ? 'draw' : 'scroll';
             canvas.style.touchAction = canvas.dataset.touchMode === 'draw' ? 'none' : 'pan-y';
-
             var ctx = canvas.getContext('2d');
-
-            var W = canvas.width, H = canvas.height;
-
-            var gridSize = typeof d.pixelGrid === 'number' ? d.pixelGrid : 16;
-
+            if (!ctx) return;
+            var W = canvas.width, H = canvas.height, gridSize = pixelGridSize;
+            var isPixelShapeTool = ['line','rectangle','ellipse'].indexOf(d.pixelTool) >= 0;
             var cellW = W / gridSize, cellH = H / gridSize;
-
-            var grid = d.pixelData || {};
-
+            if (canvas._pixelOwner !== pixelArtworkOwner || canvas._pixelGridSize !== gridSize) {
+              try { canvas.releasePointerCapture(canvas._pixelPointerId); } catch (_) {}
+              canvas._pixelDrawing = false;
+              canvas._pixelPan = null;
+              canvas._pixelLastCell = canvas._pixelLineStart = canvas._pixelLineEnd = null;
+              canvas._pixelHoverCell = null;
+              canvas._pixelSelection = canvas._pixelSelectionDrag = canvas._pixelSelectionAnchor = canvas._pixelSelectionPreview = null;
+              canvas._pixelClipboard = null;
+            }
+            canvas._pixelOwner = pixelArtworkOwner;
+            canvas._pixelGridSize = gridSize;
+            if (d.pixelTool !== 'select') canvas._pixelSelection = canvas._pixelSelectionDrag = canvas._pixelSelectionAnchor = canvas._pixelSelectionPreview = null;
+            if (d.pixelTool !== 'pan' && canvas._pixelPan) {
+              canvas._pixelPan = null;
+              try { canvas.releasePointerCapture(canvas._pixelPointerId); } catch (_) {}
+            }
+            canvas.style.cursor = d.pixelTool === 'pan' ? (canvas._pixelPan ? 'grabbing' : 'grab') : 'crosshair';
+            if (!isPixelShapeTool) canvas._pixelLineStart = canvas._pixelLineEnd = null;
+            var grid = canvas._pixelDrawing && canvas._pixelWorkingGrid ? canvas._pixelWorkingGrid : Object.assign({}, d.pixelData || {});
+            canvas._pixelWorkingGrid = grid;
             var currentColor = 'hsl(' + pixelColor.h + ',' + pixelColor.s + '%,' + pixelColor.l + '%)';
             var keyboardCursor = canvas._pixelKeyboardCursor || { x: 0, y: 0 };
             keyboardCursor.x = Math.max(0, Math.min(gridSize - 1, keyboardCursor.x || 0));
             keyboardCursor.y = Math.max(0, Math.min(gridSize - 1, keyboardCursor.y || 0));
             canvas._pixelKeyboardCursor = keyboardCursor;
-
+            function visitLine(start, end, visit) {
+              var x = start[0], y = start[1], dx = Math.abs(end[0] - x), dy = -Math.abs(end[1] - y);
+              var sx = x < end[0] ? 1 : -1, sy = y < end[1] ? 1 : -1, error = dx + dy;
+              while (true) {
+                visit(x, y);
+                if (x === end[0] && y === end[1]) break;
+                var twice = error * 2;
+                if (twice >= dy) { error += dy; x += sx; }
+                if (twice <= dx) { error += dx; y += sy; }
+              }
+            }
+            function visitMirrors(x, y, visit) {
+              var xs = d.pixelMirrorX ? [x, gridSize - 1 - x] : [x];
+              var ys = d.pixelMirrorY ? [y, gridSize - 1 - y] : [y];
+              xs.forEach(function (mx) { ys.forEach(function (my) { visit(mx, my); }); });
+            }
+            function visitBrush(x, y, visit) {
+              var size = (!d.pixelTool || d.pixelTool === 'brush' || d.pixelTool === 'eraser') ? pixelBrushSize : 1;
+              var startX = x - Math.floor(size / 2), startY = y - Math.floor(size / 2);
+              var center = (size - 1) / 2;
+              for (var by = 0; by < size; by++) for (var bx = 0; bx < size; bx++) {
+                var px = startX + bx, py = startY + by;
+                if (px < 0 || py < 0 || px >= gridSize || py >= gridSize) continue;
+                if (d.pixelBrushShape === 'round' && (bx-center)*(bx-center)+(by-center)*(by-center) > size*size/4) continue;
+                // Anchor ordered dithering to the artwork, not each brush dab.
+                // Repeated or overlapping strokes therefore keep one pattern.
+                if ((!d.pixelTool || d.pixelTool === 'brush') && pixelBrushPattern < 100) {
+                  var threshold = [[0,2],[3,1]][py % 2][px % 2];
+                  if (threshold >= pixelBrushPattern / 25) continue;
+                }
+                if (d.pixelTool === 'fill' || d.pixelTool === 'picker' || d.pixelTool === 'select') visit(px, py);
+                else visitMirrors(px, py, visit);
+              }
+            }
+            function visitShape(start, end, visit) {
+              if (d.pixelTool === 'line') { visitLine(start,end,visit); return; }
+              var minX=Math.min(start[0],end[0]),maxX=Math.max(start[0],end[0]);
+              var minY=Math.min(start[1],end[1]),maxY=Math.max(start[1],end[1]);
+              var centerX=(minX+maxX)/2,centerY=(minY+maxY)/2;
+              var radiusX=(maxX-minX+1)/2,radiusY=(maxY-minY+1)/2;
+              function insideEllipse(x,y) {
+                var nx=(x-centerX)/radiusX,ny=(y-centerY)/radiusY;
+                return nx*nx+ny*ny<=1;
+              }
+              for (var y=minY;y<=maxY;y++) for (var x=minX;x<=maxX;x++) {
+                if (d.pixelTool === 'rectangle') {
+                  if (d.pixelShapeFilled || x===minX || x===maxX || y===minY || y===maxY) visit(x,y);
+                } else if (insideEllipse(x,y) && (d.pixelShapeFilled || !insideEllipse(x-1,y) || !insideEllipse(x+1,y) || !insideEllipse(x,y-1) || !insideEllipse(x,y+1))) visit(x,y);
+              }
+            }
             function updateKeyboardLabel() {
-              var colored = Object.keys(grid).length;
-              canvas.setAttribute('aria-label', 'Pixel art editor, ' + gridSize + ' by ' + gridSize + ' grid with ' + colored +
+              canvas.setAttribute('aria-label', 'Pixel art editor, ' + gridSize + ' by ' + gridSize + ' grid with ' + Object.keys(grid).length +
                 ' colored cells. Keyboard cursor at row ' + (keyboardCursor.y + 1) + ', column ' + (keyboardCursor.x + 1) + '.');
             }
-
-            function drawPixelGrid() {
-
+            function selectionBounds(start, end) {
+              return {x:Math.min(start[0],end[0]),y:Math.min(start[1],end[1]),w:Math.abs(start[0]-end[0])+1,h:Math.abs(start[1]-end[1])+1};
+            }
+            function selectionPixels(bounds, source) {
+              var pixels = {};
+              if (!bounds) return pixels;
+              for (var y=0;y<bounds.h;y++) for (var x=0;x<bounds.w;x++) {
+                var color=source[(bounds.x+x)+','+(bounds.y+y)];
+                if (color) pixels[x+','+y]=color;
+              }
+              return pixels;
+            }
+            function updateSelectionControls(message) {
+              var selection=canvas._pixelSelection, clipboard=canvas._pixelClipboard;
+              var hasPixels=selection && Object.keys(selectionPixels(selection,grid)).length>0;
+              ['copy','cut','delete'].forEach(function(action){var button=document.getElementById('artstudio-pixel-selection-'+action);if(button)button.disabled=!hasPixels;});
+              var paste=document.getElementById('artstudio-pixel-selection-paste');
+              if(paste)paste.disabled=!clipboard || clipboard.w>gridSize || clipboard.h>gridSize;
+              var deselect=document.getElementById('artstudio-pixel-selection-deselect');
+              if(deselect)deselect.disabled=!selection && !canvas._pixelSelectionAnchor;
+              var status=document.getElementById('artstudio-pixel-selection-status');
+              var nextMessage=message || (selection ? formatArtStudioLearningText(__alloT('stem.artstudio.pixel_selection_dimensions','Selected {value1} × {value2} cells. Drag inside to move, or use Arrow keys.'),{value1:selection.w,value2:selection.h}) : __alloT('stem.artstudio.pixel_selection_empty','Drag to select a region. Keyboard: Enter, move to the opposite corner, then Enter again.'));
+              if(status && status.textContent!==nextMessage)status.textContent=nextMessage;
+            }
+            canvas._pixelRefreshSelectionControls=updateSelectionControls;
+            function selectionPlacement(bounds, dx, dy) {
+              return {x:Math.max(0,Math.min(gridSize-bounds.w,bounds.x+dx)),y:Math.max(0,Math.min(gridSize-bounds.h,bounds.y+dy)),w:bounds.w,h:bounds.h};
+            }
+            function placeSelection(source, bounds, target, pixels, removeSource) {
+              var next=Object.assign({},source);
+              if(removeSource)for(var y=0;y<bounds.h;y++)for(var x=0;x<bounds.w;x++)delete next[(bounds.x+x)+','+(bounds.y+y)];
+              // Transparent cells leave destination artwork visible. Read the
+              // complete source first so overlapping moves cannot smear it.
+              Object.keys(pixels).forEach(function(key){var point=key.split(',').map(Number);next[(target.x+point[0])+','+(target.y+point[1])]=pixels[key];});
+              return next;
+            }
+            function commitSelectionGrid(next, bounds) {
+              if(Object.keys(next).length!==Object.keys(grid).length || Object.keys(next).some(function(key){return next[key]!==grid[key];})) {
+                rememberPixelArtwork(pixelCheckpoint(grid,gridSize));
+                grid=next;canvas._pixelWorkingGrid=grid;commit();
+              }
+              canvas._pixelSelection=bounds;
+              keyboardCursor.x=bounds.x;keyboardCursor.y=bounds.y;
+              revealPixelCursor();
+              drawPixelGrid();
+            }
+            function revealPixelCursor() {
+              var viewport=pixelViewportRef.current;
+              if(!viewport || !viewport.clientWidth || !viewport.clientHeight)return;
+              var view=viewport.getBoundingClientRect(),rect=canvas.getBoundingClientRect();
+              var left=rect.left+keyboardCursor.x*rect.width/gridSize;
+              var top=rect.top+keyboardCursor.y*rect.height/gridSize;
+              var right=left+rect.width/gridSize,bottom=top+rect.height/gridSize;
+              if(left<view.left+8)viewport.scrollLeft+=left-view.left-8;
+              else if(right>view.left+viewport.clientWidth-8)viewport.scrollLeft+=right-view.left-viewport.clientWidth+8;
+              if(top<view.top+8)viewport.scrollTop+=top-view.top-8;
+              else if(bottom>view.top+viewport.clientHeight-8)viewport.scrollTop+=bottom-view.top-viewport.clientHeight+8;
+            }
+            function moveSelection(dx,dy) {
+              var bounds=canvas._pixelSelection;
+              if(!bounds)return;
+              var target=selectionPlacement(bounds,dx,dy);
+              if(target.x===bounds.x && target.y===bounds.y)return;
+              commitSelectionGrid(placeSelection(grid,bounds,target,selectionPixels(bounds,grid),true),target);
+            }
+            canvas._pixelSelectionAction=function(action) {
+              if(action==='deselect') {canvas._pixelSelection=canvas._pixelSelectionAnchor=canvas._pixelSelectionDrag=canvas._pixelSelectionPreview=null;drawPixelGrid();return true;}
+              if(canvas._pixelSelectionDrag || canvas._pixelSelectionAnchor)return false;
+              var bounds=canvas._pixelSelection;
+              if(action==='all') {canvas._pixelSelection={x:0,y:0,w:gridSize,h:gridSize};drawPixelGrid();return true;}
+              if(action==='paste') {
+                var clip=canvas._pixelClipboard;
+                if(!clip || clip.w>gridSize || clip.h>gridSize)return false;
+                var target=selectionPlacement({x:keyboardCursor.x,y:keyboardCursor.y,w:clip.w,h:clip.h},0,0);
+                commitSelectionGrid(placeSelection(grid,null,target,clip.pixels,false),target);
+                return true;
+              }
+              var pixels=selectionPixels(bounds,grid);
+              if(!bounds || !Object.keys(pixels).length)return false;
+              if(action==='copy' || action==='cut')canvas._pixelClipboard={w:bounds.w,h:bounds.h,pixels:pixels};
+              if(action==='cut' || action==='delete')commitSelectionGrid(placeSelection(grid,bounds,bounds,{},true),bounds);
+              updateSelectionControls(action==='copy' || action==='cut' ? __alloT('stem.artstudio.pixel_selection_copied','Pixels copied in this canvas. Click a destination, then Paste. Empty cells preserve destination colors.') : null);
+              return true;
+            };
+            function updateSelectionPointer(point) {
+              var drag=canvas._pixelSelectionDrag;
+              if(!drag)return;
+              if(drag.kind==='select')canvas._pixelSelectionPreview={bounds:selectionBounds(drag.start,point)};
+              else {
+                var target=selectionPlacement(drag.bounds,point[0]-drag.start[0],point[1]-drag.start[1]);
+                canvas._pixelSelectionPreview={bounds:target,grid:placeSelection(drag.source,drag.bounds,target,drag.pixels,true)};
+              }
+              drawPixelGrid();
+            }
+            function finishSelectionPointer(event) {
+              var drag=canvas._pixelSelectionDrag;
+              if(!drag || (event && event.pointerId!==undefined && event.pointerId!==canvas._pixelPointerId))return;
+              if(event && event.type==='pointerup') {
+                if(Number.isFinite(event.clientX) && Number.isFinite(event.clientY))updateSelectionPointer(eventCell(event));
+                var preview=canvas._pixelSelectionPreview;
+                canvas._pixelSelectionDrag=canvas._pixelSelectionPreview=null;
+                if(preview && drag.kind==='move')commitSelectionGrid(preview.grid,preview.bounds);
+                else if(preview)canvas._pixelSelection=preview.bounds;
+              } else canvas._pixelSelectionDrag=canvas._pixelSelectionPreview=null;
+              drawPixelGrid();
+              try{if(event && event.pointerId!==undefined)canvas.releasePointerCapture(event.pointerId);}catch(_){}
+            }
+            function drawPixelGrid(clean) {
               ctx.clearRect(0, 0, W, H);
-
               ctx.fillStyle = '#1e1e2e'; ctx.fillRect(0, 0, W, H);
-
-              Object.keys(grid).forEach(function (key) {
-
+              var visibleGrid=!clean && canvas._pixelSelectionPreview && canvas._pixelSelectionPreview.grid || grid;
+              Object.keys(visibleGrid).forEach(function (key) {
                 var parts = key.split(',');
-
-                ctx.fillStyle = grid[key];
-
+                ctx.fillStyle = visibleGrid[key];
                 ctx.fillRect(parseInt(parts[0]) * cellW, parseInt(parts[1]) * cellH, cellW, cellH);
-
               });
-
-              ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 0.5;
-
-              for (var gx = 0; gx <= gridSize; gx++) { ctx.beginPath(); ctx.moveTo(gx * cellW, 0); ctx.lineTo(gx * cellW, H); ctx.stroke(); }
-
-              for (var gy = 0; gy <= gridSize; gy++) { ctx.beginPath(); ctx.moveTo(0, gy * cellH); ctx.lineTo(W, gy * cellH); ctx.stroke(); }
-
-              if (typeof document !== 'undefined' && document.activeElement === canvas) {
+              // The preview never enters saved artwork or exports until committed.
+              if (!clean && canvas._pixelLineStart && canvas._pixelLineEnd) {
+                ctx.fillStyle = currentColor;
+                visitShape(canvas._pixelLineStart, canvas._pixelLineEnd, function (x, y) {
+                  visitMirrors(x, y, function (mx, my) { ctx.fillRect(mx * cellW, my * cellH, cellW, cellH); });
+                });
+              }
+              if (!clean && d.pixelShowGrid !== false) {
+                ctx.strokeStyle = 'rgba(255,255,255,0.24)'; ctx.lineWidth = 1;
+                for (var gx = 0; gx <= gridSize; gx++) { ctx.beginPath(); ctx.moveTo(gx * cellW, 0); ctx.lineTo(gx * cellW, H); ctx.stroke(); }
+                for (var gy = 0; gy <= gridSize; gy++) { ctx.beginPath(); ctx.moveTo(0, gy * cellH); ctx.lineTo(W, gy * cellH); ctx.stroke(); }
+              }
+              var selection=!clean && (canvas._pixelSelectionPreview && canvas._pixelSelectionPreview.bounds || canvas._pixelSelection);
+              if(selection) {
+                ctx.save();ctx.strokeStyle='#ffffff';ctx.lineWidth=4;
+                ctx.strokeRect(selection.x*cellW+2,selection.y*cellH+2,selection.w*cellW-4,selection.h*cellH-4);
+                if(ctx.setLineDash)ctx.setLineDash([8,6]);
+                ctx.strokeStyle='#0f172a';ctx.lineWidth=2;
+                ctx.strokeRect(selection.x*cellW+2,selection.y*cellH+2,selection.w*cellW-4,selection.h*cellH-4);
+                ctx.restore();
+              }
+              var brushCursor = canvas._pixelHoverCell || (document.activeElement === canvas ? [keyboardCursor.x, keyboardCursor.y] : null);
+              if (!clean && brushCursor && d.pixelTool !== 'pan') {
                 ctx.save();
-                ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 5;
-                ctx.strokeRect(keyboardCursor.x * cellW + 2, keyboardCursor.y * cellH + 2, cellW - 4, cellH - 4);
-                ctx.strokeStyle = '#111827'; ctx.lineWidth = 2;
-                ctx.strokeRect(keyboardCursor.x * cellW + 5, keyboardCursor.y * cellH + 5, cellW - 10, cellH - 10);
+                visitBrush(brushCursor[0], brushCursor[1], function (x, y) {
+                  ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 4;
+                  ctx.strokeRect(x * cellW + 2, y * cellH + 2, cellW - 4, cellH - 4);
+                  ctx.strokeStyle = '#111827'; ctx.lineWidth = 1.5;
+                  ctx.strokeRect(x * cellW + 2, y * cellH + 2, cellW - 4, cellH - 4);
+                });
                 ctx.restore();
               }
               updateKeyboardLabel();
-
+              updateSelectionControls();
             }
-
             function floodFill(startX, startY, fillColor) {
-
               var targetColor = grid[startX + ',' + startY] || null;
-
               if (targetColor === fillColor) return;
-
-              var queue = [[startX, startY]];
-
-              var visited = {};
-
-              while (queue.length > 0) {
-
-                var cell = queue.shift();
-
-                var cx2 = cell[0], cy2 = cell[1];
-
-                var k = cx2 + ',' + cy2;
-
-                if (cx2 < 0 || cx2 >= gridSize || cy2 < 0 || cy2 >= gridSize) continue;
-
-                if (visited[k]) continue;
-
-                visited[k] = true;
-
-                var cellColor = grid[k] || null;
-
-                if (cellColor !== targetColor) continue;
-
-                grid[k] = fillColor;
-
-                queue.push([cx2 + 1, cy2], [cx2 - 1, cy2], [cx2, cy2 + 1], [cx2, cy2 - 1]);
-
+              var queue = [[startX, startY]], visited = {};
+              for (var index = 0; index < queue.length; index++) {
+                var x = queue[index][0], y = queue[index][1], key = x + ',' + y;
+                if (x < 0 || x >= gridSize || y < 0 || y >= gridSize || visited[key]) continue;
+                visited[key] = true;
+                if ((grid[key] || null) !== targetColor) continue;
+                grid[key] = fillColor;
+                queue.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
               }
-
-              upd('pixelData', Object.assign({}, grid));
-
-              drawPixelGrid();
-
             }
-
-            function applyToolAt(gx, gy) {
-              if (gx < 0 || gx >= gridSize || gy < 0 || gy >= gridSize) return '';
-              if (d.pixelTool === 'fill') {
-                floodFill(gx, gy, currentColor);
-                return 'Filled from';
+            function applyToolAt(x, y) {
+              if (x < 0 || x >= gridSize || y < 0 || y >= gridSize) return '';
+              if (d.pixelTool === 'fill') { floodFill(x, y, currentColor); return 'Filled from'; }
+              visitBrush(x, y, function (mx, my) {
+                if (d.pixelTool === 'eraser') delete grid[mx + ',' + my];
+                else grid[mx + ',' + my] = currentColor;
+              });
+              return d.pixelTool === 'eraser' ? 'Erased' : 'Painted';
+            }
+            function pickColor(x, y) {
+              var color = grid[x + ',' + y];
+              if (!color) {
+                if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.pixel_pick_empty', 'This cell is empty. Choose a painted cell to pick its color.'));
+                return;
+              }
+              var hsl = /^hsl\(\s*([\d.]+)\s*,\s*([\d.]+)%\s*,\s*([\d.]+)%\s*\)$/i.exec(color);
+              var h, s, l;
+              if (hsl) { h = Number(hsl[1]); s = Number(hsl[2]); l = Number(hsl[3]); }
+              else {
+                var sample = document.createElement('canvas'); sample.width = sample.height = 1;
+                var sampleContext = sample.getContext('2d');
+                if (!sampleContext || !sampleContext.getImageData) return;
+                sampleContext.fillStyle = color; sampleContext.fillRect(0, 0, 1, 1);
+                var rgb = sampleContext.getImageData(0, 0, 1, 1).data;
+                var r = rgb[0] / 255, g = rgb[1] / 255, b = rgb[2] / 255;
+                var max = Math.max(r, g, b), min = Math.min(r, g, b), delta = max - min;
+                l = (max + min) / 2; h = 0; s = 0;
+                if (delta) {
+                  s = delta / (1 - Math.abs(2 * l - 1));
+                  h = 60 * (max === r ? ((g - b) / delta + 6) % 6 : max === g ? (b - r) / delta + 2 : (r - g) / delta + 4);
+                }
+                s *= 100; l *= 100;
+              }
+              updMany({ pixelHue: Math.round(h * 1000) / 1000, pixelSat: Math.round(s * 1000) / 1000, pixelLit: Math.round(l * 1000) / 1000, pixelTool: 'brush' });
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.pixel_color_picked', 'Color picked. Brush selected.'));
+            }
+            function commit() { upd('pixelData', Object.assign({}, grid)); }
+            function eventCell(event) {
+              var rect = canvas.getBoundingClientRect();
+              var gx = Math.max(0, Math.min(gridSize - 1, Math.floor((event.clientX - rect.left) * gridSize / Math.max(1, rect.width))));
+              var gy = Math.max(0, Math.min(gridSize - 1, Math.floor((event.clientY - rect.top) * gridSize / Math.max(1, rect.height))));
+              return [gx, gy];
+            }
+            function paint(event) {
+              var point = eventCell(event), gx = point[0], gy = point[1];
+              if (isPixelShapeTool) {
+                if (!canvas._pixelLineStart) canvas._pixelLineStart = point;
+                canvas._pixelLineEnd = point;
+                drawPixelGrid(); return;
               }
               var key = gx + ',' + gy;
-              if (d.pixelTool === 'eraser') {
-                delete grid[key];
-                upd('pixelData', Object.assign({}, grid));
-                drawPixelGrid();
-                return 'Erased';
-              }
-              grid[key] = currentColor;
-              upd('pixelData', Object.assign({}, grid));
+              if (canvas._pixelLastCell === key) return;
+              // Bresenham traverses every crossed cell, including fast release
+              // endpoints. One drag produces one undo step; publish once per
+              // pointer sample so host autosave can see an in-progress stroke.
+              var previous = canvas._pixelLastCell ? canvas._pixelLastCell.split(',').map(Number) : [gx, gy];
+              if (d.pixelTool === 'fill') {
+                if (!canvas._pixelLastCell) applyToolAt(gx, gy);
+              } else visitLine(previous, point, applyToolAt);
+              canvas._pixelLastCell = key;
               drawPixelGrid();
-              return 'Painted';
+              commit();
             }
-
-            function paint(e) {
-
-              var rect = canvas.getBoundingClientRect();
-
-              var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-
-              var ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-
-              var gx = Math.floor(ex * (W / rect.width) / cellW);
-
-              var gy = Math.floor(ey * (H / rect.height) / cellH);
-
-              var cellKey = gx + ',' + gy;
-
-              if (canvas._pixelLastCell === cellKey && d.pixelTool !== 'fill') return;
-
-              canvas._pixelLastCell = cellKey;
-
-              applyToolAt(gx, gy);
-
-            }
-
-            function finishPixelPointer(e) {
+            function finishPixelPointer(event) {
+              if(canvas._pixelSelectionDrag){finishSelectionPointer(event);return;}
+              if (canvas._pixelPan && (!event || event.pointerId === canvas._pixelPointerId)) {
+                canvas._pixelPan = null; canvas.style.cursor = 'grab';
+                try { canvas.releasePointerCapture(canvas._pixelPointerId); } catch (_) {}
+                return;
+              }
+              if (!canvas._pixelDrawing || (event && event.pointerId !== undefined && event.pointerId !== canvas._pixelPointerId)) return;
+              if (event && event.type === 'pointerup' && Number.isFinite(event.clientX) && Number.isFinite(event.clientY)) paint(event);
+              if (isPixelShapeTool && event && event.type === 'pointerup') commitShape();
               canvas._pixelDrawing = false;
-              canvas._pixelLastCell = null;
-              try { if (e && e.pointerId !== undefined) canvas.releasePointerCapture(e.pointerId); } catch (err) {}
+              canvas._pixelLastCell = canvas._pixelLineStart = canvas._pixelLineEnd = null;
+              if (!isPixelShapeTool) commit();
+              drawPixelGrid();
+              try { if (event && event.pointerId !== undefined) canvas.releasePointerCapture(event.pointerId); } catch (_) {}
             }
-
-            canvas.onpointerdown = function (e) {
-              if ((e.button !== undefined && e.button !== 0) || e.isPrimary === false) return;
-              if (!canvasAllowsFingerInteraction(canvas, e)) return;
-              e.preventDefault();
+            canvas.onpointerdown = function (event) {
+              if ((event.button !== undefined && event.button !== 0) || event.isPrimary === false || canvas._pixelDrawing || canvas._pixelPan || canvas._pixelSelectionDrag) return;
+              if (!canvasAllowsFingerInteraction(canvas, event)) return;
+              event.preventDefault();
+              try { canvas.focus({preventScroll:true}); } catch (_) { canvas.focus(); }
+              canvas._pixelHoverCell = event.pointerType === 'touch' ? null : eventCell(event);
+              if(d.pixelTool==='select') {
+                var point=eventCell(event),bounds=canvas._pixelSelection;
+                keyboardCursor.x=point[0];keyboardCursor.y=point[1];
+                canvas._pixelSelectionAnchor=null;
+                var inside=bounds && point[0]>=bounds.x && point[0]<bounds.x+bounds.w && point[1]>=bounds.y && point[1]<bounds.y+bounds.h;
+                canvas._pixelSelectionDrag=inside ? {kind:'move',start:point,bounds:bounds,source:Object.assign({},grid),pixels:selectionPixels(bounds,grid)} : {kind:'select',start:point};
+                canvas._pixelPointerId=event.pointerId;
+                updateSelectionPointer(point);
+                try{canvas.setPointerCapture(event.pointerId);}catch(_){}
+                return;
+              }
+              if (d.pixelTool === 'pan') {
+                var viewport = pixelViewportRef.current;
+                if (!viewport) return;
+                canvas._pixelPan = { x: event.clientX, y: event.clientY, left: viewport.scrollLeft, top: viewport.scrollTop };
+                canvas._pixelPointerId = event.pointerId; canvas.style.cursor = 'grabbing';
+                try { canvas.setPointerCapture(event.pointerId); } catch (_) {}
+                return;
+              }
+              if (d.pixelTool === 'picker') { var point = eventCell(event); pickColor(point[0], point[1]); return; }
+              if (!isPixelShapeTool) rememberPixelArtwork(pixelCheckpoint(grid, gridSize));
+              canvas._pixelLineStart = canvas._pixelLineEnd = null;
               canvas._pixelDrawing = true;
+              canvas._pixelPointerId = event.pointerId;
               canvas._pixelLastCell = null;
-              paint(e);
-              try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+              paint(event);
+              try { canvas.setPointerCapture(event.pointerId); } catch (_) {}
             };
-
-            canvas.onpointermove = function (e) {
-              if (!canvas._pixelDrawing) return;
-              e.preventDefault();
-              paint(e);
+            canvas.onpointermove = function (event) {
+              if(canvas._pixelSelectionDrag) {
+                if(canvas._pixelPointerId===event.pointerId){event.preventDefault();updateSelectionPointer(eventCell(event));}
+                return;
+              }
+              if (event.pointerType !== 'touch' && !canvas._pixelPan && (!canvas._pixelDrawing || canvas._pixelPointerId === event.pointerId)) canvas._pixelHoverCell = eventCell(event);
+              if (canvas._pixelPan && canvas._pixelPointerId === event.pointerId) {
+                event.preventDefault();
+                var viewport = pixelViewportRef.current, pan = canvas._pixelPan;
+                if (viewport) { viewport.scrollLeft = pan.left + pan.x - event.clientX; viewport.scrollTop = pan.top + pan.y - event.clientY; }
+                return;
+              }
+              if (!canvas._pixelDrawing) { drawPixelGrid(); return; }
+              if (canvas._pixelPointerId !== event.pointerId) return;
+              event.preventDefault(); paint(event);
             };
-
-            canvas.onpointerup = finishPixelPointer;
-            canvas.onpointercancel = finishPixelPointer;
-            canvas.onlostpointercapture = finishPixelPointer;
-            canvas.onmousedown = canvas.onmousemove = canvas.onmouseup = canvas.onmouseleave = null;
-            canvas.ontouchstart = canvas.ontouchmove = canvas.ontouchend = null;
-            canvas.onfocus = function () { drawPixelGrid(); };
-            canvas.onblur = function () { drawPixelGrid(); };
+            canvas.onpointerup = canvas.onpointercancel = canvas.onlostpointercapture = finishPixelPointer;
+            canvas.onpointerleave = function () { canvas._pixelHoverCell = null; drawPixelGrid(); };
+            canvas.onfocus = canvas.onblur = function () { drawPixelGrid(); };
+            function commitShape() {
+              if (!canvas._pixelLineStart || !canvas._pixelLineEnd) return;
+              rememberPixelArtwork(pixelCheckpoint(grid, gridSize));
+              visitShape(canvas._pixelLineStart, canvas._pixelLineEnd, applyToolAt);
+              canvas._pixelLineStart = canvas._pixelLineEnd = null;
+              commit();
+            }
+            canvas._pixelCancelGesture = function () {
+              canvas._pixelSelection=canvas._pixelSelectionAnchor=canvas._pixelSelectionDrag=canvas._pixelSelectionPreview=null;
+              canvas._pixelPan = null;
+              canvas.style.cursor = d.pixelTool === 'pan' ? 'grab' : 'crosshair';
+              canvas._pixelDrawing = false;
+              canvas._pixelLastCell = canvas._pixelLineStart = canvas._pixelLineEnd = null;
+              try { canvas.releasePointerCapture(canvas._pixelPointerId); } catch (_) {}
+              drawPixelGrid();
+            };
             canvas.onkeydown = function (event) {
+              canvas._pixelHoverCell = null;
+              if (event.key === 'Escape') { canvas._pixelCancelGesture(); return; }
+              if ((event.ctrlKey || event.metaKey) && ['z', 'y'].indexOf(event.key.toLowerCase()) >= 0) {
+                event.preventDefault(); changePixelHistory(event.key.toLowerCase() === 'y' || event.shiftKey); return;
+              }
+              if(d.pixelTool==='select') {
+                if(canvas._pixelSelectionDrag)return;
+                var selectionKey=String(event.key||'').toLowerCase();
+                var shortcut=(event.ctrlKey || event.metaKey) && {a:'all',c:'copy',x:'cut',v:'paste'}[selectionKey];
+                if(shortcut){event.preventDefault();canvas._pixelSelectionAction(shortcut);return;}
+                if(event.key==='Delete' || event.key==='Backspace'){event.preventDefault();canvas._pixelSelectionAction('delete');return;}
+                if(canvas._pixelSelection && !canvas._pixelSelectionAnchor && ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].indexOf(event.key)>=0) {
+                  event.preventDefault();var distance=event.shiftKey?4:1;
+                  moveSelection(event.key==='ArrowLeft'?-distance:event.key==='ArrowRight'?distance:0,event.key==='ArrowUp'?-distance:event.key==='ArrowDown'?distance:0);return;
+                }
+              }
+              if (d.pixelTool === 'pan') {
+                var viewport = pixelViewportRef.current;
+                if (!viewport) return;
+                if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','Enter',' '].indexOf(event.key) < 0) return;
+                event.preventDefault();
+                var panStep = event.shiftKey ? 160 : 48;
+                if (event.key === 'ArrowLeft') viewport.scrollLeft -= panStep;
+                if (event.key === 'ArrowRight') viewport.scrollLeft += panStep;
+                if (event.key === 'ArrowUp') viewport.scrollTop -= panStep;
+                if (event.key === 'ArrowDown') viewport.scrollTop += panStep;
+                if (event.key === 'Home') { viewport.scrollLeft = 0; viewport.scrollTop = 0; }
+                if (event.key === 'End') { viewport.scrollLeft = viewport.scrollWidth; viewport.scrollTop = viewport.scrollHeight; }
+                return;
+              }
               var moved = false;
               if (event.key === 'ArrowLeft') { keyboardCursor.x = Math.max(0, keyboardCursor.x - 1); moved = true; }
               else if (event.key === 'ArrowRight') { keyboardCursor.x = Math.min(gridSize - 1, keyboardCursor.x + 1); moved = true; }
@@ -4268,30 +4726,55 @@ const d = labToolData.artStudio || {};
               else if (event.key === 'End') { keyboardCursor.x = gridSize - 1; keyboardCursor.y = gridSize - 1; moved = true; }
               else if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
-                var action = applyToolAt(keyboardCursor.x, keyboardCursor.y);
-                updateKeyboardLabel();
-                if (typeof announceToSR === 'function') {
-                  announceToSR(action + ' row ' + (keyboardCursor.y + 1) + ', column ' + (keyboardCursor.x + 1) + '.');
+                if(d.pixelTool==='select') {
+                  if(canvas._pixelSelectionAnchor) {
+                    canvas._pixelSelection=selectionBounds(canvas._pixelSelectionAnchor,[keyboardCursor.x,keyboardCursor.y]);
+                    canvas._pixelSelectionAnchor=canvas._pixelSelectionPreview=null;
+                  } else {canvas._pixelSelection=null;canvas._pixelSelectionAnchor=[keyboardCursor.x,keyboardCursor.y];canvas._pixelSelectionPreview={bounds:selectionBounds(canvas._pixelSelectionAnchor,canvas._pixelSelectionAnchor)};}
+                  drawPixelGrid();return;
                 }
-                return;
-              } else {
+                if (d.pixelTool === 'picker') { pickColor(keyboardCursor.x, keyboardCursor.y); return; }
+                if (isPixelShapeTool) {
+                  canvas._pixelLineEnd = [keyboardCursor.x, keyboardCursor.y];
+                  var completing = !!canvas._pixelLineStart;
+                  if (completing) commitShape();
+                  else canvas._pixelLineStart = [keyboardCursor.x, keyboardCursor.y];
+                  drawPixelGrid();
+                  if (typeof announceToSR === 'function') announceToSR(completing ? __alloT('stem.artstudio.pixel_shape_done', 'Shape drawn.') : __alloT('stem.artstudio.pixel_shape_start', 'Shape start set. Move to the opposite corner or line end and press Enter. Escape cancels.'));
+                  return;
+                }
+                rememberPixelArtwork(pixelCheckpoint(grid, gridSize));
+                var action = applyToolAt(keyboardCursor.x, keyboardCursor.y);
+                commit(); drawPixelGrid();
+                if (typeof announceToSR === 'function') announceToSR(action + ' row ' + (keyboardCursor.y + 1) + ', column ' + (keyboardCursor.x + 1) + '.');
                 return;
               }
               if (moved) {
-                event.preventDefault();
-                canvas._pixelKeyboardCursor = keyboardCursor;
-                drawPixelGrid();
-                if (typeof announceToSR === 'function') {
-                  announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_pixel_row_column', 'Pixel row {value1}, column {value2}.'), { value1: (keyboardCursor.y + 1), value2: (keyboardCursor.x + 1) }));
-                }
+                if(canvas._pixelSelectionAnchor)canvas._pixelSelectionPreview={bounds:selectionBounds(canvas._pixelSelectionAnchor,[keyboardCursor.x,keyboardCursor.y])};
+                if (canvas._pixelLineStart) canvas._pixelLineEnd = [keyboardCursor.x, keyboardCursor.y];
+                revealPixelCursor();
+                event.preventDefault(); drawPixelGrid();
+                if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_pixel_row_column', 'Pixel row {value1}, column {value2}.'), { value1: keyboardCursor.y + 1, value2: keyboardCursor.x + 1 }));
               }
             };
-
+            canvas._captureArtStudioState = function () { return pixelCheckpoint(grid, gridSize); };
+            canvas._pixelExport = function () {
+              drawPixelGrid(true);
+              try { return canvas.toDataURL('image/png'); }
+              finally { drawPixelGrid(); }
+            };
+            canvas._pixelExportNative = function () {
+              var output = document.createElement('canvas'); output.width = output.height = gridSize;
+              var outputContext = output.getContext('2d');
+              if (!outputContext) return '';
+              Object.keys(grid).forEach(function (key) {
+                var point = key.split(',').map(Number);
+                outputContext.fillStyle = grid[key]; outputContext.fillRect(point[0], point[1], 1, 1);
+              });
+              return output.toDataURL('image/png');
+            };
             drawPixelGrid();
-
           };
-
-
 
           // Symmetry Canvas
 
@@ -6304,7 +6787,7 @@ const d = labToolData.artStudio || {};
 
           if (studioHomeOpen) return renderStudioHome();
 
-          return React.createElement("div", { className: "max-w-7xl mx-auto animate-in fade-in duration-200 motion-reduce:animate-none", 'data-artstudio-root': 'true' },
+          return React.createElement("div", { className: (tab === 'pixel' || tab === 'watercolor' ? "w-full " : "max-w-7xl ") + "mx-auto animate-in fade-in duration-200 motion-reduce:animate-none", 'data-artstudio-root': 'true' },
             React.createElement('style', null, "dialog[data-artstudio-inspector-shell]::backdrop{background:rgba(15,23,42,.58)} [data-artstudio-root] button,[data-artstudio-root] summary{scroll-margin-block:1rem} @media(max-width:639px){[data-artstudio-root] [data-studio-touch-description]{display:none}[data-artstudio-root] [data-studio-compact-palette]>summary{min-height:44px;display:list-item;align-content:center}[data-artstudio-root] [data-studio-compact-palette][open]>summary{margin-bottom:12px}} .theme-contrast [data-artstudio-root] :is(h1,h2,h3,summary,legend,a,small,strong,th,td,dt,dd,figcaption,time,code):not(button *){color:var(--allo-stem-text,#ffff00) !important}"),
 
             React.createElement("div", { className: "relative z-20 mb-3 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-300 bg-white/95 p-2 shadow-sm" },
@@ -6409,7 +6892,7 @@ const d = labToolData.artStudio || {};
                 colorWheel:   { accent: '#db2777', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDFA8', title: __alloT('stem.artstudio.color_wheel_hsl_hsv_complementary_pair', 'Color Wheel \u2014 HSL/HSV + complementary pairs'),           hint: __alloT('stem.artstudio.hue_0_360_around_the_wheel_saturation_', 'Hue (0-360 around the wheel), saturation (purity), lightness (brightness). Complementary across, analogous adjacent, triadic 120\u00b0 apart. Newton put the spectrum on a wheel in 1666.') },
                 mixer:        { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83E\uDDEA', title: __alloT('stem.artstudio.color_mixer_subtractive_vs_additive', 'Color Mixer \u2014 subtractive vs additive'),                  hint: __alloT('stem.artstudio.paint_and_print_subtractive_cmy_mixes_', 'Paint and print = subtractive (CMY mixes to dark); light and screens = additive (RGB mixes to white). Same world, completely different math \u2014 a printer thinks in K plates, a TV thinks in Hz.') },
                 watercolor:   { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83C\uDFA8', title: __alloT('stem.artstudio.watercolor_simulation', 'Watercolor \u2014 pigment, water, and paper'),                 hint: __alloT('stem.artstudio.watercolor_simulation_hint', 'Water carries pigment across paper; as the brush unloads and water evaporates, clustered pigment creates granulation and darker drying edges. Try a wash, then a dry brush.') },
-                pixel:        { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDDBC',  title: __alloT('stem.artstudio.pixel_art_bitmap_craft_at_8_8_to_32_32', 'Pixel Art \u2014 bitmap craft at 8\u00d78 to 32\u00d732'),          hint: __alloT('stem.artstudio.each_pixel_is_a_deliberate_decision_ne', 'Each pixel is a deliberate decision. NES sprites famously fit a hero into 16\u00d716 with a 4-color palette. Bresenham\u2019s line algorithm draws diagonals without floats.') },
+                pixel:        { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDDBC',  title: __alloT('stem.artstudio.pixel_art_bitmap_craft_at_8_8_to_64_64', 'Pixel Art \u2014 bitmap craft at 8\u00d78 to 64\u00d764'),          hint: __alloT('stem.artstudio.each_pixel_is_a_deliberate_decision_ne', 'Each pixel is a deliberate decision. NES sprites famously fit a hero into 16\u00d716 with a 4-color palette. Bresenham\u2019s line algorithm draws diagonals without floats.') },
                 symmetry:     { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\u2728',         title: __alloT('stem.artstudio.symmetry_reflection_rotation_glide', 'Symmetry \u2014 reflection, rotation, glide'),                hint: __alloT('stem.artstudio.bilateral_mirror_rotational_n_fold_poi', 'Bilateral (mirror), rotational (n-fold), point. The 17 wallpaper groups classify every possible repeating 2D pattern \u2014 Escher\u2019s entire body of work.') },
                 spirograph:   { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)',  icon: '\uD83C\uDF00', title: __alloT('stem.artstudio.spirograph_hypotrochoid_roulettes', 'Spirograph \u2014 hypotrochoid roulettes'),                  hint: __alloT('stem.artstudio.a_small_circle_rolls_inside_a_big_one_', 'A small circle rolls inside a big one, pen offset from center. Ratio of radii determines petal count; offset sets thickness. Toy patented 1965, math from 1700s.') },
                 generative:   { accent: '#4f46e5', soft: 'rgba(79,70,229,0.10)',  icon: '\uD83C\uDF86', title: __alloT('stem.artstudio.generative_algorithm_randomness_as_art', 'Generative \u2014 algorithm + randomness as artist'),         hint: __alloT('stem.artstudio.sol_lewitt_wrote_instructions_the_wall', 'Sol LeWitt wrote instructions; the wall installer was the executor. Today: Processing, p5.js, Cinder. \u201CThe artist is the rule, not the result.\u201D') },
@@ -6853,44 +7336,56 @@ const d = labToolData.artStudio || {};
 
             ),
 
-            tab === 'watercolor' && React.createElement("div", { className: "space-y-3" },
+            tab === 'watercolor' && React.createElement("div", { id:'watercolorFullscreenWorkspace',className: "artstudio-watercolor-workspace space-y-3" },
+              React.createElement('style',null,`
+                .artstudio-watercolor-workspace{min-width:0}
+                .artstudio-watercolor-workspace button,.artstudio-watercolor-workspace select,.artstudio-watercolor-workspace input[type=color]{min-height:44px}
+                .artstudio-watercolor-colors button{min-width:44px}
+                @media(max-width:700px){#watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-colors{flex:0 0 auto}}
+                .artstudio-watercolor-exit-label{display:none}
+                #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]){display:grid!important;grid-template-columns:minmax(0,1fr) 300px;grid-template-rows:auto minmax(0,1fr);gap:12px;box-sizing:border-box;width:100%;height:100dvh;padding:12px;overflow:auto;background:var(--allo-stem-panel,#f8fafc)!important}
+                #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"])> *{margin:0;min-width:0;min-height:0}
+                #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-colors{grid-column:1/-1;grid-row:1}
+                #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-canvas-workspace{grid-column:1;grid-row:2;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:8px}
+                #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-paper{margin:0;min-width:0;min-height:0;display:grid;place-items:center}
+                #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) #watercolorCanvas{width:var(--watercolor-side)!important;height:var(--watercolor-side)!important;max-width:none!important;margin:0}
+                #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-settings{grid-column:2;grid-row:2;overflow:auto;overscroll-behavior:contain;padding:0 4px 8px 0}
+                #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-settings [role=group].grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+                #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-expand-label{display:none}
+                #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-exit-label{display:inline}
+                @media(max-width:700px){#watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]){display:flex!important;flex-direction:column}#watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-canvas-workspace{flex:0 0 auto;height:calc(100vw + 150px)}#watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-settings{overflow:visible;flex:0 0 auto}}
+              `),
 
-              React.createElement("div", { className: "flex items-center gap-2 flex-wrap bg-teal-50 rounded-xl p-3 border border-teal-200" },
+              React.createElement("div", { className: "artstudio-watercolor-colors flex items-center gap-2 flex-wrap bg-teal-50 rounded-xl p-3 border border-teal-200" },
                 React.createElement("label", { htmlFor: "artstudio-watercolor-color", className: "text-xs font-bold text-teal-800" }, __alloT('stem.artstudio.watercolor_color', "Pigment color")),
                 React.createElement("input", { id: "artstudio-watercolor-color", type: "color", value: d.watercolorColor || '#2f6fb0', onChange: function (e) { upd('watercolorColor', e.target.value); }, 'aria-label': __alloT('stem.artstudio.watercolor_color', "Pigment color"), className: "h-8 w-12 rounded cursor-pointer border border-teal-600 bg-white" }),
+                React.createElement('button',{type:'button','aria-label':__alloT('stem.artstudio.watercolor_finger_toggle','Draw with a finger'),'aria-pressed':d.watercolorTouchMode==='draw',onClick:function(){upd('watercolorTouchMode',d.watercolorTouchMode==='draw'?'scroll':'draw');},className:'min-h-[44px] rounded-lg border border-teal-600 px-3 text-xs font-bold '+(d.watercolorTouchMode==='draw'?'bg-teal-700 text-white':'bg-white text-teal-900')},d.watercolorTouchMode==='draw'?__alloT('stem.artstudio.watercolor_finger_draw','Finger: draw'):__alloT('stem.artstudio.watercolor_finger_scroll','Finger: scroll')),
                 React.createElement("div", { className: "flex gap-1 ml-auto flex-wrap" },
                   WATERCOLOR_PIGMENTS.map(function (swatch) {
                     return React.createElement("button", { key: swatch.color, type: "button", onClick: function () { upd('watercolorColor', swatch.color); Object.keys(swatch.values).forEach(function (key) { upd(key, swatch.values[key]); }); if (typeof announceToSR === 'function') announceToSR(swatch.label + ' pigment preset applied: ' + swatch.description + '.'); }, title: swatch.label + ': ' + swatch.description, 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_choose_pigment_preset', 'Choose {value1} pigment preset, {value2}'), { value1: swatch.label, value2: swatch.description }), 'aria-pressed': artStudioHexColor(d.watercolorColor, '#2f6fb0') === swatch.color, className: "h-7 w-7 rounded-full border-2 transition-transform hover:scale-110 " + (artStudioHexColor(d.watercolorColor, '#2f6fb0') === swatch.color ? 'border-slate-900 scale-110' : 'border-white'), style: { background: swatch.color, boxShadow: '0 1px 3px rgba(0,0,0,0.25)' } });
                   })
-                )
+                ),
+                React.createElement('button',{type:'button','aria-label':__alloT('stem.artstudio.watercolor_expand','Expand watercolor canvas'),'data-fs-out':__alloT('stem.artstudio.watercolor_expand','Expand watercolor canvas'),'data-fs-in':__alloT('stem.artstudio.watercolor_exit','Exit expanded watercolor canvas (Esc)'),ref:function(button){if(button && window.__alloStemFsBind)window.__alloStemFsBind(button,document.getElementById('watercolorFullscreenWorkspace'));},onClick:function(){toggleFullscreen('watercolorFullscreenWorkspace');},className:'min-h-[44px] rounded-lg bg-slate-800 px-3 text-xs font-bold text-white'},React.createElement('span',{'aria-hidden':true},'⛶ '),React.createElement('span',{className:'artstudio-watercolor-expand-label'},__alloT('stem.artstudio.pixel_fullscreen_button','Expand canvas')),React.createElement('span',{className:'artstudio-watercolor-exit-label'},__alloT('stem.artstudio.pixel_exit_button','Exit canvas')))
               ),
 
-              React.createElement("section", { 'aria-label': __alloT('stem.artstudio.a11y_watercolor_canvas_workspace', 'Watercolor canvas workspace'), className: "space-y-2" },
-                React.createElement("div", { className: "max-w-md rounded-xl border border-teal-300 bg-teal-50 p-2.5", role: "group", 'aria-label': __alloT('stem.artstudio.a11y_watercolor_touch_interaction', 'Watercolor touch interaction') },
-                  React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wider text-teal-800" }, "Finger input"),
-                  React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2" },
-                    React.createElement("button", { type: "button", onClick: function () { upd('watercolorTouchMode', 'scroll'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_touch_mode_set_to_scroll_page', 'Watercolor touch mode set to scroll page.')); }, 'aria-pressed': d.watercolorTouchMode !== 'draw', className: "min-h-[44px] rounded-lg border px-3 text-xs font-black " + (d.watercolorTouchMode !== 'draw' ? "border-teal-700 bg-teal-700 text-white" : "border-teal-300 bg-white text-teal-900") }, "\u2195 Scroll page"),
-                    React.createElement("button", { type: "button", onClick: function () { upd('watercolorTouchMode', 'draw'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_touch_mode_set_to_draw_on_paper', 'Watercolor touch mode set to draw on paper.')); }, 'aria-pressed': d.watercolorTouchMode === 'draw', className: "min-h-[44px] rounded-lg border px-3 text-xs font-black " + (d.watercolorTouchMode === 'draw' ? "border-teal-700 bg-teal-700 text-white" : "border-teal-300 bg-white text-teal-900") }, "\u270E Draw on paper")
-                  ),
-                  React.createElement("p", { id: "artstudio-watercolor-touch-help", className: "mt-2 text-[0.625rem] leading-relaxed text-teal-900" }, d.watercolorTouchMode === 'draw' ? "One-finger drawing is active. Choose Scroll page when you want to move past the canvas." : "One-finger scrolling is active. A stylus can still paint; choose Draw on paper for finger painting.")
+              React.createElement("section", { 'aria-label': __alloT('stem.artstudio.a11y_watercolor_canvas_workspace', 'Watercolor canvas workspace'), className: "artstudio-watercolor-canvas-workspace space-y-2" },
+                React.createElement("div", { ref:watercolorPaperRef,className: "artstudio-watercolor-paper rounded-xl border-2 border-teal-200 bg-[#f8f7f1] p-2 shadow-lg", style:{position:'relative',overflow:'hidden'} },
+                  React.createElement("canvas", { id: "watercolorCanvas", tabIndex: 0, ref: watercolorRef, width: 1024, height: 1024, role: "img", 'aria-label': __alloT('stem.artstudio.a11y_watercolor_painting_canvas_focus_and_use_arrow', 'Watercolor painting canvas. Focus and use Arrow keys to move the brush, then press Enter or Space to dab.'), 'aria-describedby': "artstudio-watercolor-touch-help artstudio-watercolor-keyboard-help artstudio-watercolor-status", 'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space P Control+Z Control+Y Meta+Z Meta+Y", className: "rounded-lg cursor-crosshair mx-auto block w-full focus-visible:ring-4 focus-visible:ring-teal-700 focus-visible:ring-offset-2", style: { '--watercolor-side':watercolorFit+'px', maxWidth: 'min(100%, 82dvh)', aspectRatio: '1 / 1', touchAction: d.watercolorTouchMode === 'draw' ? 'none' : 'pan-y' } }),
+                  React.createElement('div',{id:'artstudio-watercolor-cursor','aria-hidden':true,style:{display:'none',position:'absolute',pointerEvents:'none',zIndex:2,boxSizing:'border-box',border:'1px solid #0f172a',boxShadow:'0 0 0 1px rgba(255,255,255,0.95)'}},React.createElement('span',{style:{position:'absolute',left:'50%',top:'50%',width:3,height:3,borderRadius:'50%',background:'#0f172a',boxShadow:'0 0 0 1px white',transform:'translate(-50%,-50%)'}}))
                 ),
-                React.createElement("div", { className: "rounded-xl border-2 border-teal-200 bg-[#f8f7f1] p-2 shadow-lg" },
-                  React.createElement("canvas", { id: "watercolorCanvas", tabIndex: 0, ref: watercolorRef, width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.a11y_watercolor_painting_canvas_focus_and_use_arrow', 'Watercolor painting canvas. Focus and use Arrow keys to move the brush, then press Enter or Space to dab.'), 'aria-describedby': "artstudio-watercolor-touch-help artstudio-watercolor-keyboard-help artstudio-watercolor-status", 'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space P Control+Z Control+Y Meta+Z Meta+Y", className: "rounded-lg cursor-crosshair mx-auto block w-full max-w-[640px] focus-visible:ring-4 focus-visible:ring-teal-700 focus-visible:ring-offset-2", style: { aspectRatio: '1 / 1', touchAction: d.watercolorTouchMode === 'draw' ? 'none' : 'pan-y' } })
-                ),
-                React.createElement("div", { className: "flex gap-2 flex-wrap items-center" },
-                  React.createElement("button", { id: "artstudio-watercolor-undo", type: "button", disabled: true, onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.undo()); if (typeof announceToSR === 'function') announceToSR(changed ? __alloT('stem.artstudio.sr_watercolor_undone', 'Watercolor undone.') : __alloT('stem.artstudio.sr_nothing_to_undo', 'Nothing to undo.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 disabled:opacity-40 disabled:cursor-not-allowed" }, __alloT('stem.artstudio.undo_watercolor', "Undo")),
-                  React.createElement("button", { id: "artstudio-watercolor-redo", type: "button", disabled: true, onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.redo()); if (typeof announceToSR === 'function') announceToSR(changed ? __alloT('stem.artstudio.sr_watercolor_redone', 'Watercolor redone.') : __alloT('stem.artstudio.sr_nothing_to_redo', 'Nothing to redo.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 disabled:opacity-40 disabled:cursor-not-allowed" }, __alloT('stem.artstudio.redo_watercolor', "Redo")),
+                React.createElement("div", { className: "artstudio-watercolor-actions flex gap-2 flex-wrap items-center" },
+                  React.createElement("button", { id: "artstudio-watercolor-undo", type: "button", ref:watercolorHistoryButtonRef, onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.undo()); if (typeof announceToSR === 'function') announceToSR(changed ? __alloT('stem.artstudio.sr_watercolor_undone', 'Watercolor undone.') : __alloT('stem.artstudio.sr_nothing_to_undo', 'Nothing to undo.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 disabled:opacity-40 disabled:cursor-not-allowed" }, __alloT('stem.artstudio.undo_watercolor', "Undo")),
+                  React.createElement("button", { id: "artstudio-watercolor-redo", type: "button", ref:watercolorHistoryButtonRef, onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.redo()); if (typeof announceToSR === 'function') announceToSR(changed ? __alloT('stem.artstudio.sr_watercolor_redone', 'Watercolor redone.') : __alloT('stem.artstudio.sr_nothing_to_redo', 'Nothing to redo.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 disabled:opacity-40 disabled:cursor-not-allowed" }, __alloT('stem.artstudio.redo_watercolor', "Redo")),
                   React.createElement("button", { id: "artstudio-watercolor-pause", type: "button", 'aria-pressed': false, 'data-pause-label': __alloT('stem.artstudio.pause_watercolor_drying', "Pause drying"), 'data-resume-label': __alloT('stem.artstudio.resume_watercolor_drying', "Resume drying"), onClick: function () { var c = document.getElementById('watercolorCanvas'); var isPaused = !!(c && c._watercolorEngine && c._watercolorEngine.togglePause()); if (typeof announceToSR === 'function') announceToSR(isPaused ? __alloT('stem.artstudio.sr_watercolor_drying_paused', 'Watercolor drying paused.') : __alloT('stem.artstudio.sr_watercolor_drying_resumed', 'Watercolor drying resumed.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-50 text-cyan-800 border border-cyan-200 hover:bg-cyan-100" }, __alloT('stem.artstudio.pause_watercolor_drying', "Pause drying")),
                   React.createElement("button", { id: "artstudio-watercolor-remove-mask", type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.removeMask()); if (typeof announceToSR === 'function') announceToSR(changed ? __alloT('stem.artstudio.sr_all_watercolor_masking_fluid_removed', 'All watercolor masking fluid removed.') : __alloT('stem.artstudio.sr_no_masking_fluid_to_remove', 'No masking fluid to remove.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-50 text-slate-700 border border-slate-300 hover:bg-slate-100" }, __alloT('stem.artstudio.remove_all_masking_fluid', "Remove all mask")),
                   React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.clear(); else saveWatercolorMetadata('', ''); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_canvas_cleared', 'Watercolor canvas cleared.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100" }, __alloT('stem.artstudio.clear_watercolor', "Clear")),
                   React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.reload(); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_brush_reloaded', 'Watercolor brush reloaded.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100" }, __alloT('stem.artstudio.reload_watercolor_brush', "Reload brush")),
                   React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.dry(); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_dried', 'Watercolor dried.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100" }, __alloT('stem.artstudio.dry_watercolor', "Dry paint")),
-                  React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'watercolor-' + Date.now() + '.png'; link.href = c._watercolorEngine && c._watercolorEngine.captureSnapshot ? c._watercolorEngine.captureSnapshot() : c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_watercolor_png_exported', '\uD83D\uDCE5 Watercolor PNG exported!'), 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_png_exported_without_diagnostic_overl', 'Watercolor PNG exported without diagnostic overlays.')); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_watercolor_png', "Export PNG"))
+                  React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'watercolor-' + Date.now() + '.png'; link.href = c._watercolorEngine && c._watercolorEngine.captureExport ? c._watercolorEngine.captureExport() : c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_watercolor_png_exported', '\uD83D\uDCE5 Watercolor PNG exported!'), 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_png_exported_without_diagnostic_overl', 'Watercolor PNG exported without diagnostic overlays.')); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_watercolor_png', "Export PNG"))
                 ),
-                React.createElement("p", { id: "artstudio-watercolor-keyboard-help", className: "text-[0.6875rem] text-slate-600 text-center" }, __alloT('stem.artstudio.watercolor_keyboard_help', "Draw with a pointer or stylus; pressure, tilt, and stroke speed shape the mark. Focus the canvas and use Arrow keys to move; press Enter or Space to dab, P to pause drying, and Ctrl/Command+Z to undo.")),
-                React.createElement("div", { id: "artstudio-watercolor-status", className: "text-[0.6875rem] font-semibold text-teal-900 text-center bg-teal-50 rounded-lg border border-teal-200 px-3 py-2" }, "Paper: Dry | active area 0%. Brush load: 100% water | 100% pigment. Masked area: 0%. Climate: 45% humidity | 25% airflow. Paper chemistry: 58% sizing | 60% bloom response. Drying active. Wet-state autosave on.")
               ),
 
+              React.createElement('aside',{className:'artstudio-watercolor-settings space-y-3','aria-label':__alloT('stem.artstudio.watercolor_settings','Watercolor paint settings')},
               (function () {
                 var stainingValue = isFinite(Number(d.watercolorStaining)) ? Number(d.watercolorStaining) : 50;
                 var opacityValue = isFinite(Number(d.watercolorOpacity)) ? Number(d.watercolorOpacity) : 40;
@@ -6962,6 +7457,7 @@ const d = labToolData.artStudio || {};
                     return React.createElement("button", { type: "button", key: brush.id, "aria-pressed": (d.watercolorBrush || 'round') === brush.id, onClick: function () { upd('watercolorBrush', brush.id); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.watercolorBrush || 'round') === brush.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 hover:bg-teal-50') }, brush.icon + ' ' + brush.label);
                   })
                 ),
+                d.watercolorBrush === 'salt' && React.createElement('p',{className:'rounded-lg border border-teal-200 bg-teal-50 p-2 text-xs text-teal-900'},__alloT('stem.artstudio.watercolor_salt_damp_help','Sprinkle onto a damp wash for pale crystal centers and darker rims. Fully dry paint stays unchanged; very wet puddles make a softer effect.')),
                 React.createElement("div", { role: "group", 'aria-label': __alloT('stem.artstudio.a11y_watercolor_paper_state', 'Watercolor paper state'), className: "flex items-center gap-2 flex-wrap" },
                   React.createElement("span", { className: "text-xs font-bold text-slate-600" }, __alloT('stem.artstudio.watercolor_surface', "Paper:")),
                   [{ id: 'wet', label: __alloT('stem.artstudio.wet_on_wet', 'Wet-on-wet') }, { id: 'dry', label: __alloT('stem.artstudio.wet_on_dry', 'Wet-on-dry') }].map(function (surface) {
@@ -7066,11 +7562,44 @@ const d = labToolData.artStudio || {};
                 )
               ),
 
+                React.createElement("div", { className: "max-w-md rounded-xl border border-teal-300 bg-teal-50 p-2.5", role: "group", 'aria-label': __alloT('stem.artstudio.a11y_watercolor_touch_interaction', 'Watercolor touch interaction') },
+                  React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wider text-teal-800" }, "Finger input"),
+                  React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2" },
+                    React.createElement("button", { type: "button", onClick: function () { upd('watercolorTouchMode', 'scroll'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_touch_mode_set_to_scroll_page', 'Watercolor touch mode set to scroll page.')); }, 'aria-pressed': d.watercolorTouchMode !== 'draw', className: "min-h-[44px] rounded-lg border px-3 text-xs font-black " + (d.watercolorTouchMode !== 'draw' ? "border-teal-700 bg-teal-700 text-white" : "border-teal-300 bg-white text-teal-900") }, "\u2195 Scroll page"),
+                    React.createElement("button", { type: "button", onClick: function () { upd('watercolorTouchMode', 'draw'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_touch_mode_set_to_draw_on_paper', 'Watercolor touch mode set to draw on paper.')); }, 'aria-pressed': d.watercolorTouchMode === 'draw', className: "min-h-[44px] rounded-lg border px-3 text-xs font-black " + (d.watercolorTouchMode === 'draw' ? "border-teal-700 bg-teal-700 text-white" : "border-teal-300 bg-white text-teal-900") }, "\u270E Draw on paper")
+                  ),
+                  React.createElement("p", { id: "artstudio-watercolor-touch-help", className: "mt-2 text-[0.625rem] leading-relaxed text-teal-900" }, d.watercolorTouchMode === 'draw' ? "One-finger drawing is active. Choose Scroll page when you want to move past the canvas." : "One-finger scrolling is active. A stylus can still paint; choose Draw on paper for finger painting.")
+                ),
+                React.createElement('div', {className:'flex items-center flex-wrap gap-2 rounded-xl border border-sky-200 bg-sky-50 p-2'},
+                  React.createElement('button', {type:'button',onClick:function(){var c=document.getElementById('watercolorCanvas');if(c && c._watercolorEngine)c._watercolorEngine.wetPaper();if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.wet_paper_done','Paper wetted with clear water. Masked areas remain protected.'));},className:'min-h-[44px] rounded-lg bg-sky-800 px-3 text-xs font-bold text-white'},__alloT('stem.artstudio.wet_paper','Wet paper')),
+                  React.createElement('span',{className:'text-xs text-sky-950'},__alloT('stem.artstudio.wet_paper_help','Prepare a wet sheet for soft washes. Dry paint before adding a crisp glaze.'))
+                ),
+                React.createElement("p", { id: "artstudio-watercolor-keyboard-help", className: "text-[0.6875rem] text-slate-600 text-center" }, __alloT('stem.artstudio.watercolor_keyboard_help', "Draw with a pointer or stylus; pressure, tilt, and stroke speed shape the mark. Focus the canvas and use Arrow keys to move; press Enter or Space to dab, P to pause drying, and Ctrl/Command+Z to undo.")),
+                React.createElement("div", { id: "artstudio-watercolor-status", className: "text-[0.6875rem] font-semibold text-teal-900 text-center bg-teal-50 rounded-lg border border-teal-200 px-3 py-2" }, "Paper: Dry | active area 0%. Brush load: 100% water | 100% pigment. Masked area: 0%. Climate: 45% humidity | 25% airflow. Paper chemistry: 58% sizing | 60% bloom response. Drying active. Wet-state autosave on."),
+              ),
+
             ),
 
             tab === 'pixel' && React.createElement("div",
-
-              { className: "space-y-3" },
+              { id: 'pixelFullscreenWorkspace', className: 'artstudio-pixel-workspace', role: 'region', 'aria-label': __alloT('stem.artstudio.pixel_workspace', 'Pixel drawing workspace') },
+              React.createElement('style', null, `
+                .artstudio-pixel-workspace{display:flex;flex-direction:column;gap:12px;min-width:0}
+                .artstudio-pixel-workspace button,.artstudio-pixel-workspace select{min-height:44px}
+                .artstudio-pixel-exit-label{display:none}
+                #pixelFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-pixel-expand-label{display:none}
+                #pixelFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-pixel-exit-label{display:inline}
+                .artstudio-pixel-viewport{height:72dvh;min-height:280px;overflow:auto;overscroll-behavior:contain;border-radius:12px;border:1px solid #64748b;background:#121826;display:flex;padding:12px}
+                @media(max-width:700px){.artstudio-pixel-viewport{height:min(72dvh,calc(100vw - 16px));min-height:0}}
+                #pixelFullscreenWorkspace .artstudio-pixel-viewport canvas{flex:0 0 auto!important;margin:auto;max-width:none;width:var(--pixel-side)!important;height:var(--pixel-side)!important}
+                #pixelFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]){box-sizing:border-box;width:100%;height:100dvh;padding:12px;background:var(--allo-stem-panel,#f8fafc)!important;overflow:auto;display:grid!important;grid-template-columns:minmax(0,1fr) 228px;grid-template-rows:auto minmax(0,1fr) auto;gap:10px}
+                #pixelFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"])>div:first-of-type{grid-column:1/-1;margin:0}
+                #pixelFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-pixel-viewport{grid-column:1;grid-row:2;height:100%;min-height:0}
+                #pixelFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-pixel-touch{grid-column:2;grid-row:2;align-self:end}
+                #pixelFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"])>details{grid-column:2;grid-row:2;align-self:start;max-height:calc(100% - 160px);overflow:auto}
+                #pixelFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"])>p{grid-column:1;grid-row:3;align-self:center}
+                #pixelFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) [data-studio-touch-description]{display:none}
+                @media(max-width:700px){#pixelFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]){display:flex!important;gap:8px}#pixelFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-pixel-viewport{flex:1 0 42dvh;min-height:240px}#pixelFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"])>p{display:none}}
+              `),
 
               React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
 
@@ -7080,48 +7609,86 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { className: "ml-auto flex gap-1 flex-wrap" },
 
-                  [{ id: 'brush', icon: '\uD83D\uDD8C', label: __alloT('stem.artstudio.brush', 'Brush') }, { id: 'eraser', icon: '\uD83E\uDDFD', label: __alloT('stem.artstudio.eraser', 'Eraser') }, { id: 'fill', icon: '\uD83E\uDEA3', label: __alloT('stem.artstudio.fill', 'Fill') }].map(function (t) {
+                  [{ id: 'brush', icon: '\uD83D\uDD8C', label: __alloT('stem.artstudio.brush', 'Brush') }, { id: 'eraser', icon: '\uD83E\uDDFD', label: __alloT('stem.artstudio.eraser', 'Eraser') }, { id: 'fill', icon: '\uD83E\uDEA3', label: __alloT('stem.artstudio.fill', 'Fill') }, { id: 'picker', icon: '⌖', label: __alloT('stem.artstudio.pixel_picker', 'Pick color') }, {id:'select',icon:'▧',label:__alloT('stem.artstudio.pixel_select','Select')}].map(function (t) {
 
                     return React.createElement("button", { "aria-label": t.label, "aria-pressed": (d.pixelTool || 'brush') === t.id, key: t.id, onClick: function () { upd('pixelTool', t.id); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.pixelTool || 'brush') === t.id ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, t.icon + ' ' + t.label);
 
                   }),
 
-                  React.createElement("button", { onClick: function () { upd('pixelData', {}); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_2', "\uD83D\uDDD1 Clear")),
+                  React.createElement('select', {'aria-label':__alloT('stem.artstudio.pixel_shape_tool','Shape tool'),value:['line','rectangle','ellipse'].indexOf(d.pixelTool)>=0?d.pixelTool:'',onChange:function(e){if(e.target.value)upd('pixelTool',e.target.value);},className:'rounded-lg border border-slate-400 px-2 text-xs font-bold'},
+                    React.createElement('option',{value:'',disabled:true},__alloT('stem.artstudio.pixel_shapes','Shapes…')),
+                    React.createElement('option',{value:'line'},__alloT('stem.artstudio.pixel_line','Line')),
+                    React.createElement('option',{value:'rectangle'},__alloT('stem.artstudio.pixel_rectangle','Rectangle')),
+                    React.createElement('option',{value:'ellipse'},__alloT('stem.artstudio.pixel_ellipse','Ellipse'))),
+                  ['rectangle','ellipse'].indexOf(d.pixelTool)>=0 && React.createElement('label',{className:'flex min-h-[44px] items-center gap-1 px-2 text-xs font-bold'},React.createElement('input',{type:'checkbox',checked:!!d.pixelShapeFilled,onChange:function(e){upd('pixelShapeFilled',e.target.checked);}}),__alloT('stem.artstudio.pixel_shape_filled','Fill shape')),
+                  React.createElement('button', {type:'button','aria-label':__alloT('stem.artstudio.pixel_pan','Pan canvas'),'aria-pressed':d.pixelTool==='pan',onClick:function(){upd('pixelTool','pan');},className:'px-3 py-1.5 rounded-lg text-xs font-bold '+(d.pixelTool==='pan'?'bg-pink-600 text-white':'bg-slate-100 text-slate-700')},'✋ '+__alloT('stem.artstudio.pixel_pan_short','Pan')),
+                  React.createElement("button", { onClick: function () { var c=document.getElementById('pixelCanvas');if(c && c._pixelCancelGesture)c._pixelCancelGesture();rememberPixelArtwork(); upd('pixelData', {}); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_2', "\uD83D\uDDD1 Clear")),
 
-                  React.createElement("button", { onClick: function () { var c = document.querySelector('canvas[style*="pixelated"]'); if (!c) return; var link = document.createElement('a'); link.download = 'pixel-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, __alloT('stem.artstudio.export_png', "\uD83D\uDCE5 Export PNG")),
+                  React.createElement("button", { onClick: function () { var c = document.getElementById('pixelCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'pixel-art-' + Date.now() + '.png'; link.href = c._pixelExport ? c._pixelExport() : c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, __alloT('stem.artstudio.export_png', "\uD83D\uDCE5 Export PNG")),
 
-                  React.createElement("select", { 'aria-label': __alloT('stem.artstudio.grid_size', 'Grid size'), value: typeof d.pixelGrid === 'number' ? d.pixelGrid : 16, onChange: function (e) { upd('pixelGrid', parseInt(e.target.value)); upd('pixelData', {}); }, className: "px-2 py-1 text-xs border border-slate-400 rounded-lg" },
+                  React.createElement("select", { 'aria-label': __alloT('stem.artstudio.grid_size', 'Grid size'), value: pixelGridSize, onChange: function (e) { resizePixelArtwork(parseInt(e.target.value, 10)); }, className: "px-2 py-1 text-xs border border-slate-400 rounded-lg" },
 
-                    [8, 16, 24, 32].map(function (s) { return React.createElement("option", { key: s, value: s }, s + 'x' + s); }))
+                    [8, 16, 24, 32, 48, 64].map(function (s) { return React.createElement("option", { key: s, value: s }, s + 'x' + s); })),
+                  React.createElement('button', { type:'button', disabled: !pixelHistoryRef.current.undo.length, onClick:function(){changePixelHistory(false);}, className:'px-3 rounded-lg border border-slate-400 text-xs font-bold disabled:opacity-40' }, __alloT('stem.artstudio.pixel_undo','Undo')),
+                  React.createElement('button', { type:'button', disabled: !pixelHistoryRef.current.redo.length, onClick:function(){changePixelHistory(true);}, className:'px-3 rounded-lg border border-slate-400 text-xs font-bold disabled:opacity-40' }, __alloT('stem.artstudio.pixel_redo','Redo')),
+                  React.createElement('button', { type:'button', 'aria-pressed':d.pixelShowGrid !== false, onClick:function(){upd('pixelShowGrid', d.pixelShowGrid === false);}, className:'px-3 rounded-lg border border-slate-400 text-xs font-bold' }, __alloT('stem.artstudio.pixel_grid_lines','Grid lines')),
+                  React.createElement('select', { 'aria-label':__alloT('stem.artstudio.pixel_zoom','Canvas zoom'), value:pixelZoom, onChange:function(e){zoomPixelCanvas(Number(e.target.value));}, className:'px-2 rounded-lg border border-slate-400 text-xs' },
+                    [1,1.5,2,3].map(function(z){return React.createElement('option',{key:z,value:z},z===1?__alloT('stem.artstudio.pixel_fit','Fit canvas'):Math.round(z*100)+'%');})),
+                  React.createElement('button', { type:'button', 'aria-label':__alloT('stem.artstudio.pixel_fullscreen','Expand pixel canvas'), 'data-fs-out':__alloT('stem.artstudio.pixel_fullscreen','Expand pixel canvas'), 'data-fs-in':__alloT('stem.artstudio.pixel_exit_fullscreen','Exit expanded canvas (Esc)'), ref:function(button){if(button && window.__alloStemFsBind) window.__alloStemFsBind(button,document.getElementById('pixelFullscreenWorkspace'));}, onClick:function(){toggleFullscreen('pixelFullscreenWorkspace');}, className:'px-3 rounded-lg bg-slate-800 text-white text-xs font-bold' }, React.createElement('span',{'aria-hidden':true},'⛶'), ' ', React.createElement('span',{className:'artstudio-pixel-expand-label'},__alloT('stem.artstudio.pixel_fullscreen_button','Expand canvas')), React.createElement('span',{className:'artstudio-pixel-exit-label'},__alloT('stem.artstudio.pixel_exit_button','Exit canvas')))
 
                 )
 
               ),
 
-              renderCanvasTouchMode({
+              React.createElement('div', {className:'artstudio-pixel-touch'}, renderCanvasTouchMode({
                 stateKey: 'pixelTouchMode',
                 groupLabel: 'Pixel art touch interaction',
                 helpId: 'artstudio-pixel-touch-help',
-                interactLabel: 'Draw pixels',
+                interactLabel: d.pixelTool === 'pan' ? 'Pan with a finger' : 'Draw pixels',
                 activeClass: 'bg-pink-700 text-white',
                 activeHelp: 'One-finger pixel drawing is active. Choose Scroll page when you want to move past the pixel canvas.',
                 scrollHelp: 'One-finger scrolling is active. A stylus and mouse can still draw; choose Draw pixels for finger drawing.'
-              }),
+              })),
 
-              React.createElement("canvas", { tabIndex: 0, id: 'pixelCanvas', ref: pixelRef, width: 512, height: 512, role: "img",
+              React.createElement('div', {className:'artstudio-pixel-viewport',ref:pixelViewportRef}, React.createElement("canvas", { tabIndex: 0, id: 'pixelCanvas', ref: pixelRef, width: 768, height: 768, role: "img",
                 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_pixel_art_editor_grid', 'Pixel art editor, {value1} by {value2} grid with {value3} colored cells.'), { value1: (typeof d.pixelGrid === 'number' ? d.pixelGrid : 16), value2: (typeof d.pixelGrid === 'number' ? d.pixelGrid : 16), value3: Object.keys(d.pixelData || {}).length }),
                 'aria-describedby': "artstudio-pixel-keyboard-help",
                 'aria-details': "artstudio-pixel-touch-help",
-                'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space",
+                'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space Control+A Control+C Control+X Control+V Control+Z Control+Y Meta+A Meta+C Meta+X Meta+V Meta+Z Meta+Y Delete Escape",
                 className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block focus-visible:ring-4 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
-                style: { maxWidth: '100%', imageRendering: 'pixelated', touchAction: d.pixelTouchMode === 'draw' ? 'none' : 'pan-y' } }),
+                style: { '--pixel-side': Math.round(pixelFit * pixelZoom) + 'px', width: Math.round(pixelFit * pixelZoom), height: Math.round(pixelFit * pixelZoom), imageRendering: 'pixelated', touchAction: d.pixelTouchMode === 'draw' ? 'none' : 'pan-y' } })),
 
               React.createElement("p", { id: "artstudio-pixel-keyboard-help", className: "text-xs text-slate-600 text-center" },
-                "Keyboard: focus the canvas, move the cell cursor with Arrow keys, jump with Home or End, and press Space or Enter to use the selected tool."
+                "Keyboard: focus the canvas, move the cell cursor with Arrow keys, jump with Home or End, and press Space or Enter to use the selected tool. Shapes: choose a start, move to the opposite corner or line end, then press Enter again. Escape cancels. Ctrl/Cmd+Z undoes. Pan: drag or use Arrow keys; Shift moves farther."
               ),
 
               React.createElement("details", { open: !isCompactStudio || undefined, 'data-studio-compact-palette': 'pixel', className: "bg-slate-50 rounded-xl p-2 border border-slate-400" },
                 React.createElement('summary', { className:'cursor-pointer text-sm font-bold text-slate-800' }, __alloT('stem.artstudio.pixel_palette_options', 'Palettes and colors')),
+                d.pixelTool==='select' && React.createElement('div',{className:'my-2 rounded-lg border border-pink-300 bg-pink-50 p-2',role:'group','aria-label':__alloT('stem.artstudio.pixel_selection_actions','Selected pixels')},
+                  React.createElement('div',{className:'flex flex-wrap gap-1'},[
+                    ['all',__alloT('stem.artstudio.pixel_select_all','Select all')],['copy',__alloT('stem.artstudio.pixel_copy','Copy pixels')],['cut',__alloT('stem.artstudio.pixel_cut','Cut pixels')],['paste',__alloT('stem.artstudio.pixel_paste','Paste pixels')],['delete',__alloT('stem.artstudio.pixel_delete_selection','Delete pixels')],['deselect',__alloT('stem.artstudio.pixel_deselect','Deselect')]
+                  ].map(function(action){return React.createElement('button',{id:'artstudio-pixel-selection-'+action[0],key:action[0],type:'button',ref:function(button){if(!button)return;var canvas=document.getElementById('pixelCanvas');if(canvas && canvas._pixelRefreshSelectionControls)canvas._pixelRefreshSelectionControls();else button.disabled=action[0]!=='all';},onClick:function(){var canvas=document.getElementById('pixelCanvas');if(canvas && canvas._pixelSelectionAction)canvas._pixelSelectionAction(action[0]);},className:'min-h-[44px] rounded-lg border border-pink-400 bg-white px-2 text-xs font-bold disabled:opacity-40'},action[1]);})),
+                  React.createElement('p',{id:'artstudio-pixel-selection-status','aria-live':'polite',className:'mt-2 text-xs text-slate-800'},__alloT('stem.artstudio.pixel_selection_empty','Drag to select a region. Keyboard: Enter, move to the opposite corner, then Enter again.')),
+                  React.createElement('p',{className:'mt-2 text-xs text-slate-700'},__alloT('stem.artstudio.pixel_selection_help','Drag inside to move. Arrow keys nudge; Shift moves 4 cells. Escape deselects. Ctrl/Cmd+C, X, V copy, cut, paste within this canvas. Delete clears selected pixels.'))
+                ),
+                React.createElement('details', {className:'my-2 rounded-lg border border-slate-300 p-2'},
+                  React.createElement('summary',{className:'min-h-[44px] cursor-pointer text-xs font-bold',style:{paddingTop:10}},__alloT('stem.artstudio.pixel_brush_settings','Brush settings')+' · '+pixelBrushSize+' px'),
+                  React.createElement('label',{className:'my-1 flex items-center justify-between gap-2 text-xs font-bold'},__alloT('stem.artstudio.pixel_brush_size','Brush size in cells'),React.createElement('select',{'aria-label':__alloT('stem.artstudio.pixel_brush_size','Brush size in cells'),value:pixelBrushSize,onChange:function(e){upd('pixelBrushSize',Number(e.target.value));},className:'min-h-[44px] rounded-lg border border-slate-400 px-2'},[1,2,3,4,6,8].map(function(size){return React.createElement('option',{key:size,value:size},size+' px');}))),
+                  React.createElement('label',{className:'my-1 flex items-center justify-between gap-2 text-xs font-bold'},__alloT('stem.artstudio.pixel_brush_shape','Brush tip'),React.createElement('select',{'aria-label':__alloT('stem.artstudio.pixel_brush_shape','Brush tip'),value:d.pixelBrushShape==='round'?'round':'square',onChange:function(e){upd('pixelBrushShape',e.target.value);},className:'min-h-[44px] rounded-lg border border-slate-400 px-2'},React.createElement('option',{value:'square'},__alloT('stem.artstudio.pixel_brush_square','Square')),React.createElement('option',{value:'round'},__alloT('stem.artstudio.pixel_brush_round','Round')))),
+                  React.createElement('label',{className:'my-1 flex items-center justify-between gap-2 text-xs font-bold'},__alloT('stem.artstudio.pixel_brush_pattern','Brush coverage'),React.createElement('select',{'aria-label':__alloT('stem.artstudio.pixel_brush_pattern','Brush coverage'),value:pixelBrushPattern,onChange:function(e){upd('pixelBrushPattern',Number(e.target.value));},className:'min-h-[44px] rounded-lg border border-slate-400 px-2'},React.createElement('option',{value:100},__alloT('stem.artstudio.pixel_brush_solid','Solid')),[25,50,75].map(function(coverage){return React.createElement('option',{key:coverage,value:coverage},coverage+'%');}))),
+                  React.createElement('p',{className:'mt-2 text-xs text-slate-600'},__alloT('stem.artstudio.pixel_brush_settings_help','Size and tip apply to brush and eraser. Lower brush coverage paints a repeating pixel pattern, leaving existing colors between marks.'))
+                ),
+                React.createElement('details', {className:'my-2 rounded-lg border border-slate-300 p-2'},
+                  React.createElement('summary',{className:'min-h-[44px] cursor-pointer text-xs font-bold',style:{paddingTop:10}},__alloT('stem.artstudio.pixel_transform','Transform artwork')),
+                  React.createElement('div',{className:'flex flex-wrap gap-1'},[['rotate',__alloT('stem.artstudio.pixel_rotate','Rotate 90°')],['flipX',__alloT('stem.artstudio.pixel_flip_x','Flip left / right')],['flipY',__alloT('stem.artstudio.pixel_flip_y','Flip top / bottom')]].map(function(option){return React.createElement('button',{key:option[0],type:'button',disabled:!Object.keys(d.pixelData||{}).length,onClick:function(){transformPixelArtwork(option[0]);},className:'rounded-lg border border-slate-400 px-2 text-xs font-bold disabled:opacity-40'},option[1]);}))
+                ),
+                React.createElement('fieldset', {className:'my-2 rounded-lg border border-slate-300 p-2'},
+                  React.createElement('legend',{className:'text-xs font-bold'},__alloT('stem.artstudio.pixel_mirror_shapes','Mirror brush, eraser and shapes')),
+                  [['pixelMirrorX',__alloT('stem.artstudio.pixel_mirror_x','Left / right')],['pixelMirrorY',__alloT('stem.artstudio.pixel_mirror_y','Top / bottom')]].map(function(option){return React.createElement('label',{key:option[0],className:'flex min-h-[44px] items-center gap-2 text-xs font-bold'},React.createElement('input',{type:'checkbox',checked:!!d[option[0]],onChange:function(e){upd(option[0],e.target.checked);}}),option[1]);})
+                ),
+                React.createElement('p',{className:'my-2 text-xs text-slate-600'},__alloT('stem.artstudio.pixel_shape_hint','Drag a shape to preview; release to draw. Pick color reuses a painted cell.')),
+                React.createElement('button',{type:'button',className:'my-2 min-h-[44px] rounded-lg border border-emerald-700 px-3 text-xs font-bold text-emerald-800',onClick:function(){var c=document.getElementById('pixelCanvas');if(!c || !c._pixelExportNative)return;var link=document.createElement('a');link.download='pixel-sprite-'+pixelGridSize+'x'+pixelGridSize+'.png';link.href=c._pixelExportNative();link.click();}},__alloT('stem.artstudio.pixel_native_png','Export transparent sprite')+' ('+pixelGridSize+'×'+pixelGridSize+')'),
+                renderStudioColorCapsule({prefix:'pixel',color:pixelColor,label:__alloT('stem.artstudio.pixel_custom_color','Custom pixel color')}),
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
 

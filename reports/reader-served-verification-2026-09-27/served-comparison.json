@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-09-27T17:56:59.142Z",
+  "scope": "served-reader-host-and-module",
+  "manifestSha256": "6ca5d49cf958224fc392a6e479b2d57fa6e89e7212ef43c762ff58cd624d124a",
+  "requests": [
+    {
+      "kind": "host",
+      "url": "https://alloflow-cdn.pages.dev/AlloFlowANTI.txt",
+      "mode": "ordinary",
+      "at": "2026-09-27T17:56:59.145Z",
+      "status": 200,
+      "responseUrl": "https://alloflow-cdn.pages.dev/AlloFlowANTI.txt",
+      "headers": {
+        "content-type": "text/plain; charset=utf-8",
+        "content-encoding": "br",
+        "cache-control": "public, max-age=0, must-revalidate",
+        "etag": "W/\"1cbb2fc4cac65ad87d69cab4a52385b4\"",
+        "date": "Sun, 27 Sep 2026 17:57:04 GMT",
+        "cf-ray": "a41c637e2bec7a5f-ORD"
+      },
+      "bytes": 2792162,
+      "sha256": "64bbad9a3b19e8c01dda90416c35ff355fb79d5d380ac962626e90fb66148b81",
+      "loaders": [
+        {
+          "line": 14728,
+          "url": "https://alloflow-cdn.pages.dev/view_simplified_module.js?v=81e5082f"
+        }
+      ]
+    },
+    {
+      "kind": "host",
+      "url": "https://alloflow-cdn.pages.dev/AlloFlowANTI.txt",
+      "mode": "revalidate",
+      "at": "2026-09-27T17:57:27.387Z",
+      "status": 200,
+      "responseUrl": "https://alloflow-cdn.pages.dev/AlloFlowANTI.txt",
+      "headers": {
+        "content-type": "text/plain; charset=utf-8",
+        "content-encoding": "br",
+        "cache-control": "public, max-age=0, must-revalidate",
+        "etag": "W/\"1cbb2fc4cac65ad87d69cab4a52385b4\"",
+        "date": "Sun, 27 Sep 2026 17:57:25 GMT",
+        "cf-ray": "a41c64032f6c7a5f-ORD"
+      },
+      "bytes": 2792162,
+      "sha256": "64bbad9a3b19e8c01dda90416c35ff355fb79d5d380ac962626e90fb66148b81",
+      "loaders": [
+        {
+          "line": 14728,
+          "url": "https://alloflow-cdn.pages.dev/view_simplified_module.js?v=81e5082f"
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": "host-bytes-mismatch",
+      "message": "Served host bytes differ from the captured local host.",
+      "mode": "ordinary",
+      "url": "https://alloflow-cdn.pages.dev/AlloFlowANTI.txt"
+    },
+    {
+      "code": "served-loader-mismatch",
+      "message": "Expected exactly one executable reader loader using the baseline URL; its observed URL will not be followed.",
+      "mode": "ordinary",
+      "url": "https://alloflow-cdn.pages.dev/AlloFlowANTI.txt"
+    },
+    {
+      "code": "host-bytes-mismatch",
+      "message": "Served host bytes differ from the captured local host.",
+      "mode": "revalidate",
+      "url": "https://alloflow-cdn.pages.dev/AlloFlowANTI.txt"
+    },
+    {
+      "code": "served-loader-mismatch",
+      "message": "Expected exactly one executable reader loader using the baseline URL; its observed URL will not be followed.",
+      "mode": "revalidate",
+      "url": "https://alloflow-cdn.pages.dev/AlloFlowANTI.txt"
+    }
+  ],
+  "ok": false,
+  "limits": [
+    "Checks only the supplied host-text URL and its exact reader module URL from one network vantage point.",
+    "Does not verify the compiled /app/ shell, Canvas pastes, installed desktop apps, service-worker/browser caches, other modules or user journeys.",
+    "A supplied local manifest is evidence chosen by the operator, not an authenticated release attestation. HEAD alone never proves served bytes.",
+    "Ordinary and no-cache GETs are point-in-time observations; cache headers do not prove global propagation."
+  ],
+  "baseline": {
+    "at": "2026-09-27T17:53:25.085Z",
+    "head": "a63e347b7d193cbc95b5fc3a9fec844322f1f455",
+    "hostSha256": "bee7bd183381e82e6c497b02b64ccf3c76f08a0198e2e86acdb5df0040340c66",
+    "moduleSha256": "8f2dd725870ef19789fbf158bafec389506d3c0075159ce5cd1f7293ce970dcb",
+    "moduleUrl": "https://alloflow-cdn.pages.dev/view_simplified_module.js?v=8f2dd725"
+  },
+  "hostUrl": "https://alloflow-cdn.pages.dev/AlloFlowANTI.txt"
+}

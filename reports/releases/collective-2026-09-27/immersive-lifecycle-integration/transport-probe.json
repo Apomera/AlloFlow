@@ -1,0 +1,21 @@
+[
+  {
+    "kind": "uint8array",
+    "passed": false,
+    "error": "page.goto: Timeout 2500ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"https://fixture-body.test/\", waiting until \"load\"\u001b[22m\n",
+    "errors": [],
+    "events": [
+      "route",
+      "fulfilled"
+    ]
+  },
+  {
+    "kind": "buffer",
+    "passed": true,
+    "errors": [],
+    "events": [
+      "route",
+      "fulfilled"
+    ]
+  }
+]

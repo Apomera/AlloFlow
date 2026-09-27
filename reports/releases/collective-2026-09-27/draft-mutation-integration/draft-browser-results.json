@@ -1,0 +1,48 @@
+{
+  "browser": "148.0.7778.96",
+  "results": [
+    "Keep editing cancels navigation and restores explanation focus",
+    "Native reload cancellation preserves explanation draft",
+    "Keep editing during a pending save restores focus after the result settles",
+    "Failed save retains draft and stays in reader",
+    "Confirmed save reloads without a prompt and restores fixture-persisted explanation",
+    "Unfinished picker retains query and focus when navigation is cancelled",
+    "Native reload cancellation preserves unfinished picker work",
+    "Native reload cancellation preserves picture draft",
+    "Explicit native leave discards the unsaved picture",
+    "Save and continue persists the fixture support before unmounting",
+    "Unconfirmed wording preserves draft and focus, blocks navigation, and protects native reload",
+    "Retry confirms the retained wording before continuing",
+    "Native leave after Discard changes completes without a duplicate confirmation",
+    "Native leave after Save and continue completes without a duplicate confirmation",
+    "Clean cached editor recovers current saved support content",
+    "Dirty draft survives refreshed content and still protects navigation",
+    "Removed clean support closes its stale editor and focuses Add",
+    "Deferred edit opens the latest target content after confirmation",
+    "Wrong-source save result retains the draft, focus and refresh protection until retry confirms it",
+    "Malformed save result retains the draft, focus and refresh protection until retry confirms it",
+    "Obsolete save success after owner A to B to A cannot replace newer wording or release refresh protection",
+    "Obsolete save failure after owner A to B to A cannot replace newer wording or release refresh protection"
+  ],
+  "pageErrors": [],
+  "inputsBefore": {
+    "AlloFlowANTI.txt": "1b1c4ee421d7277e0fec63007383ed860a7674ec0f95d1656d935eb1cfdc3d56",
+    "view_simplified_source.jsx": "13bba84ebfcdf57277650f136e6fbfafd37f63c714539a5e9514932b55b2db82",
+    "reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+    "view_simplified_module.js": "0614d6ba7156182f664136025ac10fa42ef74ad66e2f468c8b1309499e6ed6e2",
+    "instructional_context_module.js": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2",
+    "host_handlers_module.js": "50d534862ec23a3bbd94f0716e337818d61d28ede842c58629e0953c1c526f88",
+    "utils_pure_module.js": "aa4eebe11a0fc0acf558d03212cecce6662402234d73a244e4f43933bbc4be11",
+    "firestore_sync_module.js": "f71bd7eb0083026a08c5202fdaf1105547c35575dd4240c1b4fb76f54036c24f"
+  },
+  "inputsAfter": {
+    "AlloFlowANTI.txt": "1b1c4ee421d7277e0fec63007383ed860a7674ec0f95d1656d935eb1cfdc3d56",
+    "view_simplified_source.jsx": "13bba84ebfcdf57277650f136e6fbfafd37f63c714539a5e9514932b55b2db82",
+    "reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+    "view_simplified_module.js": "0614d6ba7156182f664136025ac10fa42ef74ad66e2f468c8b1309499e6ed6e2",
+    "instructional_context_module.js": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2",
+    "host_handlers_module.js": "50d534862ec23a3bbd94f0716e337818d61d28ede842c58629e0953c1c526f88",
+    "utils_pure_module.js": "aa4eebe11a0fc0acf558d03212cecce6662402234d73a244e4f43933bbc4be11",
+    "firestore_sync_module.js": "f71bd7eb0083026a08c5202fdaf1105547c35575dd4240c1b4fb76f54036c24f"
+  }
+}

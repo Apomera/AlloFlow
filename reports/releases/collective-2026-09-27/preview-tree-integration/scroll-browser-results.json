@@ -1,0 +1,691 @@
+{
+  "at": "2026-09-27T19:25:19.053Z",
+  "browser": "148.0.7778.96",
+  "candidate": "view_simplified_module.js",
+  "results": [
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "container": "document",
+      "readings": [
+        {
+          "input": "wheel",
+          "edge": "middle",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 0,
+            "max": 321
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 280
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "wheel",
+          "edge": "bottom",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 321,
+            "max": 321
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 321
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "wheel",
+          "edge": "top",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 0,
+            "max": 321
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 0
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "PageDown",
+          "edge": "bottom",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 321,
+            "max": 321
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 321
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "PageUp",
+          "edge": "top",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 0,
+            "max": 321
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 0
+          },
+          "backgroundMoved": false
+        }
+      ],
+      "focusRestored": true,
+      "media": 0,
+      "writes": [],
+      "errors": [],
+      "requests": 1
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "container": "panel",
+      "readings": [
+        {
+          "input": "wheel",
+          "edge": "middle",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 0,
+            "max": 321
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 280
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "wheel",
+          "edge": "bottom",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 321,
+            "max": 321
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 321
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "wheel",
+          "edge": "top",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 0,
+            "max": 321
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 0
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "PageDown",
+          "edge": "bottom",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 321,
+            "max": 321
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 321
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "PageUp",
+          "edge": "top",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 0,
+            "max": 321
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 0
+          },
+          "backgroundMoved": false
+        }
+      ],
+      "focusRestored": true,
+      "media": 0,
+      "writes": [],
+      "errors": [],
+      "requests": 1
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 700
+      },
+      "container": "document",
+      "readings": [
+        {
+          "input": "wheel",
+          "edge": "middle",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 0,
+            "max": 609
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 280
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "wheel",
+          "edge": "bottom",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 609,
+            "max": 609
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 609
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "wheel",
+          "edge": "top",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 0,
+            "max": 609
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 0
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "PageDown",
+          "edge": "bottom",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 609,
+            "max": 609
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 609
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "PageUp",
+          "edge": "top",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 0,
+            "max": 609
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 0
+          },
+          "backgroundMoved": false
+        }
+      ],
+      "focusRestored": true,
+      "media": 0,
+      "writes": [],
+      "errors": [],
+      "requests": 1
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 700
+      },
+      "container": "panel",
+      "readings": [
+        {
+          "input": "wheel",
+          "edge": "middle",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 0,
+            "max": 609
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 280
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "wheel",
+          "edge": "bottom",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 609,
+            "max": 609
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 609
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "wheel",
+          "edge": "top",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 0,
+            "max": 609
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 0
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "PageDown",
+          "edge": "bottom",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 609,
+            "max": 609
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 609
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "PageUp",
+          "edge": "top",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 0,
+            "max": 609
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 0
+          },
+          "backgroundMoved": false
+        }
+      ],
+      "focusRestored": true,
+      "media": 0,
+      "writes": [],
+      "errors": [],
+      "requests": 1
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 2400
+      },
+      "container": "document",
+      "readings": [
+        {
+          "input": "wheel",
+          "edge": "middle",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 0,
+            "max": 0
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 0
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "wheel",
+          "edge": "bottom",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 0,
+            "max": 0
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 0
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "wheel",
+          "edge": "top",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 0,
+            "max": 0
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 0
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "PageDown",
+          "edge": "bottom",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 0,
+            "max": 0
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 0
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "PageUp",
+          "edge": "top",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 0,
+            "max": 0
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 0
+            },
+            "modal": 0
+          },
+          "backgroundMoved": false
+        }
+      ],
+      "focusRestored": true,
+      "media": 0,
+      "writes": [],
+      "errors": [],
+      "requests": 1
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 2400
+      },
+      "container": "panel",
+      "readings": [
+        {
+          "input": "wheel",
+          "edge": "middle",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 0,
+            "max": 0
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 0
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "wheel",
+          "edge": "bottom",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 0,
+            "max": 0
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 0
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "wheel",
+          "edge": "top",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 0,
+            "max": 0
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 0
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "PageDown",
+          "edge": "bottom",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 0,
+            "max": 0
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 0
+          },
+          "backgroundMoved": false
+        },
+        {
+          "input": "PageUp",
+          "edge": "top",
+          "before": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 0,
+            "max": 0
+          },
+          "after": {
+            "background": {
+              "page": 250,
+              "panel": 250
+            },
+            "modal": 0
+          },
+          "backgroundMoved": false
+        }
+      ],
+      "focusRestored": true,
+      "media": 0,
+      "writes": [],
+      "errors": [],
+      "requests": 1
+    }
+  ]
+}

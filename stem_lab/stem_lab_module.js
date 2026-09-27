@@ -6283,6 +6283,23 @@
               if (snap.tool === 'coordinate' && snap.data) setGridPoints(snap.data.points || []);
               if (snap.tool === 'protractor' && snap.data) setAngleValue(snap.data.angle || 45);
               if (snap.tool === 'codingPlayground' && snap.data) setLabToolData(function (prev) { return Object.assign({}, prev, { _codingPlayground: snap.data }); });
+              if (snap.tool === 'circuit' && snap.data && typeof snap.data === 'object' && !Array.isArray(snap.data)) setLabToolData(function (prev) {
+                // A circuit snapshot belongs to the Simple bench. Restore an
+                // independent copy so later edits cannot change the saved study.
+                var restored = JSON.parse(JSON.stringify(snap.data));
+                return Object.assign({}, prev, {
+                  _circuit: Object.assign({}, restored, {
+                    tick: 0,
+                    confirmAction: null,
+                    _aiLoading: false,
+                    _aiResponse: '',
+                    mixedWorkbench: false,
+                    activeWorkbench: false,
+                    networkWorkbench: false
+                  }),
+                  circuit: Object.assign({}, prev.circuit, { workspaceTab: 'build' })
+                });
+              });
               // Machine Lab saves a curated design payload (the machine and its
               // conditions, not transient shot or wall state). It fills any key
               // it is missing from its own defaults on render, so a partial

@@ -791,7 +791,7 @@ describe('dissection workspace bands', () => {
     expect(source).toContain('legendPanelY = Math.max(74, 10 + 58 * canvasHudScale + 6);');
     // The corridor label treats the compass as an obstacle, reflected into the mirrored space
     // it is drawn in. Without the reflection the test would silently never fire in ventral.
-    expect(source).toContain('var hudCompassBox = (sceneDetail && !d.quizMode)');
+    expect(source).toContain('var hudCompassBox = (sceneDetail && detailedCanvasHud && !d.quizMode)');
     expect(source).toContain('addCorridorOverlap(specimenScale.x < 0 ? 2 * cx - hudCompassBox.x - hudCompassBox.w : hudCompassBox.x,');
   }, 60_000);
 

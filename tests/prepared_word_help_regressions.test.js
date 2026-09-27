@@ -443,6 +443,30 @@ describe('Prepared help lifecycle regressions', () => {
     expect(view.props.handleSpeak).toHaveBeenCalledTimes(1);
   });
 
+  it.each(['same occurrence', 'another occurrence'])('starts prepared help at the top for %s and preserves scroll during playback', activation => {
+    const data = 'The heron rests. The heron flies.';
+    const item = itemWithHelp(data, 'heron');
+    item.adaptedReadingSupports = contract.upsertAdaptedReadingSupport(item, item.adaptedReadingSupports, {
+      id: 'second-support', start: data.lastIndexOf('heron'), end: data.lastIndexOf('heron') + 5,
+      quote: 'heron', text: 'Meaning for the second occurrence.',
+    });
+    const { props, update } = mount(item);
+    const openers = [...host.querySelectorAll('[data-prepared-help-open]')];
+    click(openers[0]);
+    const initialCard = card(); initialCard.scrollTop = 180; initialCard.scrollLeft = 20;
+    update({ isPlaying: true, playingContentId: 'unrelated-sentence' });
+    expect(card()).toBe(initialCard); expect(card().scrollTop).toBe(180);
+    props.stopPlayback.mockClear();
+    const opener = openers[activation === 'same occurrence' ? 0 : 1];
+    click(opener);
+    expect(card().scrollTop).toBe(0); expect(card().scrollLeft).toBe(0);
+    expect(document.activeElement).toBe(card());
+    expect(card().querySelector('[data-word-help-card-text]').textContent).toBe(activation === 'same occurrence' ? 'Meaning for the selected occurrence.' : 'Meaning for the second occurrence.');
+    expect(props.handleSpeak).not.toHaveBeenCalled(); expect(props.handleWordClick).not.toHaveBeenCalled();
+    expect(props.stopPlayback).not.toHaveBeenCalled();
+    key(card(), 'Escape'); expect(document.activeElement).toBe(opener);
+  });
+
   it('retains an open card across unchanged read-aloud updates without revalidating supports', () => {
     const view = mount(itemWithHelp('The heron rests.', 'heron'));
     click(words('heron')[0]);

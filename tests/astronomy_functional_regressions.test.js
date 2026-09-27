@@ -345,14 +345,13 @@ describe('Astronomy foreground contrast regressions', () => {
 
     var document = parseMarkup(renderAstronomy({ tab: 'hrDiagram' }));
     var command = document.querySelector('[data-astronomy-command="true"]');
-    expect(command.style.getPropertyValue('background')).toContain('linear-gradient');
-    expect(command.style.getPropertyValue('background')).not.toMatch(/rgba\(/i);
-    var metricLabels = Array.from(document.querySelector('[aria-label="Astronomy learning progress"]').children)
-      .map(function(metric) { return metric.lastElementChild; });
-    expect(metricLabels).toHaveLength(3);
-    metricLabels.forEach(function(label) {
-      expect(colorChannels(label.style.getPropertyValue('color'))).toEqual([203, 213, 225]);
-    });
+    expect(command.textContent).toContain('Saved targets');
+    var route = command.querySelector('p');
+    expect(contrastRatio(route.style.color, '#0f172a')).toBeGreaterThanOrEqual(4.5);
+    // The compact route leaves the simulation in view; the full catalog is still reachable.
+    var picker = document.querySelector('select[aria-label="Explore a section"]');
+    expect(picker.options.length).toBe(18);
+    expect(picker.value).toBe('hrDiagram');
   });
 });
 

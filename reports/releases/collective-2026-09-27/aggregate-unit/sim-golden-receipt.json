@@ -1,0 +1,43 @@
+{
+  "exitCode": 0,
+  "args": [
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/stem_sim_tools_golden.test.js",
+    "--maxWorkers=1",
+    "--update=false",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\releases\\collective-2026-09-27\\aggregate-unit\\sim-golden.json"
+  ],
+  "CI": "1",
+  "counts": {
+    "total": 36,
+    "passed": 36,
+    "failed": 0,
+    "pending": 0
+  },
+  "snapshots": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 1,
+    "matched": 28,
+    "total": 33,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 5,
+    "didUpdate": true
+  },
+  "drift": [
+    "tests/__snapshots__/stem_sim_tools_golden.test.js.snap"
+  ],
+  "monitoredInputs": 153,
+  "beforeHead": "1a5067ab673408d8bf33fc6998ab843696043859",
+  "afterHead": "1a5067ab673408d8bf33fc6998ab843696043859",
+  "failures": []
+}

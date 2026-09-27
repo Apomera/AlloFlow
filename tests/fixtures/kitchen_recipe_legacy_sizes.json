@@ -1,0 +1,399 @@
+{
+  "version": 1,
+  "panModel": 2,
+  "id": "mushroom",
+  "servings": 2,
+  "mode": "demonstrate",
+  "time": 600,
+  "log": [
+    {
+      "action": "wash",
+      "value": null,
+      "time": 0,
+      "accepted": true,
+      "observation": "Soap-and-water handwashing completed for at least 20 seconds in this model."
+    },
+    {
+      "action": "rinse",
+      "value": null,
+      "time": 0,
+      "accepted": true,
+      "observation": "Produce rinsed under running water."
+    },
+    {
+      "action": "slice",
+      "value": "0:5",
+      "time": 0,
+      "accepted": true,
+      "observation": "Piece 1 split into 5 mm and 35 mm pieces."
+    },
+    {
+      "action": "finishCuts",
+      "value": null,
+      "time": 0,
+      "accepted": true,
+      "observation": "Prepared 2 pieces, 5–35 mm wide. The widths vary; larger pieces govern the modeled cooking rate."
+    },
+    {
+      "action": "dry",
+      "value": null,
+      "time": 0,
+      "accepted": true,
+      "observation": "Excess surface water removed."
+    },
+    {
+      "action": "oil",
+      "value": null,
+      "time": 0,
+      "accepted": true,
+      "observation": "15 mL olive oil added."
+    },
+    {
+      "action": "produce",
+      "value": null,
+      "time": 0,
+      "accepted": true,
+      "observation": "Produce added. Its moisture and mass affect the pan temperature. The largest 35 mm pieces determine the modeled preparation rate."
+    },
+    {
+      "action": "panHeat",
+      "value": 2,
+      "time": 0,
+      "accepted": true,
+      "observation": "Pan burner medium. The pan retains heat after you turn it down."
+    },
+    {
+      "action": "advance",
+      "value": 60,
+      "time": 60,
+      "accepted": true,
+      "observation": "Both vessels advanced 60 simulated seconds. Empty pot; Releasing moisture."
+    },
+    {
+      "action": "advance",
+      "value": 60,
+      "time": 120,
+      "accepted": true,
+      "observation": "Both vessels advanced 60 simulated seconds. Empty pot; Releasing moisture."
+    },
+    {
+      "action": "advance",
+      "value": 60,
+      "time": 180,
+      "accepted": true,
+      "observation": "Both vessels advanced 60 simulated seconds. Empty pot; Developing color."
+    },
+    {
+      "action": "advance",
+      "value": 60,
+      "time": 240,
+      "accepted": true,
+      "observation": "Both vessels advanced 60 simulated seconds. Empty pot; Developing color."
+    },
+    {
+      "action": "advance",
+      "value": 60,
+      "time": 300,
+      "accepted": true,
+      "observation": "Both vessels advanced 60 simulated seconds. Empty pot; Developing color."
+    },
+    {
+      "action": "advance",
+      "value": 60,
+      "time": 360,
+      "accepted": true,
+      "observation": "Both vessels advanced 60 simulated seconds. Empty pot; Developing color."
+    },
+    {
+      "action": "advance",
+      "value": 60,
+      "time": 420,
+      "accepted": true,
+      "observation": "Both vessels advanced 60 simulated seconds. Empty pot; Dry; needs a splash."
+    },
+    {
+      "action": "advance",
+      "value": 60,
+      "time": 480,
+      "accepted": true,
+      "observation": "Both vessels advanced 60 simulated seconds. Empty pot; Dry; needs a splash."
+    },
+    {
+      "action": "advance",
+      "value": 60,
+      "time": 540,
+      "accepted": true,
+      "observation": "Both vessels advanced 60 simulated seconds. Empty pot; Dry; needs a splash."
+    },
+    {
+      "action": "advance",
+      "value": 60,
+      "time": 600,
+      "accepted": true,
+      "observation": "Both vessels advanced 60 simulated seconds. Empty pot; Dry; needs a splash."
+    },
+    {
+      "action": "flipPiece",
+      "value": 0,
+      "time": 600,
+      "accepted": true,
+      "observation": "Piece 1 turned over. Exposed surface: dark. Existing browning and scorching remain on their surfaces."
+    },
+    {
+      "action": "stirPan",
+      "value": null,
+      "time": 600,
+      "accepted": true,
+      "observation": "Pan stirred to redistribute the pieces and sauce."
+    }
+  ],
+  "hints": 0,
+  "plan": "",
+  "reflection": "",
+  "answers": [
+    null,
+    null
+  ],
+  "submitted": false,
+  "plated": false,
+  "feedback": "Pan stirred to redistribute the pieces and sauce.",
+  "prep": {
+    "hands": true,
+    "rinsed": true,
+    "cut": true,
+    "cuts": [
+      5,
+      35
+    ],
+    "cutMethod": "board",
+    "dry": true,
+    "garlic": false,
+    "pasta": 0
+  },
+  "pot": {
+    "heat": 0,
+    "temp": 22,
+    "water": 0,
+    "pasta": false,
+    "progress": 0,
+    "stirred": false,
+    "reserve": 0,
+    "drained": false,
+    "sample": null
+  },
+  "pan": {
+    "pieces": [
+      {
+        "x": 0.26228736571055344,
+        "z": 0.18331758723215402,
+        "down": 1,
+        "faces": [
+          3.508756868960731,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 0
+      },
+      {
+        "x": -0.4560229200164599,
+        "z": 0.06035806838908475,
+        "down": 1,
+        "faces": [
+          3.1745895481073245,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 0
+      },
+      {
+        "x": 0.1156299583761746,
+        "z": -0.13794822480164118,
+        "down": 0,
+        "faces": [
+          3.3394153212309634,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 0
+      },
+      {
+        "x": 0.014069585850693091,
+        "z": 0.3196905484276787,
+        "down": 1,
+        "faces": [
+          3.508756868960731,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 0
+      },
+      {
+        "x": -0.32532640205327684,
+        "z": -0.32521182654858927,
+        "down": 0,
+        "faces": [
+          3.1745895481073245,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 0
+      },
+      {
+        "x": 0.17982871007755702,
+        "z": 0.007850798165915456,
+        "down": 1,
+        "faces": [
+          3.3394153212309634,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 0
+      },
+      {
+        "x": -0.2451688636161661,
+        "z": 0.205650743526878,
+        "down": 0,
+        "faces": [
+          2.892353635224383,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 0
+      },
+      {
+        "x": 0.060197431334140836,
+        "z": -0.45604415275362475,
+        "down": 1,
+        "faces": [
+          3.732287711964016,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 0
+      },
+      {
+        "x": 0.10316810595646865,
+        "z": 0.14750031157036533,
+        "down": 0,
+        "faces": [
+          3.8384084152080042,
+          0
+        ],
+        "damage": [
+          0.000550693884987008,
+          0
+        ],
+        "soft": 0
+      },
+      {
+        "x": -0.31236718677724107,
+        "z": -0.06947474810945485,
+        "down": 1,
+        "faces": [
+          2.27595040148804,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 0
+      },
+      {
+        "x": 0.39856877502045573,
+        "z": -0.22965829307624264,
+        "down": 0,
+        "faces": [
+          3.732287711964016,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 0
+      },
+      {
+        "x": -0.05430380432471561,
+        "z": 0.1716132187095825,
+        "down": 1,
+        "faces": [
+          3.838408415208004,
+          0
+        ],
+        "damage": [
+          0.0005506938849869974,
+          0
+        ],
+        "soft": 0
+      },
+      {
+        "x": -0.1348891137691881,
+        "z": -0.29018085220524636,
+        "down": 0,
+        "faces": [
+          2.892353635224383,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 0
+      },
+      {
+        "x": 0.42474224509626907,
+        "z": 0.1766183037812925,
+        "down": 1,
+        "faces": [
+          3.1745895481073245,
+          0
+        ],
+        "damage": [
+          0,
+          0
+        ],
+        "soft": 0
+      }
+    ],
+    "heat": 2,
+    "temp": 184.97026366356656,
+    "size": "standard",
+    "oil": true,
+    "produce": true,
+    "garlic": false,
+    "moisture": 0,
+    "brown": 1.6579343911066502,
+    "soft": 0,
+    "damage": 0.000550693884987008,
+    "lastStir": 600,
+    "waterAdded": 0,
+    "combined": false,
+    "tasted": false,
+    "turns": 1
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "head": "c4c8d6f8bffc88e5e1549b2f84448f15184b2fe8",
+  "integratedAtHead": "c4c8d6f8bffc88e5e1549b2f84448f15184b2fe8",
+  "drift": [
+    "ui_strings.js",
+    "desktop/web-app/public/ui_strings.js"
+  ],
+  "acceptedExternalDrift": [
+    "ui_strings.js",
+    "desktop/web-app/public/ui_strings.js"
+  ],
+  "unreviewedDrift": [],
+  "mirrors": {
+    "content_engine_module.js": true,
+    "view_simplified_module.js": true,
+    "host_handlers_module.js": true,
+    "dictionary_loader.js": true,
+    "ui_strings.js": true,
+    "contentEngineSource": true
+  },
+  "pins": {
+    "AlloFlowANTI.txt:content_engine_module.js": true,
+    "AlloFlowANTI.txt:view_simplified_module.js": true,
+    "AlloFlowANTI.txt:host_handlers_module.js": true,
+    "desktop/web-app/src/AlloFlowANTI.txt:content_engine_module.js": true,
+    "desktop/web-app/src/AlloFlowANTI.txt:view_simplified_module.js": true,
+    "desktop/web-app/src/AlloFlowANTI.txt:host_handlers_module.js": true,
+    "desktop/web-app/src/App.jsx:content_engine_module.js": true,
+    "desktop/web-app/src/App.jsx:view_simplified_module.js": true,
+    "desktop/web-app/src/App.jsx:host_handlers_module.js": true
+  },
+  "verified": true
+}

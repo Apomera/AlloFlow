@@ -1,0 +1,96 @@
+{
+  "at": "2026-09-27T17:57:42.664Z",
+  "before": {
+    "reader_place_store.js": {
+      "sha256": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9",
+      "mtimeMs": 1790479079491.4392
+    },
+    "reader_support_drafts.js": {
+      "sha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+      "mtimeMs": 1790460742648.577
+    },
+    "view_simplified_source.jsx": {
+      "sha256": "c9625901a41c5a48c86faf6255bc1e3b867607f7c8c953d8b656c65a3a8f0121",
+      "mtimeMs": 1790531425189.3235
+    },
+    "view_simplified_module.js": {
+      "sha256": "8f2dd725870ef19789fbf158bafec389506d3c0075159ce5cd1f7293ce970dcb",
+      "mtimeMs": 1790531527951.1624
+    },
+    "desktop/web-app/public/view_simplified_module.js": {
+      "sha256": "8f2dd725870ef19789fbf158bafec389506d3c0075159ce5cd1f7293ce970dcb",
+      "mtimeMs": 1790531528391.389
+    },
+    "AlloFlowANTI.txt": {
+      "sha256": "bee7bd183381e82e6c497b02b64ccf3c76f08a0198e2e86acdb5df0040340c66",
+      "mtimeMs": 1790531534730.771
+    },
+    "desktop/web-app/src/AlloFlowANTI.txt": {
+      "sha256": "bee7bd183381e82e6c497b02b64ccf3c76f08a0198e2e86acdb5df0040340c66",
+      "mtimeMs": 1790531534801.083
+    },
+    "desktop/web-app/src/App.jsx": {
+      "sha256": "bee7bd183381e82e6c497b02b64ccf3c76f08a0198e2e86acdb5df0040340c66",
+      "mtimeMs": 1790531534987.7544
+    },
+    "_build_view_simplified_module.js": {
+      "sha256": "48eb897aca9572b99df1c1e0bd95231bbcb7503ad0001240fb0edfe8b27857df",
+      "mtimeMs": 1790529425188.827
+    },
+    "dev-tools/lib/reader_compiler.cjs": {
+      "sha256": "841513185ccf65337a8eed7b69a951937eb581700345f39381560d81399d345a",
+      "mtimeMs": 1790529725447.726
+    },
+    "dev-tools/check_reader_release.cjs": {
+      "sha256": "76c7da24d28af2616ee8a4412f4e9a4ae851dc73b7369e3e8b74c4a6b02820ab",
+      "mtimeMs": 1790529417176.2932
+    }
+  },
+  "after": {
+    "reader_place_store.js": {
+      "sha256": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9",
+      "mtimeMs": 1790479079491.4392
+    },
+    "reader_support_drafts.js": {
+      "sha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+      "mtimeMs": 1790460742648.577
+    },
+    "view_simplified_source.jsx": {
+      "sha256": "c9625901a41c5a48c86faf6255bc1e3b867607f7c8c953d8b656c65a3a8f0121",
+      "mtimeMs": 1790531425189.3235
+    },
+    "view_simplified_module.js": {
+      "sha256": "8f2dd725870ef19789fbf158bafec389506d3c0075159ce5cd1f7293ce970dcb",
+      "mtimeMs": 1790531527951.1624
+    },
+    "desktop/web-app/public/view_simplified_module.js": {
+      "sha256": "8f2dd725870ef19789fbf158bafec389506d3c0075159ce5cd1f7293ce970dcb",
+      "mtimeMs": 1790531528391.389
+    },
+    "AlloFlowANTI.txt": {
+      "sha256": "bee7bd183381e82e6c497b02b64ccf3c76f08a0198e2e86acdb5df0040340c66",
+      "mtimeMs": 1790531534730.771
+    },
+    "desktop/web-app/src/AlloFlowANTI.txt": {
+      "sha256": "bee7bd183381e82e6c497b02b64ccf3c76f08a0198e2e86acdb5df0040340c66",
+      "mtimeMs": 1790531534801.083
+    },
+    "desktop/web-app/src/App.jsx": {
+      "sha256": "bee7bd183381e82e6c497b02b64ccf3c76f08a0198e2e86acdb5df0040340c66",
+      "mtimeMs": 1790531534987.7544
+    },
+    "_build_view_simplified_module.js": {
+      "sha256": "48eb897aca9572b99df1c1e0bd95231bbcb7503ad0001240fb0edfe8b27857df",
+      "mtimeMs": 1790529425188.827
+    },
+    "dev-tools/lib/reader_compiler.cjs": {
+      "sha256": "841513185ccf65337a8eed7b69a951937eb581700345f39381560d81399d345a",
+      "mtimeMs": 1790529725447.726
+    },
+    "dev-tools/check_reader_release.cjs": {
+      "sha256": "76c7da24d28af2616ee8a4412f4e9a4ae851dc73b7369e3e8b74c4a6b02820ab",
+      "mtimeMs": 1790529417176.2932
+    }
+  },
+  "unchanged": true
+}

@@ -1,0 +1,20 @@
+{
+  "browser": "148.0.7778.96",
+  "results": [
+    "Keep editing cancels navigation and restores explanation focus",
+    "Native reload cancellation preserves explanation draft",
+    "Keep editing during a pending save restores focus after the result settles",
+    "Failed save retains draft and stays in reader",
+    "Confirmed save reloads without a prompt and restores fixture-persisted explanation",
+    "Unfinished picker retains query and focus when navigation is cancelled",
+    "Native reload cancellation preserves unfinished picker work",
+    "Native reload cancellation preserves picture draft",
+    "Explicit native leave discards the unsaved picture",
+    "Save and continue persists the fixture support before unmounting",
+    "Unconfirmed wording preserves draft and focus, blocks navigation, and protects native reload",
+    "Retry confirms the retained wording before continuing",
+    "Native leave after Discard changes completes without a duplicate confirmation",
+    "Native leave after Save and continue completes without a duplicate confirmation"
+  ],
+  "pageErrors": []
+}

@@ -1,0 +1,69 @@
+{
+  "checkedAt": "2026-09-27T18:02:31.180Z",
+  "head": "a63e347b7d193cbc95b5fc3a9fec844322f1f455",
+  "baselineHead": "c4c8d6f8bffc88e5e1549b2f84448f15184b2fe8",
+  "pin": "698fbbc6",
+  "enginesStable": true,
+  "sourcePair": true,
+  "outputsMatch": true,
+  "pins": {
+    "AlloFlowANTI.txt": true,
+    "desktop/web-app/src/AlloFlowANTI.txt": true,
+    "desktop/web-app/src/App.jsx": true
+  },
+  "reader": {
+    "hash": "8f2dd725870ef19789fbf158bafec389506d3c0075159ce5cd1f7293ce970dcb",
+    "pin": "8f2dd725",
+    "publicMirror": true
+  },
+  "reviewedExternalHostChanges": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "afterHash": "3fc492e303317be4876203d693a17fa72fc67e9715cf7cbf7a4844bdf973e7ba",
+      "currentHash": "bee7bd183381e82e6c497b02b64ccf3c76f08a0198e2e86acdb5df0040340c66",
+      "reviewedDeltaOnly": true,
+      "readerPinMatches": true,
+      "change": "ViewSimplifiedModule cache pin only",
+      "previousReaderPin": "413cd330",
+      "currentReaderPin": "8f2dd725"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "afterHash": "3fc492e303317be4876203d693a17fa72fc67e9715cf7cbf7a4844bdf973e7ba",
+      "currentHash": "bee7bd183381e82e6c497b02b64ccf3c76f08a0198e2e86acdb5df0040340c66",
+      "reviewedDeltaOnly": true,
+      "readerPinMatches": true,
+      "change": "ViewSimplifiedModule cache pin only",
+      "previousReaderPin": "413cd330",
+      "currentReaderPin": "8f2dd725"
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "afterHash": "3fc492e303317be4876203d693a17fa72fc67e9715cf7cbf7a4844bdf973e7ba",
+      "currentHash": "bee7bd183381e82e6c497b02b64ccf3c76f08a0198e2e86acdb5df0040340c66",
+      "reviewedDeltaOnly": true,
+      "readerPinMatches": true,
+      "change": "ViewSimplifiedModule cache pin only",
+      "previousReaderPin": "413cd330",
+      "currentReaderPin": "8f2dd725"
+    }
+  ],
+  "unreviewedHostDrift": [],
+  "browserInputDrift": [],
+  "finalInputDrift": [],
+  "browser": {
+    "report": "current-reader-browser.json",
+    "passed": 11,
+    "total": 11,
+    "verified": true
+  },
+  "tests": {
+    "report": "current-reader-tests.json",
+    "passed": 463,
+    "failed": 0,
+    "skipped": 0,
+    "files": 16,
+    "success": true
+  },
+  "passed": true
+}

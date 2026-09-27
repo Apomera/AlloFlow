@@ -1,0 +1,21 @@
+{
+  "checked": "2026-09-27T16:23:12.401Z",
+  "isolatedHead": "e63e08d99f0e60b8fb16c8fc7767ee02ab12c5ae",
+  "sharedHead": "286e09850680047d44efcc836075916cf488eff6",
+  "isolated": {
+    "view_simplified_source.jsx": "242d3a4ff4a7f30adb95551ac3573524b5b50c1075f667345f25f19b80af97b7",
+    "reader_place_store.js": "f3f1b718ae496003fecf365f070e4ef98c4efcceb5e6b11761cea44e047a75ae",
+    "reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+    "package.json": "e880a66350e09285d4a43457de9765b7a0ad107fa7aa8d2ef566583a4bfd1c77",
+    "_build_view_simplified_module.js": "6ce1d000f200ef5d446c330dd35d1b3a9adb240030ec114179fd5f016f00a21f"
+  },
+  "shared": {
+    "view_simplified_source.jsx": "765383768168dec45902855ce4e18eeee66f0e0df0830f92c53e16f4ed8b388f",
+    "reader_place_store.js": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9",
+    "reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+    "package.json": "ed145399195f3bca18adcb900e76ad8785abf2048d2457333b6dedf1f08c675e",
+    "_build_view_simplified_module.js": "6ce1d000f200ef5d446c330dd35d1b3a9adb240030ec114179fd5f016f00a21f"
+  },
+  "patchApplies": true,
+  "sharedRuntimeChangedByThisTask": false
+}

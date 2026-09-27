@@ -9,6 +9,7 @@ function option(name, fallback) { const index = args.indexOf(name); return index
 const depsRoot = path.resolve(option('--deps', root)), req = createRequire(path.join(depsRoot, 'package.json'));
 const esbuild = req('esbuild');
 const instrument = args.includes('--instrument'), smoke = args.includes('--smoke'), validate = args.includes('--validate');
+const retention = args.includes('--retention');
 const head = () => execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
 const environment = {platform:process.platform,arch:process.arch,node:process.version,os:require('os').release(),cpu:require('os').cpus()[0].model,logicalCPUs:require('os').cpus().length};
 const harnessHashes = Object.fromEntries(['fixtures.cjs','harness.jsx','instrumentation.js','run.cjs'].map(file=>[file,crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname,file))).digest('hex')]));
@@ -42,6 +43,12 @@ function sourceModule(file, exports) {
   let raw = readSource(file).toString('utf8');
   if (file === 'view_simplified_source.jsx' && !fromGit)
     raw = embeddedReaderHelpers.filter(helper => fs.existsSync(path.join(root, helper))).map(helper => fs.readFileSync(path.join(root, helper), 'utf8')).join('\n') + '\n' + raw;
+  if (file === 'view_simplified_source.jsx' && retention) {
+    const marker = 'return { key: storageKey, load, save';
+    assert.ok(raw.includes(marker), 'Reading-place retention probe needs review');
+    raw = raw.replace(marker, 'return { inspectRetention: () => ({ entries: entries.size, keyChars: [...entries.keys()].reduce((n, key) => n + key.length, 0), authored: [...entries.values()].filter(entry => hasWork(entry.draft)).length, recovery: [...entries.values()].filter(needsRecovery).length }), key: storageKey, load, save');
+    raw += '\nwindow.readerPlaceRetention = () => readingPlaceStore.inspectRetention();';
+  }
   const transformed = esbuild.transformSync(raw, { loader: 'jsx', jsxFactory: 'React.createElement', jsxFragment: 'React.Fragment', target: 'es2020' }).code;
   return '(function(){var React=window.React,Fragment=React.Fragment;\n' + transformed + '\nObject.assign(window.AlloModules,{' + exports.join(',') + '});})();';
 }
@@ -93,9 +100,10 @@ const server = http.createServer((request, response) => {
 });
 const nextPaint = page => page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
 async function patch(page, update) { await page.evaluate(update => window.readerFixture.patch(update), update); await nextPaint(page); }
-async function memory(cdp) {
+async function memory(cdp, page) {
   await cdp.send('HeapProfiler.collectGarbage');
-  return { dom: await cdp.send('Memory.getDOMCounters'), heap: await cdp.send('Runtime.getHeapUsage') };
+  return { dom: await cdp.send('Memory.getDOMCounters'), heap: await cdp.send('Runtime.getHeapUsage'),
+    ...(retention ? { readingPlaces: await page.evaluate(() => window.readerPlaceRetention()) } : {}) };
 }
 function distribution(samples) {
   const sorted = [...samples].sort((a, b) => a - b), quantile = q => sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))];
@@ -140,7 +148,7 @@ async function main() {
           continue;
         }
         const cdp = await context.newCDPSession(page);
-        const retained = [{ phase: 'mounted', ...await memory(cdp) }];
+        const retained = [{ phase: 'mounted', ...await memory(cdp, page) }];
         await page.evaluate(() => window.readerMetrics.reset());
         // Samples measure update-to-two-paints, including frame pacing. They are
         // never reported as render time. Instrumented Profiler actualDuration is separate.
@@ -179,7 +187,7 @@ async function main() {
               assert.equal(visible.resource, 'fixture-resource-' + i); assert.equal(visible.learner, 'fixture-learner-' + i);
             }
           }
-          if ((i + 1) % 10 === 0) retained.push({ phase: 'cycle-' + (i + 1), ...await memory(cdp) });
+          if ((i + 1) % 10 === 0) retained.push({ phase: 'cycle-' + (i + 1), ...await memory(cdp, page) });
         }
         if (spec.audio) {
           await patch(page, { karaoke: true });
@@ -200,7 +208,7 @@ async function main() {
         await page.evaluate(() => window.readerFixture.unmount());
         await page.mouse.click(1, 1); // leave focus and pointer on a neutral part of the disposable fixture
         await page.waitForTimeout(4500); // current focus/advance timers must have drained
-        retained.push({ phase: 'unmounted', ...await memory(cdp) });
+        retained.push({ phase: 'unmounted', ...await memory(cdp, page) });
         const afterClose = await page.evaluate(() => ({ ...window.readerMetrics.snapshot(),
           highlightRanges: [...(CSS.highlights?.values() || [])].reduce((sum, mark) => sum + mark.size, 0) }));
         assert.deepEqual(errors, []); assert.deepEqual(external, []);
@@ -212,7 +220,7 @@ async function main() {
     assert.equal(head(), baseline, 'HEAD changed during the run');
     assert.deepEqual(hashes(), initialHashes, 'Measured source changed during the run');
     const report = { status: smoke ? 'fixture-smoke-only' : 'candidate-baseline', baseline,
-      environment, harnessHashes, browser: browser.version(), sourceMode: fromGit ? 'git-HEAD' : 'working-tree', instrumented: instrument, sourceHashes: initialHashes,
+      environment, harnessHashes, browser: browser.version(), sourceMode: fromGit ? 'git-HEAD' : 'working-tree', instrumented: instrument, retentionProbe: retention, sourceHashes: initialHashes,
       css: { file: cssFile, sha256: crypto.createHash('sha256').update(css).digest('hex') },
       limitations: ['Not the integrated host or deployed release.', 'Synthetic sweep updates, local audio route, and disposable browser storage; icon components are stubbed.',
         'Timing budgets are unset until repeated baseline runs establish noise and device constraints.',

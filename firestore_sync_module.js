@@ -575,8 +575,10 @@
     const claimedOriginal = profile && profile.form === 'same-text-supported';
     const hasSnapshot = Object.prototype.hasOwnProperty.call(item, 'sourceSnapshot');
     let canonicalData = item.data;
-    if (item.dataEncoding === 'json-text/v1' && typeof canonicalData === 'string') {
-      try { const decoded = JSON.parse(canonicalData); if (typeof decoded === 'string') canonicalData = decoded; } catch (_) { /* invalid envelope stays unverified */ }
+    if (item.dataEncoding === 'json-text/v1') {
+      // An explicit envelope must decode, even when its raw bytes match a snapshot.
+      canonicalData = null;
+      try { const decoded = typeof item.data === 'string' ? JSON.parse(item.data) : null; if (typeof decoded === 'string') canonicalData = decoded; } catch (_) { /* invalid envelope stays unverified */ }
     }
     const sameText = !!snapshot && typeof canonicalData === 'string' && canonicalData === snapshot.text;
     const missingSharedBody = failureReason === 'live-session-size-limit' && hasOwnReadingSnapshot(item) && typeof item.data !== 'string';
@@ -700,7 +702,15 @@
       if (!Array.isArray(items)) return [];
       return items.filter(item => item && typeof item === 'object').map(item => {
           let parsedData = item.data;
-          if (typeof parsedData === 'string' && item.dataEncoding !== 'text/v1') {
+          // Keep failed explicit reading envelopes marked through refresh/reshare.
+          // Only legacy, unmarked prose may use a snapshot to skip JSON decoding.
+          let unresolvedReadingEnvelope = item.type === 'simplified' && item.dataEncoding === 'json-text/v1';
+          if (unresolvedReadingEnvelope) {
+              try {
+                  const decoded = typeof parsedData === 'string' ? JSON.parse(parsedData) : null;
+                  if (typeof decoded === 'string') { parsedData = decoded; unresolvedReadingEnvelope = false; }
+              } catch (_) { /* preserve the declared encoding for the received preview */ }
+          } else if (typeof parsedData === 'string' && item.dataEncoding !== 'text/v1') {
               // A saved snapshot disambiguates even a quoted JSON passage.
               const exactSnapshot = validReadingSnapshot(item);
               if (!exactSnapshot || exactSnapshot.text !== parsedData) {
@@ -734,7 +744,7 @@
               ...item,
               data: parsedData,
               gameData: parsedGameData || item.gameData,
-              ...(typeof parsedData === 'string' ? { dataEncoding: 'text/v1' } : {})
+              ...(typeof parsedData === 'string' && !unresolvedReadingEnvelope ? { dataEncoding: 'text/v1' } : {})
           };
           const boundarySafeItem = normalizeReadingPreservation(normalizeReadingRoleMetadata(sanitizeMemoryAidResourceForBoundary(hydratedItem)));
           const instructionalText = normalizePersistedInstructionalText(boundarySafeItem);

@@ -11,7 +11,7 @@ describe('physics canvas animation loop', () => {
     PHYSICS_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
-      expect(source).toContain('if (prevCanvas && prevCanvas._physCleanup) prevCanvas._physCleanup();');
+      expect(source).toContain('if (prevCanvas && !prevCanvas.isConnected && prevCanvas._physCleanup) prevCanvas._physCleanup();');
       expect(source).toContain('if (canvasEl._physScheduleFrame) canvasEl._physScheduleFrame();');
       expect(source).toContain("window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches");
       expect(source).toContain('function isPhysicsHidden()');
@@ -23,7 +23,7 @@ describe('physics canvas animation loop', () => {
       expect(source).toContain("document.addEventListener('visibilitychange', onPhysicsVisibilityChange);");
       expect(source).toContain("document.removeEventListener('visibilitychange', onPhysicsVisibilityChange);");
       expect(source).toContain('if (!canvasEl.isConnected) { cleanupPhysicsCanvas(); return; }');
-      expect(source).toContain('tick += physMotionReduced ? 0.2 : 1;');
+      expect(source).toContain('tick += physMotionReduced ? 0 : 1;');
       expect(source).toContain('canvasEl._physCleanup = cleanupPhysicsCanvas;');
       expect(source).toContain('canvasEl._physScheduleFrame = schedulePhysicsFrame;');
       expect(source).toContain('schedulePhysicsFrame();');

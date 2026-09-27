@@ -48,11 +48,11 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('var idleTime = motionClockRef.current.elapsed;');
     expect(source).toContain("loggedRings.forEach(function (ring, idx)");
     expect(source).toContain(`role: 'progressbar', 'aria-label': __alloT('stem.dinolab.a11y_fossil_assembly_progress', 'Fossil assembly progress')`);
-    expect(source).toContain(`role: 'progressbar', 'aria-label': __alloT('stem.dinolab.a11y_claim_strength', 'Claim strength')`);
+    expect(source).toContain(`role: 'progressbar', 'aria-label': __alloT('stem.dinolab.a11y_evidence_route', 'Evidence route')`);
     expect(source).toContain(`role: 'progressbar', 'aria-label': __alloT('stem.dinolab.a11y_reconstruction_challenge_progress', 'Reconstruction challenge progress')`);
     expect(source).toContain("scanStatusText = 'Evidence log '");
     expect(source).toContain("assemblyProgressText = 'Assembly '");
-    expect(source).toContain("claimReadinessText = 'Claim strength '");
+    expect(source).toContain("claimReadinessText = 'Evidence route '");
     expect(source).toContain("'aria-label': target.label + ' scan anchor");
     expect(source).toContain("'aria-label': piece.label + ' fossil");
     expect(source).toContain('var DinoFieldStation3DStable = null;');

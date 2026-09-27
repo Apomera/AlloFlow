@@ -1,0 +1,53 @@
+{
+  "at": "2026-09-27T17:58:45.546Z",
+  "releaseCommit": "0cc63c58e949fe6ed4f6c245db0746354653872f",
+  "files": {
+    "AlloFlowANTI.txt": {
+      "sha256": "64bbad9a3b19e8c01dda90416c35ff355fb79d5d380ac962626e90fb66148b81",
+      "bytes": 2792162
+    },
+    "view_simplified_module.js": {
+      "sha256": "81e5082fa287dd8a3203f327bd10ae4fc253c92940591775786ebe5bc1ddb3fc",
+      "bytes": 499350
+    }
+  },
+  "hostMatches": true,
+  "moduleMatches": true,
+  "requests": [
+    {
+      "url": "https://alloflow-cdn.pages.dev/view_simplified_module.js?v=81e5082f",
+      "mode": "ordinary",
+      "at": "2026-09-27T17:58:43.886Z",
+      "status": 200,
+      "responseUrl": "https://alloflow-cdn.pages.dev/view_simplified_module.js?v=81e5082f",
+      "headers": {
+        "content-type": "application/javascript",
+        "content-encoding": "br",
+        "cache-control": "public, max-age=0, must-revalidate",
+        "etag": "W/\"93c28aed2468617d618ec7ab503227b5\"",
+        "date": "Sun, 27 Sep 2026 17:58:43 GMT",
+        "cf-ray": "a41c65e6a8f9e254-ORD"
+      },
+      "bytes": 499350,
+      "sha256": "81e5082fa287dd8a3203f327bd10ae4fc253c92940591775786ebe5bc1ddb3fc"
+    },
+    {
+      "url": "https://alloflow-cdn.pages.dev/view_simplified_module.js?v=81e5082f",
+      "mode": "revalidate",
+      "at": "2026-09-27T17:58:45.362Z",
+      "status": 200,
+      "responseUrl": "https://alloflow-cdn.pages.dev/view_simplified_module.js?v=81e5082f",
+      "headers": {
+        "content-type": "application/javascript",
+        "content-encoding": "br",
+        "cache-control": "public, max-age=0, must-revalidate",
+        "etag": "W/\"93c28aed2468617d618ec7ab503227b5\"",
+        "date": "Sun, 27 Sep 2026 17:58:43 GMT",
+        "cf-ray": "a41c65ea9b96e254-ORD"
+      },
+      "bytes": 499350,
+      "sha256": "81e5082fa287dd8a3203f327bd10ae4fc253c92940591775786ebe5bc1ddb3fc"
+    }
+  ],
+  "scope": "Two published files only, compared with recorded release commit; not full release or browser validation."
+}

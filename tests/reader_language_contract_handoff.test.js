@@ -1,20 +1,21 @@
-// Handoff to the reader/generation owners. These are known failures at the pinned base.
-// Remove .fails after the owning track fixes the contract. STRICT=1 reproduces red assertions.
+// Integrated bilingual contract regressions: passing assertions are required.
 import { beforeAll, beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import { setupReader, mountReader, disposeReader, fixtures, contentFor, helpers } from './helpers/reader_locale_harness.js';
 beforeAll(setupReader);
 beforeEach(() => localStorage.clear());
 afterEach(() => { disposeReader(); vi.restoreAllMocks(); });
-const regression = process.env.ALLO_READER_CONTRACT_STRICT === '1' ? it : it.fails;
+const regression = it;
 const marker = '\n\n--- ENGLISH TRANSLATION ---\n\n';
 const spanish = fixtures.find(f => f.locale === 'spanish_latin_america');
-describe('known bilingual contract regressions — integration handoff', () => {
-  regression('reader_bilingual_target_v1: a saved Arabic target needs Arabic DOM metadata', () => {
-    const content = contentFor(spanish, { data: 'El agua es importante.' + marker + 'الماء مهم.', translationTarget: 'Arabic', config: { language: 'Spanish', translationTarget: 'Arabic' } });
+describe('integrated bilingual language contract', () => {
+  regression.each(['paragraph', 'table'])('a saved Arabic target keeps Arabic DOM metadata for a %s', type => {
+    const source = type === 'table' ? '| Agua |\n| --- |\n| Importante |' : 'El agua es importante.';
+    const target = type === 'table' ? '| الماء |\n| --- |\n| مهم |' : 'الماء مهم.';
+    const content = contentFor(spanish, { data: source + marker + target, translationTarget: 'Arabic', config: { language: 'Spanish', translationTarget: 'Arabic' } });
     const { host } = mountReader(spanish, { generatedContent: content, history: [content], isSideBySide: true, leveledTextLanguage: 'French' });
-    const paragraphs = [...host.querySelectorAll('[data-reading-paragraph]')];
+    const paragraphs = [...host.querySelectorAll(type === 'table' ? '[data-reading-table]' : '[data-reading-paragraph]')];
     expect(paragraphs).toHaveLength(2);
-    expect(paragraphs[1].textContent).toContain('الماء مهم.');
+    expect(paragraphs[1].textContent).toContain('الماء');
     expect({ lang: paragraphs[1].lang, dir: paragraphs[1].dir }).toEqual({ lang: 'ar', dir: 'rtl' });
   });
   regression('reader_bilingual_target_v1: adapting a saved Arabic translation must retain Arabic', async () => {

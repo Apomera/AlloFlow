@@ -1,0 +1,87 @@
+{
+  "observedAt": "2026-09-26T23:07:04.080Z",
+  "baseline": "6b63e76e862125e87422f02a54ed60beac68e8fb",
+  "tests": {
+    "files": 13,
+    "passed": 183,
+    "durationSeconds": 20.05,
+    "initialNewRegressionFailures": 6
+  },
+  "browser": {
+    "scope": "Isolated fixture origin; real codecs/modules/Chromium. No live backend or deployed app.",
+    "results": [
+      {
+        "case": "first-open",
+        "passed": true
+      },
+      {
+        "case": "refresh",
+        "passed": true
+      },
+      {
+        "case": "offline-reopen",
+        "passed": true
+      },
+      {
+        "case": "mailbox-resource-cold-recipient",
+        "passed": true
+      },
+      {
+        "case": "saved-assignment-hydration",
+        "passed": true
+      },
+      {
+        "case": "saved-assignment-offline-failure",
+        "passed": true
+      },
+      {
+        "case": "fresh-live-store-chromium-decode-and-play",
+        "passed": true
+      },
+      {
+        "case": "narrow-spanish_latin_america",
+        "passed": true
+      },
+      {
+        "case": "narrow-arabic",
+        "passed": true
+      },
+      {
+        "case": "narrow-chinese_simplified",
+        "passed": true
+      },
+      {
+        "case": "narrow-thai",
+        "passed": true
+      }
+    ],
+    "errors": []
+  },
+  "modules": [
+    {
+      "file": "live_aac_module.js",
+      "sha256": "0ae0268ed505682f8b8f23117eb7b6c52945df29af9223a1fac3f0be4fe7a473",
+      "publicMirrorSha256": "0ae0268ed505682f8b8f23117eb7b6c52945df29af9223a1fac3f0be4fe7a473"
+    },
+    {
+      "file": "shared_activity_module.js",
+      "sha256": "43722e2bfcab1060f8f86a6489252f8c99ead2fda695f66bf3899edc638c43f7",
+      "publicMirrorSha256": "43722e2bfcab1060f8f86a6489252f8c99ead2fda695f66bf3899edc638c43f7"
+    },
+    {
+      "file": "view_share_session_surfaces_module.js",
+      "sha256": "341e486b775779ee9cee1c19c4a82c27936d646f6d806a72a4a422b849a934df",
+      "publicMirrorSha256": "341e486b775779ee9cee1c19c4a82c27936d646f6d806a72a4a422b849a934df"
+    },
+    {
+      "file": "view_live_session_dock_module.js",
+      "sha256": "9987a5cb96b53c267ad98c155b4e4b865484b048d3c20b1dd7b0a2484d039a8f",
+      "publicMirrorSha256": "9987a5cb96b53c267ad98c155b4e4b865484b048d3c20b1dd7b0a2484d039a8f"
+    }
+  ],
+  "hostPatchIntegratedLocally": true,
+  "hostSha256": "b7d2f7cd47f87c15324c0a6d1374e4fc879cb4ea5e0b65fdd3c8786f09f0776d",
+  "deployedRevisionVerified": false,
+  "scopedLocaleKeys": 23,
+  "scope": "Owned delivery modules, scoped locales and fixtures; no host/reader edits or deployment in this pass."
+}

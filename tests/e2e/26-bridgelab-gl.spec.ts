@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { createServer, Server } from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 
 /**
@@ -131,14 +131,55 @@ test.afterAll(async () => {
 });
 
 type Pg = import('@playwright/test').Page;
+const ENHANCEMENT_REPORT = join(ROOT, 'reports', 'bridgelab-enhancement-pass2-2026-09-27');
 
 async function mount(page: Pg, bucket: Record<string, unknown> = {}) {
   await page.goto(`${base}/__harness`);
   await page.waitForFunction(() => !!(window as any).StemLab?._registry?.bridgeLab);
   await page.evaluate((b) => (window as any).__mount(b), Object.assign({ tab: 'build' }, bucket));
   await page.waitForSelector('canvas[data-bridge-gl="true"]', { timeout: 30000 });
+  // The viewer deliberately suspends repainting offscreen. Exercise changes
+  // with the stage visible, as a learner would, instead of sampling stale GL state.
+  await page.locator('canvas[data-bridge-gl="true"]').scrollIntoViewIfNeeded();
   await page.waitForFunction(() => (window as any).__gl()?.state === 'ready', null, { timeout: 30000 });
   await page.waitForTimeout(400);
+}
+
+async function mountWorkflow(page: Pg, width: number, bucket: Record<string, unknown> = {}) {
+  await page.setViewportSize({ width, height: 900 });
+  await mount(page, Object.assign({ introDismissed: true }, bucket));
+  // Match the app shell's box sizing and viewport-bound desktop panel. At phone
+  // widths the tool's responsive rule deliberately switches to document flow.
+  await page.addStyleTag({ content: `
+    *,*::before,*::after{box-sizing:border-box}
+    body{font-family:system-ui,sans-serif}
+    #wrap{width:100%;max-width:1100px;height:${width <= 640 ? 'auto' : '100vh'};margin:0 auto;overflow:${width <= 640 ? 'visible' : 'hidden'}}
+  ` });
+  await mkdir(ENHANCEMENT_REPORT, { recursive: true });
+}
+
+async function checkWorkflowHealth(page: Pg) {
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  const extent = await page.evaluate(() => ({
+    viewport: document.documentElement.clientWidth,
+    document: document.documentElement.scrollWidth,
+    body: document.body.scrollWidth
+  }));
+  expect(extent.document, 'document horizontal overflow').toBeLessThanOrEqual(extent.viewport + 1);
+  expect(extent.body, 'body horizontal overflow').toBeLessThanOrEqual(extent.viewport + 1);
+}
+
+async function captureRegion(page: Pg, region: import('@playwright/test').Locator, name: string) {
+  const viewport = page.viewportSize();
+  // A locator image cannot see through the desktop panel's scroll clipping.
+  // Give the real panel enough height for this region while retaining its width.
+  // Restore the normal viewport before the next interaction/overflow assertion.
+  if (viewport && viewport.width > 640) {
+    const height = await region.evaluate((element) => element.getBoundingClientRect().height);
+    await page.setViewportSize({ width: viewport.width, height: Math.max(viewport.height, Math.ceil(height) + 1000) });
+  }
+  await region.screenshot({ path: join(ENHANCEMENT_REPORT, name) });
+  if (viewport) await page.setViewportSize(viewport);
 }
 
 test.describe.configure({ timeout: 180_000 });
@@ -227,6 +268,11 @@ test.describe('Bridge Lab — real WebGL', () => {
     expect(String(gl.bowedMember)).toMatch(/^TC/);   // a top chord, as the physics says
     // And it bows the way it actually failed, not just some way.
     expect(gl.bowedAxis).toBe('out-of-plane');
+    expect(gl.bowedInterval).toEqual({ startM: 3, endM: 33 });
+    expect(gl.bowedMembers).toEqual(['TC0', 'TC1', 'TC2', 'TC3', 'TC4']);
+    await expect(page.locator('[aria-describedby="bridge-gl-description"]')).toHaveAttribute('aria-label', /deformation is exaggerated/);
+    await mkdir(ENHANCEMENT_REPORT, { recursive: true });
+    await captureRegion(page, page.locator('[data-allo-fs-stage]'), 'bridge-buckled-interval.png');
   });
 
   test('the elevation survives underneath as the guaranteed floor', async ({ page }) => {
@@ -254,6 +300,11 @@ test.describe('Bridge Lab — real WebGL', () => {
       const gl = await page.evaluate(() => (window as any).__gl());
       expect(gl.state, `style ${style}`).toBe('ready');
       expect(gl.contextLost, `style ${style}`).toBe(false);
+      if (style === 'ktruss') {
+        const description = await page.locator('[aria-describedby="bridge-gl-description"]').getAttribute('aria-label');
+        expect(description).toContain('forces are not solved');
+        expect(description).not.toContain('drawn bowed');
+      }
     }
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
@@ -293,5 +344,237 @@ test.describe('Bridge Lab — real WebGL', () => {
     await page.evaluate(() => (window as any).__destroy());
     await page.waitForTimeout(400);
     expect(await page.evaluate(() => (window as any).__gl().state)).toBe('idle');
+  });
+
+  for (const width of [1000, 390, 320]) {
+    test(`enhanced workflow: inspect, sweep, compare and restore at ${width}px`, async ({ page }) => {
+      await mountWorkflow(page, width, {
+        span: 36, height: 6, nBays: 6, crossSectionMm2: 14000,
+        lateralBraceEvery: 1, loadMode: 'vehicle', vehiclePos: 0.2,
+        designName: 'Baseline bridge', designNotes: 'Compare one change at a time.'
+      });
+      const canvas = page.locator('canvas[data-bridge-gl="true"]');
+      await expect(canvas).toBeVisible();
+      await page.screenshot({ path: join(ENHANCEMENT_REPORT, `bridge-${width}-overview.png`) });
+
+      await page.getByRole('button', { name: 'Labelled 2D view', exact: true }).click();
+      await expect(page.getByRole('button', { name: 'Labelled 2D view', exact: true })).toHaveAttribute('aria-pressed', 'true');
+      await expect(page.getByRole('img', { name: /^Warren truss diagram/ })).toBeVisible();
+      await page.getByLabel('Inspect member', { exact: true }).selectOption('BC0');
+      await expect(page.locator('[data-bridge-inspector] [role="status"]')).toContainText('BC0');
+      await expect(page.locator('[data-bridge-member="BC0"] text')).toHaveText('BC0');
+      await page.locator('[data-bridge-inspector] summary').click();
+      await expect(page.getByRole('region', { name: 'Member force table', exact: true })).toBeVisible();
+      await captureRegion(page, page.locator('[data-bridge-inspector]'), `bridge-${width}-inspector.png`);
+      await captureRegion(page, page.getByRole('img', { name: /^Warren truss diagram/ }), `bridge-${width}-elevation.png`);
+
+      await page.getByRole('button', { name: 'Test all positions', exact: true }).click();
+      await expect(page.locator('[data-bridge-sweep]')).toContainText('Lowest safety factor across the crossing:');
+      const sweep = await page.evaluate(() => (window as any).__bucket().vehicleSweep);
+      expect(sweep.samples.length).toBeGreaterThanOrEqual(51);
+      expect(sweep.worst.sf).toBeGreaterThan(0);
+      await page.getByRole('button', { name: 'Inspect worst position', exact: true }).click();
+      await expect.poll(() => page.evaluate(() => (window as any).__bucket().vehiclePos)).toBe(sweep.worst.position);
+      await captureRegion(page, page.locator('[data-bridge-sweep]'), `bridge-${width}-sweep.png`);
+
+      await page.getByRole('button', { name: 'Save current design', exact: true }).click();
+      await expect(page.locator('[data-bridge-notebook] article')).toHaveCount(1);
+      const baseline = await page.evaluate(() => (window as any).__bucket().designTrials[0].inputs);
+      const area = page.getByRole('slider', { name: 'Member cross-section (mm²)', exact: true });
+      await area.focus();
+      await area.press('ArrowRight');
+      await expect.poll(() => page.evaluate(() => (window as any).__bucket().crossSectionMm2)).toBe(14500);
+      await expect(page.locator('[data-bridge-sweep]')).toContainText('The design changed. Run the crossing test again');
+      await expect(page.getByRole('button', { name: 'Inspect worst position', exact: true })).toHaveCount(0);
+      await page.getByRole('textbox', { name: 'Bridge design name', exact: true }).fill('Thicker section');
+      await page.getByRole('button', { name: 'Save current design', exact: true }).click();
+      await expect(page.locator('[data-bridge-notebook] article')).toHaveCount(2);
+      await page.getByRole('button', { name: 'Restore Baseline bridge', exact: true }).click();
+      await expect.poll(() => page.evaluate(() => (window as any).__bucket().crossSectionMm2)).toBe(baseline.crossSectionMm2);
+      await expect.poll(() => page.evaluate(() => (window as any).__bucket().vehiclePos)).toBe(baseline.vehiclePos);
+      await expect(page.getByRole('textbox', { name: 'Bridge design notes', exact: true })).toHaveValue('Compare one change at a time.');
+      await captureRegion(page, page.locator('[data-bridge-notebook]'), `bridge-${width}-notebook.png`);
+      await checkWorkflowHealth(page);
+    });
+  }
+
+  test('enhanced workflow: auto-drive visibly updates the vehicle and pauses on manual input', async ({ page }) => {
+    await mountWorkflow(page, 1000, { loadMode: 'vehicle', vehiclePos: 0, introDismissed: true });
+    await page.getByRole('button', { name: 'Labelled 2D view', exact: true }).click();
+    const elevation = page.getByRole('img', { name: /^Warren truss diagram/ });
+    const before = await elevation.textContent();
+    await page.getByRole('button', { name: 'Auto-Drive Vehicle Across Bridge' }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().vehiclePos)).toBeGreaterThan(0.1);
+    await expect(page.getByRole('button', { name: 'Stop Drive' })).toHaveAttribute('aria-pressed', 'true');
+    expect(await elevation.textContent()).not.toBe(before);
+    const position = page.getByRole('slider', { name: 'Vehicle position (0=left, 1=right)', exact: true });
+    await position.focus();
+    await position.press('End');
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().autoDriving)).toBe(false);
+    const stopped = await page.evaluate(() => (window as any).__bucket().vehiclePos);
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => (window as any).__bucket().vehiclePos)).toBe(stopped);
+    await checkWorkflowHealth(page);
+  });
+
+  for (const width of [1000, 390, 320]) {
+    test(`crossing evidence: optimize, inspect with keyboard and print a saved trial at ${width}px`, async ({ page }) => {
+      await mountWorkflow(page, width, {
+        span: 36, height: 6, nBays: 6, crossSectionMm2: 14000,
+        lateralBraceEvery: 1, loadMode: 'vehicle', vehiclePos: 0, vehicleLoad: 120
+      });
+      const optimizer = page.locator('[data-bridge-optimizer]');
+      await expect(page.getByRole('combobox', { name: 'Positions to optimize', exact: true })).toHaveValue('crossing');
+      await expect(optimizer).not.toContainText('An unloaded design cannot establish');
+      await page.getByRole('button', { name: 'Apply this design to my bridge', exact: true }).click();
+      const applied = await page.evaluate(() => (window as any).__bucket());
+      expect(applied.vehiclePos).toBe(0);
+      const sweep = applied.vehicleSweep;
+      expect(sweep.worst.sf).toBeGreaterThanOrEqual(applied.optTargetSF || 2);
+      expect(sweep.samples.some((sample: any) => sample.position > 0 && sample.position < 1 && sample.sf !== null)).toBe(true);
+      expect(sweep.memberExtremes.length).toBe(23);
+      await captureRegion(page, optimizer, `bridge-${width}-optimizer.png`);
+
+      const worst = page.getByRole('button', { name: 'Inspect worst position', exact: true });
+      await worst.focus();
+      await worst.press('Enter');
+      const member = page.getByLabel('Inspect member', { exact: true });
+      await expect(member).toBeFocused();
+      await expect(member).toHaveValue(sweep.worst.member);
+      await expect(page.getByRole('button', { name: 'Labelled 2D view', exact: true })).toHaveAttribute('aria-pressed', 'true');
+      await expect.poll(() => page.evaluate(() => (window as any).__bucket().vehiclePos)).toBe(sweep.worst.position);
+
+      const reversed = sweep.memberExtremes.find((item: any) => item.tensionKN > 0.001 && item.compressionKN > 0.001);
+      expect(reversed, 'A Warren diagonal reverses action during this crossing').toBeTruthy();
+      await member.selectOption(reversed.id);
+      const extremes = page.locator('[data-bridge-member-crossing]');
+      await expect(extremes).toContainText('Force reversal');
+      await expect(extremes).toContainText(`Maximum tension: ${reversed.tensionKN.toFixed(2)} kN`);
+      await expect(extremes).toContainText(`Maximum compression: ${reversed.compressionKN.toFixed(2)} kN`);
+      await extremes.getByRole('button', { name: `Inspect position ${(reversed.compressionPosition * 100).toFixed(1)}%`, exact: true }).click();
+      await expect(member).toBeFocused();
+      await expect(page.locator('[data-bridge-inspector] [role="status"]')).toContainText('Compression');
+      await captureRegion(page, page.locator('[data-bridge-inspector]'), `bridge-${width}-member-extremes.png`);
+
+      const resultsToggle = page.locator('[data-bridge-sweep] summary');
+      await resultsToggle.focus();
+      await resultsToggle.press('Enter');
+      const results = page.getByRole('region', { name: 'Crossing results table', exact: true });
+      await results.focus();
+      await expect(results).toBeFocused();
+      await expect(results.getByRole('row')).toHaveCount(sweep.samples.length + 1);
+      const tested = sweep.samples.find((sample: any) => sample.position > 0.3 && sample.position < 0.4);
+      const positionButton = results.getByRole('button', { name: `Inspect position ${(tested.position * 100).toFixed(1)}%`, exact: true });
+      await positionButton.focus();
+      await positionButton.press('Enter');
+      await expect(member).toBeFocused();
+      await expect(member).toHaveValue(tested.member);
+      await expect.poll(() => page.evaluate(() => (window as any).__bucket().vehiclePos)).toBe(tested.position);
+      const position = page.getByRole('slider', { name: /^Inspect vehicle position/ });
+      await position.focus();
+      await position.press('Home');
+      await position.press('ArrowRight');
+      await expect.poll(() => page.evaluate(() => (window as any).__bucket().vehiclePos)).toBe(0.01);
+      await expect(position).toHaveAttribute('aria-valuetext', /^1\.0%; SF /);
+      await resultsToggle.press('Enter');
+      await captureRegion(page, page.locator('[data-bridge-sweep]'), `bridge-${width}-crossing-controls.png`);
+
+      const prediction = 'I predict that a thicker section will improve the buckling margin because bending stiffness increases.';
+      const observation = 'The whole crossing met the target. A diagonal changed from tension to compression as the vehicle moved.';
+      await page.getByRole('textbox', { name: 'Bridge design name', exact: true }).fill('Crossing investigation');
+      await page.getByRole('textbox', { name: 'Design prediction', exact: true }).fill(prediction);
+      await page.getByRole('textbox', { name: 'Design observation', exact: true }).fill(observation);
+      await page.getByRole('button', { name: 'Save current design', exact: true }).click();
+      const trial = page.locator('[data-bridge-notebook] article');
+      await expect(trial).toHaveCount(1);
+      await expect(trial).toContainText(prediction);
+      await expect(trial).toContainText(observation);
+      await expect(trial).toContainText('Saved crossing: SF');
+      await captureRegion(page, page.locator('[data-bridge-notebook]'), `bridge-${width}-evidence-notebook.png`);
+      await checkWorkflowHealth(page);
+
+      await page.getByRole('button', { name: 'Open design report', exact: true }).click();
+      await expect(page.locator('#bridge-print-region')).toBeVisible();
+      const printedTrial = page.locator('[data-bridge-print-trial]');
+      await expect(printedTrial).toContainText(prediction);
+      await expect(printedTrial).toContainText(observation);
+      await expect(printedTrial).toContainText('Saved crossing evidence');
+      await expect(printedTrial).not.toContainText('No matching crossing test');
+      await expect(page.locator('[data-bridge-print-crossing]')).toContainText('Current design crossing test');
+      await captureRegion(page, page.locator('#bridge-print-region'), `bridge-${width}-portfolio.png`);
+      await checkWorkflowHealth(page);
+      if (width === 1000) {
+        await page.emulateMedia({ media: 'print' });
+        await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+        await page.pdf({ path: join(ENHANCEMENT_REPORT, 'bridge-evidence-portfolio.pdf'), format: 'A4', printBackground: true,
+          margin: { top: '12mm', right: '12mm', bottom: '12mm', left: '12mm' } });
+      }
+    });
+  }
+
+  test('view recovery: WebGL loss moves focused controls to a persistent labelled 2D fallback', async ({ page }) => {
+    await mountWorkflow(page, 1000, { loadMode: 'vehicle', vehiclePos: 0.3 });
+    const viewer = page.locator('[aria-describedby="bridge-gl-description"]');
+    await viewer.focus();
+    await page.evaluate(() => {
+      const canvas = document.querySelector('canvas[data-bridge-gl]') as HTMLCanvasElement;
+      const context = canvas.getContext('webgl2') || canvas.getContext('webgl');
+      const extension = context?.getExtension('WEBGL_lose_context');
+      if (!extension) throw new Error('Chromium did not expose WEBGL_lose_context');
+      (window as any).__bridgeRestoreContext = extension;
+      extension.loseContext();
+    });
+    const fallback = page.locator('[data-bridge-elevation]');
+    await expect(page.locator('[data-bridge-view-status]')).toBeVisible();
+    await expect(page.locator('[data-bridge-view-status]')).toContainText('3D is unavailable');
+    await expect(fallback).toBeFocused();
+    await expect(page.getByRole('button', { name: '3D structure', exact: true })).toBeDisabled();
+    await expect(page.getByRole('img', { name: /^Warren truss diagram/ })).toBeVisible();
+    await page.evaluate(() => (window as any).__bridgeRestoreContext.restoreContext());
+    await expect.poll(() => page.evaluate(() => (window as any).__gl().state)).toBe('ready');
+    await expect(page.locator('[data-bridge-view-status]')).toContainText('3D is available again');
+    await expect(fallback).toBeFocused();
+    await expect(page.getByRole('button', { name: 'Labelled 2D view', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await page.getByRole('button', { name: '3D structure', exact: true }).click();
+    await expect(viewer).toBeVisible();
+    await expect(page.locator('[data-bridge-view-status]')).toHaveCount(0);
+    await checkWorkflowHealth(page);
+  });
+
+  test('view recovery: failed 3D startup keeps the explanation and 2D controls available', async ({ page }) => {
+    await page.goto(`${base}/__harness`);
+    await page.evaluate(() => {
+      (window as any).StemLab.ensureThree = () => Promise.reject(new Error('Test WebGL unavailable'));
+      (window as any).__mount({ tab: 'build', introDismissed: true });
+    });
+    await expect(page.locator('[data-bridge-view-status]')).toBeVisible();
+    await expect(page.locator('[data-bridge-view-status]')).toContainText('all analysis controls remain available');
+    await expect(page.getByRole('img', { name: /^Warren truss diagram/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: '3D structure', exact: true })).toBeDisabled();
+    await page.getByLabel('Inspect member', { exact: true }).selectOption('BC0');
+    await expect(page.locator('[data-bridge-inspector] [role="status"]')).toContainText('BC0');
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('view recovery: keyboard orbit and view switching preserve explicit 2D selection', async ({ page }) => {
+    await mountWorkflow(page, 1000);
+    const viewer = page.locator('[aria-describedby="bridge-gl-description"]');
+    await viewer.focus();
+    await viewer.press('ArrowRight');
+    await viewer.press('ArrowUp');
+    await viewer.press('+');
+    const rotated = await page.evaluate(() => (window as any).__bucket());
+    expect(rotated.rot3d).toEqual({ rotY: 34, rotX: 20 });
+    expect(rotated.zoom3d).toBeGreaterThan(1);
+    const twoDimensional = page.getByRole('button', { name: 'Labelled 2D view', exact: true });
+    await twoDimensional.focus();
+    await twoDimensional.press('Enter');
+    await expect(twoDimensional).toBeFocused();
+    await expect(viewer).toHaveAttribute('tabindex', '-1');
+    await expect(page.locator('[data-allo-fs-stage]')).toHaveAttribute('aria-hidden', 'true');
+    await page.evaluate(() => (window as any).__set({ span: 40 }));
+    await expect(twoDimensional).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('img', { name: /^Warren truss diagram/ })).toBeVisible();
+    await checkWorkflowHealth(page);
   });
 });

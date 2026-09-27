@@ -311,6 +311,14 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
   const stripUndefined = deps && deps.stripUndefined;
     if (!item || typeof item !== 'object' || !item.id || !item.type) return null;
     const referenceAudioSource = item;
+    // Hydrated or not, explicit reading text is decoded exactly once. Invalid
+    // envelopes retain their marker so packing cannot turn them into ready prose.
+    if (item.type === 'simplified' && item.dataEncoding === 'json-text/v1') {
+        try {
+            const decoded = typeof item.data === 'string' ? JSON.parse(item.data) : null;
+            if (typeof decoded === 'string') item = { ...item, data: decoded, dataEncoding: 'text/v1' };
+        } catch (_) { /* retain the invalid explicit envelope through sanitization */ }
+    }
     // Student packs are an independent egress boundary. A lesson or import
     // can wrap Memory Aids several levels down, so both the shared helper and
     // this fail-closed local gate inspect the entire resource graph. Evidence
@@ -415,6 +423,7 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
     // sanitizers run. All other sanitized fields, including audio, stay as-is.
     const readingContract = typeof window !== 'undefined' && window.AlloModules?.InstructionalContext;
     const readingSnapshot = item.type === 'simplified' && typeof item.data === 'string'
+        && item.dataEncoding !== 'json-text/v1'
         && readingContract?.getSourceSnapshot?.(item);
     if (readingSnapshot && cleaned && typeof cleaned === 'object') {
         cleaned.data = item.data;
@@ -714,7 +723,7 @@ const _alloMailboxResourceImages = resource => {
         if (value.type === 'simplified' && value.readingDelivery?.version === 1) {
             omittedReadingPictures += Math.max(0, Math.min(10000, Math.trunc(Number(value.readingDelivery.pictures?.omittedCount) || 0)));
         }
-        for (const key of ['image', 'imageUrl', 'visualImage']) add(value[key]);
+        for (const key of ['image', 'imageUrl', 'visualImage', 'sceneImage']) add(value[key]);
         // Reading word-support pictures are objects with a validated src leaf.
         // They need the same recipient load check as string-valued pictures.
         if (value.image && typeof value.image === 'object') add(value.image.src);
@@ -1025,16 +1034,40 @@ const _alloMailboxImageReceiptState = ({ entry, resourceId, resourceAt, mediaRev
     const omittedLabel = receipt.omitted ? receipt.omitted + ' omitted: replace or resize in the pack' : '';
     return { status: 'failed', label: [missing ? 'Images missing ' + missing + '/' + receipt.total : '', omittedLabel].filter(Boolean).join('. '), retry: missing > 0 };
 };
-const MailboxImageStatus = ({ entry, resourceId, resourceAt, mediaRevision, now, onRetry, mailboxVersion }) => {
+// Retry feedback belongs to a delivery target, not to the lifetime of a roster row.
+// A keyed child also retires pending callbacks across an A -> B -> A transition.
+const MailboxImageStatus = (props) => {
+    const { entry, resourceId, resourceAt, mediaRevision, mailboxVersion, sessionKey, recipientId } = props;
+    const status = _alloMailboxImageReceiptState(props);
+    const retryKey = JSON.stringify([
+        sessionKey || '', recipientId || entry?.uid || '', resourceId || '', Number(resourceAt) || 0,
+        [mediaRevision !== undefined, mediaRevision ?? null], mailboxVersion ?? 23, status.retry
+    ]);
+    return <MailboxImageStatusFeedback key={retryKey} entry={entry} status={status} onRetry={props.onRetry} />;
+};
+const MailboxImageStatusFeedback = ({ entry, status, onRetry }) => {
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState('');
-    const status = _alloMailboxImageReceiptState({ entry, resourceId, resourceAt, mediaRevision, now, mailboxVersion });
+    const pendingRef = useRef(null);
+    useEffect(() => () => { pendingRef.current = null; }, []);
+    const retry = async () => {
+        // React state may not have rendered between two activation events.
+        if (pendingRef.current || !status.retry) return;
+        const attempt = {};
+        pendingRef.current = attempt;
+        setBusy(true); setError('');
+        try { await onRetry(); }
+        catch (_) { if (pendingRef.current === attempt) setError('Could not resend. Try again.'); }
+        finally {
+            if (pendingRef.current === attempt) {
+                pendingRef.current = null;
+                setBusy(false);
+            }
+        }
+    };
     return <span style={{ display: 'inline-flex', flexWrap: 'wrap', alignItems: 'center', gap: 4, fontSize: 12, color: status.status === 'ready' ? '#166534' : status.status === 'failed' ? '#9f1239' : '#075985' }}>
         <span>{status.label}</span>
-        {status.retry && <button type="button" disabled={busy} aria-label={'Retry images for ' + (entry?.name || 'student')} onClick={async () => {
-            setBusy(true); setError('');
-            try { await onRetry(); } catch (_) { setError('Could not resend. Try again.'); } finally { setBusy(false); }
-        }} style={{ minHeight: 44, padding: '4px 8px', background: 'white', color: '#075985', border: '1px solid #0369a1', borderRadius: 6, fontWeight: 700 }}>{busy ? 'Resending images…' : 'Retry images'}</button>}
+        {status.retry && <button type="button" disabled={busy} aria-label={'Retry images for ' + (entry?.name || 'student')} onClick={retry} style={{ minHeight: 44, padding: '4px 8px', background: 'white', color: '#075985', border: '1px solid #0369a1', borderRadius: 6, fontWeight: 700 }}>{busy ? 'Resending images…' : 'Retry images'}</button>}
         {error && <span role="alert">{error}</span>}
     </span>;
 };

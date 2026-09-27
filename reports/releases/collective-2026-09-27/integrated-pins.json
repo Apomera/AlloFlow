@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-27T19:09:04.865Z",
+  "pins": {
+    "view_simplified_module.js": "0614d6ba7156182f664136025ac10fa42ef74ad66e2f468c8b1309499e6ed6e2",
+    "immersive_reader_module.js": "eb2801b095442323becfd86b1eceb49c694a35abb3a35c83886ad4b8fe6833b0",
+    "read_aloud_artifact_audio_module.js": "dda3cff2cae7f0a03364ff953e4e5592198107d45eb744b3c220bd72d4a14e6a",
+    "export_module.js": "6e49127931f08d46637b51797dea3d13cef985aac9d0756856776c9c5beb1af9",
+    "firestore_sync_module.js": "316cfb0d2c14661e94698289a2af21c32df98f841255b42e5396a9d8a5797027",
+    "live_aac_module.js": "1ef3de4c33d1c88c34905ba56e9fdab0af41a83b857c55d5fff541c9c6603449",
+    "shared_activity_module.js": "020959103955319d5530e0cdfb4cd8a0069e03931372bcb2b1f6600eedc8d2f5",
+    "view_live_session_dock_module.js": "6d8b3d8693905bbb841a6222af81772f6167ba95b421793c05c1218b09a8d3f8",
+    "content_engine_module.js": "698fbbc618e58f8702e3fe559458afe3675f4134d74150ddf6d6e373ca302e0b",
+    "host_handlers_module.js": "50d534862ec23a3bbd94f0716e337818d61d28ede842c58629e0953c1c526f88",
+    "own_sources_module.js": "1c5dc26a858ecf69f0e44dc28e0198d770816a27d44c9fa6ddcecc21b06db96a"
+  }
+}

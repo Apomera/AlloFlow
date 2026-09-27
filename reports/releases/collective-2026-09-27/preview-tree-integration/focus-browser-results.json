@@ -1,0 +1,107 @@
+{
+  "at": "2026-09-27T19:24:35.880Z",
+  "browser": "148.0.7778.96",
+  "scope": "Fresh intercepted fixture contexts with current production reader module and current host focus effect; no live app",
+  "results": [
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "pendingBeforeOpen": false,
+      "status": "passed",
+      "quiet": {
+        "cancel": 0,
+        "speak": 0,
+        "tts": 0,
+        "audio": 0,
+        "play": 0,
+        "existingPause": 0,
+        "previewFocus": 5,
+        "aborts": 0,
+        "position": 12
+      },
+      "resumed": {
+        "tts": 1,
+        "play": 1
+      },
+      "pageErrors": [],
+      "requests": 1
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "pendingBeforeOpen": true,
+      "status": "passed",
+      "quiet": {
+        "cancel": 0,
+        "speak": 0,
+        "tts": 0,
+        "audio": 0,
+        "play": 0,
+        "existingPause": 0,
+        "previewFocus": 5,
+        "aborts": 1,
+        "position": 12
+      },
+      "resumed": {
+        "tts": 1,
+        "play": 1
+      },
+      "pageErrors": [],
+      "requests": 1
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 700
+      },
+      "pendingBeforeOpen": false,
+      "status": "passed",
+      "quiet": {
+        "cancel": 0,
+        "speak": 0,
+        "tts": 0,
+        "audio": 0,
+        "play": 0,
+        "existingPause": 0,
+        "previewFocus": 5,
+        "aborts": 0,
+        "position": 12
+      },
+      "resumed": {
+        "tts": 1,
+        "play": 1
+      },
+      "pageErrors": [],
+      "requests": 1
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 700
+      },
+      "pendingBeforeOpen": true,
+      "status": "passed",
+      "quiet": {
+        "cancel": 0,
+        "speak": 0,
+        "tts": 0,
+        "audio": 0,
+        "play": 0,
+        "existingPause": 0,
+        "previewFocus": 5,
+        "aborts": 1,
+        "position": 12
+      },
+      "resumed": {
+        "tts": 1,
+        "play": 1
+      },
+      "pageErrors": [],
+      "requests": 1
+    }
+  ]
+}

@@ -226,9 +226,11 @@ describe('Art Studio fourth-pass touch safety', () => {
     });
     canvas = canvasFor(touchCases[0]);
     expect(canvas._pixelDrawing).toBe(true);
+    // Address the center of column four at the current canvas resolution.
+    const fourthColumnX = canvas.getBoundingClientRect().width * 3.5 / 16;
 
     await act(async () => {
-      canvas.dispatchEvent(pointerEvent('pointermove', 'touch', 110, 10));
+      canvas.dispatchEvent(pointerEvent('pointermove', 'touch', fourthColumnX, 10));
       await Promise.resolve();
     });
 
@@ -236,7 +238,7 @@ describe('Art Studio fourth-pass touch safety', () => {
     expect(latest.artStudio.pixelData).toHaveProperty('3,0');
     expect(canvas._pixelDrawing).toBe(true);
 
-    canvas.dispatchEvent(pointerEvent('pointerup', 'touch', 110, 10));
+    canvas.dispatchEvent(pointerEvent('pointerup', 'touch', fourthColumnX, 10));
     expect(canvas._pixelDrawing).toBe(false);
   });
 });

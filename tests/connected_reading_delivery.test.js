@@ -206,3 +206,94 @@ describe('received capability consistency', () => {
     expect(describeDelivery([plain], plain.id).readings[0].capabilities.adaptedText.availability).toBe('ready');
   });
 });
+
+
+describe('explicit reading text across receive and reshare boundaries', () => {
+  it.each(['{"broken":', '{"not":"text"}', 'null', '42'])('keeps an invalid explicit envelope unavailable after hydrate, reopen and reshare: %s', data => {
+    const [adapted] = pair();
+    const damaged = { ...adapted, data, dataEncoding: 'json-text/v1' }, before = JSON.stringify(damaged);
+    const hydrated = window.hydrateHistory(roundTrip([damaged]));
+    const reopened = window.hydrateHistory(roundTrip(window.sanitizeHistoryForCloud(hydrated)));
+    const portable = window.hydrateHistory(roundTrip(reopened.map(serialize)));
+    for (const received of [hydrated, reopened, portable]) {
+      const row = describeDelivery(received, damaged.id, null, { received: true }).readings[0];
+      expect(received[0].dataEncoding).toBe('json-text/v1');
+      expect(row).toMatchObject({ bodyStatus: 'unavailable', bodyReason: 'invalid-text-envelope' });
+      expect(row.capabilities.adaptedText.availability).toBe('unavailable');
+    }
+    expect(JSON.stringify(damaged)).toBe(before);
+  });
+
+  it('does not accept a matching snapshot as proof that an invalid explicit envelope decoded', () => {
+    const original = api.createSupportedReading('{"not":"text"}', { id: 'json-original' });
+    const invalid = { ...original, dataEncoding: 'json-text/v1' };
+    for (const received of [window.hydrateHistory([invalid])[0], serialize(invalid)]) {
+      expect(received.dataEncoding).toBe('json-text/v1');
+      expect(received.instructionalText.form).not.toBe('same-text-supported');
+      expect(describeDelivery([received], received.id).readings[0].bodyStatus).toBe('unavailable');
+    }
+  });
+
+  it.each(['"quoted prose"', '{"not":"text"}', 'null', '42'])('decodes valid explicit text once and preserves plain/legacy prose: %s', text => {
+    const original = api.createSupportedReading(text, { id: 'json-original' });
+    const encoded = { ...original, data: JSON.stringify(text), dataEncoding: 'json-text/v1' };
+    for (const received of [window.hydrateHistory([encoded])[0], serialize(encoded)]) {
+      expect(received.data).toBe(text);
+      expect(received.dataEncoding).toBe('text/v1');
+      expect(api.isSupportedOriginal(received)).toBe(true);
+      expect(window.hydrateHistory(roundTrip([received]))[0].data).toBe(text);
+    }
+    for (const encoding of [undefined, 'text/v1']) {
+      expect(window.hydrateHistory([{ ...original, dataEncoding: encoding }])[0].data).toBe(text);
+    }
+  });
+});
+
+
+describe('received source-pair capability ownership', () => {
+  it('recognizes a matching received original despite the adaptation carrying an old source-unavailable flag', () => {
+    const [adapted, original] = pair();
+    adapted.readingSourceAvailability = { status: 'unavailable', reason: 'live-session-size-limit' };
+    const before = JSON.stringify([adapted, original]);
+    const row = describeDelivery([adapted, original], adapted.id, null, { received: true }).readings[0];
+    expect(row.originalStatus).toBe('included');
+    expect(row.capabilities.originalText).toMatchObject({ inclusion: 'included', availability: 'ready', resourceId: original.id });
+    expect(row.capabilities.originalSupports).toMatchObject({ availability: 'ready', activeCount: 1, educatorCount: 1 });
+    expect(row.capabilities.pictures.includedCount).toBe(1);
+    expect(JSON.stringify([adapted, original])).toBe(before);
+  });
+
+  it('describes the role on the received original instead of the adaptation’s older source-role copy', () => {
+    const [adapted, original] = pair();
+    adapted.sourceInstructionalText = { form: 'original', role: 'primary', designationSource: 'educator' };
+    original.instructionalText = { ...original.instructionalText, role: 'supplemental', designationSource: 'educator' };
+    const row = describeDelivery([adapted, original], adapted.id).readings[0];
+    expect(row.capabilities.instructionalRoles).toMatchObject({ reading: 'supplemental', original: 'supplemental' });
+    expect(describeDelivery([adapted], adapted.id).readings[0].capabilities.instructionalRoles.original).toBe('primary');
+  });
+
+  it.each([
+    ['wrong family', { sourceFamilyId: 'unrelated' }],
+    ['wrong unit', { unitId: 'another-unit' }],
+    ['truncated', { syncTruncated: true }],
+    ['unavailable', { readingSourceAvailability: { status: 'unavailable' } }],
+    ['unresolved asset', { __alloResourceRef: 'not-downloaded' }]
+  ])('does not use an original candidate that is %s', (_name, change) => {
+    const [adapted, original] = pair();
+    adapted.readingSourceAvailability = { status: 'unavailable', reason: 'source-unavailable' };
+    const row = describeDelivery([adapted, { ...original, ...change }], adapted.id).readings[0];
+    expect(row.originalStatus).toBe('unavailable');
+    expect(row.capabilities.originalText.availability).toBe('unavailable');
+    expect(row.capabilities.originalSupports.activeCount).toBe(0);
+  });
+
+  it('withdraws matching-original evidence after removal from the received bundle', () => {
+    const [adapted, original] = pair();
+    adapted.readingSourceAvailability = { status: 'unavailable', reason: 'source-unavailable' };
+    const included = describeDelivery([adapted, original], adapted.id).readings[0];
+    const removed = describeDelivery([adapted], adapted.id).readings[0];
+    expect(included.capabilities.originalText.availability).toBe('ready');
+    expect(removed.capabilities.originalText.availability).toBe('unavailable');
+    expect(removed.resourceRevision).not.toBe(included.resourceRevision);
+  });
+});

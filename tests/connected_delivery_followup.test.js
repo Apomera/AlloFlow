@@ -100,3 +100,22 @@ describe('received consistency messages',()=>{
     expect(host.textContent).not.toContain('PRIVATE_NOTE');
   });
 });
+
+
+describe('received original replacement',()=>{
+ it('updates original availability and support counts when the matching original arrives and is removed',()=>{
+  const original=api.createSupportedReading('A source.',{id:'original',sourceFamilyId:'family',unitId:'unit'});
+  original.readingSupports=api.validateReadingSupports(original,{annotations:[{start:2,end:8,quote:'source',text:'A beginning',origin:'educator'}]});
+  const adapted={id:'adapted',type:'simplified',data:'A beginning.',sourceSnapshot:original.sourceSnapshot,sourceFamilyId:'family',unitId:'unit',instructionalText:{form:'adapted',role:'supplemental'},readingSourceAvailability:{status:'unavailable',reason:'source-unavailable'}};
+  mount([adapted],adapted.id);
+  expect(host.textContent).not.toContain(payload.english.received_original);
+  const render=resources=>act(()=>root.render(React.createElement(shared.ReceivedReadingDelivery,{resources,currentResourceId:adapted.id,enabled:true,t:translate(payload.english)})));
+  render([adapted,original]);
+  expect(host.textContent).toContain(payload.english.received_original);
+  expect(host.textContent).toContain('1 saved word supports.');
+  expect(host.textContent).not.toContain('Matching original unavailable');
+  render([adapted]);
+  expect(host.textContent).not.toContain(payload.english.received_original);
+  expect(host.textContent).not.toContain('1 saved word supports.');
+ });
+});

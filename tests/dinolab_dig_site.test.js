@@ -9,14 +9,12 @@
 // Clues now cost BONES. A dry cell costs a turn and buys nothing.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { internals } from './helpers/dino_lab_harness.js';
 
 const SRC = readFileSync('stem_lab/stem_tool_dinolab.js', 'utf8');
 
 function clueThresholds() {
-  const open = SRC.indexOf('var clueList = [');
-  expect(open, 'clueList not found — did the dig site change shape?').toBeGreaterThan(-1);
-  const close = SRC.indexOf('];', open);
-  return [...SRC.slice(open, close).matchAll(/\{ at: (\d+),/g)].map((m) => Number(m[1]));
+  return internals().digSiteFor(1).clues.map(clue => clue.at);
 }
 
 // The sparsest site the generator can produce.

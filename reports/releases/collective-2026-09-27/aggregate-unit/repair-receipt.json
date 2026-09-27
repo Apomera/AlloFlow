@@ -1,0 +1,26 @@
+{
+  "exitCode": 0,
+  "beforeHead": "1a5067ab673408d8bf33fc6998ab843696043859",
+  "afterHead": "1a5067ab673408d8bf33fc6998ab843696043859",
+  "monitoredInputs": 267,
+  "drift": [],
+  "selected": [
+    "tests/galaxy_review_fixes.test.js",
+    "tests/dissection_lab_improvements.test.js",
+    "tests/dissection_workspace_bands.test.js",
+    "tests/circuit_snapshots.test.js",
+    "tests/firestore_sync.test.js",
+    "tests/connected_delivery_offline_envelope.test.js",
+    "tests/reader_followup_locales.test.js",
+    "tests/reader_release_verification.test.js"
+  ],
+  "counts": {
+    "total": 389,
+    "passed": 389,
+    "failed": 0,
+    "pending": 0,
+    "suites": 8,
+    "success": true
+  },
+  "failures": []
+}

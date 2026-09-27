@@ -1,0 +1,655 @@
+{
+  "at": "2026-09-27T19:30:40.045Z",
+  "ok": true,
+  "inputsBefore": {
+    "immersive_reader_source.jsx": "8c3d4943fcbbfe2e1fc3dbd0102de787879bfc1075aedaf578ca11368b4493ca",
+    "immersive_reader_module.js": "eb2801b095442323becfd86b1eceb49c694a35abb3a35c83886ad4b8fe6833b0",
+    "desktop/web-app/public/immersive_reader_module.js": "eb2801b095442323becfd86b1eceb49c694a35abb3a35c83886ad4b8fe6833b0",
+    "_build_immersive_reader_module.js": "478fd0f0ff49f049830248d58fd4cccbb876e9569f45bf6ee6ac9a1880949ab0",
+    "desktop/web-app/package-lock.json": "1db071fc944f9314b19598fccb7f391a92b7370b58f2f76ad49672c77760951f",
+    "AlloFlowANTI.txt": "1b1c4ee421d7277e0fec63007383ed860a7674ec0f95d1656d935eb1cfdc3d56",
+    "desktop/web-app/src/AlloFlowANTI.txt": "1b1c4ee421d7277e0fec63007383ed860a7674ec0f95d1656d935eb1cfdc3d56",
+    "desktop/web-app/src/App.jsx": "1b1c4ee421d7277e0fec63007383ed860a7674ec0f95d1656d935eb1cfdc3d56"
+  },
+  "runnerSha256": "a9bbef257d4ab30c8df7269f891317682cf5ae6ad1dd8a71f0a06a9628d1a9d7",
+  "cases": [
+    {
+      "name": "native PCM ends; queued advance is cancelled immediately on unmount",
+      "ok": true,
+      "observation": {
+        "nativeEnded": true,
+        "before": {
+          "timers": [
+            250
+          ],
+          "frames": 0,
+          "audioCount": 1,
+          "playingAudio": 0,
+          "utterances": 0,
+          "legacyCopies": 0,
+          "scratchFields": 0,
+          "copiedVisible": false
+        },
+        "immediate": {
+          "timers": [],
+          "frames": 0,
+          "audioCount": 1,
+          "playingAudio": 0,
+          "utterances": 0,
+          "legacyCopies": 0,
+          "scratchFields": 0,
+          "copiedVisible": false
+        }
+      },
+      "final": {
+        "timers": [],
+        "frames": 0,
+        "audioCount": 1,
+        "playingAudio": 0,
+        "utterances": 0,
+        "legacyCopies": 0,
+        "scratchFields": 0,
+        "copiedVisible": false
+      },
+      "pageErrors": [],
+      "externalRequests": [],
+      "transport": [
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/"
+        },
+        {
+          "type": "fulfilled",
+          "path": "/",
+          "status": 200
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/runtime.js"
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/fixture.js"
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/module.js"
+        },
+        {
+          "type": "fulfilled",
+          "path": "/runtime.js",
+          "status": 200
+        },
+        {
+          "type": "fulfilled",
+          "path": "/fixture.js",
+          "status": 200
+        },
+        {
+          "type": "fulfilled",
+          "path": "/module.js",
+          "status": 200
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/tone.wav"
+        },
+        {
+          "type": "fulfilled",
+          "path": "/tone.wav",
+          "status": 200
+        }
+      ],
+      "routeErrors": []
+    },
+    {
+      "name": "device voice advance and startup timer cancel immediately on unmount",
+      "ok": true,
+      "observation": {
+        "before": {
+          "timers": [
+            250,
+            2000
+          ],
+          "frames": 0,
+          "audioCount": 0,
+          "playingAudio": 0,
+          "utterances": 1,
+          "legacyCopies": 0,
+          "scratchFields": 0,
+          "copiedVisible": false
+        },
+        "immediate": {
+          "timers": [],
+          "frames": 0,
+          "audioCount": 0,
+          "playingAudio": 0,
+          "utterances": 1,
+          "legacyCopies": 0,
+          "scratchFields": 0,
+          "copiedVisible": false
+        }
+      },
+      "final": {
+        "timers": [],
+        "frames": 0,
+        "audioCount": 0,
+        "playingAudio": 0,
+        "utterances": 1,
+        "legacyCopies": 0,
+        "scratchFields": 0,
+        "copiedVisible": false
+      },
+      "pageErrors": [],
+      "externalRequests": [],
+      "transport": [
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/"
+        },
+        {
+          "type": "fulfilled",
+          "path": "/",
+          "status": 200
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/runtime.js"
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/fixture.js"
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/module.js"
+        },
+        {
+          "type": "fulfilled",
+          "path": "/runtime.js",
+          "status": 200
+        },
+        {
+          "type": "fulfilled",
+          "path": "/fixture.js",
+          "status": 200
+        },
+        {
+          "type": "fulfilled",
+          "path": "/module.js",
+          "status": 200
+        }
+      ],
+      "routeErrors": []
+    },
+    {
+      "name": "hung resolver closes without watchdog work or late playback",
+      "ok": true,
+      "observation": {
+        "before": {
+          "timers": [
+            20000
+          ],
+          "frames": 0,
+          "audioCount": 0,
+          "playingAudio": 0,
+          "utterances": 0,
+          "legacyCopies": 0,
+          "scratchFields": 0,
+          "copiedVisible": false
+        },
+        "closed": {
+          "timers": [],
+          "frames": 0,
+          "audioCount": 0,
+          "playingAudio": 0,
+          "utterances": 0,
+          "legacyCopies": 0,
+          "scratchFields": 0,
+          "copiedVisible": false
+        },
+        "late": {
+          "timers": [],
+          "frames": 0,
+          "audioCount": 0,
+          "playingAudio": 0,
+          "utterances": 0,
+          "legacyCopies": 0,
+          "scratchFields": 0,
+          "copiedVisible": false
+        }
+      },
+      "final": {
+        "timers": [],
+        "frames": 0,
+        "audioCount": 0,
+        "playingAudio": 0,
+        "utterances": 0,
+        "legacyCopies": 0,
+        "scratchFields": 0,
+        "copiedVisible": false
+      },
+      "pageErrors": [],
+      "externalRequests": [],
+      "transport": [
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/"
+        },
+        {
+          "type": "fulfilled",
+          "path": "/",
+          "status": 200
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/runtime.js"
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/fixture.js"
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/module.js"
+        },
+        {
+          "type": "fulfilled",
+          "path": "/runtime.js",
+          "status": 200
+        },
+        {
+          "type": "fulfilled",
+          "path": "/fixture.js",
+          "status": 200
+        },
+        {
+          "type": "fulfilled",
+          "path": "/module.js",
+          "status": 200
+        }
+      ],
+      "routeErrors": []
+    },
+    {
+      "name": "late successful clipboard completion after unmount schedules no feedback",
+      "ok": true,
+      "observation": {
+        "timers": [],
+        "frames": 0,
+        "audioCount": 0,
+        "playingAudio": 0,
+        "utterances": 0,
+        "legacyCopies": 0,
+        "scratchFields": 0,
+        "copiedVisible": false
+      },
+      "final": {
+        "timers": [],
+        "frames": 0,
+        "audioCount": 0,
+        "playingAudio": 0,
+        "utterances": 0,
+        "legacyCopies": 0,
+        "scratchFields": 0,
+        "copiedVisible": false
+      },
+      "pageErrors": [],
+      "externalRequests": [],
+      "transport": [
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/"
+        },
+        {
+          "type": "fulfilled",
+          "path": "/",
+          "status": 200
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/runtime.js"
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/fixture.js"
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/module.js"
+        },
+        {
+          "type": "fulfilled",
+          "path": "/runtime.js",
+          "status": 200
+        },
+        {
+          "type": "fulfilled",
+          "path": "/fixture.js",
+          "status": 200
+        },
+        {
+          "type": "fulfilled",
+          "path": "/module.js",
+          "status": 200
+        }
+      ],
+      "routeErrors": []
+    },
+    {
+      "name": "late clipboard rejection after close does not invoke legacy copying",
+      "ok": true,
+      "observation": {
+        "timers": [],
+        "frames": 0,
+        "audioCount": 0,
+        "playingAudio": 0,
+        "utterances": 0,
+        "legacyCopies": 0,
+        "scratchFields": 0,
+        "copiedVisible": false
+      },
+      "final": {
+        "timers": [],
+        "frames": 0,
+        "audioCount": 0,
+        "playingAudio": 0,
+        "utterances": 0,
+        "legacyCopies": 0,
+        "scratchFields": 0,
+        "copiedVisible": false
+      },
+      "pageErrors": [],
+      "externalRequests": [],
+      "transport": [
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/"
+        },
+        {
+          "type": "fulfilled",
+          "path": "/",
+          "status": 200
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/runtime.js"
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/fixture.js"
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/module.js"
+        },
+        {
+          "type": "fulfilled",
+          "path": "/runtime.js",
+          "status": 200
+        },
+        {
+          "type": "fulfilled",
+          "path": "/fixture.js",
+          "status": 200
+        },
+        {
+          "type": "fulfilled",
+          "path": "/module.js",
+          "status": 200
+        }
+      ],
+      "routeErrors": []
+    },
+    {
+      "name": "visible diagnostics feedback cancels immediately on unmount",
+      "ok": true,
+      "observation": {
+        "before": {
+          "timers": [
+            2000
+          ],
+          "frames": 0,
+          "audioCount": 0,
+          "playingAudio": 0,
+          "utterances": 0,
+          "legacyCopies": 0,
+          "scratchFields": 0,
+          "copiedVisible": true
+        },
+        "immediate": {
+          "timers": [],
+          "frames": 0,
+          "audioCount": 0,
+          "playingAudio": 0,
+          "utterances": 0,
+          "legacyCopies": 0,
+          "scratchFields": 0,
+          "copiedVisible": false
+        }
+      },
+      "final": {
+        "timers": [],
+        "frames": 0,
+        "audioCount": 0,
+        "playingAudio": 0,
+        "utterances": 0,
+        "legacyCopies": 0,
+        "scratchFields": 0,
+        "copiedVisible": false
+      },
+      "pageErrors": [],
+      "externalRequests": [],
+      "transport": [
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/"
+        },
+        {
+          "type": "fulfilled",
+          "path": "/",
+          "status": 200
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/runtime.js"
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/fixture.js"
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/module.js"
+        },
+        {
+          "type": "fulfilled",
+          "path": "/runtime.js",
+          "status": 200
+        },
+        {
+          "type": "fulfilled",
+          "path": "/fixture.js",
+          "status": 200
+        },
+        {
+          "type": "fulfilled",
+          "path": "/module.js",
+          "status": 200
+        }
+      ],
+      "routeErrors": []
+    },
+    {
+      "name": "replacement sentence scope clears diagnostics feedback",
+      "ok": true,
+      "observation": {
+        "before": {
+          "timers": [
+            2000
+          ],
+          "frames": 0,
+          "audioCount": 0,
+          "playingAudio": 0,
+          "utterances": 0,
+          "legacyCopies": 0,
+          "scratchFields": 0,
+          "copiedVisible": true
+        },
+        "after": {
+          "timers": [],
+          "frames": 0,
+          "audioCount": 0,
+          "playingAudio": 0,
+          "utterances": 0,
+          "legacyCopies": 0,
+          "scratchFields": 0,
+          "copiedVisible": false
+        },
+        "immediate": {
+          "timers": [],
+          "frames": 0,
+          "audioCount": 0,
+          "playingAudio": 0,
+          "utterances": 0,
+          "legacyCopies": 0,
+          "scratchFields": 0,
+          "copiedVisible": false
+        }
+      },
+      "final": {
+        "timers": [],
+        "frames": 0,
+        "audioCount": 0,
+        "playingAudio": 0,
+        "utterances": 0,
+        "legacyCopies": 0,
+        "scratchFields": 0,
+        "copiedVisible": false
+      },
+      "pageErrors": [],
+      "externalRequests": [],
+      "transport": [
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/"
+        },
+        {
+          "type": "fulfilled",
+          "path": "/",
+          "status": 200
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/runtime.js"
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/fixture.js"
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/module.js"
+        },
+        {
+          "type": "fulfilled",
+          "path": "/runtime.js",
+          "status": 200
+        },
+        {
+          "type": "fulfilled",
+          "path": "/fixture.js",
+          "status": 200
+        },
+        {
+          "type": "fulfilled",
+          "path": "/module.js",
+          "status": 200
+        }
+      ],
+      "routeErrors": []
+    },
+    {
+      "name": "legacy clipboard exception removes its temporary DOM field",
+      "ok": true,
+      "observation": {
+        "timers": [],
+        "frames": 0,
+        "audioCount": 0,
+        "playingAudio": 0,
+        "utterances": 0,
+        "legacyCopies": 1,
+        "scratchFields": 0,
+        "copiedVisible": false
+      },
+      "final": {
+        "timers": [],
+        "frames": 0,
+        "audioCount": 0,
+        "playingAudio": 0,
+        "utterances": 0,
+        "legacyCopies": 1,
+        "scratchFields": 0,
+        "copiedVisible": false
+      },
+      "pageErrors": [],
+      "externalRequests": [],
+      "transport": [
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/"
+        },
+        {
+          "type": "fulfilled",
+          "path": "/",
+          "status": 200
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/runtime.js"
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/fixture.js"
+        },
+        {
+          "type": "request",
+          "url": "https://immersive-lifecycle.test/module.js"
+        },
+        {
+          "type": "fulfilled",
+          "path": "/runtime.js",
+          "status": 200
+        },
+        {
+          "type": "fulfilled",
+          "path": "/fixture.js",
+          "status": 200
+        },
+        {
+          "type": "fulfilled",
+          "path": "/module.js",
+          "status": 200
+        }
+      ],
+      "routeErrors": []
+    }
+  ],
+  "limitations": [
+    "Current generated module in a disposable browser origin; full host, cloud services and deployed bytes are not exercised.",
+    "Generated route uses native local PCM playback. Device voice, resolver and clipboard responses are deterministic stubs.",
+    "Checks lifecycle correctness and immediate timer/frame cleanup; no latency, heap, cache or general performance acceptance.",
+    "The React fixture bundle is compiled only in memory; production module source is served unchanged."
+  ],
+  "browser": "148.0.7778.96",
+  "inputsAfter": {
+    "immersive_reader_source.jsx": "8c3d4943fcbbfe2e1fc3dbd0102de787879bfc1075aedaf578ca11368b4493ca",
+    "immersive_reader_module.js": "eb2801b095442323becfd86b1eceb49c694a35abb3a35c83886ad4b8fe6833b0",
+    "desktop/web-app/public/immersive_reader_module.js": "eb2801b095442323becfd86b1eceb49c694a35abb3a35c83886ad4b8fe6833b0",
+    "_build_immersive_reader_module.js": "478fd0f0ff49f049830248d58fd4cccbb876e9569f45bf6ee6ac9a1880949ab0",
+    "desktop/web-app/package-lock.json": "1db071fc944f9314b19598fccb7f391a92b7370b58f2f76ad49672c77760951f",
+    "AlloFlowANTI.txt": "1b1c4ee421d7277e0fec63007383ed860a7674ec0f95d1656d935eb1cfdc3d56",
+    "desktop/web-app/src/AlloFlowANTI.txt": "1b1c4ee421d7277e0fec63007383ed860a7674ec0f95d1656d935eb1cfdc3d56",
+    "desktop/web-app/src/App.jsx": "1b1c4ee421d7277e0fec63007383ed860a7674ec0f95d1656d935eb1cfdc3d56"
+  }
+}

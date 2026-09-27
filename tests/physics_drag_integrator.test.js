@@ -18,21 +18,19 @@ const PHYSICS_PATHS = [
 ];
 
 describe('physics source gates (both live copies)', () => {
-  it('integrates drag through the shared step, scaled by dt, and never per frame', () => {
+  it('advances the shared engine in fixed steps from accumulated playback time', () => {
     PHYSICS_PATHS.forEach((p) => {
       const src = readFileSync(p, 'utf8');
       expect(src).not.toContain('spd * 50');
       expect(src).toContain('function physStep(b, dt)');
-      expect(src).toContain('if (dt > 0) physStep(ball, dt);');
-      expect(src).toContain('if (dt > 0 && trails.length > 0)');
+      expect(src).toContain('physStep(ball, PHYS_DT)');
+      expect(src).toContain('canvasEl._accumulator');
       expect(src).toContain('window.StemLab._physics = {');
-      // The canvas loop must take its timestep from the real clock. A fixed
-      // slice per frame ran the flight at the display refresh rate (2.02x real
-      // time at 58fps, ~4x at 120Hz), so reported flight time did not match a
-      // stopwatch. The solver keeps a fixed step on purpose, for determinism.
+      // Wall-clock time controls the accumulated playback budget; it must
+      // never become the engine's integration step. The numerical suite
+      // checks accurate contact events and convergence independently.
       expect(src).toContain('function draw(nowTs) {');
-      expect(src).toContain('dt = _elapsed * _ss;');
-      expect(src).toContain('Math.min(0.05, (_now - _prevTs) / 1000)');
+      expect(src).not.toContain('physStep(ball, dt)');
       expect(src).not.toContain('dt = DT_BASE * _ss;');
     });
   });
@@ -106,7 +104,7 @@ describe('physics integrator behaviour (jsdom)', () => {
   it('matches the closed-form range without drag', () => {
     const ideal = (25 * 25 * Math.sin(Math.PI / 2)) / 9.8; // 63.78 m
     const r = P.simulate(45, 25, 9.8, false, 1).range;
-    expect(Math.abs(r - ideal) / ideal).toBeLessThan(0.02);
+    expect(r).toBeCloseTo(ideal, 9);
   });
 
   it('drag shortens the flight but keeps it forward, and heavier balls carry further', () => {
