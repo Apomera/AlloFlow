@@ -11308,14 +11308,27 @@ function createCLHuntAnimal(T, species) {
   }
   var head=ellipsoid('cl-head',squid?0.27:0.34,0,0.025,0.35,squid?1.08:1.18,0.9,squid?1.12:0.92,skin);
   if(squid)ellipsoid('cl-mantle-collar',0.28,0,0.04,0.19,1.05,0.92,0.28,skin);
-  ellipsoid('cl-siphon',0.13,0,-0.20,0.28,0.70,0.75,1.8,underside);
-  var irisMat=new T.MeshStandardMaterial({color:squid||vampire ? 0x899fba : 0xc3a666,roughness:0.27});
-  var darkMat=new T.MeshStandardMaterial({color:0x091322,roughness:0.16,metalness:0.05});
+  // A short open tube nestles against the head; a recessed lumen gives the opening depth.
+  var siphonTint=new T.Color(0xa68d78).convertSRGBToLinear();
+  var siphonMat=new T.MeshStandardMaterial({color:species.bodyColor,roughness:0.60});
+  var siphonInnerMat=new T.MeshStandardMaterial({color:0x392d2b,roughness:0.78,side:T.BackSide});
+  var siphon=new T.Group();siphon.name='cl-siphon';siphon.position.set(0,-0.215*scale,0.31*scale);siphon.scale.setScalar(scale);root.add(siphon);
+  var siphonRadius=squid?0.057:0.075,siphonLength=squid?0.25:0.28;
+  var siphonTube=new T.Mesh(new T.CylinderGeometry(siphonRadius,siphonRadius*1.28,siphonLength,20,1,true),siphonMat);
+  siphonTube.name='cl-siphon-tube';siphonTube.rotation.x=Math.PI/2;siphon.add(siphonTube);
+  var siphonInner=new T.Mesh(new T.CylinderGeometry(siphonRadius*0.74,siphonRadius*0.92,siphonLength*0.94,20,1,true),siphonInnerMat);
+  siphonInner.rotation.x=Math.PI/2;siphon.add(siphonInner);
+  var siphonLip=new T.Mesh(new T.TorusGeometry(siphonRadius*0.88,siphonRadius*0.12,7,20),siphonMat);
+  siphonLip.position.z=siphonLength/2;siphon.add(siphonLip);
+  var siphonLumen=new T.Mesh(new T.CircleGeometry(siphonRadius*0.92,20),new T.MeshStandardMaterial({color:0x201c1a,roughness:0.95}));
+  siphonLumen.position.z=-siphonLength*0.40;siphon.add(siphonLumen);
+  var irisMat=new T.MeshStandardMaterial({color:squid?0x756e61:vampire?0x899fba:0xc3a666,roughness:squid?0.38:0.27});
+  var darkMat=new T.MeshStandardMaterial({color:0x091322,roughness:0.19,metalness:0});
   for(var side=-1;side<=1;side+=2){
-    ellipsoid('cl-eye-rim',squid?0.143:0.165,side*(squid?0.245:0.31),0.075,0.41,0.70,1,1,skin);
-    ellipsoid('cl-iris',squid?0.121:0.14,side*(squid?0.297:0.375),0.075,0.43,0.32,1,1,irisMat);
-    ellipsoid('cl-pupil',squid?0.096:0.116,side*(squid?0.328:0.423),0.075,0.43,0.16,squid||vampire?0.93:0.32,1,darkMat);
-    ellipsoid('cl-eye-highlight',0.013,side*(squid?0.343:0.435),0.109,0.456,0.3,1,1,new T.MeshBasicMaterial({color:0xd8f3ef}));
+    ellipsoid('cl-eye-rim',squid?0.137:0.165,side*(squid?0.235:0.31),0.075,0.41,squid?0.65:0.70,1,1,skin);
+    ellipsoid('cl-iris',squid?0.117:0.14,side*(squid?0.316:0.375),0.075,0.43,squid?0.18:0.32,1,1,irisMat);
+    ellipsoid('cl-pupil',squid?0.095:0.116,side*(squid?0.332:0.423),0.075,0.43,squid?0.10:0.16,squid||vampire?0.93:0.32,1,darkMat);
+    ellipsoid('cl-eye-highlight',squid?0.008:0.013,side*(squid?0.343:0.435),squid?0.099:0.109,0.456,0.3,1,1,new T.MeshBasicMaterial({color:0xbbd5d0}));
   }
   // Smooth tapered tubes use stable topology; their buffers are updated in place.
   var limbs=[],arms=[],tentacles=[],fins=[],dumboFins=[],cuttleFins=[];
@@ -11372,7 +11385,7 @@ function createCLHuntAnimal(T, species) {
   var passingCloudOverlay=cuttle?{material:{opacity:0}}:null;
   var tangent=new T.Vector3(),normal=new T.Vector3(),binormal=new T.Vector3(),up=new T.Vector3(0,1,0);
   function update(time,dt,state){
-    var motion=state.reducedMotion?0:1,jet=state.jet?1:0,strike=state.strike||0;
+    var motion=state.reducedMotion?0:1,jet=state.jet?1:0,strike=state.reducedMotion?0:(state.strike||0);
     phase.value=time;pattern.value=state.substrate==='sand'?0.22:state.substrate==='grass'?0.72:0.9;
     display.value=cuttle&&state.display?0.9:0;
     var pulse=Math.sin(time*(jet?11:2.2))*motion;
@@ -11433,7 +11446,7 @@ function createCLHuntAnimal(T, species) {
   }
   update(0,0,{substrate:'sand',camo:0,reducedMotion:true});
   root.traverse(function(o){if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
-  return {root:root,mantle:mantle,mantleGeo:mantleGeo,mantleMat:skin,basePositions:basePositions,arms:arms,scale:scale,update:update,tint:function(){armMat.color.copy(skin.color);fins.forEach(function(f){f.mesh.material.color.copy(skin.color).multiplyScalar(0.9);});if(web)web.material.color.copy(skin.color);},warningRings:warningRings,dumboFins:dumboFins,vampirePhotophores:vampirePhotophores,bobtailGlow:bobtailGlow,cuttleFins:cuttleFins,cuttleTentacles:tentacles,passingCloudOverlay:passingCloudOverlay,mimicSpikes:mimicSpikes,nautilusShell:nautilusShell};
+  return {root:root,mantle:mantle,mantleGeo:mantleGeo,mantleMat:skin,basePositions:basePositions,arms:arms,scale:scale,update:update,tint:function(){siphonMat.color.copy(skin.color).lerp(siphonTint,0.28);armMat.color.copy(skin.color);fins.forEach(function(f){f.mesh.material.color.copy(skin.color).multiplyScalar(0.9);});if(web)web.material.color.copy(skin.color);},warningRings:warningRings,dumboFins:dumboFins,vampirePhotophores:vampirePhotophores,bobtailGlow:bobtailGlow,cuttleFins:cuttleFins,cuttleTentacles:tentacles,passingCloudOverlay:passingCloudOverlay,mimicSpikes:mimicSpikes,nautilusShell:nautilusShell};
 }
 
       function initHuntSim3D(canvasEl) {
@@ -13167,7 +13180,7 @@ function createCLHuntAnimal(T, species) {
         var keys = {};
         var clickRequested = false;
         var inkRequested = false;
-        function clearInput(){keys={};clickRequested=false;inkRequested=false;gKeyDownPrev=false;}
+        function clearInput(){keys={};clickRequested=false;inkRequested=false;gKeyDownPrev=false;if(typeof gameState!=='undefined'&&gameState&&gameState.forageTarget)cancelForage();}
         function setPaused(value){
           if(!gameState || gameState.gameOver)return;
           clearInput();gameState.paused=value;pauseOverlay.style.display=value?'flex':'none';
@@ -13177,6 +13190,7 @@ function createCLHuntAnimal(T, species) {
         function onWindowBlur(){if(inspection.active){inspection.wasPaused=true;inspection.drag=null;clearInput();return;}setPaused(true);}
         function onVisibility(){if(document.hidden)onWindowBlur();}
         function onKeyDown(e){
+          if(e.ctrlKey||e.metaKey||e.altKey)return;
           if(e.code==='KeyF'){if(!e.repeat)toggleInspection();e.preventDefault();return;}
           if(inspection.active)return;
           if(e.code==='Escape'){e.preventDefault();if(!e.repeat){if(settingsPanel&&!settingsPanel.hidden)closeSettings();else setPaused(!gameState.paused);}return;}
@@ -13184,6 +13198,7 @@ function createCLHuntAnimal(T, species) {
           if(e.code==='KeyT'){if(!e.repeat)cycleTarget();e.preventDefault();return;}
           if(['Space','KeyW','KeyA','KeyS','KeyD','KeyE','KeyI','KeyM','KeyG','KeyH','KeyB','KeyQ','KeyZ'].indexOf(e.code)>=0)e.preventDefault();
           if(gameState.paused || gameState.gameOver)return;
+          if(e.code==='KeyR'){e.preventDefault();if(!e.repeat)toggleForage();return;}
           keys[e.code]=true;
           if(!e.repeat && e.code==='KeyI')inkRequested=true;
           if(!e.repeat && e.code==='KeyE')clickRequested=true;
@@ -13220,6 +13235,12 @@ function createCLHuntAnimal(T, species) {
         canvasEl.parentElement.appendChild(hud);
         hud.style.width='222px';hud.style.minWidth='0';hud.style.fontFamily='system-ui,sans-serif';hud.style.borderColor='#497985';
         hud.innerHTML='<div style="display:flex;justify-content:space-between;gap:8px;font-weight:700"><span data-hud="species"></span><span data-hud="phase"></span></div><div data-hud="depth" data-detail data-sub style="font-size:11px;color:#c5dcde;margin:5px 0"></div><div style="display:flex;gap:10px;flex-wrap:wrap"><span>HEALTH <b data-hud="health"></b></span><span>ENERGY <b data-hud="energy"></b></span><span>STAMINA <b data-hud="stamina"></b></span></div><div style="display:flex;gap:12px;flex-wrap:wrap"><span>CAMO <b data-hud="camo"></b></span><span>SCORE <b data-hud="score"></b></span><span>TIME <b data-hud="time"></b></span></div><div data-hud="substrate" data-detail data-sub style="color:#c3ded4;font-size:11px"></div><div data-hud="burn" data-detail data-sub style="font-size:11px"></div><div data-hud="ink" data-sub style="color:#dbcafc;font-size:11px"></div><div data-hud="status" data-sub style="color:#ffe6ab;font-size:12px;line-height:1.4"></div>';
+        var forageRow=document.createElement('div');forageRow.hidden=true;
+        var forageActivity=document.createElement('div');forageActivity.setAttribute('data-hud','activity');forageActivity.style.cssText='color:#baf3d6;font-size:12px;margin-top:5px';forageRow.appendChild(forageActivity);
+        var forageProgress=document.createElement('progress');forageProgress.max=1;forageProgress.value=0;forageProgress.setAttribute('aria-label','Foraging progress');forageProgress.style.cssText='width:100%;height:7px;accent-color:#80e0b2';forageRow.appendChild(forageProgress);hud.appendChild(forageRow);
+        var threatRow=document.createElement('div');threatRow.hidden=true;threatRow.style.cssText='border-top:1px solid #55727c;margin-top:5px;padding-top:5px';
+        var threatLabel=document.createElement('div');threatLabel.setAttribute('data-hud','threat');threatLabel.style.cssText='color:#ffcf91;font-size:12px';threatRow.appendChild(threatLabel);
+        var threatMeter=document.createElement('progress');threatMeter.max=1;threatMeter.value=0;threatMeter.setAttribute('aria-label','Predator awareness');threatMeter.style.cssText='width:100%;height:6px;accent-color:#f5b578';threatRow.appendChild(threatMeter);hud.appendChild(threatRow);
         var hudNodes={};hud.querySelectorAll('[data-hud]').forEach(function(n){hudNodes[n.getAttribute('data-hud')]=n;});
         function hudText(key,value){if(hudNodes[key].textContent!==value)hudNodes[key].textContent=value;}
 
@@ -13281,7 +13302,7 @@ function createCLHuntAnimal(T, species) {
         // Context-aware action prompt (shows what you can do with the
         // nearest interactable). Updates from the game loop based on
         // distance checks each frame.
-        var actionPrompt = document.createElement('div');
+        var actionPrompt = document.createElement('div');actionPrompt.className='cl-hunt-action-prompt';
         actionPrompt.style.cssText = 'position:absolute;bottom:44px;left:50%;transform:translateX(-50%);color:#fff;font-family:ui-monospace,Menlo,monospace;font-size:13px;background:rgba(15,23,42,0.85);padding:7px 14px;border-radius:8px;pointer-events:none;font-weight:700;border:1px solid rgba(167,139,250,0.5);box-shadow:0 4px 12px rgba(0,0,0,0.4);opacity:0;transition:opacity 0.15s;';
         canvasEl.parentElement.appendChild(actionPrompt);
         function setActionPrompt(text, color) {
@@ -13543,7 +13564,7 @@ function createCLHuntAnimal(T, species) {
           currentSubstrate: 'sand',
           // Drill mechanic on clams (hold E within 1.2u to consume).
           drillingClam: null,
-          drillProgress: 0,
+          drillProgress: 0, forageTarget:null, forageStartedAt:0, forageProgress:0, pendingStrike:null, strikeReadyAt:0,
           // Den state — inside DEN_RADIUS of any den
           inDen: false,
           nearestDenIdx: -1,
@@ -13617,6 +13638,7 @@ function createCLHuntAnimal(T, species) {
         uiButton('Pause',function(){setPaused(!gameState.paused);canvasEl.focus();});
         uiButton('View',cycleCamera);
         uiButton('Inspect [F]',toggleInspection);
+        var forageButton=uiButton('Forage [R]',toggleForage);forageButton.setAttribute('aria-pressed','false');forageButton.onpointerdown=function(e){e.preventDefault();};
         uiButton('Help / settings',openSettings);
         var targetButton=uiButton('Next target [T]',cycleTarget);targetButton.className='cl-hunt-desktop';
         var huntButton=uiButton('Strike [E]',function(){clickRequested=true;canvasEl.focus();});huntButton.className='cl-hunt-desktop';
@@ -13630,10 +13652,10 @@ function createCLHuntAnimal(T, species) {
         function updateMission(){
           var text,rs=gameState.runStats,homeDistance=Math.hypot(octopus.position.x,octopus.position.z+8);
           if(mission){
-            text=rs.crabs===0?'Dusk on the reef · Find a crab beside the rocky reef. [T] selects prey; [E] strikes.':rs.clams===0?'One meal found · Open a clam in the sand channel. Hold [E] nearby.':'Both meals collected · Return to the HOME den ('+homeDistance.toFixed(0)+' m away).';
+            text=rs.crabs===0?'Dusk on the reef · Find a crab beside the rocky reef. [T] selects prey; [E] strikes.':rs.clams===0?'One meal found · Open a clam in the sand channel. Tap Forage [R] nearby, or hold [E].':'Both meals collected · Return to the HOME den ('+homeDistance.toFixed(0)+' m away).';
             if(gameState.camoEff<0.25 && rs.crabs===0)text+=' Settle beside cover to blend.';
             if(rs.crabs>0&&rs.clams>0&&homeDistance<2&&Math.abs(gameState.verticalY-0.55)<1.1){gameState.missionComplete=true;finishRun('mission',true);text='Reef mission complete · Both meals, safely home.';}
-          }else if(capabilities.diet==='detritus')text='Marine snow · Hold [E] to gather drifting food. [B] is your defensive display.';
+          }else if(capabilities.diet==='detritus')text='Marine snow · Tap Forage [R] near drifting food, or hold [E]. [B] is your defensive display.';
           else if(observation)text='Field study · No hunger or injury. Select a target, move closer, and use Observe to hear the scene.';
           else text=gameState.targetText || 'Explore the reef · [T] selects prey · [E] strikes or opens a nearby clam · [V] changes view';
           if(gameState.strikeMessage&&gameNow<gameState.strikeMessageUntil)text+=' '+gameState.strikeMessage;
@@ -13663,7 +13685,7 @@ function createCLHuntAnimal(T, species) {
         uiButton('Target',cycleTarget,actions);
         settingsPanel=document.createElement('div');settingsPanel.className='cl-hunt-dialog';settingsPanel.hidden=true;
         settingsPanel.setAttribute('role','dialog');settingsPanel.setAttribute('aria-modal','true');settingsPanel.setAttribute('aria-label','Dive help and settings');stage.appendChild(settingsPanel);
-        var help=document.createElement('p');help.textContent='Move with W/S; turn with A/D. Space + forward jets. Q/Z changes depth. T selects a target; E strikes or drills a clam while held. I inks; G carries a shelter. V changes the camera. F opens a paused inspection view; drag or use its orbit buttons. Escape pauses. Energy and cooldown values are simplified game rules.';settingsPanel.appendChild(help);
+        var help=document.createElement('p');help.textContent='Move with W/S; turn with A/D. Space + forward jets. Q/Z changes depth. T selects a target; E strikes or drills a clam while held. R / Forage gathers one nearby meal without holding a key; moving, pausing or taking damage cancels it. I inks; G carries a shelter. V changes the camera. F opens a paused inspection view; drag or use its orbit buttons. Escape pauses. Energy and cooldown values are simplified game rules.';settingsPanel.appendChild(help);
         function setting(label,key){var l=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.checked=!!gameState.a11y[key];input.onchange=function(){gameState.a11y[key]=input.checked;saveA11ySettings(gameState.a11y);applyLiveAccess();};l.appendChild(input);l.appendChild(document.createTextNode(label));settingsPanel.appendChild(l);}
         function applyLiveAccess(){requestAnimationFrame(function(){if(!disposed)stage.style.setProperty('--cl-mission-top',(hud.offsetHeight+22)+'px');});stage.classList.toggle('cl-large-text',!!gameState.a11y.largeText);stage.classList.toggle('cl-high-contrast',!!gameState.a11y.highContrast);captions.style.display=gameState.a11y.captionMode?'flex':'none';gameState.runStats.captionsOn=!!gameState.a11y.captionMode;gameState.runStats.reducedMotionOn=!!gameState.a11y.reducedMotion;gameState.runStats.largeTextOn=!!gameState.a11y.largeText;gameState.runStats.highContrastOn=!!gameState.a11y.highContrast;}
         setting('Captions','captionMode');setting('Reduced motion','reducedMotion');setting('Larger text','largeText');setting('High contrast','highContrast');
@@ -13775,24 +13797,95 @@ function createCLHuntAnimal(T, species) {
           var segment=b.clone().sub(a),lengthSq=segment.lengthSq();
           return gameState.inkCloudsActive.some(function(ink){var t=lengthSq?Math.max(0,Math.min(1,ink.mesh.position.clone().sub(a).dot(segment)/lengthSq)):0;return a.clone().addScaledVector(segment,t).distanceTo(ink.mesh.position)<2.6*ink.mesh.scale.x;});
         }
+        function isShelteredNow(){
+          var here=octopus.position;
+          return dens.some(function(den){return Math.hypot(here.x-den.x,here.z-den.z)<DEN_RADIUS&&Math.abs(here.y-(den.group.position.y+0.55))<1.1;})||shelters.some(function(shelter){var state=shelter.userData.state;return (state==='dropped'||state==='static')&&Math.hypot(here.x-shelter.position.x,here.z-shelter.position.z)<SHELTER_DEN_RADIUS&&Math.abs(here.y-shelter.position.y)<1.0;});
+        }
+        function predatorCanSee(predator,range){
+          var u=predator.userData,inkResistant=u.kind==='spermWhale'||u.kind==='giantSquid';
+          return !isShelteredNow()&&distance3(predator.position,octopus.position)<range&&Math.abs(predator.position.y-octopus.position.y)<5&&!rockBlocks(predator.position,octopus.position)&&(inkResistant||!inkBlocks(predator.position,octopus.position));
+        }
+        function rememberPrey(predator){var u=predator.userData;if(!u.lastSeen)u.lastSeen=new THREE.Vector3();u.lastSeen.copy(octopus.position);u.lastSeenAt=gameNow;}
         function detects(predator,range,dt){
-          var u=predator.userData,inkResistant=u.kind==='spermWhale'||u.kind==='giantSquid',canSee=!gameState.inDen&&distance3(predator.position,octopus.position)<range&&!rockBlocks(predator.position,octopus.position)&&(inkResistant||!inkBlocks(predator.position,octopus.position));
+          var u=predator.userData,canSee=predatorCanSee(predator,range);u.trackRange=range;
           u.awareness=Math.max(0,Math.min(1,(u.awareness||0)+(canSee?dt*1.25:-dt*0.65)));
-          if(canSee)u.lastSeen=octopus.position.clone();
-          if(u.awareness>0.15){gameState.threatText=u.awareness>=1?'Predator charging — break its view or reach shelter.':'Predator is investigating — use cover or settle to blend.';}
+          if(canSee)rememberPrey(predator);
+          if(u.awareness>0.15){gameState.threatText=u.awareness>=1&&canSee?'Predator charging — break its view or reach shelter.':'Predator is investigating — use cover or settle to blend.';}
           if(u.awareness>=1&&canSee){recordEvent('Threat','Detected in open view; break line of sight to escape');return true;}return false;
         }
-        function lostSight(predator,dt){var u=predator.userData;u.lostFor=rockBlocks(predator.position,octopus.position)||Math.abs(predator.position.y-octopus.position.y)>5?(u.lostFor||0)+dt:0;return u.lostFor>0.8;}
+        function pursuitPoint(predator,dt){
+          var u=predator.userData;u.canBite=predatorCanSee(predator,Math.max(u.aggroRange,u.trackRange||0)*1.35);
+          if(u.canBite){rememberPrey(predator);u.lostFor=0;}else u.lostFor=(u.lostFor||0)+dt;
+          return u.lastSeen||predator.position;
+        }
+        function lostSight(predator,dt){return (predator.userData.lostFor||0)>0.8;}
+        function movePredatorToward(predator,target,speed,dt){
+          var delta=target.clone().sub(predator.position);delta.y=0;var length=delta.length();
+          if(length>0.1){var next=predator.position.clone().addScaledVector(delta,Math.min(length,Math.max(0,speed)*dt)/length);if(!rockBlocks(predator.position,target))predator.position.copy(next);}
+        }
+        function beginPredatorSearch(predator,returnState){
+          var u=predator.userData;u.state='searching';u.searchFor=0;u.searchReturnState=returnState;u.searchOrigin=(u.lastSeen||predator.position).clone();u.searchYaw=predator.rotation.y;u.awareness=0;u.canBite=false;
+          recordEvent('Cover','Broke pursuit; predator is searching the last seen position');clAnnounce('Predator lost sight of you and is searching. Stay behind cover.');
+        }
+        function searchForPrey(predator,range,attackState,dt){
+          var u=predator.userData;u.searchFor+=dt;u.canBite=false;
+          if(gameState.inDen){u.state=u.searchReturnState;u.cooldownUntil=gameNow+3500;u.awareness=0;u.lastSeen=null;return;}
+          if(detects(predator,range,dt)){u.state=attackState;u.stateTimer=0;u.lostFor=0;sfxPredatorAlert();clAnnounce('Predator spotted you again. Break its view or reach shelter.');return;}
+          var origin=u.searchOrigin;movePredatorToward(predator,origin,u.speed*0.35,dt);
+          if(Math.hypot(origin.x-predator.position.x,origin.z-predator.position.z)>0.1){predator.lookAt(origin.x,predator.position.y,origin.z);u.searchYaw=predator.rotation.y;}
+          predator.rotation.y=(u.searchYaw||0)+(gameState.a11y.reducedMotion?0:Math.sin(u.searchFor*3.5)*0.35);
+          gameState.threatText='Predator searching your last seen position — stay covered or move away.';
+          if(u.searchFor>3.2){u.state=u.searchReturnState;u.cooldownUntil=gameNow+3500;u.awareness=0;u.lostFor=0;u.lastSeen=null;u.canBite=false;recordEvent('Escape','Stayed out of sight until the predator gave up');clAnnounce('Predator gave up the search.');}
+        }
+        function preyReadiness(prey){
+          if(!prey||!prey.userData.alive)return {ready:false,reason:'missing',distance:Infinity};
+          var crab=!!prey.userData.cfg,delta=prey.position.clone().sub(octopus.position),dist=crab?Math.hypot(delta.x,delta.z):delta.length();
+          var reason=crab&&Math.abs(delta.y)>=1.1?'depth':rockBlocks(octopus.position,prey.position)?'cover':dist>=(crab?2.6:FISH_CATCH_RANGE)?'range':'ready';
+          return {ready:reason==='ready',reason:reason,distance:dist,kind:crab?'crab':'fish'};
+        }
+        function forageReady(food){
+          if(!food)return false;var snow=capabilities.diet==='detritus',delta=food.position.clone().sub(octopus.position);
+          return (snow?marineSnow.indexOf(food)>=0&&delta.length()<2.4:food.userData.alive&&Math.hypot(delta.x,delta.z)<DRILL_RANGE&&Math.abs(delta.y)<1.0)&&!rockBlocks(octopus.position,food.position);
+        }
+        function cancelForage(message){
+          if(!gameState.forageTarget)return;
+          var food=gameState.forageTarget;food.userData.gather=0;
+          if(gameState.drillingClam&&gameState.drillingClam.userData.alive)gameState.drillingClam.children[1].rotation.x=0;
+          gameState.forageTarget=null;gameState.forageProgress=0;gameState.drillProgress=0;gameState.drillingClam=null;
+          if(forageButton)forageButton.setAttribute('aria-pressed','false');if(forageProgress)forageProgress.value=0;if(forageRow)forageRow.hidden=true;if(message)clAnnounce(message);
+        }
+        function toggleForage(){
+          if(gameState.paused||gameState.gameOver)return;
+          if(gameState.forageTarget){cancelForage('Foraging stopped.');canvasEl.focus();return;}
+          var food=(capabilities.diet==='detritus'?marineSnow:clams).filter(forageReady).sort(function(a,b){return a.position.distanceToSquared(octopus.position)-b.position.distanceToSquared(octopus.position);})[0];
+          if(!food){clAnnounce(capabilities.diet==='detritus'?'Move within reach of marine snow, then tap Forage.':'Settle beside a clam, then tap Forage.');canvasEl.focus();return;}
+          gameState.forageTarget=food;gameState.forageStartedAt=gameNow;gameState.forageProgress=0;
+          forageButton.setAttribute('aria-pressed','true');clAnnounce('Foraging started. Stay still; R or Forage stops.');canvasEl.focus();
+        }
+        function updateForaging(){
+          if(!gameState.forageTarget)return;
+          if(keys.KeyW||keys.KeyS||keys.KeyA||keys.KeyD||keys.KeyQ||keys.KeyZ||keys.Space||gameState.tookHitAt>gameState.forageStartedAt||!forageReady(gameState.forageTarget))cancelForage('Foraging stopped. Stay still and within reach to gather food.');
+        }
+        function updateThreatHud(){
+          var threats=[{p:moray,name:'Moray'},{p:grouper,name:'Grouper'},{p:shark,name:'Shark'}];zonalPredators.forEach(function(p){threats.push({p:p,name:(p.userData.kind||'Predator').replace(/([A-Z])/g,' $1')});});
+          threats=threats.filter(function(item){if(!item.p)return false;var u=item.p.userData;return u.state==='searching'||((u.state==='attacking'||u.state==='charging')&&u.canBite)||(u.state!=='sleeping'&&gameNow>=(u.cooldownUntil||0)&&(u.awareness||0)>0.15);});
+          function priority(item){var u=item.p.userData;return (u.state==='attacking'||u.state==='charging'?3:u.state==='searching'?2:1)*1000+(u.awareness||0)*100-item.p.position.distanceTo(octopus.position);}
+          threats.sort(function(a,b){return priority(b)-priority(a);});var threat=threats[0];threatRow.hidden=!threat;
+          if(!threat){threatMeter.value=0;hudText('threat','');return;}
+          var u=threat.p.userData,delta=threat.p.position.clone().sub(octopus.position),angle=Math.atan2(delta.x,delta.z)-gameState.facingAngle;angle=Math.atan2(Math.sin(angle),Math.cos(angle));
+          var bearing=Math.abs(angle)>2.4?'behind you':angle>0.5?'on your left':angle<-0.5?'on your right':'ahead';
+          var action=u.state==='searching'?'searching last sighting':u.canBite&&(u.state==='attacking'||u.state==='charging')?'charging':'investigating '+Math.round((u.awareness||0)*100)+'%';
+          threatMeter.value=u.awareness||0;hudText('threat',threat.name+' '+bearing+' · '+action);
+        }
         function updateTargets(){
           if(selectedPrey&&!selectedPrey.userData.alive){selectedPrey=null;explicitTarget=false;}
           if(!explicitTarget)selectedPrey=preyCandidates().filter(function(p){return p.position.distanceTo(octopus.position)<12;}).sort(function(a,b){return a.position.distanceToSquared(octopus.position)-b.position.distanceToSquared(octopus.position);})[0]||null;
           targetHalo.visible=!!selectedPrey&&capabilities.diet!=='detritus';
           if(selectedPrey){
-            var range=selectedPrey.userData.cfg?2.6:FISH_CATCH_RANGE,dist=selectedPrey.position.distanceTo(octopus.position),blocked=rockBlocks(octopus.position,selectedPrey.position),heightOK=!selectedPrey.userData.cfg||Math.abs(octopus.position.y-selectedPrey.position.y)<1.1;
-            var ready=dist<range&&heightOK&&!blocked;
-            targetHalo.position.copy(selectedPrey.position);targetHalo.position.y+=0.06;targetHalo.material.color.setHex(blocked?0xf4a782:ready?0x94f4bf:0xffdf91);
-            gameState.targetText=blocked?'COVER BLOCKS STRIKE · move around the rock':!heightOK&&dist<4?'MATCH DEPTH · Q rises / Z descends':ready?'IN RANGE · E to strike':'Target '+dist.toFixed(1)+' m · move closer';
-            gameState.targetText+=selectedPrey.userData.alert?' · prey is fleeing':'';
+            var readiness=preyReadiness(selectedPrey),recovering=gameNow<gameState.strikeReadyAt;
+            targetHalo.position.copy(selectedPrey.position);targetHalo.position.y+=0.06;targetHalo.material.color.setHex(recovering?0x9eb3c7:readiness.reason==='cover'?0xf4a782:readiness.ready?0x94f4bf:0xffdf91);
+            gameState.targetText=gameState.pendingStrike?'STRIKING · keep your target within reach':recovering?'RECOVERING · ready in '+((gameState.strikeReadyAt-gameNow)/1000).toFixed(1)+'s':readiness.reason==='cover'?'COVER BLOCKS STRIKE · move around the rock':readiness.reason==='depth'?'MATCH DEPTH · Q rises / Z descends':readiness.ready?'IN RANGE · E to strike':'Target '+readiness.distance.toFixed(1)+' m · move closer';
+            gameState.targetText+=selectedPrey.userData.intent==='distracted'?' · prey distracted by display':selectedPrey.userData.alert?' · prey is fleeing':' · prey is unaware';
           }else gameState.targetText='';
         }
         var marineSnow=[];
@@ -13802,8 +13895,9 @@ function createCLHuntAnimal(T, species) {
           marineSnow[0].position.copy(octopus.position).add(new THREE.Vector3(0,0,1));
         }
         function updateSnow(dt){
+          gameState.forageProgress=0;
           marineSnow.forEach(function(snow){snow.position.y-=dt*0.14;if(snow.position.distanceTo(octopus.position)>16){snow.position.copy(octopus.position).add(new THREE.Vector3((Math.random()-0.5)*10,3,(Math.random()-0.5)*10));}
-            if(keys.KeyE&&snow.position.distanceTo(octopus.position)<2.4){snow.userData.gather=(snow.userData.gather||0)+dt;if(snow.userData.gather>0.65){snow.userData.gather=0;snow.position.copy(octopus.position).add(new THREE.Vector3((Math.random()-0.5)*10,3,(Math.random()-0.5)*10));gameState.hunger=Math.min(gameState.maxHunger,gameState.hunger+18);gameState.score+=2;gameState.runStats.marineSnow=(gameState.runStats.marineSnow||0)+1;recordEvent('Meal','Gathered marine snow with feeding filaments');clAnnounce('Marine snow gathered. Energy restored.');}}else snow.userData.gather=0;
+            if((keys.KeyE||gameState.forageTarget===snow)&&forageReady(snow)){snow.userData.gather=(snow.userData.gather||0)+dt;gameState.forageProgress=Math.max(gameState.forageProgress,Math.min(1,snow.userData.gather/0.65));if(snow.userData.gather>0.65){if(gameState.forageTarget===snow)cancelForage();snow.userData.gather=0;snow.position.copy(octopus.position).add(new THREE.Vector3((Math.random()-0.5)*10,3,(Math.random()-0.5)*10));gameState.hunger=Math.min(gameState.maxHunger,gameState.hunger+18);gameState.score+=2;gameState.runStats.marineSnow=(gameState.runStats.marineSnow||0)+1;recordEvent('Meal','Gathered marine snow with feeding filaments');clAnnounce('Marine snow gathered. Energy restored.');}}else snow.userData.gather=0;
           });clickRequested=false;
         }
 
@@ -13826,7 +13920,7 @@ function createCLHuntAnimal(T, species) {
           due.forEach(function(t){if(!disposed)t.fn();});
 
           if (!gameState.gameOver && !gameState.paused) {
-            gameState.threatText="";updateTargets();if(capabilities.diet==="detritus")updateSnow(dt);
+            gameState.threatText="";updateTargets();updateForaging();if(capabilities.diet==="detritus")updateSnow(dt);
             // ─── Input → movement ───
             var moveFwd = (keys.KeyW ? 1 : 0) - (keys.KeyS ? 1 : 0);
             var turn = (keys.KeyA ? 1 : 0) - (keys.KeyD ? 1 : 0);
@@ -14227,7 +14321,7 @@ function createCLHuntAnimal(T, species) {
             // zone predators (they run BEFORE the reset) but not the grouper
             // or the moray (they run AFTER it), and the HUD never said "IN
             // DEN" at all. Same shelter, opposite answers, no explanation.
-            gameState.inShelterDen = nearAnyShelterDen;
+            gameState.inShelterDen = nearAnyShelterDen;gameState.inDen=isShelteredNow();
 
             // ─── Mimic-octopus impersonation (hold M) ───────────
             // Costs stamina while held. Visually fades in red spike-tendrils
@@ -14470,15 +14564,17 @@ function createCLHuntAnimal(T, species) {
                   zpud.stateTimer = 0;
                   sfxPredatorAlert();
                 }
+              } else if (zpud.state === 'searching') {
+                searchForPrey(zp,effectiveRange,'charging',dt);
               } else if (zpud.state === 'charging') {
                 zpud.stateTimer += dt;
+                var zpudPursuit=pursuitPoint(zp,dt);zpdx=zpudPursuit.x-zp.position.x;zpdz=zpudPursuit.z-zp.position.z;zpDist=Math.hypot(zpdx,zpdz);
                 if (zpDist > 0.1) {
-                  zp.position.x += (zpdx / zpDist) * zpud.speed * dt;
-                  zp.position.z += (zpdz / zpDist) * zpud.speed * dt;
-                  zp.position.y += (octopus.position.y + 1.2 - zp.position.y) * 2 * dt;
-                  zp.lookAt(octopus.position.x, zp.position.y, octopus.position.z);
+                  movePredatorToward(zp,zpudPursuit,zpud.speed,dt);
+                  zp.position.y += (zpudPursuit.y + 1.2 - zp.position.y) * 2 * dt;
+                  zp.lookAt(zpudPursuit.x, zp.position.y, zpudPursuit.z);
                 }
-                if (Math.abs(octopus.position.y-zp.position.y)<2.1 && zpDist < 1.8 && now - gameState.tookHitAt > 800) {
+                if (zpud.state==='charging' && zpud.canBite && Math.abs(octopus.position.y-zp.position.y)<2.1 && zpDist < 1.8 && now - gameState.tookHitAt > 800) {
                   var zpDmg = zpud.damage;
                   if (species.specialAbility === 'shellDefense') { zpDmg *= 0.3; unlockAchievement('nautilusBounce'); }
                   gameState.health = Math.max(0, gameState.health - zpDmg);
@@ -14500,8 +14596,8 @@ function createCLHuntAnimal(T, species) {
                 var zpInkEscapes = inkBlocks(zp.position,octopus.position) &&
                   zpud.kind !== 'spermWhale' && zpud.kind !== 'giantSquid';
                 if (gameState.inDen || zpInkEscapes || lostSight(zp,dt) || zpud.stateTimer > 4.5) {
-                  zpud.state = 'patrol';
-                  zpud.cooldownUntil = now + 4000;
+                  if(zpud.state==='charging'&&!gameState.inDen&&!zpInkEscapes&&lostSight(zp,dt))beginPredatorSearch(zp,'patrol');
+                  else if(zpud.state==='charging'){zpud.state='patrol';zpud.stateTimer=0;zpud.awareness=0;zpud.lastSeen=null;zpud.cooldownUntil=now+4000;}
                 }
               } else if (zpud.state === 'leaving') {
                 var awayDir = Math.atan2(zp.position.x, zp.position.z);
@@ -14560,23 +14656,26 @@ function createCLHuntAnimal(T, species) {
                 }
               } else if (sk.state === 'hunting') {
                 // Patrol slowly until lock-on
-                shark.position.x += Math.sin(now * 0.0008) * 0.5 * dt + sdx / Math.max(skDist, 0.1) * 1.2 * dt;
-                shark.position.z += Math.cos(now * 0.0008) * 0.5 * dt + sdz / Math.max(skDist, 0.1) * 1.2 * dt;
+                var skSeesPrey=predatorCanSee(shark,skEffectiveRange);
+                shark.position.x += Math.sin(now * 0.0008) * 0.5 * dt + (skSeesPrey?sdx/Math.max(skDist,0.1)*1.2*dt:0);
+                shark.position.z += Math.cos(now * 0.0008) * 0.5 * dt + (skSeesPrey?sdz/Math.max(skDist,0.1)*1.2*dt:0);
                 shark.position.y = 3 + Math.sin(now * 0.0015) * 0.3;
-                shark.lookAt(octopus.position.x, shark.position.y, octopus.position.z);
+                if(skSeesPrey)shark.lookAt(octopus.position.x,shark.position.y,octopus.position.z);else shark.rotation.y=now*0.0008;
                 if (now > sk.cooldownUntil && detects(shark,skEffectiveRange,dt)) {
                   sk.state = 'charging';
                   sk.stateTimer = 0;
                   clAnnounce(__alloT('stem.cephalopodlab.sr_shark_charging', 'Shark charging'));
                   sfxPredatorAlert();
                 }
+              } else if (sk.state === 'searching') {
+                searchForPrey(shark,skEffectiveRange,'charging',dt);
               } else if (sk.state === 'charging') {
                 sk.stateTimer += dt;
-                shark.position.x += (sdx / Math.max(skDist, 0.1)) * sk.speed * dt;
-                shark.position.z += (sdz / Math.max(skDist, 0.1)) * sk.speed * dt;
-                shark.position.y += (octopus.position.y + 1.5 - shark.position.y) * 2 * dt;
-                shark.lookAt(octopus.position.x, shark.position.y, octopus.position.z);
-                if (Math.abs(octopus.position.y-shark.position.y)<2.1 && skDist < 1.8 && now - gameState.tookHitAt > 800) {
+                var skPursuit=pursuitPoint(shark,dt);sdx=skPursuit.x-shark.position.x;sdz=skPursuit.z-shark.position.z;skDist=Math.hypot(sdx,sdz);
+                movePredatorToward(shark,skPursuit,sk.speed,dt);
+                shark.position.y += (skPursuit.y + 1.5 - shark.position.y) * 2 * dt;
+                shark.lookAt(skPursuit.x, shark.position.y, skPursuit.z);
+                if (sk.state==='charging' && sk.canBite && Math.abs(octopus.position.y-shark.position.y)<2.1 && skDist < 1.8 && now - gameState.tookHitAt > 800) {
                   var sharkDmg = 45;
                   if (species.specialAbility === 'shellDefense') sharkDmg *= 0.3;
                   gameState.health = Math.max(0, gameState.health - sharkDmg);
@@ -14595,8 +14694,8 @@ function createCLHuntAnimal(T, species) {
                 // while the octopus leaves. Without it, ink did nothing at all
                 // against the one predator that hits hardest.
                 if (gameState.inDen || inkBlocks(shark.position,octopus.position) || lostSight(shark,dt) || sk.stateTimer > 4) {
-                  sk.state = 'hunting';
-                  sk.cooldownUntil = now + 4000;
+                  if(sk.state==='charging'&&!gameState.inDen&&!inkBlocks(shark.position,octopus.position)&&lostSight(shark,dt))beginPredatorSearch(shark,'hunting');
+                  else if(sk.state==='charging'){sk.state='hunting';sk.stateTimer=0;sk.awareness=0;sk.lastSeen=null;sk.cooldownUntil=now+4000;}
                 }
               } else if (sk.state === 'leaving') {
                 // Cruise out to the same edge it came from
@@ -14615,9 +14714,13 @@ function createCLHuntAnimal(T, species) {
               }
             }
 
+            // Reach smoothly to contact at 200 ms, then recover by 650 ms of simulation time.
+            var strikeAge=now-(gameState.lastStrikeAt==null?-1000:gameState.lastStrikeAt);
+            var strikePhase=strikeAge<0||strikeAge>=650?0:strikeAge<=200?strikeAge/200:(650-strikeAge)/450;
+            var strikePose=strikePhase*strikePhase*(3-2*strikePhase);
             animal.update(now / 1000, dt, { moving:isMoving, jet:isJetting, camo:gameState.camoEff,
               substrate:gameState.currentSubstrate, display:gameState.isDisplaying,
-              strike:Math.max(0, 1-(now-(gameState.lastStrikeAt || -1000))/550), reducedMotion:gameState.a11y.reducedMotion });
+              strike:strikePose, reducedMotion:gameState.a11y.reducedMotion });
 
             // ─── Sea grass swaying ───
             grass.forEach(function(g) {
@@ -14824,13 +14927,14 @@ function createCLHuntAnimal(T, species) {
               var dx = crab.position.x - octopus.position.x;
               var dz = crab.position.z - octopus.position.z;
               var cd = Math.sqrt(dx * dx + dz * dz);
-              crab.userData.alert=cd<5*(1-0.65*gameState.camoEff);
               var cs = crab.userData.speed;
               var hypno = crab.userData.hypnotized > 0;
+              var fleeing=!hypno&&cd<5*(1-0.65*gameState.camoEff)&&sameHeight(crab.position,octopus.position,1.8)&&!rockBlocks(crab.position,octopus.position)&&!inkBlocks(crab.position,octopus.position);
+              crab.userData.alert=fleeing;crab.userData.intent=hypno?'distracted':fleeing?'fleeing':'unaware';
               if (hypno) {
                 crab.userData.hypnotized -= dt * 1000;
                 cs = 0;  // frozen by cuttlefish display
-              } else if (cd < 5*(1-0.65*gameState.camoEff) && sameHeight(crab.position,octopus.position,1.8) && !rockBlocks(crab.position,octopus.position) && !inkBlocks(crab.position,octopus.position)) {
+              } else if (fleeing) {
                 crab.userData.wanderAngle = Math.atan2(dx, dz);
                 cs = crab.userData.speed * 2.0 * crab.userData.cfg.fleeMul;
               }
@@ -14907,14 +15011,21 @@ function createCLHuntAnimal(T, species) {
                 school.heading += (Math.random() - 0.5) * 0.8;
                 school.wanderTimer = 3 + Math.random() * 4;
               }
-              school.center.x += Math.sin(school.heading) * 1.5 * dt;
-              school.center.z += Math.cos(school.heading) * 1.5 * dt;
+              // A nearby visible approach scatters the school; staying quiet and using cover delays it.
+              var schoolDistracted=false;school.fish.forEach(function(fish){var dx=fish.position.x-octopus.position.x,dz=fish.position.z-octopus.position.z;fish.userData.distracted=!!(fish.userData.alive&&gameState.isDisplaying&&dx*dx+dz*dz<4.5*4.5);if(fish.userData.distracted)schoolDistracted=true;});
+              var schoolSeesPlayer=!schoolDistracted&&school.fish.some(function(fish){return fish.userData.alive&&fish.position.distanceTo(octopus.position)<(isJetting?8:5)*(1-0.55*gameState.camoEff)&&sameHeight(fish.position,octopus.position,2.8)&&!rockBlocks(fish.position,octopus.position)&&!inkBlocks(fish.position,octopus.position);});
+              school.alarm=schoolDistracted?0:Math.max(0,Math.min(1,(school.alarm||0)+(schoolSeesPlayer?dt*1.8:-dt*0.5)));
+              if(school.alarm>0.3){var awayHeading=Math.atan2(school.center.x-octopus.position.x,school.center.z-octopus.position.z),headingDelta=Math.atan2(Math.sin(awayHeading-school.heading),Math.cos(awayHeading-school.heading));school.heading+=headingDelta*Math.min(1,dt*5);}
+              var schoolSpeed=schoolDistracted?0.35:1.5+school.alarm*2.0;
+              school.center.x += Math.sin(school.heading) * schoolSpeed * dt;
+              school.center.z += Math.cos(school.heading) * schoolSpeed * dt;
               // Bounce off map edges
               if (school.center.x > 60 || school.center.x < -60) school.heading += Math.PI;
               if (school.center.z > 60 || school.center.z < -60) school.heading += Math.PI;
               school.fish.forEach(function(fish) {
                 if (!fish.userData.alive) return;
-                var tgt = school.center.clone().add(fish.userData.offset);
+                fish.userData.alert=!fish.userData.distracted&&school.alarm>0.3;fish.userData.intent=fish.userData.distracted?'distracted':fish.userData.alert?'fleeing':'unaware';
+                var tgt = school.center.clone().addScaledVector(fish.userData.offset,1+school.alarm*0.45);
                 fish.position.x += (tgt.x - fish.position.x) * 1.5 * dt;
                 fish.position.y += (tgt.y - fish.position.y) * 1.5 * dt;
                 fish.position.z += (tgt.z - fish.position.z) * 1.5 * dt;
@@ -14978,17 +15089,19 @@ function createCLHuntAnimal(T, species) {
                 gr.stateTimer = 0;
                 sfxPredatorAlert();
               }
+            } else if (gr.state === 'searching') {
+              searchForPrey(grouper,gr.aggroRange*(1-0.7*gameState.camoEff)*(gameState.isMimicking?0.5:1),'attacking',dt);
             } else if (gr.state === 'attacking') {
               gr.stateTimer += dt;
-              var chx2 = octopus.position.x - grouper.position.x;
-              var chz2 = octopus.position.z - grouper.position.z;
+              var grPursuit=pursuitPoint(grouper,dt);
+              var chx2 = grPursuit.x - grouper.position.x;
+              var chz2 = grPursuit.z - grouper.position.z;
               var chDist2 = Math.sqrt(chx2 * chx2 + chz2 * chz2);
               if (chDist2 > 0.1) {
-                grouper.position.x += (chx2 / chDist2) * gr.speed * dt;
-                grouper.position.z += (chz2 / chDist2) * gr.speed * dt;
-                grouper.lookAt(octopus.position.x, grouper.position.y, octopus.position.z);
+                movePredatorToward(grouper,grPursuit,gr.speed,dt);
+                grouper.lookAt(grPursuit.x, grouper.position.y, grPursuit.z);
               }
-              if (Math.abs(octopus.position.y-grouper.position.y)<1.6 && chDist2 < 1.5 && now - gameState.tookHitAt > 800) {
+              if (gr.state==='attacking' && gr.canBite && Math.abs(octopus.position.y-grouper.position.y)<1.6 && chDist2 < 1.5 && now - gameState.tookHitAt > 800) {
                 var grouperDmg = 35;
                 if (species.specialAbility === 'shellDefense') grouperDmg *= 0.3;
                 gameState.health = Math.max(0, gameState.health - grouperDmg);
@@ -15001,8 +15114,8 @@ function createCLHuntAnimal(T, species) {
                 gr.cooldownUntil = now + 5000;
               }
               if (inkBlocks(grouper.position,octopus.position) || gameState.inDen || lostSight(grouper,dt) || gr.stateTimer > 5) {
-                gr.state = 'patrol';
-                gr.cooldownUntil = now + 4000;
+                if(gr.state==='attacking'&&!gameState.inDen&&!inkBlocks(grouper.position,octopus.position)&&lostSight(grouper,dt))beginPredatorSearch(grouper,'patrol');
+                else if(gr.state==='attacking'){gr.state='patrol';gr.stateTimer=0;gr.awareness=0;gr.lastSeen=null;gr.cooldownUntil=now+4000;}
               }
             }
 
@@ -15010,11 +15123,11 @@ function createCLHuntAnimal(T, species) {
             // Re-uses E (which also fires clickRequested for crabs). If
             // E is held + a clam is in range + no crab nearby, drill.
             // Movement or damage cancels.
-            var heldE = !!keys.KeyE;
+            var heldE = !!keys.KeyE || !!gameState.forageTarget;
             var nearestClam = null;
             var nearestClamD = DRILL_RANGE;
             for (var clci = 0; clci < clams.length; clci++) {
-              if (!clams[clci].userData.alive) continue;
+              if (!clams[clci].userData.alive || (gameState.forageTarget&&gameState.forageTarget!==clams[clci])) continue;
               var cldx = clams[clci].position.x - octopus.position.x;
               var cldz = clams[clci].position.z - octopus.position.z;
               var cld = Math.sqrt(cldx * cldx + cldz * cldz);
@@ -15022,9 +15135,10 @@ function createCLHuntAnimal(T, species) {
             }
             if (heldE && capabilities.diet!=='detritus' && nearestClam && !isMoving && now-gameState.tookHitAt>250) {
               gameState.drillingClam = nearestClam;
-              gameState.drillProgress = Math.min(1, gameState.drillProgress + dt / DRILL_DURATION);
+              gameState.drillProgress = Math.min(1, gameState.drillProgress + dt / DRILL_DURATION);gameState.forageProgress=gameState.drillProgress;
               nearestClam.children[1].rotation.x = -gameState.drillProgress * Math.PI / 6;
               if (gameState.drillProgress >= 1) {
+                if(gameState.forageTarget===nearestClam)cancelForage();
                 nearestClam.userData.alive = false;
                 scene.remove(nearestClam);
                 nearestClam.traverse(function(o) {
@@ -15052,7 +15166,7 @@ function createCLHuntAnimal(T, species) {
             } else {
               // Cancel drill if user lets go or moves
               if (gameState.drillProgress > 0) {
-                gameState.drillProgress = Math.max(0, gameState.drillProgress - dt * 0.8);
+                gameState.drillProgress = Math.max(0, gameState.drillProgress - dt * 0.8);gameState.forageProgress=gameState.drillProgress;
                 if (gameState.drillingClam) {
                   gameState.drillingClam.children[1].rotation.x = -gameState.drillProgress * Math.PI / 6;
                 }
@@ -15194,38 +15308,19 @@ function createCLHuntAnimal(T, species) {
               mantle.rotation.y *= 0.9;  // relax back to forward
             }
 
-            // ─── Hunt: click or E ───
-            // Pounces nearest valid prey in range. Priority: crab (substrate)
-            // > fish (mid-water, requires you to be close). Clams use the
-            // hold-E drill mechanic above instead. Each catch refills hunger
-            // proportional to the prey's size.
-            if (clickRequested && capabilities.diet!=='detritus') {
-              clickRequested = false;
-              gameState.lastStrikeAt=now;
-              var nearest = null, nearestDist = 2.6, prey = null;
-              crabs.forEach(function(crab) {
-                if (!crab.userData.alive || (explicitTarget && selectedPrey!==crab)) return;
-                var dx = crab.position.x - octopus.position.x;
-                var dz = crab.position.z - octopus.position.z;
-                var d2 = Math.sqrt(dx * dx + dz * dz);
-                if (Math.abs(octopus.position.y-crab.position.y)<1.1 && d2 < nearestDist && !rockBlocks(octopus.position,crab.position)) { nearest = crab; nearestDist = d2; prey = 'crab'; }
-              });
-              // Fish: only catchable if octopus is mid-water enough (within
-              // 3y of fish elevation), and within FISH_CATCH_RANGE
-              fishSchools.forEach(function(school) {
-                school.fish.forEach(function(fish) {
-                  if (!fish.userData.alive || (explicitTarget && selectedPrey!==fish)) return;
-                  var dx = fish.position.x - octopus.position.x;
-                  var dy = fish.position.y - octopus.position.y;
-                  var dz = fish.position.z - octopus.position.z;
-                  var d3 = Math.sqrt(dx * dx + dy * dy + dz * dz);
-                  if (d3 < FISH_CATCH_RANGE && d3 < nearestDist && !rockBlocks(octopus.position,fish.position)) {
-                    nearest = fish; nearestDist = d3; prey = 'fish';
-                  }
-                });
-              });
+            // Commit to the selected prey at the start; check reach again at contact.
+            if(clickRequested&&capabilities.diet!=='detritus'){
+              clickRequested=false;
+              if(now>=gameState.strikeReadyAt){
+                gameState.lastStrikeAt=now;gameState.strikeReadyAt=now+650;
+                gameState.pendingStrike={target:selectedPrey,at:now+200};
+              }else clAnnounce('Recovering. Wait for IN RANGE before striking again.');
+            }
+            if(gameState.pendingStrike&&now>=gameState.pendingStrike.at){
+              var attemptedPrey=gameState.pendingStrike.target;gameState.pendingStrike=null;
+              var readiness=preyReadiness(attemptedPrey),nearest=readiness.ready?attemptedPrey:null,prey=readiness.kind;
               if(!nearest&&!nearestClam){
-                gameState.strikeMessage=selectedPrey&&rockBlocks(octopus.position,selectedPrey.position)?'Strike blocked. Move around the rock.':selectedPrey?'Missed. Move closer and match the target depth.':'No prey in reach. T selects a nearby target.';
+                gameState.strikeMessage=readiness.reason==='cover'?'Strike blocked. Move around the rock.':attemptedPrey?'Missed. Move closer and match the target depth.':'No prey in reach. T selects a nearby target.';
                 gameState.strikeMessageUntil=now+1800;clAnnounce(gameState.strikeMessage);
               }else gameState.strikeMessage='';
               if (nearest && prey === 'crab') {
@@ -15256,7 +15351,6 @@ function createCLHuntAnimal(T, species) {
                 sfxCatch();
                 try {
                   setCL(function(prior){return {huntsSuccessful:(prior.huntsSuccessful||0)+1,huntBestRun:Math.max(prior.huntBestRun||0,gameState.score)};});
-                    gameState.lastStrikeAt=now;
                     recordEvent('Meal', 'Energy restored; score '+gameState.score);
                 } catch(_) {}
                 scheduleTask(function() { if (!gameState.gameOver) spawnCrab(randomCrabType()); }, 4500);
@@ -15275,7 +15369,6 @@ function createCLHuntAnimal(T, species) {
                 unlockAchievement('firstFish');
                 try {
                   setCL(function(prior){return {huntsSuccessful:(prior.huntsSuccessful||0)+1,huntBestRun:Math.max(prior.huntBestRun||0,gameState.score)};});
-                    gameState.lastStrikeAt=now;
                     recordEvent('Meal', 'Energy restored; score '+gameState.score);
                 } catch(_) {}
                 clAnnounce('Pounced a fish — ' + gameState.score + ' total');
@@ -15348,6 +15441,8 @@ function createCLHuntAnimal(T, species) {
                 clAnnounce(__alloT('stem.cephalopodlab.sr_moray_eel_attacking', 'Moray eel attacking'));
                 sfxPredatorAlert();
               }
+            } else if (me.state === 'searching') {
+              searchForPrey(moray,me.aggroRange*(1+nightFactor*0.5)*(1-0.7*gameState.camoEff),'attacking',dt);
             } else if (me.state === 'attacking') {
               // Den escape: if octopus reaches a den, eel breaks attack
               if (gameState.inDen) {
@@ -15356,15 +15451,15 @@ function createCLHuntAnimal(T, species) {
                 me.cooldownUntil = now + 3000;
               }
               me.stateTimer += dt;
-              var chx = octopus.position.x - moray.position.x;
-              var chz = octopus.position.z - moray.position.z;
+              var mePursuit=pursuitPoint(moray,dt);
+              var chx = mePursuit.x - moray.position.x;
+              var chz = mePursuit.z - moray.position.z;
               var chDist = Math.sqrt(chx * chx + chz * chz);
               if (chDist > 0.1) {
-                moray.position.x += (chx / chDist) * me.speed * dt;
-                moray.position.z += (chz / chDist) * me.speed * dt;
-                moray.lookAt(octopus.position.x, 0.25, octopus.position.z);
+                movePredatorToward(moray,mePursuit,me.speed,dt);
+                moray.lookAt(mePursuit.x, 0.25, mePursuit.z);
               }
-              if (Math.abs(octopus.position.y-moray.position.y)<1.2 && chDist < 1.2 && now - gameState.tookHitAt > 800) {
+              if (me.state==='attacking' && me.canBite && Math.abs(octopus.position.y-moray.position.y)<1.2 && chDist < 1.2 && now - gameState.tookHitAt > 800) {
                 var morayDmg = 30;
                 if (species.specialAbility === 'shellDefense') { morayDmg *= 0.3; unlockAchievement('nautilusBounce'); }
                 gameState.health = Math.max(0, gameState.health - morayDmg);
@@ -15379,9 +15474,8 @@ function createCLHuntAnimal(T, species) {
                 clAnnounce(__alloT('stem.cephalopodlab.sr_bitten_by_moray', 'Bitten by moray'));
               }
               if (inkBlocks(moray.position,octopus.position) || lostSight(moray,dt) || me.stateTimer > 4.5) {
-                me.state = 'returning';
-                me.stateTimer = 0;
-                me.cooldownUntil = now + 3500;
+                if(me.state==='attacking'&&!gameState.inDen&&!inkBlocks(moray.position,octopus.position)&&lostSight(moray,dt))beginPredatorSearch(moray,'returning');
+                else if(me.state==='attacking'){me.state='returning';me.stateTimer=0;me.awareness=0;me.lastSeen=null;me.cooldownUntil=now+3500;}
               }
             } else if (me.state === 'returning') {
               var rdx = me.homeX - moray.position.x;
@@ -15396,7 +15490,9 @@ function createCLHuntAnimal(T, species) {
               }
             }
 
-            if([moray,grouper,shark].concat(zonalPredators).some(function(p){return p&&(p.userData.state==='attacking'||p.userData.state==='charging');}))gameState.threatText='Predator charging — break its view or reach shelter.';
+            var activePredators=[moray,grouper,shark].concat(zonalPredators);
+            if(activePredators.some(function(p){return p&&(p.userData.state==='attacking'||p.userData.state==='charging')&&p.userData.canBite;}))gameState.threatText='Predator charging — break its view or reach shelter.';
+            else if(activePredators.some(function(p){return p&&p.userData.state==='searching';}))gameState.threatText='Predator searching your last seen position — stay covered or move away.';
 
             if(observation){gameState.health=gameState.maxHealth;gameState.hunger=gameState.maxHunger;}
             if (gameState.health <= 0) {
@@ -15424,10 +15520,15 @@ function createCLHuntAnimal(T, species) {
             if(gameState.pressureStrain===-1)status.push('PRESSURE BUILDING — Q to rise');else if(gameState.pressureStrain>0)status.push('CRUSHING PRESSURE — Q to rise');
             if(gameState.inDen)status.push('IN DEN — safe, regenerating');
             if(gameState.isInked)status.push('INKED — harder to track');
-            if(gameState.drillProgress>0)status.push('Drilling clam '+Math.round(gameState.drillProgress*100)+'%');
             if(carriedShelter)status.push('Carrying '+SHELTER_TYPES[carriedShelter.userData.shelterType].label+' · G drops');
             if(gameState.isMimicking)status.push('Mimicking · predators wary');
             hudText('status',status.join(' · '));
+            huntButton.disabled=gameState.paused||gameState.gameOver||now<gameState.strikeReadyAt;
+            var activeGather=gameState.forageTarget||gameState.drillProgress>0||(capabilities.diet==='detritus'&&gameState.forageProgress>0);
+            forageRow.hidden=!activeGather;forageProgress.value=activeGather?gameState.forageProgress:0;
+            hudText('activity',activeGather?(capabilities.diet==='detritus'?'Gathering marine snow':'Opening clam')+' · '+Math.round(gameState.forageProgress*100)+'%'+(gameState.forageTarget?' · R stops':''):'');
+            updateThreatHud();
+            var nextHudHeight=hud.offsetHeight;if(gameState.hudHeight!==nextHudHeight){gameState.hudHeight=nextHudHeight;stage.style.setProperty('--cl-mission-top',(nextHudHeight+22)+'px');}
             drawMinimap();if(!gameState.observationUntil || now>gameState.observationUntil)updateMission();
           }
 
@@ -15488,7 +15589,7 @@ function createCLHuntAnimal(T, species) {
                 prompt = '<span style="color:#fbbf24">[G]</span> pick up ' + sht2.label + ' <span style="color:#94a3b8;font-weight:400">(+' + (sht2.camoBonus * 100).toFixed(0) + '% camo)</span>';
                 pColor = 'rgba(160,120,64,0.7)';
               } else if (pNearestCl) {
-                prompt = '<span style="color:#fbbf24">[HOLD E]</span> drill clam';
+                prompt = '<span style="color:#fbbf24">[R]</span> forage clam <span style="font-weight:400">or hold E</span>';
                 pColor = 'rgba(251,191,36,0.5)';
               } else if (pNearestCb) {
                 prompt = '<span style="color:#fbbf24">[CLICK]</span> pounce crab';
@@ -15496,7 +15597,7 @@ function createCLHuntAnimal(T, species) {
               }
               }   // close pearl-fallback else
             }
-            setActionPrompt(prompt, pColor);
+            setActionPrompt(gameState.forageTarget||gameState.forageProgress>0?'':prompt, pColor);
           } else {
             setActionPrompt('', null);
           }
@@ -15539,7 +15640,8 @@ function createCLHuntAnimal(T, species) {
           var nW = canvasEl.clientWidth || 800;
           var nH = canvasEl.clientHeight || 500;
           stage.classList.toggle('cl-hunt-small',nW<600);stage.style.setProperty('--cl-mission-top',(hud.offsetHeight+22)+'px');
-          actionPrompt.style.bottom=nW<600?'214px':'58px';
+          actionPrompt.style.bottom=((nW<600?172:10)+controlPanel.offsetHeight+12)+'px';
+          actionPrompt.style.width=nW<600?'calc(100% - 48px)':'auto';actionPrompt.style.boxSizing='border-box';actionPrompt.style.textAlign='center';
           bioPopup.style.display=nW<600?'none':'block';tutorial.style.display='none';
           camera.aspect = nW / nH;
           camera.updateProjectionMatrix();

@@ -1,0 +1,137 @@
+{
+  "date": "2026-09-27",
+  "status": "complete",
+  "unit": {
+    "passed": 194,
+    "failed": 0,
+    "total": 194,
+    "files": 9,
+    "source": "unit-review-results.json"
+  },
+  "browser": {
+    "distinctScenariosWithPassingLatestResult": 23,
+    "retries": 0,
+    "note": "Aggregated results, not one uninterrupted clean run. Initial foraging run exposed a product initialization bug; full six-case retest passed after correction. Initial regression had two timing assumptions; targeted retest passed after robust waits. Cuttlefish interaction passed after final review fix.",
+    "runs": [
+      {
+        "file": "regression-browser.json",
+        "startTime": "2026-09-27T03:35:22.665Z",
+        "duration": 353139.994,
+        "expected": 11,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      },
+      {
+        "file": "regression-retest.json",
+        "startTime": "2026-09-27T03:42:26.252Z",
+        "duration": 37108.579,
+        "expected": 2,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      {
+        "file": "foraging-strike-initial.json",
+        "startTime": "2026-09-27T03:20:32.900Z",
+        "duration": 180706.419,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      },
+      {
+        "file": "foraging-strike-retest.json",
+        "startTime": "2026-09-27T03:24:03.980Z",
+        "duration": 149003.122,
+        "expected": 6,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      {
+        "file": "predator-browser.json",
+        "startTime": "2026-09-27T03:28:19.754Z",
+        "duration": 82263.863,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      {
+        "file": "cuttlefish-display-initial.json",
+        "startTime": "2026-09-27T03:46:45.475Z",
+        "duration": 33812.842000000004,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    ]
+  },
+  "mirrors": [
+    {
+      "path": "stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "302dd73b770cbfce108249b46722ed6334146bf2f6abfc7453e3c729d6e82e5c"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "302dd73b770cbfce108249b46722ed6334146bf2f6abfc7453e3c729d6e82e5c"
+    },
+    {
+      "path": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "302dd73b770cbfce108249b46722ed6334146bf2f6abfc7453e3c729d6e82e5c"
+    },
+    {
+      "path": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "302dd73b770cbfce108249b46722ed6334146bf2f6abfc7453e3c729d6e82e5c"
+    }
+  ],
+  "syntax": "passed",
+  "whitespace": "passed",
+  "deployed": false,
+  "visual": {
+    "errors": [],
+    "boxes": {
+      "hud": {
+        "x": 32,
+        "y": 246.78125,
+        "width": 326,
+        "height": 177.9375
+      },
+      "mission": {
+        "x": 32,
+        "y": 436.78125,
+        "width": 326,
+        "height": 91.5625
+      },
+      "controls": {
+        "x": 32,
+        "y": 598.453125,
+        "width": 243,
+        "height": 74
+      },
+      "touch": {
+        "x": 32,
+        "y": 692.453125,
+        "width": 326,
+        "height": 140
+      },
+      "prompt": {
+        "x": 44,
+        "y": 555.453125,
+        "width": 302,
+        "height": 31
+      },
+      "promptOpacity": "0"
+    },
+    "layoutClear": true,
+    "fixture": "Controlled clam and concealed searching predator for UI review.",
+    "screenshots": [
+      "humboldt-inspection.png",
+      "forage-and-search.png",
+      "mobile-foraging.png"
+    ],
+    "reviewed": true
+  }
+}

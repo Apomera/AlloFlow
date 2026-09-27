@@ -24,14 +24,15 @@ test('pause freezes dive time and energy; losing canvas focus releases held move
 test('the seabed is solid and the home den only protects at its actual height',async({page})=>{
   await mount(page);await hold(page,'KeyZ',600);expect((await player(page))[1]).toBeGreaterThan(0.35);
   await page.evaluate(()=>{const w=window as any,h=w.__scene.getObjectByName('cl-home');w.__player.position.x=h.position.x;w.__player.position.z=h.position.z;});
-  await expect(page.locator('[data-hud=status]')).toContainText('IN DEN');await hold(page,'KeyQ',1300);
+  await expect(page.locator('[data-hud=status]')).toContainText('IN DEN');await page.locator(sel).focus();await page.keyboard.down('KeyQ');try{await expect.poll(async()=>(await player(page))[1]).toBeGreaterThan(2.2);}finally{await page.keyboard.up('KeyQ');}
   await expect(page.locator('[data-hud=status]')).not.toContainText('IN DEN');expect((await player(page))[1]).toBeGreaterThan(2);
 });
 test('target selection never catches a different nearby animal, and repeated catches persist',async({page})=>{
   await mount(page);await placeCrab(page);await page.locator(sel).focus();await page.keyboard.press('KeyT');
   await page.evaluate(()=>{const w=window as any,all=w.__scene.children.filter((o:any)=>o.userData.alive&&o.userData.cfg);all[0].position.set(18,0.18,18);all[1].position.copy(w.__player.position);all[1].userData.speed=0;});
-  await page.keyboard.press('KeyE');await page.waitForTimeout(200);expect(await page.locator('[data-hud=score]').innerText()).toBe('0');
+  await page.keyboard.press('KeyE');await expect(page.locator('.cl-hunt-mission')).toContainText(/Missed\.|Strike blocked\./);await expect(page.getByRole('button',{name:'Strike [E]',exact:true})).toBeEnabled();expect(await page.locator('[data-hud=score]').innerText()).toBe('0');
   await page.keyboard.press('KeyT');await page.keyboard.press('KeyE');await expect.poll(()=>page.evaluate(()=>(window as any).__toolData.cephalopodLab.huntsSuccessful)).toBe(1);
+  await expect(page.getByRole('button',{name:'Strike [E]',exact:true})).toBeEnabled();
   await placeCrab(page);await page.keyboard.press('KeyT');await page.keyboard.press('KeyE');await expect.poll(()=>page.evaluate(()=>(window as any).__toolData.cephalopodLab.huntsSuccessful)).toBe(2);
 });
 test('reef mission requires both foods and a return home, then writes one debrief',async({page})=>{
