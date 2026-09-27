@@ -37,6 +37,9 @@ const HOSTILE = [
   { landingResult: { crashed: true, vVel: '9' } },
   { entryOutcome: { outcome: 'nominal' } },
   { entryOutcome: 'skip' },
+  { entryOutcome: { modelVersion: 1, completed: true, outcome: 'nominal', angle: -6.5, peakG: 6, peakHeatFlux: Infinity } },
+  { entryRun: { version: 1, angle: -6.5, time: Infinity, recovery: 'old', recorded: 'yes' } },
+  { entryAttempts: ['bad', null, { outcome: 'skip' }], entryAwardedXP: NaN, entryCompletionAwarded: 'true', entryPlaybackRate: '30' },
   { deltaVHunt: { log: 'x' } },
   { deltaVHunt: 3 },
 ];

@@ -148,23 +148,71 @@ describe('debrief notes and the report', () => {
     expect(writeText.mock.calls[0][0]).toContain('Mid-course correction: declined');
     delete navigator.clipboard;
   });
+
+  it('the physical entry card names the computed terminal event and measurements', () => {
+    const entry = { modelVersion: 1, completed: true, outcome: 'nominal', angle: -6.5, peakG: 6.8,
+      peakHeatFlux: 2300000, heatLoad: 160000000, duration: 725.4, downrange: 1850000,
+      splashSpeed: 9.3, terminal: 'splash' };
+    const nominal = html({ ...FLOWN, entryOutcome: entry });
+    expect(nominal).toContain('data-entry-debrief="physical"');
+    expect(nominal).toContain('ATMOSPHERIC CAPTURE &amp; SPLASHDOWN');
+    expect(nominal).toContain('2.30 MW/m²');
+    expect(nominal).toContain('160.0 MJ/m²');
+    expect(nominal).toContain('9.3 m/s');
+    const skip = html({ ...FLOWN, entryOutcome: { ...entry, outcome: 'skip', terminal: 'skip', splashSpeed: null } });
+    expect(skip).toContain('later return is not modeled');
+    expect(skip).not.toContain('next chance is hours away');
+    expect(skip).toContain('Not reached');
+    const incomplete = html({ ...FLOWN, entryOutcome: { ...entry, outcome: 'incomplete', terminal: 'incomplete', splashSpeed: null } });
+    expect(incomplete).toContain('ENTRY INCOMPLETE');
+    expect(incomplete).toContain('No recovery is claimed');
+    expect(incomplete).not.toContain('STEEP ENTRY');
+    const steep = html({ ...FLOWN, entryOutcome: { ...entry, outcome: 'steep', peakG: 15 } });
+    expect(steep).toContain('HIGH-LOAD SPLASHDOWN');
+    expect(steep).toContain('10 g caution level');
+  });
 });
 
 describe('your flights', () => {
   it('Fly Another Mission keeps the flight it replaces (the last five)', () => {
     const older = Array.from({ length: 5 }, (_, i) => ({ difficulty: 'tourist', quiz: { correct: i, total: 10 } }));
-    const app = mount(Object.assign({}, FLOWN, { flightHistory: older, reflection: { mattered: 'x' } }));
+    const app = mount(Object.assign({}, FLOWN, { flightHistory: older, reflection: { mattered: 'x' },
+      entryRun: { version: 1, angle: -6.4, time: 725, recovery: 9, recorded: true },
+      entryAttempts: [{ ...FLOWN.entryOutcome, legacy: true }], entryAwardedXP: 25,
+      entryCompletionAwarded: true, entryPlaybackRate: 60, entryPaused: true, entryMigrationNote: 'Earlier animation' }));
     const [again] = walk(app.tree(), (n) => n.type === 'button' && /Fly Another Mission/.test(textOf(n.props.children)));
     again.onClick();
     const mm = app.mm();
     expect(mm.missionPhase).toBe(0);
     expect(mm.reflection).toBeNull();
+    expect(mm.entryRun).toBeNull();
+    expect(mm.entryOutcome).toBeNull();
+    expect(mm.entryAttempts).toEqual([]);
+    expect(mm.entryAwardedXP).toBe(0);
+    expect(mm.entryCompletionAwarded).toBe(false);
+    expect(mm.entryPlaybackRate).toBe(30);
+    expect(mm.entryPaused).toBe(false);
+    expect(mm.entryMigrationNote).toBeNull();
     expect(mm.flightHistory).toHaveLength(5);
     const kept = mm.flightHistory[4];
     expect(kept.mcc).toBe('skipped');
     expect(kept.landing).toMatchObject({ crashed: false, grade: 'C', fuel: 6, fuelUnit: 's' });
     expect(kept.tli).toMatchObject({ onTime: false, offByDeg: 22 });
+    expect(kept.entry).toEqual(FLOWN.entryOutcome);
     expect(mm.flightHistory[0].quiz.correct).toBe(1);   // the oldest one dropped off
+  });
+
+  it('Fly Another Mission retains compact physical entry measurements in flight history', () => {
+    const entry = { modelVersion: 1, completed: true, outcome: 'nominal', angle: -6.5, peakG: 6.8,
+      peakHeatFlux: 2300000, heatLoad: 160000000, duration: 725.4, downrange: 1850000,
+      splashSpeed: 9.3, terminal: 'splash' };
+    const app = mount({ ...FLOWN, entryOutcome: entry });
+    const [report] = walk(app.tree(), (n) => n.type === 'textarea' && n.props['data-moonmission-report-text']);
+    expect(report.value).toContain('peak heat flux 2.30 MW/m²');
+    const [again] = walk(app.tree(), (n) => n.type === 'button' && /Fly Another Mission/.test(textOf(n.props.children)));
+    again.onClick();
+    expect(app.mm().flightHistory[0].entry).toEqual(entry);
+    expect(app.mm().entryOutcome).toBeNull();
   });
 
   it('the table compares this flight with the last one', () => {

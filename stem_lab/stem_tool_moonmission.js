@@ -416,12 +416,90 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     descentRecordingSummary: mmDescentRecordingSummary, descentCSV: mmDescentCSV
   }); } catch (e) {}
 
+  // The physics keeps seconds and metres. Only recovery artwork uses this
+  // presentation clock, with milestones aligned to the calculated events.
+  function mmEntryVisualTick(profile, seconds, recovery) {
+    var events = profile.events, end = profile.summary.duration;
+    var drogue = events.drogue ? events.drogue.time : end;
+    var main = events.main ? events.main.time : end;
+    if (seconds < drogue) return 360 * seconds / Math.max(0.01, drogue);
+    if (seconds < main) return 360 + 120 * (seconds - drogue) / Math.max(0.01, main - drogue);
+    if (seconds < end) return 480 + 120 * (seconds - main) / Math.max(0.01, end - main);
+    return events.splash ? 600 + Math.min(580, Math.max(0, recovery || 0) * 60) : 360;
+  }
+  function mmEntryStageIndex(sample) {
+    return sample.stage === 'skip' ? 5 : sample.stage === 'splash' ? 4 : sample.stage === 'main' ? 3
+      : sample.stage === 'drogue' ? 2 : sample.blackout ? 1 : 0;
+  }
+  function mmEntryRecordedResult(profile) {
+    var sum = profile.summary;
+    return { modelVersion: 1, completed: true, outcome: sum.outcome, angle: profile.angle,
+      peakG: Math.round(sum.peakG * 10) / 10, peakHeatFlux: sum.peakHeatFlux,
+      heatLoad: sum.heatLoad, duration: sum.duration, downrange: sum.downrange,
+      splashSpeed: sum.splashSpeed, terminal: profile.events.splash ? 'splash' : profile.events.skip ? 'skip' : 'incomplete' };
+  }
+
+  // Save only the compact, finite measurements needed to resume and compare a run.
+  // Legacy results have no physical measurements; keep their original three fields.
+  function mmCleanEntryOutcome(raw) {
+    var inRange = function (v, lo, hi) { return mmNum(v) && v >= lo && v <= hi; };
+    if (!mmIsObj(raw) || !inRange(raw.angle, -90, -1) || !inRange(raw.peakG, 0, 1000) ||
+        ['nominal', 'steep', 'skip', 'incomplete'].indexOf(raw.outcome) < 0) return null;
+    var result = { outcome: raw.outcome, angle: raw.angle, peakG: raw.peakG };
+    if (raw.modelVersion == null) {
+      if (raw.outcome === 'incomplete') return null;
+      if (raw.legacy === true) result.legacy = true;
+      return result;
+    }
+    if (raw.modelVersion !== 1 || raw.completed !== true || !inRange(raw.angle, -12, -1) ||
+        !inRange(raw.peakHeatFlux, 0, 1e9) || !inRange(raw.heatLoad, 0, 1e12) ||
+        !inRange(raw.duration, 0.001, 2400) || !inRange(raw.downrange, 0, 1e8) ||
+        ['splash', 'skip', 'incomplete'].indexOf(raw.terminal) < 0) return null;
+    if (raw.terminal === 'splash' ? (raw.outcome !== 'nominal' && raw.outcome !== 'steep') || !inRange(raw.splashSpeed, 0, 20000)
+      : raw.outcome !== raw.terminal || raw.splashSpeed != null) return null;
+    return Object.assign(result, { modelVersion: 1, completed: true,
+      peakHeatFlux: raw.peakHeatFlux, heatLoad: raw.heatLoad, duration: raw.duration,
+      downrange: raw.downrange, splashSpeed: raw.terminal === 'splash' ? raw.splashSpeed : null, terminal: raw.terminal });
+  }
+  function mmCleanEntryRun(raw) {
+    if (!mmIsObj(raw) || raw.version !== 1 || !mmNum(raw.angle) || raw.angle < -12 || raw.angle > -1 ||
+        !mmNum(raw.time) || !mmNum(raw.recovery)) return null;
+    return { version: 1, angle: raw.angle, time: Math.max(0, Math.min(2400, raw.time)),
+      recovery: Math.max(0, Math.min(580 / 60, raw.recovery)), recorded: raw.recorded === true };
+  }
+  function mmCleanEntryState(raw) {
+    raw = mmIsObj(raw) ? raw : {};
+    var outcome = mmCleanEntryOutcome(raw.entryOutcome), run = mmCleanEntryRun(raw.entryRun);
+    if (run) {
+      var matches = outcome && outcome.modelVersion === 1 && Math.abs(run.angle - outcome.angle) < 0.005;
+      if (outcome && outcome.modelVersion === 1 && !matches) outcome = null;
+      if (!matches) { run.recorded = false; run.recovery = 0; }
+      else {
+        // A completed run can be scrubbed backward without losing its result.
+        run.time = Math.min(run.time, outcome.duration);
+        if (run.time < outcome.duration || outcome.terminal !== 'splash') run.recovery = 0;
+      }
+    }
+    return {
+      entryOutcome: outcome, entryRun: run,
+      entryAttempts: (Array.isArray(raw.entryAttempts) ? raw.entryAttempts : []).slice(-5).map(mmCleanEntryOutcome).filter(Boolean),
+      entryAwardedXP: mmNum(raw.entryAwardedXP) ? Math.max(0, Math.min(25, raw.entryAwardedXP)) : 0,
+      entryCompletionAwarded: raw.entryCompletionAwarded === true,
+      entryPlaybackRate: [1, 10, 30, 60].indexOf(raw.entryPlaybackRate) >= 0 ? raw.entryPlaybackRate : 30,
+      entryPaused: raw.entryPaused === true,
+      entryMigrationNote: typeof raw.entryMigrationNote === 'string' ? raw.entryMigrationNote.slice(0, 300) : null
+    };
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
+    cleanEntryOutcome: mmCleanEntryOutcome, cleanEntryRun: mmCleanEntryRun, cleanEntryState: mmCleanEntryState
+  }); } catch (e) {}
+
   function mmFlightSummary(d, totals, when) {
     totals = totals || {};
     var dl = Array.isArray(d.decisionLog) ? d.decisionLog.filter(mmIsObj) : [];
     var ta = mmIsObj(d.tliAccuracy) ? d.tliAccuracy : null;
     var lr = mmIsObj(d.landingResult) && mmNum(d.landingResult.vVel) ? d.landingResult : null;
-    var eo = mmIsObj(d.entryOutcome) && mmNum(d.entryOutcome.angle) ? d.entryOutcome : null;
+    var eo = mmCleanEntryOutcome(d.entryOutcome);
     return {
       when: when || '',
       difficulty: MM_MODE_NAMES[d.difficulty] ? d.difficulty : 'pilot',
@@ -430,7 +508,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       landing: lr ? { crashed: !!lr.crashed, score: mmNum(lr.score) ? lr.score : 0, grade: String(lr.grade || ''),
         vVel: lr.vVel, hVel: mmNum(lr.hVel) ? lr.hVel : 0, fuel: mmNum(lr.fuel) ? lr.fuel : 0, fuelUnit: lr.fuelUnit === 's' ? 's' : '%',
         flight: mmDescentRecordingSummary(lr.recording) } : null,
-      entry: eo ? { outcome: String(eo.outcome), angle: eo.angle, peakG: mmNum(eo.peakG) ? eo.peakG : 0 } : null,
+      entry: eo ? eo.modelVersion === 1 ? eo : { outcome: eo.outcome, angle: eo.angle, peakG: eo.peakG } : null,
       quiz: { correct: mmNum(d.quizCorrect) ? d.quizCorrect : 0, total: totals.quiz || 0 },
       samples: mmSampleTypeCount(d.lunarSamples), sampleTotal: totals.samples || 8,
       decisions: { optimal: dl.filter(function (x) { return x.quality === 'optimal'; }).length, total: dl.length },
@@ -483,8 +561,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     if (sum.entry) {
       var E = sum.entry;
       steps.push({ call: 'You set the entry angle to ' + E.angle.toFixed(1) + MM_DEG_SIGN,
-        result: E.outcome === 'nominal' ? 'inside the corridor, about ' + E.peakG + ' g at peak'
+        result: E.modelVersion === 1 ? (E.terminal === 'skip' ? 'the capsule crossed 122 km upward; later motion was not simulated'
+          : E.terminal === 'incomplete' ? 'the simulation reached its time limit before a terminal event'
+          : E.outcome === 'steep' ? 'the capsule reached splashdown, but its ' + E.peakG + ' g peak load exceeded the model\u2019s ' + MM_ENTRY.cautionG + ' g caution level'
+          : 'atmospheric drag slowed the capsule for parachute descent, with a peak load of ' + E.peakG + ' g')
+          : E.outcome === 'nominal' ? 'inside the corridor, about ' + E.peakG + ' g at peak'
           : E.outcome === 'skip' ? 'too shallow: the atmosphere threw the capsule back out'
+          : E.outcome === 'incomplete' ? 'the simulation reached its time limit before a terminal event'
           : 'too steep: about ' + E.peakG + ' g, harder on the crew and the heat shield' });
     }
     return steps;
@@ -499,7 +582,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       !T ? MM_DASH : T.onTime ? 'on time' : (mmNum(T.offByDeg) ? T.offByDeg : '?') + MM_DEG_SIGN + ' ' + (T.side === 'late' ? 'late' : 'early'),
       !L ? MM_DASH : L.crashed ? 'hard landing' : 'grade ' + (L.grade ? String(L.grade) : '?') + (mmNum(L.score) ? ' (' + L.score + ')' : ''),
       !L || !mmNum(L.fuel) ? MM_DASH : L.fuel + (L.fuelUnit === 's' ? ' s' : '%'),
-      !E ? MM_DASH : E.outcome === 'nominal' ? 'corridor' : E.outcome === 'skip' ? 'skip-out' : 'too steep',
+      !E ? MM_DASH : E.outcome === 'nominal' ? 'corridor' : E.outcome === 'skip' ? 'skip-out' : E.outcome === 'incomplete' ? 'incomplete' : 'too steep',
       !Q || !mmNum(Q.correct) ? MM_DASH : Q.correct + '/' + (mmNum(Q.total) ? Q.total : '?')
     ];
   }
@@ -507,7 +590,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     prev = mmIsObj(prev) ? prev : {};
     var parts = [];
     var P = mmIsObj(prev.landing) ? prev.landing : null, C = cur.landing;
-    var entryName = function (e) { return e.outcome === 'nominal' ? 'in the corridor' : e.outcome === 'skip' ? 'skip-out' : 'too steep'; };
+    var entryName = function (e) { return e.outcome === 'nominal' ? 'in the corridor' : e.outcome === 'skip' ? 'skip-out' : e.outcome === 'incomplete' ? 'incomplete' : 'too steep'; };
     if (P && C) {
       if (P.crashed && !C.crashed) parts.push('a hard landing became a touchdown');
       else if (!P.crashed && C.crashed) parts.push('a touchdown became a hard landing');
@@ -535,7 +618,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         + (L.fuelUnit === 's' ? L.fuel + ' s of fuel left' : L.fuel + '% fuel left') + (L.crashed ? '' : ', score ' + L.score + ' (' + L.grade + ')')));
     if (L && L.flight) ln('Descent: ' + L.flight.duration.toFixed(1) + ' s, hover fuel used ' + L.flight.fuelUsed.toFixed(1) + ' s, displacement ' + L.flight.displacement.toFixed(1) + ' m.');
     var E = sum.entry;
-    ln('Entry: ' + (!E ? 'not flown' : E.angle.toFixed(1) + MM_DEG_SIGN + ', ' + (E.outcome === 'nominal' ? 'in the corridor, about ' + E.peakG + ' g' : E.outcome === 'skip' ? 'too shallow, skip-out' : 'too steep, about ' + E.peakG + ' g')));
+    ln('Entry: ' + (!E ? 'not flown' : E.angle.toFixed(1) + MM_DEG_SIGN + ', ' + (E.modelVersion === 1
+      ? (E.terminal === 'splash' ? 'splashdown, peak load ' + E.peakG + ' g' : E.terminal === 'skip' ? 'upward crossing of 122 km, skip-out' : 'simulation time limit reached')
+      : E.outcome === 'nominal' ? 'in the corridor, about ' + E.peakG + ' g' : E.outcome === 'skip' ? 'too shallow, skip-out' : E.outcome === 'incomplete' ? 'simulation time limit reached' : 'too steep, about ' + E.peakG + ' g')));
+    var physicalEntry = mmCleanEntryOutcome(E);
+    if (physicalEntry && physicalEntry.modelVersion === 1) ln('Entry model: ' + physicalEntry.duration.toFixed(1) + ' s, ' +
+      (physicalEntry.downrange / 1000).toFixed(0) + ' km downrange, peak heat flux ' + (physicalEntry.peakHeatFlux / 1e6).toFixed(2) +
+      ' MW/m\u00b2, heat load ' + (physicalEntry.heatLoad / 1e6).toFixed(1) + ' MJ/m\u00b2; ' +
+      (physicalEntry.terminal === 'splash' ? 'splashdown at ' + physicalEntry.splashSpeed.toFixed(1) + ' m/s.'
+        : physicalEntry.terminal === 'skip' ? 'skipped out of the atmosphere.' : 'simulation reached its time limit.'));
     ln('Quiz: ' + sum.quiz.correct + ' / ' + sum.quiz.total + '   Rock types collected: ' + sum.samples + ' / ' + sum.sampleTotal);
     var dec = (Array.isArray(opts.decisions) ? opts.decisions : []).filter(mmIsObj);
     if (dec.length) {
@@ -642,10 +733,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   // in a straight line, "closing speed" was 3,200 + p^2 * 36,700 km/h, and the clock
   // counted to 3 days. Integrating that speed over that time covers 1.1 million km,
   // 2.9 times the trip. This falls toward Earth under Earth's gravity instead
-  // (energy: v^2 = v0^2 + 2GM(1/r - 1/r0)), starting 384,400 km out at 1.0 km/s.
-  // That reproduces Apollo 11's own return: about 2.5 days, and about 39,700 km/h at
-  // entry interface, 6,500 km from Earth's centre (Apollo 11: 36,194 ft/s).
-  var MM_GM = 398600, MM_R0 = 384400, MM_R_EI = 6500, MM_V0 = 1.0, MM_R_EARTH = 6378;
+  // (energy: v^2 = v0^2 + 2GM(1/r - 1/r0)), starting 384,400 km out. Calibrate its
+  // initial radial speed to the separate entry preset: 122 km altitude, 11.03 km/s.
+  // It is an Earth-only radial teaching approximation, not Apollo's curved orbit.
+  var MM_GM = 398600, MM_R0 = 384400, MM_R_EI = 6500, MM_R_EARTH = 6378, MM_RETURN_ENTRY_SPEED = 11.03;
+  var MM_V0 = Math.sqrt(MM_RETURN_ENTRY_SPEED * MM_RETURN_ENTRY_SPEED - 2 * MM_GM * (1 / MM_R_EI - 1 / MM_R0));
+  // Apollo 11 Mission Report table 3-I: 194:49:12.7 separation, 195:03:05.7 entry.
+  // https://www.nasa.gov/wp-content/uploads/static/apollo50th/pdf/A11_MissionReport.pdf
+  var MM_SM_SEPARATION_SECONDS = 833;
   function mmReturnSpeed(r) { return Math.sqrt(MM_V0 * MM_V0 + 2 * MM_GM * (1 / r - 1 / MM_R0)); }
   function mmCoastInterval(r0, r1, speed) {
     // Simpson integration of dt = dr / v. Small radial steps close to either
@@ -709,13 +804,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   function mmReturnCoast(p) {
     p = Math.max(0, Math.min(1, p));
     var target = p * MM_RETURN_SECONDS, sample = mmSampleCoast(_mmReturnTable, target);
-    return { distKm: Math.max(0, sample.r - MM_R_EARTH), speedKmh: -sample.v * 3600, days: target / 86400, totalDays: MM_RETURN_SECONDS / 86400 };
+    var remaining = Math.max(0, MM_RETURN_SECONDS - target);
+    return { distKm: Math.max(0, sample.r - MM_R_EARTH), speedKmh: -sample.v * 3600,
+      days: target / 86400, totalDays: MM_RETURN_SECONDS / 86400,
+      elapsedSeconds: target, remainingSeconds: remaining, totalSeconds: MM_RETURN_SECONDS,
+      serviceModuleSeparated: remaining <= MM_SM_SEPARATION_SECONDS, atInterface: p === 1 };
   }
-  // Re-entry peak deceleration for a given flight-path angle. The slope is set so the
-  // Apollo 11 angle (-6.5 deg) gives Apollo 11's roughly 6.5 g; it gave 6.9 before,
-  // right beside a sentence saying 6.5.
+  // Peak sensed aerodynamic load comes from the same trajectory as the entry view.
   function mmEntryPeakG(angleDeg) {
-    return Math.round((4 + (Math.abs(angleDeg) - 5.3) * 2.08) * 10) / 10;
+    return Math.round(mmEntryProfile(angleDeg).summary.peakG * 10) / 10;
   }
   // Powered descent: a two-dimensional teaching model in metres, seconds and kg.
   // The computer flies from 15 km; the student takes over the last 300 m.
@@ -1489,27 +1586,184 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   }
   try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { ascentDemoState: mmAscentDemoState }); } catch (e) {}
 
-  // The fiery part of re-entry by the same clock (0 at entry interface, 360 at the
-  // drogues). Heating is a pulse that peaks under a minute in; the shield's surface
-  // follows it by radiative equilibrium (T proportional to the fourth root of the
-  // heating), so it peaks at Apollo's 2,760 C and cools as the capsule slows. The
-  // path starts at the student's entry angle and bends to vertical as speed bleeds
-  // off; a skip-out climbs back out for a while, cooler, before it falls again.
-  function mmEntryState(tick, outcome, angle) {
-    var s = Math.min(1, Math.max(0, tick / 360));
-    var sm = function (v) { v = Math.min(1, Math.max(0, v)); return v * v * (3 - 2 * v); };
-    var p = outcome === 'steep' ? 0.34 : 0.42, u = s / p;
-    var heat = s <= 0 ? 0 : Math.pow(u, 6) * Math.exp(6 * (1 - u));
-    var bump = outcome === 'skip' && s > 0.33 && s < 0.83 ? Math.sin(Math.PI * (s - 0.33) / 0.5) : 0;
-    heat *= 1 - 0.75 * bump;
-    var g0 = Math.abs(typeof angle === 'number' && isFinite(angle) ? angle : -6.5);
-    var gamma = g0 + (90 - g0) * sm((s - 0.55) / 0.45) - (g0 + 5) * bump;
-    return {
-      h: 7.3 + 114.7 * Math.pow(1 - s, 1.6) + 25 * bump,
-      gamma: gamma, heat: heat,
-      tempC: Math.max(15, Math.round(3033 * Math.pow(heat, 0.25) - 273))
-    };
+  // Atmospheric entry: planar point-mass dynamics in SI, on a nonrotating sphere.
+  // The rounded 122 km / 11.03 km/s interface is an explicit Apollo-like preset;
+  // the earlier radial coast is a separate teaching approximation, not a vector orbit.
+  // NASA Apollo 11 report: 36,194.4 ft/s, -6.48 degrees, measured maximum 6.51 g:
+  // ntrs.nasa.gov/api/citations/19710015566/downloads/19710015566.pdf
+  // US Standard Atmosphere 1976 layers below 86 km (NASA TM X-74335); above that,
+  // a continuous 6.2 km isothermal scale-height extension is deliberately simple.
+  // Sutton-Graves convective stagnation heating: q = 1.7415e-4 sqrt(rho/Rn) v^3,
+  // SI W/m2 (NASA/TM-2014-218507; ntrs.nasa.gov/citations/20220018610).
+  // It excludes radiative heating, ablation and thermal conduction: heat flux/load
+  // are indicators, not a prediction of shield temperature or survival.
+  // Rounded capsule mass, constant drag area, effective nose radius and L/D=0.3
+  // are illustrative. A simple bounded bank controller aims toward level flight
+  // above 3 km/s; it is not Apollo's guidance software. Lift does no mechanical work.
+  // Parachute altitudes follow Apollo's ~24,000 / 10,000 ft sequence (NASA CSM
+  // News Reference). Speed/pressure gates, smooth inflation and the 10 g caution
+  // threshold are teaching choices, not hardware certification limits.
+  var MM_ENTRY = Object.freeze({
+    radius: 6371000, mu: 3.986004418e14, g0: 9.80665,
+    interfaceAltitude: 122000, interfaceSpeed: 11030,
+    mass: 5500, capsuleDragArea: 5500 / 365, liftToDrag: 0.3, noseRadius: 4.7,
+    heatCoefficient: 1.7415e-4, step: 0.25, maxTime: 2400, cautionG: 10,
+    drogueAltitude: 7315.2, mainAltitude: 3048,
+    drogueMaxMach: 0.8, drogueMaxPressure: 10000, drogueDragArea: 26,
+    mainMaxSpeed: 100, mainMaxPressure: 5000, mainDragArea: 1000,
+    drogueInflationSeconds: 2, mainInflationSeconds: 6
+  });
+  var _mmEntryLayers = (function () {
+    var levels = [0, 11000, 20000, 32000, 47000, 51000, 71000, 84852];
+    var lapse = [-0.0065, 0, 0.001, 0.0028, 0, -0.0028, -0.002];
+    var rows = [], temp = 288.15, pressure = 101325;
+    for (var i = 0; i < lapse.length; i++) {
+      rows.push({ h: levels[i], top: levels[i + 1], lapse: lapse[i], temp: temp, pressure: pressure });
+      var dh = levels[i + 1] - levels[i], nextTemp = temp + lapse[i] * dh;
+      pressure *= lapse[i] === 0 ? Math.exp(-9.80665 * dh / (287.05287 * temp))
+        : Math.pow(temp / nextTemp, 9.80665 / (287.05287 * lapse[i]));
+      temp = nextTemp;
+    }
+    rows.push({ h: 84852, temp: temp, pressure: pressure });
+    return rows;
+  })();
+  function mmEntryAtmosphere(altitude) {
+    var z = Math.max(0, Number.isFinite(altitude) ? altitude : 0);
+    var h = 6356766 * z / (6356766 + z), layer = _mmEntryLayers[7];
+    for (var i = 0; i < 7; i++) { if (h <= _mmEntryLayers[i].top) { layer = _mmEntryLayers[i]; break; } }
+    var dh = h - layer.h, temp = layer.temp, pressure;
+    if (layer.lapse == null) pressure = layer.pressure * Math.exp(-dh / 6200);
+    else {
+      temp += layer.lapse * dh;
+      pressure = layer.pressure * (layer.lapse === 0 ? Math.exp(-9.80665 * dh / (287.05287 * layer.temp))
+        : Math.pow(layer.temp / temp, 9.80665 / (287.05287 * layer.lapse)));
+    }
+    return { density: pressure / (287.05287 * temp), pressure: pressure,
+      temperature: temp, soundSpeed: Math.sqrt(1.4 * 287.05287 * temp) };
   }
+  function mmEntryForces(y, time, events) {
+    var atmosphere = mmEntryAtmosphere(y[0]), speed = Math.max(1, y[1]);
+    var q = 0.5 * atmosphere.density * speed * speed, area = MM_ENTRY.capsuleDragArea, chuteFraction = 0;
+    var smooth = function (v) { v = Math.max(0, Math.min(1, v)); return v * v * (3 - 2 * v); };
+    if (events.main) {
+      var inflate = smooth((time - events.main.time) / MM_ENTRY.mainInflationSeconds);
+      chuteFraction = inflate;
+      area += MM_ENTRY.drogueDragArea * (1 - inflate) + MM_ENTRY.mainDragArea * inflate;
+    } else if (events.drogue) {
+      chuteFraction = smooth((time - events.drogue.time) / MM_ENTRY.drogueInflationSeconds);
+      area += MM_ENTRY.drogueDragArea * chuteFraction;
+    }
+    var drag = q * area / MM_ENTRY.mass, r = MM_ENTRY.radius + y[0], gravity = MM_ENTRY.mu / (r * r), lift = 0;
+    if (!events.drogue && speed > 3000) {
+      // Cancel curvature and gently aim gamma toward zero, within capsule lift.
+      var desiredLift = speed * (-0.05 * y[2] - (speed / r - gravity / speed) * Math.cos(y[2]));
+      lift = Math.max(-drag * MM_ENTRY.liftToDrag, Math.min(drag * MM_ENTRY.liftToDrag, desiredLift));
+    }
+    return { density: atmosphere.density, pressure: q, mach: speed / atmosphere.soundSpeed,
+      dragArea: area, chuteFraction: chuteFraction,
+      drag: drag, lift: lift, gravity: gravity,
+      heatFlux: MM_ENTRY.heatCoefficient * Math.sqrt(atmosphere.density / MM_ENTRY.noseRadius) * Math.pow(speed, 3) };
+  }
+  function mmEntryDerivative(y, time, events) {
+    var f = mmEntryForces(y, time, events), v = Math.max(1, y[1]), gamma = y[2], r = MM_ENTRY.radius + y[0];
+    return [v * Math.sin(gamma), -f.drag - f.gravity * Math.sin(gamma),
+      f.lift / v + (v / r - f.gravity / v) * Math.cos(gamma),
+      v * Math.cos(gamma) * MM_ENTRY.radius / r, f.heatFlux, f.drag * v];
+  }
+  function mmEntryIntegrate(y, time, dt, events) {
+    var a = mmEntryDerivative(y, time, events);
+    var b = mmEntryDerivative(y.map(function (v, i) { return v + a[i] * dt / 2; }), time + dt / 2, events);
+    var c = mmEntryDerivative(y.map(function (v, i) { return v + b[i] * dt / 2; }), time + dt / 2, events);
+    var d2 = mmEntryDerivative(y.map(function (v, i) { return v + c[i] * dt; }), time + dt, events);
+    return y.map(function (v, i) { return v + dt / 6 * (a[i] + 2 * b[i] + 2 * c[i] + d2[i]); });
+  }
+  function mmEntryRecord(y, time, stage, events) {
+    var f = mmEntryForces(y, time, events);
+    return { time: time, altitude: Math.max(0, y[0]), speed: Math.max(0, y[1]), gamma: y[2],
+      downrange: y[3], dragG: f.drag / MM_ENTRY.g0,
+      loadG: Math.sqrt(f.drag * f.drag + f.lift * f.lift) / MM_ENTRY.g0,
+      heatFlux: f.heatFlux, heatLoad: y[4], energyLost: y[5], density: f.density,
+      dynamicPressure: f.pressure, mach: f.mach, stage: stage,
+      dragArea: f.dragArea, chuteFraction: f.chuteFraction,
+      // A visual plasma cue only: no radio-frequency/ionization model is solved.
+      blackout: stage === 'entry' && y[1] > 2500 && y[0] < 100000 && f.heatFlux > 40000 };
+  }
+  var _mmEntryProfiles = [];
+  function mmEntryProfile(angle, options) {
+    var normalized = -Math.round(Math.max(1, Math.min(12, Math.abs(Number.isFinite(angle) ? angle : -6.5))) * 100) / 100;
+    var customStep = options && Number.isFinite(options.step);
+    var dt = customStep ? Math.max(0.05, Math.min(0.5, options.step)) : MM_ENTRY.step;
+    if (!customStep) for (var ci = 0; ci < _mmEntryProfiles.length; ci++) {
+      if (_mmEntryProfiles[ci].angle === normalized) return _mmEntryProfiles[ci];
+    }
+    var events = { drogue: null, main: null, splash: null, skip: null };
+    var y = [MM_ENTRY.interfaceAltitude, MM_ENTRY.interfaceSpeed, normalized * Math.PI / 180, 0, 0, 0];
+    var time = 0, stage = 'entry', samples = [mmEntryRecord(y, time, stage, events)];
+    var peakG = 0, peakHeatFlux = 0, peakGTime = 0, peakHeatTime = 0;
+    while (time < MM_ENTRY.maxTime) {
+      var step = Math.min(dt, MM_ENTRY.maxTime - time), next = mmEntryIntegrate(y, time, step, events);
+      var terminal = next[0] <= 0 ? 'splash' : (time > 1 && next[0] >= MM_ENTRY.interfaceAltitude && next[2] > 0 ? 'skip' : null);
+      if (terminal) {
+        // Locate the crossing inside the slice; terminal records keep impact speed.
+        var lo = 0, hi = step, targetHeight = terminal === 'splash' ? 0 : MM_ENTRY.interfaceAltitude;
+        for (var root = 0; root < 24; root++) {
+          var mid = (lo + hi) / 2, probe = mmEntryIntegrate(y, time, mid, events);
+          if (terminal === 'splash' ? probe[0] > targetHeight : probe[0] < targetHeight) lo = mid; else hi = mid;
+        }
+        step = hi; next = mmEntryIntegrate(y, time, step, events); next[0] = targetHeight; stage = terminal;
+      }
+      time += step; y = next;
+      var row = mmEntryRecord(y, time, stage, events);
+      if (stage === 'entry' && y[2] < 0 && row.altitude <= MM_ENTRY.drogueAltitude &&
+          row.mach <= MM_ENTRY.drogueMaxMach && row.dynamicPressure <= MM_ENTRY.drogueMaxPressure) {
+        stage = 'drogue'; row.stage = stage; row.blackout = false; row.chuteFraction = 0; events.drogue = Object.assign({}, row);
+      } else if (stage === 'drogue' && row.altitude <= MM_ENTRY.mainAltitude &&
+          row.speed <= MM_ENTRY.mainMaxSpeed && row.dynamicPressure <= MM_ENTRY.mainMaxPressure &&
+          time - events.drogue.time >= MM_ENTRY.drogueInflationSeconds + 2) {
+        stage = 'main'; row.stage = stage; row.chuteFraction = 0; events.main = Object.assign({}, row);
+      }
+      if (row.loadG > peakG) { peakG = row.loadG; peakGTime = time; }
+      if (row.heatFlux > peakHeatFlux) { peakHeatFlux = row.heatFlux; peakHeatTime = time; }
+      samples.push(Object.freeze(row));
+      if (terminal) { events[terminal] = Object.assign({}, row); break; }
+    }
+    Object.freeze(samples[0]);
+    Object.keys(events).forEach(function (key) { if (events[key]) Object.freeze(events[key]); });
+    var last = samples[samples.length - 1];
+    var profile = Object.freeze({ version: 1, angle: normalized, samples: Object.freeze(samples), events: Object.freeze(events),
+      summary: Object.freeze({ outcome: events.skip ? 'skip' : !events.splash ? 'incomplete' : peakG > MM_ENTRY.cautionG ? 'steep' : 'nominal',
+        peakG: peakG, peakHeatFlux: peakHeatFlux, heatLoad: last.heatLoad, duration: time,
+        downrange: last.downrange, splashSpeed: events.splash ? last.speed : null,
+        peakGTime: peakGTime, peakHeatTime: peakHeatTime }) });
+    if (!customStep) { _mmEntryProfiles.push(profile); if (_mmEntryProfiles.length > 6) _mmEntryProfiles.shift(); }
+    return profile;
+  }
+  function mmEntrySample(profile, seconds) {
+    var samples = profile.samples, time = Math.max(0, Math.min(profile.summary.duration, Number.isFinite(seconds) ? seconds : 0));
+    var lo = 0, hi = samples.length - 1;
+    while (hi - lo > 1) { var mid = (lo + hi) >> 1; if (samples[mid].time <= time) lo = mid; else hi = mid; }
+    var a = samples[lo], b = samples[hi], f = (time - a.time) / Math.max(1e-12, b.time - a.time), result = {};
+    Object.keys(a).forEach(function (key) {
+      result[key] = typeof a[key] === 'number' ? a[key] + (b[key] - a[key]) * f : (f >= 1 ? b[key] : a[key]);
+    });
+    // A new canopy starts its own inflation clock at the deployment event.
+    // Do not blend that reset backward into the previous canopy's final slice.
+    if (a.stage !== b.stage && f < 1) result.chuteFraction = a.chuteFraction;
+    result.time = time;
+    return result;
+  }
+  // Compatibility for earlier canvas callers: ticks 0..360 cover interface to
+  // drogue (or terminal skip). Outcome is derived from the trajectory, never forced
+  // by a saved string. h/gamma retain the legacy km / positive-down degrees shape.
+  function mmEntryState(tick, outcome, angle) {
+    var profile = mmEntryProfile(angle), end = profile.events.drogue || profile.events.skip || profile.samples[profile.samples.length - 1];
+    var state = mmEntrySample(profile, Math.max(0, Math.min(1, (Number(tick) || 0) / 360)) * end.time);
+    return Object.assign({}, state, { h: state.altitude / 1000, gamma: -state.gamma * 180 / Math.PI,
+      heat: Math.max(0, Math.min(1, state.heatFlux / 2000000)) });
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
+    entry: MM_ENTRY, entryAtmosphere: mmEntryAtmosphere, entryProfile: mmEntryProfile, entrySample: mmEntrySample
+  }); } catch (e) {}
 
   // The trans-lunar coast from the energy equation, with Earth's and the Moon's gravity
   // along the line between them (the Moon held still): how far out and how fast after
@@ -3112,7 +3366,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         s.landingAttempts = (Array.isArray(s.landingAttempts) ? s.landingAttempts : []).slice(-5).filter(function(a) { return isObj(a) && isNum(a.vVel) && isNum(a.hVel); }).map(function(a) {
           return Object.assign({}, a, { recording: mmCleanDescentRecording(a.recording) });
         });
-        if (s.entryOutcome != null && !(isObj(s.entryOutcome) && isNum(s.entryOutcome.angle) && isNum(s.entryOutcome.peakG) && typeof s.entryOutcome.outcome === 'string')) s.entryOutcome = null;
+        Object.assign(s, mmCleanEntryState(s));
         if (s.deltaVHunt != null && (!isObj(s.deltaVHunt) || (s.deltaVHunt.log != null && !Array.isArray(s.deltaVHunt.log)))) s.deltaVHunt = null;
         return s;
       })(d);
@@ -3828,6 +4082,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       var COMPLETE_PHASE = { name: t('stem.moonmission.mission_complete_title', 'Mission Complete'), icon: '\uD83C\uDF1F', desc: t('stem.moonmission.splashdown_debrief', 'Splashdown confirmed. Read your flight record, then fly again.') };
       var activePhase = phase >= 10 ? COMPLETE_PHASE : (PHASES[phase] || COMPLETE_PHASE);
       var nextPhase = phase + 1 < PHASES.length ? PHASES[phase + 1] : null;
+      var entryReady = !!(d.entryRun && d.entryRun.recorded && d.entryOutcome && d.entryOutcome.modelVersion === 1 && d.entryOutcome.completed && d.entryOutcome.terminal === 'splash');
       // One line per phase saying what the student is supposed to DO here. The dashboard
       // used to name the phase and what came next, and left "so what do I press?" to be
       // worked out from whatever sat under the canvas.
@@ -3840,8 +4095,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         t('stem.moonmission.task_5', 'Fly the landing: W or \u2191 for thrust, A/D to slide. Touch down under 3 m/s down and 5 m/s sideways.'),
         t('stem.moonmission.task_6', 'Walk the surface: collect 4 rocks with F, deploy the seismometer, then End EVA.'),
         t('stem.moonmission.task_7', 'Watch the ascent and docking, then fire the TEI burn to head home.'),
-        t('stem.moonmission.task_8', 'Answer the second knowledge check, set the entry angle inside the corridor, then begin re-entry.'),
-        t('stem.moonmission.task_9', 'Watch the entry and splashdown, then complete the mission.'),
+        t('stem.moonmission.task_entry_plan', 'Compare entry angles and predicted loads, then begin re-entry.'),
+        t('stem.moonmission.task_entry_playback', 'Watch or scrub the entry flight. Inspect its result, then complete the mission after splashdown or try another angle.'),
         t('stem.moonmission.task_10', 'Read your flight record \u2014 four graded calls \u2014 then fly again and beat it.')
       ];
       var phaseTask = PHASE_TASKS[Math.min(phase, 10)];
@@ -3941,7 +4196,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   h('p', { className: 'mt-2 text-[0.6875rem] sm:text-xs text-amber-200 font-bold leading-snug', 'data-moonmission-task': 'true' },
                     '\uD83C\uDFAF ' + t('stem.moonmission.your_job_now', 'Your job now: ') + phaseTask),
                   h('p', { className: 'mt-1 text-[0.6875rem] text-cyan-200/90' },
-                    nextPhase ? t('stem.moonmission.next_phase_prefix', 'Next: ') + nextPhase.name : t('stem.moonmission.ready_for_debrief', 'Ready for debrief and replay.')
+                    nextPhase ? t('stem.moonmission.next_phase_prefix', 'Next: ') + nextPhase.name : phase === 9 && !entryReady
+                      ? d.entryRun && d.entryRun.recorded ? 'Try another angle to reach splashdown.' : 'Inspect the entry flight before opening the debrief.'
+                      : t('stem.moonmission.ready_for_debrief', 'Ready for debrief and replay.')
                   )
                 )
               ),
@@ -10259,12 +10516,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   var tick = 0;
                   var teiClock = { last: null, acc: 0 };
                   function drawTEI(ts) {
-                    if (_mmAnimPaused && tick > 0) { teiClock.last = null; if (document.contains(cvEl)) requestAnimationFrame(drawTEI); return; }
-                    tick += mmFrameSteps(teiClock, ts);
+                    if (!document.contains(cvEl)) return;
+                    // Pausing freezes the model clock, but repainting still handles a
+                    // resized backing canvas and changes to the entry-angle preview.
+                    if (_mmAnimPaused) teiClock.last = null;
+                    else tick = Math.min(2360, tick + mmFrameSteps(teiClock, ts));
                     ctx.clearRect(0, 0, W, HT);
                     ctx.fillStyle = '#010108'; ctx.fillRect(0, 0, W, HT);
                     drawStarfield(ctx, W, HT, tick, 150);
-                    var progress = Math.min(0.97, tick * 0.0005);
+                    // Slow the final 15 model minutes to six display seconds so the
+                    // physically timed separation remains visible in this fast-forward view.
+                    var approachStart = Math.max(0, 1 - 900 / MM_RETURN_SECONDS);
+                    var progress = tick <= 2000 ? tick / 2000 * approachStart
+                      : approachStart + (1 - approachStart) * Math.min(1, (tick - 2000) / 360);
+                    var _rc = mmReturnCoast(progress);
+                    cvEl.dataset.returnAltitude = _rc.distKm.toFixed(3);
+                    cvEl.dataset.returnSpeed = (_rc.speedKmh / 3.6).toFixed(3);
+                    cvEl.dataset.returnElapsed = _rc.elapsedSeconds.toFixed(3);
+                    cvEl.dataset.returnRemaining = _rc.remainingSeconds.toFixed(3);
+                    cvEl.dataset.returnSeparated = String(_rc.serviceModuleSeparated);
+                    cvEl.dataset.returnComplete = String(_rc.atInterface);
                     // Moon receding behind (left), Earth swelling ahead (right)
                     var moonR = Math.max(6, 34 * (1 - progress * 0.82));
                     var moonX = 52 - progress * 18;
@@ -10287,7 +10558,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var teiPt = teiPos(progress);
                     var scX = teiPt.x;
                     var scY = teiPt.y + Math.sin(tick * 0.008) * 4;
-                    var jettisoned = progress > 0.82;   // SM separation shortly before entry interface
+                    var jettisoned = _rc.serviceModuleSeparated;
                     // Fading dashed trail back toward the Moon, sampled along the same arc
                     ctx.save();
                     ctx.strokeStyle = 'rgba(148,163,184,0.14)';
@@ -10303,7 +10574,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.restore();
                     // Jettisoned Service Module tumbling away behind the capsule
                     if (jettisoned) {
-                      var jF = (progress - 0.82) / 0.15;
+                      var jF = Math.max(0, Math.min(1, (MM_SM_SEPARATION_SECONDS - _rc.remainingSeconds) / MM_SM_SEPARATION_SECONDS));
                       ctx.save();
                       ctx.globalAlpha = Math.max(0, 0.85 - jF * 0.6);
                       ctx.translate(scX - 22 - jF * 60, scY + jF * 16);
@@ -10348,7 +10619,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     }
                     // HUD \u2014 everything in the panel. The distance and the configuration
                     // line used to be centred ON the spacecraft and ran through the hull.
-                    var _rc = mmReturnCoast(progress);
                     var distToEarth = Math.round(_rc.distKm);
                     ctx.fillStyle = 'rgba(0,0,0,0.55)';
                     ctx.fillRect(8, 8, 158, 92);
@@ -10369,14 +10639,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.textAlign = 'center'; ctx.font = '9px monospace';
                     ctx.fillStyle = jettisoned ? '#fbbf24' : '#94a3b8';
                     ctx.fillText(jettisoned ? 'CM only \u2014 SM jettisoned' : 'CSM \u2014 homeward coast', scX, scY + 24);
-                    // Entry corridor, drawn from the slider below as the coast closes in.
-                    // Schematic, with the angles exaggerated four times so a two-degree
-                    // corridor can be seen at all.
+                    // Entry preview: exaggerated reference geometry, with the predicted
+                    // outcome supplied by the same trajectory as the planner.
                     var corrA = Math.min(1, Math.max(0, (progress - 0.55) / 0.12));
                     if (corrA > 0) {
                       var ciW = Math.min(200, W * 0.42), ciH = 92, ciX = 8, ciY = HT - ciH - 24;
-                      var entryMag = Math.abs(_mmEntryAngle);
-                      var entryState = entryMag < 5.3 ? 'skip' : entryMag > 7.4 ? 'steep' : 'ok';
+                      var entryMag = Math.max(4, Math.min(9, Math.abs(_mmEntryAngle)));
+                      var entryPlan = mmEntryProfile(-entryMag);
+                      var entryState = entryPlan.summary.outcome;
                       ctx.save();
                       ctx.globalAlpha = corrA;
                       ctx.fillStyle = 'rgba(2,6,23,0.8)'; ctx.fillRect(ciX, ciY, ciW, ciH);
@@ -10391,12 +10661,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       var eX = ciX + ciW * 0.72, eY = gCy - Math.sqrt((gR + 12) * (gR + 12) - (eX - gCx) * (eX - gCx));
                       var len = ciW * 0.62, k4 = 4 * Math.PI / 180;
                       var ray = function(deg, l) { return [eX - l * Math.cos(deg * k4), eY - l * Math.sin(deg * k4)]; };
-                      // The safe wedge, 5.3 to 7.4 degrees.
-                      var w1 = ray(5.3, len), w2 = ray(7.4, len);
-                      ctx.fillStyle = 'rgba(16,185,129,0.28)';
-                      ctx.beginPath(); ctx.moveTo(eX, eY); ctx.lineTo(w1[0], w1[1]); ctx.lineTo(w2[0], w2[1]); ctx.closePath(); ctx.fill();
+                      // A reference ray, not a fixed "safe" corridor.
+                      var referenceRay = ray(6.5, len);
+                      ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+                      ctx.beginPath(); ctx.moveTo(referenceRay[0], referenceRay[1]); ctx.lineTo(eX, eY); ctx.stroke(); ctx.setLineDash([]);
                       // The student's approach, and what happens next.
-                      var col = entryState === 'ok' ? '#34d399' : entryState === 'skip' ? '#fbbf24' : '#f87171';
+                      var col = entryState === 'nominal' ? '#34d399' : entryState === 'skip' ? '#fbbf24' : '#f87171';
                       var st = ray(entryMag, len);
                       ctx.strokeStyle = col; ctx.lineWidth = 2;
                       ctx.beginPath(); ctx.moveTo(st[0], st[1]); ctx.lineTo(eX, eY); ctx.stroke();
@@ -10408,11 +10678,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       var cf = (tick % 150) / 150, cp = ray(entryMag, len * (1 - cf));
                       ctx.fillStyle = '#e2e8f0'; ctx.beginPath(); ctx.arc(cp[0], cp[1], 2.2, 0, Math.PI * 2); ctx.fill();
                       ctx.textAlign = 'left'; ctx.font = 'bold 8px monospace'; ctx.fillStyle = '#38bdf8';
-                      ctx.fillText('ENTRY CORRIDOR', ciX + 6, ciY + 12);
+                      ctx.fillText('ENTRY PREVIEW', ciX + 6, ciY + 12);
                       ctx.font = '8px system-ui'; ctx.fillStyle = '#94a3b8';
-                      ctx.fillText('angles drawn x4', ciX + 6, ciY + 23);
+                      ctx.fillText('reference sketch; angles x4', ciX + 6, ciY + 23);
+                      ctx.fillText('blue: -6.5\u00B0 reference', ciX + 6, ciY + 85);
                       ctx.textAlign = 'right'; ctx.font = 'bold 9px system-ui'; ctx.fillStyle = col;
-                      ctx.fillText(_mmEntryAngle.toFixed(1) + '\u00B0 ' + (entryState === 'ok' ? 'in the corridor' : entryState === 'skip' ? 'skips out' : 'too steep'), ciX + ciW - 6, ciY + 12);
+                      ctx.fillText(entryPlan.angle.toFixed(1) + '\u00B0 ' + (entryState === 'nominal' ? 'splashdown' : entryState === 'skip' ? 'skip-out' : entryState === 'steep' ? 'high load' : 'unfinished'), ciX + ciW - 6, ciY + 36);
                       ctx.restore();
                     }
                     // Lesson captions (same cadence as the LEO panel)
@@ -10468,98 +10739,98 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('p', { className: 'text-[0.6875rem] text-slate-300 leading-relaxed' },
                 t('stem.moonmission.the_service_module_engine_fires_for_th', 'The Service Module engine fires for the Trans-Earth Injection burn. You coast for about two and a half days back to Earth, jettison the Service Module, and prepare the Command Module for re-entry \u2014 the most dangerous phase of the mission.'))
             ),
+            h('div', { 'data-return-model-note': 'true', className: 'rounded-lg p-3 border border-slate-600 mb-3 text-xs text-slate-200 leading-relaxed' },
+              h('p', null, t('stem.moonmission.return_model_note', 'The coast readouts model a straight fall toward Earth, with Earth gravity only. The curved path and lighting are illustrations. Time is compressed; the final 15 model minutes play more slowly so you can see separation. The separate entry model starts at 122 km and 11.03 km/s, using your selected angle.')),
+              h('p', { className: 'mt-2' }, t('stem.moonmission.return_separation_note', 'The Service Module separates 13 minutes 53 seconds before entry interface, following the Apollo 11 timeline.')),
+              h('a', { href: 'https://www.nasa.gov/wp-content/uploads/static/apollo50th/pdf/A11_MissionReport.pdf', target: '_blank', rel: 'noopener noreferrer', className: 'inline-flex items-center min-h-[44px] text-sky-300 underline' }, t('stem.moonmission.return_model_source', 'NASA Apollo 11 Mission Report (PDF)'))),
             h('div', { className: 'bg-indigo-500/10 rounded-lg p-2 border border-indigo-500/20' },
               h('p', { className: 'text-[0.6875rem] text-indigo-300' }, '\uD83D\uDCA1 ' + apolloFact())
             )
             )
           ),
           // \u2500\u2500 Entry corridor \u2500\u2500
-          // Re-entry was pure spectacle: an animation and a button. It is also the single
-          // most unforgiving number in the mission. Come in too shallow and the atmosphere
-          // bounces you back into space; too steep and the deceleration and heating climb
-          // fast. Apollo's corridor was about two degrees wide after a quarter of a
-          // million miles, which is the fact worth feeling rather than reading.
+          // Predictions come from the same trajectory that phase 9 will fly.
+          // They are a plan, not a completed attempt or an earned reward.
           (function() {
-            var ang = (typeof d.entryAngle === 'number' && isFinite(d.entryAngle)) ? d.entryAngle : -6.5;
-            var mag = Math.abs(ang);
-            var tooShallow = mag < 5.3, tooSteep = mag > 7.4;
-            var inCorridor = !tooShallow && !tooSteep;
-            var pct = Math.max(0, Math.min(100, ((mag - 4) / 5) * 100));
-            var peakG = mmEntryPeakG(mag);
-            return h('div', { className: 'bg-slate-900 rounded-xl p-3 border border-slate-700 mb-2' },
-              h('p', { className: 'text-[0.6875rem] font-bold text-sky-300 mb-1' }, t('stem.moonmission.entry_corridor', '\uD83C\uDFAF SET THE ENTRY CORRIDOR')),
+            var ang = -Math.max(4, Math.min(9, Math.abs(mmNum(d.entryAngle) ? d.entryAngle : -6.5)));
+            var plan = mmEntryProfile(ang), predicted = plan.summary;
+            var predictionLabel = predicted.outcome === 'skip' ? 'Predicted skip-out'
+              : predicted.outcome === 'steep' ? 'Predicted high-load splashdown'
+              : predicted.outcome === 'nominal' ? 'Predicted splashdown' : 'Simulation time limit reached';
+            var caution = predicted.outcome !== 'nominal';
+            return h('div', { 'data-entry-planner': 'true', className: 'bg-slate-900 rounded-xl p-3 border border-slate-700 mb-2' },
+              h('h4', { className: 'text-sm font-bold text-sky-300 mb-1' }, t('stem.moonmission.entry_plan_title', 'Plan atmospheric entry')),
               h('p', { className: 'text-[0.6875rem] text-slate-300 mb-2 leading-relaxed' },
-                t('stem.moonmission.entry_corridor_help', 'The flight path angle is how steeply you meet the atmosphere. The safe corridor is about two degrees wide, and you have been aiming at it since you left the Moon.')),
-              // Corridor bar: the safe band sits between 5.3\u00B0 and 7.4\u00B0 of the 4-9\u00B0 range.
-              h('div', { className: 'relative h-6 rounded-full bg-slate-800 overflow-hidden mb-1' },
-                h('div', { className: 'absolute inset-y-0 bg-emerald-500/30 border-x border-emerald-400/50',
-                  style: { left: (((5.3 - 4) / 5) * 100) + '%', width: (((7.4 - 5.3) / 5) * 100) + '%' } }),
-                h('div', { className: 'absolute top-0 bottom-0 w-0.5 bg-white',
-                  style: { left: pct + '%', boxShadow: '0 0 6px rgba(255,255,255,0.8)' } })
-              ),
-              h('div', { className: 'flex justify-between text-[0.6875rem] text-slate-300 mb-2' },
-                h('span', null, t('stem.moonmission.skip_out', '4\u00B0 skip out')),
-                h('span', { className: 'text-emerald-400 font-bold' }, t('stem.moonmission.corridor', 'corridor')),
-                h('span', null, t('stem.moonmission.too_steep', '9\u00B0 too steep'))
-              ),
+                t('stem.moonmission.entry_plan_help', 'Choose how steeply the capsule meets the atmosphere. Compare a shallow approach, the Apollo-like reference, and a steep approach. The predictions below come from the trajectory model you will watch.')),
+              h('div', { className: 'flex flex-wrap gap-2 mb-3', role: 'group', 'aria-label': t('stem.moonmission.entry_angle_presets', 'Entry angle presets') },
+                [{ id: 'shallow', angle: -5, label: t('stem.moonmission.entry_shallow_preset', 'Shallow \u22125.0\u00B0') },
+                  { id: 'reference', angle: -6.5, label: t('stem.moonmission.entry_reference_preset', 'Reference \u22126.5\u00B0') },
+                  { id: 'steep', angle: -9, label: t('stem.moonmission.entry_steep_preset', 'Steep \u22129.0\u00B0') }].map(function(preset) {
+                    return h('button', { key: preset.id, type: 'button', 'data-entry-preset': preset.id,
+                      'aria-pressed': Math.abs(ang - preset.angle) < 0.001 ? 'true' : 'false',
+                      onClick: function() { upd('entryAngle', preset.angle); },
+                      className: 'min-h-[44px] px-3 rounded-lg text-xs font-bold border ' + (Math.abs(ang - preset.angle) < 0.001 ? 'bg-sky-800 border-sky-400 text-white' : 'bg-slate-800 border-slate-500 text-slate-100') }, preset.label);
+                  })),
               h('label', { className: 'block text-[0.6875rem] font-bold text-slate-300 mb-1', htmlFor: 'mm-entry-angle' },
                 t('stem.moonmission.flight_path_angle', 'Flight path angle: ') + ang.toFixed(1) + '\u00B0'),
               h('input', {
                 id: 'mm-entry-angle', type: 'range', min: -9, max: -4, step: 0.1, value: ang,
                 'aria-label': t('stem.moonmission.entry_flight_path_angle', 'Entry flight path angle in degrees'),
-                'aria-valuetext': ang.toFixed(1) + ' degrees, ' + (tooShallow ? 'too shallow, you will skip off the atmosphere' : tooSteep ? 'too steep, severe deceleration' : 'inside the safe corridor'),
-                onChange: function(e) { upd('entryAngle', parseFloat(e.target.value)); },
-                className: 'w-full h-11 cursor-pointer accent-emerald-500'   // was 16px tall
+                'aria-valuetext': ang.toFixed(1) + ' degrees. ' + predictionLabel + '. Peak load ' + predicted.peakG.toFixed(1) + ' g.',
+                onChange: function(e) { var next = Number(e.target.value); if (mmNum(next)) upd('entryAngle', Math.max(-9, Math.min(-4, next))); },
+                className: 'w-full h-11 cursor-pointer accent-sky-400'
               }),
               h('div', {
-                role: 'status', 'aria-live': 'polite',
+                role: 'status', 'aria-live': 'polite', 'data-entry-predicted-outcome': predicted.outcome,
                 className: 'mt-2 rounded-lg px-3 py-2 text-[0.6875rem] font-bold border ' +
-                  (inCorridor ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
-                              : 'bg-amber-500/10 border-amber-500/40 text-amber-300')
-              },
-                tooShallow
-                  ? '\u26A0\uFE0F Too shallow. You will graze the atmosphere and bounce back out \u2014 a skip-out, and the next pass takes hours you do not have.'
-                  : tooSteep
-                    ? ('\u26A0\uFE0F Too steep. Peak deceleration about ' + peakG + ' g, and the heat shield gets a harder ride than it was built for.')
-                    : ('\u2705 In the corridor. Peak deceleration about ' + peakG + ' g \u2014 Apollo 11 pulled roughly 6.5.')
-              )
+                  (caution ? 'bg-amber-500/10 border-amber-500/40 text-amber-300' : 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300')
+              }, predictionLabel + '. ' + (predicted.outcome === 'skip'
+                  ? 'The capsule climbs back above 122 km. This attempt ends there; a later return is not simulated.'
+                  : predicted.outcome === 'steep' ? 'Peak load exceeds the model\u2019s ' + MM_ENTRY.cautionG + ' g caution level.'
+                  : predicted.outcome === 'nominal' ? 'Peak load stays below the model\u2019s deceleration caution level.'
+                  : 'The model did not reach splashdown or an upward crossing of entry interface.')),
+              h('dl', { className: 'grid grid-cols-2 gap-2 my-3 text-xs' }, [
+                { key: 'peakG', label: 'Peak load', value: predicted.peakG.toFixed(1) + ' g' },
+                { key: 'peakHeatFlux', label: 'Peak heating rate', value: (predicted.peakHeatFlux / 1000000).toFixed(2) + ' MW/m\u00B2' },
+                { key: 'heatLoad', label: 'Accumulated heat', value: (predicted.heatLoad / 1000000).toFixed(1) + ' MJ/m\u00B2' },
+                { key: 'duration', label: predicted.outcome === 'skip' ? 'Time to skip-out' : plan.events.splash ? 'Time to splashdown' : 'Simulated time', value: (predicted.duration / 60).toFixed(1) + ' min' }
+              ].map(function(metric) {
+                return h('div', { key: metric.key, className: 'rounded-lg p-2 bg-slate-800 border border-slate-700' },
+                  h('dt', { className: 'text-slate-300' }, metric.label),
+                  h('dd', { 'data-entry-predicted-value': metric.key, className: 'font-bold text-white mt-1' }, metric.value));
+              })),
+              h('p', { 'data-entry-plan-model-note': 'true', className: 'text-xs text-slate-300 leading-relaxed' },
+                t('stem.moonmission.entry_plan_model_note', 'Educational model: a spherical, non-rotating Earth, an approximate atmosphere, fixed capsule mass and drag area, and simple lift guidance. Parachutes deploy when the model meets altitude and speed conditions. Heating is an estimate of convective energy transfer, not a heat-shield temperature or a prediction of crew survival.'))
             );
           })(),
           h('button', {
+            'data-entry-begin': 'true',
             title: t('stem.moonmission.begin_atmospheric_re_entry_sequence_at', 'Begin atmospheric re-entry sequence at about 39,700 kilometers per hour'),
             disabled: eventPending,
-                onClick: function() {
-                  if (!canProceed()) return;
-              var ang2 = (typeof d.entryAngle === 'number' && isFinite(d.entryAngle)) ? d.entryAngle : -6.5;
-              var mag2 = Math.abs(ang2);
-              var outcome = mag2 < 5.3 ? 'skip' : mag2 > 7.4 ? 'steep' : 'nominal';
-              upd('entryOutcome', { outcome: outcome, angle: ang2, peakG: mmEntryPeakG(mag2) });
+            onClick: function() {
+              if (!canProceed()) return;
+              var ang2 = -Math.max(4, Math.min(9, Math.abs(mmNum(d.entryAngle) ? d.entryAngle : -6.5)));
+              upd('entryOutcome', null);
+              upd('entryRun', { version: 1, angle: ang2, time: 0, recovery: 0, recorded: false });
+              upd('reentryStatus', 0);
+              upd('entryPaused', false);
+              upd('entryMigrationNote', null);
               advancePhase(9);
-              log(outcome === 'nominal'
-                ? '\uD83C\uDF0D Entry interface at ' + ang2.toFixed(1) + '\u00B0 \u2014 inside the corridor.'
-                : outcome === 'skip'
-                  ? '\uD83C\uDF0D Entry at ' + ang2.toFixed(1) + '\u00B0 \u2014 too shallow, the capsule skipped before catching.'
-                  : '\uD83C\uDF0D Entry at ' + ang2.toFixed(1) + '\u00B0 \u2014 steep, and the crew wore it.');
-              addXP(outcome === 'nominal' ? 25 : 10);
-              if (typeof announceToSR === 'function') {
-                announceToSR(outcome === 'nominal'
-                  ? 'Entry interface at ' + ang2.toFixed(1) + ' degrees, inside the corridor.'
-                  : outcome === 'skip'
-                    ? 'Entry angle too shallow at ' + ang2.toFixed(1) + ' degrees. The capsule skipped off the atmosphere before it caught.'
-                    : 'Steep entry at ' + ang2.toFixed(1) + ' degrees. Peak deceleration will be high.');
-              }
+              log('\uD83C\uDF0D Beginning entry at ' + ang2.toFixed(1) + '\u00B0. The trajectory will determine the result.');
+              if (typeof announceToSR === 'function') announceToSR('Beginning entry at ' + ang2.toFixed(1) + ' degrees. The trajectory will determine the result.');
             },
             className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed'
           }, t('stem.moonmission.begin_re_entry_sequence', '\uD83C\uDF0A Begin Re-entry Sequence'))
         ),
 
         // ═══ PHASE 9: RE-ENTRY & SPLASHDOWN (Animated Canvas) ═══
-        phase === 9 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
+        phase === 9 && h('div', { className: 'space-y-3', 'data-entry-workspace': true, style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-b from-orange-950 to-slate-900 rounded-xl overflow-hidden border border-orange-900/50' },
             h('div', { className: 'relative', style: { height: '320px' } },
               h('canvas', { 
                 role: 'img',
-                'aria-label': t('stem.moonmission.reentry_canvas_alt', 'Animated re-entry and recovery. In pre-dawn darkness over the Pacific, the Command Module meets the atmosphere heat shield first at about 39,700 km/h, trailing a glowing wake. The shield heats to 2,760 degrees and cools again, and radio contact is lost in the plasma. Its path bends from the entry angle to straight down as it slows, then it descends under drogue and main parachutes and splashes down just before sunrise. It flips nose-down, is righted by its orange uprighting bags, and a recovery helicopter arrives while swimmers fit a flotation collar.'),
+                'data-entry-canvas': true,
+                'aria-label': 'Animated re-entry and recovery. Capsule motion, heating and parachutes follow the entry model. A shallow entry can skip out. After splashdown, illustrative recovery begins just before sunrise: uprighting bags roll the capsule upright, then swimmers fit a flotation collar. Read the instruments and use playback controls below to inspect any moment.',
                 style: { width: '100%', height: '100%', display: 'block' },
                 ref: function(cvEl) {
                   if (!cvEl || cvEl._reentryInit) return;
@@ -10567,15 +10838,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   var ctx = cvEl.getContext('2d');
                   var W = cvEl.offsetWidth || 500, HR = cvEl.offsetHeight || 320;
                   cvEl.width = W * 2; cvEl.height = HR * 2; ctx.scale(2, 2); if (typeof ResizeObserver === 'function' && !cvEl._mmRO) { cvEl._mmRO = new ResizeObserver(function() { var nw = cvEl.offsetWidth, nh = cvEl.offsetHeight; if (nw > 0 && nh > 0 && (nw !== W || nh !== HR)) { W = nw; HR = nh; cvEl.width = nw * 2; cvEl.height = nh * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); } }); cvEl._mmRO.observe(cvEl); }   // rotate/resize used to leave the canvas stretched (backing store was locked at first mount)
-                  var tick = 0;
-                  var reentryPhase = 0; // 0=heat, 1=blackout, 2=drogue, 3=main chutes, 4=splash
-                  var _lastReentryPhase = -1;   // throttle the readiness publish
-                  // Corridor the student set back on the coast, captured at mount.
-                  var _entryRes = d.entryOutcome || {};
-                  var _entryOutcome = _entryRes.outcome || 'nominal';
-                  var _entryAngle = _entryRes.angle != null ? _entryRes.angle : -6.5;
-                  var _entryPeakG = _entryRes.peakG != null ? _entryRes.peakG : mmEntryPeakG(_entryAngle);
-                  var reClock = { last: null, acc: 0 };
+                  var savedEntryRun = d.entryRun && d.entryRun.version === 1 ? d.entryRun : null;
+                  var entryProfile = mmEntryProfile(savedEntryRun ? savedEntryRun.angle : d.entryAngle != null ? d.entryAngle : d.entryOutcome ? d.entryOutcome.angle : -6.5);
+                  var entryTime = savedEntryRun ? Math.min(entryProfile.summary.duration, Math.max(0, savedEntryRun.time || 0)) : 0;
+                  var entryRecovery = savedEntryRun ? Math.min(580 / 60, Math.max(0, savedEntryRun.recovery || 0)) : 0;
+                  var entryRecorded = !!(savedEntryRun && savedEntryRun.recorded && d.entryOutcome && d.entryOutcome.modelVersion === 1 && d.entryOutcome.completed);
+                  var entryRewardAlready = Math.max(d.entryAwardedXP || 0, !savedEntryRun && d.entryOutcome ? d.entryOutcome.outcome === 'nominal' ? 25 : 10 : 0);
+                  var entryRate = [1, 10, 30, 60].indexOf(d.entryPlaybackRate) >= 0 ? d.entryPlaybackRate : 30;
+                  var entryPaused = !!d.entryPaused, entryLastTs = null, entryLastPublish = -Infinity, entryPublishedKey = '';
+                  var tick = 0, reentryPhase = 0, _lastReentryPhase = -1;
+                  var _entryAngle = entryProfile.angle, _entryPeakG = Math.round(entryProfile.summary.peakG * 10) / 10;
+                  if (!savedEntryRun) {
+                    if (d.entryOutcome) {
+                      upd('entryAttempts', function(cur) { return (Array.isArray(cur) ? cur : []).concat([Object.assign({}, d.entryOutcome, { legacy: true })]).slice(-5); });
+                      upd('entryAwardedXP', entryRewardAlready);
+                    }
+                    if (d.entryOutcome || d.reentryStatus) upd('entryMigrationNote', d.entryOutcome ? 'This save used the earlier entry animation. Its earlier summary is retained in entry history; playback restarts with the physical model.' : 'This save used the earlier entry animation. Playback restarts with the physical model.');
+                    upd('entryOutcome', null);
+                  }
+                  function publishEntry() {
+                    var checkpointKey = entryTime + ':' + entryRecovery + ':' + entryRecorded;
+                    if (checkpointKey === entryPublishedKey) return;
+                    entryPublishedKey = checkpointKey;
+                    upd('entryRun', { version: 1, angle: _entryAngle, time: entryTime, recovery: entryRecovery, recorded: entryRecorded });
+                  }
+                  function entryVisibilityChanged() { entryLastTs = null; publishEntry(); }
+                  document.addEventListener('visibilitychange', entryVisibilityChanged);
+                  function recordEntryResult() {
+                    if (entryRecorded || entryTime < entryProfile.summary.duration) return;
+                    entryRecorded = true;
+                    var result = mmEntryRecordedResult(entryProfile);
+                    upd('entryOutcome', result);
+                    upd('entryAttempts', function(cur) { return (Array.isArray(cur) ? cur : []).concat([result]).slice(-5); });
+                    var targetXP = result.outcome === 'nominal' ? 25 : 10;
+                    var earnedXP = Math.max(0, targetXP - entryRewardAlready);
+                    if (earnedXP) { entryRewardAlready = targetXP; upd('entryAwardedXP', targetXP); addXP(earnedXP); }
+                    log('Entry ' + _entryAngle.toFixed(1) + '\u00b0: ' + result.outcome + ', peak ' + result.peakG + ' g.');
+                    if (typeof announceToSR === 'function') announceToSR(result.terminal === 'splash' ? 'Entry complete. Splashdown at ' + result.splashSpeed.toFixed(1) + ' metres per second.' : 'Entry ended without splashdown. Try another entry angle.');
+                    publishEntry();
+                  }
+                  cvEl._entryAction = function(action, value) {
+                    if (action === 'seek') { entryTime = Math.max(0, Math.min(entryProfile.summary.duration, Number(value) || 0)); entryRecovery = 0; }
+                    if (action === 'result') { entryTime = entryProfile.summary.duration; entryRecovery = 580 / 60; }
+                    if (action === 'pause') { entryPaused = !!value; upd('entryPaused', entryPaused); if (!entryPaused) upd('animPaused', false); }
+                    if (action === 'rate' && [1, 10, 30, 60].indexOf(Number(value)) >= 0) { entryRate = Number(value); upd('entryPlaybackRate', entryRate); }
+                    entryLastTs = null; recordEntryResult(); publishEntry();
+                  };
+                  function updateEntryInstruments(sample) {
+                    cvEl.dataset.entryTime = String(sample.time);
+                    cvEl.dataset.entryStage = sample.stage;
+                    cvEl.dataset.entryAltitude = String(sample.altitude);
+                    cvEl.dataset.entrySpeed = String(sample.speed);
+                    cvEl.dataset.entryLoad = String(sample.loadG);
+                    cvEl.dataset.entryHeatFlux = String(sample.heatFlux);
+                    cvEl.dataset.entryRecovery = String(entryRecovery);
+                    var panel = cvEl.closest('[data-entry-workspace]');
+                    if (!panel) return;
+                    var values = { time: sample.time.toFixed(1) + ' s', altitude: (sample.altitude / 1000).toFixed(2) + ' km', speed: (sample.speed / 1000).toFixed(3) + ' km/s',
+                      load: sample.loadG.toFixed(2) + ' g', heat: (sample.heatFlux / 1e6).toFixed(2) + ' MW/m\u00b2', heatLoad: (sample.heatLoad / 1e6).toFixed(1) + ' MJ/m\u00b2',
+                      pressure: (sample.dynamicPressure / 1000).toFixed(2) + ' kPa', downrange: (sample.downrange / 1000).toFixed(0) + ' km', stage: sample.stage === 'entry' && sample.blackout ? 'Entry \u00b7 radio cue' : sample.stage };
+                    panel.querySelectorAll('[data-entry-value]').forEach(function(node) { node.textContent = values[node.getAttribute('data-entry-value')] || ''; });
+                    var slider = panel.querySelector('[data-entry-seek]'); if (slider && document.activeElement !== slider) slider.value = String(sample.time);
+                    panel.querySelectorAll('[data-entry-playhead]').forEach(function(node) { var xx = 20 + 560 * sample.time / entryProfile.summary.duration; node.setAttribute('x1', xx); node.setAttribute('x2', xx); });
+                  }
                   // Night over the Pacific: Apollo 11 hit the air in darkness and came down
                   // just before dawn. Stars above; below, the night ocean with the first light
                   // of day on the horizon ahead (left, the way the capsule flies), and the
@@ -10591,8 +10916,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     sky.addColorStop(0.62, mixA([4, 6, 22], [58, 52, 110], k));
                     sky.addColorStop(1, mixA([34, 42, 92], [214, 118, 84], k * k));
                     ctx.fillStyle = sky; ctx.fillRect(-10, -10, W + 20, HR + 20);
-                    ctx.save(); ctx.globalAlpha = 0.8 * (1 - k); drawStarfield(ctx, W, HR, tick, 80); ctx.restore();
+                    ctx.save(); ctx.globalAlpha = 0.55 * (1 - k); drawStarfield(ctx, W, HR, 0, 80); ctx.restore();
                     var Rs = W * (1.8 + 40 * k * k * k), ecy = hz + Rs;
+                    // A thin limb, not a glowing solid shell: the atmosphere
+                    // occupies only a small part of the planet's radius.
+                    ctx.save();
+                    for (var limb = 6; limb > 0; limb--) {
+                      ctx.strokeStyle = 'rgba(112,169,225,' + ((1 - k) * 0.032 * (7 - limb)) + ')';
+                      ctx.lineWidth = 1.5;
+                      ctx.beginPath(); ctx.arc(W * 0.5, ecy, Rs + limb * 1.4, 0, Math.PI * 2); ctx.stroke();
+                    }
+                    ctx.restore();
                     if (e.h > 95) {                                  // airglow, about 100 km up
                       ctx.strokeStyle = 'rgba(134,239,172,' + (0.4 * Math.min(1, (e.h - 95) / 20)) + ')'; ctx.lineWidth = 1.5;
                       ctx.beginPath(); ctx.arc(W * 0.5, ecy, Rs + 4, 0, Math.PI * 2); ctx.stroke();
@@ -10614,30 +10948,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   // its attitude. The wake: air the shield has heated, streaming back past the
                   // shoulders, with bits of the charring shield carried off as sparks.
                   function drawEntryWake(e) {
-                    var q = e.heat;
+                    var q = Math.max(0, Math.min(1, e.heat));
                     if (q < 0.02) return;
-                    var L = 70 + 90 * q;
+                    var L = 45 + 85 * q;
                     var wg = ctx.createLinearGradient(0, 8, 0, -L);
-                    wg.addColorStop(0, 'rgba(255,170,90,' + (0.75 * q) + ')');
-                    wg.addColorStop(0.35, 'rgba(244,114,182,' + (0.35 * q) + ')');
+                    wg.addColorStop(0, 'rgba(255,181,106,' + (0.62 * q) + ')');
+                    wg.addColorStop(0.35, 'rgba(244,114,182,' + (0.23 * q) + ')');
                     wg.addColorStop(1, 'rgba(167,139,250,0)');
                     ctx.fillStyle = wg;
                     ctx.beginPath(); ctx.moveTo(-13, 9);
                     ctx.bezierCurveTo(-20, -L * 0.25, -9, -L * 0.7, 0, -L);
                     ctx.bezierCurveTo(9, -L * 0.7, 20, -L * 0.25, 13, 9); ctx.closePath(); ctx.fill();
-                    for (var ab = 0; ab < 14; ab++) {
-                      var af = (tick * (0.021 + (ab % 5) * 0.004) + ab * 0.137) % 1;   // 0 at the rim, 1 far back
-                      var ax = (ab % 2 ? 1 : -1) * (11 + 5 * af + Math.sin(ab * 3.1 + tick * 0.2) * 2 * af);
+                    for (var ab = 0; ab < 10; ab++) {
+                      var af = (tick * (0.011 + (ab % 5) * 0.002) + ab * 0.137) % 1;   // 0 at the rim, 1 far back
+                      var ax = (ab % 2 ? 1 : -1) * (11 + 5 * af + Math.sin(ab * 3.1 + tick * 0.08) * 2 * af);
                       ctx.fillStyle = 'rgba(255,' + (220 - ab * 8) + ',120,' + (q * (1 - af)) + ')';
                       ctx.beginPath(); ctx.arc(ax * (1 - 0.6 * af), 9 - af * L * 0.8, 0.6 + (1 - af) * 0.9, 0, Math.PI * 2); ctx.fill();
                     }
                   }
-                  // The fireball, and the shock layer standing just off the shield: air
-                  // squeezed so hard it glows white, hotter than the surface of the Sun.
+                  // The detached bow shock and hot gas stand ahead of the shield.
+                  // Compression heats the gas; this glow is a qualitative view
+                  // of the sampled heat flux, not a measured surface temperature.
                   function drawEntryShock(e) {
-                    var q = e.heat;
+                    var q = Math.max(0, Math.min(1, e.heat));
                     if (q < 0.02) return;
-                    var flick = 0.92 + 0.08 * Math.sin(tick * 0.9) * Math.sin(tick * 0.37);
+                    var flick = 0.985 + 0.015 * Math.sin(tick * 0.11);
                     var gr = 26 + 20 * q;
                     var glow = ctx.createRadialGradient(0, 14, 0, 0, 14, gr);
                     glow.addColorStop(0, 'rgba(255,237,213,' + (0.55 * q * flick) + ')');
@@ -10654,49 +10989,80 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.quadraticCurveTo(0, 10 + sd * 2.4, 14, 9);
                     ctx.quadraticCurveTo(0, 12.5, -14, 9); ctx.fill();
                   }
-                  function drawReentry(ts) {
-                    if (_mmAnimPaused && tick > 0) { reClock.last = null; if (document.contains(cvEl)) requestAnimationFrame(drawReentry); return; }
-                    for (var reN = mmFrameSteps(reClock, ts); reN > 0; reN--) {
-                      tick++;
-                      // Phase progression
-                      if (tick > 180 && reentryPhase === 0) reentryPhase = 1; // blackout
-                      if (tick > 360 && reentryPhase === 1) reentryPhase = 2; // drogue
-                      if (tick > 480 && reentryPhase === 2) reentryPhase = 3; // main chutes
-                      if (tick > 600 && reentryPhase === 3) reentryPhase = 4; // splash
+                  function entryCaption(text, y, size, color, maxWidth) {
+                    var width = Math.max(40, Math.min(W - 24, maxWidth || W - 24));
+                    ctx.save(); ctx.font = '600 ' + size + 'px system-ui'; ctx.textAlign = 'center';
+                    var words = String(text).split(' '), lines = [], line = '';
+                    words.forEach(function(word) {
+                      var next = line ? line + ' ' + word : word;
+                      if (line && ctx.measureText(next).width > width - 16) { lines.push(line); line = word; } else line = next;
+                    });
+                    if (line) lines.push(line);
+                    var lineH = size + 4, boxW = Math.min(width, Math.max.apply(null, lines.map(function(ln) { return ctx.measureText(ln).width; })) + 16);
+                    ctx.fillStyle = 'rgba(9,17,33,0.88)'; ctx.fillRect(W * 0.5 - boxW / 2, y - size - 3, boxW, lines.length * lineH + 7);
+                    ctx.fillStyle = color || '#f1f5f9';
+                    lines.forEach(function(ln, i) { ctx.fillText(ln, W * 0.5, y + i * lineH); });
+                    ctx.restore();
+                    return lines.length * lineH + 7;
+                  }
+                  function drawEntryCanopy(x, y, rx, ry, mains, alpha) {
+                    ctx.save(); ctx.globalAlpha = alpha;
+                    // Curved orange/white gores make inflation visible even at
+                    // phone width. Panel seams converge at the crown and vent.
+                    ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, Math.PI, 0);
+                    ctx.quadraticCurveTo(x, y + ry * 0.16, x - rx, y); ctx.closePath(); ctx.clip();
+                    ctx.fillStyle = mains ? '#ed6c28' : '#d6d3c6'; ctx.fillRect(x - rx, y - ry, rx * 2, ry * 1.3);
+                    for (var gore = 0; gore < 8; gore++) {
+                      var gx0 = x - rx + gore * rx / 4, gx1 = gx0 + rx / 4;
+                      ctx.fillStyle = gore % 2 ? '#f1ede1' : mains ? '#df5f1f' : '#c0bbae';
+                      ctx.beginPath(); ctx.moveTo(x, y - ry);
+                      ctx.quadraticCurveTo(gx0, y - ry * 0.65, gx0, y + ry * 0.18);
+                      ctx.lineTo(gx1, y + ry * 0.18);
+                      ctx.quadraticCurveTo(gx1, y - ry * 0.65, x, y - ry); ctx.fill();
+                      ctx.strokeStyle = 'rgba(75,48,27,0.28)'; ctx.lineWidth = 0.6; ctx.stroke();
                     }
+                    ctx.restore();
+                    ctx.save(); ctx.globalAlpha = alpha;
+                    ctx.strokeStyle = '#e7dfce'; ctx.lineWidth = 0.7;
+                    ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, Math.PI, 0); ctx.stroke();
+                    ctx.fillStyle = '#44403c'; ctx.beginPath(); ctx.ellipse(x, y - ry + 1, Math.max(1, rx * 0.045), 1.2, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.restore();
+                  }
+                  function drawReentry(ts) {
+                    if (!document.contains(cvEl)) { if (cvEl._mmRO) cvEl._mmRO.disconnect(); document.removeEventListener('visibilitychange', entryVisibilityChanged); return; }
+                    var entryDt = Number.isFinite(ts) && entryLastTs != null ? Math.max(0, Math.min(0.25, (ts - entryLastTs) / 1000)) : 0;
+                    entryLastTs = Number.isFinite(ts) && !_mmAnimPaused && !entryPaused && !document.hidden ? ts : null;
+                    if (!_mmAnimPaused && !entryPaused && !document.hidden) {
+                      if (entryTime < entryProfile.summary.duration) entryTime = Math.min(entryProfile.summary.duration, entryTime + entryDt * entryRate);
+                      else if (entryProfile.events.splash) entryRecovery = Math.min(580 / 60, entryRecovery + entryDt);
+                    }
+                    var entrySample = mmEntrySample(entryProfile, entryTime);
+                    tick = mmEntryVisualTick(entryProfile, entryTime, entryRecovery);
+                    reentryPhase = mmEntryStageIndex(entrySample);
+                    recordEntryResult();
+                    updateEntryInstruments(entrySample);
+                    if (!Number.isFinite(ts) || ts - entryLastPublish >= 250) { entryLastPublish = ts || 0; publishEntry(); }
                     ctx.clearRect(0, 0, W, HR);
                     if (reentryPhase !== _lastReentryPhase) { _lastReentryPhase = reentryPhase; upd('reentryStatus', reentryPhase); }
-                    var entryNow = reentryPhase <= 1 ? mmEntryState(tick, _entryOutcome, _entryAngle) : null;
+                    var entryNow = entrySample.stage === 'entry' || entrySample.stage === 'skip' ? { h: entrySample.altitude / 1000, gamma: -entrySample.gamma * 180 / Math.PI, heat: Math.max(0, Math.min(1, entrySample.heatFlux / 2000000)) } : null;
                     var capsuleY = HR * (0.35 - 0.05 * Math.min(1, Math.max(0, (tick - 300) / 60)));
                     // After splashdown the camera eases in on the capsule, or the recovery
                     // plays out at a 24px capsule on a 1,000px-wide canvas.
                     var reZoom = 1;
-                    if (reentryPhase >= 4) { var zk = Math.min(1, Math.max(0, (tick - 600) / 150)); reZoom = 1 + 1.2 * zk * zk * (3 - 2 * zk); }
+                    if (reentryPhase === 4) { var zk = Math.min(1, Math.max(0, (tick - 600) / 150)); reZoom = 1 + 1.2 * zk * zk * (3 - 2 * zk); }
                     if (reZoom > 1) { ctx.save(); ctx.translate(W * 0.5, HR * 0.70); ctx.scale(reZoom, reZoom); ctx.translate(-W * 0.5, -HR * 0.70); }
                     // Background changes with phase
-                    if (reentryPhase <= 1) {
+                    if (entryNow) {
                       drawEntrySky(entryNow);
                       // The fireball lights the air around it.
                       var litG = ctx.createRadialGradient(W * 0.5, capsuleY, 0, W * 0.5, capsuleY, HR * 0.6);
                       litG.addColorStop(0, 'rgba(251,146,60,' + (0.16 * entryNow.heat) + ')'); litG.addColorStop(1, 'rgba(251,146,60,0)');
                       ctx.fillStyle = litG; ctx.fillRect(-10, -10, W + 20, HR + 20);
-                      // Blackout static + enhanced interference
+                      // A radio link can fail while the external view remains
+                      // clear. Keep the cue in its caption, not full-screen TV static.
                       if (reentryPhase === 1) {
-                        ctx.globalAlpha = 0.2;
-                        for (var ni = 0; ni < 60; ni++) {
-                          ctx.fillStyle = Math.random() > 0.5 ? '#ffffff' : (Math.random() > 0.5 ? '#ff4400' : '#ff8800');
-                          var nw = 1 + Math.random() * 3;
-                          ctx.fillRect(Math.random() * W, Math.random() * HR, nw, 1);
-                        }
-                        // Scan lines
-                        ctx.fillStyle = 'rgba(0,0,0,0.03)';
-                        for (var sli = 0; sli < HR; sli += 3) { ctx.fillRect(0, sli, W, 1); }
-                        ctx.globalAlpha = 1;
-                        ctx.textAlign = 'center'; ctx.font = 'bold 14px monospace';
-                        ctx.fillStyle = '#ff4444';
-                        ctx.fillText('\u26A0 COMMUNICATIONS BLACKOUT', W * 0.5, 30);
-                        ctx.font = '9px system-ui'; ctx.fillStyle = '#f87171';
-                        ctx.fillText('Plasma around the capsule is blocking all radio signals...', W * 0.5, 46);
+                        entryCaption('RADIO LINK INTERRUPTED', 20, 12, '#fecaca', 330);
+                        entryCaption('Hot ionised air can block radio signals. Educational blackout cue.', 46, 10, '#f8fafc', 330);
                       }
                     } else {
                       // Under the chutes. The capsule sinks steadily to the sea, the horizon
@@ -10727,6 +11093,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       var pose = mmSplashPose(tick, HR);
                       var oceanTop = pose.oceanTop;
                       capsuleY = pose.capsuleY;
+                      if (reentryPhase === 2 || reentryPhase === 3) {
+                        // Vertical position follows measured altitude through
+                        // chute descent, independently of playback speed.
+                        var drogueHeight = typeof entryProfile !== 'undefined' && entryProfile.events && entryProfile.events.drogue
+                          ? entryProfile.events.drogue.altitude : 7300;
+                        var chuteAltitude = typeof entrySample !== 'undefined' ? entrySample.altitude : drogueHeight;
+                        var remainingHeight = Math.max(0, Math.min(1, chuteAltitude / Math.max(1, drogueHeight)));
+                        capsuleY = HR * 0.3 + (pose.waterY - 6 - HR * 0.3) * (1 - remainingHeight);
+                      }
                       if (oceanTop < HR) {
                         var seaGrad = ctx.createLinearGradient(0, oceanTop, 0, HR);
                         seaGrad.addColorStop(0, rgbc(mixc(30, 37), mixc(45, 99), mixc(96, 235))); seaGrad.addColorStop(1, rgbc(mixc(15, 30), mixc(23, 58), mixc(42, 138)));
@@ -10757,9 +11132,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     }
                     // After splashdown: the real Apollo 11 recovery, step by step.
                     var rp = mmSplashPose(tick, HR);
-                    var sT = rp.sT, afloat = rp.afloat, waterY = rp.waterY;
+                    var sT = rp.sT, afloat = reentryPhase === 4 && rp.afloat, waterY = rp.waterY;
                     var capX = W * 0.5;
-                    var capAng = rp.angle, bags = rp.bags;   // Stable 2, then righted by the bags
+                    var capAng = afloat ? rp.angle : 0, bags = afloat ? rp.bags : 0;   // Stable 2, then righted by the bags
                     var capScale = 1;
                     if (entryNow) {                             // shield along the path; upright by the drogues
                       capAng = (90 - entryNow.gamma) * Math.PI / 180;
@@ -10774,35 +11149,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         ctx.beginPath(); ctx.ellipse(capX + 6, waterY + 1.5, dyeR, 2.2, 0, 0, Math.PI * 2); ctx.fill();
                       }
                     }
-                    // Parachutes: two drogues, then three mains that open in reefed stages.
-                    // At splashdown they are cut loose and settle on the water.
-                    if (reentryPhase >= 2) {
-                      var mains = tick > 480;
+                    // Cover jettison exposes the parachute compartment before
+                    // two drogues stabilize the CM. This small piece drifts away.
+                    if (reentryPhase === 2 && tick < 405) {
+                      var coverAge = Math.max(0, tick - 360);
+                      ctx.save(); ctx.translate(capX - 8 - coverAge * 0.9, capsuleY - 12 - coverAge * 0.45);
+                      ctx.rotate(-coverAge * 0.045); ctx.globalAlpha = Math.max(0, 1 - coverAge / 45);
+                      ctx.fillStyle = '#81766a'; ctx.beginPath(); ctx.moveTo(-6, 3); ctx.lineTo(0, -4); ctx.lineTo(6, 3); ctx.closePath(); ctx.fill(); ctx.restore();
+                    }
+                    // Two drogues, then three orange-and-white mains. Reefing
+                    // limits canopy area in two steps while the suspension lines
+                    // remain attached to the capsule. Sizes are illustrative.
+                    if (reentryPhase === 2 || reentryPhase === 3 || reentryPhase === 4) {
+                      var mains = reentryPhase >= 3;
                       var chuteCount = mains ? 3 : 2;
-                      var chuteColor = mains ? '#ef4444' : '#f59e0b';
-                      var openK = mains ? Math.min(1, (tick - 480) / 45) : 1;
-                      var chuteFade = afloat ? Math.max(0, 1 - sT / 200) : 1;
+                      var openAge = Math.max(0, tick - (mains ? 480 : 360));
+                      var smoothOpen = function(v) { v = Math.max(0, Math.min(1, v)); return v * v * (3 - 2 * v); };
+                      var openK = mains ? 0.23 + 0.26 * smoothOpen(openAge / 12) + 0.51 * smoothOpen((openAge - 18) / 25)
+                        : 0.35 + 0.65 * smoothOpen(openAge / 18);
+                      if (!afloat && typeof entrySample !== 'undefined' && Number.isFinite(entrySample.chuteFraction)) {
+                        // The model publishes effective canopy AREA; its drawn
+                        // radius follows the square root of that fraction.
+                        openK = Math.sqrt(Math.max(0.015, Math.min(1, entrySample.chuteFraction)));
+                      }
+                      var chuteFade = afloat ? Math.max(0, 1 - sT / 175) : 1;
+                      var mainRadius = Math.min(52, Math.max(28, (W - 36) / 5));
                       for (var pi = 0; pi < chuteCount && chuteFade > 0; pi++) {
-                        var pxOff = (pi - (chuteCount - 1) / 2) * 25;
-                        var cyC = capsuleY - 40 - pi * 5;
+                        var pxOff = (pi - (chuteCount - 1) / 2) * (mains ? mainRadius * 0.87 : 23);
+                        var cyC = capsuleY - (mains ? 94 : 46) - (mains && pi === 1 ? 11 : pi * 3);
                         var flat = 1;
                         if (afloat) {
-                          pxOff += 30 + sT * 0.45;
-                          cyC = Math.min(waterY - 2, cyC + sT * 1.4);
-                          flat = Math.max(0.2, 1 - sT / 50);
+                          pxOff += 24 + sT * 0.45;
+                          cyC = Math.min(waterY - 1, cyC + sT * 1.6);
+                          flat = Math.max(0.08, 1 - sT / 48);
                         }
-                        ctx.globalAlpha = chuteFade;
+                        var rx = (mains ? mainRadius : 14) * openK;
+                        var ry = (mains ? 31 : 10) * (0.6 + 0.4 * openK) * flat;
                         if (!afloat) {
-                          ctx.strokeStyle = '#888'; ctx.lineWidth = 0.5;
-                          ctx.beginPath(); ctx.moveTo(capX + pxOff - 15 * openK, cyC + 5); ctx.lineTo(capX - 5, capsuleY - 8); ctx.stroke();
-                          ctx.beginPath(); ctx.moveTo(capX + pxOff + 15 * openK, cyC + 5); ctx.lineTo(capX + 5, capsuleY - 8); ctx.stroke();
+                          ctx.strokeStyle = 'rgba(239,234,214,0.8)'; ctx.lineWidth = 0.65;
+                          for (var lineIndex = 0; lineIndex <= 6; lineIndex++) {
+                            var lineX = capX + pxOff - rx + lineIndex * rx / 3;
+                            ctx.beginPath(); ctx.moveTo(lineX, cyC + 1);
+                            ctx.lineTo(capX + (lineIndex < 3 ? -3 : 3), capsuleY - 8); ctx.stroke();
+                          }
                         }
-                        var rx = 18 * (0.35 + 0.65 * openK), ry = 10 * (0.5 + 0.5 * openK) * flat;
-                        ctx.fillStyle = chuteColor;
-                        ctx.beginPath(); ctx.ellipse(capX + pxOff, cyC, rx, ry, 0, Math.PI, 0); ctx.fill();
-                        ctx.fillStyle = '#ffffff';
-                        ctx.beginPath(); ctx.ellipse(capX + pxOff, cyC, rx, Math.max(1, 3 * flat), 0, Math.PI, 0); ctx.fill();
-                        ctx.globalAlpha = 1;
+                        drawEntryCanopy(capX + pxOff, cyC, rx, ry, mains, chuteFade);
+                      }
+                      // Drogues are released as the main system deploys; they
+                      // do not silently turn into three larger parachutes.
+                      if (reentryPhase === 3 && openAge < 34) {
+                        var releaseAlpha = Math.max(0, 1 - openAge / 34);
+                        for (var released = 0; released < 2; released++) {
+                          var releasedX = capX + (released ? 1 : -1) * (25 + openAge * 1.2);
+                          var releasedY = capsuleY - 54 - openAge * 0.75;
+                          drawEntryCanopy(releasedX, releasedY, 13, 8, false, releaseAlpha);
+                          ctx.strokeStyle = 'rgba(226,232,240,' + releaseAlpha * 0.5 + ')'; ctx.lineWidth = 0.6;
+                          ctx.beginPath(); ctx.moveTo(releasedX, releasedY); ctx.lineTo(releasedX + 4, releasedY + 15); ctx.stroke();
+                        }
                       }
                     }
                     // Capsule — the Apollo CM gumdrop: truncated cone with curved shoulder,
@@ -10811,10 +11214,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.save();
                     ctx.translate(capX, capsuleY); ctx.rotate(capAng); ctx.scale(capScale, capScale);
                     if (entryNow) drawEntryWake(entryNow);
+                    var charLevel = entryNow && typeof entrySample !== 'undefined'
+                      ? Math.max(0, Math.min(1, (entrySample.heatLoad || 0) / 60000000)) : entryNow ? 0.5 : 1;
+                    var bodyTone = function(a, b) { return Math.round(a + (b - a) * charLevel); };
                     var capGrad = ctx.createLinearGradient(-12, 0, 12, 0);
-                    capGrad.addColorStop(0, '#e8ecf2');
-                    capGrad.addColorStop(0.45, '#c3cad4');
-                    capGrad.addColorStop(1, '#7d8794');
+                    capGrad.addColorStop(0, 'rgb(' + bodyTone(232, 168) + ',' + bodyTone(236, 153) + ',' + bodyTone(242, 132) + ')');
+                    capGrad.addColorStop(0.45, 'rgb(' + bodyTone(195, 123) + ',' + bodyTone(202, 111) + ',' + bodyTone(212, 95) + ')');
+                    capGrad.addColorStop(1, '#494643');
                     ctx.fillStyle = capGrad;
                     ctx.beginPath();
                     ctx.moveTo(-12, 10);
@@ -10822,10 +11228,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.quadraticCurveTo(0, -10.5, 3.5, -8);   // rounded apex (docking tunnel shoulder)
                     ctx.lineTo(12, 10);
                     ctx.closePath(); ctx.fill();
-                    ctx.fillStyle = '#64748b';                   // apex docking probe stub
-                    ctx.fillRect(-1.5, -12, 3, 3);
-                    ctx.fillStyle = '#38bdf8';                   // crew hatch window
-                    ctx.beginPath(); ctx.arc(-4.5, 2.5, 1.8, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = '#303238'; ctx.lineWidth = 0.65; ctx.stroke();
+                    // The forward cover is discarded before the drogue system
+                    // opens. Below it is a dark parachute compartment, not an engine.
+                    ctx.fillStyle = entryNow ? '#8e877e' : '#29282a';
+                    ctx.beginPath(); ctx.ellipse(0, -8, 3.7, 1.7, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = 'rgba(211,203,185,0.55)'; ctx.lineWidth = 0.5;
+                    ctx.beginPath(); ctx.moveTo(-2.5, -4.5); ctx.lineTo(-5.6, 6.5); ctx.lineTo(3.7, 6.5); ctx.lineTo(1.8, -4.5); ctx.closePath(); ctx.stroke();
+                    ctx.fillStyle = '#172633';
+                    ctx.beginPath(); ctx.moveTo(-2, -3); ctx.lineTo(0.7, -3); ctx.lineTo(1.5, -0.2); ctx.lineTo(-2.7, -0.2); ctx.closePath(); ctx.fill();
+                    ctx.fillStyle = '#bbcbd0'; ctx.fillRect(-1.8, -2.7, 1.8, 0.55);
+                    ctx.fillStyle = '#202126';
+                    ctx.beginPath(); ctx.ellipse(-7.8, 5.1, 0.8, 1.25, -0.35, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.ellipse(7.8, 5.1, 0.8, 1.25, 0.35, 0, Math.PI * 2); ctx.fill();
                     ctx.strokeStyle = 'rgba(71,85,105,0.55)'; ctx.lineWidth = 0.8;   // panel seam
                     ctx.beginPath(); ctx.moveTo(-9.5, 6); ctx.lineTo(9.5, 6); ctx.stroke();
                     if (bags > 0) {                              // three orange uprighting bags at the apex
@@ -10834,8 +11249,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         ctx.beginPath(); ctx.arc(bp[0], bp[1], 4.2 * bags, 0, Math.PI * 2); ctx.fill();
                       });
                     }
-                    if (entryNow) {                             // the shield itself, glowing with the heat
-                      ctx.fillStyle = 'rgb(' + Math.round(120 + 135 * Math.min(1, entryNow.heat * 1.5)) + ',' + Math.round(60 + 120 * entryNow.heat) + ',' + Math.round(40 + 60 * entryNow.heat) + ')';
+                    // The black, charred ablative shield remains after the glow
+                    // disappears; the capsule does not become factory silver at sea.
+                    ctx.fillStyle = '#282523';
+                    ctx.beginPath(); ctx.moveTo(-12.5, 9.5); ctx.quadraticCurveTo(0, 14, 12.5, 9.5); ctx.lineTo(12, 10); ctx.quadraticCurveTo(0, 11.5, -12, 10); ctx.closePath(); ctx.fill();
+                    if (entryNow) {
+                      ctx.fillStyle = 'rgba(255,141,62,' + Math.max(0, Math.min(0.85, entryNow.heat * 0.85)) + ')';
                       ctx.beginPath(); ctx.moveTo(-12.5, 9.5); ctx.quadraticCurveTo(0, 13.5, 12.5, 9.5); ctx.lineTo(12, 10); ctx.quadraticCurveTo(0, 11.5, -12, 10); ctx.closePath(); ctx.fill();
                       drawEntryShock(entryNow);
                     }
@@ -10847,6 +11266,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       ctx.fillStyle = seaGrad || '#2563eb';
                       ctx.fillRect(capX - 24, waterY + 0.5, 48, 20);
                       ctx.globalAlpha = 1;
+                      // A narrow foreground swell joins the hull to the water
+                      // plane and keeps the masked lower half from reading as a box.
+                      ctx.strokeStyle = 'rgba(220,233,240,0.55)'; ctx.lineWidth = 0.8;
+                      ctx.beginPath(); ctx.moveTo(capX - 19, waterY + 1);
+                      ctx.quadraticCurveTo(capX, waterY + 4, capX + 19, waterY + 1); ctx.stroke();
                       // Splash: spray thrown up and falling back, then spreading rings.
                       var sprayRng = _seededRand(711);
                       if (sT < 45) {
@@ -10894,97 +11318,115 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       }
                     }
                     if (reZoom > 1) ctx.restore();
-                    // Temperature HUD, now reporting the corridor the student chose.
-                    if (reentryPhase <= 1) {
+                    // Convective heating is a flux; a shield temperature needs a thermal model.
+                    if (entryNow) {
                       ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(8, HR - 58, 168, 50);
                       ctx.font = 'bold 9px monospace'; ctx.textAlign = 'left';
-                      ctx.fillStyle = '#ef4444'; ctx.fillText('HEAT SHIELD', 14, HR - 44);
-                      var shieldTemp = entryNow.tempC;
-                      ctx.fillStyle = shieldTemp > 2000 ? '#ef4444' : '#f59e0b';
+                      ctx.fillStyle = '#fdba74'; ctx.fillText('HEAT FLUX', 14, HR - 44);
+                      ctx.fillStyle = '#f8fafc';
                       ctx.font = 'bold 14px monospace';
-                      ctx.fillText(shieldTemp + '\u00B0C', 14, HR - 30);
+                      ctx.fillText((entrySample.heatFlux / 1e6).toFixed(2) + ' MW/m\u00b2', 14, HR - 30);
                       ctx.font = 'bold 9px monospace'; ctx.fillStyle = '#94a3b8';
                       ctx.fillText('ENTRY ' + _entryAngle.toFixed(1) + '\u00B0  \u2022  PEAK ' + _entryPeakG + ' g', 14, HR - 14);
                     }
-                    // A skip-out is the one entry mistake the animation can actually show:
-                    // the capsule grazes the atmosphere and is thrown back out.
-                    if (_entryOutcome === 'skip' && tick > 120 && tick < 300) {
-                      ctx.textAlign = 'center'; ctx.font = 'bold 13px monospace';
-                      ctx.fillStyle = '#fbbf24';
-                      ctx.fillText('\u26A0 SKIP-OUT \u2014 ANGLE TOO SHALLOW', W * 0.5, HR * 0.62);
-                      ctx.font = '9px system-ui'; ctx.fillStyle = '#fcd34d';
-                      ctx.fillText('The atmosphere threw the capsule back toward space before it caught.', W * 0.5, HR * 0.68);
+                    // Labels are wrapped into backed captions, clear of the
+                    // bottom-left flight instrument panel even on a phone.
+                    var phaseLabels = ['ATMOSPHERIC ENTRY', 'RADIO BLACKOUT', 'DROGUE CHUTES', 'MAIN CHUTES', 'SPLASHDOWN', 'SKIP-OUT'];
+                    if (reentryPhase === 5) {
+                      entryCaption('SKIP-OUT — NO SPLASHDOWN', 19, 12, '#fde68a', 340);
+                      entryCaption('The capsule has left the atmosphere. This shallow entry did not complete atmospheric capture.', 46, 10, '#fef3c7', 360);
+                    } else if (reentryPhase !== 1) {
+                      entryCaption(phaseLabels[reentryPhase], 19, 11, reentryPhase === 4 ? '#86efac' : reentryPhase === 0 ? '#fdba74' : '#bae6fd', 260);
                     }
-                    // Phase label
-                    var phaseLabels = ['ATMOSPHERIC ENTRY', 'RADIO BLACKOUT', 'DROGUE CHUTES', 'MAIN CHUTES', 'SPLASHDOWN!'];
-                    ctx.textAlign = 'center'; ctx.font = 'bold 11px system-ui';
-                    var plW = ctx.measureText(phaseLabels[reentryPhase]).width + 16;
-                    ctx.fillStyle = 'rgba(15,23,42,0.62)';   // sky-blue on the dawn glow was about 1.5:1
-                    ctx.fillRect(W * 0.5 - plW / 2, HR - 20, plW, 16);
-                    ctx.fillStyle = reentryPhase === 4 ? '#4ade80' : reentryPhase <= 1 ? '#fb923c' : '#7dd3fc';
-                    ctx.fillText(phaseLabels[reentryPhase], W * 0.5, HR - 8);
-                    // Comms — pushed to the bottom during blackout, where the phase label
-                    // already lives, because the banner occupies the top three text rows
-                    // (y=30 and y=46) and the comms line at y=16 was crowding straight into
-                    // it. During blackout the line is also the crew being unheard, so it
-                    // belongs away from the warning that explains why.
-                    var reComms = ['CDR: "Getting warm in here..."', 'Houston: "...Apollo, do you read?... Apollo..."', 'Houston: "We see your chutes! Welcome back!"', 'CDR: "Main chutes look good!"', 'Houston: "SPLASHDOWN! Welcome home!"'];
-                    var reLine = reComms[reentryPhase];
-                    if (reentryPhase >= 4) {
-                      reLine = sT < 90 ? 'Splashdown just before sunrise, about 24 km from the recovery ship, USS Hornet.'
-                        : sT < 150 ? 'Stable 2: the capsule has flipped nose-down, as Apollo 11\'s did.'
-                        : sT < 210 ? 'Uprighting bags inflating to roll it back over...'
-                        : sT < 360 ? 'Stable 1: upright. Green dye marks the spot for the helicopter.'
-                        : 'Recovery helicopter overhead. Swimmers fit a flotation collar.';
+                    var reLine = reentryPhase === 0 ? 'Heat shield first. Hot gas streams around the capsule.'
+                      : reentryPhase === 2 ? 'Drogues stabilize the capsule before the mains deploy.'
+                      : reentryPhase === 3 ? 'Three main parachutes reduce the descent speed.' : '';
+                    if (reentryPhase === 4) {
+                      reLine = sT < 90 ? 'Splashdown in the Pacific. USS Hornet is beyond the horizon.'
+                        : sT < 150 ? 'Stable 2: the capsule has tipped nose-down.'
+                        : sT < 210 ? 'Three uprighting bags inflate to roll the capsule upright.'
+                        : sT < 360 ? 'Stable 1: upright. Green dye helps the recovery crew find it.'
+                        : 'Recovery swimmers approach and fit a flotation collar.';
                     }
-                    ctx.font = 'italic 9px system-ui'; ctx.textAlign = 'center';
-                    var reY = reentryPhase === 1 ? (HR - 22) : 16;
-                    if (reentryPhase >= 2) {
-                      // Lavender at 60% on the daylight sky was about 1.2:1.
-                      var rlW = ctx.measureText(reLine).width + 14;
-                      ctx.fillStyle = 'rgba(15,23,42,0.62)';
-                      ctx.fillRect(W * 0.5 - rlW / 2, reY - 10, rlW, 14);
-                      ctx.fillStyle = '#f1f5f9';
-                      ctx.fillText(reLine, W * 0.5, reY);
-                    } else {
-                      ctx.globalAlpha = 0.6; ctx.fillStyle = '#a5b4fc';
-                      ctx.fillText(reLine, W * 0.5, reY);
-                      ctx.globalAlpha = 1;
-                    }
+                    if (reLine) entryCaption(reLine, reentryPhase === 0 ? 44 : HR - 37, 10, '#f1f5f9', 420);
                     drawVignette(ctx, W, HR, 0.35);
-                    if (tick < 1180 && document.contains(cvEl)) requestAnimationFrame(drawReentry);   // runs on through the recovery, then rests
+                    requestAnimationFrame(drawReentry); // paused and completed frames still repaint after resize
                   }
                   drawReentry();
                 }
               })
             ),
             h('div', { className: 'p-3 border-t border-orange-900/30' },
-              h('p', { className: 'text-[0.6875rem] text-slate-200 mb-2' }, t('stem.moonmission.watch_the_command_module_survive_re_en', 'Watch the Command Module survive re-entry at about 39,700 km/h with its heat shield at 2,760\u00B0C, deploy parachutes, and splash down in the Pacific Ocean.')),
+              h('p', { className: 'text-[0.6875rem] text-slate-200 mb-2' }, 'Follow the capsule from 122 km at 11.03 km/s. Motion, aerodynamic loads, heating and parachutes use the same trajectory. Playback compresses time; capsule size, sky, blackout cue and recovery scenery are illustrative.'),
               h('div', { className: 'bg-indigo-500/10 rounded p-1.5 border border-indigo-500/20' },
                 h('p', { className: 'text-[0.6875rem] text-indigo-300' }, '\uD83D\uDCA1 ' + apolloFact())
               )
             )
           ),
           (function() {
-            var rs = (typeof d.reentryStatus === 'number' && isFinite(d.reentryStatus)) ? d.reentryStatus : 0;
-            return phaseStatus(rs >= 4,
-              rs === 0 ? 'Entry interface. The heat shield is taking 2,760°C, and it protects you by burning away on purpose.'
-                : rs === 1 ? 'Radio blackout. Ionised air around the capsule blocks every signal — Houston cannot hear you, and this is the part everyone counts through.'
-                : rs === 2 ? 'Drogue chutes out, slowing and steadying the capsule.'
-                : 'Three main chutes. Two would have been enough.',
-              'Splashdown in the Pacific. The crew is home.');
+            var uiRun = d.entryRun || {}, uiProfile = mmEntryProfile(uiRun.angle != null ? uiRun.angle : d.entryAngle != null ? d.entryAngle : d.entryOutcome ? d.entryOutcome.angle : -6.5);
+            var uiSample = mmEntrySample(uiProfile, uiRun.time || 0), uiPaused = !!d.entryPaused || _mmAnimPaused;
+            function entryAction(ev, action, value) { var host = ev.currentTarget.closest('[data-entry-workspace]'), canvas = host && host.querySelector('[data-entry-canvas]'); if (canvas && canvas._entryAction) canvas._entryAction(action, value); }
+            var entryButtonStyle = { padding: '8px 12px', minHeight: '40px', borderRadius: '8px', border: '1px solid #475569', background: '#1e293b', color: '#f8fafc', fontSize: '12px', fontWeight: 600 };
+            function entryChart(key, title, unit, divisor, color) {
+              var rows = uiProfile.samples, maximum = Math.max.apply(null, rows.map(function(row) { return row[key] / divisor; })) * 1.08 || 1;
+              var points = [], stride = Math.max(1, Math.floor(rows.length / 180));
+              for (var chartIndex = 0; chartIndex < rows.length; chartIndex += stride) { var chartRow = rows[chartIndex]; points.push((20 + 560 * chartRow.time / uiProfile.summary.duration).toFixed(2) + ',' + (82 - 68 * chartRow[key] / divisor / maximum).toFixed(2)); }
+              var endRow = rows[rows.length - 1]; points.push('580,' + (82 - 68 * endRow[key] / divisor / maximum).toFixed(2));
+              var cursor = 20 + 560 * uiSample.time / uiProfile.summary.duration;
+              return h('figure', { key: key, style: { margin: 0, minWidth: 0, background: '#0b1425', borderRadius: '8px', padding: '8px' } },
+                h('figcaption', { style: { color: color, fontSize: '12px', fontWeight: 700 } }, title + ' \u00b7 peak ' + (maximum / 1.08).toFixed(2) + ' ' + unit),
+                h('svg', { viewBox: '0 0 600 110', role: 'img', 'aria-label': title + ' over entry time. Use the playback slider for exact readings.', style: { display: 'block', width: '100%' } },
+                  h('line', { x1: 20, y1: 82, x2: 580, y2: 82, stroke: '#475569' }),
+                  h('polyline', { points: points.join(' '), fill: 'none', stroke: color, strokeWidth: 2 }),
+                  h('line', { 'data-entry-playhead': key, x1: cursor, x2: cursor, y1: 8, y2: 85, stroke: '#f8fafc', strokeWidth: 1.5 }),
+                  h('text', { x: 20, y: 103, fill: '#cbd5e1', fontSize: 12 }, '0 s'),
+                  h('text', { x: 580, y: 103, textAnchor: 'end', fill: '#cbd5e1', fontSize: 12 }, uiProfile.summary.duration.toFixed(0) + ' s')));
+            }
+            var metricRows = [['time', 'Entry time', uiSample.time.toFixed(1) + ' s'], ['altitude', 'Altitude', (uiSample.altitude / 1000).toFixed(2) + ' km'], ['speed', 'Speed', (uiSample.speed / 1000).toFixed(3) + ' km/s'], ['load', 'Crew load', uiSample.loadG.toFixed(2) + ' g'], ['heat', 'Heat flux', (uiSample.heatFlux / 1e6).toFixed(2) + ' MW/m\u00b2'], ['heatLoad', 'Heat load', (uiSample.heatLoad / 1e6).toFixed(1) + ' MJ/m\u00b2'], ['pressure', 'Dynamic pressure', (uiSample.dynamicPressure / 1000).toFixed(2) + ' kPa'], ['downrange', 'Downrange', (uiSample.downrange / 1000).toFixed(0) + ' km']];
+            var completedEntry = !!(uiRun.recorded && d.entryOutcome && d.entryOutcome.modelVersion === 1 && d.entryOutcome.completed);
+            return h('div', { 'data-entry-instruments': true, style: { padding: '14px', border: '1px solid #334155', borderRadius: '12px', background: '#0f172a', color: '#e2e8f0' } },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' } },
+                h('h4', { style: { margin: 0, fontSize: '15px', fontWeight: 700 } }, 'Entry flight recorder'),
+                h('span', { 'data-entry-value': 'stage', style: { fontFamily: 'monospace', textTransform: 'uppercase', fontSize: '12px', color: '#bae6fd' } }, uiSample.stage)),
+              d.entryMigrationNote && h('p', { role: 'status', style: { fontSize: '12px', color: '#fde68a', marginBottom: '10px' } }, d.entryMigrationNote),
+              h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(116px, 1fr))', gap: '10px', margin: '0 0 14px' } }, metricRows.map(function(item) {
+                return h('div', { key: item[0] }, h('dt', { style: { fontSize: '11px', color: '#cbd5e1' } }, item[1]), h('dd', { 'data-entry-value': item[0], style: { margin: 0, fontSize: '15px', fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: '#f8fafc' } }, item[2]));
+              })),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' } },
+                h('button', { type: 'button', 'data-entry-pause': true, style: entryButtonStyle, onClick: function(ev) { entryAction(ev, 'pause', !uiPaused); } }, uiPaused ? 'Play entry' : 'Pause entry'),
+                h('label', { style: { fontSize: '12px' } }, 'Playback speed ', h('select', { 'aria-label': 'Playback speed', value: d.entryPlaybackRate || 30, onChange: function(ev) { entryAction(ev, 'rate', ev.target.value); }, style: entryButtonStyle }, [1, 10, 30, 60].map(function(rate) { return h('option', { key: rate, value: rate }, rate + '\u00d7'); }))),
+                h('button', { type: 'button', 'data-entry-result': true, style: entryButtonStyle, onClick: function(ev) { entryAction(ev, 'result'); } }, 'Show entry result')),
+              h('label', { htmlFor: 'mm-entry-playback', style: { display: 'block', marginTop: '12px', fontSize: '12px' } }, 'Entry playback time'),
+              h('input', { id: 'mm-entry-playback', 'data-entry-seek': true, type: 'range', min: 0, max: uiProfile.summary.duration, step: 0.1, defaultValue: uiSample.time,
+                onChange: function(ev) { entryAction(ev, 'seek', ev.target.value); }, style: { width: '100%', accentColor: '#fb923c', minHeight: '32px' } }),
+              h('p', { style: { fontSize: '11px', color: '#cbd5e1', margin: '4px 0 12px' } }, 'Scrub to inspect the computed flight. Show entry result works while paused. The white lines mark the current physical time.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '8px' } }, entryChart('loadG', 'Crew load', 'g', 1, '#7dd3fc'), entryChart('heatFlux', 'Convective heat flux', 'MW/m\u00b2', 1e6, '#fdba74')),
+              completedEntry && h('p', { role: 'status', 'data-entry-terminal': d.entryOutcome.terminal, style: { marginTop: '12px', fontSize: '13px', color: d.entryOutcome.outcome === 'nominal' ? '#86efac' : '#fde68a' } },
+                d.entryOutcome.terminal === 'splash' ? 'Splashdown at ' + d.entryOutcome.splashSpeed.toFixed(1) + ' m/s. Peak crew load ' + d.entryOutcome.peakG.toFixed(1) + ' g.' + (d.entryOutcome.outcome === 'steep' ? ' This exceeds the model\u2019s 10 g teaching threshold; try a shallower angle.' : '') : d.entryOutcome.terminal === 'skip' ? 'The capsule exited the atmosphere before capture. No parachutes or splashdown occurred. Try a steeper angle.' : 'The computed flight did not reach a terminal event. Choose another entry angle.'),
+              completedEntry && h('button', { type: 'button', 'data-entry-retry': true, style: Object.assign({}, entryButtonStyle, { marginTop: '10px' }), disabled: eventPending,
+                onClick: function() { if (!canProceed()) return; upd('entryRun', null); upd('entryOutcome', null); upd('reentryStatus', 0); upd('entryPaused', false); setPhase(8); } }, 'Try another entry angle'),
+              (d.entryAttempts || []).length > 0 && h('details', { style: { marginTop: '12px', fontSize: '12px' } }, h('summary', { style: { cursor: 'pointer' } }, 'Recent entry attempts (' + d.entryAttempts.length + ')'),
+                h('ol', { style: { margin: '8px 0 0', paddingLeft: '20px' } }, d.entryAttempts.slice().reverse().map(function(attempt, index) { return h('li', { key: index, style: { marginBottom: '4px' } }, attempt.angle.toFixed(1) + '\u00b0 \u00b7 ' + attempt.outcome + ' \u00b7 ' + attempt.peakG.toFixed(1) + ' g' + (attempt.modelVersion === 1 ? ' \u00b7 ' + (attempt.peakHeatFlux / 1e6).toFixed(2) + ' MW/m\u00b2' : ' \u00b7 earlier model')); }))),
+              h('details', { style: { marginTop: '12px', fontSize: '12px', lineHeight: 1.6, color: '#cbd5e1' } }, h('summary', { style: { cursor: 'pointer' } }, 'How this entry model works'),
+                h('p', null, 'A spherical Earth, altitude-dependent gravity, a layered standard atmosphere and a 5,500 kg capsule determine the trajectory. Drag and modest guided lift act on the same state. Parachutes open gradually after altitude, speed and pressure checks. The simplified guidance and constant aerodynamic properties are educational approximations.'),
+                h('p', null, 'Heating uses a Sutton\u2013Graves convective heat-flux estimate. Heat load is its time integral. Predicting heat-shield temperature, ablation or survival would require a separate material and thermal model. The 10 g caution is a teaching threshold; radio blackout is a visual cue.'),
+                h('p', null, 'References: ', h('a', { href: 'https://ntrs.nasa.gov/citations/19770009539', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, 'U.S. Standard Atmosphere'), ' \u00b7 ', h('a', { href: 'https://ntrs.nasa.gov/citations/19710015566', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, 'Apollo entry measurements'), ' \u00b7 ', h('a', { href: 'https://www.nasa.gov/history/throwback-to-apollo-parachute-testing/', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, 'Apollo parachute testing'))));
           })(),
           h('button', {
-            title: t('stem.moonmission.complete_the_mission_with_pacific_ocea', 'Complete the mission with Pacific Ocean splashdown. Welcome home Commander!'),
+            'data-entry-complete': true,
+            disabled: eventPending || !entryReady,
+            title: 'Complete the mission with Pacific Ocean splashdown once the model records it.',
             onClick: function() {
+              if (!entryReady || !canProceed()) return;
               setPhase(10);
               log('\uD83C\uDF0A SPLASHDOWN! Mission complete.');
-              addXP(50);
+              if (!d.entryCompletionAwarded) { upd('entryCompletionAwarded', true); addXP(50); }
               if (addToast) addToast('\uD83C\uDF89 MISSION COMPLETE! Welcome home, Commander!', 'success');
               if (typeof announceToSR === 'function') announceToSR('Mission complete! Splashdown in the Pacific Ocean. Welcome home, Commander.');
             },
-            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-orange-700 to-red-600 hover:from-orange-700 hover:to-red-700 shadow-lg'
-          }, t('stem.moonmission.mission_complete_splashdown', '\uD83C\uDF0A Mission Complete \u2014 SPLASHDOWN!'))
+            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-orange-700 to-red-600 hover:from-orange-700 hover:to-red-700 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed'
+          }, entryReady ? t('stem.moonmission.mission_complete_splashdown', '\uD83C\uDF0A Mission Complete \u2014 SPLASHDOWN!') : t('stem.moonmission.entry_waiting_splashdown', 'Splashdown required to complete mission'))
         ),
 
         // ═══ PHASE 10: MISSION COMPLETE ═══
@@ -11077,19 +11519,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   'The real Apollo seismometers ran until 1977 and recorded thousands of moonquakes and meteorite strikes. Almost everything we know about the inside of the Moon came from instruments the crews set down by hand and walked away from.')
               ),
               // Entry corridor \u2014 the last number the mission asks you to get right.
-              d.entryOutcome && h('div', { className: 'bg-white/5 rounded-lg p-2 border border-white/10 mb-2' },
+              d.entryOutcome && h('div', { 'data-entry-debrief': d.entryOutcome.modelVersion === 1 ? 'physical' : 'legacy', className: 'bg-white/5 rounded-lg p-2 border border-white/10 mb-2' },
                 h('p', { className: 'text-[0.6875rem] font-bold mb-0.5 ' + (d.entryOutcome.outcome === 'nominal' ? 'text-green-300' : 'text-yellow-300') },
-                  d.entryOutcome.outcome === 'nominal'
+                  d.entryOutcome.modelVersion === 1
+                    ? (d.entryOutcome.terminal === 'skip' ? '\u26a0\ufe0f SKIP-OUT'
+                      : d.entryOutcome.terminal === 'incomplete' ? '\u26a0\ufe0f ENTRY INCOMPLETE'
+                      : d.entryOutcome.outcome === 'steep' ? '\u26a0\ufe0f HIGH-LOAD SPLASHDOWN' : '\ud83c\udfaf ATMOSPHERIC CAPTURE & SPLASHDOWN') +
+                      ' \u2014 ' + d.entryOutcome.angle.toFixed(1) + '\u00b0, peak load ' + d.entryOutcome.peakG + ' g'
+                    : d.entryOutcome.outcome === 'nominal'
                     ? '\ud83c\udfaf ENTRY IN THE CORRIDOR \u2014 ' + d.entryOutcome.angle.toFixed(1) + '\u00b0, about ' + d.entryOutcome.peakG + ' g'
                     : d.entryOutcome.outcome === 'skip'
                       ? '\u26a0\ufe0f SKIP-OUT \u2014 entered at ' + d.entryOutcome.angle.toFixed(1) + '\u00b0, too shallow'
                       : '\u26a0\ufe0f STEEP ENTRY \u2014 ' + d.entryOutcome.angle.toFixed(1) + '\u00b0, about ' + d.entryOutcome.peakG + ' g'),
                 h('p', { className: 'text-[0.6875rem] text-slate-200' },
-                  d.entryOutcome.outcome === 'nominal'
+                  d.entryOutcome.modelVersion === 1
+                    ? (d.entryOutcome.terminal === 'skip'
+                      ? 'The capsule climbed back above the 122 km entry interface. This simulation ends at that upward crossing; a later return is not modeled.'
+                      : d.entryOutcome.terminal === 'incomplete'
+                        ? 'The simulation reached its time limit without splashdown or an upward crossing of entry interface. No recovery is claimed.'
+                        : d.entryOutcome.outcome === 'steep'
+                          ? 'The atmosphere slowed the capsule enough for splashdown, but peak load exceeded the model\u2019s ' + MM_ENTRY.cautionG + ' g caution level. Compare the heating rate and accumulated heat with a shallower attempt.'
+                          : 'Atmospheric drag slowed the capsule for parachute descent. Peak load stayed below the model\u2019s ' + MM_ENTRY.cautionG + ' g caution level. These are educational model results, not a crew-survival assessment.')
+                    : d.entryOutcome.outcome === 'nominal'
                     ? 'A corridor roughly two degrees wide, hit after a quarter of a million miles. Apollo 11 pulled about 6.5 g coming home.'
                     : d.entryOutcome.outcome === 'skip'
                       ? 'Too shallow and the atmosphere behaves like a stone skipping on water \u2014 it throws you back out, and the next chance is hours away.'
-                      : 'Steeper means shorter, hotter and heavier. The shield is built to burn away, but the crew feels every g of it.')
+                      : 'Steeper means shorter, hotter and heavier. The shield is built to burn away, but the crew feels every g of it.'),
+                d.entryOutcome.modelVersion === 1 && h('dl', { className: 'grid grid-cols-2 gap-2 mt-2 text-[0.6875rem]' }, [
+                  ['Peak heat flux', (d.entryOutcome.peakHeatFlux / 1e6).toFixed(2) + ' MW/m\u00b2'],
+                  ['Accumulated heat', (d.entryOutcome.heatLoad / 1e6).toFixed(1) + ' MJ/m\u00b2'],
+                  ['Simulated time', d.entryOutcome.duration.toFixed(1) + ' s'],
+                  ['Downrange', (d.entryOutcome.downrange / 1000).toFixed(0) + ' km'],
+                  ['Terminal event', d.entryOutcome.terminal === 'splash' ? 'Splashdown' : d.entryOutcome.terminal === 'skip' ? 'Upward 122 km crossing' : 'Time limit'],
+                  ['Splashdown speed', d.entryOutcome.terminal === 'splash' ? d.entryOutcome.splashSpeed.toFixed(1) + ' m/s' : 'Not reached']
+                ].map(function(metric) { return h('div', { key: metric[0], className: 'rounded bg-white/5 p-2' },
+                  h('dt', { className: 'text-slate-300' }, metric[0]), h('dd', { className: 'font-bold text-white' }, metric[1])); }))
               ),
               // What caused what: the calls above, linked in the order they were flown.
               (function() {
@@ -11296,6 +11760,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 upd('mccChoice', null);
                 upd('entryAngle', null);
                 upd('entryOutcome', null);
+                upd('entryRun', null);
+                upd('entryAttempts', []);
+                upd('entryAwardedXP', 0);
+                upd('entryCompletionAwarded', false);
+                upd('entryPlaybackRate', 30);
+                upd('entryPaused', false);
+                upd('entryMigrationNote', null);
                 // aiBriefing is kept: it is the teacher's customization of the whole
                 // mission (objectives, samples, quiz), not something this flight earned.
                 upd('aiBriefingLoading', false);

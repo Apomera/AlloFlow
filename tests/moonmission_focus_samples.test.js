@@ -85,7 +85,8 @@ describe('Moon Mission focus management', () => {
   });
 
   it('after splashdown, focus lands on the debrief heading, not on <body>', async () => {
-    await mountLive({ missionPhase: 9, reentryStatus: 4 });
+    await mountLive({ missionPhase: 9, animPaused: true });
+    await click(buttonByText(/Show entry result/));
     const done = buttonByText(/Splashdown|Complete Mission|Welcome home/i) ||
       Array.from(host.querySelectorAll('button')).find((b) => /Pacific Ocean splashdown/.test(b.title || ''));
     expect(done, 'splashdown button not found').toBeTruthy();

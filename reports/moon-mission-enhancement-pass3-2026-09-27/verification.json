@@ -1,0 +1,12 @@
+{
+  "date": "2026-09-27",
+  "scope": "Moon Mission atmospheric entry, return handoff, visuals, playback and saved results",
+  "source": "stem_lab/stem_tool_moonmission.js",
+  "mirror": "desktop/web-app/public/stem_lab/stem_tool_moonmission.js",
+  "sha256": "8f25c4917f36f7f6c18c6a7a5f74cdecad41fec23c9376d299912031cbee8155",
+  "unitChecks": { "uniquePassed": 280, "unresolved": 0, "initialFull": "277/280", "affectedIntegration": "77/77", "finalReview": "88/88" },
+  "browser": { "engine": "Chromium", "passed": 8, "failed": 0, "workers": 1, "retries": 0, "spec": "tests/e2e/moon-mission-entry-dynamics.spec.ts" },
+  "syntax": "passed",
+  "mirrorParity": "passed",
+  "deployed": false
+}

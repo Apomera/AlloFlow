@@ -141,7 +141,7 @@ describe('Moon Mission loops', () => {
     document.body.appendChild(el);
     const frames = [];
     const snap = () => {
-      frames.push({ text: rec.frame.text.slice(), arcs: rec.frame.arcs.slice(), rects: rec.frame.rects.slice(), grads: rec.frame.grads.slice(), rots: rec.frame.rots.slice(), lines: rec.frame.lines.slice(), fills: rec.frame.fills.slice(), mm: Object.assign({}, store.toolData.moonMission) });
+      frames.push({ text: rec.frame.text.slice(), arcs: rec.frame.arcs.slice(), rects: rec.frame.rects.slice(), grads: rec.frame.grads.slice(), rots: rec.frame.rots.slice(), lines: rec.frame.lines.slice(), fills: rec.frame.fills.slice(), dataset: Object.assign({}, el.dataset), mm: Object.assign({}, store.toolData.moonMission) });
       rec.frame.text.length = 0; rec.frame.arcs.length = 0; rec.frame.rects.length = 0; rec.frame.grads.length = 0; rec.frame.rots.length = 0; rec.frame.lines.length = 0; rec.frame.fills.length = 0;
     };
     ref(el);
@@ -334,12 +334,13 @@ describe('Moon Mission loops', () => {
       return { early: fr[200].text.map((t) => t.s), late: fr[fr.length - 1].text.map((t) => t.s) };
     };
     const nominal = late(null), skip = late(-4.5), steep = late(-8.5);
-    expect(nominal.early, 'not before the coast closes in').not.toContain('ENTRY CORRIDOR');
-    expect(nominal.late).toContain('ENTRY CORRIDOR');
-    const verdict = (t) => t.find((s) => /\u00B0 (in the corridor|skips out|too steep)$/.test(s));
-    expect(verdict(nominal.late)).toBe('-6.5\u00B0 in the corridor');
-    expect(verdict(skip.late)).toBe('-4.5\u00B0 skips out');
-    expect(verdict(steep.late)).toBe('-8.5\u00B0 too steep');
+    expect(nominal.early, 'not before the coast closes in').not.toContain('ENTRY PREVIEW');
+    expect(nominal.late).toContain('ENTRY PREVIEW');
+    const verdict = (t) => t.find((s) => /\u00B0 (splashdown|skip-out|high load)$/.test(s));
+    expect(verdict(nominal.late)).toBe('-6.5\u00B0 splashdown');
+    expect(verdict(skip.late)).toBe('-4.5\u00B0 skip-out');
+    expect(verdict(steep.late)).toBe('-8.5\u00B0 high load');
+    expect(nominal.late).toContain('reference sketch; angles x4');
   }, 120_000);   // thousands of real loop frames; slow under load, not wrong
 
   it('trans-lunar coast: predict the speed first; the answer waits for the flight to show it', () => {
@@ -387,8 +388,11 @@ describe('Moon Mission loops', () => {
   it('a restored entry without an outcome uses the default angle to calculate peak g', () => {
     const { frames } = run({ missionPhase: 9 }, reentryCanvas, 4);
     const labels = frames.flatMap((frame) => frame.text.map((item) => item.s));
-    expect(labels.some((label) => /ENTRY -6\.5°.*PEAK 6\.5 g/.test(label))).toBe(true);
-    expect(labels.some((label) => /PEAK 6\.9 g/.test(label))).toBe(false);
+    const peakG = P.entryPeakG(-6.5).toFixed(1);
+    expect(labels.some((label) => label.includes('ENTRY -6.5°') && label.includes('PEAK ' + peakG + ' g'))).toBe(true);
+    expect(labels).toContain('HEAT FLUX');
+    expect(labels.some((label) => /°C$/.test(label))).toBe(false);
+    expect(Number(frames[0].dataset.entryTime)).toBe(0);
   });
 
   it('lunar ascent: Eagle catches Columbia from a lower, faster orbit, and the card waits for the dock', () => {
@@ -580,78 +584,93 @@ describe('Moon Mission loops', () => {
     expect(frames[10].fills, 'the Moon behind is lit by the same Sun as Earth').toContain('rgba(1,1,8,0.86)');
   }, 120_000);
 
-  it('entry: the shield heats in a pulse to 2,760 C and cools, and the path bends from the entry angle to vertical', () => {
-    // The readout used to climb 15 C a step and sit at 2,760 until the chutes.
-    const E = (t, o = 'nominal', a = -6.5) => P.entryState(t, o, a);
-    expect(E(0).tempC, 'cold at entry interface').toBe(15);
-    let peak = 0, peakAt = 0;
-    for (let t = 0; t <= 360; t++) if (E(t).tempC > peak) { peak = E(t).tempC; peakAt = t; }
-    expect(Math.abs(peak - 2760), "Apollo's peak").toBeLessThanOrEqual(3);
-    expect(peakAt, 'peaks in the first half').toBeLessThan(180);
-    for (let t = peakAt + 1; t <= 360; t++) expect(E(t).tempC, 'cooling after the peak').toBeLessThanOrEqual(E(t - 1).tempC);
-    expect(E(360).tempC, 'well down by the drogues').toBeLessThan(peak * 0.5);
-    // Radiative equilibrium: temperature (in kelvin) goes as the fourth root of the heating.
-    [60, 150, 250].forEach((t) => expect(Math.abs((E(t).tempC + 273) - 3033 * Math.pow(E(t).heat, 0.25)), 't=' + t).toBeLessThanOrEqual(1));
-    expect(E(0).gamma, 'the angle the student set').toBeCloseTo(6.5, 5);
-    expect(E(0, 'nominal', -5.8).gamma).toBeCloseTo(5.8, 5);
-    expect(E(360).gamma, 'falling straight down under the drogues').toBeCloseTo(90, 5);
-    const skip = [...Array(361).keys()].map((t) => E(t, 'skip', -5.2));
-    expect(Math.min(...skip.map((e) => e.gamma)), 'a skip-out climbs for a while').toBeLessThan(0);
-    expect(E(170, 'skip', -5.2).heat, 'and cools while it is out').toBeLessThan(E(170).heat * 0.5);
-    let steepAt = 0; for (let t = 0; t <= 360; t++) if (E(t, 'steep').heat > E(steepAt, 'steep').heat) steepAt = t;
-    expect(steepAt, 'a steep entry peaks sooner').toBeLessThan(peakAt);
+  it('entry: the compatibility helper samples physical heating and motion without forcing a saved outcome', () => {
+    const profile = P.entryProfile(-6.5), drogue = profile.events.drogue;
+    for (const tick of [0, 60, 150, 250, 360]) {
+      const legacy = P.entryState(tick, 'nominal', -6.5);
+      const physical = P.entrySample(profile, tick / 360 * drogue.time);
+      expect(legacy.h).toBeCloseTo(physical.altitude / 1000, 9);
+      expect(legacy.gamma).toBeCloseTo(-physical.gamma * 180 / Math.PI, 9);
+      expect(legacy.speed).toBe(physical.speed);
+      expect(legacy.heatFlux).toBe(physical.heatFlux);
+      expect(legacy.tempC, 'no unsupported heat-shield temperature prediction').toBeUndefined();
+      expect(P.entryState(tick, 'skip', -6.5), 'a stale saved label cannot change the trajectory').toEqual(legacy);
+    }
+    expect(P.entryState(0, 'nominal', -5.8).gamma).toBeCloseTo(5.8, 5);
+    const skip = P.entryState(360, 'nominal', -4.5);
+    expect(skip.stage).toBe('skip');
+    expect(skip.gamma, 'positive physical gamma means climbing out').toBeLessThan(0);
+    expect(skip.h).toBe(P.entry.interfaceAltitude / 1000);
+    const steep = P.entryProfile(-8.5);
+    expect(steep.summary.peakHeatFlux).toBeGreaterThan(profile.summary.peakHeatFlux);
+    expect(steep.summary.peakHeatTime).toBeLessThan(profile.summary.peakHeatTime);
   });
 
-  it('entry: the loop flies the capsule shield-first on that path, shows that temperature, and hands its horizon to the chutes', () => {
-    const { frames } = run({ missionPhase: 9 }, reentryCanvas, 380);
-    const temps = frames.map((f) => { const x = f.text.find((t) => /^\d+°C$/.test(t.s)); return x ? parseInt(x.s, 10) : null; });
-    const shown = temps.filter((x) => x != null);
-    expect(shown.length).toBeGreaterThan(300);
-    expect(Math.max(...shown)).toBeGreaterThanOrEqual(2757);
-    expect(shown[shown.length - 1], 'cooled by the drogues').toBeLessThan(1400);
-    // Each frame is one step of the entry clock; its readout and attitude are the model's
-    // for that step (the frame's tick is within one step of its index).
+  it('entry: the canvas heat flux, shield-first attitude and chute timing follow its physical playhead', () => {
+    const profile = P.entryProfile(-6.5), dt = 1000 / 60;
+    const { frames } = run({ missionPhase: 9 }, reentryCanvas, Math.ceil(profile.events.drogue.time / 30 * 60) + 5, dt);
     let matched = 0;
-    frames.forEach((f, i) => {
-      if (temps[i] == null || i < 2) return;
-      const near = [i - 1, i, i + 1].map((t) => P.entryState(t, 'nominal', -6.5));
-      expect(near.some((e) => e.tempC === temps[i]), 'frame ' + i + ' temperature').toBe(true);
-      const want = near.map((e) => (90 - e.gamma) * Math.PI / 180);
-      expect(f.rots.some((a) => want.some((w) => Math.abs(a - w) < 1e-9)), 'frame ' + i + ': shield along the path').toBe(true);
+    for (const frame of frames) {
+      const seconds = Number(frame.dataset.entryTime), physical = P.entrySample(profile, seconds);
+      if (physical.stage !== 'entry') continue;
+      const flux = frame.text.find((text) => /^\d+\.\d{2} MW\/m²$/.test(text.s));
+      expect(flux, seconds + ' s: flux readout').toBeTruthy();
+      expect(Math.abs(parseFloat(flux.s) - physical.heatFlux / 1e6)).toBeLessThanOrEqual(0.0051);
+      expect(frame.rots.some((angle) => Math.abs(angle - (Math.PI / 2 + physical.gamma)) < 0.0001),
+        seconds + ' s: shield faces the relative flow').toBe(true);
       matched++;
-    });
-    expect(matched).toBeGreaterThan(300);
-    // The last entry frame's horizon is where the chute view's sea begins.
-    const lastEntry = frames.map((f, i) => (temps[i] != null ? i : -1)).filter((i) => i >= 0).pop();
-    const sea = frames[lastEntry].arcs.filter((a) => a.r > 1000).reduce((a, b) => (!a || b.r < a.r ? b : a), null);
-    expect(Math.abs(sea.y - sea.r - P.splashPose(361, 320).oceanTop), 'no jump at the drogues').toBeLessThan(3);
+    }
+    expect(matched).toBeGreaterThan(800);
+    const firstDrogue = frames.find((frame) => frame.mm.reentryStatus === 2);
+    expect(firstDrogue, 'drogues become visible at the model deployment event').toBeTruthy();
+    expect(Number(firstDrogue.dataset.entryTime)).toBeGreaterThanOrEqual(profile.events.drogue.time);
+    expect(Number(firstDrogue.dataset.entryTime) - profile.events.drogue.time).toBeLessThanOrEqual(30 * dt / 1000 + 0.001);
   }, 60_000);
 
-  it('plays the recovery after splashdown, then rests, on the same clock at any frame rate', () => {
-    const order = ['Splashdown just before sunrise', 'Stable 2', 'Uprighting bags', 'Stable 1', 'Recovery helicopter overhead'];
-    const splashAt = {};
-    for (const fps of [30, 60, 120]) {
-      const dt = 1000 / fps;
-      const { frames, stopped } = run({ missionPhase: 9 }, reentryCanvas, Math.ceil(24000 / dt), dt);
-      expect(stopped, fps + ' fps: the loop should rest once the recovery is over').toBe(true);
-      const first = order.map((k) => frames.findIndex((f) => f.text.some((t) => t.s.includes(k))));
-      first.forEach((i, k) => expect(i, fps + ' fps: never showed "' + order[k] + '"').toBeGreaterThan(0));
-      for (let k = 1; k < first.length; k++) expect(first[k], fps + ' fps: ' + order[k] + ' after ' + order[k - 1]).toBeGreaterThan(first[k - 1]);
-      splashAt[fps] = { t: frames.findIndex((f) => f.text.some((t) => t.s === 'SPLASHDOWN!')) * dt, dt };
+  it('entry: 30x playback advances in real time at different frame rates and preserves a paused playhead', () => {
+    const finalTimes = [];
+    for (const fps of [20, 60, 120]) {
+      const { frames } = run({ missionPhase: 9 }, reentryCanvas, fps * 5 + 2, 1000 / fps);
+      expect(Number(frames[0].dataset.entryTime)).toBe(0);
+      const time = Number(frames.at(-1).dataset.entryTime);
+      expect(Math.abs(time - 150)).toBeLessThanOrEqual(30 / fps + 0.001);
+      expect(Math.abs(frames.at(-1).mm.entryRun.time - time), '4 Hz persistence stays close to the visible playhead').toBeLessThanOrEqual(7.5 + 30 / fps);
+      finalTimes.push(time);
     }
-    for (const fps of [30, 120]) {
-      expect(Math.abs(splashAt[fps].t - splashAt[60].t), fps + ' fps splashdown at ' + Math.round(splashAt[fps].t) + ' ms vs 60 fps').toBeLessThanOrEqual(2 * splashAt[fps].dt + 1);
+    expect(Math.max(...finalTimes) - Math.min(...finalTimes)).toBeLessThanOrEqual(1.5);
+    const paused = run({ missionPhase: 9, animPaused: true,
+      entryRun: { version: 1, angle: -6.5, time: 123, recovery: 0, recorded: false } }, reentryCanvas, 20);
+    expect(paused.stopped, 'paused view remains available for resize and review').toBe(false);
+    for (const frame of paused.frames) expect(Number(frame.dataset.entryTime)).toBe(123);
+  }, 60_000);
+
+  it('entry: splashdown follows the model duration, then recovery finishes while repaint stays available', () => {
+    const profile = P.entryProfile(-6.5), fps = 30, dt = 1000 / fps;
+    const order = ['Splashdown in the Pacific.', 'Stable 2:', 'Three uprighting bags', 'Stable 1:', 'Recovery swimmers'];
+    const { frames, stopped } = run({ missionPhase: 9 }, reentryCanvas, Math.ceil((profile.summary.duration / 30 + 12) * fps), dt);
+    expect(stopped, 'the finished view still responds to resize and timeline review').toBe(false);
+    const first = order.map((caption) => frames.findIndex((frame) => frame.text.some((text) => text.s.includes(caption))));
+    first.forEach((index, i) => expect(index, 'never showed ' + order[i]).toBeGreaterThan(0));
+    for (let i = 1; i < first.length; i++) expect(first[i], order[i] + ' follows ' + order[i - 1]).toBeGreaterThan(first[i - 1]);
+    const splashIndex = frames.findIndex((frame) => frame.mm.reentryStatus === 4);
+    expect(Math.abs(splashIndex * dt / 1000 - profile.summary.duration / 30)).toBeLessThanOrEqual(2 / fps + 0.001);
+    for (const frame of frames.slice(splashIndex)) {
+      expect(Number(frame.dataset.entryTime)).toBeCloseTo(profile.summary.duration, 3);
+      expect(frame.mm.entryOutcome.terminal).toBe('splash');
+      expect(frame.mm.entryOutcome.completed).toBe(true);
     }
-    expect(Math.abs(splashAt[60].t - 10000), 'splashdown about 10 s in').toBeLessThanOrEqual(50);
-  }, 60_000);   // thousands of real loop frames; slow under load, not wrong
+    expect(frames.at(-1).mm.entryRun.recovery).toBeGreaterThanOrEqual(580 / 60 - 0.01);
+  }, 60_000);
+
 });
 
 describe('one scope, many models', () => {
-  it('the trans-Earth coast still starts at the 1.0 km/s its own model states', () => {
+  it('the trans-Earth coast keeps its calibrated start speed separate from the outbound model', () => {
     // The trans-lunar model once re-declared MM_R0 and MM_V0 in the same module scope;
     // the return coast then read 6,712 km and 10.84 km/s at call time. Its entry speed
     // came out within 0.1% by coincidence, so only the start gives it away.
-    expect(P.returnCoast(0).speedKmh).toBeCloseTo(3600, -1);
+    const initialSpeed = Math.sqrt(11.03 ** 2 - 2 * 398600 * (1 / 6500 - 1 / 384400));
+    expect(P.returnCoast(0).speedKmh).toBeCloseTo(initialSpeed * 3600, 7);
   });
 
   it('declares no variable twice in one function scope', () => {

@@ -88,10 +88,14 @@ describe('the return coast is one model, not three', () => {
 });
 
 describe('re-entry and the rocket-equation lab', () => {
-  it("Apollo 11's own entry angle gives Apollo 11's peak g", () => {
-    expect(pure.entryPeakG(-6.5)).toBe(6.5);
+  it('entry loads come from the numerical trajectory and have the Apollo scale', () => {
+    const nominal = pure.entryProfile(-6.5);
+    expect(pure.entryPeakG(-6.5)).toBe(Math.round(nominal.summary.peakG * 10) / 10);
+    expect(pure.entryPeakG(-6.5)).toBeGreaterThan(5.5);
+    expect(pure.entryPeakG(-6.5)).toBeLessThan(8);
     expect(pure.entryPeakG(-7.4)).toBeGreaterThan(pure.entryPeakG(-6.5));
-    expect(pure.entryPeakG(-5.3)).toBe(4);
+    expect(pure.entryPeakG(-5.3)).toBeLessThan(pure.entryPeakG(-6.5));
+    expect(pure.entryProfile(-4.5).summary.outcome).toBe('skip');
   });
 
   it('the best single-stage setting reaches orbit but not the Moon, and the lab says why', () => {

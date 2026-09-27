@@ -55,6 +55,17 @@ afterEach(() => vi.restoreAllMocks());
 
 const EVENT = { id: 'test_evt', title: 'Test event', scenario: 'x', options: [] };
 
+function finishedEntryState(angle = -6.5) {
+  loadTool(FILE, ID);
+  const profile = window.MoonMissionPure.entryProfile(angle);
+  const terminal = profile.events.splash ? 'splash' : 'skip';
+  return {
+    missionPhase: 9, missionXP: 0, missionLog: [], reentryStatus: terminal === 'splash' ? 4 : 5,
+    entryRun: { version: 1, angle, time: profile.summary.duration, recovery: 0, recorded: true },
+    entryOutcome: { ...profile.summary, angle, modelVersion: 1, completed: true, terminal },
+  };
+}
+
 describe('Moon Mission proceed gates', () => {
   it('a pending event disables the phase button, and its handler refuses too', () => {
     const app = mount({ missionPhase: 1, activeEvent: EVENT, eventPhaseTarget: 2, missionXP: 0 });
@@ -144,5 +155,66 @@ describe('Moon Mission proceed gates', () => {
     const landed = mount({ missionPhase: 5, descentStarted: true,
       landingResult: { crashed: false, score: 80, grade: 'B', vVel: 1.5, hVel: 1, fuel: 20 } });
     expect(find(landed, /Begin extravehicular activity/i).disabled).toBe(false);
+  });
+
+  it('entry completion requires the recorded physical splashdown, including when animation is paused', () => {
+    const ready = finishedEntryState();
+    const incompleteStates = [
+      { entryRun: undefined, entryOutcome: undefined, reentryStatus: 0 },
+      { entryRun: { ...ready.entryRun, time: ready.entryRun.time - 1, recorded: false }, entryOutcome: undefined },
+      { entryRun: { ...ready.entryRun, recorded: false } },
+      { entryOutcome: { ...ready.entryOutcome, completed: false } },
+      { entryOutcome: { angle: -6.5, peakG: 6.5, outcome: 'nominal' } },
+      { entryRun: undefined, reentryStatus: 4 },
+    ];
+    for (const incomplete of incompleteStates) {
+      const app = mount({ ...ready, ...incomplete, animPaused: true });
+      const button = find(app, /Complete the mission with Pacific Ocean splashdown/i);
+      expect(button.disabled).toBe(true);
+      button.onClick();
+      expect(app.mm().missionPhase).toBe(9);
+      expect(app.mm().missionXP).toBe(0);
+    }
+  });
+
+  it('entry completion advances and pays its 50 XP only once', () => {
+    const app = mount(finishedEntryState());
+    const button = find(app, /Complete the mission with Pacific Ocean splashdown/i);
+    expect(button.disabled).toBe(false);
+    button.onClick();
+    button.onClick();
+    expect(app.mm().missionPhase).toBe(10);
+    expect(app.mm().missionXP).toBe(50);
+    expect(app.mm().missionLog.filter((entry) => /SPLASHDOWN! Mission complete/.test(entry.text))).toHaveLength(1);
+  });
+
+  it('reviewing an earlier entry moment preserves an already recorded splashdown', () => {
+    const ready = finishedEntryState();
+    const app = mount({ ...ready, animPaused: true, entryRun: { ...ready.entryRun, time: 120 } });
+    const button = find(app, /Complete the mission with Pacific Ocean splashdown/i);
+    expect(button.disabled).toBe(false);
+    button.onClick();
+    expect(app.mm().missionPhase).toBe(10);
+    expect(app.mm().missionXP).toBe(50);
+  });
+
+  it('a terminal skip cannot complete the mission or collect splashdown XP', () => {
+    const app = mount(finishedEntryState(-5));
+    const button = find(app, /Complete the mission with Pacific Ocean splashdown/i);
+    expect(button.disabled).toBe(true);
+    button.onClick();
+    expect(app.mm().missionPhase).toBe(9);
+    expect(app.mm().missionXP).toBe(0);
+  });
+
+  it('a pending event or its outcome blocks entry completion even after physical splashdown', () => {
+    for (const pending of [{ activeEvent: EVENT }, { eventOutcome: { label: 'x', outcome: 'y' } }]) {
+      const app = mount({ ...finishedEntryState(), ...pending, eventPhaseTarget: 10 });
+      const button = find(app, /Complete the mission with Pacific Ocean splashdown/i);
+      expect(button.disabled).toBe(true);
+      button.onClick();
+      expect(app.mm().missionPhase).toBe(9);
+      expect(app.mm().missionXP).toBe(0);
+    }
   });
 });
