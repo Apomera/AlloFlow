@@ -413,7 +413,8 @@ describe('Moon Mission optional LRV traverse', () => {
     expect(source).toContain('lunarSampleOrbs.push(gtSpecimen)');
     expect(pickupBlock).toContain('if (orb._collected || !orb.visible) return');
     expect(pickupBlock).toContain('if (orb._isTraverseSample && (!gtActive || gtStep !== 3)) return');
-    expect(pickupBlock).toContain('sDist < 2 && moveState.sample && evaSampleCooldown <= 0 && !o2Exhausted');
+    expect(pickupBlock).toContain('sDist < 2 && moveState.sample && evaResources.cooldown <= 0 && !o2Exhausted');
+    expect(pickupBlock).toContain('evaResources.cooldown = 1;');
     expect(pickupBlock).toContain('gtSampleCollected = true');
     expect(pickupBlock).toContain('gtSampleResult = sd.name');
     expect(pickupBlock).toContain('!gtSampleEverBanked');

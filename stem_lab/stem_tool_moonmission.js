@@ -574,12 +574,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   // That reproduces Apollo 11's own return: about 2.5 days, and about 39,700 km/h at
   // entry interface, 6,500 km from Earth's centre (Apollo 11: 36,194 ft/s).
   var MM_GM = 398600, MM_R0 = 384400, MM_R_EI = 6500, MM_V0 = 1.0, MM_R_EARTH = 6378;
+  function mmReturnSpeed(r) { return Math.sqrt(MM_V0 * MM_V0 + 2 * MM_GM * (1 / r - 1 / MM_R0)); }
+  function mmCoastInterval(r0, r1, speed) {
+    // Simpson integration of dt = dr / v. Small radial steps close to either
+    // body resolve the rapidly changing gravity without a frame-rate dependency.
+    return Math.abs(r1 - r0) / 6 * (1 / speed(r0) + 4 / speed((r0 + r1) / 2) + 1 / speed(r1));
+  }
+  function mmSampleCoast(rows, t) {
+    var lo = 0, hi = rows.length - 1;
+    while (hi - lo > 1) { var mid = (lo + hi) >> 1; if (rows[mid].t <= t) lo = mid; else hi = mid; }
+    var a = rows[lo], b = rows[hi], dt = b.t - a.t, k = Math.max(0, Math.min(1, (t - a.t) / dt));
+    var k2 = k * k, k3 = k2 * k;
+    // Cubic Hermite position with energy-derived velocities at both ends. The
+    // displayed speed is its derivative, so distance, speed and time stay linked.
+    return {
+      r: (2 * k3 - 3 * k2 + 1) * a.r + (k3 - 2 * k2 + k) * dt * a.v + (-2 * k3 + 3 * k2) * b.r + (k3 - k2) * dt * b.v,
+      v: ((6 * k2 - 6 * k) * a.r + (-6 * k2 + 6 * k) * b.r) / dt + (3 * k2 - 4 * k + 1) * a.v + (3 * k2 - 2 * k) * b.v
+    };
+  }
   var _mmReturnTable = (function () {
-    var rows = [{ t: 0, r: MM_R0 }], r = MM_R0, t = 0, dt = 60;
+    var rows = [{ t: 0, r: MM_R0, v: -MM_V0 }], r = MM_R0, t = 0;
     while (r > MM_R_EI) {
-      r -= Math.sqrt(MM_V0 * MM_V0 + 2 * MM_GM * (1 / r - 1 / MM_R0)) * dt;
-      t += dt;
-      rows.push({ t: t, r: Math.max(MM_R_EI, r) });
+      var next = Math.max(MM_R_EI, r - Math.min(500, r * 0.01));
+      t += mmCoastInterval(r, next, mmReturnSpeed); r = next;
+      rows.push({ t: t, r: r, v: -mmReturnSpeed(r) });
     }
     return rows;
   })();
@@ -618,11 +636,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   }
   function mmReturnCoast(p) {
     p = Math.max(0, Math.min(1, p));
-    var target = p * MM_RETURN_SECONDS, rows = _mmReturnTable;
-    var i = Math.min(rows.length - 1, Math.floor(target / 60));
-    var r = rows[i].r;
-    var v = Math.sqrt(MM_V0 * MM_V0 + 2 * MM_GM * (1 / r - 1 / MM_R0));
-    return { distKm: Math.max(0, r - MM_R_EARTH), speedKmh: v * 3600, days: target / 86400, totalDays: MM_RETURN_SECONDS / 86400 };
+    var target = p * MM_RETURN_SECONDS, sample = mmSampleCoast(_mmReturnTable, target);
+    return { distKm: Math.max(0, sample.r - MM_R_EARTH), speedKmh: -sample.v * 3600, days: target / 86400, totalDays: MM_RETURN_SECONDS / 86400 };
   }
   // Re-entry peak deceleration for a given flight-path angle. The slope is set so the
   // Apollo 11 angle (-6.5 deg) gives Apollo 11's roughly 6.5 g; it gave 6.9 before,
@@ -630,29 +645,111 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   function mmEntryPeakG(angleDeg) {
     return Math.round((4 + (Math.abs(angleDeg) - 5.3) * 2.08) * 10) / 10;
   }
-  // Powered descent, final approach, in REAL time. The computer flies the braking
-  // phase from 15 km (P63/P64); the student takes over 300 m up, as Armstrong did at
-  // about 140 m. One engine: tilting it is the only way to move sideways, so every
-  // change of drift is paid for in fuel, and fuel burns with throttle, counted in
-  // seconds of HOVER, which is how Apollo counted it ("60 seconds", "30 seconds").
+  // Powered descent: a two-dimensional teaching model in metres, seconds and kg.
+  // The computer flies from 15 km; the student takes over the last 300 m.
+  // NASA: lunar g/radius (science.nasa.gov/moon/by-the-numbers/); DPS 46.7 kN
+  // (ntrs.nasa.gov/citations/20090016298); Isp 311 s and engine lag 0.11 s
+  // (aviationsystems.arc.nasa.gov/publications/2008/AF2008100.pdf).
+  // Retained mass is a rounded 7,000 kg, including the ascent stage and its fuel.
+  // Constant Isp, continuous throttle and assisted attitude hold simplify Apollo's
+  // hardware; separate RCS propellant and terrain slopes are not simulated here.
+  // fuel remains seconds of ideal upright surface hover. The rocket equation maps
+  // it to real propellant mass, so displayed reserves and vehicle mass agree.
   var MM_DESCENT = {
-    g: 1.62, maxAcc: 4.0, maxTilt: 0.35,
+    g: 1.624, radius: 1737500, dryMass: 7000, maxThrust: 46700,
+    isp: 311, earthG: 9.80665, engineLag: 0.11, attitudeLag: 0.23,
+    maxAcc: 46700 / 7000, maxTilt: 0.35, maxStep: 1 / 120,
     handoverAlt: 300, handoverVv: -9, handoverHv: 4,
     pilotFuel: 110, skipFuel: 25, skipDrift: 7,
     landV: 3, landH: 5
   };
   var MM_CALLOUT_BANDS = [250, 200, 150, 100, 75, 50, 30, 20, 10, 5];
   var MM_FUEL_CALLS = [60, 30, 0];
-  // One fixed 1/60 s step. st = { alt, vVel, hVel, fuel, thrust, tilt }, mutated.
+  function mmLunarGravity(alt) {
+    var ratio = MM_DESCENT.radius / (MM_DESCENT.radius + Math.max(0, Number(alt) || 0));
+    return MM_DESCENT.g * ratio * ratio;
+  }
+  function mmDescentMass(fuel) {
+    return MM_DESCENT.dryMass * Math.exp(MM_DESCENT.g * Math.max(0, Number(fuel) || 0) / (MM_DESCENT.isp * MM_DESCENT.earthG));
+  }
+  function mmDescentGuidance(st) {
+    var D = MM_DESCENT, fuel = Math.max(0, Number(st.fuel) || 0);
+    var alt = Math.max(0, st.alt), g = mmLunarGravity(alt), mass = mmDescentMass(fuel);
+    var tilt = Math.max(-D.maxTilt, Math.min(D.maxTilt, st.tilt || 0)), upright = Math.cos(tilt);
+    var throttle = fuel > 0 ? Math.max(0, Math.min(1, st.thrust || 0)) : 0;
+    var maximum = fuel > 0 ? D.maxThrust : 0, thrust = maximum * throttle;
+    var descentSpeed = Math.max(0, -st.vVel), net = maximum * upright / mass - g;
+    var stop = descentSpeed === 0 ? 0 : net > 0 ? descentSpeed * descentSpeed / (2 * net) : Infinity;
+    // Allow three engine time constants. Treating this interval as a coast is a
+    // conservative estimate; the following stop assumes the current tilt is held.
+    // This is guidance, not a prediction of a guaranteed safe touchdown.
+    var delay = 3 * D.engineLag * (1 - throttle), afterDelay = descentSpeed + g * delay;
+    var braking = descentSpeed === 0 ? 0 : net > 0 ? descentSpeed * delay + 0.5 * g * delay * delay + afterDelay * afterDelay / (2 * net) : Infinity;
+    var burnTime = net > 0 ? afterDelay / net : Infinity;
+    var deltaV = D.g * fuel;
+    var requiredDeltaV = (afterDelay + g * burnTime) / upright;
+    var canBrake = fuel > 0 && net > 0 && deltaV >= requiredDeltaV;
+    return {
+      gravity: g, massKg: mass, propellantKg: mass - D.dryMass,
+      thrustN: thrust, thrustToWeight: maximum / (mass * g), maxThrustToWeight: maximum / (mass * g),
+      hoverThrottle: mass * g / (D.maxThrust * upright),
+      deltaV: deltaV, fuelSeconds: fuel, verticalAcceleration: thrust * upright / mass - g,
+      stopAltitude: stop, brakingAltitude: braking, brakingMargin: alt - braking,
+      canBrake: canBrake, requiredDeltaV: requiredDeltaV,
+      timeToImpact: alt > 0 ? (st.vVel + Math.sqrt(st.vVel * st.vVel + 2 * g * alt)) / g : 0
+    };
+  }
+  // One integration slice. Mass flow is thrust / exhaust velocity; the integrated
+  // engine response gives an exact impulse even during a short throttle transient.
+  function mmDescentSlice(st, input, dt) {
+    var D = MM_DESCENT, ve = D.isp * D.earthG;
+    var target = typeof input.throttle === 'number' && isFinite(input.throttle)
+      ? Math.max(0, Math.min(1, input.throttle)) : input.thrust ? 1 : 0;
+    var initialThrust = st.fuel > 0 ? Math.max(0, Math.min(1, st.thrust || 0)) : 0;
+    var decay = Math.exp(-dt / D.engineLag);
+    var throttle = target + (initialThrust - target) * decay;
+    var meanThrottle = target + (initialThrust - target) * D.engineLag * (1 - decay) / dt;
+    var cmd = input.left === input.right ? 0 : input.left ? -D.maxTilt : input.right ? D.maxTilt : 0;
+    var initialTilt = Math.max(-D.maxTilt, Math.min(D.maxTilt, st.tilt || 0));
+    var midTilt = cmd + (initialTilt - cmd) * Math.exp(-dt / (2 * D.attitudeLag));
+    var tilt = cmd + (initialTilt - cmd) * Math.exp(-dt / D.attitudeLag);
+    var m0 = mmDescentMass(st.fuel), available = Math.max(0, m0 - D.dryMass);
+    var spent = Math.min(available, Math.max(0, meanThrottle) * D.maxThrust * dt / ve);
+    var m1 = Math.max(D.dryMass, m0 - spent);
+    var impulseDv = ve * Math.log(m0 / m1);
+    var g = mmLunarGravity(st.alt + st.vVel * dt / 2);
+    var dv = impulseDv * Math.cos(midTilt) - g * dt, dh = impulseDv * Math.sin(midTilt);
+    return {
+      alt: st.alt + (st.vVel + dv / 2) * dt, vVel: st.vVel + dv, hVel: st.hVel + dh,
+      x: (Number(st.x) || 0) + (st.hVel + dh / 2) * dt,
+      elapsed: (Number(st.elapsed) || 0) + dt,
+      fuel: spent >= available ? 0 : spent === 0 ? Math.max(0, st.fuel) : ve / D.g * Math.log(m1 / D.dryMass),
+      thrust: spent >= available ? 0 : throttle, tilt: tilt
+    };
+  }
+  // st = { alt, vVel, hVel, fuel, thrust, tilt }, mutated. Optional x/elapsed are
+  // metres/seconds. Substeps make the same controls behave consistently at 30,
+  // 60 or 120 Hz; zero/invalid elapsed time never consumes fuel or changes attitude.
   function mmDescentStep(st, input, dt) {
-    if (input.thrust) st.thrust = Math.min(1, st.thrust + 0.03); else st.thrust *= 0.95;
-    var cmd = input.left ? -MM_DESCENT.maxTilt : input.right ? MM_DESCENT.maxTilt : 0;
-    st.tilt += (cmd - st.tilt) * 0.07;   // eased, so the vehicle swings rather than snapping
-    var acc = st.fuel > 0 ? st.thrust * MM_DESCENT.maxAcc : 0;
-    st.vVel += (-MM_DESCENT.g + acc * Math.cos(st.tilt)) * dt;
-    st.hVel += acc * Math.sin(st.tilt) * dt;
-    st.alt += st.vVel * dt;
-    st.fuel = Math.max(0, st.fuel - (acc / MM_DESCENT.g) * dt);
+    if (!isFinite(dt) || dt <= 0 || st.contact) return st;
+    input = input || {};
+    var remaining = dt;
+    while (remaining > 1e-10 && !st.contact) {
+      var h = Math.min(remaining, MM_DESCENT.maxStep), next = mmDescentSlice(st, input, h);
+      if (st.alt >= 0 && next.alt <= 0 && next.vVel <= 0) {
+        // Locate contact inside the slice: preserve the velocity and fuel at the
+        // surface instead of integrating below ground or erasing impact velocity.
+        var lo = 0, hi = h;
+        for (var j = 0; j < 24; j++) {
+          var mid = (lo + hi) / 2;
+          if (mmDescentSlice(st, input, mid).alt > 0) lo = mid; else hi = mid;
+        }
+        next = mmDescentSlice(st, input, hi);
+        next.alt = 0; next.contact = true;
+      }
+      Object.keys(next).forEach(function (key) { st[key] = next[key]; });
+      remaining -= h;
+    }
     return st;
   }
   // Score and its parts, so the breakdown under the score shows the points actually
@@ -674,7 +771,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     var grade = total >= 90 ? 'A+' : total >= 80 ? 'A' : total >= 70 ? 'B' : total >= 50 ? 'C' : 'D';
     return { total: total, grade: grade, parts: parts };
   }
-  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { launchDisplay: mmLaunchDisplay, returnCoast: mmReturnCoast, returnView: mmReturnView, phaseLitAt: mmPhaseLitAt, entryPeakG: mmEntryPeakG, descent: MM_DESCENT, descentStep: mmDescentStep, landingScore: mmLandingScore, earthLandPaths: mmEarthLandPaths, earthClouds: mmEarthClouds, drawEarth: drawDetailedEarth, saturnV: mmDrawSaturnV, saturnVHeight: function () { return MM_SATURN_V_H; }, moonProject: mmMoonProject, moonMaria: mmMoonMariaPaths, moonSites: function () { return MM_MOON_SITES; }, terminatorLon: function () { return MM_TERMINATOR_LON; }, craftInShadow: mmCraftInShadow, splashPose: mmSplashPose, entryState: mmEntryState, coastAt: mmCoastAt, coastSpeed: mmCoastSpeed, soundSpeed: mmSoundSpeed, dynamicPressure: mmDynamicPressure, airAbove: mmAirAbove, skyAt: mmSkyAt, plumeGrow: mmPlumeGrow, equalPull: function () { return MM_EQUAL_PULL; } }); } catch (e) {}
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { launchDisplay: mmLaunchDisplay, returnCoast: mmReturnCoast, returnView: mmReturnView, phaseLitAt: mmPhaseLitAt, entryPeakG: mmEntryPeakG, descent: MM_DESCENT, descentStep: mmDescentStep, lunarGravity: mmLunarGravity, descentMass: mmDescentMass, descentGuidance: mmDescentGuidance, landingScore: mmLandingScore, earthLandPaths: mmEarthLandPaths, earthClouds: mmEarthClouds, drawEarth: drawDetailedEarth, saturnV: mmDrawSaturnV, saturnVHeight: function () { return MM_SATURN_V_H; }, moonProject: mmMoonProject, moonMaria: mmMoonMariaPaths, moonSites: function () { return MM_MOON_SITES; }, terminatorLon: function () { return MM_TERMINATOR_LON; }, craftInShadow: mmCraftInShadow, splashPose: mmSplashPose, entryState: mmEntryState, coastAt: mmCoastAt, coastSpeed: mmCoastSpeed, soundSpeed: mmSoundSpeed, dynamicPressure: mmDynamicPressure, airAbove: mmAirAbove, skyAt: mmSkyAt, plumeGrow: mmPlumeGrow, equalPull: function () { return MM_EQUAL_PULL; } }); } catch (e) {}
 
   function _seededRand(seed) {
     var s = (seed * 16807 + 1) % 2147483647;
@@ -1338,22 +1435,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   var _mmCoast = null;
   function mmCoastTable() {
     if (_mmCoast) return _mmCoast;
-    var rows = [[0, MM_TLC_R0]], t = 0, r = MM_TLC_R0;
+    var rows = [{ t: 0, r: MM_TLC_R0, v: MM_TLC_V0 }], t = 0, r = MM_TLC_R0;
     while (r < MM_COAST_END) {
-      var dr = Math.min(500, MM_COAST_END - r);
-      t += dr / mmCoastSpeed(r + dr / 2); r += dr; rows.push([t, r]);
+      var dr = Math.min(500, r * 0.01, (MM_EM_D - r) * 0.01, MM_COAST_END - r);
+      t += mmCoastInterval(r, r + dr, mmCoastSpeed); r += dr;
+      rows.push({ t: t, r: r, v: mmCoastSpeed(r) });
     }
     return (_mmCoast = rows);
   }
   // Distance from Earth's centre and speed a fraction f (0..1) of the way through the
   // coast in TIME.
   function mmCoastAt(f) {
-    var rows = mmCoastTable(), t = Math.min(1, Math.max(0, f)) * rows[rows.length - 1][0];
-    var lo = 0, hi = rows.length - 1;
-    while (hi - lo > 1) { var mid = (lo + hi) >> 1; if (rows[mid][0] <= t) lo = mid; else hi = mid; }
-    var a = rows[lo], b = rows[hi], k = b[0] > a[0] ? (t - a[0]) / (b[0] - a[0]) : 0;
-    var r = a[1] + (b[1] - a[1]) * k;
-    return { r: r, v: mmCoastSpeed(r) };
+    var rows = mmCoastTable(), total = rows[rows.length - 1].t;
+    var t = Math.min(1, Math.max(0, f)) * total, sample = mmSampleCoast(rows, t);
+    return { r: sample.r, v: sample.v, elapsedSeconds: t, totalSeconds: total, days: t / 86400, totalDays: total / 86400 };
   }
 
   // ── Enhanced starfield with size/color variation ──
@@ -2006,7 +2101,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     // an equirectangular sky map stretches worst exactly at the pole it would
     // be staring through.
     var starGeo = new THREE.BufferGeometry();
-    var starN = lowPower ? 420 : 900;
+    var starN = lowPower ? 90 : 180;
     var starPos = new Float32Array(starN * 3);
     var sRng = _seededRand(7919);
     for (var si = 0; si < starN; si++) {
@@ -2020,7 +2115,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       starPos[si * 3 + 2] = Math.sin(sth) * sr2 * 1800;
     }
     starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-    var starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 5.5, sizeAttenuation: false, depthWrite: false });
+    // Restrained stars keep the sunlit surface readable; exposed lunar photos
+    // do not show a bright galaxy behind a brightly lit spacecraft.
+    var starMat = new THREE.PointsMaterial({ color: 0xbac3d0, size: 1.1, transparent: true, opacity: 0.28, sizeAttenuation: false, depthWrite: false });
     var stars = new THREE.Points(starGeo, starMat);
     scene.add(stars);
 
@@ -2034,7 +2131,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     // separate them. A single wide heightfield with radially graded detail has no
     // seam to fight, and costs less than the two planes did together.
     var TERRAIN_SPAN = 16000;
-    var seg = lowPower ? 150 : 230;
+    var seg = lowPower ? 140 : 220;
     var terGeo = new THREE.PlaneGeometry(TERRAIN_SPAN, TERRAIN_SPAN, seg, seg);
     terGeo.rotateX(-Math.PI / 2);
     // Seeded crater field, so the same landing site greets every retry and a
@@ -2069,27 +2166,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         var cr = craters[cj];
         var dxc = vx - cr.x, dzc = vz - cr.z;
         var dist = Math.sqrt(dxc * dxc + dzc * dzc);
-        if (dist < cr.r * 1.35) {
+        if (dist < cr.r * 1.6) {
           var tq = dist / cr.r;
-          // Bowl inside, raised ejecta rim just outside. The rim is what makes
-          // a crater legible under a low sun — without it the bowl reads flat.
-          if (tq < 1) hgt -= cr.d * (1 - tq * tq) * 0.85;
-          else hgt += cr.d * 0.32 * (1 - (tq - 1) / 0.35);
+          // Smooth bowl and rim: the old formula jumped at one crater radius,
+          // producing an artificial cliff where the inside met the ejecta.
+          var rim = Math.exp(-Math.pow((tq - 1) / 0.16, 2)) * cr.d * 0.22;
+          var edge = Math.max(0, Math.min(1, (1.6 - tq) / 0.3));
+          var bowl = tq < 1 ? -cr.d * Math.pow(1 - tq * tq, 2) * 0.85 : 0;
+          hgt += bowl + rim * edge * edge * (3 - 2 * edge);
         }
       }
       return hgt;
     }
     var terPos = terGeo.attributes.position;
-    for (var vi = 0; vi < terPos.count; vi++) terPos.setY(vi, terrainHeight(terPos.getX(vi), terPos.getZ(vi)));
+    var terColors = new Float32Array(terPos.count * 3);
+    for (var vi = 0; vi < terPos.count; vi++) {
+      // Concentrate vertices near the approach instead of spending almost all
+      // of them on distant terrain. One continuous mesh still reaches 8 km.
+      var tx = terPos.getX(vi) / (TERRAIN_SPAN / 2), tz = terPos.getZ(vi) / (TERRAIN_SPAN / 2);
+      tx = tx * (550 + 7450 * tx * tx); tz = tz * (550 + 7450 * tz * tz);
+      terPos.setXYZ(vi, tx, terrainHeight(tx, tz), tz);
+      var grain = 0.87 + 0.08 * Math.sin(tx * 0.57 + Math.sin(tz * 0.81)) + 0.045 * Math.cos(tx * 0.12 - tz * 0.22);
+      terColors[vi * 3] = grain; terColors[vi * 3 + 1] = grain * 0.98; terColors[vi * 3 + 2] = grain * 0.94;
+    }
+    terGeo.setAttribute('color', new THREE.BufferAttribute(terColors, 3));
     terGeo.computeVertexNormals();
     // Lunar albedo is about 0.12 — darker than worn asphalt. Photographs read
     // bright only because the Moon sits against pure black with no atmosphere to
     // haze it. Painting the regolith light made the whole scene milky and, worse,
     // pushed it over the bloom threshold so the landing site washed out.
-    var terMat = new THREE.MeshStandardMaterial({ color: 0x565149, roughness: 1.0, metalness: 0.0 });
+    var terMat = new THREE.MeshStandardMaterial({ color: 0x756f66, vertexColors: true, roughness: 1.0, metalness: 0.0 });
     var terrain = new THREE.Mesh(terGeo, terMat);
     terrain.receiveShadow = !lowPower;
+    terrain.castShadow = !lowPower;
     scene.add(terrain);
+
+    // Surface-referenced instruments, not landing targets. Amber shows where
+    // five seconds of the current horizontal speed would carry the craft.
+    var nadirMat = new THREE.LineBasicMaterial({ color: 0x67e8f9, transparent: true, opacity: 0.8, depthTest: false });
+    var nadirGeo = new THREE.BufferGeometry();
+    var nadirPos = new Float32Array(64 * 3);
+    nadirGeo.setAttribute('position', new THREE.BufferAttribute(nadirPos, 3));
+    var nadir = new THREE.LineLoop(nadirGeo, nadirMat); nadir.renderOrder = 3; nadir.frustumCulled = false; scene.add(nadir);
+    var driftGeo = new THREE.BufferGeometry();
+    driftGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6 * 3), 3));
+    var drift = new THREE.LineSegments(driftGeo, new THREE.LineBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.9, depthTest: false }));
+    drift.renderOrder = 4; drift.frustumCulled = false; scene.add(drift);
+
+    // A reusable, deterministic scatter adds scale near the final approach.
+    var rockRng = _seededRand(12021969);
+    var rockGeo = new THREE.DodecahedronGeometry(1, 0);
+    var rockMat = new THREE.MeshStandardMaterial({ color: 0x68645d, roughness: 1 });
+    for (var ri = 0; ri < (lowPower ? 40 : 90); ri++) {
+      var rx = (rockRng.next() - 0.5) * 1100, rz = (rockRng.next() - 0.5) * 450;
+      var rs = 0.35 + Math.pow(rockRng.next(), 2) * 2.8;
+      var rock = new THREE.Mesh(rockGeo, rockMat);
+      rock.scale.set(rs, rs * 0.6, rs * 0.85); rock.rotation.y = rockRng.next() * Math.PI;
+      rock.position.set(rx, terrainHeight(rx, rz) + rs * 0.3, rz);
+      rock.castShadow = !lowPower; rock.receiveShadow = !lowPower; terrain.add(rock);
+    }
 
 
 
@@ -2108,8 +2243,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       sun.castShadow = true;
       sun.shadow.mapSize.width = 1024; sun.shadow.mapSize.height = 1024;
       sun.shadow.camera.near = 1; sun.shadow.camera.far = 1400;
-      sun.shadow.camera.left = -60; sun.shadow.camera.right = 60;
-      sun.shadow.camera.top = 60; sun.shadow.camera.bottom = -60;
+      sun.shadow.camera.left = -180; sun.shadow.camera.right = 180;
+      sun.shadow.camera.top = 180; sun.shadow.camera.bottom = -180;
       sun.shadow.bias = -0.0015;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -2136,6 +2271,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     var hatch = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.96, 0.12), darkMat);
     hatch.position.set(0, 2.36, 1.58);
     lm.add(hatch);
+
+    // Alternating foil panels break up the descent stage's silhouette under
+    // the hard sunlight without a bitmap texture or an extra network request.
+    var foilMat = new THREE.MeshStandardMaterial({ color: 0xe2b75b, metalness: 0.7, roughness: 0.58 });
+    for (var fi = 0; fi < 8; fi++) {
+      var fa = fi * Math.PI / 4 + Math.PI / 8;
+      var foil = new THREE.Mesh(new THREE.BoxGeometry(1.25, 1.35, 0.035), fi % 2 ? foilMat : darkMat);
+      foil.position.set(Math.sin(fa) * 1.91, 0.88, Math.cos(fa) * 1.91); foil.rotation.y = fa;
+      lm.add(foil);
+    }
+    function lmRod(ax, ay, az, bx, by, bz, radius, material) {
+      var dv = new THREE.Vector3(bx - ax, by - ay, bz - az);
+      var rod = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, dv.length(), 6), material);
+      rod.position.set((ax + bx) / 2, (ay + by) / 2, (az + bz) / 2);
+      rod.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dv.normalize()); lm.add(rod);
+    }
+    lmRod(0, 3.3, 0, 0, 4.3, 0, 0.035, silverMat);
+    var dish = new THREE.Mesh(new THREE.SphereGeometry(0.38, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), silverMat);
+    dish.position.set(0, 4.3, 0); dish.rotation.x = Math.PI / 3; lm.add(dish);
+    for (var rung = 0; rung < 7; rung++) {
+      var ladderY = -1.65 + rung * 0.48, ladderZ = 2.7 - rung * 0.16;
+      lmRod(-0.32, ladderY, ladderZ, 0.32, ladderY, ladderZ, 0.027, silverMat);
+    }
+    lmRod(-0.36, -1.8, 2.75, -0.36, 1.7, 1.59, 0.035, silverMat);
+    lmRod(0.36, -1.8, 2.75, 0.36, 1.7, 1.59, 0.035, silverMat);
 
     // Triangular windows, canted down: the LM's forward windows point at the
     // landing site, which is the whole reason they were shaped that way.
@@ -2172,6 +2332,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         lz * (hipR + (footR - hipR) * 0.5)
       );
       lm.add(strut);
+      lmRod(lx * 1.0, 0.7, lz * 1.0, lx * footR, footY, lz * footR, 0.055, legMat);
       var pad = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.5, 0.12, 12), legMat);
       pad.position.set(lx * footR, footY, lz * footR);
       lm.add(pad);
@@ -2187,22 +2348,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     scene.add(lm);
 
     // ── Exhaust plume ──
-    // Additive cone plus a bright core. In vacuum there is no air to billow
-    // against, so the plume stays tight and hard-edged instead of mushrooming.
+    // With almost no ambient pressure, exhaust expands broadly from the bell.
+    // Its faint tint is a teaching cue: the hypergolic exhaust is much less
+    // conspicuous than the orange flame of a launch rocket in atmosphere.
     var plumeGrp = new THREE.Group();
     var plumeMat = new THREE.MeshBasicMaterial({
-      color: 0xff7a1e, transparent: true, opacity: 0.42,
+      color: 0xa8b9df, transparent: true, opacity: 0.08,
       blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide
     });
-    var plume = new THREE.Mesh(new THREE.ConeGeometry(0.62, 4.2, 14, 1, true), plumeMat);
-    plume.position.y = -2.1; plume.rotation.x = Math.PI;
+    var plume = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 3.4, 5.5, 20, 1, true), plumeMat);
+    plume.position.y = -2.75;
     plumeGrp.add(plume);
     var coreMat = new THREE.MeshBasicMaterial({
-      color: 0xfff2c4, transparent: true, opacity: 0.85,
+      color: 0xe5e6ff, transparent: true, opacity: 0.15,
       blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide
     });
-    var plumeCore = new THREE.Mesh(new THREE.ConeGeometry(0.26, 2.5, 12, 1, true), coreMat);
-    plumeCore.position.y = -1.25; plumeCore.rotation.x = Math.PI;
+    var plumeCore = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 1.0, 2.2, 14, 1, true), coreMat);
+    plumeCore.position.y = -1.1;
     plumeGrp.add(plumeCore);
     plumeGrp.position.y = -1.1;
     lm.add(plumeGrp);
@@ -2214,23 +2376,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     var dustN = lowPower ? 90 : 220;
     var dustGeo = new THREE.BufferGeometry();
     var dustPos = new Float32Array(dustN * 3);
-    var dustSeed = [];
+    var dustSeed = [], dustRng = _seededRand(1202);
     for (var di = 0; di < dustN; di++) {
-      dustSeed.push({ a: Math.random() * Math.PI * 2, sp: 14 + Math.random() * 46, t: Math.random() });
+      dustSeed.push({ a: dustRng.next() * Math.PI * 2, sp: 12 + dustRng.next() * 32,
+        offset: dustRng.next() * 1.5, life: 1.1 + dustRng.next() * 0.8, born: -100, x: 0, y: 0, z: 0, vx: 0, vz: 0, vy: 0 });
       dustPos[di * 3] = 0; dustPos[di * 3 + 1] = -9999; dustPos[di * 3 + 2] = 0;
     }
     dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
     var dustMat = new THREE.PointsMaterial({
-      color: 0xbcb2a0, size: 1.5, transparent: true, opacity: 0.0,
+      color: 0xbcb2a0, size: 0.45, transparent: true, opacity: 0.0,
       depthWrite: false, sizeAttenuation: true
     });
     var dust = new THREE.Points(dustGeo, dustMat);
+    // Inactive particles sit below the world; a cached bounding sphere there
+    // would incorrectly cull the whole sheet when emission starts later.
+    dust.frustumCulled = false;
     scene.add(dust);
 
     // ── Bloom (guarded, house pattern) ──
     var composer = null;
+    var disposed = false;
     (function setupBloom() {
-      if (window.AlloPostFXEnabled === false) return;
+      if (lowPower || window.AlloPostFXEnabled === false) return;
       var ensure = function (cb) {
         if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
         var urls = [
@@ -2250,6 +2417,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         })();
       };
       ensure(function () {
+        if (disposed) return;
         try {
           var T = window.THREE;
           if (!T || !T.EffectComposer || !T.RenderPass || !T.UnrealBloomPass) return;
@@ -2261,15 +2429,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           // a student most needs to read the ground they are dropping onto.
           c.addPass(new T.UnrealBloomPass(
             new T.Vector2(Math.max(1, Math.round(W * res)), Math.max(1, Math.round(H * res))),
-            lowPower ? 0.5 : 0.7, 0.4, 0.92));
+            0.12, 0.2, 0.98));
           composer = c;
         } catch (e) { composer = null; }
       });
     })();
 
     hostEl.appendChild(glCv);
-
-    var disposed = false;
 
     // ── Per-frame update ──
     // Driven entirely by the 2D loop's own physics: this owns no state that
@@ -2279,6 +2445,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       var alt = Math.max(0, s.alt);
       var tilt = s.tilt || 0;
       var thrust = s.thrust || 0;
+      var simTime = Number.isFinite(s.time) ? s.time : (s.tick || 0) / 60;
       var burning = thrust > 0.1 && s.fuel > 0 && !s.done;   // the plume stayed lit on a crashed lander
 
       // The lander holds a fixed world point and the GROUND moves, so craters
@@ -2288,48 +2455,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       // that only the coarse skirt is in frame; compressed this way, 15 km still
       // reads as "very high" while the last 200 m — the part actually flown —
       // gets most of the visual range.
-      var altUnits = 2.2 + 96 * Math.log(1 + alt / 60) / Math.log(1 + MM_DESCENT.handoverAlt / 60);   // full visual range across the part actually flown
+      var altUnits = 2.2 + 32 * Math.log(1 + alt / 60) / Math.log(1 + MM_DESCENT.handoverAlt / 60);   // altitude is compressed; instruments retain real metres
       lm.rotation.z = -tilt;
-      var wrap = TERRAIN_SPAN / 24;
-      terrain.position.x = -((s.groundX || 0) % wrap);
-      terrain.position.z = -((s.groundZ || 0) % wrap);
+      // Keep the scenery fixed to the integrated ground track. Modulo wrapping
+      // teleported the craters and camera on long drifts and erased distance.
+      terrain.position.x = -(s.groundX || 0);
+      terrain.position.z = -(s.groundZ || 0);
       // The terrain slides and the lander does not, so read the ground under it.
       var groundH = terrainHeight(-terrain.position.x, -terrain.position.z);
       lm.position.set(0, groundH + altUnits, 0);
-      dust.position.y = groundH;
+      var groundX = -terrain.position.x, groundZ = -terrain.position.z;
+
+      // The ring marks the point directly below the craft. It rides the actual
+      // surface rather than floating as a horizontal disc through crater walls.
+      var ringRadius = 4.5 + Math.min(8, altUnits * 0.045);
+      for (var ni = 0; ni < 64; ni++) {
+        var na = ni / 64 * Math.PI * 2, nx = Math.cos(na) * ringRadius, nz = Math.sin(na) * ringRadius;
+        nadirGeo.attributes.position.setXYZ(ni, nx, terrainHeight(groundX + nx, groundZ + nz) + 0.3, nz);
+      }
+      nadirGeo.attributes.position.needsUpdate = true;
+      var driftX = Math.max(-140, Math.min(140, (s.hVel || 0) * 5 * 0.6));
+      var driftH = terrainHeight(groundX + driftX, groundZ) + 0.45;
+      var headX = driftX - Math.sign(driftX) * Math.min(3.5, Math.abs(driftX) * 0.4);
+      var driftP = driftGeo.attributes.position;
+      driftP.setXYZ(0, 0, groundH + 0.45, 0); driftP.setXYZ(1, driftX, driftH, 0);
+      driftP.setXYZ(2, driftX, driftH, 0); driftP.setXYZ(3, headX, driftH, 1.6);
+      driftP.setXYZ(4, driftX, driftH, 0); driftP.setXYZ(5, headX, driftH, -1.6);
+      driftP.needsUpdate = true; drift.visible = !s.done && Math.abs(s.hVel || 0) > 0.15;
 
       sun.target.position.copy(lm.position);
       sun.position.set(lm.position.x - 700, lm.position.y + 260, lm.position.z + 360);
 
-      // Plume length tracks throttle, with a little chug so a held burn never
-      // looks like a static decal pasted under the engine.
+      // A steady hypergolic burn, with a subtle deterministic shimmer. Scale
+      // the GROUP from the nozzle so throttle never detaches the exhaust.
       plumeGrp.visible = burning;
       if (burning) {
-        var chug = 0.9 + Math.sin(s.tick * 0.55) * 0.07 + Math.random() * 0.05;
-        plume.scale.set(0.7 + thrust * 0.5, (0.45 + thrust * 1.15) * chug, 0.7 + thrust * 0.5);
-        plumeCore.scale.set(0.7 + thrust * 0.4, (0.45 + thrust * 1.0) * chug, 0.7 + thrust * 0.4);
-        plumeMat.opacity = 0.3 + thrust * 0.3;
-        coreMat.opacity = 0.6 + thrust * 0.3;
+        var chug = reduce ? 1 : 1 + Math.sin(simTime * 19) * 0.015;
+        var exhaustLength = Math.min(0.55 + thrust * 0.85, Math.max(0.15, (altUnits - 1.15) / 5.5));
+        plumeGrp.scale.set(0.8 + thrust * 0.25, exhaustLength * chug, 0.8 + thrust * 0.25);
+        plumeMat.opacity = 0.045 + thrust * 0.07;
+        coreMat.opacity = 0.09 + thrust * 0.11;
       }
 
-      // Dust: only close in, only under thrust, strengthening as you descend.
-      var dustStrength = (burning && alt < 30) ? (1 - alt / 30) : 0;
-      dustMat.opacity = dustStrength * 0.55;
-      if (dustStrength > 0) {
-        var dp = dustGeo.attributes.position;
-        for (var k = 0; k < dustN; k++) {
-          var sd = dustSeed[k];
-          sd.t += 0.016 + thrust * 0.012;
-          if (sd.t > 1) { sd.t = 0; sd.a = Math.random() * Math.PI * 2; }
-          var rad = sd.t * sd.sp;
-          // Downrange bias, because the plume points where the vehicle tilts.
-          dp.setXYZ(k,
-            Math.cos(sd.a) * rad + Math.sin(tilt) * rad * 0.5,
-            0.25 + sd.t * 0.7,
-            Math.sin(sd.a) * rad);
+      // Ballistic dust, driven by simulation time rather than frames. Grains
+      // retain their world launch points as the lander drifts and fall under
+      // lunar gravity; cutting the engine does not erase airborne grains.
+      // Qualitative sheet geometry follows NASA plume/surface observations:
+      // https://ntrs.nasa.gov/citations/20090022233
+      var dustStrength = (burning && alt < 30) ? (1 - alt / 30) * thrust : 0;
+      var dp = dustGeo.attributes.position, liveDust = 0, dustOpacity = 0;
+      for (var k = 0; k < dustN; k++) {
+        var sd = dustSeed[k], age = simTime - sd.born;
+        if (dustStrength > 0 && age >= sd.life) {
+          sd.born = simTime - ((simTime + sd.offset) % sd.life); age = simTime - sd.born;
+          sd.x = groundX - Math.sin(tilt) * Math.min(12, altUnits - 1.1); sd.z = groundZ;
+          sd.y = terrainHeight(sd.x, sd.z) + 0.15;
+          sd.vx = Math.cos(sd.a) * sd.sp - Math.sin(tilt) * sd.sp * 0.4;
+          sd.vz = Math.sin(sd.a) * sd.sp; sd.vy = 0.35 + dustStrength * 0.55;
+          sd.strength = dustStrength;
         }
-        dp.needsUpdate = true;
+        var dustY = sd.y + sd.vy * age - 0.5 * MM_DESCENT.g * 0.6 * age * age;
+        if (age >= 0 && age < sd.life && dustY >= terrainHeight(sd.x + sd.vx * age, sd.z + sd.vz * age)) {
+          dp.setXYZ(k, sd.x + sd.vx * age - groundX, dustY, sd.z + sd.vz * age - groundZ); liveDust++;
+          dustOpacity = Math.max(dustOpacity, sd.strength * (1 - age / sd.life));
+        } else { dp.setXYZ(k, 0, -9999, 0); }
       }
+      dp.needsUpdate = true; dustMat.opacity = liveDust ? dustOpacity * 0.55 : 0;
 
       // ── Camera ──
       // A chase view that trucks back as altitude grows, so the lander keeps a
@@ -2337,14 +2528,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       // High up you read the approach; near the surface you read the touchdown.
       // Framed off the COMPRESSED altitude, so the lander keeps a readable screen
       // size all the way down instead of shrinking to a speck for most of the run.
-      var back = 12 + altUnits * 0.42;
-      var up = 4 + altUnits * 0.30;
+      var back = 20 + altUnits * 0.50;
+      var up = 8 + altUnits * 0.34;
       var camX = lm.position.x + back * 0.34, camZ = lm.position.z + back;
       var camFloor = terrainHeight(camX - terrain.position.x, camZ - terrain.position.z) + 3;
       camera.position.set(camX, Math.max(lm.position.y + up, camFloor), camZ);
       // Look progressively further ahead of the vehicle as height grows, so high
       // up you read the approach and low down you read the touchdown point.
-      camera.lookAt(lm.position.x, Math.max(groundH, lm.position.y - 2 - altUnits * 0.22), lm.position.z);
+      camera.lookAt(lm.position.x, Math.max(groundH, lm.position.y - 2 - altUnits * 0.28), lm.position.z);
 
       // Stars ride the camera so they never parallax — at this range they are
       // effectively at infinity, and drifting them would read as tumbling.
@@ -4878,6 +5069,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   return h('p', { key: i, className: 'text-[0.6875rem] text-slate-400' }, '\u2022 ' + fact);
                 })
               ),
+              h('p', { 'data-coast-model-note': 'true', className: 'text-xs text-slate-300 mb-3' },
+                t('stem.moonmission.coast_model_note', 'Model: distance and speed share one gravity calculation with a fixed Moon. Distances are measured from body centers. The curved route is a schematic; the calculated coast is radial.') + ' ' +
+                t('stem.moonmission.coast_model_duration', 'Model coast duration:') + ' ' + mmCoastAt(1).totalDays.toFixed(2) + ' ' + t('stem.moonmission.coast_model_days', 'days.')),
               h('div', { className: 'mb-2' }, (function() {
                 var cs = d.coastSlowest;
                 var seen = mmIsObj(cs) && typeof cs.v === 'number' && isFinite(cs.v) && typeof cs.toMoonKm === 'number' && isFinite(cs.toMoonKm);
@@ -5321,6 +5515,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   // nothing integrated it into a position, because a fixed side-on
                   // view had nowhere to put one. The 3D ground needs it to slide.
                   var groundX = 0, groundZ = 0;
+                  var flightTime = 0, flightPaused = false, throttleSetting = 0, dustSettlingTime = 0;
+                  var flightState = { alt: alt, vVel: vVel, hVel: hVel, fuel: fuel, thrust: thrust, tilt: tilt, x: 0, elapsed: 0 };
+                  var flightPanel = null, instrumentNodes = {}, lastInstrumentTime = -1;
                   // Fixed-step accumulator. The descent used to advance one physics
                   // step per FRAME, which tied a graded piloting task to the refresh
                   // rate: the same flight scored differently on a fast machine than a
@@ -5407,6 +5604,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // the DOM, so the parent-watching MutationObserver never fired and Retry
                     // Landing / Begin EVA left the WebGL context behind.
                     if (!document.contains(cvEl)) { if (d3) { try { d3.dispose(); } catch (_goneErr) {} d3 = null; } return; }
+                    if (!flightPanel) {
+                      flightPanel = cvEl.parentElement.parentElement.querySelector('[data-descent-instruments]');
+                      if (flightPanel) {
+                        flightPanel.querySelectorAll('[data-flight-value]').forEach(function(node) { instrumentNodes[node.getAttribute('data-flight-value')] = node; });
+                        var lever = flightPanel.querySelector('[data-descent-throttle]');
+                        lever.addEventListener('input', function() {
+                          throttleSetting = Math.max(0, Math.min(1, Number(lever.value) / 100));
+                          flightPanel.querySelector('[data-throttle-setting]').textContent = Math.round(throttleSetting * 100) + '%';
+                        });
+                        var pauseFlight = flightPanel.querySelector('[data-descent-pause]');
+                        pauseFlight.addEventListener('click', function() {
+                          if (landed || crashed) return;
+                          flightPaused = !flightPaused;
+                          pauseFlight.setAttribute('aria-pressed', String(flightPaused));
+                          keys = {}; padCtl.thrust = padCtl.left = padCtl.right = false;
+                          cvEl.parentElement.querySelectorAll('[data-descent-pad] button').forEach(function(b) { b.setAttribute('aria-pressed', 'false'); });
+                          callout(flightPaused ? 'Flight paused. Inspect the instruments or adjust the throttle, then press Pause flight again to resume.' : 'You have control. ' + Math.round(alt) + ' m up, ' + Math.abs(vVel).toFixed(1) + ' m/s vertical speed.');
+                          lastInstrumentTime = -1;
+                          if (!flightPaused) cvEl.focus();
+                        });
+                      }
+                    }
                     tick++;
                     // Attach here rather than in the ref: by the first frame React has
                     // committed and the canvas is really in the document.
@@ -5426,6 +5645,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var _steps = Math.floor(_physAcc / PHYS_STEP_MS);
                     if (_steps > PHYS_MAX_STEPS) _steps = PHYS_MAX_STEPS;
                     _physAcc -= _steps * PHYS_STEP_MS;
+                    if (flightPaused || document.hidden) { _steps = 0; _physAcc = 0; }
 
                     for (var _ps = 0; _ps < _steps && !landed && !crashed; _ps++) {
                       // Controls: up arrow = thrust, left/right = horizontal adjust
@@ -5435,6 +5655,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       // main engine, so declining the mid-course correction really costs.
                       var _in = {
                         thrust: !!(padCtl.thrust || keys['arrowup'] || keys['w']),
+                        throttle: (padCtl.thrust || keys['arrowup'] || keys['w']) ? 1 : throttleSetting,
                         left: !!(padCtl.left || keys['arrowleft'] || keys['a']),
                         right: !!(padCtl.right || keys['arrowright'] || keys['d'])
                       };
@@ -5456,7 +5677,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
                       // Integrate the ground track the 3D terrain slides along, at about
                       // 0.6 scene units per metre, the scale the scene has near the ground.
-                      groundX += hVel * (PHYS_STEP_MS / 1000) * 0.6;
 
                       // Callouts fire when a line is CROSSED, not whenever a live number
                       // changes: the old strip re-announced ~30 times a second (it printed
@@ -5477,13 +5697,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       }
 
                       // Physics: one real-time step, the same function the tests fly.
-                      var _st = { alt: alt, vVel: vVel, hVel: hVel, fuel: fuel, thrust: thrust, tilt: tilt };
+                      var _st = flightState;
                       mmDescentStep(_st, _in, PHYS_STEP_MS / 1000);
                       alt = _st.alt; vVel = _st.vVel; hVel = _st.hVel; fuel = _st.fuel; thrust = _st.thrust; tilt = _st.tilt;
+                      flightTime = _st.elapsed; groundX = _st.x * 0.6;
 
                       // Landing check
                       if (alt <= 0) {
                         alt = 0;
+                        thrust = 0; flightState.thrust = 0;
                         var _vAbs = Math.abs(vVel), _hAbs = Math.abs(hVel);
                         if (_vAbs < 3 && _hAbs < 5) {
                           landed = true;
@@ -5507,6 +5729,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       }
                     }
 
+                    // Airborne ejecta keep falling after engine cutoff at contact.
+                    // Only the visual clock continues; final flight measurements stay fixed.
+                    if ((landed || crashed) && !document.hidden) dustSettlingTime = Math.min(3, dustSettlingTime + Math.min(0.1, _elapsed / 1000));
+
+                    // Instruments use the same state as the graded flight; update at 4 Hz
+                    // without re-rendering React or repeatedly announcing moving numbers.
+                    if (flightPanel && (lastInstrumentTime < 0 || flightTime - lastInstrumentTime >= 0.25 || landed || crashed)) {
+                      lastInstrumentTime = flightTime;
+                      var guidance = mmDescentGuidance(flightState);
+                      var finishedFlight = landed || crashed;
+                      var flightValues = {
+                        altitude: Math.max(0, alt).toFixed(1) + ' m',
+                        vertical: Math.abs(vVel).toFixed(1) + ' m/s ' + (vVel > 0 ? 'up' : 'down'),
+                        lateral: Math.abs(hVel).toFixed(1) + ' m/s ' + (hVel < 0 ? 'left' : 'right'),
+                        propellant: guidance.propellantKg.toFixed(0) + ' kg',
+                        mass: guidance.massKg.toFixed(0) + ' kg',
+                        hover: (guidance.hoverThrottle * 100).toFixed(1) + '%',
+                        throttle: (finishedFlight ? 0 : thrust * 100).toFixed(0) + '%',
+                        deltaV: guidance.deltaV.toFixed(0) + ' m/s',
+                        brake: isFinite(guidance.brakingAltitude) ? guidance.brakingAltitude.toFixed(1) + ' m' : 'No thrust available',
+                        time: flightTime.toFixed(1) + ' s',
+                        track: Math.abs(flightState.x).toFixed(1) + ' m ' + (flightState.x < 0 ? 'left' : 'right'),
+                        margin: guidance.brakingMargin.toFixed(1) + ' m'
+                      };
+                      Object.keys(flightValues).forEach(function(key) { if (instrumentNodes[key]) instrumentNodes[key].textContent = flightValues[key]; });
+                      var guidanceNode = flightPanel.querySelector('[data-descent-guidance]');
+                      var guidanceText = finishedFlight ? (landed ? 'Touchdown recorded. Review the final flight instruments.' : 'Impact recorded. Review your descent rate and braking height before retrying.')
+                        : flightPaused ? 'Paused — flight time, propellant and motion are held.'
+                        : fuel <= 0 ? 'Engine unavailable — propellant exhausted.'
+                        : !guidance.canBrake && vVel < -1 ? 'Fuel margin critical — estimated propellant is insufficient to stop this descent.'
+                        : guidance.brakingMargin <= 5 && vVel < -1 ? 'Brake now — little height remains above the estimated stopping height.'
+                        : Math.abs(hVel) >= 5 ? 'Cancel lateral drift: tilt against your motion while applying thrust.'
+                        : alt < 30 && vVel < -2 ? 'Final approach — reduce descent below 3 m/s and drift below 5 m/s.'
+                        : 'Use the hover setting to balance gravity. Tilt diverts some lift into sideways acceleration.';
+                      guidanceNode.textContent = guidanceText;
+                      guidanceNode.style.color = !finishedFlight && (fuel <= 0 || guidance.brakingMargin <= 5) ? '#fde68a' : '#a5f3fc';
+                      cvEl.dataset.descentElapsed = flightTime.toFixed(3);
+                      cvEl.dataset.descentAlt = String(Math.max(0, Math.round(alt)));
+                      cvEl.dataset.descentVspeed = vVel.toFixed(1);
+                      cvEl.dataset.descentHspeed = hVel.toFixed(1);
+                      cvEl.dataset.descentFuel = String(Math.max(0, Math.round(fuel)));
+                      cvEl.dataset.descentThrust = thrust.toFixed(2);
+                      cvEl.dataset.descentPaused = String(flightPaused);
+                      cvEl.dataset.descentMass = guidance.massKg.toFixed(2);
+                      cvEl.dataset.descentBrakeAltitude = String(guidance.brakingAltitude);
+                      cvEl.dataset.descentX = flightState.x.toFixed(3);
+                      if (finishedFlight) {
+                        flightPanel.querySelector('[data-descent-pause]').disabled = true;
+                        flightPanel.querySelector('[data-descent-throttle]').disabled = true;
+                      }
+                    }
+
                     // ── World ──
                     // With the 3D scene live the canvas holds only the HUD, so it must
                     // be CLEARED rather than filled: a fill would paint over the WebGL
@@ -5518,7 +5792,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       ctx.clearRect(0, 0, W, H);
                       d3.update({
                         alt: alt, tilt: tilt, thrust: thrust, fuel: fuel,
-                        groundX: groundX, groundZ: groundZ, tick: tick, done: landed || crashed
+                        groundX: groundX, groundZ: groundZ, tick: tick, time: flightTime + dustSettlingTime, hVel: hVel, vVel: vVel, done: landed || crashed
                       });
                     }
                     if (!d3) {
@@ -5528,43 +5802,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // Enhanced starfield (upper portion of canvas only)
                     ctx.save();
                     ctx.beginPath(); ctx.rect(0, 0, W, H * 0.45); ctx.clip();
-                    drawStarfield(ctx, W, H * 0.45, tick, 80);
+                    ctx.globalAlpha = 0.25;
+                    drawStarfield(ctx, W, H * 0.45, 0, 40);
                     ctx.restore();
 
-                    // Moon surface (rises as altitude drops)
-                    var surfaceY = H * 0.5 + Math.min(H * 0.45, (alt / 15000) * H * 0.45);
+                    // A compressed side view preserves visible clearance all
+                    // the way down; the pads meet the ground at zero altitude.
+                    var surfaceY = H * 0.79;
+                    var visualClearance = Math.min(H * 0.35, H * 0.35 * Math.log(1 + alt / 25) / Math.log(1 + MM_DESCENT.handoverAlt / 25));
                     // ── Moon surface (gradient with procedural craters + boulders) ──
                     var surfGrad = ctx.createLinearGradient(0, surfaceY, 0, H);
-                    surfGrad.addColorStop(0, '#9a9288'); surfGrad.addColorStop(0.3, '#8a8278'); surfGrad.addColorStop(1, '#6a6258');
+                    surfGrad.addColorStop(0, '#79756d'); surfGrad.addColorStop(0.3, '#65625d'); surfGrad.addColorStop(1, '#444440');
                     ctx.fillStyle = surfGrad;
                     ctx.fillRect(0, surfaceY, W, H - surfaceY);
                     // Procedural craters (seeded so they're stable)
                     var sRng = _seededRand(314);
                     if (surfaceY < H - 10) {
-                      for (var ci = 0; ci < 16; ci++) {
-                        var crX = sRng.next() * W;
+                      for (var ci = 0; ci < 75; ci++) {
+                        var crX = (sRng.next() - 0.5) * 2600 - groundX * 1.5 + W * 0.5;
                         var crY = surfaceY + 5 + sRng.next() * Math.max(5, (H - surfaceY) * 0.7);
                         var crR = 3 + sRng.next() * 12;
                         // Shadow
-                        ctx.fillStyle = 'rgba(80,70,60,0.3)';
-                        ctx.beginPath(); ctx.arc(crX, crY, crR, 0, Math.PI * 2); ctx.fill();
+                        ctx.fillStyle = 'rgba(18,18,19,0.75)';
+                        ctx.beginPath(); ctx.ellipse(crX, crY, crR, crR * 0.35, 0, 0, Math.PI * 2); ctx.fill();
                         // Bright rim (upper-left)
-                        ctx.strokeStyle = 'rgba(180,170,160,0.25)';
+                        ctx.strokeStyle = 'rgba(205,199,183,0.65)';
                         ctx.lineWidth = Math.max(0.5, crR * 0.12);
-                        ctx.beginPath(); ctx.arc(crX, crY, crR, -2.5, -0.8); ctx.stroke();
+                        ctx.beginPath(); ctx.ellipse(crX, crY, crR, crR * 0.35, 0, 0.2, 2.8); ctx.stroke();
                       }
                       // Scattered boulders
-                      ctx.fillStyle = 'rgba(100,90,80,0.4)';
-                      for (var bi = 0; bi < 8; bi++) {
-                        var bx = sRng.next() * W;
+                      for (var bi = 0; bi < 45; bi++) {
+                        var bx = (sRng.next() - 0.5) * 2600 - groundX * 1.5 + W * 0.5;
                         var by = surfaceY + 3 + sRng.next() * Math.max(3, (H - surfaceY) * 0.5);
                         var br = 1 + sRng.next() * 3;
-                        ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI * 2); ctx.fill();
+                        ctx.fillStyle = 'rgba(10,10,12,0.65)';
+                        ctx.beginPath(); ctx.ellipse(bx + br * 2, by + 2, br * 3, br * 0.5, 0, 0, Math.PI * 2); ctx.fill();
+                        ctx.fillStyle = '#8b877e';
+                        ctx.beginPath(); ctx.moveTo(bx - br, by); ctx.lineTo(bx - br * 0.5, by - br); ctx.lineTo(bx + br * 0.7, by - br * 0.6); ctx.lineTo(bx + br, by + br * 0.4); ctx.closePath(); ctx.fill();
                       }
                     }
 
                     // ── Enhanced Lunar Module ──
-                    var lmX = W * 0.5, lmY = Math.min(surfaceY - 18, H * 0.5);
+                    var lmX = W * 0.5, lmY = surfaceY - 29 - visualClearance;
+                    ctx.fillStyle = 'rgba(0,0,0,0.68)';
+                    ctx.beginPath(); ctx.ellipse(lmX + visualClearance * 2.65, surfaceY + 3, 29, 4.5, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = '#67e8f9'; ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.ellipse(lmX, surfaceY + 3, 27, 5, 0, 0, Math.PI * 2); ctx.stroke();
+                    if (!landed && !crashed && Math.abs(hVel) > 0.15) {
+                      var driftEnd = Math.max(12, Math.min(W - 12, lmX + hVel * 5 * 0.6 * 1.5));
+                      var arrowBack = driftEnd - Math.sign(hVel) * 6;
+                      ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2;
+                      ctx.beginPath(); ctx.moveTo(lmX, surfaceY + 15); ctx.lineTo(driftEnd, surfaceY + 15);
+                      ctx.moveTo(arrowBack, surfaceY + 11); ctx.lineTo(driftEnd, surfaceY + 15); ctx.lineTo(arrowBack, surfaceY + 19); ctx.stroke();
+                    }
                     // Everything from here to the end of the exhaust plume is drawn in the
                     // vehicle's own tilted frame, so the engine bell and flame point where
                     // the thrust actually goes.
@@ -5619,22 +5909,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.beginPath(); ctx.arc(lmX + 24, lmY + 28, 2.5, 0, Math.PI * 2); ctx.fill();
                     ctx.beginPath(); ctx.arc(lmX - 10, lmY + 28, 2, 0, Math.PI * 2); ctx.fill();
                     ctx.beginPath(); ctx.arc(lmX + 10, lmY + 28, 2, 0, Math.PI * 2); ctx.fill();
-                    // ── Descent engine flame (dual envelope) ──
-                    if (thrust > 0.1 && fuel > 0) {
-                      var fLen = 12 + thrust * 28 + Math.random() * 5;
-                      var fW = 4 + thrust * 3;
-                      // Outer flame
+                    // Engine bell and expanding, faint vacuum exhaust.
+                    ctx.fillStyle = '#34383e';
+                    ctx.beginPath(); ctx.moveTo(lmX - 3, lmY + 15); ctx.lineTo(lmX - 6, lmY + 22);
+                    ctx.lineTo(lmX + 6, lmY + 22); ctx.lineTo(lmX + 3, lmY + 15); ctx.closePath(); ctx.fill();
+                    if (thrust > 0.1 && fuel > 0 && !landed && !crashed) {
+                      var fLen = Math.min(10 + thrust * 28, visualClearance + 7);
+                      var fW = 4;
                       var fOutGrad = ctx.createLinearGradient(lmX, lmY + 16, lmX, lmY + 16 + fLen);
-                      fOutGrad.addColorStop(0, 'rgba(255,130,0,0.7)'); fOutGrad.addColorStop(0.5, 'rgba(255,60,0,0.3)'); fOutGrad.addColorStop(1, 'rgba(200,0,0,0)');
+                      fOutGrad.addColorStop(0, 'rgba(195,211,255,0.3)'); fOutGrad.addColorStop(0.5, 'rgba(165,185,225,0.09)'); fOutGrad.addColorStop(1, 'rgba(160,180,220,0)');
                       ctx.fillStyle = fOutGrad;
                       ctx.beginPath();
-                      ctx.moveTo(lmX - fW, lmY + 16);
-                      ctx.quadraticCurveTo(lmX - fW * 0.5, lmY + 16 + fLen * 0.4, lmX, lmY + 16 + fLen);
-                      ctx.quadraticCurveTo(lmX + fW * 0.5, lmY + 16 + fLen * 0.4, lmX + fW, lmY + 16);
+                      ctx.moveTo(lmX - fW, lmY + 22);
+                      ctx.lineTo(lmX - fW - fLen * 0.65, lmY + 22 + fLen);
+                      ctx.lineTo(lmX + fW + fLen * 0.65, lmY + 22 + fLen);
+                      ctx.lineTo(lmX + fW, lmY + 22);
+                      ctx.closePath();
                       ctx.fill();
                       // Inner core
                       var fInGrad = ctx.createLinearGradient(lmX, lmY + 16, lmX, lmY + 16 + fLen * 0.65);
-                      fInGrad.addColorStop(0, 'rgba(255,255,255,0.9)'); fInGrad.addColorStop(0.4, 'rgba(255,230,80,0.5)'); fInGrad.addColorStop(1, 'rgba(255,180,0,0)');
+                      fInGrad.addColorStop(0, 'rgba(225,230,255,0.3)'); fInGrad.addColorStop(0.4, 'rgba(180,195,235,0.12)'); fInGrad.addColorStop(1, 'rgba(180,195,235,0)');
                       ctx.fillStyle = fInGrad;
                       ctx.beginPath();
                       ctx.moveTo(lmX - fW * 0.3, lmY + 16);
@@ -5646,13 +5940,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // Surface dust, drawn in WORLD space: the regolith does not bank with
                     // the spacecraft. It also blows downrange of the tilt, because that is
                     // where the plume is now pointing.
-                    if (thrust > 0.1 && fuel > 0 && alt < 200 && surfaceY < H) {
-                      ctx.globalAlpha = 0.15 * (1 - alt / 200);
-                      ctx.fillStyle = '#b0a898';
-                      for (var di = 0; di < 6; di++) {
-                        var dx = lmX + Math.sin(tilt) * 34 + (Math.random() - 0.5) * 60;
-                        var dy = surfaceY + 2 + Math.random() * 8;
-                        ctx.beginPath(); ctx.arc(dx, dy, 3 + Math.random() * 6, 0, Math.PI * 2); ctx.fill();
+                    if (thrust > 0.1 && fuel > 0 && alt < 30 && !landed && !crashed) {
+                      ctx.globalAlpha = 0.38 * (1 - alt / 30) * thrust;
+                      ctx.strokeStyle = '#d0c6b4'; ctx.lineWidth = 1;
+                      var dustTime = flightTime;
+                      for (var di = 0; di < 32; di++) {
+                        var dustAge = (dustTime + di * 0.071) % 1.1;
+                        var dustDir = di % 2 ? -1 : 1;
+                        var dustSpeed = 32 + (di * 13 % 55);
+                        var dx = lmX - Math.sin(tilt) * 34 + dustDir * dustSpeed * dustAge;
+                        var dy = surfaceY + 3 - (5 * dustAge - 0.5 * MM_DESCENT.g * 4 * dustAge * dustAge);
+                        ctx.beginPath(); ctx.moveTo(dx, dy); ctx.lineTo(dx - dustDir * 4, dy + 0.3); ctx.stroke();
                       }
                       ctx.globalAlpha = 1;
                     }
@@ -5745,8 +6043,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         landingRecorded = true;
                         var _cr = { crashed: true, score: 0, grade: '\u2014', vVel: Math.abs(vVel), hVel: Math.abs(hVel), fuel: Math.round(fuel), fuelUnit: 's' };
                         upd('landingResult', _cr);
-                        log('\u26A0\uFE0F Hard landing \u2014 impact at ' + Math.abs(vVel).toFixed(1) + ' m/s (limit 3 m/s)');
-                        if (typeof announceToSR === 'function') announceToSR('Hard landing. Impact at ' + Math.abs(vVel).toFixed(1) + ' meters per second against a 3 meter per second limit. Use Retry Landing to fly the descent again, or proceed to the moonwalk.');
+                        log('\u26A0\uFE0F Hard landing \u2014 vertical ' + Math.abs(vVel).toFixed(1) + ' m/s (limit 3), lateral ' + Math.abs(hVel).toFixed(1) + ' m/s (limit 5).');
+                        if (typeof announceToSR === 'function') announceToSR('Hard landing. Vertical speed ' + Math.abs(vVel).toFixed(1) + ' meters per second (limit 3), lateral speed ' + Math.abs(hVel).toFixed(1) + ' meters per second (limit 5). Use Retry Landing to fly the descent again, or proceed to the moonwalk.');
                       }
                       outcomePanel([
                         { text: '\u26A0 HARD LANDING', size: 18, bold: true, color: '#f87171' },
@@ -5853,6 +6151,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   drawDescent();
                 }
               })
+            ),
+            h('section', { 'data-descent-instruments': 'true', 'aria-label': t('stem.moonmission.flight_instruments', 'Flight instruments'), style: { padding: '14px', background: '#081322', color: '#e2e8f0', borderTop: '1px solid #334155' } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' } },
+                h('h4', { style: { fontWeight: '800', fontSize: '14px', margin: 0 } }, t('stem.moonmission.flight_dynamics', 'Flight dynamics')),
+                h('button', { type: 'button', 'data-descent-pause': 'true', 'aria-pressed': 'false', style: { minHeight: '44px', border: '1px solid #64748b', borderRadius: '8px', padding: '8px 14px', background: '#1e293b', color: '#f8fafc', cursor: 'pointer' } }, t('stem.moonmission.pause_flight', 'Pause flight'))
+              ),
+              h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '8px', margin: '0 0 14px' } },
+                [
+                  ['altitude', t('stem.moonmission.instrument_altitude', 'Altitude')],
+                  ['vertical', t('stem.moonmission.instrument_vertical', 'Vertical speed')],
+                  ['lateral', t('stem.moonmission.instrument_drift', 'Lateral drift')],
+                  ['brake', t('stem.moonmission.instrument_brake', 'Est. braking height')],
+                  ['hover', t('stem.moonmission.instrument_hover', 'Hover throttle')],
+                  ['throttle', t('stem.moonmission.instrument_throttle', 'Actual throttle')],
+                  ['propellant', t('stem.moonmission.instrument_propellant', 'Propellant')],
+                  ['mass', t('stem.moonmission.instrument_mass', 'Vehicle mass')],
+                  ['deltaV', t('stem.moonmission.instrument_deltav', 'Remaining delta-v')],
+                  ['time', t('stem.moonmission.instrument_time', 'Flight time')],
+                  ['track', t('stem.moonmission.instrument_track', 'Ground displacement')]
+                ].map(function(item) {
+                  return h('div', { key: item[0], style: { padding: '8px 10px', background: '#111f33', border: '1px solid #293b53', borderRadius: '8px' } },
+                    h('dt', { style: { fontSize: '11px', color: '#cbd5e1', marginBottom: '4px' } }, item[1]),
+                    h('dd', { 'data-flight-value': item[0], style: { margin: 0, fontSize: '15px', fontWeight: '700', fontVariantNumeric: 'tabular-nums', color: '#f8fafc' } }, '\u2014'));
+                })
+              ),
+              h('label', { htmlFor: 'moon-descent-throttle', style: { display: 'flex', gap: '10px', justifyContent: 'space-between', fontSize: '13px', fontWeight: '700' } },
+                t('stem.moonmission.engine_throttle', 'Engine throttle'), h('span', { 'data-throttle-setting': 'true', 'aria-hidden': 'true' }, '0%')),
+              h('input', { id: 'moon-descent-throttle', 'data-descent-throttle': 'true', type: 'range', min: 0, max: 100, step: 1, defaultValue: 0, 'aria-describedby': 'moon-descent-throttle-help', style: { display: 'block', width: '100%', height: '44px', accentColor: '#fbbf24' } }),
+              h('p', { id: 'moon-descent-throttle-help', style: { fontSize: '12px', color: '#cbd5e1', margin: '0 0 10px' } }, t('stem.moonmission.throttle_help', 'Set a steady throttle, or hold THRUST / W to override it to 100%. Release returns to the slider setting. Set 0% to coast.')),
+              h('p', { 'data-descent-guidance': 'true', style: { fontSize: '13px', lineHeight: '1.5', color: '#a5f3fc', margin: '8px 0' } }, t('stem.moonmission.guidance_initial', 'Flight guidance will appear as the descent begins.')),
+              h('details', { style: { fontSize: '12px', lineHeight: '1.6', color: '#cbd5e1' } },
+                h('summary', { style: { minHeight: '44px', paddingTop: '10px', cursor: 'pointer', color: '#e2e8f0', fontWeight: '700' } }, t('stem.moonmission.flight_model_notes', 'How to read this flight model')),
+                h('p', null, t('stem.moonmission.flight_model_explanation', 'Mass falls as propellant burns, so the same thrust produces more acceleration. Hover throttle balances lunar gravity at your current tilt. Delta-v is the ideal remaining change in velocity; holding altitude also spends fuel.')),
+                h('p', null, t('stem.moonmission.brake_model_explanation', 'Braking height estimates a full-thrust stop at the current tilt, with an engine-response allowance. It assumes continued thrust and enough fuel, and does not guarantee a safe landing. Begin braking above that height.')),
+                h('p', null, t('stem.moonmission.scene_model_explanation', 'The scene compresses altitude to keep the lander visible. Cyan marks the ground below the lander; amber shows five seconds of drift at the current speed. The terrain is illustrative and is not a landing hazard map.')),
+                h('p', null, t('stem.moonmission.engine_model_explanation', 'Educational final-approach model: 46.7 kN maximum engine thrust, 311 s specific impulse, and an assumed 7,000 kg mass without remaining descent propellant. The throttle range and landing limits are simplified for practice.')),
+                h('a', { href: 'https://aviationsystems.arc.nasa.gov/publications/2008/AF2008100.pdf', target: '_blank', rel: 'noopener noreferrer', style: { display: 'inline-block', padding: '10px 0', color: '#7dd3fc', textDecoration: 'underline' } }, t('stem.moonmission.engine_reference', 'NASA lunar lander simulation reference (PDF)'))
+              )
             ),
             h('div', { className: 'p-3 border-t border-slate-700 flex justify-between items-center gap-2 flex-wrap', 'data-descent-footer': 'true' },
               h('p', { className: 'text-[0.6875rem] text-slate-400' }, t('stem.moonmission.w_thrust_ad_lateral_land_gently', '\u2191/W = thrust \u2022 \u2190\u2192/AD = tilt\u2022 Land gently!')),
@@ -7791,6 +8127,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       try { canvasEl.focus(); } catch (_lrvSoundFocusErr) {}
                     }
                     function onLrvVisibilityChange() {
+                      if (evaResources) evaResources.lastTime = null;
                       resetLrvImpactEffects();
                       updateLrvAudio(document.hidden);
                     }
@@ -7993,7 +8330,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var evaO2 = 100;
                     var evaSteps = 0;
                     var evaSampleCount = lunarSampleOrbs.filter(function(o) { return o._collected && !o._isTraverseSample; }).length;
-                    var evaSampleCooldown = 0;
+                    // Percent per active second: the shortened classroom reserve keeps
+                    // the same difficulty budget on a 12 fps laptop and a 144 Hz display.
+                    // Pausing in another tab does not silently consume the suit reserve.
+                    var evaResources = { oxygen: 100, cooldown: 0, elapsed: 0, lastTime: null };
+                    function mmAdvanceEvaResources(st, now, hidden, rate) {
+                      if (hidden || !isFinite(now)) { st.lastTime = null; return 0; }
+                      var dt = st.lastTime === null ? 0 : Math.min(1, Math.max(0, (now - st.lastTime) / 1000));
+                      st.lastTime = now;
+                      st.elapsed += dt;
+                      st.oxygen = Math.max(0, st.oxygen - Math.max(0, rate) * dt);
+                      st.cooldown = Math.max(0, st.cooldown - dt);
+                      if (st.cooldown < 1e-9) st.cooldown = 0;
+                      return dt;
+                    }
                     var _evaLrvRowsDisplay = null;   // HUD GRADE/GRIP rows are shown only while boarded
                     var evaLastFrameTime = 0;
                     var evaAlive = true;
@@ -8041,6 +8391,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       evaRaf = requestAnimationFrame(animateEva);
                       evaTick++;
                       var evaNow = (typeof frameTime === 'number' && isFinite(frameTime)) ? frameTime : performance.now();
+                      var evaResourceDt = mmAdvanceEvaResources(evaResources, evaNow, document.hidden, diffSettings.o2Rate);
                       var evaDt = evaLastFrameTime ? Math.min(0.05, Math.max(0.001, (evaNow - evaLastFrameTime) / 1000)) : (1 / 60);
                       // The hop uses real elapsed time. evaDt is clamped to 0.05 s, so below
                       // 20 fps (a weak Chromebook, or SwiftShader) it slows the simulation, and a
@@ -8532,8 +8883,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         }
                       }
 
-                      // O2 depletion (rate based on difficulty)
-                      if (evaTick % 60 === 0) evaO2 = Math.max(0, evaO2 - diffSettings.o2Rate);
+                      // O2 and interaction timers share active elapsed time, independent
+                      // of rendered frames. The rates intentionally compress an Apollo EVA.
+                      evaO2 = evaResources.oxygen;
                       // O2 warnings
                       if (!o2Warned30 && evaO2 <= 30) {
                         o2Warned30 = true;
@@ -8577,16 +8929,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       }
 
                       // Sample collection
-                      if (evaSampleCooldown > 0) evaSampleCooldown--;
                       lunarSampleOrbs.forEach(function(orb) {
                         if (orb._collected || !orb.visible) return;
                         if (orb._isTraverseSample && (!gtActive || gtStep !== 3)) return;
-                        orb.children[0].rotation.y += 0.02;
-                        orb.children[0].material.opacity = 0.6 + Math.sin(evaTick * 0.05 + orb._pulsePhase) * 0.2;
+                        orb.children[0].rotation.y += 1.2 * evaResourceDt;
+                        orb.children[0].material.opacity = 0.6 + Math.sin(evaResources.elapsed * 3 + orb._pulsePhase) * 0.2;
                         var sDist = playerPos.distanceTo(orb.position);
-                        if (sDist < 2 && moveState.sample && evaSampleCooldown <= 0 && !o2Exhausted) {
+                        if (sDist < 2 && moveState.sample && evaResources.cooldown <= 0 && !o2Exhausted) {
                           orb._collected = true; orb.visible = false;
-                          evaSampleCooldown = 60;
+                          evaResources.cooldown = 1;
                           if (!orb._isTraverseSample) evaSampleCount++;
                           var sd = orb._sampleData;
                           var picked = { key: orb._isTraverseSample ? 'traverse' : 'sample:' + orb._sampleIdx, name: sd.name, type: sd.type, icon: sd.icon, fact: sd.fact };
@@ -8615,7 +8966,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                           if (orb._isTraverseSample) gtSampleEverBanked = true;
                         }
                       });
-                      updateGtMission(evaDt);
+                      updateGtMission(evaResourceDt);
 
                       // ── Deploy the seismometer (F, when you are standing at it) ──
                       // F is contextual: a rock at your feet gets collected, the instrument
@@ -8625,11 +8976,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         var seiDist = Math.sqrt(seiDx * seiDx + seiDz * seiDz);
                         if (seiDist < EVA_INTERACT_RANGE) {
                           // Idle pulse so it reads as interactive before you press anything.
-                          _seismoPulse += 0.08;
+                          _seismoPulse += 4.8 * evaResourceDt;
                           seismo.position.y = alsepY + 0.15 + Math.sin(_seismoPulse) * 0.04;
-                          if (moveState.sample && evaSampleCooldown <= 0) {
+                          if (moveState.sample && evaResources.cooldown <= 0) {
                             seismoDeployed = true;
-                            evaSampleCooldown = 60;
+                            evaResources.cooldown = 1;
                             seismo.position.y = alsepY + 0.15;
                             // Deployed: the instrument levels out and puts up its antenna.
                             var seiMast = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.7, 6),
@@ -8871,12 +9222,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                                 bounds: { minX: -80, maxX: 80, minZ: -80, maxZ: 80 },
                                 render: function () { if (composer) { try { composer.render(); return; } catch (e) {} } renderer.render(scene, camera); },
                                 pauseLoop: function () {
+                                  evaResources.lastTime = null;
                                   _evaVRPaused = true;
                                   resetLrvImpactEffects();
                                   updateLrvAudio(true);
                                 },
                                 resumeLoop: function () {
                                   if (evaAlive && _evaVRPaused) {
+                                    evaResources.lastTime = null;
                                     _evaVRPaused = false;
                                     resetLrvImpactEffects();
                                     lrvImpactCooldown = 0.28;
