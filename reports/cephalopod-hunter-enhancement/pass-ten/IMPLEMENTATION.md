@@ -1,0 +1,32 @@
+# Cephalopod Hunter: tenth enhancement pass
+
+Work log (2026-09-27): COMPLETE. The user authorized continued deep improvement of the current simulator, with animal visuals a priority. This pass owns only the canonical Cephalopod module, its three desktop mirrors, focused Cephalopod tests, and this report folder. Shared handoff, hosts, loaders, unrelated files, and future Ocean/Reef work are outside this pass.
+
+## Selected scope
+
+- Replace the generic non-squid fin strips with distinct, mantle-attached membranes for cuttlefish, bobtail squid, Dumbo octopus and vampire squid. Preserve the recently improved Humboldt rig. Reuse the existing fin meshes and materials and accumulate animation phase for smooth propulsion transitions.
+- Correct fish-school escape after loss of sight: remember the last visible threat position rather than continually steering from an unseen player. Make existing partial alarm and recovery readable through prey intent. Preserve detection ranges, alarm rates, movement speeds and capture rules.
+
+Parallel agents prepared guarded patches and focused tests. Root integrated both canonical patches, synchronized all three mirrors, and reviewed rendered results. Browser work is serialized. No deployment is requested.
+
+## Implementation and visual review
+
+Each affected fin now has five span segments. Cuttlefish has a narrow skirt along the mantle; bobtail has shorter rounded lateral paddles; Dumbo and vampire have elevated, distinct lobes. Attachment follows the breathing mantle with a small inset into its actual triangles. Fin phase and mantle breathing accumulate over elapsed steps, with eased visual propulsion. Raw gameplay jet state, limb geometry and sucker poses are preserved. Dumbo's previous second rotation around the animal origin was removed so it cannot detach the new seam.
+
+This adds 232 vertices and 448 triangles per affected animal, retaining the same two fin meshes, materials and draw calls. No texture or dive RNG use was added. The existing Humboldt rig and the other species remain unchanged. The pose audit exercised 720 frames, checked every root against the rendered mantle triangles (inset 0.001292–0.006129 scene units), and measured a maximum moving fin-vertex step of 0.017012 at 60 Hz. This is geometric continuity evidence, not a device performance benchmark.
+
+The fish-school helper stores a copied numeric position only while a school can see the player. Residual alarm steers away from that remembered position; new sight refreshes it and calm/display interruption clears it. Detection checks, alarm rise/decay, speed, formation spread, capture timing and respawn rules are retained. Target feedback now distinguishes early wariness and settling after loss of sight. New schools start without memory; no old school state is captured by respawn callbacks.
+
+The seven standard inspection captures use the ordinary field-study scene, camera controls and anatomy toggle, without pose/material/lighting overrides. First review found a cleaner cuttlefish skirt and distinct bobtail paddle; side-on Dumbo/vampire views required a higher angle to inspect lobe area. Two additional captures using ordinary Higher/Orbit inputs confirmed rounded, attached lobes; root and an independent reviewer found no further correction necessary. All nine final images were reviewed, including both phone layouts. See [visual-notes.md](visual-notes.md) for primary morphology sources, illustrative-model limits and review notes.
+
+## Validation
+
+Initial unit run: 103/107 passed. The new continuity test incorrectly included the switch from the constructor's reduced-motion pose to live motion; it now begins in live motion before measuring propulsion transitions. Three other failures returned only `STACK_TRACE_ERROR`, so their cause is not established by that report. Final rerun uses 30-second test and 60-second hook limits for the busy shared host; the geometry test batches finite/normal assertions while retaining all sampled vertices and poses. No production change was made in response to these test issues.
+
+The rerun passed 103 tests in five suites, then the accessibility suite failed to load with `ENOSPC: no space left on device`. A disk check subsequently showed approximately 2.9 GB free; no files were deleted. The isolated accessibility rerun passed all four tests. Final unit evidence therefore comprises **107 passing cases across six files**, assembled from `unit-final.json` and `unit-a11y.json`, rather than a claim that the first runner invocation was clean.
+
+All four new browser scenarios passed on their first run, with one worker and zero retries: live Dumbo seam attachment through movement/boost, inspection freeze, cuttlefish reduced motion/resource release, identical escape paths for different hidden movements with actual cover/range/depth preconditions, re-sighting, and wary/fleeing/settling/calm target feedback. The two specs group these checks into four scenarios. Four existing regressions also passed on their first run: fish capture and disposal, squid animation/inspection, fish tail continuity, and low/balanced rendering with texture disposal. This totals **8/8 browser scenarios**, zero retries or runner failures. Both capture scripts reported no console/runtime errors.
+
+Reproduce the six-file unit scope with `npx vitest run tests/cephalopodlab_fin_membranes.test.js tests/cephalopodlab_prey_memory.test.js tests/cephalopodlab_squid_arm_detail.test.js tests/cephalopodlab_squid_strike_clock.test.js tests/cephalopodlab_canvas_focus_a11y.test.js tests/cephalopodlab_fact_consistency.test.js --maxWorkers=1 --testTimeout=30000 --hookTimeout=60000`. The two new browser specs are `tests/e2e/cephalopod-fin-membranes.spec.ts` and `tests/e2e/cephalopod-prey-memory.spec.ts`, run with `--workers=1 --retries=0`. Capture scripts require the existing local preview harness URL file.
+
+Syntax and scoped whitespace checks passed. All four runtime copies have SHA-256 `38d9baabaf9ba3dadd0abd5d30bf1d268fe2944de2b4490c6ec9dde36559e055`. See [validation-summary.json](validation-summary.json) for precise run evidence, capture inventory and limitations. Raw logs, guarded patch scripts and initial captures remain locally ignored; final captures and their reproduction scripts are included. This pass uses headless software WebGL and phone-sized viewports, without claiming physical-phone performance measurements. No deployment or release build was performed.

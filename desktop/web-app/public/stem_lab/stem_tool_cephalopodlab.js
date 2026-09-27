@@ -11454,8 +11454,8 @@ function createCLHuntAnimal(T, species) {
     suckers=new T.InstancedMesh(sg,underside,suckerCount);suckers.name='cl-suckers';suckers.frustumCulled=false;root.add(suckers);
   }
   function makeFin(side,ear) {
-    // Squid membranes bend across their span instead of hinging as a two-vertex strip.
-    var seg=28,span=squid?5:1,stride=span+1,positions=new Float32Array((seg+1)*stride*3),idx=[];
+    // Each membrane has enough span rows for a curved surface; existing meshes and materials stay owned here.
+    var seg=28,span=5,stride=span+1,positions=new Float32Array((seg+1)*stride*3),idx=[];
     for(var k=0;k<seg;k++)for(var r=0;r<span;r++){var q=k*stride+r;idx.push(q,q+1,q+stride,q+1,q+stride+1,q+stride);}
     var g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(positions,3).setUsage(T.DynamicDrawUsage));g.setIndex(idx);
     var fm=skin.clone();fm.side=T.DoubleSide;fm.roughness=0.55;fm.onBeforeCompile=skin.onBeforeCompile;if(squid)fm.customProgramCacheKey=skin.customProgramCacheKey;var m=new T.Mesh(g,fm);m.frustumCulled=false;m.name='cl-fin-'+side;root.add(m);var fin={mesh:m,side:side,ear:ear,seg:seg,span:span};fins.push(fin);if(ear)dumboFins.push(fin);if(cuttle)cuttleFins.push(fin);
@@ -11489,6 +11489,13 @@ function createCLHuntAnimal(T, species) {
   var passingCloudOverlay=cuttle?{material:{opacity:0}}:null;
   var tangent=new T.Vector3(),normal=new T.Vector3(),binormal=new T.Vector3(),up=new T.Vector3(0,1,0);
   var squidJetBlend=0,squidMantlePhase=0,squidFinPhase=0;
+  var membraneSwimmer=cuttle||bobtail||vampire||dumbo;
+  var membraneJetBlend=0,membraneFinPhase=0,membraneMantlePhase=0;
+  // Normalized attachment ranges distinguish a long skirt from rounded lateral paddles and ears.
+  var finProfile=cuttle?{start:-0.985,end:0.965,elevation:0,width:0.19,camber:0.023,sweep:0,rate:3.6,boost:2.0}:
+    bobtail?{start:-0.72,end:0.24,elevation:0.03,width:0.34,camber:0.022,sweep:-0.025,rate:3.1,boost:2.0}:
+    dumbo?{start:-0.42,end:0.34,elevation:0.64,width:0.46,camber:0.042,sweep:0.055,rate:2.4,boost:1.8}:
+    vampire?{start:-0.42,end:0.18,elevation:0.48,width:0.34,camber:0.030,sweep:0.025,rate:1.9,boost:1.3}:null;
   var strikeTubeSide=new T.Vector3(-1,0,0);
   var suckerOral=new T.Vector3(),suckerAcross=new T.Vector3(),suckerSurface=new T.Vector3();
   function update(time,dt,state){
@@ -11504,10 +11511,19 @@ function createCLHuntAnimal(T, species) {
       squidMantlePhase=(squidMantlePhase+poseStep*(2.2+8.8*jet)*motion)%(Math.PI*2);
       squidFinPhase=(squidFinPhase+poseStep*(3.6+1.8*jet)*motion)%(Math.PI*2);
     }
+    if(membraneSwimmer){
+      // Accumulate phases: changing propulsion must not multiply all elapsed time by a new rate.
+      var membraneStep=Math.max(0,Math.min(0.05,dt||0));
+      if(state.reducedMotion)membraneJetBlend=0;
+      else membraneJetBlend+=(jet-membraneJetBlend)*(1-Math.exp(-membraneStep*6));
+      membraneFinPhase=(membraneFinPhase+membraneStep*(finProfile.rate+finProfile.boost*membraneJetBlend)*motion)%(Math.PI*2);
+      membraneMantlePhase=(membraneMantlePhase+membraneStep*(2.2+8.8*membraneJetBlend)*motion)%(Math.PI*2);
+    }
     phase.value=time;pattern.value=state.substrate==='sand'?0.22:state.substrate==='grass'?0.72:0.9;
     display.value=cuttle&&state.display?0.9:0;
-    var pulse=Math.sin(squid?squidMantlePhase:time*(jet?11:2.2))*motion;
-    mantle.scale.set(1+pulse*(squid?0.018+jet*0.037:jet?0.055:0.018),1+pulse*(squid?0.024+jet*0.021:jet?0.045:0.024),1+jet*0.04-pulse*0.008);
+    var pulse=Math.sin(squid?squidMantlePhase:membraneSwimmer?membraneMantlePhase:time*(jet?11:2.2))*motion;
+    if(membraneSwimmer)mantle.scale.set(1+pulse*(0.018+membraneJetBlend*0.037),1+pulse*(0.024+membraneJetBlend*0.021),1+membraneJetBlend*0.04-pulse*0.008);
+    else mantle.scale.set(1+pulse*(squid?0.018+jet*0.037:jet?0.055:0.018),1+pulse*(squid?0.024+jet*0.021:jet?0.045:0.024),1+jet*0.04-pulse*0.008);
     var pp=mantleGeo.attributes.position.array,rough=!swimming&&state.substrate!=='sand'?(state.camo||0)*0.035:0;
     for(var p=0;p<pp.length;p+=3){var x=basePositions[p],y=basePositions[p+1],z=basePositions[p+2],n=1+rough*Math.sin(x*18)*Math.sin(y*20+z*13);pp[p]=x*n;pp[p+1]=y*n;pp[p+2]=z*n;}mantleGeo.attributes.position.needsUpdate=true;
     var si=0;
@@ -11652,10 +11668,26 @@ function createCLHuntAnimal(T, species) {
           }
         }
       }else{
-        for(var k=0;k<=f.seg;k++){var t=k/f.seg,z,width,edge;
-          if(cuttle){z=-1.15+t*1.73;width=Math.sin(t*Math.PI)*0.64;edge=Math.sin(t*Math.PI)*0.20;}
-          else{z=-0.72+t*0.82;width=Math.sin(t*Math.PI)*0.42;edge=Math.sin(t*Math.PI)*(dumbo?0.48:0.25);}
-          for(var row=0;row<2;row++){var at=(k*2+row)*3;p[at]=f.side*(width+row*edge)*scale;p[at+1]=(0.08+row*Math.sin(time*(dumbo?3:jet?7:3.6)-t*9)*0.095*motion+(dumbo?row*0.32:0))*scale;p[at+2]=z*scale;}
+        for(var k=0;k<=f.seg;k++){
+          var t=k/f.seg,mantleAlong=finProfile.start+(finProfile.end-finProfile.start)*t;
+          var section=Math.sqrt(Math.max(0,1-mantleAlong*mantleAlong));
+          // A tiny inset seals the seam inside the rendered mantle facets, including breathing scale.
+          var rootX=dims[0]*section*Math.cos(finProfile.elevation)*scale*mantle.scale.x*0.992;
+          var rootY=mantle.position.y+dims[1]*section*Math.sin(finProfile.elevation)*scale*mantle.scale.y*0.992;
+          var rootZ=mantle.position.z+mantleAlong*dims[2]*scale*mantle.scale.z*0.992;
+          var envelope=Math.pow(Math.max(0.001,Math.sin(t*Math.PI)),cuttle?0.62:0.72);
+          var blade=finProfile.width*envelope*scale;
+          // Skirts carry a traveling ripple. Rounded ears and paddles beat as a flexible lobe.
+          var beat=Math.sin(membraneFinPhase-(t-0.5)*(cuttle?9.5:0.65))*motion;
+          var beatAngle=cuttle?0:(dumbo?0.20:vampire?0.12:0.035)+beat*(dumbo?0.27+membraneJetBlend*0.18:vampire?0.19+membraneJetBlend*0.12:0.14+membraneJetBlend*0.11);
+          for(var row=0;row<=f.span;row++){
+            var across=row/f.span,at=(k*(f.span+1)+row)*3,reach=across*blade;
+            var camber=finProfile.camber*Math.sin(across*Math.PI)*envelope*scale;
+            var flex=cuttle?Math.pow(across,1.4)*envelope*beat*(0.057+membraneJetBlend*0.018)*scale:Math.pow(across,1.7)*envelope*Math.sin(membraneFinPhase-(t-0.5)*1.3-0.45)*0.018*motion*scale;
+            p[at]=f.side*(rootX+reach*Math.cos(beatAngle));
+            p[at+1]=rootY+reach*Math.sin(beatAngle)+camber+flex;
+            p[at+2]=rootZ+finProfile.sweep*across*across*envelope*scale;
+          }
         }
       }
       f.mesh.geometry.attributes.position.needsUpdate=true;f.mesh.geometry.computeVertexNormals();
@@ -11703,6 +11735,26 @@ function createCLHuntFish(T,index){
 }
 
       // Display-only propulsion feedback; movement, energy and recovery remain simulation rules.
+      // School escape remembers only a visible threat. Alarm rates and capture rules stay unchanged.
+      function advanceCLHuntSchoolThreat(school, player, seesPlayer, distracted, dt) {
+        var visible=!!seesPlayer&&!distracted;
+        school.alarm=distracted?0:Math.max(0,Math.min(1,(school.alarm||0)+(visible?dt*1.8:-dt*0.5)));
+        if(visible){
+          if(!school.lastThreatPosition)school.lastThreatPosition={x:0,z:0};
+          school.lastThreatPosition.x=player.x;school.lastThreatPosition.z=player.z;
+        }else if(school.alarm===0)school.lastThreatPosition=null;
+        if(school.alarm>0.3&&school.lastThreatPosition){
+          var awayHeading=Math.atan2(school.center.x-school.lastThreatPosition.x,school.center.z-school.lastThreatPosition.z);
+          var headingDelta=Math.atan2(Math.sin(awayHeading-school.heading),Math.cos(awayHeading-school.heading));
+          school.heading+=headingDelta*Math.min(1,dt*5);
+        }
+        school.intent=school.alarm>0?(visible?(school.alarm>0.3?'fleeing':'wary'):'settling'):'unaware';
+      }
+      function clHuntPreyIntentText(prey) {
+        var u=prey&&prey.userData||{};
+        return u.intent==='distracted'?'prey distracted by display':u.intent==='wary'?'prey is wary · use cover':u.intent==='settling'?'prey is settling · stay out of sight':u.alert?'prey is fleeing':'prey is unaware';
+      }
+
       function clHuntPropulsionText(state, observation) {
         if(state.paused)return 'Paused';
         var p=state.propulsionState||{},waterborne=!!p.swimming||p.aboveFloor>0.2;
@@ -14363,7 +14415,7 @@ function createCLHuntFish(T,index){
             var readiness=preyReadiness(trackedPrey),recovering=gameNow<gameState.strikeReadyAt;
             targetHalo.position.copy(trackedPrey.position);targetHalo.position.y+=0.06;targetHalo.material.color.setHex(recovering?0x9eb3c7:readiness.reason==='cover'?0xf4a782:readiness.ready?0x94f4bf:0xffdf91);
             gameState.targetText=committedStrike?'STRIKING · keep your target within reach':recovering?'RECOVERING · ready in '+((gameState.strikeReadyAt-gameNow)/1000).toFixed(1)+'s':readiness.reason==='cover'?'COVER BLOCKS STRIKE · move around the rock':readiness.reason==='depth'?'MATCH DEPTH · Q rises / Z descends':readiness.ready?'IN RANGE · E to strike':'OUT OF REACH · move closer';
-            gameState.targetText+=trackedPrey.userData.intent==='distracted'?' · prey distracted by display':trackedPrey.userData.alert?' · prey is fleeing':' · prey is unaware';
+            gameState.targetText+=' · '+clHuntPreyIntentText(trackedPrey);
           }else gameState.targetText=committedStrike?(trackedPrey?'STRIKING · target unavailable':'STRIKING · no prey selected'):'';
         }
         var marineSnow=[];
@@ -14936,12 +14988,7 @@ function createCLHuntFish(T,index){
             // ─── Nautilus shell defense (passive — applied at damage taken) ─
             // No tick logic; damage multipliers applied in predator-bite paths.
 
-            // ─── Dumbo fin animation ──────────────────────────────
-            if (species.id === 'dumboOcto') {
-              dumboFins.forEach(function(df, fi) {
-                df.mesh.rotation.x = gameState.a11y.reducedMotion?0:Math.sin(now * 0.003 + fi * Math.PI) * 0.22;
-              });
-            }
+            // Dumbo fin beats are owned by the attached membrane rig; no secondary mesh rotation.
 
             // ─── Vampire squid arm photophore subtle base glow ────
             if (species.id === 'vampireSquid' && gameState.burglarAlarmActive <= 0) {
@@ -15496,8 +15543,7 @@ function createCLHuntFish(T,index){
               // A nearby visible approach scatters the school; staying quiet and using cover delays it.
               var schoolDistracted=false;school.fish.forEach(function(fish){var dx=fish.position.x-octopus.position.x,dz=fish.position.z-octopus.position.z;fish.userData.distracted=!!(fish.userData.alive&&gameState.isDisplaying&&dx*dx+dz*dz<4.5*4.5);if(fish.userData.distracted)schoolDistracted=true;});
               var schoolSeesPlayer=!schoolDistracted&&school.fish.some(function(fish){return fish.userData.alive&&fish.position.distanceTo(octopus.position)<(isJetting?8:5)*(1-0.55*gameState.camoEff)&&sameHeight(fish.position,octopus.position,2.8)&&!rockBlocks(fish.position,octopus.position)&&!inkBlocks(fish.position,octopus.position);});
-              school.alarm=schoolDistracted?0:Math.max(0,Math.min(1,(school.alarm||0)+(schoolSeesPlayer?dt*1.8:-dt*0.5)));
-              if(school.alarm>0.3){var awayHeading=Math.atan2(school.center.x-octopus.position.x,school.center.z-octopus.position.z),headingDelta=Math.atan2(Math.sin(awayHeading-school.heading),Math.cos(awayHeading-school.heading));school.heading+=headingDelta*Math.min(1,dt*5);}
+              advanceCLHuntSchoolThreat(school,octopus.position,schoolSeesPlayer,schoolDistracted,dt);
               var schoolSpeed=schoolDistracted?0.35:1.5+school.alarm*2.0;
               school.center.x += Math.sin(school.heading) * schoolSpeed * dt;
               school.center.z += Math.cos(school.heading) * schoolSpeed * dt;
@@ -15506,7 +15552,9 @@ function createCLHuntFish(T,index){
               if (school.center.z > 60 || school.center.z < -60) school.heading += Math.PI;
               school.fish.forEach(function(fish) {
                 if (!fish.userData.alive) return;
-                fish.userData.alert=!fish.userData.distracted&&school.alarm>0.3;fish.userData.intent=fish.userData.distracted?'distracted':fish.userData.alert?'fleeing':'unaware';
+                fish.userData.alert=!fish.userData.distracted&&school.alarm>0.3;
+                fish.userData.awareness=school.alarm;fish.userData.threatVisible=schoolSeesPlayer;
+                fish.userData.intent=fish.userData.distracted?'distracted':school.intent;
                 var tgt = school.center.clone().addScaledVector(fish.userData.offset,1+school.alarm*0.45);
                 var vx=tgt.x-fish.position.x,vy=tgt.y-fish.position.y,vz=tgt.z-fish.position.z;
                 fish.position.x += vx * 1.5 * dt;

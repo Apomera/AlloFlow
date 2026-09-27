@@ -1,0 +1,109 @@
+{
+  "date": "2026-09-27",
+  "status": "complete",
+  "unit": {
+    "distinctPassed": 107,
+    "files": 6,
+    "initial": {
+      "file": "unit.json",
+      "passed": 103,
+      "failed": 4
+    },
+    "final": {
+      "file": "unit-final.json",
+      "passed": 103,
+      "testFailures": 0,
+      "note": "Five suites passed. Accessibility suite failed to load with transient ENOSPC; the separate final accessibility run passed all four cases."
+    },
+    "accessibility": {
+      "file": "unit-a11y.json",
+      "passed": 4,
+      "failed": 0
+    },
+    "correction": "Continuity fixture now begins in live motion, excluding the intentional reduced-motion-to-live pose change; batched normal/finite checks retain all vertices and sampled poses. Test/hook limits were raised for the shared host. Three initial failures supplied only STACK_TRACE_ERROR; their initial causes remain unestablished. No production correction was required."
+  },
+  "browser": {
+    "distinctPassed": 8,
+    "workers": 1,
+    "retries": 0,
+    "runs": [
+      {
+        "file": "new-browser-initial.json",
+        "startTime": "2026-09-27T18:17:35.583Z",
+        "duration": 190000.913,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      {
+        "file": "browser-regression.json",
+        "startTime": "2026-09-27T18:23:05.486Z",
+        "duration": 334042.935,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    ]
+  },
+  "visual": {
+    "reviewed": 9,
+    "files": [
+      "cuttlefish-profile.png",
+      "cuttlefish-phone.png",
+      "bobtailSquid-profile.png",
+      "dumboOcto-profile.png",
+      "dumboOcto-phone.png",
+      "vampireSquid-profile.png",
+      "humboldtSquid-profile.png",
+      "dumboOcto-fin-detail.png",
+      "vampireSquid-fin-detail.png"
+    ],
+    "consoleErrors": [],
+    "fixture": [
+      "Normal field-study scene and paused inspection with one orbit-right and higher-camera input; anatomy labels enabled. No pose, camera coordinates, material, light or geometry overrides.",
+      "Unmodified standard paused inspection using three Higher inputs and one Orbit right; no pose or rendering overrides."
+    ],
+    "limitation": "Headless software-WebGL desktop/phone-size captures; not physical-device performance measurements."
+  },
+  "geometry": {
+    "affectedSpecies": [
+      "cuttlefish",
+      "bobtailSquid",
+      "dumboOcto",
+      "vampireSquid"
+    ],
+    "addedVerticesPerAnimal": 232,
+    "addedTrianglesPerAnimal": 448,
+    "finDrawCalls": 2,
+    "auditFrames": 720,
+    "maxFinVertexFrameDisplacementAt60Hz": 0.01701179455988943,
+    "renderedMantleSeamInset": [
+      0.001292245213387444,
+      0.006129034624399066
+    ],
+    "humboldtGeometryPreserved": true
+  },
+  "hashes": [
+    {
+      "file": "stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "38d9baabaf9ba3dadd0abd5d30bf1d268fe2944de2b4490c6ec9dde36559e055"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "38d9baabaf9ba3dadd0abd5d30bf1d268fe2944de2b4490c6ec9dde36559e055"
+    },
+    {
+      "file": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "38d9baabaf9ba3dadd0abd5d30bf1d268fe2944de2b4490c6ec9dde36559e055"
+    },
+    {
+      "file": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "38d9baabaf9ba3dadd0abd5d30bf1d268fe2944de2b4490c6ec9dde36559e055"
+    }
+  ],
+  "syntax": "passed",
+  "scopedWhitespace": "passed",
+  "deployment": "not requested"
+}
