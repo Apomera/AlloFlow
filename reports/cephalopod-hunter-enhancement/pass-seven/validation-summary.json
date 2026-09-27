@@ -1,0 +1,149 @@
+{
+  "date": "2026-09-27",
+  "status": "complete",
+  "unit": {
+    "distinctScenariosWithPassingLatestResult": 197,
+    "files": 10,
+    "initial": {
+      "passed": 191,
+      "failed": 3,
+      "total": 194
+    },
+    "hubRetest": {
+      "passed": 88,
+      "total": 88,
+      "evidence": "initial-hub-retest.log",
+      "note": "All three initial Hub failures pass unchanged in this isolated rerun; exact first-run cause not established."
+    },
+    "newClockRegressions": 3
+  },
+  "finalContracts": {
+    "passed": 7,
+    "total": 7,
+    "note": "Four existing canvas/focus contracts plus three new strike-clock regressions, on final source."
+  },
+  "browser": {
+    "distinctScenariosWithPassingLatestResult": 27,
+    "workers": 1,
+    "retries": 0,
+    "runs": [
+      {
+        "file": "new-features-initial.json",
+        "startTime": "2026-09-27T15:05:10.029Z",
+        "duration": 113609.88399999999,
+        "expected": 5,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      {
+        "file": "directed-recovery-retest.json",
+        "startTime": "2026-09-27T15:08:28.595Z",
+        "duration": 26979.235,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      {
+        "file": "regressions.json",
+        "startTime": "2026-09-27T15:11:44.328Z",
+        "duration": 548086.8450000001,
+        "expected": 15,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      {
+        "file": "render-inspection.json",
+        "startTime": "2026-09-27T15:21:21.485Z",
+        "duration": 434615.536,
+        "expected": 5,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      {
+        "file": "species-rigs-retest.json",
+        "startTime": "2026-09-27T15:30:15.516Z",
+        "duration": 116138.225,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    ],
+    "note": "Initial recovery test stopped the simulation before the 8Hz HUD refresh; fixture now advances bounded simulation steps until refresh and verifies retraction. No production change was needed for that failure. The all-species loop initially exceeded its 120-second limit while mounting the final species; one unchanged targeted rerun passed under the same limit. Both runs are retained."
+  },
+  "visual": {
+    "errors": [],
+    "fixture": "Reef views use standard movement/inspection. Coral detail uses a paused camera-only close-up of an actual world colony with overlays hidden. Squid strike fixture places one actual fish school near the player, triggers normal T/E, advances 250ms including accepted-input frame, and inspects the real contact pose. No rig/geometry/material edits.",
+    "screenshots": [
+      "reef-desktop.png",
+      "reef-inspection.png",
+      "reef-phone.png",
+      "coral-detail.png",
+      "squid-strike-contact.png",
+      "squid-strike-oblique.png"
+    ],
+    "coralDetail": {
+      "position": [
+        -8,
+        1.1764111316186479,
+        15.5
+      ],
+      "camera": [
+        -8.010191718353969,
+        2.2675585424671487,
+        19.532640278267326
+      ],
+      "fixture": "Camera-only view of an existing colony clear of rocks; scene meshes, placement, lights and materials unchanged."
+    },
+    "reviewed": true,
+    "viewports": [
+      "1280x1100",
+      "390x844"
+    ],
+    "note": "Initial reef images exposed camera clipping beside rocks. Final inspection images follow the fix; initial images remain locally as ignored evidence."
+  },
+  "nonbrowserReview": {
+    "clockMutationSensitivity": {
+      "currentPhaseAtExpiration": 0,
+      "oldPhaseAtExpiration": 0.84375
+    },
+    "coralConstruction": {
+      "geometries": 54,
+      "vertices": 27945,
+      "minNormal": 0.9999999571621027,
+      "maxNormal": 1.0000000417674055,
+      "finite": true
+    },
+    "sourceChanged": false
+  },
+  "inspectionCameraChecks": 10,
+  "mirrors": [
+    {
+      "path": "stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "6bbba4d663741f0384210f18fa041601104b9bce0dd223eec63e70b03470d971"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "6bbba4d663741f0384210f18fa041601104b9bce0dd223eec63e70b03470d971"
+    },
+    {
+      "path": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "6bbba4d663741f0384210f18fa041601104b9bce0dd223eec63e70b03470d971"
+    },
+    {
+      "path": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "6bbba4d663741f0384210f18fa041601104b9bce0dd223eec63e70b03470d971"
+    }
+  ],
+  "syntax": "passed",
+  "whitespace": "passed",
+  "deployed": false,
+  "commit": {
+    "status": "ready",
+    "note": "Passes six and seven are included in the same scoped commit; no unrelated files or hook bypass."
+  }
+}

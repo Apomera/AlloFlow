@@ -1,0 +1,125 @@
+{
+  "date": "2026-09-27",
+  "status": "complete",
+  "unit": {
+    "passed": 194,
+    "total": 194,
+    "files": 9,
+    "note": "Before final surface and wording refinement."
+  },
+  "finalContracts": {
+    "passed": 4,
+    "total": 4,
+    "note": "On final integrated source."
+  },
+  "browser": {
+    "distinctScenariosWithPassingLatestResult": 14,
+    "workers": 1,
+    "retries": 0,
+    "runs": [
+      {
+        "file": "pursuit-initial.json",
+        "startTime": "2026-09-27T14:06:44.458Z",
+        "duration": 107823.462,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      {
+        "file": "foraging-strike.json",
+        "startTime": "2026-09-27T14:14:09.376Z",
+        "duration": 121229.591,
+        "expected": 7,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      {
+        "file": "target-selection.json",
+        "startTime": "2026-09-27T14:16:27.606Z",
+        "duration": 18868.865999999998,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      {
+        "file": "render-quality.json",
+        "startTime": "2026-09-27T14:17:15.855Z",
+        "duration": 28677.175,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      {
+        "file": "species-rigs.json",
+        "startTime": "2026-09-27T14:17:59.319Z",
+        "duration": 67465.253,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    ],
+    "note": "Four new pursuit scenarios passed before final material-only refinement. Eight existing hunting and two rendering/species scenarios ran after that refinement; species-rigs cycles all twelve species and render-quality exercises low and balanced modes."
+  },
+  "visual": {
+    "errors": [],
+    "fixture": "Standard inspection, orbit/zoom and forward controls. No mesh, material or actor placement overrides.",
+    "screenshots": [
+      "squid-profile.png",
+      "squid-three-quarter.png",
+      "squid-eye-detail.png",
+      "squid-opposite-eye.png",
+      "phone-inspection.png",
+      "pursuit-desktop.png",
+      "pursuit-phone.png"
+    ],
+    "reviewed": true,
+    "viewports": [
+      "1280x1100",
+      "390x844"
+    ],
+    "note": "Initial images prompted finer pigment and narrower/darker irises. These final seven images include both eyes, desktop/phone inspection and pursuit."
+  },
+  "pupilGpuShader": {
+    "revision": "128",
+    "compiled": [
+      {
+        "length": 54289,
+        "compileStatus": true,
+        "compilerLog": "",
+        "hasWorldReflection": true,
+        "hasFinalReflectionAdd": true
+      }
+    ],
+    "errors": []
+  },
+  "mirrors": [
+    {
+      "path": "stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "9c953559a167f2e95389bcc4bf0ae71cb3b33c08edd05c483eff32baf61186f6"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "9c953559a167f2e95389bcc4bf0ae71cb3b33c08edd05c483eff32baf61186f6"
+    },
+    {
+      "path": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "9c953559a167f2e95389bcc4bf0ae71cb3b33c08edd05c483eff32baf61186f6"
+    },
+    {
+      "path": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "9c953559a167f2e95389bcc4bf0ae71cb3b33c08edd05c483eff32baf61186f6"
+    }
+  ],
+  "syntax": "passed",
+  "whitespace": "passed",
+  "deployed": false,
+  "commit": {
+    "status": "combined-with-pass-seven",
+    "note": "Included in the combined pass-six/seven change set. Earlier attempts encountered unrelated content-engine mirror drift; no unrelated files edited or hook bypass. See pass-seven validation and Git history."
+  }
+}
