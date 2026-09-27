@@ -1,0 +1,60 @@
+{
+  "base": "6b63e76e862125e87422f02a54ed60beac68e8fb",
+  "snapshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\.codex-artifacts\\reader-localization-preview-track17",
+  "inputs": [
+    {
+      "file": "ui_strings.js",
+      "snapshotSha256": "0fcbf04d06c67f460d41e92a910fef8aa104a49bf912981121cf32ccbce6d3a2",
+      "sharedSha256": "dec2d522cccae1e7bb5baf676d3dc8bdf780eda5730443f3e19c4e0d46dd71e3",
+      "sharedMatches": false
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "snapshotSha256": "0fcbf04d06c67f460d41e92a910fef8aa104a49bf912981121cf32ccbce6d3a2",
+      "sharedSha256": "dec2d522cccae1e7bb5baf676d3dc8bdf780eda5730443f3e19c4e0d46dd71e3",
+      "sharedMatches": false
+    },
+    {
+      "file": "view_simplified_source.jsx",
+      "snapshotSha256": "069c3751a49d02356db0093c996266ed96ba1687501458afd9acee494f8aa595",
+      "sharedSha256": "afe7ba74c50f3ce9663855883c43289dd8f4e9e7b05d331be80284687dae4995",
+      "sharedMatches": false
+    },
+    {
+      "file": "reader_place_store.js",
+      "snapshotSha256": "8f48e622f3993371a43cff4ba21198e86269fefe6cb1d4fa2662c4d51bfb4334",
+      "sharedSha256": "b1861d25b5466d829b05e115cba776bd8d9cc419d12598d473ff1b6b20a9d2fc",
+      "sharedMatches": false
+    },
+    {
+      "file": "reader_support_drafts.js",
+      "snapshotSha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+      "sharedSha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+      "sharedMatches": true
+    },
+    {
+      "file": "generation_helpers_source.jsx",
+      "snapshotSha256": "85fb09f8f8d57c2df6383f59c280b3400d10f6565411e27e2da13301cbb16d7e",
+      "sharedSha256": "85fb09f8f8d57c2df6383f59c280b3400d10f6565411e27e2da13301cbb16d7e",
+      "sharedMatches": true
+    },
+    {
+      "file": "generation_helpers_module.js",
+      "snapshotSha256": "3704119dc13a33c1d068648c82bad44f6bfd1774fbb0019cf48cc0efdf6e42e1",
+      "sharedSha256": "3704119dc13a33c1d068648c82bad44f6bfd1774fbb0019cf48cc0efdf6e42e1",
+      "sharedMatches": true
+    },
+    {
+      "file": "text_pipeline_helpers_module.js",
+      "snapshotSha256": "6c04401f5fc47e150bab9218eb5d71b988a77d74e61e42d42af285f4f2e12cb8",
+      "sharedSha256": "6c04401f5fc47e150bab9218eb5d71b988a77d74e61e42d42af285f4f2e12cb8",
+      "sharedMatches": true
+    },
+    {
+      "file": "tests/helpers/reader_recovery_locale_harness.js",
+      "snapshotSha256": "53868f8d890315ec840b7249e0c02ea145c12a557e740b151f9e225ffc42674e",
+      "sharedSha256": "53868f8d890315ec840b7249e0c02ea145c12a557e740b151f9e225ffc42674e",
+      "sharedMatches": true
+    }
+  ]
+}

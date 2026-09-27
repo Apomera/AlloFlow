@@ -1,0 +1,218 @@
+{
+  "testFiles": 29,
+  "passed": 340,
+  "total": 341,
+  "remainingFailures": [
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/host_handlers_wave3_extraction.test.js",
+      "test": "wave-3 host handler extraction loads the handler module as boot-critical, pinned by content hash, with a shim per handler"
+    }
+  ],
+  "files": [
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/document_citation_adaptation.test.js",
+      "report": "integrated-tests.json",
+      "passed": 17,
+      "failed": [],
+      "total": 17
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/lumen_evidence.test.js",
+      "report": "independent-tests.json",
+      "passed": 11,
+      "failed": [],
+      "total": 11
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/lumen_sourced_workspace.test.js",
+      "report": "independent-tests.json",
+      "passed": 32,
+      "failed": [],
+      "total": 32
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/lumen_source_controls.test.js",
+      "report": "independent-tests.json",
+      "passed": 8,
+      "failed": [],
+      "total": 8
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/lumen_storage_recovery.test.js",
+      "report": "independent-tests.json",
+      "passed": 17,
+      "failed": [],
+      "total": 17
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/own_sources_duplicates_selection.test.js",
+      "report": "independent-tests.json",
+      "passed": 14,
+      "failed": [],
+      "total": 14
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/own_sources_import.test.js",
+      "report": "independent-tests.json",
+      "passed": 30,
+      "failed": [],
+      "total": 30
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/own_source_controls_load_timing.test.js",
+      "report": "independent-tests.json",
+      "passed": 9,
+      "failed": [],
+      "total": 9
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/own_source_documents_only.test.js",
+      "report": "final-followup-tests.json",
+      "passed": 9,
+      "failed": [],
+      "total": 9
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/own_source_evidence_inspector.test.js",
+      "report": "integrated-tests.json",
+      "passed": 14,
+      "failed": [],
+      "total": 14
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/own_source_lesson_controls.test.js",
+      "report": "independent-tests.json",
+      "passed": 11,
+      "failed": [],
+      "total": 11
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/quickstart_loading_recovery.test.js",
+      "report": "independent-tests.json",
+      "passed": 8,
+      "failed": [],
+      "total": 8
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/quickstart_wizard_a11y.test.js",
+      "report": "independent-tests.json",
+      "passed": 9,
+      "failed": [],
+      "total": 9
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/quickstart_wizard_render.test.js",
+      "report": "quickstart-followup-tests.json",
+      "passed": 5,
+      "failed": [],
+      "total": 5
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/document_citation_renderer_transform.test.js",
+      "report": "integrated-tests.json",
+      "passed": 24,
+      "failed": [],
+      "total": 24
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/external_search_privacy.test.js",
+      "report": "integrated-tests.json",
+      "passed": 8,
+      "failed": [],
+      "total": 8
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/host_handlers_wave3_extraction.test.js",
+      "report": "contract-followup-tests.json",
+      "passed": 4,
+      "failed": [
+        "wave-3 host handler extraction loads the handler module as boot-critical, pinned by content hash, with a shim per handler"
+      ],
+      "total": 5
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/own_source_ai_permission.test.js",
+      "report": "integrated-tests.json",
+      "passed": 1,
+      "failed": [],
+      "total": 1
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/own_source_grounding.test.js",
+      "report": "integrated-tests.json",
+      "passed": 15,
+      "failed": [],
+      "total": 15
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/own_source_rag_and_citation_tokens.test.js",
+      "report": "integrated-tests.json",
+      "passed": 10,
+      "failed": [],
+      "total": 10
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/own_source_sidebar_prop_chain.test.js",
+      "report": "final-followup-tests.json",
+      "passed": 1,
+      "failed": [],
+      "total": 1
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/own_source_toggle_ui.test.js",
+      "report": "final-followup-tests.json",
+      "passed": 14,
+      "failed": [],
+      "total": 14
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/own_source_workspace_settings.test.js",
+      "report": "final-followup-tests.json",
+      "passed": 6,
+      "failed": [],
+      "total": 6
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/phase_n_formatted_links_a11y.test.js",
+      "report": "final-followup-tests.json",
+      "passed": 3,
+      "failed": [],
+      "total": 3
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/search_query_contract.test.js",
+      "report": "final-followup-tests.json",
+      "passed": 7,
+      "failed": [],
+      "total": 7
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/source_citation_resilience.test.js",
+      "report": "integrated-tests.json",
+      "passed": 13,
+      "failed": [],
+      "total": 13
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/source_generation_state_ownership.test.js",
+      "report": "integrated-tests.json",
+      "passed": 4,
+      "failed": [],
+      "total": 4
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/source_research_phase.test.js",
+      "report": "final-followup-tests.json",
+      "passed": 17,
+      "failed": [],
+      "total": 17
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/source_research_query_transport.test.js",
+      "report": "final-followup-tests.json",
+      "passed": 19,
+      "failed": [],
+      "total": 19
+    }
+  ]
+}

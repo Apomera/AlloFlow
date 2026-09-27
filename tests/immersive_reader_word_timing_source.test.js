@@ -20,13 +20,7 @@ describe('Immersive Reader word-level read-along regressions', () => {
     expect(simplifiedSource).toContain('!chunkReaderReadAlong || readAlongWordProgress > 0');
   });
 
-  it('sends an atomic word tap through the direct interactive speech path', () => {
-    expect(simplifiedSource).not.toMatch(/handleSpeak\(simplifiedReadAloudText, 'simplified-main', assignedIdx\)/);
-    expect(simplifiedSource).toContain('const spokenWord = String(wordData.text');
-    expect(simplifiedSource).toContain('handleSpeak(spokenWord,');
-    expect(simplifiedSource).toContain('immersive-word-');
-    expect(simplifiedSource).toContain(', 0, true);');
-  });
+  // Atomic word taps are exercised against the rendered reader in reader_render_cost.test.js.
 
   it('runs foreground Read Along on an abortable interactive request in every host', () => {
     for (const entry of hostSources) {

@@ -124,12 +124,168 @@ const translationTargetChoices = (outputLanguage, uiLanguage, selectedLanguages)
   return out;
 };
 
-const generateBilingualText = async (basePrompt, targetLang, callGeminiFn, translationPolicy) => {
+// Shared, conservative reading representation. Unsupported markup fails closed
+// for validation; readers may fall back to their legacy renderer.
+const readingText = (() => {
+    const normalizeText = value => value.normalize('NFC').replace(/\s+/gu, ' ').trim();
+    const balanced = (text, start, open, close) => {
+        let depth = 0;
+        for (let i = start; i < text.length; i++) {
+            if (text[i] === '\\') { i++; continue; }
+            if (text[i] === open) depth++;
+            else if (text[i] === close && --depth === 0) return i;
+        }
+        return -1;
+    };
+    const inline = text => {
+        let result = '';
+        for (let i = 0; i < text.length; i++) {
+            // Code spans display punctuation literally; do not reinterpret their
+            // HTML or Markdown as invisible formatting.
+            if (text.charCodeAt(i) === 96) {
+                let width = 1;
+                while (text.charCodeAt(i + width) === 96) width++;
+                const delimiter = String.fromCharCode(96).repeat(width);
+                let end = text.indexOf(delimiter, i + width);
+                while (end >= 0 && (text.charCodeAt(end - 1) === 96 || text.charCodeAt(end + width) === 96)) end = text.indexOf(delimiter, end + width);
+                if (end < 0) throw new Error('unclosed-formatting');
+                result += Array.from(text.slice(i + width, end)).map(char => '&#' + char.codePointAt(0) + ';').join('');
+                i = end + width - 1; continue;
+            }
+            const image = text[i] === '!' && text[i + 1] === '[';
+            const start = image ? i + 1 : i;
+            if (text[start] === '[') {
+                const end = balanced(text, start, '[', ']');
+                const next = text[end + 1];
+                const destination = end >= 0 && (next === '(' || next === '[')
+                    ? balanced(text, end + 1, next, next === '(' ? ')' : ']') : -1;
+                if (destination >= 0) {
+                    const label = text.slice(start + 1, end);
+                    result += image ? '<span hidden></span>' : '<a href="' + Array.from(text.slice(end + 2, destination)).map(char => '&#' + char.codePointAt(0) + ';').join('') + '">' + inline(label) + '</a>';
+                    i = destination; continue;
+                }
+            }
+            if (text[i] === '\\' && /[\\`*_[\]{}()#+.!|>-]/.test(text[i + 1] || '')) {
+                result += '&#' + text.charCodeAt(++i) + ';'; continue;
+            }
+            result += text[i];
+        }
+        return result.replace(/~~([^~]+)~~/g, '<del>$1</del>')
+            .replace(/\*\*([^*]+)\*\*|__([^_]+)__/g, (_, a, b) => '<strong>' + (a || b) + '</strong>')
+            .replace(/(^|[^\p{L}\p{N}])_([^_]+)_(?=$|[^\p{L}\p{N}])/gu, '$1<em>$2</em>')
+            .replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/`([^`]+)`/g, '$1');
+    };
+    const tree = raw => {
+        if (typeof DOMParser !== 'function') throw new Error('text-parser-unavailable');
+        const html = inline(String(raw || ''));
+        const tags = html.match(/<\/?[A-Za-z][^<>]*>/g) || [], stack = [];
+        for (const tag of tags) {
+            const name = tag.match(/^<\/?([A-Za-z][\w:-]*)/)[1].toUpperCase();
+            if (/^(CODE|PRE)$/.test(name)) throw new Error('unsupported-formatting');
+            if (/^<\//.test(tag)) { if (stack.pop() !== name) throw new Error('unsupported-formatting'); }
+            else if (!/\/>$/.test(tag) && !/^(BR|HR|IMG|INPUT|META|LINK|SOURCE|AREA|BASE|COL|EMBED|PARAM|TRACK|WBR)$/.test(name)) stack.push(name);
+        }
+        if (stack.length) throw new Error('unsupported-formatting');
+        const allowed = new Set('BODY P DIV SPAN STRONG B EM I U A BR UL OL LI TABLE THEAD TBODY TFOOT TR TD TH H1 H2 H3 H4 H5 H6 BLOCKQUOTE DL DT DD FIGURE FIGCAPTION SUB SUP HR DEL S STRIKE'.split(' '));
+        const visit = node => {
+            if (node.nodeType === 3) return { text: node.data };
+            if (node.nodeType !== 1) return { hidden: true };
+            if (/^(SCRIPT|STYLE|TEMPLATE|NOSCRIPT|IMG|SVG|MATH|BUTTON)$/.test(node.tagName)
+                || node.hasAttribute('hidden') || node.getAttribute('aria-hidden') === 'true'
+                || /(?:display\s*:\s*none|visibility\s*:\s*hidden)/i.test(node.getAttribute('style') || '')) return { hidden: true };
+            if (!allowed.has(node.tagName) || node.hasAttribute('class') || node.hasAttribute('style')) throw new Error('unsupported-formatting');
+            return { tag: node.tagName.toLowerCase(), excluded: /^(DEL|S|STRIKE)$/.test(node.tagName), href: node.tagName === 'A' ? node.getAttribute('href') : undefined, children: Array.from(node.childNodes, visit) };
+        };
+        return visit(new DOMParser().parseFromString(html, 'text/html').body);
+    };
+    const blocks = raw => {
+        if (typeof DOMParser !== 'function') throw new Error('text-parser-unavailable');
+        // Keep hidden HTML spanning lines from being split into independent
+        // Markdown paragraphs. Unsupported cross-line HTML is unverified.
+        if (/<!--[\s\S]*$/.test(raw.replace(/<!--[\s\S]*?-->/g, ''))) throw new Error('unclosed-formatting');
+        raw = raw.replace(/<!--[\s\S]*?-->/g, '');
+        const chunks = []; let paragraph = [], fence = '';
+        const flush = () => { if (paragraph.length) chunks.push(paragraph.join('\n')); paragraph = []; };
+        for (const line of raw.replace(/\r\n?/g, '\n').split('\n')) {
+            const marker = line.match(/^\s*(`{3,}|~{3,})/);
+            if (marker) { flush(); if (!fence) fence = marker[1][0]; else if (marker[1][0] === fence) fence = ''; continue; }
+            if (fence) continue; // Chart/code payloads are not vocabulary evidence.
+            const htmlTags = inline(line).match(/<\/?[A-Za-z][^<>]*>/g) || [];
+            const stack = [];
+            for (const tag of htmlTags) {
+                const name = tag.match(/^<\/?([A-Za-z][\w:-]*)/)[1].toUpperCase();
+                if (/^(CODE|PRE)$/.test(name)) throw new Error('unsupported-formatting');
+                if (/^<\//.test(tag)) { if (stack.pop() !== name) throw new Error('unsupported-formatting'); }
+                else if (!/\/>$/.test(tag) && !/^(BR|HR|IMG|INPUT|META|LINK|SOURCE|AREA|BASE|COL|EMBED|PARAM|TRACK|WBR)$/.test(name)) stack.push(name);
+            }
+            if (stack.length) throw new Error('unsupported-formatting');
+            if (!line.trim() || /^\s*\[[^\]]+\]:\s*\S/.test(line) || /^\s*([-*_])(?:\s*\1){2,}\s*$/.test(line)) { flush(); continue; }
+            if (/^\s*\|.*\|\s*$/.test(line)) { flush(); chunks.push(...line.trim().slice(1, -1).split(/(?<!\\)\|/)); continue; }
+            const block = line.match(/^\s*(?:#{1,6}\s+|[-+*]\s+|\d+[.)]\s+|>\s?)(.*)$/);
+            if (block) { flush(); chunks.push(block[1]); } else paragraph.push(line);
+        }
+        if (fence) throw new Error('unclosed-formatting');
+        flush();
+        const output = [];
+        const blockTags = new Set('p div pre li td th h1 h2 h3 h4 h5 h6 blockquote dt dd figcaption hr'.split(' '));
+        for (const chunk of chunks) {
+            let current = '';
+            const finish = () => { output.push(...current.replace(/\b(?:https?:\/\/|www\.|mailto:)\S+/gi, '\u0001').split('\u0001').map(normalizeText).filter(Boolean)); current = ''; };
+            const visit = node => {
+                if (node.hidden || node.excluded) { finish(); return; }
+                if (node.text !== undefined) { current += node.text; return; }
+                if (node.tag === 'a' && /^⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾$/.test((node.children || []).map(n => n.text || '').join(''))) { finish(); return; }
+                if (node.tag === 'br') { current += ' '; return; }
+                const boundary = blockTags.has(node.tag);
+                if (boundary) finish();
+                (node.children || []).forEach(visit);
+                if (boundary) finish();
+            };
+            // The reader renders sentences separately. Project those same fragments,
+            // so formatting spanning a sentence boundary cannot prove invisible terms.
+            const splitSentences = window.AlloModules?.PureHelpers?.splitTextToSentences;
+            if (typeof splitSentences !== 'function') throw new Error('text-parser-unavailable');
+            for (const sentence of splitSentences(chunk, {})) { visit(tree(sentence)); current += ' '; }
+            finish();
+        }
+        return output;
+    };
+
+    const plain = raw => {
+        const visit = node => node.hidden ? '' : node.text !== undefined ? node.text : node.tag === 'br' ? ' ' : (node.children || []).map(visit).join('');
+        return visit(tree(raw));
+    };
+    return { tree, blocks, plain };
+})();
+
+const generateBilingualText = async (basePrompt, targetLang, callGeminiFn, translationPolicy, adaptation = null) => {
+    // Accept direct callers' optional fifth argument and the four-argument host
+    // shim's forwarded policy envelope. Neither changes the translation policy.
+    const controls = adaptation ?? translationPolicy?.adaptation ?? {};
     const stripFences = (s) => String(s || "")
         .replace(/^```[a-zA-Z]*\n/i, '')
         .replace(/^```\s*/, '')
         .replace(/```\s*$/, '')
         .trim();
+    const ensureCurrent = () => {
+        if (typeof controls?.isCurrent === 'function' && !controls.isCurrent()) {
+            const error = new Error('This adaptation request is no longer current.');
+            error.code = 'adaptation-request-stale';
+            throw error;
+        }
+    };
+    const requestText = async prompt => {
+        ensureCurrent();
+        try {
+            const raw = await callGeminiFn(prompt);
+            ensureCurrent();
+            return stripFences(raw);
+        } catch (error) {
+            // An obsolete provider failure belongs to the cancelled request.
+            ensureCurrent();
+            throw error;
+        }
+    };
     // Explicit URL preservation rules — Gemini has a persistent quirk where it inserts spaces
     // into URLs (treating `.com` as a sentence boundary) and occasionally drops trailing chars
     // on the last citation when the input text is wrapped in surrounding quotes.
@@ -149,20 +305,24 @@ URL PRESERVATION (CRITICAL — applies to every citation link [⁽N⁾](url)):
         ? translationPolicy
         : resolveTranslationPolicy(TRANSLATION_MODE_AUTO, targetLang, 'English');
     if (!targetLang || targetLang === 'English') {
-        const raw = await callGeminiFn(basePrompt + '\n\n' + urlPreservationRules);
-        return stripFences(raw);
+        return requestText(basePrompt + '\n\n' + urlPreservationRules);
     }
     const targetPrompt = `${basePrompt}\n\n${urlPreservationRules}\n\nCRITICAL: Return ONLY the ${targetLang} text.${policy.enabled ? ` Do NOT provide a ${policy.target} translation yet.` : ''}`;
-    const targetResult = stripFences(await callGeminiFn(targetPrompt));
+    const targetResult = await requestText(targetPrompt);
     // Translations off (or nothing sensible to translate into): one call, one
     // block, no delimiter. Every downstream consumer already handles a string
     // without the delimiter — that is the English-output case they see today.
     if (!policy.enabled) return targetResult;
     // Use triple-pipe fences instead of "..." wrapping so trailing ")" on the last citation
     // doesn't butt up against a closing quote (which Gemini sometimes eats).
+    const preservedTranslationTerms = Array.isArray(controls?.translationKeepTerms) ? controls.translationKeepTerms : [];
+    const termDirective = preservedTranslationTerms.length
+        ? 'Keep each of these source-translation terms at least once, exactly as written (including case and punctuation). Use them naturally in the translation; do not replace them with synonyms: ' + JSON.stringify(preservedTranslationTerms)
+        : '';
     const translationPrompt = `
 Translate the ${targetLang} text between the fences into ${policy.target}.
 Maintain the formatting, tone, emojis, and citation markers exactly.
+${termDirective}
 
 ${urlPreservationRules}
 
@@ -172,7 +332,7 @@ Return ONLY the ${policy.target} translation — no preamble, no fences in your 
 ${targetResult}
 |||END ${targetLang.toUpperCase()}|||
     `;
-    const translatedResult = stripFences(await callGeminiFn(translationPrompt));
+    const translatedResult = await requestText(translationPrompt);
     // The delimiter stays the literal '--- ENGLISH TRANSLATION ---' whatever the
     // destination language is. It is a MACHINE TOKEN, not user-facing copy: it
     // is parsed by extractSourceTextForProcessing, BilingualFieldRenderer,
@@ -1429,6 +1589,7 @@ const parseTaggedContent = (text) => {
 // Factory: takes no parameters (all helpers are pure). Returns the registry.
 const createTextPipelineHelpers = () => ({
   generateBilingualText,
+  readingText,
   resolveTranslationPolicy,
   isTranslationControlRelevant,
   translationTargetChoices,

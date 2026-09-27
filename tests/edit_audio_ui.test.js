@@ -90,7 +90,10 @@ function baseProps(overrides = {}) {
     isImmersiveReaderActive: false,
     isCompareMode: false,
     isSideBySide: false,
-    isZenMode: true,
+    isZenMode: false,
+    ComplexityGauge: () => null,
+    setComplexityLevel: noop,
+    setSaveOriginalOnAdjust: noop,
     isProcessing: false,
     isPlaying: false,
     interactionMode: 'read',
@@ -165,14 +168,14 @@ describe('SimplifiedView Edit Audio mode', () => {
 
     mount(baseProps());
 
-    const toggle = host.querySelector('button[aria-label^="common.edit."]');
+    const toggle = host.querySelector('button[data-manage-narration]');
     expect(toggle).toBeTruthy();
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
-    expect(host.querySelector('[role="region"][aria-label="common.edit"]')).toBeNull();
+    expect(host.querySelector('[role="region"][aria-label="Manage narration"]')).toBeNull();
 
     act(() => { toggle.click(); });
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
-    expect(host.querySelector('[role="region"][aria-label="common.edit"]')).toBeTruthy();
+    expect(host.querySelector('[role="region"][aria-label="Manage narration"]')).toBeTruthy();
 
     const missingPlay = button('Play audio for sentence 1');
     expect(missingPlay).toBeTruthy();
@@ -272,7 +275,7 @@ describe('SimplifiedView Edit Audio mode', () => {
     const callTTS = vi.fn(async () => 'blob:wrong-direct-tts');
 
     mount(baseProps({ selectedVoice: 'Kore', voiceSpeed: 1, callTTS }));
-    act(() => { host.querySelector('button[aria-label^="common.edit."]').click(); });
+    act(() => { host.querySelector('button[data-manage-narration]').click(); });
 
     rawGet.mockClear();
     window.__alloResolveReadAloudAudio.mockClear();
@@ -289,7 +292,7 @@ describe('SimplifiedView Edit Audio mode', () => {
     expect(window.__alloResolveReadAloudAudio).not.toHaveBeenCalled();
     expect(callTTS).not.toHaveBeenCalled();
     expect(rawGet).not.toHaveBeenCalled();
-    expect(host.textContent).toContain('common.success \u00b7 ui_common.unsaved_changes');
+    expect(host.textContent).toContain('ready for playback \u00b7 ui_common.unsaved_changes');
   });
 
   it('keeps an unreadable saved clip removable and offers to rebuild it', async () => {
@@ -346,7 +349,7 @@ describe('SimplifiedView Edit Audio mode', () => {
     window.__alloStoreRecordedSentenceAudio = vi.fn(async () => true);
 
     mount(baseProps({ selectedVoice: 'Kore', voiceSpeed: 1 }));
-    act(() => { host.querySelector('button[aria-label^="common.edit."]').click(); });
+    act(() => { host.querySelector('button[data-manage-narration]').click(); });
 
     await act(async () => {
       button('Play audio for sentence 1').click();
@@ -356,10 +359,10 @@ describe('SimplifiedView Edit Audio mode', () => {
 
     expect(audioInstances).toHaveLength(1);
     expect(audioInstances[0].src).toBe('blob:broken-saved-clip');
-    expect(host.textContent).toContain('common.success \u00b7 common.error');
+    expect(host.textContent).toContain('ready for playback \u00b7 common.error');
     expect(button('Rebuild audio for sentence 1')).toBeTruthy();
     expect(button('Remove saved audio for sentence 1')).toBeTruthy();
-    expect(host.textContent).toContain('1/2 common.success');
+    expect(host.textContent).toContain('1/2 ready for playback');
     expect(window.__alloRemoveSentenceAudio).not.toHaveBeenCalled();
     expect(window.__alloResolveReadAloudAudio).not.toHaveBeenCalled();
   });
@@ -388,14 +391,14 @@ describe('SimplifiedView Edit Audio mode', () => {
     window.__alloStoreRecordedSentenceAudio = vi.fn(async () => true);
 
     mount(baseProps({ selectedVoice: 'Kore', voiceSpeed: 1 }));
-    const toggle = host.querySelector('button[aria-label^="common.edit."]');
+    const toggle = host.querySelector('button[data-manage-narration]');
     act(() => { toggle.click(); });
 
     expect(button('Rebuild audio for sentence 1')).toBeTruthy();
     expect(host.textContent).toContain('ui_common.unsaved_changes');
     expect(host.textContent).toContain('AI voice');
     expect(host.textContent).toContain('Puck');
-    expect(host.textContent).toContain('1/2 common.success');
+    expect(host.textContent).toContain('1/2 ready for playback');
     expect(host.textContent).toContain('1/12 MB');
 
     await act(async () => {
@@ -439,8 +442,8 @@ describe('SimplifiedView Edit Audio mode', () => {
     window.__alloStoreRecordedSentenceAudio = vi.fn();
 
     mount(baseProps());
-    const toggle = host.querySelector('button[aria-label^="common.edit."]');
-    expect(toggle.getAttribute('aria-label')).toContain('0/2 common.success');
+    const toggle = host.querySelector('button[data-manage-narration]');
+    expect(toggle.textContent).toContain('0/2 ready for playback');
 
     await act(async () => {
       saved.add('First sentence.');
@@ -455,7 +458,7 @@ describe('SimplifiedView Edit Audio mode', () => {
       await Promise.resolve();
     });
 
-    expect(toggle.getAttribute('aria-label')).toContain('1/2 common.success');
+    expect(toggle.textContent).toContain('1/2 ready for playback');
   });
   it('shows clips captured by playback as saved when using the REAL karaoke store (key agreement)', async () => {
     // Aaron's 2026-07-15/16 repro. Playback (phase_k playSequence) captures the
@@ -502,8 +505,8 @@ describe('SimplifiedView Edit Audio mode', () => {
     window.__alloStoreRecordedSentenceAudio = vi.fn(async () => true);
 
     mount(baseProps({ generatedContent: { id: 'resource-edit-audio', type: 'simplified', data } }));
-    const toggle = host.querySelector('button[aria-label^="common.edit."]');
-    expect(toggle.getAttribute('aria-label')).toContain('2/2 common.success');
+    const toggle = host.querySelector('button[data-manage-narration]');
+    expect(toggle.textContent).toContain('2/2 ready for playback');
     act(() => { toggle.click(); });
 
     // Every listed sentence resolves to the captured clip — and the list has

@@ -1,0 +1,131 @@
+{
+  "date": "2026-09-26",
+  "sourceChanges": false,
+  "unit": {
+    "total": 172,
+    "passed": 172,
+    "failed": 0
+  },
+  "webgl": {
+    "startTime": "2026-09-26T21:25:31.078Z",
+    "duration": 230650.522,
+    "expected": 10,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "checks": [
+    {
+      "name": "dives into a live, non-blank scene with the HUD attached",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 52115
+        }
+      ]
+    },
+    {
+      "name": "W moves the octopus: the frame changes and the loop is running",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 44305
+        }
+      ]
+    },
+    {
+      "name": "the canvas follows its container when the container resizes",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 7327
+        }
+      ]
+    },
+    {
+      "name": "the HUD reports a real reef depth and pressure on arrival",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 5717
+        }
+      ]
+    },
+    {
+      "name": "descending warns about pressure before it starts doing damage",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 13053
+        }
+      ]
+    },
+    {
+      "name": "jetting burns calories faster than crawling, and says so",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 39632
+        }
+      ]
+    },
+    {
+      "name": "inking reports what ink actually does",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 17465
+        }
+      ]
+    },
+    {
+      "name": "camouflage fades when the animal leaves the bottom",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 17646
+        }
+      ]
+    },
+    {
+      "name": "surfacing releases the WebGL context",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 10408
+        }
+      ]
+    },
+    {
+      "name": "a lost context during the hunt raises Retry, and Retry dives again",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 6698
+        }
+      ]
+    }
+  ],
+  "localTrace": {
+    "lcpMs": 464,
+    "cls": 0,
+    "fieldData": null,
+    "inp": null,
+    "scope": "Minimal localhost harness; not deployed app or representative target-device benchmark"
+  },
+  "notes": [
+    "All WebGL suite tests used retries=0 and workers=1.",
+    "Controlled probes demonstrate input, time, containment, persistence, and lifecycle issues even though existing suites pass.",
+    "No full accessibility conformance audit or long-session memory trend measurement was performed."
+  ]
+}

@@ -125,6 +125,102 @@ const contractAudio = (base64) => ({
 });
 
 describe('Adventure narrated Storybook artifact export', () => {
+  it('does not opt text-only exports into the narration recovery cache', async () => {
+    window.AlloModules.StudentArtifactStore = { save: vi.fn() };
+    window.callGemini = vi.fn().mockResolvedValue('Text-only summary.');
+    const prepareStorybookSummary = vi.fn(), prepareReadAloudArtifactAudio = vi.fn();
+    const write = vi.fn(); vi.spyOn(window, 'open').mockReturnValue({ document: { write, close: vi.fn() } });
+    expect(await createExport(storyLive({ prepareStorybookSummary, prepareReadAloudArtifactAudio })).handleExportStorybook({ includeNarration: false })).toBe(true);
+    expect(write).toHaveBeenCalledWith(expect.stringContaining('Text-only summary.'));
+    expect(prepareStorybookSummary).not.toHaveBeenCalled(); expect(prepareReadAloudArtifactAudio).not.toHaveBeenCalled();
+  });
+  it.each(['summary', 'narration'])('does not download a competing partial export when %s is already preparing', async phase => {
+    const downloads = installDownloadCapture(), save = vi.fn(); window.AlloModules.StudentArtifactStore = { save };
+    const busy = async () => { throw Object.assign(new Error('Already preparing.'), { code: 'preparation-in-progress' }); };
+    const live = storyLive({ prepareStorybookSummary: phase === 'summary' ? busy : async () => ({ text: 'Ready.', recovery: { state: 'saved' } }),
+      prepareReadAloudArtifactAudio: busy });
+    expect(await createExport(live).handleExportStorybook({ includeNarration: true })).toBe(false);
+    expect(downloads).toHaveLength(0); expect(save).not.toHaveBeenCalled();
+  });
+  it('recovers the matching epilogue and exposes session-only text without an extra provider call', async () => {
+    const downloads = installDownloadCapture();
+    window.AlloModules.StudentArtifactStore = { save: vi.fn() };
+    window.callGemini = vi.fn().mockRejectedValue(new Error('offline'));
+    const prepareStorybookSummary = vi.fn(async () => ({ text: 'Saved epilogue.', recovery: { resumed: true, state: 'session-only' } }));
+    const live = storyLive({ prepareStorybookSummary, prepareReadAloudArtifactAudio: async () => ({}) });
+    expect(await createExport(live).handleExportStorybook({ includeNarration: true })).toBe(true);
+    expect(window.callGemini).not.toHaveBeenCalled();
+    expect(prepareStorybookSummary).toHaveBeenCalledWith(expect.objectContaining({ ownerApproved: true, scopeId: 'story', prompt: expect.stringContaining('Write in English.') }));
+    expect(JSON.parse(prepareStorybookSummary.mock.calls[0][0].input)).toEqual([1, 'Water Cycle', live.adventureState.history.map(entry => [entry.type, entry.text]), 'English']);
+    expect(downloads[0].blob.content).toContain('Saved epilogue.');
+    expect(live.addToast).toHaveBeenCalledWith(expect.stringContaining('epilogue is available for this session'), 'warning');
+  });
+  it('includes edits beyond the summary prompt limit and language changes in recovery identity', async () => {
+    installDownloadCapture(); window.AlloModules.StudentArtifactStore = { save: vi.fn() };
+    const prepareStorybookSummary = vi.fn(async () => ({ text: 'Summary.', recovery: { state: 'saved' } }));
+    const live = storyLive({ prepareStorybookSummary, adventureState: { history: [{ type: 'scene', text: 'A'.repeat(16000) }, { type: 'choice', text: 'First.' }] } });
+    const api = createExport(live);
+    await api.handleExportStorybook({ includeNarration: true });
+    live.adventureState.history[1].text = 'Edited.';
+    await api.handleExportStorybook({ includeNarration: true });
+    live.currentUiLanguage = 'Spanish';
+    await api.handleExportStorybook({ includeNarration: true });
+    const [first, edited, language] = prepareStorybookSummary.mock.calls.map(([request]) => request);
+    expect(first.prompt).toBe(edited.prompt); expect(first.input).not.toBe(edited.input);
+    expect(edited.input).not.toBe(language.input); expect(language.prompt).toContain('Write in Spanish.');
+  });
+  it('exports the complete journey without an epilogue when offline and no matching summary exists', async () => {
+    const downloads = installDownloadCapture(), save = vi.fn(); window.AlloModules.StudentArtifactStore = { save };
+    const prepareStorybookSummary = vi.fn().mockRejectedValue(new Error('offline'));
+    const prepareReadAloudArtifactAudio = vi.fn(async () => ({ audioBySegmentId: { 'turn:1:scene:scene:0': contractAudio('Z29vZA==') } }));
+    const live = storyLive({ prepareStorybookSummary, prepareReadAloudArtifactAudio });
+    expect(await createExport(live).handleExportStorybook({ includeNarration: true })).toBe(true);
+    const html = downloads.find(item => item.filename.endsWith('.html')).blob.content;
+    expect(html).toContain('Epilogue unavailable. The complete journey follows.');
+    expect(html).not.toContain('data-scene-id="epilogue"');
+    expect(html).toContain('Build a safe bridge.'); expect(html).toContain('data:audio/mpeg;base64,Z29vZA==');
+    const artifact = JSON.parse(downloads.find(item => item.filename.endsWith('.json')).blob.content);
+    expect(artifact.transcript.segmentCount).toBe(4);
+    expect(save.mock.calls[0][0].summary).toContain('4 journey entries');
+    expect(prepareReadAloudArtifactAudio.mock.calls[0][0].segments.some(segment => segment.segmentId === 'epilogue:summary')).toBe(false);
+    expect(live.addToast).toHaveBeenCalledWith(expect.stringContaining('retry online'), 'warning');
+  });
+  it('blocks a duplicate export while story preparation is active and releases the request after cancellation', async () => {
+    const downloads = installDownloadCapture(), controller = new AbortController(), save = vi.fn();
+    window.AlloModules.StudentArtifactStore = { save };
+    let finish;
+    const prepareStorybookSummary = vi.fn().mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }))
+      .mockResolvedValue({ text: 'Retry summary.', recovery: { state: 'saved' } });
+    const live = storyLive({ prepareStorybookSummary }); const api = createExport(live);
+    const first = api.handleExportStorybook({ includeNarration: true, signal: controller.signal });
+    await vi.waitFor(() => expect(finish).toBeTypeOf('function'));
+    expect(await api.handleExportStorybook({ includeNarration: true })).toBe(false);
+    expect(prepareStorybookSummary).toHaveBeenCalledOnce();
+    controller.abort(); finish({ text: 'Discarded summary.' }); expect(await first).toBe(false);
+    expect(downloads).toHaveLength(0); expect(save).not.toHaveBeenCalled();
+    expect(await api.handleExportStorybook({ includeNarration: true })).toBe(true); expect(downloads).toHaveLength(2);
+  });
+  it('reports external pictures without declaring the entire download self-contained', async () => {
+    const downloads = installDownloadCapture();
+    window.callGemini = vi.fn().mockResolvedValue('You completed the journey.');
+    const live = storyLive({ adventureState: { history: [{ type: 'scene', text: 'A river rises.', image: 'https://example.test/river.png' }], level: 3 },
+      prepareReadAloudArtifactAudio: async () => ({ audioBySegmentId: { 'epilogue:summary': contractAudio('Z29vZA==') } }) });
+    const save = vi.fn(); window.AlloModules.StudentArtifactStore = { save };
+    expect(await createExport(live).handleExportStorybook({ includeNarration: true, includeImages: true })).toBe(true);
+    const html = downloads.find(item => item.filename.endsWith('.html')).blob.content;
+    expect(html).toContain('Pictures requiring the original source: 1');
+    expect(live.addToast).toHaveBeenCalledWith(expect.stringContaining('not embedded'), 'warning');
+    expect(save.mock.calls[0][0].artifact.readAloudReference.pictures).toMatchObject({ external: 1, decoding: 'unverified' });
+    expect(live.addToast.mock.calls.some(([text]) => text.includes('self-contained'))).toBe(false);
+  });
+  it('does not save a manifest or download after cancellation during story preparation', async () => {
+    const downloads = installDownloadCapture(), controller = new AbortController();
+    const save = vi.fn(); window.AlloModules.StudentArtifactStore = { save };
+    window.callGemini = vi.fn(async () => { controller.abort(); return 'You completed the journey.'; });
+    const prepareReadAloudArtifactAudio = vi.fn();
+    expect(await createExport(storyLive({ prepareReadAloudArtifactAudio })).handleExportStorybook({ includeNarration: true, signal: controller.signal })).toBe(false);
+    expect(prepareReadAloudArtifactAudio).not.toHaveBeenCalled(); expect(save).not.toHaveBeenCalled(); expect(downloads).toHaveLength(0);
+  });
   it('uses the shared flat-segment callback, embeds valid clips, and saves only a lightweight manifest', async () => {
     const downloads = installDownloadCapture();
     const save = vi.fn();
@@ -161,6 +257,7 @@ describe('Adventure narrated Storybook artifact export', () => {
     const request = prepareReadAloudArtifactAudio.mock.calls[0][0];
     expect(request).toMatchObject({
       ownerApproved: true,
+      recoverPreparedAudio: true,
       resourceType: 'adventure-storybook-read-aloud',
       adapterId: 'adventure-storybook-artifact',
       scopeId: 'story',
@@ -227,6 +324,23 @@ describe('Adventure narrated Storybook artifact export', () => {
 });
 
 describe('Storybook export modal narration progress', () => {
+  it('stops an active export without dismissing the dialog and offers another attempt', async () => {
+    let finish, request;
+    const close = vi.fn();
+    const handleExportStorybook = vi.fn(options => { request = options; return new Promise(resolve => { finish = resolve; }); });
+    host = document.createElement('div'); document.body.append(host); root = ReactDOMClient.createRoot(host);
+    await act(async () => root.render(React.createElement(StorybookExportModal, { handleExportStorybook, handleSetShowStorybookExportModalToFalse: close,
+      setShowStorybookExportModal: close, isProcessing: false, t: key => key })));
+    expect(host.textContent).toContain('recovery copy is saved on this device when space allows');
+    await act(async () => host.querySelector('[data-help-key="export_storybook_images"]').click());
+    const stop = [...host.querySelectorAll('button')].find(button => button.textContent === 'Stop export');
+    expect(stop.disabled).toBe(false);
+    await act(async () => stop.click()); expect(request.signal.aborted).toBe(true);
+    await act(async () => finish(false));
+    expect(close).not.toHaveBeenCalled();
+    expect(host.querySelector('[role="status"]').textContent).toContain('Completed narration is kept');
+    expect(host.querySelector('[data-help-key="export_storybook_images"]').disabled).toBe(false);
+  });
   it('offers an accessible opt-in and keeps live spinner/progress feedback visible until export completes', async () => {
     let finish;
     const pending = new Promise((resolvePromise) => { finish = resolvePromise; });

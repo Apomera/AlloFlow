@@ -166,7 +166,10 @@ async function generateSource({ includeCitations = true, useOwnSources = true, c
   const callGemini = vi.fn(async (prompt, jsonMode, useSearch) => {
     const p = String(prompt);
     calls.push({ prompt: p, useSearch });
-    if (/Research the following topic/.test(p)) return { text: 'too short' }; // web research found nothing usable
+    if (/Research the following topic/.test(p)) return {
+      text: 'Clouds form when water vapor cools and condenses on tiny dust particles. The droplets collect into visible clouds.',
+      groundingMetadata: { groundingChunks: [{ web: { uri: 'https://weather.example.org/clouds', title: 'Cloud science' } }] },
+    };
     if (/Write a self-contained educational article|Write the section/.test(p)) {
       return {
         text: '## How Clouds Form\n\nClouds form when vapor condenses [Your document 1]. "Clouds form when water vapor cools and condenses on tiny dust particles."' + (grounded ? ' Water vapor cools [Source 1].' : ''),
@@ -192,7 +195,7 @@ async function generateSource({ includeCitations = true, useOwnSources = true, c
 }
 
 describe('own-source RAG in source generation', () => {
-  it('loads the document engine, uses the passages even when web research comes back empty, and never labels them [Source N]', async () => {
+  it('loads the document engine alongside successful web research and never labels its passages [Source N]', async () => {
     const { api } = installOwnSources();
     const { calls, sectionPrompt, finalDocument } = await generateSource();
     expect(api.ensureLumen).toHaveBeenCalled();

@@ -474,12 +474,15 @@ const handleWizardComplete = (data, deps) => {
         setTextFormat(finalData.format);
     }
     if (finalData.sourceMode === 'generate') {
+      if (typeof deps.setUseOwnSources === 'function') deps.setUseOwnSources(finalData.useOwnSources === true);
+      if (typeof deps.setSelectedOwnSourceIds === 'function') deps.setSelectedOwnSourceIds(Array.isArray(finalData.selectedOwnSourceIds) ? finalData.selectedOwnSourceIds.slice() : null);
+      if (typeof deps.setDocumentsOnly === 'function') deps.setDocumentsOnly(finalData.documentsOnly === true);
       setSourceTopic(finalData.topic);
       if (finalData.tone) setSourceTone(finalData.tone);
       if (finalData.length) setSourceLength(finalData.length);
       if (finalData.sourceCustomInstructions) setSourceCustomInstructions(finalData.sourceCustomInstructions);
       if (finalData.verification !== undefined) {
-          setIncludeSourceCitations(finalData.verification);
+          setIncludeSourceCitations(finalData.documentsOnly ? false : finalData.verification);
       }
       if (finalData.dokLevel) setDokLevel(finalData.dokLevel);
       if (finalData.vocabulary) setSourceVocabulary(finalData.vocabulary);
@@ -490,7 +493,9 @@ const handleWizardComplete = (data, deps) => {
               topic: finalData.topic,
               grade: finalData.grade,
               standards: finalData.standards ? finalData.standards.join('; ') : '',
-              includeCitations: finalData.verification,
+              includeCitations: finalData.documentsOnly ? false : finalData.verification,
+              selectedOwnSourceIds: Array.isArray(finalData.selectedOwnSourceIds) ? finalData.selectedOwnSourceIds.slice() : undefined,
+              documentsOnly: finalData.documentsOnly === true,
               // The wizard's "use my own sources" box was never forwarded.
               useOwnSources: finalData.useOwnSources === true,
               length: parseInt(finalData.length),

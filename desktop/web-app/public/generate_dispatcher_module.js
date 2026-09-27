@@ -264,8 +264,10 @@ const GENERATION_STAGE_BY_TYPE = Object.freeze({
   'sentence-frames': 'build', brainstorm: 'build', adventure: 'build', persona: 'build',
   timeline: 'build', 'word-sounds': 'build',
 });
-const ADAPTED_REFERENCES_HEADER_RE = /(?:^|\r?\n)[ \t]*#{1,6}[ \t]+(?:Source\s+Text\s+References|Accuracy\s+Check\s+References|(?:Referenced|Verified)\s+Sources|Sources?(?:[ \t]*\/[^\r\n]*)?|References|Bibliography|Works\s+Cited|Références|Sources\s+du\s+texte|Referencias|Quellen)[ \t]*:?[ \t]*(?=\r?\n|$)/i;
-const ADAPTED_CITATION_START_RE = /\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/g;
+const ADAPTED_REFERENCES_HEADER_RE = /(?:^|\r?\n)[ \t]*#{1,6}[ \t]+(?:Your\s+Document\s+References|Source\s+Text\s+References|Accuracy\s+Check\s+References|(?:Referenced|Verified)\s+Sources|Sources?(?:[ \t]*\/[^\r\n]*)?|References|Bibliography|Works\s+Cited|Références|Sources\s+du\s+texte|Referencias|Quellen)[ \t]*:?[ \t]*(?=\r?\n|$)/i;
+// Local document passages have their own anchor namespace and never share
+// web citation numbers. Only accept the application's exact local-link shape.
+const ADAPTED_CITATION_START_RE = /\[(?:⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾|Document [1-9]\d*(?=\]\(#allo-doc-[a-z0-9-]+\)))\]\(/g;
 
 function sanitizeMemoryAidPromptData(value, maxLength = 4000, preserveLineBreaks = false) {
   const requestedLimit = Number(maxLength);
@@ -4192,14 +4194,14 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           const original = String(sourceText || '');
           const envelope = keepCitations
               ? protectAdaptationCitations(original)
-              : { text: original, citations: [], original };
+              : { text: stripAuditCitationMarkup(original), citations: [], original };
           const maxAttempts = keepCitations ? 2 : 1;
           let finalCheck = null;
           for (let attempt = 1; attempt <= maxAttempts; attempt++) {
               const raw = await transform(envelope.text, attempt > 1);
               const cleaned = cleanModelText(raw);
               if (!keepCitations) {
-                  return { text: cleaned, valid: true, attempts: attempt };
+                  return { text: stripAuditCitationMarkup(cleaned), valid: true, attempts: attempt };
               }
               const restored = restoreProtectedAdaptationCitations(envelope, cleaned);
               finalCheck = restored;

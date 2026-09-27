@@ -42,12 +42,14 @@ function HomeworkQrDialogView(props) {
             {delivery && (
               <section data-reading-delivery-summary className="mb-3 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-left" aria-labelledby="assignment-reading-summary-title">
                 <h3 id="assignment-reading-summary-title" className="text-sm font-black text-indigo-950">{deliveryText('share_collect.what_students_receive', 'What students receive')}</h3>
+                {delivery.contentsStatus && delivery.contentsStatus !== 'ready' && <p role="status" className="mt-1 text-xs text-amber-900">{deliveryText(delivery.contentsStatus === 'unavailable' ? 'share_collect.contents_unavailable' : 'share_collect.contents_pending', delivery.contentsStatus === 'unavailable' ? 'The reading contents could not be downloaded. Reconnect and reopen the link.' : 'The reading contents are awaiting download. Included resources have not been verified.')}</p>}
                 {delivery.openingTitle && <p className="mt-1 break-words text-xs text-slate-800"><strong>{deliveryText('share_collect.opens_first', 'Opens first:')}</strong> {delivery.openingTitle}</p>}
                 {readingRows.length > 0 && <details className="mt-2" open>
                   <summary className="cursor-pointer text-xs font-bold text-indigo-900">{deliveryText('share_collect.readings_and_word_supports', 'Readings and saved word supports')}</summary>
                   <ul className="mt-2 max-h-48 space-y-2 overflow-y-auto text-xs text-slate-800">
                     {readingRows.map((reading, index) => <li key={reading.id || index} className="rounded-lg border border-indigo-100 bg-white p-2 break-words">
                       <p className="font-bold">{reading.title}</p>
+                      {reading.bodyStatus === 'unavailable' && <p className="text-amber-900" data-reading-body-unavailable>{deliveryText('share_collect.reading_body_unavailable', 'This reading’s text could not be opened. Reopen the link or ask for a new copy.')}</p>}
                       <p>{reading.form === 'original' ? deliveryText('share_collect.original_reading', 'Original reading') : reading.form === 'adapted' ? deliveryText('share_collect.adapted_companion', 'Adapted companion') : deliveryText('share_collect.reading_needs_review', 'Reading — check before sharing')}</p>
                       <p className={['unavailable', 'unverified'].includes(reading.originalStatus) ? 'font-semibold text-amber-900' : ''}>
                         {reading.originalStatus === 'included' ? (reading.form === 'original' ? deliveryText('share_collect.original_included', 'Original text included.') : deliveryText('share_collect.matching_original_included', 'Matching original included.'))
@@ -59,6 +61,21 @@ function HomeworkQrDialogView(props) {
                         ? deliveryText('share_collect.saved_word_support_count', '{count} saved word supports.').replace('{count}', String(reading.supportsCount))
                         : deliveryText('share_collect.word_supports_unverified', 'Saved word supports could not be checked.')}</p>
                       {['partial', 'unavailable'].includes(reading.supportsStatus) && <p className="text-amber-900">{deliveryText('share_collect.word_supports_partial', 'Some word supports are unavailable. Check the student view.')}</p>}
+                      {reading.capabilities && <div className="mt-1 space-y-1" data-reading-capabilities>
+                        {reading.form === 'adapted' && Number.isInteger(reading.capabilities.adaptedSupports?.activeCount) && <p>{deliveryText('share_collect.adapted_support_count', '{count} saved supports on the adapted text.').replace('{count}', String(reading.capabilities.adaptedSupports.activeCount))}</p>}
+                        {reading.capabilities.adaptedSupports?.reason === 'stale-identity' && <p className="text-amber-900">{deliveryText('share_collect.adapted_supports_stale', 'The adapted text changed. Its saved supports need review.')}</p>}
+                        {reading.capabilities.adaptedSupports?.reason === 'validator-unavailable' && <p className="text-amber-900">{deliveryText('share_collect.adapted_supports_unverified', 'Saved supports on the adapted text could not be checked.')}</p>}
+                        {reading.capabilities.adaptedSupports?.inclusion === 'partial' && <p className="text-amber-900">{deliveryText('share_collect.adapted_supports_partial', 'Some saved supports on the adapted text are unavailable.')}</p>}
+                        {reading.capabilities.pictures?.reason === 'validator-unavailable' && <p className="text-amber-900">{deliveryText('share_collect.reading_pictures_unverified', 'Some support pictures could not be checked.')}</p>}
+                        {Number.isInteger(reading.capabilities.pictures?.includedCount) && <p>{deliveryText('share_collect.reading_picture_count', '{count} support pictures included.').replace('{count}', String(reading.capabilities.pictures.includedCount))}</p>}
+                        {reading.capabilities.pictures?.omittedCount > 0 && <p className="text-amber-900">{deliveryText('share_collect.reading_pictures_omitted', '{count} support pictures were omitted because of format or size limits.').replace('{count}', String(reading.capabilities.pictures.omittedCount))}</p>}
+                        <p data-reading-audio-capability className={reading.capabilities.referenceAudio?.inclusion === 'omitted' ? 'text-amber-900' : ''}>{reading.capabilities.referenceAudio?.inclusion === 'included'
+                          ? deliveryText('share_collect.reading_audio_included_unchecked', 'Saved reading audio is included. Playback on the student device has not been checked.')
+                          : reading.capabilities.referenceAudio?.inclusion === 'omitted'
+                            ? deliveryText('share_collect.reading_audio_omitted', 'Saved reading audio is not included in this link.')
+                            : deliveryText('share_collect.reading_audio_unverified', 'Saved reading audio could not be checked.')}</p>
+                        {reading.capabilities.citations?.inclusion === 'included' && <p>{deliveryText('share_collect.reading_references_included', 'The reading’s saved references are included.')}</p>}
+                      </div>}
                       {reading.incomplete === true && <p className="text-amber-900">{deliveryText('share_collect.reading_reduced', 'This reading was reduced for this link. Check the student view.')}</p>}
                     </li>)}
                   </ul>

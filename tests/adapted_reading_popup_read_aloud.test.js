@@ -18,7 +18,7 @@ beforeAll(() => {
   global.React = window.React = React;
   global.IS_REACT_ACT_ENVIRONMENT = true;
   window.AlloIcons = new Proxy({}, { get: () => () => null });
-  loadAlloModule('pure_helpers_module.js'); loadAlloModule('phase_n_misc_helpers_module.js'); loadAlloModule('view_simplified_module.js');
+  loadAlloModule('pure_helpers_module.js'); loadAlloModule('phase_n_misc_helpers_module.js'); loadAlloModule(process.env.ALLO_VIEW_CANDIDATE || 'view_simplified_module.js');
   pure = window.AlloModules.PureHelpers; phase = window.AlloModules.PhaseNHelpers; View = window.AlloModules.SimplifiedView;
 });
 afterEach(() => { if (root) act(() => root.unmount()); host?.remove(); root = null; });
@@ -48,7 +48,7 @@ describe('Adapted reading Define popup read-aloud', () => {
     const button = speaker(DEFINE_ID);
     expect(button).not.toBeNull();
     expect(button.getAttribute('type')).toBe('button');
-    expect(button.getAttribute('aria-label')).toBe('common.read_aloud');
+    expect(button.getAttribute('aria-label')).toBe('common.listen');
     expect(button.textContent).toContain('common.listen');
     click(button);
     expect(props.handleSpeak).toHaveBeenCalledTimes(1);
@@ -63,11 +63,11 @@ describe('Adapted reading Define popup read-aloud', () => {
   it('turns into a stop control while its own audio is playing, and not for other audio', () => {
     mount({ definitionData: definition, isPlaying: true, playingContentId: DEFINE_ID });
     const active = speaker(DEFINE_ID);
-    expect(active.getAttribute('aria-label')).toBe('common.stop_reading');
+    expect(active.getAttribute('aria-label')).toBe('common.stop');
     expect(active.textContent).toContain('common.stop');
     act(() => root.unmount()); host.remove(); root = null;
     mount({ definitionData: definition, isPlaying: true, playingContentId: 'simplified-main' });
-    expect(speaker(DEFINE_ID).getAttribute('aria-label')).toBe('common.read_aloud');
+    expect(speaker(DEFINE_ID).getAttribute('aria-label')).toBe('common.listen');
   });
 
   it('stops its own audio when the popup closes, and leaves other audio alone', () => {
@@ -86,7 +86,7 @@ describe('Adapted reading Explain popup read-aloud', () => {
     const props = mount({ revisionData: explanation });
     const button = speaker(EXPLAIN_ID);
     expect(button).not.toBeNull();
-    expect(button.getAttribute('aria-label')).toBe('common.read_aloud');
+    expect(button.getAttribute('aria-label')).toBe('common.listen');
     click(button);
     expect(props.handleSpeak).toHaveBeenCalledWith('It means the water goes up into the air.', EXPLAIN_ID, 0);
   });
@@ -187,7 +187,7 @@ describe('Student word-help audio controls', () => {
   });
   it('keeps incomplete syllable data readable instead of crashing', () => {
     mount({ phonicsData: { ...phonics, data: { ipa: 'aɣwa' } } });
-    expect(host.querySelector('#phonics-popup-title').textContent).toBe('agua');
+    expect(host.querySelector('[id^="phonics-popup-title-"]').textContent).toBe('agua');
     expect(audioButton('phonics-word')).not.toBeNull();
   });
 });
@@ -196,14 +196,14 @@ describe('Word-help keyboard boundaries', () => {
   it('handles Escape once without triggering the workspace shortcut', () => {
     const globalEscape = vi.fn();window.addEventListener('keydown', globalEscape);
     const closePhonics = vi.fn();mount({ phonicsData: phonics, closePhonics });
-    const dialog = host.querySelector('[aria-labelledby="phonics-popup-title"]');
+    const dialog = host.querySelector('[aria-labelledby^="phonics-popup-title-"]');
     act(() => dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
     expect(closePhonics).toHaveBeenCalledOnce();expect(globalEscape).not.toHaveBeenCalled();
     window.removeEventListener('keydown', globalEscape);
   });
   it('wraps through the pronunciation disclosure and ignores hidden controls', () => {
     mount({ phonicsData: phonics });
-    const dialog = host.querySelector('[aria-labelledby="phonics-popup-title"]');
+    const dialog = host.querySelector('[aria-labelledby^="phonics-popup-title-"]');
     const close = dialog.querySelector('button');const summary = dialog.querySelector('summary');
     const hidden = document.createElement('div');hidden.style.display = 'none';hidden.innerHTML = '<button>Hidden action</button>';dialog.append(hidden);
     const collapsedButton = document.createElement('button');collapsedButton.textContent = 'Collapsed action';summary.parentElement.append(collapsedButton);

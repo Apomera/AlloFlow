@@ -1,0 +1,61 @@
+{
+  "checkedAt": "2026-09-26T23:24:13.640Z",
+  "uniqueBrowserScenariosValidated": 16,
+  "combinedRun": {
+    "passed": 15,
+    "failed": 1,
+    "output": "final-browser-results",
+    "failure": "Focus restoration after native fullscreen exit"
+  },
+  "finalAffectedRun": {
+    "passed": 3,
+    "failed": 0,
+    "output": "focus-regression-results",
+    "fix": "Restore focus after fullscreenchange; remove listeners and pending timer during cleanup"
+  },
+  "project": "chromium",
+  "workers": 1,
+  "retries": 0,
+  "coverage": {
+    "savedObservations": 3,
+    "existingStudyMode": 3,
+    "investigations": 7,
+    "pauseAndInput": 3
+  },
+  "accessibility": {
+    "axeViolations": 0,
+    "scopes": [
+      ".rh-flight-moments",
+      ".rh-study-header",
+      ".rh-study-panel",
+      ".rh-inquiry-choices",
+      ".rh-journal"
+    ],
+    "rules": [
+      "wcag2a",
+      "wcag2aa",
+      "wcag21aa",
+      "wcag22aa"
+    ]
+  },
+  "reviewedCaptures": [
+    "capture-desktop.png",
+    "comparison-desktop.png",
+    "comparison-phone.png",
+    "study-fullscreen-short.png"
+  ],
+  "sourcePath": "stem_lab/stem_tool_raptorhunt.js",
+  "mirrorPath": "desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js",
+  "mirrorsIdentical": true,
+  "sourceBytes": 3691005,
+  "sha256": "55c61f96ab756052443efba6d124ace7e344de1e58a3d4f40c29dcdc8032b05b",
+  "imageDimensions": [
+    480,
+    320
+  ],
+  "maxWorkingMoments": 2,
+  "imageDataUrlCharacterLimit": 48000,
+  "newTranslationKeys": 36,
+  "languagePackIntegration": "pending",
+  "deployed": false
+}

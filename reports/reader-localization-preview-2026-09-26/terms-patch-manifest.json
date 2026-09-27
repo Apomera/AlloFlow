@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "file": "lang/arabic.js",
+      "newFile": false,
+      "appliesToShared": true
+    },
+    {
+      "file": "desktop/web-app/public/lang/arabic.js",
+      "newFile": false,
+      "appliesToShared": true
+    },
+    {
+      "file": "lang/chinese_simplified.js",
+      "newFile": false,
+      "appliesToShared": true
+    },
+    {
+      "file": "desktop/web-app/public/lang/chinese_simplified.js",
+      "newFile": false,
+      "appliesToShared": true
+    },
+    {
+      "file": "lang/thai.js",
+      "newFile": false,
+      "appliesToShared": true
+    },
+    {
+      "file": "desktop/web-app/public/lang/thai.js",
+      "newFile": false,
+      "appliesToShared": true
+    },
+    {
+      "file": "dev-tools/i18n/apply_reader_contract_locales.cjs",
+      "newFile": false,
+      "appliesToShared": true
+    },
+    {
+      "file": "translations/reader-terms-locales.json",
+      "newFile": true,
+      "appliesToShared": true
+    },
+    {
+      "file": "tests/reader_terms_locales.test.js",
+      "newFile": true,
+      "appliesToShared": true
+    },
+    {
+      "file": "tests/reader_recovery_locale_catalogs.test.js",
+      "newFile": false,
+      "appliesToShared": true
+    }
+  ],
+  "addedLocaleValues": 51,
+  "guardedKeys": 17,
+  "patchBytes": 51840,
+  "sha256": "852d812139638115029587e1f162cfedaacebd1b8bccc15ff12215a48806709a"
+}

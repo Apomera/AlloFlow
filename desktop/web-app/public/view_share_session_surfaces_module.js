@@ -105,7 +105,10 @@ function HomeworkQrDialogView(props) {
   }, /*#__PURE__*/React.createElement("h3", {
     id: "assignment-reading-summary-title",
     className: "text-sm font-black text-indigo-950"
-  }, deliveryText('share_collect.what_students_receive', 'What students receive')), delivery.openingTitle && /*#__PURE__*/React.createElement("p", {
+  }, deliveryText('share_collect.what_students_receive', 'What students receive')), delivery.contentsStatus && delivery.contentsStatus !== 'ready' && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "mt-1 text-xs text-amber-900"
+  }, deliveryText(delivery.contentsStatus === 'unavailable' ? 'share_collect.contents_unavailable' : 'share_collect.contents_pending', delivery.contentsStatus === 'unavailable' ? 'The reading contents could not be downloaded. Reconnect and reopen the link.' : 'The reading contents are awaiting download. Included resources have not been verified.')), delivery.openingTitle && /*#__PURE__*/React.createElement("p", {
     className: "mt-1 break-words text-xs text-slate-800"
   }, /*#__PURE__*/React.createElement("strong", null, deliveryText('share_collect.opens_first', 'Opens first:')), " ", delivery.openingTitle), readingRows.length > 0 && /*#__PURE__*/React.createElement("details", {
     className: "mt-2",
@@ -119,11 +122,30 @@ function HomeworkQrDialogView(props) {
     className: "rounded-lg border border-indigo-100 bg-white p-2 break-words"
   }, /*#__PURE__*/React.createElement("p", {
     className: "font-bold"
-  }, reading.title), /*#__PURE__*/React.createElement("p", null, reading.form === 'original' ? deliveryText('share_collect.original_reading', 'Original reading') : reading.form === 'adapted' ? deliveryText('share_collect.adapted_companion', 'Adapted companion') : deliveryText('share_collect.reading_needs_review', 'Reading — check before sharing')), /*#__PURE__*/React.createElement("p", {
+  }, reading.title), reading.bodyStatus === 'unavailable' && /*#__PURE__*/React.createElement("p", {
+    className: "text-amber-900",
+    "data-reading-body-unavailable": true
+  }, deliveryText('share_collect.reading_body_unavailable', 'This reading’s text could not be opened. Reopen the link or ask for a new copy.')), /*#__PURE__*/React.createElement("p", null, reading.form === 'original' ? deliveryText('share_collect.original_reading', 'Original reading') : reading.form === 'adapted' ? deliveryText('share_collect.adapted_companion', 'Adapted companion') : deliveryText('share_collect.reading_needs_review', 'Reading — check before sharing')), /*#__PURE__*/React.createElement("p", {
     className: ['unavailable', 'unverified'].includes(reading.originalStatus) ? 'font-semibold text-amber-900' : ''
   }, reading.originalStatus === 'included' ? reading.form === 'original' ? deliveryText('share_collect.original_included', 'Original text included.') : deliveryText('share_collect.matching_original_included', 'Matching original included.') : reading.originalStatus === 'captured' ? deliveryText('share_collect.original_captured_only', 'Original text is captured; a separate supported original is not included.') : reading.originalStatus === 'unavailable' ? deliveryText('share_collect.original_unavailable', 'Matching original unavailable in this link.') : deliveryText('share_collect.original_unverified', 'Original access could not be verified.')), /*#__PURE__*/React.createElement("p", null, Number.isInteger(reading.supportsCount) && reading.supportsCount >= 0 ? deliveryText('share_collect.saved_word_support_count', '{count} saved word supports.').replace('{count}', String(reading.supportsCount)) : deliveryText('share_collect.word_supports_unverified', 'Saved word supports could not be checked.')), ['partial', 'unavailable'].includes(reading.supportsStatus) && /*#__PURE__*/React.createElement("p", {
     className: "text-amber-900"
-  }, deliveryText('share_collect.word_supports_partial', 'Some word supports are unavailable. Check the student view.')), reading.incomplete === true && /*#__PURE__*/React.createElement("p", {
+  }, deliveryText('share_collect.word_supports_partial', 'Some word supports are unavailable. Check the student view.')), reading.capabilities && /*#__PURE__*/React.createElement("div", {
+    className: "mt-1 space-y-1",
+    "data-reading-capabilities": true
+  }, reading.form === 'adapted' && Number.isInteger(reading.capabilities.adaptedSupports?.activeCount) && /*#__PURE__*/React.createElement("p", null, deliveryText('share_collect.adapted_support_count', '{count} saved supports on the adapted text.').replace('{count}', String(reading.capabilities.adaptedSupports.activeCount))), reading.capabilities.adaptedSupports?.reason === 'stale-identity' && /*#__PURE__*/React.createElement("p", {
+    className: "text-amber-900"
+  }, deliveryText('share_collect.adapted_supports_stale', 'The adapted text changed. Its saved supports need review.')), reading.capabilities.adaptedSupports?.reason === 'validator-unavailable' && /*#__PURE__*/React.createElement("p", {
+    className: "text-amber-900"
+  }, deliveryText('share_collect.adapted_supports_unverified', 'Saved supports on the adapted text could not be checked.')), reading.capabilities.adaptedSupports?.inclusion === 'partial' && /*#__PURE__*/React.createElement("p", {
+    className: "text-amber-900"
+  }, deliveryText('share_collect.adapted_supports_partial', 'Some saved supports on the adapted text are unavailable.')), reading.capabilities.pictures?.reason === 'validator-unavailable' && /*#__PURE__*/React.createElement("p", {
+    className: "text-amber-900"
+  }, deliveryText('share_collect.reading_pictures_unverified', 'Some support pictures could not be checked.')), Number.isInteger(reading.capabilities.pictures?.includedCount) && /*#__PURE__*/React.createElement("p", null, deliveryText('share_collect.reading_picture_count', '{count} support pictures included.').replace('{count}', String(reading.capabilities.pictures.includedCount))), reading.capabilities.pictures?.omittedCount > 0 && /*#__PURE__*/React.createElement("p", {
+    className: "text-amber-900"
+  }, deliveryText('share_collect.reading_pictures_omitted', '{count} support pictures were omitted because of format or size limits.').replace('{count}', String(reading.capabilities.pictures.omittedCount))), /*#__PURE__*/React.createElement("p", {
+    "data-reading-audio-capability": true,
+    className: reading.capabilities.referenceAudio?.inclusion === 'omitted' ? 'text-amber-900' : ''
+  }, reading.capabilities.referenceAudio?.inclusion === 'included' ? deliveryText('share_collect.reading_audio_included_unchecked', 'Saved reading audio is included. Playback on the student device has not been checked.') : reading.capabilities.referenceAudio?.inclusion === 'omitted' ? deliveryText('share_collect.reading_audio_omitted', 'Saved reading audio is not included in this link.') : deliveryText('share_collect.reading_audio_unverified', 'Saved reading audio could not be checked.')), reading.capabilities.citations?.inclusion === 'included' && /*#__PURE__*/React.createElement("p", null, deliveryText('share_collect.reading_references_included', 'The reading’s saved references are included.'))), reading.incomplete === true && /*#__PURE__*/React.createElement("p", {
     className: "text-amber-900"
   }, deliveryText('share_collect.reading_reduced', 'This reading was reduced for this link. Check the student view.')))))), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-[11px] text-slate-600"

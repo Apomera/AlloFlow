@@ -118,7 +118,7 @@ describe('a simpler reading toolbar', () => {
     expect(modes).toEqual(['read', 'define', 'phonics', 'explain']);
     expect(readingTools().querySelector('[data-reader-display]')).not.toBeNull();
     expect(readingTools().querySelector('[data-reader-focus-view]')).not.toBeNull();
-    expect(readingTools().querySelector('[aria-controls="simplified-practice-tools"]')).not.toBeNull();
+    expect(readingTools().querySelector('[aria-controls^="simplified-practice-tools-"]')).not.toBeNull();
     expect(teacherTools()).toBeNull();
   });
   it('groups Add term, Revise, Edit and Teacher tools apart from reading', () => {

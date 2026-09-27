@@ -28,11 +28,11 @@ describe('Simplified View layered accessibility', () => {
   });
 
   it('focus-manages definition and revision dialogs without fake keyboard backdrops', () => {
-    expect(source).toContain('ref={definitionDialogRef} role="dialog" aria-modal="true" aria-labelledby="simplified-definition-title"');
+    expect(source).toContain('ref={definitionDialogRef} role="dialog" aria-modal="true" aria-labelledby={readerId("simplified-definition-title")}');
     expect(source).toContain('containSimplifiedModalFocus(e, definitionDialogRef.current, closeDefinition)');
     expect(source).toContain('ref={definitionCloseRef} type="button"');
     expect(source).toContain('if (definitionCloseRef.current) definitionCloseRef.current.focus()');
-    expect(source).toContain('ref={revisionDialogRef} role="dialog" aria-modal="true" aria-labelledby="simplified-revision-title"');
+    expect(source).toContain('ref={revisionDialogRef} role="dialog" aria-modal="true" aria-labelledby={readerId("simplified-revision-title")}');
     expect(source).toContain('containSimplifiedModalFocus(e, revisionDialogRef.current, closeRevision)');
     expect(source).toContain('ref={revisionCloseRef} type="button"');
     expect(source).toContain('if (revisionCloseRef.current) revisionCloseRef.current.focus()');

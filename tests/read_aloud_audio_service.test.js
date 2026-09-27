@@ -90,7 +90,7 @@ function makeHarness(options = {}) {
     mime: 'audio/mpeg',
   }));
   const encode = options.encode;
-  const persist = options.persist || vi.fn(async () => {});
+  const persist = options.persist || vi.fn(async () => ({ status: 'saved', verified: true }));
   const eventSink = options.events || vi.fn();
   const getStoreModule = vi.fn(() => storeModule);
   const getResource = vi.fn(() => resource);
@@ -407,6 +407,13 @@ function makeLegacyBridgeHarness(options = {}) {
 }
 
 describe('ReadAloudAudioService structured store inspection', () => {
+  it.each([null, '', '   '])('does not count a reported ready clip without a playable URL (%s)', (url) => {
+    const harness = makeHarness({
+      store: { inspect: () => ({ status: 'ready', url }), get: () => null },
+    });
+    expect(harness.bound.summary()).toMatchObject({ total: 3, ready: 0, missing: 3 });
+  });
+
   it('preserves a v4 stale result even when raw has() would report missing', () => {
     const structuredStore = {
       inspect: vi.fn(() => ({
@@ -633,6 +640,55 @@ describe('ReadAloudAudioService resilience contracts', () => {
 });
 
 describe('ReadAloudAudioService legacy compatibility bridge', () => {
+  it('summarizes the same descriptors and profiles that preparation saved', async () => {
+    const canonical = [
+      { segmentId: 'first', text: 'AlloFlow.', language: 'English' },
+      { segmentId: 'second', text: 'AlloFlow.', language: 'English' },
+    ];
+    const entries = [
+      { segmentId: 'first', text: 'AlloFlow.', occurrence: 0, language: 'Spanish' },
+      { segmentId: 'second', text: 'AlloFlow.', occurrence: 1, language: 'English' },
+    ];
+    const harness = makeLegacyBridgeHarness({ enumerateResourceSegments: () => canonical });
+    await harness.bridge.prepare(entries.map(entry => entry.text), null, { entries });
+    expect(harness.bridge.summary(entries.map(entry => entry.text), 'reference', { entries }))
+      .toMatchObject({ total: 2, ready: 2, stale: 0 });
+    expect(harness.bridge.summary(entries.map(entry => entry.text), 'reference', { entries, profile: { voice: 'Aoede' } }))
+      .toMatchObject({ total: 2, ready: 0, stale: 2 });
+    expect(harness.bridge.summary(entries.map(entry => entry.text), 'reference', { entries: [entries[1]] }))
+      .toMatchObject({ total: 1, ready: 1 });
+  });
+
+  it('keeps human recordings ready through synthesis setting changes but not text identity edits', async () => {
+    let text = 'Teacher narration.';
+    const harness = makeLegacyBridgeHarness({ enumerateResourceSegments: () => [{ segmentId: 'one', text }] });
+    await harness.bridge.saveRecording(text, { b64: clipB64('teacher'), mime: 'audio/mpeg' });
+    expect(harness.bridge.summary([text], 'reference', { profile: { voice: 'Aoede', synthesisRate: 0.7 } }))
+      .toMatchObject({ ready: 1, stale: 0 });
+    text = 'Changed teacher narration.';
+    expect(harness.bridge.summary([text], 'reference')).toMatchObject({ ready: 0, stale: 1 });
+    expect(harness.synthesize).not.toHaveBeenCalled();
+  });
+
+  it('tracks corruption, removal, reload, and resource-store clearing', async () => {
+    const entries = [{ segmentId: 'one', text: 'First.' }, { segmentId: 'two', text: 'Second.' }];
+    const harness = makeLegacyBridgeHarness({ enumerateResourceSegments: () => entries });
+    await harness.bridge.prepare(entries);
+    const payload = harness.referenceStore.serialize();
+    expect(harness.bridge.summary(entries)).toMatchObject({ ready: 2 });
+    await harness.bridge.quarantine('First.', { code: 'media-error' });
+    await harness.bridge.remove('Second.');
+    expect(harness.bridge.summary(entries)).toMatchObject({ ready: 0, corrupt: 1, missing: 1 });
+    harness.referenceStore.clear();
+    expect(harness.bridge.summary(entries)).toMatchObject({ ready: 0, missing: 2 });
+    harness.referenceStore.hydrate(JSON.parse(JSON.stringify(payload)));
+    expect(harness.bridge.summary(entries)).toMatchObject({ ready: 2, corrupt: 0, missing: 0 });
+    const malformed = JSON.parse(JSON.stringify(payload));
+    Object.values(malformed.entries)[0].audio = 'not-audio';
+    harness.referenceStore.clear(); harness.referenceStore.hydrate(malformed);
+    expect(harness.bridge.summary(entries)).toMatchObject({ ready: 1, missing: 1 });
+  });
+
   it('resolves a compatible stored clip without synthesizing and exposes its inspection', async () => {
     const harness = makeLegacyBridgeHarness();
     await harness.bridge.regenerate('Already stored.');

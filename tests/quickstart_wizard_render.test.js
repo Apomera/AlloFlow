@@ -62,6 +62,7 @@ let root, host;
 afterEach(() => {
   if (root) { try { root.unmount(); } catch (_) {} root = null; }
   if (host) { host.remove(); host = null; }
+  delete window.AlloOwnSources;
 });
 
 const flush = async () => { await act(async () => { await Promise.resolve(); }); };
@@ -73,7 +74,7 @@ function clickByText(needle) {
   return el;
 }
 
-async function mountAtSourceStep() {
+async function mountAtSourceStep(extra = {}) {
   host = document.createElement('div');
   document.body.appendChild(host);
   root = ReactDOMClient.createRoot(host);
@@ -92,10 +93,11 @@ async function mountAtSourceStep() {
       isIndependentMode: false,
       isHelpMode: false,
       setIsHelpMode: () => {},
+      ...extra,
     }));
   });
   await flush();
-  clickByText('Next'); // step 1 (grade preselected) → step 2
+  if (!extra.initialSourceMode) clickByText('Next'); // step 1 (grade preselected) → step 2
   await flush();
   return calls;
 }
@@ -109,6 +111,45 @@ describe('source-material step (step 2)', () => {
     // the old separate cards are gone (their t-keys would echo raw)
     expect(labels.some((l) => l.includes('wizard.paste_url'))).toBe(false);
     expect(labels.some((l) => l.includes('wizard.ai_search'))).toBe(false);
+  });
+});
+
+describe('own-document imports in Quick Start', () => {
+  it('waits for imports before continuing and ignores the stale opening list', async () => {
+    let finishCount, finishImport, reads = 0;
+    const importedRows = [{ id: 'clouds', title: 'Cloud notes', active: true, allowAI: true }];
+    window.AlloOwnSources = {
+      available: () => true,
+      acceptAttribute: () => '.txt',
+      countSources: async () => 0,
+      listSources: () => ++reads === 1 ? new Promise((resolve) => { finishCount = resolve; }) : Promise.resolve(importedRows),
+      importFiles: () => new Promise((resolve) => { finishImport = resolve; }),
+    };
+    const calls = await mountAtSourceStep({ initialSourceMode: 'generate' });
+    const topic = host.querySelector('[data-help-key="wizard_topic_input"]');
+    act(() => {
+      Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(topic, 'How clouds form');
+      topic.dispatchEvent(new window.Event('input', { bubbles: true }));
+    });
+    const next = host.querySelector('button[aria-label="Next"]');
+    expect(next.disabled).toBe(false);
+    const input = host.querySelector('#wiz-own-sources-import');
+    Object.defineProperty(input, 'files', { value: [new File(['Cloud notes'], 'clouds.txt', { type: 'text/plain' })] });
+    act(() => input.dispatchEvent(new window.Event('change', { bubbles: true })));
+    expect(next.disabled).toBe(true);
+    expect(input.disabled).toBe(true);
+    act(() => next.click());
+    expect(calls.complete).toHaveLength(0);
+    await act(async () => { finishImport({ imported: 1, count: 1, results: [{ ok: true, action: 'added', sourceId: 'clouds' }] }); });
+    expect(next.disabled).toBe(false);
+    expect(host.querySelector('#wiz-own-sources')).not.toBeNull();
+    await act(async () => { finishCount([]); });
+    expect(host.querySelector('#wiz-own-sources')).not.toBeNull();
+    expect(host.querySelector('#wiz-own-sources').checked).toBe(true);
+    clickByText('Next');
+    await flush();
+    clickByText('Finish');
+    expect(calls.complete[0]).toMatchObject({ topic: 'How clouds form', useOwnSources: true, selectedOwnSourceIds: ['clouds'] });
   });
 });
 

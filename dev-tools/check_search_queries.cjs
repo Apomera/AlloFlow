@@ -56,8 +56,6 @@ const SCAN_GLOBS = [
 // Each entry must say WHY it is safe — i.e. which prompt pattern the extractor
 // matches and why that yields the subject.
 const ALLOWED_EXTRACTION = {
-  'content_engine_source.jsx': 'researchPrompt leads with `Topic: "<subject>"`, which the extractor matches exactly.',
-  'content_engine_module.js': 'Built from content_engine_source.jsx — same prompt.',
   'AlloFlowANTI.txt': 'handleAiUrlSearch prompt is `…resources about: <query>.` — the extractor matches "resources about" and the prompt is otherwise only the query.',
   'host_handlers_source.jsx': 'handleAiUrlSearch moved here from AlloFlowANTI.txt (wave 3, 2026-09-13); same `…resources about: <query>.` prompt, unchanged.',
   'host_handlers_module.js': 'Built from host_handlers_source.jsx — same prompt.',

@@ -96,6 +96,15 @@ describe('teacher reading-delivery dialog', () => {
     expect(props.createSelfContainedHomeworkLink).toHaveBeenCalledWith([adapted.id], { aiPolicy: 'off' }); expect(props.hostPackOnMailbox).toHaveBeenCalledWith([adapted.id], { includeSharedActivity: false, aiPolicy: 'off' });
     expect(summary.conversionResourceIds).toEqual([adapted.id]);
   });
+
+  it('shows payload audio omission even when a local teacher player has clips', () => {
+    const { original, adapted } = readings();
+    const summary = shared.describeAssignmentDelivery([adapted, original], adapted.id, [adapted.id]);
+    window.AlloModules.KaraokeAudioStore = { current: { size: () => 30 } };
+    render(summary);
+    expect(host.querySelector('[data-reading-audio-capability]').textContent).toBe('Saved reading audio is not included in this link.');
+    expect(host.textContent).not.toContain('Playback on the student device has not been checked.');
+  });
   it('passes the saved optional-AI policy to both formats', () => {
     const { original, adapted } = readings(); const summary = shared.describeAssignmentDelivery([adapted, original], adapted.id, [adapted.id]);
     const props = render(summary, {qrShareModal:{type:'assignment',title:'Saved',url:'https://example.invalid/saved',noQr:true,resourceCount:2,deliverySummary:summary,aiPolicy:'student-byok'}});
@@ -114,5 +123,21 @@ describe('teacher reading-delivery dialog', () => {
     const summary = shared.describeAssignmentDelivery([{ ...adapted, syncTruncated: true, sourceSnapshot: null }], adapted.id, [adapted.id]);
     render(summary); expect(host.querySelector('img,[onerror]')).toBeNull();
     expect(host.textContent).toContain('<img src=x onerror=evil>'); expect(host.textContent).toContain('Matching original unavailable'); expect(host.textContent).toContain('reading was reduced');
+  });
+});
+
+
+describe('follow-up delivery status copy', () => {
+  it('explains stale adapted supports instead of only showing a zero count', () => {
+    const {original,adapted}=readings();
+    adapted.adaptedReadingSupports=api.validateAdaptedReadingSupports(adapted,{annotations:[{start:0,end:2,quote:'On',text:'At',origin:'educator'}]});
+    adapted.data='Changed text.';
+    render(shared.describeAssignmentDelivery([adapted,original],adapted.id));
+    expect(host.textContent).toContain('The adapted text changed. Its saved supports need review.');
+  });
+  it('shows a pending whole-pack download rather than an empty verified reading list', () => {
+    render(shared.describeAssignmentDelivery([{id:'manifest',type:'session-resources-manifest',__alloResourcesManifestRef:'asset',__alloResourceCount:30}],null));
+    expect(host.textContent).toContain('The reading contents are awaiting download.');
+    expect(host.textContent).not.toContain('0 saved word supports.');
   });
 });

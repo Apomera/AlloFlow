@@ -1979,7 +1979,11 @@ function SourceInputPanel(props) {
     urlSearchQuery,
     urlToFetch,
     useOwnSources,
-    setUseOwnSources
+    setUseOwnSources,
+    selectedOwnSourceIds,
+    setSelectedOwnSourceIds,
+    documentsOnly,
+    setDocumentsOnly
   } = props;
   if (!expandedTools || !expandedTools.includes("source-input")) return null;
   return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, showUrlInput && /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-indigo-50/50 border-b border-indigo-100 animate-in motion-reduce:animate-none slide-in-from-top-2 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-center bg-white p-1 rounded-lg border border-indigo-100 mb-2 shadow-sm" }, /* @__PURE__ */ React.createElement(
@@ -2112,7 +2116,12 @@ function SourceInputPanel(props) {
     t,
     targetStandards,
     useOwnSources,
-    setUseOwnSources
+    setUseOwnSources,
+    selectedOwnSourceIds,
+    setSelectedOwnSourceIds,
+    documentsOnly,
+    setDocumentsOnly,
+    generationStep
   }), /* @__PURE__ */ React.createElement("div", { className: "p-4 relative" }, /* @__PURE__ */ React.createElement(
     "textarea",
     {
@@ -4939,7 +4948,13 @@ function SourceInputShellView(props) {
     toggleTool,
     urlSearchQuery,
     urlToFetch,
-    videoTranscriptSourceContext
+    videoTranscriptSourceContext,
+    useOwnSources,
+    setUseOwnSources,
+    selectedOwnSourceIds,
+    setSelectedOwnSourceIds,
+    documentsOnly,
+    setDocumentsOnly
   } = props;
   return /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("source-input") ? void 0 : "none" }, id: "tour-input-panel", "data-help-key": "source_input", className: `bg-white rounded-3xl shadow-indigo-500/10 border transition-all motion-reduce:transition-none overflow-hidden shrink-0 ${activeView === "input" ? "border-indigo-600 shadow-indigo-500/20" : "border-slate-200 hover:border-indigo-200"}` }, /* @__PURE__ */ React.createElement(
     "div",
@@ -5275,7 +5290,13 @@ function SourceInputShellView(props) {
     t,
     targetStandards,
     urlSearchQuery,
-    urlToFetch
+    urlToFetch,
+    useOwnSources,
+    setUseOwnSources,
+    selectedOwnSourceIds,
+    setSelectedOwnSourceIds,
+    documentsOnly,
+    setDocumentsOnly
   }));
 }
 window.AlloModules = window.AlloModules || {};

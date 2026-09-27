@@ -51,6 +51,7 @@ const output = `/**
   var Sparkles = window.Sparkles || _IconFallback;
   var Type = window.Type || _IconFallback;
   var Upload = window.Upload || _IconFallback;
+  var FileText = window.FileText || _IconFallback;
   var Wrench = window.Wrench || _IconFallback;
   var X = window.X || _IconFallback;
   var _shared = window.__alloShared || {};

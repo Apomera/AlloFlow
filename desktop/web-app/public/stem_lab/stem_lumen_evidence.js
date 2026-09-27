@@ -850,48 +850,166 @@
   }
 
   var projectWriteQueues = Object.create(null);
+  var projectWriteSequence = 0;
+
+  function storedProjectSnapshot(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+    if (value.__lumenProjectStore === 1) {
+      if (typeof value.writeId !== 'string' || !value.writeId ||
+          (value.project !== null && (!value.project || typeof value.project !== 'object' || Array.isArray(value.project)))) return null;
+      return value;
+    }
+    // Projects saved before recovery metadata was introduced remain readable.
+    return { writeId: null, fallbackWriteId: null, project: value };
+  }
+
+  function latestProjectSnapshot(primary, fallback) {
+    if (!primary) return fallback;
+    if (!fallback || !fallback.writeId) return primary;
+    // A fallback write is authoritative until a primary write explicitly
+    // acknowledges it. No wall-clock or project.updatedAt ordering is needed.
+    if (primary.writeId === fallback.writeId || primary.fallbackWriteId === fallback.writeId) return primary;
+    return fallback;
+  }
 
   function createProjectStore(options) {
     options = options || {};
     var db = options.storageDB || null;
     var local = options.localStorage || null;
     var key = storageKey(options.scope || 'default');
+
+    function enqueue(operation) {
+      var pending = (projectWriteQueues[key] || Promise.resolve()).catch(function () {}).then(operation);
+      projectWriteQueues[key] = pending;
+      return pending;
+    }
+
+    function readFallback() {
+      var serialized = null;
+      try {
+        if (local && typeof local.getItem === 'function') serialized = local.getItem(key);
+        else if (local) return { readable: true, serialized: null, snapshot: null, reason: 'unavailable' };
+      } catch (_) { return { readable: false, serialized: null, snapshot: null, reason: 'unavailable' }; }
+      var value = null;
+      try { value = serialized == null ? null : JSON.parse(serialized); }
+      catch (_) { return { readable: true, serialized: serialized, snapshot: null, reason: 'corrupt' }; }
+      var snapshot = storedProjectSnapshot(value);
+      return { readable: true, serialized: serialized, snapshot: snapshot, reason: snapshotProblem(value, snapshot) };
+    }
+
+    function snapshotProblem(value, snapshot) {
+      if (value == null) return '';
+      if (!snapshot || (value.__lumenProjectStore != null && value.__lumenProjectStore !== 1)) return 'corrupt';
+      var project = snapshot.project;
+      if (project) {
+        // Every persisted project, including legacy records, has a source
+        // array. Missing/null sources must not migrate into an empty library.
+        if (!Array.isArray(project.sources)) return 'corrupt';
+        // Legacy projects may omit later collections, but an explicitly broken
+        // collection must not silently migrate into an empty document library.
+        var collections = ['evidenceNodes', 'claims', 'artifacts', 'audit'];
+        for (var i = 0; i < collections.length; i++) {
+          if (project[collections[i]] != null && !Array.isArray(project[collections[i]])) return 'corrupt';
+        }
+        if (Array.isArray(project.sources) && project.sources.some(function (source) {
+          return !source || typeof source !== 'object' || Array.isArray(source);
+        })) return 'corrupt';
+      }
+      return '';
+    }
+
+    async function readSnapshots(strict) {
+      var primary = { snapshot: null, reason: '' };
+      if (db) {
+        if (typeof db.get !== 'function') primary.reason = 'unavailable';
+        else {
+          try {
+            // The shared UtilsPure adapter otherwise converts IndexedDB and
+            // JSON decoding failures to null, indistinguishable from absence.
+            var value = strict ? await db.get(key, { throwOnError: true }) : await db.get(key);
+            primary.snapshot = storedProjectSnapshot(value);
+            primary.reason = snapshotProblem(value, primary.snapshot);
+          } catch (error) { primary.reason = error && error.name === 'SyntaxError' ? 'corrupt' : 'unavailable'; }
+        }
+      }
+      var fallback = readFallback();
+      var snapshot = latestProjectSnapshot(primary.snapshot, fallback.snapshot);
+      return {
+        primary: primary, fallback: fallback, snapshot: snapshot,
+        medium: snapshot ? (snapshot === primary.snapshot ? 'indexeddb' : 'localstorage') : null
+      };
+    }
+
+    async function loadState() {
+      var read = await readSnapshots(true);
+      // The accessible copy might be older: an unreadable fallback can contain
+      // a newer save, and an unreadable primary may acknowledge a stale fallback.
+      // Mutation callers must distinguish this uncertainty from a new library.
+      var reasons = [read.primary.reason, read.fallback.reason];
+      if ((!db && !local) || reasons.indexOf('unavailable') !== -1) {
+        return { ok: false, project: null, reason: 'unavailable', medium: null };
+      }
+      if (reasons.indexOf('corrupt') !== -1) return { ok: false, project: null, reason: 'corrupt', medium: null };
+      if (!read.snapshot || !read.snapshot.project) return { ok: true, project: null, reason: 'empty', medium: null };
+      try { return { ok: true, project: migrateProject(read.snapshot.project), reason: '', medium: read.medium }; }
+      catch (_) { return { ok: false, project: null, reason: 'corrupt', medium: null }; }
+    }
+
+    async function persist(project) {
+      var fallback = readFallback();
+      // Without reading a configured fallback, a successful primary write
+      // could be hidden by an older fallback when access returns. Report the
+      // failure rather than claiming the project was durably saved.
+      if (!fallback.readable) return { ok: false, medium: null };
+      var snapshot = {
+        __lumenProjectStore: 1,
+        writeId: Date.now().toString(36) + '-' + (++projectWriteSequence).toString(36) + '-' + Math.random().toString(36).slice(2),
+        fallbackWriteId: fallback.snapshot && fallback.snapshot.writeId || null,
+        project: project
+      };
+      try {
+        if (db && typeof db.set === 'function') {
+          var landed = await db.set(key, snapshot);
+          if (landed !== false) {
+            // The acknowledgement above keeps a stale fallback harmless even
+            // if cleanup fails. Do not remove another tab's intervening write.
+            try {
+              if (local && typeof local.getItem === 'function' && typeof local.removeItem === 'function' &&
+                  local.getItem(key) === fallback.serialized) local.removeItem(key);
+            } catch (_) {}
+            return { ok: true, medium: 'indexeddb' };
+          }
+        }
+      } catch (_) {}
+      try {
+        var serialized = JSON.stringify(snapshot);
+        if (local && typeof local.setItem === 'function' && serialized.length <= 1500000) {
+          local.setItem(key, serialized);
+          return { ok: true, medium: 'localstorage' };
+        }
+      } catch (_) {}
+      return { ok: false, medium: null };
+    }
+
     return {
       key: key,
-      load: async function () {
-        if (projectWriteQueues[key]) await projectWriteQueues[key].catch(function () {});
-        var value = null;
-        try { if (db && typeof db.get === 'function') value = await db.get(key); } catch (_) {}
-        if (!value && local && typeof local.getItem === 'function') {
-          try { value = JSON.parse(local.getItem(key) || 'null'); } catch (_) { value = null; }
-        }
-        return value ? migrateProject(value) : null;
+      load: function () {
+        return enqueue(async function () {
+          // Retain the legacy best-effort project/null contract. New callers
+          // that create or change libraries should use the explicit loadState.
+          var snapshot = (await readSnapshots()).snapshot;
+          return snapshot && snapshot.project ? migrateProject(snapshot.project) : null;
+        });
       },
+      loadState: function () { return enqueue(loadState); },
       save: function (project) {
         var clean = migrateProject(project);
-        var persist = async function () {
-        try {
-          if (db && typeof db.set === 'function') {
-            var landed = await db.set(key, clean);
-            if (landed !== false) return { ok: true, medium: 'indexeddb' };
-          }
-        } catch (_) {}
-        try {
-          var serialized = JSON.stringify(clean);
-          if (local && serialized.length <= 1500000) {
-            local.setItem(key, serialized);
-            return { ok: true, medium: 'localstorage' };
-          }
-        } catch (_) {}
-        return { ok: false, medium: null };
-        };
-        var pending = (projectWriteQueues[key] || Promise.resolve()).catch(function () {}).then(persist);
-        projectWriteQueues[key] = pending;
-        return pending;
+        return enqueue(function () { return persist(clean); });
       },
-      clear: async function () {
-        try { if (db && typeof db.del === 'function') await db.del(key); } catch (_) {}
-        try { if (local && typeof local.removeItem === 'function') local.removeItem(key); } catch (_) {}
+      clear: function () {
+        // A durable tombstone prevents an unavailable/older backend from
+        // resurrecting the project, and is ordered after any pending saves.
+        return enqueue(function () { return persist(null); });
       }
     };
   }

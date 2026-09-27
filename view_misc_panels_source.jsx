@@ -2164,6 +2164,57 @@ function _getSourceGradeMismatch(sourceGrade, instructionalGrade) {
   };
 }
 
+// Each import pauses for an explicit filename decision. The prompt traps focus
+// locally so it works in both the source panel and nested browser surfaces.
+function SourceDuplicateChoice({ info, onChoose, text }) {
+  const dialogRef = React.useRef(null);
+  React.useEffect(() => {
+    const dialog = dialogRef.current;
+    const previous = document.activeElement;
+    const buttons = () => Array.from(dialog.querySelectorAll('button'));
+    buttons()[0].focus();
+    const keydown = (event) => {
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); onChoose('skip'); }
+      if (event.key === 'Tab') {
+        const items = buttons();
+        const index = items.indexOf(document.activeElement);
+        event.preventDefault(); event.stopPropagation();
+        items[(index + (event.shiftKey ? items.length - 1 : 1)) % items.length].focus();
+      }
+    };
+    dialog.addEventListener('keydown', keydown);
+    return () => { dialog.removeEventListener('keydown', keydown); if (previous && previous.isConnected) previous.focus(); };
+  }, [onChoose]);
+  return <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={text('input.my_sources_duplicate_title', 'A document with this name is already saved')} className="my-2 rounded-lg border-2 border-purple-400 bg-white p-3 space-y-2">
+    <p className="text-sm font-bold text-purple-900">{text('input.my_sources_duplicate_title', 'A document with this name is already saved')}</p>
+    <p className="text-xs text-slate-700">{info.incoming.title || info.incoming.fileName}</p>
+    <p className="text-xs text-slate-700">{info.identical ? text('input.my_sources_duplicate_identical', 'This file has the same contents as the saved document.') : text('input.my_sources_duplicate_different', 'This file has different contents. Choose how to save it.')}</p>
+    <div className="flex flex-wrap gap-2">
+      <button type="button" onClick={() => onChoose('keep-both')} className="min-h-11 px-3 rounded border border-purple-500 font-bold text-purple-900">{text('input.my_sources_keep_both', 'Keep both')}</button>
+      <button type="button" onClick={() => onChoose('replace')} className="min-h-11 px-3 rounded border border-rose-500 font-bold text-rose-800">{text('input.my_sources_replace', 'Replace saved document')}</button>
+      <button type="button" onClick={() => onChoose('skip')} className="min-h-11 px-3 rounded border border-slate-400 text-slate-700">{text('input.my_sources_skip_duplicate', 'Skip this file')}</button>
+    </div>
+  </div>;
+}
+
+async function readSourcePanelLibrary(api) {
+  if (!api) return { ok: false, reason: 'unavailable' };
+  if (typeof api.readLibrary === 'function') return api.readLibrary({});
+  if (typeof api.listSources === 'function') return { ok: true, sources: await api.listSources({}) };
+  return { ok: false, reason: 'unavailable' };
+}
+function sourcePanelImportSummary(outcome, text) {
+  const results = outcome.results || [];
+  const counts = {
+    saved: Number(outcome.imported) || 0,
+    replaced: results.filter(row => row.ok && row.action === 'replaced').length,
+    skipped: results.length ? results.filter(row => row.ok && row.action === 'skipped').length : Number(outcome.skipped) || 0,
+    failed: Math.max(Number(outcome.failed) || 0, results.filter(row => !row.ok).length),
+  };
+  return text('input.my_sources_import_summary', 'Saved {saved} document(s), including {replaced} replacement(s). Skipped {skipped}; failed {failed}.')
+    .replace(/\{(saved|replaced|skipped|failed)\}/g, (_, key) => String(counts[key]));
+}
+
 function SourceGenPanel(props) {
   const {
     addToast, aiStandardQuery, aiStandardRegion, gradeLevel,
@@ -2175,24 +2226,54 @@ function SourceGenPanel(props) {
     setTargetStandards, showSourceGen, sourceCustomInstructions, sourceLength,
     sourceLevel, sourceTone, sourceTopic, sourceVocabulary,
     standardInputValue, standardMode, studentInterests, suggestedStandards, t,
-    targetStandards, useOwnSources, setUseOwnSources
+    targetStandards, useOwnSources, setUseOwnSources,
+    selectedOwnSourceIds, setSelectedOwnSourceIds, documentsOnly, setDocumentsOnly, generationStep
   } = props;
   // Own-source grounding is only useful once the teacher has imported documents,
   // so the panel asks Lumen how many there are. A control that is always on but
   // silently does nothing is worse than one that explains why it is unavailable.
   // Reads local storage only — no network, nothing sent anywhere.
-  const [ownSourceCount, setOwnSourceCount] = React.useState(null);
+  const sourceText = (key, fallback) => { try { const value = t(key); return value && value !== key ? value : fallback; } catch (_) { return fallback; } };
+  const [ownSourcesLoaded, setOwnSourcesLoaded] = React.useState(false);
+  const [ownSourceLoading, setOwnSourceLoading] = React.useState(true);
+  const [ownSourceReadError, setOwnSourceReadError] = React.useState('');
+  const [ownSourceReadAttempt, setOwnSourceReadAttempt] = React.useState(0);
+  const [localSelectedIds, setLocalSelectedIds] = React.useState(null);
   const [ownSourceImporting, setOwnSourceImporting] = React.useState(false);
   const [ownSourceImportMsg, setOwnSourceImportMsg] = React.useState('');
   const [ownSourceImportFailures, setOwnSourceImportFailures] = React.useState([]);
   const [ownSourceList, setOwnSourceList] = React.useState([]);
   const [ownSourceBusy, setOwnSourceBusy] = React.useState(false);
   const ownSourceRevision = React.useRef(0);
+  const panelOpenRef = React.useRef(showSourceGen);
+  panelOpenRef.current = showSourceGen;
+  const selectedIds = setSelectedOwnSourceIds ? selectedOwnSourceIds : localSelectedIds;
+  const selectedIdsRef = React.useRef(selectedIds);
+  selectedIdsRef.current = selectedIds;
+  const updateSelectedIds = React.useCallback((next) => {
+    const ids = typeof next === 'function' ? next(selectedIdsRef.current) : next;
+    selectedIdsRef.current = ids;
+    if (setSelectedOwnSourceIds) setSelectedOwnSourceIds(ids);
+    else setLocalSelectedIds(ids);
+  }, [setSelectedOwnSourceIds]);
+  const isSourceSelected = (source) => source.allowAI !== false && (Array.isArray(selectedIds) ? selectedIds.includes(source.id) : source.active !== false);
+  const ownSourceCount = ownSourcesLoaded ? ownSourceList.filter(isSourceSelected).length : null;
+  const [duplicatePrompt, setDuplicatePrompt] = React.useState(null);
+  const duplicateResolverRef = React.useRef(null);
+  const chooseDuplicate = React.useCallback((choice) => {
+    const resolve = duplicateResolverRef.current;
+    duplicateResolverRef.current = null;
+    setDuplicatePrompt(null);
+    if (resolve) resolve(choice);
+  }, []);
   const ownSourceControlsBusy = ownSourceBusy || ownSourceImporting || isGeneratingSource;
+  const canGenerateSource = (!!sourceTopic.trim() || targetStandards.length > 0)
+    && !ownSourceControlsBusy && (!documentsOnly || (ownSourceCount > 0 && !ownSourceLoading && !ownSourceReadError));
+  const submitSource = (event) => { if (canGenerateSource) return handleGenerateSource(event); };
   const ownSourcesApi = (typeof window !== 'undefined' && window.AlloOwnSources) || null;
   React.useEffect(() => {
-    if (ownSourceCount === 0 && useOwnSources && setUseOwnSources) setUseOwnSources(false);
-  }, [ownSourceCount, useOwnSources, setUseOwnSources]);
+    if (ownSourceCount === 0 && !ownSourceLoading && !ownSourceReadError && !ownSourceImporting && useOwnSources && !documentsOnly && setUseOwnSources) setUseOwnSources(false);
+  }, [ownSourceCount, ownSourceLoading, ownSourceReadError, ownSourceImporting, useOwnSources, documentsOnly, setUseOwnSources]);
 
   // Exclude keeps the document but drops it from retrieval; the count follows,
   // because the count is what the toggle promises the AI will read.
@@ -2203,30 +2284,15 @@ function SourceGenPanel(props) {
       ? t('input.my_sources_storage_failed')
       : t('input.my_sources_unavailable'));
   }, [t]);
-  const handleToggleOwnSource = React.useCallback(async (source) => {
+  const handleToggleOwnSource = React.useCallback((source) => {
     if (ownSourceControlsBusy) return;
-    if (!ownSourcesApi || typeof ownSourcesApi.setSourceActive !== 'function' || !source) {
-      setOwnSourceImportMsg(t('input.my_sources_unavailable'));
-      return;
-    }
-    ownSourceRevision.current++;
-    setOwnSourceBusy(true);
-    try {
-      const outcome = await ownSourcesApi.setSourceActive(source.id, !source.active, {});
-      if (outcome && outcome.ok) {
-        setOwnSourceList(outcome.sources);
-        setOwnSourceCount(outcome.count);
-        if (!outcome.count && setUseOwnSources) setUseOwnSources(false);
-        setOwnSourceImportMsg('');
-      } else {
-        reportOwnSourceFailure(outcome);
-      }
-    } catch (_) {
-      reportOwnSourceFailure(null);
-    } finally {
-      setOwnSourceBusy(false);
-    }
-  }, [ownSourcesApi, t, reportOwnSourceFailure, ownSourceControlsBusy, setUseOwnSources]);
+    if (!source || source.allowAI === false) return;
+    updateSelectedIds((current) => {
+      const ids = Array.isArray(current) ? current : ownSourceList.filter((row) => row.active !== false && row.allowAI !== false).map((row) => row.id);
+      return ids.includes(source.id) ? ids.filter((id) => id !== source.id) : [...ids, source.id];
+    });
+    setOwnSourceImportMsg('');
+  }, [ownSourceList, ownSourceControlsBusy, updateSelectedIds]);
 
   // Deleting a teacher's document is not undoable from here, so ask first, in
   // the panel: window.confirm returns false in Gemini Canvas, which made Remove
@@ -2241,24 +2307,25 @@ function SourceGenPanel(props) {
       setOwnSourceImportMsg(t('input.my_sources_unavailable'));
       return;
     }
-    ownSourceRevision.current++;
+    const revision = ++ownSourceRevision.current;
     setOwnSourceBusy(true);
     try {
       const outcome = await ownSourcesApi.removeSource(source.id, {});
+      if (!panelOpenRef.current || revision !== ownSourceRevision.current) return;
       if (outcome && outcome.ok) {
         setOwnSourceList(outcome.sources);
-        setOwnSourceCount(outcome.count);
-        if (!outcome.count && setUseOwnSources) setUseOwnSources(false);
+        setOwnSourcesLoaded(true);
+        updateSelectedIds((ids) => (ids || []).filter((id) => id !== source.id));
         setOwnSourceImportMsg(t('input.my_sources_removed', { title: source.title }));
       } else {
         reportOwnSourceFailure(outcome);
       }
     } catch (_) {
-      reportOwnSourceFailure(null);
+      if (panelOpenRef.current && revision === ownSourceRevision.current) reportOwnSourceFailure(null);
     } finally {
-      setOwnSourceBusy(false);
+      if (revision === ownSourceRevision.current) setOwnSourceBusy(false);
     }
-  }, [ownSourcesApi, t, reportOwnSourceFailure, ownSourceControlsBusy, setUseOwnSources]);
+  }, [ownSourcesApi, t, reportOwnSourceFailure, ownSourceControlsBusy, updateSelectedIds]);
 
   // Import documents into the teacher's own corpus. Everything runs locally:
   // Lumen's adapter extracts text in this browser and only the text is stored,
@@ -2272,15 +2339,33 @@ function SourceGenPanel(props) {
       setOwnSourceImportMsg(t('input.my_sources_unavailable'));
       return;
     }
-    ownSourceRevision.current++;
+    const revision = ++ownSourceRevision.current;
     setOwnSourceImporting(true);
+    setOwnSourceLoading(true);
     setOwnSourceImportMsg('');
     setOwnSourceImportFailures([]);
     try {
-      const outcome = await ownSourcesApi.importFiles(files, {});
-      setOwnSourceCount(outcome.count);
-      if (typeof ownSourcesApi.listSources === 'function') {
-        setOwnSourceList(await ownSourcesApi.listSources({}));
+      const outcome = await ownSourcesApi.importFiles(files, { resolveDuplicate: (info) => {
+        if (!panelOpenRef.current || revision !== ownSourceRevision.current) return Promise.resolve('skip');
+        return new Promise((resolve) => { duplicateResolverRef.current = resolve; setDuplicatePrompt(info); });
+      } });
+      if (!panelOpenRef.current || revision !== ownSourceRevision.current) return;
+      const importedIds = (outcome.results || []).filter((row) => row.ok && row.sourceId && (row.action === 'added' || row.action === 'replaced')).map((row) => row.sourceId);
+      if (importedIds.length) {
+        updateSelectedIds((ids) => Array.from(new Set([...(ids || []), ...importedIds])));
+        if (setUseOwnSources) setUseOwnSources(true);
+      }
+      try {
+        const library = await readSourcePanelLibrary(ownSourcesApi);
+        if (!panelOpenRef.current || revision !== ownSourceRevision.current) return;
+        if (library && library.ok && Array.isArray(library.sources)) {
+          setOwnSourceList(library.sources);
+          setOwnSourcesLoaded(true);
+          setOwnSourceReadError('');
+        } else setOwnSourceReadError(library && library.reason || 'storage-read');
+      } catch (_) {
+        if (!panelOpenRef.current || revision !== ownSourceRevision.current) return;
+        setOwnSourceReadError('storage-read');
       }
       // Name the files that did not make it. A bare "2 of 3 imported" leaves
       // the teacher guessing which document to fix.
@@ -2289,29 +2374,31 @@ function SourceGenPanel(props) {
           .filter((row) => row && !row.ok)
           .map((row) => [row.name, row.message].filter(Boolean).join(' — ')),
       );
-      if (outcome.reason === 'storage') {
+      if (outcome.reason === 'storage' && !outcome.imported) {
         setOwnSourceImportMsg(t('input.my_sources_storage_failed'));
       } else if (outcome.reason === 'unavailable') {
         setOwnSourceImportMsg(t('input.my_sources_unavailable'));
-      } else if (outcome.imported > 0) {
-        setOwnSourceImportMsg(t('input.my_sources_imported', { count: outcome.imported }));
       } else {
-        setOwnSourceImportMsg(t('input.my_sources_none_added'));
+        setOwnSourceImportMsg(sourcePanelImportSummary(outcome, sourceText));
       }
     } catch (_) {
-      setOwnSourceImportMsg(t('input.my_sources_none_added'));
+      if (panelOpenRef.current && revision === ownSourceRevision.current) {
+        setOwnSourceImportMsg(sourceText('input.my_sources_import_interrupted', 'Import could not finish. Retry loading documents to check which files were saved.'));
+        setOwnSourceReadError('storage-read');
+      }
     } finally {
-      setOwnSourceImporting(false);
+      if (revision === ownSourceRevision.current) { setOwnSourceImporting(false); setOwnSourceLoading(false); }
       // Clear the input so choosing the same file again still fires onChange.
       if (input) input.value = '';
     }
-  }, [ownSourcesApi, t, ownSourceControlsBusy]);
+  }, [ownSourcesApi, t, ownSourceControlsBusy, updateSelectedIds, setUseOwnSources]);
   React.useEffect(() => {
     if (!showSourceGen) return undefined;
     let cancelled = false;
     let timer = null;
     const startedAt = Date.now();
     const revision = ownSourceRevision.current;
+    setOwnSourceLoading(true);
     setPendingRemoveId(null);
     setOwnSourceImportMsg('');
     setOwnSourceImportFailures([]);
@@ -2321,7 +2408,7 @@ function SourceGenPanel(props) {
     const refresh = async () => {
       if (cancelled || revision !== ownSourceRevision.current) return;
       const OS = (typeof window !== 'undefined' && window.AlloOwnSources) || null;
-      const ready = !!(OS && typeof OS.countSources === 'function'
+      const ready = !!(OS && (typeof OS.readLibrary === 'function' || typeof OS.listSources === 'function')
         && (typeof OS.available !== 'function' || OS.available()));
       if (!ready && Date.now() - startedAt < 30000) {
         if (OS && typeof OS.ensureLumen === 'function') Promise.resolve(OS.ensureLumen(1)).catch(() => {});
@@ -2329,28 +2416,38 @@ function SourceGenPanel(props) {
         return;
       }
       try {
-        if (!OS || typeof OS.countSources !== 'function') { if (!cancelled) setOwnSourceCount(0); return; }
         // Derive the count from the same snapshot as the list. A delayed panel
         // read must not overwrite an import, Include, or Remove made meanwhile.
-        if (typeof OS.listSources === 'function') {
-          const rows = await OS.listSources({});
-          if (cancelled || revision !== ownSourceRevision.current) return;
+        const library = await readSourcePanelLibrary(OS);
+        if (cancelled || revision !== ownSourceRevision.current) return;
+        if (library && library.ok && Array.isArray(library.sources)) {
+          const rows = library.sources;
           setOwnSourceList(rows);
-          setOwnSourceCount(rows.filter((source) => source.active !== false).length);
-        } else {
-          const n = await OS.countSources({});
-          if (!cancelled && revision === ownSourceRevision.current) setOwnSourceCount(n);
-        }
+          setOwnSourcesLoaded(true);
+          setOwnSourceReadError('');
+          if (!Array.isArray(selectedIdsRef.current)) updateSelectedIds(rows.filter((source) => source.active !== false && source.allowAI !== false).map((source) => source.id));
+        } else setOwnSourceReadError(library && library.reason || 'storage-read');
       } catch (_) {
         if (!cancelled && revision === ownSourceRevision.current) {
-          setOwnSourceCount(0);
-          setOwnSourceImportMsg(t('input.my_sources_unavailable'));
+          setOwnSourceReadError('storage-read');
         }
+      } finally {
+        if (!cancelled && revision === ownSourceRevision.current) setOwnSourceLoading(false);
       }
     };
     refresh();
-    return () => { cancelled = true; if (timer) clearTimeout(timer); };
-  }, [showSourceGen]);
+    return () => {
+      cancelled = true;
+      ownSourceRevision.current++;
+      if (timer) clearTimeout(timer);
+      const resolve = duplicateResolverRef.current;
+      duplicateResolverRef.current = null;
+      if (resolve) resolve('skip');
+      setDuplicatePrompt(null);
+      setOwnSourceImporting(false);
+      setOwnSourceBusy(false);
+    };
+  }, [showSourceGen, ownSourceReadAttempt]);
   if (!(showSourceGen)) return null;
   // N7 (2026-08-16): the standards finder inside this panel read the UNIVERSAL
   // SETTINGS grade, even though this section carries its own target level right
@@ -2373,7 +2470,7 @@ function SourceGenPanel(props) {
                           placeholder={t('wizard.topic_placeholder')}
                           aria-label={t('common.topic_subject_aria')}
                           className="w-full text-sm p-2 border border-indigo-200 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
-                          onKeyDown={(e) => e.key === 'Enter' && handleGenerateSource()}
+                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitSource(); } }}
                           autoFocus
                         />
                       </div>
@@ -2610,7 +2707,7 @@ function SourceGenPanel(props) {
                                   id="includeCitations"
                                   type="checkbox"
                                   checked={includeSourceCitations}
-                                  onChange={(e) => setIncludeSourceCitations(e.target.checked)}
+                                  onChange={(e) => { setIncludeSourceCitations(e.target.checked); if (e.target.checked && setDocumentsOnly) setDocumentsOnly(false); }}
                                   className="w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-purple-500 cursor-pointer"
                               />
                               <label htmlFor="includeCitations" className="text-xs font-bold text-purple-900 cursor-pointer select-none flex items-center gap-1.5">
@@ -2625,25 +2722,43 @@ function SourceGenPanel(props) {
                           {/* Documents and web search are independent options. Keep
                               the document toggle visible when all saved files are
                               excluded, so the user can still see its state. */}
-                          {ownSourceCount !== null && ownSourceList.length > 0 && (
+                          {(useOwnSources || (ownSourceCount !== null && ownSourceList.length > 0)) && (
                               <div className="flex items-center gap-2 ml-6 pt-1.5 border-t border-purple-200/70">
                                   <input aria-label={t('input.use_my_sources')}
                                       id="useOwnSources"
                                       type="checkbox"
                                       checked={!!useOwnSources}
-                                      onChange={(e) => setUseOwnSources && setUseOwnSources(e.target.checked)}
-                                      disabled={ownSourceCount === 0 || ownSourceControlsBusy}
+                                      onChange={(e) => { if (setUseOwnSources) setUseOwnSources(e.target.checked); if (!e.target.checked && setDocumentsOnly) setDocumentsOnly(false); }}
+                                      disabled={(ownSourceCount === 0 && !documentsOnly && !ownSourceLoading && !ownSourceReadError) || ownSourceControlsBusy}
                                       className="w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-purple-500 cursor-pointer"
                                   />
                                   <label htmlFor="useOwnSources" className="text-xs font-bold text-purple-900 cursor-pointer select-none flex items-center gap-1.5">
                                       <FileText size={12} className="text-purple-600" aria-hidden="true"/> {t('input.use_my_sources')}
-                                      <span className="font-normal text-purple-700">({ownSourceCount})</span>
+                                      {ownSourceCount !== null && <span className="font-normal text-purple-700">({ownSourceCount})</span>}
                                   </label>
                               </div>
                           )}
                           {ownSourceCount !== null && ownSourceCount > 0 && useOwnSources && (
                               <p className="text-[11px] text-purple-700 ml-12 leading-relaxed">{t('input.use_my_sources_desc')}</p>
                           )}
+                          {useOwnSources && (
+                              <div className="ml-6 space-y-1">
+                                  <label className="flex min-h-11 items-center gap-2 text-xs font-bold text-purple-900">
+                                      <input id="documentsOnly" type="checkbox" checked={!!documentsOnly} disabled={ownSourceControlsBusy}
+                                          onChange={(e) => { if (setDocumentsOnly) setDocumentsOnly(e.target.checked); if (e.target.checked) setIncludeSourceCitations(false); }} />
+                                      {sourceText('input.documents_only', 'Documents only (quoted excerpts)')}
+                                  </label>
+                                  {documentsOnly && <p className="text-[11px] text-purple-700">{sourceText('input.documents_only_desc', 'Uses exact passages from the selected documents, without adding outside information. Web search is off. Length, tone and reading level do not rewrite these excerpts.')}</p>}
+                                  {documentsOnly && ownSourceCount === 0 && !ownSourceLoading && !ownSourceReadError && <p role="status" className="text-xs text-amber-900">{sourceText('input.documents_only_select', 'Select at least one available document to continue.')}</p>}
+                              </div>
+                          )}
+                          {ownSourceLoading && <p role="status" className="text-xs text-purple-700">{sourceText('input.my_sources_loading', 'Loading saved documents…')}</p>}
+                          {ownSourceReadError && <div className="ml-6 space-y-1">
+                              <p role="alert" className="text-xs text-amber-900">{sourceText('input.my_sources_load_failed', 'Saved documents could not be loaded. Your selections have been kept. Retry loading, or continue with web search.')}</p>
+                              {ownSourcesLoaded && <p className="text-xs text-slate-600">{sourceText('input.my_sources_last_loaded', 'Showing the last successfully loaded document list.')}</p>}
+                              <button type="button" onClick={() => setOwnSourceReadAttempt(value => value + 1)} disabled={ownSourceControlsBusy || ownSourceLoading} className="min-h-11 px-3 rounded border border-purple-400 bg-white text-sm font-bold text-purple-900 disabled:opacity-50">{sourceText('input.my_sources_retry_loading', 'Retry loading documents')}</button>
+                          </div>}
+                          {duplicatePrompt && <SourceDuplicateChoice info={duplicatePrompt} onChoose={chooseDuplicate} text={sourceText} />}
                           {/* The import control, unlike the toggle above, shows even at zero
                               sources: with nothing imported the toggle is hidden, so this is
                               the only way in. Extraction runs in this browser through Lumen's
@@ -2663,17 +2778,19 @@ function SourceGenPanel(props) {
                                       multiple
                                       className="sr-only"
                                       accept={ownSourcesApi ? ownSourcesApi.acceptAttribute() : undefined}
-                                      disabled={ownSourceControlsBusy}
+                                      disabled={ownSourceControlsBusy || ownSourceLoading || !!ownSourceReadError}
                                       onChange={handleImportOwnSources}
                                   />
                                   {/* role=status so a screen reader hears the outcome; the
                                       per-file detail matters because one unreadable scan among
                                       five documents is not "import failed". */}
-                                  <p role="status" aria-live="polite" className="text-[11px] text-purple-700 leading-relaxed">
-                                      {ownSourceImportMsg || (ownSourceList.length > 0
+                                  {ownSourceImportMsg && <p role="status" aria-live="polite" className="text-[11px] text-purple-700 leading-relaxed">{ownSourceImportMsg}</p>}
+                                  {(ownSourceList.length > 0 || (!ownSourceLoading && !ownSourceReadError)) && <p role="status" aria-live="polite" className="text-[11px] text-purple-700 leading-relaxed">
+                                      {ownSourceList.length > 0
                                           ? `${t('input.my_sources_stored', { count: ownSourceList.length })} ${t('input.my_sources_included', { count: ownSourceCount })}`
-                                          : t('input.my_sources_empty'))}
-                                  </p>
+                                          : t('input.my_sources_empty')}
+                                  </p>}
+                                  {ownSourceList.length > 0 && <p className="text-[11px] text-purple-700">{sourceText('input.my_sources_lesson_selection', 'Include or exclude documents for this lesson. Saved documents remain available in other workspaces.')}</p>}
                                   {ownSourceImportFailures.length > 0 && (
                                       <ul className="text-[11px] text-amber-900 leading-relaxed list-disc ml-4">
                                           {ownSourceImportFailures.map((failure, index) => (
@@ -2694,20 +2811,22 @@ function SourceGenPanel(props) {
                                               {ownSourceList.map((source) => (
                                                   <li key={source.id} className="text-[11px]">
                                                     <div className="flex items-center justify-between gap-2">
-                                                      <span className={'min-w-0 break-words ' + (source.active ? 'text-purple-900' : 'text-slate-500 line-through')}>
+                                                      <span className={'min-w-0 break-words ' + (isSourceSelected(source) ? 'text-purple-900' : 'text-slate-500')}>
                                                           {source.title}
+                                                          {source.allowAI === false && <span className="block text-amber-900">{sourceText('input.my_sources_ai_disabled', 'Unavailable for AI: permission is off in the document library.')}</span>}
                                                       </span>
                                                       <span className="flex items-center gap-1 shrink-0">
                                                           <button type="button"
                                                               onClick={() => handleToggleOwnSource(source)}
-                                                              disabled={ownSourceControlsBusy}
+                                                              disabled={ownSourceControlsBusy || source.allowAI === false}
+                                                              aria-pressed={isSourceSelected(source)}
                                                               className="min-h-11 px-2 rounded border border-purple-300 bg-white font-bold text-purple-800 hover:bg-purple-50 disabled:opacity-50"
                                                           >
-                                                              {source.active ? t('input.my_sources_exclude') : t('input.my_sources_include')}
+                                                              {isSourceSelected(source) ? t('input.my_sources_exclude') : t('input.my_sources_include')}
                                                           </button>
                                                           <button type="button"
                                                               onClick={() => handleRemoveOwnSource(source, false)}
-                                                              disabled={ownSourceControlsBusy}
+                                                              disabled={ownSourceControlsBusy || ownSourceLoading || !!ownSourceReadError}
                                                               aria-label={t('input.my_sources_remove_aria', { title: source.title })}
                                                               aria-expanded={pendingRemoveId === source.id}
                                                               className="min-h-11 px-2 rounded border border-rose-300 bg-white font-bold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
@@ -2722,7 +2841,7 @@ function SourceGenPanel(props) {
                                                           <button type="button"
                                                               autoFocus
                                                               onClick={() => handleRemoveOwnSource(source, true)}
-                                                              disabled={ownSourceControlsBusy}
+                                                              disabled={ownSourceControlsBusy || ownSourceLoading || !!ownSourceReadError}
                                                               aria-label={t('input.my_sources_remove_aria', { title: source.title })}
                                                               className="min-h-11 px-2 rounded border border-rose-700 bg-rose-700 font-bold text-white hover:bg-rose-800 disabled:opacity-50"
                                                           >
@@ -2746,12 +2865,12 @@ function SourceGenPanel(props) {
                       </div>
                       <button
                         data-help-key="source_generate_button"
-                        onClick={handleGenerateSource}
-                        disabled={(!sourceTopic.trim() && targetStandards.length === 0) || ownSourceControlsBusy} aria-busy={isGeneratingSource}
+                        onClick={submitSource}
+                        disabled={!canGenerateSource} aria-busy={isGeneratingSource}
                         className="w-full bg-indigo-600 text-white text-sm font-medium py-2 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
                         {isGeneratingSource ? <RefreshCw className="animate-spin motion-reduce:animate-none" size={14} /> : <Pencil size={14} />}
-                        {isGeneratingSource ? t('input.writing') : t('input.generate')}
+                        <span role={isGeneratingSource ? 'status' : undefined} aria-live="polite" aria-atomic="true">{isGeneratingSource ? (generationStep || t('input.writing')) : t('input.generate')}</span>
                       </button>
                   </div>
   );

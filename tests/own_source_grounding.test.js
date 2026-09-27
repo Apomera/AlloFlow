@@ -41,7 +41,7 @@ function loadSanitizer() {
 }
 
 // ── Extract the quote verifier from the shipped file ──
-function loadQuoteVerifier() {
+function loadQuoteVerifier(helper = 'verifyQuotesAgainstOwnSources') {
   const src = readSource(CONTENT_ENGINE);
   const start = src.indexOf('var _normalizeQuoteText =');
   const end = src.indexOf('var computeGroundingSupportStats =');
@@ -49,8 +49,21 @@ function loadQuoteVerifier() {
   expect(end).toBeGreaterThan(start);
   const scope = {};
   // eslint-disable-next-line no-new-func
-  return new Function(src.slice(start, end) + '\nreturn verifyQuotesAgainstOwnSources;')();
+  return new Function(src.slice(start, end) + '\nreturn ' + helper + ';')();
 }
+
+describe('document quotation comparison in mixed research', () => {
+  it('does not flag an unrelated web quotation as invented or claim its attribution was verified', () => {
+    const notice = loadQuoteVerifier('ownSourceVerificationNotice')(
+      'The notes say "Water vapor condenses into droplets." A web source says "Cloud droplets may contain ice crystals."',
+      [{ snippet: 'Water vapor condenses into droplets.' }],
+    );
+    expect(notice).toContain('Your sources: 1 of 2 quotation(s)');
+    expect(notice).toContain('Unmatched quotations may come from web sources or dialogue');
+    expect(notice).toContain('does not verify attribution or factual accuracy');
+    expect(notice).not.toMatch(/invention|invented|Cloud droplets/);
+  });
+});
 
 describe('evidence sanitizer accepts the user\'s own sources', () => {
   const sanitize = () => loadSanitizer();

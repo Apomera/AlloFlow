@@ -1,0 +1,22 @@
+{
+  "stem.raptorhunt.study_canvas": "Frozen raptor study. Drag or use arrow keys to orbit. Use the view buttons and distance slider below. Escape returns to paused flight.",
+  "stem.raptorhunt.study_moment": "Study this moment",
+  "stem.raptorhunt.study_frozen": "Frozen moment · study lighting",
+  "stem.raptorhunt.study_close": "Close study",
+  "stem.raptorhunt.study_controls": "3D bird study controls",
+  "stem.raptorhunt.study_side": "Side",
+  "stem.raptorhunt.study_front": "Front",
+  "stem.raptorhunt.study_above": "Above",
+  "stem.raptorhunt.study_behind": "Behind",
+  "stem.raptorhunt.study_distance": "View distance",
+  "stem.raptorhunt.study_resume": "Resume from this moment",
+  "stem.raptorhunt.study_help": "Drag the bird view or focus it and use arrow keys to orbit. The mission clock and animals stay frozen.",
+  "stem.raptorhunt.study_rest_question": "What changes when a bird lands?",
+  "stem.raptorhunt.study_dive_question": "Where did the wing area go?",
+  "stem.raptorhunt.study_glide_question": "How are the wings and tail arranged?",
+  "stem.raptorhunt.study_rest_copy": "Inspect the wing position, tail, and feet. Resume and take off, then freeze another moment to compare.",
+  "stem.raptorhunt.study_dive_copy": "Compare the swept wings with your last glide. Predict what will happen to speed and height when you pull up, then resume to test it.",
+  "stem.raptorhunt.study_glide_copy": "Look from above for wing shape and from behind for the tail. Predict how the pose will change during a turn or dive, then try it.",
+  "stem.raptorhunt.study_simulation_reading": "Simulation snapshot",
+  "stem.raptorhunt.study_announced": "3D study open. Flight is frozen. Choose a view, drag to orbit, or use the arrow keys on the bird view."
+}

@@ -1932,7 +1932,7 @@ function SourceInputPanel(props) {
     sourceCustomInstructions, sourceLength, sourceLevel, sourceTone,
     sourceTopic, sourceVocabulary, standardInputValue, standardMode,
     suggestedStandards, t, targetStandards, urlSearchQuery,
-    urlToFetch, useOwnSources, setUseOwnSources
+    urlToFetch, useOwnSources, setUseOwnSources, selectedOwnSourceIds, setSelectedOwnSourceIds, documentsOnly, setDocumentsOnly
   } = props;
   if (!expandedTools || !expandedTools.includes('source-input')) return null;
   return (
@@ -2047,7 +2047,7 @@ function SourceInputPanel(props) {
           setSourceTone, setSourceTopic, setSourceVocabulary, setStandardInputValue, setTargetStandards,
           showSourceGen, sourceCustomInstructions, sourceLength, sourceLevel, sourceTone,
           sourceTopic, sourceVocabulary, standardInputValue, standardMode, studentInterests: props.studentInterests, suggestedStandards,
-          t, targetStandards, useOwnSources, setUseOwnSources
+          t, targetStandards, useOwnSources, setUseOwnSources, selectedOwnSourceIds, setSelectedOwnSourceIds, documentsOnly, setDocumentsOnly, generationStep
                 })}
                 <div className="p-4 relative">
                   <textarea
@@ -4328,6 +4328,7 @@ function SourceInputShellView(props) {
     showUrlInput, sourceCustomInstructions, sourceLength, sourceLevel, sourceTone, sourceTopic,
     sourceVocabulary, standardInputValue, standardMode, startNewPdfAudit, suggestedStandards, t,
     targetStandards, toggleTool, urlSearchQuery, urlToFetch, videoTranscriptSourceContext,
+    useOwnSources, setUseOwnSources, selectedOwnSourceIds, setSelectedOwnSourceIds, documentsOnly, setDocumentsOnly,
   } = props;
   return (
 <div style={{display: isGuidedToolVisible('source-input') ? undefined : 'none'}} id="tour-input-panel" data-help-key="source_input" className={`bg-white rounded-3xl shadow-indigo-500/10 border transition-all motion-reduce:transition-none overflow-hidden shrink-0 ${activeView === 'input' ? 'border-indigo-600 shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200'}`}>
@@ -4608,7 +4609,7 @@ function SourceInputShellView(props) {
           setUrlToFetch, showSourceGen, showUrlInput, sourceCustomInstructions, sourceLength,
           sourceLevel, sourceTone, sourceTopic, sourceVocabulary, standardInputValue,
           standardMode, suggestedStandards, t, targetStandards, urlSearchQuery,
-          urlToFetch
+          urlToFetch, useOwnSources, setUseOwnSources, selectedOwnSourceIds, setSelectedOwnSourceIds, documentsOnly, setDocumentsOnly
             })}
           </div>
   );

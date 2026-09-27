@@ -59,4 +59,5 @@ ${compiled}
 `;
 
 fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
+fs.writeFileSync(path.join(ROOT, 'desktop/web-app/public/view_storybook_export_modal_module.js'), outputCode, 'utf-8');
 console.log(`Built ${OUTPUT} (${outputCode.split('\n').length} lines)`);

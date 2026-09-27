@@ -1,0 +1,137 @@
+{
+  "at": "2026-09-26T23:00:05.470Z",
+  "head": "6b63e76e862125e87422f02a54ed60beac68e8fb",
+  "modules": [
+    {
+      "file": "ai_backend_module.js",
+      "sha256": "4e006985c76d7e1bc1934521a6a13bf5188dae6ed1bc2c0aee62077bc1e3b528",
+      "loaderReferences": 0
+    },
+    {
+      "file": "content_engine_module.js",
+      "sha256": "e3c56af9afabccfd745112b251dbad6702c7524ea53a3e5d77b983d3ce0352bc",
+      "loaderReferences": 1
+    },
+    {
+      "file": "export_module.js",
+      "sha256": "bb9ef80933bd833af3c0660bf65a2e3a9f7a7fb172c8813ac46400a7614ef784",
+      "loaderReferences": 1
+    },
+    {
+      "file": "generate_dispatcher_module.js",
+      "sha256": "2eb366e72cb494eb675b2c3276b9bf78a45991ecfb0f0cabb4f6ccf7436e1703",
+      "loaderReferences": 1
+    },
+    {
+      "file": "generation_helpers_module.js",
+      "sha256": "3704119dc13a33c1d068648c82bad44f6bfd1774fbb0019cf48cc0efdf6e42e1",
+      "loaderReferences": 1
+    },
+    {
+      "file": "host_handlers_module.js",
+      "sha256": "fbda9fa8fe52b085a138bcb2f581ee127c34f1f8cec5991df8f44244237dd132",
+      "loaderReferences": 1
+    },
+    {
+      "file": "immersive_reader_module.js",
+      "sha256": "4dd044c7ce14a5d09529a9fb9ec172aab85b5f46c6549275dc9f200916d2f865",
+      "loaderReferences": 1
+    },
+    {
+      "file": "karaoke_audio_store_module.js",
+      "sha256": "5f7c36d96c3d9c713da7f34cc95ec96ac46b0c775cca6e35a0c1b65a3460316e",
+      "loaderReferences": 1
+    },
+    {
+      "file": "live_aac_module.js",
+      "sha256": "0ae0268ed505682f8b8f23117eb7b6c52945df29af9223a1fac3f0be4fe7a473",
+      "loaderReferences": 1
+    },
+    {
+      "file": "own_sources_module.js",
+      "sha256": "feb653e45ba1ca567ae2d7f9f7b960829b6b35c2e7c4350eb51fb5a45e9bd41c",
+      "loaderReferences": 1
+    },
+    {
+      "file": "phase_n_misc_helpers_module.js",
+      "sha256": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c",
+      "loaderReferences": 1
+    },
+    {
+      "file": "phase_o_misc_handlers_module.js",
+      "sha256": "5e470d0bf0b505acf66fa011aed003267d1e783733369f78474f18323c2c84bf",
+      "loaderReferences": 1
+    },
+    {
+      "file": "quickstart_module.js",
+      "sha256": "474212e1e6039e21e2126f13427076f4b79961dc4ff3acf1ca1c6357c1ef3b05",
+      "loaderReferences": 2
+    },
+    {
+      "file": "read_aloud_artifact_audio_module.js",
+      "sha256": "dae3f54932ed3794376e8cb662f0f088e4783b9f2a7761bcce41682e192aaee6",
+      "loaderReferences": 1
+    },
+    {
+      "file": "read_aloud_audio_service_module.js",
+      "sha256": "7e3af8f0f9065bcba082870006210978a8a47dc1e07f284051de66a3ad64825f",
+      "loaderReferences": 1
+    },
+    {
+      "file": "shared_activity_module.js",
+      "sha256": "5ca1dfe5ba3dc606bcca45861dd838944cbece8c857da303451bd2d0f9e8979d",
+      "loaderReferences": 1
+    },
+    {
+      "file": "text_pipeline_helpers_module.js",
+      "sha256": "6c04401f5fc47e150bab9218eb5d71b988a77d74e61e42d42af285f4f2e12cb8",
+      "loaderReferences": 1
+    },
+    {
+      "file": "utils_pure_module.js",
+      "sha256": "aa4eebe11a0fc0acf558d03212cecce6662402234d73a244e4f43933bbc4be11",
+      "loaderReferences": 1
+    },
+    {
+      "file": "view_live_session_dock_module.js",
+      "sha256": "9987a5cb96b53c267ad98c155b4e4b865484b048d3c20b1dd7b0a2484d039a8f",
+      "loaderReferences": 1
+    },
+    {
+      "file": "view_misc_panels_module.js",
+      "sha256": "3dcc2bb8fa0e1b8ec41824ce73ee8bd3b55a4bc51bb478bc308372e9beee41a9",
+      "loaderReferences": 1
+    },
+    {
+      "file": "view_share_session_surfaces_module.js",
+      "sha256": "abc55e09de78b9c7762c4e8db3b9209a2825449369a9fd249962029f97e74cec",
+      "loaderReferences": 1
+    },
+    {
+      "file": "view_sidebar_panels_module.js",
+      "sha256": "d91a3b8a09edc1546be67bb383f992dfa6ada716982c0d726b1376273338cb8f",
+      "loaderReferences": 1
+    },
+    {
+      "file": "view_simplified_module.js",
+      "sha256": "ce38636cd36e2564609eeb466978b0bcf9d948d32add02eec66f486fa3c8203e",
+      "loaderReferences": 1
+    },
+    {
+      "file": "view_storybook_export_modal_module.js",
+      "sha256": "5ab329d3200c563c77bbc2b293b1fe8df646de1ee69dc684995a5c4de9517396",
+      "loaderReferences": 1
+    },
+    {
+      "file": "dictionary_loader.js",
+      "sha256": "2b3b3a961ad36bea638d7e1f6fd75bf97b8186075cbbe9d6b21c6a5a92dc8df9",
+      "loaderReferences": 0
+    },
+    {
+      "file": "ui_strings.js",
+      "sha256": "0fcbf04d06c67f460d41e92a910fef8aa104a49bf912981121cf32ccbce6d3a2",
+      "loaderReferences": 0
+    }
+  ],
+  "hosts": {}
+}

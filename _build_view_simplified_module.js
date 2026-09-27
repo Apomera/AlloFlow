@@ -10,7 +10,7 @@
 const babel = require('@babel/core');
 const fs = require('fs');
 
-const source = fs.readFileSync('view_simplified_source.jsx', 'utf-8');
+const source = ['reader_place_store.js', 'reader_support_drafts.js', 'view_simplified_source.jsx'].map(file => fs.readFileSync(file, 'utf-8')).join('\n');
 
 const result = babel.transformSync(source, {
   plugins: [['@babel/plugin-transform-react-jsx', { useBuiltIns: false }]],

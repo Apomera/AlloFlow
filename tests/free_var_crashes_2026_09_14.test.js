@@ -31,15 +31,18 @@ describe('content engine applies a text revision through the host handler', () =
     window.__alloUtils = { cleanJson: (x) => x };
     loadAlloModule('content_engine_module.js');
     const handleSimplifiedTextChange = vi.fn();
-    const setRevisionData = vi.fn();
+    const setRevisionData = vi.fn(value => { state.revisionData = typeof value === 'function' ? value(state.revisionData) : value; });
     const state = {
       generatedContent: { type: 'simplified', data: 'The cat sat on the mat. It was warm.' },
-      revisionData: { type: 'simplify', original: 'It was warm.', result: 'It felt warm.' },
+      revisionData: null,
+      selectionMenu: { text: 'It was warm.', occurrence: 0 },
       leveledTextLanguage: 'English',
       handleSimplifiedTextChange, setRevisionData, setSelectionMenu: vi.fn(), addToast: vi.fn(),
+      setIsCustomReviseOpen: vi.fn(),
     };
     window.getSelection = () => ({ removeAllRanges: () => {} });
-    const engine = window.AlloModules.createContentEngine({ getState: () => state, callGemini: vi.fn(), addToast: vi.fn(), t: (k) => k });
+    const engine = window.AlloModules.createContentEngine({ getState: () => state, callGemini: vi.fn(async () => 'It felt warm.'), addToast: vi.fn(), t: (k) => k });
+    await engine.handleReviseSelection('simplify');
     await engine.applyTextRevision();
     expect(handleSimplifiedTextChange).toHaveBeenCalledWith('The cat sat on the mat. It felt warm.');
     expect(setRevisionData).toHaveBeenCalledWith(null);

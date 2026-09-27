@@ -175,12 +175,12 @@ describe('Student reading workflow and teacher boundaries', () => {
     expect(host.querySelector('[data-reading-sentence][aria-current]')).toBeNull();
   });
   it('keeps practice collapsed and exposes its expanded state', () => {
-    mount(); const button = host.querySelector('[aria-controls="simplified-practice-tools"]');
+    mount(); const button = host.querySelector('[aria-controls^="simplified-practice-tools-"]');
     expect(button.getAttribute('aria-expanded')).toBe('false');
-    expect(host.querySelector('#simplified-practice-tools').hidden).toBe(true);
+    expect(host.querySelector('[id^="simplified-practice-tools-"]').hidden).toBe(true);
     act(() => button.click());
     expect(button.getAttribute('aria-expanded')).toBe('true');
-    expect(host.querySelector('#simplified-practice-tools').hidden).toBe(false);
+    expect(host.querySelector('[id^="simplified-practice-tools-"]').hidden).toBe(false);
   });
   it('clears old help, comparison and editing when choosing a reading mode', () => {
     const { props } = mount({ isTeacherMode: true, isEditingLeveledText: true });
@@ -241,12 +241,12 @@ describe('Adapted reader theme selection', () => {
     const { props } = mount({ isZenMode: false, readingTheme: 'warm', definitionData: { word: 'water', text: 'A liquid.', x: 10, y: 10 } });
     const passage = host.querySelector('[data-reading-passage]');
     const width = host.querySelector('select[aria-label="Reading width"]');
-    act(() => { width.value = '40'; width.dispatchEvent(new Event('change', { bubbles: true })); host.querySelector('[aria-controls="simplified-practice-tools"]').click(); });
+    act(() => { width.value = '40'; width.dispatchEvent(new Event('change', { bubbles: true })); host.querySelector('[aria-controls^="simplified-practice-tools-"]').click(); });
     act(() => root.render(React.createElement(View, { ...props, theme: 'dark', readingTheme: 'dim' })));
     expect(host.querySelector('[data-reading-passage]')).toBe(passage);
     expect(width.value).toBe('40');
     expect(host.querySelector('[data-adapted-theme-picker]').value).toBe('dim');
-    expect(host.querySelector('[aria-controls="simplified-practice-tools"]').getAttribute('aria-expanded')).toBe('true');
+    expect(host.querySelector('[aria-controls^="simplified-practice-tools-"]').getAttribute('aria-expanded')).toBe('true');
     expect(host.querySelector('[role="dialog"]')).not.toBeNull();
     expect(props.closeDefinition).not.toHaveBeenCalled();
     expect(props.stopPlayback).not.toHaveBeenCalled();

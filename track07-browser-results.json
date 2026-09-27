@@ -1,0 +1,41 @@
+{
+  "results": [
+    {
+      "name": "acknowledged overwrite and keyboard Apply",
+      "status": "passed"
+    },
+    {
+      "name": "acknowledged new version retains original",
+      "status": "passed"
+    },
+    {
+      "name": "declined save has no success or history entry",
+      "status": "passed"
+    },
+    {
+      "name": "declined unchanged text is not mistaken for a committed rewrite",
+      "status": "passed"
+    },
+    {
+      "name": "Apply revalidation returns focus to preserved terms",
+      "status": "passed"
+    },
+    {
+      "name": "obsolete in-flight preview cannot restore Apply",
+      "status": "passed"
+    },
+    {
+      "name": "bilingual candidate reports the missing translation term",
+      "status": "passed"
+    },
+    {
+      "name": "supported inline markup matches the shared visible-text projection",
+      "status": "passed"
+    },
+    {
+      "name": "Discard restores keyboard focus",
+      "status": "passed"
+    }
+  ],
+  "errors": []
+}

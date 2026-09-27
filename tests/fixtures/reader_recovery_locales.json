@@ -1,0 +1,27 @@
+[
+  {
+    "id": "reader_en_contract_recovery_v1",
+    "baseFixture": "reader_en_contract_v1",
+    "answer": "The heron waits in the water. It catches a fish.\n<note> $& {draft} ١٢٣"
+  },
+  {
+    "id": "reader_es419_long_labels_recovery_v1",
+    "baseFixture": "reader_es419_long_labels_v1",
+    "answer": "La garza espera en el agua. Atrapa un pez.\n<note> $& {draft} ١٢٣"
+  },
+  {
+    "id": "reader_ar_rtl_mixed_recovery_v1",
+    "baseFixture": "reader_ar_rtl_mixed_v1",
+    "answer": "هل يحتاج إلى 2 L كل يوم؟\n<note> $& {draft} ١٢٣"
+  },
+  {
+    "id": "reader_zh_hans_unspaced_recovery_v1",
+    "baseFixture": "reader_zh_hans_unspaced_v1",
+    "answer": "水变成水蒸气。它升到空中。\n<note> $& {draft} ١٢٣"
+  },
+  {
+    "id": "reader_th_unspaced_recovery_v1",
+    "baseFixture": "reader_th_unspaced_v1",
+    "answer": "ฉันชอบอ่านหนังสือภาษาไทย\n<note> $& {draft} ١٢٣"
+  }
+]

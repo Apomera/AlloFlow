@@ -21,7 +21,10 @@ const esbuild = require(path.join(root, 'node_modules/esbuild'));
     page.on('pageerror', (error) => errors.push(error.message));
     await page.route('**/*', (route) => route.fulfill({ contentType: 'text/html', body: '<!doctype html><html><head><title>Research controls regression</title></head><body><main id="root" style="max-width:700px;margin:20px auto"></main></body></html>' }));
     await page.goto('https://research-controls.test/');
-    await page.addStyleTag({ path: path.join(root, 'desktop/web-app/public/app/static/css/main.c2930cf0.css') });
+    const cssDir = path.join(root, 'desktop/web-app/public/app/static/css');
+    const cssName = fs.readdirSync(cssDir).find((name) => /^main\.[^.]+\.css$/.test(name));
+    if (!cssName) throw new Error('The built app stylesheet is missing');
+    await page.addStyleTag({ path: path.join(cssDir, cssName) });
     await page.addScriptTag({ content: runtime });
     await page.evaluate((strings) => { window.strings = strings; }, JSON.parse(fs.readFileSync(path.join(root, 'ui_strings.js'), 'utf8')));
     for (const file of ['stem_lab/stem_lumen_evidence.js', 'stem_lab/stem_lumen_documents.js', 'own_sources_module.js', 'view_misc_panels_module.js']) {

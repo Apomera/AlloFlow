@@ -1,0 +1,62 @@
+{
+  "at": "2026-09-26T23:59:05.663Z",
+  "head": "a9c8fb36285c661a9b85a1cf376f99f05f382de5",
+  "changedDuringFinalValidation": [],
+  "pinFailures": [],
+  "hostsMatch": true,
+  "contentSourceMatches": true,
+  "mirrorDrift": [],
+  "unit": {
+    "passed": 900,
+    "failed": 0,
+    "files": 40
+  },
+  "reflow": {
+    "passed": 36,
+    "failed": 0,
+    "files": 3
+  },
+  "places": {
+    "passed": 71,
+    "failed": 0,
+    "files": 4
+  },
+  "browserRuns": [
+    {
+      "name": "narration",
+      "exit": 0
+    },
+    {
+      "name": "audio",
+      "exit": 0
+    },
+    {
+      "name": "preview",
+      "exit": 0
+    },
+    {
+      "name": "places",
+      "exit": 0
+    },
+    {
+      "name": "prepared-help",
+      "exit": 0
+    },
+    {
+      "name": "prepared-preview",
+      "exit": 0
+    },
+    {
+      "name": "storybook",
+      "exit": 0
+    },
+    {
+      "name": "vocabulary",
+      "exit": 0
+    },
+    {
+      "name": "routes",
+      "exit": 0
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "date": "2026-09-26T23:27:15.272Z",
+  "localHead": "a9c8fb36285c661a9b85a1cf376f99f05f382de5",
+  "unit": {
+    "passed": 96,
+    "failed": 0,
+    "pending": 0
+  },
+  "browser": {
+    "legacyPassed": 8,
+    "newPassed": 4,
+    "newFailed": 4,
+    "previewOverflowCases": 0,
+    "enlargedTermOverflowCases": 4
+  },
+  "englishCopyGuard": {
+    "keys": 125,
+    "mismatches": []
+  },
+  "mirror": [
+    {
+      "locale": "spanish_latin_america",
+      "byteIdentical": true
+    },
+    {
+      "locale": "spanish_castilian",
+      "byteIdentical": true
+    },
+    {
+      "locale": "arabic",
+      "byteIdentical": true
+    },
+    {
+      "locale": "chinese_simplified",
+      "byteIdentical": true
+    },
+    {
+      "locale": "thai",
+      "byteIdentical": true
+    }
+  ],
+  "patch": {
+    "files": 22,
+    "bytes": 97870,
+    "sha256": "3f096cf8147c567abc9b398fef32c7c6908df1736bf494d0f6a05ff23424f699",
+    "sharedInMemoryApplyConflicts": []
+  },
+  "limitations": [
+    "Captured source is not the deployed release.",
+    "Shared reader, store and whole English catalog changed during work; scoped English messages still match.",
+    "Root text-size tests are not native browser zoom.",
+    "Browser markup is rendered from real reader source in jsdom and inspected in disposable Chromium with network blocked; it is not a full live app run.",
+    "Native-speaker review pending; other catalog strings may fall back to English."
+  ],
+  "stableTerms": {
+    "files": [
+      {
+        "file": "lang/arabic.js",
+        "newFile": false,
+        "appliesToShared": true
+      },
+      {
+        "file": "desktop/web-app/public/lang/arabic.js",
+        "newFile": false,
+        "appliesToShared": true
+      },
+      {
+        "file": "lang/chinese_simplified.js",
+        "newFile": false,
+        "appliesToShared": true
+      },
+      {
+        "file": "desktop/web-app/public/lang/chinese_simplified.js",
+        "newFile": false,
+        "appliesToShared": true
+      },
+      {
+        "file": "lang/thai.js",
+        "newFile": false,
+        "appliesToShared": true
+      },
+      {
+        "file": "desktop/web-app/public/lang/thai.js",
+        "newFile": false,
+        "appliesToShared": true
+      },
+      {
+        "file": "dev-tools/i18n/apply_reader_contract_locales.cjs",
+        "newFile": false,
+        "appliesToShared": true
+      },
+      {
+        "file": "translations/reader-terms-locales.json",
+        "newFile": true,
+        "appliesToShared": true
+      },
+      {
+        "file": "tests/reader_terms_locales.test.js",
+        "newFile": true,
+        "appliesToShared": true
+      },
+      {
+        "file": "tests/reader_recovery_locale_catalogs.test.js",
+        "newFile": false,
+        "appliesToShared": true
+      }
+    ],
+    "addedLocaleValues": 51,
+    "guardedKeys": 17,
+    "patchBytes": 51840,
+    "sha256": "852d812139638115029587e1f162cfedaacebd1b8bccc15ff12215a48806709a",
+    "standaloneTestsPassed": 28
+  },
+  "previewCopyStatus": "Hold for Track 09 revised note and refresh-copy reconciliation; pending increments are not covered by the current 125-key match."
+}

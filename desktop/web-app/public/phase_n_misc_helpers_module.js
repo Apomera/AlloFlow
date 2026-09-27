@@ -274,7 +274,8 @@ const _citationNumber = (label) => {
   const digits = value.slice(1, -1).split("").map((ch) => _SUPERSCRIPT_DIGITS.indexOf(ch));
   return digits.every((d) => d >= 0) ? digits.join("") : null;
 };
-const _linkLabel = (label, t) => {
+const _linkLabel = (label, t, href) => {
+  if (/^#allo-doc-[a-z0-9-]+$/.test(href || "")) return String(label || "") + ", inspect supplied document passage";
   const tr = (key, fallback, params) => {
     const v = typeof t === "function" ? t(key, params) : void 0;
     return typeof v === "string" && v && v !== key ? v : fallback;
@@ -290,8 +291,9 @@ const formatInteractiveText = (text, isCloze = false, isDarkBg = false, deps, in
   } catch (_) {
   }
   if (!text) return null;
-  const parts = text.split(/(\$\$[\s\S]+?\$\$|\$(?=\S)[^$]*?\S\$(?!\d)|\*\*.*?\*\*|\*.*?\*|\[.*?\]\(.*?\))/g);
+  const parts = text.split(/(\\[\x21-\x2f\x3a-\x40\x5b-\x60\x7b-\x7e]|\$\$[\s\S]+?\$\$|\$(?=\S)[^$]*?\S\$(?!\d)|\*\*.*?\*\*|\*.*?\*|\[.*?\]\(.*?\))/g);
   return parts.filter((p) => p != null).map((part, i) => {
+    if (/^\\[\x21-\x2f\x3a-\x40\x5b-\x60\x7b-\x7e]$/.test(part)) return /* @__PURE__ */ React.createElement(React.Fragment, { key: i }, part.slice(1));
     if (part.startsWith("$") && part.endsWith("$") || part.startsWith("$$") && part.endsWith("$$")) {
       return /* @__PURE__ */ React.createElement(React.Fragment, { key: i }, /* @__PURE__ */ React.createElement(MathSymbol, { text: part }));
     }
@@ -303,8 +305,9 @@ const formatInteractiveText = (text, isCloze = false, isDarkBg = false, deps, in
           {
             key: i,
             href: match[2],
-            "aria-label": _linkLabel(match[1], t),
-            target: "_blank",
+            "aria-label": _linkLabel(match[1], t, match[2]),
+            "aria-haspopup": /^#allo-doc-[a-z0-9-]+$/.test(match[2]) ? "dialog" : void 0,
+            target: /^#allo-doc-[a-z0-9-]+$/.test(match[2]) ? void 0 : "_blank",
             rel: "noopener noreferrer",
             className: `${isDarkBg ? "text-sky-300 hover:text-sky-200 focus-visible:ring-sky-300 focus-visible:ring-offset-slate-900" : "text-blue-700 hover:text-blue-900 focus-visible:ring-blue-700 focus-visible:ring-offset-white"} z-20 relative font-medium underline decoration-2 underline-offset-2 cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2`,
             onClick: (e) => e.stopPropagation(),
@@ -319,8 +322,9 @@ const formatInteractiveText = (text, isCloze = false, isDarkBg = false, deps, in
     let content = part;
     if (isBold) content = part.slice(2, -2);
     else if (isItalic) content = part.slice(1, -1);
-    const subParts = content.split(/(\$\$[\s\S]+?\$\$|\$(?=\S)[^$]*?\S\$(?!\d)|\[.*?\]\(.*?\))/g);
+    const subParts = content.split(/(\\[\x21-\x2f\x3a-\x40\x5b-\x60\x7b-\x7e]|\$\$[\s\S]+?\$\$|\$(?=\S)[^$]*?\S\$(?!\d)|\[.*?\]\(.*?\))/g);
     const renderedSubParts = subParts.filter((sp) => sp != null).map((subPart, sIdx) => {
+      if (/^\\[\x21-\x2f\x3a-\x40\x5b-\x60\x7b-\x7e]$/.test(subPart)) return /* @__PURE__ */ React.createElement(React.Fragment, { key: sIdx }, subPart.slice(1));
       if (subPart.startsWith("$") && subPart.endsWith("$") || subPart.startsWith("$$") && subPart.endsWith("$$")) {
         return /* @__PURE__ */ React.createElement(React.Fragment, { key: sIdx }, /* @__PURE__ */ React.createElement(MathSymbol, { text: subPart }));
       }
@@ -332,8 +336,9 @@ const formatInteractiveText = (text, isCloze = false, isDarkBg = false, deps, in
             {
               key: sIdx,
               href: match[2],
-              "aria-label": _linkLabel(match[1], t),
-              target: "_blank",
+              "aria-label": _linkLabel(match[1], t, match[2]),
+              "aria-haspopup": /^#allo-doc-[a-z0-9-]+$/.test(match[2]) ? "dialog" : void 0,
+              target: /^#allo-doc-[a-z0-9-]+$/.test(match[2]) ? void 0 : "_blank",
               rel: "noopener noreferrer",
               className: `${isDarkBg ? "text-sky-300 hover:text-sky-200 focus-visible:ring-sky-300 focus-visible:ring-offset-slate-900" : "text-blue-700 hover:text-blue-900 focus-visible:ring-blue-700 focus-visible:ring-offset-white"} z-20 relative font-medium underline decoration-2 underline-offset-2 cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2`,
               onClick: (e) => e.stopPropagation(),

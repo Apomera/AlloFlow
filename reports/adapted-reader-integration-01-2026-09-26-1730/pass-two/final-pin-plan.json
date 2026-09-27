@@ -1,0 +1,98 @@
+{
+  "at": "2026-09-26T23:55:41.434Z",
+  "records": [
+    {
+      "source": "dictionary_loader.js",
+      "target": "desktop/web-app/public/dictionary_loader.js",
+      "sha256": "2f6cfa948fadef07d97c5705dc412e062bc070cf2a031bef9067169bf82bfd91"
+    },
+    {
+      "source": "karaoke_audio_store_module.js",
+      "target": "desktop/web-app/public/karaoke_audio_store_module.js",
+      "sha256": "9b9d88b8f07e695d5a7efb7f4a148b660a5e63c48c9df5823e6d6d85845194df"
+    },
+    {
+      "source": "content_engine_source.jsx",
+      "target": "desktop/web-app/src/content_engine_source.jsx",
+      "sha256": "b541b4d6e29c097f8955314acb87f82344e62f6ce2c4418879ddc4275d6edee8"
+    }
+  ],
+  "pins": [
+    {
+      "file": "view_simplified_module.js",
+      "sha256": "a1b6e04609179cd6352cb10ef01224a88adc162f885eceeedf2e2a5c801ec3e6",
+      "references": 1
+    },
+    {
+      "file": "content_engine_module.js",
+      "sha256": "189593ed46af578e9a9a9ab830d5b39a351ae8e0d06b61b0cc669e2a316404a4",
+      "references": 1
+    },
+    {
+      "file": "read_aloud_audio_service_module.js",
+      "sha256": "961229e6ff3b2f0b330153520935616dac4b7a36f119011f29c1fbc92f34c047",
+      "references": 1
+    },
+    {
+      "file": "read_aloud_artifact_audio_module.js",
+      "sha256": "f8a017fc9a1cb1ef0fc507883c4a78ffda5ef843085fcf83c44dc9060915485e",
+      "references": 1
+    },
+    {
+      "file": "generation_helpers_module.js",
+      "sha256": "7e9a1a5c8a5ed327f38aa597190d75894e317fa72ca70c5fdf4104a682240fce",
+      "references": 1
+    },
+    {
+      "file": "text_pipeline_helpers_module.js",
+      "sha256": "d254c1ff001f544d3734d5d8fc922e460751eeb023c7a395eaceb1c54695dcee",
+      "references": 1
+    },
+    {
+      "file": "immersive_reader_module.js",
+      "sha256": "718a334275dae108386380adcfe0a85af0ed1e616948a569dc246bf2899dc589",
+      "references": 1
+    },
+    {
+      "file": "export_module.js",
+      "sha256": "262f743504adcea642739990252671494a59445ec930ba8e8fcfe2c853ca966a",
+      "references": 1
+    },
+    {
+      "file": "view_storybook_export_modal_module.js",
+      "sha256": "429a1ae27a8608e1459ad83f5a16d892d357f5d59d0e5e46812b7e96623c4f9f",
+      "references": 1
+    },
+    {
+      "file": "quickstart_module.js",
+      "sha256": "ac2eb44c91e92588055d6629fee5583182ffd8a7311b9f094132a653bd472c62",
+      "references": 2
+    },
+    {
+      "file": "view_misc_panels_module.js",
+      "sha256": "71c38634b235e48f8e6619ef7ab77b00ef89c781e409f9155133e172f1c4f7d6",
+      "references": 1
+    },
+    {
+      "file": "own_sources_module.js",
+      "sha256": "45a610136690bed52c6b06e2be7d98180e2bf4a5de2143341050d42fef17a05a",
+      "references": 1
+    },
+    {
+      "file": "shared_activity_module.js",
+      "sha256": "43722e2bfcab1060f8f86a6489252f8c99ead2fda695f66bf3899edc638c43f7",
+      "references": 1
+    },
+    {
+      "file": "view_share_session_surfaces_module.js",
+      "sha256": "341e486b775779ee9cee1c19c4a82c27936d646f6d806a72a4a422b849a934df",
+      "references": 1
+    },
+    {
+      "file": "karaoke_audio_store_module.js",
+      "sha256": "9b9d88b8f07e695d5a7efb7f4a148b660a5e63c48c9df5823e6d6d85845194df",
+      "references": 1
+    }
+  ],
+  "dynamicVersionNote": "Dictionary and catalogs still use the existing release cache scheme; actual release build stamp and fetched bytes must be verified at deployment."
+}

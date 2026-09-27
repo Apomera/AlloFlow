@@ -32,10 +32,9 @@ describe('the toggle is offered where source material is generated', () => {
   });
 
   it('stays hidden until the teacher has actually imported something', () => {
-    // An always-visible control that cannot do anything is worse than no
-    // control, so both surfaces gate on a real count.
-    expect(read('view_misc_panels_source.jsx')).toMatch(/ownSourceCount !== null && ownSourceList.length > 0 &&/);
-    expect(read('quickstart_source.jsx')).toMatch(/\{wizOwnSourceCount > 0 && \(/);
+    // Saved documents stay selectable even when this lesson has selected none.
+    expect(read('view_misc_panels_source.jsx')).toMatch(/ownSourceList\.length > 0/);
+    expect(read('quickstart_source.jsx')).toMatch(/wizOwnSourceList\.length > 0/);
   });
 
   // Counting used to be inlined in each panel. It moved into own_sources_module
@@ -46,9 +45,9 @@ describe('the toggle is offered where source material is generated', () => {
     expect(read('own_sources_module.js')).toMatch(/source\.active !== false/);
   });
 
-  it('both panels count through the shared helper rather than opening the store themselves', () => {
+  it('both panels list documents through the shared helper rather than opening the store themselves', () => {
     for (const f of ['view_misc_panels_source.jsx', 'quickstart_source.jsx']) {
-      expect(read(f), f).toMatch(/countSources\(/);
+      expect(read(f), f).toMatch(/listSources\(/);
       expect(read(f), `${f} should not hand-roll the store`).not.toMatch(/createProjectStore\(/);
     }
   });

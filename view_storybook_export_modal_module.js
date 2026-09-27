@@ -92,9 +92,16 @@ function StorybookExportModal({
   const [progress, setProgress] = React.useState(null);
   const busy = !!isProcessing || localProcessing;
   const dialogRef = React.useRef(null);
+  const requestRef = React.useRef(null);
+  React.useEffect(() => () => {
+    requestRef.current?.abort();
+    requestRef.current = null;
+  }, []);
   _useStorybookDialogFocus(dialogRef, handleSetShowStorybookExportModalToFalse, busy);
   const runExport = async (includeImages) => {
-    if (busy) return;
+    if (busy || requestRef.current) return;
+    const controller = new AbortController();
+    requestRef.current = controller;
     setLocalProcessing(true);
     setProgress({ phase: "story", completed: 0, total: 0, message: "Preparing your Storybook\u2026" });
     try {
@@ -102,17 +109,26 @@ function StorybookExportModal({
         includeImages,
         includeNarration,
         keepModalOpen: true,
-        onProgress: (update) => setProgress(update || null)
+        signal: controller.signal,
+        onProgress: (update) => {
+          if (requestRef.current === controller) setProgress(update || null);
+        }
       });
-      if (result !== false) {
+      if (requestRef.current !== controller) return;
+      if (controller.signal.aborted) {
+        setProgress({ phase: "cancelled", message: "Export stopped. Completed narration is kept for your next attempt." });
+      } else if (result !== false) {
         setShowStorybookExportModal(false);
       } else {
         setProgress({ phase: "error", completed: 0, total: 0, message: "Storybook export could not be completed." });
       }
     } catch (_) {
-      setProgress({ phase: "error", completed: 0, total: 0, message: "Storybook export could not be completed." });
+      if (requestRef.current === controller) setProgress({ phase: controller.signal.aborted ? "cancelled" : "error", completed: 0, total: 0, message: controller.signal.aborted ? "Export stopped. Completed narration is kept for your next attempt." : "Storybook export could not be completed." });
     } finally {
-      setLocalProcessing(false);
+      if (requestRef.current === controller) {
+        requestRef.current = null;
+        setLocalProcessing(false);
+      }
     }
   };
   const progressTotal = progress && Number(progress.total) > 0 ? Number(progress.total) : 0;
@@ -152,7 +168,7 @@ function StorybookExportModal({
           disabled: busy,
           className: "mt-1 h-5 w-5 rounded border-slate-400 text-indigo-600 focus:ring-indigo-500"
         }
-      ), /* @__PURE__ */ React.createElement("label", { htmlFor: "storybook-include-narration", className: "cursor-pointer text-sm text-slate-800" }, /* @__PURE__ */ React.createElement("span", { className: "block font-bold" }, "Include narrated TTS audio"), /* @__PURE__ */ React.createElement("span", { className: "mt-1 block text-xs leading-relaxed text-slate-600" }, "Creates self-contained HTML and JSON downloads. Audio is not saved in the AlloHaven browser store.")))),
+      ), /* @__PURE__ */ React.createElement("label", { htmlFor: "storybook-include-narration", className: "cursor-pointer text-sm text-slate-800" }, /* @__PURE__ */ React.createElement("span", { className: "block font-bold" }, "Include narrated TTS audio"), /* @__PURE__ */ React.createElement("span", { className: "mt-1 block text-xs leading-relaxed text-slate-600" }, "Creates HTML and JSON downloads with embedded audio. A separate epilogue and narration recovery copy is saved on this device when space allows, so interrupted exports can resume. Unchanged journeys reuse their saved epilogue.")))),
       /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3" }, /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -183,11 +199,16 @@ function StorybookExportModal({
         {
           type: "button",
           "data-alloflow-close-on-escape": "true",
-          onClick: handleSetShowStorybookExportModalToFalse,
-          disabled: busy,
+          onClick: () => {
+            if (requestRef.current) {
+              requestRef.current.abort();
+              setProgress({ phase: "stopping", message: "Stopping export\u2026 Completed narration will be kept." });
+            } else if (!busy) handleSetShowStorybookExportModalToFalse();
+          },
+          disabled: busy && !localProcessing,
           className: "w-full px-4 py-2 text-slate-600 hover:text-slate-700 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         },
-        t("common.cancel")
+        localProcessing ? "Stop export" : t("common.cancel")
       )),
       /* @__PURE__ */ React.createElement(
         "div",

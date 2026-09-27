@@ -243,7 +243,8 @@ describe('complexity adjustment freshness', () => {
     expect(prompt).toContain('ARTIFACT STANDARD');
     expect(prompt).not.toContain('AMBIENT STANDARD');
     expect(h.resolveTranslationPolicy).toHaveBeenCalledWith('off', 'English', 'English');
-    const saved = h.setGeneratedContent.mock.calls[0][0];
+    const update = h.setGeneratedContent.mock.calls[0][0];
+    const saved = typeof update === 'function' ? update(h.generatedContent) : update;
     expect(saved.levelCheck).toBeUndefined();
     expect(saved.alignmentCheck).toBeUndefined();
     expect(saved.localStats.score).toBe('5.4');
@@ -268,7 +269,8 @@ describe('complexity adjustment freshness', () => {
 
     await makeComplexityAdjustment()(h.deps);
 
-    const saved = h.setGeneratedContent.mock.calls[0][0];
+    const update = h.setGeneratedContent.mock.calls[0][0];
+    const saved = typeof update === 'function' ? update(h.generatedContent) : update;
     expect(h.generateBilingualText.mock.calls[0][3]).toMatchObject({
       enabled: true,
       target: 'English',

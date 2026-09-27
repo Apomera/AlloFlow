@@ -3498,10 +3498,24 @@ const handleComplexityAdjustment = async (deps) => {
     // adaptationPlan (reader, 2026-09-26): { options } adds precise changes;
     // preview returns the candidate without saving; apply saves a previewed one.
     const plan = deps.adaptationPlan && typeof deps.adaptationPlan === 'object' ? deps.adaptationPlan : null;
-    const planOptions = generatedContent?.type === 'simplified' && plan && plan.options ? plan.options : {};
-    const keepTerms = (Array.isArray(planOptions.keepTerms) ? planOptions.keepTerms : []).map(term => String(term || '').trim()).filter(Boolean).slice(0, 30);
-    const hasPlanOptions = !!(planOptions.shorterSentences || planOptions.explainVocabulary || keepTerms.length);
     const prepared = plan && plan.apply && typeof plan.apply === 'object' ? plan.apply : null;
+    const preparedRequest = prepared ? _adaptationPreviewRequests.get(prepared) : null;
+    const planOptions = generatedContent?.type === 'simplified' ? (preparedRequest?.options || plan?.options || {}) : {};
+    const requestedTerms = preparedRequest?.requestedTerms || (planOptions.keepTerms === undefined ? [] : planOptions.keepTerms);
+    const normalizedTerms = _preservedVocabulary.normalize(requestedTerms);
+    const keepTerms = normalizedTerms.terms;
+    const hasPlanOptions = !!(planOptions.shorterSentences || planOptions.explainVocabulary || keepTerms.length || !normalizedTerms.valid);
+    const vocabularyPolicy = JSON.stringify([effectiveLanguage, !!_xlate.enabled, _xlate.target || '', _xlate.mode || '']);
+    let vocabularyRejected = false;
+    let adjustmentAccepted = false;
+    const isCurrent = () => !plan?.isCurrent || plan.isCurrent();
+    if (!isCurrent()) return { status: 'stale' };
+    const rejectVocabulary = audit => {
+        vocabularyRejected = true;
+        const message = _preservedVocabulary.feedback(audit, t);
+        addToast(message, 'warning');
+        return { status: 'rejected', reason: audit.reason || 'invalid-preserved-terms', sourceRetained: true, message, vocabulary: audit };
+    };
     const supportedTypes = ['simplified', 'quiz', 'sentence-frames', 'glossary'];
     if ((complexityLevel === 5 && !hasPlanOptions && !prepared) || !generatedContent || !supportedTypes.includes(generatedContent.type)) return;
     const originalForm = generatedContent.instructionalText?.form || generatedContent.config?.instructionalText?.form;
@@ -3517,6 +3531,19 @@ const handleComplexityAdjustment = async (deps) => {
         addToast(t('simplified.adapt_preview_stale'), 'warning');
         return { status: 'stale' };
     }
+    if (preparedRequest && generatedContent.type !== 'simplified') return { status: 'stale' };
+    if (prepared && generatedContent.type === 'simplified') {
+        if (!preparedRequest) return rejectVocabulary({ status: 'unverified', reason: 'preview-validation-unavailable' });
+        const currentOptions = plan.options && { shorterSentences: !!plan.options.shorterSentences, explainVocabulary: !!plan.options.explainVocabulary, keepTerms: plan.options.keepTerms === undefined ? [] : plan.options.keepTerms };
+        if (preparedRequest.resourceId !== requestResourceId || preparedRequest.baseData !== requestResourceData
+            || preparedRequest.policy !== vocabularyPolicy || preparedRequest.complexityLevel !== Number(complexityLevel)
+            || (currentOptions && (JSON.stringify(currentOptions) !== JSON.stringify(preparedRequest.options)))) {
+            addToast(t('simplified.adapt_preview_stale'), 'warning');
+            return { status: 'stale' };
+        }
+    }
+    const processingOwner = {};
+    _adaptationProcessingOwners.set(setIsProcessing, processingOwner);
     setIsProcessing(true);
     try {
         const isSimpler = complexityLevel < 5;
@@ -3567,6 +3594,13 @@ const handleComplexityAdjustment = async (deps) => {
                 afterCount: candidateOccurrences.length
             };
         };
+        // Require the real reference splitter for vocabulary evidence; the legacy
+        // citation fallback must not make reference-only matches count as body text.
+        const vocabularySplit = window.AlloModules?.TextPipelineHelpers?.splitReferencesFromBody
+            || window.AlloModules?.GenDispatcher?.splitAdaptationReferences;
+        let vocabularyAudit = generatedContent.type === 'simplified'
+            ? _preservedVocabulary.prepare(requestResourceData, requestedTerms, vocabularySplit) : null;
+        if (vocabularyAudit && !vocabularyAudit.valid) return rejectVocabulary(vocabularyAudit);
         let prompt = '';
         let jsonMode = false;
         let simplifiedCitationContext = null;
@@ -3583,10 +3617,11 @@ const handleComplexityAdjustment = async (deps) => {
                 wasBilingual: !!sourceExtraction.isBilingual
             };
             const direction = complexityLevel === 5 ? "About the same reading level" : isSimpler ? "Simpler / Easier to read" : "More Complex / Academic / Rigorous";
+            const primaryKeepTerms = vocabularyAudit.required.filter(entry => entry.panes.some(pane => pane.pane === 'primary')).map(entry => entry.term);
             const planLines = [
                 planOptions.shorterSentences ? '- Break long sentences into shorter ones, with one main idea per sentence.' : '',
                 planOptions.explainVocabulary ? '- When an unfamiliar or technical word is needed, keep it and explain it briefly in plain words where it first appears.' : '',
-                keepTerms.length ? `- Keep these essential terms exactly as written; do not replace or simplify them: ${keepTerms.join('; ')}.` : ''
+                primaryKeepTerms.length ? `- Keep these essential terms exactly as written; do not replace or simplify them: ${primaryKeepTerms.join('; ')}.` : ''
             ].filter(Boolean).join('\n                ');
             prompt = `
                 Rewrite the following educational text as an adapted companion to the unchanged original.
@@ -3663,14 +3698,26 @@ const handleComplexityAdjustment = async (deps) => {
                 Return ONLY JSON matching the input structure exactly.
             `;
         }
-        let result = prepared ? null : (!jsonMode && generatedContent.type === 'simplified')
-            ? await generateBilingualText(prompt, effectiveLanguage, callGemini, _xlate)
+        let result = prepared ? prepared.data : (!jsonMode && generatedContent.type === 'simplified')
+            ? await generateBilingualText(prompt, effectiveLanguage, callGemini, {
+                ..._xlate,
+                // The existing host shim forwards four arguments. Keep adaptation
+                // controls in that forwarded object so old hosts retain them.
+                adaptation: {
+                    isCurrent,
+                    translationKeepTerms: vocabularyAudit.required.filter(entry => entry.panes.some(pane => pane.pane === 'translation')).map(entry => entry.term)
+                }
+            })
             : await callGemini(prompt, jsonMode);
-        if (!prepared && generatedContent.type === 'simplified' && simplifiedCitationContext) {
+        if (!isCurrent()) return { status: 'stale' };
+        if (generatedContent.type === 'simplified' && simplifiedCitationContext) {
             const candidateParts = splitReferenceTrailer(result);
             const candidateBody = candidateParts.body.trim();
             const candidateExtraction = extractSourceTextForProcessing(candidateBody, false);
             const candidateTarget = candidateExtraction.targetLangBlock || candidateExtraction.text;
+            const finalCandidate = [candidateBody, simplifiedCitationContext.references].filter(Boolean).join('\n\n');
+            vocabularyAudit = _preservedVocabulary.validate(requestResourceData, finalCandidate, requestedTerms, vocabularySplit);
+            if (!vocabularyAudit.valid) return rejectVocabulary(vocabularyAudit);
             const originalForValidation = simplifiedCitationContext.wasBilingual
                 ? simplifiedCitationContext.sourceBody
                 : simplifiedCitationContext.sourceTarget;
@@ -3708,14 +3755,11 @@ const handleComplexityAdjustment = async (deps) => {
                 citationError.details = conservation;
                 throw citationError;
             }
-            result = [
-                candidateBody,
-                simplifiedCitationContext.references
-            ].filter(Boolean).join('\n\n');
+            result = finalCandidate;
         }
         let updatedData;
         if (prepared) {
-            updatedData = prepared.data;
+            updatedData = generatedContent.type === 'simplified' ? result : prepared.data;
         } else if (jsonMode) {
             const parsed = JSON.parse(cleanJson(result));
             if (generatedContent.type === 'quiz') {
@@ -3744,8 +3788,8 @@ const handleComplexityAdjustment = async (deps) => {
         const priorAudit = priorConfig.citationAudit && typeof priorConfig.citationAudit === 'object'
             ? priorConfig.citationAudit
             : null;
-        const adjustedConfig = prepared && prepared.config ? prepared.config : {
-            ...priorConfig,
+        const adjustedConfig = {
+            ...(prepared && prepared.config ? prepared.config : priorConfig),
             ...(complexityCitationAudit ? {
                 citationAudit: {
                     ...(priorAudit || {
@@ -3844,29 +3888,49 @@ const handleComplexityAdjustment = async (deps) => {
             return freshItem;
         };
         if (plan && plan.preview) {
-            return { status: 'preview', resourceId: requestResourceId, baseData: requestResourceData, data: updatedData, config: adjustedConfig, changeLabel };
+            const preview = { status: 'preview', resourceId: requestResourceId, baseData: requestResourceData, data: updatedData, config: adjustedConfig, changeLabel, vocabulary: vocabularyAudit };
+            if (generatedContent.type === 'simplified') {
+                // Request identity stays private. Serialized/old previews require a
+                // fresh preview; editing public audit fields cannot weaken Apply.
+                _adaptationPreviewRequests.set(preview, {
+                    resourceId: requestResourceId, baseData: requestResourceData,
+                    requestedTerms: normalizedTerms.requestedTerms.slice(),
+                    options: { shorterSentences: !!planOptions.shorterSentences, explainVocabulary: !!planOptions.explainVocabulary, keepTerms: normalizedTerms.requestedTerms.slice() },
+                    policy: vocabularyPolicy, complexityLevel: Number(complexityLevel)
+                });
+            }
+            return preview;
         }
-        if (saveOriginalOnAdjust) {
-            const newItem = refreshSimplifiedComplexity({
-                ...generatedContent,
-                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-                data: updatedData,
-                title: `${generatedContent.title || getDefaultTitle(generatedContent.type)} (${changeLabel})`,
-                timestamp: new Date(),
-                config: adjustedConfig
-            });
-            setGeneratedContent(prev => canUpdateResource(prev) ? newItem : prev); setWordSoundsCustomTerms(generatedTerms); setWsPreloadedWords(generatedTerms);
-            setHistory(prev => prev.some(canUpdateResource) ? [...prev, newItem] : prev);
-            addToast(t('toasts.saved_new_version', { label: changeLabel }), "success");
-            return { status: 'applied', previousId: requestResourceId, newId: newItem.id };
+        if (!isCurrent()) return { status: 'stale' };
+        const updatedContent = refreshSimplifiedComplexity({
+            ...generatedContent, data: updatedData, config: adjustedConfig,
+            ...(saveOriginalOnAdjust ? {
+                id: Date.now().toString() + Math.random().toString(36).slice(2),
+                title: `${generatedContent.title || getDefaultTitle(generatedContent.type)} (${changeLabel})`, timestamp: new Date()
+            } : {})
+        });
+        const outcome = { previousId: requestResourceId, newId: updatedContent.id, previousData: requestResourceData, data: updatedData };
+        if (typeof plan?.commit === 'function') {
+            const accepted = await plan.commit({ item: updatedContent, baseId: requestResourceId, baseData: requestResourceData, keepOriginal: !!saveOriginalOnAdjust });
+            if (!accepted) return { status: 'stale' };
+            adjustmentAccepted = true;
         } else {
-            const updatedContent = refreshSimplifiedComplexity({ ...generatedContent, data: updatedData, config: adjustedConfig });
+            // Legacy callers can schedule guarded setters, but cannot acknowledge
+            // a React commit. Never describe that scheduling as a confirmed save.
             setGeneratedContent(prev => canUpdateResource(prev) ? updatedContent : prev);
-            setHistory(prev => prev.map(item => canUpdateResource(item) ? updatedContent : item));
-            addToast(t('toasts.adjusted_version', { label: changeLabel }), "success");
-            return { status: 'applied', previousId: requestResourceId, newId: requestResourceId, previousData: requestResourceData, data: updatedData };
+            setHistory(prev => saveOriginalOnAdjust
+                ? (prev.some(canUpdateResource) ? [...prev, updatedContent] : prev)
+                : prev.map(item => canUpdateResource(item) ? updatedContent : item));
+            if (generatedContent.type !== 'simplified') {
+                // Unrelated quiz/glossary/scaffold callers retain their existing contract.
+                adjustmentAccepted = true;
+            } else return { status: 'scheduled', ...outcome };
         }
+        setWordSoundsCustomTerms(generatedTerms); setWsPreloadedWords(generatedTerms);
+        addToast(t(saveOriginalOnAdjust ? 'toasts.saved_new_version' : 'toasts.adjusted_version', { label: changeLabel }), 'success');
+        return { status: 'applied', ...outcome };
     } catch (err) {
+        if (!isCurrent()) return { status: 'stale' };
         if (err?.code === 'citation-conservation-failed') {
             warnLog('[CitationConservation] Complexity adjustment rejected; original resource retained.', err.details || err);
             addToast('The adjustment changed a source citation, so the original citation-safe version was retained.', 'warning');
@@ -3876,10 +3940,159 @@ const handleComplexityAdjustment = async (deps) => {
         setError(t('errors.complexity_adjustment_failed'));
         addToast(t('toasts.adjustment_failed'), "error");
     } finally {
-        setIsProcessing(false);
-        if (!(plan && plan.preview)) setComplexityLevel(5);
+        if (_adaptationProcessingOwners.get(setIsProcessing) === processingOwner) { _adaptationProcessingOwners.delete(setIsProcessing); setIsProcessing(false); }
+        if (adjustmentAccepted && !vocabularyRejected) setComplexityLevel(5);
     }
 };
+
+// Essential vocabulary v1 checks exact visible presence in each source pane.
+// It does not assert occurrence-count or semantic conservation.
+const _adaptationPreviewRequests = new WeakMap();
+const _adaptationProcessingOwners = new WeakMap();
+const _preservedVocabulary = (() => {
+    const version = 1;
+    const limits = Object.freeze({ terms: 30, termCharacters: 256, totalCharacters: 4096 });
+    const normalizeText = value => value.normalize('NFC').replace(/\s+/gu, ' ').trim();
+    const normalize = requested => {
+        const result = { version, valid: true, status: 'valid', requestedTerms: [], terms: [], duplicates: [], errors: [], limits };
+        if (!Array.isArray(requested)) result.errors.push({ code: 'invalid-term-list' });
+        else {
+            const seen = new Set();
+            requested.forEach((value, index) => {
+                if (typeof value !== 'string') { result.errors.push({ code: 'invalid-term', index }); return; }
+                result.requestedTerms.push(value);
+                const term = normalizeText(value);
+                if (!term) return;
+                if (seen.has(term)) { result.duplicates.push({ term, index }); return; }
+                seen.add(term); result.terms.push(term);
+                if (Array.from(term).length > limits.termCharacters) result.errors.push({ code: 'term-too-long', term, limit: limits.termCharacters });
+            });
+            if (result.terms.length > limits.terms) result.errors.push({ code: 'too-many-terms', count: result.terms.length, limit: limits.terms });
+            const total = result.terms.reduce((sum, term) => sum + Array.from(term).length, 0);
+            if (total > limits.totalCharacters) result.errors.push({ code: 'terms-too-long', count: total, limit: limits.totalCharacters });
+        }
+        if (result.errors.length) { result.valid = false; result.status = 'invalid'; }
+        else if (!result.terms.length) result.status = 'not-requested';
+        return result;
+    };
+    // Quoted entries support literal commas/semicolons and doubled quote marks.
+    const parseInput = input => {
+        const terms = []; let value = '', quoted = false, closed = false;
+        for (let i = 0; i < input.length; i++) {
+            const char = input[i];
+            if (char === '"' && (quoted || !value.trim())) {
+                if (quoted && input[i + 1] === '"') { value += '"'; i++; }
+                else { quoted = !quoted; closed = !quoted; }
+            } else if (!quoted && /[,;\n\r]/.test(char)) {
+                if (value.trim()) terms.push(value.trim()); value = ''; closed = false;
+            } else {
+                if (closed && char.trim()) return { valid: false, terms, reason: 'separator-after-quote' };
+                value += char;
+            }
+        }
+        if (quoted) return { valid: false, terms, reason: 'unclosed-term-quote' };
+        if (value.trim()) terms.push(value.trim());
+        return { valid: true, terms };
+    };
+    const blocks = raw => {
+        const shared = window.AlloModules?.TextPipelineHelpers?.readingText;
+        if (!shared) throw new Error('text-parser-unavailable');
+        return shared.blocks(raw);
+    };
+    const panes = (text, splitReferences) => {
+        if (typeof text !== 'string' || typeof splitReferences !== 'function') throw new Error('text-parser-unavailable');
+        const body = splitReferences(text).body;
+        if (typeof body !== 'string') throw new Error('text-parser-unavailable');
+        const parts = body.split(/^\s*---\s*ENGLISH TRANSLATION\s*---\s*$/im);
+        if (parts.length > 2 || /---\s*TRANSLATION\s*---/i.test(body)) throw new Error('ambiguous-language-panes');
+        return { primary: blocks(parts[0]), ...(parts.length === 2 ? { translation: blocks(parts[1]) } : {}) };
+    };
+    // Index boundaries once per region, not once per requested term. This is
+    // request-local: no reading text or segmentation data survives in a cache.
+    const indexPanes = (text, splitReferences) => {
+        if (typeof Intl?.Segmenter !== 'function') throw new Error('word-boundaries-unavailable');
+        const words = new Intl.Segmenter('und', { granularity: 'word' });
+        const graphemes = new Intl.Segmenter('und', { granularity: 'grapheme' });
+        return Object.fromEntries(Object.entries(panes(text, splitReferences)).map(([pane, texts]) => [pane, texts.map(text => {
+            const boundaries = new Uint8Array(text.length + 1);
+            for (const part of graphemes.segment(text)) boundaries[part.index] = 1;
+            boundaries[text.length] = 1;
+            for (const part of words.segment(text)) if (part.isWordLike) {
+                boundaries.fill(0, part.index + 1, part.index + part.segment.length);
+            }
+            return { text, boundaries };
+        })]));
+    };
+    const count = (regions, term) => (regions || []).reduce((total, { text, boundaries }) => {
+        let offset = 0, hits = 0;
+        while ((offset = text.indexOf(term, offset)) >= 0) {
+            const end = offset + term.length;
+            if (boundaries[offset] && boundaries[end]) hits++;
+            offset = end;
+        }
+        return total + hits;
+    }, 0);
+    const prepare = (source, requested, splitReferences) => {
+        const result = { ...normalize(requested), required: [], absentFromSource: [], missingTerms: [] };
+        if (!result.valid || !result.terms.length) return result;
+        try {
+            const sourcePanes = indexPanes(source, splitReferences);
+            for (const term of result.terms) {
+                const occurrences = Object.keys(sourcePanes).map(pane => ({ pane, count: count(sourcePanes[pane], term) })).filter(entry => entry.count);
+                if (!occurrences.length) result.absentFromSource.push(term);
+                else result.required.push({ term, panes: occurrences });
+            }
+            if (result.absentFromSource.length) { result.valid = false; result.status = 'invalid'; result.reason = 'terms-absent-from-source'; }
+        } catch (error) { result.valid = false; result.status = 'unverified'; result.reason = error.message; }
+        return result;
+    };
+    const validate = (source, candidate, requested, splitReferences) => {
+        const result = prepare(source, requested, splitReferences);
+        if (!result.valid || !result.terms.length) return result;
+        try {
+            const candidatePanes = indexPanes(candidate, splitReferences);
+            for (const entry of result.required) for (const original of entry.panes) {
+                if (!count(candidatePanes[original.pane], entry.term)) result.missingTerms.push({ term: entry.term, pane: original.pane });
+            }
+            if (result.missingTerms.length) { result.valid = false; result.status = 'invalid'; result.reason = 'essential-terms-missing'; }
+        } catch (error) { result.valid = false; result.status = 'unverified'; result.reason = error.message; }
+        return result;
+    };
+    const feedback = (audit, translate) => {
+        const defaults = {
+        "adapt_exact_terms_hint": "Separate terms with commas or semicolons; quote a term containing either. Up to 30 distinct terms. Terms must already occur in the text. We check that each remains at least once, with exact spelling, case, and punctuation, in its source reading pane.",
+        "adapt_validation_unavailable": "Essential-term validation is unavailable. Reload before previewing.",
+        "adapt_not_applied": "The change was not applied. Review the current text and preview again.",
+        "adapt_preview_unverified": "Current text kept. Essential terms could not be verified. Reload and preview again.",
+        "adapt_terms_missing": "Current text kept. The proposed version is missing: {terms}. Retry or edit the preserved-term list.",
+        "adapt_terms_absent": "Current text kept. These terms were not found exactly in the source: {terms}. Check spelling and case, or remove them from the list.",
+        "adapt_terms_primary": "primary reading",
+        "adapt_terms_translation": "translation",
+        "adapt_terms_many": "{count} distinct terms exceeds the limit of {limit}.",
+        "adapt_term_long": "A term exceeds {limit} characters.",
+        "adapt_terms_long": "{count} total characters exceeds the limit of {limit}.",
+        "adapt_terms_text": "Each term must be a text entry.",
+        "adapt_terms_invalid": "Current text kept. {details} No terms were dropped. Correct the list and preview again.",
+        "adapt_preview_expired": "Current text kept. This preview can no longer be verified. Preview the change again.",
+        "adapt_terms_unverified": "Current text kept. Essential terms could not be verified. Preview again using supported text formatting.",
+        "adapt_terms_separator": "Use a separator after a quoted term.",
+        "adapt_terms_quote": "Close the quotation mark around the term."
+};
+        const message = (name, params = {}) => {
+            const key = 'simplified.' + name; let translated;
+            try { translated = translate?.(key, params); } catch (_) {}
+            const value = typeof translated === 'string' && translated && translated !== key ? translated : defaults[name];
+            return value.replace(/\{(\w+)\}/g, (match, name) => params[name] === undefined ? match : String(params[name]));
+        };
+        if (audit.reason === 'separator-after-quote') return message('adapt_terms_separator');
+        if (audit.reason === 'unclosed-term-quote') return message('adapt_terms_quote');
+        if (audit.missingTerms?.length) return message('adapt_terms_missing', { terms: audit.missingTerms.map(entry => '“' + entry.term + '” (' + message(entry.pane === 'primary' ? 'adapt_terms_primary' : 'adapt_terms_translation') + ')').join('; ') });
+        if (audit.absentFromSource?.length) return message('adapt_terms_absent', { terms: audit.absentFromSource.map(term => '“' + term + '”').join('; ') });
+        if (audit.errors?.length) return message('adapt_terms_invalid', { details: audit.errors.map(error => message(error.code === 'too-many-terms' ? 'adapt_terms_many' : error.code === 'term-too-long' ? 'adapt_term_long' : error.code === 'terms-too-long' ? 'adapt_terms_long' : 'adapt_terms_text', error)).join(' ') });
+        return message(audit.reason === 'preview-validation-unavailable' ? 'adapt_preview_expired' : 'adapt_terms_unverified');
+    };
+    return { version, limits, normalize, parseInput, prepare, validate, feedback };
+})();
 
 const _waitForGenerationMatrixReady = async (deps = {}) => {
   if (_getGenerationMatrixModule()) return true;
@@ -4635,6 +4848,7 @@ window.AlloModules.GenerationHelpers = {
   estimateFullPackRowProviderWork: (row, settings) => _cloneFullPackValue(_estimateFullPackRowProviderWork(row, settings || {})),
   estimateFullPackCapacity: _estimateFullPackCapacity,
   handleComplexityAdjustment,
+  preservedVocabulary: _preservedVocabulary,
 };
 
 window.AlloModules.GenerationHelpersModule = true;

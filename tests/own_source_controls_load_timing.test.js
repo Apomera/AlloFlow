@@ -310,14 +310,16 @@ describe('source panel own-source controls', () => {
     }
   });
 
-  it('says so when Exclude cannot complete, instead of looking dead', async () => {
+  it('excludes only from this lesson without depending on the shared library mutation API', async () => {
     const os = fakeOwnSources({ setSourceActive: vi.fn(async () => ({ ok: false, reason: 'unavailable', count: 1, sources: [] })) });
     window.AlloOwnSources = os;
     const { container, root, flushSync } = await mount(panelProps());
     try {
       expect(await waitFor(() => !!buttonByText(container, 'input.my_sources_exclude'))).toBe(true);
       flushSync(() => buttonByText(container, 'input.my_sources_exclude').click());
-      expect(await waitFor(() => container.textContent.includes('input.my_sources_unavailable'))).toBe(true);
+      expect(await waitFor(() => !!buttonByText(container, 'input.my_sources_include'))).toBe(true);
+      expect(os.setSourceActive).not.toHaveBeenCalled();
+      expect(container.textContent).toContain('input.my_sources_included:0');
     } finally {
       root.unmount();
     }

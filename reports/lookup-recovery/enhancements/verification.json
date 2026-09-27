@@ -1,0 +1,44 @@
+{
+  "inspectedAt": "2026-09-26T22:40:19.285Z",
+  "head": "6b63e76e862125e87422f02a54ed60beac68e8fb",
+  "files": {
+    "host_handlers_source.jsx": {
+      "testedSourceSha256": "dc6ca4a0a8d9f80c435f55e8ae64e8418d8fcc16998ffa951386ad2c5f25566a",
+      "currentSourceSha256": "dc6ca4a0a8d9f80c435f55e8ae64e8418d8fcc16998ffa951386ad2c5f25566a",
+      "currentMatchesTestedSource": true,
+      "patchApplies": true,
+      "candidateParses": true
+    },
+    "dictionary_loader.js": {
+      "testedSourceSha256": "a7cd103d5fac9dcee6b673fb6638835df3c802f2973262b059f591a902343d22",
+      "currentSourceSha256": "a7cd103d5fac9dcee6b673fb6638835df3c802f2973262b059f591a902343d22",
+      "currentMatchesTestedSource": true,
+      "patchApplies": true,
+      "candidateParses": true
+    },
+    "content_engine_source.jsx": {
+      "testedSourceSha256": "646dc4a0447fb418c26b6c372b90349df7543e700011333e893f463a028a320f",
+      "currentSourceSha256": "646dc4a0447fb418c26b6c372b90349df7543e700011333e893f463a028a320f",
+      "currentMatchesTestedSource": true,
+      "patchApplies": true,
+      "candidateParses": true
+    },
+    "view_simplified_source.jsx": {
+      "testedSourceSha256": "6b261d2b828b3f9aff2de7099ab85a49f176918607104be925684080f37168b1",
+      "currentSourceSha256": "6b261d2b828b3f9aff2de7099ab85a49f176918607104be925684080f37168b1",
+      "currentMatchesTestedSource": true,
+      "patchApplies": true,
+      "candidateParses": true
+    }
+  },
+  "modules": {
+    "content_engine_module.candidate.js": "4077fc256817ec1b7195d15d962ce9dedcc97f09be81f4659bc229c096052a4d",
+    "view_simplified_module.candidate.js": "881b38bc3e79b926a2a13c22560a40dfd2503578863ec828c2953daac293772a"
+  },
+  "tests": {
+    "passed": 224,
+    "failed": 0,
+    "files": 12,
+    "success": true
+  }
+}

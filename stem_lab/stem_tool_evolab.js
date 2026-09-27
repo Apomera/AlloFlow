@@ -151,10 +151,898 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     return a;
   }
 
+  // Living Island model and view are module-scoped: saving host state must not
+  // remount the WebGL scene. The model uses its own seeded RNG, never animation time.
+  var IslandModel = (function() {
+    var traits = ['shade', 'fur', 'legs'];
+    var habitats = {
+      meadow: { name: 'Sunlit meadow', ground: '#8ca65e', water: '#46969a', sky: '#d5ebdd', shade: 0.45, cold: 0.35, food: 1, predators: 0.28, icon: '☀', hint: 'Mild weather and abundant food. Look for variation before changing anything.' },
+      snow: { name: 'Long winter', ground: '#e0e9e8', water: '#77b6c9', sky: '#dce7f2', shade: 0.95, cold: 0.9, food: 0.88, predators: 0.45, icon: '❄', hint: 'Pale coats blend into snow. More insulation helps in the cold.' },
+      drought: { name: 'Dry season', ground: '#cbb27b', water: '#598c96', sky: '#efe1c6', shade: 0.7, cold: 0.08, food: 0.72, predators: 0.35, icon: '◒', hint: 'Food is scarce. Heavy insulation and long legs both carry energy costs.' },
+      forest: { name: 'Forest returns', ground: '#496344', water: '#408d91', sky: '#b8d6c7', shade: 0.12, cold: 0.48, food: 1, predators: 0.68, icon: '♣', hint: 'Dark coats are harder to spot. Longer legs improve escape but cost energy.' }
+    };
+    function rng(seed) { var s = seed >>> 0; return { next: function() { s = (Math.imul(1664525, s) + 1013904223) >>> 0; return s / 4294967296; }, state: function() { return s; } }; }
+    function geneValue(o, key) { return (o.genes[key][0] + o.genes[key][1]) / 2; }
+    function stats(pop) {
+      var out = { size: pop.length, means: {}, diversity: 0 };
+      traits.forEach(function(key) {
+        var mean = pop.length ? pop.reduce(function(n, o) { return n + geneValue(o, key); }, 0) / pop.length : null;
+        out.means[key] = mean;
+        if (mean != null) out.diversity += Math.sqrt(pop.reduce(function(n, o) { return n + Math.pow(geneValue(o, key) - mean, 2); }, 0) / pop.length) / 3;
+      });
+      return out;
+    }
+    function chance(o, env, selection) {
+      if (!selection) return 0.68 * env.food;
+      var shade = geneValue(o, 'shade'), fur = geneValue(o, 'fur'), legs = geneValue(o, 'legs');
+      var camouflage = 1 - Math.abs(shade - env.shade);
+      var temperature = 1 - Math.abs(fur - env.cold);
+      var escape = 0.35 + 0.65 * legs;
+      var predation = 1 - env.predators * (1 - (camouflage * 0.7 + escape * 0.3));
+      var energy = 1 - 0.13 * legs - 0.12 * fur * (1 - env.cold);
+      return clamp((0.36 + 0.58 * temperature) * predation * energy * env.food, 0.02, 0.95);
+    }
+    function create(seed) {
+      seed = Number.isFinite(Number(seed)) ? Number(seed) >>> 0 : 2026;
+      var r = rng(seed), pop = [];
+      for (var i = 0; i < 36; i++) {
+        var genes = {};
+        traits.forEach(function(key) { genes[key] = [r.next(), r.next()]; });
+        pop.push({ id: i + 1, born: 0, parents: [], genes: genes, mutations: 0 });
+      }
+      return { version: 1, seed: seed, rng: r.state(), nextId: 37, generation: 0, habitat: 'meadow', living: true, selection: true, mutation: 0.06,
+        history: [{ generation: 0, habitat: 'meadow', population: pop, stats: stats(pop), survivors: [], mutations: 0, mutationRate: 0.06, selection: true, event: 'arrival' }] };
+    }
+    function step(world) {
+      if (world.generation >= 60 || !world.history[world.generation].population.length) return world;
+      var r = rng(world.rng), gen = world.generation + 1, habitat = world.habitat, event = world.history[world.generation].habitat !== world.habitat ? 'intervention' : 'steady';
+      if (world.living && gen % 5 === 0) {
+        var options = Object.keys(habitats).filter(function(k) { return k !== habitat; });
+        habitat = options[Math.floor(r.next() * options.length)]; event = 'climate';
+      }
+      var env = habitats[habitat], before = world.history[world.generation].population;
+      var survivors = before.filter(function(o) { return r.next() < chance(o, env, world.selection); });
+      var pop = [], nextId = world.nextId, mutations = 0;
+      // Non-overlapping, sexually reproducing generations; no forced rescue.
+      var count = survivors.length >= 2 ? Math.min(60, Math.floor(survivors.length * 2.65)) : 0;
+      for (var i = 0; i < count; i++) {
+        var ai = Math.floor(r.next() * survivors.length), bi = Math.floor(r.next() * (survivors.length - 1));
+        if (bi >= ai) bi++;
+        var a = survivors[ai], b = survivors[bi], genes = {}, changed = 0;
+        traits.forEach(function(key) {
+          genes[key] = [a, b].map(function(parent) {
+            var allele = parent.genes[key][r.next() < 0.5 ? 0 : 1];
+            if (r.next() < world.mutation) {
+              // Reflect at the bounds; mutations have no environmental target.
+              allele += (r.next() - 0.5) * 0.28;
+              allele = allele < 0 ? -allele : allele > 1 ? 2 - allele : allele;
+              changed++;
+            }
+            return allele;
+          });
+        });
+        mutations += changed;
+        pop.push({ id: nextId++, born: gen, parents: [a.id, b.id], genes: genes, mutations: changed });
+      }
+      var frame = { generation: gen, habitat: habitat, population: pop, stats: stats(pop), survivors: survivors.map(function(o) { return o.id; }), mutations: mutations, mutationRate: world.mutation, selection: world.selection, event: event };
+      return Object.assign({}, world, { generation: gen, habitat: habitat, rng: r.state(), nextId: nextId, history: world.history.concat([frame]) });
+    }
+    function restore(raw) {
+      try {
+        if (!raw || raw.version !== 1 || !Number.isInteger(raw.generation) || raw.generation < 0 || raw.generation > 60 || !Array.isArray(raw.history) || raw.history.length !== raw.generation + 1) return null;
+        if (!Object.prototype.hasOwnProperty.call(habitats, raw.habitat) || !Number.isInteger(raw.seed) || raw.seed < 0 || raw.seed > 4294967295 || !Number.isInteger(raw.rng) || raw.rng < 0 || raw.rng > 4294967295) return null;
+        var seen = new Set(), highest = 0;
+        var history = raw.history.map(function(f, index) {
+          if (f.generation !== index || !Object.prototype.hasOwnProperty.call(habitats, f.habitat) || !Array.isArray(f.population) || f.population.length > 60) throw Error('frame');
+          var previous = index ? raw.history[index - 1].population.map(function(o) { return o.id; }) : [];
+          var population = f.population.map(function(o) {
+            if (!Number.isInteger(o.id) || o.id < 1 || o.id > 3636 || seen.has(o.id) || o.born !== index || !Array.isArray(o.parents) || o.parents.length !== (index ? 2 : 0) || o.parents.some(function(id) { return previous.indexOf(id) < 0; }) || (index && o.parents[0] === o.parents[1])) throw Error('organism');
+            seen.add(o.id); highest = Math.max(highest, o.id);
+            var genes = {};
+            traits.forEach(function(k) { if (!o.genes || !Array.isArray(o.genes[k]) || o.genes[k].length !== 2 || o.genes[k].some(function(v) { return typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > 1; })) throw Error('gene'); genes[k] = o.genes[k].slice(); });
+            return { id: o.id, born: index, parents: o.parents.slice(), genes: genes, mutations: clamp(Number(o.mutations) || 0, 0, 6) };
+          });
+          var survivors = Array.isArray(f.survivors) ? f.survivors.filter(function(id, i, all) { return previous.indexOf(id) >= 0 && all.indexOf(id) === i; }) : [];
+          return { generation: index, habitat: f.habitat, population: population, stats: stats(population), survivors: survivors, mutations: population.reduce(function(n, o) { return n + o.mutations; }, 0), mutationRate: typeof f.mutationRate === 'number' ? clamp(f.mutationRate, 0, 0.2) : 0.06, selection: f.selection !== false, event: f.event === 'climate' || f.event === 'intervention' ? f.event : index ? 'steady' : 'arrival' };
+        });
+        if (raw.nextId !== highest + 1) return null;
+        return { version: 1, seed: raw.seed, rng: raw.rng, nextId: raw.nextId, generation: raw.generation, habitat: raw.habitat, living: raw.living !== false, selection: raw.selection !== false, mutation: clamp(Number(raw.mutation) || 0, 0, 0.2), history: history };
+      } catch (_) { return null; }
+    }
+    function family(world, id) {
+      var ids = new Set([id]);
+      world.history.forEach(function(f) { f.population.forEach(function(o) { if (o.parents.some(function(p) { return ids.has(p); })) ids.add(o.id); }); });
+      return ids;
+    }
+    function csv(world) {
+      var rows = ['model,seed,generation,habitat,selection,population,breeding_survivors,mutated_alleles,mean_coat_lightness,mean_insulation,mean_leg_length,trait_SD_mean,mutation_probability_per_allele'];
+      world.history.forEach(function(f) { rows.push(['Living Island v1', world.seed, f.generation, f.habitat, f.selection, f.population.length, f.survivors.length, f.mutations].concat(traits.map(function(k) { var v = f.stats.means[k]; return v == null ? '' : v.toFixed(5); })).concat(f.stats.diversity.toFixed(5), f.mutationRate).join(',')); });
+      return rows.join('\r\n');
+    }
+    return { create: create, step: step, restore: restore, value: geneValue, stats: stats, chance: chance, family: family, csv: csv, traits: traits, habitats: habitats };
+  })();
+  window.StemLab.evoIslandModel = IslandModel;
+
+  // Read-only investigation helpers: replay and missions observe the recorded
+  // generations, never roll survival again or draw from the biological RNG.
+  var IslandStudy = {
+    transition: function(world, generation) {
+      if (!Number.isInteger(generation) || generation < 1 || generation > world.generation) return null;
+      var before = world.history[generation - 1], after = world.history[generation];
+      var ids = new Set(after.survivors), survivors = before.population.filter(function(o) { return ids.has(o.id); });
+      return { parents: before.population, survivors: survivors, offspring: after.population,
+        means: { parents: IslandModel.stats(before.population).means, survivors: IslandModel.stats(survivors).means, offspring: IslandModel.stats(after.population).means },
+        habitat: after.habitat, selection: after.selection };
+    },
+    lineage: function(world, id) {
+      var found = null, index = {};
+      world.history.forEach(function(f) { f.population.forEach(function(o) { index[o.id] = o; if (o.id === id) found = o; }); });
+      if (!found) return null;
+      var next = world.history[found.born + 1];
+      return { organism: found, parents: found.parents.map(function(p) { return index[p]; }),
+        children: next ? next.population.filter(function(o) { return o.parents.indexOf(id) >= 0; }) : [],
+        outcome: !next ? 'pending' : next.survivors.indexOf(id) < 0 ? 'not-survived' : next.population.some(function(o) { return o.parents.indexOf(id) >= 0; }) ? 'offspring' : 'no-offspring' };
+    },
+    restoreMission: function(raw, world) {
+      if (!raw || ['cold', 'family', 'drift'].indexOf(raw.kind) < 0 || !Number.isInteger(raw.start) || raw.start < 0 || raw.start > world.generation || raw.start > (raw.kind === 'family' ? 57 : 55)) return null;
+      var founders = world.history[raw.start].population;
+      if (!founders.length || !founders.some(function(o) { return o.id === raw.founder; }) || !Object.prototype.hasOwnProperty.call(IslandModel.habitats, raw.habitat) || typeof raw.selection !== 'boolean' || !Number.isFinite(raw.mutation) || raw.mutation < 0 || raw.mutation > 0.2) return null;
+      var target = raw.start + (raw.kind === 'family' ? 3 : 5), end = Math.min(world.generation, target);
+      var reviewedAt = Number.isInteger(raw.reviewedAt) && raw.reviewedAt > raw.start && raw.reviewedAt <= end ? raw.reviewedAt : null;
+      return { kind: raw.kind, start: raw.start, founder: raw.founder, habitat: raw.kind === 'cold' ? 'snow' : raw.kind === 'drift' ? 'meadow' : raw.habitat,
+        selection: raw.kind === 'cold' ? true : raw.kind === 'drift' ? false : raw.selection, mutation: raw.mutation,
+        reviewedAt: reviewedAt, saved: raw.saved === true && reviewedAt === end && (end >= target || !world.history[end].population.length) };
+    },
+    progress: function(world, mission) {
+      if (!mission) return null;
+      var target = mission.start + (mission.kind === 'family' ? 3 : 5), end = Math.min(target, world.generation);
+      var frames = world.history.slice(mission.start + 1, end + 1), last = world.history[end];
+      var ready = end >= target || (end > mission.start && !last.population.length);
+      var relatives = IslandModel.family(world, mission.founder);
+      return { target: target, end: end, elapsed: end - mission.start, total: target - mission.start, ready: ready,
+        reviewed: ready && mission.reviewedAt === end,
+        consistent: frames.every(function(f) { return f.habitat === mission.habitat && f.selection === mission.selection && f.mutationRate === mission.mutation; }),
+        first: world.history[mission.start], last: last,
+        descendants: last.population.filter(function(o) { return o.id !== mission.founder && relatives.has(o.id); }).length };
+    }
+  };
+  window.StemLab.evoIslandStudy = IslandStudy;
+
+  // A separate, deterministic visual world. Scenery never draws from the
+  // inheritance RNG or changes survival, food supply, or parent selection.
+  var IslandLandscape = {
+    create: function(seed) {
+      var phase = ((Number(seed) >>> 0) % 997) / 997 * Math.PI * 2;
+      function noise(n) { var v = Math.sin(n * 127.1 + phase * 91.7) * 43758.5453; return v - Math.floor(v); }
+      function grain(x, z) {
+        var ix = Math.floor(x), iz = Math.floor(z), u = x - ix, v = z - iz;
+        u = u * u * (3 - 2 * u); v = v * v * (3 - 2 * v);
+        return (noise(ix + iz * 157) * (1 - u) + noise(ix + 1 + iz * 157) * u) * (1 - v) + (noise(ix + (iz + 1) * 157) * (1 - u) + noise(ix + 1 + (iz + 1) * 157) * u) * v;
+      }
+      function coast(a) {
+        var bay = Math.atan2(Math.sin(a - 0.35), Math.cos(a - 0.35));
+        var headland = Math.atan2(Math.sin(a - 2.8), Math.cos(a - 2.8));
+        return Math.max(7.4, 10 * (1 + 0.11 * Math.sin(3 * a + phase) + 0.07 * Math.cos(5 * a - phase) + 0.025 * Math.sin(11 * a + phase) - 0.22 * Math.exp(-bay * bay / 0.10) + 0.16 * Math.exp(-headland * headland / 0.20)));
+      }
+      function sample(x, z) {
+        var a = Math.atan2(z / 0.82, x), radius = Math.hypot(x, z / 0.82), edge = radius / coast(a);
+        var inland = clamp((1 - edge) / 0.24, 0, 1), ease = inland * inland * (3 - 2 * inland);
+        var craterR = Math.hypot((x + 2.8) / 1.1, z + 3.1);
+        var volcano = 4.0 * Math.exp(-craterR * craterR / 7.6) - 1.65 * Math.exp(-craterR * craterR / 0.58);
+        volcano += 0.30 * Math.cos(Math.atan2(z + 3.1, x + 2.8) * 6 + phase) * Math.min(1, craterR) * Math.exp(-craterR * craterR / 10);
+        var ridge = 0.56 * Math.exp(-((x - 2.4) * (x - 2.4) / 13 + (z + 2.7) * (z + 2.7) / 6));
+        var rough = (grain(x * 1.4, z * 1.4) - 0.5) * 0.10 + (grain(x * 4, z * 4) - 0.5) * 0.035;
+        var height = -0.28 + ease * (0.8 + volcano + ridge + rough) - Math.max(0, edge - 1) * 3;
+        var lava = clamp((0.5 - z / 10) * 0.7 + (0.5 - grain(x * 0.55, z * 0.55)) * 0.7 + volcano * 0.18, 0, 1);
+        return { height: height, edge: edge, lava: lava, grain: grain(x * 0.7, z * 0.7) };
+      }
+      function position(index, count, id) {
+        var a = index * 2.399963 + noise(id) * 0.18, r = 0.55 + Math.sqrt(index / Math.max(1, count)) * 4.3;
+        var x = Math.cos(a) * r + 0.4, z = Math.sin(a) * r * 0.75 + 0.8;
+        return { x: x, y: sample(x, z).height, z: z };
+      }
+      return { coast: coast, sample: sample, noise: noise, position: position };
+    }
+  };
+  window.StemLab.evoIslandLandscape = IslandLandscape;
+
+  function IslandScene(props) {
+    var R = props.React, h = R.createElement, host = R.useRef(null), engine = R.useRef(null), latest = R.useRef(props);
+    var focusState = R.useState(false), focused = focusState[0], setFocused = focusState[1];
+    latest.current = Object.assign({}, props, { focused: focused });
+    var state = R.useState('loading'), status = state[0], setStatus = state[1];
+    R.useEffect(function() {
+      var disposed = false, renderer, observer, timer, raf = 0, geometries = [], materials = [], textures = [], remove = [];
+      var view = { angle: 0.25, elevation: 0.74, distance: 29, x: 0, z: 0, y: 0.5 }, drag = null;
+      function listen(el, name, fn, options) { el.addEventListener(name, fn, options); remove.push(function() { el.removeEventListener(name, fn, options); }); }
+      function fail() { if (!disposed) { cancelAnimationFrame(raf); engine.current = null; setStatus('fallback'); } }
+      function start() {
+        if (disposed || renderer) return;
+        clearTimeout(timer);
+        try {
+          var T = window.THREE;
+          if (!T || !host.current) return fail();
+          renderer = new T.WebGLRenderer({ antialias: true, alpha: false });
+          renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+          if (T.sRGBEncoding !== undefined) renderer.outputEncoding = T.sRGBEncoding;
+          renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
+          var canvas = renderer.domElement;
+          canvas.setAttribute('aria-hidden', 'true'); canvas.style.cssText = 'display:block;width:100%;height:100%;touch-action:pan-y';
+          host.current.appendChild(canvas);
+          var scene = new T.Scene(), camera = new T.PerspectiveCamera(39, 1, 0.1, 240);
+          scene.add(new T.HemisphereLight('#deefff', '#67634b', 0.85));
+          var sun = new T.DirectionalLight('#fff0d5', 1.05); sun.position.set(-12, 20, 9); scene.add(sun);
+          sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
+          Object.assign(sun.shadow.camera, { left: -13, right: 13, top: 13, bottom: -13, near: 1, far: 65 });
+          sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.04;
+          var fill = new T.DirectionalLight('#c4e4ff', 0.25); fill.position.set(9, 6, -9); scene.add(fill);
+          remove.push(function() { if (sun.shadow.map) sun.shadow.map.dispose(); });
+          var cache = {};
+          function mat(color) { if (!cache[color]) { cache[color] = new T.MeshLambertMaterial({ color: new T.Color(color).convertSRGBToLinear() }); materials.push(cache[color]); } return cache[color]; }
+          function geo(g) { geometries.push(g); return g; }
+          var sphere = geo(new T.SphereGeometry(1, 18, 12)), cone = geo(new T.ConeGeometry(1, 1, 7)), rockGeo = geo(new T.DodecahedronGeometry(1, 0));
+          var ringGeo = geo(new T.TorusGeometry(0.63, 0.035, 5, 28));
+          function mesh(g, color, parent, x, y, z, sx, sy, sz) {
+            var m = new T.Mesh(g, mat(color)); m.position.set(x || 0, y || 0, z || 0); m.scale.set(sx || 1, sy || sx || 1, sz || sx || 1); parent.add(m); return m;
+          }
+          // Adapt the ecosystem renderer's vertex terrain, cutout foliage,
+          // procedural surfaces and instancing. No ecosystem simulation state.
+          function surface(width, height, paint, repeat) {
+            var c = document.createElement('canvas'); c.width = width; c.height = height;
+            var ctx = c.getContext('2d'); paint(ctx, width, height);
+            var tex = new T.CanvasTexture(c); textures.push(tex);
+            tex.wrapS = tex.wrapT = T.RepeatWrapping; tex.repeat.set(repeat || 1, repeat || 1);
+            tex.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+            return tex;
+          }
+          function fixedNoise(n) { var v = Math.sin(n * 78.233 + 17.13) * 43758.5453; return v - Math.floor(v); }
+          var groundTexture = surface(256, 256, function(ctx, w, ht) {
+            ctx.fillStyle = '#dfdfdf'; ctx.fillRect(0, 0, w, ht);
+            for (var n = 0; n < 11000; n++) {
+              var gray = 145 + Math.floor(fixedNoise(n + 19000) * 100);
+              ctx.fillStyle = 'rgb(' + gray + ',' + gray + ',' + gray + ')';
+              ctx.fillRect(fixedNoise(n) * w, fixedNoise(n + 12000) * ht, 1 + fixedNoise(n + 23000) * 2, 1);
+            }
+            ctx.strokeStyle = '#b5b5b5'; ctx.lineWidth = 0.5;
+            for (var t = 0; t < 140; t++) { var x = fixedNoise(t + 80) * w, y = fixedNoise(t + 800) * ht; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 4, y + 7); ctx.stroke(); }
+          });
+          var barkTexture = surface(64, 128, function(ctx, w, ht) {
+            ctx.fillStyle = '#c5c5c5'; ctx.fillRect(0, 0, w, ht);
+            for (var i = 0; i < 110; i++) { ctx.fillStyle = i % 2 ? '#aaaaaa' : '#e4e4e4'; ctx.fillRect(fixedNoise(i) * w, fixedNoise(i + 300) * ht, 0.6 + fixedNoise(i + 900), 12 + fixedNoise(i + 500) * 80); }
+          });
+          var leafTexture = surface(256, 256, function(ctx, w, ht) {
+            for (var i = 0; i < 42; i++) {
+              var a = fixedNoise(i) * Math.PI * 2, r = Math.sqrt(fixedNoise(i + 200)) * 94;
+              var x = 128 + Math.cos(a) * r, y = 128 + Math.sin(a) * r;
+              ctx.strokeStyle = '#b6b6b6'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(128, 170); ctx.lineTo(x, y); ctx.stroke();
+              for (var j = 0; j < 5; j++) {
+                var px = x + Math.cos(a + j) * 12, py = y + Math.sin(a + j) * 12;
+                var gray = 170 + Math.floor(fixedNoise(i * 10 + j + 700) * 85);
+                ctx.fillStyle = 'rgb(' + gray + ',' + gray + ',' + gray + ')'; ctx.beginPath(); ctx.ellipse(px, py, 5, 10, a + j, 0, Math.PI * 2); ctx.fill();
+              }
+            }
+          });
+          var coatTexture = surface(256, 128, function(ctx, w, ht) {
+            ctx.fillStyle = '#e9e9e9'; ctx.fillRect(0, 0, w, ht);
+            for (var i = 0; i < 3800; i++) { var x = fixedNoise(i) * w, y = fixedNoise(i + 4000) * ht; ctx.strokeStyle = i % 3 ? '#d0d0d0' : '#fafafa'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 2 + fixedNoise(i + 9000) * 3, y + 1); ctx.stroke(); }
+          });
+          function standard(options) { var m = new T.MeshStandardMaterial(Object.assign({ roughness: 0.96 }, options)); materials.push(m); return m; }
+          var groundMat = standard({ vertexColors: true, map: groundTexture, bumpMap: groundTexture, bumpScale: 0.028 });
+          var barkMat = standard({ color: new T.Color('#a99d80').convertSRGBToLinear(), map: barkTexture, bumpMap: barkTexture, bumpScale: 0.025 });
+          var foliageMat = standard({ map: leafTexture, alphaTest: 0.42, side: T.DoubleSide });
+          var rockMat = standard({ map: groundTexture, bumpMap: groundTexture, bumpScale: 0.065 });
+          var grassMat = standard({ side: T.DoubleSide });
+          var coatCache = {};
+          function coat(color) { if (!coatCache[color]) coatCache[color] = standard({ color: new T.Color(color).convertSRGBToLinear(), map: coatTexture, bumpMap: coatTexture, bumpScale: 0.016 }); return coatCache[color]; }
+          function radialGeometry(rings, segments) {
+            var g = geo(new T.BufferGeometry()), indices = [], count = (rings + 1) * (segments + 1);
+            g.setAttribute('position', new T.BufferAttribute(new Float32Array(count * 3), 3));
+            g.setAttribute('color', new T.BufferAttribute(new Float32Array(count * 3), 3));
+            g.setAttribute('uv', new T.BufferAttribute(new Float32Array(count * 2), 2));
+            for (var r = 0; r < rings; r++) for (var s = 0; s < segments; s++) {
+              var v = r * (segments + 1) + s, next = v + segments + 1;
+              indices.push(v, v + 1, next, v + 1, next + 1, next);
+            }
+            g.setIndex(indices); return g;
+          }
+          var terrainGeo = radialGeometry(60, 128), waterGeo = radialGeometry(42, 128);
+          var isletGeo = radialGeometry(12, 48);
+          for (var ir = 0; ir <= 12; ir++) for (var ia = 0; ia <= 48; ia++) {
+            var angle = ia / 48 * Math.PI * 2, radial = ir / 12, radius = radial * (1 + 0.14 * Math.sin(angle * 3) + 0.08 * Math.cos(angle * 7));
+            var height = Math.pow(1 - radial, 1.5) * (0.9 + Math.cos(angle * 5) * radial * 0.2) - 0.025;
+            isletGeo.attributes.position.setXYZ(ir * 49 + ia, Math.cos(angle) * radius, height, Math.sin(angle) * radius);
+          }
+          isletGeo.computeVertexNormals(); isletGeo.computeBoundingSphere();
+          var terrain = new T.Mesh(terrainGeo, groundMat); terrain.name = 'Evolution island terrain'; terrain.receiveShadow = true; scene.add(terrain);
+          var waterMat = new T.MeshPhongMaterial({ vertexColors: true, shininess: 75, specular: new T.Color('#376a76').convertSRGBToLinear() }); materials.push(waterMat);
+          var waterTime = { value: 0 };
+          waterMat.onBeforeCompile = function(shader) {
+            shader.uniforms.islandTime = waterTime;
+            shader.vertexShader = 'varying vec3 islandPoint;\n' + shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nislandPoint = position;');
+            shader.fragmentShader = 'varying vec3 islandPoint; uniform float islandTime;\n' + shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\nvec2 p = islandPoint.xz; p += vec2(sin(p.y * 0.45 + islandTime * 0.2), cos(p.x * 0.33)) * 0.48; float ripple = sin(p.x * 5.0 + p.y * 2.2 + islandTime) * sin(p.y * 7.0 - p.x * 1.7 + islandTime * 0.7); diffuseColor.rgb *= 0.98 + ripple * 0.025;');
+          };
+          var water = new T.Mesh(waterGeo, waterMat); water.name = 'Shallow coastal water'; scene.add(water);
+          var ocean = mesh(geo(new T.PlaneGeometry(460, 460)), '#20596c', scene, 0, -0.065, 0); ocean.rotation.x = -Math.PI / 2;
+          var foliageGeo = geo(new T.BufferGeometry()), leafPos = [], leafUv = [], leafIdx = [];
+          for (var plane = 0; plane < 4; plane++) {
+            var a = plane * Math.PI / 3, dx = Math.cos(a) * 0.5, dz = Math.sin(a) * 0.5, v = plane * 4;
+            if (plane === 3) leafPos.push(-0.5, 0, -0.5, 0.5, 0, -0.5, -0.5, 0, 0.5, 0.5, 0, 0.5);
+            else leafPos.push(-dx, -0.5, -dz, dx, -0.5, dz, -dx, 0.5, -dz, dx, 0.5, dz);
+            leafUv.push(0, 0, 1, 0, 0, 1, 1, 1); leafIdx.push(v, v + 1, v + 2, v + 1, v + 3, v + 2);
+          }
+          foliageGeo.setAttribute('position', new T.Float32BufferAttribute(leafPos, 3)); foliageGeo.setAttribute('uv', new T.Float32BufferAttribute(leafUv, 2)); foliageGeo.setIndex(leafIdx); foliageGeo.computeVertexNormals();
+          var bladeGeo = geo(new T.BufferGeometry());
+          bladeGeo.setAttribute('position', new T.Float32BufferAttribute([-0.045, 0, 0, 0.045, 0, 0, 0.025, 0.34, 0.03, 0, 0, -0.045, 0, 0, 0.045, -0.04, 0.26, 0.02], 3)); bladeGeo.computeVertexNormals();
+          var trunkGeo = geo(new T.CylinderGeometry(0.6, 1, 1, 7));
+          var scenery = new T.Group(), animals = new T.Group(); scene.add(scenery); scene.add(animals);
+          var residents = [], hitMeshes = [], currentFrame = null, currentHabitat = '', currentSeed = null, landscape;
+          function noise(n) { return landscape.noise(n); }
+          function linear(color) { return new T.Color(color).convertSRGBToLinear(); }
+          function instances(g, material, count) { var m = new T.InstancedMesh(g, material, count); m.frustumCulled = false; scenery.add(m); return m; }
+          var transform = new T.Object3D();
+          function place(m, index, x, y, z, sx, sy, sz, angle) {
+            transform.position.set(x, y, z); transform.rotation.set(0, angle || 0, 0); transform.scale.set(sx, sy, sz); transform.updateMatrix(); m.setMatrixAt(index, transform.matrix);
+          }
+          function environment(key) {
+            landscape = IslandLandscape.create(latest.current.seed);
+            var winter = key === 'snow', dry = key === 'drought', forest = key === 'forest';
+            scene.background = linear(winter ? '#d8e4e9' : dry ? '#d9e2d6' : '#c8dfe1'); scene.fog = new T.Fog(scene.background, 55, 135);
+            var basalt = linear(winter ? '#a9b7b7' : '#484a43'), sand = linear(winter ? '#dce6e4' : '#dac8a2');
+            var soil = linear(winter ? '#e9eeeb' : dry ? '#a39560' : forest ? '#52643b' : '#82945a');
+            var moss = linear(winter ? '#d4e1df' : dry ? '#b4a675' : forest ? '#778751' : '#a0a771');
+            var shallow = linear(winter ? '#87b9bf' : '#79b8b0'), deep = linear('#20596c'), foam = linear('#cce4d7');
+            for (var r = 0; r <= 60; r++) for (var s = 0; s <= 128; s++) {
+              var a = s / 128 * Math.PI * 2, radius = landscape.coast(a) * r / 60 * 1.16;
+              var x = Math.cos(a) * radius, z = Math.sin(a) * radius * 0.82, point = landscape.sample(x, z), i = r * 129 + s;
+              terrainGeo.attributes.position.setXYZ(i, x, point.height, z); terrainGeo.attributes.uv.setXY(i, x / 2, z / 2);
+              var color = soil.clone().lerp(moss, point.grain);
+              var bare = clamp((point.lava - 0.5) * 3.2 + Math.max(0, point.height - 1.7) * 0.8, 0, 1);
+              color.lerp(basalt, bare);
+              if (point.edge > 0.81) color.lerp(point.lava > 0.61 ? basalt : sand, clamp((point.edge - 0.81) * 9, 0, 1));
+              color.multiplyScalar(0.94 + point.grain * 0.12); terrainGeo.attributes.color.setXYZ(i, color.r, color.g, color.b);
+            }
+            terrainGeo.attributes.position.needsUpdate = terrainGeo.attributes.color.needsUpdate = terrainGeo.attributes.uv.needsUpdate = true; terrainGeo.computeVertexNormals(); terrainGeo.computeBoundingSphere();
+            for (var r = 0; r <= 42; r++) for (var s = 0; s <= 128; s++) {
+              var a = s / 128 * Math.PI * 2, edge = 0.80 + Math.pow(r / 42, 1.7) * 3.8, radius = landscape.coast(a) * edge;
+              var x = Math.cos(a) * radius, z = Math.sin(a) * radius * 0.82, i = r * 129 + s;
+              waterGeo.attributes.position.setXYZ(i, x, -0.055, z);
+              var depth = -landscape.sample(x, z).height, color = shallow.clone().lerp(deep, clamp(depth / 3.4, 0, 1));
+              color.lerp(foam, Math.exp(-Math.pow((depth - 0.10) / 0.085, 2)) * 0.6);
+              waterGeo.attributes.color.setXYZ(i, color.r, color.g, color.b);
+            }
+            waterGeo.attributes.position.needsUpdate = waterGeo.attributes.color.needsUpdate = true; waterGeo.computeVertexNormals(); waterGeo.computeBoundingSphere();
+            // Dispose per-instance GPU attributes while retaining the shared surfaces.
+            while (scenery.children.length) { var old = scenery.children[0]; scenery.remove(old); if (old.isInstancedMesh && old.dispose) old.dispose(); }
+            var rocks = instances(rockGeo, rockMat, 130); rocks.castShadow = true; rocks.receiveShadow = true;
+            for (var i = 0; i < 130; i++) {
+              var a = noise(i + 500) * Math.PI * 2, edge = 0.82 + noise(i + 800) * 0.27, radius = landscape.coast(a) * edge;
+              var x = Math.cos(a) * radius, z = Math.sin(a) * radius * 0.82, p = landscape.sample(x, z), y = p.height, size = (0.15 + noise(i + 700) * 0.55) * (p.lava > 0.5 ? 1 : 0.45);
+              place(rocks, i, x, Math.max(-0.25, y) + size * 0.20, z, size * 1.7, size * (0.35 + noise(i + 900) * 0.5), size, a);
+              rocks.setColorAt(i, basalt.clone().multiplyScalar(0.6 + noise(i + 1200) * 0.7));
+            }
+            // Open foreground and central breeding ground; scrub frames the slopes.
+            var trunks = instances(trunkGeo, barkMat, 40), branches = instances(trunkGeo, barkMat, 120), leaves = instances(foliageGeo, foliageMat, 280);
+            trunks.castShadow = branches.castShadow = leaves.castShadow = true;
+            var green = linear(winter ? '#a0b8a8' : dry ? '#969363' : forest ? '#456645' : '#72885a');
+            var pale = linear(winter ? '#e3ece4' : dry ? '#b4a77b' : '#a4ae71');
+            for (var i = 0; i < 40; i++) {
+              var a = Math.PI + noise(i + 1500) * Math.PI * 1.05, radius = landscape.coast(a) * (0.57 + noise(i + 1600) * 0.25);
+              // A few foreground shrubs stay short enough to see the population.
+              if (i > 32) a = noise(i + 1750) * Math.PI;
+              var x = Math.cos(a) * radius, z = Math.sin(a) * radius * 0.82, y = landscape.sample(x, z).height;
+              var height = (0.85 + noise(i + 1800) * 1.2) * (i > 32 ? 0.55 : 1) * (forest ? 1.15 : 1);
+              place(trunks, i, x, y + height * 0.42, z, 0.08, height * 0.84, 0.08, a);
+              for (var b = 0; b < 3; b++) {
+                var heading = b * 2.094 + a, dx = Math.cos(heading) * height * 0.29, dz = Math.sin(heading) * height * 0.29;
+                var start = new T.Vector3(x, y + height * 0.48, z), end = new T.Vector3(x + dx, y + height * 0.92, z + dz), direction = end.clone().sub(start);
+                transform.position.copy(start.add(end).multiplyScalar(0.5)); transform.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), direction.clone().normalize()); transform.scale.set(0.04, direction.length(), 0.04); transform.updateMatrix(); branches.setMatrixAt(i * 3 + b, transform.matrix);
+              }
+              for (var f = 0; f < 7; f++) {
+                var heading = f * 2.399, spread = f ? height * 0.34 : 0, scale = height * (dry ? 0.56 : 0.82);
+                place(leaves, i * 7 + f, x + Math.cos(heading) * spread, y + height * (f ? 0.87 : 1.10), z + Math.sin(heading) * spread, scale, scale * 0.75, scale, heading);
+                leaves.setColorAt(i * 7 + f, green.clone().lerp(pale, noise(i * 10 + f + 2000)));
+              }
+            }
+            var grass = instances(bladeGeo, grassMat, winter ? 120 : 1100);
+            for (var i = 0; i < grass.count; i++) {
+              var a = noise(i + 3000) * Math.PI * 2, r = Math.sqrt(noise(i + 4500)) * landscape.coast(a) * 0.87;
+              var x = Math.cos(a) * r, z = Math.sin(a) * r * 0.82, p = landscape.sample(x, z), scale = 0.4 + noise(i + 6000) * 0.6;
+              if (p.lava > 0.72 || p.height < 0.12) scale = 0;
+              place(grass, i, x, p.height, z, scale, scale * (forest ? 1.4 : 1), scale, a);
+              grass.setColorAt(i, green.clone().lerp(pale, noise(i + 7500)));
+            }
+            // Opuntia-inspired silhouettes belong to the scenery, not the food web.
+            for (var i = 0; i < 11; i++) {
+              var a = 0.5 + noise(i + 8500) * 2.4, r = landscape.coast(a) * (0.73 + noise(i + 9000) * 0.1);
+              var x = Math.cos(a) * r, z = Math.sin(a) * r * 0.82, y = landscape.sample(x, z).height;
+              if (y < 0.12) continue;
+              var height = 0.55 + noise(i + 9100) * 0.55;
+              mesh(trunkGeo, '#8c8161', scenery, x, y + height * 0.4, z, 0.085, height * 0.8, 0.085);
+              for (var pad = 0; pad < 4; pad++) {
+                var p = mesh(sphere, winter ? '#aec7b4' : dry ? '#8a9861' : '#7c975f', scenery, x + (pad === 1 ? -0.23 : pad === 2 ? 0.23 : 0), y + height * (pad === 3 ? 1.25 : 0.85), z, 0.19, 0.26, 0.075); p.rotation.z = pad === 1 ? 0.6 : pad === 2 ? -0.6 : 0; p.castShadow = true;
+              }
+            }
+            for (var i = 0; i < 5; i++) {
+              var islet = mesh(isletGeo, '#577575', scenery, -38 + i * 17, -0.055, -48 - noise(i + 9500) * 17, 5 + noise(i + 9600) * 5, 2.5 + noise(i + 9700) * 2, 5.2); islet.rotation.y = i * 1.7;
+            }
+            scenery.updateMatrixWorld(true);
+            renderer.shadowMap.needsUpdate = true;
+          }
+          function populate(frame) {
+            while (animals.children.length) animals.remove(animals.children[0]);
+            residents = []; hitMeshes = [];
+            frame.population.forEach(function(o, index) {
+              var shade = IslandModel.value(o, 'shade'), fur = IslandModel.value(o, 'fur'), legs = IslandModel.value(o, 'legs');
+              var root = new T.Group(), body = new T.Group(); root.add(body); animals.add(root); root.name = 'Spriglet ' + o.id; root.userData.islandResident = true;
+              var layout = latest.current.layoutPopulation || frame.population;
+              var layoutIndex = layout.findIndex(function(resident) { return resident.id === o.id; });
+              var site = landscape.position(layoutIndex < 0 ? index : layoutIndex, layout.length, o.id), x = site.x, z = site.z;
+              root.position.set(x, site.y + 0.025, z); root.rotation.y = noise(o.id + 1000) * 6.28;
+              var c = new T.Color('#5d5348').lerp(new T.Color('#f2ead0'), Math.round(shade * 20) / 20).getStyle();
+              var legH = 0.12 + legs * 0.35, belly = 0.3 + fur * 0.12;
+              mesh(sphere, c, body, 0, legH + belly * 0.8, 0, 0.37 + fur * 0.1, belly, 0.53).castShadow = true;
+              mesh(sphere, c, body, 0, legH + 0.47, 0.35, 0.3, 0.29, 0.29).castShadow = true;
+              [-1, 1].forEach(function(side) {
+                var ear = mesh(sphere, c, body, side * 0.17, legH + 0.79, 0.3, 0.09, 0.27 - fur * 0.09, 0.08); ear.rotation.z = side * -0.22;
+                mesh(sphere, '#ccaa94', body, side * 0.17, legH + 0.8, 0.35, 0.045, 0.15 - fur * 0.05, 0.035);
+                mesh(sphere, '#fff8e4', body, side * 0.145, legH + 0.52, 0.585, 0.092, 0.103, 0.045);
+                mesh(sphere, '#253531', body, side * 0.15, legH + 0.52, 0.624, 0.043, 0.058, 0.025);
+                [-1, 1].forEach(function(end) { mesh(sphere, c, body, side * 0.25, legH * 0.6, end * 0.31, 0.10, legH * 0.7, 0.13); });
+              });
+              mesh(sphere, '#735449', body, 0, legH + 0.40, 0.64, 0.07, 0.045, 0.045);
+              mesh(sphere, '#e2d7b8', body, 0, legH + 0.34, -0.52, 0.15 + fur * 0.06);
+              if (fur > 0.5) for (var tuft = 0; tuft < 3; tuft++) mesh(cone, c, body, (tuft - 1) * 0.15, legH + belly * 1.8, -0.08, 0.1, fur * 0.24, 0.1);
+              var ring = new T.Mesh(ringGeo, mat('#ffd66e')); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.03; root.add(ring);
+              body.traverse(function(m) { if (m.isMesh) { if (m.material === mat(c)) m.material = coat(c); m.receiveShadow = true; m.userData.organismId = o.id; hitMeshes.push(m); } });
+              residents.push({ root: root, body: body, ring: ring, id: o.id, x: x, z: z, angle: root.rotation.y });
+            });
+          }
+          var lastTime = 0;
+          function draw(time) {
+            if (disposed || !engine.current) return;
+            var p = latest.current, motion = p.moving && !p.reduced && !document.hidden;
+            if (p.habitat !== currentHabitat || p.seed !== currentSeed) { environment(p.habitat); currentHabitat = p.habitat; if (currentSeed !== p.seed) currentFrame = null; currentSeed = p.seed; }
+            if (p.frame !== currentFrame) { populate(p.frame); currentFrame = p.frame; }
+            var width = Math.max(1, host.current.clientWidth), height = Math.max(1, host.current.clientHeight);
+            if (canvas.width !== Math.round(width * renderer.getPixelRatio()) || canvas.height !== Math.round(height * renderer.getPixelRatio())) renderer.setSize(width, height, false);
+            camera.aspect = width / height; camera.updateProjectionMatrix();
+            var focal = p.focused ? residents.filter(function(a) { return a.id === p.selected; })[0] : null;
+            var targetX = focal ? focal.x : view.x, targetZ = focal ? focal.z : view.z, targetY = focal ? landscape.sample(focal.x, focal.z).height + 0.65 : view.y;
+            var distance = (focal ? clamp(view.distance * 0.17, 3.2, 6.2) : view.distance) * Math.max(1, 1.3 / camera.aspect);
+            var cameraAngle = focal ? view.angle + focal.angle : view.angle, cameraElevation = focal ? 0.30 : view.elevation;
+            camera.position.set(targetX + Math.sin(cameraAngle) * Math.cos(cameraElevation) * distance, targetY + Math.sin(cameraElevation) * distance, targetZ + Math.cos(cameraAngle) * Math.cos(cameraElevation) * distance); camera.lookAt(targetX, targetY, targetZ);
+            residents.forEach(function(a) {
+              a.root.visible = !focal || a.id === focal.id;
+              var phase = motion ? (time || 0) * 0.0006 + a.id : a.id;
+              a.root.position.x = a.x + (motion ? Math.sin(phase) * 0.12 : 0);
+              a.root.position.z = a.z + (motion ? Math.cos(phase) * 0.12 : 0);
+              a.root.position.y = landscape.sample(a.root.position.x, a.root.position.z).height + 0.025;
+              a.body.position.y = motion ? Math.max(0, Math.sin(phase * 5)) * 0.045 : 0;
+              a.root.rotation.y = a.angle + (motion ? Math.sin(phase * 0.7) * 0.25 : 0);
+              // Follow the local ground normal so selection rings remain readable on slopes.
+              var slopeX = (landscape.sample(a.root.position.x - 0.1, a.root.position.z).height - landscape.sample(a.root.position.x + 0.1, a.root.position.z).height) / 0.2;
+              var slopeZ = (landscape.sample(a.root.position.x, a.root.position.z - 0.1).height - landscape.sample(a.root.position.x, a.root.position.z + 0.1).height) / 0.2;
+              var normal = new T.Vector3(slopeX, 1, slopeZ).normalize().applyAxisAngle(new T.Vector3(0, 1, 0), -a.root.rotation.y);
+              a.ring.quaternion.setFromUnitVectors(new T.Vector3(0, 0, 1), normal);
+              a.ring.visible = p.selected === a.id || p.family.has(a.id);
+              a.ring.material = mat(p.selected === a.id ? '#fff8d6' : '#e1ae39');
+            });
+            if (motion) waterTime.value = (time || 0) * 0.00035;
+            renderer.render(scene, camera);
+          }
+          function tick(time) { raf = 0; if (disposed) return; if (time - lastTime > 32) { draw(time); lastTime = time; } if (latest.current.moving && !latest.current.reduced && !document.hidden) raf = requestAnimationFrame(tick); }
+          function refresh() { cancelAnimationFrame(raf); raf = 0; draw(performance.now()); if (latest.current.moving && !latest.current.reduced && !document.hidden) raf = requestAnimationFrame(tick); }
+          engine.current = { refresh: refresh, move: function(action) {
+            if (action === 'left') view.angle -= 0.25; if (action === 'right') view.angle += 0.25;
+            if (action === 'in') view.distance = Math.max(13, view.distance - 2); if (action === 'out') view.distance = Math.min(40, view.distance + 2);
+            if (action === 'reset') view = { angle: 0.25, elevation: 0.74, distance: 29, x: 0, z: 0, y: 0.5 };
+            if (action === 'coast') view = { angle: 0.78, elevation: 0.44, distance: 22, x: 1, z: 2, y: 0.5 };
+            if (action === 'highlands') view = { angle: -0.5, elevation: 0.66, distance: 23, x: -1, z: -1.4, y: 1 };
+            refresh();
+          } };
+          listen(canvas, 'pointerdown', function(e) { if (e.button !== 0) return; drag = { x: e.clientX, y: e.clientY, startX: e.clientX, startY: e.clientY, angle: view.angle, elevation: view.elevation }; canvas.setPointerCapture(e.pointerId); });
+          listen(canvas, 'pointermove', function(e) { if (!drag) return; view.angle = drag.angle - (e.clientX - drag.x) * 0.007; view.elevation = clamp(drag.elevation + (e.clientY - drag.y) * 0.005, 0.3, 1.25); refresh(); });
+          listen(canvas, 'pointerup', function(e) {
+            if (!drag) return; var moved = Math.abs(e.clientX - drag.startX) + Math.abs(e.clientY - drag.startY); drag = null;
+            if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
+            if (moved > 6) return;
+            var rect = canvas.getBoundingClientRect(), ray = new T.Raycaster();
+            ray.setFromCamera(new T.Vector2((e.clientX - rect.left) / rect.width * 2 - 1, -(e.clientY - rect.top) / rect.height * 2 + 1), camera);
+            var targets = latest.current.focused ? hitMeshes.filter(function(m) { return m.userData.organismId === latest.current.selected; }) : hitMeshes;
+            var hits = ray.intersectObjects(targets, false); if (hits.length) latest.current.onSelect(hits[0].object.userData.organismId);
+          });
+          listen(canvas, 'pointercancel', function() { drag = null; });
+          listen(canvas, 'webglcontextlost', function(e) { e.preventDefault(); fail(); });
+          listen(document, 'visibilitychange', refresh);
+          if (typeof ResizeObserver !== 'undefined') { observer = new ResizeObserver(refresh); observer.observe(host.current); }
+          else listen(window, 'resize', refresh);
+          setStatus('ready'); refresh();
+        } catch (_) { fail(); }
+      }
+      timer = setTimeout(fail, 12000);
+      if (window.THREE) start();
+      else if (window.StemLab.ensureThree) { try { Promise.resolve(window.StemLab.ensureThree({ orbit: false })).then(function() { if (!disposed) start(); }).catch(fail); } catch (_) { fail(); } }
+      else fail();
+      return function() { disposed = true; clearTimeout(timer); cancelAnimationFrame(raf); engine.current = null; if (observer) observer.disconnect(); remove.forEach(function(fn) { fn(); }); geometries.forEach(function(g) { g.dispose(); }); materials.forEach(function(m) { m.dispose(); }); textures.forEach(function(t) { t.dispose(); }); if (renderer) { renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove(); } };
+    }, []);
+    R.useEffect(function() { if (engine.current) engine.current.refresh(); }, [props.frame, props.habitat, props.seed, props.selected, props.family, props.moving, props.reduced, focused]);
+    function move(action) { if (engine.current) engine.current.move(action); }
+    var tx = props.tx;
+    return h('div', { className: 'ei-stage-wrap' },
+      h('div', { className: 'ei-scene', ref: host, role: 'group', 'aria-label': tx('scene', 'Living Island habitat. Use the organism selector below to inspect any creature.'), 'data-island-scene': status },
+        status === 'loading' && h('p', { className: 'ei-loading', role: 'status' }, tx('loading', 'Growing your island… You can already use every simulation control.')),
+        status === 'fallback' && h('div', { className: 'ei-fallback' },
+          h('p', null, tx('fallback', 'Habitat map · 3D is unavailable on this device. All experiments and family records still work.')),
+          h('div', { className: 'ei-map', style: { background: IslandModel.habitats[props.habitat].ground } }, props.frame.population.map(function(o) {
+            var value = IslandModel.value(o, 'shade');
+            return h('button', { key: o.id, type: 'button', onClick: function() { props.onSelect(o.id); }, 'aria-label': tx('inspect', 'Inspect Spriglet') + ' ' + o.id, className: 'ei-map-creature', style: { background: 'hsl(38 28% ' + (28 + value * 58) + '%)', outline: props.family.has(o.id) ? '3px solid #ffda78' : undefined } }, o.id);
+          })))),
+      h('div', { className: 'ei-camera', role: 'group', 'aria-label': tx('camera', 'Island camera') },
+        [['left', '↶', tx('left', 'Rotate left')], ['right', '↷', tx('right', 'Rotate right')], ['in', '+', tx('zoom_in', 'Zoom in')], ['out', '−', tx('zoom_out', 'Zoom out')], ['reset', '⌂', tx('reset_camera', 'Reset camera')]].map(function(b) { return h('button', { key: b[0], type: 'button', onClick: function() { move(b[0]); }, disabled: status !== 'ready', 'aria-label': b[2], title: b[2] }, b[1]); })),
+      h('button', { type: 'button', className: 'ei-closeup', disabled: status !== 'ready' || (!focused && !props.frame.population.some(function(o) { return o.id === props.selected; })), onClick: function() { setFocused(!focused); }, 'aria-pressed': focused }, focused ? tx('overview', 'Island overview') : tx('closeup', 'Creature close-up')),
+      h('div', { className: 'ei-landscape-bar' }, h('div', null, h('strong', null, tx('landscape_title', 'A volcanic field island')), h('small', null, tx('landscape_inspiration', 'Galápagos-inspired · fictional research habitat'))),
+        h('div', { className: 'ei-viewpoints', role: 'group', 'aria-label': tx('viewpoints', 'Scenic viewpoints') },
+          [['reset', tx('view_island', 'Island')], ['coast', tx('view_coast', 'Lava coast')], ['highlands', tx('view_highlands', 'Highlands')]].map(function(b) { return h('button', { key: b[0], type: 'button', disabled: status !== 'ready', onClick: function() { setFocused(false); move(b[0]); } }, b[1]); }))),
+      h('div', { className: 'ei-scene-caption' }, tx('camera_hint', 'Drag to orbit · tap a creature to meet it · pale rings mark your selection, gold rings its family')));
+  }
+
+  var islandCSS = `
+    .ei-app{--ei-ink:#203d36;--ei-muted:#51675e;--ei-line:#d4dfd5;--ei-paper:#fffef9;--ei-green:#255c47;color:var(--ei-ink);background:#f2f4eb;font-family:system-ui,sans-serif;width:100%;min-width:0;padding:24px;box-sizing:border-box;color-scheme:light}
+    .ei-app *{box-sizing:border-box}.ei-app h1,.ei-app h2,.ei-app h3,.ei-app p{margin:0}.ei-app h1{font-size:clamp(27px,3.2vw,43px);font-weight:750;letter-spacing:-1.5px;line-height:1.1}.ei-app h2{font-size:19px;font-weight:750}.ei-app h3{font-size:15px;font-weight:750}
+    .ei-app p{line-height:1.55}.ei-app button,.ei-app select,.ei-app input{font:inherit}.ei-app button{cursor:pointer;min-height:42px;border:1px solid var(--ei-line);border-radius:10px;padding:9px 13px;background:var(--ei-paper);color:var(--ei-ink);font-weight:650;line-height:1.3}.ei-app button:hover:not(:disabled){background:#e9efdf;border-color:#739383}.ei-app button:disabled{cursor:default;opacity:.48}.ei-app :is(button,select,input,summary,a):focus-visible{outline:3px solid #ae591d;outline-offset:3px}.ei-app .ei-primary{background:#255c47;color:#fffef7;border-color:#255c47}.ei-app .ei-primary:hover:not(:disabled){background:#164d38;color:#fffef7}.ei-app .ei-quiet{background:transparent}
+    .ei-app select,.ei-app input[type=text]{width:100%;min-height:42px;padding:8px;border:1px solid #8c9e91;border-radius:8px;background:white;color:#203d36}.ei-app input[type=range]{accent-color:#255c47;width:100%;min-height:30px}.ei-app label{font-size:13px;font-weight:650}.ei-app summary{cursor:pointer;font-weight:700;min-height:36px;padding:6px 0}.ei-app small,.ei-small{font-size:12px;color:var(--ei-muted);line-height:1.5}.ei-kicker{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#547264}.ei-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.ei-between{justify-content:space-between}.ei-stack{display:grid;gap:13px}.ei-header{max-width:1440px;margin:0 auto 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.ei-title{display:grid;gap:6px}.ei-header p{font-size:14px;color:var(--ei-muted)}
+    .ei-shell{max-width:1440px;margin:auto}.ei-mission{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:13px 17px;border:1px solid var(--ei-line);border-radius:12px;background:#e7eddd;margin-bottom:17px;font-size:12px}.ei-mission strong{font-size:13px}.ei-mission span{display:flex;align-items:center;gap:6px}.ei-mission b{display:inline-flex;border:1px solid #6a8473;border-radius:50%;width:22px;height:22px;align-items:center;justify-content:center;font-size:11px}.ei-mission .ei-done b{background:#255c47;color:white}.ei-board{display:grid;grid-template-columns:minmax(0,1fr) 292px;gap:17px;align-items:start}.ei-main{min-width:0;display:grid;gap:14px}.ei-card{border:1px solid var(--ei-line);background:var(--ei-paper);border-radius:15px;padding:18px;min-width:0}.ei-card-head{margin-bottom:13px}.ei-habitat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ei-app .ei-habitat{font-size:12px;text-align:left;min-height:70px;padding:10px}.ei-habitat i{display:block;font-style:normal;font-size:19px;margin-bottom:4px}.ei-app .ei-habitat[aria-pressed=true]{background:#e6eecf;border:2px solid #537248;padding:9px}.ei-switch{display:flex;gap:9px;align-items:flex-start;font-size:12px;line-height:1.5}.ei-switch input{margin-top:3px;accent-color:#255c47;width:17px;height:17px;flex-shrink:0}.ei-switch small{display:block;font-weight:400}
+    .ei-stage{position:relative;border:1px solid #b9cdba;border-radius:18px;overflow:hidden;background:#d5ebdd}.ei-stage-wrap{position:relative}.ei-scene{height:480px;position:relative;overflow:hidden}.ei-stage-top{position:absolute;z-index:2;top:17px;left:18px;right:18px;display:flex;justify-content:space-between;gap:12px;pointer-events:none}.ei-stage-label{background:rgba(255,254,244,.92);padding:10px 13px;border-radius:11px;border:1px solid #bccfbd;box-shadow:0 3px 14px #163c3612}.ei-stage-label strong{font-size:14px}.ei-stage-label small{display:block}.ei-live-dot{display:inline-block;width:7px;height:7px;background:#297354;border-radius:50%;margin-right:6px}.ei-camera{position:absolute;bottom:47px;left:14px;display:flex;gap:5px}.ei-camera button{min-width:40px;padding:7px;background:#fffef8ed;font-size:18px}.ei-scene-caption{padding:10px 15px;font-size:11px;background:#edf2e6;border-top:1px solid #c6d8c6;color:#35564a;line-height:1.5}.ei-loading{position:absolute;top:45%;left:15%;right:15%;text-align:center;font-size:14px}.ei-fallback{position:absolute;inset:85px 20px 65px;z-index:1;background:#f1f3e5;border-radius:16px;padding:15px;font-size:12px;overflow:auto}.ei-map{margin-top:15px;display:flex;flex-wrap:wrap;gap:8px;border-radius:40%;padding:30px;justify-content:center}.ei-app .ei-map-creature{border-radius:45%;min-height:32px;min-width:32px;padding:4px;color:white;font-size:10px;text-shadow:0 1px 3px #000}
+    .ei-transport{display:grid;gap:12px;padding:15px 18px}.ei-generations{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;font-size:12px}.ei-generation{font-variant-numeric:tabular-nums;font-weight:800}.ei-app .ei-speed{width:auto;min-width:84px;min-height:40px;font-size:12px}.ei-story{border-left:3px solid #a1b37d;padding-left:13px;font-size:13px;color:#385345}.ei-loop{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--ei-line);border-radius:12px;overflow:hidden;background:#fffef8}.ei-loop>div{padding:13px 10px;border-right:1px solid var(--ei-line)}.ei-loop>div:last-child{border-right:0}.ei-loop strong{display:block;font-size:20px;letter-spacing:-.5px}.ei-loop small{display:block;font-size:10px}.ei-organism{display:flex;align-items:center;gap:12px;margin:10px 0}.ei-portrait{width:72px;height:76px;flex-shrink:0}.ei-trait{display:grid;grid-template-columns:1fr auto;gap:4px;font-size:12px}.ei-meter{grid-column:1/-1;height:6px;border-radius:6px;background:#e7eadd;overflow:hidden}.ei-meter>span{display:block;height:100%;border-radius:6px}.ei-parents{display:flex;gap:6px;flex-wrap:wrap}.ei-app .ei-parents button{font-size:11px;padding:5px 9px;min-height:32px}.ei-tag{padding:4px 8px;border-radius:20px;background:#e9ecd9;font-size:10px;font-weight:750;color:#455e43}.ei-evidence{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,1fr);gap:17px;margin-top:17px}.ei-chart{width:100%;height:auto;display:block}.ei-chart text{font-size:11px;fill:#496455}.ei-chart-legend{display:flex;gap:13px;flex-wrap:wrap;font-size:11px}.ei-chart-legend span:before{content:'';display:inline-block;width:17px;height:3px;background:var(--trait-color);vertical-align:middle;margin-right:5px}.ei-table-wrap{overflow:auto}.ei-app table{border-collapse:collapse;width:100%;font-size:12px;margin-top:10px}.ei-app td,.ei-app th{padding:8px 9px;border-bottom:1px solid var(--ei-line);text-align:left;white-space:nowrap}.ei-app th{font-weight:750}.ei-callout{padding:12px;border-radius:10px;background:#edf0df;font-size:12px;line-height:1.6}.ei-app .ei-warning{background:#f6ead8;color:#6e4a22}.ei-app a{color:#255c47;text-decoration:underline}.ei-reset{margin-top:15px;border-top:1px solid var(--ei-line);padding-top:10px}.ei-expedition{background:#183e35;color:#fff9df;padding:30px;border-radius:20px;display:grid;grid-template-columns:1.25fr 1fr;gap:20px;align-items:center;overflow:hidden;position:relative;margin-bottom:22px}.ei-expedition h2{font-size:clamp(30px,4vw,48px);letter-spacing:-1.8px;line-height:1.06;font-weight:750;margin:9px 0 14px}.ei-expedition p{color:#dae7d4;font-size:14px}.ei-expedition .ei-kicker{color:#cae2a3}.ei-expedition .ei-primary{background:#e6f0bd;border-color:#e6f0bd;color:#244734;margin-top:20px;padding:13px 20px}.ei-expedition-art{height:240px;position:relative;display:flex;align-items:center;justify-content:center}.ei-mini-island{position:absolute;width:95%;height:60%;background:#789563;border:12px solid #a5af7a;box-shadow:0 17px 0 #8f8060,0 22px 0 #576d53,0 35px 45px #071f2366;border-radius:50%;transform:rotate(-10deg)}.ei-mini-creatures{position:relative;display:flex;gap:0;width:90%;align-items:center;justify-content:center;transform:translateY(-30px)}.ei-mini-creatures svg{width:38%;height:130px;filter:drop-shadow(0 10px 0 #1f3f3422)}.ei-mini-creatures svg:nth-child(2){transform:translateY(-20px) scale(.8)}
+    @media(min-width:1500px){.ei-scene{height:560px}}@media(max-width:1000px){.ei-app{padding:16px}.ei-board{grid-template-columns:minmax(0,1fr) 260px}.ei-scene{height:420px}.ei-card{padding:14px}}@media(max-width:760px){.ei-board,.ei-evidence{grid-template-columns:1fr}.ei-side{display:grid;grid-template-columns:1fr 1fr;gap:13px}.ei-side>.ei-card{margin:0}.ei-scene{height:420px}.ei-header{margin-bottom:15px}.ei-expedition{grid-template-columns:1fr;padding:24px}.ei-expedition-art{height:150px}.ei-mini-creatures svg{height:110px}.ei-mission{gap:8px}.ei-kicker{letter-spacing:1.3px}}@media(max-width:480px){.ei-app{padding:10px}.ei-side{grid-template-columns:1fr}.ei-scene{height:365px}.ei-stage-top{left:10px;right:10px;top:10px}.ei-stage-label{padding:8px}.ei-stage-label strong{font-size:12px}.ei-loop strong{font-size:18px}.ei-loop>div{padding:9px 7px}.ei-loop small{font-size:10px}.ei-app h1{font-size:30px}.ei-app .ei-header button{font-size:12px}.ei-generations{gap:7px}.ei-transport{padding:13px}.ei-expedition-art{height:130px}}
+    .ei-stack{align-content:start}.ei-stage-wrap{--ei-scene-h:480px}.ei-scene{height:var(--ei-scene-h)}.ei-camera{bottom:auto;top:calc(var(--ei-scene-h) - 55px)}.ei-app .ei-closeup{position:absolute;right:14px;top:calc(var(--ei-scene-h) - 55px);font-size:12px;background:#fffef8ed}.ei-log{display:grid;gap:10px;font-size:12px}.ei-log-entry{display:grid;grid-template-columns:40px 1fr;gap:10px;border-top:1px solid #e1e6d8;padding-top:10px}.ei-log-entry:first-child{border:0;padding-top:0}.ei-log-entry b{color:#416e50;font-size:11px}.ei-log-entry small{display:block}.ei-app .ei-log-jump{min-height:30px;padding:3px 7px;font-size:10px}
+    @media(min-width:1500px){.ei-stage-wrap{--ei-scene-h:560px}}@media(max-width:1000px){.ei-stage-wrap{--ei-scene-h:420px}}@media(max-width:480px){.ei-stage-wrap{--ei-scene-h:365px}.ei-app .ei-closeup{top:80px;right:10px}}
+    .ei-landscape-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:12px 15px;background:#f8faf0;border-top:1px solid #c6d8c6}.ei-landscape-bar strong{display:block;font-size:12px}.ei-landscape-bar small{display:block;font-size:10px;margin-top:2px}.ei-viewpoints{display:flex;gap:5px;flex-wrap:wrap}.ei-app .ei-viewpoints button{font-size:11px;min-height:34px;padding:6px 10px;border-radius:18px}.ei-landscape-bar+.ei-scene-caption{border-top:0;padding-top:0;background:#f8faf0}
+    .ei-investigations{display:grid;gap:12px;padding:18px;background:#e6edde;border:1px solid #c8d6c2;border-radius:16px;margin-bottom:18px}.ei-quest-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.ei-app .ei-quest-choice{position:relative;display:grid;gap:5px;text-align:left;padding:14px 14px 14px 48px;background:#fffef8;border-radius:12px}.ei-quest-choice strong{font-size:14px}.ei-quest-choice>span:not(.ei-quest-icon){font-size:12px;font-weight:400}.ei-quest-choice small{font-size:10px;font-weight:500}.ei-quest-icon{position:absolute;left:15px;top:15px;font-size:24px;color:#42694c}.ei-quest-progress{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:14px}.ei-quest-progress strong{display:block;font-size:22px;letter-spacing:-.5px}.ei-quest-progress small{display:block;font-size:11px}.ei-quest-track{height:5px;border-radius:6px;overflow:hidden;background:#cad8c2}.ei-quest-track span{display:block;height:100%;background:#436f50}.ei-replay-phases{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:10px 18px;background:#eff3e7;border-top:1px solid #c6d8c6}.ei-app .ei-replay-phases button{padding:7px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}.ei-replay-phases small{color:inherit;font-size:11px}.ei-replay-phases strong{font-size:21px}.ei-app .ei-replay-phases button[aria-pressed=true]{background:#255c47;color:#fffef7;border-color:#255c47}.ei-app .ei-trait-select{width:auto;max-width:100%;font-size:12px;min-height:36px}.ei-distributions{display:grid;gap:7px}.ei-distribution{display:grid;grid-template-columns:75px minmax(0,1fr) 45px;align-items:center;gap:10px;font-size:12px}.ei-distribution svg{width:100%;height:48px}.ei-distribution svg text{font-size:8px;fill:#51675e}.ei-distribution strong{text-align:right}.ei-family-flow{display:grid;grid-template-columns:minmax(100px,1fr) auto 76px auto minmax(150px,1.5fr);align-items:center;gap:10px}.ei-family-members{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}.ei-app .ei-family-member{padding:5px;min-width:55px;display:grid;justify-items:center;border-radius:10px;font-size:11px}.ei-family-member .ei-portrait{width:37px;height:40px}.ei-family-member small{font-size:9px}.ei-family-focus{display:grid;justify-items:center;background:#e8eedb;border-radius:12px;padding:8px;font-size:12px}.ei-family-focus .ei-portrait{width:50px;height:56px}.ei-family-arrow{color:#698066}.ei-allele-trace{display:grid;grid-template-columns:100px 1fr 1fr;gap:8px;font-size:11px;align-items:center}.ei-allele-trace span{padding:8px;background:#edf1e5;border-radius:8px;font-variant-numeric:tabular-nums}.ei-allele-trace small{display:block;font-size:10px}.ei-allele-trace .ei-allele-new{background:#f4e7ce}
+    .ei-investigations .ei-kicker{color:#486553}
+    @media(max-width:760px){.ei-quest-grid{grid-template-columns:1fr}.ei-app .ei-quest-choice{padding:11px 12px 11px 46px;gap:3px}.ei-quest-icon{top:12px}.ei-investigations{padding:14px}.ei-quest-progress{gap:10px}.ei-quest-progress strong{font-size:18px}.ei-quest-progress small{font-size:10px}}@media(max-width:480px){.ei-family-flow{grid-template-columns:1fr;justify-items:center;text-align:center}.ei-family-members{justify-content:center}.ei-family-arrow{transform:rotate(90deg);line-height:1}.ei-allele-trace{grid-template-columns:1fr 1fr}.ei-allele-trace>strong{grid-column:1/-1}.ei-replay-phases{padding:10px;gap:5px}.ei-app .ei-replay-phases button{padding:7px 4px;flex-direction:column;gap:0}.ei-distribution{grid-template-columns:62px minmax(0,1fr) 35px;gap:5px;font-size:11px}}
+    @media(prefers-reduced-motion:reduce){.ei-app *{scroll-behavior:auto!important}}@media(forced-colors:active){.ei-app button{border:1px solid ButtonText}.ei-meter{border:1px solid CanvasText}.ei-stage-label{background:Canvas;color:CanvasText}.ei-chart polyline{stroke:CanvasText}.ei-replay-phases button[aria-pressed=true]{outline:2px solid Highlight}.ei-distribution circle{fill:CanvasText}}
+    @media print{.ei-app{padding:0;background:white}.ei-app button,.ei-camera,.ei-mission,.ei-reset{display:none}.ei-board,.ei-evidence{display:block}.ei-card{break-inside:avoid;margin:10px 0}.ei-scene{height:300px}}
+  `;
+
+  function IslandPortrait(props) {
+    var h = props.React.createElement, o = props.organism, shade = IslandModel.value(o, 'shade'), fur = IslandModel.value(o, 'fur'), legs = IslandModel.value(o, 'legs');
+    var color = 'hsl(38 24% ' + (30 + shade * 55) + '%)';
+    return h('svg', { viewBox: '0 0 100 110', className: 'ei-portrait', 'aria-hidden': true },
+      h('ellipse', { cx: 50, cy: 101, rx: 32, ry: 6, fill: '#244b3522' }),
+      [30, 66].map(function(x) { return h('ellipse', { key: x, cx: x, cy: 86, rx: 9, ry: 8 + legs * 15, fill: color }); }),
+      h('ellipse', { cx: 48, cy: 67 - legs * 5, rx: 29 + fur * 5, ry: 28 + fur * 4, fill: color }),
+      [34, 63].map(function(x) { return h('ellipse', { key: x, cx: x, cy: 22, rx: 8, ry: 17 - fur * 5, fill: color, transform: 'rotate(' + (x < 50 ? -14 : 14) + ' ' + x + ' 22)' }); }),
+      h('ellipse', { cx: 50, cy: 45, rx: 27, ry: 25, fill: color }),
+      [38, 63].map(function(x) { return h('g', { key: x }, h('ellipse', { cx: x, cy: 44, rx: 8, ry: 10, fill: '#fffbea' }), h('ellipse', { cx: x + 1, cy: 45, rx: 4, ry: 6, fill: '#253d36' }), h('circle', { cx: x + 2, cy: 42, r: 1.5, fill: 'white' })); }),
+      h('ellipse', { cx: 50, cy: 56, rx: 4, ry: 3, fill: '#826353' }),
+      h('path', { d: 'M44 62 Q50 66 56 62', stroke: '#695843', fill: 'none', strokeWidth: 1.5 }));
+  }
+
+  function IslandInvestigations(props) {
+    var h = props.React.createElement, tx = props.tx, mission = props.mission, p = props.progress;
+    var titles = { cold: tx('quest_cold', 'Cold snap'), family: tx('quest_family', 'Family detective'), drift: tx('quest_drift', 'The chance experiment') };
+    var descriptions = {
+      cold: tx('quest_cold_question', 'Who leaves offspring when winter arrives?'),
+      family: tx('quest_family_question', 'How far will one spriglet’s family reach?'),
+      drift: tx('quest_drift_question', 'Can traits change without an advantage?')
+    };
+    var setups = { cold: tx('quest_cold_setup', '5 generations · winter · selection on'), family: tx('quest_family_setup', '3 generations · track a resident family'), drift: tx('quest_drift_setup', '5 generations · meadow · selection off') };
+    function percent(v) { return v == null ? '—' : Math.round(v * 100) + '%'; }
+    return h('section', { className: 'ei-investigations', 'aria-label': tx('investigations', 'Guided investigations') },
+      h('div', { className: 'ei-row ei-between' }, h('div', null,
+        h('div', { className: 'ei-kicker' }, tx('quest_kicker', 'An island full of questions')),
+        h('h2', null, mission ? titles[mission.kind] : tx('quest_choose', 'What will you discover?'))),
+        h('span', { className: 'ei-tag' }, props.badges.length + '/3 · ' + tx('field_notes_collected', 'field notes collected'))),
+      !mission ? h(props.React.Fragment, null,
+        h('p', { className: 'ei-small' }, tx('quest_intro', 'Choose a guided investigation or explore freely. Each uses your current population and holds the climate steady. Your island history stays with you.')),
+        (!props.canStart || props.generation > 57) && h('p', { className: 'ei-small' }, props.ended || props.generation > 57 ? tx('quest_unavailable_end', 'Start a new expedition below for another full investigation. Your existing evidence remains available to review and export.') : tx('quest_unavailable_past', 'Return to the present to start an investigation. You can still explore this recorded generation.')),
+        h('div', { className: 'ei-quest-grid' }, ['cold', 'family', 'drift'].map(function(kind, i) {
+          return h('button', { key: kind, type: 'button', className: 'ei-quest-choice', disabled: !props.canStart || props.generation > (kind === 'family' ? 57 : 55), onClick: function() { props.onStart(kind); } },
+            h('span', { className: 'ei-quest-icon', 'aria-hidden': true }, ['❄', '↗', '◌'][i]),
+            h('strong', null, titles[kind]), h('span', null, descriptions[kind]), h('small', null, setups[kind]),
+            props.badges.indexOf(kind) >= 0 && h('small', null, '✓ ' + tx('quest_recorded', 'Investigation recorded')));
+        }))) : h(props.React.Fragment, null,
+        h('p', { className: 'ei-small' }, descriptions[mission.kind] + ' ' + setups[mission.kind] + ' · G' + mission.start + '–' + p.target),
+        h('div', { className: 'ei-quest-progress' },
+          h('div', null, h('strong', null, Math.min(p.elapsed, p.total) + '/' + p.total), h('small', null, tx('quest_generations', 'generations observed'))),
+          h('div', null, h('strong', null, mission.kind === 'family' ? p.descendants : percent(p.first.stats.means.fur) + ' → ' + percent(p.last.stats.means.fur)), h('small', null, mission.kind === 'family' ? tx('quest_descendants', 'descendants in the result generation') + ' · #' + mission.founder : tx('quest_insulation', 'mean insulation · start → result'))),
+          h('div', null, h('strong', null, mission.saved ? '✓' : p.reviewed ? '2/3' : p.ready ? '1/3' : '0/3'), h('small', null, tx('quest_steps', 'observe → review → record')))),
+        h('div', { className: 'ei-quest-track', 'aria-hidden': true }, h('span', { style: { width: (mission.saved ? 100 : p.reviewed ? 85 : 60 * p.elapsed / p.total) + '%' } })),
+        h('p', { className: 'ei-small' }, !p.consistent ? tx('quest_changed', 'Settings changed during this investigation. You can still record it as exploratory evidence.') : p.ready && !p.last.population.length ? tx('quest_extinct', 'The population ended early. Extinction is an observation: review the final survivors and record what happened.') : p.ready ? tx('quest_ready', 'Your evidence is ready. Replay the result generation, then collect a field note. An unexpected result counts as a discovery too.') : tx('quest_active', 'Follow the island through the next generations. Playback pauses when your investigation reaches its result.')),
+        h('div', { className: 'ei-row' },
+          !p.ready && h('button', { type: 'button', className: 'ei-primary', disabled: props.playing, onClick: props.onAdvance }, tx('quest_advance', 'Advance investigation')),
+          p.ready && h('button', { type: 'button', className: mission.saved ? '' : 'ei-primary', onClick: props.onReview }, tx('quest_review', 'Review the evidence')),
+          p.ready && h('button', { type: 'button', disabled: !p.reviewed || mission.saved, onClick: props.onRecord }, mission.saved ? tx('quest_saved', '✓ Field note collected') : tx('quest_collect', 'Collect field note')),
+          h('button', { type: 'button', className: 'ei-quiet', onClick: props.onChoose }, tx('quest_change', 'Choose another question')))));
+  }
+
+  function IslandPhaseControls(props) {
+    var h = props.React.createElement, tx = props.tx;
+    var labels = { parents: tx('replay_parents', 'Parents'), survivors: tx('replay_survivors', 'Survivors'), offspring: tx('replay_offspring', 'Offspring') };
+    var buttonLabels = { parents: tx('show_parents', 'Show parents'), survivors: tx('show_survivors', 'Show survivors'), offspring: tx('show_offspring', 'Show offspring') };
+    return h('div', { className: 'ei-replay-phases', role: 'group', 'aria-label': tx('replay_phases', 'Replay a recorded generation') }, ['parents', 'survivors', 'offspring'].map(function(phase, i) {
+      return h('button', { key: phase, type: 'button', 'aria-label': buttonLabels[phase], 'aria-pressed': props.phase === phase, onClick: function() { props.onPhase(phase); } },
+        h('small', null, (i + 1) + ' · ' + labels[phase]), h('strong', null, props.data[phase].length));
+    }));
+  }
+
+  function IslandReplay(props) {
+    var h = props.React.createElement, tx = props.tx, data = props.data;
+    if (!data) return h('div', { className: 'ei-callout' }, h('strong', null, tx('replay_wait_title', 'Watch the next generation unfold. ')), tx('replay_wait', 'Advance once to reveal which parents survived and what their offspring inherited. You can replay the same evidence as often as you like.'));
+    var labels = { parents: tx('replay_parents', 'Parents'), survivors: tx('replay_survivors', 'Survivors'), offspring: tx('replay_offspring', 'Offspring') };
+    var hints = {
+      parents: tx('replay_parent_hint', 'These are the parents before survival was sampled. Their genes stay the same throughout their lives.'),
+      survivors: tx('replay_survivor_hint', 'These are the actual survivors, still in their original places. Everyone else left no offspring in this round.'),
+      offspring: tx('replay_child_hint', 'These are new individuals. Each inherited one allele per trait from each of two surviving parents.')
+    };
+    function fmt(v) { return v == null ? '—' : Math.round(v * 100) + '%'; }
+    return h('section', { className: 'ei-card ei-stack ei-replay', 'aria-label': tx('replay_title', 'Inside this generation') },
+      h('div', { className: 'ei-row ei-between' }, h('div', null, h('div', { className: 'ei-kicker' }, tx('replay_kicker', 'See the mechanism')), h('h2', null, tx('replay_title', 'Inside this generation'))), h('span', { className: 'ei-tag' }, 'G' + (props.generation - 1) + ' → G' + props.generation)),
+      h('p', { className: 'ei-small', role: 'status' }, hints[props.phase]),
+      h('div', { className: 'ei-row ei-between' }, h('label', { htmlFor: 'ei-replay-trait' }, tx('replay_compare', 'Compare inherited variation')), h('select', { id: 'ei-replay-trait', className: 'ei-trait-select', value: props.trait, onChange: function(e) { props.onTrait(e.target.value); } }, IslandModel.traits.map(function(k) { return h('option', { key: k, value: k }, props.labels[k]); }))),
+      h('div', { className: 'ei-distributions', 'aria-hidden': true }, ['parents', 'survivors', 'offspring'].map(function(phase) {
+        var mean = data.means[phase][props.trait];
+        return h('div', { className: 'ei-distribution', key: phase }, h('span', null, labels[phase]),
+          h('svg', { viewBox: '0 0 320 42', focusable: 'false' }, h('line', { x1: 8, x2: 312, y1: 31, y2: 31, stroke: '#bdcbb9' }),
+            data[phase].map(function(o, i) { return h('circle', { key: o.id, cx: 8 + IslandModel.value(o, props.trait) * 304, cy: 12 + i % 3 * 6, r: 3.4, fill: phase === 'survivors' ? '#95641e' : props.colors[props.trait], opacity: 0.72 }); }),
+            mean != null && h('path', { d: 'M' + (8 + mean * 304) + ' 2v30', stroke: '#203d36', strokeWidth: 2 }),
+            h('text', { x: 8, y: 41 }, '0'), h('text', { x: 312, y: 41, textAnchor: 'end' }, '100%')),
+          h('strong', null, fmt(mean)));
+      })),
+      h('p', { className: 'ei-small' }, tx('replay_dots', 'Each dot is one organism; the dark line marks the mean. '), data.selection ? tx('replay_selection', 'Traits and chance both affected survival. The offspring mean can shift again through inheritance and random sampling.') : tx('replay_neutral', 'Trait advantages were off. Differences here arise from random survival, inheritance, and any mutations—not a survival advantage for a trait.')),
+      h('details', null, h('summary', { className: 'ei-small' }, tx('replay_values', 'Read exact cohort means')), h('div', { className: 'ei-table-wrap' }, h('table', null,
+        h('caption', { className: 'ei-small' }, props.labels[props.trait] + ' · ' + tx('replay_values_scale', 'mean on a 0–1 teaching scale')),
+        h('thead', null, h('tr', null, h('th', { scope: 'col' }, tx('cohort', 'Cohort')), h('th', { scope: 'col' }, tx('population', 'Population')), h('th', { scope: 'col' }, tx('mean', 'Mean')))),
+        h('tbody', null, ['parents', 'survivors', 'offspring'].map(function(phase) { return h('tr', { key: phase }, h('th', { scope: 'row' }, labels[phase]), h('td', null, data[phase].length), h('td', null, data.means[phase][props.trait] == null ? '—' : data.means[phase][props.trait].toFixed(4))); }))))));
+  }
+
+  function IslandFamily(props) {
+    var h = props.React.createElement, tx = props.tx, family = props.family;
+    if (!family) return null;
+    var organism = family.organism;
+    function member(o, prefix) { return h('button', { key: o.id, type: 'button', className: 'ei-family-member', onClick: function() { props.onVisit(o.id); }, 'aria-label': prefix + ' #' + o.id }, h(IslandPortrait, { React: props.React, organism: o }), h('strong', null, '#' + o.id), h('small', null, 'G' + o.born)); }
+    return h('section', { className: 'ei-card ei-stack ei-family-tree', 'aria-label': tx('family_tree', 'Family connections') },
+      h('div', { className: 'ei-row ei-between' }, h('div', null, h('div', { className: 'ei-kicker' }, tx('family_kicker', 'A life in the lineage')), h('h2', null, tx('family_tree', 'Family connections'))), h('span', { className: 'ei-tag' }, tx('spriglet', 'Spriglet') + ' #' + organism.id)),
+      h('div', { className: 'ei-family-flow' },
+        h('div', null, h('small', null, tx('parents', 'Parents')), h('div', { className: 'ei-family-members' }, family.parents.length ? family.parents.map(function(o) { return member(o, tx('visit_parent', 'Meet parent')); }) : h('p', { className: 'ei-small' }, tx('founder', 'Founding population · no recorded parents')))),
+        h('span', { className: 'ei-family-arrow', 'aria-hidden': true }, '→'),
+        h('div', { className: 'ei-family-focus' }, h(IslandPortrait, { React: props.React, organism: organism }), h('strong', null, '#' + organism.id), h('small', null, 'G' + organism.born)),
+        h('span', { className: 'ei-family-arrow', 'aria-hidden': true }, '→'),
+        h('div', null, h('small', null, family.children.length + ' ' + tx('direct_children', 'direct offspring')), h('div', { className: 'ei-family-members' }, family.children.slice(0, 4).map(function(o) { return member(o, tx('visit_child', 'Meet offspring')); })),
+          family.children.length > 4 && h('small', null, tx('family_showing', 'Showing the first four. Explore the next generation for the rest.')))),
+      h('p', { className: 'ei-small' }, family.outcome === 'pending' ? tx('family_pending', 'This organism’s next generation has not been recorded yet.') : family.outcome === 'not-survived' ? tx('family_not_survived', 'This organism did not survive the next round. Its traits remain unchanged in the record.') : family.outcome === 'no-offspring' ? tx('family_no_offspring', 'This organism survived but left no recorded offspring. Survival does not guarantee parenthood.') : tx('family_trace_help', 'Choose a parent or offspring to visit its birth generation. Follow the same family as its traits are reshuffled.')),
+      family.parents.length === 2 && h('details', null, h('summary', { className: 'ei-small' }, tx('inheritance_trace', 'Trace each inherited allele')), h('div', { className: 'ei-stack' },
+        h('p', { className: 'ei-small' }, tx('inheritance_trace_help', 'The first allele comes from the first parent; the second comes from the second parent. A new value indicates a mutation during inheritance. Displayed values are rounded. Matching values do not identify which identical copy was inherited.')),
+        IslandModel.traits.map(function(k) { return h('div', { key: k, className: 'ei-allele-trace' }, h('strong', null, props.labels[k]), organism.genes[k].map(function(value, i) {
+          var parent = family.parents[i], matches = parent.genes[k].indexOf(value) >= 0;
+          return h('span', { key: i, className: matches ? '' : 'ei-allele-new' }, '#' + parent.id + ': ' + parent.genes[k].map(function(v) { return v.toFixed(3); }).join(' / ') + ' → ' + value.toFixed(3), h('small', null, matches ? tx('allele_matches', 'Matches a parent allele') : tx('allele_mutated', 'New value at inheritance')));
+        })); }))));
+  }
+
+  function LivingIsland(props) {
+    var R = props.React, h = R.createElement;
+    function tx(k, fb) { return __alloT('stem.evolab.island_' + k, fb); }
+    var worldState = R.useState(function() { return IslandModel.restore(props.saved) || IslandModel.restore(lsGet('evoLab.island.v1', null)) || IslandModel.create(2026); }), world = worldState[0], setWorld = worldState[1];
+    var studyRef = R.useRef(null);
+    if (!studyRef.current) {
+      var candidate = props.study || lsGet('evoLab.island.study.v1', null);
+      studyRef.current = candidate && candidate.seed === world.seed ? candidate : {};
+    }
+    var study = studyRef.current;
+    var missionState = R.useState(function() { return IslandStudy.restoreMission(study.mission, world); }), mission = missionState[0], setMission = missionState[1];
+    var notesState = R.useState(function() { var out = {}; ['cold', 'family', 'drift'].forEach(function(k) { if (study.notes && typeof study.notes[k] === 'string' && study.notes[k].length <= 6000) out[k] = study.notes[k]; }); return out; }), notes = notesState[0], setNotes = notesState[1];
+    var phaseState = R.useState('offspring'), replayPhase = phaseState[0], setReplayPhase = phaseState[1];
+    var traitState = R.useState('fur'), replayTrait = traitState[0], setReplayTrait = traitState[1];
+    var missionRef = R.useRef(mission); missionRef.current = mission;
+    var current = R.useRef(world); current.current = world;
+    var callbacks = R.useRef(props); callbacks.current = props;
+    var playingState = R.useState(false), playing = playingState[0], playback = R.useRef(false);
+    function setPlaying(value) { playback.current = value; playingState[1](value); }
+    var cursorState = R.useState(world.generation), cursor = cursorState[0], setCursor = cursorState[1];
+    var selectedState = R.useState(Number.isInteger(study.selectedId) && study.selectedId < world.nextId ? study.selectedId : null), selectedId = selectedState[0], setSelected = selectedState[1];
+    var trackedState = R.useState(Number.isInteger(study.trackedId) && study.trackedId < world.nextId ? study.trackedId : null), trackedId = trackedState[0], setTracked = trackedState[1];
+    var movingState = R.useState(false), moving = movingState[0], setMoving = movingState[1];
+    var reducedState = R.useState(_prefersReducedMotion), reduced = reducedState[0], setReduced = reducedState[1];
+    var speedState = R.useState(1800), speed = speedState[0], setSpeed = speedState[1];
+    var predictionState = R.useState(function() { var p = study.prediction; return p && Number.isInteger(p.start) && p.start >= 0 && p.start <= world.generation && ['more','less','same'].indexOf(p.choice) >= 0 && p.mean === world.history[p.start].stats.means.fur ? { start: p.start, mean: p.mean, choice: p.choice } : null; }), prediction = predictionState[0], setPrediction = predictionState[1];
+    var predictionChoiceState = R.useState(''), predictionChoice = predictionChoiceState[0], setPredictionChoice = predictionChoiceState[1];
+    var seedState = R.useState(String(world.seed)), seedText = seedState[0], setSeedText = seedState[1];
+    var resetState = R.useState(false), resetOpen = resetState[0], setResetOpen = resetState[1];
+    var statusState = R.useState(''), status = statusState[0], setStatus = statusState[1];
+    var frame = world.history[Math.min(cursor, world.generation)], live = cursor === world.generation;
+    var transition = R.useMemo(function() { return IslandStudy.transition(world, cursor); }, [world.history, cursor]);
+    var phase = transition ? replayPhase : 'offspring';
+    var sceneFrame = R.useMemo(function() { return phase === 'offspring' ? frame : Object.assign({}, frame, { population: transition[phase] }); }, [frame, transition, phase]);
+    var shownHabitat = phase !== 'offspring' ? frame.habitat : live ? world.habitat : frame.habitat, env = IslandModel.habitats[shownHabitat];
+    var missionProgress = R.useMemo(function() { return IslandStudy.progress(world, mission); }, [world.history, mission]);
+    var all = R.useMemo(function() { var index = {}; world.history.forEach(function(f) { f.population.forEach(function(o) { index[o.id] = o; }); }); return index; }, [world.history]);
+    var selected = all[selectedId] || null, family = R.useMemo(function() { return trackedId == null ? new Set() : IslandModel.family(world, trackedId); }, [world.history, trackedId]);
+    var connections = R.useMemo(function() { return selectedId == null ? null : IslandStudy.lineage(world, selectedId); }, [world.history, selectedId]);
+    var descendants = frame.population.filter(function(o) { return o.id !== trackedId && family.has(o.id); });
+    var labels = { shade: tx('shade', 'Coat lightness'), fur: tx('fur', 'Insulation'), legs: tx('legs', 'Leg length') };
+    var colors = { shade: '#98713b', fur: '#4e7760', legs: '#716aa1' };
+    function fmt(v) { return v == null ? '—' : Math.round(v * 100) + '%'; }
+    function save(next) { current.current = next; setWorld(next); callbacks.current.onSave(next); lsSet('evoLab.island.v1', next); }
+    function advance() {
+      var before = current.current, next = IslandModel.step(before);
+      if (next === before) { setPlaying(false); return; }
+      save(next); setCursor(next.generation);
+      setReplayPhase('offspring');
+      var activeMission = missionRef.current, target = activeMission ? activeMission.start + (activeMission.kind === 'family' ? 3 : 5) : Infinity;
+      if (before.generation < target && next.generation >= target) setPlaying(false);
+      if (!next.history[next.generation].population.length || next.generation === 60) setPlaying(false);
+    }
+    R.useEffect(function() {
+      if (!playing) return;
+      var active = true, id = setInterval(function() { if (active && playback.current) advance(); }, speed);
+      return function() { active = false; clearInterval(id); };
+    }, [playing, speed]);
+    R.useEffect(function() {
+      var next = { seed: world.seed, selectedId: selectedId, trackedId: trackedId, prediction: prediction, mission: mission, notes: notes };
+      callbacks.current.onStudy(next); lsSet('evoLab.island.study.v1', next);
+    }, [world.seed, selectedId, trackedId, prediction, mission, notes]);
+    R.useEffect(function() {
+      function pauseHidden() { if (document.hidden) setPlaying(false); }
+      function motion(e) { setReduced(e.matches); }
+      document.addEventListener('visibilitychange', pauseHidden);
+      if (_motionQuery && _motionQuery.addEventListener) _motionQuery.addEventListener('change', motion);
+      else if (_motionQuery && _motionQuery.addListener) _motionQuery.addListener(motion);
+      return function() { document.removeEventListener('visibilitychange', pauseHidden); if (_motionQuery && _motionQuery.removeEventListener) _motionQuery.removeEventListener('change', motion); else if (_motionQuery && _motionQuery.removeListener) _motionQuery.removeListener(motion); };
+    }, []);
+    function inspect(id) { setSelected(Number(id)); }
+    function visitOrganism(id) { var o = all[id]; if (!o) return; setPlaying(false); setCursor(o.born); setReplayPhase('offspring'); inspect(id); }
+    function showPhase(value, generation) {
+      var gen = generation == null ? cursor : generation;
+      setPlaying(false); setCursor(gen); setReplayPhase(value);
+      if (missionProgress && missionProgress.ready && gen === missionProgress.end) setMission(Object.assign({}, mission, { reviewedAt: gen }));
+    }
+    function startMission(kind) {
+      var now = current.current, residents = now.history[now.generation].population;
+      if (!residents.length || now.generation > (kind === 'family' ? 57 : 55)) return;
+      var founder = residents.filter(function(o) { return o.id === selectedId; })[0] || residents[0];
+      var habitat = kind === 'cold' ? 'snow' : kind === 'drift' ? 'meadow' : now.habitat;
+      var selection = kind === 'drift' ? false : kind === 'cold' ? true : now.selection;
+      setPlaying(false); setCursor(now.generation); setReplayPhase('offspring'); setSelected(founder.id);
+      if (kind === 'family') setTracked(founder.id);
+      setMission({ kind: kind, start: now.generation, founder: founder.id, habitat: habitat, selection: selection, mutation: now.mutation, reviewedAt: null, saved: false });
+      save(Object.assign({}, now, { habitat: habitat, selection: selection, living: false }));
+      setStatus(tx('quest_started', 'Investigation started with your current population. Living climate is off. Follow the generations, review the evidence, then collect a field note.'));
+    }
+    function recordMission() {
+      if (!missionProgress || !missionProgress.reviewed || mission.saved) return;
+      var p = missionProgress, title = mission.kind === 'cold' ? tx('quest_cold', 'Cold snap') : mission.kind === 'family' ? tx('quest_family', 'Family detective') : tx('quest_drift', 'The chance experiment');
+      var text = title + ' · seed ' + world.seed + ' · G' + mission.start + '–G' + p.end + '\nPopulation: ' + p.first.population.length + ' → ' + p.last.population.length + '.\n' + IslandModel.traits.map(function(k) { return labels[k] + ': ' + fmt(p.first.stats.means[k]) + ' → ' + fmt(p.last.stats.means[k]); }).join('\n');
+      text += '\nFamily #' + mission.founder + ': ' + p.descendants + ' descendants in G' + p.end + '.\n' + (p.consistent ? 'Habitat, selection setting and mutation rate held steady.' : 'Settings changed; interpret as exploratory evidence.') + '\nHabitat: ' + IslandModel.habitats[mission.habitat].name + '. Trait selection: ' + mission.selection + '. Mutation probability: ' + mission.mutation + '.\nA single run combines chance and inheritance; repeat before drawing a general conclusion.';
+      var nextNotes = Object.assign({}, notes); nextNotes[mission.kind] = text; setNotes(nextNotes);
+      callbacks.current.onFinding(text, mission.kind);
+      setMission(Object.assign({}, mission, { saved: true }));
+      setStatus(tx('quest_collected', 'Field note collected and saved to your Learning Journal. Try another question, or repeat with a fresh seed to test how reliable the pattern is.'));
+    }
+    function changeHabitat(key) { setPlaying(false); setCursor(world.generation); setReplayPhase('offspring'); save(Object.assign({}, current.current, { habitat: key, living: false })); setStatus(tx('habitat_queued', 'Habitat changed. Run the next generation to test survival here. Living climate is now off so you can control this experiment.')); }
+    function setting(key, value) { setPlaying(false); setReplayPhase('offspring'); var change = {}; change[key] = value; save(Object.assign({}, current.current, change)); }
+    function restart(seed) { var next = IslandModel.create(seed); setPlaying(false); setMission(null); setNotes({}); setReplayPhase('offspring'); setPrediction(null); setPredictionChoice(''); setCursor(0); setSelected(null); setTracked(null); setSeedText(String(next.seed)); save(next); setResetOpen(false); setStatus(tx('new_world_status', 'A fresh population is ready. Start by meeting a spriglet.')); }
+    function recordPrediction() { if (!predictionChoice || !frame.population.length) return; setPrediction({ start: world.generation, mean: world.history[world.generation].stats.means.fur, choice: predictionChoice, habitat: world.habitat }); setStatus(tx('prediction_saved', 'Prediction locked. Observe five more generations, then compare the evidence.')); }
+    var evaluated = prediction && (world.generation >= prediction.start + 5 || !world.history[world.generation].population.length);
+    var predFrame = evaluated ? world.history[Math.min(world.generation, prediction.start + 5)] : null;
+    var difference = predFrame && predFrame.stats.means.fur != null ? predFrame.stats.means.fur - prediction.mean : null;
+    var observed = difference == null ? 'extinct' : Math.abs(difference) < 0.03 ? 'same' : difference > 0 ? 'more' : 'less';
+    var choices = { more: tx('more_fur', 'More insulation'), less: tx('less_fur', 'Less insulation'), same: tx('same_fur', 'Little change (under 3 points)') };
+    var extinct = !world.history[world.generation].population.length, ended = extinct || world.generation >= 60;
+    var previous = cursor ? world.history[cursor - 1] : null;
+    var story = !cursor ? tx('arrival_story', '36 spriglets have arrived, each with a different mix of inherited traits. Meet one, make a prediction, then advance a generation.') :
+      frame.population.length ? frame.survivors.length + ' / ' + previous.population.length + ' ' + tx('survived_story', 'survived to breed. Their offspring form the new generation. Parents keep their original traits.') : tx('extinct_story', 'Fewer than two spriglets survived to breed. This population left no next generation. Rewind to investigate, or start a new expedition.');
+    function finding() {
+      var first = world.history[0], last = world.history[world.generation];
+      var text = 'Living Island · seed ' + world.seed + ' · generations 0–' + world.generation + '\nPopulation: ' + first.population.length + ' → ' + last.population.length + '.\n' + IslandModel.traits.map(function(k) { return labels[k] + ': ' + fmt(first.stats.means[k]) + ' → ' + fmt(last.stats.means[k]); }).join('\n') + '\nHabitat: ' + IslandModel.habitats[world.habitat].name + '. ' + (world.selection ? 'Selection enabled.' : 'Trait-neutral survival; drift remains.') + '\nThis is a simplified fictional population, not a prediction for a real species.';
+      callbacks.current.onFinding(text); setStatus(tx('finding_saved', 'Evidence saved to your Learning Journal. Add your explanation in the field note below.'));
+    }
+    function download() {
+      try { var url = URL.createObjectURL(new Blob([IslandModel.csv(world)], { type: 'text/csv;charset=utf-8' })); var a = document.createElement('a'); a.href = url; a.download = 'living-island-' + world.seed + '.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function() { URL.revokeObjectURL(url); }, 1000); setStatus(tx('exported', 'Generation data exported as CSV.')); } catch (_) { setStatus(tx('export_failed', 'The browser could not download this file. Use Save finding to keep the evidence in your journal.')); }
+    }
+    function traitLine(key) { var v = selected ? IslandModel.value(selected, key) : 0; return h('div', { key: key, className: 'ei-trait' }, h('span', null, labels[key]), h('strong', null, fmt(v)), h('div', { className: 'ei-meter', 'aria-hidden': true }, h('span', { style: { width: v * 100 + '%', background: colors[key] } }))); }
+    return h('div', { className: 'ei-app', 'data-living-island': true },
+      h('style', null, islandCSS),
+      h('header', { className: 'ei-header' }, h('div', { className: 'ei-title' },
+        h('div', { className: 'ei-kicker' }, tx('eyebrow', 'EvoLab / field expedition 01')),
+        h('h1', null, tx('title', 'Living Island')),
+        h('p', null, tx('subtitle', 'Small creatures. Changing worlds. An evolutionary story you can follow.'))),
+        h('div', { className: 'ei-row' }, h('button', { type: 'button', onClick: function() { setPlaying(false); props.onMenu(); } }, tx('all_labs', '← All EvoLab activities')), h('button', { type: 'button', onClick: function() { setPlaying(false); props.onJournal(); } }, tx('journal', 'Field journal ↗')))),
+      h('div', { className: 'ei-shell' },
+        h(IslandInvestigations, { React: R, tx: tx, mission: mission, progress: missionProgress, badges: Object.keys(notes), canStart: live && !ended, ended: ended, generation: world.generation, playing: playing, onStart: startMission, onAdvance: advance, onChoose: function() { setPlaying(false); setMission(null); }, onReview: function() { showPhase('survivors', missionProgress.end); }, onRecord: recordMission }),
+        h('div', { className: 'ei-board' },
+          h('main', { className: 'ei-main' },
+            h('section', { className: 'ei-stage', 'aria-label': tx('habitat_view', 'Habitat and generation controls') },
+              h('div', { className: 'ei-stage-top' }, h('div', { className: 'ei-stage-label' }, h('strong', null, env.icon + ' ' + tx('habitat_' + shownHabitat, env.name)), h('small', null, tx('seed', 'World seed') + ' ' + world.seed)),
+                h('div', { className: 'ei-stage-label' }, h('strong', { 'data-island-generation': cursor }, h('span', { className: 'ei-live-dot' }), tx('generation', 'Generation') + ' ' + cursor), h('small', { 'data-island-phase': phase }, phase === 'parents' ? tx('viewing_parents', 'Replay · parent population') : phase === 'survivors' ? tx('viewing_survivors', 'Replay · actual survivors') : live ? tx('present', 'Present day') : tx('past', 'Looking into the past')))),
+              h(IslandScene, { React: R, tx: tx, frame: sceneFrame, layoutPopulation: phase === 'survivors' ? transition.parents : null, habitat: shownHabitat, seed: world.seed, selected: selectedId, family: family, moving: phase === 'offspring' && (moving || playing), reduced: reduced, onSelect: inspect }),
+              transition && h(IslandPhaseControls, { React: R, tx: tx, data: transition, phase: phase, onPhase: function(value) { showPhase(value); } }),
+              h('div', { className: 'ei-transport' },
+                h('div', { className: 'ei-row ei-between' }, h('div', { className: 'ei-row' },
+                  h('button', { type: 'button', className: 'ei-primary', disabled: ended, onClick: function() { setCursor(world.generation); setReplayPhase('offspring'); setPlaying(!playing); } }, playing ? tx('pause', 'Ⅱ Pause evolution') : tx('play', '▶ Play evolution')),
+                  h('button', { type: 'button', disabled: ended || !live || playing, onClick: advance }, tx('step', 'Next generation →'))),
+                  h('label', { className: 'ei-row' }, tx('pace', 'Pace'), h('select', { className: 'ei-speed', value: speed, onChange: function(e) { setSpeed(Number(e.target.value)); } }, h('option', { value: 1800 }, '1×'), h('option', { value: 900 }, '2×'), h('option', { value: 450 }, '4×')))),
+                h('div', { className: 'ei-generations' }, h('label', { htmlFor: 'ei-time' }, tx('rewind', 'Time travel')), h('input', { id: 'ei-time', type: 'range', min: 0, max: world.generation, value: cursor, disabled: world.generation === 0, 'aria-valuetext': tx('generation', 'Generation') + ' ' + cursor + ' / ' + world.generation, onChange: function(e) { setPlaying(false); setReplayPhase('offspring'); setCursor(Number(e.target.value)); } }), h('span', { className: 'ei-generation' }, cursor + ' / ' + world.generation)),
+                !live && h('button', { type: 'button', onClick: function() { setReplayPhase('offspring'); setCursor(world.generation); } }, tx('return_present', 'Return to present')),
+                h('p', { className: 'ei-story', role: playing ? undefined : 'status', 'aria-live': playing ? 'off' : 'polite' }, story),
+                ended && h('div', { className: 'ei-callout ei-warning' }, extinct ? tx('extinction', 'Your population went extinct. This is evidence to investigate, not a failed score. Rewind the timeline and inspect the last breeding generation.') : tx('finished', '60 generations recorded. Your expedition is complete: explore the timeline, export your data, and explain what changed.')))),
+            h('div', { className: 'ei-loop', 'aria-label': tx('generation_summary', 'Generation summary') },
+              [[frame.population.length, phase === 'offspring' ? tx('residents', 'Spriglets now') : tx('replay_offspring', 'Offspring') + ' · G' + cursor], [cursor ? frame.survivors.length : '—', tx('breeders', 'Breeding survivors')], [frame.mutations, tx('mutations', 'New allele mutations')], [fmt(frame.stats.diversity), tx('diversity', 'Trait diversity (mean SD)')]].map(function(s, i) { return h('div', { key: i }, h('strong', null, s[0]), h('small', null, s[1])); })),
+            h(IslandReplay, { React: R, tx: tx, data: transition, phase: phase, generation: cursor, trait: replayTrait, labels: labels, colors: colors, onTrait: setReplayTrait, onPhase: function(value) { showPhase(value); } }),
+            h(IslandFamily, { React: R, tx: tx, family: connections, labels: labels, onVisit: visitOrganism }),
+            h('div', { className: 'ei-callout' }, h('strong', null, tx('remember', 'Watch populations change. ')), tx('remember_body', 'Each spriglet keeps the genes it was born with. Evolution appears across generations as different parents leave offspring. Walking and hopping are decorative; survival is calculated once per generation.')),
+            h('details', { className: 'ei-card ei-stack' },
+              h('summary', null, tx('log_title', 'Your expedition log')),
+              h('div', { className: 'ei-log' }, world.history.slice(Math.max(0, cursor - 2), cursor + 1).reverse().map(function(f) {
+                var before = f.generation ? world.history[f.generation - 1] : null;
+                var breeders = before ? before.population.filter(function(o) { return f.survivors.indexOf(o.id) >= 0; }) : [];
+                var means = IslandModel.stats(breeders).means;
+                return h('div', { key: f.generation, className: 'ei-log-entry' }, h('b', null, 'G' + f.generation), h('div', null,
+                  h('strong', null, f.event === 'arrival' ? tx('log_arrival', 'A population full of possibilities') : f.event === 'climate' || f.event === 'intervention' ? tx('habitat_' + f.habitat, IslandModel.habitats[f.habitat].name) : tx('log_next', 'A new generation arrives')),
+                  h('small', null, before ? before.population.length + ' → ' + f.survivors.length + ' → ' + f.population.length + ' · ' + tx('log_sequence', 'parents → survivors → offspring') : tx('log_founders', '36 founders. Three inherited traits. No two gene combinations are the same.')),
+                  before && h('small', null, tx('log_fur', 'Mean insulation: ') + fmt(before.stats.means.fur) + ' → ' + fmt(means.fur) + ' → ' + fmt(f.stats.means.fur)),
+                  f.event === 'climate' && h('small', null, tx('log_climate', 'Living climate changed the habitat before this round of survival.'))));
+              })))),
+          h('aside', { className: 'ei-side ei-stack' },
+            h('section', { className: 'ei-card ei-stack' },
+              h('div', { className: 'ei-card-head' }, h('div', { className: 'ei-kicker' }, tx('world_controls', 'Make a change')), h('h2', null, tx('shape_habitat', 'Shape the habitat'))),
+              h('div', { className: 'ei-habitat-grid', role: 'group', 'aria-label': tx('choose_habitat', 'Choose the next habitat') }, Object.keys(IslandModel.habitats).map(function(key) { var v = IslandModel.habitats[key]; return h('button', { key: key, type: 'button', className: 'ei-habitat', disabled: !live || ended, 'aria-pressed': world.habitat === key, onClick: function() { changeHabitat(key); } }, h('i', { 'aria-hidden': true }, v.icon), tx('habitat_' + key, v.name)); })),
+              h('p', { className: 'ei-small' }, tx('hint_' + shownHabitat, env.hint)),
+              h('label', { className: 'ei-switch' }, h('input', { type: 'checkbox', checked: world.living, disabled: !live || ended, onChange: function(e) { setting('living', e.target.checked); } }), h('span', null, tx('living_climate', 'Living climate'), h('small', null, tx('climate_help', 'A fresh habitat every 5 generations. Turn off for a controlled experiment.')))),
+              h('label', { className: 'ei-switch' }, h('input', { type: 'checkbox', checked: moving, onChange: function(e) { setMoving(e.target.checked); } }), h('span', null, tx('motion', 'Animate wildlife while paused'), reduced && h('small', null, tx('motion_reduced', 'Your reduced-motion preference keeps the habitat still.'))))),
+            h('section', { className: 'ei-card ei-stack' },
+              h('div', null, h('div', { className: 'ei-kicker' }, tx('field_guide', 'Meet the residents')), h('h2', null, tx('creature_title', 'Every spriglet is different'))),
+              h('label', { htmlFor: 'ei-organism' }, tx('select_organism', 'Inspect an organism')),
+              h('select', { id: 'ei-organism', value: selectedId || '', onChange: function(e) { inspect(e.target.value); } }, h('option', { value: '', disabled: true }, tx('choose_creature', 'Choose a spriglet…')),
+                selected && !sceneFrame.population.some(function(o) { return o.id === selectedId; }) && h('option', { value: selected.id }, tx('spriglet', 'Spriglet') + ' #' + selected.id + ' · ' + tx('outside_view', 'outside this view')),
+                sceneFrame.population.map(function(o) { return h('option', { key: o.id, value: o.id }, tx('spriglet', 'Spriglet') + ' #' + o.id + (family.has(o.id) ? ' ★' : '')); })),
+              selected ? h(R.Fragment, null,
+                h('div', { className: 'ei-organism' }, h(IslandPortrait, { React: R, organism: selected }), h('div', null, h('h3', null, tx('spriglet', 'Spriglet') + ' #' + selected.id), h('p', { className: 'ei-small' }, tx('born', 'Born in generation') + ' ' + selected.born), h('span', { className: 'ei-tag' }, selected.mutations + ' ' + tx('new_variants', 'new mutations')))),
+                IslandModel.traits.map(traitLine),
+                h('p', { className: 'ei-small' }, tx('survival_outlook', 'Model survival chance in this habitat') + ': ' + fmt(IslandModel.chance(selected, env, live && phase === 'offspring' ? world.selection : frame.selection)) + '. ' + tx('chance_help', 'A probability, not a guarantee.')),
+                h('button', { type: 'button', className: 'ei-quiet', onClick: function() { visitOrganism(selected.id); } }, tx('visit_birth', 'Visit this organism’s generation')),
+                h('button', { type: 'button', onClick: function() { setTracked(selected.id); setStatus(tx('tracking', 'Family tracking started. Gold rings mark this organism and its descendants.')); } }, trackedId === selected.id ? tx('following', '★ Following this family') : tx('follow', '☆ Follow this family')),
+                h('details', null, h('summary', { className: 'ei-small' }, tx('genes', 'See inherited allele pairs')), h('p', { className: 'ei-small' }, tx('allele_help', 'One allele from each parent; the trait is their average. Values use a teaching scale from 0 to 1.')), IslandModel.traits.map(function(k) { return h('p', { key: k, className: 'ei-small' }, labels[k] + ': ' + selected.genes[k].map(function(v) { return v.toFixed(3); }).join(' + ')); }))) : h('p', { className: 'ei-small' }, tx('meet_hint', 'Tap a creature on the island or choose one above. Inspect its coat, insulation, legs, and parents.')),
+              trackedId != null && h('div', { className: 'ei-callout' }, h('strong', null, tx('family_of', 'Family of') + ' #' + trackedId), h('p', null, descendants.length + ' ' + tx('descendants', 'descendants in this generation.')), descendants.length > 0 && h('button', { type: 'button', onClick: function() { inspect(descendants[0].id); } }, tx('meet_descendant', 'Meet a descendant')), h('p', { className: 'ei-small' }, tx('family_help', 'A descendant may inherit no particular allele from a distant ancestor. Relatedness is not identical traits.')))))),
+        h('div', { className: 'ei-evidence' },
+          h('section', { className: 'ei-card ei-stack' },
+            h('div', { className: 'ei-row ei-between' }, h('div', null, h('div', { className: 'ei-kicker' }, tx('evidence_kicker', 'The story in your data')), h('h2', null, tx('chart_title', 'What changed across generations?'))), h('button', { type: 'button', onClick: download }, tx('export', 'Export CSV'))),
+            h('div', { className: 'ei-chart-legend' }, IslandModel.traits.map(function(k) { return h('span', { key: k, style: { '--trait-color': colors[k] } }, labels[k]); })),
+            h('svg', { viewBox: '0 0 600 190', className: 'ei-chart', role: 'img', 'aria-label': tx('chart_alt', 'Mean inherited traits across generations. Exact values are available in the generation table below.') },
+              [0, 0.5, 1].map(function(v) { return h('g', { key: v }, h('line', { x1: 38, x2: 583, y1: 160 - v * 140, y2: 160 - v * 140, stroke: '#dce3d3', strokeDasharray: '3 5' }), h('text', { x: 30, y: 164 - v * 140, textAnchor: 'end' }, Math.round(v * 100))); }),
+              world.history.filter(function(f) { return f.event === 'climate' || f.event === 'intervention'; }).map(function(f) { var x = 40 + f.generation / Math.max(10, world.generation) * 535; return h('line', { key: f.generation, x1: x, x2: x, y1: 15, y2: 160, stroke: '#b3c4ab', strokeDasharray: '2 4' }); }),
+              IslandModel.traits.map(function(k, i) { var points = world.history.filter(function(f) { return f.stats.means[k] != null; }).map(function(f) { return (40 + f.generation / Math.max(10, world.generation) * 535) + ',' + (160 - f.stats.means[k] * 140); }).join(' '); return h('g', { key: k }, h('polyline', { points: points, fill: 'none', stroke: colors[k], strokeWidth: 3, strokeDasharray: i === 1 ? '7 3' : i === 2 ? '2 3' : undefined, strokeLinecap: 'round' }), frame.stats.means[k] != null && h('circle', { cx: 40 + cursor / Math.max(10, world.generation) * 535, cy: 160 - frame.stats.means[k] * 140, r: 4, fill: colors[k] })); }),
+              h('line', { x1: 40 + cursor / Math.max(10, world.generation) * 535, x2: 40 + cursor / Math.max(10, world.generation) * 535, y1: 14, y2: 162, stroke: '#2d463d', strokeWidth: 1 }),
+              h('text', { x: 40, y: 183 }, tx('generation', 'Generation') + ' 0'), h('text', { x: 580, y: 183, textAnchor: 'end' }, Math.max(10, world.generation))),
+            h('div', { className: 'ei-table-wrap' }, h('table', null, h('caption', { className: 'ei-small', style: { textAlign: 'left' } }, tx('comparison', 'Founders compared with the generation you are viewing')), h('thead', null, h('tr', null, h('th', { scope: 'col' }, tx('trait', 'Trait')), h('th', { scope: 'col' }, tx('founders', 'Founders')), h('th', { scope: 'col' }, tx('viewed', 'Viewed')))), h('tbody', null, IslandModel.traits.map(function(k) { return h('tr', { key: k }, h('th', { scope: 'row' }, labels[k]), h('td', null, fmt(world.history[0].stats.means[k])), h('td', null, fmt(frame.stats.means[k]))); })))),
+            h('details', null, h('summary', null, tx('all_data', 'Generation table')), h('div', { className: 'ei-table-wrap', style: { maxHeight: 250 } }, h('table', null, h('thead', null, h('tr', null, ['Generation', 'Habitat', 'Population', 'Insulation', 'Coat', 'Legs'].map(function(v, i) { return h('th', { key: i, scope: 'col' }, tx('col_' + i, v)); }))), h('tbody', null, world.history.map(function(f) { return h('tr', { key: f.generation }, h('th', { scope: 'row' }, f.generation), h('td', null, tx('habitat_' + f.habitat, IslandModel.habitats[f.habitat].name)), h('td', null, f.population.length), h('td', null, fmt(f.stats.means.fur)), h('td', null, fmt(f.stats.means.shade)), h('td', null, fmt(f.stats.means.legs))); }))))),
+            h('p', { className: 'ei-small' }, tx('chart_help', 'Dashed vertical markers show habitat changes. These are population averages, not upgrades to individual creatures. A single run mixes selection and chance; repeat with fresh seeds to look for a pattern.')),
+            h('button', { type: 'button', disabled: !world.generation, onClick: finding }, tx('save_finding', 'Save finding to journal'))),
+          h('section', { className: 'ei-card ei-stack' },
+            h('div', null, h('div', { className: 'ei-kicker' }, tx('think_scientist', 'Think like a field scientist')), h('h2', null, tx('prediction_title', 'Predict. Watch. Explain.'))),
+            h('p', { className: 'ei-small' }, tx('prediction_question', 'Over the next five generations, what will happen to average insulation? Choose a habitat first. For a clearer test, keep Living climate off.')),
+            !prediction ? h(R.Fragment, null, h('label', { htmlFor: 'ei-predict' }, tx('my_prediction', 'My prediction')), h('select', { id: 'ei-predict', value: predictionChoice, onChange: function(e) { setPredictionChoice(e.target.value); } }, h('option', { value: '' }, tx('choose_prediction', 'I predict…')), Object.keys(choices).map(function(k) { return h('option', { key: k, value: k }, choices[k]); })), h('button', { type: 'button', disabled: !predictionChoice || !live || ended || world.generation > 55, onClick: recordPrediction }, tx('lock_prediction', 'Lock my prediction'))) : h('div', { className: 'ei-callout', role: 'status' },
+              h('strong', null, choices[prediction.choice]), h('p', null, tx('prediction_start', 'Starting mean') + ': ' + fmt(prediction.mean) + ' · G' + prediction.start),
+              evaluated ? h(R.Fragment, null, h('p', null, (predFrame.generation < prediction.start + 5 ? tx('generation', 'Generation') + ' ' + predFrame.generation : tx('prediction_observed', 'Five generations later')) + ': ' + fmt(predFrame.stats.means.fur) + '.'), h('p', null, observed === 'extinct' ? tx('prediction_extinct', 'The population went extinct, so there is no mean trait to compare.') : observed === prediction.choice ? tx('prediction_supported', 'This run supports your prediction. Could a different seed give a different result?') : tx('prediction_not_supported', 'This run did not match your prediction. Inspect who survived and what changed. Unexpected results are useful evidence.')), h('button', { type: 'button', onClick: function() { setPrediction(null); setPredictionChoice(''); } }, tx('new_prediction', 'Make another prediction'))) : h('p', null, tx('prediction_wait', 'Evidence arrives at generation') + ' ' + (prediction.start + 5))),
+            h('details', null, h('summary', null, tx('experiment_settings', 'Experiment settings')), h('div', { className: 'ei-stack' },
+              h('label', { className: 'ei-switch' }, h('input', { type: 'checkbox', checked: world.selection, disabled: !live || ended, onChange: function(e) { setting('selection', e.target.checked); } }), h('span', null, tx('selection_on', 'Traits affect survival'), h('small', null, tx('selection_off_help', 'Turn off for trait-neutral survival. Random survival, inheritance, and drift still occur.')))),
+              h('label', { htmlFor: 'ei-mutation' }, tx('mutation_chance', 'Mutation chance per inherited allele') + ': ' + Math.round(world.mutation * 100) + '%'), h('input', { id: 'ei-mutation', type: 'range', min: 0, max: 20, step: 1, value: Math.round(world.mutation * 100), disabled: !live || ended, onChange: function(e) { setting('mutation', Number(e.target.value) / 100); } }), h('p', { className: 'ei-small' }, tx('mutation_help', 'Mutation rates are deliberately exaggerated for a short lesson. New changes are random with respect to what the environment rewards.')))),
+            h('details', { className: 'ei-reset', open: resetOpen, onToggle: function(e) { setResetOpen(e.currentTarget.open); } }, h('summary', null, tx('new_expedition', 'Start a new expedition')), h('div', { className: 'ei-stack' }, h('p', { className: 'ei-small' }, tx('reset_help', 'Starting over replaces this island and timeline. Export your data or save a finding first. The same seed and the same actions reproduce the same result.')), h('label', { htmlFor: 'ei-seed' }, tx('seed', 'World seed')), h('input', { type: 'text', inputMode: 'numeric', id: 'ei-seed', value: seedText, maxLength: 10, onChange: function(e) { setSeedText(e.target.value); } }), h('button', { type: 'button', disabled: !/^\d{1,10}$/.test(seedText) || Number(seedText) > 4294967295, onClick: function() { restart(Number(seedText)); } }, tx('restart', 'Restart with this seed')), h('button', { type: 'button', onClick: function() { var a = new Uint32Array(1); if (window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(a); else a[0] = Date.now() >>> 0; restart(a[0]); } }, tx('fresh_world', 'Generate a fresh world')))))),
+        status && h('p', { role: 'status', className: 'ei-callout', style: { marginTop: 15 } }, status),
+        h('details', { className: 'ei-card', style: { marginTop: 17 } }, h('summary', null, tx('model_title', 'How this world works · teacher notes')), h('div', { className: 'ei-stack' },
+          h('p', { className: 'ei-small' }, tx('model_body', 'Spriglets are fictional organisms in a simplified population-genetics model. Three independent diploid loci control continuous traits; one allele per locus comes from each of two randomly sampled surviving parents. The trait is the average of its two alleles. Survival depends on habitat, coat camouflage, insulation, leg length, food, and chance. Longer legs aid escape but cost energy. Mutations happen during inheritance, with no knowledge of the environment.')),
+          h('p', { className: 'ei-small' }, tx('model_limits', 'Generations do not overlap. At least two survivors are needed to breed. The next population has 2.65 offspring per survivor, rounded down and capped at 60. Carrying capacity, trait effects, and mutation rates are teaching choices, not measurements. The model omits migration, linkage, dominance, learned behavior, age structure, and reproductive isolation. It does not simulate the full evolutionary process or demonstrate speciation.')),
+          h('p', { className: 'ei-small' }, tx('teacher_prompt', 'Try a 10-minute investigation: inspect two founders; predict the effect of a long winter; hold that habitat for five generations; compare allele pairs in parents and offspring. Repeat with a fresh seed. Then disable trait-based survival to investigate drift. A single run cannot separate all causes of change.')),
+          h('p', { className: 'ei-small' }, tx('landscape_model_note', 'The scenery draws inspiration from Galápagos lava shores, arid scrub, and greener highlands. This is a fictional island, not a geographic replica. Winter is an experimental climate, not a Galápagos season. Terrain, plants, water, and scenic viewpoints are visual context: all spriglets experience the selected habitat, regardless of position. This tool follows inherited traits across generations; the Ecosystem tool explores interactions between species and resources.')),
+          h('a', { href: 'https://www.galapagos.org/about_galapagos/biodiversity/', target: '_blank', rel: 'noopener noreferrer', className: 'ei-small' }, tx('landscape_reference', 'Landscape inspiration: Galápagos Conservancy — habitats')),
+          h('a', { href: 'https://evolution.berkeley.edu/evolution-101/mechanisms-the-processes-of-evolution/mutations/', target: '_blank', rel: 'noopener noreferrer', className: 'ei-small' }, tx('science_source', 'Science reference: UC Berkeley Understanding Evolution — mutations')))),
+        h('div', { style: { marginTop: 17 } }, props.fieldNote)));
+  }
+
   window.StemLab.registerTool('evoLab', {
     name: 'EvoLab — Evolution',
     icon: '\uD83D\uDC12',
-    desc: 'Evolution and natural selection through 17 student modules: seven core simulators, six quick concept labs, three reasoning challenges, and a persistent Capstone investigation. Includes population genetics, common ancestry, climate pressure, coevolution, and Maine wildlife examples.',
+    desc: 'Explore Living Island, a generative 3D evolution expedition with inherited traits, family tracking, changing habitats, and a generation timeline. Continue into 17 focused activities on natural selection, population genetics, ancestry, and scientific investigation.',
     category: 'biology',
     aliases: ['evolution', 'natural selection', 'Darwin', 'Hardy-Weinberg'],
     render: function(ctx) {
@@ -408,7 +1296,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       }
 
       // Top-level view selector. 'menu' is the hub; each module has its own view.
-      var viewState = useState(d.view || 'menu');
+      var viewState = useState(d.view || 'livingIsland');
       var view = viewState[0], setView = viewState[1];
       // ── Stable view identities ──
       // Components defined inside render() get a new function identity every
@@ -471,6 +1359,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         t('stem.evolab.mq_l9', 'Evolution is random'), t('stem.evolab.mq_l10', 'Macroevolution unobserved'), t('stem.evolab.mq_l11', 'Giraffes needed long necks'), t('stem.evolab.mq_l12', 'Evolution is always slow')
       ];
       var MODULE_TITLES = {
+        livingIsland: 'Living Island',
+        livingIslandData: 'Living Island — recorded evidence',
+        livingIslandCold: t('stem.evolab.island_note_cold', 'Living Island — Cold snap'),
+        livingIslandFamily: t('stem.evolab.island_note_family', 'Living Island — Family detective'),
+        livingIslandDrift: t('stem.evolab.island_note_drift', 'Living Island — The chance experiment'),
         predatorVision: 'Predator Vision', mateChoice: 'Mate Choice Lab', climatePressure: 'Climate Pressure Lab', selectionSandbox: 'Selection Sandbox', beakLab: 'Galápagos Beak Lab', speciation: 'Trait Divergence Model', phyloBuilder: 'Phylogenetic Tree Builder', hardyWeinberg: 'Hardy-Weinberg', geneticDrift: 'Genetic Drift', commonAncestry: 'Common Ancestry', antibioticLab: 'Antibiotic Resistance', coevolution: 'Coevolution Lab', discoveryTimeline: 'Discovery Timeline', misconceptions: 'Misconceptions Quiz', selectionSleuth: 'Selection Sleuth', homologySleuth: 'Homology vs Analogy', capstone: 'Capstone Project', termSprint: 'Term Sprint'
       };
       var goto = function(v) {
@@ -1956,6 +2849,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         };
 
         return h('div', { className: 'p-6 max-w-6xl mx-auto' },
+          h('div', { className: 'ei-app', style: { padding: 0, borderRadius: 20, marginBottom: 24 } },
+            h('style', null, islandCSS),
+            h('section', { className: 'ei-expedition' },
+              h('div', null,
+                h('div', { className: 'ei-kicker' }, t('stem.evolab.island_flagship', 'Start here · a living 3D expedition')),
+                h('h2', null, t('stem.evolab.island_hero', 'A small island.\nAn extraordinary story.')),
+                h('p', null, t('stem.evolab.island_hero_body', 'Meet the spriglets. Follow their families, change their habitat, and discover how a population evolves. Every generation has a story. What will yours reveal?')),
+                h('button', { type: 'button', className: 'ei-primary', onClick: function() { goto('livingIsland'); } }, t('stem.evolab.island_enter', 'Explore Living Island →')),
+                h('p', { style: { fontSize: 11, marginTop: 12 } }, t('stem.evolab.island_hero_hint', 'No setup needed · 10-minute first expedition · new worlds to discover'))),
+              h('div', { className: 'ei-expedition-art', 'aria-hidden': true }, h('div', { className: 'ei-mini-island' }),
+                h('div', { className: 'ei-mini-creatures' }, [0.25, 0.8, 0.5].map(function(v, i) { return h(IslandPortrait, { key: i, React: React, organism: { genes: { shade: [v,v], fur: [i / 3,i / 3], legs: [0.3,0.6] } } }); }))))),
           h('div', { className: 'text-center mb-6' },
             h('div', { className: 'text-6xl mb-3' }, '🧬'),
             h('h1', { className: 'text-4xl font-black text-slate-800 mb-2' + onHostInk }, 'EvoLab'),
@@ -13959,6 +14863,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // ─────────────────────────────────────────────────────
       // MAIN VIEW DISPATCH
       // ─────────────────────────────────────────────────────
+      if (view === 'livingIsland') return h(LivingIsland, {
+        React: React, saved: d.island, study: d.islandStudy,
+        onSave: function(world) { upd('island', world); },
+        onStudy: function(study) { upd('islandStudy', study); },
+        onMenu: function() { goto('menu'); },
+        onJournal: function() { goto('journal'); },
+        onFinding: function(text, investigation) { var noteKeys = { cold: 'livingIslandCold', family: 'livingIslandFamily', drift: 'livingIslandDrift' }; saveNote(Object.prototype.hasOwnProperty.call(noteKeys, investigation) ? noteKeys[investigation] : 'livingIslandData', text); },
+        fieldNote: h(FieldNote, { moduleId: 'livingIsland', prompt: t('stem.evolab.island_note_prompt', 'What changed in your population? Use a before-and-after number, explain inheritance and survival, and name one limit of this model.') })
+      });
       if (view === 'predatorVision') return h(stableType('PredatorVisionLab', PredatorVisionLab));
       if (view === 'mateChoice') return h(stableType('MateChoiceLab', MateChoiceLab));
       if (view === 'climatePressure') return h(stableType('ClimatePressureLab', ClimatePressureLab));

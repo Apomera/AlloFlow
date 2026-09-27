@@ -2,6 +2,12 @@
 
 Purpose: a shared, human-readable coordination note for Aaron, Claude Code, and Codex. Update this before and after meaningful work so agents do not step on each other.
 
+## Current multi-chat integration ownership (2026-09-26)
+
+The current 19-chat ownership ledger and validation record are in `reports/adapted-reader-integration-01-2026-09-26-1730/ownership.md`. All domain handoffs and the second local integration pass are complete. The parent coordination chat now owns the release following Aaron's explicit request to commit everyone's work and run `deploy.sh`. Preserve existing changes; no other implementation writer is active.
+
+Track 01 integrated the delivered reader, audio, research, delivery, preview and helper deltas. The final local validation passed 900 tests across 40 files and nine browser acceptance runs; 8,227 mirrors and all 15 affected content pins matched. Before release, the parent rechecked all 157 frozen input hashes with no drift. See `reports/adapted-reader-integration-01-2026-09-26-1730/pass-two/HANDOFF.md` for evidence and documented translation, accessibility and memory-profiling follow-ups. Deployment verification is recorded separately from these local results.
+
 Last updated: 2026-07-28 by Codex.
 
 ## Repo Map
@@ -100,6 +106,16 @@ Recent validation from the desktop work:
 - `npm run desktop:web:build` timed out after roughly 184 seconds and needs to be retried with a longer timeout before calling the installer "fresh."
 
 ## Work Log
+
+- 2026-09-26 | Codex parent release | All completed multi-chat source, runtime mirrors, tests, developer tools, translation payloads and selected durable reports | In progress | Aaron explicitly authorized commit and `deploy.sh`. Stage reviewed files and required report fixtures; retain temporary baseline/candidate copies locally. Use the script's normal gates, source/post-build commits and pushes, then verify the live student shell and changed CDN assets against the committed release.
+
+- 2026-09-26 | Codex | Document research improvements IMPLEMENTED LOCALLY: storage recovery, duplicate choices, lesson-specific selections, exact-excerpt documents-only mode, inspectable citations and adaptation preservation. 340 focused checks pass across rechecks; one pre-existing host shim assertion remains. Chromium smoke passes. See reports/own-source-research-improvements-2026-09-26/README.md and COORDINATION.md for exact shared scope/hashes. Shared host/manifest/reader/global-pin ownership returned to integration01; final engine pin 04a718b3 remains for its assembled-pin pass. Preserve the coordinated water-cycle research fix and all unrelated concurrent work. No push/deploy requested or performed.
+
+- 2026-09-26 | Codex | Cephalopod Hunter enhancement IN PROGRESS: owns stem_lab/stem_tool_cephalopodlab.js and its deploy mirrors, focused hunt tests, and reports/cephalopod-hunter-enhancement/. Implementing approved visual/anatomy, mission/strategy, input/time/persistence/lifecycle, and responsive-control improvements. Preserve other concurrent work. No deployment requested.
+
+
+
+- 2026-09-26 | Codex | Track 10 prepared word help COMPLETE in isolated C:\Users\cabba\.codex\worktrees\prepared-word-help-sparse\UDL-Tool-Updated, branch codex/prepared-word-help, commit a8aaef88a392aaa1b3e682e4d6323e4ed905d2d8 (base fd4044c86; normal hooks passed). Fixes exact formatted/repeated anchors, language-pane isolation, card invalidation, prepared accessible labels/list access, no-Highlights copy, and per-card audio cleanup. 175/175 tests across seven suites and four Chromium fixture groups pass. Shared reader/host/generated files untouched; track 03/04/09 integration must merge the bounded source delta and rebuild with the current shared builder. The original shared 10-case regression seed remains unchanged; merge the final 25-case file from the commit with the source. Detailed evidence and limits: isolated reports/prepared-word-help/README.md. No push, deployment, or outbound cross-session message.
 
 - 2026-09-20 | Codex | Comparison reading presentation COMPLETE locally: Original/Adapted panes render Markdown and open the existing karaoke reader with the selected text/language; source text/gloss offsets and navigation stay intact. Comparison playback disables recording/resource capture; device fallback receives per-sentence language. Canonical reader sources and generated root/public pairs synchronized. 193/193 focused tests and 6/6 Chromium desktop/320px scenarios pass; screenshots visually checked; source parse, render references, parity and scoped whitespace pass. Report: reports/comparison-reader-markdown-karaoke/README.md. Scoped local commit prepared; no push or deployment, as requested.
 

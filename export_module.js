@@ -3061,8 +3061,15 @@ const createExport = deps => {
   };
 
   // ─── handleExportStorybook ────────────────────────────────────────
+  let storybookPreparing = false;
   const handleExportStorybook = async (rawOptions = false) => {
+    if (storybookPreparing) return false;
     const options = _normalizeStorybookExportOptions(rawOptions);
+    const checkCancelled = () => {
+      if (options.signal?.aborted) throw Object.assign(new Error('Storybook export cancelled.'), {
+        name: 'AbortError'
+      });
+    };
     const {
       includeImages,
       includeNarration
@@ -3077,6 +3084,7 @@ const createExport = deps => {
       rehydrateHistoryWithImages,
       parseMarkdownToHTML,
       prepareReadAloudArtifactAudio,
+      prepareStorybookSummary,
       selectedVoice,
       voiceSpeed,
       leveledTextLanguage,
@@ -3086,16 +3094,19 @@ const createExport = deps => {
     } = current;
     if (!adventureState || !Array.isArray(adventureState.history) && !adventureState.currentScene) return false;
     if ((!adventureState.history || adventureState.history.length === 0) && !adventureState.currentScene) return false;
-    if (!options.keepModalOpen && typeof setShowStorybookExportModal === 'function') setShowStorybookExportModal(false);
-    if (typeof setIsProcessing === 'function') setIsProcessing(true);
-    if (typeof addToast === 'function') addToast(t('adventure.storybook_toast_writing'), "info");
-    _storybookProgress(options, {
-      phase: 'story',
-      message: 'Preparing your Storybook…'
-    });
+    storybookPreparing = true;
     try {
+      checkCancelled();
+      if (!options.keepModalOpen && typeof setShowStorybookExportModal === 'function') setShowStorybookExportModal(false);
+      if (typeof setIsProcessing === 'function') setIsProcessing(true);
+      if (typeof addToast === 'function') addToast(t('adventure.storybook_toast_writing'), "info");
+      _storybookProgress(options, {
+        phase: 'story',
+        message: 'Preparing your Storybook…'
+      });
       const hydrated = typeof rehydrateHistoryWithImages === 'function' ? await rehydrateHistoryWithImages(adventureState.history || [], adventureState.imageCache || {}) : (adventureState.history || []).slice();
       const fullStory = Array.isArray(hydrated) ? hydrated.slice() : [];
+      checkCancelled();
       if (adventureState.currentScene) {
         fullStory.push({
           type: 'scene',
@@ -3104,6 +3115,11 @@ const createExport = deps => {
         });
       }
       const historyText = fullStory.map(entry => entry.type === 'scene' ? `Scene: ${entry.text}` : entry.type === 'choice' ? `Student Action: ${entry.text}` : `Outcome/Feedback: ${entry.text}`).join('\n\n');
+      const title = String(sourceTopic || t('adventure.title'));
+      const contract = window.AlloModules && window.AlloModules.ReadAloudArtifactContract;
+      const identitySeed = generatedContent?.id ? String(generatedContent.id) : String(sourceTopic || title || 'adventure');
+      const storyId = typeof contract?.stableIdFromParts === 'function' ? contract.stableIdFromParts('adventure-story', [identitySeed]) : identitySeed;
+      const summaryLanguage = String(leveledTextLanguage || currentUiLanguage || _exportLanguage() || 'English');
       const prompt = `
               You are a storyteller writing an epilogue for a student's educational adventure.
               Topic: ${sourceTopic || "General"}
@@ -3112,10 +3128,38 @@ const createExport = deps => {
               Task: Write a consolidated, engaging narrative summary of their journey (2-3 paragraphs).
               Highlight their key decisions and the final outcome.
               Write in the second person ("You started by... then you decided to...").
+              Write in ${summaryLanguage}.
               Return ONLY the narrative text.
             `;
-      const summary = String((await window.callGemini(prompt)) || '').trim();
-      const title = String(sourceTopic || t('adventure.title'));
+      let summary = '',
+        summaryWarning = '';
+      try {
+        if (includeNarration && typeof prepareStorybookSummary === 'function') {
+          const preparedText = await prepareStorybookSummary({
+            ownerApproved: true,
+            resourceId: storyId,
+            resourceType: 'adventure-storybook-read-aloud',
+            adapterId: 'adventure-storybook-artifact',
+            scopeId: 'story',
+            // Include the full journey, even beyond the provider prompt limit.
+            input: JSON.stringify([1, String(sourceTopic || 'General'), fullStory.map(entry => [entry.type, entry.text]), summaryLanguage]),
+            prompt,
+            signal: options.signal
+          });
+          summary = preparedText.text;
+          if (preparedText.recovery?.state === 'session-only') summaryWarning = 'The epilogue is available for this session but could not be saved on this device. Keep this page open to retry, or keep the download.';
+        } else {
+          summary = String((await window.callGemini(prompt)) || '').trim();
+        }
+        if (!summary) throw new Error('No Storybook epilogue was returned.');
+      } catch (error) {
+        if (error?.name === 'AbortError' || error?.code === 'preparation-in-progress') throw error;
+        checkCancelled();
+        summaryWarning = 'The epilogue could not be prepared. Your complete journey is included; retry online to add the epilogue.';
+        if (typeof warnLog === 'function') warnLog('Storybook epilogue unavailable', error);
+      }
+      checkCancelled();
+      if (summaryWarning && typeof addToast === 'function') addToast(summaryWarning, 'warning');
       const date = new Date().toLocaleDateString();
       const strPageTitle = t('export.storybook.page_title', {
         title
@@ -3143,7 +3187,6 @@ const createExport = deps => {
       const fileTitle = title.replace(/[^A-Za-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'adventure-storybook';
       const htmlFilename = `${fileTitle}-storybook-${ts}.html`;
       const jsonFilename = `${fileTitle}-storybook-read-aloud-${ts}.json`;
-      const contract = window.AlloModules && window.AlloModules.ReadAloudArtifactContract;
       let readAloudArtifact = null;
       let serializedReadAloudArtifact = '';
       let readAloudStats = {
@@ -3156,8 +3199,6 @@ const createExport = deps => {
           narrationWarning = 'Narration export is not available in this build yet. The complete text Storybook will still be downloaded.';
           if (typeof warnLog === 'function') warnLog('Storybook narration contract unavailable');
         } else {
-          const identitySeed = generatedContent && generatedContent.id ? String(generatedContent.id) : String(sourceTopic || title || 'adventure');
-          const storyId = contract.stableIdFromParts('adventure-story', [identitySeed]);
           const resourceId = generatedContent && generatedContent.id ? contract.stableIdFromParts('adventure-resource', [String(generatedContent.id)]) : null;
           const makeArtifactInput = acceptedAudio => ({
             storyId,
@@ -3189,6 +3230,7 @@ const createExport = deps => {
                 const narrationSpeed = Number.isFinite(numericSpeed) && numericSpeed > 0 ? numericSpeed : 1;
                 prepared = await prepareReadAloudArtifactAudio({
                   ownerApproved: true,
+                  recoverPreparedAudio: true,
                   resourceId: storyId,
                   resourceType: 'adventure-storybook-read-aloud',
                   adapterId: 'adventure-storybook-artifact',
@@ -3218,7 +3260,7 @@ const createExport = deps => {
                   }
                 });
               } catch (audioError) {
-                if (audioError && audioError.name === 'AbortError') throw audioError;
+                if (audioError?.name === 'AbortError' || audioError?.code === 'preparation-in-progress') throw audioError;
                 if (typeof warnLog === 'function') warnLog('Storybook narration preparation failed', audioError);
                 narrationWarning = 'Narrated audio could not be prepared. The complete text Storybook will still be downloaded.';
               }
@@ -3242,6 +3284,11 @@ const createExport = deps => {
                 narrationWarning = `${rejectedClips} narration clip${rejectedClips === 1 ? '' : 's'} could not be included. The Storybook text remains complete.`;
               } else if (!Object.keys(acceptedAudio).length && !narrationWarning) {
                 narrationWarning = 'No narrated audio was returned. The complete text Storybook will still be downloaded.';
+              } else if (Object.keys(acceptedAudio).length < totalSegments && !narrationWarning) {
+                narrationWarning = `${totalSegments - Object.keys(acceptedAudio).length} narration clips are missing. Retry the export to prepare the missing clips; completed narration is retained.`;
+              }
+              if (prepared?.recovery?.state === 'session-only') {
+                narrationWarning += ' Prepared narration could not be saved for recovery on this device. Keep this page open to retry, or keep the downloaded Storybook.';
               }
             } else {
               narrationWarning = 'Narration is not connected in this build yet. The complete text Storybook will still be downloaded.';
@@ -3253,7 +3300,7 @@ const createExport = deps => {
               if (validation && validation.ok && validation.stats) readAloudStats = validation.stats;
             }
           } catch (contractError) {
-            if (contractError && contractError.name === 'AbortError') throw contractError;
+            if (contractError?.name === 'AbortError' || contractError?.code === 'preparation-in-progress') throw contractError;
             if (typeof warnLog === 'function') warnLog('Storybook read-aloud artifact could not be built', contractError);
             readAloudArtifact = null;
             serializedReadAloudArtifact = '';
@@ -3286,8 +3333,14 @@ const createExport = deps => {
       const journeyScenes = normalizedScenes.filter(scene => scene.sceneId !== 'epilogue');
       const epilogueHtml = epilogueScene ? epilogueScene.segments.map(segment => `${renderMarkdown(segment.text)}${renderAudio(segment, epilogueScene.title)}`).join('') : renderMarkdown(summary);
       let chaptersHtml = '';
+      let embeddedPictureCount = 0,
+        externalPictureCount = 0,
+        omittedPictureCount = 0;
       journeyScenes.forEach((scene, sceneIndex) => {
         const safeImage = /^(?:data:image\/(?:png|jpeg|jpg|gif|webp);base64,|blob:|https?:\/\/)/i.test(String(scene.image || '')) ? String(scene.image) : '';
+        if (includeImages && scene.image) {
+          if (!safeImage) omittedPictureCount++;else if (safeImage.startsWith('data:')) embeddedPictureCount++;else externalPictureCount++;
+        }
         const segmentHtml = scene.segments.map(segment => {
           const audioHtml = renderAudio(segment, scene.title);
           if (segment.kind === 'choice') {
@@ -3307,6 +3360,11 @@ const createExport = deps => {
                 `;
       });
       const embeddedArtifact = serializedReadAloudArtifact ? `<script type="application/json" id="alloflow-read-aloud-artifact">${_jsonForHtmlScript(readAloudArtifact)}</script>` : '';
+      const mediaSummary = includeNarration ? `${Number(readAloudStats.audioClips) || 0} of ${normalizedScenes.reduce((count, scene) => count + scene.segments.length, 0)} narration clips included.` : '';
+      const pictureSummary = includeImages ? `Pictures embedded: ${embeddedPictureCount}. Pictures requiring the original source: ${externalPictureCount}. Pictures omitted: ${omittedPictureCount}.` : '';
+      if (includeImages && (externalPictureCount || omittedPictureCount) && typeof addToast === 'function') {
+        addToast('Some Storybook pictures are not embedded. Their availability on another device is not verified.', 'warning');
+      }
       const storyHtml = `
               <!DOCTYPE html>
               <html lang="${_escapeExportText(exportLang)}" dir="${exportDir}">
@@ -3345,17 +3403,19 @@ const createExport = deps => {
                       <p class="meta">${_escapeExportText(strSubtitle)}</p>
                       <p class="meta">${_escapeExportText(strMeta)}</p>
                   </div>
-                  <div class="summary-box" data-scene-id="epilogue">
+                  ${summary ? `<div class="summary-box" data-scene-id="epilogue">
                       <div class="epilogue-badge">${safeEpilogue}</div>
                       ${epilogueHtml}
-                  </div>
+                  </div>` : '<p class="epilogue-availability">Epilogue unavailable. The complete journey follows.</p>'}
                   <h2 style="text-align: center; text-transform: uppercase; letter-spacing: 2px; color: #64748b; margin-bottom: 40px;">${_escapeExportText(strLogHeader)}</h2>
                   <div class="log-section">${chaptersHtml}</div>
+                  <p class="media-availability" role="status">${_escapeExportText([mediaSummary, pictureSummary].filter(Boolean).join(' '))}</p>
                   <div style="text-align: center; margin-top: 50px; color: #64748b; font-size: 0.8em;">${_escapeExportText(strFooter)}</div>
                   ${embeddedArtifact}
               </body>
               </html>
             `;
+      checkCancelled();
       const storyItems = normalizedScenes.flatMap(scene => scene.segments.map(segment => ({
         id: segment.segmentId,
         title: segment.kind === 'epilogue' ? 'Epilogue' : segment.kind === 'choice' ? 'Student choice' : segment.kind === 'feedback' ? 'Outcome' : scene.title,
@@ -3376,7 +3436,13 @@ const createExport = deps => {
         sceneCount: readAloudArtifact ? readAloudArtifact.transcript.sceneCount : normalizedScenes.length,
         segmentCount: readAloudArtifact ? readAloudArtifact.transcript.segmentCount : storyItems.length,
         audioClipCount: Number(readAloudStats.audioClips) || 0,
-        totalAudioBytes: Number(readAloudStats.totalAudioBytes) || 0
+        totalAudioBytes: Number(readAloudStats.totalAudioBytes) || 0,
+        pictures: {
+          embedded: embeddedPictureCount,
+          external: externalPictureCount,
+          omitted: omittedPictureCount,
+          decoding: 'unverified'
+        }
       } : null;
       try {
         const artifact = {
@@ -3386,9 +3452,9 @@ const createExport = deps => {
           sourceLabel: 'Adventure Mode',
           kindLabel: 'Adventure Storybook',
           title,
-          summary: `Student-controlled Adventure Mode storybook with ${Math.max(0, storyItems.length - 1)} journey entries`,
+          summary: `Student-controlled Adventure Mode storybook with ${storyItems.filter(item => item.id !== 'epilogue:summary').length} journey entries`,
           privacy: 'student-controlled',
-          privacySummary: includeNarration ? 'Student-controlled. Storybook text and a lightweight download reference are saved on this device; narration audio remains only in downloaded files.' : 'Student-controlled. Storybook text is saved on this device for the AlloHaven Portfolio.',
+          privacySummary: includeNarration ? 'Student-controlled. Storybook text and a lightweight download reference are saved on this device. Narration is included in downloaded files, and a separate epilogue and narration recovery copy may be saved on this device for export retries.' : 'Student-controlled. Storybook text is saved on this device for the AlloHaven Portfolio.',
           sourceSummary: 'Saved from Adventure Mode storybook export',
           lifecycleStatus: 'saved',
           version: 1,
@@ -3449,13 +3515,14 @@ const createExport = deps => {
         phase: 'download',
         message: 'Finishing your Storybook download…'
       });
+      checkCancelled();
       if (includeNarration) {
         _downloadStorybookFile(storyHtml, 'text/html;charset=utf-8', htmlFilename);
         if (serializedReadAloudArtifact) {
           _downloadStorybookFile(serializedReadAloudArtifact, 'application/json;charset=utf-8', jsonFilename);
         }
         if (typeof addToast === 'function') {
-          addToast(readAloudStats.audioClips > 0 ? 'Downloaded the narrated Storybook as self-contained HTML and JSON files.' : 'Downloaded the Storybook as text-first HTML and JSON files.', 'success');
+          addToast(readAloudStats.audioClips > 0 ? 'Downloaded the Storybook as HTML and JSON files with embedded narration. Check the included media counts before sharing.' : 'Downloaded the Storybook as text-first HTML and JSON files.', 'success');
         }
       } else {
         const printWindow = window.open('', '_blank');
@@ -3490,6 +3557,7 @@ const createExport = deps => {
       });
       return false;
     } finally {
+      storybookPreparing = false;
       if (typeof setIsProcessing === 'function') setIsProcessing(false);
     }
   };

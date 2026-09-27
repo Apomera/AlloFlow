@@ -146,7 +146,7 @@ describe('adapted text under hidden AI', () => {
     const engine = window.AlloModules.createContentEngine({ getState: () => state, callGemini: blocked, addToast, t: () => null });
     const word = document.createElement('span'); word.getBoundingClientRect = () => ({ left: 1, bottom: 2 });
     await engine.handleWordClick('river', { stopPropagation() {}, currentTarget: word, clientX: 0, clientY: 0 });
-    expect(definition).toMatchObject({ word: 'river', text: 'AI explanations are off; the dictionary entry is below.' });
+    expect(definition).toMatchObject({ word: 'river', text: null, aiStatus: 'disabled', isLoading: false });
     expect(addToast).not.toHaveBeenCalled();
     delete window.callGemini;
   });

@@ -2417,6 +2417,7 @@ function _installLocalTextBridge(aiInstance, aiConfig) {
             return await aiInstance.generateText(prompt, {
                 json: Boolean(jsonMode),
                 search: Boolean(useSearch),
+                searchQuery: _searchQuery || null,
                 temperature: temperature == null ? null : Number(temperature),
                 signal,
                 schema: (opts && opts.schema) || null,
@@ -11515,6 +11516,10 @@ if (typeof window !== 'undefined') {
   };
 }
 // END ALLO_ARTIFACT_INSTANCE_IDENTITY
+function ReceivedReadingDeliveryStatus(props) {
+  const View = _alloSharedActivityModule()?.ReceivedReadingDelivery;
+  return View ? <View {...props} /> : null;
+}
 function MailboxImageDeliveryMonitor(props) {
   const Real = _alloLiveAacModule()?.MailboxImageDeliveryMonitor;
   return Real ? React.createElement(Real, props) : null;
@@ -11626,7 +11631,7 @@ const AlloFlowContent = () => {
     get havenConfigBusy() { return havenConfigBusy; }, get havenRecognitionConfig() { return havenRecognitionConfig; }, get havenRewardAmount() { return havenRewardAmount; }, get havenRewardBusy() { return havenRewardBusy; },
     get havenRewardDraftsRef() { return havenRewardDraftsRef; }, get havenRewardReasonId() { return havenRewardReasonId; }, get havenRewardSendLockRef() { return havenRewardSendLockRef; }, get highlightColor() { return highlightColor; },
     get highlightElement() { return highlightElement; }, get history() { return history; }, get homeworkExpiryDays() { return homeworkExpiryDays; }, get homeworkShelf() { return homeworkShelf; },
-    get hydrateHistory() { return hydrateHistory; }, get hydratedHistoryRef() { return hydratedHistoryRef; }, get includeSourceCitations() { return includeSourceCitations; }, get useOwnSources() { return useOwnSources; }, get setUseOwnSources() { return setUseOwnSources; }, get inputText() { return inputText; },
+    get hydrateHistory() { return hydrateHistory; }, get hydratedHistoryRef() { return hydratedHistoryRef; }, get includeSourceCitations() { return includeSourceCitations; }, get setUseOwnSources() { return setUseOwnSources; }, get setSelectedOwnSourceIds() { return setSelectedOwnSourceIds; }, get setDocumentsOnly() { return setDocumentsOnly; }, get inputText() { return inputText; },
     get interactiveOrganizerWriteQueueRef() { return interactiveOrganizerWriteQueueRef; }, get invalidateLocalDataHydration() { return invalidateLocalDataHydration; }, get invalidatePdfDocumentOperations() { return invalidatePdfDocumentOperations; }, get isBotSpeakingRef() { return isBotSpeakingRef; },
     get isBotVisible() { return isBotVisible; }, get isCanvas() { return isCanvas; }, get isCheckingChallenge() { return isCheckingChallenge; }, get isCommittedMathAssessmentContext() { return isCommittedMathAssessmentContext; },
     get isDictationActiveRef() { return isDictationActiveRef; }, get isExecutingBlueprint() { return isExecutingBlueprint; }, get isGlobalMuted() { return isGlobalMuted; }, get isGoogleRedirect() { return isGoogleRedirect; },
@@ -12261,7 +12266,19 @@ const AlloFlowContent = () => {
   const setWordSearchLang = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'wordSearchLang', value: v });
   const setStandardDeckLang = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'standardDeckLang', value: v });
   const setTargetTranslationLang = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'targetTranslationLang', value: v });
-  const [isTeacherMode, setIsTeacherMode] = useState(true);
+  const supportDraftSessionRef = useRef(null);
+  const requestReadingSupportTransition = run => supportDraftSessionRef.current ? supportDraftSessionRef.current.request(run) : run();
+  useEffect(() => {
+      const protect = event => supportDraftSessionRef.current?.protectUnload(event);
+      window.addEventListener('beforeunload', protect);
+      return () => window.removeEventListener('beforeunload', protect);
+  }, []);
+  const [isTeacherMode, _setIsTeacherMode] = useState(true);
+  const teacherModeRef = useRef(isTeacherMode); teacherModeRef.current = isTeacherMode;
+  const setIsTeacherMode = useCallback(value => {
+      const next = typeof value === 'function' ? value(teacherModeRef.current) : value;
+      return next === teacherModeRef.current ? undefined : requestReadingSupportTransition(() => _setIsTeacherMode(next));
+  }, []);
   const [studentAiConfigRevision, setStudentAiConfigRevision] = useState(0);
   useEffect(() => {
       const refreshStudentAi = () => {
@@ -13198,7 +13215,12 @@ const AlloFlowContent = () => {
   const generationDisplayStateRef = useRef({ resource: null, view: 'input' });
   generationDisplayStateRef.current.resource = generatedContent;
   const setGeneratedContent = useCallback((nextContent, generationOwner = null) => {
+      if (generationOwner && generationOwner !== generationViewOwnerRef.current) return;
       const displayed = generationDisplayStateRef.current.resource;
+      if (typeof nextContent !== 'function' && supportDraftSessionRef.current?.blocked()
+          && (nextContent?.id !== displayed?.id || nextContent?._artifactInstanceId !== displayed?._artifactInstanceId || nextContent?.type !== displayed?.type || nextContent?.data !== displayed?.data)) {
+          return requestReadingSupportTransition(() => setGeneratedContent(nextContent, generationOwner));
+      }
       if (!generationOwner && typeof nextContent !== 'function' && (nextContent?.id !== displayed?.id || nextContent?.type !== displayed?.type)) generationViewOwnerRef.current = null;
       _setGeneratedContent(previous => {
           if (generationOwner && generationOwner !== generationViewOwnerRef.current) return previous;
@@ -14272,11 +14294,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=55e824a46');
     loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=55e824a46');
     loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=55e824a46');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=55e824a46');
+    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=aa4eebe1');
     loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=55e824a46');
     loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=47162871');
     loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=a3fb7ab7');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=42ba4ded');
+    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=262f7435');
     loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=55e824a46');
     loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=55e824a46');
     loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=55e824a46');
@@ -14366,9 +14388,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=55e824a46');
     loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=55e824a46');
     loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=55e824a46');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=55e824a46');
+    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=ac2eb44c');
     window.__alloLazyQuickStartWizard = function() {
-      loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=55e824a46');
+      loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=ac2eb44c');
     };
     loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=55e824a46');
     loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=55e824a46');
@@ -14482,16 +14504,16 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloEnsureDocPipeline = function() {
       return window.__alloEnsureLazyModule('DocPipelineModule', '__alloLazyDocPipeline', 'createDocPipeline');
     };
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { try { window.__alloLazyDocPipeline(); } catch (_) {} if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=b3668673'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { try { window.__alloLazyDocPipeline(); } catch (_) {} if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=429a1ae2'); }; })();
     window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=55e824a46'); }; })();
     window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', 'https://alloflow-cdn.pages.dev/view_video_library_module.js?v=55e824a46'); }; })();
     window.__alloLazyVideoRefPlayer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoRefPlayer', 'https://alloflow-cdn.pages.dev/view_video_ref_player_module.js?v=55e824a46'); }; })();
     window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', 'https://alloflow-cdn.pages.dev/view_end_session_preview_module.js?v=55e824a46'); }; })();
     window.__alloLazyAssignmentCenter = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AssignmentCenter', 'https://alloflow-cdn.pages.dev/view_assignment_center_module.js?v=55e824a46'); }; })();
     window.__alloLazyMailboxScriptSource = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MailboxScriptSource', 'https://alloflow-cdn.pages.dev/mailbox_script_source_module.js?v=55e824a46'); }; })();
-    window.__alloLazyLiveSessionDockView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LiveSessionDockView', 'https://alloflow-cdn.pages.dev/view_live_session_dock_module.js?v=6de49b92'); }; })();
+    window.__alloLazyLiveSessionDockView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LiveSessionDockView', 'https://alloflow-cdn.pages.dev/view_live_session_dock_module.js?v=9987a5cb'); }; })();
     window.__alloLazyFullPackRunView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FullPackRunView', 'https://alloflow-cdn.pages.dev/view_full_pack_run_module.js?v=c7e326f0'); }; })();
-    window.__alloLazyShareSessionSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ShareSessionSurfaces', 'https://alloflow-cdn.pages.dev/view_share_session_surfaces_module.js?v=4fbf452c'); }; })();
+    window.__alloLazyShareSessionSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ShareSessionSurfaces', 'https://alloflow-cdn.pages.dev/view_share_session_surfaces_module.js?v=341e486b'); }; })();
     window.__alloLazyCanvasRecoveryDialogView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('CanvasRecoveryDialogView', 'https://alloflow-cdn.pages.dev/view_canvas_recovery_dialog_module.js?v=5f13b334'); }; })();
     window.__alloLazyColdPathSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ColdPathSurfaces', 'https://alloflow-cdn.pages.dev/view_cold_path_surfaces_module.js?v=2ce0737b'); }; })();
     window.__alloLazyVideoStudioHostBridgeView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoStudioHostBridgeView', 'https://alloflow-cdn.pages.dev/video_studio_host_bridge_module.js?v=081de825'); }; })();
@@ -14559,25 +14581,25 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     };
     loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=55e824a46');
     loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=55e824a46');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=55e824a46');
+    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=71c38634');
     // The teacher's own imported documents, shared by the source generator,
     // its toggle, the Quick Start toggle and the import control. No
     // dependencies of its own: it reaches Lumen lazily, loading those STEM
     // plugins on demand when a teacher first imports outside STEM Lab.
-    loadModule('OwnSources', 'https://alloflow-cdn.pages.dev/own_sources_module.js?v=55e824a46');
+    loadModule('OwnSources', 'https://alloflow-cdn.pages.dev/own_sources_module.js?v=45a61013');
     loadModule('AppStyles', 'https://alloflow-cdn.pages.dev/app_styles_module.js?v=55e824a46');
-    loadModule('LiveAac', 'https://alloflow-cdn.pages.dev/live_aac_module.js?v=55e824a46');
+    loadModule('LiveAac', 'https://alloflow-cdn.pages.dev/live_aac_module.js?v=0ae0268e');
     window.__alloLazySharedActivity = function() {
       if (window.AlloModules?.SharedActivity?.SharedAssignmentActivityPanel) return true;
       const entry = window.__alloModuleRegistry?.SharedActivity;
       if (entry?.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('SharedActivity');
-      loadModule('SharedActivity', 'https://alloflow-cdn.pages.dev/shared_activity_module.js?v=55e824a46');
+      loadModule('SharedActivity', 'https://alloflow-cdn.pages.dev/shared_activity_module.js?v=43722e2b');
       return true;
     };
     window.__alloLazySharedActivity();
     loadModule('GuidedModeConfig', 'https://alloflow-cdn.pages.dev/guided_mode_config_module.js?v=55e824a46');
     loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=55e824a46');
-    window.__alloEnsureSidebarPanels = () => { loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=55e824a46'); };
+    window.__alloEnsureSidebarPanels = () => { loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=d91a3b8a'); };
     window.__alloEnsureSidebarPanels();
     loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=55e824a46');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
@@ -14600,10 +14622,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=fc102547');
+    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=718a3342');
     loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=55e824a46');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=55e824a46');
+    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=189593ed');
     loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=55e824a46');
     loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=55e824a46');
     // Capability index (dev-tools/build_tool_index.cjs): what each STEM tool
@@ -14630,7 +14652,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           .catch(function () {});
       } catch (_) {}
     })();
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=55e824a46');
+    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=4e7ccd0d');
     loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=55e824a46');
     loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=55e824a46');
     loadModule('InstructionalContext', 'https://alloflow-cdn.pages.dev/instructional_context_module.js?v=55e824a46');
@@ -14671,16 +14693,16 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=55e824a46');
     loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=55e824a46');
     loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=55e824a46');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=5b9220b8');
+    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=9b9d88b8');
     // Word-by-word karaoke timing (deterministic envelope + valley snapping).
     loadModule('WordTimingModule', 'https://alloflow-cdn.pages.dev/word_timing_module.js?v=df764e1d');
     // Unified live-session content channel (SessionTransport stage 1).
     loadModule('SessionTransportModule', 'https://alloflow-cdn.pages.dev/session_transport_module.js?v=51e1ef84');
-    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=32af9127');
+    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=961229e6');
     loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=9a934766');
-    loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
+    loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=f8a017fc');
     loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=02102365');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=55e824a46');
+    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=7e9a1a5c');
     // File selection must promote intake ahead of deferred background tools.
     // The registry handles in-flight deduplication and failed-load retries.
     window.__alloLazyFileIntake = () => { loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=55e824a46'); };
@@ -14689,7 +14711,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=55e824a46');
     loadModule('MathManipulativeGraderModule', 'https://alloflow-cdn.pages.dev/math_manipulative_grader_module.js?v=55e824a46');
     loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=55e824a46');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=55e824a46');
+    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=2eb366e7');
     loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=78fd1c76');
     loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=55e824a46');
     loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=55e824a46');
@@ -14703,7 +14725,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=55e824a46');
     loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=55e824a46');
     loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=55e824a46');
-    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=285d9096'); }; })();
+    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=a1b6e046'); }; })();
     if (window.__alloSimplifiedViewRequested) window.__alloLazySimplifiedView();
     loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=55e824a46');
     loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=55e824a46');
@@ -14719,11 +14741,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js?v=a012c2fd');
     loadModule('AlloCommandContext', 'https://alloflow-cdn.pages.dev/allo_command_context_module.js?v=d9950c8d');
-    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=46b7618f');
+    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=fbda9fa8');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
     loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=55e824a46');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=55e824a46');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=55e824a46');
+    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=abda3c02');
+    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=5e470d0b');
     loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=55e824a46');
     loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=55e824a46');
     loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=55e824a46');
@@ -16110,6 +16132,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [activeView, _setActiveView] = useState('input');
   generationDisplayStateRef.current.view = activeView;
   const setActiveView = useCallback((value, generationOwner = null) => {
+      if (generationOwner && generationOwner !== generationViewOwnerRef.current) return;
+      if (typeof value !== 'function' && value !== generationDisplayStateRef.current.view && supportDraftSessionRef.current?.blocked()) return requestReadingSupportTransition(() => setActiveView(value, generationOwner));
       // Invalidate synchronously so a late result in the same React batch
       // cannot win before the navigation state updater is evaluated.
       if (!generationOwner && typeof value !== 'function' && value !== generationDisplayStateRef.current.view) generationViewOwnerRef.current = null;
@@ -16716,7 +16740,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, [isChunkReaderActive]);
   useEffect(() => {
       // Reset typewriter on chunk change. Tick advance happens in the renderer's
-      // own RAF loop (see view_simplified_module.js?v=222054b7 typewriter logic) so the char
+      // own RAF loop (see view_simplified_module.js?v=4bf8b03e typewriter logic) so the char
       // count doesn't depend on prop drilling another timer through the chain.
       setChunkTypewriterCharIdx(0);
   }, [chunkReaderIdx, chunkReaderMood, isChunkReaderActive]);
@@ -17305,8 +17329,30 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [focusData, setFocusData] = useState({ focusedMs: 0, unfocusedMs: 0, currentStreak: 0, longestStreak: 0, lastVisibleTime: Date.now(), engagedMinutes: 0, idleMinutes: 0 });
   const [pasteEvents, setPasteEvents] = useState([]);
   const lastInteractionTimeRef = useRef(Date.now());
+  const readingPreviewTimeRef = useRef({ owners: new Set(), startedAt: null, excludedMs: 0 });
   useEffect(() => {
-    const trackInteraction = () => { lastInteractionTimeRef.current = Date.now(); };
+    const onReadingPreview = event => {
+      const detail = event.detail;
+      if (!detail || typeof detail.owner !== 'string' || typeof detail.active !== 'boolean') return;
+      const clock = readingPreviewTimeRef.current;
+      if (detail.active) {
+        if (!clock.owners.size) clock.startedAt = Date.now();
+        clock.owners.add(detail.owner);
+      } else if (clock.owners.delete(detail.owner) && !clock.owners.size) {
+        clock.excludedMs += Math.max(0, Date.now() - clock.startedAt);
+        clock.startedAt = null;
+        // Resuming the host requires a host interaction before crediting work.
+        lastInteractionTimeRef.current = 0;
+      }
+    };
+    window.addEventListener('alloflow:reading-preview', onReadingPreview);
+    return () => window.removeEventListener('alloflow:reading-preview', onReadingPreview);
+  }, []);
+  useEffect(() => {
+    const trackInteraction = () => {
+      if (document.querySelector('[data-student-preview]')) return;
+      lastInteractionTimeRef.current = Date.now();
+    };
     window.addEventListener('click', trackInteraction);
     window.addEventListener('keydown', trackInteraction);
     window.addEventListener('scroll', trackInteraction);
@@ -17321,7 +17367,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloEngagement = {
       timeoutMs: _ALLO_ENGAGEMENT_TIMEOUT_MS,
       isEngaged: () => {
-        if (typeof document !== 'undefined' && document.hidden) return false;
+        if (typeof document !== 'undefined' && (document.hidden || document.querySelector('[data-student-preview]'))) return false;
         return (Date.now() - lastInteractionTimeRef.current) < _ALLO_ENGAGEMENT_TIMEOUT_MS;
       }
     };
@@ -17376,6 +17422,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     const STREAK_MILESTONES = [5, 10, 15, 20, 30];
     const ENGAGEMENT_TIMEOUT_MS = _ALLO_ENGAGEMENT_TIMEOUT_MS;
     focusStreakTimerRef.current = setInterval(() => {
+      if (document.querySelector('[data-student-preview]')) return;
       if (!document.hidden) {
         const isEngaged = (Date.now() - lastInteractionTimeRef.current) < ENGAGEMENT_TIMEOUT_MS;
         const isStreakEligible = !isParentMode;
@@ -17418,16 +17465,19 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
     }, 60000);
     const handleVisibilityChange = () => {
+      if (document.querySelector('[data-student-preview]')) return;
       const now = Date.now();
+      const excludedMs = readingPreviewTimeRef.current.excludedMs;
+      readingPreviewTimeRef.current.excludedMs = 0;
       if (document.hidden) {
         setFocusData(prev => ({
           ...prev,
-          focusedMs: prev.focusedMs + (now - prev.lastVisibleTime),
+          focusedMs: prev.focusedMs + Math.max(0, now - prev.lastVisibleTime - excludedMs),
           lastVisibleTime: now
         }));
       } else {
         setFocusData(prev => {
-          const awayMs = now - prev.lastVisibleTime;
+          const awayMs = Math.max(0, now - prev.lastVisibleTime - excludedMs);
           const awayMinutes = Math.round(awayMs / 60000);
           const resetStreak = awayMs > 30000;
           if (resetStreak && prev.currentStreak >= 3 && typeof addToast === "function") {
@@ -18408,6 +18458,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [saveEncryptPassword, setSaveEncryptPassword] = useState(''); // optional educator-save encryption password (transient, never persisted)
   const [saveType, setSaveType] = useState(null);
   const [isStudentLinkMode, setIsStudentLinkMode] = useState(false);
+  // Evidence is restricted to received bundles, never broader device History.
+  const [receivedDeliveryResources, setReceivedDeliveryResources] = useState([]);
+  useEffect(() => { setReceivedDeliveryResources([]); }, [activeSessionAppId, activeSessionCode]);
   const [showNewGameSetup, setShowNewGameSetup] = useState(false);
   const [resourceCount, setResourceCount] = useState('Auto');
   const [fullPackTargetGroup, setFullPackTargetGroup] = useState('none');
@@ -19421,6 +19474,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // via the native Enter/Space click, which the capture handler above intercepts.)
   useEffect(() => {
     const onHelpKeyDown = (e) => {
+      // Capture listeners run before the preview's own keyboard boundary.
+      if (e.target?.closest?.('[data-student-preview]')) return;
       const inField = e.target && e.target.closest && e.target.closest('input, textarea, select, [contenteditable=""], [contenteditable="true"]');
       if (e.key === '?' && !inField && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
@@ -20434,7 +20489,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const handleToggleShowWordSearchAnswers = React.useCallback(() => setShowWordSearchAnswers(prev => !prev), []);
   const handleToggleShowHealthCheckPanel = React.useCallback(() => setShowHealthCheckPanel(prev => !prev), []);
   const handleToggleIsTeacherToolbarExpanded = React.useCallback(() => setIsTeacherToolbarExpanded(prev => !prev), []);
-  const handleToggleIsEditingLeveledText = React.useCallback(() => setIsEditingLeveledText(prev => !prev), []);
+  const handleToggleIsEditingLeveledText = React.useCallback(() => requestReadingSupportTransition(() => setIsEditingLeveledText(prev => !prev)), []);
   const handleToggleIsEditingOutline = React.useCallback(() => setIsEditingOutline(prev => !prev), []);
   const handleToggleIsPresentationMode = React.useCallback(() => setIsPresentationMode(prev => !prev), []);
   const handleToggleIsReviewGame = React.useCallback(() => setIsReviewGame(prev => !prev), []);
@@ -22365,6 +22420,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                               hydratedHistoryRef.current = hydrated;
                               resourcesToRender = hydrated;
                               setHistory(hydrated);
+                              setReceivedDeliveryResources(hydrated);
                               if (liveResourceHydrationRetryTimerRef.current) clearTimeout(liveResourceHydrationRetryTimerRef.current);
                               liveResourceHydrationRetryTimerRef.current = null;
                               setLiveResourceLoadState({ status: 'ready', attempt });
@@ -22413,6 +22469,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                               hydratedHistoryRef.current = merged;
                               resourcesToRender = merged;
                               setHistory(merged);
+                              setReceivedDeliveryResources(merged);
                               clearHydrationRetry();
                               setLiveResourceLoadState({ status: 'ready', attempt });
                               _alloSessionSyncTrace('sync:mailbox-pack-hydrated', { count: merged.length, attempt });
@@ -23460,6 +23517,19 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                 const supportSource = stripImages && typeof window.stripReadingSupportPictures === 'function' ? window.stripReadingSupportPictures(item) : item;
                 if (supportSource.readingSupports) serializedItem.readingSupports = supportSource.readingSupports;
                 if (supportSource.adaptedReadingSupports) serializedItem.adaptedReadingSupports = supportSource.adaptedReadingSupports;
+                // Retain small omission markers through reload so a missing
+                // picture is distinguishable from a reading that never had one.
+                const pictureOmissions = [];
+                ['readingSupports', 'adaptedReadingSupports'].forEach(field => {
+                    const annotations = Array.isArray(item[field]?.annotations) ? item[field].annotations : [];
+                    annotations.forEach(entry => {
+                        if (!entry?.id) return;
+                        const omittedNow = stripImages && entry.image && !supportSource[field]?.annotations?.some(saved => saved.id === entry.id && saved.image);
+                        const omittedBefore = !entry.image && item.offlineMediaOmissions?.some?.(omission => omission.field === field && omission.id === entry.id);
+                        if (omittedNow || omittedBefore) pictureOmissions.push({ field, id: entry.id, kind: 'picture', reason: 'storage-quota' });
+                    });
+                });
+                if (pictureOmissions.length) serializedItem.offlineMediaOmissions = pictureOmissions;
                 if (item.gameData) serializedItem.gameData = JSON.stringify(item.gameData);
                 if (item.levelCheck) serializedItem.levelCheck = item.levelCheck;
                 if (item.alignmentCheck) serializedItem.alignmentCheck = item.alignmentCheck;
@@ -23484,10 +23554,28 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                 return serializedItem;
             });
         };
+        const publishMediaReceipt = (receipt) => {
+            if (owner.sequence !== sequence) return;
+            window.__alloOfflineMediaPersistence = {
+                status: receipt.status, verified: receipt.verified,
+                verifiedAt: receipt.verifiedAt || null, code: receipt.code || null
+            };
+            window.dispatchEvent(new CustomEvent('alloflow:offline-media-persistence', {
+                detail: { status: receipt.status, verified: receipt.verified, verifiedAt: receipt.verifiedAt || null }
+            }));
+        };
+        const verifySnapshot = async (snapshot) => {
+            const write = window.AlloModules?.UtilsPure?.writeVerifiedStorageSnapshot;
+            if (typeof write !== 'function') throw new Error('Verified device storage is not ready yet.');
+            return write(storageDB, 'allo_offline_history', snapshot, () => owner.sequence === sequence);
+        };
         try {
             const fullPayload = { items: serializeItems(itemsToSave, false) };
-            await storageDB.set('allo_offline_history', fullPayload);
-            if (owner.sequence === sequence) setLastSaved(new Date());
+            const receipt = await verifySnapshot(fullPayload);
+            if (receipt.verified && owner.sequence === sequence) {
+                publishMediaReceipt(receipt);
+                setLastSaved(new Date(receipt.verifiedAt));
+            }
         } catch (e) {
             // Quota classification must be PRECISE. This used to also match any error
             // whose message merely contained 'exceeded', which catches
@@ -23509,13 +23597,18 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                 addToast(t('toasts.storage_full_text_only'), "warning");
                 try {
                     const strippedPayload = { items: serializeItems(itemsToSave, true) };
-                    await storageDB.set('allo_offline_history', strippedPayload);
-                    if (owner.sequence === sequence) setLastSaved(new Date());
+                    const receipt = await verifySnapshot(strippedPayload);
+                    if (receipt.verified && owner.sequence === sequence) {
+                        publishMediaReceipt({ ...receipt, status: 'text-only' });
+                        setLastSaved(new Date(receipt.verifiedAt));
+                    }
                 } catch (retryErr) {
+                    publishMediaReceipt({ status: 'failed', verified: false, code: retryErr?.code || retryErr?.name || 'storage-failed' });
                     warnLog("Critical Storage Failure:", retryErr);
                     if (owner.sequence === sequence) addToast(t('toasts.storage_full_critical'), "error");
                 }
             } else {
+                publishMediaReceipt({ status: 'failed', verified: false, code: e?.code || e?.name || 'storage-failed' });
                 // NOT a quota problem. Say so plainly instead of leaving the teacher
                 // with a silent failure or, worse, a false 'storage full'.
                 warnLog("IndexedDB Save Error (not a quota condition):", e);
@@ -25338,6 +25431,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           return;
       }
       if (v.kind === 'res-remove' && Array.isArray(v.ids)) {
+          setReceivedDeliveryResources(prev => prev.filter(item => !v.ids.includes(item.id)));
           setHistory(prev => {
               const next = (Array.isArray(prev) ? prev : []).filter(item => item && !v.ids.includes(item.id));
               hydratedHistoryRef.current = next;
@@ -25351,9 +25445,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           if (!assembled) return;
           try {
               let resource = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
-              resource = _alloStudentSafeResources([resource])[0];
+              const receivedResourceId = resource && resource.id;
+              // Pair expansion can prepend an original. Preserve the identity
+              // that this message actually delivered and requested to open.
+              resource = _alloStudentSafeResources([resource]).find(item => item.id === receivedResourceId);
               if (!resource) throw new Error('The transferred resource is not a valid student resource');
               if (mbChunkStoreRef.current !== store) return;
+              setReceivedDeliveryResources(prev => [...prev.filter(item => item.id !== resource.id), resource]);
               setHistory(prev => {
                   const rest = (Array.isArray(prev) ? prev : []).filter(item => item && item.id !== resource.id);
                   const next = [...rest, resource];
@@ -25452,6 +25550,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               addToast('Some selected resources cannot be shared with students. Choose different resources in History before creating a link.', 'info');
               return null;
           }
+          // Describe the uploaded bodies, not their compact reference entries.
+          // A failed read falls through to the existing full-pack fallback.
+          const deliveryResources = await hydrateSessionAssets(appId, resources);
+          if (!Array.isArray(deliveryResources) || deliveryResources.some(item => !item || item.__alloResourceRef || item.__alloResourcesManifestRef)) {
+              throw new Error('Assignment resource assets are unavailable');
+          }
+          const deliverySummary = _alloSharedActivityModule()?.describeAssignmentDelivery?.(deliveryResources, resources[0]?.id, selectedResourceIds);
           const assignmentRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', assignmentId);
           await setDoc(assignmentRef, stripUndefined({
               kind: 'assignment',
@@ -25466,6 +25571,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               isActive: false,
               currentResourceId: resources[0]?.id || resourcesToAssign[0]?.id || null,
               resources,
+              deliverySummary,
               aiPolicy: {
                   studentAi: studentAiPolicyForShare,
                   workStory: studentProjectSettings.workStoryEnabled === true,
@@ -25476,7 +25582,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               version: 1,
           }));
           copyToClipboard(shareUrl);
-          openQrShareModal({ type: 'assignment', title, url: shareUrl, resourceCount: resources.length, resourceTitles: resources.map(item => item.title || item.type || 'Untitled resource'), deliverySummary: _alloSharedActivityModule()?.describeAssignmentDelivery?.(resources, resources[0]?.id, selectedResourceIds), createdAt: new Date().toISOString(), expiresAt: new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString(), assignmentId, hostAppId: appId, aiPolicy: studentAiPolicyForShare });
+          openQrShareModal({ type: 'assignment', title, url: shareUrl, resourceCount: resources.length, resourceTitles: resources.map(item => item.title || item.type || 'Untitled resource'), deliverySummary, createdAt: new Date().toISOString(), expiresAt: new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString(), assignmentId, hostAppId: appId, aiPolicy: studentAiPolicyForShare });
           addToast(studentAiPolicyForShare === 'student-byok' ? 'Homework QR ready. Students may connect their own tested AI provider.' : 'Homework QR ready. Student AI stays off.', 'success');
           return shareUrl;
       } catch (e) {
@@ -25606,6 +25712,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // Off by default: it only does anything once they have imported sources,
   // and turning it on silently would change what the AI is reading.
   const [useOwnSources, setUseOwnSources] = useState(false);
+  const [selectedOwnSourceIds, setSelectedOwnSourceIds] = useState(null);
+  const [documentsOnly, setDocumentsOnly] = useState(false);
   const [saveOriginalOnAdjust, setSaveOriginalOnAdjust] = useState(false);
 
   const [showUrlInput, setShowUrlInput] = useState(false);
@@ -31674,7 +31782,7 @@ const parseTaggedContent = (text) => {
     generationStep, isGeneratingSource, selectionMenu, phonicsData,
     sourceCustomInstructions, sourceLength, sourceLevel, sourceTone,
     sourceVocabulary, resourceCount, targetStandards, dokLevel,
-    selectedFont, includeSourceCitations, useOwnSources,
+    selectedFont, includeSourceCitations, useOwnSources, selectedOwnSourceIds, documentsOnly,
     interactionMode, revisionData, selectedVoice, voiceSpeed,
     standardsPromptString: targetStandards.join('; '),
     standardsContext: activeResolvedStandardsContext,
@@ -32514,6 +32622,7 @@ const parseTaggedContent = (text) => {
     if (container.mime === 'audio/wav') return _normalizeRecordedAudioForStore(blob);
     return { b64: await _blobToBase64(blob), mime: blob.type };
   };
+  window.__alloReadAloudProfileRevision = JSON.stringify([_aiConfig.ttsProvider, _aiConfig.backend, _aiConfig.models?.tts, GEMINI_MODELS.tts]);
   const _getReadAloudBridge = () => {
     const createBridge = window.AlloModules && window.AlloModules.createReadAloudLegacyBridge;
     if (typeof createBridge !== 'function') return null;
@@ -32726,8 +32835,10 @@ const parseTaggedContent = (text) => {
     } finally {
       if (cancellationPoll) clearInterval(cancellationPoll);
       try { externalSignal?.removeEventListener?.('abort', relayExternalAbort); } catch (_) {}
-      if (window.__alloPrepareReadAloudController === controller) window.__alloPrepareReadAloudController = null;
-      window.__alloPrepareReadAloudCancel = false;
+      if (window.__alloPrepareReadAloudController === controller) {
+        window.__alloPrepareReadAloudController = null;
+        window.__alloPrepareReadAloudCancel = false;
+      }
     }
   };
   window.__alloCaptureKaraokeAudio = async (sentence, url, captureOptions) => {
@@ -32798,10 +32909,42 @@ const parseTaggedContent = (text) => {
       ? bridge.reconcile(lane || 'reference', options || {})
       : null;
   };
-  window.__alloGetReadAloudAudioSummary = (sentences, lane, _summaryOptions) => {
+  // Provider/model changes also affect stored compatibility, even when reader
+  // text, voice, and speed props remain the same.
+  window.__alloReadAloudProfileRevision = JSON.stringify([_aiConfig.ttsProvider || 'auto', _aiConfig.backend || 'gemini', (_aiConfig.models && _aiConfig.models.tts) || GEMINI_MODELS.tts || '']);
+  window.__alloGetReadAloudAudioSummary = (sentences, lane, summaryOptions) => {
     const bridge = _getReadAloudBridge();
-    return bridge ? bridge.summary(sentences, lane || 'reference') : null;
+    return bridge ? bridge.summary(sentences, lane || 'reference', summaryOptions || {}) : null;
   };
+  // Track 02 can present these device-scoped counts alongside its current
+  // identity summary. Reading IndexedDB again detects eviction and text-only
+  // autosave; this never infers package or reader-shell portability.
+  window.__alloGetReadAloudReadiness = async (sentences, lane = 'reference', options = {}) => {
+    const requestOwner = window.__alloGetReadAloudReadiness;
+    const bridge = _getReadAloudBridge();
+    if (!bridge?.readiness) return null;
+    const resourceId = generatedContent?.id || generatedContent?.resourceId;
+    const KS = window.AlloModules?.KaraokeAudioStore;
+    const durableStore = KS?.createStore();
+    try {
+      const snapshot = await storageDB.get('allo_offline_history', { throwOnError: true, localOnly: true });
+      if (window.__alloGetReadAloudReadiness !== requestOwner) return null;
+      const saved = snapshot?.items?.find(item => String(item.id || item.resourceId) === String(resourceId));
+      if (saved && durableStore) durableStore.hydrate(saved[lane === 'student' ? 'karaokeStudentAudio' : 'karaokeAudio']);
+      return { resourceId, ...bridge.readiness(sentences, lane, {
+        entries: options.entries, profile: options.profile, failure: options.failure,
+        durableStore, receipt: { verified: true, verifiedAt: new Date().toISOString() },
+        preparing: !!window.__alloPrepareReadAloudController && !window.__alloPrepareReadAloudController.signal.aborted
+      }), pictureOmissions: saved?.offlineMediaOmissions || [] };
+    } catch (error) {
+      if (window.__alloGetReadAloudReadiness !== requestOwner) return null;
+      return { resourceId, ...bridge.readiness(sentences, lane, {
+        entries: options.entries, profile: options.profile,
+        failure: error, preparing: !!window.__alloPrepareReadAloudController && !window.__alloPrepareReadAloudController.signal.aborted
+      }), code: error?.code || error?.name || 'storage-failed' };
+    } finally { durableStore?.clear(); }
+  };
+  window.__alloRetryReadAloudPersistence = (lane = 'reference', options = {}) => _getReadAloudBridge()?.retryPersistence(lane, options);
   const STYLE_SEEDS = (window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.STYLE_SEEDS) || {
     professional: { name: 'Professional', emoji: '💼', wcagLevel: 'AA', cssVars: { bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', cardBg: '#f8fafc', cardBorder: '#e2e8f0', headerBg: 'linear-gradient(135deg, #1e3a5f, #2563eb)', headerText: '#ffffff' } },
     highContrast: { name: 'High Contrast', emoji: '◼️', wcagLevel: 'AAA', cssVars: { bodyFont: "'Atkinson Hyperlegible', system-ui, sans-serif", headingColor: '#000000', accentColor: '#0000ff', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#000000', headerBg: '#000000', headerText: '#ffff00', extraCSS: 'body { font-size: 1.1rem; } a { color: #0000ff; text-decoration: underline; } .section { border: 2px solid #000; } th { background: #000; color: #fff; }' } },
@@ -33566,6 +33709,17 @@ const parseTaggedContent = (text) => {
   // sheet (Memory Aid: cue-first, answer-free); teacherKey adds the appendix.
   // Returns false when it could not render so the caller can fall back.
   const handlePrintResourceSheet = (...__a) => _alloHostHandlers().handlePrintResourceSheet(...__a);
+  const artifactAudioRecoveryRef = useRef(null);
+  const prepareStorybookSummary = async (options = {}) => {
+      const moduleValue = window.AlloModules?.ReadAloudArtifactAudio;
+      if (typeof moduleValue?.createRecovery !== 'function') throw new Error('Storybook recovery is still loading. Please try again.');
+      if (!artifactAudioRecoveryRef.current) artifactAudioRecoveryRef.current = moduleValue.createRecovery();
+      return artifactAudioRecoveryRef.current.prepareText(options, {
+          storage: storageDB,
+          writeVerifiedStorageSnapshot: window.AlloModules.UtilsPure?.writeVerifiedStorageSnapshot,
+          generate: () => window.callGemini(options.prompt),
+      });
+  };
   const prepareReadAloudArtifactAudio = async (options = {}) => {
       const moduleValue = window.AlloModules && window.AlloModules.ReadAloudArtifactAudio;
       if (!moduleValue || typeof moduleValue.create !== 'function') {
@@ -33574,12 +33728,21 @@ const parseTaggedContent = (text) => {
           throw error;
       }
       const preparer = moduleValue.create({ callTTS });
-      return preparer.prepare({
+      const request = {
           ...options,
           defaultVoice: options.defaultVoice || selectedVoice || 'Kore',
           language: options.language || leveledTextLanguage || currentUiLanguage || 'English',
           speed: options.speed || voiceSpeed || 1,
-      });
+      };
+      if (options.recoverPreparedAudio === true && typeof moduleValue.createRecovery === 'function') {
+          if (!artifactAudioRecoveryRef.current) artifactAudioRecoveryRef.current = moduleValue.createRecovery();
+          return artifactAudioRecoveryRef.current.prepare(request, {
+              storage: storageDB,
+              writeVerifiedStorageSnapshot: window.AlloModules.UtilsPure?.writeVerifiedStorageSnapshot,
+              prepare: value => preparer.prepare(value),
+          });
+      }
+      return preparer.prepare(request);
   };
   const _getPrivatePersonaArtifactStorage = async () => {
       return _alloGetCanvasDeviceStorage();
@@ -33591,7 +33754,7 @@ const parseTaggedContent = (text) => {
       externalCBMScores, interventionLogs,
       setIsProcessing, setShowStorybookExportModal,
       addToast, parseMarkdownToHTML, generateResourceHTML, rehydrateHistoryWithImages,
-      prepareReadAloudArtifactAudio, selectedVoice, voiceSpeed,
+      prepareReadAloudArtifactAudio, prepareStorybookSummary, selectedVoice, voiceSpeed,
       leveledTextLanguage, currentUiLanguage,
       t,
   };
@@ -34655,6 +34818,28 @@ const parseTaggedContent = (text) => {
     return handlers ? handlers.resetCanvasWorkspaceSettings(...__a) : undefined;
   };
 
+  // Own-source lesson research settings lifecycle (2026-09-26).
+const _alloNormalizeResearchSettings = function normalizeResearchSettings(value) {
+  const input = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const documentsOnly = input.documentsOnly === true;
+  const rawIds = input.selectedOwnSourceIds;
+  // Null is the legacy/uninitialized state; [] explicitly selects no documents.
+  // Malformed supplied values must never broaden back to the shared library.
+  let selectedOwnSourceIds = rawIds == null ? null : [];
+  if (Array.isArray(rawIds)) {
+    selectedOwnSourceIds = Array.from(new Set(rawIds.filter(id =>
+      typeof id === 'string' && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,255}$/.test(id)
+    ))).slice(0, 2000);
+  }
+  if (documentsOnly && selectedOwnSourceIds === null) selectedOwnSourceIds = [];
+  return {
+    selectedOwnSourceIds,
+    documentsOnly,
+    useOwnSources: documentsOnly || input.useOwnSources === true,
+    includeSourceCitations: !documentsOnly && input.includeSourceCitations === true,
+  };
+};
+
   const clearCanvasWorkspaceState = (options = {}) => {
       cancelActiveProjectLoad();
       cancelActiveFileIntakeOperations('canvas-workspace-clear');
@@ -34667,6 +34852,10 @@ const parseTaggedContent = (text) => {
       setActiveSidebarTab('create');
       setInputText('');
       setSourceTopic('');
+      setSelectedOwnSourceIds(null);
+      setDocumentsOnly(false);
+      setUseOwnSources(false);
+      setIncludeSourceCitations(false);
       setUnits([]);
       setProfiles([]);
       setActiveUnitId('all');
@@ -34742,6 +34931,7 @@ const parseTaggedContent = (text) => {
                   planBrief: guidedPlanBrief
               },
               lessonSettings: {
+                  ..._alloNormalizeResearchSettings({ selectedOwnSourceIds, documentsOnly, useOwnSources, includeSourceCitations }),
                   gradeLevel,
                   differentiationRange,
                   textFormat,
@@ -35474,6 +35664,7 @@ const parseTaggedContent = (text) => {
       adventureCustomInstructions, personaCustomInstructions, useEmojis, keepCitations, includeCharts,
       dokLevel, targetStandards, standardInputValue, standardMode, selectedLanguages, leveledTextLanguage,
       sourceTone, sourceLevel, sourceVocabulary, sourceLength, sourceCustomInstructions, resourceCount,
+      selectedOwnSourceIds, documentsOnly, useOwnSources, includeSourceCitations,
       fullPackTargetGroup, studentProjectSettings, guidedMode, guidedStep, guidedSelectedIds, guidedCompletedIds, guidedSkippedIds, guidedCreatedHistoryIds, guidedDeliveryEvidence, guidedPlanBrief, studentResponses,
       studentProgressLog, stickers, wordSoundsHistory, wordSoundsFamilies, wordSoundsAudioLibrary,
       wordSoundsBadges, phonemeMastery, wordSoundsDailyProgress, wordSoundsConfusionPatterns,
@@ -35933,7 +36124,13 @@ const parseTaggedContent = (text) => {
             setCanvasRecoverySaveStatus('restoring');
         },
         onProjectLoadComplete: ({ success }) => {
-            if (success) resetAllMathRuntimeState();
+            if (success) {
+                resetAllMathRuntimeState();
+                setSelectedOwnSourceIds(null);
+                setDocumentsOnly(false);
+                setUseOwnSources(false);
+                setIncludeSourceCitations(false);
+            }
             if (!canvasRecoveryImportPreviousIdRef.current) return;
             if (!success) {
                 canvasRecoveryCurrentIdRef.current = canvasRecoveryImportPreviousIdRef.current;
@@ -36001,6 +36198,7 @@ const parseTaggedContent = (text) => {
   // Resource-opening behavior belongs to MiscHandlers; the host supplies current React state.
   const pendingQrAssignmentOpenGenerationRef = useRef(0);
   const handleRestoreView = (item, options = {}) => {
+      if (supportDraftSessionRef.current?.blocked()) return requestReadingSupportTransition(() => handleRestoreView(item, options));
       const moduleApi = window.AlloModules && window.AlloModules.MiscHandlers;
       if (moduleApi && typeof moduleApi.handleRestoreView === 'function') {
           const { preservePendingAssignment, ...restoreOptions } = options || {};
@@ -36122,14 +36320,13 @@ const parseTaggedContent = (text) => {
                   if (_alloAssignmentIsExpired(packet)) throw new Error('Assignment expired');
                   const rawResources = Array.isArray(packet.resources) ? packet.resources : [];
                   if (!rawResources.length) throw new Error('Assignment has no resources');
-                  let restoredResources = rawResources;
-                  try {
-                      restoredResources = await hydrateSessionAssets(hostId, rawResources);
-                  } catch (hydrateErr) {
-                      warnLog('Assignment asset hydration failed:', hydrateErr);
+                  const restoredResources = await hydrateSessionAssets(hostId, rawResources);
+                  if (!Array.isArray(restoredResources) || restoredResources.some(item => !item || item.__alloResourceRef || item.__alloResourcesManifestRef)) {
+                      throw new Error('Assignment resource assets are unavailable');
                   }
                   if (cancelled) return;
                   setHistory(restoredResources);
+                  setReceivedDeliveryResources(restoredResources);
                   const firstId = packet.currentResourceId || restoredResources[0]?.id;
                   // Directions v2 delivery rule: the assignment brief is the front page at every
                   // student consumption point — a DELIVERY rule, not a storage reorder, so the
@@ -36193,6 +36390,7 @@ const parseTaggedContent = (text) => {
               if (!rawResources.length) throw new Error('Pack has no resources');
               if (cancelled) return;
               setHistory(rawResources);
+              setReceivedDeliveryResources(rawResources);
               const firstId = packet.currentResourceId || rawResources[0]?.id;
               const firstResource = rawResources.find(item => item && item.id === firstId) || rawResources[0];
               setPendingQrAssignmentResource(firstResource);
@@ -36598,6 +36796,7 @@ const parseTaggedContent = (text) => {
                   mailbox: { url: entry.u, id: entry.id, secret: String(entry.k) },
               } : null);
               setHistory(rawResources);
+              setReceivedDeliveryResources(rawResources);
               const firstId = packet.currentResourceId || rawResources[0]?.id;
               const firstResource = rawResources.find(item => item && item.id === firstId) || rawResources[0];
               setPendingQrAssignmentResource(firstResource || null);
@@ -37785,7 +37984,7 @@ const parseTaggedContent = (text) => {
   // shared microphone owner first (including dictation/persona voice surfaces),
   // stop spoken output, close tutorial chrome, and request a fresh Canvas
   // checkpoint. The workspace and selected role stay mounted behind LaunchPad.
-  const handleReturnToStart = (...__a) => _alloHostHandlers().handleReturnToStart(...__a);
+  const handleReturnToStart = (...__a) => requestReadingSupportTransition(() => _alloHostHandlers().handleReturnToStart(...__a));
   // The chat's delivery path to the conversational UdlChat module. Split out so
   // handleSendUDLMessage (below) can reach it after the command preview/confirm
   // step, and so a "just chat" reply can re-send the original text as normal chat.
@@ -38338,6 +38537,7 @@ const parseTaggedContent = (text) => {
       setEscapeTimeLeft, setIsEscapeTimerRunning, setEscapeRoomState, t, addToast });
   }, [isEscapeTimerRunning, escapeTimeLeft, escapeRoomState.isActive, escapeRoomState.isEscaped, escapeRoomState.isGameOver, escapeRoomState.timerEnabled, t, addToast]);
   const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, generationDepsOverride = null) => {
+    if (switchView && supportDraftSessionRef.current?.blocked()) return requestReadingSupportTransition(() => handleGenerate(type, langOverride, keepLoading, textOverride, configOverride, switchView, generationDepsOverride));
     const _m = window.AlloModules && window.AlloModules.GenDispatcher;
     const viewOwner = {};
     if (switchView) generationViewOwnerRef.current = viewOwner;
@@ -39135,11 +39335,17 @@ const handleSubmitOrganizerReflection = async (reflection) => {
   // A reader snapshot belongs to its source, independent of later analysis edits.
   const openReadingArtifact = (item, compare = false) => {
     if (!item) return;
+    if (supportDraftSessionRef.current?.blocked()) return requestReadingSupportTransition(() => openReadingArtifact(item, compare));
+    const live = _resourceMutationStateRef.current;
+    item = [live.generatedContent, ...(live.history || [])].find(candidate => candidate?.id === item.id && candidate?._artifactInstanceId === item._artifactInstanceId) || item;
     stopPlayback(); setSelectionMenu(null); setRevisionData(null); setPhonicsData(null);
     setIsEditingLeveledText(false); setIsFluencyMode(false); setIsCompareMode(!!compare); setInteractionMode('read');
-    setGeneratedContent(item); setActiveView('simplified');
+    // A support save may still be queued in this React batch. Preserve that
+    // latest artifact when changing its reader layout instead of restoring a captured copy.
+    setGeneratedContent(previous => previous?.id === item.id && previous?._artifactInstanceId === item._artifactInstanceId && previous?.type === item.type ? previous : item); setActiveView('simplified');
   };
   const handleReadOriginal = (selected = null) => {
+    if (supportDraftSessionRef.current?.blocked()) return requestReadingSupportTransition(() => handleReadOriginal(selected));
     const api = window.AlloModules?.InstructionalContext;
     if (!api?.createSourceSnapshot || !api?.createSupportedReading || !api?.resolveReadingSource) { addToast('Reading tools are still loading. Try again in a moment.', 'info'); return; }
     let sourceItem = selected, resolved = null;
@@ -40209,7 +40415,14 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           liveStatus prop carries mode: 'homework' for the assignment entry
           types, so the codename and AI status sit behind a header button
           instead of a fixed strip over the page. */}
+      <ReceivedReadingDeliveryStatus
+          enabled={!isTeacherMode && (!!activeSessionCode || !!mbStudent || isStudentLinkMode)}
+          resources={receivedDeliveryResources}
+          currentResourceId={generatedContent?.id}
+          t={t}
+      />
       <MailboxImageDeliveryMonitor
+          revisionReceipts={true}
           enabled={!isTeacherMode && !!mbStudent && !!activeSessionCode}
           resource={generatedContent}
           sessionKey={String(activeSessionAppId || appId) + '|' + String(activeSessionCode || '')}
@@ -40650,7 +40863,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
     showUrlInput, sourceCustomInstructions, sourceLength, sourceLevel, sourceTone, sourceTopic,
     sourceVocabulary, standardInputValue, standardMode, startNewPdfAudit, suggestedStandards, t,
     targetStandards, toggleTool, urlSearchQuery, urlToFetch, videoTranscriptSourceContext,
-    useOwnSources, setUseOwnSources,
+    useOwnSources, setUseOwnSources, selectedOwnSourceIds, setSelectedOwnSourceIds, documentsOnly, setDocumentsOnly,
   })}
 </CDNModuleGate>
           )}
@@ -41750,6 +41963,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     />;
                 })()}
                 {activeView === 'simplified' && React.createElement(LazySimplifiedView, {
+                    supportDraftSessionRef,
                     onInstructionalRoleChange: handleReadingRoleChange, onSelectReadingSource: handleSelectReadingSource,
                     onGenerateReadingSupports: handleGenerateReadingSupports, onUpdateReadingSupports: handleUpdateReadingSupports, onReadOriginal: handleReadOriginal, onOpenReadingArtifact: openReadingArtifact, onCreateAdaptedCompanion: handleCreateAdaptedCompanion,
                     t, generatedContent, inputText, gradeLevel, leveledTextLanguage,
@@ -42853,7 +43067,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
         havenRewardReceipt, history, interactiveOrganizerRetrying, interactiveOrganizerSync, isStudyTimerRunning, launchPreparedLiveInteraction, liveActivitySnapshots, liveAudioStatusNow,
         liveDockPanelRef, liveOrganizer, liveOrganizerSummary, livePresenterCuesByResourceId, liveSessionQaEnabled, normalizeClassGoal, normalizeClassGoals, normalizeLiveOrganizerProgress,
         openChecklistGoalId, openLiveActivityDashboard, recentHavenRecognition, resolveClassGoalTeamUids, resolveLiveStudentResourceTarget, resolveWordSoundsAudioDeliveryState, retryInteractiveOrganizerStudents, retryableLiveOrganizerUids,
-        retryMailboxImagesForStudent, mailboxImageVersion: Number(mbConfig?.v || 0), rosterEntries, rosterKey, sessionData, setActiveView, setChecklistMarks, setClassGoalDraft, setHavenRewardAmount, setHavenRewardReasonId,
+        retryMailboxImagesForStudent, getPreparedMailboxResource: item => mbPreparedImagesRef.current.get(item)?.resource || null, mailboxImageVersion: Number(mbConfig?.v || 0), rosterEntries, rosterKey, sessionData, setActiveView, setChecklistMarks, setClassGoalDraft, setHavenRewardAmount, setHavenRewardReasonId,
         setIsWordSoundsMode, setLivePollPreset, setLiveSessionQaEnabled, setOpenChecklistGoalId, setPictionaryInitialMode, setPictionaryPreparedInteraction, setRosterKey, setShowHavenRewardAudit,
         setShowLiveDock, setShowLivePollingPanel, setShowPictionaryHost, setShowSessionModal, setWordSoundsAutoReview, showHavenRewardAudit, signalMeta, studyTimeLeft,
         t, toggleSessionMode, units, updateLivePresenterCue, requestEndLiveSession

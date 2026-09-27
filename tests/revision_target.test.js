@@ -13,15 +13,18 @@ beforeAll(() => { window.__alloUtils = { cleanJson: x => x }; loadAlloModule(pro
 function engineFor(text, revision) {
   const state = {
     generatedContent: { id: 'one', type: 'simplified', data: text, config: { grade: '5', language: 'English' } },
-    revisionData: { resourceId: 'one', resourceText: text, ...revision },
+    revisionData: null,
     interactionMode: 'revise', leveledTextLanguage: 'English', gradeLevel: '5',
-    handleSimplifiedTextChange: vi.fn(), setRevisionData: vi.fn(), setSelectionMenu: value => { state.selectionMenu = value; },
+    handleSimplifiedTextChange: vi.fn(), setRevisionData: value => { state.revisionData = typeof value === 'function' ? value(state.revisionData) : value; }, setSelectionMenu: value => { state.selectionMenu = value; },
+    setIsCustomReviseOpen: vi.fn(), setCustomReviseInstruction: vi.fn(),
   };
-  const engine = window.AlloModules.createContentEngine({ getState: () => state, callGemini: vi.fn(), addToast: vi.fn(), t: x => x });
+  const engine = window.AlloModules.createContentEngine({ getState: () => state, callGemini: vi.fn(async () => revision.result), addToast: vi.fn(), t: x => x });
   return { engine, state };
 }
 const applied = async (text, revision) => {
   const { engine, state } = engineFor(text, revision);
+  state.selectionMenu = { text: revision.original, occurrence: revision.occurrence, language: 'English', x: 0, y: 0 };
+  await engine.handleReviseSelection('simplify');
   await engine.applyTextRevision();
   return state.handleSimplifiedTextChange.mock.calls[0]?.[0];
 };
@@ -44,6 +47,11 @@ describe('applying a revision', () => {
   it('keeps dollar signs in the new wording literally', async () => {
     expect(await applied('It costs five dollars.', { original: 'five dollars', occurrence: 0, result: '$5 ($& not a pattern) and $$x$$' }))
       .toBe('It costs $5 ($& not a pattern) and $$x$$.');
+  });
+  it('rejects invalid occurrence indices instead of redirecting them', async () => {
+    for (const occurrence of [-1, 1, 50]) {
+      expect(await applied('One cell.', { original: 'cell', occurrence, result: 'organelle' })).toBeUndefined();
+    }
   });
 });
 

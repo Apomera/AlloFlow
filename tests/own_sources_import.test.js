@@ -376,7 +376,7 @@ describe('Quick Start can import too', () => {
     // Quick Start had the TOGGLE but no import, and the toggle hides at zero
     // sources — so a teacher starting here saw neither control and had no way
     // in at all. The import markup must therefore sit OUTSIDE that count gate.
-    const gateAt = wizard.indexOf('{wizOwnSourceCount > 0 && (');
+    const gateAt = wizard.indexOf('{(localData.useOwnSources || (wizSourcesLoaded && wizOwnSourceList.length > 0)) && (');
     const importAt = wizard.indexOf('id="wiz-own-sources-import"');
     expect(gateAt).toBeGreaterThan(-1);
     expect(importAt).toBeGreaterThan(-1);
@@ -436,7 +436,7 @@ describe('the manage list in the source panel', () => {
 
   it('keeps the count and the list from disagreeing', () => {
     // Both come from the same load, and both follow what retrieval will search.
-    expect(panel).toContain('setOwnSourceCount(outcome.count)');
+    expect(panel).toContain('ownSourceList.filter(isSourceSelected).length');
     expect(panel).toContain('setOwnSourceList(outcome.sources)');
   });
 

@@ -1,0 +1,44 @@
+{
+  "checkedAt": "2026-09-26T22:27:41.889Z",
+  "browserChecks": {
+    "passed": 12,
+    "failed": 0,
+    "project": "chromium",
+    "workers": 1,
+    "retries": 0,
+    "suites": {
+      "raptor-study-mode": 3,
+      "raptor-flight-continuity": 3,
+      "raptor-input-pause": 3,
+      "raptor-scenic-pause": 2,
+      "raptor-motion-framing": 1
+    }
+  },
+  "accessibility": {
+    "axeViolations": 0,
+    "scope": [
+      ".rh-study-header",
+      ".rh-study-panel"
+    ],
+    "rules": [
+      "wcag2a",
+      "wcag2aa",
+      "wcag21aa",
+      "wcag22aa"
+    ]
+  },
+  "reviewedCaptures": [
+    "side-desktop.png",
+    "above-desktop.png",
+    "dive-desktop.png",
+    "owl-phone.png"
+  ],
+  "sourcePath": "stem_lab/stem_tool_raptorhunt.js",
+  "mirrorPath": "desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js",
+  "mirrorsIdentical": true,
+  "sourceBytes": 3668428,
+  "sha256": "748189b2ef1f1c4b68a8a1123e0a748b90dfdee13b9e73c8bd5c7af7231beeec",
+  "newTranslationKeys": 20,
+  "languagePackIntegration": "pending",
+  "deployed": false
+}

@@ -371,7 +371,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
     ['voice', 'language', 'provider', 'engine', 'engineVersion', 'model', 'modelVersion', 'requestedProvider', 'requestedModel', 'createdAt'].forEach(function (key) {
       if (meta[key] != null && String(meta[key]).trim()) out[key] = String(meta[key]).trim().slice(0, 160);
     });
-    var speed = Number(meta.speed);
+    var speed = Number(meta.synthesisRate != null ? meta.synthesisRate : meta.speed);
     if (isFinite(speed) && speed > 0 && speed <= 4) out.speed = speed;
     var voiceResolverVersion = Number(meta.voiceResolverVersion);
     if (isFinite(voiceResolverVersion) && voiceResolverVersion > 0) out.voiceResolverVersion = voiceResolverVersion;
@@ -446,9 +446,33 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
     return !!entry && String(entry.source || 'ai').indexOf('human') === 0;
   }
 
+  function missingProfileFields(entry, requested) {
+    if (!entry || isHuman(entry)) return [];
+    var stored = entry.synthesisProfile || metadataToProfile(entry.metadata) || {};
+    var wanted = normalizeSynthesisProfile(requested) || {};
+    var missing = [];
+    if (!stored.voiceResolverVersion) missing.push('voiceResolverVersion');
+    if (wanted.voice && !stored.voice) missing.push('voice');
+    if (wanted.synthesisRate != null && stored.synthesisRate == null) missing.push('synthesisRate');
+    if (wanted.language && !stored.language) missing.push('language');
+    return missing;
+  }
+
+  function withProfileEvidence(result, entry, requested) {
+    var missing = missingProfileFields(entry, requested);
+    if (result.status === 'stale' && missing.length) {
+      result.reason = 'profile-unverified';
+      result.unverifiedProfileFields = missing;
+    }
+    return result;
+  }
+
   function profilesCompatible(entry, requested) {
     if (!entry) return false;
     if (isHuman(entry)) return true;
+    // Missing settings are unknown, not evidence that this take matches the
+    // current request. Preserve the stored bytes for review/regeneration.
+    if (missingProfileFields(entry, requested).length) return false;
     var stored = entry.synthesisProfile || metadataToProfile(entry.metadata);
     var wanted = normalizeSynthesisProfile(requested) || {};
     // V2 remains the default for legacy callers; version-aware callers may
@@ -497,6 +521,24 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
     var identities = new Map();
     var legacy = new Map();
     var lastPutError = null;
+    // One store belongs to one resource/lane. Publish after a committed
+    // mutation; revisions and listeners are transient, never serialized.
+    var revision = 0;
+    var subscribers = new Set();
+    var pendingChanges = [], notifying = false;
+    var _changed = function (type) {
+      pendingChanges.push(Object.freeze({ type: type, revision: ++revision }));
+      if (notifying) return;
+      notifying = true;
+      try {
+        while (pendingChanges.length) {
+          var event = pendingChanges.shift();
+          Array.from(subscribers).forEach(function (listener) {
+            try { listener(event); } catch (_) {}
+          });
+        }
+      } finally { notifying = false; }
+    };
     var _revoke = function (entry) {
       if (entry && entry.url) { try { URL.revokeObjectURL(entry.url); } catch (_) {} }
     };
@@ -556,6 +598,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
       entry.identity = Object.assign({}, identity);
       entry.synthesisProfile = entry.synthesisProfile || metadataToProfile(entry.metadata);
       identities.set(identityKey, entry);
+      _changed('promote');
       return entry;
     };
 
@@ -573,9 +616,10 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
             quarantine: Object.assign({}, direct.quarantine),
             legacy: false
           };
-          var ready = identitiesCompatible(direct.identity, identity) &&
+          var sameIdentity = identitiesCompatible(direct.identity, identity);
+          var ready = sameIdentity &&
             profilesCompatible(direct, requestedProfile);
-          return {
+          var result = {
             status: ready ? 'ready' : 'stale',
             url: ready ? direct.url : null,
             source: direct.source || 'ai',
@@ -583,6 +627,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
             synthesisProfile: direct.synthesisProfile ? Object.assign({}, direct.synthesisProfile) : null,
             legacy: false
           };
+          return sameIdentity ? withProfileEvidence(result, direct, requestedProfile) : result;
         }
         var legacyEntry = legacy.get(keyFor(identity.spokenText));
         if (!legacyEntry) return {
@@ -595,11 +640,11 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
           synthesisProfile: metadataToProfile(legacyEntry.metadata),
           quarantine: Object.assign({}, legacyEntry.quarantine), legacy: true
         };
-        if (!profilesCompatible(legacyEntry, requestedProfile)) return {
+        if (!profilesCompatible(legacyEntry, requestedProfile)) return withProfileEvidence({
           status: 'stale', url: null, source: legacyEntry.source || 'ai',
           identity: Object.assign({}, identity),
           synthesisProfile: metadataToProfile(legacyEntry.metadata), legacy: true
-        };
+        }, legacyEntry, requestedProfile);
         var shouldPromote = promote && !isHuman(legacyEntry);
         var resolved = shouldPromote ? _promoteLegacy(identity, legacyEntry) : legacyEntry;
         if (!resolved) return {
@@ -644,7 +689,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
         legacy: !entry.identity
       };
       var compatible = profilesCompatible(entry, requestedProfile);
-      return {
+      return withProfileEvidence({
         status: compatible ? 'ready' : 'stale',
         url: compatible ? entry.url : null,
         source: entry.source || 'ai',
@@ -653,7 +698,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
           ? Object.assign({}, entry.synthesisProfile)
           : metadataToProfile(entry.metadata),
         legacy: !entry.identity
-      };
+      }, entry, requestedProfile);
     };
 
     var _serializeLegacy = function () {
@@ -769,6 +814,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
       _revoke(located.entry);
       located.entry.url = null;
       located.entry.quarantine = normalizeQuarantine(detail);
+      _changed('quarantine');
       return true;
     };
     var _orphanDescriptor = function (entry, legacyEntry) {
@@ -856,9 +902,16 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
         legacy.delete(legacyKey);
       });
       report.changed = report.removedAi > 0;
+      if (report.changed) _changed('reconcile');
       return report;
     };
     return {
+      getRevision: function () { return revision; },
+      subscribe: function (listener) {
+        if (typeof listener !== 'function') return function () {};
+        subscribers.add(listener);
+        return function () { subscribers.delete(listener); };
+      },
       // Raw getters remain for legacy UI/diagnostics. Playback should prefer
       // getCompatible(), which applies voice/profile compatibility.
       get: function (target) {
@@ -961,6 +1014,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
           legacy.delete(keyFor(identity.spokenText));
         }
         lastPutError = null;
+        _changed('put');
         return url;
       },
 
@@ -1013,12 +1067,12 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
         if (identity) {
           var identityKey = portableKeyForIdentity(identity);
           _revoke(identities.get(identityKey));
-          identities.delete(identityKey);
+          if (identities.delete(identityKey)) _changed('remove');
           return;
         }
         var legacyKey = keyFor(target);
         _revoke(legacy.get(legacyKey));
-        legacy.delete(legacyKey);
+        var removed = legacy.delete(legacyKey);
         // Preserve legacy Edit Audio removal during a partial service rollout:
         // a string can remove one unambiguous V4 spelling, never guess among
         // repeated-text identities.
@@ -1027,14 +1081,18 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
           var uniqueIdentityKey = portableKeyForIdentity(uniqueIdentityEntry.identity);
           _revoke(uniqueIdentityEntry);
           identities.delete(uniqueIdentityKey);
+          removed = true;
         }
+        if (removed) _changed('remove');
       },
       size: function () { return identities.size + legacy.size; },
       clear: function () {
+        var changed = identities.size > 0 || legacy.size > 0;
         identities.forEach(_revoke);
         legacy.forEach(_revoke);
         identities.clear();
         legacy.clear();
+        if (changed) _changed('clear');
       },
 
       // With no profile this preserves V3's raw-presence behavior. Supplying a
@@ -1083,7 +1141,11 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
       hydrate: function (obj, options) {
         if (!obj || typeof obj !== 'object') return 0;
         var limits = _hydrateLimits(options);
-        if (Number(obj.version) !== 4) return _hydrateLegacy(obj, limits);
+        if (Number(obj.version) !== 4) {
+          var hydrated = _hydrateLegacy(obj, limits);
+          if (hydrated) _changed('hydrate');
+          return hydrated;
+        }
         var n = 0;
         var entries = obj.entries && typeof obj.entries === 'object' ? obj.entries : {};
         var list = Array.isArray(entries)
@@ -1130,6 +1192,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
         }
         n += _hydrateLegacy(obj.legacy, limits);
         if (obj.sentences) n += _hydrateLegacy(obj, limits);
+        if (n) _changed('hydrate');
         return n;
       },
       estimateBytes: function () { return _estimateBytes(); }

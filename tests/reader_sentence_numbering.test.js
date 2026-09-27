@@ -19,6 +19,7 @@ beforeAll(() => {
   global.React = window.React = React;
   global.IS_REACT_ACT_ENVIRONMENT = true;
   window.AlloIcons = new Proxy({}, { get: () => () => null });
+  loadAlloModule('text_pipeline_helpers_module.js');
   loadAlloModule('instructional_context_module.js'); loadAlloModule('pure_helpers_module.js'); loadAlloModule('phase_n_misc_helpers_module.js');
   loadAlloModule(process.env.ALLO_VIEW_CANDIDATE || 'view_simplified_module.js');
   pure = window.AlloModules.PureHelpers; phase = window.AlloModules.PhaseNHelpers; View = window.AlloModules.SimplifiedView;

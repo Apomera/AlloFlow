@@ -1,0 +1,27 @@
+[
+  {
+    "id": "reader_en_contract_audio_preview_v1",
+    "baseFixture": "reader_en_contract_v1"
+  },
+  {
+    "id": "reader_es419_long_labels_audio_preview_v1",
+    "baseFixture": "reader_es419_long_labels_v1"
+  },
+  {
+    "id": "reader_esES_ui_audio_preview_v1",
+    "baseFixture": "reader_es419_long_labels_v1",
+    "locale": "spanish_castilian"
+  },
+  {
+    "id": "reader_ar_rtl_mixed_audio_preview_v1",
+    "baseFixture": "reader_ar_rtl_mixed_v1"
+  },
+  {
+    "id": "reader_zh_hans_unspaced_audio_preview_v1",
+    "baseFixture": "reader_zh_hans_unspaced_v1"
+  },
+  {
+    "id": "reader_th_unspaced_audio_preview_v1",
+    "baseFixture": "reader_th_unspaced_v1"
+  }
+]

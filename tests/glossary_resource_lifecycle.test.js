@@ -171,9 +171,9 @@ describe('shared generation display ownership', () => {
     const contentSetter = fn => queued ? contentQueue.push(fn) : resource = fn(resource);
     const viewSetter = fn => queued ? viewQueue.push(fn) : view = fn(view);
     const start = host.indexOf('  const setGeneratedContent = useCallback('), end = host.indexOf('\n  //', start);
-    const setGeneratedContent = new Function('_setGeneratedContent', 'generationViewOwnerRef', 'generationDisplayStateRef', 'useCallback', 'ensureArtifactInstanceId', host.slice(start, end) + ';return setGeneratedContent;')(contentSetter, ref, displayed, fn => fn, value => value);
+    const setGeneratedContent = new Function('_setGeneratedContent', 'generationViewOwnerRef', 'generationDisplayStateRef', 'useCallback', 'ensureArtifactInstanceId', 'supportDraftSessionRef', 'requestReadingSupportTransition', host.slice(start, end) + ';return setGeneratedContent;')(contentSetter, ref, displayed, fn => fn, value => value, { current: null }, run => run());
     const viewStart = host.indexOf('  const setActiveView = useCallback('), viewEnd = host.indexOf('\n  const [showReadThisPage', viewStart);
-    const setActiveView = new Function('_setActiveView', 'generationViewOwnerRef', 'generationDisplayStateRef', 'useCallback', host.slice(viewStart, viewEnd) + ';return setActiveView;')(viewSetter, ref, displayed, fn => fn);
+    const setActiveView = new Function('_setActiveView', 'generationViewOwnerRef', 'generationDisplayStateRef', 'useCallback', 'supportDraftSessionRef', 'requestReadingSupportTransition', host.slice(viewStart, viewEnd) + ';return setActiveView;')(viewSetter, ref, displayed, fn => fn, { current: null }, run => run());
     return { owner, ref, setGeneratedContent, setActiveView, read: () => ({ resource, view }), flush: () => { contentQueue.forEach(fn => { resource = fn(resource); }); viewQueue.forEach(fn => { view = fn(view); }); } };
   }
   it('revokes display ownership before queued navigation updates flush', () => {

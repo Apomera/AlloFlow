@@ -1,0 +1,168 @@
+{
+  "recordedAt": "2026-09-26T23:26:18.311Z",
+  "aggregation": "Latest complete run per test file; repeated tests counted once.",
+  "files": 20,
+  "passed": 249,
+  "failed": 0,
+  "pending": 0,
+  "suiteFailures": [],
+  "tests": [
+    {
+      "file": "tests\\own_sources_duplicates_selection.test.js",
+      "report": "storage-helper-final.json",
+      "status": "passed",
+      "tests": 14
+    },
+    {
+      "file": "tests\\own_sources_import.test.js",
+      "report": "final-ui-tests.json",
+      "status": "passed",
+      "tests": 30
+    },
+    {
+      "file": "tests\\own_sources_read_recovery.test.js",
+      "report": "final-contract-tests.json",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "tests\\own_source_ai_permission.test.js",
+      "report": "helper-tests.json",
+      "status": "passed",
+      "tests": 1
+    },
+    {
+      "file": "tests\\external_search_privacy.test.js",
+      "report": "research-regressions.json",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "tests\\own_sources_mutation_recovery.test.js",
+      "report": "final-contract-tests.json",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests\\own_source_documents_only.test.js",
+      "report": "research-regressions.json",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "tests\\own_source_evidence_inspector.test.js",
+      "report": "research-regressions.json",
+      "status": "passed",
+      "tests": 14
+    },
+    {
+      "file": "tests\\own_source_grounding.test.js",
+      "report": "research-regressions.json",
+      "status": "passed",
+      "tests": 15
+    },
+    {
+      "file": "tests\\own_source_rag_and_citation_tokens.test.js",
+      "report": "research-regressions.json",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "tests\\source_citation_resilience.test.js",
+      "report": "research-regressions.json",
+      "status": "passed",
+      "tests": 13
+    },
+    {
+      "file": "tests\\source_research_query_transport.test.js",
+      "report": "research-regressions.json",
+      "status": "passed",
+      "tests": 19
+    },
+    {
+      "file": "tests\\lumen_storage_load_state.test.js",
+      "report": "storage-helper-final.json",
+      "status": "passed",
+      "tests": 28
+    },
+    {
+      "file": "tests\\lumen_storage_recovery.test.js",
+      "report": "storage-helper-final.json",
+      "status": "passed",
+      "tests": 17
+    },
+    {
+      "file": "tests\\source_generation_state_ownership.test.js",
+      "report": "final-contract-tests.json",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests\\source_research_phase.test.js",
+      "report": "final-contract-tests.json",
+      "status": "passed",
+      "tests": 17
+    },
+    {
+      "file": "tests\\own_source_controls_load_timing.test.js",
+      "report": "final-ui-tests.json",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "tests\\own_source_lesson_controls.test.js",
+      "report": "final-ui-tests.json",
+      "status": "passed",
+      "tests": 11
+    },
+    {
+      "file": "tests\\own_source_library_recovery_controls.test.js",
+      "report": "final-ui-tests.json",
+      "status": "passed",
+      "tests": 15
+    },
+    {
+      "file": "tests\\own_source_sidebar_prop_chain.test.js",
+      "report": "final-ui-tests.json",
+      "status": "passed",
+      "tests": 1
+    }
+  ],
+  "mirrors": [
+    {
+      "file": "own_sources_module.js",
+      "sha256": "45a610136690bed52c6b06e2be7d98180e2bf4a5de2143341050d42fef17a05a",
+      "publicSha256": "45a610136690bed52c6b06e2be7d98180e2bf4a5de2143341050d42fef17a05a",
+      "matches": true
+    },
+    {
+      "file": "stem_lab/stem_lumen_evidence.js",
+      "sha256": "d8c1a66d5220ba352c24e2120f2e30e6e3ed25b63b255357d9e46df4ca97d901",
+      "publicSha256": "d8c1a66d5220ba352c24e2120f2e30e6e3ed25b63b255357d9e46df4ca97d901",
+      "matches": true
+    },
+    {
+      "file": "quickstart_module.js",
+      "sha256": "ac2eb44c91e92588055d6629fee5583182ffd8a7311b9f094132a653bd472c62",
+      "publicSha256": "ac2eb44c91e92588055d6629fee5583182ffd8a7311b9f094132a653bd472c62",
+      "matches": true
+    },
+    {
+      "file": "view_misc_panels_module.js",
+      "sha256": "71c38634b235e48f8e6619ef7ab77b00ef89c781e409f9155133e172f1c4f7d6",
+      "publicSha256": "71c38634b235e48f8e6619ef7ab77b00ef89c781e409f9155133e172f1c4f7d6",
+      "matches": true
+    }
+  ],
+  "sources": [
+    {
+      "file": "quickstart_source.jsx",
+      "sha256": "f827f68655af0fbc6f6d841b670dc3d1627f5cab6a3d0256b94e0d64e2206bd3"
+    },
+    {
+      "file": "view_misc_panels_source.jsx",
+      "sha256": "7b04648466f43f2ea2bc72562fcd2ff0a504742a89a98a31966cb73ea710c2d9"
+    }
+  ],
+  "deployment": "None. Shared host pins and global translations remain with integration01."
+}

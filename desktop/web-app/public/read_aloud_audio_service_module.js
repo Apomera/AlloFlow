@@ -190,6 +190,8 @@ const createReadAloudAudioService = (dependencies = {}) => {
         const lane = configuration.lane == null ? 'current' : configuration.lane;
         const persistencePolicy = configuration.persistencePolicy == null ? 'none' : configuration.persistencePolicy;
         const subscribers = new Set();
+        let preparation = null;
+        let preparationOptions = null;
         const bindingKey = resourceType + ':' + resourceId + ':' + (typeof lane === 'string' ? lane : 'custom');
 
         if (!adapter || typeof adapter.enumerate !== 'function' || typeof adapter.spokenText !== 'function') {
@@ -323,10 +325,10 @@ const createReadAloudAudioService = (dependencies = {}) => {
             return found;
         }
 
-        function profileFor(segment, operation) {
+        function profileFor(segment, operation, requestedProfile) {
             const resource = liveResource({ segment, operation });
             const base = getSynthesisProfile(context({ resource, segment, operation })) || {};
-            const profile = Object.assign({}, base);
+            const profile = Object.assign({}, base, requestedProfile || {});
             const overrides = segment && segment.fields && (
                 segment.fields.synthesisProfile || segment.fields.profile
             );
@@ -394,9 +396,11 @@ const createReadAloudAudioService = (dependencies = {}) => {
             if (typeof store.inspect === 'function') {
                 const inspected = store.inspect(key, compatibility);
                 if (inspected && typeof inspected === 'object') {
-                    const status = ['ready', 'stale', 'missing', 'corrupt'].includes(inspected.status)
+                    let status = ['ready', 'stale', 'missing', 'corrupt'].includes(inspected.status)
                         ? inspected.status
                         : (inspected.url != null ? 'ready' : 'missing');
+                    // Presence/profile metadata alone cannot certify a playable clip.
+                    if (status === 'ready' && !(typeof inspected.url === 'string' && inspected.url.trim())) status = 'missing';
                     return {
                         status,
                         url: status === 'ready' && inspected.url != null ? inspected.url : null,
@@ -407,6 +411,8 @@ const createReadAloudAudioService = (dependencies = {}) => {
                         synthesisProfile: inspected.synthesisProfile || null,
                         legacy: inspected.legacy === true,
                         quarantine: inspected.quarantine || null,
+                        reason: inspected.reason || null,
+                        unverifiedProfileFields: Array.isArray(inspected.unverifiedProfileFields) ? inspected.unverifiedProfileFields.slice() : [],
                         segment,
                         profile,
                     };
@@ -426,7 +432,7 @@ const createReadAloudAudioService = (dependencies = {}) => {
             }
             if (!exists && (url != null || storedUrl != null)) exists = true;
             return {
-                status: url != null ? 'ready' : (exists ? 'stale' : 'missing'),
+                status: typeof url === 'string' && url.trim() ? 'ready' : (exists ? 'stale' : 'missing'),
                 url: url == null ? null : url,
                 storedUrl: storedUrl == null ? null : storedUrl,
                 source,
@@ -439,17 +445,18 @@ const createReadAloudAudioService = (dependencies = {}) => {
         function inspect(input, options = {}) {
             const segment = requireSegment(input);
             const store = liveStore({ segment, operation: 'inspect' });
-            const profile = Object.assign({}, profileFor(segment, 'inspect'), options.profile || {});
+            const profile = profileFor(segment, 'inspect', options.profile);
             return inspectDescriptor(segment, store, profile);
         }
 
-        function summary() {
+        function summary(options = {}) {
             const list = segments();
             const store = liveStore({ operation: 'summary' });
-            const result = { total: list.length, ready: 0, stale: 0, corrupt: 0, missing: 0, estimatedBytes: 0 };
+            const result = { total: list.length, ready: 0, stale: 0, corrupt: 0, missing: 0, unverified: 0, estimatedBytes: 0 };
             list.forEach((segment) => {
-                const status = inspectDescriptor(segment, store, profileFor(segment, 'summary')).status;
-                result[status] += 1;
+                const inspection = inspectDescriptor(segment, store, profileFor(segment, 'summary', options.profile));
+                result[inspection.status] += 1;
+                if (inspection.status === 'stale' && inspection.unverifiedProfileFields?.length) result.unverified += 1;
             });
             if (store && typeof store.estimateBytes === 'function') {
                 const bytes = Number(store.estimateBytes());
@@ -458,10 +465,54 @@ const createReadAloudAudioService = (dependencies = {}) => {
             return result;
         }
 
+        function readiness(options = {}) {
+            const memory = summary(options);
+            const currentStore = liveStore({ operation: 'readiness' });
+            const receipt = options.receipt;
+            const durableStore = receipt?.verified === true ? options.durableStore : null;
+            const payload = serializeStore(currentStore);
+            const saved = serializeStore(durableStore);
+            const storeApi = typeof window !== 'undefined' && window.AlloModules?.KaraokeAudioStore;
+            const clip = (value, key) => {
+                if (!value || !storeApi) return null;
+                const identityKey = typeof key === 'object' ? storeApi.portableKeyForIdentity(key) : null;
+                const entry = identityKey && value.entries?.[identityKey];
+                if (entry) return JSON.stringify([entry.audio, entry.mime, entry.source, entry.synthesisProfile]);
+                const legacy = value.version === 4 ? value.legacy : value;
+                const textKey = storeApi.keyFor(typeof key === 'object' ? key.spokenText : key);
+                if (!legacy?.sentences?.[textKey]) return null;
+                return JSON.stringify([legacy.sentences[textKey], legacy.mimes?.[textKey] || 'audio/mpeg',
+                    legacy.sources?.[textKey] || 'ai', storeApi.normalizeSynthesisProfile(legacy.metadata?.[textKey])]);
+            };
+            let durableReady = 0, protectedRecordings = 0;
+            for (const segment of segments()) {
+                const profile = profileFor(segment, 'readiness', options.profile);
+                const current = inspectDescriptor(segment, currentStore, profile);
+                if (current.status !== 'ready' && String(current.source || '').startsWith('human')) protectedRecordings++;
+                if (current.status !== 'ready' ||
+                    inspectDescriptor(segment, durableStore, profile).status !== 'ready') continue;
+                // The selected take matters, even when an older take has the
+                // same text and voice. Never count unsaved replacement bytes.
+                const currentClip = clip(payload, segment.storageKey);
+                if (currentClip && currentClip === clip(saved, segment.storageKey)) durableReady++;
+            }
+            const sessionOnly = Math.max(0, memory.ready - durableReady);
+            const remaining = memory.missing + memory.stale + memory.corrupt;
+            const state = options.preparing || preparation ? 'preparing'
+                : memory.total > 0 && durableReady === memory.total ? 'ready'
+                    : sessionOnly > 0 ? 'session-only'
+                        : options.failure && memory.ready === 0 ? 'failed' : 'partial';
+            return { scope: 'device-audio', state, ...memory, durableReady, sessionOnly, remaining, protectedRecordings,
+                verifiedAt: receipt?.verified === true ? receipt.verifiedAt || null : null,
+                nextActions: [sessionOnly > 0 && 'retry-save', remaining > protectedRecordings && 'prepare-missing',
+                    protectedRecordings > 0 && 'review-recordings',
+                    receipt?.verified !== true && 'verify-device-save'].filter(Boolean) };
+        }
+
         async function resolve(input, options = {}) {
             const segment = requireSegment(input);
             const store = liveStore({ segment, operation: 'resolve' });
-            const profile = Object.assign({}, profileFor(segment, 'resolve'), options.profile || {});
+            const profile = profileFor(segment, 'resolve', options.profile);
             const inspected = inspectDescriptor(segment, store, profile);
             if (!options.force && inspected.status === 'ready' && inspected.url != null) {
                 emit('resolved', { source: 'store', segment, profile, url: inspected.url });
@@ -515,7 +566,7 @@ const createReadAloudAudioService = (dependencies = {}) => {
             throwIfAborted(signal);
             const resource = liveResource({ segment, operation: 'persist', reason });
             const payload = serializeStore(store);
-            await persist({
+            const receipt = await persist({
                 resource,
                 resourceId,
                 resourceType,
@@ -527,8 +578,14 @@ const createReadAloudAudioService = (dependencies = {}) => {
                 payload,
                 signal,
             });
-            emit('persisted', { reason, segment, payload });
-            return true;
+            // Legacy hosts attach bytes to React state. Only an explicit receipt
+            // acknowledges durable storage; undefined is an attachment, not a save.
+            if (receipt === false || receipt?.status === 'failed') {
+                throw serviceError('persistence-failed', 'Audio is available for this session but could not be saved.', receipt);
+            }
+            const durable = receipt?.status === 'saved' && receipt?.verified === true;
+            emit(durable ? 'persisted' : 'attached', { reason, segment, payload, receipt: receipt || null });
+            return durable;
         }
 
         async function storeAudio(input, audio, options) {
@@ -536,7 +593,7 @@ const createReadAloudAudioService = (dependencies = {}) => {
             const operation = options.operation;
             const signal = options.signal;
             throwIfAborted(signal);
-            const profile = Object.assign({}, profileFor(segment, operation), options.profile || {},
+            const profile = Object.assign({}, profileFor(segment, operation, options.profile),
                 audioProvenanceOf(audio));
             const encoded = await encode(audio, {
                 segment,
@@ -608,7 +665,7 @@ const createReadAloudAudioService = (dependencies = {}) => {
 
         async function regenerate(input, options = {}) {
             const segment = requireSegment(input);
-            const profile = Object.assign({}, profileFor(segment, 'regenerate'), options.profile || {});
+            const profile = profileFor(segment, 'regenerate', options.profile);
             throwIfAborted(options.signal);
             emit('regenerating', { segment, profile });
             const resource = liveResource({ segment, operation: 'regenerate' });
@@ -638,7 +695,23 @@ const createReadAloudAudioService = (dependencies = {}) => {
             });
         }
 
-        async function prepareAll(options = {}) {
+        function prepareAll(options = {}) {
+            // Joining an identical controller job also prevents two callers from
+            // both observing a missing clip and synthesizing it simultaneously.
+            if (preparation) {
+                if (options.signal === preparationOptions.signal &&
+                    JSON.stringify([options.profile, options.source, options.storeOptions, options.metadata]) ===
+                    JSON.stringify([preparationOptions.profile, preparationOptions.source, preparationOptions.storeOptions, preparationOptions.metadata])) return preparation;
+                return Promise.reject(serviceError('preparation-in-progress', 'Stop the current preparation before starting a different request.'));
+            }
+            preparationOptions = options;
+            const running = Promise.resolve().then(() => runPreparation(options));
+            preparation = running;
+            running.finally(() => { if (preparation === running) preparation = null; }).catch(() => {});
+            return running;
+        }
+
+        async function runPreparation(options = {}) {
             const signal = options.signal;
             const onProgress = typeof options.onProgress === 'function' ? options.onProgress : null;
             const list = segments();
@@ -665,10 +738,17 @@ const createReadAloudAudioService = (dependencies = {}) => {
             for (let index = 0; index < list.length; index += 1) {
                 throwIfAborted(signal);
                 const segment = list[index];
-                const state = inspect(segment);
+                const state = inspect(segment, { profile: options.profile });
                 if (state.status === 'ready') {
                     result.skipped += 1;
                     progress('segment', { index, segment, status: 'skipped' });
+                    continue;
+                }
+                if (String(state.source || '').startsWith('human')) {
+                    const error = serviceError('human-recording-protected', 'Review or replace this recording explicitly. Automatic preparation preserves human recordings.');
+                    result.failed += 1;
+                    result.errors.push({ index, segmentId: segment.segmentId, error });
+                    progress('segment', { index, segment, status: 'failed', error });
                     continue;
                 }
                 try {
@@ -695,7 +775,7 @@ const createReadAloudAudioService = (dependencies = {}) => {
                     emit('error', { operation: 'prepare-all', segment, error });
                 }
             }
-            result.summary = summary();
+            result.summary = summary(options);
             progress('complete', { summary: result.summary });
             return result;
         }
@@ -706,7 +786,11 @@ const createReadAloudAudioService = (dependencies = {}) => {
             throwIfAborted(signal);
             const store = liveStore({ operation: 'reconcile' });
             if (!store || typeof store.reconcile !== 'function') return null;
-            const activeKeys = segments().map((segment) => segment.storageKey);
+            // A retry/card selection is a worklist, never proof that the other
+            // resource segments were deleted. Adapters may supply the full inventory.
+            const activeKeys = typeof configuration.reconciliationKeys === 'function'
+                ? configuration.reconciliationKeys()
+                : segments().map((segment) => segment.storageKey);
             const report = await Promise.resolve(store.reconcile(activeKeys, {
                 pruneAi: options.pruneAi !== false,
             }));
@@ -761,6 +845,7 @@ const createReadAloudAudioService = (dependencies = {}) => {
             segments,
             inspect,
             summary,
+            readiness,
             resolve,
             prepareAll,
             regenerate,
@@ -771,6 +856,7 @@ const createReadAloudAudioService = (dependencies = {}) => {
             remove,
             subscribe,
             serialize,
+            retryPersistence: (options = {}) => persistStore('retry-save', null, liveStore({ operation: 'retry-save' }), options.signal),
         };
     }
 
@@ -1104,6 +1190,8 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
             adapter,
             lane: lane || 'reference',
             persistencePolicy: 'durable',
+            reconciliationKeys: () => resourceSegments(resource, resourceType, null)
+                .map((segment) => identityFor(resourceType, segment)),
         });
         return { controller, resource, resourceId, resourceType, rawSegments };
     }
@@ -1224,18 +1312,35 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
             : (Array.isArray(sentences) ? sentences : null);
         const binding = bindingFor(suppliedSegments, 'reference');
         if (!binding) {
-            return { ok: false, generated: 0, failed: 0, remaining: 0, cancelled: false, attempted: 0, total: 0, bytes: 0, failure: null };
+            return { ok: false, generated: 0, failed: 0, remaining: 0, cancelled: false, attempted: 0, total: 0, bytes: 0, failure: null, failures: [] };
         }
         const controller = binding.controller;
         const allSegments = controller.segments();
         const pending = allSegments.filter((segment) => {
-            try { return controller.inspect(segment).status !== 'ready'; } catch (_) { return true; }
+            try { return controller.inspect(segment, { profile: options.profile }).status !== 'ready'; } catch (_) { return true; }
         });
         const total = pending.length;
         let generated = 0;
         let failed = 0;
         let attempted = 0;
         let lastFailure = null;
+        const failures = [];
+        function recordFailure(error, segment, index) {
+            const detail = failureDetail(error) || {};
+            const code = detail.code || error?.code || 'read-aloud-failed';
+            const action = code === 'human-recording-protected' ? 'review-recording'
+                : ['resource-limit', 'clip-too-large'].includes(code) ? 'review-storage' : 'retry';
+            const failure = {
+                index: Number.isInteger(index) ? index : null,
+                segmentId: segment?.segmentId || null,
+                text: segment?.spokenText || '',
+                code,
+                reason: detail.reason || error?.message || 'Read-aloud audio could not be saved.',
+                retryable: action === 'retry' && detail.retryable !== false,
+                action,
+            };
+            if (!failures.some(item => item.index === failure.index && item.segmentId === failure.segmentId)) failures.push(failure);
+        }
         const cancellationGetter = typeof options.isCancelled === 'function'
             ? options.isCancelled
             : defaultIsCancelled;
@@ -1257,6 +1362,7 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
             if (event.status === 'failed') {
                 failed += 1;
                 lastFailure = failureDetail(event.error);
+                recordFailure(event.error, event.segment, event.index);
             }
             if (typeof onProgress === 'function') {
                 try { onProgress(attempted, total, event.segment && event.segment.spokenText); } catch (_) {}
@@ -1277,15 +1383,17 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
             });
             if (result && result.errors && result.errors.length) {
                 lastFailure = failureDetail(result.errors[result.errors.length - 1].error);
+                result.errors.forEach(item => recordFailure(item.error, allSegments[item.index], item.index));
             }
         } catch (error) {
             if (error && (error.name === 'AbortError' || error.code === 'aborted')) cancelled = true;
             else {
                 failed += 1;
                 lastFailure = failureDetail(error);
+                recordFailure(error, null, null);
             }
         }
-        const finalSummary = controller.summary();
+        const finalSummary = controller.summary({ profile: options.profile });
         const remaining = Math.max(0, Number(finalSummary.stale || 0) +
             Number(finalSummary.corrupt || 0) + Number(finalSummary.missing || 0));
         return {
@@ -1298,6 +1406,7 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
             total,
             bytes: Number(finalSummary.estimatedBytes || 0),
             failure: lastFailure,
+            failures,
         };
     }
 
@@ -1420,14 +1529,26 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
         } catch (_) { return null; }
     }
 
-    function summary(sentences, lane) {
-        const binding = bindingFor(Array.isArray(sentences) ? sentences : null, lane || 'reference');
+    function summary(sentences, lane, options = {}) {
+        const supplied = Array.isArray(options.entries) ? options.entries : (Array.isArray(sentences) ? sentences : null);
+        const binding = bindingFor(supplied, lane || 'reference');
         if (!binding) return null;
-        try { return binding.controller.summary(); } catch (_) { return null; }
+        try { return binding.controller.summary({ profile: options.profile }); } catch (_) { return null; }
+    }
+
+    function readiness(sentences, lane, options = {}) {
+        const supplied = Array.isArray(options.entries) ? options.entries : (Array.isArray(sentences) ? sentences : null);
+        const binding = bindingFor(supplied, lane || 'reference');
+        return binding ? binding.controller.readiness(options || {}) : null;
+    }
+
+    async function retryPersistence(lane, options) {
+        const binding = bindingFor(null, lane || 'reference');
+        return binding ? binding.controller.retryPersistence(options || {}) : false;
     }
 
     return {
-        resolve, inspect, regenerate, prepare, capturePlayed, saveRecording, remove, quarantine, reconcile, summary,
+        resolve, inspect, regenerate, prepare, capturePlayed, saveRecording, remove, quarantine, reconcile, summary, readiness, retryPersistence,
     };
 };
 window.AlloModules = window.AlloModules || {};

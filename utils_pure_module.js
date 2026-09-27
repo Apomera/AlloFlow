@@ -447,7 +447,7 @@ const storageDB = {
         warnLog('storageDB.get: IDB not yet loaded, returning null for', key); return null;
       }
       let val = await window.idbKeyval.get(key);
-      if ((val === undefined || val === null) && _dsBridgeWanted) {
+      if ((val === undefined || val === null) && _dsBridgeWanted && !(options && options.localOnly)) {
         // Fresh Canvas session: local IDB is empty but the bridge may hold
         // the previous session's autosave. Backfill local so later reads hit
         // the fast path.
@@ -478,13 +478,22 @@ const storageDB = {
       return null;
     }
   },
-  set: async (key, value) => {
+  set: async (key, value, options) => {
+    const strict = !!(options && options.throwOnError);
     // Reports success as a boolean (2026-07-13): true when the write LANDED,
     // false when it was skipped or failed (quota, IDB unavailable). Durability-
     // sensitive callers (batch checkpoints) check the report; legacy callers
-    // that ignore the return keep fire-and-forget semantics — still never throws.
-    if (typeof window === 'undefined') return false;
-    if (!window.idbKeyval) { warnLog("storageDB.set: IDB not yet loaded, skipping write for", key); return false; }
+    // that ignore the return keep non-throwing semantics. Strict recovery
+    // writers opt in to the original error for accurate quota classification.
+    if (typeof window === 'undefined' || !window.idbKeyval) {
+      if (strict) {
+        const error = new Error('Device storage is not ready yet.');
+        error.code = 'storage-unavailable';
+        throw error;
+      }
+      warnLog('storageDB.set: IDB not yet loaded, skipping write for', key);
+      return false;
+    }
     try {
       const stringified = JSON.stringify(value);
       const valToStore = window.LZString ? window.LZString.compressToUTF16(stringified) : stringified;
@@ -499,6 +508,7 @@ const storageDB = {
         const stringified = JSON.stringify(value);
         _dsMirrorSet(key, window.LZString ? window.LZString.compressToUTF16(stringified) : stringified);
       } catch (_) {}
+      if (strict) throw e;
       return false;
     }
   },
@@ -522,6 +532,22 @@ const storageDB = {
   }
 };
 const PROVIDER_RETRY_AFTER_MAX_MS = 120000;
+
+// A successful state update or a fulfilled legacy set() promise is not a
+// durability receipt. Recovery callers require an acknowledged write and a
+// matching strict read. The caller owns sequencing and quota fallback.
+const writeVerifiedStorageSnapshot = async (storage, key, snapshot, isCurrent = () => true) => {
+  const fail = (code, message) => { const error = new Error(message); error.code = code; throw error; };
+  if (!isCurrent()) return { status: 'superseded', verified: false };
+  const expected = JSON.stringify(snapshot);
+  const written = await storage.set(key, snapshot, { throwOnError: true });
+  if (written !== true) fail('storage-write-unacknowledged', 'Device storage did not acknowledge this save.');
+  if (!isCurrent()) return { status: 'superseded', verified: false };
+  const saved = await storage.get(key, { throwOnError: true, localOnly: true });
+  if (!isCurrent()) return { status: 'superseded', verified: false };
+  if (JSON.stringify(saved) !== expected) fail('storage-readback-mismatch', 'The saved snapshot could not be verified.');
+  return { status: 'saved', verified: true, verifiedAt: new Date().toISOString(), snapshot: saved };
+};
 
 // RFC 9110 Retry-After accepts either delta-seconds or an HTTP date. Keep the
 // raw header out of every return value: callers get numeric, bounded metadata.
@@ -1584,6 +1610,7 @@ window.AlloModules.UtilsPure = {
   flattenObject,
   unflattenObject,
   storageDB,
+  writeVerifiedStorageSnapshot,
   parseProviderRetryAfter,
   classifyProviderError,
   getProviderErrorSafeFields,

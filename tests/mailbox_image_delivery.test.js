@@ -67,14 +67,14 @@ describe('resource replay acknowledgment',()=>{
     expect(chunks.collect(store,part('oversize',1,300))).toBeNull();expect(chunks.collect(store,part('too-big',1,1,'X'.repeat(93000)))).toBeNull();
   });
   const receiver=decode=>{
-    const refs={store:{current:{parts:{},applied:new Set()}},history:{current:[]},cursor:{current:5}};
-    const deps={useCallback:fn=>fn,mbChunkStoreRef:refs.store,mbStudentCursorRef:refs.cursor,_alloCollectResChunk:chunks.collect,_alloFinishResChunk:chunks.finish,_alloDecodeAlloPack:decode,_alloStudentSafeResources:items=>items.filter(x=>x?.id),setHistory:vi.fn(fn=>{refs.history.current=fn(refs.history.current);}),hydratedHistoryRef:refs.history,setPendingQrAssignmentResource:vi.fn(),setMbResourceReceiveError:vi.fn(),addToast:vi.fn(),warnLog:vi.fn()};
+    const refs={store:{current:{parts:{},applied:new Set()}},history:{current:[]},received:{current:[]},cursor:{current:5}};
+    const deps={useCallback:fn=>fn,mbChunkStoreRef:refs.store,mbStudentCursorRef:refs.cursor,_alloCollectResChunk:chunks.collect,_alloFinishResChunk:chunks.finish,_alloDecodeAlloPack:decode,_alloStudentSafeResources:items=>items.filter(x=>x?.id),setHistory:vi.fn(fn=>{refs.history.current=fn(refs.history.current);}),hydratedHistoryRef:refs.history,setReceivedDeliveryResources:vi.fn(fn=>{refs.received.current=fn(refs.received.current);}),setPendingQrAssignmentResource:vi.fn(),setMbResourceReceiveError:vi.fn(),addToast:vi.fn(),warnLog:vi.fn()};
     return {...deps,refs,apply:new Function(...Object.keys(deps),slice('const applyMbDownPayload = useCallback(', 'const createHomeworkAssignmentLink = useCallback(')+';return applyMbDownPayload;')(...Object.values(deps))};
   };
   it('runs failed decode then successful replay through the real student applier',async()=>{
     const decode=vi.fn().mockRejectedValueOnce(Error('decode interruption')).mockResolvedValue(JSON.stringify(resource(png(100))));
-    const h=receiver(decode);await h.apply(part());expect(h.setHistory).not.toHaveBeenCalled();expect(h.refs.cursor.current).toBe(0);
-    await h.apply(part());expect(h.setHistory).toHaveBeenCalledOnce();expect(h.refs.store.current.applied.has('one')).toBe(true);expect(h.refs.history.current[0].data.imageUrl).toBe(png(100));
+    const h=receiver(decode);await h.apply(part());expect(h.setHistory).not.toHaveBeenCalled();expect(h.setReceivedDeliveryResources).not.toHaveBeenCalled();expect(h.refs.received.current).toEqual([]);expect(h.refs.cursor.current).toBe(0);
+    await h.apply(part());expect(h.setHistory).toHaveBeenCalledOnce();expect(h.refs.store.current.applied.has('one')).toBe(true);expect(h.refs.history.current[0].data.imageUrl).toBe(png(100));expect(h.setReceivedDeliveryResources).toHaveBeenCalledOnce();expect(h.refs.received.current).toEqual([resource(png(100))]);
   });
   it('discards a pending decode after leaving the session',async()=>{
     let finish;const h=receiver(()=>new Promise(resolve=>{finish=resolve;}));const pending=h.apply(part());h.refs.store.current=null;finish(JSON.stringify(resource(png(100))));await pending;expect(h.setHistory).not.toHaveBeenCalled();
@@ -185,10 +185,41 @@ describe('real mailbox receipt authorization', () => {
     let entry=call({a:'dget',admin,c,ps:[{p:'s'}]}).docs[0].d.roster[student.uid];expect(entry.imageDelivery).toEqual(receipt);expect(entry.activityProgress).toEqual(activity);
     expect(patch({[imagePath]:{...receipt,at:400}}).ok).toBe(true);entry=call({a:'dget',admin,c,ps:[{p:'s'}]}).docs[0].d.roster[student.uid];expect(entry.activityProgress).toEqual(activity);
   });
+  it('accepts bounded image revision identities through the existing authorized server contract', () => {
+    const {call,c,student}=setup();
+    const revision=api.mailboxResourceImages(resource(png(100))).revision;
+    const value={...receipt,resourceId:api.mailboxImageReceiptId('picture',revision)};
+    expect(call({a:'dpatch',c,uid:student.uid,pt:student.pt,p:'s',u:{['roster.'+student.uid+'.imageDelivery']:value}}).ok).toBe(true);
+  });
   it('rejects forged peers, nested leaves and malformed delivery summaries', () => {
     const {call,c,student,other}=setup(),imagePath='roster.'+student.uid+'.imageDelivery';const patch=u=>call({a:'dpatch',c,uid:student.uid,pt:student.pt,p:'s',u});
     expect(patch({['roster.'+other.uid+'.imageDelivery']:receipt}).ok).toBe(false);
     expect(patch({[imagePath+'.loaded']:2}).ok).toBe(false);
     for(const change of [{url:'https://private.test'},{total:100001},{loaded:3},{omitted:1},{assignmentAt:-1},{at:0},{resourceId:'bad.id'},{status:'complete'}])expect(patch({[imagePath]:{...receipt,...change}}).ok).toBe(false);
+  });
+});
+
+
+describe('image receipt revision identity', () => {
+  it('rejects an old ready receipt when pictures change under the same assignment', () => {
+    const before = api.mailboxResourceImages(resource(png(100))), after = api.mailboxResourceImages(resource(png(200)));
+    const receipt = { version:1,resourceId:api.mailboxImageReceiptId('picture',before.revision),status:'ready',loaded:1,total:1,omitted:0,assignmentAt:100,at:200 };
+    expect(api.normalizeMailboxImageDelivery(receipt)).toEqual(receipt);
+    const read = (mediaRevision, entry = receipt) => api.mailboxImageReceiptState({entry:{imageDelivery:entry},resourceId:'picture',resourceAt:100,mediaRevision,now:300});
+    expect(read(before.revision).status).toBe('ready');
+    expect(read(after.revision).status).toBe('waiting');
+    expect(read(null).status).toBe('waiting');
+    expect(read(after.revision, {...receipt,resourceId:api.mailboxImageReceiptId('picture',after.revision)}).status).toBe('ready');
+    expect(read(before.revision, {...receipt,resourceId:'picture'}).status).toBe('waiting');
+  });
+  it('is deterministic across property ordering and bounds identities without copying media', () => {
+    const a = api.mailboxResourceImages({id:'p',image:png(100),data:{image:png(200)}});
+    const b = api.mailboxResourceImages({data:{image:png(200)},image:png(100),id:'p'});
+    expect(a.revision).toBe(b.revision);
+    const id = api.mailboxImageReceiptId('長'.repeat(500),a.revision);
+    expect(id).toMatch(/^[A-Za-z0-9][A-Za-z0-9:_-]{0,159}$/);
+    expect(id).not.toContain('base64');
+    expect(api.mailboxImageReceiptId('p','data:image/png;base64,PRIVATE')).toBeNull();
+    expect(api.mailboxResourceImages({...resource(png(100)),mailboxImageReport:{omitted:1}}).revision).not.toBe(a.revision);
   });
 });

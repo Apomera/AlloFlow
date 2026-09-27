@@ -57,7 +57,7 @@ const AppStyles = ({ disableAnimations = false, baseFontSize = 16, lineHeight = 
  * plus the main-content JSX region of ANTI. Union 1223 tokens,
  * plus 631 state-variant tokens (hover/focus/active/
  * group-hover/...) which the base selectors cannot reach.
- * NOT remapped (16): responsive and pseudo-element
+ * NOT remapped (17): responsive and pseudo-element
  * variants — list them with: node dev-tools/gen_docsuite_theme.cjs --unsupported
  * (No backticks in this header: the whole block is pasted INTO a JSX template
  * literal, so one would end the literal and break the AppStyles module.) */

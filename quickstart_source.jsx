@@ -275,6 +275,55 @@ const useQuickStartDialogFocus = (ref, isOpen, onEscape) => {
     };
   }, [isOpen, ref]);
 };
+function QuickStartDuplicateChoice({ info, onChoose, text }) {
+  const dialogRef = React.useRef(null);
+  React.useEffect(() => {
+    const dialog = dialogRef.current;
+    const previous = document.activeElement;
+    const buttons = () => Array.from(dialog.querySelectorAll('button'));
+    buttons()[0].focus();
+    const keydown = (event) => {
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); onChoose('skip'); }
+      if (event.key === 'Tab') {
+        const items = buttons();
+        const index = items.indexOf(document.activeElement);
+        event.preventDefault(); event.stopPropagation();
+        items[(index + (event.shiftKey ? items.length - 1 : 1)) % items.length].focus();
+      }
+    };
+    dialog.addEventListener('keydown', keydown);
+    return () => { dialog.removeEventListener('keydown', keydown); if (previous && previous.isConnected) previous.focus(); };
+  }, [onChoose]);
+  return <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={text('input.my_sources_duplicate_title', 'A document with this name is already saved')} className="my-2 rounded-lg border-2 border-purple-400 bg-white p-3 space-y-2">
+    <p className="text-sm font-bold text-purple-900">{text('input.my_sources_duplicate_title', 'A document with this name is already saved')}</p>
+    <p className="text-xs text-slate-700">{info.incoming.title || info.incoming.fileName}</p>
+    <p className="text-xs text-slate-700">{info.identical ? text('input.my_sources_duplicate_identical', 'This file has the same contents as the saved document.') : text('input.my_sources_duplicate_different', 'This file has different contents. Choose how to save it.')}</p>
+    <div className="flex flex-wrap gap-2">
+      <button type="button" onClick={() => onChoose('keep-both')} className="min-h-11 px-3 rounded border border-purple-500 font-bold text-purple-900">{text('input.my_sources_keep_both', 'Keep both')}</button>
+      <button type="button" onClick={() => onChoose('replace')} className="min-h-11 px-3 rounded border border-rose-500 font-bold text-rose-800">{text('input.my_sources_replace', 'Replace saved document')}</button>
+      <button type="button" onClick={() => onChoose('skip')} className="min-h-11 px-3 rounded border border-slate-400 text-slate-700">{text('input.my_sources_skip_duplicate', 'Skip this file')}</button>
+    </div>
+  </div>;
+}
+
+async function readQuickStartLibrary(api) {
+  if (!api) return { ok: false, reason: 'unavailable' };
+  if (typeof api.readLibrary === 'function') return api.readLibrary({});
+  if (typeof api.listSources === 'function') return { ok: true, sources: await api.listSources({}) };
+  return { ok: false, reason: 'unavailable' };
+}
+function quickStartImportSummary(outcome, text) {
+  const results = outcome.results || [];
+  const counts = {
+    saved: Number(outcome.imported) || 0,
+    replaced: results.filter(row => row.ok && row.action === 'replaced').length,
+    skipped: results.length ? results.filter(row => row.ok && row.action === 'skipped').length : Number(outcome.skipped) || 0,
+    failed: Math.max(Number(outcome.failed) || 0, results.filter(row => !row.ok).length),
+  };
+  return text('input.my_sources_import_summary', 'Saved {saved} document(s), including {replaced} replacement(s). Skipped {skipped}; failed {failed}.')
+    .replace(/\{(saved|replaced|skipped|failed)\}/g, (_, key) => String(counts[key]));
+}
+
 const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLookupStandards, onCallGemini, onWebSearch, addToast, isParentMode, isIndependentMode, isHelpMode, setIsHelpMode, initialSourceMode, onInitialModeConsumed }) => {
   const [step, setStep] = useState(1);
   const { t } = useContext(LanguageContext);
@@ -308,6 +357,8 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
       tone: 'Informative',
       verification: false,
       useOwnSources: false,
+      selectedOwnSourceIds: null,
+      documentsOnly: false,
       sourceCustomInstructions: '',
       dokLevel: '',
       vocabulary: '',
@@ -331,15 +382,41 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
   // wizard opens, from local storage only. The toggle below stays hidden at 0,
   // so a teacher who has imported nothing never sees a control that would do
   // nothing for them.
-  const [wizOwnSourceCount, setWizOwnSourceCount] = useState(0);
+  const [wizSourcesLoaded, setWizSourcesLoaded] = useState(false);
+  const [wizSourceLoading, setWizSourceLoading] = useState(true);
+  const [wizSourceReadError, setWizSourceReadError] = useState('');
+  const [wizSourceReadAttempt, setWizSourceReadAttempt] = useState(0);
+  const [wizOwnSourceList, setWizOwnSourceList] = useState([]);
   const [wizImporting, setWizImporting] = useState(false);
   const [wizImportMsg, setWizImportMsg] = useState('');
   const [wizImportFailures, setWizImportFailures] = useState([]);
+  const wizSourceRevision = useRef(0);
+  const wizardOpenRef = useRef(isOpen);
+  wizardOpenRef.current = isOpen;
+  const [wizDuplicatePrompt, setWizDuplicatePrompt] = useState(null);
+  const wizDuplicateResolverRef = useRef(null);
+  const chooseWizDuplicate = useCallback((choice) => {
+    const resolve = wizDuplicateResolverRef.current;
+    wizDuplicateResolverRef.current = null;
+    setWizDuplicatePrompt(null);
+    if (resolve) resolve(choice);
+  }, []);
+  const isWizSourceSelected = (source) => source.allowAI !== false && (Array.isArray(localData.selectedOwnSourceIds) ? localData.selectedOwnSourceIds.includes(source.id) : source.active !== false);
+  const wizOwnSourceCount = wizSourcesLoaded ? wizOwnSourceList.filter(isWizSourceSelected).length : null;
+  const handleWizToggleSource = (source) => {
+    if (wizImporting || source.allowAI === false) return;
+    setLocalData((prev) => {
+      const ids = Array.isArray(prev.selectedOwnSourceIds) ? prev.selectedOwnSourceIds : wizOwnSourceList.filter((row) => row.active !== false && row.allowAI !== false).map((row) => row.id);
+      return { ...prev, selectedOwnSourceIds: ids.includes(source.id) ? ids.filter((id) => id !== source.id) : [...ids, source.id] };
+    });
+    setWizImportMsg('');
+  };
   const wizOwnSourcesApi = (typeof window !== 'undefined' && window.AlloOwnSources) || null;
 
   // Same import path as the source panel, through the shared helper: Lumen's
   // adapter extracts text in this browser and only the text is stored.
   const handleWizImportOwnSources = async (event) => {
+    if (wizImporting) return;
     const input = event && event.target;
     const files = input && input.files ? Array.from(input.files) : [];
     if (!files.length) return;
@@ -347,24 +424,46 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
       setWizImportMsg(t('input.my_sources_unavailable'));
       return;
     }
+    const revision = ++wizSourceRevision.current;
     setWizImporting(true);
+    setWizSourceLoading(true);
     setWizImportMsg('');
     setWizImportFailures([]);
     try {
-      const outcome = await wizOwnSourcesApi.importFiles(files, {});
-      setWizOwnSourceCount(outcome.count);
+      const outcome = await wizOwnSourcesApi.importFiles(files, { resolveDuplicate: (info) => {
+        if (!wizardOpenRef.current || revision !== wizSourceRevision.current) return Promise.resolve('skip');
+        return new Promise((resolve) => { wizDuplicateResolverRef.current = resolve; setWizDuplicatePrompt(info); });
+      } });
+      if (!wizardOpenRef.current || revision !== wizSourceRevision.current) return;
+      const importedIds = (outcome.results || []).filter((row) => row.ok && row.sourceId && (row.action === 'added' || row.action === 'replaced')).map((row) => row.sourceId);
+      if (importedIds.length) setLocalData((prev) => ({ ...prev, useOwnSources: true, selectedOwnSourceIds: Array.from(new Set([...(prev.selectedOwnSourceIds || []), ...importedIds])) }));
+      try {
+        const library = await readQuickStartLibrary(wizOwnSourcesApi);
+        if (!wizardOpenRef.current || revision !== wizSourceRevision.current) return;
+        if (library && library.ok && Array.isArray(library.sources)) {
+          setWizOwnSourceList(library.sources);
+          setWizSourcesLoaded(true);
+          setWizSourceReadError('');
+        } else setWizSourceReadError(library && library.reason || 'storage-read');
+      } catch (_) {
+        if (!wizardOpenRef.current || revision !== wizSourceRevision.current) return;
+        setWizSourceReadError('storage-read');
+      }
       // Name the files that did not make it: "2 of 3 imported" leaves the
       // teacher guessing which document to fix.
       setWizImportFailures((outcome.results || [])
         .filter((row) => row && !row.ok)
         .map((row) => [row.name, row.message].filter(Boolean).join(' — ')));
-      if (outcome.reason === 'storage') setWizImportMsg(t('input.my_sources_storage_failed'));
-      else if (outcome.imported > 0) setWizImportMsg(t('input.my_sources_imported', { count: outcome.imported }));
-      else setWizImportMsg(t('input.my_sources_none_added'));
+      if (outcome.reason === 'storage' && !outcome.imported) setWizImportMsg(t('input.my_sources_storage_failed'));
+      else if (outcome.reason === 'unavailable') setWizImportMsg(t('input.my_sources_unavailable'));
+      else setWizImportMsg(quickStartImportSummary(outcome, wt));
     } catch (_) {
-      setWizImportMsg(t('input.my_sources_none_added'));
+      if (wizardOpenRef.current && revision === wizSourceRevision.current) {
+        setWizImportMsg(wt('input.my_sources_import_interrupted', 'Import could not finish. Retry loading documents to check which files were saved.'));
+        setWizSourceReadError('storage-read');
+      }
     } finally {
-      setWizImporting(false);
+      if (revision === wizSourceRevision.current) { setWizImporting(false); setWizSourceLoading(false); }
       // Clear the input so choosing the same file again still fires onChange.
       if (input) input.value = '';
     }
@@ -374,12 +473,14 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
     let cancelled = false;
     let timer = null;
     const startedAt = Date.now();
+    const revision = wizSourceRevision.current;
+    setWizSourceLoading(true);
     // Same as the source panel: the module and Lumen arrive after boot, and a
     // single early count hid the toggle for the whole wizard. Keep checking.
     const refresh = async () => {
-      if (cancelled) return;
+      if (cancelled || revision !== wizSourceRevision.current) return;
       const OS = typeof window !== 'undefined' && window.AlloOwnSources;
-      const ready = !!(OS && typeof OS.countSources === 'function'
+      const ready = !!(OS && (typeof OS.readLibrary === 'function' || typeof OS.listSources === 'function')
         && (typeof OS.available !== 'function' || OS.available()));
       if (!ready && Date.now() - startedAt < 30000) {
         if (OS && typeof OS.ensureLumen === 'function') Promise.resolve(OS.ensureLumen(1)).catch(() => {});
@@ -387,14 +488,33 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
         return;
       }
       try {
-        if (!OS || typeof OS.countSources !== 'function') return;
-        const n = await OS.countSources({});
-        if (!cancelled) setWizOwnSourceCount(n);
-      } catch (_) { /* the toggle simply stays hidden */ }
+        const library = await readQuickStartLibrary(OS);
+        if (cancelled || revision !== wizSourceRevision.current) return;
+        if (library && library.ok && Array.isArray(library.sources)) {
+          const rows = library.sources;
+          setWizOwnSourceList(rows);
+          setWizSourcesLoaded(true);
+          setWizSourceReadError('');
+          setLocalData((prev) => Array.isArray(prev.selectedOwnSourceIds) ? prev : { ...prev, selectedOwnSourceIds: rows.filter((row) => row.active !== false && row.allowAI !== false).map((row) => row.id) });
+        } else setWizSourceReadError(library && library.reason || 'storage-read');
+      } catch (_) {
+        if (!cancelled && revision === wizSourceRevision.current) setWizSourceReadError('storage-read');
+      } finally {
+        if (!cancelled && revision === wizSourceRevision.current) setWizSourceLoading(false);
+      }
     };
     refresh();
-    return () => { cancelled = true; if (timer) clearTimeout(timer); };
-  }, [isOpen]);
+    return () => {
+      cancelled = true;
+      wizSourceRevision.current++;
+      if (timer) clearTimeout(timer);
+      const resolve = wizDuplicateResolverRef.current;
+      wizDuplicateResolverRef.current = null;
+      if (resolve) resolve('skip');
+      setWizDuplicatePrompt(null);
+      setWizImporting(false);
+    };
+  }, [isOpen, wizSourceReadAttempt]);
   const wizardStepHelp = {
     1: { title: 'Step 1: Grade Level', text: 'Select the grade level for your content. This determines vocabulary complexity, sentence structure, and concept depth. All generated materials will be calibrated to this level. You can always change it later in settings.' },
     2: { title: 'Step 2: Source Material', text: 'Choose how to provide your lesson content. You can paste or type text directly, fetch content from a URL, upload a file, or let the AI generate content from a topic. Each option creates a rich source document for all tools to work from.' },
@@ -1387,27 +1507,39 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                           type="checkbox"
                                           data-help-key="wizard_verify_checkbox" id="wiz-verify"
                                           checked={localData.verification}
-                                          onChange={(e) => setLocalData(prev => ({ ...prev, verification: e.target.checked }))}
+                                          onChange={(e) => setLocalData(prev => ({ ...prev, verification: e.target.checked, documentsOnly: e.target.checked ? false : prev.documentsOnly }))}
                                           className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 border-gray-300 cursor-pointer"
                                       />
                                       <label htmlFor="wiz-verify" className="text-sm font-bold text-slate-700 cursor-pointer flex items-center gap-2">
                                           <ShieldCheck size={16} className="text-purple-500"/> {t('wizard.verify_facts')}
                                       </label>
                                   </div>
-                                  {wizOwnSourceCount > 0 && (
+                                  {(localData.useOwnSources || (wizSourcesLoaded && wizOwnSourceList.length > 0)) && (
                                   <div className="flex items-center gap-2 bg-purple-50 p-3 rounded-xl border border-purple-100">
                                       <input dir="auto" aria-label={t('input.use_my_sources')}
                                           type="checkbox"
                                           id="wiz-own-sources"
                                           checked={localData.useOwnSources}
-                                          onChange={(e) => setLocalData(prev => ({ ...prev, useOwnSources: e.target.checked }))}
+                                          onChange={(e) => setLocalData(prev => ({ ...prev, useOwnSources: e.target.checked, documentsOnly: e.target.checked ? prev.documentsOnly : false }))}
+                                          disabled={wizImporting || (wizOwnSourceCount === 0 && !localData.useOwnSources && !wizSourceLoading && !wizSourceReadError)}
                                           className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 border-gray-300 cursor-pointer"
                                       />
                                       <label htmlFor="wiz-own-sources" className="text-sm font-bold text-slate-700 cursor-pointer flex items-center gap-2">
                                           <FileText size={16} className="text-purple-500" aria-hidden="true"/> {t('input.use_my_sources')}
-                                          <span className="font-normal text-slate-500">({wizOwnSourceCount})</span>
+                                          {wizOwnSourceCount !== null && <span className="font-normal text-slate-500">({wizOwnSourceCount})</span>}
                                       </label>
                                   </div>
+                                  )}
+                                  {localData.useOwnSources && (
+                                    <div className="bg-purple-50 p-3 rounded-xl border border-purple-100 space-y-1">
+                                      <label className="flex min-h-11 items-center gap-2 text-sm font-bold text-slate-700">
+                                        <input id="wiz-documents-only" type="checkbox" checked={!!localData.documentsOnly} disabled={wizImporting}
+                                          onChange={(e) => setLocalData(prev => ({ ...prev, documentsOnly: e.target.checked, verification: e.target.checked ? false : prev.verification }))} />
+                                        {wt('input.documents_only', 'Documents only (quoted excerpts)')}
+                                      </label>
+                                      {localData.documentsOnly && <p className="text-xs text-slate-600">{wt('input.documents_only_desc', 'Uses exact passages from the selected documents, without adding outside information. Web search is off. Length, tone and reading level do not rewrite these excerpts.')}</p>}
+                                      {localData.documentsOnly && wizOwnSourceCount === 0 && !wizSourceLoading && !wizSourceReadError && <p role="status" className="text-xs text-amber-900">{wt('input.documents_only_select', 'Select at least one available document to continue.')}</p>}
+                                    </div>
                                   )}
                                   {/* The import control shows even at zero sources. The toggle
                                       above hides when the corpus is empty, so without this a
@@ -1428,24 +1560,42 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                           multiple
                                           className="sr-only"
                                           accept={wizOwnSourcesApi ? wizOwnSourcesApi.acceptAttribute() : undefined}
-                                          disabled={wizImporting}
+                                          disabled={wizImporting || wizSourceLoading || !!wizSourceReadError}
                                           onChange={handleWizImportOwnSources}
                                       />
-                                      <p role="status" aria-live="polite" className="text-xs text-slate-600 leading-relaxed">
-                                          {wizImportMsg || (wizOwnSourceCount > 0
-                                              ? t('input.my_sources_stored', { count: wizOwnSourceCount })
-                                              : t('input.my_sources_empty'))}
-                                      </p>
+                                      {wizDuplicatePrompt && <QuickStartDuplicateChoice info={wizDuplicatePrompt} onChoose={chooseWizDuplicate} text={wt} />}
+                                      {wizSourceLoading && <p role="status" className="text-xs text-slate-600">{wt('input.my_sources_loading', 'Loading saved documents…')}</p>}
+                                      {wizSourceReadError && <div className="space-y-1">
+                                        <p role="alert" className="text-xs text-amber-900">{wt('input.my_sources_load_failed', 'Saved documents could not be loaded. Your selections have been kept. Retry loading, or continue with web search.')}</p>
+                                        {wizSourcesLoaded && <p className="text-xs text-slate-600">{wt('input.my_sources_last_loaded', 'Showing the last successfully loaded document list.')}</p>}
+                                        <button type="button" onClick={() => setWizSourceReadAttempt(value => value + 1)} disabled={wizImporting || wizSourceLoading} className="min-h-11 px-3 rounded border border-purple-400 bg-white text-sm font-bold text-purple-900 disabled:opacity-50">{wt('input.my_sources_retry_loading', 'Retry loading documents')}</button>
+                                      </div>}
+                                      {wizImportMsg && <p role="status" aria-live="polite" className="text-xs text-slate-600 leading-relaxed">{wizImportMsg}</p>}
+                                      {(wizOwnSourceList.length > 0 || (wizSourcesLoaded && !wizSourceLoading && !wizSourceReadError)) && <p role="status" aria-live="polite" className="text-xs text-slate-600 leading-relaxed">
+                                          {wizOwnSourceList.length > 0
+                                              ? `${t('input.my_sources_stored', { count: wizOwnSourceList.length })} ${t('input.my_sources_included', { count: wizOwnSourceCount })}`
+                                              : t('input.my_sources_empty')}
+                                      </p>}
                                       {wizImportFailures.length > 0 && (
                                           <ul className="text-xs text-amber-900 leading-relaxed list-disc ms-4">
                                               {wizImportFailures.map((failure, index) => <li key={index}>{failure}</li>)}
                                           </ul>
                                       )}
+                                      {wizOwnSourceList.length > 0 && <details className="mt-2">
+                                        <summary className="min-h-11 flex items-center cursor-pointer text-xs font-bold text-purple-900">{t('input.my_sources_manage', { count: wizOwnSourceList.length })}</summary>
+                                        <p className="text-xs text-slate-600">{wt('input.my_sources_lesson_selection', 'Include or exclude documents for this lesson. Saved documents remain available in other workspaces.')}</p>
+                                        <ul className="space-y-1 mt-1">
+                                          {wizOwnSourceList.map((source) => <li key={source.id} className="flex items-center justify-between gap-2 text-xs">
+                                            <span className="min-w-0 break-words">{source.title}{source.allowAI === false && <span className="block text-amber-900">{wt('input.my_sources_ai_disabled', 'Unavailable for AI: permission is off in the document library.')}</span>}</span>
+                                            <button type="button" onClick={() => handleWizToggleSource(source)} disabled={wizImporting || source.allowAI === false} aria-pressed={isWizSourceSelected(source)} className="min-h-11 px-2 rounded border border-purple-300 bg-white font-bold text-purple-800 disabled:opacity-50">{isWizSourceSelected(source) ? t('input.my_sources_exclude') : t('input.my_sources_include')}</button>
+                                          </li>)}
+                                        </ul>
+                                      </details>}
                                   </div>
                                   <button type="button"
                                       aria-label={t('common.next')}
                                       onClick={() => setStep(4)}
-                                      disabled={!localData.topic.trim()}
+                                      disabled={!localData.topic.trim() || wizImporting || (localData.documentsOnly && (!wizOwnSourceCount || wizSourceLoading || !!wizSourceReadError))}
                                       className="w-full bg-purple-600 text-white font-bold py-3 rounded-xl hover:bg-purple-700 disabled:opacity-50 transition-transform motion-reduce:transition-none hover:scale-[1.02] motion-reduce:hover:scale-100 active:scale-95 motion-reduce:active:scale-100 flex items-center justify-center gap-2 shadow-md mt-4"
                                   >
                                       {t('common.next')} <ArrowRight size={18} />
@@ -1599,6 +1749,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                   aria-label={t('common.back')}
                                 data-help-key="wizard_prev_btn"
                                 onClick={() => setStep(s => s - 1)}
+                                disabled={wizImporting}
                                 className="text-slate-600 hover:text-slate-600 font-bold text-sm px-4 py-2 flex items-center gap-2"
                               >
                                 <ArrowDown className="rotate-90" size={16}/> {t('common.back')}
@@ -1607,6 +1758,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                   aria-label={t('common.finish')}
                                 data-help-key="wizard_complete_btn"
                                 onClick={() => onComplete(localData)}
+                                disabled={wizImporting || (localData.sourceMode === 'generate' && localData.documentsOnly && (!wizOwnSourceCount || wizSourceLoading || !!wizSourceReadError))}
                                 className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all motion-reduce:transition-none active:scale-95 motion-reduce:active:scale-100 flex items-center gap-2"
                               >
                                 {t('common.finish')} <CheckCircle2 size={18} />
@@ -1622,6 +1774,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                       <button type="button"
                           aria-label={t('common.back')}
                         onClick={() => setStep(s => s - 1)}
+                        disabled={wizImporting}
                         className="text-slate-600 hover:text-slate-600 font-bold text-sm px-4 py-2 flex items-center gap-2 transition-colors motion-reduce:transition-none"
                       >
                         <ArrowDown className="rotate-90" size={16}/> {t('common.back')}

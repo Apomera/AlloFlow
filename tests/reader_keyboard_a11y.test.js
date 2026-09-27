@@ -32,6 +32,7 @@ beforeAll(() => {
   global.IS_REACT_ACT_ENVIRONMENT = true;
   window.AlloIcons = new Proxy({}, { get: () => () => null });
   if (!Range.prototype.getBoundingClientRect) Range.prototype.getBoundingClientRect = () => ({ left: 0, top: 0, width: 0, height: 0 });
+  loadAlloModule('text_pipeline_helpers_module.js');
   loadAlloModule('instructional_context_module.js'); loadAlloModule('pure_helpers_module.js'); loadAlloModule('phase_n_misc_helpers_module.js');
   loadAlloModule(process.env.ALLO_VIEW_CANDIDATE || 'view_simplified_module.js');
   pure = window.AlloModules.PureHelpers; phase = window.AlloModules.PhaseNHelpers; View = window.AlloModules.SimplifiedView; api = window.AlloModules.InstructionalContext;
@@ -167,7 +168,8 @@ describe('names match what is shown', () => {
     ['add term menu', { isTeacherMode: true, interactionMode: 'add-glossary', selectionMenu: { text: 'sentences', x: 0, y: 0 } }],
   ])('%s', (_, extra) => {
     mount(extra);
-    expect(nameMismatches(host)).toEqual([]);
+    const mismatches = nameMismatches(host);
+    expect(mismatches, JSON.stringify(mismatches)).toEqual([]);
   });
   it('the menu buttons are named by their words', () => {
     mount({ isTeacherMode: true, interactionMode: 'revise', selectionMenu: { text: 'Two sentences here.', x: 0, y: 0 } });

@@ -184,7 +184,9 @@ describe('finding word help in the passage on screen', () => {
       const tw = document.createTreeWalker(passage, NodeFilter.SHOW_TEXT);
       for (let node = tw.nextNode(); node; node = tw.nextNode()) node.data = node.data.replace('heron', 'egret');
       view.rerender();
-      expect(registry.get('allo-word-help').ranges.map(range => range.toString())).toEqual(['shallow']);
+      // A changed display no longer proves the source anchors. Keep the list,
+      // but remove all marks rather than guessing a surviving occurrence.
+      expect(registry.has('allo-word-help')).toBe(false);
     } finally {
       window.CSS = savedCSS; globalThis.Highlight = savedHighlight; Element.prototype.scrollIntoView = savedScroll;
     }
@@ -400,7 +402,10 @@ describe('word help opens from the passage', () => {
   });
 
   it('says in the Word meaning banner that underlined words open prepared help', () => {
+    vi.stubGlobal('CSS', { highlights: new Map() });
+    vi.stubGlobal('Highlight', class extends Set {});
     mountReader(adaptedItem([at('heron')], true), { mode: 'define' });
     expect(host.querySelector('[data-reading-mode-status]').textContent).toBe('Word meaning · Select a word to see what it means. Underlined words open the word help your teacher prepared. Use Left and Right arrows to move between words.');
+    vi.unstubAllGlobals();
   });
 });

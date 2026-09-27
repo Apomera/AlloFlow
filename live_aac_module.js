@@ -609,6 +609,43 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
     });
   };
   restoreReferenceAudio(referenceAudioSource, cleaned);
+  if (item.type === 'simplified' && cleaned && typeof cleaned === 'object') {
+    // This route does not yet have an approved portable reading-audio
+    // contract. Record the omission, never infer delivery from a host cache.
+    const omittedAudio = !!item.karaokeAudio || item.readingDelivery?.referenceAudio?.reason === 'route-unsupported';
+    const priorPictureKeys = new Set(item.readingDelivery?.version === 1 && Array.isArray(item.readingDelivery.pictures?.omittedSupportKeys) ? item.readingDelivery.pictures.omittedSupportKeys.filter(key => typeof key === 'string' && /^[a-z0-9]{1,16}$/.test(key)).slice(0, 10000) : []);
+    const omittedPictureKeys = new Set();
+    const pictureKey = (scope, envelope, note) => {
+      // Identity only: no gloss or media bytes in delivery metadata.
+      const identity = JSON.stringify([scope, envelope?.sourceFingerprint, envelope?.sourceFamilyId, envelope?.unitId, note.id, note.start, note.end, note.quote]);
+      let hash = 2166136261;
+      for (let i = 0; i < identity.length; i += 1) hash = Math.imul(hash ^ identity.charCodeAt(i), 16777619);
+      return (hash >>> 0).toString(36);
+    };
+    for (const key of ['readingSupports', 'adaptedReadingSupports']) {
+      const accepted = Array.isArray(cleaned[key]?.annotations) ? cleaned[key].annotations : [];
+      const annotations = Array.isArray(item[key]?.annotations) ? item[key].annotations : [];
+      for (const kept of accepted) {
+        if (kept.origin !== 'educator' || kept.image) continue;
+        const identity = pictureKey(key, cleaned[key], kept);
+        const entry = annotations.find(note => note.start === kept.start && note.end === kept.end && note.quote === kept.quote);
+        // Retain omissions only for unchanged surviving supports without art.
+        if (entry?.image || priorPictureKeys.has(identity)) omittedPictureKeys.add(identity);
+      }
+    }
+    const omittedSupportKeys = [...omittedPictureKeys].slice(0, 10000);
+    cleaned.readingDelivery = {
+      version: 1,
+      referenceAudio: {
+        inclusion: 'omitted',
+        reason: omittedAudio ? 'route-unsupported' : 'not-provided'
+      },
+      pictures: {
+        omittedCount: omittedSupportKeys.length,
+        omittedSupportKeys
+      }
+    };
+  }
   const {
     karaokeStudentAudio,
     ...safe
@@ -741,13 +778,20 @@ const _alloPrepareMailboxResource = async (item, deps = {}) => {
 const _alloMailboxResourceImages = resource => {
   const sources = new Set();
   const seen = new WeakSet();
+  let omittedReadingPictures = 0;
   const add = value => {
     if (typeof value === 'string' && /^(?:https:\/\/|data:image\/)/i.test(value)) sources.add(value);
   };
   const visit = value => {
     if (!value || typeof value !== 'object' || seen.has(value)) return;
     seen.add(value);
+    if (value.type === 'simplified' && value.readingDelivery?.version === 1) {
+      omittedReadingPictures += Math.max(0, Math.min(10000, Math.trunc(Number(value.readingDelivery.pictures?.omittedCount) || 0)));
+    }
     for (const key of ['image', 'imageUrl', 'visualImage']) add(value[key]);
+    // Reading word-support pictures are objects with a validated src leaf.
+    // They need the same recipient load check as string-valued pictures.
+    if (value.image && typeof value.image === 'object') add(value.image.src);
     if (Array.isArray(value.optionImageUrls)) value.optionImageUrls.forEach(add);
     if (typeof value.imageUrl === 'string' && Array.isArray(value.frames)) value.frames.forEach(add);
     Object.keys(value).forEach(key => {
@@ -755,19 +799,35 @@ const _alloMailboxResourceImages = resource => {
     });
   };
   visit(resource);
-  const omitted = Math.max(0, Math.min(10000, Math.trunc(Number(resource?.mailboxImageReport?.omitted) || 0)));
+  const omitted = Math.min(10000, omittedReadingPictures + Math.max(0, Math.min(10000, Math.trunc(Number(resource?.mailboxImageReport?.omitted) || 0))));
   const list = [...sources];
   // A compact signature keeps React effects stable when non-image resource
   // fields change, without putting image data in roster receipts or logs.
   let hash = 2166136261;
-  list.forEach(source => {
-    for (let i = 0; i < source.length; i += 1) hash = Math.imul(hash ^ source.charCodeAt(i), 16777619);
+  // Sort and frame each source so object order and concatenation cannot make
+  // two different image sets look like the same delivered revision.
+  list.sort().forEach(source => {
+    const framed = source.length + ':' + source;
+    for (let i = 0; i < framed.length; i += 1) hash = Math.imul(hash ^ framed.charCodeAt(i), 16777619);
   });
+  const revision = (hash >>> 0).toString(36) + '-' + list.length + '-' + omitted;
   return {
     sources: list,
     omitted,
-    key: String(resource?.id || '') + ':' + (hash >>> 0).toString(36) + ':' + omitted
+    revision,
+    key: String(resource?.id || '') + ':' + revision
   };
+};
+// Version the resource identity inside the existing bounded receipt field.
+// This is an equality token, not authentication or proof of decoding.
+const _alloMailboxImageReceiptId = (resourceId, revision) => {
+  if (typeof revision !== 'string' || !/^[a-z0-9-]{1,48}$/.test(revision)) return null;
+  const raw = String(resourceId || '');
+  if (!raw) return null;
+  let hash = 2166136261;
+  for (let i = 0; i < raw.length; i += 1) hash = Math.imul(hash ^ raw.charCodeAt(i), 16777619);
+  const id = raw.trim().replace(/[^A-Za-z0-9:_-]/g, '-').slice(0, 80).replace(/^[^A-Za-z0-9]+/, '') || 'resource';
+  return id + ':images:' + (hash >>> 0).toString(36) + ':' + revision;
 };
 const _alloLoadMailboxImage = (source, signal) => new Promise(resolve => {
   if (typeof Image !== 'function' || signal?.aborted) return resolve(false);
@@ -849,12 +909,15 @@ const _alloUseMailboxImageDelivery = ({
     }).then(update);
     return () => controller.abort();
   }, [key]);
-  return state.key === key ? state : {
-    key,
-    status: enabled && (manifest.sources.length || manifest.omitted) ? 'loading' : 'idle',
-    ready: 0,
-    total: manifest.sources.length + manifest.omitted,
-    omitted: manifest.omitted
+  return {
+    ...(state.key === key ? state : {
+      key,
+      status: enabled && (manifest.sources.length || manifest.omitted) ? 'loading' : 'idle',
+      ready: 0,
+      total: manifest.sources.length + manifest.omitted,
+      omitted: manifest.omitted
+    }),
+    revision: manifest.revision
   };
 };
 const LiveAacBoardDialog = ({
@@ -1182,7 +1245,8 @@ const MailboxImageDeliveryMonitor = ({
   assignmentAt,
   onReceipt,
   receiveError,
-  onRetryResource
+  onRetryResource,
+  revisionReceipts = false
 }) => {
   const [retryEpoch, setRetryEpoch] = useState(0);
   const state = _alloUseMailboxImageDelivery({
@@ -1204,7 +1268,7 @@ const MailboxImageDeliveryMonitor = ({
       try {
         const work = receiptQueue.current.catch(() => {}).then(() => {
           if (!cancelled) return receiptRef.current?.({
-            resourceId: resource.id,
+            resourceId: revisionReceipts ? _alloMailboxImageReceiptId(resource.id, state.revision) : resource.id,
             status: state.status,
             ready: completed,
             total: state.total,
@@ -1223,7 +1287,7 @@ const MailboxImageDeliveryMonitor = ({
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [enabled, state.key, state.status, completed, state.total, state.omitted]);
+  }, [enabled, state.key, state.status, completed, state.total, state.omitted, revisionReceipts]);
   if (!enabled || !receiveError && (state.status === 'idle' || state.status === 'ready')) return null;
   const failed = receiveError || state.status === 'failed';
   const failure = _alloMailboxImageFailure(state);
@@ -1268,6 +1332,7 @@ const _alloMailboxImageReceiptState = ({
   entry,
   resourceId,
   resourceAt,
+  mediaRevision,
   now = Date.now(),
   mailboxVersion = 23
 }) => {
@@ -1277,7 +1342,7 @@ const _alloMailboxImageReceiptState = ({
     retry: false
   };
   const receipt = _alloNormalizeMailboxImageDelivery(entry?.imageDelivery);
-  const id = String(resourceId || '').trim().replace(/[^A-Za-z0-9:_-]/g, '-').slice(0, 160);
+  const id = mediaRevision === undefined ? String(resourceId || '').trim().replace(/[^A-Za-z0-9:_-]/g, '-').slice(0, 160) : _alloMailboxImageReceiptId(resourceId, mediaRevision);
   if (!id || !receipt || receipt.resourceId !== id || receipt.assignmentAt !== (Number(resourceAt) || 0)) return {
     status: 'waiting',
     label: 'Images: awaiting device',
@@ -1310,6 +1375,7 @@ const MailboxImageStatus = ({
   entry,
   resourceId,
   resourceAt,
+  mediaRevision,
   now,
   onRetry,
   mailboxVersion
@@ -1320,6 +1386,7 @@ const MailboxImageStatus = ({
     entry,
     resourceId,
     resourceAt,
+    mediaRevision,
     now,
     mailboxVersion
   });
@@ -1378,6 +1445,7 @@ window.AlloModules.LiveAac = {
   prepareMailboxResource: _alloPrepareMailboxResource,
   resizeMailboxImage: _alloResizeMailboxImage,
   mailboxResourceImages: _alloMailboxResourceImages,
+  mailboxImageReceiptId: _alloMailboxImageReceiptId,
   checkMailboxImages: _alloCheckMailboxImages,
   useMailboxImageDelivery: _alloUseMailboxImageDelivery,
   mailboxImageReceiptState: _alloMailboxImageReceiptState,

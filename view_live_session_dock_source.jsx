@@ -8,6 +8,12 @@ function LiveSessionDockView(props) {
   const reviewLabel = reviewApi?.organizerReviewText?.(props.t, 'review_title', 'Review organizer reflections') || 'Review organizer reflections';
   const imageApi = window.AlloModules?.LiveAac;
   const MailboxImageStatus = imageApi?.MailboxImageStatus;
+  const imageRevisionFor = id => {
+    // A teacher original may differ from resized/filtered media on the wire.
+    const source = (history || []).find(item => item?.id === id);
+    const prepared = source && props.getPreparedMailboxResource?.(source);
+    return prepared ? imageApi?.mailboxResourceImages?.(prepared)?.revision || null : null;
+  };
   const resourcesWithImages = React.useMemo(() => new Set((history || []).filter(resource => {
     const manifest = imageApi?.mailboxResourceImages?.(resource);
     return manifest && (manifest.sources.length || manifest.omitted);
@@ -773,7 +779,7 @@ function LiveSessionDockView(props) {
                                 >{organizerProgressLabel}</span>
                               ) : null}
                               {MailboxImageStatus && _alloMbBridgeActive() && resourcesWithImages.has(targetId || viewing) && (
-                                <MailboxImageStatus entry={entry} resourceId={targetId || viewing} resourceAt={targetAt} now={dockNow} mailboxVersion={mailboxImageVersion} onRetry={() => retryMailboxImagesForStudent(uid, targetId || viewing)} />
+                                <MailboxImageStatus entry={entry} resourceId={targetId || viewing} mediaRevision={imageRevisionFor(targetId || viewing)} resourceAt={targetAt} now={dockNow} mailboxVersion={mailboxImageVersion} onRetry={() => retryMailboxImagesForStudent(uid, targetId || viewing)} />
                               )}
                               {entry.wsProgress && wsAudioNeedsAttention ? (
                                 <span style={{display:'inline-flex',alignItems:'center',gap:4}}>

@@ -297,10 +297,85 @@ function _alloBuildAssignmentCenterCsv(rows) {
     return [header.join(','), ...body].join('\n');
 }
 
+// Capability evidence is confined to the supplied payload. No History lookup,
+// ambient input, TTS cache, or sender-authored "ready" flag is authoritative.
+function _alloReadingDeliveryCapabilities(item, items, options = {}) {
+    const api = window.AlloModules?.InstructionalContext;
+    const state = (inclusion, availability, reason, extra = {}) => ({ inclusion, availability, ...(reason ? { reason } : {}), ...extra });
+    const keys = ['originalText', 'adaptedText', 'originalSupports', 'adaptedSupports', 'pictures', 'referenceAudio', 'instructionalRoles', 'citations'];
+    const unresolved = item.__alloResourceRef || item.__alloResourcesManifestRef;
+    if (unresolved || !api?.getSourceSnapshot || !api?.getInstructionalText || !api?.sameReadingSourceFamily || !api?.validateReadingSupports) {
+        const reason = unresolved ? (options.assetStatus === 'failed' ? 'missing-asset' : 'asset-not-resolved') : 'validator-unavailable';
+        return Object.fromEntries(keys.map(key => [key, state('unknown', unresolved && options.assetStatus === 'failed' ? 'unavailable' : 'unverified', reason)]));
+    }
+    const snapshot = api.getSourceSnapshot(item);
+    const intact = value => value && value.syncTruncated !== true && value.readingSourceAvailability?.status !== 'unavailable' && api.isSupportedOriginal?.(value);
+    const original = intact(item);
+    const paired = original ? item : snapshot && items.find(candidate => intact(candidate) && api.sameReadingSourceFamily(candidate, item) && candidate.data === snapshot.text);
+    const profile = api.getInstructionalText(item);
+    const adapted = profile.form === 'adapted';
+    const hasBody = typeof item.data === 'string' && item.syncTruncated !== true;
+    const hasSource = !!snapshot && item.readingSourceAvailability?.status !== 'unavailable';
+    const originalOwner = paired || item;
+    const supports = hasSource && originalOwner.readingSupports ? api.validateReadingSupports(originalOwner, originalOwner.readingSupports) : null;
+    const adaptedValidationUnavailable = adapted && item.adaptedReadingSupports && typeof api.validateAdaptedReadingSupports !== 'function';
+    const adaptedSupports = adapted && typeof api.validateAdaptedReadingSupports === 'function' && item.adaptedReadingSupports
+        ? api.validateAdaptedReadingSupports(item, item.adaptedReadingSupports) : null;
+    const activeAnnotations = envelope => envelope && !['stale', 'unavailable'].includes(envelope.status)
+        && Array.isArray(envelope.annotations) ? envelope.annotations : [];
+    const describeSupports = (envelope, applicable = true) => {
+        if (!applicable) return state('not-applicable', 'unavailable');
+        if (!envelope) return state('omitted', 'unavailable', 'not-provided', { activeCount: 0, suppressedCount: 0 });
+        const active = activeAnnotations(envelope);
+        const invalid = ['stale', 'unavailable'].includes(envelope.status);
+        return state(invalid ? 'omitted' : envelope.status === 'partial' ? 'partial' : 'included', invalid ? 'unavailable' : 'ready', invalid ? 'stale-identity' : null, {
+            activeCount: active.length, suppressedCount: invalid ? 0 : (envelope.suppressedAnnotations || []).length,
+            educatorCount: active.filter(entry => entry.origin === 'educator').length,
+            ...(typeof envelope.shown === 'boolean' ? { shown: envelope.shown } : {})
+        });
+    };
+    const pictures = [supports, adaptedSupports].flatMap(activeAnnotations).filter(entry => entry.image?.src);
+    const unavailablePictureSupports = [supports, adaptedSupports].some(envelope => envelope
+        && ['stale', 'unavailable'].includes(envelope.status));
+    const pictureOwners = paired && paired !== item ? [item, paired] : [item];
+    const omittedPictures = pictureOwners.reduce((sum, owner) => sum + (owner.readingDelivery?.version === 1
+        ? Math.max(0, Math.min(10000, Math.trunc(Number(owner.readingDelivery.pictures?.omittedCount) || 0))) : 0), 0);
+    // Audio presence is not playback readiness. In particular, a receiver may
+    // reject an entry's identity, provenance, profile, bytes, or decoder format.
+    const audio = item.karaokeAudio;
+    const audioEntries = audio && typeof audio === 'object'
+        ? Object.values(audio.version === 4 ? audio.entries || {} : audio.sentences || {}).filter(entry => typeof entry === 'string' ? !!entry : typeof entry?.audio === 'string' && !!entry.audio)
+        : [];
+    const audioReason = item.readingDelivery?.version === 1 && item.readingDelivery.referenceAudio?.reason === 'route-unsupported' ? 'route-unsupported' : 'not-provided';
+    const split = window.AlloModules?.TextPipelineHelpers?.splitReferencesFromBody;
+    let references = null;
+    if (hasBody && typeof split === 'function') {
+        try { references = String(split(item.data)?.references || ''); } catch (_) { /* unknown, never borrow another source */ }
+    }
+    return {
+        originalText: hasSource ? state('included', 'ready', null, { resourceId: paired ? String(paired.id) : null, fingerprint: snapshot.fingerprint }) : state('omitted', 'unavailable', 'source-unavailable'),
+        adaptedText: !adapted ? state('not-applicable', 'unavailable') : hasBody ? state('included', 'ready', null, { fingerprint: api.fingerprintSourceText?.(item.data) || null }) : state('omitted', 'unavailable', options.bodyIssue || 'body-unavailable'),
+        originalSupports: describeSupports(supports),
+        adaptedSupports: adaptedValidationUnavailable ? state('unknown', 'unverified', 'validator-unavailable') : describeSupports(adaptedSupports, adapted),
+        pictures: state(adaptedValidationUnavailable ? (pictures.length ? 'partial' : 'unknown') : pictures.length ? (omittedPictures || unavailablePictureSupports ? 'partial' : 'included') : 'omitted',
+            pictures.length || adaptedValidationUnavailable ? 'unverified' : 'unavailable',
+            adaptedValidationUnavailable ? 'validator-unavailable' : omittedPictures ? 'invalid-or-over-budget' : unavailablePictureSupports ? 'supports-unavailable' : pictures.length ? 'decode-not-checked' : 'not-provided',
+            { includedCount: pictures.length, omittedCount: omittedPictures }),
+        referenceAudio: audioEntries.length ? state('included', 'unverified', 'playback-not-checked', { includedCount: audioEntries.length }) : state('omitted', 'unavailable', audioReason, { includedCount: 0 }),
+        instructionalRoles: state('included', 'ready', null, { reading: profile.role, original: api.getSourceInstructionalText?.(item)?.role || 'unspecified', sourceFamilyId: api.getReadingSourceFamilyId?.(item) || null, unitId: item.unitId ?? null }),
+        citations: references ? state('included', 'ready', null, { basis: 'resource-owned-text', verification: 'not-assessed' }) : state('unknown', 'unverified', !hasBody ? options.bodyIssue || 'body-unavailable' : references === null ? 'validator-unavailable' : 'no-owned-reference-list')
+    };
+}
+
 // Describe only the resources that survived student serialization. This is
 // display metadata for the teacher, never a second copy of source text or glosses.
-function _alloDescribeAssignmentDelivery(resources, currentResourceId, selectedResourceIds = null) {
-    const items = (Array.isArray(resources) ? resources : []).filter(item => item && item.id && item.type);
+function _alloDescribeAssignmentDelivery(resources, currentResourceId, selectedResourceIds = null, options = {}) {
+    const suppliedItems = (Array.isArray(resources) ? resources : []).filter(item => item && item.id && item.type);
+    const manifests = suppliedItems.filter(item => item.__alloResourcesManifestRef);
+    const items = suppliedItems.filter(item => !item.__alloResourcesManifestRef);
+    const unresolved = manifests.length > 0 || items.some(item => item.__alloResourceRef);
+    const advertisedResourceCount = manifests.length ? manifests.reduce((sum, item) => sum
+        + Math.max(0, Math.min(100000, Math.trunc(Number(item.__alloResourceCount) || 0))), items.length) : items.length;
     const text = value => typeof value === 'string' ? value.replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, 240) : '';
     const title = item => text(item && item.title) || text(item && item.type) || 'Untitled resource';
     const opening = items.find(item => String(item.id) === String(currentResourceId)) || items[0];
@@ -308,31 +383,56 @@ function _alloDescribeAssignmentDelivery(resources, currentResourceId, selectedR
     const selected = Array.isArray(selectedResourceIds) ? new Set(selectedResourceIds.map(String)) : null;
     const conversionIds = selected ? ids.filter(id => selected.has(id)) : ids;
     const api = window.AlloModules && window.AlloModules.InstructionalContext;
+    const invalidReadingBodies = new WeakSet();
     const readableItems = items.map(item => {
-        if (item.dataEncoding !== 'json-text/v1' || typeof item.data !== 'string') return item;
-        try { const data = JSON.parse(item.data); return typeof data === 'string' ? { ...item, data, dataEncoding: 'text/v1' } : item; }
-        catch (_) { return item; }
+        if (item.type !== 'simplified' || item.dataEncoding !== 'json-text/v1') return item;
+        try {
+            const data = typeof item.data === 'string' ? JSON.parse(item.data) : null;
+            if (typeof data === 'string') return { ...item, data, dataEncoding: 'text/v1' };
+        } catch (_) { /* Explicit text envelopes must decode to a string. */ }
+        const unreadable = { ...item, data: null };
+        invalidReadingBodies.add(unreadable);
+        return unreadable;
     });
     const intact = item => !!api && typeof api.isSupportedOriginal === 'function'
         && item.syncTruncated !== true && item.readingSourceAvailability?.status !== 'unavailable'
         && api.isSupportedOriginal(item);
     const readings = readableItems.filter(item => item.type === 'simplified').map(item => {
-        const result = { id: String(item.id), title: title(item), form: 'unverified', originalStatus: 'unverified', supportsCount: null, supportsStatus: 'unverified', incomplete: item.syncTruncated === true };
+        const unresolvedBody = !!(item.__alloResourceRef || item.__alloResourcesManifestRef);
+        const bodyIssue = invalidReadingBodies.has(item) ? 'invalid-text-envelope' : null;
+        const result = { id: String(item.id), title: title(item),
+            bodyStatus: unresolvedBody ? 'unverified' : typeof item.data === 'string' && !item.syncTruncated ? 'ready' : 'unavailable',
+            ...(bodyIssue ? { bodyReason: bodyIssue } : {}), form: 'unverified', originalStatus: 'unverified', supportsCount: null, supportsStatus: 'unverified', incomplete: item.syncTruncated === true,
+            // A change token, not a security digest. It binds the description to
+            // this resource's serialized content, including curated supports.
+            resourceRevision: null,
+            capabilities: _alloReadingDeliveryCapabilities(item, readableItems, { ...options, bodyIssue }) };
+        if (item.__alloResourceRef || item.__alloResourcesManifestRef) return result;
         if (!api?.getSourceSnapshot || !api?.getInstructionalText || !api?.sameReadingSourceFamily || !api?.validateReadingSupports) return result;
         const snapshot = api.getSourceSnapshot(item);
         const original = intact(item);
         result.form = original ? 'original' : api.getInstructionalText(item).form === 'adapted' ? 'adapted' : 'unverified';
         const paired = original ? item : snapshot && readableItems.find(candidate => intact(candidate)
             && api.sameReadingSourceFamily(candidate, item) && candidate.data === snapshot.text);
+        // A row also depends on its original's curation, not just its own body.
+        result.resourceRevision = api?.fingerprintSourceText?.(JSON.stringify([item, paired && paired !== item ? paired : null])) || null;
         result.originalStatus = paired ? 'included' : snapshot && item.readingSourceAvailability?.status !== 'unavailable' ? 'captured' : 'unavailable';
-        const supports = paired && paired.readingSupports ? api.validateReadingSupports(paired, paired.readingSupports) : null;
-        result.supportsCount = supports ? supports.annotations.length : 0;
-        result.supportsStatus = supports ? supports.status : 'none';
+        // Legacy dialog fields share the same validation result as capabilities.
+        const supports = result.capabilities.originalSupports;
+        result.supportsCount = supports.activeCount ?? null;
+        result.supportsStatus = supports.availability === 'unverified' ? 'unverified'
+            : supports.inclusion === 'partial' ? 'partial' : supports.availability === 'ready' ? 'complete'
+                : supports.reason === 'not-provided' ? 'none' : 'unavailable';
         return result;
     });
-    return { schemaVersion: 1, resourceCount: items.length, openingResourceId: opening ? String(opening.id) : null,
+    return { schemaVersion: 1, capabilitySchemaVersion: 1, basis: options.received === true ? 'received-resources' : 'serialized-resources',
+        contentsStatus: unresolved ? (options.assetStatus === 'failed' ? 'unavailable' : 'unverified') : 'ready',
+        ...(unresolved ? { contentsReason: options.assetStatus === 'failed' ? 'missing-asset' : 'asset-not-resolved' } : {}),
+        resourceCount: manifests.length ? null : items.length, advertisedResourceCount,
+        verifiedResourceCount: items.filter(item => !item.__alloResourceRef).length,
+        openingResourceId: opening && !opening.__alloResourceRef ? String(opening.id) : null,
         openingTitle: opening ? title(opening) : '', resourceIds: ids,
-        conversionResourceIds: conversionIds.length && conversionIds.length <= 25 ? conversionIds : null, readings };
+        conversionResourceIds: !unresolved && conversionIds.length && conversionIds.length <= 25 ? conversionIds : null, readings };
 }
 
 // Assignment packet shaping belongs beside the shared-activity contracts it
@@ -533,6 +633,7 @@ async function _alloBuildAssignmentPackEncoded(options = {}, dependencies = {}) 
         expiresAt,
         currentResourceId: resources[0]?.id || null,
         resources,
+        deliverySummary: _alloDescribeAssignmentDelivery(resources, resources[0]?.id, resourceIds),
         aiPolicy: { studentAi: studentAiPolicy, defaultStudentAi: 'off', teacherPrepared: true },
         workStory: workStoryEnabled === true,
         sharedActivities: sharedActivities.length ? sharedActivities : undefined,
@@ -543,7 +644,7 @@ async function _alloBuildAssignmentPackEncoded(options = {}, dependencies = {}) 
         title,
         count: resources.length,
         resourceTitles: resources.map(item => item.title || item.type || 'Untitled resource'),
-        deliverySummary: _alloDescribeAssignmentDelivery(resources, packet.currentResourceId, resourceIds),
+        deliverySummary: packet.deliverySummary,
         createdAt: packet.createdAt,
         expiresAt: packet.expiresAt,
         aiPolicy: studentAiPolicy,
@@ -1640,6 +1741,34 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     );
 });
 
+// Recomputed from received resources on each resource replacement. Sender
+// summaries and teacher caches are deliberately not accepted as inputs.
+function ReceivedReadingDelivery({ resources, currentResourceId, enabled, assetStatus, t }) {
+    const summary = React.useMemo(() => _alloDescribeAssignmentDelivery(resources, currentResourceId, null, { received: true, assetStatus }), [resources, currentResourceId, assetStatus]);
+    const text = (key, fallback) => { const value = typeof t === 'function' ? t('share_collect.' + key) : null; return typeof value === 'string' && value && value !== 'share_collect.' + key ? value : fallback; };
+    const reading = summary.readings.find(item => item.id === String(currentResourceId));
+    if (!enabled || (!reading && summary.contentsStatus === 'ready')) return null;
+    const capabilities = reading?.capabilities;
+    return <details data-received-reading-delivery className="no-print mx-3 my-2 rounded-lg border border-slate-300 bg-white p-3 text-sm text-slate-800" style={{ overflowWrap: 'anywhere' }}>
+        <summary className="cursor-pointer font-semibold">{text('received_reading', 'What arrived with this reading')}</summary>
+        {summary.contentsStatus !== 'ready' ? <p role="status">{summary.contentsStatus === 'unavailable' ? text('contents_unavailable', 'The reading contents could not be downloaded. Reconnect and reopen the link.') : text('contents_pending', 'The reading contents are awaiting download. Included resources have not been verified.')}</p> : <div className="mt-2 space-y-1">
+            {reading.bodyStatus === 'unavailable' && <p data-reading-body-unavailable>{text('reading_body_unavailable', 'This reading’s text could not be opened. Reopen the link or ask for a new copy.')}</p>}
+            <p>{capabilities.originalText.availability === 'unverified' ? text('original_unverified', 'Original access could not be verified.') : capabilities.originalText.inclusion === 'included' ? text('received_original', 'Original text received.') : text('original_unavailable', 'Matching original unavailable in this link.')}</p>
+            {reading.form === 'adapted' && <p>{capabilities.adaptedText.inclusion === 'included' ? text('received_adapted', 'Adapted text received.') : text('received_adapted_unavailable', 'The adapted text is unavailable.')}</p>}
+            {(capabilities.originalSupports.reason === 'stale-identity' || capabilities.originalSupports.inclusion === 'partial') && <p>{text('reading_supports_unavailable', 'Some saved supports are unavailable for this version of the reading.')}</p>}
+            {Number.isInteger(capabilities.originalSupports.activeCount) && <p>{text('saved_word_support_count', '{count} saved word supports.').replace('{count}', String(capabilities.originalSupports.activeCount))}</p>}
+            {reading.form === 'adapted' && <p>{capabilities.adaptedSupports.reason === 'stale-identity' ? text('adapted_supports_stale', 'The adapted text changed. Its saved supports need review.')
+                : capabilities.adaptedSupports.availability === 'unverified' ? text('adapted_supports_unverified', 'Saved supports on the adapted text could not be checked.')
+                : text('adapted_support_count', '{count} saved supports on the adapted text.').replace('{count}', String(capabilities.adaptedSupports.activeCount || 0))}</p>}
+            <p data-received-audio>{capabilities.referenceAudio.inclusion === 'included' ? text('reading_audio_included_unchecked', 'Saved reading audio is included. Playback on the student device has not been checked.')
+                : capabilities.referenceAudio.inclusion === 'omitted' ? text('received_audio_omitted', 'Saved reading audio was not delivered with this reading.') : text('reading_audio_unverified', 'Saved reading audio could not be checked.')}</p>
+            {capabilities.adaptedSupports.inclusion === 'partial' && <p>{text('adapted_supports_partial', 'Some saved supports on the adapted text are unavailable.')}</p>}
+            {capabilities.pictures.reason === 'validator-unavailable' && <p>{text('reading_pictures_unverified', 'Some support pictures could not be checked.')}</p>}
+            {capabilities.pictures.omittedCount > 0 && <p>{text('reading_pictures_omitted', '{count} support pictures were omitted because of format or size limits.').replace('{count}', String(capabilities.pictures.omittedCount))}</p>}
+        </div>}
+    </details>;
+}
+
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.SharedActivity = {
   normalizeRatingActivity: _alloNormalizeSharedRatingActivity,
@@ -1650,6 +1779,7 @@ window.AlloModules.SharedActivity = {
   buildAssignmentCenterCsv: _alloBuildAssignmentCenterCsv,
   buildAssignmentPackEncoded: _alloBuildAssignmentPackEncoded,
   describeAssignmentDelivery: _alloDescribeAssignmentDelivery,
+  ReceivedReadingDelivery,
   nextSummaryOrder: _alloNextSharedActivitySummaryOrder,
   normalizeCredentialStore: alloNormalizeCredentialStore,
   credentialSlotKey: alloCredentialSlotKey,

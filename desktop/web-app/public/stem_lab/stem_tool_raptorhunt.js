@@ -339,6 +339,128 @@
 @container (max-width:850px){.rh-command-deck{grid-template-columns:1fr;gap:20px;}.rh-command-deck>.rh-hero-grid .rh-stat-grid{grid-template-columns:repeat(4,minmax(0,1fr));}.rh-command-deck .rh-stat-card:nth-child(3){border-left:1px solid #425465!important;}.rh-command-deck .rh-stat-card:nth-child(n+3){border-top:0!important;}}
 @container (max-width:600px){.rh-command-deck>.rh-hero-grid .rh-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.rh-command-deck .rh-stat-card:nth-child(3){border-left:0!important;}.rh-command-deck .rh-stat-card:nth-child(n+3){border-top:1px solid #425465!important;}.rh-station-mark{display:none;}.rh-command-deck>div:first-child{gap:0;}.rh-command-deck>div:last-child{gap:12px;}.rh-command-deck>div:last-child button{width:100%;}}
 @media(forced-colors:active){.rh-command-deck .rh-stat-card,.rh-command-deck>div:last-child button{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;}}
+
+/* Inquiry layer: a quiet field journal, with evidence separate from browsing. */
+.rh-command-deck{grid-template-columns:minmax(0,1.1fr) minmax(280px,1fr);}
+.rh-hero-habitat{height:138px;margin:-12px 0 12px;overflow:hidden;border-radius:12px;background:#102d36;}
+.rh-hero-habitat svg{display:block;width:100%;height:100%;}
+.rh-command-deck .rh-stat-card{min-height:73px!important;padding:10px 13px!important;}
+.rh-command-deck .rh-stat-card>div:first-child{font:700 10px/1.3 ui-sans-serif,system-ui;letter-spacing:.06em;}
+.rh-command-deck .rh-stat-card>div:nth-child(2){font:700 14px/1.4 ui-sans-serif,system-ui;}
+.rh-command-deck .rh-stat-card>div:last-child{font:400 12px/1.4 ui-sans-serif,system-ui;}
+.rh-inquiry-choices,.rh-journal{--iq-accent:#a8decf;color:#e9f2f3;font:400 14px/1.6 ui-sans-serif,system-ui;min-width:0;}
+.rh-inquiry-heading{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:14px;}
+.rh-inquiry-heading h3,.rh-journal h3{margin:4px 0;font-size:clamp(22px,2.5vw,29px);font-weight:750;line-height:1.2;letter-spacing:-.025em;color:#f2f7f5;}
+.rh-inquiry-heading p,.rh-journal p{margin:5px 0;color:#b9cdd1;}
+.rh-inquiry-kicker{font-size:10px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--iq-accent);}
+.rh-inquiry-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;}
+.rh-inquiry-card{display:flex;flex-direction:column;min-width:0;overflow:hidden;border:1px solid #47606a;border-radius:16px;background:#132530;}
+.rh-inquiry-card[data-selected=true]{border-color:#a8decf;box-shadow:inset 0 0 0 1px #a8decf;}
+.rh-inquiry-art{height:128px;overflow:hidden;background:#0d202b;}
+.rh-inquiry-art svg{width:100%;height:100%;display:block;}
+.rh-inquiry-card-copy{display:flex;flex-direction:column;flex:1;padding:18px;}
+.rh-inquiry-card h4{margin:7px 0 8px;font-size:21px;font-weight:750;line-height:1.25;color:#f2f7f5;letter-spacing:-.02em;}
+.rh-inquiry-card p{margin:0 0 16px;color:#bfd0d4;font-size:13px;line-height:1.55;}
+.rh-inquiry-card .rh-inquiry-button{margin-top:auto;align-self:start;}
+.rh-inquiry-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 15px;border:1px solid #708d98;border-radius:9px;background:#203b48;color:#f2f7f5;font:650 13px/1.4 ui-sans-serif,system-ui;text-align:left;white-space:normal;}
+.rh-inquiry-button:hover{background:#2d4d59;border-color:#c0e5dd;}
+.rh-inquiry-button[data-primary=true]{background:#c2e7d6;border-color:#c2e7d6;color:#12352f;}
+.rh-inquiry-button:disabled{background:#172b36;color:#a5b6bd;border-color:#52636e;cursor:not-allowed;}
+.rh-inquiry-button:focus-visible,.rh-journal input:focus-visible,.rh-journal textarea:focus-visible,.rh-journal summary:focus-visible{outline:3px solid #e9c786;outline-offset:4px;}
+.rh-journal{margin:0 0 18px;padding:20px;border:1px solid #698f8b;border-radius:16px;background:linear-gradient(125deg,#163638,#142332 70%);scroll-margin-top:90px;}
+.rh-hub-layout>.rh-journal{margin-bottom:0;}
+.rh-journal-top{display:flex;justify-content:space-between;align-items:center;gap:16px;}
+.rh-journal-top h3{font-size:22px;}
+.rh-journal-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.rh-journal-summary{font-size:12px;color:#b9d5d0;}
+.rh-journal-phases{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0;padding:0;list-style:none;}
+.rh-journal-phases li{padding:6px 11px;border:1px solid #526c74;border-radius:6px;color:#c3d2d6;background:#102731;font-size:12px;}
+.rh-journal-phases li[data-done=true]{border-color:#82bbaa;color:#d2f2e4;background:#21483e;}
+.rh-journal-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:24px;}
+.rh-journal-grid>*{min-width:0;}
+.rh-journal h4{margin:0 0 7px;font-size:16px;line-height:1.4;font-weight:750;color:#f2f7f5;}
+.rh-journal label{display:block;margin:14px 0 6px;font-size:13px;font-weight:650;color:#e2eeed;}
+.rh-journal textarea{display:block;box-sizing:border-box;resize:vertical;width:100%;min-height:88px;padding:12px;border:1px solid #718995;border-radius:8px;background:#0b1c28;color:#f2f7f5;font:400 14px/1.55 ui-sans-serif,system-ui;}
+.rh-journal textarea::placeholder{color:#9db3bd;}
+.rh-journal .rh-journal-help{font-size:12px;line-height:1.6;color:#b9cdd1;}
+.rh-journal-stations{display:grid;gap:8px;margin:14px 0;}
+.rh-journal-stations button{display:grid;grid-template-columns:auto minmax(0,1fr) auto;justify-content:stretch;width:100%;}
+.rh-journal-stations button[aria-current=step]{border-color:#a8decf;background:#294f4b;}
+.rh-journal-stations small{display:block;font-size:12px;color:#c1d8d8;font-weight:400;margin-top:4px;}
+.rh-journal-count{display:inline-block;padding:3px 8px;border:1px solid #62877c;border-radius:5px;font-size:11px;color:#d3eee4;white-space:nowrap;}
+.rh-journal-notes{display:grid;gap:10px;padding:0;list-style:none;margin:12px 0;}
+.rh-journal-note{padding:13px;border:1px solid #58727a;border-radius:10px;background:#0c202a;overflow-wrap:anywhere;}
+.rh-journal-note-top{display:flex;justify-content:space-between;gap:12px;align-items:center;}
+.rh-journal-note strong{font-size:13px;color:#d2eee1;}
+.rh-journal-note p{color:#e0ecef;white-space:pre-wrap;font-size:13px;}
+.rh-journal-note .rh-inquiry-button{min-height:36px;padding:6px 9px;font-size:12px;}
+.rh-journal-reading{display:block;margin:8px 0;padding:9px;border-left:2px solid #dabe81;background:#1b3039;color:#f4dfb1;font:500 12px/1.6 ui-monospace,monospace;}
+.rh-journal-empty{padding:16px;border:1px dashed #6c838b;border-radius:9px;color:#c1d3d8;font-size:13px;}
+.rh-journal-comparison{padding:14px;margin:14px 0;border:1px solid #7c8976;border-radius:10px;background:#263b36;}
+.rh-journal-comparison p{color:#d9e6da;}
+.rh-journal-compare-row{display:grid;grid-template-columns:20px minmax(0,1fr) 82px;gap:8px;align-items:center;margin:9px 0;font-size:12px;}
+.rh-journal-compare-bar{height:9px;border-radius:4px;background:#102731;overflow:hidden;}
+.rh-journal-compare-bar span{display:block;height:100%;background:#bdd9a7;}
+.rh-journal-reflection{margin-top:20px;padding-top:20px;border-top:1px solid #526c74;}
+.rh-journal-reflection summary{cursor:pointer;font-size:16px;font-weight:700;min-height:44px;line-height:44px;color:#e5f0ed;}
+.rh-study-header,.rh-study-panel{display:none;}
+[data-raptor-flight-stage][data-raptor-study=true]{height:76vh;min-height:620px;max-height:860px;}
+[data-raptor-study=true]>:not(canvas):not(.rh-study-header):not(.rh-study-panel){display:none!important;}
+[data-raptor-study=true]>.rh-study-header{position:absolute;z-index:25;top:14px;left:16px;right:16px;display:flex;justify-content:space-between;gap:12px;align-items:start;pointer-events:none;}
+.rh-study-heading{padding:10px 14px;border:1px solid #789996;border-radius:10px;background:#0a202de8;max-width:65%;color:#f1f7f2;}
+.rh-study-heading>span{display:block;color:#b4e2d2;font:750 10px/1.3 ui-sans-serif,system-ui;letter-spacing:.12em;text-transform:uppercase;}
+.rh-study-heading h3{margin:5px 0 0;font:750 21px/1.2 ui-sans-serif,system-ui;letter-spacing:-.02em;}
+.rh-study-close{pointer-events:auto;min-height:44px;padding:10px 14px;border:1px solid #87a8ab;border-radius:9px;background:#122e3bea;color:#f1f7f2;font:650 13px/1.3 ui-sans-serif,system-ui;}
+[data-raptor-study=true]>.rh-study-panel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;position:absolute;z-index:25;left:12px;right:12px;bottom:12px;padding:16px 18px;border:1px solid #789996;border-radius:14px;background:#0a202df5;box-shadow:0 8px 30px #0003;color:#e5f2ee;font:400 13px/1.5 ui-sans-serif,system-ui;}
+.rh-study-panel h4{font:750 17px/1.3 ui-sans-serif,system-ui;margin:0 0 6px;color:#f3f6ef;}
+.rh-study-panel p{margin:6px 0;color:#c5d9d9;line-height:1.5;}
+.rh-study-readings{font:650 12px/1.4 ui-sans-serif,system-ui;color:#eddaa7;margin-top:10px;}
+.rh-study-presets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}
+.rh-study-presets button,.rh-study-resume{min-height:44px;padding:8px;border:1px solid #78939d;border-radius:8px;background:#203e4b;color:#eef7f5;font:650 12px/1.3 ui-sans-serif,system-ui;}
+.rh-study-presets button[aria-pressed=true]{background:#bfe1ce;border-color:#e4f2d8;color:#16372f;}
+.rh-study-zoom{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center;margin:10px 0;font-weight:650;}
+.rh-study-zoom input{width:100%;min-width:0;min-height:30px;accent-color:#bfe1ce;}
+.rh-study-resume{display:block;width:100%;background:#ebd39a;color:#23352d;border-color:#ebd39a;}
+.rh-study-panel .rh-study-help{font-size:11px;color:#b9cccf;}
+.rh-study-save-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.rh-study-save-actions button{min-height:44px;padding:8px 12px;border:1px solid #8daaa7;border-radius:8px;background:#244b4b;color:#edf8f0;font:650 12px/1.3 ui-sans-serif,system-ui;}
+.rh-study-save-actions button:disabled{opacity:.65;cursor:default;}
+[data-raptor-sim-shell]:is(:fullscreen,:-webkit-full-screen,[data-allo-fullscreen-active=true]):has([data-raptor-study=true])>:not([data-raptor-flight-stage]){display:none!important;}
+@media(max-height:600px){[data-raptor-sim-shell]:is(:fullscreen,:-webkit-full-screen,[data-allo-fullscreen-active=true]) .rh-study-panel{max-height:50vh;overflow:auto;overscroll-behavior:contain;box-sizing:border-box;}}
+.rh-flight-moments{margin:18px 0;padding:22px;border:1px solid #557e80;border-radius:16px;background:#102b36;color:#e8f1eb;min-width:0;}
+.rh-flight-moments h3{margin:4px 0 8px;font:750 26px/1.2 ui-sans-serif,system-ui;letter-spacing:-.025em;}
+.rh-flight-moments>p{margin:8px 0 16px;color:#bdced0;font-size:13px;line-height:1.6;}
+.rh-moment-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
+.rh-moment-card{overflow:hidden;border:1px solid #54737b;border-radius:12px;background:#193640;min-width:0;}
+.rh-moment-photo{display:block;width:100%;aspect-ratio:3/2;object-fit:contain;background:#091d28;}
+.rh-moment-photo-fallback{display:flex;align-items:center;justify-content:center;text-align:center;padding:18px;box-sizing:border-box;color:#d6e5dc;font-size:13px;}
+.rh-moment-body{padding:16px;}
+.rh-moment-card h4{font:750 18px/1.3 ui-sans-serif,system-ui;color:#f0ead3;margin:0 0 5px;}
+.rh-moment-context{color:#c4d5d5;font-size:12px;line-height:1.5;margin:6px 0 12px;}
+.rh-moment-values{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0;padding:12px 0;border-top:1px solid #45636c;border-bottom:1px solid #45636c;}
+.rh-moment-values dt{font-size:11px;line-height:1.5;color:#b7cccc;}
+.rh-moment-values dd{font:700 17px/1.5 ui-sans-serif,system-ui;color:#ebf2e7;margin:2px 0 0;}
+.rh-moment-card label{display:block;font-size:13px;font-weight:700;margin-bottom:7px;}
+.rh-moment-card textarea{box-sizing:border-box;display:block;resize:vertical;width:100%;min-height:90px;padding:11px;border:1px solid #87a4aa;border-radius:8px;background:#09222f;color:#eef7ee;font:400 14px/1.5 ui-sans-serif,system-ui;}
+.rh-moment-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.rh-moment-actions button{min-height:44px;border:1px solid #819da0;border-radius:8px;padding:9px 12px;background:#23444d;color:#edf6ee;font:650 12px/1.3 ui-sans-serif,system-ui;}
+.rh-moment-actions button:first-child{background:#c4debf;color:#15342e;border-color:#c4debf;}
+.rh-moment-actions button:disabled{opacity:.65;cursor:default;}
+.rh-moment-comparison{margin:16px 0 0;padding:16px;border:1px solid #6c8c85;border-radius:10px;background:#25413e;}
+.rh-moment-comparison strong{color:#f0dfa8;font-size:14px;}
+.rh-moment-comparison p{margin:6px 0 0;font-size:13px;line-height:1.6;color:#d7e5dc;}
+.rh-flight-moments button:focus-visible,.rh-flight-moments textarea:focus-visible{outline:3px solid #f1d49a;outline-offset:3px;}
+@container(max-width:600px){.rh-flight-moments{padding:16px;}.rh-moment-grid{grid-template-columns:1fr;}.rh-flight-moments h3{font-size:23px;}.rh-moment-values dd{font-size:16px;}}
+@media(max-width:760px){.rh-flight-controls-run>[data-raptor-study-button]{grid-column:1/-1;}}
+@media(forced-colors:active){.rh-flight-moments,.rh-moment-card,.rh-moment-comparison,.rh-moment-card textarea{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;}.rh-flight-moments *{color:CanvasText!important;}.rh-moment-actions button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;}}
+.rh-study-panel button:focus-visible,.rh-study-panel input:focus-visible,.rh-study-close:focus-visible{outline:3px solid #f1d49a;outline-offset:3px;}
+@container(max-width:600px){[data-raptor-flight-stage][data-raptor-study=true]{min-height:740px;height:90vh;max-height:none;}[data-raptor-study=true]>.rh-study-header{left:10px;right:10px;top:10px;gap:8px;}.rh-study-heading{padding:9px;max-width:68%;}.rh-study-heading h3{font-size:17px;}.rh-study-close{padding:8px;font-size:12px;}[data-raptor-study=true]>.rh-study-panel{grid-template-columns:1fr;gap:12px;left:8px;right:8px;bottom:8px;padding:13px;}.rh-study-panel h4{font-size:16px;}.rh-study-panel p{font-size:12px;}.rh-study-presets{gap:5px;}}
+@media(forced-colors:active){.rh-study-heading,.rh-study-panel{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;}.rh-study-heading *,.rh-study-panel *{color:CanvasText!important;}.rh-study-panel button,.rh-study-close{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;}.rh-study-presets button[aria-pressed=true]{outline:2px solid Highlight;}}
+.rh-journal-review{margin:15px 0;padding:12px;border-left:3px solid #a8decf;background:#193832;color:#d2e9df;}
+.rh-journal-review[data-reviewed=true]{border-color:#e9c786;}
+@container(max-width:850px){.rh-hero-habitat{display:none;}.rh-command-deck{grid-template-columns:1fr;}.rh-inquiry-grid{gap:10px;}.rh-inquiry-card-copy{padding:14px;}.rh-inquiry-card h4{font-size:18px;}.rh-journal-grid{grid-template-columns:1fr;}.rh-journal-top{align-items:start;}}
+@container(max-width:600px){.rh-inquiry-heading,.rh-journal-top{display:block;}.rh-inquiry-heading h3{font-size:25px;}.rh-inquiry-grid{grid-template-columns:1fr;}.rh-inquiry-art{height:112px;}.rh-inquiry-card-copy{padding:18px;}.rh-inquiry-card h4{font-size:23px;}.rh-journal{padding:16px;}.rh-journal-top>.rh-journal-actions{margin-top:12px;}.rh-journal-phases{gap:6px;}.rh-journal-phases li{padding:6px 8px;}.rh-journal-actions .rh-inquiry-button{flex:1;}.rh-journal-stations button{padding:10px;}.rh-journal-stations .rh-journal-count{display:none;}}
+@media(forced-colors:active){.rh-inquiry-card,.rh-journal,.rh-journal-note,.rh-journal-reading,.rh-journal-comparison,.rh-journal-review,.rh-journal-phases li,.rh-journal-empty,.rh-journal-count{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none;}.rh-inquiry-choices *,.rh-journal *{color:CanvasText!important;}.rh-inquiry-button,.rh-journal textarea{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;}.rh-inquiry-card[data-selected=true],.rh-journal-stations button[aria-current=step]{outline:2px solid Highlight;}.rh-journal-compare-bar{border:1px solid CanvasText;}.rh-journal-compare-bar span{background:Highlight;}.rh-inquiry-art,.rh-hero-habitat{display:none;}}
 `;
   if (document.head) document.head.appendChild(st);
 })();
@@ -8887,6 +9009,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       var threeRetryToken = threeRetryState[0];
       var setThreeRetryToken = threeRetryState[1];
       var huntCanvasRef = useRef(null);
+      var studyRunSequence = useRef(0);
       var flightResultRef = useRef(null);
       var simRevisionState = React.useState(0);
       var simRevision = simRevisionState[0];
@@ -8896,6 +9019,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         heldKeys: {},
         ready: false,
         paused: false,
+        studyActive: false,
         camera: 'chase',
         zoom: false,
         assist: true,
@@ -9071,17 +9195,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       function startHuntFlight() {
         var nextSession = { speciesId: selectedSpecies, missionId: activeMissionId };
         setRH({ flightSession: nextSession });
-        patchSimUI({ ready: false, paused: false, missionState: 'active', missionMessage: '', strikeReady: true, lastStrikeResult: null, targetAnnouncement: '', flightSummary: null, fps: 0, touchHint: true, recorderReplay: 0 });
+        patchSimUI({ ready: false, paused: false, studyActive: false, missionState: 'active', missionMessage: '', strikeReady: true, lastStrikeResult: null, targetAnnouncement: '', flightSummary: null, fps: 0, touchHint: true, recorderReplay: 0 });
         rhAnnounce(findSpecies(selectedSpecies).name + ' flight ready');
       }
       function editHuntFlight() {
         setRH({ flightSession: null });
-        patchSimUI({ ready: false, paused: false, missionState: 'active', missionMessage: '', strikeReady: true, lastStrikeResult: null, targetAnnouncement: '', flightSummary: null, fps: 0, touchHint: true, recorderReplay: 0 });
+        patchSimUI({ ready: false, paused: false, studyActive: false, missionState: 'active', missionMessage: '', strikeReady: true, lastStrikeResult: null, targetAnnouncement: '', flightSummary: null, fps: 0, touchHint: true, recorderReplay: 0 });
         rhAnnounce(__alloT('stem.raptorhunt.sr_flight_setup_opened', 'Flight setup opened'));
       }
       function restartHuntRun() {
         if (!flightSession) return;
-        patchSimUI({ ready: false, paused: false, missionState: 'active', missionMessage: '', strikeReady: true, lastStrikeResult: null, targetAnnouncement: '', flightSummary: null, fps: 0, touchHint: true, recorderReplay: 0 });
+        patchSimUI({ ready: false, paused: false, studyActive: false, missionState: 'active', missionMessage: '', strikeReady: true, lastStrikeResult: null, targetAnnouncement: '', flightSummary: null, fps: 0, touchHint: true, recorderReplay: 0 });
         setSimRevision(function(value) { return value + 1; });
         rhAnnounce(__alloT('stem.raptorhunt.sr_flight_restarted', 'Flight restarted'));
       }
@@ -9098,7 +9222,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           selectedSpecies: nextSpeciesId,
           flightSession: { speciesId: nextSpeciesId, missionId: nextMission.id }
         });
-        patchSimUI({ ready: false, paused: false, missionState: 'active', missionMessage: '', strikeReady: true, lastStrikeResult: null, targetAnnouncement: '', flightSummary: null, fps: 0, touchHint: true, recorderReplay: 0 });
+        patchSimUI({ ready: false, paused: false, studyActive: false, missionState: 'active', missionMessage: '', strikeReady: true, lastStrikeResult: null, targetAnnouncement: '', flightSummary: null, fps: 0, touchHint: true, recorderReplay: 0 });
         setSimRevision(function(value) { return value + 1; });
         rhAnnounce(nextMission.name + ' started');
       }
@@ -9169,6 +9293,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
         };
       }, [activeSection, flightSession && flightSession.speciesId, flightSession && flightSession.missionId, threeReady, webglError, simRevision, graphicsQuality]);
+      useEffect(function() {
+        sendHuntCommand('studyRecords', { ids: flightStudyMoments().map(function(moment) { return moment.id; }) });
+      }, [JSON.stringify(flightStudyMoments().map(function(moment) { return moment.id; })), simUI.ready, simRevision, activeSection]);
 
       // ── Section nav config ──
       var SECTIONS = [
@@ -9497,6 +9624,366 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       // RENDER: HUB
       // ────────────────────────────────────────────────────────
+      // Investigation records live in the host's toolData, alongside the existing
+      // session state. Browsing is never treated as evidence or as mastery.
+      var INVESTIGATIONS = [
+        { id: 'speed', code: '01', theme: 'flight',
+          title: __alloT('stem.raptorhunt.inquiry_speed_title', 'What makes a faster dive?'),
+          topic: __alloT('stem.raptorhunt.inquiry_speed_topic', 'Physics · compare a model'),
+          intro: __alloT('stem.raptorhunt.inquiry_speed_intro', 'Change one feature of a falcon. Can you explain the change in its predicted speed?'),
+          prediction: __alloT('stem.raptorhunt.inquiry_speed_prediction', 'If frontal area gets smaller, what will happen to terminal speed? Why?'),
+          observation: __alloT('stem.raptorhunt.inquiry_speed_observation', 'Save a baseline in the Stoop Calculator. Change only frontal area, then save a second observation. Include the result and what you changed.'),
+          reflection: __alloT('stem.raptorhunt.inquiry_speed_reflection', 'Use your two readings to explain the relationship. What does this fixed-drag model leave out about a real dive?'),
+          transfer: __alloT('stem.raptorhunt.inquiry_speed_transfer', 'Would the same prediction hold if mass changed too? Design your next fair test.'),
+          stations: [
+            { id: 'stoop', cue: __alloT('stem.raptorhunt.inquiry_speed_stoop', 'Keep mass and drag fixed. Compare two frontal areas.') },
+            { id: 'flight', cue: __alloT('stem.raptorhunt.inquiry_speed_flight', 'Connect the result to drag and wing shape.') },
+            { id: 'hunt', cue: __alloT('stem.raptorhunt.inquiry_speed_hunt', 'Optional: try a flight. Why is speed alone not enough?') }
+          ] },
+        { id: 'night', code: '02', theme: 'night',
+          title: __alloT('stem.raptorhunt.inquiry_night_title', 'How do you hunt in darkness?'),
+          topic: __alloT('stem.raptorhunt.inquiry_night_topic', 'Adaptations · connect evidence'),
+          intro: __alloT('stem.raptorhunt.inquiry_night_intro', 'Investigate an owl’s hearing and feathers. Build an explanation from two different sources.'),
+          prediction: __alloT('stem.raptorhunt.inquiry_night_prediction', 'Which would matter most in darkness: seeing, hearing, or moving quietly? Explain your starting idea.'),
+          observation: __alloT('stem.raptorhunt.inquiry_night_observation', 'Collect one observation about locating prey and another about approaching it. Name the feature and explain what it helps the owl do.'),
+          reflection: __alloT('stem.raptorhunt.inquiry_night_reflection', 'How do hearing and quiet flight work together? Use both observations, and describe a situation where another sense could matter.'),
+          transfer: __alloT('stem.raptorhunt.inquiry_night_transfer', 'What might change in a noisy habitat? Propose an observation that could test your idea.'),
+          stations: [
+            { id: 'hearing', cue: __alloT('stem.raptorhunt.inquiry_night_hearing', 'Investigate how sound gives location clues.') },
+            { id: 'silent', cue: __alloT('stem.raptorhunt.inquiry_night_silent', 'Examine feather features and flight noise.') },
+            { id: 'senses', cue: __alloT('stem.raptorhunt.inquiry_night_senses', 'Compare the roles of senses in different conditions.') }
+          ] },
+        { id: 'recovery', code: '03', theme: 'landscape',
+          title: __alloT('stem.raptorhunt.inquiry_recovery_title', 'What helps a raptor recover?'),
+          topic: __alloT('stem.raptorhunt.inquiry_recovery_topic', 'Conservation · weigh a decision'),
+          intro: __alloT('stem.raptorhunt.inquiry_recovery_intro', 'Trace a threat, compare recovery evidence, and recommend an action with a reason.'),
+          prediction: __alloT('stem.raptorhunt.inquiry_recovery_prediction', 'Choose a threat to raptors. What action do you predict would help, and why?'),
+          observation: __alloT('stem.raptorhunt.inquiry_recovery_observation', 'Record a threat and how it affects the bird. Then find a recovery example. Keep a proposed solution separate from evidence that it worked.'),
+          reflection: __alloT('stem.raptorhunt.inquiry_recovery_reflection', 'Recommend one action using your observations. What uncertainty or tradeoff should a conservation team consider?'),
+          transfer: __alloT('stem.raptorhunt.inquiry_recovery_transfer', 'What would you monitor to find out whether your action is helping?'),
+          stations: [
+            { id: 'threats', cue: __alloT('stem.raptorhunt.inquiry_recovery_threats', 'Trace a threat from its source to its effect.') },
+            { id: 'conservation', cue: __alloT('stem.raptorhunt.inquiry_recovery_conservation', 'Follow the DDT and recovery story.') },
+            { id: 'recoveries', cue: __alloT('stem.raptorhunt.inquiry_recovery_recoveries', 'Compare a recovery example before deciding.') }
+          ] }
+      ];
+      var activeInvestigation = INVESTIGATIONS.find(function(item) { return item.id === rh.activeInvestigation; });
+      function inquiryRecord(id) {
+        var record = (rh.investigations || {})[id] || {};
+        return Object.assign({}, record, {
+          evidence: Array.isArray(record.evidence) ? record.evidence.filter(function(note) { return note && typeof note.text === 'string'; }).slice(0, 12) : []
+        });
+      }
+      function updateInquiry(id, patch) {
+        setRH(function(cur) {
+          var records = Object.assign({}, cur.investigations || {});
+          var record = records[id] || {};
+          records[id] = Object.assign({}, record, { reviewed: false }, typeof patch === 'function' ? patch(record) : patch);
+          return Object.assign({}, cur, { investigations: records });
+        });
+      }
+      function focusInquiry(event, selector) {
+        var root = event.currentTarget.closest('[data-raptorhunt-root]');
+        window.setTimeout(function() {
+          var destination = root && root.querySelector(selector);
+          if (destination) { if (!destination.matches('button,a[href],input,select,textarea,[tabindex]')) destination.setAttribute('tabindex', '-1'); destination.focus(); destination.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
+        }, 0);
+      }
+      function openInquiryStation(id, event) {
+        openCollectionSection(id);
+        setRH({ inquiryExpanded: false });
+        focusInquiry(event, '#rh-active-section-title');
+      }
+      function inquiryReading() {
+        if (activeSection !== 'stoop') return null;
+        var v = stoopSimVars;
+        if (![v.mass, v.area, v.cd].every(function(value) { return typeof value === 'number' && isFinite(value) && value > 0; })) return null;
+        return { mass: v.mass, area: v.area, cd: v.cd, mph: Math.sqrt(2 * v.mass * 9.81 / (1.225 * v.area * v.cd)) * 2.237 };
+      }
+      function inquiryReadingText(reading) {
+        if (reading.kind === 'flight-study') return flightStudyReadingText(reading);
+        return __alloT('stem.raptorhunt.inquiry_model_reading', 'Model reading') + ': ' + reading.mph.toFixed(1) + ' mph · ' + reading.mass.toFixed(2) + ' kg · Cd ' + reading.cd.toFixed(2) + ' · ' + reading.area.toFixed(4) + ' m²';
+      }
+      function flightStudyMoments() {
+        return (Array.isArray(rh.flightStudyMoments) ? rh.flightStudyMoments : []).filter(function(moment) {
+          return moment && moment.kind === 'flight-study' && typeof moment.id === 'string' &&
+            [moment.speedMph, moment.heightM, moment.elapsedS].every(function(value) { return typeof value === 'number' && isFinite(value); });
+        }).slice(0, 2);
+      }
+      function flightStudyImage(moment) {
+        return typeof moment.image === 'string' && moment.image.length < 48000 && /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(moment.image) ? moment.image : null;
+      }
+      function flightStudyReadingText(moment) {
+        return __alloT('stem.raptorhunt.study_simulation_reading', 'Simulation snapshot') + ': ' + moment.speciesName + ' · ' + moment.poseLabel + ' · ' +
+          moment.speedMph.toFixed(1) + ' mph · ' + moment.heightM.toFixed(1) + ' m ' + __alloT('stem.raptorhunt.study_above_ground', 'above ground') + ' · ' +
+          moment.elapsedS.toFixed(1) + ' s · ' + moment.missionName + ' · ' + moment.viewLabel;
+      }
+      function renderFlightMoments() {
+        var moments = flightStudyMoments();
+        if (!moments.length) return null;
+        var eligible = activeInvestigation && activeInvestigation.stations.some(function(station) { return station.id === 'hunt'; });
+        var record = eligible ? inquiryRecord(activeInvestigation.id) : null;
+        var predictionReady = record && !!String(record.prediction || '').trim();
+        var allInNotebook = record && moments.every(function(moment) { return record.evidence.some(function(note) { return note.id === 'study-' + moment.id; }); });
+        function pauseForNotes() { sendHuntCommand('pauseForNotes'); }
+        return h('section', { className: 'rh-flight-moments', 'aria-labelledby': 'rh-flight-moments-title' },
+          h('span', { className: 'rh-inquiry-kicker' }, __alloT('stem.raptorhunt.study_compare_kicker', 'Observe · try a change · compare')),
+          h('h3', { id: 'rh-flight-moments-title', tabIndex: -1 }, __alloT('stem.raptorhunt.study_compare_title', 'Your flight observations')),
+          h('p', null, moments.length < 2 ? __alloT('stem.raptorhunt.study_compare_next', 'One moment kept. Resume, try a maneuver, then use Study this moment to keep a second view. Match the camera angle for an easier comparison.') : __alloT('stem.raptorhunt.study_compare_full', 'Two moments kept. Describe what changed. Remove a moment when you are ready to try another comparison.')),
+          h('div', { className: 'rh-moment-grid' }, moments.map(function(moment, index) {
+            var letter = index ? 'B' : 'A';
+            var copied = !!(record && record.evidence.some(function(note) { return note.id === 'study-' + moment.id; }));
+            var image = flightStudyImage(moment);
+            return h('article', { key: moment.id, className: 'rh-moment-card', 'data-study-moment': letter },
+              image ? h('img', { className: 'rh-moment-photo', src: image, width: 480, height: 320,
+                alt: __alloFill(__alloT('stem.raptorhunt.study_compare_image', '{species}, {pose}, {view}. Saved simulation image.'), { species: moment.speciesName, pose: moment.poseLabel, view: moment.viewLabel })
+              }) : h('div', { className: 'rh-moment-photo rh-moment-photo-fallback' }, __alloT('stem.raptorhunt.study_compare_no_image', 'Image unavailable. The simulation readings are saved.')),
+              h('div', { className: 'rh-moment-body' },
+                h('h4', null, letter + ' · ' + moment.speciesName),
+                h('p', { className: 'rh-moment-context' }, moment.poseLabel + ' · ' + moment.viewLabel + ' · ' + moment.missionName),
+                h('dl', { className: 'rh-moment-values' }, [
+                  [__alloT('stem.raptorhunt.study_compare_speed', 'Airspeed'), moment.speedMph.toFixed(1) + ' mph'],
+                  [__alloT('stem.raptorhunt.study_compare_height', 'Above ground'), moment.heightM.toFixed(1) + ' m'],
+                  [__alloT('stem.raptorhunt.study_compare_time', 'Flight time'), moment.elapsedS.toFixed(1) + ' s']
+                ].map(function(value) { return h('div', { key: value[0] }, h('dt', null, value[0]), h('dd', null, value[1])); })),
+                h('label', { htmlFor: 'rh-moment-note-' + letter }, __alloFill(__alloT('stem.raptorhunt.study_compare_note', 'What do you notice in moment {letter}?'), { letter: letter })),
+                h('textarea', { id: 'rh-moment-note-' + letter, rows: 3, maxLength: 1200, value: moment.note || '', onFocus: pauseForNotes,
+                  onChange: function(event) { var text = event.target.value; setRH(function(cur) { return Object.assign({}, cur, { flightStudyMoments: (cur.flightStudyMoments || []).map(function(item) { return item.id === moment.id ? Object.assign({}, item, { note: text }) : item; }) }); }); }
+                }),
+                h('div', { className: 'rh-moment-actions' },
+                  h('button', { type: 'button', disabled: !predictionReady || !String(moment.note || '').trim() || copied || record.evidence.length >= 12,
+                    onClick: function(event) {
+                      pauseForNotes();
+                      var investigationId = activeInvestigation.id;
+                      setRH(function(cur) {
+                        var records = Object.assign({}, cur.investigations || {}), current = records[investigationId] || {};
+                        var evidence = Array.isArray(current.evidence) ? current.evidence : [];
+                        var saved = (cur.flightStudyMoments || []).find(function(item) { return item.id === moment.id; });
+                        if (!saved || !String(saved.note || '').trim() || !String(current.prediction || '').trim() || evidence.length >= 12 || evidence.some(function(note) { return note.id === 'study-' + moment.id; })) return cur;
+                        var note = { id: 'study-' + saved.id, station: 'hunt', stationLabel: findSection('hunt').label, text: saved.note.trim(), reading: Object.assign({}, saved) };
+                        records[investigationId] = Object.assign({}, current, { evidence: evidence.concat([note]), reviewed: false });
+                        return Object.assign({}, cur, { investigations: records });
+                      });
+                      focusInquiry(event, '#rh-flight-moments-title');
+                      rhAnnounce(__alloT('stem.raptorhunt.study_compare_added', 'Moment and observation added to your field notebook.'));
+                    }
+                  }, copied ? __alloT('stem.raptorhunt.study_compare_in_notebook', 'Added to notebook') : __alloT('stem.raptorhunt.study_compare_add', 'Add to notebook')),
+                  h('button', { type: 'button', 'aria-label': __alloFill(__alloT('stem.raptorhunt.study_compare_remove_named', 'Remove moment {letter}'), { letter: letter }), onClick: function(event) {
+                    pauseForNotes();
+                    setRH(function(cur) { return Object.assign({}, cur, { flightStudyMoments: (cur.flightStudyMoments || []).filter(function(item) { return item.id !== moment.id; }) }); });
+                    focusInquiry(event, moments.length > 1 ? '#rh-flight-moments-title' : '[data-raptor-study-button]');
+                    rhAnnounce(__alloT('stem.raptorhunt.study_compare_removed', 'Moment removed. Any copy in your notebook is kept.'));
+                  } }, __alloT('stem.raptorhunt.inquiry_remove', 'Remove'))
+                )
+              )
+            );
+          })),
+          moments.length === 2 && h('div', { className: 'rh-moment-comparison', 'data-study-comparison': moments[0].runId === moments[1].runId ? 'same-flight' : 'different-flights' },
+            h('strong', null, __alloT('stem.raptorhunt.study_compare_between', 'From A to B')),
+            moments[0].runId === moments[1].runId ? h('p', null,
+              __alloFill(__alloT('stem.raptorhunt.study_compare_deltas', 'Airspeed: {speed} mph. Height above ground: {height} m.'), {
+                speed: (moments[1].speedMph >= moments[0].speedMph ? '+' : '') + (moments[1].speedMph - moments[0].speedMph).toFixed(1),
+                height: (moments[1].heightM >= moments[0].heightM ? '+' : '') + (moments[1].heightM - moments[0].heightM).toFixed(1)
+              })) : h('p', null, __alloT('stem.raptorhunt.study_compare_different', 'These moments come from different flights. Compare the features you can see; the readings are not a controlled trial.')),
+            h('p', null, __alloT('stem.raptorhunt.study_compare_limits', 'Camera angle can change how a pose looks. Several flight conditions can change together, so a speed difference alone does not establish its cause.'))
+          ),
+          h('p', { id: 'rh-moment-notebook-help' }, allInNotebook ? __alloT('stem.raptorhunt.study_compare_explain', 'Open your notebook to build an explanation. It keeps the original readings and the observation you added for each moment.') : predictionReady ? __alloT('stem.raptorhunt.study_compare_write', 'Write an observation to add a moment to your notebook. Saved notebook copies remain unchanged when you edit or remove these moments.') : __alloT('stem.raptorhunt.study_compare_predict', 'To collect these moments as evidence, open the dive investigation and add your starting prediction in the notebook.')),
+          record && record.evidence.length >= 12 && h('p', null, __alloT('stem.raptorhunt.inquiry_note_limit', 'This notebook holds 12 observations. Download your notes before removing any to make room.')),
+          h('button', { type: 'button', className: 'rh-inquiry-button', onClick: function(event) { pauseForNotes(); setRH({ activeInvestigation: eligible ? activeInvestigation.id : 'speed', inquiryExpanded: true }); focusInquiry(event, '#rh-journal-title'); }
+          }, eligible ? __alloT('stem.raptorhunt.inquiry_open_notebook', 'Open notebook') : __alloT('stem.raptorhunt.study_compare_open', 'Open dive investigation')),
+          h('p', null, __alloT('stem.raptorhunt.study_compare_session', 'Kept moments stay with this lab session. Notebook downloads include your words and the simulation readings.'))
+        );
+      }
+      function inquiryArtwork(theme, hero) {
+        // Code-native illustrations stay sharp at every zoom and need no network.
+        return h('svg', { viewBox: hero ? '0 0 520 180' : '0 0 400 140', preserveAspectRatio: 'xMidYMid slice', 'aria-hidden': 'true', focusable: 'false' },
+          h('rect', { width: 520, height: 180, fill: theme === 'night' ? '#1a243d' : '#123842' }),
+          [35, 75, 115].map(function(y) { return h('path', { key: y, d: 'M0 ' + y + ' Q130 ' + (y - 35) + ' 260 ' + y + ' T540 ' + y, fill: 'none', stroke: '#82bcb9', opacity: .12 }); }),
+          h('circle', { cx: hero ? 400 : 320, cy: 42, r: theme === 'night' ? 25 : 32, fill: theme === 'night' ? '#e7e6c8' : '#e8c58b', opacity: .9 }),
+          theme === 'night' && h('circle', { cx: 332, cy: 31, r: 23, fill: '#1a243d' }),
+          h('path', { d: 'M0 150 L60 91 L116 122 L190 62 L266 125 L338 80 L430 130 L520 70 L520 180 L0 180Z', fill: '#29515a' }),
+          h('path', { d: 'M0 155 L96 121 L167 151 L251 108 L330 155 L433 117 L520 149 L520 190 L0 190Z', fill: '#0c2835' }),
+          theme === 'night' ? h('g', { transform: 'translate(130 14)' },
+            h('path', { d: 'M55 98 Q20 88 28 46 L23 15 L47 31 Q65 22 83 31 L107 15 L102 47 Q110 88 77 99 L88 121 L42 121Z', fill: '#acbdba', stroke: '#d9e5dc', strokeWidth: 1.5 }),
+            h('path', { d: 'M35 48 Q45 28 64 49 Q84 28 96 48 Q100 79 65 86 Q30 80 35 48', fill: '#e1debd' }),
+            h('circle', { cx: 49, cy: 57, r: 9, fill: '#18313b' }), h('circle', { cx: 81, cy: 57, r: 9, fill: '#18313b' }),
+            h('circle', { cx: 51, cy: 54, r: 2, fill: '#f6e9c6' }), h('circle', { cx: 83, cy: 54, r: 2, fill: '#f6e9c6' }),
+            h('path', { d: 'M59 69 L71 69 L65 79Z', fill: '#86664a' }),
+            h('path', { d: 'M33 108 H99', stroke: '#d3bd97', strokeWidth: 5, strokeLinecap: 'round' })
+          ) : h('g', { transform: hero ? 'translate(75 -8) scale(1.35)' : 'translate(54 -5)' },
+            h('path', { d: 'M36 21 L81 40 L144 78 L169 72 L182 80 L169 83 L153 91 L173 122 L150 116 L133 96 L97 85 L62 69 L35 45 L82 62 L53 40 L101 63Z', fill: '#dbc99f', stroke: '#f0dfb8', strokeWidth: 1.2, strokeLinejoin: 'round' }),
+            h('path', { d: 'M83 45 L136 78 L105 74 L67 48 M100 67 L135 86 L100 80 L66 65', fill: 'none', stroke: '#48636a', strokeWidth: 3 }),
+            h('path', { d: 'M157 76 L168 74 L172 79 L165 86 L161 81Z', fill: '#203945' }),
+            h('circle', { cx: 168, cy: 78, r: 1.4, fill: '#ffe8a6' })
+          ),
+          theme === 'landscape' && h('g', { stroke: '#9fc4ac', strokeWidth: 2, fill: 'none' },
+            h('path', { d: 'M55 117 V66 M38 87 L55 65 L72 87 M33 103 L55 78 L77 103' }),
+            h('path', { d: 'M340 138 V92 M323 115 L340 91 L357 115' })),
+          theme === 'flight' && h('path', { d: 'M263 15 Q305 56 284 102 L310 94 M284 102 L282 76', stroke: '#a8decf', strokeWidth: 2, fill: 'none', strokeDasharray: '5 5' })
+        );
+      }
+      function renderInvestigationChoices() {
+        return h('section', { className: 'rh-inquiry-choices', 'aria-labelledby': 'rh-inquiry-title' },
+          h('div', { className: 'rh-inquiry-heading' },
+            h('div', null, h('span', { className: 'rh-inquiry-kicker' }, __alloT('stem.raptorhunt.inquiry_choose_kicker', 'Follow a question')),
+              h('h3', { id: 'rh-inquiry-title' }, __alloT('stem.raptorhunt.inquiry_choose_title', 'Go beyond the first discovery.')),
+              h('p', null, __alloT('stem.raptorhunt.inquiry_choose_intro', 'Predict. Investigate. Build an explanation you can defend.'))),
+            h('span', { className: 'rh-journal-summary' }, __alloT('stem.raptorhunt.inquiry_choose_meta', '3 guided investigations · your pace'))),
+          h('div', { className: 'rh-inquiry-grid' }, INVESTIGATIONS.map(function(item) {
+            var record = inquiryRecord(item.id);
+            var started = !!(record.prediction || record.evidence.length || record.claim);
+            return h('article', { key: item.id, className: 'rh-inquiry-card', 'data-selected': !!activeInvestigation && activeInvestigation.id === item.id },
+              h('div', { className: 'rh-inquiry-art' }, inquiryArtwork(item.theme)),
+              h('div', { className: 'rh-inquiry-card-copy' },
+                h('span', { className: 'rh-inquiry-kicker' }, item.code + ' / ' + item.topic),
+                h('h4', null, item.title), h('p', null, item.intro),
+                h('button', { type: 'button', className: 'rh-inquiry-button', 'data-inquiry-start': item.id,
+                  onClick: function(event) { setRH({ activeInvestigation: item.id, inquiryExpanded: true }); focusInquiry(event, '#rh-journal-title'); }
+                }, record.reviewed ? __alloT('stem.raptorhunt.inquiry_review_path', 'Revisit investigation') : started ? __alloT('stem.raptorhunt.inquiry_resume_path', 'Continue investigation') : __alloT('stem.raptorhunt.inquiry_start_path', 'Begin investigation'), h('span', { 'aria-hidden': 'true' }, '→'))
+              ));
+          }))
+        );
+      }
+      function renderInquiryJournal() {
+        if (!activeInvestigation) return null;
+        var investigation = activeInvestigation;
+        var record = inquiryRecord(investigation.id);
+        var notes = record.evidence;
+        var expanded = rh.inquiryExpanded === true;
+        var canCapture = investigation.stations.some(function(station) { return station.id === activeSection; });
+        var predictionReady = !!String(record.prediction || '').trim();
+        var readyToReview = predictionReady && notes.length >= 2 && !!String(record.claim || '').trim() && !!String(record.next || '').trim();
+        var reading = inquiryReading();
+        var measured = notes.filter(function(note) { return note.reading && note.reading.kind !== 'flight-study' && isFinite(note.reading.mph) && note.reading.mph > 0; }).slice(-2);
+        function patchRecord(patch) { updateInquiry(investigation.id, patch); }
+        function field(key, title, prompt) {
+          return h('div', null,
+            h('label', { htmlFor: 'rh-journal-' + key }, title),
+            h('p', { id: 'rh-journal-' + key + '-hint', className: 'rh-journal-help' }, prompt),
+            h('textarea', { id: 'rh-journal-' + key, value: record[key] || '', maxLength: 3000, rows: 3,
+              'aria-describedby': 'rh-journal-' + key + '-hint',
+              onChange: function(event) { var patch = {}; patch[key] = event.target.value; patchRecord(patch); }
+            }));
+        }
+        function downloadNotes() {
+          var text = '# ' + __alloT('stem.raptorhunt.inquiry_journal', 'Raptor Lab field notebook') + '\n\n' + investigation.title + '\n\n' +
+            '## ' + __alloT('stem.raptorhunt.inquiry_prediction', 'My prediction') + '\n' + (record.prediction || '') + '\n\n' +
+            '## ' + __alloT('stem.raptorhunt.inquiry_evidence', 'My evidence') + '\n' + notes.map(function(note, index) {
+              return '\n' + (index + 1) + '. ' + note.stationLabel + '\n' + note.text + (note.reading ? '\n' + inquiryReadingText(note.reading) : '');
+            }).join('\n') + (String(record.draft || '').trim() ? '\n\n## ' + __alloT('stem.raptorhunt.inquiry_draft_export', 'Observation draft (not saved as evidence)') + '\n' + record.draft : '') + '\n\n## ' + __alloT('stem.raptorhunt.inquiry_claim', 'My explanation') + '\n' + (record.claim || '') + '\n\n## ' +
+            __alloT('stem.raptorhunt.inquiry_next', 'My next question') + '\n' + (record.next || '') + '\n\n' +
+            (record.reviewed ? __alloT('stem.raptorhunt.inquiry_reviewed', 'Reflection self-reviewed') : __alloT('stem.raptorhunt.inquiry_in_progress', 'Investigation in progress')) + '\n';
+          var url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+          var link = document.createElement('a'); link.href = url; link.download = 'raptor-field-notes-' + investigation.id + '.txt';
+          document.body.appendChild(link); link.click(); link.remove();
+          window.setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+          rhAnnounce(__alloT('stem.raptorhunt.inquiry_download_started', 'Field notes download started.'));
+        }
+        return h('section', { className: 'rh-journal', 'aria-labelledby': 'rh-journal-title', 'data-inquiry-journal': investigation.id },
+          h('div', { className: 'rh-journal-top' },
+            h('div', null, h('span', { className: 'rh-inquiry-kicker' }, __alloT('stem.raptorhunt.inquiry_journal', 'Raptor Lab field notebook')),
+              h('h3', { id: 'rh-journal-title', tabIndex: -1 }, investigation.title),
+              h('div', { className: 'rh-journal-summary' }, notes.length + ' ' + __alloT('stem.raptorhunt.inquiry_evidence_minimum', 'observations saved · gather at least 2') + (record.reviewed ? ' · ' + __alloT('stem.raptorhunt.inquiry_reviewed', 'Reflection self-reviewed') : ''))),
+            h('div', { className: 'rh-journal-actions' },
+              h('button', { type: 'button', className: 'rh-inquiry-button', 'aria-expanded': expanded, 'aria-controls': expanded ? 'rh-journal-body' : undefined,
+                onClick: function() { setRH({ inquiryExpanded: !expanded }); }
+              }, expanded ? __alloT('stem.raptorhunt.inquiry_close_notebook', 'Close notebook') : __alloT('stem.raptorhunt.inquiry_open_notebook', 'Open notebook')),
+              h('button', { type: 'button', className: 'rh-inquiry-button', onClick: function(event) {
+                setRH({ activeInvestigation: null }); focusInquiry(event, activeSection === 'hub' ? (rh.activeCategory ? '.rh-collection-title' : '#rh-command-title') : '#rh-active-section-title');
+              } }, __alloT('stem.raptorhunt.inquiry_leave_path', 'Set aside')))),
+          !expanded && h('p', { className: 'rh-journal-help' }, canCapture ? __alloT('stem.raptorhunt.inquiry_compact_cue', 'Try a change or inspect a detail, then open your notebook to save what you notice.') : investigation.observation),
+          expanded && h('div', { id: 'rh-journal-body' },
+            h('ol', { className: 'rh-journal-phases', 'aria-label': __alloT('stem.raptorhunt.inquiry_steps', 'Investigation steps') },
+              [
+                [__alloT('stem.raptorhunt.inquiry_step_predict', '1 · Predict'), predictionReady],
+                [__alloT('stem.raptorhunt.inquiry_step_observe', '2 · Gather evidence'), notes.length >= 2],
+                [__alloT('stem.raptorhunt.inquiry_step_explain', '3 · Explain and reflect'), readyToReview && record.reviewed]
+              ].map(function(step, index) { return h('li', { key: index, 'data-done': !!step[1] }, step[0], step[1] ? ' ✓' : ''); })),
+            h('div', { className: 'rh-journal-grid' },
+              h('div', null,
+                h('h4', null, __alloT('stem.raptorhunt.inquiry_start_idea', 'Start with your idea')),
+                field('prediction', __alloT('stem.raptorhunt.inquiry_prediction', 'My prediction'), investigation.prediction),
+                h('p', { className: 'rh-journal-help' }, __alloT('stem.raptorhunt.inquiry_prediction_hint', 'A few words or bullet points are enough. You can revise your thinking as you go.')),
+                h('div', { className: 'rh-journal-stations' }, investigation.stations.map(function(station, index) {
+                  var section = findSection(station.id);
+                  return h('button', { key: station.id, type: 'button', className: 'rh-inquiry-button', 'data-inquiry-station': station.id,
+                    'aria-current': activeSection === station.id ? 'step' : undefined,
+                    onClick: function(event) { openInquiryStation(station.id, event); }
+                  }, h('span', { 'aria-hidden': 'true' }, '0' + (index + 1)), h('span', null, section.label, h('small', null, station.cue)),
+                    h('span', { className: 'rh-journal-count' }, notes.filter(function(note) { return note.station === station.id; }).length + ' ' + __alloT('stem.raptorhunt.inquiry_notes', 'notes')));
+                })),
+                h('p', { className: 'rh-journal-help' }, investigation.observation)
+              ),
+              h('div', null,
+                h('h4', { id: 'rh-journal-evidence-title', tabIndex: -1 }, __alloT('stem.raptorhunt.inquiry_evidence', 'My evidence')),
+                !notes.length && h('div', { className: 'rh-journal-empty' }, __alloT('stem.raptorhunt.inquiry_empty', 'Your evidence starts here. Open a station, investigate, and save an observation in your own words.')),
+                h('ol', { className: 'rh-journal-notes' }, notes.map(function(note, index) {
+                  return h('li', { key: note.id, className: 'rh-journal-note' },
+                    h('div', { className: 'rh-journal-note-top' }, h('strong', null, (index + 1) + '. ' + note.stationLabel),
+                      h('button', { type: 'button', className: 'rh-inquiry-button',
+                        'aria-label': __alloT('stem.raptorhunt.inquiry_remove_observation', 'Remove observation') + ' ' + (index + 1),
+                        onClick: function(event) {
+                          patchRecord(function(current) { return { evidence: (current.evidence || []).filter(function(item) { return item.id !== note.id; }) }; });
+                          focusInquiry(event, '#rh-journal-evidence-title');
+                          rhAnnounce(__alloT('stem.raptorhunt.inquiry_removed', 'Observation removed.'));
+                        }
+                      }, __alloT('stem.raptorhunt.inquiry_remove', 'Remove'))),
+                    h('p', null, note.text), note.reading && flightStudyImage(note.reading) && h('img', { className: 'rh-moment-photo', src: flightStudyImage(note.reading), width: 480, height: 320, alt: note.reading.speciesName + ' · ' + note.reading.poseLabel + ' · ' + note.reading.viewLabel }),
+                    note.reading && h('span', { className: 'rh-journal-reading' }, inquiryReadingText(note.reading)));
+                })),
+                measured.length === 2 && (function() {
+                  var first = measured[0].reading, second = measured[1].reading;
+                  var changed = ['mass', 'cd', 'area'].filter(function(key) { return first[key] !== second[key]; });
+                  var delta = (second.mph / first.mph - 1) * 100;
+                  var max = Math.max(first.mph, second.mph);
+                  return h('div', { className: 'rh-journal-comparison', 'data-inquiry-comparison': changed.length },
+                    h('h4', null, __alloT('stem.raptorhunt.inquiry_comparison', 'Compare your last two model readings')),
+                    [first, second].map(function(value, index) {
+                      return h('div', { key: index, className: 'rh-journal-compare-row' }, h('span', null, index ? 'B' : 'A'),
+                        h('div', { className: 'rh-journal-compare-bar', 'aria-hidden': 'true' }, h('span', { style: { width: (value.mph / max * 100) + '%' } })),
+                        h('strong', null, value.mph.toFixed(1) + ' mph'));
+                    }),
+                    h('p', null, __alloT('stem.raptorhunt.inquiry_speed_change', 'Change in model speed') + ': ' + (delta > 0 ? '+' : '') + delta.toFixed(1) + '%.'),
+                    h('p', { className: 'rh-journal-help' }, changed.length === 1 ? __alloT('stem.raptorhunt.inquiry_fair_test', 'One variable changed. Use the comparison to explain the effect, while keeping the model’s limits in mind.') : changed.length === 0 ? __alloT('stem.raptorhunt.inquiry_no_change', 'The inputs are the same. Change one variable and collect another observation to test an effect.') : __alloT('stem.raptorhunt.inquiry_confounded', 'More than one variable changed. You cannot isolate one cause yet. Hold two inputs fixed and try again.')));
+                })(),
+                canCapture ? h('div', null,
+                  field('draft', __alloT('stem.raptorhunt.inquiry_observation', 'What did you notice?'), __alloT('stem.raptorhunt.inquiry_observation_hint', 'Describe a change, pattern, or detail. Include what you compared and what it suggests.')),
+                  reading && h('span', { className: 'rh-journal-reading' }, inquiryReadingText(reading)),
+                  h('p', { className: 'rh-journal-help' }, reading ? __alloT('stem.raptorhunt.inquiry_snapshot_hint', 'Saving includes these model inputs and this reading. Later slider changes will not alter saved evidence.') : __alloT('stem.raptorhunt.inquiry_source_hint', 'Saving attaches this station’s name to your observation.')),
+                  h('button', { type: 'button', className: 'rh-inquiry-button', 'data-primary': true, 'data-inquiry-capture': true,
+                    disabled: !predictionReady || !String(record.draft || '').trim() || notes.length >= 12,
+                    onClick: function() {
+                      if (!predictionReady || !String(record.draft || '').trim() || notes.length >= 12) return;
+                      var note = { id: Date.now().toString(36) + '-' + notes.length, station: activeSection, stationLabel: findSection(activeSection).label, text: record.draft.trim(), reading: reading };
+                      patchRecord(function(current) { return { evidence: (current.evidence || []).concat([note]).slice(0, 12), draft: '' }; });
+                      rhAnnounce(__alloT('stem.raptorhunt.inquiry_saved', 'Observation saved to your field notebook.'));
+                    }
+                  }, __alloT('stem.raptorhunt.inquiry_save_observation', 'Save observation')),
+                  !predictionReady && h('p', { className: 'rh-journal-help' }, __alloT('stem.raptorhunt.inquiry_predict_first', 'Add a starting prediction before saving evidence.')),
+                  notes.length >= 12 && h('p', { className: 'rh-journal-help' }, __alloT('stem.raptorhunt.inquiry_note_limit', 'This notebook holds 12 observations. Download your notes before removing any to make room.'))
+                ) : h('p', { className: 'rh-journal-help' }, __alloT('stem.raptorhunt.inquiry_open_station', 'Open one of the stations in this investigation to add evidence.'))
+              )
+            ),
+            h('details', { className: 'rh-journal-reflection' },
+              h('summary', null, __alloT('stem.raptorhunt.inquiry_reflection', 'Build your explanation')),
+              field('claim', __alloT('stem.raptorhunt.inquiry_claim', 'My explanation'), investigation.reflection),
+              field('next', __alloT('stem.raptorhunt.inquiry_next', 'My next question'), investigation.transfer),
+              h('div', { className: 'rh-journal-review', 'data-reviewed': !!record.reviewed },
+                h('strong', null, record.reviewed ? __alloT('stem.raptorhunt.inquiry_reviewed', 'Reflection self-reviewed') : __alloT('stem.raptorhunt.inquiry_review_prompt', 'Check your reasoning')),
+                h('p', null, __alloT('stem.raptorhunt.inquiry_review_checklist', 'Did I use specific evidence, explain why it supports my idea, and name an uncertainty? Discuss with a partner or read your explanation back to yourself.')),
+                h('p', { className: 'rh-journal-help' }, __alloT('stem.raptorhunt.inquiry_self_review_hint', 'This records your own review; it does not grade your explanation.'))),
+              h('button', { type: 'button', className: 'rh-inquiry-button', 'data-primary': true, disabled: !readyToReview || record.reviewed,
+                onClick: function() { if (!readyToReview) return; patchRecord({ reviewed: true }); rhAnnounce(__alloT('stem.raptorhunt.inquiry_review_saved', 'Your reflection review is recorded. You can return and revise it.')); }
+              }, record.reviewed ? __alloT('stem.raptorhunt.inquiry_review_recorded', 'Review recorded') : __alloT('stem.raptorhunt.inquiry_mark_reviewed', 'Mark reflection reviewed')),
+              !readyToReview && h('p', { className: 'rh-journal-help' }, __alloT('stem.raptorhunt.inquiry_review_requirements', 'For your review: add a prediction, at least two observations, an explanation, and a next question.'))
+            ),
+            h('div', { className: 'rh-journal-actions', style: { marginTop: 18 } },
+              h('button', { type: 'button', className: 'rh-inquiry-button', onClick: downloadNotes }, __alloT('stem.raptorhunt.inquiry_download', 'Download field notes')),
+              h('span', { className: 'rh-journal-help' }, __alloT('stem.raptorhunt.inquiry_save_scope', 'Notes stay with your current lab session. Download a copy to keep or share.')))
+          )
+        );
+      }
+
       function renderHub() {
         var hubVisited = rh.visited || {};
         var hubVisitedCount = Object.keys(hubVisited).filter(function(k) { return k !== 'hub' && findSection(k) && hubVisited[k] > 0; }).length;
@@ -9531,7 +10018,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('path', { d: 'M8 24 L28 32 L38 43 L39 32 L44 28 L51 30 L45 34 L43 44 L57 33 L73 29 L61 43 L49 48 L42 58 L35 54 L33 46 L19 40 Z', fill: 'currentColor' })),
               h('div', { className: 'rh-hero-copy flex-1' },
                 h('div', { className: 'rh-hero-eyebrow' }, __alloT('stem.raptorhunt.field_station', 'Interactive field station')),
-                h('h2', { id: 'rh-command-title', className: 'rh-hero-title text-xl font-bold text-amber-200' }, __alloT('stem.raptorhunt.station_title', 'Raptor Lab')),
+                h('h2', { id: 'rh-command-title', tabIndex: -1, className: 'rh-hero-title text-xl font-bold text-amber-200' }, __alloT('stem.raptorhunt.station_title', 'Raptor Lab')),
                 h('div', { className: 'rh-hero-lede text-sm text-amber-100/80 mt-1' }, __alloT('stem.raptorhunt.station_intro', 'Take flight. Follow your curiosity. Explore the physics, senses, and survival strategies of the world’s birds of prey.')),
                 h('div', { className: 'text-xs text-amber-300/80 mt-2 font-semibold' }, CATEGORIES.length + ' collections · ' + contentSectionCount + ' sections · ' + speciesCount + ' species · 3D flight missions · ' + quizQuestionCount + '-question quiz'),
                 h('div', { className: 'rh-hero-actions' },
@@ -9552,6 +10039,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             ),
             h('div', { className: 'rh-hero-grid mt-4' },
+              h('div', { className: 'rh-hero-habitat' }, inquiryArtwork('landscape', true)),
               h('div', { className: 'rh-stat-grid' },
                 hubStats.map(function(stat, idx) {
                   return h('div', { key: idx, className: 'rh-stat-card rounded-lg border border-amber-700/35 bg-slate-950/45 p-3 min-h-[86px]' },
@@ -9598,6 +10086,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               }, __alloT('stem.raptorhunt.surprise_me_random_section', '🎰 Surprise me — random section'))
             )
           ),
+          renderInvestigationChoices(),
+          renderInquiryJournal(),
           h('section', { className: 'rh-category-section', 'aria-labelledby': 'rh-explore-title' },
             h('div', { className: 'rh-category-heading' },
               h('div', null,
@@ -10970,9 +11460,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       ref: huntCanvasRef,
                       'data-raptor-canvas': 'true',
                       role: 'application',
-                      'aria-label': '3D raptor flight. ' + raptorSchemeBindings(activeScheme).map(function(row) { return row.keys.join(' or ') + ' ' + row.label.toLowerCase(); }).join(', ') + '.',
-                      'aria-describedby': 'rh-flight-instructions',
-                      'aria-keyshortcuts': raptorSchemeShortcuts(activeScheme),
+                      'aria-label': simUI.studyActive ? __alloT('stem.raptorhunt.study_canvas', 'Frozen raptor study. Drag or use arrow keys to orbit. Use the view buttons and distance slider below. Escape returns to paused flight.') : '3D raptor flight. ' + raptorSchemeBindings(activeScheme).map(function(row) { return row.keys.join(' or ') + ' ' + row.label.toLowerCase(); }).join(', ') + '.',
+                      'aria-describedby': simUI.studyActive ? 'rh-study-help' : 'rh-flight-instructions',
+                      'aria-keyshortcuts': simUI.studyActive ? 'ArrowLeft ArrowRight ArrowUp ArrowDown Escape' : raptorSchemeShortcuts(activeScheme),
                       'data-raptor-control-scheme': controlScheme,
                       'data-raptor-control-keys': controlScheme === 'custom' ? JSON.stringify(customControlKeys) : undefined,
                       'data-raptor-key-guide': keyGuideEnabled ? 'true' : 'false',
@@ -11237,6 +11727,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     h('div', { className: 'rh-flight-controls-group rh-flight-controls-run' },
                       h('span', { className: 'rh-flight-control-label' }, 'Run'),
                       h('button', {
+                        type: 'button', className: 'rh-flight-btn', disabled: flightResolved || !simUI.ready,
+                        'data-raptor-study-button': true, 'aria-pressed': !!simUI.studyActive,
+                        onClick: function() { sendHuntCommand('study'); }
+                      }, __alloT('stem.raptorhunt.study_moment', 'Study this moment')),
+                      h('button', {
                         type: 'button',
                         className: 'rh-flight-btn rh-flight-btn-primary',
                         onClick: function(event) { sendHuntCommandFromControl(event, 'pause'); },
@@ -11415,6 +11910,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 )
           ),
 
+          renderFlightMoments(),
           (function() {
             // Aggregate stats across all species
             var allCatches = 0, allAttempts = 0, bestRunAllSpecies = 0;
@@ -16083,7 +16579,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var pointerId = dragState.pointerId;
           dragState.active = false;
           dragState.pointerId = null;
-          canvasEl.style.cursor = 'crosshair';
+          canvasEl.style.cursor = studyActive ? 'grab' : 'crosshair';
           if (pointerId !== null && canvasEl.hasPointerCapture && canvasEl.hasPointerCapture(pointerId)) {
             canvasEl.releasePointerCapture(pointerId);
           }
@@ -16094,6 +16590,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             ready: true,
             heldKeys: Object.assign({}, keys),
             paused: simPaused,
+            studyActive: !!studyActive,
             camera: camMode,
             zoom: zoomActive,
             assist: targetLockOn,
@@ -16129,6 +16626,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function setPaused(nextPaused, announcement) {
           // A resolved mission stays frozen until a new flight is started.
           if (!nextPaused && missionOutcome !== 'active') return;
+          if (!nextPaused && studyActive) leaveStudy();
           var wasPaused = simPaused;
           simPaused = !!nextPaused;
           clearHeldInputs();
@@ -16272,6 +16770,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           });
         }
         function toggleView() {
+          if (studyActive) return;
           camMode = camMode === 'chase' ? 'fp' : 'chase';
           cameraFloorSmoothed = null;
           updatePausedView(true);
@@ -16279,6 +16778,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           rhAnnounce(camMode === 'fp' ? 'First-person raptor vision' : 'Chase camera');
         }
         function toggleZoom() {
+          if (studyActive) return;
           zoomActive = !zoomActive;
           updatePausedView(false);
           if (zoomActive) markTutorialSignal('acuity');
@@ -16319,6 +16819,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // Preserve system shortcuts and text composition; Shift remains a flight control.
           if (event.ctrlKey || event.metaKey || event.altKey || event.isComposing) return;
           var raw = String(event.key || '').toLowerCase();
+          if (studyActive) {
+            if (raw === 'escape' && !(document.fullscreenElement || document.webkitFullscreenElement)) {
+              event.preventDefault(); leaveStudy(); publishControlState(); repaintPausedFlight(false); pauseResume.focus(); return;
+            }
+            if (['arrowleft','arrowright','arrowup','arrowdown'].indexOf(raw) !== -1) {
+              event.preventDefault();
+              if (raw === 'arrowleft') studyAzimuth -= Math.PI / 18;
+              if (raw === 'arrowright') studyAzimuth += Math.PI / 18;
+              if (raw === 'arrowup') studyElevation += Math.PI / 36;
+              if (raw === 'arrowdown') studyElevation -= Math.PI / 36;
+              studyPreset = ''; repaintPausedFlight(false); return;
+            }
+          }
           var action = controlScheme.keys[raw];
           if (!action) return;  // keys outside the active preset do nothing
           if (action === 'pause') {
@@ -16364,7 +16877,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         function onPointerDown(event) {
           // Keep steering with the pointer that began the gesture; other fingers may use flight controls.
-          if (simPaused || dragState.active || event.button !== 0) return;
+          if ((simPaused && !studyActive) || dragState.active || event.button !== 0) return;
           canvasEl.focus({ preventScroll: true });
           dragState.active = true;
           dragState.lastX = event.clientX;
@@ -16375,11 +16888,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           event.preventDefault();
         }
         function onPointerMove(event) {
-          if (!dragState.active || event.pointerId !== dragState.pointerId || simPaused) return;
+          if (!dragState.active || event.pointerId !== dragState.pointerId || (simPaused && !studyActive)) return;
           var dx = event.clientX - dragState.lastX;
           var dy = event.clientY - dragState.lastY;
           dragState.lastX = event.clientX;
           dragState.lastY = event.clientY;
+          if (studyActive) {
+            studyAzimuth -= dx * 0.008; studyElevation += dy * 0.006; studyPreset = '';
+            repaintPausedFlight(false); event.preventDefault(); return;
+          }
           pendingPointerYaw=Math.max(-0.75,Math.min(0.75,pendingPointerYaw+dx*touchYawSensitivity));
           pendingPointerPitch=Math.max(-0.45,Math.min(0.45,pendingPointerPitch-dy*touchPitchSensitivity));
           if (!touchHintDismissed && Math.abs(dx) + Math.abs(dy) > 4) {
@@ -16396,7 +16913,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var pointerId = dragState.pointerId;
           dragState.active = false;
           dragState.pointerId = null;
-          canvasEl.style.cursor = 'crosshair';
+          canvasEl.style.cursor = studyActive ? 'grab' : 'crosshair';
           // Clear ownership before releasing capture: the resulting lost event is no longer a cancellation.
           if (canvasEl.hasPointerCapture && canvasEl.hasPointerCapture(pointerId)) {
             canvasEl.releasePointerCapture(pointerId);
@@ -16440,6 +16957,233 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         updatePauseControls();
         pauseOverlay.appendChild(pauseCard);
         hudParent2.appendChild(pauseOverlay);
+
+        // The study camera borrows the live bird while the existing pause gate
+        // freezes physics, wildlife, mission time, and animation. No auto-orbit.
+        var studyActive = false, studySavedCamera = null, studyAzimuth = 0, studyElevation = 0.24, studyDistance = 1, studyPreset = 'side';
+        var studyRunId = Date.now().toString(36) + '-' + (++studyRunSequence.current);
+        var studyRecordedIds = flightStudyMoments().map(function(moment) { return moment.id; });
+        var studyReviewFocusTimer = null;
+        var studyCenter = new THREE.Vector3(), studySize = new THREE.Vector3(), studyBounds = new THREE.Box3();
+        var studyBoundsDirty = true, studyVertex = new THREE.Vector3(), studyBaseVertex = new THREE.Vector3(), studyMorphVertex = new THREE.Vector3();
+        var studyFill = new THREE.DirectionalLight(0xe5f3ff, 0.75);
+        studyFill.name = 'raptor-study-fill'; studyFill.visible = false; studyFill.castShadow = false;
+        scene.add(studyFill); scene.add(studyFill.target);
+        function studyElement(tag, className, text, parent) {
+          var node = document.createElement(tag); node.className = className || '';
+          if (text) node.textContent = text;
+          if (parent) parent.appendChild(node);
+          return node;
+        }
+        var studyHeader = studyElement('div', 'rh-study-header', '', hudParent2);
+        var studyHeading = studyElement('div', 'rh-study-heading', '', studyHeader);
+        studyElement('span', '', __alloT('stem.raptorhunt.study_frozen', 'Frozen moment · study lighting'), studyHeading);
+        var studyTitle = studyElement('h3', '', species.name, studyHeading); studyTitle.tabIndex = -1;
+        var studyClose = studyElement('button', 'rh-study-close', __alloT('stem.raptorhunt.study_close', 'Close study'), studyHeader); studyClose.type = 'button';
+        var studyPanel = studyElement('section', 'rh-study-panel', '', hudParent2);
+        studyPanel.setAttribute('aria-label', __alloT('stem.raptorhunt.study_controls', '3D bird study controls'));
+        var studyObservation = studyElement('div', '', '', studyPanel);
+        var studyPrompt = studyElement('h4', '', '', studyObservation);
+        var studyCopy = studyElement('p', '', '', studyObservation);
+        var studyReadings = studyElement('div', 'rh-study-readings', '', studyObservation);
+        var studySaveActions = studyElement('div', 'rh-study-save-actions', '', studyObservation);
+        var studyKeep = studyElement('button', '', __alloT('stem.raptorhunt.study_compare_keep', 'Keep moment'), studySaveActions); studyKeep.type = 'button';
+        var studyReview = studyElement('button', '', __alloT('stem.raptorhunt.study_compare_review', 'Review kept moments'), studySaveActions); studyReview.type = 'button';
+        var studySaveHint = studyElement('p', 'rh-study-help', '', studyObservation);
+        studyKeep.onclick = captureStudyMoment;
+        studyReview.onclick = function() {
+          leaveStudy(); publishControlState(); repaintPausedFlight(false);
+          var shell = canvasEl.closest('[data-raptor-sim-shell]');
+          if (document.fullscreenElement || document.webkitFullscreenElement) {
+            document.addEventListener('fullscreenchange', onStudyFullscreenExit);
+            document.addEventListener('webkitfullscreenchange', onStudyFullscreenExit);
+            requestHuntFullscreen();
+          } else {
+            if (shell && shell.dataset.alloFullscreenActive === 'true') requestHuntFullscreen();
+            focusStudyReview();
+          }
+        };
+        function onStudyFullscreenExit() {
+          if (document.fullscreenElement || document.webkitFullscreenElement) return;
+          document.removeEventListener('fullscreenchange', onStudyFullscreenExit);
+          document.removeEventListener('webkitfullscreenchange', onStudyFullscreenExit);
+          focusStudyReview();
+        }
+        function focusStudyReview() {
+          if (studyReviewFocusTimer) window.clearTimeout(studyReviewFocusTimer);
+          studyReviewFocusTimer = window.setTimeout(function() {
+            studyReviewFocusTimer = null;
+            if (disposed) return;
+            var root = canvasEl.closest('[data-raptorhunt-root]');
+            var heading = root && root.querySelector('#rh-flight-moments-title');
+            if (heading) { heading.focus({ preventScroll: true }); heading.scrollIntoView({ block: 'start', behavior: 'instant' }); }
+          }, 0);
+        }
+        var studyActions = studyElement('div', '', '', studyPanel);
+        var studyPresets = studyElement('div', 'rh-study-presets', '', studyActions);
+        var studyViews = [
+          { id: 'side', label: __alloT('stem.raptorhunt.study_side', 'Side'), angle: Math.PI / 2, elevation: 0.20 },
+          { id: 'front', label: __alloT('stem.raptorhunt.study_front', 'Front'), angle: 0, elevation: 0.14 },
+          { id: 'above', label: __alloT('stem.raptorhunt.study_above', 'Above'), angle: Math.PI, elevation: 1.24 },
+          { id: 'behind', label: __alloT('stem.raptorhunt.study_behind', 'Behind'), angle: Math.PI, elevation: 0.25 }
+        ];
+        studyViews.forEach(function(view) {
+          view.button = studyElement('button', '', view.label, studyPresets); view.button.type = 'button';
+          view.button.setAttribute('data-study-view', view.id);
+          view.button.onclick = function() {
+            studyPreset = view.id; studyAzimuth = raptor.yaw + view.angle; studyElevation = view.elevation;
+            repaintPausedFlight(false);
+          };
+        });
+        var studyZoomLabel = studyElement('label', 'rh-study-zoom', '', studyActions);
+        studyElement('span', '', __alloT('stem.raptorhunt.study_distance', 'View distance'), studyZoomLabel);
+        var studyZoom = studyElement('input', '', '', studyZoomLabel);
+        studyZoom.type = 'range'; studyZoom.min = '0.75'; studyZoom.max = '1.7'; studyZoom.step = '0.05'; studyZoom.value = '1';
+        studyZoom.oninput = function() { studyDistance = Number(studyZoom.value); repaintPausedFlight(false); };
+        var studyResume = studyElement('button', 'rh-study-resume', __alloT('stem.raptorhunt.study_resume', 'Resume from this moment'), studyActions); studyResume.type = 'button';
+        var studyHelp = studyElement('p', 'rh-study-help', __alloT('stem.raptorhunt.study_help', 'Drag the bird view or focus it and use arrow keys to orbit. The mission clock and animals stay frozen.'), studyActions); studyHelp.id = 'rh-study-help';
+        studyClose.onclick = function() { leaveStudy(); publishControlState(); repaintPausedFlight(false); pauseResume.focus(); };
+        studyHeader.onkeydown = studyPanel.onkeydown = function(event) {
+          if (event.key === 'Escape' && !(document.fullscreenElement || document.webkitFullscreenElement)) {
+            event.preventDefault(); studyClose.onclick();
+          }
+        };
+        studyResume.onclick = function() { setPaused(false); canvasEl.focus({ preventScroll: true }); };
+        var pauseStudy = studyElement('button', '', __alloT('stem.raptorhunt.study_moment', 'Study this moment'), pauseViews); pauseStudy.type = 'button'; pauseStudy.onclick = enterStudy;
+
+        function updateStudySaveControls() {
+          var alreadyKept = studyRecordedIds.indexOf(studyRunId + ':' + motionNow) !== -1;
+          studyKeep.disabled = !studyActive || alreadyKept || studyRecordedIds.length >= 2;
+          studyReview.disabled = !studyRecordedIds.length;
+          studyKeep.textContent = alreadyKept ? __alloT('stem.raptorhunt.study_compare_kept', 'Moment kept') : __alloT('stem.raptorhunt.study_compare_keep', 'Keep moment');
+          studySaveHint.textContent = studyRecordedIds.length >= 2 ? __alloT('stem.raptorhunt.study_compare_capacity', 'Two moments saved. Review them below the flight, or remove one to make room.') : alreadyKept ? __alloT('stem.raptorhunt.study_compare_resume_hint', 'Resume and try a change before keeping another moment.') : __alloT('stem.raptorhunt.study_compare_capture_hint', 'Keep this view and its readings to compare after your next maneuver.');
+        }
+        function captureStudyMoment() {
+          if (disposed || !studyActive || studyKeep.disabled) return;
+          var image = null;
+          // Read back only on an explicit capture. Crop around the frozen bird;
+          // the source is the live renderer, without HTML overlays or a new scene.
+          try {
+            repaintPausedFlight(false);
+            var left = W, right = 0, top = H, bottom = 0, point = new THREE.Vector3();
+            [studyBounds.min.x, studyBounds.max.x].forEach(function(x) {
+              [studyBounds.min.y, studyBounds.max.y].forEach(function(y) {
+                [studyBounds.min.z, studyBounds.max.z].forEach(function(z) {
+                  point.set(x, y, z).project(camera);
+                  var px = (point.x + 1) * W / 2, py = (1 - point.y) * H / 2;
+                  left = Math.min(left, px); right = Math.max(right, px); top = Math.min(top, py); bottom = Math.max(bottom, py);
+                });
+              });
+            });
+            var visibleBottom = H - studyPanel.getBoundingClientRect().height - 20;
+            var cropHeight = Math.min(Math.max(100, visibleBottom - 80), W / 1.5, Math.max((right - left) / 1.5, bottom - top) * 1.4);
+            var cropWidth = cropHeight * 1.5;
+            var cropX = Math.max(0, Math.min(W - cropWidth, (left + right - cropWidth) / 2));
+            var cropY = Math.max(0, Math.min(H - cropHeight, (top + bottom - cropHeight) / 2));
+            var photo = document.createElement('canvas'); photo.width = 480; photo.height = 320;
+            var photoContext = photo.getContext('2d');
+            photoContext.drawImage(canvasEl, cropX * canvasEl.width / W, cropY * canvasEl.height / H,
+              cropWidth * canvasEl.width / W, cropHeight * canvasEl.height / H, 0, 0, photo.width, photo.height);
+            image = photo.toDataURL('image/jpeg', 0.72);
+            if (image.length >= 48000) image = photo.toDataURL('image/jpeg', 0.5);
+            if (image.length >= 48000) image = photo.toDataURL('image/jpeg', 0.35);
+            if (image.length >= 48000) image = null;
+          } catch (studyCaptureError) { image = null; }
+          var view = studyViews.find(function(item) { return item.id === studyPreset; });
+          var moment = {
+            kind: 'flight-study', id: studyRunId + ':' + motionNow, runId: studyRunId,
+            speciesId: species.id, speciesName: species.name, missionId: mission.id, missionName: mission.name,
+            elapsedS: missionElapsed, speedMph: raptor.speed * 2.237, heightM: Math.max(0, raptor.y - terrainHeightAt(raptor.x, raptor.z)),
+            poseLabel: raptor.landed || raptor.crashed ? __alloT('stem.raptorhunt.study_compare_resting', 'Resting') : raptor.diving ? __alloT('stem.raptorhunt.study_compare_diving', 'Diving') : __alloT('stem.raptorhunt.study_compare_flying', 'Flying'),
+            viewLabel: view ? view.label : __alloT('stem.raptorhunt.study_compare_orbit', 'Custom orbit'),
+            image: image, note: ''
+          };
+          studyRecordedIds = studyRecordedIds.concat([moment.id]); updateStudySaveControls();
+          setRH(function(cur) {
+            var records = Array.isArray(cur.flightStudyMoments) ? cur.flightStudyMoments : [];
+            if (records.length >= 2 || records.some(function(item) { return item && item.id === moment.id; })) return cur;
+            return Object.assign({}, cur, { flightStudyMoments: records.concat([moment]) });
+          });
+          repaintPausedFlight(false);
+          rhAnnounce(__alloT('stem.raptorhunt.study_compare_saved', 'Moment kept with simulation readings. Review kept moments below the flight.'));
+        }
+
+        function updateStudyCamera() {
+          if (!studyActive) return;
+          studyElevation = Math.max(0.08, Math.min(1.40, studyElevation));
+          raptorGroup.visible = true;
+          raptorGroup.updateMatrixWorld(true);
+          if (studyBoundsDirty) {
+            // Geometry bounds include both open and folded morph targets. Measure
+            // this frozen pose once so a perched bird receives a real close-up.
+            studyBounds.makeEmpty();
+            raptorGroup.traverseVisible(function(mesh) {
+              if (!mesh.isMesh || !mesh.geometry || !mesh.geometry.attributes.position) return;
+              var positions = mesh.geometry.attributes.position, morphs = mesh.geometry.morphAttributes.position || [];
+              for (var vertexIndex = 0; vertexIndex < positions.count; vertexIndex++) {
+                studyBaseVertex.fromBufferAttribute(positions, vertexIndex); studyVertex.copy(studyBaseVertex);
+                for (var morphIndex = 0; morphIndex < morphs.length; morphIndex++) {
+                  var weight = mesh.morphTargetInfluences && mesh.morphTargetInfluences[morphIndex];
+                  if (!weight) continue;
+                  studyMorphVertex.fromBufferAttribute(morphs[morphIndex], vertexIndex);
+                  if (!mesh.geometry.morphTargetsRelative) studyMorphVertex.sub(studyBaseVertex);
+                  studyVertex.addScaledVector(studyMorphVertex, weight);
+                }
+                studyBounds.expandByPoint(studyVertex.applyMatrix4(mesh.matrixWorld));
+              }
+            });
+            if (studyBounds.isEmpty()) studyBounds.setFromObject(raptorGroup);
+            studyBounds.getCenter(studyCenter); studyBounds.getSize(studySize); studyBoundsDirty = false;
+          }
+          var panelHeight = studyPanel.getBoundingClientRect().height || 200;
+          var availableHeight = Math.max(130, H - panelHeight - 110);
+          var radius = Math.max(studySize.x, studySize.y, studySize.z) * 0.57;
+          var distance = Math.max(2.2, radius / Math.tan(20 * Math.PI / 180) * Math.max(H / availableHeight, H / Math.max(220, W))) * studyDistance;
+          camera.position.set(studyCenter.x + Math.sin(studyAzimuth) * Math.cos(studyElevation) * distance,
+            studyCenter.y + Math.sin(studyElevation) * distance,
+            studyCenter.z - Math.cos(studyAzimuth) * Math.cos(studyElevation) * distance);
+          camera.position.y = Math.max(camera.position.y, terrainHeightAt(camera.position.x, camera.position.z) + 0.7);
+          camera.up.set(0, 1, 0); camera.lookAt(studyCenter); camera.fov = 40;
+          camera.setViewOffset(W, H, 0, (panelHeight - 60) / 2, W, H);
+          camera.updateProjectionMatrix(); camera.updateMatrixWorld(true);
+          skyDome.position.copy(camera.position);
+          sunSprite.position.copy(camera.position).addScaledVector(sunDir, sunDistance);
+          moonSprite.position.copy(camera.position).addScaledVector(moonDir, moonDistance);
+          studyFill.position.copy(camera.position); studyFill.position.y += 3; studyFill.target.position.copy(studyCenter);
+          studyViews.forEach(function(view) { view.button.setAttribute('aria-pressed', String(studyPreset === view.id)); });
+        }
+        function enterStudy() {
+          if (disposed || missionOutcome !== 'active') return;
+          if (studyActive) { studyTitle.focus({ preventScroll: true }); return; }
+          studySavedCamera = { position: camera.position.clone(), quaternion: camera.quaternion.clone(), up: camera.up.clone(), fov: camera.fov,
+            view: camera.view ? Object.assign({}, camera.view) : null, visible: raptorGroup.visible };
+          setPaused(true, false);
+          studyActive = true; studyBoundsDirty = true; studyFill.visible = true; studyDistance = 1; studyZoom.value = '1'; studyPreset = 'side';
+          studyAzimuth = raptor.yaw + Math.PI / 2; studyElevation = 0.20;
+          hudParent2.dataset.raptorStudy = 'true'; canvasEl.style.cursor = 'grab';
+          updateStudySaveControls();
+          var grounded = raptor.landed || raptor.crashed;
+          studyPrompt.textContent = grounded ? __alloT('stem.raptorhunt.study_rest_question', 'What changes when a bird lands?') : raptor.diving ? __alloT('stem.raptorhunt.study_dive_question', 'Where did the wing area go?') : __alloT('stem.raptorhunt.study_glide_question', 'How are the wings and tail arranged?');
+          studyCopy.textContent = grounded ? __alloT('stem.raptorhunt.study_rest_copy', 'Inspect the wing position, tail, and feet. Resume and take off, then freeze another moment to compare.') : raptor.diving ? __alloT('stem.raptorhunt.study_dive_copy', 'Compare the swept wings with your last glide. Predict what will happen to speed and height when you pull up, then resume to test it.') : __alloT('stem.raptorhunt.study_glide_copy', 'Look from above for wing shape and from behind for the tail. Predict how the pose will change during a turn or dive, then try it.');
+          studyReadings.textContent = __alloT('stem.raptorhunt.study_simulation_reading', 'Simulation snapshot') + ': ' + Math.round(raptor.speed * 2.237) + ' mph · ' + Math.round(Math.max(0, raptor.y - terrainHeightAt(raptor.x, raptor.z))) + ' m ' + __alloT('stem.raptorhunt.study_above_ground', 'above ground');
+          publishControlState(); repaintPausedFlight(true);
+          window.setTimeout(function() { if (!disposed && studyActive) { repaintPausedFlight(false); studyTitle.focus({ preventScroll: true }); } }, 0);
+          rhAnnounce(__alloT('stem.raptorhunt.study_announced', '3D study open. Flight is frozen. Choose a view, drag to orbit, or use the arrow keys on the bird view.'));
+        }
+        function leaveStudy() {
+          if (!studyActive) return;
+          studyActive = false; studyFill.visible = false; clearHeldInputs();
+          delete hudParent2.dataset.raptorStudy; canvasEl.style.cursor = 'crosshair';
+          if (studySavedCamera) {
+            camera.position.copy(studySavedCamera.position); camera.quaternion.copy(studySavedCamera.quaternion); camera.up.copy(studySavedCamera.up);
+            camera.fov = studySavedCamera.fov; camera.view = studySavedCamera.view; camera.updateProjectionMatrix(); camera.updateMatrixWorld(true);
+            raptorGroup.visible = studySavedCamera.visible; studySavedCamera = null;
+          }
+          skyDome.position.copy(camera.position);
+          sunSprite.position.copy(camera.position).addScaledVector(sunDir, sunDistance);
+          moonSprite.position.copy(camera.position).addScaledVector(moonDir, moonDistance);
+          updateTargetFeedback(motionNow, false);
+        }
 
         var flightMarker = document.createElement('div');
         flightMarker.className = 'rh-flight-marker';
@@ -16868,7 +17612,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           return { left: left - screenX + 24, top: top - screenY + 24, width: width };
         }
         canvasEl._rhCommand = function(action, value) {
+          if (action === 'study') { enterStudy(); return; }
           if (disposed) return;
+          if (action === 'studyRecords') {
+            studyRecordedIds = value && Array.isArray(value.ids) ? value.ids.slice(0, 2) : [];
+            updateStudySaveControls(); repaintPausedFlight(false); return;
+          }
+          if (action === 'pauseForNotes') { if (!simPaused) setPaused(true, false); return; }
           if (action === 'hold' && value) {
             var buttonSource = 'button:' + value.key;
             if (value.releaseAll) {
@@ -17025,6 +17775,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             tailLift: tail.rotation.x,tailYaw:tail.rotation.y,tailClosure:tail.morphTargetInfluences[0],
             tailPositionVersion:tailGeometry.attributes.position.version,tailMorphVersion:tailGeometry.morphAttributes.position[0].version,tailBandsCompiled:!!tail.material.userData.tailBandsCompiled,
             cameraPosition: camera.position.toArray(),
+            studyActive: studyActive,
+            studyPreset: studyPreset,
+            studyFillVisible: studyFill.visible,
             cameraQuaternion: camera.quaternion.toArray(),
             cameraAssistOffset: cameraAssistOffset.toArray(),
             terrainDetail: terrain.geometry.attributes.color.count,
@@ -17607,6 +18360,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         } catch (reducedMotionError) {}
         function onReducedMotionChange(event) {
           _rmFX = !!event.matches;
+          studyBoundsDirty = true;
           if (starsList) starsList.motion.value = _rmFX ? 0 : 1;
           if (_rmFX) {
             gazeTarget=null;gazeState.yaw=gazeState.pitch=0;headMesh.rotation.set(0,0,0);
@@ -17621,6 +18375,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             raptor.cameraRoll = 0;
             cameraTargetBlend = 0;
             cameraLateralLead = 0;
+            // Apply the preference to the return view as well as the study view.
+            if (studyActive && studySavedCamera) {
+              camera.position.copy(studySavedCamera.position);
+              camera.quaternion.copy(studySavedCamera.quaternion);
+            }
             // Rebuild orientation too: changing up alone leaves a paused view tilted.
             camera.getWorldDirection(cameraRollAxis);
             cameraRollAxis.add(camera.position);
@@ -17628,6 +18387,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             camera.lookAt(cameraRollAxis);
             // A paused frame has no FOV tick; remove motion widening while retaining acuity zoom.
             if (simPaused) updateFlightFov(0, 0, true);
+            if (studyActive && studySavedCamera) {
+              studySavedCamera.quaternion.copy(camera.quaternion);
+              studySavedCamera.up.copy(camera.up);
+              studySavedCamera.fov = camera.fov;
+            }
             if (diveVig) diveVig.style.opacity = '0';
             rainSystem.visible = false;
             snowSystem.visible = false;
@@ -19511,7 +20275,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             flightOverlayVisibility.trail = flightTrail.visible;
             flightOverlayVisibility.vortices = wingtipVortices.visible;
           }
-          var scenicView = canvasEl.parentElement && canvasEl.parentElement.dataset.raptorScenicView === 'true';
+          var scenicView = studyActive || (canvasEl.parentElement && canvasEl.parentElement.dataset.raptorScenicView === 'true');
           speedLines.visible = !scenicView && !_rmFX && !raptor.landed && !raptor.crashed;
           airflowLines.visible = !scenicView && !_rmFX && flightOverlayVisibility.airflow;
           flightTrail.visible = !scenicView && !_rmFX && flightOverlayVisibility.trail;
@@ -19534,6 +20298,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // running physics, prey movement, timers, or starting another frame chain.
         function repaintPausedFlight(refreshShadows) {
           if (disposed || !simPaused) return;
+          if (studyActive) updateStudyCamera();
           if (refreshShadows && sun.castShadow) renderer.shadowMap.needsUpdate = true;
           // A catch may remove the tracked prey immediately before the player pauses.
           if (lastTrackerTargetInfo && preyMeshes.indexOf(lastTrackerTargetInfo.prey) === -1) lastTrackerTargetInfo = null;
@@ -19596,6 +20361,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           delete hudParent.dataset.raptorFlightTrail;
           delete hudParent.dataset.raptorTrailResult;
           delete hudParent.dataset.raptorPerched;
+          delete hudParent.dataset.raptorStudy;
+          studyClose.onclick = studyResume.onclick = pauseStudy.onclick = studyZoom.oninput = null;
+          studyKeep.onclick = studyReview.onclick = null;
+          if (studyReviewFocusTimer) window.clearTimeout(studyReviewFocusTimer);
+          document.removeEventListener('fullscreenchange', onStudyFullscreenExit);
+          document.removeEventListener('webkitfullscreenchange', onStudyFullscreenExit);
+          studyHeader.onkeydown = studyPanel.onkeydown = null;
+          studyViews.forEach(function(view) { view.button.onclick = null; });
+          scene.remove(studyFill); scene.remove(studyFill.target);
           pauseResume.onclick=pauseView.onclick=pauseZoom.onclick=pauseCard.onkeydown=null;
           if(practiceButton)practiceButton.onclick=null;
           if(practiceRetry)practiceRetry.onclick=null;
@@ -19603,6 +20377,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if(perchButton)perchButton.onclick=null;
 
           [
+            studyHeader, studyPanel,
             pauseOverlay,
             flightMarker,
             missionPanel,
@@ -35629,6 +36404,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               'aria-label': __alloT('stem.raptorhunt.go_to_hub', 'Go to Hub'),
               className: 'rh-nav-home px-3 py-1.5 rounded-lg text-xs font-bold ' + (atHub ? 'bg-amber-700 text-white' : 'transition-colors bg-slate-800 text-amber-200 hover:bg-slate-700 active:scale-[0.97]')
             }, __alloT('stem.raptorhunt.hub', '🏠 Hub')),
+            activeInvestigation && h('button', {
+              type: 'button', className: 'rh-inquiry-button', 'data-inquiry-shortcut': true,
+              onClick: function(event) { setRH({ inquiryExpanded: true }); focusInquiry(event, '#rh-journal-title'); }
+            }, __alloT('stem.raptorhunt.inquiry_notebook_shortcut', 'Field notebook')),
             activeCategory && h('span', { className: 'text-xs text-slate-400' }, '/'),
             activeCategory && (activeSection === 'hub'
               ? h('span', { className: 'rh-nav-breadcrumb px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800/60 text-amber-200', 'aria-current': 'page' }, activeCategory.icon + ' ' + activeCategory.label)
@@ -35714,6 +36493,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             )
           )
         ),
+        (activeSection !== 'hub' || activeCategoryMeta) && renderInquiryJournal(),
         // Panel
         h('div', { id: 'rh-panel-' + activeSection, role: 'tabpanel', 'aria-labelledby': activeSection === 'hub' ? (activeCategoryMeta ? 'rh-collection-title-' + activeCategoryMeta.id : 'rh-command-title') : (activeSectionMeta ? 'rh-active-section-title' : activeSection) },
           activeSection === 'hub' && (activeCategoryMeta ? renderCategoryLanding(activeCategoryMeta) : renderHub()),

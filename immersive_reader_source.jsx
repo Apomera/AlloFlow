@@ -447,7 +447,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
   }, [onGenerateSyllables, onGeneratePOS, syllablesReady, posReady, isGeneratingSyllables, isGeneratingPOS, toggleSetting]);
   return (
     <div data-immersive-toolbar className="sticky top-0 z-[220] p-3 bg-white border-b border-slate-200 shadow-sm shrink-0">
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-bold text-slate-800 text-sm">{safeT(t, 'immersive.title', 'Immersive Reader')}</h2>
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => setSettingsExpanded(value => !value)} aria-expanded={settingsExpanded} aria-controls="immersive-reader-settings" className="min-h-11 px-3 rounded-full bg-indigo-50 text-indigo-800 text-xs font-bold"><Settings2 size={14} className="inline me-1"/>{safeT(t, 'common.settings', 'Settings')}</button>
@@ -743,6 +743,12 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
 // Text starts at the bottom, scrolls up, tilts away from the reader as it
 // travels into the distance. Dramatic long-form reading mode.
 // ============================================================================
+// Read storage at the write boundary so remounts and StrictMode replay do not
+// rewrite the same preference. No in-memory copy can outlive another writer.
+function writeCrawlPreference(key, value) {
+    try { if (localStorage.getItem(key) !== value) localStorage.setItem(key, value); } catch (_) {}
+}
+
 const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     const { t } = useContext(LanguageContext);
     const dialogRef = useOverlayDialogFocus(isOpen);
@@ -752,13 +758,13 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     const [speedPxPerSec, setSpeedPxPerSec] = useState(() => {
         try { const v = parseInt(localStorage.getItem('allo_crawl_speed'), 10); return (v >= 10 && v <= 140) ? v : 70; } catch { return 70; }
     });
-    useEffect(() => { try { localStorage.setItem('allo_crawl_speed', String(speedPxPerSec)); } catch {} }, [speedPxPerSec]);
+    useEffect(() => { writeCrawlPreference('allo_crawl_speed', String(speedPxPerSec)); }, [speedPxPerSec]);
     const [isPlaying, setIsPlaying] = useState(() => !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
     const [translateY, setTranslateY] = useState(0); // negative = scrolled up — used for render only
     const [palette, setPalette] = useState(() => {
         try { const v = localStorage.getItem('allo_crawl_palette'); return ['gold', 'teal', 'paper'].includes(v) ? v : 'gold'; } catch { return 'gold'; }
     }); // 'gold' | 'teal' | 'paper'
-    useEffect(() => { try { localStorage.setItem('allo_crawl_palette', palette); } catch {} }, [palette]);
+    useEffect(() => { writeCrawlPreference('allo_crawl_palette', palette); }, [palette]);
     const [finished, setFinished] = useState(false);
     // Ambient pad defaults OFF — clicking "Cinematic Crawl" counts as a user
     // gesture, so the AudioContext would otherwise start playing immediately and
@@ -767,7 +773,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     const [ambientOn, setAmbientOn] = useState(() => {
         try { return localStorage.getItem('allo_crawl_ambient') === '1'; } catch { return false; }
     });
-    useEffect(() => { try { localStorage.setItem('allo_crawl_ambient', ambientOn ? '1' : '0'); } catch {} }, [ambientOn]);
+    useEffect(() => { writeCrawlPreference('allo_crawl_ambient', ambientOn ? '1' : '0'); }, [ambientOn]);
     const [progressPct, setProgressPct] = useState(0);
     const palettes = {
         gold: { bg: '#000000', text: '#fde047', accent: '#facc15' },
@@ -2248,13 +2254,13 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
 
     const hasStudentTake = studentTakeTick >= 0 && (() => { try { const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.studentCurrent; return !!(st && st.has(sentences[sentenceIdx])); } catch (e) { return false; } })();
     return (
-        <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="karaoke-reader-dialog-title" tabIndex={-1} className="fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200 motion-reduce:animate-none" style={{ backgroundColor: c.bg, color: c.ink }}>
-            <div className="p-4 flex justify-between items-center gap-3 flex-wrap">
-                <div className="flex items-center gap-3">
+        <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="karaoke-reader-dialog-title" tabIndex={-1} className="fixed inset-0 z-[300] overflow-y-auto flex flex-col animate-in fade-in duration-200 motion-reduce:animate-none" style={{ backgroundColor: c.bg, color: c.ink, overflowWrap: 'anywhere' }}>
+            <div className="shrink-0 p-4 flex justify-between items-center gap-3 flex-wrap">
+                <div className="flex min-w-0 items-center gap-3">
                     <button type="button" onClick={() => { hardStop(); onClose(); }} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.ink }}>
                         <ArrowLeft size={22} />
                     </button>
-                    <div className="flex flex-col">
+                    <div className="flex min-w-0 flex-col">
                         <h2 id="karaoke-reader-dialog-title" className="font-bold text-base">{safeT(t, 'immersive.focus_reader', 'Focus Reader')}</h2>
                         <span className="text-xs" style={{ color: c.dim }}>Sentence {sentenceIdx + 1} / {sentences.length} · read-along sweep{(() => { try { const _st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current; return _st && _st.sourceOf(sentences[sentenceIdx]) === 'human-teacher'; } catch (e) { return false; } })() ? ' · \uD83C\uDFA4 your voice' : ''}</span>
                         {playbackFallbackNotice ? (
@@ -2266,7 +2272,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
                 </div>
                 <div className="flex items-center gap-4 flex-wrap text-xs font-bold">
                     {isTeacher && !playbackOnly && (
-                        <div className="flex items-center gap-2" role="group" aria-label={safeT(t, 'immersive.teacher_audio_tools', 'Read-aloud tools')}>
+                        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2" role="group" aria-label={safeT(t, 'immersive.teacher_audio_tools', 'Read-aloud tools')}>
                             <label className="flex items-center gap-1.5 cursor-pointer" title={safeT(t, 'immersive.save_readaloud_tip', 'Save each sentence shortly after it starts playing into this resource, so students hear your vetted audio instantly on any device.')}>
                                 <input type="checkbox" checked={captureOn} onChange={e => setCaptureOn(e.target.checked)} aria-label={safeT(t, "immersive.save_readaloud", "Save read-aloud as I listen")} />
                                 <span>{'💾'} {safeT(t, 'immersive.save_readaloud', 'Save read-aloud')}</span>
@@ -2329,7 +2335,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
                         </div>
                     )}
                     {!isTeacher && !playbackOnly && (
-                        <div className="flex items-center gap-2" role="group" aria-label={safeT(t, 'immersive.student_reading_tools', 'My reading')}>
+                        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2" role="group" aria-label={safeT(t, 'immersive.student_reading_tools', 'My reading')}>
                             <button type="button"
                                 onClick={recordCurrent}
                                 title={safeT(t, 'immersive.record_reading_tip', 'Record yourself reading this sentence, then hear it back. The teacher\u2019s read-along stays your reference.')}
@@ -2357,7 +2363,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
                         flips on the currently-playing sentence); browser TTS
                         picks it up on the next sentence since speechSynthesis
                         rate is locked once speak() fires. */}
-                    <div className="flex items-center gap-1" role="group" aria-label={t('immersive.playback_speed_aria') || 'Playback speed'}>
+                    <div className="flex min-w-0 max-w-full flex-wrap items-center gap-1" role="group" aria-label={t('immersive.playback_speed_aria') || 'Playback speed'}>
                         <span style={{ color: c.dim }}>SPEED</span>
                         {[0.75, 1, 1.25, 1.5].map(rate => (
                             <button type="button"
@@ -2409,7 +2415,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
                     </button>
                 </div>
             </div>
-            <div className="flex-1 overflow-auto px-6 md:px-16 py-10" style={{ scrollBehavior: reducedMotion ? 'auto' : 'smooth' }}>
+            <div className="flex-1 min-h-48 min-w-0 overflow-auto px-6 md:px-16 py-10" style={{ scrollBehavior: reducedMotion ? 'auto' : 'smooth' }}>
                 <div className="max-w-3xl mx-auto" style={{ fontSize: 'clamp(1.5rem, 2.4vw, 2.25rem)', lineHeight: 1.7, fontFamily: 'Georgia, "Iowan Old Style", "Times New Roman", serif' }}>
                     {!sentences.length && <p role="status">{safeT(t, "immersive.no_text", "No text to read. Close the reader and choose a passage.")}</p>}
                     {sentences.map((s, i) => (

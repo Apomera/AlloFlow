@@ -6,7 +6,8 @@ const source = fs.readFileSync('phase_n_misc_helpers_source.jsx', 'utf8');
 describe('Shared formatted-text link accessibility', () => {
   it('keeps both top-level and emphasized Markdown links as ordinary links', () => {
     expect(source.match(/<a\r?\n/g)).toHaveLength(2);
-    expect(source.match(/target="_blank"/g)).toHaveLength(2);
+    expect(source.match(/target=\{\/\^#allo-doc-/g)).toHaveLength(2);
+    expect(source.match(/\? undefined : "_blank"\}/g)).toHaveLength(2);
     expect(source.match(/rel="noopener noreferrer"/g)).toHaveLength(2);
     expect(source.match(/title=\{match\[2\]\}/g)).toHaveLength(2);
     expect(source).not.toContain('role="dialog" aria-modal="true"');
