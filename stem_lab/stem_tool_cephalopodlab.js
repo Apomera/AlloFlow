@@ -11441,9 +11441,18 @@ function createCLHuntAnimal(T, species) {
   if(squid||cuttle||bobtail)for(var t=0;t<2;t++)limb('tentacle',t,t?1:-1,cuttle?1.6:1.85,0.032);
   if(vampire)for(var vt=0;vt<2;vt++)limb('filament',vt,vt?1:-1,2.7,0.009);
   // Suckers are instanced, not hundreds of individual draw calls.
-  var suckerCount=nautilus?0:8*12*2+(tentacles.length&& !vampire?2*6*2:0);
+  var suckerCount=nautilus?0:8*12*2+(tentacles.length&& !vampire?(squid?2*4*2:2*6*2):0);
   var suckers=null, suckerDummy=new T.Object3D();
-  if(suckerCount){var sg=new T.TorusGeometry(0.038,0.012,5,10);sg.rotateX(Math.PI/2);suckers=new T.InstancedMesh(sg,underside,suckerCount);suckers.name='cl-suckers';suckers.frustumCulled=false;root.add(suckers);}
+  if(suckerCount){
+    var sg;
+    if(squid){
+      // One opaque cupped surface, opening along local +Y. The recessed floor and rolled rim
+      // replace interlocking torus rings without adding meshes, textures or transparent layers.
+      sg=new T.LatheGeometry([new T.Vector2(0,-0.06),new T.Vector2(0.57,-0.06),new T.Vector2(1,0.26),new T.Vector2(0.90,0.34),new T.Vector2(0.79,0.25),new T.Vector2(0.48,0.06),new T.Vector2(0,0.025)],10);
+      sg.computeVertexNormals();sg.computeBoundingBox();sg.computeBoundingSphere();
+    }else{sg=new T.TorusGeometry(0.038,0.012,5,10);sg.rotateX(Math.PI/2);}
+    suckers=new T.InstancedMesh(sg,underside,suckerCount);suckers.name='cl-suckers';suckers.frustumCulled=false;root.add(suckers);
+  }
   function makeFin(side,ear) {
     // Squid membranes bend across their span instead of hinging as a two-vertex strip.
     var seg=28,span=squid?5:1,stride=span+1,positions=new Float32Array((seg+1)*stride*3),idx=[];
@@ -11481,6 +11490,7 @@ function createCLHuntAnimal(T, species) {
   var tangent=new T.Vector3(),normal=new T.Vector3(),binormal=new T.Vector3(),up=new T.Vector3(0,1,0);
   var squidJetBlend=0,squidMantlePhase=0,squidFinPhase=0;
   var strikeTubeSide=new T.Vector3(-1,0,0);
+  var suckerOral=new T.Vector3(),suckerAcross=new T.Vector3(),suckerSurface=new T.Vector3();
   function update(time,dt,state){
     if(squidSurfaceFrame){root.updateWorldMatrix(true,false);squidSurfaceFrame.value.copy(root.matrixWorld).invert();}
     var motion=state.reducedMotion?0:1,jet=state.jet?1:0,strike=state.reducedMotion?0:(state.strike||0);
@@ -11579,9 +11589,43 @@ function createCLHuntAnimal(T, species) {
         normal.crossVectors(binormal,tangent).normalize();
         var radius=l.radius*scale*Math.pow(1-t2,squid&&!isTent?0.95:0.8)+(squid?0.006:0.007)*scale;
         if(isTent)radius+=Math.sin(Math.max(0,(t2-0.76)/0.24)*Math.PI)*0.050*scale;
-        for(var k=0;k<=sides;k++){var v=(j2*(sides+1)+k)*3,theta=k/sides*Math.PI*2,nx=normal.x*Math.cos(theta)+binormal.x*Math.sin(theta),ny=normal.y*Math.cos(theta)+binormal.y*Math.sin(theta),nz=normal.z*Math.cos(theta)+binormal.z*Math.sin(theta);pos[v]=center.x+nx*radius;pos[v+1]=center.y+ny*radius;pos[v+2]=center.z+nz*radius;norm[v]=nx;norm[v+1]=ny;norm[v+2]=nz;}
-        if(suckers&&((l.kind==='arm'&&j2>=3&&j2<15)||(isTent&&j2>=14&&j2<20)))for(var row=-1;row<=1;row+=2){
-          suckerDummy.position.copy(center).addScaledVector(normal,-radius*0.88).addScaledVector(binormal,row*radius*0.45);suckerDummy.quaternion.setFromUnitVectors(up,normal);var sz=(l.kind==='arm'?1-t2*0.65:0.70)*scale;suckerDummy.scale.setScalar(sz);suckerDummy.updateMatrix();suckers.setMatrixAt(si++,suckerDummy.matrix);
+        var sectionWidth=radius,sectionDepth=radius;
+        if(squid&&isTent){
+          // Keep the stalk circular and its centerline/contact point unchanged; only the distal club flattens.
+          var clubBulge=Math.sin(Math.max(0,(t2-0.76)/0.24)*Math.PI);
+          sectionWidth=radius*(1+clubBulge*0.32);sectionDepth=radius*(1-clubBulge*0.32);
+        }
+        for(var k=0;k<=sides;k++){var v=(j2*(sides+1)+k)*3,theta=k/sides*Math.PI*2,nx=normal.x*Math.cos(theta)+binormal.x*Math.sin(theta),ny=normal.y*Math.cos(theta)+binormal.y*Math.sin(theta),nz=normal.z*Math.cos(theta)+binormal.z*Math.sin(theta);
+          if(squid&&isTent){
+            pos[v]=center.x+normal.x*Math.cos(theta)*sectionDepth+binormal.x*Math.sin(theta)*sectionWidth;pos[v+1]=center.y+normal.y*Math.cos(theta)*sectionDepth+binormal.y*Math.sin(theta)*sectionWidth;pos[v+2]=center.z+normal.z*Math.cos(theta)*sectionDepth+binormal.z*Math.sin(theta)*sectionWidth;
+            suckerSurface.copy(normal).multiplyScalar(Math.cos(theta)/sectionDepth).addScaledVector(binormal,Math.sin(theta)/sectionWidth).normalize();norm[v]=suckerSurface.x;norm[v+1]=suckerSurface.y;norm[v+2]=suckerSurface.z;
+          }else{pos[v]=center.x+nx*radius;pos[v+1]=center.y+ny*radius;pos[v+2]=center.z+nz*radius;norm[v]=nx;norm[v+1]=ny;norm[v+2]=nz;}
+        }
+        if(suckers&&((l.kind==='arm'&&j2>=3&&j2<15)||(isTent&&j2>=(squid?16:14)&&j2<20)))for(var row=-1;row<=1;row+=2){
+          if(squid){
+            // Arms face into the oral crown, not a shared global underside. Clubs retain their
+            // transported oral frame so a vertical or backward strike cannot flip their cups.
+            if(isTent)suckerOral.copy(normal);
+            else{
+              suckerOral.set(-center.x,-0.035*scale-center.y,0).addScaledVector(tangent,center.x*tangent.x+(center.y+0.035*scale)*tangent.y);
+              if(suckerOral.lengthSq()<0.000001)suckerOral.set(-Math.cos(l.angle),-Math.sin(l.angle),0).addScaledVector(tangent,Math.cos(l.angle)*tangent.x+Math.sin(l.angle)*tangent.y);
+              suckerOral.normalize();
+            }
+            suckerAcross.crossVectors(tangent,suckerOral).normalize();
+            var rowOffset=row*0.42,rowDepth=Math.sqrt(1-rowOffset*rowOffset);
+            var ringSpacing=Math.min(center.distanceTo(l.points[j2-1]),center.distanceTo(l.points[j2+1]));
+            var cupRadius=Math.min(sectionWidth*0.34,ringSpacing*0.39);
+            suckerSurface.copy(suckerOral).multiplyScalar(rowDepth/sectionDepth).addScaledVector(suckerAcross,rowOffset/sectionWidth).normalize();
+            // Anchor to the actual eight-sided ring edge, not the ideal ellipse outside its facets.
+            // Retain the smooth opening normal and radius; only the basal attachment point moves.
+            suckerDummy.position.copy(suckerOral).multiplyScalar(rowDepth*sectionDepth).addScaledVector(suckerAcross,rowOffset*sectionWidth);
+            var cupRingAngle=Math.atan2(suckerDummy.position.dot(binormal)/sectionWidth,suckerDummy.position.dot(normal)/sectionDepth),cupRingStep=Math.PI*2/sides;
+            cupRingAngle-=Math.floor(cupRingAngle/cupRingStep)*cupRingStep;
+            var cupFacetScale=Math.cos(cupRingStep/2)/Math.cos(cupRingAngle-cupRingStep/2);
+            suckerDummy.position.multiplyScalar(cupFacetScale).add(center).addScaledVector(suckerSurface,cupRadius*0.06);
+            suckerDummy.quaternion.setFromUnitVectors(up,suckerSurface);suckerDummy.scale.setScalar(cupRadius);
+          }else{suckerDummy.position.copy(center).addScaledVector(normal,-radius*0.88).addScaledVector(binormal,row*radius*0.45);suckerDummy.quaternion.setFromUnitVectors(up,normal);var sz=(l.kind==='arm'?1-t2*0.65:0.70)*scale;suckerDummy.scale.setScalar(sz);}
+          suckerDummy.updateMatrix();suckers.setMatrixAt(si++,suckerDummy.matrix);
         }
       }
       l.mesh.geometry.attributes.position.needsUpdate=true;l.mesh.geometry.attributes.normal.needsUpdate=true;
@@ -11657,6 +11701,17 @@ function createCLHuntFish(T,index){
   var tail=new T.Mesh(tailGeometry,material);tail.name='cl-fish-tail';tail.position.z=-0.185;fish.add(tail);
   fish.userData.tail=tail;fish.userData.swimPhase=index*1.7;fish.rotation.order='YXZ';return fish;
 }
+
+      // Display-only propulsion feedback; movement, energy and recovery remain simulation rules.
+      function clHuntPropulsionText(state, observation) {
+        if(state.paused)return 'Paused';
+        var p=state.propulsionState||{},waterborne=!!p.swimming||p.aboveFloor>0.2;
+        var mode=p.jetting?(p.finPowered?'Fin boost':'Jetting'):p.vertical>0.00001?'Rising':p.vertical<-0.00001?'Diving':p.forward?waterborne?'Swimming':'Crawling':p.turn?'Turning':p.aboveFloor>0.2?'Hovering':'Resting';
+        if(p.recovering)mode+=' · Jet recovering '+Math.floor(Math.max(0,Math.min(24,Number(state.stamina)||0)))+'/24 stamina';
+        if(observation)return mode+' · Field study · energy conserved';
+        var rate=Number.isFinite(state.hungerRate)?Math.max(0,state.hungerRate):1;
+        return mode+' · '+rate.toFixed(1)+' energy/s';
+      }
 
       function initHuntSim3D(canvasEl) {
         var gameNow=0, disposed=false, pendingTasks=[], lastHudAt=-1000;
@@ -13527,7 +13582,7 @@ function createCLHuntFish(T,index){
         hud.setAttribute('aria-label', 'Hunter Sim status: health, stamina, hunger, camouflage, score');
         canvasEl.parentElement.appendChild(hud);
         hud.style.width='222px';hud.style.minWidth='0';hud.style.fontFamily='system-ui,sans-serif';hud.style.borderColor='#497985';
-        hud.innerHTML='<div style="display:flex;justify-content:space-between;gap:8px;font-weight:700"><span data-hud="species"></span><span data-hud="phase"></span></div><div data-hud="depth" data-detail data-sub style="font-size:11px;color:#c5dcde;margin:5px 0"></div><div style="display:flex;gap:10px;flex-wrap:wrap"><span>HEALTH <b data-hud="health"></b></span><span>ENERGY <b data-hud="energy"></b></span><span>STAMINA <b data-hud="stamina"></b></span></div><div style="display:flex;gap:12px;flex-wrap:wrap"><span>CAMO <b data-hud="camo"></b></span><span>SCORE <b data-hud="score"></b></span><span>TIME <b data-hud="time"></b></span></div><div data-hud="substrate" data-detail data-sub style="color:#c3ded4;font-size:11px"></div><div data-hud="burn" data-detail data-sub style="font-size:11px"></div><div data-hud="ink" data-sub style="color:#dbcafc;font-size:11px"></div><div data-hud="status" data-sub style="color:#ffe6ab;font-size:12px;line-height:1.4"></div>';
+        hud.innerHTML='<div style="display:flex;justify-content:space-between;gap:8px;font-weight:700"><span data-hud="species"></span><span data-hud="phase"></span></div><div data-hud="depth" data-detail data-sub style="font-size:11px;color:#c5dcde;margin:5px 0"></div><div style="display:flex;gap:10px;flex-wrap:wrap"><span>HEALTH <b data-hud="health"></b></span><span>ENERGY <b data-hud="energy"></b></span><span>STAMINA <b data-hud="stamina"></b></span></div><div style="display:flex;gap:12px;flex-wrap:wrap"><span>CAMO <b data-hud="camo"></b></span><span>SCORE <b data-hud="score"></b></span><span>TIME <b data-hud="time"></b></span></div><div data-hud="substrate" data-detail data-sub style="color:#c3ded4;font-size:11px"></div><div data-hud="burn" data-sub style="font-size:11px;overflow-wrap:anywhere"></div><div data-hud="ink" data-sub style="color:#dbcafc;font-size:11px"></div><div data-hud="status" data-sub style="color:#ffe6ab;font-size:12px;line-height:1.4"></div>';
         var forageRow=document.createElement('div');forageRow.hidden=true;
         var forageActivity=document.createElement('div');forageActivity.setAttribute('data-hud','activity');forageActivity.style.cssText='color:#baf3d6;font-size:12px;margin-top:5px';forageRow.appendChild(forageActivity);
         var forageProgress=document.createElement('progress');forageProgress.max=1;forageProgress.value=0;forageProgress.setAttribute('aria-label','Foraging progress');forageProgress.style.cssText='width:100%;height:7px;accent-color:#80e0b2';forageRow.appendChild(forageProgress);hud.appendChild(forageRow);
@@ -14372,6 +14427,7 @@ function createCLHuntFish(T,index){
             var vertInput = (keys.KeyQ ? 1 : 0) - (keys.KeyZ ? 1 : 0);
             if (vertInput !== 0) gameState.lastInputAt = now;
             var vertSpeed = isDeepSpecies(species.id) ? 4 : 2.5;
+            var propulsionYBefore=gameState.verticalY;
             gameState.verticalY = (gameState.verticalY || 0.55) + vertInput * vertSpeed * dt;
             // Soft clamp by depth limits
             var bottomY=terrainHeight(octopus.position.x,octopus.position.z)+FLOOR_REST_Y;
@@ -14510,6 +14566,8 @@ function createCLHuntFish(T,index){
             gameState.hungerRate = hungerRate;
             gameState.isJetting = isJetting;
             gameState.isMovingOnFloor = isMoving;
+            // Use the effective depth change after clamping, never an unfulfilled rise/dive key.
+            gameState.propulsionState={jetting:isJetting,finPowered:species.specialAbility==='finPropulsion',swimming:capabilities.swimming,forward:moveFwd,turn:turn,vertical:vertInput>0?Math.max(0,gameState.verticalY-propulsionYBefore):vertInput<0?Math.min(0,gameState.verticalY-propulsionYBefore):0,aboveFloor:gameState.verticalY-terrainHeight(octopus.position.x,octopus.position.z)-FLOOR_REST_Y,recovering:!!keys.Space&&moveFwd>0&&!!gameState.jetExhausted};
             gameState.hunger = Math.max(0, gameState.hunger - (observation?0:hungerRate) * dt);
             if (isJetting) gameState.runStats.jetMs += dt * 1000;
             gameState.runStats.caloriesBurned += hungerRate * dt;
@@ -15974,7 +16032,7 @@ function createCLHuntFish(T,index){
             hudText('energy',gameState.hunger.toFixed(0));hudText('stamina',gameState.stamina.toFixed(0));
             hudText('camo',Math.round(gameState.camoEff*100)+'%');hudText('score',String(gameState.score));hudText('time',Math.floor(now/1000)+'s');
             hudText('substrate',species.camoQualityMul === 0?'shell — no chromatophores, camo cannot rise':gameState.substrateContact<0.99?'off the bottom — nothing behind you to match':'on '+gameState.currentSubstrate.replace('_',' ')+' · '+(gameState.stationaryTime>0.5?'still':'moving'));
-            hudText('burn',gameState.paused?'Paused':observation?'Field study · energy conserved':(gameState.isJetting?'jetting ':gameState.isMovingOnFloor?'crawling ':'resting ')+(gameState.hungerRate||1).toFixed(1)+' energy/s'+(gameState.isJetting?' · 5× crawl movement cost':''));
+            hudText('burn',clHuntPropulsionText(gameState,observation));
             hudText('ink',capabilities.ink?'INK '+gameState.inkReserves+'/'+gameState.inkMaxReserves+(gameState.inkReserves===0?' · sac empty — no refill this dive':now<gameState.inkCooldownUntil?' · refilling siphon '+Math.ceil((gameState.inkCooldownUntil-now)/1000)+'s':''):'No ink · '+(capabilities.diet==='detritus'?'B: defensive display':speciesId==='nautilus'?'shell defense':'fin propulsion'));
             var status=[];
             if(gameState.pressureStrain===-1)status.push('PRESSURE BUILDING — Q to rise');else if(gameState.pressureStrain>0)status.push('CRUSHING PRESSURE — Q to rise');

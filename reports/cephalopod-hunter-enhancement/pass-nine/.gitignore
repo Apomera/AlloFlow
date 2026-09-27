@@ -1,0 +1,9 @@
+*.log
+*.json
+!validation-summary.json
+*.generated.cjs
+apply-*.cjs
+refine-*.cjs
+*-artifacts/
+initial-*.png
+*-initial.png

@@ -1,0 +1,241 @@
+{
+  "date": "2026-09-27",
+  "status": "complete",
+  "unit": {
+    "passed": 92,
+    "total": 92,
+    "files": 4,
+    "evidence": "unit-final.json",
+    "initialPassed": 91,
+    "coverage": "Seven new actual-rig checks, three strike-clock regressions, four canvas/focus contracts, and 78 fact-consistency cases including final-position floor feedback.",
+    "note": "Initial91 and final92 passed. One new regression followed a source-review finding; the isolated old-assignment probe reproduces two expected mismatches, not two more runner scenarios."
+  },
+  "browser": {
+    "distinctPassed": 10,
+    "workers": 1,
+    "retries": 0,
+    "runnerFailures": 0,
+    "runs": [
+      {
+        "file": "browser-features-initial.json",
+        "startTime": "2026-09-27T17:27:50.740Z",
+        "duration": 197567.886,
+        "expected": 7,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      {
+        "file": "browser-propulsion-final.json",
+        "startTime": "2026-09-27T17:34:05.691Z",
+        "duration": 64630.863,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      {
+        "file": "browser-regressions.json",
+        "startTime": "2026-09-27T17:35:26.213Z",
+        "duration": 117598.57299999999,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    ],
+    "coverage": [
+      "four new propulsion scenarios: movement and actual energy, held-jet recovery/resume/release, Dumbo fin cost, phone/larger-text/Observe/clamped depth",
+      "three existing directed-strike scenarios",
+      "existing squid jet easing and inspection freeze",
+      "existing low/balanced rendering and texture disposal",
+      "existing live crawl/jet energy budget comparison"
+    ],
+    "note": "Initial7 passed. A later display-only floor-sampling correction prompted another four propulsion cases; these and the three selected regressions passed on final source. The three directed-strike cases ran on the identical final rig before that HUD-only correction."
+  },
+  "visual": {
+    "errors": [],
+    "screenshots": [
+      "squid-profile.png",
+      "squid-phone.png",
+      "squid-arm-detail.png",
+      "squid-crown-front.png",
+      "squid-reaching-clubs.png"
+    ],
+    "details": [
+      {
+        "name": "squid-arm-detail",
+        "camera": [
+          1.25,
+          3.300191769558208,
+          2.15
+        ],
+        "target": [
+          0,
+          3.910191769558208,
+          0.9
+        ],
+        "suckerInstances": 208,
+        "suckerVertices": 77
+      },
+      {
+        "name": "squid-crown-front",
+        "camera": [
+          0.28,
+          3.980191769558208,
+          2.15
+        ],
+        "target": [
+          0,
+          3.915191769558208,
+          0.84
+        ],
+        "suckerInstances": 208,
+        "suckerVertices": 77
+      },
+      {
+        "name": "squid-reaching-clubs",
+        "camera": [
+          2.3,
+          3.395845529859125,
+          3.2
+        ],
+        "target": [
+          0.2,
+          4.115845529859125,
+          1.03
+        ],
+        "suckerInstances": 208,
+        "suckerVertices": 77
+      }
+    ],
+    "fixture": "Profile and phone use normal paused inspection. Close-ups only move the paused camera and hide overlays. The reaching-club view moves one actual fish school near the player, triggers normal T/E and pauses during wind-up. No animal geometry, material, lighting or rig pose override.",
+    "reviewed": true,
+    "additionalScreenshots": [
+      "propulsion-phone.png",
+      "dumbo-fin-boost.png"
+    ],
+    "additionalFixture": "Actual browser regression scenes. Phone uses larger text in Observe during held-jet recovery; Dumbo uses free mode during fin boost. No fabricated HUD text.",
+    "viewports": [
+      "1280x1100",
+      "390x844"
+    ],
+    "initialEvidence": "Initial close-ups exposed overlapping global-down torus rows; pre-change images remain locally ignored. The previous preview server had expired and was restarted before successful initial captures."
+  },
+  "geometry": {
+    "guards": 5,
+    "syntax": "passed",
+    "squidScenarios": 8,
+    "nonSquidParity": [
+      "commonOcto",
+      "cuttlefish",
+      "bobtailSquid",
+      "vampireSquid",
+      "nautilus"
+    ],
+    "centerlinesAndRing18": "unchanged",
+    "limbTopology": "21 rings by 9 seam vertices unchanged",
+    "suckerInstances": {
+      "before": 216,
+      "after": 208
+    },
+    "cupGeometry": {
+      "vertices": 77,
+      "triangles": 120,
+      "openingAxis": "+Y",
+      "baseY": -0.06
+    },
+    "meshCount": {
+      "before": 28,
+      "after": 28
+    },
+    "checks": [
+      "finite buffers and transforms",
+      "unit limb normals",
+      "inward arm openings",
+      "resource and buffer reuse",
+      "non-squid animated geometry parity",
+      "unchanged centerlines/contact",
+      "reduced-motion zero-delta freeze"
+    ]
+  },
+  "anchors": {
+    "exactAnchorGuard": "passed",
+    "syntax": "passed",
+    "poses": 7,
+    "attachments": 1456,
+    "maxBeforeGap": 0.005328715538889123,
+    "maxAfterGap": 1.443577488762618e-7,
+    "unchanged": [
+      "limb positions and normals",
+      "cup opening axes and sizes",
+      "208 instances",
+      "ring18 contact",
+      "non-squid cup transforms"
+    ]
+  },
+  "propulsionFormatter": {
+    "cases": 11,
+    "evidence": "propulsion-formatter-checks.log",
+    "rules": "Display-only: existing speed, stamina/hunger rules, and capture timing unchanged."
+  },
+  "resourceCost": {
+    "meshes": 28,
+    "suckerInstances": {
+      "before": 216,
+      "after": 208
+    },
+    "sharedCupVertices": {
+      "before": 66,
+      "after": 77
+    },
+    "sharedCupTriangles": {
+      "before": 100,
+      "after": 120
+    },
+    "note": "Same draw-call count and fixed owned buffers/materials; no frame-rate or physical-phone performance claim."
+  },
+  "sources": [
+    {
+      "title": "Hopkins Marine Station / NOAA Humboldt squid guide",
+      "url": "https://gillylab.stanford.edu/sites/g/files/sbiybj20896/files/media/file/squids4kidsdissectionguide_0.pdf"
+    },
+    {
+      "title": "Humboldt external anatomy",
+      "url": "https://gillylab.stanford.edu/sites/g/files/sbiybj20896/files/media/file/squids4kidsdgigasanatomy_0.pdf"
+    }
+  ],
+  "sourceReview": {
+    "finding": "HUD clearance originally reused the floor height sampled before rock collision changed X/Z.",
+    "fix": "Sample the current player X/Z for display clearance.",
+    "regressionEvidence": "floor-regression-before-fix.json",
+    "visualReview": "Root and independent visual review accepted the captures. Fine club attachment is difficult to judge from the reach angle; actual-facet tests verify the attachment."
+  },
+  "limitations": "Illustrative geometry, not an exact sucker/tooth count or calibrated anatomical reconstruction. Browser rendering is software-tested, not a physical-device performance measurement. Five rig captures precede the final HUD-only floor correction; geometry was unchanged.",
+  "mirrors": [
+    {
+      "path": "stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "873b14a09a83d38637e215ae933bf5c8c2cc0c43eddd4a6a82d4f1ba5525a28c"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "873b14a09a83d38637e215ae933bf5c8c2cc0c43eddd4a6a82d4f1ba5525a28c"
+    },
+    {
+      "path": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "873b14a09a83d38637e215ae933bf5c8c2cc0c43eddd4a6a82d4f1ba5525a28c"
+    },
+    {
+      "path": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "873b14a09a83d38637e215ae933bf5c8c2cc0c43eddd4a6a82d4f1ba5525a28c"
+    }
+  ],
+  "syntax": "passed",
+  "whitespace": "passed",
+  "mirrorRecovery": "A public-mirror copy and a later canonical edit encountered transient file-access errors. Ordinary retries succeeded; all four hashes were verified before final tests.",
+  "deployed": false,
+  "commit": {
+    "status": "ready",
+    "note": "Scoped source, focused tests and pass-nine evidence only; normal repository hooks."
+  }
+}

@@ -216,7 +216,7 @@ test.describe('Cephalopod Lab — Hunter Sim on real WebGL', () => {
     const crawlDrop = crawlStart! - crawlEnd!;
 
     // The row has to name the crawl state and its rate while it happens.
-    expect(crawlHud).toMatch(/crawling [\d.]+ energy\/s/);
+    expect(crawlHud).toMatch(/Crawling · 1\.6 energy\/s/);
 
     // Let stamina come back before the jet leg.
     await page.waitForTimeout(6000);
@@ -234,8 +234,8 @@ test.describe('Cephalopod Lab — Hunter Sim on real WebGL', () => {
     const jetDrop = jetStart! - jetEnd!;
 
     // Sampled 600ms in, while stamina certainly still has ~2.2s of jet in it.
-    expect(jetHud).toMatch(/jetting [\d.]+ energy\/s/);
-    expect(jetHud).toContain('5× crawl');
+    // The total is basal 1.0 + fivefold locomotion (5 × 0.6), not 5 × total crawl cost.
+    expect(jetHud).toMatch(/Jetting · 4\.0 energy\/s/);
 
     // Stamina caps sustained jetting at a ~29% duty cycle, so a 9s jet leg
     // costs roughly 9 * 2.3 = 21 cal against the crawl leg's 9 * 1.6 = 14.

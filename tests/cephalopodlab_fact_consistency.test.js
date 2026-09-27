@@ -482,11 +482,45 @@ describe('Cephalopod Lab charges the metabolic cost it teaches', () => {
 
   it('shows the burn rate live and reports the budget at the end', () => {
     // A cost the player cannot see is just a bar draining faster for no reason.
-    expect(src).toContain("(gameState.hungerRate||1).toFixed(1)+' energy/s'");
+    expect(src).toContain("hudText('burn',clHuntPropulsionText(gameState,observation));");
+    const start = src.indexOf('function clHuntPropulsionText(');
+    const end = src.indexOf('function initHuntSim3D(', start);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const readout = new Function(src.slice(start, end) + ';return clHuntPropulsionText;')();
+    expect(readout({ hungerRate: 2.37, propulsionState: { forward: 1, swimming: true } }, false)).toBe('Swimming · 2.4 energy/s');
+    expect(readout({ hungerRate: 1.6, propulsionState: { jetting: true, finPowered: true } }, false)).toBe('Fin boost · 1.6 energy/s');
     expect(src).toMatch(/statCard\('Time jetting'/);
     expect(src).toMatch(/statCard\('Energy spent'/);
     expect(src).toMatch(/jetMs: 0,/);
     expect(src).toMatch(/caloriesBurned: 0,/);
+  });
+
+  it('classifies propulsion against the final floor after collision changes horizontal position', () => {
+    const assignmentStart = src.indexOf('gameState.propulsionState={');
+    const assignmentEnd = src.indexOf(';', assignmentStart) + 1;
+    const formatterStart = src.indexOf('function clHuntPropulsionText(');
+    const formatterEnd = src.indexOf('function initHuntSim3D(', formatterStart);
+    expect(assignmentStart).toBeGreaterThan(-1); expect(assignmentEnd).toBeGreaterThan(assignmentStart);
+    expect(formatterStart).toBeGreaterThan(-1); expect(formatterEnd).toBeGreaterThan(formatterStart);
+    const floorRest = Number(/var FLOOR_REST_Y = ([\d.]+);/.exec(src)[1]);
+    const readActualState = new Function('fixture', 'terrainHeight', 'FLOOR_REST_Y', `
+      var gameState={verticalY:fixture.y,hungerRate:1.6,stamina:100},octopus={position:fixture.position};
+      var bottomY=fixture.staleBottomY,isJetting=false,species={specialAbility:''},capabilities={swimming:false};
+      var moveFwd=1,turn=0,vertInput=0,propulsionYBefore=gameState.verticalY,keys={};
+      ${src.slice(assignmentStart, assignmentEnd)}
+      ${src.slice(formatterStart, formatterEnd)}
+      return {aboveFloor:gameState.propulsionState.aboveFloor,text:clHuntPropulsionText(gameState,false)};
+    `);
+    const terrain = (x, z) => x * .4 + z * .2;
+    // A rock push can leave the pre-collision floor either above or below the
+    // final floor. Execute the actual state assignment and actual HUD formatter.
+    for (const [position, clearance, mode] of [[{ x: 4, z: -2 }, 2, 'Swimming'], [{ x: 2, z: 3 }, 0, 'Crawling']]) {
+      const y = terrain(position.x, position.z) + floorRest + clearance;
+      const result = readActualState({ position, y, staleBottomY: clearance ? y : y - 2 }, terrain, floorRest);
+      expect(result.aboveFloor).toBeCloseTo(clearance, 8);
+      expect(result.text).toBe(mode + ' · 1.6 energy/s');
+    }
   });
 });
 
