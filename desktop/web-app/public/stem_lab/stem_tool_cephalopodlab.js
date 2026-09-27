@@ -11386,12 +11386,22 @@ function createCLHuntAnimal(T, species) {
   }
   var passingCloudOverlay=cuttle?{material:{opacity:0}}:null;
   var tangent=new T.Vector3(),normal=new T.Vector3(),binormal=new T.Vector3(),up=new T.Vector3(0,1,0);
+  var squidJetBlend=0,squidMantlePhase=0,squidFinPhase=0;
   function update(time,dt,state){
     var motion=state.reducedMotion?0:1,jet=state.jet?1:0,strike=state.reducedMotion?0:(state.strike||0);
+    if(squid){
+      // Visual inertia only: capture timing and movement remain owned by the simulation.
+      var poseStep=Math.max(0,Math.min(0.05,dt||0));
+      if(state.reducedMotion)squidJetBlend=0;
+      else squidJetBlend+=(jet-squidJetBlend)*(1-Math.exp(-poseStep*7));
+      jet=squidJetBlend;
+      squidMantlePhase=(squidMantlePhase+poseStep*(2.2+8.8*jet)*motion)%(Math.PI*2);
+      squidFinPhase=(squidFinPhase+poseStep*(3.6+1.8*jet)*motion)%(Math.PI*2);
+    }
     phase.value=time;pattern.value=state.substrate==='sand'?0.22:state.substrate==='grass'?0.72:0.9;
     display.value=cuttle&&state.display?0.9:0;
-    var pulse=Math.sin(time*(jet?11:2.2))*motion;
-    mantle.scale.set(1+pulse*(jet?0.055:0.018),1+pulse*(jet?0.045:0.024),1+jet*0.04-pulse*0.008);
+    var pulse=Math.sin(squid?squidMantlePhase:time*(jet?11:2.2))*motion;
+    mantle.scale.set(1+pulse*(squid?0.018+jet*0.037:jet?0.055:0.018),1+pulse*(squid?0.024+jet*0.021:jet?0.045:0.024),1+jet*0.04-pulse*0.008);
     var pp=mantleGeo.attributes.position.array,rough=!swimming&&state.substrate!=='sand'?(state.camo||0)*0.035:0;
     for(var p=0;p<pp.length;p+=3){var x=basePositions[p],y=basePositions[p+1],z=basePositions[p+2],n=1+rough*Math.sin(x*18)*Math.sin(y*20+z*13);pp[p]=x*n;pp[p+1]=y*n;pp[p+2]=z*n;}mantleGeo.attributes.position.needsUpdate=true;
     var si=0;
@@ -11402,6 +11412,28 @@ function createCLHuntAnimal(T, species) {
         var x,y,z;
         if(swimming){
           if(fil){x=l.angle*(0.32+reach*0.55);y=-0.10+Math.sin(t*5+time*0.6)*0.12*motion;z=0.45+reach*0.7;}
+          else if(squid){
+            if(isTent){
+              // Fold the feeding stalks beneath the arm crown, with their clubs still readable.
+              var rest=1-t,rest2=rest*rest,t2=t*t;
+              var foldedX=l.angle*(0.13*rest2*rest+3*0.18*rest2*t+3*0.22*rest*t2+0.12*t2*t);
+              var foldedY=-0.08*rest2*rest-3*0.13*rest2*t-3*0.17*rest*t2-0.10*t2*t;
+              var foldedZ=0.48*rest2*rest+3*0.76*rest2*t+3*1.10*rest*t2+1.06*t2*t;
+              x=foldedX*(1-strike)+l.angle*(0.13+0.13*t)*strike;
+              y=foldedY*(1-strike)+(-0.10-Math.sin(t*Math.PI)*0.035)*strike;
+              z=foldedZ*(1-strike)+(0.48+reach*1.18)*strike;
+            }else{
+              // The crown opens gently behind the head, then gathers into tapered curved tips.
+              var crownCurve=Math.sin(t*Math.PI)*(1-t*0.25);
+              var crownRadius=0.145+crownCurve*(0.10-jet*0.06)-0.045*t;
+              var tipCurl=Math.pow(t,4)*(0.055-jet*0.04);
+              x=Math.cos(ang)*crownRadius+Math.sin(ang)*tipCurl;
+              y=Math.sin(ang)*crownRadius*0.82-0.035-Math.cos(ang)*tipCurl*0.45;
+              z=0.48+reach*(0.90+jet*0.12-t*t*0.16);
+            }
+            var drift=Math.sin(time*1.8-t*4+l.phase)*0.014*t*t*motion*(1-jet*0.8);
+            x+=Math.cos(ang+Math.PI/2)*drift;y+=Math.sin(ang+Math.PI/2)*drift*0.6;
+          }
           else {
             var fan=nautilus?0.12:vampire?0.16+Math.sin(t*Math.PI*0.82)*0.64:0.13+Math.sin(t*Math.PI*0.86)*(jet?0.09:0.22);
             var curl=Math.pow(t,4)*(jet?0.025:0.12),fold=1-strike;
@@ -11420,13 +11452,13 @@ function createCLHuntAnimal(T, species) {
           y+=Math.pow(t,7)*0.12;
           if(strike>0&&Math.sin(ang)>0){z+=strike*t*0.55;y+=strike*t*0.15;}
         }
-        if(jet){x*=1-t*0.35;z+=(swimming?0.16:-1.3)*t;y+=0.16*t;}
+        if(jet){x*=1-t*0.35*jet;z+=(swimming?0.16:-1.3)*t*jet;y+=(squid?0.06:0.16)*t*jet;}
         l.points[j].set(x*scale,y*scale,z*scale);
       }
       var pos=l.mesh.geometry.attributes.position.array,norm=l.mesh.geometry.attributes.normal.array;
       for(var j2=0;j2<=rings;j2++){
         var t2=j2/rings,center=l.points[j2];tangent.subVectors(l.points[Math.min(rings,j2+1)],l.points[Math.max(0,j2-1)]).normalize();binormal.crossVectors(tangent,up).normalize();if(binormal.lengthSq()<0.1)binormal.set(1,0,0);normal.crossVectors(binormal,tangent).normalize();
-        var radius=l.radius*scale*Math.pow(1-t2,0.8)+0.007*scale;
+        var radius=l.radius*scale*Math.pow(1-t2,squid&&!isTent?0.95:0.8)+(squid?0.006:0.007)*scale;
         if(isTent)radius+=Math.sin(Math.max(0,(t2-0.76)/0.24)*Math.PI)*0.050*scale;
         for(var k=0;k<=sides;k++){var v=(j2*(sides+1)+k)*3,theta=k/sides*Math.PI*2,nx=normal.x*Math.cos(theta)+binormal.x*Math.sin(theta),ny=normal.y*Math.cos(theta)+binormal.y*Math.sin(theta),nz=normal.z*Math.cos(theta)+binormal.z*Math.sin(theta);pos[v]=center.x+nx*radius;pos[v+1]=center.y+ny*radius;pos[v+2]=center.z+nz*radius;norm[v]=nx;norm[v+1]=ny;norm[v+2]=nz;}
         if(suckers&&((l.kind==='arm'&&j2>=3&&j2<15)||(isTent&&j2>=14&&j2<20)))for(var row=-1;row<=1;row+=2){
@@ -11446,7 +11478,7 @@ function createCLHuntAnimal(T, species) {
           var rootWidth=dims[0]*Math.sqrt(Math.max(0,1-mantleZ*mantleZ))*taper*mantle.scale.x*0.985;
           var z=-0.76+(baseZ+0.76)*mantle.scale.z;
           var envelope=Math.pow(Math.sin(t*Math.PI),1.55),edge=0.60*envelope*(0.86+0.14*t);
-          var travelingWave=Math.sin(time*(jet?5.4:3.6)-t*6.8)*motion*(jet?0.42:1);
+          var travelingWave=Math.sin(squidFinPhase-t*6.8)*motion*(1-jet*0.58);
           for(var row=0;row<=f.span;row++){
             var across=row/f.span,at=(k*(f.span+1)+row)*3;
             var camber=0.060*Math.sin(across*Math.PI)*envelope;
@@ -11470,6 +11502,41 @@ function createCLHuntAnimal(T, species) {
   update(0,0,{substrate:'sand',camo:0,reducedMotion:true});
   root.traverse(function(o){if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
   return {root:root,mantle:mantle,mantleGeo:mantleGeo,mantleMat:skin,basePositions:basePositions,arms:arms,scale:scale,update:update,tint:function(){siphonMat.color.copy(skin.color).lerp(siphonTint,0.28);armMat.color.copy(skin.color);fins.forEach(function(f){f.mesh.material.color.copy(skin.color).multiplyScalar(0.9);});if(web)web.material.color.copy(skin.color);},warningRings:warningRings,dumboFins:dumboFins,vampirePhotophores:vampirePhotophores,bobtailGlow:bobtailGlow,cuttleFins:cuttleFins,cuttleTentacles:tentacles,passingCloudOverlay:passingCloudOverlay,mimicSpikes:mimicSpikes,nautilusShell:nautilusShell};
+}
+
+// Compact, individually owned prey rig. Forward is +Z, matching school movement.
+// Eyes and static fins are merged into the body; only the forked tail adds a draw call.
+function createCLHuntFish(T,index){
+  var fish=new T.Group();fish.name='cl-prey-fish';var positions=[],normals=[],colors=[];
+  var back=new T.Color(0x3d626b).convertSRGBToLinear(),silver=new T.Color(0xa6c5c9).convertSRGBToLinear(),belly=new T.Color(0xc3cebf).convertSRGBToLinear();
+  var shade=new T.Color(),finTint=new T.Color(0x7b9fa4).convertSRGBToLinear(),eyeTint=new T.Color(0x10262c).convertSRGBToLinear();
+  function append(geometry,tint){
+    var flat=geometry.index?geometry.toNonIndexed():geometry,p=flat.attributes.position,n=flat.attributes.normal;
+    for(var i=0;i<p.count;i++){
+      positions.push(p.getX(i),p.getY(i),p.getZ(i));normals.push(n.getX(i),n.getY(i),n.getZ(i));
+      if(tint)shade.copy(tint);else if(p.getY(i)>0)shade.copy(silver).lerp(back,Math.min(1,p.getY(i)/0.085));else shade.copy(silver).lerp(belly,Math.min(1,-p.getY(i)/0.085));
+      colors.push(shade.r,shade.g,shade.b);
+    }
+    if(flat!==geometry)flat.dispose();geometry.dispose();
+  }
+  var bodyGeometry=new T.SphereGeometry(1,20,12);bodyGeometry.scale(0.072,0.094,0.21);
+  var bp=bodyGeometry.attributes.position;
+  for(var v=0;v<bp.count;v++){var taper=1-0.48*Math.max(0,-bp.getZ(v)/0.21);bp.setXYZ(v,bp.getX(v)*taper,bp.getY(v)*taper,bp.getZ(v));}
+  bodyGeometry.computeVertexNormals();append(bodyGeometry);
+  function fin(vertices){var g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(vertices,3));g.computeVertexNormals();append(g,finTint);}
+  fin([0,0.082,0.02, 0,0.16,-0.08, 0,0.065,-0.145]);
+  for(var side=-1;side<=1;side+=2){
+    fin([side*0.054,-0.012,0.05, side*0.13,-0.04,-0.075, side*0.04,-0.05,-0.025]);
+    var eye=new T.SphereGeometry(0.015,8,6);eye.translate(side*0.061,0.025,0.118);append(eye,eyeTint);
+  }
+  var geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('normal',new T.Float32BufferAttribute(normals,3));geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));geometry.computeBoundingSphere();
+  var material=new T.MeshStandardMaterial({vertexColors:true,roughness:0.34,metalness:0.18,side:T.DoubleSide});
+  var body=new T.Mesh(geometry,material);body.name='cl-fish-body';fish.add(body);
+  var tailGeometry=new T.BufferGeometry(),tailVertices=[0,0.025,0, 0,0.13,-0.18, 0,0,-0.10, 0,0.025,0, 0,0,-0.10, 0,-0.025,0, 0,0,-0.10, 0,-0.13,-0.18, 0,-0.025,0],tailColors=[];
+  for(var tc=0;tc<tailVertices.length/3;tc++)tailColors.push(finTint.r,finTint.g,finTint.b);
+  tailGeometry.setAttribute('position',new T.Float32BufferAttribute(tailVertices,3));tailGeometry.setAttribute('color',new T.Float32BufferAttribute(tailColors,3));tailGeometry.computeVertexNormals();
+  var tail=new T.Mesh(tailGeometry,material);tail.name='cl-fish-tail';tail.position.z=-0.185;fish.add(tail);
+  fish.userData.tail=tail;fish.userData.swimPhase=index*1.7;fish.rotation.order='YXZ';return fish;
 }
 
       function initHuntSim3D(canvasEl) {
@@ -13004,20 +13071,16 @@ function createCLHuntAnimal(T, species) {
             wanderTimer: 0,
           };
           for (var fi = 0; fi < 8; fi++) {
-            var fishGeo = new THREE.ConeGeometry(0.08, 0.32, 5);
-            var fishMat = new THREE.MeshStandardMaterial({ color: 0xc8d8e8, roughness: 0.3, metalness: 0.4 });
-            var fishMesh = new THREE.Mesh(fishGeo, fishMat);
-            fishMesh.rotation.z = -Math.PI / 2;  // point forward
-            var fish = new THREE.Group();
-            fish.add(fishMesh);
-            fish.userData = {
+            var fish=createCLHuntFish(THREE,fi);
+            Object.assign(fish.userData, {
               offset: new THREE.Vector3(
                 (Math.random() - 0.5) * 2.5,
                 (Math.random() - 0.5) * 1.2,
                 (Math.random() - 0.5) * 2.5
               ),
               alive: true,
-            };
+            });
+            fish.rotation.y=school.heading;
             fish.position.copy(school.center).add(fish.userData.offset);
             scene.add(fish);
             school.fish.push(fish);
@@ -13794,7 +13857,7 @@ function createCLHuntAnimal(T, species) {
           if(gameState.gameOver)return;
           if(!inspection.active){inspection.wasPaused=gameState.paused;setPaused(true);inspection.active=true;inspection.yaw=gameState.facingAngle+1.42;inspection.pitch=0.18;inspection.touchAction=canvasEl.style.touchAction;canvasEl.style.touchAction='none';pauseOverlay.style.display='none';camera.fov=44;}
           else{inspection.active=false;inspection.drag=null;canvasEl.style.touchAction=inspection.touchAction||'';setPaused(inspection.wasPaused);camera.fov=70;}
-          camera.updateProjectionMatrix();stage.classList.toggle('cl-inspecting',inspection.active);inspectionPanel.hidden=!inspection.active;if(inspection.active)frameInspection(true);canvasEl.focus();clAnnounce(inspection.active?'Inspection. Dive paused. Drag or use orbit controls to examine '+species.name+'. Escape returns.':inspection.wasPaused?'Inspection closed. Dive remains paused.':'Inspection closed. Dive resumed.');
+          camera.updateProjectionMatrix();stage.classList.toggle('cl-inspecting',inspection.active);inspectionPanel.hidden=!inspection.active;if(inspection.active)frameInspection(true);if(targetHalo)targetHalo.visible=!inspection.active&&!!selectedPrey&&selectedPrey.userData.alive&&capabilities.diet!=='detritus';canvasEl.focus();clAnnounce(inspection.active?'Inspection. Dive paused. Drag or use orbit controls to examine '+species.name+'. Escape returns.':inspection.wasPaused?'Inspection closed. Dive remains paused.':'Inspection closed. Dive resumed.');
         }
         function inspectKey(e){
           if(!inspection.active)return;
@@ -15102,11 +15165,18 @@ function createCLHuntAnimal(T, species) {
                 if (!fish.userData.alive) return;
                 fish.userData.alert=!fish.userData.distracted&&school.alarm>0.3;fish.userData.intent=fish.userData.distracted?'distracted':fish.userData.alert?'fleeing':'unaware';
                 var tgt = school.center.clone().addScaledVector(fish.userData.offset,1+school.alarm*0.45);
-                fish.position.x += (tgt.x - fish.position.x) * 1.5 * dt;
-                fish.position.y += (tgt.y - fish.position.y) * 1.5 * dt;
-                fish.position.z += (tgt.z - fish.position.z) * 1.5 * dt;
-                // Face direction of travel
-                fish.rotation.y = school.heading;
+                var vx=tgt.x-fish.position.x,vy=tgt.y-fish.position.y,vz=tgt.z-fish.position.z;
+                fish.position.x += vx * 1.5 * dt;
+                fish.position.y += vy * 1.5 * dt;
+                fish.position.z += vz * 1.5 * dt;
+                // Align the nose with actual travel, including formation changes and display attraction.
+                var turnDelta=0,steer=1-Math.exp(-8*dt),horizontal=Math.hypot(vx,vz);
+                if(horizontal>0.001){var desiredYaw=Math.atan2(vx,vz);turnDelta=Math.atan2(Math.sin(desiredYaw-fish.rotation.y),Math.cos(desiredYaw-fish.rotation.y));fish.rotation.y+=turnDelta*steer;}
+                fish.rotation.x+=((horizontal>0.001?-Math.atan2(vy,horizontal):0)-fish.rotation.x)*steer;
+                fish.rotation.z=gameState.a11y.reducedMotion?0:fish.rotation.z+(Math.max(-0.16,Math.min(0.16,-turnDelta*0.15))-fish.rotation.z)*steer;
+                // Integrate swim phase so changing alarm speed never jumps the tail pose.
+                if(!gameState.a11y.reducedMotion)fish.userData.swimPhase=(fish.userData.swimPhase+dt*(7+school.alarm*6))%(Math.PI*2);
+                fish.userData.tail.rotation.y=gameState.a11y.reducedMotion?0:Math.sin(fish.userData.swimPhase)*(0.22+school.alarm*0.14);
               });
             });
             // Respawn empty schools

@@ -1,0 +1,97 @@
+{
+  "date": "2026-09-27",
+  "status": "complete",
+  "unit": {
+    "passed": 194,
+    "total": 194,
+    "files": 9,
+    "note": "Before final inspection-ring and fish tail-phase refinements."
+  },
+  "finalContracts": {
+    "passed": 4,
+    "total": 4,
+    "note": "After final source refinements."
+  },
+  "browser": {
+    "distinctScenariosWithPassingLatestResult": 15,
+    "retries": 0,
+    "workers": 1,
+    "runs": [
+      {
+        "file": "swimming-polish-initial.json",
+        "startTime": "2026-09-27T05:55:19.443Z",
+        "duration": 50819.168,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      {
+        "file": "anatomy-inspection.json",
+        "startTime": "2026-09-27T06:02:03.310Z",
+        "duration": 210340.316,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      {
+        "file": "foraging-strike.json",
+        "startTime": "2026-09-27T06:06:47.533Z",
+        "duration": 176426.81,
+        "expected": 7,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      {
+        "file": "swimming-polish-final.json",
+        "startTime": "2026-09-27T06:10:16.694Z",
+        "duration": 109058.14600000001,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    ],
+    "note": "Four final swimming scenarios on final source. Four anatomy/inspection cases include all twelve species. Seven foraging/strike cases passed; the visual-only tail-phase fix landed during that suite, so its run spans two source revisions. Initial three swimming checks also passed before the added long-dive regression."
+  },
+  "visual": {
+    "errors": [],
+    "fixture": "Fish school image places the player behind an existing school after standard rise input; squid images show actual game poses.",
+    "screenshots": [
+      "squid-resting.png",
+      "squid-arm-crown.png",
+      "squid-jet-pose.png",
+      "mobile-squid.png",
+      "fish-school.png"
+    ],
+    "reviewed": true,
+    "viewportChecks": [
+      "desktop 1280x1100",
+      "mobile 390x844"
+    ],
+    "note": "Final-source screenshots. Earlier capture fixtures froze camera easing and produced misleading jet/mobile angles; final captures restore real camera time during frozen inspection."
+  },
+  "mirrors": [
+    {
+      "path": "stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "57d95c7bbc44b97d16d6e1f00c26bbd1b0c31a2de72fd9760b8e2650e6b7190e"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "57d95c7bbc44b97d16d6e1f00c26bbd1b0c31a2de72fd9760b8e2650e6b7190e"
+    },
+    {
+      "path": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "57d95c7bbc44b97d16d6e1f00c26bbd1b0c31a2de72fd9760b8e2650e6b7190e"
+    },
+    {
+      "path": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "57d95c7bbc44b97d16d6e1f00c26bbd1b0c31a2de72fd9760b8e2650e6b7190e"
+    }
+  ],
+  "syntax": "passed",
+  "whitespace": "passed",
+  "deployed": false
+}
