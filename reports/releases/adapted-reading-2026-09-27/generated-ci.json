@@ -1,0 +1,190 @@
+{
+  "sha": "0cc63c58e949fe6ed4f6c245db0746354653872f",
+  "checkedAt": "2026-09-27T02:33:34.8927492Z",
+  "checks": [
+    {
+      "name": "Workers Builds: alloflow-cdn",
+      "status": "completed",
+      "conclusion": "failure",
+      "started_at": "2026-09-27T02:33:32Z",
+      "completed_at": "2026-09-27T02:33:32Z",
+      "details_url": "https://dash.cloudflare.com/37d398da2811e2beead8fe41dac52058/workers/services/view/alloflow-cdn/production/builds/c18ea5c0-764d-4132-ab21-7db601b915fd"
+    },
+    {
+      "name": "Cloudflare Pages",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-09-27T02:32:32Z",
+      "completed_at": "2026-09-27T02:32:32Z",
+      "details_url": "https://dash.cloudflare.com/?to=/37d398da2811e2beead8fe41dac52058/pages/view/alloflow-cdn/d5b95c96-e203-417c-8bae-5f17731a27cc"
+    },
+    {
+      "name": "Full verify suite (non-blocking visibility)",
+      "status": "in_progress",
+      "conclusion": null,
+      "started_at": "2026-09-27T02:32:04Z",
+      "completed_at": null,
+      "details_url": "https://github.com/Apomera/AlloFlow/actions/runs/36288604315/job/108534137169"
+    },
+    {
+      "name": "Unit tests (shard 4/8)",
+      "status": "in_progress",
+      "conclusion": null,
+      "started_at": "2026-09-27T02:28:20Z",
+      "completed_at": null,
+      "details_url": "https://github.com/Apomera/AlloFlow/actions/runs/36288604315/job/108534137162"
+    },
+    {
+      "name": "Unit tests (shard 3/8)",
+      "status": "in_progress",
+      "conclusion": null,
+      "started_at": "2026-09-27T02:28:20Z",
+      "completed_at": null,
+      "details_url": "https://github.com/Apomera/AlloFlow/actions/runs/36288604315/job/108534137159"
+    },
+    {
+      "name": "Unit tests (shard 5/8)",
+      "status": "in_progress",
+      "conclusion": null,
+      "started_at": "2026-09-27T02:28:20Z",
+      "completed_at": null,
+      "details_url": "https://github.com/Apomera/AlloFlow/actions/runs/36288604315/job/108534137157"
+    },
+    {
+      "name": "Render smoke — deployed demo (non-blocking)",
+      "status": "in_progress",
+      "conclusion": null,
+      "started_at": "2026-09-27T02:31:05Z",
+      "completed_at": null,
+      "details_url": "https://github.com/Apomera/AlloFlow/actions/runs/36288604315/job/108534137144"
+    },
+    {
+      "name": "Static gate (crash + load classes)",
+      "status": "in_progress",
+      "conclusion": null,
+      "started_at": "2026-09-27T02:31:41Z",
+      "completed_at": null,
+      "details_url": "https://github.com/Apomera/AlloFlow/actions/runs/36288604315/job/108534137141"
+    },
+    {
+      "name": "Tagged-PDF goldens (BLOCKING)",
+      "status": "in_progress",
+      "conclusion": null,
+      "started_at": "2026-09-27T02:28:20Z",
+      "completed_at": null,
+      "details_url": "https://github.com/Apomera/AlloFlow/actions/runs/36288604315/job/108534137127"
+    },
+    {
+      "name": "Unit tests (shard 2/8)",
+      "status": "in_progress",
+      "conclusion": null,
+      "started_at": "2026-09-27T02:28:20Z",
+      "completed_at": null,
+      "details_url": "https://github.com/Apomera/AlloFlow/actions/runs/36288604315/job/108534137111"
+    },
+    {
+      "name": "Unit tests (shard 6/8)",
+      "status": "in_progress",
+      "conclusion": null,
+      "started_at": "2026-09-27T02:28:20Z",
+      "completed_at": null,
+      "details_url": "https://github.com/Apomera/AlloFlow/actions/runs/36288604315/job/108534137106"
+    },
+    {
+      "name": "Unit tests (shard 7/8)",
+      "status": "in_progress",
+      "conclusion": null,
+      "started_at": "2026-09-27T02:28:20Z",
+      "completed_at": null,
+      "details_url": "https://github.com/Apomera/AlloFlow/actions/runs/36288604315/job/108534137103"
+    },
+    {
+      "name": "Unit tests (shard 1/8)",
+      "status": "in_progress",
+      "conclusion": null,
+      "started_at": "2026-09-27T02:28:20Z",
+      "completed_at": null,
+      "details_url": "https://github.com/Apomera/AlloFlow/actions/runs/36288604315/job/108534137101"
+    },
+    {
+      "name": "Remediation preservation (source + browser + export)",
+      "status": "in_progress",
+      "conclusion": null,
+      "started_at": "2026-09-27T02:28:20Z",
+      "completed_at": null,
+      "details_url": "https://github.com/Apomera/AlloFlow/actions/runs/36288604315/job/108534137095"
+    },
+    {
+      "name": "Quarantined tests (non-blocking)",
+      "status": "in_progress",
+      "conclusion": null,
+      "started_at": "2026-09-27T02:28:20Z",
+      "completed_at": null,
+      "details_url": "https://github.com/Apomera/AlloFlow/actions/runs/36288604315/job/108534137085"
+    },
+    {
+      "name": "Adventure journey (choice + free response + debate)",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-09-27T02:28:20Z",
+      "completed_at": "2026-09-27T02:32:38Z",
+      "details_url": "https://github.com/Apomera/AlloFlow/actions/runs/36288604315/job/108534137071"
+    },
+    {
+      "name": "veraPDF ISO 14289-1 ground-truth gate (independent validator)",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-09-27T02:28:20Z",
+      "completed_at": "2026-09-27T02:32:04Z",
+      "details_url": "https://github.com/Apomera/AlloFlow/actions/runs/36288604315/job/108534137051"
+    },
+    {
+      "name": "CDN-heavy goldens (non-blocking — network flake tolerated)",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-09-27T02:28:22Z",
+      "completed_at": "2026-09-27T02:31:38Z",
+      "details_url": "https://github.com/Apomera/AlloFlow/actions/runs/36288604315/job/108534137031"
+    },
+    {
+      "name": "STEM plugin failure recovery (BLOCKING)",
+      "status": "in_progress",
+      "conclusion": null,
+      "started_at": "2026-09-27T02:28:20Z",
+      "completed_at": null,
+      "details_url": "https://github.com/Apomera/AlloFlow/actions/runs/36288604315/job/108534137026"
+    },
+    {
+      "name": "Research integration contracts + accessibility",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-09-27T02:28:20Z",
+      "completed_at": "2026-09-27T02:32:07Z",
+      "details_url": "https://github.com/Apomera/AlloFlow/actions/runs/36288604315/job/108534137021"
+    },
+    {
+      "name": "Unit tests (shard 8/8)",
+      "status": "in_progress",
+      "conclusion": null,
+      "started_at": "2026-09-27T02:28:21Z",
+      "completed_at": null,
+      "details_url": "https://github.com/Apomera/AlloFlow/actions/runs/36288604315/job/108534137010"
+    },
+    {
+      "name": "Documentation + promotion integrity",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-09-27T02:28:20Z",
+      "completed_at": "2026-09-27T02:31:59Z",
+      "details_url": "https://github.com/Apomera/AlloFlow/actions/runs/36288604315/job/108534136949"
+    },
+    {
+      "name": "build",
+      "status": "in_progress",
+      "conclusion": null,
+      "started_at": "2026-09-27T02:28:20Z",
+      "completed_at": null,
+      "details_url": "https://github.com/Apomera/AlloFlow/actions/runs/36288603397/job/108534136509"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "recordedAtUtc": "2026-09-27T02:36:03.1268343Z",
+  "command": "deploy.sh Fix release accessibility and word-help validation",
+  "exitCode": 0,
+  "sourceCommits": [
+    "14a2d9cfa1d19a3a8d64ebe7d017d35fe0d777f5",
+    "37bdb2883edeba6ba2b29b0fa1983a45af42c79a"
+  ],
+  "generatedCommit": "0cc63c58e949fe6ed4f6c245db0746354653872f",
+  "pluginCdnVersion": "37bdb2883",
+  "origin": "https://github.com/Apomera/AlloFlow.git",
+  "backup": "https://codeberg.org/Pomera/AlloFlow-backup.git",
+  "bothRemoteMainRefsVerified": "0cc63c58e949fe6ed4f6c245db0746354653872f",
+  "appUrl": "https://alloflow-cdn.pages.dev/app/",
+  "cloudflarePagesDeployment": "d5b95c96-e203-417c-8bae-5f17731a27cc",
+  "cloudflarePagesStatus": "success",
+  "webBuild": "passed",
+  "desktopWebBuild": "passed",
+  "desktopInstallerPublished": false,
+  "firebase": "skipped: no school-owned project configured",
+  "selectedTests": {
+    "files": 7,
+    "passed": 111
+  },
+  "liveAssetChecks": {
+    "total": 52,
+    "matched": 52,
+    "mismatched": 0
+  },
+  "liveBrowserChecks": {
+    "failed": 0,
+    "passed": 3
+  },
+  "scriptWarning": "app/index.html and app/sw.js still propagating at script exit; resolved by subsequent exact-byte verification",
+  "globalCI": "not green",
+  "preservedUnstagedReportImages": 26
+}

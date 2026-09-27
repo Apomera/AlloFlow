@@ -4,11 +4,13 @@ Purpose: a shared, human-readable coordination note for Aaron, Claude Code, and 
 
 ## Current multi-chat integration ownership (2026-09-26)
 
-The current 19-chat ownership ledger and validation record are in `reports/adapted-reader-integration-01-2026-09-26-1730/ownership.md`. All domain handoffs and the second local integration pass are complete. The parent coordination chat now owns the release following Aaron's explicit request to commit everyone's work and run `deploy.sh`. Preserve existing changes; no other implementation writer is active.
+The current 19-chat ownership ledger and validation record are in `reports/adapted-reader-integration-01-2026-09-26-1730/ownership.md`. All domain handoffs and the second local integration pass are complete. Following Aaron's explicit request, the parent committed the completed work and ran `deploy.sh`; release verification is complete. Preserve the remaining temporary files and unstaged test-generated report images.
 
 Track 01 integrated the delivered reader, audio, research, delivery, preview and helper deltas. The final local validation passed 900 tests across 40 files and nine browser acceptance runs; 8,227 mirrors and all 15 affected content pins matched. Before release, the parent rechecked all 157 frozen input hashes with no drift. See `reports/adapted-reader-integration-01-2026-09-26-1730/pass-two/HANDOFF.md` for evidence and documented translation, accessibility and memory-profiling follow-ups. Deployment verification is recorded separately from these local results.
 
-Last updated: 2026-07-28 by Codex.
+Release completed 2026-09-27 UTC: source commits `14a2d9cfa` and `37bdb2883`, generated release `0cc63c58e`, pushed to GitHub and Codeberg. Normal affected-test gate: 111/111 tests; web and desktop web builds passed. Cloudflare Pages succeeded; 52/52 selected public files match committed bytes and all three live Chromium boot/reload checks passed. Global CI is not green (unit shards, known static toast debt and a separate Worker build failure); see `reports/releases/adapted-reading-2026-09-27/README.md` for exact evidence and limits. Existing Gemini Canvas copies still require the updated host text. No new desktop installer was published.
+
+Last updated: 2026-09-27 by Codex.
 
 ## Repo Map
 

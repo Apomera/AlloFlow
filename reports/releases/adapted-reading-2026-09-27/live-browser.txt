@@ -1,0 +1,12 @@
+
+Running 3 tests using 1 worker
+
+(node:40760) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40760) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\01-app-boot.spec.ts:4:7 › App boot + initial state › main page loads with expected title (6.0s)
+  ok 2 [chromium] › tests\e2e\01-app-boot.spec.ts:20:7 › App boot + initial state › boot completes without critical pageerrors (6.7s)
+  ok 3 [chromium] › tests\e2e\01-app-boot.spec.ts:66:7 › App boot + initial state › a reload with the service worker active still loads (second navigation in one tab) (7.7s)
+
+  3 passed (21.7s)

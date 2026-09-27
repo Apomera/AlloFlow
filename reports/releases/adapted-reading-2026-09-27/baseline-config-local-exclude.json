@@ -1,0 +1,7 @@
+{
+  "path": "reports/adapted-reader-integration-01-2026-09-26-1730/pass-two/baseline/package.json",
+  "sha256": "ed145399195f3bca18adcb900e76ad8785abf2048d2457333b6dedf1f08c675e",
+  "preserved": true,
+  "localExclude": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\.git\\info\\exclude",
+  "reason": "Untracked report snapshot was incorrectly triggering Vitest force-rerun of every suite."
+}

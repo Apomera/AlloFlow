@@ -1,0 +1,389 @@
+{
+  "sha": "37bdb2883edeba6ba2b29b0fa1983a45af42c79a",
+  "checkedAt": "2026-09-27T02:34:10.660Z",
+  "initialCheckedAt": "2026-09-27T02:11:00.840Z",
+  "checks": [
+    {
+      "id": 108533248559,
+      "name": "report-build-status",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-09-27T02:22:04Z",
+      "completedAt": "2026-09-27T02:22:07Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710093/job/108533248559"
+    },
+    {
+      "id": 108533248542,
+      "name": "deploy",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-09-27T02:22:04Z",
+      "completedAt": "2026-09-27T02:24:43Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710093/job/108533248542"
+    },
+    {
+      "id": 108532197781,
+      "name": "Workers Builds: alloflow-cdn",
+      "status": "completed",
+      "conclusion": "failure",
+      "startedAt": "2026-09-27T02:14:34Z",
+      "completedAt": "2026-09-27T02:14:34Z",
+      "detailsUrl": "https://dash.cloudflare.com/37d398da2811e2beead8fe41dac52058/workers/services/view/alloflow-cdn/production/builds/0656875a-490a-4fca-9ae3-597078ba4352"
+    },
+    {
+      "id": 108532092166,
+      "name": "Cloudflare Pages",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-09-27T02:13:51Z",
+      "completedAt": "2026-09-27T02:13:51Z",
+      "detailsUrl": "https://dash.cloudflare.com/?to=/37d398da2811e2beead8fe41dac52058/pages/view/alloflow-cdn/3a97569f-16b1-4c8d-956d-8bf71a6a1493"
+    },
+    {
+      "id": 108531526465,
+      "name": "build",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-09-27T02:13:36Z",
+      "completedAt": "2026-09-27T02:22:01Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710093/job/108531526465"
+    },
+    {
+      "id": 108531525750,
+      "name": "Unit tests (shard 7/8)",
+      "status": "completed",
+      "conclusion": "failure",
+      "startedAt": "2026-09-27T02:10:01Z",
+      "completedAt": "2026-09-27T02:20:47Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710497/job/108531525750"
+    },
+    {
+      "id": 108531525747,
+      "name": "Unit tests (shard 3/8)",
+      "status": "completed",
+      "conclusion": "failure",
+      "startedAt": "2026-09-27T02:10:01Z",
+      "completedAt": "2026-09-27T02:19:46Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710497/job/108531525747"
+    },
+    {
+      "id": 108531525705,
+      "name": "Unit tests (shard 8/8)",
+      "status": "completed",
+      "conclusion": "failure",
+      "startedAt": "2026-09-27T02:10:01Z",
+      "completedAt": "2026-09-27T02:23:55Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710497/job/108531525705"
+    },
+    {
+      "id": 108531525682,
+      "name": "Unit tests (shard 1/8)",
+      "status": "completed",
+      "conclusion": "failure",
+      "startedAt": "2026-09-27T02:10:01Z",
+      "completedAt": "2026-09-27T02:31:02Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710497/job/108531525682"
+    },
+    {
+      "id": 108531525666,
+      "name": "Unit tests (shard 4/8)",
+      "status": "completed",
+      "conclusion": "failure",
+      "startedAt": "2026-09-27T02:10:00Z",
+      "completedAt": "2026-09-27T02:26:37Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710497/job/108531525666"
+    },
+    {
+      "id": 108531525654,
+      "name": "Unit tests (shard 2/8)",
+      "status": "completed",
+      "conclusion": "failure",
+      "startedAt": "2026-09-27T02:10:00Z",
+      "completedAt": "2026-09-27T02:27:15Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710497/job/108531525654"
+    },
+    {
+      "id": 108531525652,
+      "name": "CDN-heavy goldens (non-blocking — network flake tolerated)",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-09-27T02:10:01Z",
+      "completedAt": "2026-09-27T02:13:34Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710497/job/108531525652"
+    },
+    {
+      "id": 108531525641,
+      "name": "Unit tests (shard 5/8)",
+      "status": "completed",
+      "conclusion": "failure",
+      "startedAt": "2026-09-27T02:10:04Z",
+      "completedAt": "2026-09-27T02:25:19Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710497/job/108531525641"
+    },
+    {
+      "id": 108531525612,
+      "name": "Static gate (crash + load classes)",
+      "status": "completed",
+      "conclusion": "failure",
+      "startedAt": "2026-09-27T02:10:01Z",
+      "completedAt": "2026-09-27T02:14:54Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710497/job/108531525612"
+    },
+    {
+      "id": 108531525611,
+      "name": "Render smoke — deployed demo (non-blocking)",
+      "status": "completed",
+      "conclusion": "failure",
+      "startedAt": "2026-09-27T02:10:01Z",
+      "completedAt": "2026-09-27T02:17:12Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710497/job/108531525611"
+    },
+    {
+      "id": 108531525607,
+      "name": "Documentation + promotion integrity",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-09-27T02:10:01Z",
+      "completedAt": "2026-09-27T02:13:43Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710497/job/108531525607"
+    },
+    {
+      "id": 108531525602,
+      "name": "Remediation preservation (source + browser + export)",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-09-27T02:10:01Z",
+      "completedAt": "2026-09-27T02:20:32Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710497/job/108531525602"
+    },
+    {
+      "id": 108531525601,
+      "name": "Unit tests (shard 6/8)",
+      "status": "completed",
+      "conclusion": "failure",
+      "startedAt": "2026-09-27T02:10:33Z",
+      "completedAt": "2026-09-27T02:28:09Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710497/job/108531525601"
+    },
+    {
+      "id": 108531525599,
+      "name": "Quarantined tests (non-blocking)",
+      "status": "in_progress",
+      "conclusion": null,
+      "startedAt": "2026-09-27T02:10:01Z",
+      "completedAt": null,
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710497/job/108531525599"
+    },
+    {
+      "id": 108531525595,
+      "name": "Full verify suite (non-blocking visibility)",
+      "status": "completed",
+      "conclusion": "failure",
+      "startedAt": "2026-09-27T02:10:01Z",
+      "completedAt": "2026-09-27T02:22:49Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710497/job/108531525595"
+    },
+    {
+      "id": 108531525580,
+      "name": "veraPDF ISO 14289-1 ground-truth gate (independent validator)",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-09-27T02:10:36Z",
+      "completedAt": "2026-09-27T02:14:07Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710497/job/108531525580"
+    },
+    {
+      "id": 108531525579,
+      "name": "Adventure journey (choice + free response + debate)",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-09-27T02:10:01Z",
+      "completedAt": "2026-09-27T02:15:08Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710497/job/108531525579"
+    },
+    {
+      "id": 108531525575,
+      "name": "Tagged-PDF goldens (BLOCKING)",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-09-27T02:10:00Z",
+      "completedAt": "2026-09-27T02:27:48Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710497/job/108531525575"
+    },
+    {
+      "id": 108531525559,
+      "name": "STEM plugin failure recovery (BLOCKING)",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-09-27T02:10:01Z",
+      "completedAt": "2026-09-27T02:16:26Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710497/job/108531525559"
+    },
+    {
+      "id": 108531525491,
+      "name": "Research integration contracts + accessibility",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-09-27T02:10:02Z",
+      "completedAt": "2026-09-27T02:14:04Z",
+      "detailsUrl": "https://github.com/Apomera/AlloFlow/actions/runs/36287710497/job/108531525491"
+    }
+  ],
+  "diagnostics": [],
+  "failedJobSteps": [],
+  "comparisonCaution": "Earlier source14a2d9cfa and baselinefd4044c contained failures; matching check names alone do not prove the same cause. In-progress jobs have no verdict.",
+  "staticJobInspection": {
+    "checkedAt": "2026-09-27T02:18:01.513Z",
+    "jobId": 108531525612,
+    "sourceSha": "37bdb2883edeba6ba2b29b0fa1983a45af42c79a",
+    "status": "completed",
+    "conclusion": "failure",
+    "failedSteps": [
+      "verify:gate (generated modules + render refs + module contracts)"
+    ],
+    "logBytes": 30425,
+    "selectedLogLines": [
+      "##[group]Runner Image Provisioner\r",
+      "##[group]Operating System\r",
+      "##[group]Runner Image\r",
+      "##[group]GITHUB_TOKEN Permissions\r",
+      "##[group]Run actions/checkout@v4\r",
+      "##[group]Getting Git version info\r",
+      "##[group]Initializing the repository\r",
+      "##[group]Disabling automatic garbage collection\r",
+      "##[group]Setting up auth\r",
+      "##[group]Fetching the repository\r",
+      "##[group]Determining the checkout info\r",
+      "##[group]Checking out the ref\r",
+      "##[group]Run actions/setup-node@v4\r",
+      "##[group]Environment details\r",
+      "(node:2752) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.\r",
+      "##[group]Run npm install --no-audit --no-fund\r",
+      "##[group]Run npm run verify:gate\r",
+      "> node dev-tools/sync_allosheet_assets.cjs --check && node _build_adventure_module.js --check && node dev-tools/check_render_refs.cjs && node dev-tools/check_keyless_map.cjs && node dev-tools/check_stem_render.cjs --quiet && node dev-tools/check_stem_reachability.cjs --quiet && node dev-tools/check_sel_render.cjs --quiet && node dev-tools/check_sel_a11y.cjs --quiet && node dev-tools/check_sel_hub_wcag.cjs --quiet && node dev-tools/check_module_render.cjs --quiet && node dev-tools/check_aria_handler.cjs --quiet && node dev-tools/check_hardcoded_aria_text.cjs --quiet && node dev-tools/check_hardcoded_toast_text.cjs --quiet && node dev-tools/check_lang_json.cjs && node dev-tools/check_cmd_i18n.",
+      "✗ toast text that no translator can reach increased in 6 file(s):\r",
+      "      line 29926  \"Summary generation failed\"\r",
+      "      addToast(__alloT('stem.<tool>.<key>', 'English text'), 'success')\r",
+      "  Inspect with: node dev-tools/check_hardcoded_toast_text.cjs --list <file>\r",
+      "##[error]Process completed with exit code 1.\r"
+    ],
+    "failureExcerpt": [
+      "Require stack:",
+      "- D:\\a\\AlloFlow\\AlloFlow\\dev-tools\\check_sel_a11y.cjs)",
+      "[check_sel_hub_wcag] SKIPPED - React/jsdom not found at D:\\a\\AlloFlow\\AlloFlow\\desktop\\web-app\\node_modules (Cannot find module 'D:\\a\\AlloFlow\\AlloFlow\\desktop\\web-app\\node_modules\\jsdom'",
+      "Require stack:",
+      "- D:\\a\\AlloFlow\\AlloFlow\\dev-tools\\check_sel_hub_wcag.cjs)",
+      "[check_module_render] SKIPPED — React/jsdom not found at D:\\a\\AlloFlow\\AlloFlow\\desktop\\web-app\\node_modules (Cannot find module 'D:\\a\\AlloFlow\\AlloFlow\\desktop\\web-app\\node_modules\\jsdom'",
+      "Require stack:",
+      "- D:\\a\\AlloFlow\\AlloFlow\\dev-tools\\check_module_render.cjs)",
+      "✗ toast text that no translator can reach increased in 6 file(s):",
+      "",
+      "  behavior_lens_module.js  215 → 242  (+27)",
+      "      last 27 in source order (check your diff for the actual additions):",
+      "      line 29663  \"Comparison is limited to 10 workspace files at a time.\"",
+      "      line 29666  \"No comparison workspaces were loaded; selected files exceeded safety ",
+      "      line 29728  \"That tool is for staff. Leave Family view to open it.\"",
+      "      line 29763  \"Your unfinished observation was restored. Its target and notes have b",
+      "      line 29926  \"Summary generation failed\"",
+      "      line 30061  \"The cloud copy could not be loaded. Your local copy is still availabl",
+      "",
+      "  symbol_studio_module.js  95 → 97  (+2)",
+      "      last 2 in source order (check your diff for the actual additions):",
+      "      line 11706  \"\\\" added!\"",
+      "      line 12386  \"\\\" saved!\"",
+      "",
+      "  view_image_module.js  3 → 6  (+3)",
+      "      last 3 in source order (check your diff for the actual additions):",
+      "      line 211  \"Choose a PNG, JPEG, GIF, WebP, or AVIF image.\"",
+      "      line 234  \"The image could not be read. Please try another file.\"",
+      "      line 401  \"The image description could not be generated. Try again or write a de",
+      "",
+      "  stem_lab/stem_tool_geologyexplorer.js  20 → 22  (+2)",
+      "      last 2 in source order (check your diff for the actual additions):",
+      "      line 10761  \"Could not export the field note.\"",
+      "      line 10821  \"Field conclusion saved.\"",
+      "",
+      "  stem_lab/stem_tool_optics.js  9 → 10  (+1)",
+      "      last 1 in source order (check your diff for the actual additions):",
+      "      line 13247  \"Trial captured in the evidence journal\"",
+      "",
+      "  sel_hub/sel_hub_module.js  15 → 16  (+1)",
+      "      last 1 in source order (check your diff for the actual additions):",
+      "      line 6079  \"\\\" quest preset!\"",
+      "",
+      "  A bare string here has no key, so it is never shown to a translator and ships",
+      "  English in every language pack. Wrap it the way the file already does, e.g.",
+      "      addToast(__alloT('stem.<tool>.<key>', 'English text'), 'success')",
+      "  For an interpolated value use a {value1} placeholder rather than splitting the",
+      "  sentence, so a translator can reorder it.",
+      "  Inspect with: node dev-tools/check_hardcoded_toast_text.cjs --list <file>",
+      "##[error]Process completed with exit code 1."
+    ],
+    "baselineComparison": {
+      "baselineSha": "fd4044c862ed9b345b340d69cb1411a19c09dafb",
+      "comparedAt": "2026-09-27T02:19:39.651Z",
+      "comparisons": [
+        {
+          "path": "behavior_lens_module.js",
+          "baselineBlob": "408b8965819b1ec814a36503453dfc547e3abd03",
+          "sourceBlob": "408b8965819b1ec814a36503453dfc547e3abd03",
+          "identical": true
+        },
+        {
+          "path": "symbol_studio_module.js",
+          "baselineBlob": "5cfa8f070aa704583b4e479fc7be10a3dc1732cb",
+          "sourceBlob": "5cfa8f070aa704583b4e479fc7be10a3dc1732cb",
+          "identical": true
+        },
+        {
+          "path": "view_image_module.js",
+          "baselineBlob": "fc7edf1bf2e8520b85fa69a534c834454d105851",
+          "sourceBlob": "fc7edf1bf2e8520b85fa69a534c834454d105851",
+          "identical": true
+        },
+        {
+          "path": "stem_lab/stem_tool_geologyexplorer.js",
+          "baselineBlob": "d894d92010895967342bb6a31f14d3b7d8249d80",
+          "sourceBlob": "d894d92010895967342bb6a31f14d3b7d8249d80",
+          "identical": true
+        },
+        {
+          "path": "stem_lab/stem_tool_optics.js",
+          "baselineBlob": "3eb3542385b9af039f6589953a5f0f242ea102b2",
+          "sourceBlob": "3eb3542385b9af039f6589953a5f0f242ea102b2",
+          "identical": true
+        },
+        {
+          "path": "sel_hub/sel_hub_module.js",
+          "baselineBlob": "a4fa474e7069d2cacb59a59496609d89f93cb9a7",
+          "sourceBlob": "a4fa474e7069d2cacb59a59496609d89f93cb9a7",
+          "identical": true
+        },
+        {
+          "path": "dev-tools/check_hardcoded_toast_text.cjs",
+          "baselineBlob": "aa36f247731b8c2effebc3e8e979975d09b17d04",
+          "sourceBlob": "aa36f247731b8c2effebc3e8e979975d09b17d04",
+          "identical": true
+        },
+        {
+          "path": "dev-tools/hardcoded_toast_text_baseline.json",
+          "baselineBlob": "7d69a76c6194ef93a5f9d9ceb534a277ae49ce9b",
+          "sourceBlob": "7d69a76c6194ef93a5f9d9ceb534a277ae49ce9b",
+          "identical": true
+        }
+      ],
+      "classification": "Six remaining untranslated-toast failures are pre-existing: failing modules, checker, and ratchet baseline have identical Git blob IDs.",
+      "releaseFixEvidence": [
+        "The shell && chain reached check_hardcoded_toast_text, so preceding check_aria_handler and check_hardcoded_aria_text exited successfully.",
+        "export_module.js is not among the six failing toast files."
+      ],
+      "limits": [
+        "Multiple runtime render and SEL checks explicitly skipped due missing desktop/web-app/node_modules React/jsdom.",
+        "Later &&-chained gates did not run after the toast failure."
+      ]
+    }
+  },
+  "combinedStatus": "pending",
+  "statuses": [],
+  "note": "Single snapshot only; pending checks are unverified. A red check alone is not classified as pre-existing or a regression."
+}

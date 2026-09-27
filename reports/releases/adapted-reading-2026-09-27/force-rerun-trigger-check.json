@@ -1,0 +1,23 @@
+{
+  "checkedAt": "2026-09-27T02:02:46.683Z",
+  "selection": "bare --changed: staged plus untracked/modified non-ignored paths",
+  "patterns": [
+    "**/package.json/**",
+    "**/{vitest,vite}.config.*/**"
+  ],
+  "stagedCount": 38,
+  "unstagedAndUntrackedCount": 6875,
+  "affectedUniqueCount": 6913,
+  "matchingTriggerCount": 0,
+  "matchingPaths": [],
+  "snapshotProof": {
+    "path": "reports/adapted-reader-integration-01-2026-09-26-1730/pass-two/baseline/package.json",
+    "stillExists": true,
+    "matchesTrigger": true,
+    "includedInAffectedPaths": false,
+    "ignoreRule": [
+      ".git/info/exclude:9:/reports/adapted-reader-integration-01-2026-09-26-1730/pass-two/baseline/package.json\treports/adapted-reader-integration-01-2026-09-26-1730/pass-two/baseline/package.json"
+    ]
+  },
+  "testDiscoveryRun": false
+}
