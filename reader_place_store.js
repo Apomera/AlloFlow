@@ -9,6 +9,7 @@ function createReadingPlaceStore(options) {
   var maxChars = options.maxChars || 1500000;
   var maxAnswerChars = options.maxAnswerChars || 16000;
   var maxRecords = options.maxRecords || 80;
+  var maxEmptyEntries = Number.isSafeInteger(options.maxEmptyEntries) && options.maxEmptyEntries > 0 ? options.maxEmptyEntries : 20;
   var now = options.now || Date.now;
   var object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
   var equal = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -116,6 +117,23 @@ function createReadingPlaceStore(options) {
       .map(entry => ({ scope: copy(entry.scope), place: copy(entry.draft), recoveryCopies: copy(entry.recoveryCopies), status: entry.status })) };
   }
   function matching(row, scope) { return row && (row.sourceText === undefined || row.sourceText === scope.text); }
+  function trimEmptyEntries(current) {
+    // Exact-text keys can be large. Bound only pristine, never-saved readings;
+    // authored work, positions, pending writes, removals and recovery evidence
+    // remain available for this page's lifetime, regardless of this limit.
+    var empty = [];
+    entries.forEach((entry, key) => {
+      if (!entry.base && !entry.removed && !entry.recoveryPending && !entry.problem &&
+          (entry.status === 'ready' || entry.status === 'session-only') &&
+          !entry.dirty.size && !entry.recoveryCopies.length && !hasWork(entry.draft) &&
+          entry.draft.paragraph === undefined) empty.push(key);
+    });
+    var remaining = empty.length;
+    for (var key of empty) {
+      if (remaining <= maxEmptyEntries) break;
+      if (key !== current) { entries.delete(key); remaining--; }
+    }
+  }
   function entryFor(scope) {
     var key = memoryKey(scope), entry = entries.get(key);
     if (!entry) {
@@ -126,6 +144,9 @@ function createReadingPlaceStore(options) {
         status: !scope.learner ? 'session-only' : loaded.reason ? 'failed' : row ? 'saved' : 'ready', reason: loaded.reason, problem: loaded.problem };
       entries.set(key, entry);
     }
+    // Map insertion order is the recency order for the disposable entries.
+    entries.delete(key); entries.set(key, entry);
+    trimEmptyEntries(key);
     return entry;
   }
   function reconcile(entry, remote) {

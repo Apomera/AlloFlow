@@ -29,6 +29,7 @@ const makeComplexityAdjustment = () => extractFunction(
 
 beforeAll(() => {
   loadAlloModule('instructional_context_module.js');
+  loadAlloModule('pure_helpers_module.js'); loadAlloModule('text_pipeline_helpers_module.js');
   Context = window.AlloModules.InstructionalContext;
   if (!Context) throw new Error('InstructionalContext failed to register');
 });

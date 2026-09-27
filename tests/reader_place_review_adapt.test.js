@@ -58,6 +58,7 @@ const focusParagraph = index => act(() => { const node = paragraph(index); node.
 const typeInto = async (node, value) => {
   const proto = node.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : node.tagName === 'SELECT' ? HTMLSelectElement.prototype : HTMLInputElement.prototype;
   await act(async () => { Object.getOwnPropertyDescriptor(proto, 'value').set.call(node, value); node.dispatchEvent(new Event(node.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true })); });
+  if (node.hasAttribute('data-adapt-keep-terms')) await act(async () => { await new Promise(done => setTimeout(done, 230)); });
 };
 const scrollAndWait = async () => { await act(async () => { document.dispatchEvent(new Event('scroll')); await new Promise(done => setTimeout(done, 900)); }); };
 
@@ -414,7 +415,7 @@ describe('precise adaptation choices', () => {
 
   it('blocks over-limit/unfinished lists visibly and preserves literal quoted punctuation', async () => {
     const handleComplexityAdjustment = vi.fn(async () => ({ status: 'rejected', message: 'Current text kept.' }));
-    mount(item(), { ...open, handleComplexityAdjustment });
+    mount(item('In Washington, D.C., herons eat fish.'), { ...open, handleComplexityAdjustment });
     await typeInto($('[data-adapt-keep-terms]'), Array.from({ length: 31 }, (_, i) => 'term' + i).join(', '));
     expect($('[data-apply-complexity]').disabled).toBe(true);
     expect($('[data-adapt-keep-terms]').getAttribute('aria-invalid')).toBe('true');

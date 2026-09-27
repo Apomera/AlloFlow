@@ -3484,12 +3484,14 @@ const handleComplexityAdjustment = async (deps) => {
   const artifactIsBilingual = generatedContent?.type === 'simplified'
     && typeof generatedContent?.data === 'string'
     && /---\s*ENGLISH TRANSLATION\s*---/i.test(generatedContent.data);
-  // A rewrite of an already bilingual artifact must remain bilingual even if
-  // the teacher has since changed the ambient translation toggle. The content
-  // itself is the durable language snapshot for legacy artifacts that predate
-  // an explicit translation-policy field.
+  // The legacy delimiter names English even when the saved target is another
+  // language. Preserve the artifact's metadata before consulting ambient settings.
+  const savedTranslationTarget = [generatedContent?.config?.translationPolicy?.target,
+    generatedContent?.translationPolicy?.target, generatedContent?.translationTarget,
+    generatedContent?.config?.translationTarget, generatedContent?.config?.attachedTranslationTarget]
+    .find(value => typeof value === 'string' && value.trim() && !/^(auto|off)$/i.test(value.trim()));
   const _xlate = artifactIsBilingual
-    ? { ...resolvedTranslationPolicy, enabled: true, target: 'English', mode: 'artifact-preserve' }
+    ? { enabled: true, target: window.AlloModules?.TextPipelineHelpers?.getArtifactTranslationTarget?.(generatedContent) || savedTranslationTarget?.trim() || 'English', mode: 'artifact-preserve' }
     : resolvedTranslationPolicy;
   try { if (window._DEBUG_GEN_HELPERS) console.log("[GenerationHelpers] handleComplexityAdjustment fired"); } catch(_) {}
     // adaptationPlan (reader, 2026-09-26): { options } adds precise changes;
@@ -3511,7 +3513,8 @@ const handleComplexityAdjustment = async (deps) => {
         vocabularyRejected = true;
         const message = _preservedVocabulary.feedback(audit, t);
         addToast(message, 'warning');
-        return { status: 'rejected', reason: audit.reason || 'invalid-preserved-terms', sourceRetained: true, message, vocabulary: audit };
+        return { status: 'rejected', reason: audit.reason || 'invalid-preserved-terms', sourceRetained: true, message,
+            ...(audit.scope === 'panes' ? { panes: audit, recovery: 'preview' } : { vocabulary: audit }) };
     };
     const supportedTypes = ['simplified', 'quiz', 'sentence-frames', 'glossary'];
     if ((complexityLevel === 5 && !hasPlanOptions && !prepared) || !generatedContent || !supportedTypes.includes(generatedContent.type)) return;
@@ -3708,6 +3711,7 @@ const handleComplexityAdjustment = async (deps) => {
             : await callGemini(prompt, jsonMode);
         if (!isCurrent()) return { status: 'stale' };
         if (generatedContent.type === 'simplified' && simplifiedCitationContext) {
+            if (typeof result !== 'string') return rejectVocabulary({ scope: 'panes', valid: false, reason: 'invalid-candidate-text' });
             const candidateParts = splitReferenceTrailer(result);
             const candidateBody = candidateParts.body.trim();
             const candidateExtraction = extractSourceTextForProcessing(candidateBody, false);
@@ -3715,6 +3719,9 @@ const handleComplexityAdjustment = async (deps) => {
             const finalCandidate = [candidateBody, simplifiedCitationContext.references].filter(Boolean).join('\n\n');
             vocabularyAudit = _preservedVocabulary.validate(requestResourceData, finalCandidate, requestedTerms, vocabularySplit);
             if (!vocabularyAudit.valid) return rejectVocabulary(vocabularyAudit);
+            const requiresTranslation = simplifiedCitationContext.wasBilingual || !!_xlate.enabled;
+            const paneAudit = _preservedVocabulary.checkPanes(candidateBody, requiresTranslation, vocabularySplit);
+            if (!paneAudit.valid) return rejectVocabulary(paneAudit);
             const originalForValidation = simplifiedCitationContext.wasBilingual
                 ? simplifiedCitationContext.sourceBody
                 : simplifiedCitationContext.sourceTarget;
@@ -3722,9 +3729,10 @@ const handleComplexityAdjustment = async (deps) => {
                 ? candidateBody
                 : candidateTarget;
             let conservation = validateCitationsInOrder(originalForValidation, candidateForValidation);
-            const shouldValidateGeneratedEnglish = !simplifiedCitationContext.wasBilingual
-                && (candidateExtraction.isBilingual || String(effectiveLanguage || '').trim().toLowerCase() !== 'english');
-            if (shouldValidateGeneratedEnglish) {
+            // Pane validation above guarantees the configured translation exists.
+            // A non-English primary alone does not require a translation.
+            const shouldValidateGeneratedTranslation = !simplifiedCitationContext.wasBilingual && requiresTranslation;
+            if (shouldValidateGeneratedTranslation) {
                 const englishConservation = validateCitationsInOrder(
                     candidateTarget,
                     candidateExtraction.isBilingual ? candidateExtraction.englishBlock : ''
@@ -3787,6 +3795,10 @@ const handleComplexityAdjustment = async (deps) => {
             : null;
         const adjustedConfig = {
             ...(prepared && prepared.config ? prepared.config : priorConfig),
+            ...(generatedContent.type === 'simplified' ? {
+                translationPolicy: { enabled: !!_xlate.enabled, target: _xlate.target || '', mode: _xlate.mode || 'auto' },
+                translationTarget: _xlate.enabled ? _xlate.target : ''
+            } : {}),
             ...(complexityCitationAudit ? {
                 citationAudit: {
                     ...(priorAudit || {
@@ -3928,6 +3940,8 @@ const handleComplexityAdjustment = async (deps) => {
         return { status: 'applied', ...outcome };
     } catch (err) {
         if (!isCurrent()) return { status: 'stale' };
+        if (err?.code === 'invalid-generated-text') return rejectVocabulary({ scope: 'panes', valid: false,
+            reason: 'empty-required-pane', pane: err.pane || 'primary' });
         if (err?.code === 'citation-conservation-failed') {
             warnLog('[CitationConservation] Complexity adjustment rejected; original resource retained.', err.details || err);
             addToast('The adjustment changed a source citation, so the original citation-safe version was retained.', 'warning');
@@ -4002,7 +4016,11 @@ const _preservedVocabulary = (() => {
         if (typeof body !== 'string') throw new Error('text-parser-unavailable');
         const parts = body.split(/^\s*---\s*ENGLISH TRANSLATION\s*---\s*$/im);
         if (parts.length > 2 || /---\s*TRANSLATION\s*---/i.test(body)) throw new Error('ambiguous-language-panes');
-        return { primary: blocks(parts[0]), ...(parts.length === 2 ? { translation: blocks(parts[1]) } : {}) };
+        const readPane = (raw, pane) => {
+            try { return blocks(raw); }
+            catch (error) { error.pane = pane; throw error; }
+        };
+        return { primary: readPane(parts[0], 'primary'), ...(parts.length === 2 ? { translation: readPane(parts[1], 'translation') } : {}) };
     };
     // Index boundaries once per region, not once per requested term. This is
     // request-local: no reading text or segmentation data survives in a cache.
@@ -4040,7 +4058,10 @@ const _preservedVocabulary = (() => {
                 else result.required.push({ term, panes: occurrences });
             }
             if (result.absentFromSource.length) { result.valid = false; result.status = 'invalid'; result.reason = 'terms-absent-from-source'; }
-        } catch (error) { result.valid = false; result.status = 'unverified'; result.reason = error.message; }
+        } catch (error) {
+            result.valid = false; result.status = 'unverified'; result.reason = error.message;
+            result.diagnostic = { stage: 'source', pane: error.pane || null, format: error.format || null };
+        }
         return result;
     };
     const validate = (source, candidate, requested, splitReferences) => {
@@ -4052,8 +4073,29 @@ const _preservedVocabulary = (() => {
                 if (!count(candidatePanes[original.pane], entry.term)) result.missingTerms.push({ term: entry.term, pane: original.pane });
             }
             if (result.missingTerms.length) { result.valid = false; result.status = 'invalid'; result.reason = 'essential-terms-missing'; }
-        } catch (error) { result.valid = false; result.status = 'unverified'; result.reason = error.message; }
+        } catch (error) {
+            result.valid = false; result.status = 'unverified'; result.reason = error.message;
+            result.diagnostic = { stage: 'candidate', pane: error.pane || null, format: error.format || null };
+        }
         return result;
+    };
+    // Pane completeness is independent of vocabulary presence. An empty term
+    // list grants no vocabulary guarantee, but must not permit lost reading panes.
+    const checkPanes = (candidate, requiresTranslation, splitReferences) => {
+        const audit = { version, scope: 'panes', valid: false, requiredPanes: requiresTranslation ? ['primary', 'translation'] : ['primary'] };
+        if (typeof candidate !== 'string') return { ...audit, reason: 'invalid-candidate-text' };
+        try {
+            const markers = candidate.match(/---\s*(?:ENGLISH\s+)?TRANSLATION\s*---/gi) || [];
+            if (markers.some(marker => marker !== '--- ENGLISH TRANSLATION ---')) return { ...audit, reason: 'ambiguous-language-panes' };
+            const candidatePanes = panes(candidate, splitReferences);
+            if (markers.length !== (candidatePanes.translation ? 1 : 0)) return { ...audit, reason: 'ambiguous-language-panes' };
+            if (requiresTranslation && !candidatePanes.translation) return { ...audit, reason: 'missing-required-pane', pane: 'translation' };
+            if (!requiresTranslation && candidatePanes.translation) return { ...audit, reason: 'unexpected-translation-pane' };
+            for (const pane of audit.requiredPanes) if (!candidatePanes[pane]?.some(text => text.replace(/[\s\p{Default_Ignorable_Code_Point}]/gu, ''))) return { ...audit, reason: 'empty-required-pane', pane };
+            return { ...audit, valid: true };
+        } catch (error) {
+            return { ...audit, reason: error.message, diagnostic: { stage: 'candidate', pane: error.pane || null, format: error.format || null } };
+        }
     };
     const feedback = (audit, translate) => {
         const defaults = {
@@ -4071,6 +4113,20 @@ const _preservedVocabulary = (() => {
         "adapt_terms_text": "Each term must be a text entry.",
         "adapt_terms_invalid": "Current text kept. {details} No terms were dropped. Correct the list and preview again.",
         "adapt_preview_expired": "Current text kept. This preview can no longer be verified. Preview the change again.",
+        "adapt_format_source": "Current text kept. Cannot verify the {pane} in the current reading: {details} {action}",
+        "adapt_format_candidate": "Current text kept. Cannot verify the {pane} in the proposed version: {details} Retry the preview; no change was applied.",
+        "adapt_format_code": "HTML code or preformatted text cannot be checked.",
+        "adapt_format_html": "HTML tags are unbalanced or span separate lines or sentences.",
+        "adapt_format_styled": "Custom styles or classes prevent reliable text checking.",
+        "adapt_format_element": "This pane contains an unsupported HTML element.",
+        "adapt_format_unclosed": "A code span, comment, or fenced block is not closed.",
+        "adapt_format_plain_action": "Use plain text or standard emphasis in that pane, then preview again.",
+        "adapt_format_close_action": "Close the formatting markers in that pane, then preview again.",
+        "adapt_pane_missing": "Current text kept. The proposed version is missing the {pane}. Preview again to generate both reading panes.",
+        "adapt_pane_empty": "Current text kept. The proposed {pane} has no readable text. Preview again; no change was applied.",
+        "adapt_pane_unexpected": "Current text kept. The proposed version added a translation that was not requested. Preview again.",
+        "adapt_panes_invalid": "Current text kept. The proposed version has invalid or ambiguous reading panes. Preview again.",
+        "adapt_panes_unverified": "Current text kept. The proposed reading panes could not be verified. Reload and preview again.",
         "adapt_terms_unverified": "Current text kept. Essential terms could not be verified. Preview again using supported text formatting.",
         "adapt_terms_separator": "Use a separator after a quoted term.",
         "adapt_terms_quote": "Close the quotation mark around the term."
@@ -4081,14 +4137,26 @@ const _preservedVocabulary = (() => {
             const value = typeof translated === 'string' && translated && translated !== key ? translated : defaults[name];
             return value.replace(/\{(\w+)\}/g, (match, name) => params[name] === undefined ? match : String(params[name]));
         };
+        if (audit.reason === 'missing-required-pane' || audit.reason === 'empty-required-pane') return message(audit.reason === 'missing-required-pane' ? 'adapt_pane_missing' : 'adapt_pane_empty', {
+            pane: message(audit.pane === 'translation' ? 'adapt_terms_translation' : 'adapt_terms_primary')
+        });
+        if (audit.reason === 'unexpected-translation-pane') return message('adapt_pane_unexpected');
+        if (audit.scope === 'panes' && ['invalid-candidate-text', 'ambiguous-language-panes'].includes(audit.reason)) return message('adapt_panes_invalid');
         if (audit.reason === 'separator-after-quote') return message('adapt_terms_separator');
         if (audit.reason === 'unclosed-term-quote') return message('adapt_terms_quote');
         if (audit.missingTerms?.length) return message('adapt_terms_missing', { terms: audit.missingTerms.map(entry => '“' + entry.term + '” (' + message(entry.pane === 'primary' ? 'adapt_terms_primary' : 'adapt_terms_translation') + ')').join('; ') });
         if (audit.absentFromSource?.length) return message('adapt_terms_absent', { terms: audit.absentFromSource.map(term => '“' + term + '”').join('; ') });
         if (audit.errors?.length) return message('adapt_terms_invalid', { details: audit.errors.map(error => message(error.code === 'too-many-terms' ? 'adapt_terms_many' : error.code === 'term-too-long' ? 'adapt_term_long' : error.code === 'terms-too-long' ? 'adapt_terms_long' : 'adapt_terms_text', error)).join(' ') });
+        const formatKey = { code: 'code', html: 'html', styled: 'styled', element: 'element', unclosed: 'unclosed' }[audit.diagnostic?.format];
+        if (formatKey && audit.diagnostic.pane) return message(audit.diagnostic.stage === 'candidate' ? 'adapt_format_candidate' : 'adapt_format_source', {
+            pane: message(audit.diagnostic.pane === 'translation' ? 'adapt_terms_translation' : 'adapt_terms_primary'),
+            details: message('adapt_format_' + formatKey),
+            action: message(formatKey === 'unclosed' ? 'adapt_format_close_action' : 'adapt_format_plain_action')
+        });
+        if (audit.scope === 'panes') return message('adapt_panes_unverified');
         return message(audit.reason === 'preview-validation-unavailable' ? 'adapt_preview_expired' : 'adapt_terms_unverified');
     };
-    return { version, limits, normalize, parseInput, prepare, validate, feedback };
+    return { version, limits, normalize, parseInput, prepare, validate, checkPanes, feedback };
 })();
 
 const _waitForGenerationMatrixReady = async (deps = {}) => {

@@ -101,6 +101,13 @@ const resolveTranslationPolicy = (mode, outputLanguage, uiLanguage, allowedTarge
 // which is Aaron's "it would probably only want to come up when you are doing
 // other languages". Second clause: a teacher who has already chosen 'off' or a
 // specific language must keep seeing the control, or they cannot undo it.
+const getArtifactTranslationTarget = artifact => {
+  const saved = [artifact?.config?.translationPolicy?.target, artifact?.translationPolicy?.target,
+    artifact?.translationTarget, artifact?.config?.translationTarget, artifact?.config?.attachedTranslationTarget]
+    .find(value => typeof value === 'string' && value.trim() && !/^(auto|off)$/i.test(value.trim()));
+  return saved?.trim() || 'English'; // Legacy bilingual artifacts predate destination metadata.
+};
+
 const isTranslationControlRelevant = (mode, outputLanguage, uiLanguage, allowedTargets) => {
   // Read through the resolver, never by comparing the raw string here — a
   // second, looser copy of the mode logic is exactly how a setting starts
@@ -133,6 +140,7 @@ const translationTargetChoices = (outputLanguage, uiLanguage, selectedLanguages)
 // for validation; readers may fall back to their legacy renderer.
 const readingText = (() => {
     const normalizeText = value => value.normalize('NFC').replace(/\s+/gu, ' ').trim();
+    const formattingError = (reason, format) => Object.assign(new Error(reason), { format });
     const balanced = (text, start, open, close) => {
         let depth = 0;
         for (let i = start; i < text.length; i++) {
@@ -153,7 +161,7 @@ const readingText = (() => {
                 const delimiter = String.fromCharCode(96).repeat(width);
                 let end = text.indexOf(delimiter, i + width);
                 while (end >= 0 && (text.charCodeAt(end - 1) === 96 || text.charCodeAt(end + width) === 96)) end = text.indexOf(delimiter, end + width);
-                if (end < 0) throw new Error('unclosed-formatting');
+                if (end < 0) throw formattingError('unclosed-formatting', 'unclosed');
                 result += Array.from(text.slice(i + width, end)).map(char => '&#' + char.codePointAt(0) + ';').join('');
                 i = end + width - 1; continue;
             }
@@ -186,11 +194,11 @@ const readingText = (() => {
         const tags = html.match(/<\/?[A-Za-z][^<>]*>/g) || [], stack = [];
         for (const tag of tags) {
             const name = tag.match(/^<\/?([A-Za-z][\w:-]*)/)[1].toUpperCase();
-            if (/^(CODE|PRE)$/.test(name)) throw new Error('unsupported-formatting');
-            if (/^<\//.test(tag)) { if (stack.pop() !== name) throw new Error('unsupported-formatting'); }
+            if (/^(CODE|PRE)$/.test(name)) throw formattingError('unsupported-formatting', 'code');
+            if (/^<\//.test(tag)) { if (stack.pop() !== name) throw formattingError('unsupported-formatting', 'html'); }
             else if (!/\/>$/.test(tag) && !/^(BR|HR|IMG|INPUT|META|LINK|SOURCE|AREA|BASE|COL|EMBED|PARAM|TRACK|WBR)$/.test(name)) stack.push(name);
         }
-        if (stack.length) throw new Error('unsupported-formatting');
+        if (stack.length) throw formattingError('unsupported-formatting', 'html');
         const allowed = new Set('BODY P DIV SPAN STRONG B EM I U A BR UL OL LI TABLE THEAD TBODY TFOOT TR TD TH H1 H2 H3 H4 H5 H6 BLOCKQUOTE DL DT DD FIGURE FIGCAPTION SUB SUP HR DEL S STRIKE'.split(' '));
         const visit = node => {
             if (node.nodeType === 3) return { text: node.data };
@@ -198,7 +206,8 @@ const readingText = (() => {
             if (/^(SCRIPT|STYLE|TEMPLATE|NOSCRIPT|IMG|SVG|MATH|BUTTON)$/.test(node.tagName)
                 || node.hasAttribute('hidden') || node.getAttribute('aria-hidden') === 'true'
                 || /(?:display\s*:\s*none|visibility\s*:\s*hidden)/i.test(node.getAttribute('style') || '')) return { hidden: true };
-            if (!allowed.has(node.tagName) || node.hasAttribute('class') || node.hasAttribute('style')) throw new Error('unsupported-formatting');
+            if (!allowed.has(node.tagName)) throw formattingError('unsupported-formatting', 'element');
+            if (node.hasAttribute('class') || node.hasAttribute('style')) throw formattingError('unsupported-formatting', 'styled');
             return { tag: node.tagName.toLowerCase(), excluded: /^(DEL|S|STRIKE)$/.test(node.tagName), href: node.tagName === 'A' ? node.getAttribute('href') : undefined, children: Array.from(node.childNodes, visit) };
         };
         return visit(new DOMParser().parseFromString(html, 'text/html').body);
@@ -207,7 +216,7 @@ const readingText = (() => {
         if (typeof DOMParser !== 'function') throw new Error('text-parser-unavailable');
         // Keep hidden HTML spanning lines from being split into independent
         // Markdown paragraphs. Unsupported cross-line HTML is unverified.
-        if (/<!--[\s\S]*$/.test(raw.replace(/<!--[\s\S]*?-->/g, ''))) throw new Error('unclosed-formatting');
+        if (/<!--[\s\S]*$/.test(raw.replace(/<!--[\s\S]*?-->/g, ''))) throw formattingError('unclosed-formatting', 'unclosed');
         raw = raw.replace(/<!--[\s\S]*?-->/g, '');
         const chunks = []; let paragraph = [], fence = '';
         const flush = () => { if (paragraph.length) chunks.push(paragraph.join('\n')); paragraph = []; };
@@ -219,17 +228,17 @@ const readingText = (() => {
             const stack = [];
             for (const tag of htmlTags) {
                 const name = tag.match(/^<\/?([A-Za-z][\w:-]*)/)[1].toUpperCase();
-                if (/^(CODE|PRE)$/.test(name)) throw new Error('unsupported-formatting');
-                if (/^<\//.test(tag)) { if (stack.pop() !== name) throw new Error('unsupported-formatting'); }
+                if (/^(CODE|PRE)$/.test(name)) throw formattingError('unsupported-formatting', 'code');
+                if (/^<\//.test(tag)) { if (stack.pop() !== name) throw formattingError('unsupported-formatting', 'html'); }
                 else if (!/\/>$/.test(tag) && !/^(BR|HR|IMG|INPUT|META|LINK|SOURCE|AREA|BASE|COL|EMBED|PARAM|TRACK|WBR)$/.test(name)) stack.push(name);
             }
-            if (stack.length) throw new Error('unsupported-formatting');
+            if (stack.length) throw formattingError('unsupported-formatting', 'html');
             if (!line.trim() || /^\s*\[[^\]]+\]:\s*\S/.test(line) || /^\s*([-*_])(?:\s*\1){2,}\s*$/.test(line)) { flush(); continue; }
             if (/^\s*\|.*\|\s*$/.test(line)) { flush(); chunks.push(...line.trim().slice(1, -1).split(/(?<!\\)\|/)); continue; }
             const block = line.match(/^\s*(?:#{1,6}\s+|[-+*]\s+|\d+[.)]\s+|>\s?)(.*)$/);
             if (block) { flush(); chunks.push(block[1]); } else paragraph.push(line);
         }
-        if (fence) throw new Error('unclosed-formatting');
+        if (fence) throw formattingError('unclosed-formatting', 'unclosed');
         flush();
         const output = [];
         const blockTags = new Set('p div pre li td th h1 h2 h3 h4 h5 h6 blockquote dt dd figcaption hr'.split(' '));
@@ -279,12 +288,14 @@ const generateBilingualText = async (basePrompt, targetLang, callGeminiFn, trans
             throw error;
         }
     };
-    const requestText = async prompt => {
+    const requestText = async (prompt, pane = 'primary') => {
         ensureCurrent();
         try {
             const raw = await callGeminiFn(prompt);
             ensureCurrent();
-            return stripFences(raw);
+            const text = typeof raw === 'string' ? stripFences(raw) : '';
+            if (!text) throw Object.assign(new Error('Generation returned no reading text.'), { code: 'invalid-generated-text', pane });
+            return text;
         } catch (error) {
             // An obsolete provider failure belongs to the cancelled request.
             ensureCurrent();
@@ -309,15 +320,18 @@ URL PRESERVATION (CRITICAL — applies to every citation link [⁽N⁾](url)):
     const policy = (translationPolicy && typeof translationPolicy === 'object')
         ? translationPolicy
         : resolveTranslationPolicy(TRANSLATION_MODE_AUTO, targetLang, 'English');
-    if (!targetLang || targetLang === 'English') {
+    if (!targetLang || targetLang === 'All Selected Languages') {
         return requestText(basePrompt + '\n\n' + urlPreservationRules);
     }
-    const targetPrompt = `${basePrompt}\n\n${urlPreservationRules}\n\nCRITICAL: Return ONLY the ${targetLang} text.${policy.enabled ? ` Do NOT provide a ${policy.target} translation yet.` : ''}`;
+    // English can be the primary pane too. Suppress only disabled, empty, or
+    // same-language destinations; never suppress a requested translation by source language.
+    const translationEnabled = !!policy.enabled && !!_normLangName(policy.target) && !isSameLanguage(targetLang, policy.target);
+    const targetPrompt = `${basePrompt}\n\n${urlPreservationRules}\n\nCRITICAL: Return ONLY the ${targetLang} text.${translationEnabled ? ` Do NOT provide a ${policy.target} translation yet.` : ''}`;
     const targetResult = await requestText(targetPrompt);
     // Translations off (or nothing sensible to translate into): one call, one
     // block, no delimiter. Every downstream consumer already handles a string
     // without the delimiter — that is the English-output case they see today.
-    if (!policy.enabled) return targetResult;
+    if (!translationEnabled) return targetResult;
     // Use triple-pipe fences instead of "..." wrapping so trailing ")" on the last citation
     // doesn't butt up against a closing quote (which Gemini sometimes eats).
     const preservedTranslationTerms = Array.isArray(controls?.translationKeepTerms) ? controls.translationKeepTerms : [];
@@ -337,7 +351,7 @@ Return ONLY the ${policy.target} translation — no preamble, no fences in your 
 ${targetResult}
 |||END ${targetLang.toUpperCase()}|||
     `;
-    const translatedResult = await requestText(translationPrompt);
+    const translatedResult = await requestText(translationPrompt, 'translation');
     // The delimiter stays the literal '--- ENGLISH TRANSLATION ---' whatever the
     // destination language is. It is a MACHINE TOKEN, not user-facing copy: it
     // is parsed by extractSourceTextForProcessing, BilingualFieldRenderer,
@@ -1599,6 +1613,7 @@ const createTextPipelineHelpers = () => ({
   isTranslationControlRelevant,
   translationTargetChoices,
   isSameLanguage,
+  getArtifactTranslationTarget,
   TRANSLATION_MODE_AUTO,
   TRANSLATION_MODE_OFF,
   extractSourceTextForProcessing,

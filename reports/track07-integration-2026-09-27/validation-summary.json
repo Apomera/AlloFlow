@@ -1,0 +1,67 @@
+{
+  "head": "286e09850680047d44efcc836075916cf488eff6",
+  "firstRun": {
+    "passed": 448,
+    "failed": 1,
+    "files": 17
+  },
+  "unchangedDraftRerun": {
+    "passed": 58,
+    "failed": 0
+  },
+  "distinctTests": 449,
+  "browserCases": 29,
+  "mirrors": [
+    {
+      "file": "generation_helpers_module.js",
+      "equal": true
+    },
+    {
+      "file": "text_pipeline_helpers_module.js",
+      "equal": true
+    },
+    {
+      "file": "view_simplified_module.js",
+      "equal": true
+    },
+    {
+      "file": "ui_strings.js",
+      "equal": true
+    },
+    {
+      "file": "lang/spanish_castilian.js",
+      "equal": true
+    },
+    {
+      "file": "lang/spanish_latin_america.js",
+      "equal": true
+    }
+  ],
+  "pins": {
+    "generation_helpers_module.js": "d308e94c",
+    "text_pipeline_helpers_module.js": "50f47633",
+    "view_simplified_module.js": "b8f7f57e"
+  },
+  "concurrentCatalogDrift": {
+    "files": [
+      "ui_strings.js",
+      "desktop/web-app/public/ui_strings.js"
+    ],
+    "review": "Only unrelated Scale Explorer atlas and DinoLab text was added beyond the track 07 keys. Preserved in working files; excluded from this commit."
+  },
+  "verified": "2026-09-27T16:15:41.124Z",
+  "commitBase": "e6e137b8e07a544beda49e54a7a2cdbbd778de65",
+  "postValidationConcurrentCommit": {
+    "files": [
+      "desktop/web-app/public/stem_lab/stem_tool_moonmission.js",
+      "reports/moon-mission-enhancement-2026-09-27/README.md",
+      "stem_lab/stem_tool_moonmission.js",
+      "tests/e2e/moon-mission-flight-dynamics.spec.ts",
+      "tests/moon_mission_lrv_traverse.test.js",
+      "tests/moonmission_eva_resources.test.js",
+      "tests/moonmission_physics_realism.test.js"
+    ],
+    "scopeOverlap": false,
+    "validatedSourceDrift": false
+  }
+}

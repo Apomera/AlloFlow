@@ -17,7 +17,7 @@ const root = path.resolve(__dirname, '..');
     const mount = async options => { await page.evaluate(options => mountReading(options),options || {}); await expect(page.locator('[data-adapt-keep-terms]')).toBeVisible(); };
     const preview = async (terms='wading birds') => { await page.locator('[data-adapt-keep-terms]').fill(terms); await page.locator('[data-apply-complexity]').click(); };
     const apply = async () => { await page.locator('[data-adaptation-apply]').focus(); await page.keyboard.press('Enter'); };
-    const check = async (name, fn) => { try { await fn(); results.push({name,status:'passed'}); console.log('PASS '+name); } catch(error) { failures.push(name);results.push({name,status:'failed',error:error.stack});console.error('FAIL '+name+': '+error.message); } };
+    const check = async (name, fn) => { try { await fn(); results.push({name,status:'passed'}); console.log('PASS '+name); } catch(error) { failures.push(name);results.push({name,status:'failed',error:error.stack,reader:await page.evaluate(()=>({sections:[...document.querySelectorAll('[data-reading-passage] section')].map(n=>({language:n.dataset.readingLanguage,text:n.textContent.slice(0,100)})),translationTarget:window.AlloModules.TextPipelineHelpers.getArtifactTranslationTarget?.(fixture.state.current),config:fixture.state.current.config}))});console.error('FAIL '+name+': '+error.message); } };
     await check('acknowledged overwrite and keyboard Apply',async()=>{
       await mount();await preview();await apply();
       await expect(page.locator('[data-adaptation-notice]')).toContainText('Change applied');
@@ -84,8 +84,10 @@ const root = path.resolve(__dirname, '..');
       assert.equal(await page.evaluate(()=>fixture.state.current.data),'Learners see 👩.');
     });
     await check('partial emoji source terms fail before a model call',async()=>{
-      await mount({source:'Learners see 👩‍🏫.'});await preview('👩');
-      await expect(page.locator('[data-adaptation-notice]')).toContainText('not found exactly');
+      await mount({source:'Learners see 👩‍🏫.'});await page.locator('[data-adapt-keep-terms]').fill('👩');
+      await expect(page.locator('[data-adapt-keep-terms]')).toHaveAttribute('aria-invalid','true');
+      await expect(page.locator('[data-apply-complexity]')).toBeDisabled();
+      await expect(page.locator('[data-adapt-term-readiness]')).toContainText('not found exactly');
       assert.equal(await page.evaluate(()=>fixture.requests.length),0);
     });
     await check('changing readings during primary generation prevents the translation call',async()=>{
@@ -104,8 +106,101 @@ const root = path.resolve(__dirname, '..');
       await expect(page.locator('[data-apply-complexity]')).toBeFocused();
       await expect(page.locator('[data-adaptation-preview]')).toHaveCount(0);
     });
+    await check('readiness shows each pane, duplicates and remaining capacity before Preview',async()=>{
+      const source='Herons are wading birds. fish.\n\n--- ENGLISH TRANSLATION ---\n\nLas garzas comen fish.';
+      await mount({source,config:{translationTarget:'Spanish'}});
+      await page.locator('[data-adapt-keep-terms]').fill('wading birds; garzas; fish; garzas');
+      const ready=page.locator('[data-adapt-term-readiness]');
+      await expect(ready).toContainText('27 of 30');await expect(ready).toContainText('Repeated entries count once: garzas');
+      await expect(ready).toContainText('“wading birds”: found in primary reading.');await expect(ready).toContainText('“garzas”: found in translation.');await expect(ready).toContainText('“fish”: found in primary reading, translation.');
+      assert.equal(await page.evaluate(()=>fixture.requests.length),0);await expect(page.locator('[data-adapt-keep-terms]')).toHaveValue('wading birds; garzas; fish; garzas');
+    });
+    await check('readiness rejects case changes and recovers when corrected',async()=>{
+      await mount();await page.locator('[data-adapt-keep-terms]').fill('Wading birds');
+      await expect(page.locator('[data-adapt-term-readiness]')).toContainText('not found exactly');await expect(page.locator('[data-apply-complexity]')).toBeDisabled();
+      assert.equal(await page.evaluate(()=>fixture.requests.length),0);
+      await page.locator('[data-adapt-keep-terms]').fill('wading birds');await expect(page.locator('[data-apply-complexity]')).toBeEnabled();
+    });
+    await check('readiness invalidates immediately when the reading changes',async()=>{
+      await mount();await page.locator('[data-adapt-keep-terms]').fill('wading birds');await expect(page.locator('[data-apply-complexity]')).toBeEnabled();
+      await page.evaluate(()=>fixture.changeSource('A different reading.'));
+      await expect(page.locator('[data-adapt-term-readiness]')).toContainText('not found exactly');await expect(page.locator('[data-apply-complexity]')).toBeDisabled();assert.equal(await page.evaluate(()=>fixture.requests.length),0);
+    });
+    await check('formatting feedback identifies the source pane before generation',async()=>{
+      await mount({source:'Herons eat.\n\n--- ENGLISH TRANSLATION ---\n\n<span class="colored">garzas</span>',config:{translationTarget:'Spanish'}});
+      await page.locator('[data-adapt-keep-terms]').fill('garzas');
+      await expect(page.locator('[id^="simplified-adapt-terms-error"]')).toContainText('translation in the current reading: Custom styles or classes');await expect(page.locator('[data-apply-complexity]')).toBeDisabled();
+      assert.equal(await page.evaluate(()=>fixture.requests.length),0);
+    });
+    await check('candidate formatting failure retains source and offers retry',async()=>{
+      await mount({candidate:'<span class="colored">wading birds</span>'});await preview();
+      await expect(page.locator('[data-adaptation-notice]')).toContainText('primary reading in the proposed version');await expect(page.locator('[data-adaptation-notice]')).toContainText('Retry the preview');assert.equal(await page.evaluate(()=>fixture.state.current.data),await page.evaluate(()=>fixture.initial.data));
+    });
+    await check('failure notice stays cleared after switching readings and returning',async()=>{
+      await mount({candidate:'Birds eat.'});await preview();await expect(page.locator('[data-adaptation-notice]')).toContainText('missing:');
+      await page.evaluate(()=>fixture.replaceCurrent({...fixture.initial,id:'another-reading'}));await expect(page.locator('[data-adaptation-notice]')).toHaveText('');
+      await page.evaluate(()=>fixture.replaceCurrent(fixture.initial));await expect(page.locator('[data-adaptation-notice]')).toHaveText('');
+    });
+    await check('editing adaptation options clears obsolete feedback',async()=>{
+      await mount({candidate:'Birds eat.'});await preview();await expect(page.locator('[data-adaptation-notice]')).toContainText('missing:');
+      await page.locator('[data-adapt-option="shorterSentences"]').check();await expect(page.locator('[data-adaptation-notice]')).toHaveText('');
+    });
+    await check('English primary and saved Spanish translation survive Preview and Apply',async()=>{
+      const source='Herons are wading birds.\n\n--- ENGLISH TRANSLATION ---\n\nLas garzas comen.';
+      await mount({source,config:{translationTarget:'Spanish'},translationMode:'off',pipeline:true,responses:['Herons remain wading birds.','Las garzas pescan.']});
+      await preview('wading birds; garzas');await expect(page.locator('[data-adaptation-apply]')).toBeVisible();await apply();
+      await expect(page.locator('[data-adaptation-notice]')).toContainText('Change applied');
+      assert.equal(await page.evaluate(()=>fixture.providerCalls),2);assert.equal(await page.evaluate(()=>fixture.state.current.config.translationPolicy.target),'Spanish');
+      await expect(page.locator('[data-reading-passage] section[data-reading-language="Spanish"]')).toHaveAttribute('lang','es');
+      await expect(page.locator('[data-reading-passage] section[data-reading-language="Spanish"]')).toContainText('Spanish translation');
+    });
+    await check('saved Arabic translation receives RTL and Arabic metadata',async()=>{
+      await mount({source:'Herons eat.\n\n--- ENGLISH TRANSLATION ---\n\nطيور الماء تأكل.',config:{translationTarget:'Arabic'}});
+      await expect(page.locator('[data-reading-passage] section[data-reading-language="Arabic"]')).toHaveAttribute('dir','rtl');await expect(page.locator('[data-reading-passage] section[data-reading-language="Arabic"]')).toHaveAttribute('lang','ar');
+    });
+    await check('Spanish readiness strings interpolate terms and counts',async()=>{
+      const entries=JSON.parse(fs.readFileSync(path.join(root,'lang/spanish_castilian.js'),'utf8')).simplified;
+      await mount({strings:Object.fromEntries(Object.entries(entries).map(([key,value])=>['simplified.'+key,value]))});await page.locator('[data-adapt-keep-terms]').fill('wading birds; wading birds');
+      await expect(page.locator('[data-adapt-term-readiness]')).toContainText('Quedan 29 de 30');await expect(page.locator('[data-adapt-term-readiness]')).toContainText('«wading birds»: aparece en');await expect(page.locator('[data-adapt-term-readiness]')).not.toContainText('{term}');
+    });
+    await check('Undo retains its confirmation after the reading changes back',async()=>{
+      await mount({keepOriginal:true});await preview();await apply();await expect(page.locator('[data-adaptation-undo]')).toBeVisible();
+      await page.locator('[data-adaptation-undo]').click();await expect(page.locator('[data-adaptation-notice]')).toHaveText('Back to the previous version.');
+      assert.equal(await page.evaluate(()=>fixture.state.current.id),'fixture-1');
+    });
+    await check('required translation cannot disappear behind primary-only preserved terms',async()=>{
+      const source='Herons are wading birds.\n\n--- ENGLISH TRANSLATION ---\n\nLas garzas comen.';
+      await mount({source,config:{translationTarget:'Spanish'},candidate:'Herons are wading birds.'});await preview();
+      await expect(page.locator('[data-adaptation-notice]')).toContainText('missing the translation');await expect(page.locator('[data-apply-complexity]')).toBeFocused();await expect(page.locator('[data-adaptation-apply]')).toHaveCount(0);
+      assert.equal(await page.evaluate(()=>fixture.state.current.data),source);assert.equal(await page.evaluate(()=>fixture.state.history.length),1);
+    });
+    await check('empty candidate is rejected without preserved terms',async()=>{
+      await mount({level:3,candidate:''});await page.locator('[data-apply-complexity]').click();
+      await expect(page.locator('[data-adaptation-notice]')).toContainText('primary reading has no readable text');await expect(page.locator('[data-apply-complexity]')).toBeFocused();assert.equal(await page.evaluate(()=>fixture.state.level),3);
+      assert.equal(await page.evaluate(()=>fixture.state.current.data),await page.evaluate(()=>fixture.initial.data));
+    });
+    await check('hidden-only translation is rejected without preserved terms',async()=>{
+      const source='Herons eat.\n\n--- ENGLISH TRANSLATION ---\n\nLas garzas comen.';
+      await mount({source,level:3,config:{translationTarget:'Spanish'},candidate:'Herons eat.\n\n--- ENGLISH TRANSLATION ---\n\n<span hidden>Las garzas comen.</span>'});await page.locator('[data-apply-complexity]').click();
+      await expect(page.locator('[data-adaptation-notice]')).toContainText('translation has no readable text');assert.equal(await page.evaluate(()=>fixture.state.current.data),source);
+    });
+    await check('Apply rechecks complete panes after preview data is changed',async()=>{
+      const source='Herons are wading birds.\n\n--- ENGLISH TRANSLATION ---\n\nLas garzas comen.';
+      await mount({source,config:{translationTarget:'Spanish'},candidate:source});await preview();await expect(page.locator('[data-adaptation-apply]')).toBeVisible();
+      await page.evaluate(()=>fixture.preview.data='Herons are wading birds.');await apply();
+      await expect(page.locator('[data-adaptation-notice]')).toContainText('missing the translation');await expect(page.locator('[data-apply-complexity]')).toBeFocused();assert.equal(await page.evaluate(()=>fixture.state.current.data),source);
+      assert.equal(await page.evaluate(()=>fixture.toasts.filter(t=>t.tone==='success').length),0);
+    });
+    await check('blank primary provider output never starts translation',async()=>{
+      await mount({level:3,pipeline:true,translationMode:'Spanish',responses:['','Las garzas comen.']});await page.locator('[data-apply-complexity]').click();
+      await expect(page.locator('[data-adaptation-notice]')).toContainText('primary reading has no readable text');assert.equal(await page.evaluate(()=>fixture.providerCalls),1);assert.equal(await page.evaluate(()=>fixture.state.current.data),await page.evaluate(()=>fixture.initial.data));
+    });
+    await check('complexity reset after Apply preserves its confirmation',async()=>{
+      await mount({level:3});await preview();await apply();await expect.poll(()=>page.evaluate(()=>fixture.state.level)).toBe(5);
+      await expect(page.locator('[data-adaptation-notice]')).toContainText('Change applied');await expect(page.locator('[data-adaptation-undo]')).toBeVisible();
+    });
     assert.deepEqual(errors,[]);
   } catch(error) { results.push({name:'browser harness',status:'failed',error:error.stack});failures.push('browser harness'); }
-  finally { fs.writeFileSync(path.join(root,'track07-enhancement-browser-results.json'),JSON.stringify({results,errors},null,2));await browser.close(); }
+  finally { fs.writeFileSync(path.join(root,'track07-completeness-browser-results.json'),JSON.stringify({results,errors},null,2));await browser.close(); }
   if(failures.length) process.exitCode=1;
 })();

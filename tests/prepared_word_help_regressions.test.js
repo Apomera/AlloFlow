@@ -16,6 +16,8 @@ beforeAll(() => {
   window.AlloIcons = new Proxy({}, { get: () => () => null });
   const sourceRoot = process.env.PREPARED_HELP_SOURCE_DIR || process.cwd();
   for (const file of ['instructional_context_module.js', 'pure_helpers_module.js', 'phase_n_misc_helpers_module.js']) loadAlloModule(resolve(sourceRoot, file));
+  window.__alloUtils = { cleanJson: value => value };
+  loadAlloModule(resolve(sourceRoot, 'content_engine_module.js'));
   ({ InstructionalContext: contract, PureHelpers: pure, PhaseNHelpers: phase } = window.AlloModules);
   // Newer integration baselines embed both the place and support-draft helpers.
   const source = ['reader_place_store.js', 'reader_support_drafts.js', 'view_simplified_source.jsx']
@@ -79,7 +81,128 @@ const key = (node, value) => act(() => node.dispatchEvent(new KeyboardEvent('key
 const words = (text, selector = '[data-reading-passage]') => [...host.querySelectorAll(selector + ' [role="button"]')].filter(node => node.textContent === text);
 const card = () => host.querySelector('[data-word-help-card]');
 
+// Exercise the real lookup boundary with provider calls mocked, so a plausible
+// callback payload cannot hide a wrong passage or occurrence in the request.
+function lookupHost(item, mode = 'define') {
+  let definition = null;
+  const state = { interactionMode: mode, gradeLevel: '5', generatedContent: item, activeView: 'simplified',
+    setDefinitionData: value => { definition = typeof value === 'function' ? value(definition) : value; },
+    setPhonicsData: () => {}, setSelectionMenu: () => {} };
+  const callGemini = vi.fn().mockResolvedValue('A further explanation.');
+  const engine = window.AlloModules.createContentEngine({ getState: () => state, callGemini, addToast: vi.fn(), t: value => value });
+  return { engine, callGemini, definition: () => definition };
+}
+
+describe('Prepared help lookup handoff', () => {
+  it.each(['first word', 'last word', 'list'])('keeps the exact prepared phrase when requesting more from the %s', async origin => {
+    const data = 'A bank **account**. A bank account.', quote = 'bank account';
+    const item = itemWithHelp(data, quote, data.lastIndexOf(quote)), lookup = lookupHost(item);
+    const { props } = mount(item, { handleWordClick: lookup.engine.handleWordClick });
+    const opener = origin === 'list' ? host.querySelector('[data-prepared-help-open]') : words(origin === 'last word' ? 'account' : 'bank')[1];
+    click(opener);
+    expect(lookup.callGemini).not.toHaveBeenCalled();
+    click(card().querySelector('[data-word-help-card-more]'));
+    await act(async () => {});
+    expect(lookup.callGemini).toHaveBeenCalledTimes(1);
+    const request = lookup.definition().lookupRequest;
+    expect(request.passageText.slice(request.selectionStart, request.selectionStart + quote.length)).toBe(quote);
+    expect(request.passageText.slice(request.selectionStart, request.selectionEnd)).toBe(quote);
+    expect(request.passageText).toBe(data);
+    expect(request.selectionStart).toBe(data.lastIndexOf(quote));
+    expect(request.selectionEnd).toBe(data.length - 1);
+    expect(request.passageText.slice(request.selectionStart, request.selectionEnd)).toBe(quote);
+    expect(request.lookupText).toBe(quote);
+    expect(request.preparedText).toBe('Meaning for the selected occurrence.');
+    expect(lookup.callGemini.mock.calls[0][0]).toContain(JSON.stringify({
+      passage: data, selectedText: quote, selectionStart: data.lastIndexOf(quote), selectionEnd: data.length - 1, occurrence: null,
+    }));
+    expect(props.handleSpeak).not.toHaveBeenCalled(); expect(card()).toBeNull();
+  });
+
+  it('keeps the source-language passage when more help starts from a bilingual list', async () => {
+    const source = 'La radio suena.\n\nLa radio calla.', quote = 'radio';
+    const data = source + '\n\n--- ENGLISH TRANSLATION ---\n\nThe radio plays.\n\nThe radio stops.';
+    const item = itemWithHelp(data, quote, source.lastIndexOf(quote), 'Spanish'), lookup = lookupHost(item);
+    mount(item, { isSideBySide: true, handleWordClick: lookup.engine.handleWordClick });
+    click(host.querySelector('[data-prepared-help-open]'));
+    click(card().querySelector('[data-word-help-card-more]'));
+    await act(async () => {});
+    expect(lookup.definition().lookupRequest).toMatchObject({ passageText: source, language: 'Spanish',
+      selectionStart: source.lastIndexOf(quote), selectionEnd: source.lastIndexOf(quote) + quote.length, lookupText: quote });
+    expect(lookup.callGemini).toHaveBeenCalledTimes(1);
+  });
+
+  it('retains exact lookup context when only the prepared list can locate a table support', async () => {
+    const data = '| Bird |\n| --- |\n| heron |', quote = 'heron';
+    const item = itemWithHelp(data, quote), lookup = lookupHost(item);
+    mount(item, { handleWordClick: lookup.engine.handleWordClick, renderFormattedText: () => React.createElement('table', null,
+      React.createElement('tbody', null, React.createElement('tr', null, React.createElement('td', null, 'heron')))) });
+    expect(host.querySelector('[data-prepared-word-help]')).toBeNull();
+    click(host.querySelector('[data-prepared-help-open]'));
+    click(card().querySelector('[data-word-help-card-more]'));
+    await act(async () => {});
+    expect(lookup.definition().lookupRequest).toMatchObject({ passageText: data, selectionStart: data.indexOf(quote),
+      selectionEnd: data.indexOf(quote) + quote.length, lookupText: quote });
+  });
+
+  it('keeps prepared help and its exact context available when live AI is disabled', async () => {
+    vi.stubGlobal('__alloStudentAiDisabled', true);
+    const data = 'The heron rests. The heron flies.', quote = 'heron';
+    const item = itemWithHelp(data, quote, data.lastIndexOf(quote)), lookup = lookupHost(item);
+    mount(item, { handleWordClick: lookup.engine.handleWordClick });
+    click(host.querySelector('[data-prepared-help-open]'));
+    expect(card().textContent).toContain('Meaning for the selected occurrence.');
+    expect(lookup.callGemini).not.toHaveBeenCalled();
+    click(card().querySelector('[data-word-help-card-more]'));
+    await act(async () => {});
+    expect(lookup.callGemini).not.toHaveBeenCalled();
+    expect(lookup.definition()).toMatchObject({ aiStatus: 'disabled', preparedText: 'Meaning for the selected occurrence.',
+      lookupRequest: { passageText: data, selectionStart: data.lastIndexOf(quote), selectionEnd: data.lastIndexOf(quote) + quote.length } });
+  });
+
+  it('does not offer a lookup action the host ignores outside Word meaning', async () => {
+    const item = itemWithHelp('The heron rests.', 'heron'), lookup = lookupHost(item, 'read');
+    await lookup.engine.handleWordClick('heron', null);
+    expect(lookup.definition()).toBeNull();
+    mount(item, { interactionMode: 'read', handleWordClick: lookup.engine.handleWordClick });
+    click(host.querySelector('[data-prepared-help-open]'));
+    expect(card()).not.toBeNull();
+    expect(card().querySelector('[data-word-help-card-more]')).toBeNull();
+    expect(lookup.callGemini).not.toHaveBeenCalled();
+  });
+
+  it('keeps the real preview free of lookup callbacks and More controls', () => {
+    const { props } = mount(itemWithHelp('The heron rests.', 'heron'), { isTeacherMode: true, isZenMode: false });
+    click(host.querySelector('[data-student-preview-open]'));
+    const preview = host.querySelector('[data-student-preview]');
+    click([...preview.querySelectorAll('button')].find(button => button.textContent === 'Word meaning'));
+    click(preview.querySelector('[data-prepared-help-open]'));
+    expect(preview.querySelector('[data-word-help-card]')).not.toBeNull();
+    expect(preview.querySelector('[data-word-help-card-more]')).toBeNull();
+    expect(props.handleWordClick).not.toHaveBeenCalled();
+  });
+});
+
 describe('Prepared help exact occurrence regressions', () => {
+  it('includes the visible list action in its accessible name', () => {
+    mount(itemWithHelp('The heron rests.', 'heron'));
+    const button = host.querySelector('[data-prepared-help-open]');
+    expect(button.getAttribute('aria-label')).toContain(button.textContent.trim());
+    expect(button.getAttribute('aria-label')).toContain('heron');
+  });
+
+  it('gives a truthful preview instruction without CSS Highlights', () => {
+    vi.stubGlobal('Highlight', undefined);
+    mount(itemWithHelp('The heron rests.', 'heron'), { isTeacherMode: true, isZenMode: false });
+    click(host.querySelector('[data-student-preview-open]'));
+    const preview = host.querySelector('[data-student-preview]');
+    click([...preview.querySelectorAll('button')].find(button => button.textContent === 'Word meaning'));
+    expect(preview.textContent).not.toMatch(/underlined word/i);
+    expect(preview.textContent).toMatch(/Word help after the passage/i);
+    click(preview.querySelector('[data-prepared-help-open]'));
+    expect(preview.querySelector('[data-word-help-card-text]').textContent).toBe('Meaning for the selected occurrence.');
+  });
+
   it('does not give a later phrase explanation to an earlier phrase split by emphasis', () => {
     const data = 'A bank **account**. A bank account.';
     const { props } = mount(itemWithHelp(data, 'bank account', data.lastIndexOf('bank account')));
@@ -119,6 +242,51 @@ describe('Prepared help exact occurrence regressions', () => {
   it('identifies prepared help before activation', () => {
     mount(itemWithHelp('The heron rests.', 'heron'));
     expect(words('heron')[0].getAttribute('aria-label')).toMatch(/prepared|teacher/i);
+  });
+
+  it('refocuses a prepared card when its same keyboard trigger is activated again', () => {
+    const { props } = mount(itemWithHelp('The heron rests.', 'heron'));
+    const opener = words('heron')[0];
+    act(() => opener.focus()); key(opener, 'Enter');
+    expect(document.activeElement).toBe(card());
+    act(() => opener.focus()); key(opener, 'Enter');
+    expect(document.activeElement).toBe(card());
+    expect(props.handleWordClick).not.toHaveBeenCalled();
+    expect(props.handleSpeak).not.toHaveBeenCalled();
+    key(card(), 'Escape'); expect(document.activeElement).toBe(opener);
+  });
+
+  it('keeps a cross-paragraph prepared phrase highlight out of translated text and controls', () => {
+    const registry = new Map();
+    vi.stubGlobal('CSS', { highlights: registry });
+    vi.stubGlobal('Highlight', class extends Set { constructor(...ranges) { super(ranges); } });
+    const source = 'La radio suena.\n\nLa radio calla.';
+    const quote = 'suena.\n\nLa radio';
+    const data = source + '\n\n--- ENGLISH TRANSLATION ---\n\nThe radio plays.\n\nThe radio stops.';
+    const item = itemWithHelp(data, quote, source.indexOf(quote), 'Spanish'), saved = JSON.stringify(item);
+    const { props, update } = mount(item, { isSideBySide: true });
+    const unchanged = host.querySelector('[data-reading-passage]').textContent;
+    const checkRanges = name => {
+      const ranges = [...registry.get(name)];
+      expect(ranges.length).toBeGreaterThan(0);
+      expect(ranges.map(range => range.toString()).join('')).toBe('suena.La radio');
+      for (const range of ranges) {
+        expect(range.startContainer.parentElement.closest('[data-reading-language]').getAttribute('data-reading-language')).toBe('Spanish');
+        expect(range.endContainer.parentElement.closest('[data-reading-language]').getAttribute('data-reading-language')).toBe('Spanish');
+        expect(range.cloneContents().querySelector('button, [data-reading-ui], [data-reading-language="English"]')).toBeNull();
+      }
+    };
+    checkRanges('allo-word-help');
+    click(host.querySelector('[data-adapted-word-help-spot]'));
+    checkRanges('allo-word-help-focus');
+    click(words('radio').filter(word => word.closest('[data-reading-language]').getAttribute('data-reading-language') === 'Spanish')[1]);
+    expect(card()?.querySelector('h5').textContent).toBe(quote);
+    expect(props.handleSpeak).not.toHaveBeenCalled(); expect(props.handleWordClick).not.toHaveBeenCalled();
+    expect(host.querySelector('[data-reading-passage]').textContent).toBe(unchanged);
+    expect(JSON.stringify(item)).toBe(saved);
+    item.adaptedReadingSupports.shown = false; update({});
+    expect(registry.has('allo-word-help')).toBe(false);
+    expect(registry.has('allo-word-help-focus')).toBe(false);
   });
 
   it.each([
@@ -175,7 +343,120 @@ describe('Prepared help exact occurrence regressions', () => {
 });
 
 describe('Prepared help lifecycle regressions', () => {
-  it('does not expose the old card during a render that hides its supports', () => {
+  it.each(['original', 'same-text-supported'])('dismisses prepared help and its owned audio when the reading becomes %s', form => {
+    const registry = new Map();
+    vi.stubGlobal('CSS', { highlights: registry });
+    vi.stubGlobal('Highlight', class extends Set { constructor(...ranges) { super(ranges); } });
+    const item = itemWithHelp('The heron rests.', 'heron'), view = mount(item);
+    click(host.querySelector('[data-adapted-word-help-spot]'));
+    click(words('heron')[0]); click(card().querySelector('[data-word-help-card-listen]'));
+    const ownedId = view.props.handleSpeak.mock.calls.at(-1)[1];
+    view.update({ isPlaying: false, playingContentId: ownedId });
+    view.props.stopPlayback.mockClear();
+    const changed = { ...item, instructionalText: { ...item.instructionalText, form } };
+    expect(contract.isAdaptedReading(changed)).toBe(false);
+    view.update({ generatedContent: changed });
+    expect(card()).toBeNull();
+    expect(host.querySelector('[data-prepared-help-open], [data-prepared-word-help]')).toBeNull();
+    expect(view.props.stopPlayback).toHaveBeenCalledTimes(1);
+    expect(registry.has('allo-word-help')).toBe(false);
+    expect(registry.has('allo-word-help-focus')).toBe(false);
+    view.update({ generatedContent: item, playingContentId: null });
+    expect(card()).toBeNull();
+    expect(view.props.handleSpeak).toHaveBeenCalledTimes(1);
+    click(words('heron')[0]);
+    expect(card().querySelector('[data-word-help-card-text]').textContent).toBe('Meaning for the selected occurrence.');
+    expect(view.props.handleWordClick).not.toHaveBeenCalled();
+  });
+
+  it('removes obsolete prepared trigger labels when validation changes without an open card', () => {
+    const item = itemWithHelp('The heron rests.', 'heron'), view = mount(item);
+    expect(words('heron')[0].getAttribute('aria-label')).toMatch(/Prepared word help/);
+    view.update({ generatedContent: { ...item, instructionalText: { ...item.instructionalText, form: 'original' } } });
+    const word = words('heron')[0];
+    expect(word.hasAttribute('data-prepared-word-help')).toBe(false);
+    expect(word.hasAttribute('aria-haspopup')).toBe(false);
+    expect(word.getAttribute('aria-label')).not.toMatch(/Prepared word help/);
+    click(word);
+    expect(card()).toBeNull(); expect(view.props.handleWordClick).toHaveBeenCalledTimes(1);
+    view.update({ generatedContent: item });
+    expect(words('heron')[0].getAttribute('aria-label')).toMatch(/Prepared word help/);
+    click(words('heron')[0]); expect(card()).not.toBeNull();
+    expect(view.props.handleWordClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('removes invalid prepared content before paint and leaves unrelated audio alone', () => {
+    const item = itemWithHelp('The heron rests.', 'heron'), view = mount(item);
+    let seen;
+    function ObservedReader({ current }) {
+      React.useLayoutEffect(() => { seen = { card: !!card(), labels: host.querySelectorAll('[data-prepared-word-help]').length }; });
+      return React.createElement(View, { ...view.props, generatedContent: current, isPlaying: true, playingContentId: 'unrelated-reading' });
+    }
+    act(() => root.render(React.createElement(ObservedReader, { current: item })));
+    click(words('heron')[0]); expect(card()).not.toBeNull();
+    view.props.stopPlayback.mockClear();
+    act(() => root.render(React.createElement(ObservedReader, { current: { ...item, instructionalText: { ...item.instructionalText, form: 'original' } } })));
+    expect(seen).toEqual({ card: false, labels: 0 });
+    expect(view.props.stopPlayback).not.toHaveBeenCalled();
+  });
+
+  it.each(['hidden', 'changed explanation', 'removed entry'])('invalidates the card and controls after an in-place support change: %s', change => {
+    const item = itemWithHelp('The heron rests.', 'heron'), view = mount(item);
+    click(words('heron')[0]); click(card().querySelector('[data-word-help-card-listen]'));
+    const ownedId = view.props.handleSpeak.mock.calls.at(-1)[1];
+    view.update({ isPlaying: true, playingContentId: ownedId });
+    view.props.stopPlayback.mockClear();
+    if (change === 'hidden') item.adaptedReadingSupports.shown = false;
+    if (change === 'changed explanation') item.adaptedReadingSupports.annotations[0].text = 'A revised explanation.';
+    if (change === 'removed entry') item.adaptedReadingSupports.annotations.length = 0;
+    view.update({ generatedContent: item });
+    expect(card()).toBeNull();
+    expect(view.props.stopPlayback).toHaveBeenCalledTimes(1);
+    if (change === 'changed explanation') {
+      click(words('heron')[0]);
+      expect(card().querySelector('[data-word-help-card-text]').textContent).toBe('A revised explanation.');
+      expect(view.props.handleWordClick).not.toHaveBeenCalled();
+    } else expect(host.querySelector('[data-prepared-word-help], [data-prepared-help-open]')).toBeNull();
+  });
+
+  it.each(['learner', 'role'])('dismisses prepared help on a %s boundary without stopping unrelated playback', boundary => {
+    const view = mount(itemWithHelp('The heron rests.', 'heron'), { readingLearnerKey: 'learner-a', isTeacherMode: true });
+    click(words('heron')[0]);
+    view.update({ isPlaying: true, playingContentId: 'unrelated-reading' });
+    view.props.stopPlayback.mockClear();
+    view.update(boundary === 'learner' ? { readingLearnerKey: 'learner-b' } : { isTeacherMode: false });
+    expect(card()).toBeNull();
+    expect(view.props.stopPlayback).not.toHaveBeenCalled();
+  });
+
+  it.each(['hear', 'listen'])('a second activation cancels pending %s instead of requesting speech twice', control => {
+    const view = mount(itemWithHelp('The heron rests.', 'heron'));
+    click(words('heron')[0]);
+    click(card().querySelector('[data-word-help-card-' + control + ']'));
+    const ownedId = view.props.handleSpeak.mock.calls.at(-1)[1];
+    view.update({ isPlaying: false, playingContentId: ownedId });
+    view.props.stopPlayback.mockClear();
+    const button = card().querySelector('[data-word-help-card-' + control + ']');
+    expect(button.textContent).toBe('Stop');
+    click(button);
+    expect(view.props.stopPlayback).toHaveBeenCalledTimes(1);
+    expect(view.props.handleSpeak).toHaveBeenCalledTimes(1);
+  });
+
+  it('retains an open card across unchanged read-aloud updates without revalidating supports', () => {
+    const view = mount(itemWithHelp('The heron rests.', 'heron'));
+    click(words('heron')[0]);
+    const popup = card(), validation = vi.spyOn(contract, 'validateAdaptedReadingSupports');
+    const listen = popup.querySelector('[data-word-help-card-listen]');
+    act(() => listen.focus());
+    // Settle the hook's dependency on the spied function, then measure stable frames.
+    view.update({ playbackState: { currentIdx: 0 } }); validation.mockClear();
+    view.update({ playbackState: { currentIdx: 1 } }); view.update({ playbackState: { currentIdx: 2 } });
+    expect(card()).toBe(popup); expect(validation).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(listen);
+  });
+
+  it.each(['replacement', 'in-place'])('does not expose the old card during a render that hides supports by %s', change => {
     const item = itemWithHelp('The heron rests.', 'heron'), view = mount(item);
     let observedCard;
     function ObservedReader({ current }) {
@@ -184,7 +465,8 @@ describe('Prepared help lifecycle regressions', () => {
     }
     act(() => root.render(React.createElement(ObservedReader, { current: item })));
     click(words('heron')[0]); expect(card()).not.toBeNull();
-    const hidden = { ...item, adaptedReadingSupports: { ...item.adaptedReadingSupports, shown: false } };
+    const hidden = change === 'in-place' ? item : { ...item, adaptedReadingSupports: { ...item.adaptedReadingSupports } };
+    hidden.adaptedReadingSupports.shown = false;
     act(() => root.render(React.createElement(ObservedReader, { current: hidden })));
     expect(observedCard).toBe(false);
   });

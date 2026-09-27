@@ -173,6 +173,59 @@ describe('deferred reader transitions', () => {
     expect(draft().querySelector('img').getAttribute('src')).toBe('data:image/png;base64,REVG');
     await click(byText('Keep editing')); await transitions.Both(h); expect(prompt()).toBeTruthy();
   });
+  it.each(['explanation', 'importance', 'pin'])('retains an unconfirmed %s and blocks navigation until retry confirms it', async field => {
+    const h = fixture({ original: field === 'pin' }); await dirtyExplanation();
+    if (field === 'importance') act(() => { const select = draft().querySelector('select'); select.value = 'essential'; select.dispatchEvent(new Event('change', { bubbles: true })); });
+    if (field === 'pin') await click(draft().querySelector('input[type="checkbox"]'));
+    h.persist.mockImplementationOnce(async (owner, action) => {
+      const annotation = { ...action.annotation, ...(field === 'explanation' ? { text: 'Older saved wording.' } : field === 'importance' ? { priority: 'helpful' } : { pinned: false }) };
+      return contract.isAdaptedReading(owner) ? contract.upsertAdaptedReadingSupport(owner, owner.adaptedReadingSupports, annotation) : contract.upsertReadingSupport(owner, owner.readingSupports, annotation);
+    });
+    await transitions.Both(h); await click(byText('Save and continue'));
+    expect(h.state.compare).toBe(false); expect(prompt()).toBeTruthy(); expect(h.session.hasChanges()).toBe(true);
+    expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.');
+    if (field === 'importance') expect(draft().querySelector('select').value).toBe('essential');
+    if (field === 'pin') expect(draft().querySelector('input[type="checkbox"]').checked).toBe(true);
+    expect(host.textContent).toContain('did not confirm all your changes');
+    await click(byText('Keep editing')); await transitions.Both(h); await click(byText('Save and continue'));
+    expect(h.state.compare).toBe(true); expect(h.session.hasChanges()).toBe(false);
+    const stored = h.state.history.find(item => item.id === (field === 'pin' ? 'original' : 'adapted'));
+    const accepted = (stored.readingSupports || stored.adaptedReadingSupports).annotations[0];
+    expect(accepted.text).toBe('My unsaved explanation.');
+    if (field === 'importance') expect(accepted.priority).toBe('essential');
+    if (field === 'pin') expect(accepted.pinned).toBe(true);
+  });
+  it('retains an unconfirmed picture removal without describing it as a full picture budget', async () => {
+    const h = fixture({ image: IMAGE }); await edit(); await click(byText('Remove picture'));
+    h.persist.mockImplementationOnce(async (owner, action) => contract.upsertAdaptedReadingSupport(owner, owner.adaptedReadingSupports, { ...action.annotation, image: IMAGE }));
+    await transitions.Both(h); await click(byText('Save and continue'));
+    expect(h.state.compare).toBe(false); expect(h.session.hasChanges()).toBe(true); expect(draft().querySelector('img')).toBeNull();
+    expect(host.textContent).toContain('did not confirm all your changes'); expect(host.textContent).not.toContain('as many pictures as it can hold');
+    await click(byText('Save and continue')); expect(h.state.compare).toBe(true); expect(h.session.hasChanges()).toBe(false);
+    expect(h.state.history.find(item => item.id === 'adapted').adaptedReadingSupports.annotations[0].image).toBeUndefined();
+  });
+  it('retains a new draft when a partial save changes its wording', async () => {
+    const h = fixture(); await click(byText('Add a word or phrase'));
+    type(draft().querySelector('input[type="text"]'), 'water'); type(draft().querySelector('textarea'), 'A liquid where the heron walks.');
+    h.persist.mockImplementationOnce(async (owner, action) => contract.upsertAdaptedReadingSupport(owner, owner.adaptedReadingSupports, { ...action.annotation, text: 'Unconfirmed wording.' }));
+    await transitions.Edit(h); await click(byText('Save and continue'));
+    expect(h.state.editing).toBe(false); expect(h.session.hasChanges()).toBe(true); expect(draft().querySelector('textarea').value).toBe('A liquid where the heron walks.');
+    await click(byText('Save and continue')); expect(h.state.editing).toBe(true); expect(h.session.hasChanges()).toBe(false);
+    expect(h.state.item.adaptedReadingSupports.annotations.find(entry => entry.quote === 'water').text).toBe('A liquid where the heron walks.');
+  });
+  it('recovers all unconfirmed edits after a partial save and interrupted editor', async () => {
+    const h = fixture(); await dirtyExplanation(); await pictureChoice();
+    h.persist.mockImplementationOnce(async (owner, action) => contract.upsertAdaptedReadingSupport(owner, owner.adaptedReadingSupports, { ...action.annotation, text: 'Only this older wording was saved.', image: null }));
+    await transitions.Both(h); await click(byText('Save and continue'));
+    expect(h.state.compare).toBe(false); expect(host.textContent).toContain('did not confirm all your changes');
+    h.force({ view: 'other' }); h.force({ view: 'simplified' });
+    expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.');
+    expect(draft().querySelector('img').getAttribute('src')).toBe('data:image/png;base64,REVG');
+    const unload = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(unload); expect(unload.defaultPrevented).toBe(true);
+    await transitions.Both(h); await click(byText('Save and continue'));
+    expect(h.state.compare).toBe(true); expect(h.session.hasChanges()).toBe(false);
+    expect(h.state.history.find(item => item.id === 'adapted').adaptedReadingSupports.annotations[0]).toMatchObject({ text: 'My unsaved explanation.', image: { src: 'data:image/png;base64,REVG' } });
+  });
   it('saves an equal-length picture replacement before navigating', async () => {
     const h = fixture({ image: IMAGE }); await edit(); await pictureChoice();
     await transitions.Both(h); await click(byText('Save and continue'));
