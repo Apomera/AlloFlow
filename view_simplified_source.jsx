@@ -3554,11 +3554,12 @@
       return helpText('simplified.lookup_dictionary_unavailable', 'No dictionary entry is available.');
     };
     var renderLookupStatus = function (data, kind) {
+      var preparedText = simplifiedAiText(data.preparedText);
       var status = data.aiStatus || (kind === 'definition' ? data.text ? 'ready' : 'loading' : data.isLoading ? 'loading' : data.data ? 'ready' : 'error');
       var blocked = status === 'disabled' || studentAiFeaturesHidden;
       return <div data-lookup-status={kind}>
         <p role="status" className="sr-only">{status === 'ready' ? helpText('simplified.lookup_ready', 'Word help ready') : ''}{data.dictionaryStatus === 'ready' ? ' ' + helpText('simplified.lookup_dictionary_ready', 'Dictionary entry ready') : ''}</p>
-        {data.preparedText && <div className="mb-3 rounded-lg border border-indigo-200 bg-indigo-50 p-3"><p className="text-xs font-bold">{helpText('simplified.word_help_card_prepared', 'Word help from your teacher')}</p><p>{data.preparedText}</p></div>}
+        {preparedText && <div className="mb-3 rounded-lg border border-indigo-200 bg-indigo-50 p-3"><p className="text-xs font-bold">{helpText('simplified.word_help_card_prepared', 'Word help from your teacher')}</p><p>{preparedText}</p></div>}
         {(blocked || status === 'error' || status === 'loading') && <p role="status" className="my-2 text-sm text-slate-700">{blocked ? helpText('simplified.lookup_ai_disabled', 'AI explanations are off. You can still use any available word help.') : status === 'loading' ? helpText('simplified.lookup_loading', 'Preparing word help…') : data.aiErrorReason === 'timeout' ? helpText('simplified.lookup_ai_timeout', 'AI word help took too long. Any available help is still shown. You can try again.') : helpText('simplified.lookup_ai_failed', 'AI word help could not load. Any available help is still shown.')}</p>}
         {!blocked && (status === 'error' || data.aiRetryAvailable) && typeof data.retry === 'function' && <button type="button" data-lookup-retry={kind} aria-disabled={status !== 'error'} aria-busy={status === 'loading'} onClick={() => { if (status !== 'error') return; stopHelpAudio(); data.retry(); }} className="min-h-11 rounded-lg border border-indigo-300 px-3 py-2 text-sm text-indigo-900">{status === 'loading' ? helpText('simplified.lookup_retrying', 'Trying again…') : status === 'ready' ? helpText('simplified.lookup_ready', 'Word help ready') : helpText('simplified.lookup_retry', 'Try word help again')}</button>}
         {data.dictionaryStatus === 'loading' && <p role="status" className="my-2 text-sm text-slate-700">{helpText('simplified.lookup_dictionary_loading', 'Looking for a dictionary entry…')}</p>}
@@ -3582,9 +3583,10 @@
     };
     var renderDefinitionSpeech = function (data) {
       var dictionaryText = dictionarySenseForLookup(data)?.definition || '';
-      var spoken = data.text || data.preparedText || dictionaryText;
+      var preparedText = simplifiedAiText(data.preparedText);
+      var spoken = data.text || preparedText || dictionaryText;
       if (!spoken) return null;
-      var language = data.text || data.preparedText ? data.language : 'English';
+      var language = data.text || preparedText ? data.language : 'English';
       var translation = language && language !== 'English' ? spoken.match(/\n\s*(?:\*\*)?English:(?:\*\*)?\s*/i) : null;
       var primary = translation ? spoken.slice(0, translation.index) : spoken;
       var english = translation ? spoken.slice(translation.index + translation[0].length) : '';

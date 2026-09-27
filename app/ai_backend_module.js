@@ -1653,12 +1653,13 @@ class AIProvider {
      * @param {string} prompt
      * @param {Object} [opts]
      * @param {boolean} [opts.json=false] - Request JSON output
-     * @param {boolean} [opts.search=false] - Enable Google Search grounding (Gemini only)
+     * @param {boolean} [opts.search=false] - Enable web grounding
+     * @param {string} [opts.searchQuery] - Explicit public topic for external search; never derived from prompt
      * @param {number} [opts.temperature] - Sampling temperature
      * @param {number} [opts.maxTokens=8192] - Max output tokens
      * @returns {Promise<string|Object>} Generated text (or {text, groundingMetadata} if search=true)
      */
-    async generateText(prompt, { json = false, search = false, temperature = null, maxTokens = 8192, onProgress = null, signal = null, schema = null } = {}) {
+    async generateText(prompt, { json = false, search = false, searchQuery = null, temperature = null, maxTokens = 8192, onProgress = null, signal = null, schema = null } = {}) {
         await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey, operation: 'text', search });
         if (signal && signal.aborted) {
             const error = new Error('Text generation cancelled.');
@@ -1686,7 +1687,7 @@ class AIProvider {
             case 'gemini':
                 return this._geminiGenerateText(prompt, { json, search, temperature, maxTokens: effectiveMaxTokens, signal });
             case 'claude':
-                return this._claudeGenerateText(prompt, { json, search, temperature, maxTokens: effectiveMaxTokens, signal });
+                return this._claudeGenerateText(prompt, { json, search, searchQuery, temperature, maxTokens: effectiveMaxTokens, signal });
             case 'openai':
             case 'localai':
             case 'lmstudio':
@@ -1694,7 +1695,7 @@ class AIProvider {
             case 'alloflow-local':
             case 'custom':
             default:
-                return this._openaiGenerateText(prompt, { json, search, temperature, maxTokens: effectiveMaxTokens, onProgress, localProfile: this.localModelProfile, localUsage, signal, schema });
+                return this._openaiGenerateText(prompt, { json, search, searchQuery, temperature, maxTokens: effectiveMaxTokens, onProgress, localProfile: this.localModelProfile, localUsage, signal, schema });
         }
     }
 
@@ -1798,7 +1799,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         return text || '';
     }
 
-    async _openaiGenerateText(prompt, { json, search, temperature, maxTokens, onProgress, localProfile = null, localUsage = null, signal = null, localRetryDepth = 0, schema = null } = {}) {
+    async _openaiGenerateText(prompt, { json, search, searchQuery = null, temperature, maxTokens, onProgress, localProfile = null, localUsage = null, signal = null, localRetryDepth = 0, schema = null } = {}) {
         // ── Additive local-only streaming progress (opt-in; Phase 1) ──────────
         // Cloud is untouched: gemini/claude use their own methods, and hosted
         // 'openai' is excluded by isLocalTextBackend(). This branch engages ONLY
@@ -1851,7 +1852,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         let effectivePrompt = prompt;
         let requestSearchMetadata = null;
         if (search) {
-            const augmented = await this._webSearchAugment(prompt);
+            const augmented = await this._webSearchAugment(prompt, searchQuery);
             effectivePrompt = augmented.prompt;
             requestSearchMetadata = augmented.groundingMetadata;
         }
@@ -2180,10 +2181,10 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * Perform web search and augment prompt with results.
      * Uses DuckDuckGo Instant Answers API (free, no key required).
      */
-    async _webSearchAugment(prompt) {
+    async _webSearchAugment(prompt, searchQuery = null) {
         try {
             if (typeof window !== 'undefined' && window.WebSearchProvider) {
-                const { contextPrompt, groundingMetadata } = await window.WebSearchProvider.search(prompt, 10);
+                const { contextPrompt, groundingMetadata } = await window.WebSearchProvider.search(searchQuery || prompt, 10, searchQuery);
                 if (contextPrompt) {
                     return {
                         prompt: contextPrompt + prompt,
@@ -2197,7 +2198,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         return { prompt, groundingMetadata: null };
     }
 
-    async _claudeGenerateText(prompt, { json, search, temperature, maxTokens, signal }) {
+    async _claudeGenerateText(prompt, { json, search, searchQuery = null, temperature, maxTokens, signal }) {
         const url = `${this.baseUrl}/v1/messages`;
         const payload = {
             model: this.models.default,
@@ -2210,7 +2211,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         // If search is requested, augment prompt with web search results
         let requestSearchMetadata = null;
         if (search) {
-            const augmented = await this._webSearchAugment(prompt);
+            const augmented = await this._webSearchAugment(prompt, searchQuery);
             payload.messages[0].content = augmented.prompt;
             requestSearchMetadata = augmented.groundingMetadata;
         }

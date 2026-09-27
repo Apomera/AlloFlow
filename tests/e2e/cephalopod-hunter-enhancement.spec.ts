@@ -41,7 +41,7 @@ test('reef mission requires both foods and a return home, then writes one debrie
   await page.evaluate(()=>{const w=window as any,h=w.__scene.getObjectByName('cl-home');w.__player.position.x=h.position.x;w.__player.position.z=h.position.z;});
   await expect(page.getByText('Mission complete',{exact:true})).toBeVisible();
   const summary=await page.evaluate(()=>JSON.parse(localStorage.getItem('allo.cephalopodlab.lastRun.v2')!));expect(summary.reason).toBe('mission');expect(summary.stats.crabs).toBe(1);expect(summary.stats.clams).toBe(1);expect(summary.missionComplete).toBe(true);expect(summary.events.filter((e:any)=>e.kind==='Finish')).toHaveLength(1);
-  await page.getByRole('button',{name:/Pick different species/}).click();await expect(page.getByLabel('Last dive summary')).toContainText('Reef mission complete');
+  await page.getByRole('button',{name:/Pick different species/}).click();await expect(page.getByRole('heading',{name:'Reef mission complete',exact:true})).toBeVisible();
 });
 test('vampire squid gathers marine snow and has no ink',async({page})=>{
   await mount(page,'vampireSquid');await expect(page.locator('[data-hud=ink]')).toContainText('No ink');await page.locator(sel).focus();await page.keyboard.down('KeyE');
@@ -65,7 +65,11 @@ test('new rigs have distinct anatomy, render without shader errors and release e
 });
 test('voluntary surfacing persists results and releases the actual WebGL context',async({page})=>{
   await mount(page);const contexts=await harness.glContexts(page);expect(contexts.some(c=>!c.lost)).toBe(true);await page.getByRole('button',{name:/End run \+ surface/}).click();
-  await expect(page.getByLabel('Last dive summary')).toBeVisible();await expect.poll(async()=>(await harness.glContexts(page)).filter(c=>!c.lost).length).toBe(0);
+  await expect(page.getByRole('heading',{name:'Last dive',exact:true})).toBeVisible();
+  await expect(page.getByRole('combobox',{name:'Mode',exact:true})).toBeVisible();
+  await expect(page.getByRole('combobox',{name:'Graphics',exact:true})).toBeVisible();
+  await expect(page.getByRole('spinbutton',{name:'World seed',exact:true})).toBeVisible();
+  await expect.poll(async()=>(await harness.glContexts(page)).filter(c=>!c.lost).length).toBe(0);
   const summary=await page.evaluate(()=>JSON.parse(localStorage.getItem('allo.cephalopodlab.lastRun.v2')!));expect(summary.reason).toBe('surfaced');expect(summary.seed).toBe(2741);
 });
 test('rock cover blocks awareness and a spatial ink cloud interrupts pursuit',async({page})=>{

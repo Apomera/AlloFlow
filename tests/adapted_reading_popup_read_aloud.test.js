@@ -81,6 +81,53 @@ describe('Adapted reading Define popup read-aloud', () => {
   });
 });
 
+describe('Prepared help popup render boundary', () => {
+  function preparedPopup(kind, preparedText) {
+    const data = { word: 'evaporate', text: '', preparedText, language: 'Spanish', aiStatus: 'disabled', isLoading: false, data: null, x: 40, y: 40 };
+    return { [kind === 'definition' ? 'definitionData' : 'phonicsData']: data, closePhonics: vi.fn() };
+  }
+
+  it.each(['definition', 'phonics'])('preserves teacher text in the %s popup', kind => {
+    const teacherText = 'El agua se convierte en vapor.';
+    const props = mount(preparedPopup(kind, teacherText));
+    const status = host.querySelector('[data-lookup-status="' + kind + '"]');
+    expect(status.textContent).toContain('Word help from your teacher');
+    expect(status.textContent).toContain(teacherText);
+    if (kind === 'definition') {
+      click(speaker(DEFINE_ID));
+      expect(props.handleSpeak).toHaveBeenCalledWith('evaporate. ' + teacherText, DEFINE_ID, 0, false, 'Spanish');
+    }
+  });
+
+  it.each(['definition', 'phonics'])('normalizes single-text prepared help in the %s popup', kind => {
+    const props = mount(preparedPopup(kind, { text: 'Ayuda del docente.' }));
+    expect(host.querySelector('[data-lookup-status="' + kind + '"]').textContent).toContain('Ayuda del docente.');
+    expect(host.textContent).not.toContain('[object Object]');
+    if (kind === 'definition') {
+      click(speaker(DEFINE_ID));
+      expect(props.handleSpeak).toHaveBeenCalledWith('evaporate. Ayuda del docente.', DEFINE_ID, 0, false, 'Spanish');
+    }
+  });
+
+  it.each(['definition', 'phonics'].flatMap(kind => [
+    [kind, 'object', { unexpected: 'Malformed help' }],
+    [kind, 'array', [{ text: 'Malformed help' }]],
+    [kind, 'nested text', { text: { value: 'Malformed help' } }],
+  ]))('keeps the %s popup usable with malformed %s prepared help', (kind, _shape, value) => {
+    const props = mount(preparedPopup(kind, value));
+    const status = host.querySelector('[data-lookup-status="' + kind + '"]');
+    expect(status).not.toBeNull();
+    expect(status.textContent).toContain('AI explanations are off');
+    expect(status.textContent).not.toContain('Word help from your teacher');
+    expect(status.textContent).not.toContain('Malformed help');
+    expect(host.textContent).not.toContain('[object Object]');
+    if (kind === 'definition') expect(speaker(DEFINE_ID)).toBeNull();
+    const dialog = status.closest('[role="dialog"]');
+    click(dialog.querySelector('button[aria-label="common.close"]'));
+    expect(kind === 'definition' ? props.closeDefinition : props.closePhonics).toHaveBeenCalledOnce();
+  });
+});
+
 describe('Adapted reading Explain popup read-aloud', () => {
   it('reads the explanation through the shared handleSpeak once a result exists', () => {
     const props = mount({ revisionData: explanation });

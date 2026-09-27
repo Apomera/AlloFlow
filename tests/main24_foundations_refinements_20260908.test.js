@@ -185,7 +185,8 @@ describe('Adapted Reading audio preparation lifecycle',()=>{
     mount('SimplifiedView',p);click(host.querySelector('[data-help-key=simplified_save_tts]'));await settle();
     expect(host.textContent).toContain('Audio could not be saved');
     click(host.querySelector('[data-help-key=simplified_save_tts]'));await settle();
-    expect(host.textContent).toContain('saved for all sentences');expect(window.__alloPrepareReadAloud).toHaveBeenCalledTimes(2);
+    expect(host.querySelector('[data-tts-prep-status]').textContent).toBe('Audio is prepared. Checking whether it is saved on this device.');
+    expect(host.textContent).not.toContain('saved for all sentences');expect(window.__alloPrepareReadAloud).toHaveBeenCalledTimes(2);
   });
   it('aborts and ignores old preparation after changing the reading',async()=>{
     const old=deferred(),next=deferred(),p={...readingProps(),isTeacherToolbarExpanded:true};
@@ -196,6 +197,8 @@ describe('Adapted Reading audio preparation lifecycle',()=>{
     expect(signal.aborted).toBe(true);click(host.querySelector('[data-help-key=simplified_save_tts]'));
     act(()=>progress(88,99));expect(host.textContent).not.toContain('88/99');
     await act(async()=>old.reject(new Error('late')));expect(host.textContent).not.toContain('could not be saved');
-    await act(async()=>next.resolve({ok:true}));expect(host.textContent).toContain('saved for all sentences');
+    await act(async()=>next.resolve({ok:true}));
+    expect(host.querySelector('[data-tts-prep-status]').textContent).toBe('Audio is prepared. Checking whether it is saved on this device.');
+    expect(host.textContent).not.toContain('saved for all sentences');
   });
 });

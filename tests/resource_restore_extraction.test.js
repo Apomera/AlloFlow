@@ -98,9 +98,15 @@ describe('resource restore handler extraction', () => {
     );
     let pending = waiting;
     const generationRef = { current: 0 };
+    const supportDraftSessionRef = { current: null };
+    const requestReadingSupportTransition = vi.fn(run => run());
     const setPending = vi.fn(value => { pending = typeof value === 'function' ? value(pending) : value; });
     const open = new Function('window', '_alloMiscHandlersDeps', 'useRef', 'setPendingQrAssignmentResource',
-      wrapper + '\nreturn handleRestoreView;')(window, () => deps, () => generationRef, setPending);
+      'supportDraftSessionRef', 'requestReadingSupportTransition',
+      wrapper + '\nreturn handleRestoreView;')(
+      window, () => deps, () => generationRef, setPending,
+      supportDraftSessionRef, requestReadingSupportTransition,
+    );
 
     expect(open(invalid)).toBe(false);
     expect(deps.setGeneratedContent).not.toHaveBeenCalled();
@@ -113,6 +119,7 @@ describe('resource restore handler extraction', () => {
     expect(deps.setActiveView).toHaveBeenCalledWith('quiz');
     expect(pending).toBeNull();
     expect(generationRef.current).toBe(1);
+    expect(requestReadingSupportTransition).not.toHaveBeenCalled();
   });
 
   it('recomputes portable Word Sounds audio readiness instead of trusting saved flags', () => {

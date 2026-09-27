@@ -35,10 +35,12 @@ function mount(file) {
     removeEventListener: (evt, fn) => { if (listeners.has(evt)) listeners.get(evt).delete(fn); },
   };
   const ref = { current: Date.now() };
-  const cleanup = loadEffect(file)(win, { hidden: false }, ref, TIMEOUT);
+  const doc = document.implementation.createHTMLDocument('Engagement fixture');
+  Object.defineProperty(doc, 'hidden', { value: false, configurable: true });
+  const cleanup = loadEffect(file)(win, doc, ref, TIMEOUT);
   const fire = (evt) => { for (const fn of listeners.get(evt) || []) fn({ type: evt }); };
   const live = () => [...listeners].filter(([, set]) => set.size).map(([evt]) => evt).sort();
-  return { win, ref, cleanup, fire, live };
+  return { win, doc, ref, cleanup, fire, live };
 }
 
 describe.each(FILES)('host engagement probe (%s)', (file) => {
@@ -58,6 +60,27 @@ describe.each(FILES)('host engagement probe (%s)', (file) => {
     h.ref.current = Date.now() - TIMEOUT - 1;
     expect(h.win.__alloEngagement.isEngaged()).toBe(false);
     h.cleanup();
+  });
+
+  it('does not credit preview interactions and resumes only after a host interaction', () => {
+    const h = mount(file);
+    try {
+      const preview = h.doc.createElement('div');
+      preview.setAttribute('data-student-preview', '');
+      h.doc.body.appendChild(preview);
+      expect(h.win.__alloEngagement.isEngaged()).toBe(false);
+      const idleTime = Date.now() - TIMEOUT - 1;
+      h.ref.current = idleTime;
+      h.fire('wheel');
+      expect(h.ref.current).toBe(idleTime);
+      expect(h.win.__alloEngagement.isEngaged()).toBe(false);
+      preview.remove();
+      expect(h.win.__alloEngagement.isEngaged()).toBe(false);
+      h.fire('wheel');
+      expect(h.win.__alloEngagement.isEngaged()).toBe(true);
+    } finally {
+      h.cleanup();
+    }
   });
 
   it('cleanup removes every listener it added and retracts the probe', () => {

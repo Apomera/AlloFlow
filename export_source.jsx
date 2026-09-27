@@ -2197,6 +2197,15 @@ const createExport = (deps) => {
             selectedVoice, voiceSpeed, leveledTextLanguage, currentUiLanguage,
             addToast, t,
         } = current;
+        const __alloT = (key, fallback) => {
+            try {
+                const translated = typeof t === 'function' ? t(key) : undefined;
+                return typeof translated === 'string' && translated.trim() && translated.trim() !== key
+                    ? translated : fallback;
+            } catch (_) {
+                return fallback;
+            }
+        };
         if (!adventureState || (!Array.isArray(adventureState.history) && !adventureState.currentScene)) return false;
         if ((!adventureState.history || adventureState.history.length === 0) && !adventureState.currentScene) return false;
         storybookPreparing = true;
@@ -2462,7 +2471,7 @@ const createExport = (deps) => {
                 : '';
             const pictureSummary = includeImages ? `Pictures embedded: ${embeddedPictureCount}. Pictures requiring the original source: ${externalPictureCount}. Pictures omitted: ${omittedPictureCount}.` : '';
             if (includeImages && (externalPictureCount || omittedPictureCount) && typeof addToast === 'function') {
-                addToast('Some Storybook pictures are not embedded. Their availability on another device is not verified.', 'warning');
+                addToast(__alloT('export.storybook.pictures_not_embedded', 'Some Storybook pictures are not embedded. Their availability on another device is not verified.'), 'warning');
             }
             const storyHtml = `
               <!DOCTYPE html>

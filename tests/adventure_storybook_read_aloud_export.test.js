@@ -200,16 +200,30 @@ describe('Adventure narrated Storybook artifact export', () => {
     expect(downloads).toHaveLength(0); expect(save).not.toHaveBeenCalled();
     expect(await api.handleExportStorybook({ includeNarration: true })).toBe(true); expect(downloads).toHaveLength(2);
   });
-  it('reports external pictures without declaring the entire download self-contained', async () => {
+  const pictureWarningKey = 'export.storybook.pictures_not_embedded';
+  const pictureWarningFallback = 'Some Storybook pictures are not embedded. Their availability on another device is not verified.';
+  it.each([
+    ['translated', () => 'Translated picture-portability warning.', 'Translated picture-portability warning.'],
+    ['missing', () => undefined, pictureWarningFallback],
+    ['null', () => null, pictureWarningFallback],
+    ['blank', () => '', pictureWarningFallback],
+    ['whitespace', () => ' \t ', pictureWarningFallback],
+    ['returned key', () => pictureWarningKey, pictureWarningFallback],
+    ['non-string object', () => ({ text: 'Unexpected group' }), pictureWarningFallback],
+    ['non-string number', () => 42, pictureWarningFallback],
+    ['throwing', () => { throw new Error('Translation lookup failed'); }, pictureWarningFallback],
+  ])('reports external pictures with a %s translation lookup and preserves portability limits', async (_case, lookup, expectedWarning) => {
     const downloads = installDownloadCapture();
     window.callGemini = vi.fn().mockResolvedValue('You completed the journey.');
     const live = storyLive({ adventureState: { history: [{ type: 'scene', text: 'A river rises.', image: 'https://example.test/river.png' }], level: 3 },
+      t: vi.fn(key => key === pictureWarningKey ? lookup() : key),
       prepareReadAloudArtifactAudio: async () => ({ audioBySegmentId: { 'epilogue:summary': contractAudio('Z29vZA==') } }) });
     const save = vi.fn(); window.AlloModules.StudentArtifactStore = { save };
     expect(await createExport(live).handleExportStorybook({ includeNarration: true, includeImages: true })).toBe(true);
     const html = downloads.find(item => item.filename.endsWith('.html')).blob.content;
     expect(html).toContain('Pictures requiring the original source: 1');
-    expect(live.addToast).toHaveBeenCalledWith(expect.stringContaining('not embedded'), 'warning');
+    expect(live.t).toHaveBeenCalledWith(pictureWarningKey);
+    expect(live.addToast).toHaveBeenCalledWith(expectedWarning, 'warning');
     expect(save.mock.calls[0][0].artifact.readAloudReference.pictures).toMatchObject({ external: 1, decoding: 'unverified' });
     expect(live.addToast.mock.calls.some(([text]) => text.includes('self-contained'))).toBe(false);
   });
