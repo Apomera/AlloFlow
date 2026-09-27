@@ -105,5 +105,10 @@ for m in app/index.html app/sw.js; do
 done
 ```
 
-If those still disagree after ~30 minutes, it is worth investigating rather than
-waiting further.
+**Resolved at 18:04.** Both files re-checked fresh (local md5 == remote md5), so
+it was ordinary Cloudflare edge propagation and nothing was wrong with the
+upload. The live index's built asset references match the local HEAD copy
+exactly (`main.aefc6e2d.js`, `main.e0dc1514.css`), and `/app/` and `/app/sw.js`
+both return HTTP 200.
+
+**This release is fully deployed and verified with no open warnings.**
