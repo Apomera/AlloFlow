@@ -11272,6 +11272,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // via a callback ref. Lifecycle managed via canvasEl._clCleanup.
 // Geometry-native cephalopod rig. Forward is +Z; body dimensions are illustrative.
 // No remote assets or texture downloads are required.
+// Static scene placement primitives: no simulation state, RNG or owned GPU resources.
+function createCLReefFootprint(T,mesh){
+  var matrix=new T.Matrix4().compose(new T.Vector3(),mesh.quaternion,mesh.scale),point=new T.Vector3();
+  var footprint={minX:Infinity,maxX:-Infinity,minY:Infinity,maxY:-Infinity,minZ:Infinity,maxZ:-Infinity};
+  var positions=mesh.geometry.attributes.position;
+  for(var i=0;i<positions.count;i++){
+    point.fromBufferAttribute(positions,i).applyMatrix4(matrix);
+    footprint.minX=Math.min(footprint.minX,point.x);footprint.maxX=Math.max(footprint.maxX,point.x);
+    footprint.minY=Math.min(footprint.minY,point.y);footprint.maxY=Math.max(footprint.maxY,point.y);
+    footprint.minZ=Math.min(footprint.minZ,point.z);footprint.maxZ=Math.max(footprint.maxZ,point.z);
+  }
+  return footprint;
+}
+function findCLReefSite(desired,footprint,blockers,options){
+  var center=options.center,min=options.minDistance||0,max=options.maxDistance,phase=(options.index||0)*2.3999632297,gap=0.12;
+  function clear(x,z){
+    var radiusSq=(x-center.x)*(x-center.x)+(z-center.z)*(z-center.z);
+    if(!Number.isFinite(radiusSq)||radiusSq<min*min||radiusSq>max*max)return false;
+    var left=x+footprint.minX-gap,right=x+footprint.maxX+gap,back=z+footprint.minZ-gap,front=z+footprint.maxZ+gap;
+    for(var i=0;i<blockers.length;i++){var b=blockers[i];if(left<b.maxX&&right>b.minX&&back<b.maxZ&&front>b.minZ)return false;}
+    return true;
+  }
+  if(clear(desired.x,desired.z))return{x:desired.x,z:desired.z};
+  // Prefer nearby open sand. The stable phase varies the search without drawing from the dive RNG.
+  for(var ring=1;ring<=16;ring++){
+    var radius=ring*0.75,samples=Math.max(12,Math.ceil(radius*7));
+    for(var sample=0;sample<samples;sample++){
+      var angle=phase+sample*Math.PI*2/samples,x=desired.x+Math.sin(angle)*radius,z=desired.z+Math.cos(angle)*radius;
+      if(clear(x,z))return{x:x,z:z};
+    }
+  }
+  // Bounded fallback covers the permitted area; never accept the last rejected candidate.
+  for(var radius=min+0.5;radius<max;radius+=1.5){
+    var samples=Math.max(12,Math.ceil(radius*Math.PI*2/1.5));
+    for(var sample=0;sample<samples;sample++){
+      var angle=phase+sample*Math.PI*2/samples,x=center.x+Math.sin(angle)*radius,z=center.z+Math.cos(angle)*radius;
+      if(clear(x,z))return{x:x,z:z};
+    }
+  }
+  return null;
+}
+
 function createCLHuntAnimal(T, species) {
   var id = species.id, squid = id === 'humboldtSquid', cuttle = id === 'cuttlefish';
   var bobtail = id === 'bobtailSquid', vampire = id === 'vampireSquid';
@@ -11868,42 +11910,80 @@ function createCLHuntFish(T,index){
         // A colony is one static buffer/mesh. Shape variation is derived from its index,
         // never from the dive RNG: prey, cover and mission layout retain their sequence.
         function createReefCoralGeometry(height,index){
-          var positions=[],normals=[],colors=[],indices=[],sides=8;
+          var positions=[],normals=[],colors=[],indices=[],sides=8,form=index%3,phase=index*1.71;
           var tangent=new THREE.Vector3(),radial=new THREE.Vector3(),across=new THREE.Vector3(),around=new THREE.Vector3(),axis=new THREE.Vector3(0,0,1);
           function point(curve,t){var u=1-t;return new THREE.Vector3().copy(curve[0]).multiplyScalar(u*u*u).addScaledVector(curve[1],3*u*u*t).addScaledVector(curve[2],3*u*t*t).addScaledVector(curve[3],t*t*t);}
-          function radiusAt(t,radius){return radius*(1-0.66*t)*Math.sqrt(Math.max(0,1-Math.pow(t,8)));}
-          function grow(curve,radius,steps){
-            var first=positions.length/3;
-            for(var row=0;row<=steps;row++){
-              // Extra tip sampling closes each branch with a rounded taper, not a flat disc.
-              var t=row<steps-1?row/(steps-1)*0.88:row===steps-1?0.965:1,u=1-t,center=point(curve,t);
-              tangent.subVectors(curve[1],curve[0]).multiplyScalar(3*u*u).addScaledVector(radial.subVectors(curve[2],curve[1]),6*u*t).addScaledVector(radial.subVectors(curve[3],curve[2]),3*t*t);
-              var speed=tangent.length();tangent.normalize();across.crossVectors(tangent,axis).normalize();around.crossVectors(tangent,across).normalize();
-              var radiusNow=radiusAt(t,radius),lo=Math.max(0,t-0.001),hi=Math.min(1,t+0.001),slope=(radiusAt(hi,radius)-radiusAt(lo,radius))/Math.max(0.00001,(hi-lo)*speed);
-              var growth=Math.max(0,Math.min(1,(center.y+height/2)/height)),shade=0.66+growth*0.29;
+          function grow(curve,radius,steps,taper){
+            var first=positions.length/3,last=steps+3,endRadius=radius*(1-taper);
+            for(var row=0;row<=last;row++){
+              var t=Math.min(1,row/steps),u=1-t,cap=row>steps?(row-steps)/3*Math.PI/2:0,center;
+              if(row<=steps){
+                center=point(curve,t);
+                tangent.subVectors(curve[1],curve[0]).multiplyScalar(3*u*u).addScaledVector(radial.subVectors(curve[2],curve[1]),6*u*t).addScaledVector(radial.subVectors(curve[3],curve[2]),3*t*t);
+                var speed=tangent.length();tangent.normalize();
+                // Transport the radial frame along the branch, including nearly horizontal boughs.
+                if(row===0)across.crossVectors(tangent,axis);else across.addScaledVector(tangent,-across.dot(tangent));
+                if(across.lengthSq()<0.000001)across.set(1,0,0).addScaledVector(tangent,-tangent.x);
+                across.normalize();around.crossVectors(tangent,across).normalize();
+              }else center=new THREE.Vector3().copy(curve[3]).addScaledVector(tangent,endRadius*Math.sin(cap));
+              // The rounded growth tip is a sampled hemisphere, not a long zero-radius needle.
+              var radiusNow=row<=steps?radius*(1-taper*t*t*(3-2*t)):endRadius*Math.cos(cap);
+              var slope=row<=steps?-radius*taper*6*t*u/Math.max(0.00001,speed):0;
+              var growth=Math.max(0,Math.min(1,(center.y+height/2)/height)),tip=row<=steps?t*t:1,shade=0.66+growth*0.28+tip*0.025;
               for(var side=0;side<=sides;side++){
                 var angle=side/sides*Math.PI*2;radial.copy(across).multiplyScalar(Math.cos(angle)).addScaledVector(around,Math.sin(angle));
                 positions.push(center.x+radial.x*radiusNow,center.y+radial.y*radiusNow,center.z+radial.z*radiusNow);
-                if(row===steps)radial.copy(tangent);else radial.addScaledVector(tangent,-slope).normalize();
-                normals.push(radial.x,radial.y,radial.z);colors.push(shade,shade*(0.96+growth*0.04),shade*(0.93+growth*0.05));
-                if(row<steps&&side<sides){var a=first+row*(sides+1)+side,b=a+sides+1;indices.push(a,a+1,b);if(row<steps-1)indices.push(a+1,b+1,b);}
+                if(row>steps)radial.multiplyScalar(Math.cos(cap)).addScaledVector(tangent,Math.sin(cap));else radial.addScaledVector(tangent,-slope).normalize();
+                normals.push(radial.x,radial.y,radial.z);colors.push(shade*(1-tip*0.035),shade,shade*(0.95+tip*0.035));
+                if(row<last&&side<sides){var a=first+row*(sides+1)+side,b=a+sides+1;indices.push(a,a+1,b);if(row<last-1)indices.push(a+1,b+1,b);}
               }
             }
           }
-          var phase=index*1.71,rootPoint=new THREE.Vector3(0,-height/2,0);
-          var trunk=[rootPoint,new THREE.Vector3(Math.sin(phase)*0.06,-height*0.16,Math.cos(phase)*0.05),new THREE.Vector3(-Math.cos(phase)*0.08,height*0.22,Math.sin(phase)*0.06),new THREE.Vector3(Math.sin(phase+0.8)*0.10,height*0.5,Math.cos(phase)*0.07)];
-          grow(trunk,0.19+height*0.022,9);
-          for(var branch=0;branch<5;branch++){
-            var attachment=0.20+branch*0.125,base=point(trunk,attachment),angle=branch*2.4+phase*0.31;
-            var reach=0.43+(branch%3)*0.055+(index%3)*0.035,rise=height*(0.42-branch*0.039),dx=Math.cos(angle),dz=Math.sin(angle);
-            var curve=[base,new THREE.Vector3(base.x+dx*reach*0.25,base.y+rise*0.24,base.z+dz*reach*0.25),new THREE.Vector3(base.x+dx*reach*0.88,base.y+rise*0.62,base.z+dz*reach*0.88),new THREE.Vector3(base.x+dx*reach,base.y+rise,base.z+dz*reach)];
-            grow(curve,0.095-branch*0.006,6);
-            if((branch+index)%2===0){
-              var forkBase=point(curve,0.56),forkAngle=angle+((branch%2)?-0.85:0.85),fx=Math.cos(forkAngle),fz=Math.sin(forkAngle),forkReach=0.18+(branch%2)*0.045,forkRise=height*(0.17-branch*0.013);
-              grow([forkBase,new THREE.Vector3(forkBase.x+fx*forkReach*0.4,forkBase.y+forkRise*0.22,forkBase.z+fz*forkReach*0.4),new THREE.Vector3(forkBase.x+fx*forkReach*0.92,forkBase.y+forkRise*0.66,forkBase.z+fz*forkReach*0.92),new THREE.Vector3(forkBase.x+fx*forkReach,forkBase.y+forkRise,forkBase.z+fz*forkReach)],0.045-branch*0.003,4);
+          var baseY=-height/2,rootPoint=new THREE.Vector3(0,baseY,0);
+          // Each growth form begins with a vertical, planar basal ring at the same substrate anchor.
+          var stemHeight=height*(form===2?0.40:0.24),stem=[rootPoint,new THREE.Vector3(0,baseY+stemHeight*0.34,0),new THREE.Vector3(Math.sin(phase)*0.025,baseY+stemHeight*0.76,Math.cos(phase)*0.025),new THREE.Vector3(0,baseY+stemHeight,0)];
+          grow(stem,form===0?0.25:0.21,3,0.40);
+          if(form===0){
+            // Stout finger growth: several unequal lobes emerge low, without a dominant bare trunk.
+            var central=point(stem,0.52),centralTip=height*0.49-0.104;
+            grow([central,new THREE.Vector3(0,baseY+height*0.37,0),new THREE.Vector3(Math.sin(phase)*0.06,centralTip-height*0.18,Math.cos(phase)*0.04),new THREE.Vector3(Math.sin(phase)*0.04,centralTip,0)],0.13,5,0.20);
+            for(var finger=0;finger<5;finger++){
+              var angle=phase*0.37+finger*Math.PI*2/5,dx=Math.cos(angle),dz=Math.sin(angle),reach=0.43+(finger%2)*0.035;
+              var base=point(stem,0.38+finger*0.035);base.x+=dx*0.085;base.z+=dz*0.085;
+              var endY=height*(0.27+0.05*((finger+index)%3));
+              var curve=[base,new THREE.Vector3(dx*0.20,baseY+height*0.33,dz*0.20),new THREE.Vector3(dx*reach*0.97,endY-height*0.19,dz*reach*0.97),new THREE.Vector3(dx*reach,endY,dz*reach)];
+              grow(curve,0.115+(finger%3)*0.012,5,0.20);
+              if(finger===1||finger===3){
+                var bud=point(curve,0.57),budAngle=angle+0.8,bx=Math.cos(budAngle),bz=Math.sin(budAngle);
+                grow([bud,new THREE.Vector3(bud.x+bx*0.075,bud.y+height*0.05,bud.z+bz*0.075),new THREE.Vector3(bud.x+bx*0.15,bud.y+height*0.10,bud.z+bz*0.15),new THREE.Vector3(bud.x+bx*0.16,bud.y+height*0.15,bud.z+bz*0.16)],0.076,3,0.18);
+              }
+            }
+          }else if(form===1){
+            // Open antler growth: three curved main limbs divide above a low common base.
+            for(var limb=0;limb<3;limb++){
+              var angle=phase*0.31+limb*2.4,dx=Math.cos(angle),dz=Math.sin(angle),reach=0.56+(limb%2)*0.035,base=point(stem,0.45+limb*0.08),endY=height*(0.34+limb*0.035);
+              var curve=[base,new THREE.Vector3(dx*0.11,base.y+height*0.22,dz*0.11),new THREE.Vector3(dx*reach*0.80,endY-height*0.23,dz*reach*0.80),new THREE.Vector3(dx*reach,endY,dz*reach)];
+              grow(curve,0.13-limb*0.008,6,0.56);
+              for(var fork=0;fork<2;fork++){
+                var forkBase=point(curve,fork?0.75:0.50),forkAngle=angle+(fork?0.90:-0.95),fx=Math.cos(forkAngle),fz=Math.sin(forkAngle),rise=height*(fork?0.13:0.20),forkReach=fork?0.17:0.21;
+                grow([forkBase,new THREE.Vector3(forkBase.x+fx*forkReach*0.3,forkBase.y+rise*0.22,forkBase.z+fz*forkReach*0.3),new THREE.Vector3(forkBase.x+fx*forkReach*0.9,forkBase.y+rise*0.65,forkBase.z+fz*forkReach*0.9),new THREE.Vector3(forkBase.x+fx*forkReach,forkBase.y+rise,forkBase.z+fz*forkReach)],0.058-fork*0.009,3,0.38);
+              }
+            }
+          }else{
+            // Corymbose growth: spreading support boughs carry a broad crown of upright branchlets.
+            var crownBase=point(stem,0.85);
+            grow([crownBase,new THREE.Vector3(0,0,0),new THREE.Vector3(0,height*0.28,0),new THREE.Vector3(0,height*0.425,0)],0.065,2,0.20);
+            for(var bough=0;bough<5;bough++){
+              var angle=phase*0.29+bough*Math.PI*2/5,dx=Math.cos(angle),dz=Math.sin(angle),reach=0.62+(bough%2)*0.025,base=point(stem,0.58+bough*0.025),endY=height*(0.025+Math.sin(phase+bough)*0.01);
+              var curve=[base,new THREE.Vector3(dx*reach*0.25,base.y+height*0.10,dz*reach*0.25),new THREE.Vector3(dx*reach*0.78,endY-height*0.035,dz*reach*0.78),new THREE.Vector3(dx*reach,endY,dz*reach)];
+              grow(curve,0.095-bough*0.006,3,0.40);
+              for(var twig=0;twig<2;twig++){
+                var twigBase=point(curve,twig?0.92:0.53),top=height*(0.385+Math.sin(phase+bough*0.7+twig*0.8)*0.035),lean=twig?0.035:-0.025;
+                grow([twigBase,new THREE.Vector3(twigBase.x,twigBase.y+(top-twigBase.y)*0.35,twigBase.z),new THREE.Vector3(twigBase.x+dx*lean,top-height*0.09,twigBase.z+dz*lean),new THREE.Vector3(twigBase.x+dx*lean,top,twigBase.z+dz*lean)],0.055+((bough+twig)%2)*0.006,2,0.16);
+              }
             }
           }
-          var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeBoundingBox();geometry.computeBoundingSphere();return geometry;
+          var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeBoundingBox();geometry.computeBoundingSphere();geometry.userData.growthForm=['finger','antler','corymbose'][form];return geometry;
         }
         var coralColors = [0xc94e6d, 0xff6b35, 0xd4af37, 0x8e5572, 0xb8345c];
         var corals = [];
@@ -13363,6 +13443,7 @@ function createCLHuntFish(T,index){
             if (d2 < rad * rad && d2 < nearestD) { nearestD = d2; nearest = rocks[i]; }
           }
           for (var j = 0; j < corals.length; j++) {
+            if(corals[j].userData.reefPlacementValid===false)continue;
             var ddx = corals[j].position.x - pos.x;
             var ddz = corals[j].position.z - pos.z;
             var dd2 = ddx * ddx + ddz * ddz;
@@ -14076,6 +14157,23 @@ function createCLHuntFish(T,index){
         targetHalo.name='cl-target';targetHalo.rotation.x=-Math.PI/2;scene.add(targetHalo);targetHalo.visible=false;
         var grounded=rocks.concat(corals,grass.map(function(g){return g.mesh;}),kelpStrands.map(function(k){return k.mesh;}));
         grounded.forEach(function(o){if(o)o.userData.groundOffset=o.position.y;});
+        rocks.concat(corals).forEach(function(o){o.userData.reefFootprint=createCLReefFootprint(THREE,o);});
+        // Lean and growth form change the lowest rendered point; anchor that point to the seabed.
+        corals.forEach(function(o){o.userData.groundOffset=-o.userData.reefFootprint.minY;});
+        function settleReefCorals(near,recycled){
+          var blockers=rocks.map(function(o){var f=o.userData.reefFootprint;return{minX:o.position.x+f.minX,maxX:o.position.x+f.maxX,minZ:o.position.z+f.minZ,maxZ:o.position.z+f.maxZ};});
+          // Preserve the open spawn and the existing sandy mission route.
+          blockers.push({minX:-4.5,maxX:4.5,minZ:-5,maxZ:4.5},{minX:0,maxX:7,minZ:-5,maxZ:10});
+          corals.forEach(function(o,i){
+            var f=o.userData.reefFootprint,isRecycled=!!recycled[i];
+            var site=findCLReefSite(o.position,f,blockers,{center:near||{x:0,z:0},minDistance:isRecycled?55:0,maxDistance:near?(isRecycled?95:119):78,index:i});
+            o.userData.reefPlacementValid=!!site;o.visible=!!site;
+            // An impossible fully occupied area leaves this pooled colony inactive, never embedded in cover.
+            if(!site)return;
+            o.position.x=site.x;o.position.z=site.z;o.position.y=terrainHeight(site.x,site.z)+o.userData.groundOffset;
+            blockers.push({minX:site.x+f.minX,maxX:site.x+f.maxX,minZ:site.z+f.minZ,maxZ:site.z+f.maxZ});
+          });
+        }
         function updateGround(){
           grounded.forEach(function(o){if(o)o.position.y=terrainHeight(o.position.x,o.position.z)+o.userData.groundOffset;});
           crabs.forEach(function(o){o.position.y=terrainHeight(o.position.x,o.position.z)+0.18;});
@@ -14091,6 +14189,7 @@ function createCLHuntFish(T,index){
         // Keep the spawn and sand route clear of impassable rocks.
         rocks.slice(10).forEach(function(r){if(Math.hypot(r.position.x,r.position.z)<5 || (r.position.x>0&&r.position.x<7&&r.position.z>-5&&r.position.z<10))r.position.x-=16;});
         corals.slice(0,10).forEach(function(r,i){r.position.x=-8+(i%3)*1.1;r.position.z=2+i*1.5;});
+        settleReefCorals(null,[]);
         if(isDeepSpecies(speciesId)){var spawnDepth=speciesId==='vampireSquid'?-6:-12;octopus.position.set(42,spawnDepth,0);gameState.verticalY=spawnDepth;gameState.runStats.deepestY=spawnDepth;}
         if(speciesId==='humboldtSquid'){gameState.verticalY=4;octopus.position.y=4;fishSchools[0].center.set(0,4,9);fishSchools[0].fish.forEach(function(f){f.position.copy(fishSchools[0].center).add(f.userData.offset);});}
         if(mission)gameState.dayTime=0.18;
@@ -15098,6 +15197,7 @@ function createCLHuntFish(T,index){
               var RECYCLE_DIST = 120;
               var SPAWN_RING_MIN = 55;
               var SPAWN_RING_MAX = 95;
+              var reefRocksMoved=false,recycledCorals=[];
               function recyclePos(near) {
                 var ang = Math.random() * Math.PI * 2;
                 var rad = SPAWN_RING_MIN + Math.random() * (SPAWN_RING_MAX - SPAWN_RING_MIN);
@@ -15111,6 +15211,7 @@ function createCLHuntFish(T,index){
                   var np = recyclePos(octopus.position);
                   rocks[rri].position.x = np.x;
                   rocks[rri].position.z = np.z;
+                  reefRocksMoved=true;
                 }
               }
               // Corals
@@ -15121,8 +15222,11 @@ function createCLHuntFish(T,index){
                   var nc = recyclePos(octopus.position);
                   corals[crri].position.x = nc.x;
                   corals[crri].position.z = nc.z;
+                  recycledCorals[crri]=true;
                 }
               }
+              // A moved rock may obstruct a colony that did not recycle. Resolve the whole stable pool.
+              if(reefRocksMoved||recycledCorals.length)settleReefCorals(octopus.position,recycledCorals);
               // Grass
               for (var gri = 0; gri < grass.length; gri++) {
                 var grx = grass[gri].mesh.position.x - octopus.position.x;
@@ -15232,6 +15336,8 @@ function createCLHuntFish(T,index){
                 scene.add(newDen);
                 dens.push({ group: newDen, x: ndp.x, z: ndp.z, glow: nglow });
               }
+              // Recycling changes X/Z after the regular grounding pass; render the new terrain height immediately.
+              updateGround();
             }
 
             // ─── Crab AI ───

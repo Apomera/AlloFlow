@@ -1,0 +1,200 @@
+{
+  "date": "2026-09-27",
+  "status": "complete",
+  "unit": {
+    "passed": 10,
+    "total": 10,
+    "files": 2,
+    "evidence": "reef-focus-unit-final.json",
+    "note": "Six new placement cases plus four existing canvas/focus contracts, on final source. Initial six placement tests also passed; not counted twice."
+  },
+  "browser": {
+    "passed": 9,
+    "total": 9,
+    "workers": 1,
+    "retries": 0,
+    "firstRunsPassed": true,
+    "runs": [
+      {
+        "file": "reef-browser-initial.json",
+        "startTime": "2026-09-27T16:02:16.552Z",
+        "duration": 276463.985,
+        "expected": 7,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      {
+        "file": "gameplay-regressions.json",
+        "startTime": "2026-09-27T16:07:19.919Z",
+        "duration": 83998.278,
+        "expected": 2,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    ],
+    "coverage": [
+      "initial actual-vertex footprint clearance and all three growth forms",
+      "same-frame recycling grounding, 55–95 ring bounds, and retained coral resources/metadata",
+      "moved rock relocates an obstructed surviving colony",
+      "desktop/phone inspection and restored rock visibility",
+      "low/balanced squid rendering and scene texture disposal",
+      "caustics remain attached when terrain tiles shift",
+      "inspection and reduced motion pause caustics",
+      "reef meal objectives, return home, and one debrief",
+      "rock cover and spatial ink interrupt predator awareness/pursuit"
+    ],
+    "limitations": "Clearance uses conservative world XZ bounds of actual transformed vertices, not triangle-triangle collision. The exact terrain-ray grounding case is in flat far-water terrain; initial placement checks the lowest rendered vertex against its configured offset."
+  },
+  "visual": {
+    "errors": [],
+    "fixture": "Desktop and phone reef views use normal movement and inspection. Three detail views reposition only the paused camera and hide overlays; actual world colonies, actors, lighting, geometry and materials are unchanged.",
+    "details": [
+      {
+        "form": "finger",
+        "position": [
+          -8.861037722821452,
+          1.1315054013371246,
+          -0.07872894815039544
+        ],
+        "camera": [
+          -5.375149094329302,
+          1.7668484651132452,
+          -2.0558824224300905
+        ],
+        "vertices": 675,
+        "triangles": 984
+      },
+      {
+        "form": "antler",
+        "position": [
+          -3.737009075339013,
+          0.8566469445052352,
+          5.514444938565518
+        ],
+        "camera": [
+          -1.8478752366999287,
+          1.439551717588849,
+          8.616855945322401
+        ],
+        "vertices": 711,
+        "triangles": 1024
+      },
+      {
+        "form": "corymbose",
+        "position": [
+          -3.6482559289951295,
+          1.106013366507451,
+          8.071237120916486
+        ],
+        "camera": [
+          -1.821329702442163,
+          1.6946068988761627,
+          11.140019454740989
+        ],
+        "vertices": 972,
+        "triangles": 1320
+      }
+    ],
+    "screenshots": [
+      "reef-desktop.png",
+      "reef-inspection.png",
+      "reef-phone.png",
+      "coral-finger.png",
+      "coral-antler.png",
+      "coral-corymbose.png"
+    ],
+    "reviewed": true,
+    "viewports": [
+      "1280x1100",
+      "390x844"
+    ]
+  },
+  "geometry": {
+    "cases": 54,
+    "checks": [
+      "finite buffers",
+      "unit normals",
+      "valid indices",
+      "deterministic construction",
+      "one indexed geometry, no material groups",
+      "planar substrate anchor",
+      "height above 0.9",
+      "leaned radius at most 1.1",
+      "at most 1400 triangles",
+      "owned geometry disposal"
+    ],
+    "forms": {
+      "finger": {
+        "cases": 18,
+        "vertices": 675,
+        "triangles": 984,
+        "maxLeaningRadius": 0.6792869507122201,
+        "minHeight": 0.9875234663486481
+      },
+      "antler": {
+        "cases": 18,
+        "vertices": 711,
+        "triangles": 1024,
+        "maxLeaningRadius": 0.7801637724564177,
+        "minHeight": 0.9598547518253326
+      },
+      "corymbose": {
+        "cases": 18,
+        "vertices": 972,
+        "triangles": 1320,
+        "maxLeaningRadius": 0.8254918790818535,
+        "minHeight": 0.9769999980926514
+      }
+    },
+    "minHeight": 0.9598547518253326,
+    "maxLeaningRadius": 0.8254918790818535,
+    "rngDraws": {
+      "before": 0,
+      "after": 0
+    },
+    "pool18": {
+      "previous": {
+        "vertices": 9315,
+        "triangles": 12888
+      },
+      "current": {
+        "vertices": 14148,
+        "triangles": 19968
+      }
+    },
+    "note": "One static mesh per colony. Illustrative growth forms; no frame-rate claim."
+  },
+  "sourceReview": "Scoped read-only audit found no actionable correctness issues in placement, inactive pooling, recycling timing, resource ownership or inspection interactions.",
+  "determinism": "Geometry and resolver consume zero random draws. Initial construction draw sequence and per-candidate recycle draws are preserved; changed colony locations can alter future recycling timing.",
+  "mirrors": [
+    {
+      "path": "stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "28e86803cb57809f7d2b0c6b099a961c56e957f400e781fc787a1c95f8d8756a"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "28e86803cb57809f7d2b0c6b099a961c56e957f400e781fc787a1c95f8d8756a"
+    },
+    {
+      "path": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "28e86803cb57809f7d2b0c6b099a961c56e957f400e781fc787a1c95f8d8756a"
+    },
+    {
+      "path": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "28e86803cb57809f7d2b0c6b099a961c56e957f400e781fc787a1c95f8d8756a"
+    }
+  ],
+  "syntax": "passed",
+  "whitespace": "passed",
+  "deployed": false,
+  "oceanReuse": {
+    "recommendation": "Share small scene components; keep Hunter focused and build a separate bounded reef experience with an independent ecological model.",
+    "note": "Architecture note only. No extraction, new tool, loader, registry, model or save migration implemented."
+  },
+  "commit": {
+    "status": "ready",
+    "note": "Only pass-eight source, tests and report artifacts; normal repository hooks."
+  }
+}
