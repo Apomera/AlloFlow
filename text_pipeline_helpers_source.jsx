@@ -145,18 +145,54 @@ const readingText = (() => {
         }
         return -1;
     };
+    const codeSpan = (text, start) => {
+        let width = 1;
+        while (text.charCodeAt(start + width) === 96) width++;
+        const delimiter = String.fromCharCode(96).repeat(width);
+        let end = text.indexOf(delimiter, start + width);
+        while (end >= 0 && (text.charCodeAt(end - 1) === 96 || text.charCodeAt(end + width) === 96)) end = text.indexOf(delimiter, end + width);
+        if (end < 0) throw formattingError('unclosed-formatting', 'unclosed');
+        return { width, end };
+    };
+    // Comments and fenced payloads are not evidence, but their syntax inside a
+    // displayed code span is literal text. Scan in context before splitting lines.
+    const readingBody = raw => {
+        let result = '', lineStart = true;
+        for (let i = 0; i < raw.length;) {
+            if (raw.startsWith('<!--', i)) {
+                const end = raw.indexOf('-->', i + 4);
+                if (end < 0) throw formattingError('unclosed-formatting', 'unclosed');
+                i = end + 3; continue;
+            }
+            const fence = lineStart && raw.slice(i).match(/^(`{3,}|~{3,})/);
+            if (fence) {
+                const openingEnd = raw.indexOf('\n', i + fence[1].length);
+                const closer = new RegExp('^[^\\S\\r\\n]*' + fence[1][0] + '{' + fence[1].length + ',}[^\\S\\r\\n]*$', 'gm');
+                closer.lastIndex = openingEnd + 1;
+                const closing = openingEnd >= 0 ? closer.exec(raw) : null;
+                if (!closing) throw formattingError('unclosed-formatting', 'unclosed');
+                result += '\n\n'; i = closing.index + closing[0].length; lineStart = true; continue;
+            }
+            if (raw[i] === '\\' && /[\\`*_[\]{}()#+.!|>-]/.test(raw[i + 1] || '')) {
+                result += raw.slice(i, i + 2); i += 2; lineStart = false; continue;
+            }
+            if (raw.charCodeAt(i) === 96) {
+                const { width, end } = codeSpan(raw, i);
+                result += raw.slice(i, end + width); i = end + width; lineStart = false; continue;
+            }
+            const char = raw[i++]; result += char;
+            if (char === '\n') lineStart = true;
+            else if (char.trim()) lineStart = false;
+        }
+        return result;
+    };
     const inline = text => {
         let result = '';
         for (let i = 0; i < text.length; i++) {
             // Code spans display punctuation literally; do not reinterpret their
             // HTML or Markdown as invisible formatting.
             if (text.charCodeAt(i) === 96) {
-                let width = 1;
-                while (text.charCodeAt(i + width) === 96) width++;
-                const delimiter = String.fromCharCode(96).repeat(width);
-                let end = text.indexOf(delimiter, i + width);
-                while (end >= 0 && (text.charCodeAt(end - 1) === 96 || text.charCodeAt(end + width) === 96)) end = text.indexOf(delimiter, end + width);
-                if (end < 0) throw formattingError('unclosed-formatting', 'unclosed');
+                const { width, end } = codeSpan(text, i);
                 result += Array.from(text.slice(i + width, end)).map(char => '&#' + char.codePointAt(0) + ';').join('');
                 i = end + width - 1; continue;
             }
@@ -209,16 +245,9 @@ const readingText = (() => {
     };
     const blocks = raw => {
         if (typeof DOMParser !== 'function') throw new Error('text-parser-unavailable');
-        // Keep hidden HTML spanning lines from being split into independent
-        // Markdown paragraphs. Unsupported cross-line HTML is unverified.
-        if (/<!--[\s\S]*$/.test(raw.replace(/<!--[\s\S]*?-->/g, ''))) throw formattingError('unclosed-formatting', 'unclosed');
-        raw = raw.replace(/<!--[\s\S]*?-->/g, '');
-        const chunks = []; let paragraph = [], fence = '';
+        const chunks = []; let paragraph = [];
         const flush = () => { if (paragraph.length) chunks.push(paragraph.join('\n')); paragraph = []; };
-        for (const line of raw.replace(/\r\n?/g, '\n').split('\n')) {
-            const marker = line.match(/^\s*(`{3,}|~{3,})/);
-            if (marker) { flush(); if (!fence) fence = marker[1][0]; else if (marker[1][0] === fence) fence = ''; continue; }
-            if (fence) continue; // Chart/code payloads are not vocabulary evidence.
+        for (const line of readingBody(raw.replace(/\r\n?/g, '\n')).split('\n')) {
             const htmlTags = inline(line).match(/<\/?[A-Za-z][^<>]*>/g) || [];
             const stack = [];
             for (const tag of htmlTags) {
@@ -233,7 +262,6 @@ const readingText = (() => {
             const block = line.match(/^\s*(?:#{1,6}\s+|[-+*]\s+|\d+[.)]\s+|>\s?)(.*)$/);
             if (block) { flush(); chunks.push(block[1]); } else paragraph.push(line);
         }
-        if (fence) throw formattingError('unclosed-formatting', 'unclosed');
         flush();
         const output = [];
         const blockTags = new Set('p div pre li td th h1 h2 h3 h4 h5 h6 blockquote dt dd figcaption hr'.split(' '));

@@ -4136,9 +4136,11 @@ const _preservedVocabulary = (() => {
 };
         const message = (name, params = {}) => {
             const key = 'simplified.' + name; let translated;
-            try { translated = translate?.(key, params); } catch (_) {}
+            // Fetch the template, then insert literal values once. A term may
+            // itself contain placeholders or JavaScript replacement symbols.
+            try { translated = translate?.(key); } catch (_) {}
             const value = typeof translated === 'string' && translated && translated !== key ? translated : defaults[name];
-            return value.replace(/\{(\w+)\}/g, (match, name) => params[name] === undefined ? match : String(params[name]));
+            return value.replace(/\{(\w+)\}/g, (match, name) => Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : match);
         };
         if (audit.reason === 'missing-required-pane' || audit.reason === 'empty-required-pane') return message(audit.reason === 'missing-required-pane' ? 'adapt_pane_missing' : 'adapt_pane_empty', {
             pane: message(audit.pane === 'translation' ? 'adapt_terms_translation' : 'adapt_terms_primary')

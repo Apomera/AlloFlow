@@ -1,0 +1,53 @@
+{
+  "baseline": "a63e347b7d193cbc95b5fc3a9fec844322f1f455",
+  "initialReproduction": {
+    "failed": 10,
+    "passed": 6
+  },
+  "unit": {
+    "passed": 224,
+    "files": 10
+  },
+  "browser": {
+    "newCases": 6,
+    "existingCases": 29,
+    "errors": 0
+  },
+  "pins": {
+    "generation_helpers_module.js": "46f32889",
+    "text_pipeline_helpers_module.js": "850e17ed"
+  },
+  "compiledModulesMatchTestedBytes": true,
+  "readerInputs": [
+    {
+      "file": "view_simplified_module.js",
+      "sha256": "8f2dd725870ef19789fbf158bafec389506d3c0075159ce5cd1f7293ce970dcb"
+    },
+    {
+      "file": "instructional_context_module.js",
+      "sha256": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2"
+    },
+    {
+      "file": "phase_n_misc_helpers_module.js",
+      "sha256": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c"
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "bee7bd183381e82e6c497b02b64ccf3c76f08a0198e2e86acdb5df0040340c66"
+    },
+    {
+      "file": "tests/track07-browser-fixture.js",
+      "sha256": "9a2c5acb1ed6b8e316075b5a22cf238224c890b0dee36ca8119b38d4a48dba03"
+    },
+    {
+      "file": "tests/original_reader_markdown.test.js",
+      "sha256": "c3dab554f1347ce48291fddc77500609b4b6703a55259c73aea63abe32ebeac9"
+    },
+    {
+      "file": "tests/reader_sentence_links.test.js",
+      "sha256": "4f493df8198ea9e477968d350855877a77a4c180008077cc955dd2008b1880e4"
+    }
+  ],
+  "scope": "Generation/pipeline helpers, two new regression files, module pairs and only their host pins. Reader/compiler/catalog changes remain owned separately.",
+  "validated": "2026-09-27T18:05:25.021Z"
+}
