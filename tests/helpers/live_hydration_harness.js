@@ -17,6 +17,8 @@ export const fetchMailboxPackParts=new Function('ALLO_MB_PACK_FETCH_CONCURRENCY'
 export function makeHydrationHarness(options={}) {
  const refs={liveResourceHydrationAttemptsRef:{current:{signature:'',count:0}},liveResourceHydrationRetryTimerRef:{current:null},lastResourcesStringRef:{current:null},lastPackRefRef:{current:null},hydratedHistoryRef:{current:[{id:'old',type:'quiz'}]}};
  let status={status:'idle',attempt:0};
+ let receivedResources=options.receivedResources??[];
+ const setReceivedDeliveryResources=vi.fn(next=>{receivedResources=typeof next==='function'?next(receivedResources):next;});
  const clearHydrationRetry=()=>{if(refs.liveResourceHydrationRetryTimerRef.current)clearTimeout(refs.liveResourceHydrationRetryTimerRef.current);refs.liveResourceHydrationRetryTimerRef.current=null;};
  const coordinator=createCoordinator({attemptsRef:refs.liveResourceHydrationAttemptsRef,onSourceChange:clearHydrationRetry});
  const connectionState={current:{sessionKey:'fixture',attempt:0,blocked:false,status:'connected'}};
@@ -24,7 +26,7 @@ export function makeHydrationHarness(options={}) {
  const epoch=vi.fn(),history=vi.fn(),mailbox=options.mailbox||vi.fn(async()=>({of:1,data:JSON.stringify({kind:'assignment',resources:[]})}));
  const connectionRecovery=createConnectionRecovery({stateRef:connectionState,sessionKey:'fixture',onState:s=>connectionStates.push(s),reconnect:epoch});
  connectionRecovery.connected();
- const values={connectionRecovery,liveSessionConnectionAttemptsRef:connectionState,liveSessionConnectionRecoveryRef:{current:connectionRecovery},...refs,hydrationCoordinator:coordinator,clearHydrationRetry,setLiveResourceRetryEpoch:epoch,setLiveResourceLoadState:vi.fn(s=>{status=s;}),setHistory:history,activeSessionAppId:'app',activeSessionCode:'session',hydrateSessionAssets:options.hydrate||vi.fn(async(_app,resources)=>resources),_alloMbBridgeActive:()=>true,_alloMbBridgeState:{url:'local-fixture'},_alloMailboxCall:mailbox,_alloFetchMailboxPackParts:fetchMailboxPackParts,_alloDecodeAlloPack:async s=>s,_alloStudentSafeResources:items=>items.filter(r=>r&&r.id&&r.type!=='lesson-plan'),_alloSessionSyncTrace:vi.fn(),warnLog:vi.fn(),isTeacherMode:false};
+ const values={connectionRecovery,liveSessionConnectionAttemptsRef:connectionState,liveSessionConnectionRecoveryRef:{current:connectionRecovery},...refs,hydrationCoordinator:coordinator,clearHydrationRetry,setLiveResourceRetryEpoch:epoch,setLiveResourceLoadState:vi.fn(s=>{status=s;}),setHistory:history,setReceivedDeliveryResources,activeSessionAppId:'app',activeSessionCode:'session',hydrateSessionAssets:options.hydrate||vi.fn(async(_app,resources)=>resources),_alloMbBridgeActive:()=>true,_alloMbBridgeState:{url:'local-fixture'},_alloMailboxCall:mailbox,_alloFetchMailboxPackParts:fetchMailboxPackParts,_alloDecodeAlloPack:async s=>s,_alloStudentSafeResources:items=>items.filter(r=>r&&r.id&&r.type!=='lesson-plan'),_alloSessionSyncTrace:vi.fn(),warnLog:vi.fn(),isTeacherMode:false};
  const retrySource=between('      const scheduleHydrationRetry = attempt => {','      window.addEventListener(\'online\', retryHydrationOnNetworkReturn);');
  const retryApi=new Function(...Object.keys(values),retrySource+';return {scheduleHydrationRetry,retryHydrationOnNetworkReturn};')(...Object.values(values));
  Object.assign(values,retryApi);
@@ -42,5 +44,5 @@ export function makeHydrationHarness(options={}) {
  const errorStart=source.indexOf('      }, (err) => {',snapshot)+'      }, (err) => {'.length;
  const errorEnd=source.indexOf('      });\n      sessionUnsubscribeRef.current = unsubscribe;',errorStart);
  const onError=new Function(...Object.keys(lifecycleValues),'return err=>{'+source.slice(errorStart,errorEnd)+'};')(...Object.values(lifecycleValues));
- return {connectionRecovery,connectionState,connectionStates,receive,cleanup,endSession,onError,lifecycleValues,coordinator,refs,history,mailbox,epoch,status:()=>status,hydrate:values.hydrateSessionAssets,wake:retryApi.retryHydrationOnNetworkReturn,loadState:values.setLiveResourceLoadState};
+ return {connectionRecovery,connectionState,connectionStates,receive,cleanup,endSession,onError,lifecycleValues,coordinator,refs,history,mailbox,epoch,status:()=>status,receivedResources:()=>receivedResources,setReceivedDeliveryResources,hydrate:values.hydrateSessionAssets,wake:retryApi.retryHydrationOnNetworkReturn,loadState:values.setLiveResourceLoadState};
 }

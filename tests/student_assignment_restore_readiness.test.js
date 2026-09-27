@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+
+const { createSession } = createRequire(import.meta.url)('../reader_support_drafts.js');
 
 const source = readFileSync('AlloFlowANTI.txt', 'utf8').replace(/\r\n/g, '\n');
 function section(start, end) {
@@ -17,7 +20,7 @@ const resource = id => ({
   readingSupports: { annotations: [{ quote: 'Fair', text: 'Teacher-selected meaning', origin: 'educator', pinned: true }] }
 });
 
-function harness({ ready = false, throwing = false, rejecting = false, withoutEnsure = false } = {}) {
+function harness({ ready = false, throwing = false, rejecting = false, withoutEnsure = false, draftSession = null } = {}) {
   vi.useFakeTimers();
   const listeners = new Set();
   const events = new EventTarget();
@@ -36,14 +39,20 @@ function harness({ ready = false, throwing = false, rejecting = false, withoutEn
   const addToast = vi.fn(), warnLog = vi.fn(), deps = { marker: 'current-host-deps' };
   let pending, cleanup, restore;
   const generationRef = { current: 0 };
+  const supportDraftSessionRef = { current: draftSession };
+  const requestReadingSupportTransition = vi.fn(run => supportDraftSessionRef.current ? supportDraftSessionRef.current.request(run) : run());
   const setPending = vi.fn(value => { pending = typeof value === 'function' ? value(pending) : value; });
   const notify = () => events.dispatchEvent(new Event('alloflow:module-registry-changed'));
   return {
-    window, api, addToast, warnLog, listeners, setPending, get pending() { return pending; },
+    window, api, addToast, warnLog, listeners, setPending, requestReadingSupportTransition, get pending() { return pending; },
     run(item, teacher = false) {
       cleanup?.(); pending = item; let callback;
       restore = new Function('window', '_alloMiscHandlersDeps', 'useRef', 'useEffect', 'pendingQrAssignmentResource', 'isTeacherMode', 'setPendingQrAssignmentResource', 'addToast', 'warnLog',
-        wrapper + '\n' + effect + '\nreturn handleRestoreView;')(window, () => deps, () => generationRef, fn => { callback = fn; }, item, teacher, setPending, addToast, warnLog);
+        'supportDraftSessionRef', 'requestReadingSupportTransition',
+        wrapper + '\n' + effect + '\nreturn handleRestoreView;')(
+        window, () => deps, () => generationRef, fn => { callback = fn; }, item, teacher, setPending, addToast, warnLog,
+        supportDraftSessionRef, requestReadingSupportTransition,
+      );
       cleanup = callback();
     },
     manualOpen(item) { return restore(item); },
@@ -206,6 +215,29 @@ describe('cold student assignment restore', () => {
     h.notify(); await flush();
     expect(h.api.handleRestoreView).toHaveBeenCalledTimes(2);
     expect(h.api.handleRestoreView.mock.calls[1][0]).toBe(waiting);
+    expect(h.pending).toBeNull();
+    h.cleanup(); expect(h.listeners.size).toBe(0);
+  });
+
+  it('keeps waiting homework when a draft transition is cancelled, then lets a clean manual open supersede it', async () => {
+    const session = createSession();
+    let dirty = true, transition;
+    session.register({ hasChanges: () => dirty, defer: next => { transition = next; } });
+    const h = harness({ draftSession: session }), waiting = resource('waiting-with-draft'), chosen = resource('manual-after-editing');
+    h.run(waiting); await flush();
+    h.window.AlloModules.MiscHandlers = h.api;
+    expect(h.manualOpen(chosen)).toBe(false);
+    expect(h.requestReadingSupportTransition).toHaveBeenCalledOnce();
+    expect(h.api.handleRestoreView).not.toHaveBeenCalled();
+    expect(h.pending).toBe(waiting);
+    expect(h.setPending).not.toHaveBeenCalled();
+    transition.cancel();
+    expect(transition.run()).toBe(false);
+    expect(h.pending).toBe(waiting);
+    dirty = false;
+    h.manualOpen(chosen);
+    h.ready(); await flush();
+    expect(h.api.handleRestoreView).toHaveBeenCalledExactlyOnceWith(chosen, {}, expect.any(Object));
     expect(h.pending).toBeNull();
     h.cleanup(); expect(h.listeners.size).toBe(0);
   });

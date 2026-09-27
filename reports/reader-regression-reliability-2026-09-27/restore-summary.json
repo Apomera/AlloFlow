@@ -1,0 +1,83 @@
+{
+  "recordedAt": "2026-09-27T03:37:22.561Z",
+  "baselineHead": "452e7cd230b62f4e192f055826817653d5b997f4",
+  "scope": "Three assigned fixture files only; production host and modules not edited by this lane.",
+  "baseline": {
+    "file": "restore-baseline.json",
+    "processExitCode": 1,
+    "total": 40,
+    "passed": 13,
+    "failed": 27,
+    "success": false,
+    "files": [
+      {
+        "file": "homework_selection_integrity.test.js",
+        "passed": 11,
+        "failed": 2
+      },
+      {
+        "file": "novak_original_reader_handlers.test.js",
+        "passed": 0,
+        "failed": 14
+      },
+      {
+        "file": "student_assignment_restore_readiness.test.js",
+        "passed": 2,
+        "failed": 11
+      }
+    ]
+  },
+  "after": {
+    "file": "restore-after.json",
+    "processExitCode": 1,
+    "runnerError": "Failed to start forks worker for homework_selection_integrity.test.js: Timeout waiting for worker to respond. Vitest's JSON success field covers the completed files and does not override this process failure.",
+    "total": 30,
+    "passed": 30,
+    "failed": 0,
+    "success": true,
+    "files": [
+      {
+        "file": "novak_original_reader_handlers.test.js",
+        "passed": 16,
+        "failed": 0
+      },
+      {
+        "file": "student_assignment_restore_readiness.test.js",
+        "passed": 14,
+        "failed": 0
+      }
+    ]
+  },
+  "homeworkRecheck": {
+    "file": "restore-homework-recheck.json",
+    "processExitCode": 0,
+    "total": 15,
+    "passed": 15,
+    "failed": 0,
+    "success": true,
+    "files": [
+      {
+        "file": "homework_selection_integrity.test.js",
+        "passed": 15,
+        "failed": 0
+      }
+    ]
+  },
+  "distinctPassingTestsAfter": 45,
+  "addedBehavioralCases": 5,
+  "limits": [
+    "The three-file after run exited 1 because the homework forks worker timed out before executing that file; its other two files passed 30 tests.",
+    "The unchanged homework test file then passed all 15 tests on its focused recheck.",
+    "Concurrent host edits were present during this work; hashes below record current read-only inputs after the recheck, not a frozen release snapshot."
+  ],
+  "afterInputSha256": {
+    "AlloFlowANTI.txt": "10efb52ce77d7ae5dc0f45153463a7f865ae03d504d77eb30dd82b1d2b270d94",
+    "reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+    "instructional_context_module.js": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2",
+    "module_scope_extras_module.js": "a3fc2aa9f8e61772e29281811ff1d9413de8700900508384c9afcacd3769157d",
+    "shared_activity_module.js": "43722e2bfcab1060f8f86a6489252f8c99ead2fda695f66bf3899edc638c43f7",
+    "tests/student_assignment_restore_readiness.test.js": "33fb1a24feadafc9fa5920f93ea17060f26ec3ad8c71c96e9d13a01041bf37f0",
+    "tests/novak_original_reader_handlers.test.js": "d988be3d0c40aa771f2b87f139db194bac5a292b4dadddfd2891c5a45ccaaf09",
+    "tests/homework_selection_integrity.test.js": "8b62221660b51e632fd76f1203c92bb4d1a708b5dc53c1992f63d066392f8f8b"
+  }
+}

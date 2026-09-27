@@ -1,6 +1,9 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { loadAlloModule } from './setup.js';
+
+const { createSession } = createRequire(import.meta.url)('../reader_support_drafts.js');
 
 let Context;
 const shell = readFileSync('AlloFlowANTI.txt', 'utf8');
@@ -13,7 +16,8 @@ const buildHandlers = new Function('deps', `
     history, inputText, sourceTopic, gradeLevel, leveledTextLanguage, activeUnitId, selectedReadingSourceId,
     stopPlayback, setSelectionMenu, setRevisionData, setPhonicsData,
     setIsEditingLeveledText, setIsFluencyMode, setIsCompareMode, setInteractionMode,
-    setGeneratedContent, setActiveView, setHistory, addToast, callGemini, handleGenerate
+    setGeneratedContent, setActiveView, setHistory, addToast, callGemini, handleGenerate,
+    supportDraftSessionRef, requestReadingSupportTransition, _resourceMutationStateRef
   } = deps;
   ${handlerSource}
   return { handleReadOriginal, openReadingArtifact };
@@ -25,19 +29,33 @@ beforeAll(() => {
 });
 
 function readerHarness(options = {}) {
-  const state = { history: options.history || [], opened: null, view: '' };
+  const state = { history: options.history || [], opened: options.generatedContent || null, view: '' };
+  const _resourceMutationStateRef = { current: { history: state.history, generatedContent: state.opened } };
+  const queuedUpdates = [];
+  const applyContent = update => {
+    state.opened = typeof update === 'function' ? update(state.opened) : update;
+    _resourceMutationStateRef.current.generatedContent = state.opened;
+  };
   const deps = {
     inputText: '', sourceTopic: 'Current lesson', gradeLevel: '5th Grade',
-    leveledTextLanguage: 'English', activeUnitId: 'all', selectedReadingSourceId: '', ...options,
+    leveledTextLanguage: 'English', activeUnitId: 'all', selectedReadingSourceId: '',
+    supportDraftSessionRef: { current: null }, _resourceMutationStateRef, ...options,
+    requestReadingSupportTransition: vi.fn(run => deps.supportDraftSessionRef.current ? deps.supportDraftSessionRef.current.request(run) : run()),
     stopPlayback: vi.fn(), setSelectionMenu: vi.fn(), setRevisionData: vi.fn(), setPhonicsData: vi.fn(),
     setIsEditingLeveledText: vi.fn(), setIsFluencyMode: vi.fn(), setIsCompareMode: vi.fn(),
     setInteractionMode: vi.fn(), addToast: vi.fn(), callGemini: vi.fn(), handleGenerate: vi.fn(),
-    setGeneratedContent: vi.fn(item => { state.opened = item; }),
+    setGeneratedContent: vi.fn(update => { if (options.queueContentUpdates) queuedUpdates.push(update); else applyContent(update); }),
     setActiveView: vi.fn(view => { state.view = view; }),
-    setHistory: vi.fn(update => { state.history = update(state.history); })
+    setHistory: vi.fn(update => {
+      state.history = typeof update === 'function' ? update(state.history) : update;
+      _resourceMutationStateRef.current.history = state.history;
+    })
   };
   const open = selected => buildHandlers({ ...deps, history: state.history }).handleReadOriginal(selected);
-  return { state, deps, open };
+  return { state, deps, open,
+    openArtifact: (item, compare) => buildHandlers({ ...deps, history: state.history }).openReadingArtifact(item, compare),
+    flush: () => queuedUpdates.splice(0).forEach(applyContent),
+  };
 }
 
 describe('open original reader source selection', () => {
@@ -166,6 +184,42 @@ describe('open original reader source selection', () => {
     harness.open();
     expect(harness.state.opened).toBe(original);
     expect(harness.state.history).toHaveLength(1);
+  });
+
+  it('preserves a support save queued before a reader-layout change in the same state batch', () => {
+    const original = Context.createSupportedReading('An exact original.', { id: 'batch-original' });
+    original._artifactInstanceId = 'batch-instance';
+    const saved = { ...original, readingSupports: { annotations: [{ id: 'saved-help', text: 'Keep this save.' }] } };
+    const harness = readerHarness({ history: [original], generatedContent: original, queueContentUpdates: true });
+    harness.deps.setGeneratedContent(() => saved);
+    harness.openArtifact(original, true);
+    expect(harness.state.opened).toBe(original);
+    harness.flush();
+    expect(harness.state.opened).toBe(saved);
+    expect(harness.state.opened.readingSupports).toBe(saved.readingSupports);
+    expect(harness.deps.setIsCompareMode).toHaveBeenCalledWith(true);
+    expect(harness.state.view).toBe('simplified');
+  });
+
+  it('cancels a deferred reader open and uses the latest saved supports when a later transition is accepted', () => {
+    const session = createSession(), transitions = [];
+    session.register({ hasChanges: () => true, defer: next => transitions.push(next) });
+    const original = Context.createSupportedReading('Keep the original text.', { id: 'deferred-original' });
+    const harness = readerHarness({ history: [original], supportDraftSessionRef: { current: session } });
+    expect(harness.openArtifact(original, true)).toBe(false);
+    expect(harness.deps.stopPlayback).not.toHaveBeenCalled();
+    expect(harness.deps.setGeneratedContent).not.toHaveBeenCalled();
+    transitions[0].cancel();
+    expect(transitions[0].run()).toBe(false);
+    expect(harness.state.opened).toBeNull();
+    expect(harness.openArtifact(original, true)).toBe(false);
+    const saved = { ...original, readingSupports: { annotations: [{ id: 'latest-help', text: 'Latest saved support.' }] } };
+    harness.deps.setHistory(() => [saved]);
+    expect(transitions[1].run()).toBe(true);
+    expect(harness.state.opened).toBe(saved);
+    expect(harness.state.opened.data).toBe(original.data);
+    expect(harness.deps.stopPlayback).toHaveBeenCalledOnce();
+    expect(harness.deps.setIsCompareMode).toHaveBeenCalledWith(true);
   });
 });
 

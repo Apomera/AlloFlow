@@ -28,7 +28,7 @@ async function packet(type='word_cloud',resources=[]){
   return JSON.parse(built.encoded);
 }
 function intake(value,{decode}={}){
-  const changes={activity:null,history:['previous-resource'],pending:{id:'previous-pending'},show:false};let cleanup;
+  const changes={activity:null,history:['previous-resource'],receivedResources:[{id:'previous-delivery',type:'quiz'}],pending:{id:'previous-pending'},show:false};let cleanup;
   const env={
     useEffect:fn=>{cleanup=fn();},_alloReadMailboxEntryParam:()=>({u:'https://mailbox.example.invalid',id:'PK-local-fixture',k:'fixture-secret'}),
     setMbHostedAssignment:vi.fn(),setSharedHostedActivity:vi.fn(next=>changes.activity=next),
@@ -40,6 +40,7 @@ function intake(value,{decode}={}){
     _alloStudentSafeResources:items=>transport.studentSafeResources(items,['analysis','lesson-plan']),
     _alloNormalizeSharedRatingActivity:shared.normalizeRatingActivity,
     setHistory:vi.fn(next=>changes.history=next),setPendingQrAssignmentResource:vi.fn(next=>changes.pending=next),
+    setReceivedDeliveryResources:vi.fn(next=>{changes.receivedResources=typeof next==='function'?next(changes.receivedResources):next;}),
     setShowSharedHostedActivity:vi.fn(next=>changes.show=next),addToast:vi.fn(),warnLog:vi.fn(),
   };
   new Function('env','with(env){'+effect+'}')(env);
@@ -52,6 +53,7 @@ describe('actual mailbox activity-only student intake',()=>{
     expect(h.changes.activity?.activity.type).toBe(type);
     expect(h.changes.activity?.mailbox).toEqual({url:'https://mailbox.example.invalid',id:'PK-local-fixture',secret:'fixture-secret'});
     expect(h.changes.history).toEqual([]);expect(h.changes.pending).toBeNull();expect(h.changes.show).toBe(true);
+    expect(h.changes.receivedResources).toEqual([]);expect(h.env.setReceivedDeliveryResources).toHaveBeenCalledExactlyOnceWith([]);
     expect(h.env.addToast).toHaveBeenLastCalledWith(expect.stringContaining('Homework loaded:'),'success');
     expect(h.env._alloApplyAuthoritativeStudentAiPolicy).toHaveBeenCalledTimes(1);
   });
@@ -59,6 +61,7 @@ describe('actual mailbox activity-only student intake',()=>{
     const resource={id:'reading',type:'simplified',title:'Reading',data:'Original prepared text'};
     const h=intake(await packet('word_cloud',[resource]));await flush();
     expect(h.changes.pending).toEqual(resource);expect(h.changes.history).toEqual([resource]);
+    expect(h.changes.receivedResources).toEqual([resource]);expect(h.env.setReceivedDeliveryResources).toHaveBeenCalledExactlyOnceWith([resource]);
     expect(h.changes.activity.activity.type).toBe('word_cloud');expect(h.changes.show).toBe(false);
   });
   it.each(['absent','wrong-type','wrong-delivery','wrong-id','empty-prompt'])('rejects empty packs with %s activity instead of reporting successful homework',async variant=>{
@@ -67,6 +70,7 @@ describe('actual mailbox activity-only student intake',()=>{
     else {const activity=built.sharedActivities[0];if(variant==='wrong-type')activity.type='unsupported';if(variant==='wrong-delivery')activity.delivery='live';if(variant==='wrong-id')activity.activityId='invalid';if(variant==='empty-prompt')activity.prompt='  ';}
     const h=intake(built);await flush();
     expect(h.changes.activity).toBeNull();expect(h.env.setHistory).not.toHaveBeenCalled();expect(h.env.setPendingQrAssignmentResource).not.toHaveBeenCalled();
+    expect(h.env.setReceivedDeliveryResources).not.toHaveBeenCalled();expect(h.changes.receivedResources).toEqual([{id:'previous-delivery',type:'quiz'}]);
     expect(h.env.addToast).toHaveBeenLastCalledWith(expect.any(String),'error');
     expect(h.env._alloApplyAuthoritativeStudentAiPolicy).not.toHaveBeenCalled();
   });
@@ -74,6 +78,7 @@ describe('actual mailbox activity-only student intake',()=>{
     const built=await packet();built.expiresAt='2000-01-01T00:00:00Z';built.aiPolicy.studentAi='student-byok';
     const h=intake(built);await flush();
     expect(h.changes.activity).toBeNull();expect(h.env.setHistory).not.toHaveBeenCalled();expect(h.env.setPendingQrAssignmentResource).not.toHaveBeenCalled();
+    expect(h.env.setReceivedDeliveryResources).not.toHaveBeenCalled();expect(h.changes.receivedResources).toEqual([{id:'previous-delivery',type:'quiz'}]);
     expect(h.env._alloApplyAuthoritativeStudentAiPolicy).not.toHaveBeenCalled();expect(h.env.addToast).toHaveBeenLastCalledWith(expect.any(String),'error');
   });
   it('does not restore an old assignment or its policy if cleanup occurs during decompression',async()=>{
@@ -82,6 +87,7 @@ describe('actual mailbox activity-only student intake',()=>{
     expect(h.env._alloDecodeAlloPack).toHaveBeenCalledTimes(1);h.cleanup();finishDecode(JSON.stringify(built));await flush();
     expect(h.env._alloApplyAuthoritativeStudentAiPolicy).not.toHaveBeenCalled();expect(h.env.setHistory).not.toHaveBeenCalled();
     expect(h.env.setPendingQrAssignmentResource).not.toHaveBeenCalled();expect(h.env.setSharedHostedActivity).toHaveBeenCalledTimes(1);
+    expect(h.env.setReceivedDeliveryResources).not.toHaveBeenCalled();expect(h.changes.receivedResources).toEqual([{id:'previous-delivery',type:'quiz'}]);
     expect(h.env.addToast).not.toHaveBeenCalled();
   });
 });

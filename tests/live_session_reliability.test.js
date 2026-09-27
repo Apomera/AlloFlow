@@ -22,21 +22,26 @@ describe('live dashboard delivery status',()=>{
  it('ignores another session, app, and legacy unscoped success',()=>{const events=[event('sync:write-ok'),{at:101,event:'sync:write-ok',detail:{}}];expect(health(events,'other').lastSync).toBeNull();expect(health(events,'session','other-app').lastSync).toBeNull();expect(health([events[1]]).lastSync).toBeNull();});
  it('does not fabricate a sync before any delivery',()=>{const status=health([]);expect(status.lastSync).toBeNull();expect(status.lastProblem).toBeNull();});
 });
-function hydrateHarness() {
- const h=makeHydrationHarness();hydrationHarnesses.push(h);
+function hydrateHarness(options={}) {
+ const h=makeHydrationHarness(options);hydrationHarnesses.push(h);
  return {...h,hydratedHistoryRef:h.refs.hydratedHistoryRef,setHistory:h.history,setLiveResourceLoadState:h.loadState,
   run:assembled=>{h.mailbox.mockResolvedValue({of:1,data:assembled});return h.receive({packRef:{id:'test',k:'key',t:1}});}};
 }
 describe('mailbox reconnect with an intentionally empty assignment',()=>{
  it('clears stale history and settles ready when the teacher removes every resource',async()=>{
-  const h=hydrateHarness();expect(await h.run(JSON.stringify({kind:'assignment',resources:[]}))).toEqual([]);
+  const h=hydrateHarness({receivedResources:[{id:'prior-delivery',type:'quiz'}]});expect(await h.run(JSON.stringify({kind:'assignment',resources:[]}))).toEqual([]);
   expect(h.hydratedHistoryRef.current).toEqual([]);expect(h.setHistory).toHaveBeenCalledWith([]);expect(h.setLiveResourceLoadState).toHaveBeenCalledWith({status:'ready',attempt:1});
+  expect(h.receivedResources()).toEqual([]);expect(h.setReceivedDeliveryResources).toHaveBeenCalledExactlyOnceWith([]);
+  expect(h.status()).toEqual({status:'ready',attempt:1});expect(h.refs.liveResourceHydrationRetryTimerRef.current).toBeNull();
  });
  it('retains prior history for a malformed packet',async()=>{
-  const h=hydrateHarness();await h.run(JSON.stringify({kind:'assignment'}));expect(h.status().status).toBe('failed');
+  const prior=[{id:'prior-delivery',type:'quiz'}],h=hydrateHarness({receivedResources:prior});await h.run(JSON.stringify({kind:'assignment'}));expect(h.status().status).toBe('failed');
   expect(h.setHistory).not.toHaveBeenCalled();expect(h.hydratedHistoryRef.current[0].id).toBe('old');
+  expect(h.setReceivedDeliveryResources).not.toHaveBeenCalled();expect(h.receivedResources()).toEqual(prior);
  });
  it('keeps the student-safe filter when hydrating a nonempty assignment',async()=>{
   const h=hydrateHarness();expect(await h.run(JSON.stringify({kind:'assignment',resources:[{id:'a',type:'quiz'},{id:'private',type:'lesson-plan'}]}))).toEqual([{id:'a',type:'quiz'}]);
+  expect(h.receivedResources()).toEqual([{id:'a',type:'quiz'}]);expect(h.setReceivedDeliveryResources).toHaveBeenCalledExactlyOnceWith([{id:'a',type:'quiz'}]);
+  expect(h.status()).toEqual({status:'ready',attempt:1});
  });
 });

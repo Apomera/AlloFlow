@@ -1,0 +1,70 @@
+{
+  "recordedAt": "2026-09-27T03:29:41.8184119Z",
+  "files": [
+    {
+      "sha256": "10efb52ce77d7ae5dc0f45153463a7f865ae03d504d77eb30dd82b1d2b270d94",
+      "path": "AlloFlowANTI.txt"
+    },
+    {
+      "sha256": "6ce1d000f200ef5d446c330dd35d1b3a9adb240030ec114179fd5f016f00a21f",
+      "path": "_build_view_simplified_module.js"
+    },
+    {
+      "sha256": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9",
+      "path": "reader_place_store.js"
+    },
+    {
+      "sha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+      "path": "reader_support_drafts.js"
+    },
+    {
+      "sha256": "d953f735f98b5904d52203d0b028bf2a1968e6213df0be37b41e30baebb29b22",
+      "path": "view_simplified_source.jsx"
+    },
+    {
+      "sha256": "7b04648466f43f2ea2bc72562fcd2ff0a504742a89a98a31966cb73ea710c2d9",
+      "path": "view_misc_panels_source.jsx"
+    },
+    {
+      "sha256": "1d1efb79f5f38a17b9054e7806f9e6a76f667ab1d472aa5ab9ea15e3906b4a08",
+      "path": "view_analysis_source.jsx"
+    },
+    {
+      "sha256": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2",
+      "path": "instructional_context_module.js"
+    },
+    {
+      "sha256": "47162871af726c77c46f90ab32a3f1ee7e1b7a67d85d7df077562f9be7086991",
+      "path": "tts_module.js"
+    },
+    {
+      "sha256": "961229e6ff3b2f0b330153520935616dac4b7a36f119011f29c1fbc92f34c047",
+      "path": "read_aloud_audio_service_module.js"
+    },
+    {
+      "sha256": "9b9d88b8f07e695d5a7efb7f4a148b660a5e63c48c9df5823e6d6d85845194df",
+      "path": "karaoke_audio_store_module.js"
+    },
+    {
+      "sha256": "4e006985c76d7e1bc1934521a6a13bf5188dae6ed1bc2c0aee62077bc1e3b528",
+      "path": "ai_backend_module.js"
+    },
+    {
+      "sha256": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+      "path": "tests/setup.js"
+    },
+    {
+      "sha256": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04",
+      "path": "vitest.config.js"
+    },
+    {
+      "sha256": "2a56476bf8bf5f362820c60c21dfd12cdbc6db2f53c540b5866d316c64ba4b7a",
+      "path": "tests/instructional_role_ui.test.js"
+    },
+    {
+      "sha256": "1d2ab497e5efb0ce8bc9767e02165cd7f5d2b1c15d9426ea6148461b7f9a5d41",
+      "path": "tests/karaoke_tts_review_runtime.test.js"
+    }
+  ],
+  "head": "452e7cd230b62f4e192f055826817653d5b997f4"
+}

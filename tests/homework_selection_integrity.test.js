@@ -40,6 +40,7 @@ function cloudHarness(history, overrides = {}) {
   });
   const hosted = vi.fn(async () => 'hosted-activity');
   const upload = vi.fn(async (_app, items) => items);
+  const hydrate = vi.fn((...args) => window.AlloModules.ModuleScopeExtras.hydrateSessionAssets(...args));
   const deps = {
     useCallback: fn => fn, resolveAssignmentResources: resolver(history),
     _alloSerializeResourceForStudentPack: pack.deps.serializeResourceForStudentPack,
@@ -47,7 +48,7 @@ function cloudHarness(history, overrides = {}) {
     mbConfig: null, appId: 'local-test', sourceTopic: '', generatedContent: null,
     homeworkExpiryDays: 7, studentAiPolicyForShare: 'off', studentProjectSettings: {}, user: { uid: 'local-test' }, db: {},
     generateUUID: () => 'local-test', buildAlloShareUrl: () => 'https://example.invalid/assignment',
-    uploadSessionAssets: upload, prepareSessionResourcesForWrite: window.prepareSessionResourcesForWrite,
+    uploadSessionAssets: upload, hydrateSessionAssets: hydrate, prepareSessionResourcesForWrite: window.prepareSessionResourcesForWrite,
     doc: (...args) => args, setDoc: async (_ref, value) => writes.push(value), stripUndefined: window.stripUndefined,
     copyToClipboard: () => {}, openQrShareModal: value => previews.push(value),
     _alloSharedActivityModule: () => shared, addToast: (...args) => toasts.push(args), warnLog: () => {},
@@ -55,7 +56,7 @@ function cloudHarness(history, overrides = {}) {
   };
   const create = new Function(...Object.keys(deps),
     shellRegion('  const createHomeworkAssignmentLink = useCallback(', '  const savePortableAacResourceToHistory') + '\nreturn createHomeworkAssignmentLink;')(...Object.values(deps));
-  return { create, writes, previews, toasts, upload, fallback, fallbackPackets, hosted };
+  return { create, writes, previews, toasts, upload, hydrate: deps.hydrateSessionAssets, fallback, fallbackPackets, hosted };
 }
 function readingPair(size = 90000) {
   const original = contract.createSupportedReading('Fair '.repeat(Math.ceil(size / 5)), { id: 'original', sourceFamilyId: 'family', unitId: 'unit' });
@@ -72,7 +73,8 @@ function readingPair(size = 90000) {
 }
 beforeAll(() => {
   window.React = React;
-  for (const name of ['instructional_context_module.js', 'firestore_sync_module.js', 'session_transport_module.js', 'shared_activity_module.js']) loadAlloModule(name);
+  window.AlloLanguageContext = {};
+  for (const name of ['instructional_context_module.js', 'firestore_sync_module.js', 'session_transport_module.js', 'shared_activity_module.js', 'module_scope_extras_module.js']) loadAlloModule(name);
   contract = window.AlloModules.InstructionalContext;
   transport = window.AlloModules.SessionTransport;
   shared = window.AlloModules.SharedActivity;
@@ -171,6 +173,7 @@ describe('homework selection integrity through production callbacks and serializ
     expect(cloud.writes).toHaveLength(1);
     expect(cloud.fallback).not.toHaveBeenCalled();
     const saved = cloud.writes[0];
+    expect(cloud.hydrate).toHaveBeenCalledExactlyOnceWith('local-test', saved.resources);
     expect(saved.resources.map(item => item.id)).toEqual([adapted.id, original.id]);
     const received = window.hydrateHistory(saved.resources);
     expect(received[0].data).toBe(adapted.data);
@@ -179,7 +182,31 @@ describe('homework selection integrity through production callbacks and serializ
     expect(contract.isSupportedOriginal(received[1])).toBe(true);
     expect(received[1].readingSupports.annotations).toEqual([expect.objectContaining({ id: 'pinned', pinned: true, text: 'Teacher curated meaning' })]);
     expect(cloud.previews[0].resourceTitles).toEqual(saved.resources.map(item => item.title));
+    expect(saved.deliverySummary.readings[0]).toMatchObject({ originalStatus: 'included', supportsCount: 1 });
+    expect(cloud.previews[0].deliverySummary).toEqual(saved.deliverySummary);
     expect(saved.currentResourceId).toBe(adapted.id);
+  });
+
+  it.each(['failure', 'unresolved reference'])('falls back without publishing a cloud assignment after hydration %s', async mode => {
+    const { original, adapted } = readingPair(30);
+    const hydrate = vi.fn(async (_app, resources) => {
+      if (mode === 'failure') throw new Error('Resource hydration unavailable');
+      return resources.map(item => ({ id: item.id, type: item.type, __alloResourceRef: 'unavailable-' + item.id }));
+    });
+    const cloud = cloudHarness([original, adapted], { hydrateSessionAssets: hydrate });
+    expect(await cloud.create([adapted.id])).toBe('full-pack');
+    expect(hydrate).toHaveBeenCalledOnce();
+    expect(cloud.writes).toEqual([]);
+    expect(cloud.previews).toEqual([]);
+    expect(cloud.fallback).toHaveBeenCalledExactlyOnceWith([adapted.id]);
+    const packet = cloud.fallbackPackets[0];
+    expect(packet.resources.map(item => item.id)).toEqual([adapted.id, original.id]);
+    expect(packet.currentResourceId).toBe(adapted.id);
+    const received = window.hydrateHistory(packet.resources);
+    expect(received[0].data).toBe(adapted.data);
+    expect(received[1].data).toBe(original.data);
+    expect(received[1].sourceSnapshot).toEqual(original.sourceSnapshot);
+    expect(received[1].readingSupports.annotations).toEqual([expect.objectContaining({ id: 'pinned', pinned: true, text: 'Teacher curated meaning' })]);
   });
 
   it('reroutes an oversized original/adaptation pair before writes and retains exact reading and curated support', async () => {

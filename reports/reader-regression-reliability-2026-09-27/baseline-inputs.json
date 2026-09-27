@@ -1,0 +1,70 @@
+{
+  "at": "2026-09-27T03:28:08.590Z",
+  "head": "452e7cd230b62f4e192f055826817653d5b997f4",
+  "files": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "5dca71fc6ee9cee776d5b65522a728099632604418f02a3d7fd9eca1216d0d54"
+    },
+    {
+      "file": "misc_handlers_source.jsx",
+      "sha256": "72bb55fb6e5ecaf76da5b0c0b17db329f5c3990ccdd50ba3ff89412c9ad418b2"
+    },
+    {
+      "file": "misc_handlers_module.js",
+      "sha256": "cbae982fcc8669941e81c6de0046ad272989ff22ee4533f1c5fc59dbe926d440"
+    },
+    {
+      "file": "view_simplified_source.jsx",
+      "sha256": "d953f735f98b5904d52203d0b028bf2a1968e6213df0be37b41e30baebb29b22"
+    },
+    {
+      "file": "reader_place_store.js",
+      "sha256": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9"
+    },
+    {
+      "file": "reader_support_drafts.js",
+      "sha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5"
+    },
+    {
+      "file": "_build_view_simplified_module.js",
+      "sha256": "6ce1d000f200ef5d446c330dd35d1b3a9adb240030ec114179fd5f016f00a21f"
+    },
+    {
+      "file": "tests/student_assignment_restore_readiness.test.js",
+      "sha256": "799d5177bb6ee4cf525e7aaf5f507b6430ef17afb66635ae56899253a25cadbe"
+    },
+    {
+      "file": "tests/novak_original_reader_handlers.test.js",
+      "sha256": "269d4c11a05d5d7addd3a904282ed81c419836f7e0ed34301c7eddbe3074e2d7"
+    },
+    {
+      "file": "tests/homework_selection_integrity.test.js",
+      "sha256": "dd6c2438d0781971a891a156e5154eb4571867d9c0712eddd07daf89e2938223"
+    },
+    {
+      "file": "tests/mailbox_activity_only_intake.test.js",
+      "sha256": "5712969bac1674afec4e5330a17f580d9de17b1df0a7f52811b5e3d22aa565e3"
+    },
+    {
+      "file": "tests/helpers/live_hydration_harness.js",
+      "sha256": "4c4242debe73f451d0c4c93035cda2662b83839a55031fdcee74dfa09c747d39"
+    },
+    {
+      "file": "tests/live_session_learner_recovery.test.js",
+      "sha256": "b43974e6e925eaeac19188a881ab307db503610f37439f7888aac44d173551b6"
+    },
+    {
+      "file": "tests/live_session_reliability.test.js",
+      "sha256": "f12744156bc0ddf0bb386833bc960f2293df03920299392eda284b20d1384bdc"
+    },
+    {
+      "file": "tests/instructional_role_ui.test.js",
+      "sha256": "06458d0c1a31a97c654dad6f2ea8027b1f3a6bef7112574e5d1126f731c4c1a6"
+    },
+    {
+      "file": "tests/karaoke_tts_review_runtime.test.js",
+      "sha256": "a2705570263515c8e9e15a18298f6a61f6714b3ba8669cc7f6921c2719671aca"
+    }
+  ]
+}

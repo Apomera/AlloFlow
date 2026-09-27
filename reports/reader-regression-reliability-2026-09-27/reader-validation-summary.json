@@ -1,0 +1,88 @@
+{
+  "head": "452e7cd230b62f4e192f055826817653d5b997f4",
+  "command": "node node_modules/vitest/vitest.mjs run tests/instructional_role_ui.test.js tests/karaoke_tts_review_runtime.test.js --maxWorkers=1 --configLoader native --reporter=json --outputFile=<report>",
+  "before": {
+    "total": 40,
+    "passed": 30,
+    "failed": 1,
+    "pending": 9,
+    "files": [
+      {
+        "file": "instructional_role_ui.test.js",
+        "status": "failed",
+        "count": 9,
+        "message": "createReadingPlaceStore is not defined"
+      },
+      {
+        "file": "karaoke_tts_review_runtime.test.js",
+        "status": "failed",
+        "count": 31,
+        "message": ""
+      }
+    ]
+  },
+  "after": {
+    "total": 40,
+    "passed": 40,
+    "failed": 0,
+    "pending": 0,
+    "files": [
+      {
+        "file": "instructional_role_ui.test.js",
+        "status": "passed",
+        "count": 9,
+        "message": ""
+      },
+      {
+        "file": "karaoke_tts_review_runtime.test.js",
+        "status": "passed",
+        "count": 31,
+        "message": ""
+      }
+    ]
+  },
+  "changes": [
+    {
+      "path": "AlloFlowANTI.txt",
+      "before": "5dca71fc6ee9cee776d5b65522a728099632604418f02a3d7fd9eca1216d0d54",
+      "runStart": "10efb52ce77d7ae5dc0f45153463a7f865ae03d504d77eb30dd82b1d2b270d94",
+      "runEnd": "10efb52ce77d7ae5dc0f45153463a7f865ae03d504d77eb30dd82b1d2b270d94"
+    },
+    {
+      "path": "tests/instructional_role_ui.test.js",
+      "before": "06458d0c1a31a97c654dad6f2ea8027b1f3a6bef7112574e5d1126f731c4c1a6",
+      "runStart": "2a56476bf8bf5f362820c60c21dfd12cdbc6db2f53c540b5866d316c64ba4b7a",
+      "runEnd": "2a56476bf8bf5f362820c60c21dfd12cdbc6db2f53c540b5866d316c64ba4b7a"
+    },
+    {
+      "path": "tests/karaoke_tts_review_runtime.test.js",
+      "before": "a2705570263515c8e9e15a18298f6a61f6714b3ba8669cc7f6921c2719671aca",
+      "runStart": "1d2ab497e5efb0ce8bc9767e02165cd7f5d2b1c15d9426ea6148461b7f9a5d41",
+      "runEnd": "1d2ab497e5efb0ce8bc9767e02165cd7f5d2b1c15d9426ea6148461b7f9a5d41"
+    }
+  ],
+  "finalRunInputsStable": true,
+  "headHostMatchesBaseline": false,
+  "headHostSha256": "64bbad9a3b19e8c01dda90416c35ff355fb79d5d380ac962626e90fb66148b81",
+  "extractedAudioHelpers": [
+    {
+      "name": "_encodeReadAloudBridgeAudio",
+      "headHash": "29cf17bcdae7a5c84eec65f86ca9c647bceba89e1c437dbc9754430bef08a7a3",
+      "currentHash": "29cf17bcdae7a5c84eec65f86ca9c647bceba89e1c437dbc9754430bef08a7a3"
+    },
+    {
+      "name": "_synthSentenceForStore",
+      "headHash": "fde71e77b6d95dc851adcc7c399b8fd654323b322db1e92a6fb145466349f3d4",
+      "currentHash": "fde71e77b6d95dc851adcc7c399b8fd654323b322db1e92a6fb145466349f3d4"
+    }
+  ],
+  "assertionsChanged": false,
+  "productionFilesEditedByThisTask": [],
+  "hostComparison": {
+    "headWithCrlfSha256": "346be431767cd2764285ee8aeaee1b0dde43264e5e4f314b9b313b959da536e0",
+    "baselineMatchesHeadWithCrlf": false,
+    "currentHostSha256": "10efb52ce77d7ae5dc0f45153463a7f865ae03d504d77eb30dd82b1d2b270d94",
+    "helperLineEndings": "CRLF normalized to LF",
+    "headAndCurrentHelperDeclarationsIdentical": true
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "head": "452e7cd230b62f4e192f055826817653d5b997f4",
+  "command": [
+    "node",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/mailbox_activity_only_intake.test.js",
+    "tests/live_session_learner_recovery.test.js",
+    "tests/live_session_reliability.test.js",
+    "--maxWorkers=1",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile.json=reports/reader-regression-reliability-2026-09-27/delivery-after.json"
+  ],
+  "exitCode": 0,
+  "before": {
+    "AlloFlowANTI.txt": "10efb52ce77d7ae5dc0f45153463a7f865ae03d504d77eb30dd82b1d2b270d94",
+    "view_live_session_dock_source.jsx": "77f00a410ffa13f90e7292de0d08d8501fd2bf1e91c8f1c5060c72a9e588043d",
+    "shared_activity_module.js": "43722e2bfcab1060f8f86a6489252f8c99ead2fda695f66bf3899edc638c43f7",
+    "session_transport_module.js": "51e1ef84618a6f83f701493a08abcd656c4e86298d765300ae91350b2b6c065b",
+    "tests/helpers/live_hydration_harness.js": "0ebc17dbe86790026aa150659a17a0752a1b128bf076d119a984a01e54fde629",
+    "tests/mailbox_activity_only_intake.test.js": "5e0854af0db80ea438559de8a075b5e06637b25f22b614fe2e846e7370298f21",
+    "tests/live_session_learner_recovery.test.js": "6612cf0e5d8ef8c5939d4a0bf069db3203e846bd2469a8582179de8a82f6ca71",
+    "tests/live_session_reliability.test.js": "5247cbc9aa4c9c1b3338322f6f6fba4f6ae916d786025e2544a73372abf1e99d"
+  },
+  "after": {
+    "AlloFlowANTI.txt": "10efb52ce77d7ae5dc0f45153463a7f865ae03d504d77eb30dd82b1d2b270d94",
+    "view_live_session_dock_source.jsx": "77f00a410ffa13f90e7292de0d08d8501fd2bf1e91c8f1c5060c72a9e588043d",
+    "shared_activity_module.js": "43722e2bfcab1060f8f86a6489252f8c99ead2fda695f66bf3899edc638c43f7",
+    "session_transport_module.js": "51e1ef84618a6f83f701493a08abcd656c4e86298d765300ae91350b2b6c065b",
+    "tests/helpers/live_hydration_harness.js": "0ebc17dbe86790026aa150659a17a0752a1b128bf076d119a984a01e54fde629",
+    "tests/mailbox_activity_only_intake.test.js": "5e0854af0db80ea438559de8a075b5e06637b25f22b614fe2e846e7370298f21",
+    "tests/live_session_learner_recovery.test.js": "6612cf0e5d8ef8c5939d4a0bf069db3203e846bd2469a8582179de8a82f6ca71",
+    "tests/live_session_reliability.test.js": "5247cbc9aa4c9c1b3338322f6f6fba4f6ae916d786025e2544a73372abf1e99d"
+  },
+  "counts": {
+    "files": 3,
+    "suites": 10,
+    "tests": 42,
+    "passed": 42,
+    "failed": 0
+  },
+  "failures": []
+}

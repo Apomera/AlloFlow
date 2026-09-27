@@ -1,5 +1,6 @@
 import { beforeAll, beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { parse } from '@babel/parser';
 import { loadAlloModule } from './setup.js';
 
 let M, AIProvider;
@@ -51,7 +52,13 @@ function hostHelper(name, next, dependencies) {
   const start = hostSource.indexOf('  const ' + name + ' =');
   const end = hostSource.indexOf('  const ' + next, start);
   if (start < 0 || end < 0) throw Error('Host extraction failed: ' + name);
-  return new Function(...Object.keys(dependencies), hostSource.slice(start, end) + '\nreturn ' + name + ';')(...Object.values(dependencies));
+  const region = hostSource.slice(start, end);
+  // Only evaluate the requested declaration, not unrelated host statements before the next helper.
+  const declaration = parse(region, { sourceType: 'script' }).program.body[0];
+  if (declaration?.type !== 'VariableDeclaration' || declaration.declarations.length !== 1 || declaration.declarations[0].id.name !== name) {
+    throw Error('Host helper declaration missing: ' + name);
+  }
+  return new Function(...Object.keys(dependencies), region.slice(declaration.start, declaration.end) + '\nreturn ' + name + ';')(...Object.values(dependencies));
 }
 
 describe('Gemini model identity and response reliability', () => {

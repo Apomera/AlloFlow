@@ -14,20 +14,25 @@ describe('learner download ordering and ownership',()=>{
   const expected=[{id:'new',type:'quiz'}];fresh.resolve(channel==='firebase'?expected:packet(expected));await newer;
   old.resolve(channel==='firebase'?[{id:'old'}]:packet([{id:'old'}]));await older;
   expect(h.history).toHaveBeenCalledTimes(1);expect(h.refs.hydratedHistoryRef.current).toEqual(expected);expect(h.status().status).toBe('ready');
+  expect(h.receivedResources()).toEqual(expected);expect(h.setReceivedDeliveryResources).toHaveBeenCalledExactlyOnceWith(expected);
+  expect(h.loadState.mock.calls.map(([state])=>state.status)).not.toContain('failed');
  });
  it.each(['firebase','mailbox'])('reuses a pending %s download for a newer roster snapshot',async channel=>{
   const wait=pending(),backend=vi.fn(()=>wait.promise),h=harness(channel==='firebase'?{hydrate:backend}:{mailbox:backend});const data=channel==='firebase'?{resources:[{id:'a'}]}:manifest('a');
   const first=h.receive(data),second=h.receive({...data,roster:{student:{hand:true}}});await vi.waitFor(()=>expect(backend).toHaveBeenCalledOnce());
   wait.resolve(channel==='firebase'?[{id:'a'}]:packet([{id:'a'}]));await Promise.all([first,second]);expect(h.history).toHaveBeenCalledOnce();expect(h.status()).toEqual({status:'ready',attempt:1});
+  expect(h.receivedResources()).toEqual([{id:'a'}]);expect(h.setReceivedDeliveryResources).toHaveBeenCalledExactlyOnceWith([{id:'a'}]);
  });
  it('ignores an old failure after a newer resource is ready',async()=>{
   const wait=pending(),h=harness({hydrate:vi.fn().mockReturnValueOnce(wait.promise).mockResolvedValue([{id:'new'}])});
   const older=h.receive({resources:[{id:'old'}]});await vi.waitFor(()=>expect(h.hydrate).toHaveBeenCalledOnce());await h.receive({resources:[{id:'new'}]});wait.reject(Error('old network failure'));await older;
   expect(h.status().status).toBe('ready');expect(h.refs.liveResourceHydrationRetryTimerRef.current).toBeNull();
+  expect(h.receivedResources()).toEqual([{id:'new'}]);expect(h.setReceivedDeliveryResources).toHaveBeenCalledExactlyOnceWith([{id:'new'}]);
  });
  it.each(['firebase','mailbox'])('does not restore resources after leaving the %s session',async channel=>{
   const wait=pending(),backend=vi.fn(()=>wait.promise),h=harness(channel==='firebase'?{hydrate:backend}:{mailbox:backend});const work=h.receive(channel==='firebase'?{resources:[{id:'a'}]}:manifest('a'));
   await vi.waitFor(()=>expect(backend).toHaveBeenCalledOnce());h.cleanup();wait.resolve(channel==='firebase'?[{id:'a'}]:packet([{id:'a'}]));await work;expect(h.history).not.toHaveBeenCalled();
+  expect(h.setReceivedDeliveryResources).not.toHaveBeenCalled();expect(h.receivedResources()).toEqual([]);
  });
  it('does not mistake a changed pack key for the cached version',async()=>{
   const h=harness({mailbox:vi.fn().mockResolvedValueOnce(packet([{id:'old'}])).mockResolvedValueOnce(packet([{id:'new'}]))});
@@ -36,9 +41,11 @@ describe('learner download ordering and ownership',()=>{
 });
 describe('learner retries and pack completeness',()=>{
  it('schedules recovery after a mailbox failure without waiting for another snapshot',async()=>{
-  vi.useFakeTimers();const h=harness({mailbox:vi.fn().mockRejectedValueOnce(Error('offline')).mockResolvedValue(packet([{id:'recovered'}]))});
+  vi.useFakeTimers();const prior=[{id:'prior-delivery',type:'quiz'}],h=harness({receivedResources:prior,mailbox:vi.fn().mockRejectedValueOnce(Error('offline')).mockResolvedValue(packet([{id:'recovered'}]))});
   await h.receive(manifest('a'));expect(h.status()).toEqual({status:'failed',attempt:1});await vi.advanceTimersByTimeAsync(1200);expect(h.epoch).toHaveBeenCalledOnce();
+  expect(h.setReceivedDeliveryResources).not.toHaveBeenCalled();expect(h.receivedResources()).toEqual(prior);
   await h.receive(manifest('a'));expect(h.status()).toEqual({status:'ready',attempt:2});expect(h.refs.hydratedHistoryRef.current[0].id).toBe('recovered');
+  expect(h.receivedResources()).toEqual([{id:'recovered'}]);expect(h.setReceivedDeliveryResources).toHaveBeenCalledExactlyOnceWith([{id:'recovered'}]);
  });
  it('caps retries despite repeated snapshots and resets on network return',async()=>{
   vi.useFakeTimers();const h=harness({mailbox:vi.fn().mockRejectedValue(Error('offline'))});
@@ -51,9 +58,11 @@ describe('learner retries and pack completeness',()=>{
  });
  it.each([{of:0,data:'x'},{of:1.5,data:'x'},{of:1,data:null}])('rejects a malformed part instead of changing history: %j',async part=>{
   const h=harness({mailbox:vi.fn().mockResolvedValue(part)});await h.receive(manifest('a'));expect(h.history).not.toHaveBeenCalled();expect(h.status().status).toBe('failed');
+  expect(h.setReceivedDeliveryResources).not.toHaveBeenCalled();expect(h.receivedResources()).toEqual([]);
  });
  it('rejects a changed part count while assembling a pack',async()=>{
   const h=harness({mailbox:vi.fn().mockResolvedValueOnce({of:2,data:'first'}).mockResolvedValueOnce({of:1,data:'last'})});await h.receive(manifest('a'));expect(h.history).not.toHaveBeenCalled();expect(h.status().status).toBe('failed');
+  expect(h.setReceivedDeliveryResources).not.toHaveBeenCalled();expect(h.receivedResources()).toEqual([]);
  });
 });
 
@@ -73,6 +82,7 @@ describe('late callbacks after session closure',()=>{
  it.each([{status:'ended'},{isActive:false}])('discards a pending download when the session ends: %j',async terminal=>{
   const wait=pending(),h=harness({hydrate:vi.fn(()=>wait.promise)});const work=h.receive({resources:[{id:'a'}]});await vi.waitFor(()=>expect(h.hydrate).toHaveBeenCalledOnce());
   h.endSession(terminal);wait.resolve([{id:'a'}]);await work;expect(h.history).not.toHaveBeenCalled();expect(h.lifecycleValues.setActiveSessionCode).toHaveBeenCalledWith(null);
+  expect(h.setReceivedDeliveryResources).not.toHaveBeenCalled();expect(h.receivedResources()).toEqual([]);
  });
  it('ignores a listener error delivered after cleanup',()=>{
   const h=harness();h.cleanup();h.onError({code:'permission-denied'});expect(h.lifecycleValues.addToast).not.toHaveBeenCalled();expect(h.lifecycleValues.unsubscribe).toHaveBeenCalledOnce();

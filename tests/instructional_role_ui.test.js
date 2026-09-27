@@ -8,8 +8,8 @@ const require = createRequire(import.meta.url);
 const babel = require('@babel/core');
 const React = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
 
-function compileSourceView(filename, exportName) {
-  const source = readFileSync(resolve(process.cwd(), filename), 'utf8');
+function compileSourceView(filename, exportName, dependencies = []) {
+  const source = [...dependencies, filename].map(file => readFileSync(resolve(process.cwd(), file), 'utf8')).join('\n');
   const transformed = babel.transformSync(source, {
     plugins: [['@babel/plugin-transform-react-jsx', { useBuiltIns: false }]],
     babelrc: false,
@@ -27,7 +27,8 @@ let SourceGenPanel;
 
 beforeAll(() => {
   loadAlloModule('instructional_context_module.js');
-  SimplifiedView = compileSourceView('view_simplified_source.jsx', 'SimplifiedView');
+  // Match the reader builder's source assembly without relying on its generated output.
+  SimplifiedView = compileSourceView('view_simplified_source.jsx', 'SimplifiedView', ['reader_place_store.js', 'reader_support_drafts.js']);
   SourceGenPanel = compileSourceView('view_misc_panels_source.jsx', 'SourceGenPanel');
 });
 
