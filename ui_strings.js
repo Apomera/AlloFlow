@@ -738,7 +738,21 @@
     "ai_status_none": "No AI is connected yet. You can add your text now; creating materials needs AI.",
     "ai_status_setup": "Set up AI (about 2 minutes)",
     "path_label": "Path",
-    "path_change": "Change"
+    "path_change": "Change",
+    "sample_summary": "See a sample result for the example passage",
+    "sample_note": "Prepared in advance for this example, not made by AI just now. Set up AI to analyze your own text.",
+    "sample_level_label": "Reading level",
+    "sample_level": "about grades 5 to 7",
+    "sample_level_why": "Short, clear sentences. The science terms (chlorophyll, stomata, glucose) are explained in the text.",
+    "sample_ideas_label": "Key ideas",
+    "sample_idea_1": "Plants, algae, and some bacteria turn sunlight into food.",
+    "sample_idea_2": "Chlorophyll captures energy from the sun.",
+    "sample_idea_3": "Carbon dioxide enters through stomata; water comes in through the roots.",
+    "sample_idea_4": "Glucose stores the energy; oxygen is released.",
+    "sample_accuracy_label": "Accuracy",
+    "sample_accuracy": "Accurate for an introduction. It leaves out the light and dark reactions, which is fine at this level.",
+    "sample_grammar_label": "Readability note",
+    "sample_grammar": "One long sentence joins two ideas with a dash. Splitting it helps younger readers."
   },
   "lesson_import": {
     "button": "Import lesson deck",
@@ -3815,8 +3829,7 @@
     "stem_lab_explore": "Explore",
     "tool_applied_challenge": "Applied Challenge Studio",
     "class_materials_tab": "Class & Materials",
-    "materials_tab": "Materials",
-    "materials_after_guided": "{tab} is available after you finish or exit Guided Mode."
+    "materials_tab": "Materials"
   },
   "history": {
     "load_project": "Load Project",
@@ -3869,7 +3882,10 @@
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
     "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
     "panel_intro": "Everything you have made in this workspace. Sort it into units, save a backup file, or share it as a pack.",
-    "panel_intro_student": "Everything you have made. Save a copy so you do not lose it."
+    "panel_intro_student": "Everything you have made. Save a copy so you do not lose it.",
+    "panel_intro_family": "Everything you have made for your child. Save a copy so you do not lose it.",
+    "empty_first_use": "Things you make in Create show up here.",
+    "go_to_create": "Go to Create"
   },
   "input": {
     "placeholder": "Paste curriculum text here, upload a document or lesson deck, image, audio, or video, or use 'Generate Source Text'...",
@@ -11710,7 +11726,16 @@
     "edit_groups": "Edit groups",
     "strip_intro": "Give each group its own grade and language. Tap a group to create for it, or make a version for every group.",
     "strip_empty_groups": "No groups yet.",
-    "strip_setup_groups": "Set up groups"
+    "strip_setup_groups": "Set up groups",
+    "quick_title": "Add your first group",
+    "quick_name": "Group name",
+    "quick_name_example": "For example: Reading support",
+    "quick_grade": "Grade",
+    "quick_language": "Language",
+    "quick_add": "Add group",
+    "quick_duplicate": "You already have a group with that name.",
+    "quick_need_name": "Give the group a name first.",
+    "open_full": "Open the full class roster"
   },
   "adventure": {
     "title": "Adventure Mode",
@@ -118120,5 +118145,16 @@
     "explore_body": "Open Learning Tools to read, explore science, write, and more.",
     "open_tools": "Open Learning Tools",
     "failed_toast": "We couldn’t reach your class. Your options are on the screen."
+  },
+  "family_start": {
+    "title": "Start with what your child is reading",
+    "body": "Paste a page or upload a photo of it on the left. Then make a simpler version, a word list, or a story from it.",
+    "add": "Add your child’s reading"
+  },
+  "source_ready": {
+    "title": "Your source is ready",
+    "next_guided": "Follow the next step on the left.",
+    "next_family": "Now choose a simpler version, a word list, or a story on the left.",
+    "next_tools": "Choose a tool on the left to create from it."
   }
 }

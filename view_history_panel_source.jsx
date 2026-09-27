@@ -338,7 +338,7 @@ function HistoryPanel(props) {
     handleSetIsUnitModalOpenToTrue, handleSetMovingItemIdToNull, handleStartEdit,
     handleToggleIsHistoryMaximized, history, initiateSaveStudentProject,
     initiateSaveTeacherProject, isCloudSyncEnabled, isHistoryMaximized,
-    isIndependentMode, isParentMode, isSaveActionPulsing, isStorageDisabled, isSyncMode,
+    isIndependentMode, onGoToCreate, isParentMode, isSaveActionPulsing, isStorageDisabled, isSyncMode,
     isTeacherMode, isUnitModalOpen, lastSaved, moveItem, movingItemId, newUnitName,
     pendingSync, projectFileInputRef, sanitizeString, setActiveStation, setActiveUnitId,
     isCanvas = false, canvasRecoverySaveStatus = 'inactive', canvasRecoverySnapshotCount = 0,
@@ -886,7 +886,7 @@ function HistoryPanel(props) {
                     <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="flex min-w-0 flex-col">
                             <h3 className="font-bold text-base text-slate-950 flex items-center gap-2">
-                                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-indigo-50 text-indigo-700"><History size={16}/></span>
+                                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-indigo-50 text-indigo-700"><FolderOpen size={16}/></span>
                                 <span className="min-w-0 truncate">{isTeacherMode ? t('sidebar.resource_pack_history') : t('sidebar.my_resources')}</span>
                                 <span
                                     className="rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700"
@@ -900,7 +900,9 @@ function HistoryPanel(props) {
                                     {isResourceFilterActive ? filteredHistory.length + ' of ' + unitFilteredHistory.length : unitFilteredHistory.length}
                                 </span>
                             </h3>
-                        <p className="mt-1 pl-10 text-xs leading-relaxed text-slate-600">{isTeacherMode
+                        <p className="mt-1 pl-10 text-xs leading-relaxed text-slate-600">{isParentMode
+                            ? (t('history.panel_intro_family') || 'Everything you have made for your child. Save a copy so you do not lose it.')
+                            : isTeacherMode
                             ? (t('history.panel_intro') || 'Everything you have made in this workspace. Sort it into units, save a backup file, or share it as a pack.')
                             : (t('history.panel_intro_student') || 'Everything you have made. Save a copy so you do not lose it.')}</p>
                         <div className="flex items-center gap-1.5 mt-1 pl-10 text-xs font-medium text-slate-500">
@@ -1371,10 +1373,13 @@ function HistoryPanel(props) {
                     {filteredHistory.length === 0 && (
                         <div className="rounded-xl border border-dashed border-slate-300 bg-white/70 p-6 text-center text-sm text-slate-500">
                             {safeHistory.length === 0
-                                ? t('history.empty_general')
+                                ? (typeof onGoToCreate === 'function' ? (t('history.empty_first_use') || 'Things you make in Create show up here.') : t('history.empty_general'))
                                 : unitFilteredHistory.length === 0
                                     ? t('history.empty_unit')
                                     : t('history.no_filter_matches')}
+                            {safeHistory.length === 0 && typeof onGoToCreate === 'function' && (
+                                <button type="button" onClick={onGoToCreate} className="mx-auto mt-3 block min-h-11 rounded-lg bg-indigo-600 px-4 text-sm font-bold text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">{t('history.go_to_create') || 'Go to Create'}</button>
+                            )}
                             {isResourceFilterActive && unitFilteredHistory.length > 0 && (
                                 <button type="button" onClick={clearResourceFilters} className="mx-auto mt-3 block min-h-11 rounded-lg px-3 font-bold text-indigo-700 hover:bg-indigo-50">{t('history.clear_filters')}</button>
                             )}

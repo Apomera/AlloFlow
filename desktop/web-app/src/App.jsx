@@ -16193,7 +16193,6 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [rtpCurrentIndex, setRtpCurrentIndex] = useState(-1);
   const [showAIBackendModal, setShowAIBackendModal] = React.useState(false);
   const [aiBackendModuleTick, setAiBackendModuleTick] = React.useState(0);
-  const desktopAISetupPromptedRef = useRef(false);
 
   const [wsGeneratorMinimized, setWsGeneratorMinimized] = React.useState(false);
     const [wordSoundsCustomTerms, setWordSoundsCustomTerms] = React.useState([]);
@@ -16970,6 +16969,22 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     } catch(e) { return null; }
   });
   const [isRosterKeyOpen, setIsRosterKeyOpen] = useState(false);
+  // Quick first group from the Class & Materials tab; same id, color and
+  // profile shape as the roster's own Add group (2026-09-26).
+  const handleQuickAddRosterGroup = (name, grade, language) => {
+      const clean = String(name || '').trim().slice(0, 60);
+      if (!clean) return 'empty';
+      const existing = (rosterKey && rosterKey.groups) || {};
+      if (Object.values(existing).some(g => String(g?.name || '').trim().toLocaleLowerCase() === clean.toLocaleLowerCase())) return 'duplicate';
+      const palette = ['#4F46E5', '#059669', '#D97706', '#DC2626', '#7C3AED', '#0891B2', '#BE185D', '#65A30D'];
+      const id = alloStableIdentityId('GRP');
+      setRosterKey(prev => {
+          const base = alloNormalizeRosterIdentity(prev || { groups: {}, students: {} });
+          const groups = (base && base.groups) || {};
+          return { ...base, className: (prev && prev.className) || '', groups: { ...groups, [id]: { name: clean, color: palette[Object.keys(groups).length % palette.length], profile: { gradeLevel: grade || '5th Grade', leveledTextLanguage: language || 'English' } } }, students: (base && base.students) || {} };
+      });
+      return 'added';
+  };
   const [rosterBatchOpenRequest, setRosterBatchOpenRequest] = useState(0);
   const [rosterStorageError, setRosterStorageError] = useState('');
   const rosterStorageWarningRef = useRef(false);
@@ -18384,29 +18399,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     }, 100);
     return () => clearInterval(poll);
   }, [showAIBackendModal, _isCanvasEnv]);
-  React.useEffect(() => {
-    if (!_isDesktopBundledApp || _isCanvasEnv || !isAppReady || desktopAISetupPromptedRef.current) return;
-    // Wait for an adult in the plain workspace: over the Launch Pad, the Quick
-    // Start wizard or a hub it stacked a second first-run panel.
-    // Guided Mode says it at step 1 with a setup button, so no modal there.
-    if (!hasSelectedMode || !hasSelectedRole || !isTeacherMode || guidedMode || showWizard || showEducatorHub || showLearningHub) return;
-    let shouldPrompt = true;
-    const hasUsableKey = (value) => {
-      const key = String(value || '').trim();
-      return Boolean(key && key !== 'desktop-user-provided');
-    };
-    try {
-      const cfg = JSON.parse(localStorage.getItem('alloflow_ai_config') || 'null');
-      const backend = cfg && cfg.backend ? cfg.backend : 'gemini';
-      if (backend && backend !== 'gemini') shouldPrompt = false;
-      if (backend === 'gemini' && hasUsableKey((cfg && cfg.apiKey) || apiKey)) shouldPrompt = false;
-    } catch (_) {
-      shouldPrompt = true;
-    }
-    if (!shouldPrompt) return;
-    desktopAISetupPromptedRef.current = true;
-    setShowAIBackendModal(true);
-  }, [isAppReady, _isCanvasEnv, hasSelectedMode, hasSelectedRole, isTeacherMode, showWizard, guidedMode, showEducatorHub, showLearningHub]);
+  // No first-run AI modal: it stacked over the Launch Pad, the tour and tools.
+  // Setup is offered inline (Guided step 1, blocked generate buttons, the
+  // Launch Pad's AI Backend Settings) where AI is actually needed (2026-09-26).
   // Focus traps for 5 more student-facing modals (a11y D1, 2026-06-28): same proven pattern as above —
   // traps Tab inside the modal while open + restores focus to the trigger on close (WCAG 2.4.3). Inline-arrow
   // close handlers use the setters (declared above); the handleSet* wrappers are defined later so can't be used here.
@@ -19134,6 +19129,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           setExpandedTools(['source-input', 'adventure', 'glossary', 'simplified']);
           addToast(t('toasts.mode_parent_enabled'), "success");
           setIsAdventureStoryMode(true);
+          // Parents start from their child's reading, not a grade/standards wizard.
+          setShowWizard(false);
       } else if (role === 'independent') {
           setIsTeacherMode(true);
           setIsParentMode(false);
@@ -40744,9 +40741,6 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 role="tab"
                 aria-selected={workspacePane === 'history'}
                 aria-controls="workspace-sidebar-pane"
-                aria-disabled={guidedMode ? 'true' : undefined}
-                disabled={guidedMode}
-                title={guidedMode ? ((t('sidebar.materials_after_guided') || '{tab} is available after you finish or exit Guided Mode.').replace('{tab}', _alloMaterialsTabLabel)) : undefined}
                 onClick={() => {
                   setActiveSidebarTab('history');
                   setIsHistoryPulsing(false);
@@ -40785,7 +40779,9 @@ const handleSubmitOrganizerReflection = async (reflection) => {
               </div>
             </section>
           )}
-          {guidedMode && guidedModeConfigReady && <GuidedModeBanner GUIDED_STEPS={guidedActiveSteps} allGuidedSteps={GUIDED_STEPS} guidedSelectedIds={guidedSelectedIds} toggleGuidedStepId={toggleGuidedStepId} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedEngaged={guidedEngaged} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} history={history} getDefaultTitle={getDefaultTitle} inputText={inputText} setInputText={setInputText} guidedCompletedIds={guidedCompletedIds} guidedSkippedIds={guidedSkippedIds} guidedCreatedHistoryIds={guidedCreatedHistoryIds} wordSoundsHistory={wordSoundsHistory} currentUiLanguage={currentUiLanguage} markGuidedStepDone={markGuidedStepDone} resetGuidedProgress={resetGuidedProgress} guidedPresets={GUIDED_PRESETS} applyGuidedPreset={applyGuidedPreset} applyGuidedPlanToRemaining={applyGuidedPlanToRemaining} generateGuidedPlanFromGoal={generateGuidedPlanFromGoal} guidedPhases={GUIDED_PHASES} guidedDeliveryGroups={GUIDED_DELIVERY_GROUPS} openGuidedDocumentBuilder={() => openExportPreview('print', guidedCreatedHistoryIds)} createGuidedHomeworkShare={createGuidedHomeworkShare} startGuidedLiveSession={() => setShowSessionStartOptions(true)} canPreviewGuidedStudentAssignment={!!latestStudentPreviewShare} previewGuidedStudentAssignment={previewGuidedStudentAssignment} guidedDeliveryEvidence={guidedDeliveryEvidence} guidedPlanBrief={guidedPlanBrief} guidedAdvanceNotice={guidedAdvanceNotice} clearGuidedAdvanceNotice={() => setGuidedAdvanceNotice(null)} undoGuidedAutoAdvance={undoGuidedAutoAdvance} guidedNavigationUndo={guidedNavigationUndo} undoGuidedNavigation={undoGuidedNavigation} clearGuidedNavigationUndo={() => setGuidedNavigationUndo(null)} guidedStepCostNote={guidedStepCostNote} guidedSettingsSummary={guidedSettingsSummary} openUniversalSettings={openUniversalSettings} guidedStepError={guidedStepError} retryGuidedStep={retryGuidedStep} isGuidedRetrying={isProcessing || isGeneratingPersona || isGeneratingSource || isExtracting} openGuidedHistoryItem={handleRestoreView} guidedAutoAdvance={guidedAutoAdvance} setGuidedAutoAdvance={setGuidedAutoAdvance} handleCompleteGuidedMode={handleCompleteGuidedMode} handleGuidedJump={handleGuidedJump} focusGuidedTarget={focusGuidedTarget} processingProgress={processingProgress} generationStep={generationStep} guidedProviderProfile={String(ai?.backend || ai?.textBackend || ai?.provider || 'default')} guidedProgressSaveState={guidedProgressSaveState} retryGuidedProgressSave={retryGuidedProgressSave} openGuidedProjectBackup={history.length > 0 ? initiateSaveTeacherProject : null} />}
+          {/* Class & Materials shows its own one-line "Guided Mode is still running /
+              Back to my step"; the full banner stays mounted but hidden (2026-09-26). */}
+          {guidedMode && guidedModeConfigReady && <div style={{ display: (isTeacherMode && activeSidebarTab === 'history') ? 'none' : 'contents' }}><GuidedModeBanner GUIDED_STEPS={guidedActiveSteps} allGuidedSteps={GUIDED_STEPS} guidedSelectedIds={guidedSelectedIds} toggleGuidedStepId={toggleGuidedStepId} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedEngaged={guidedEngaged} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} history={history} getDefaultTitle={getDefaultTitle} inputText={inputText} setInputText={setInputText} guidedCompletedIds={guidedCompletedIds} guidedSkippedIds={guidedSkippedIds} guidedCreatedHistoryIds={guidedCreatedHistoryIds} wordSoundsHistory={wordSoundsHistory} currentUiLanguage={currentUiLanguage} markGuidedStepDone={markGuidedStepDone} resetGuidedProgress={resetGuidedProgress} guidedPresets={GUIDED_PRESETS} applyGuidedPreset={applyGuidedPreset} applyGuidedPlanToRemaining={applyGuidedPlanToRemaining} generateGuidedPlanFromGoal={generateGuidedPlanFromGoal} guidedPhases={GUIDED_PHASES} guidedDeliveryGroups={GUIDED_DELIVERY_GROUPS} openGuidedDocumentBuilder={() => openExportPreview('print', guidedCreatedHistoryIds)} createGuidedHomeworkShare={createGuidedHomeworkShare} startGuidedLiveSession={() => setShowSessionStartOptions(true)} canPreviewGuidedStudentAssignment={!!latestStudentPreviewShare} previewGuidedStudentAssignment={previewGuidedStudentAssignment} guidedDeliveryEvidence={guidedDeliveryEvidence} guidedPlanBrief={guidedPlanBrief} guidedAdvanceNotice={guidedAdvanceNotice} clearGuidedAdvanceNotice={() => setGuidedAdvanceNotice(null)} undoGuidedAutoAdvance={undoGuidedAutoAdvance} guidedNavigationUndo={guidedNavigationUndo} undoGuidedNavigation={undoGuidedNavigation} clearGuidedNavigationUndo={() => setGuidedNavigationUndo(null)} guidedStepCostNote={guidedStepCostNote} guidedSettingsSummary={guidedSettingsSummary} openUniversalSettings={openUniversalSettings} guidedStepError={guidedStepError} retryGuidedStep={retryGuidedStep} isGuidedRetrying={isProcessing || isGeneratingPersona || isGeneratingSource || isExtracting} openGuidedHistoryItem={handleRestoreView} guidedAutoAdvance={guidedAutoAdvance} setGuidedAutoAdvance={setGuidedAutoAdvance} handleCompleteGuidedMode={handleCompleteGuidedMode} handleGuidedJump={handleGuidedJump} focusGuidedTarget={focusGuidedTarget} processingProgress={processingProgress} generationStep={generationStep} guidedProviderProfile={String(ai?.backend || ai?.textBackend || ai?.provider || 'default')} guidedProgressSaveState={guidedProgressSaveState} retryGuidedProgressSave={retryGuidedProgressSave} openGuidedProjectBackup={history.length > 0 ? initiateSaveTeacherProject : null} /></div>}
           {isTeacherMode && !(guidedMode && String(inputText || '').trim().length <= 20) && <UDLGuideButton handleToggleShowUDLGuide={handleToggleShowUDLGuide} showUDLGuide={showUDLGuide} t={t} subtitle={isIndependentMode ? t('sidebar.ai_guide_sub_independent') : undefined} />}
           {isTeacherMode && <div
             id="sidebar-create-panel"
@@ -41008,8 +41004,8 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 </button>
               </div>
             )}
-            {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && !isParentMode && <TeacherHistoryTab handleApplyRosterGroup={handleApplyRosterGroup} hasSourceOrAnalysis={hasSourceOrAnalysis} rosterKey={rosterKey} setIsRosterKeyOpen={setIsRosterKeyOpen} onDifferentiateByGroup={() => { setRosterBatchOpenRequest(request => request + 1); setIsRosterKeyOpen(true); }} t={t} />}
-            {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleRestoreView} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryVaultState.enabled ? canvasRecoveryVaultState.snapshotCount : canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}
+            {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && !isParentMode && <TeacherHistoryTab onQuickAddGroup={handleQuickAddRosterGroup} defaultGrade={gradeLevel} defaultLanguage={leveledTextLanguage} handleApplyRosterGroup={handleApplyRosterGroup} hasSourceOrAnalysis={hasSourceOrAnalysis} rosterKey={rosterKey} setIsRosterKeyOpen={setIsRosterKeyOpen} onDifferentiateByGroup={() => { setRosterBatchOpenRequest(request => request + 1); setIsRosterKeyOpen(true); }} t={t} />}
+            {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel onGoToCreate={isTeacherMode ? () => { setActiveSidebarTab('create'); setWorkspacePane('create'); } : undefined} activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleRestoreView} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryVaultState.enabled ? canvasRecoveryVaultState.snapshotCount : canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}
           </div>
         </div>
         {isWide && !isFullscreen && !isZenMode && (
@@ -41554,6 +41550,26 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                       <button type="button" onClick={() => setShowLearningHub(true)} className="mt-5 min-h-11 rounded-xl bg-indigo-600 px-5 text-sm font-bold text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300">{t('student_join.open_tools') || 'Open Learning Tools'}</button>
                     </>
                   );
+                  const _src = String(inputText || '').trim();
+                  const _focusSource = () => { setActiveSidebarTab('create'); setWorkspacePane('create'); setTimeout(() => { const box = document.querySelector('#tour-input-panel textarea'); if (box) box.focus(); }, 80); };
+                  if (isParentMode && !_src) return (
+                    <div data-help-key="family_start_card" className="w-full max-w-xl">
+                      <h2 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">{t('family_start.title') || 'Start with what your child is reading'}</h2>
+                      <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">{t('family_start.body') || 'Paste a page or upload a photo of it on the left. Then make a simpler version, a word list, or a story from it.'}</p>
+                      <button type="button" onClick={_focusSource} className="mt-5 min-h-11 rounded-xl bg-indigo-600 px-5 text-sm font-bold text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300">{t('family_start.add') || 'Add your child\u2019s reading'}</button>
+                    </div>
+                  );
+                  if (isTeacherMode && _src.length > 20) return (
+                    <div data-help-key="source_ready_card" className="w-full max-w-xl">
+                      <h2 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">{t('source_ready.title') || 'Your source is ready'}</h2>
+                      <p className="mt-4 max-h-64 overflow-y-auto whitespace-pre-line rounded-xl border border-slate-200 bg-slate-50 p-4 text-left text-sm leading-relaxed text-slate-800">{_src.length > 900 ? _src.slice(0, 900) + '\u2026' : _src}</p>
+                      <p className="mt-3 text-sm leading-relaxed text-slate-600">{guidedMode
+                        ? (t('source_ready.next_guided') || 'Follow the next step on the left.')
+                        : isParentMode
+                          ? (t('source_ready.next_family') || 'Now choose a simpler version, a word list, or a story on the left.')
+                          : (t('source_ready.next_tools') || 'Choose a tool on the left to create from it.')}</p>
+                    </div>
+                  );
                   return (
                     <>
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-indigo-600">
@@ -41578,8 +41594,10 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     </>
                   );
                 })()}
-                {isTeacherMode && !guidedMode && (
+                {isTeacherMode && !guidedMode && String(inputText || '').trim().length <= 20 && (
                   <div className="mt-8 w-full max-w-2xl">
+                    {/* Families already have "Add your child's reading" above. */}
+                    {!isParentMode && (
                     <button
                       type="button"
                       onClick={() => {
@@ -41599,6 +41617,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                       <FileText size={18} aria-hidden="true" />
                       {t('tools.source') || 'Source Material'}
                     </button>
+                    )}
                     <p className="mb-3 mt-7 border-t border-slate-200 pt-6 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">{t('input.quickstart_heading') || 'Or choose a starting point'}</p>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                       {[

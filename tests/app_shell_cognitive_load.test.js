@@ -30,7 +30,9 @@ describe('AlloFlow focused workspace shell', () => {
     expect(app).toContain("if (guidedMode) {\n      // A new Guided step always starts beside its real authoring control.");
     expect(app).toContain("const needsPaneSwitch = !isWide && workspacePane !== 'create';");
     expect(app).toContain("window.requestAnimationFrame(() => window.requestAnimationFrame(focusTarget))");
-    expect(app).toContain("disabled={guidedMode}");
+    // 2026-09-26: the phone Class & Materials tab stays usable during Guided Mode, as
+    // N2 (2026-08-16) intended for narrow screens; the disabled attribute was a leftover.
+    expect(app).not.toContain("disabled={guidedMode}");
     expect(app).toContain("const hiddenToolCatalogSelector = (guidedMode || runTour || !hasToolCatalogControls) ? ''");
   });
 
@@ -76,7 +78,8 @@ describe('AlloFlow focused workspace shell', () => {
   it('uses an editorial source-first empty state with restrained secondary routes', () => {
     expect(app).toContain("t('common.ready') || 'Workspace ready'");
     expect(app).toContain("t('tools.source') || 'Source Material'");
-    expect(app).toContain('{isTeacherMode && !guidedMode && (');
+    // 2026-09-26: the starting points hide once a source exists (the preview then shows it).
+    expect(app).toContain("{isTeacherMode && !guidedMode && String(inputText || '').trim().length <= 20 && (");
     expect(app).toContain("].filter(a => a.key !== 'write').map((a) => {");
     expect(app).toContain("const ActionIcon = a.key === 'book' ? BookOpen");
     expect(app).toContain("history.length > 0 && !guidedMode");

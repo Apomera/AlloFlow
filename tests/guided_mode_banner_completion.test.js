@@ -1282,3 +1282,29 @@ describe('Guided step 1 first-run onboarding', () => {
     b.cleanup();
   });
 });
+
+// Keyless + built-in example: a clearly labelled sample result at the Analyze step.
+describe('Guided sample result without AI (2026-09-26)', () => {
+  const SAMPLE = (require('node:fs').readFileSync('view_guided_mode_banner_source.jsx', 'utf8').match(/const GUIDED_SAMPLE_TEXT = (".*?");\n/) || [])[1];
+  afterEach(() => { delete window.__alloResolveAiCapability; });
+
+  it('shows the prepared sample for the example passage when no AI is connected', () => {
+    window.__alloResolveAiCapability = () => ({ text: false });
+    const b = mountBanner(baseProps({ guidedStep: 1, inputText: JSON.parse(SAMPLE) }));
+    const sample = b.host.querySelector('[data-help-key="guided_sample_result"]');
+    expect(sample).not.toBeNull();
+    expect(sample.textContent).toContain('Prepared in advance');
+    b.cleanup();
+  });
+
+  it('stays hidden for the teacher\'s own text, or when AI is connected', () => {
+    window.__alloResolveAiCapability = () => ({ text: false });
+    let b = mountBanner(baseProps({ guidedStep: 1, inputText: 'A different passage the teacher pasted about volcanoes and plates.' }));
+    expect(b.host.querySelector('[data-help-key="guided_sample_result"]')).toBeNull();
+    b.cleanup();
+    window.__alloResolveAiCapability = () => ({ text: true });
+    b = mountBanner(baseProps({ guidedStep: 1, inputText: JSON.parse(SAMPLE) }));
+    expect(b.host.querySelector('[data-help-key="guided_sample_result"]')).toBeNull();
+    b.cleanup();
+  });
+});
