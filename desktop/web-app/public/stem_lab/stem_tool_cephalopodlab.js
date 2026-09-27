@@ -11289,7 +11289,7 @@ function createCLHuntAnimal(T, species) {
     shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\nfloat mottling=clNoise(clSkinPos*13.0+vec3(0.0,clNoise(clSkinPos*5.0),0.0)); float grain=clNoise(clSkinPos*105.0); float cells=smoothstep(0.56,0.78,grain); float belly=1.0-smoothstep(-0.18,0.10,clSkinPos.y); float bands=0.5+0.5*sin(clSkinPos.z*15.0-clPhase*4.0); diffuseColor.rgb *= 0.87 + mottling*0.25 - cells*0.20 - smoothstep(0.38,0.74,mottling)*clPattern*0.26 - bands*clDisplay*0.32; diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*0.65+vec3(0.36,0.27,0.18),belly*0.30);');
   };
   var armMat = skin.clone(); armMat.onBeforeCompile = skin.onBeforeCompile;
-  var underside = new T.MeshStandardMaterial({ color: 0xe5c9ab, roughness: 0.62 });
+  var underside = new T.MeshStandardMaterial({ color: 0xe5c9ab, roughness: 0.62 });underside.color.convertSRGBToLinear();
   var dims = squid ? [0.37,0.33,1.24] : cuttle ? [0.65,0.25,0.88] : bobtail ? [0.46,0.39,0.52] : vampire ? [0.43,0.48,0.65] : dumbo ? [0.47,0.48,0.54] : [0.48,0.48,0.61];
   var mantleGeo = new T.SphereGeometry(1, 40, 28);
   var mp = mantleGeo.attributes.position;
@@ -11323,6 +11323,7 @@ function createCLHuntAnimal(T, species) {
   var siphonLumen=new T.Mesh(new T.CircleGeometry(siphonRadius*0.92,20),new T.MeshStandardMaterial({color:0x201c1a,roughness:0.95}));
   siphonLumen.position.z=-siphonLength*0.40;siphon.add(siphonLumen);
   var irisMat=new T.MeshStandardMaterial({color:squid?0x756e61:vampire?0x899fba:0xc3a666,roughness:squid?0.38:0.27});
+  irisMat.color.convertSRGBToLinear();
   var darkMat=new T.MeshStandardMaterial({color:0x091322,roughness:0.19,metalness:0});
   for(var side=-1;side<=1;side+=2){
     ellipsoid('cl-eye-rim',squid?0.137:0.165,side*(squid?0.235:0.31),0.075,0.41,squid?0.65:0.70,1,1,skin);
@@ -11351,10 +11352,11 @@ function createCLHuntAnimal(T, species) {
   var suckers=null, suckerDummy=new T.Object3D();
   if(suckerCount){var sg=new T.TorusGeometry(0.038,0.012,5,10);sg.rotateX(Math.PI/2);suckers=new T.InstancedMesh(sg,underside,suckerCount);suckers.name='cl-suckers';suckers.frustumCulled=false;root.add(suckers);}
   function makeFin(side,ear) {
-    var seg=28,positions=new Float32Array((seg+1)*2*3),idx=[];
-    for(var k=0;k<seg;k++){var q=k*2;idx.push(q,q+1,q+2,q+1,q+3,q+2);}
+    // Squid membranes bend across their span instead of hinging as a two-vertex strip.
+    var seg=28,span=squid?5:1,stride=span+1,positions=new Float32Array((seg+1)*stride*3),idx=[];
+    for(var k=0;k<seg;k++)for(var r=0;r<span;r++){var q=k*stride+r;idx.push(q,q+1,q+stride,q+1,q+stride+1,q+stride);}
     var g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(positions,3).setUsage(T.DynamicDrawUsage));g.setIndex(idx);
-    var fm=skin.clone();fm.side=T.DoubleSide;fm.roughness=0.55;fm.onBeforeCompile=skin.onBeforeCompile;var m=new T.Mesh(g,fm);m.frustumCulled=false;m.name='cl-fin-'+side;root.add(m);var fin={mesh:m,side:side,ear:ear,seg:seg};fins.push(fin);if(ear)dumboFins.push(fin);if(cuttle)cuttleFins.push(fin);
+    var fm=skin.clone();fm.side=T.DoubleSide;fm.roughness=0.55;fm.onBeforeCompile=skin.onBeforeCompile;var m=new T.Mesh(g,fm);m.frustumCulled=false;m.name='cl-fin-'+side;root.add(m);var fin={mesh:m,side:side,ear:ear,seg:seg,span:span};fins.push(fin);if(ear)dumboFins.push(fin);if(cuttle)cuttleFins.push(fin);
   }
   if(swimming&&!nautilus){makeFin(-1,dumbo);makeFin(1,dumbo);}
   // A continuous scalloped web joins the proximal arms on octopuses and vampires.
@@ -11435,11 +11437,32 @@ function createCLHuntAnimal(T, species) {
     });
     if(suckers){suckers.count=si;suckers.instanceMatrix.needsUpdate=true;}
     if(web){var arr=web.geometry.attributes.position.array;for(var wa=0;wa<8;wa++)for(var ws=0;ws<=8;ws++){var at=(wa*9+ws)*3,step=Math.round(ws/8*(vampire?13:5)),pt=arms[wa].points[step];arr[at]=pt.x;arr[at+1]=pt.y+0.012;arr[at+2]=pt.z;}web.geometry.attributes.position.needsUpdate=true;web.geometry.computeVertexNormals();}
-    fins.forEach(function(f){var p=f.mesh.geometry.attributes.position.array;for(var k=0;k<=f.seg;k++){var t=k/f.seg,z,width,edge;
-      if(squid){z=-1.98+t*1.32;width=0.02+Math.sin(t*Math.PI*0.70)*0.23;edge=Math.pow(Math.sin(t*Math.PI),1.25)*0.53;}
-      else if(cuttle){z=-1.15+t*1.73;width=Math.sin(t*Math.PI)*0.64;edge=Math.sin(t*Math.PI)*0.20;}
-      else{z=-0.72+t*0.82;width=Math.sin(t*Math.PI)*0.42;edge=Math.sin(t*Math.PI)*(dumbo?0.48:0.25);}
-      for(var row=0;row<2;row++){var at=(k*2+row)*3;p[at]=f.side*(width+row*edge)*scale;p[at+1]=(0.08+row*Math.sin(time*(dumbo?3:jet?7:3.6)-t*9)*0.095*motion+(dumbo?row*0.32:0))*scale;p[at+2]=z*scale;}}
+    fins.forEach(function(f){var p=f.mesh.geometry.attributes.position.array;
+      if(squid){
+        for(var k=0;k<=f.seg;k++){
+          var t=k/f.seg,baseZ=-1.98+t*1.32,mantleZ=(baseZ+0.76)/dims[2];
+          // Use the same tapered cross-section as the mantle, including its breathing pose.
+          var taper=0.30+0.70*Math.pow((mantleZ+1)/2,0.7);
+          var rootWidth=dims[0]*Math.sqrt(Math.max(0,1-mantleZ*mantleZ))*taper*mantle.scale.x*0.985;
+          var z=-0.76+(baseZ+0.76)*mantle.scale.z;
+          var envelope=Math.pow(Math.sin(t*Math.PI),1.55),edge=0.60*envelope*(0.86+0.14*t);
+          var travelingWave=Math.sin(time*(jet?5.4:3.6)-t*6.8)*motion*(jet?0.42:1);
+          for(var row=0;row<=f.span;row++){
+            var across=row/f.span,at=(k*(f.span+1)+row)*3;
+            var camber=0.060*Math.sin(across*Math.PI)*envelope;
+            var flex=0.105*Math.pow(across,1.5)*envelope*travelingWave;
+            p[at]=f.side*(rootWidth+across*edge)*scale;
+            p[at+1]=(0.10+camber+flex)*scale;
+            p[at+2]=(z+0.09*envelope*across*across)*scale;
+          }
+        }
+      }else{
+        for(var k=0;k<=f.seg;k++){var t=k/f.seg,z,width,edge;
+          if(cuttle){z=-1.15+t*1.73;width=Math.sin(t*Math.PI)*0.64;edge=Math.sin(t*Math.PI)*0.20;}
+          else{z=-0.72+t*0.82;width=Math.sin(t*Math.PI)*0.42;edge=Math.sin(t*Math.PI)*(dumbo?0.48:0.25);}
+          for(var row=0;row<2;row++){var at=(k*2+row)*3;p[at]=f.side*(width+row*edge)*scale;p[at+1]=(0.08+row*Math.sin(time*(dumbo?3:jet?7:3.6)-t*9)*0.095*motion+(dumbo?row*0.32:0))*scale;p[at+2]=z*scale;}
+        }
+      }
       f.mesh.geometry.attributes.position.needsUpdate=true;f.mesh.geometry.computeVertexNormals();
     });
     vampirePhotophores.forEach(function(g,i){var pt=arms[i%8].points[i<8?12:18];g.position.copy(pt);g.position.y+=0.04;});
@@ -11636,24 +11659,36 @@ function createCLHuntAnimal(T, species) {
         sandCv.setAttribute('aria-hidden', 'true');
         sandCv.width = 256; sandCv.height = 256;
         var sandCx = sandCv.getContext('2d');
-        sandCx.fillStyle = '#c9a06a';
-        sandCx.fillRect(0, 0, 256, 256);
-        for (var sg = 0; sg < 1200; sg++) {
-          var sr = 180 + Math.random() * 40, gg = 140 + Math.random() * 40, sb = 90 + Math.random() * 40;
-          sandCx.fillStyle = 'rgba(' + sr.toFixed(0) + ',' + gg.toFixed(0) + ',' + sb.toFixed(0) + ',0.7)';
-          sandCx.fillRect(Math.random() * 256, Math.random() * 256, 1 + Math.random() * 2.5, 1 + Math.random() * 2.5);
+        // Neutral mineral grains vary in luminance, avoiding oversized colored square flecks.
+        // Visual-only randomness must not move seeded rocks, prey or mission actors.
+        for(var oldSandDraw=0;oldSandDraw<8400;oldSandDraw++)Math.random();
+        var textureSeed=928371;
+        function textureRandom(){textureSeed=(Math.imul(textureSeed,1664525)+1013904223)>>>0;return textureSeed/4294967296;}
+        var sandPixels=sandCx.createImageData(256,256);
+        for(var grain=0;grain<256*256;grain++){
+          var tone=(textureRandom()-0.5)*17,at=grain*4;
+          sandPixels.data[at]=183+tone;sandPixels.data[at+1]=176+tone;sandPixels.data[at+2]=155+tone;sandPixels.data[at+3]=255;
         }
+        sandCx.putImageData(sandPixels,0,0);
         var sandTex = new THREE.CanvasTexture(sandCv);
         sandTex.wrapS = sandTex.wrapT = THREE.RepeatWrapping;
-        sandTex.repeat.set(14, 14);sandTex.encoding=THREE.sRGBEncoding;
+        sandTex.repeat.set(28,28);sandTex.encoding=THREE.sRGBEncoding;sandTex.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
         var floor = new THREE.Mesh(floorGeo,
-          new THREE.MeshStandardMaterial({ map: sandTex, roughness: 0.97, metalness: 0.02 }));
-        floor.rotation.x = -Math.PI / 2;
+          new THREE.MeshStandardMaterial({ map: sandTex, roughness: 0.94, metalness: 0 }));
+        floor.name='cl-seafloor';floor.material.extensions={derivatives:true};floor.rotation.x = -Math.PI / 2;
         scene.add(floor);floor.receiveShadow=true;
         floor.material.onBeforeCompile=function(shader){
           shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 clSandWorld;').replace('#include <begin_vertex>','#include <begin_vertex>\nclSandWorld=(modelMatrix*vec4(position,1.0)).xyz;');
-          shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 clSandWorld;').replace('#include <color_fragment>','#include <color_fragment>\nfloat ripple=sin(clSandWorld.z*8.0+sin(clSandWorld.x*0.75)*1.5); float patches=sin(clSandWorld.x*0.43+sin(clSandWorld.z*0.3))*sin(clSandWorld.z*0.52); diffuseColor.rgb*=0.82+0.035*ripple+0.07*patches;');
+          shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 clSandWorld;')
+            .replace('#include <color_fragment>','#include <color_fragment>\nfloat clRipplePhase=clSandWorld.z*9.0+sin(clSandWorld.x*0.85)*1.35; float clRippleAA=1.0-smoothstep(0.4,1.8,fwidth(clRipplePhase)); float clPatches=sin(clSandWorld.x*0.43+sin(clSandWorld.z*0.3))*sin(clSandWorld.z*0.52); diffuseColor.rgb*=0.87+0.028*sin(clRipplePhase)*clRippleAA+0.045*clPatches;')
+            .replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\nvec3 clSlope=vec3(cos(clSandWorld.x*0.85)*1.1475,0.0,9.0)*cos(clRipplePhase)*0.015*clRippleAA; vec3 clViewSlope=mat3(viewMatrix)*clSlope; normal=normalize(normal-clViewSlope+normal*dot(normal,clViewSlope));');
         };
+        // Fine rough mineral variation makes reef forms readable without new maps or draw calls.
+        function reefSurface(shader){
+          shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 clReefPos;').replace('#include <begin_vertex>','#include <begin_vertex>\nclReefPos=position;');
+          shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 clReefPos;')
+            .replace('#include <color_fragment>','#include <color_fragment>\nfloat clVeins=sin(clReefPos.x*6.0+sin(clReefPos.z*5.0))*sin(clReefPos.y*7.0+clReefPos.z*3.0);float clPores=sin(clReefPos.x*41.0)*sin(clReefPos.y*37.0)*sin(clReefPos.z*43.0);diffuseColor.rgb*=0.87+clVeins*0.10+clPores*0.045;');
+        }
 
         // ─── Reef rocks (scattered, irregular) ───
         var rocks = [];
@@ -11672,7 +11707,8 @@ function createCLHuntAnimal(T, species) {
           rockGeo.computeVertexNormals();
           var ROCK_TINTS = [0x55483a, 0x3f4d3d, 0x5c4f3f, 0x46524a, 0x4a3f36];
           var rockTint = new THREE.Color(ROCK_TINTS[Math.floor(Math.random() * ROCK_TINTS.length)]).offsetHSL(0,0,(Math.random()-0.5)*0.05);
-          var rockMesh = new THREE.Mesh(rockGeo, new THREE.MeshStandardMaterial({ color: rockTint, roughness: 0.95, flatShading: false }));
+          var rockMesh = new THREE.Mesh(rockGeo, new THREE.MeshStandardMaterial({ color: rockTint.clone().convertSRGBToLinear(), roughness: 0.92, flatShading: false }));
+          rockMesh.material.onBeforeCompile=reefSurface;
           rockMesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
           rockMesh.scale.set(1, 0.7 + Math.random() * 0.5, 1);
           rockMesh.position.set(rx, rs * 0.35, rz);
@@ -11696,6 +11732,7 @@ function createCLHuntAnimal(T, species) {
           var coralGeo = new THREE.CylinderGeometry(0.15, 0.32, ch, 8);
           var coral = new THREE.Mesh(coralGeo,
             new THREE.MeshStandardMaterial({ color: coralHex, emissive: coralHex, emissiveIntensity: 0.04, roughness: 0.7 })); // soft coral fluorescence through the blue gloom (same hex)
+          coral.material.color.convertSRGBToLinear();coral.material.emissive.convertSRGBToLinear();coral.material.onBeforeCompile=reefSurface;
           coral.position.set(cx, ch / 2, cz);
           coral.rotation.y = Math.random() * Math.PI;
           coral.rotation.z = (Math.random() - 0.5) * 0.3;
@@ -11733,31 +11770,29 @@ function createCLHuntAnimal(T, species) {
           grass.push({ mesh: gmesh, phase: Math.random() * Math.PI * 2 });
         }
 
-        // ─── Caustic light overlay (animated bright spots) ───
-        var causticsGeo = new THREE.PlaneGeometry(140, 140, 1, 1);
-        var causticsTex = (function() {
-          var cv = document.createElement('canvas');
-          cv.setAttribute('aria-hidden', 'true');
-          cv.width = 256; cv.height = 256;
-          var cx = cv.getContext('2d');
-          cx.fillStyle = 'rgba(0,0,0,0)';
-          cx.fillRect(0, 0, 256, 256);
-          for (var cci = 0; cci < 30; cci++) {
-            var grd = cx.createRadialGradient(Math.random() * 256, Math.random() * 256, 4, Math.random() * 256, Math.random() * 256, 20 + Math.random() * 20);
-            grd.addColorStop(0, 'rgba(220,250,255,0.18)');
-            grd.addColorStop(1, 'rgba(220,250,255,0)');
-            cx.fillStyle = grd; cx.fillRect(0, 0, 256, 256);
+        // Terrain-conforming caustics: seamless cellular light, anchored to the same world tile.
+        var causticsGeo=floorGeo.clone();
+        var causticsTex=(function(){
+          var cv=document.createElement('canvas');
+          cv.setAttribute('aria-hidden','true');
+          cv.width=256;cv.height=256;
+          var cx=cv.getContext('2d'),pixels=cx.createImageData(256,256),cells=[];
+          for(var oldCausticDraw=0;oldCausticDraw<150;oldCausticDraw++)Math.random();
+          for(var cy=0;cy<4;cy++)for(var cx0=0;cx0<4;cx0++)cells.push({x:cx0+0.18+textureRandom()*0.64,y:cy+0.18+textureRandom()*0.64});
+          for(var py=0;py<256;py++)for(var px=0;px<256;px++){
+            var ux=(px/64+0.18*Math.sin(py/256*Math.PI*4)+4)%4,uy=(py/64+0.14*Math.sin(px/256*Math.PI*4+0.7)+4)%4,first=100,second=100;
+            for(var cell=0;cell<cells.length;cell++){
+              var dx=Math.abs(ux-cells[cell].x),dy=Math.abs(uy-cells[cell].y);dx=Math.min(dx,4-dx);dy=Math.min(dy,4-dy);
+              var d2=dx*dx+dy*dy;if(d2<first){second=first;first=d2;}else if(d2<second)second=d2;
+            }
+            var gap=Math.sqrt(second)-Math.sqrt(first),edge=Math.exp(-gap*gap*620),i=(py*256+px)*4;
+            pixels.data[i]=188;pixels.data[i+1]=231;pixels.data[i+2]=237;pixels.data[i+3]=Math.round(edge*190);
           }
-          var t = new THREE.CanvasTexture(cv);
-          t.wrapS = t.wrapT = THREE.RepeatWrapping;
-          return t;
+          cx.putImageData(pixels,0,0);var texture=new THREE.CanvasTexture(cv);texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.repeat.set(16,16);return texture;
         })();
-        causticsTex.repeat.set(4, 4);
-        var causticsMat = new THREE.MeshBasicMaterial({ map: causticsTex, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite:false });
-        var caustics = new THREE.Mesh(causticsGeo, causticsMat);
-        caustics.rotation.x = -Math.PI / 2;
-        caustics.position.y = 0.05;
-        scene.add(caustics);
+        var causticsMat=new THREE.MeshBasicMaterial({map:causticsTex,transparent:true,opacity:0.04,blending:THREE.AdditiveBlending,depthWrite:false});
+        var caustics=new THREE.Mesh(causticsGeo,causticsMat);caustics.name='cl-caustics';caustics.rotation.x=-Math.PI/2;caustics.position.y=0.025;scene.add(caustics);
+        var causticPhase=0;
 
         var animal = createCLHuntAnimal(THREE, species);
         var octopus=animal.root, mantle=animal.mantle, mantleGeo=animal.mantleGeo, mantleMat=animal.mantleMat;
@@ -13704,6 +13739,41 @@ function createCLHuntAnimal(T, species) {
         var inspectionTools=document.createElement('div');inspectionTools.className='cl-inspection-tools';inspectionPanel.appendChild(inspectionTools);
         function orbit(y,p){inspection.yaw+=y;inspection.pitch=Math.max(-0.25,Math.min(1.20,inspection.pitch+p));}
         function zoomSpecimen(factor){inspection.distance=Math.max(3.6*bodyScale,Math.min(18*bodyScale,inspection.distance*factor));}
+        function frameInspection(reset){
+          if(reset||!inspection.corners){
+            // Dynamic tubes and fins have moved since construction. Include instance transforms too.
+            octopus.updateMatrixWorld(true);
+            var bounds=new THREE.Box3(),part=new THREE.Box3(),inverse=new THREE.Matrix4().copy(octopus.matrixWorld).invert();
+            var relative=new THREE.Matrix4(),instance=new THREE.Matrix4(),combined=new THREE.Matrix4();
+            octopus.traverse(function(obj){
+              if(!obj.isMesh||!obj.geometry)return;
+              for(var ancestor=obj;ancestor&&ancestor!==octopus.parent;ancestor=ancestor.parent)if(!ancestor.visible)return;
+              var geometry=obj.geometry;geometry.computeBoundingBox();geometry.computeBoundingSphere();
+              if(!geometry.boundingBox||geometry.boundingBox.isEmpty())return;
+              relative.multiplyMatrices(inverse,obj.matrixWorld);
+              if(obj.isInstancedMesh){for(var i=0;i<obj.count;i++){obj.getMatrixAt(i,instance);combined.multiplyMatrices(relative,instance);bounds.union(part.copy(geometry.boundingBox).applyMatrix4(combined));}}
+              else bounds.union(part.copy(geometry.boundingBox).applyMatrix4(relative));
+            });
+            if(bounds.isEmpty())bounds.setFromCenterAndSize(new THREE.Vector3(),new THREE.Vector3(2,2,3).multiplyScalar(bodyScale));
+            inspection.center=bounds.getCenter(new THREE.Vector3()).applyMatrix4(octopus.matrixWorld);inspection.corners=[];
+            for(var x=0;x<2;x++)for(var y=0;y<2;y++)for(var z=0;z<2;z++)inspection.corners.push(new THREE.Vector3(x?bounds.max.x:bounds.min.x,y?bounds.max.y:bounds.min.y,z?bounds.max.z:bounds.min.z).applyMatrix4(octopus.matrixWorld).sub(inspection.center));
+          }
+          var height=canvasEl.clientHeight||500;
+          var top=Math.min(height*0.40,inspectionTitle.offsetTop+inspectionTitle.offsetHeight+22);
+          var bottom=Math.min(height*0.40,height-inspectionTools.offsetTop+22);
+          var middle=(bottom-top)/height,extent=Math.max(0.16,1-(top+bottom)/height)*0.86;
+          var toward=new THREE.Vector3(-Math.sin(inspection.yaw)*Math.cos(inspection.pitch),Math.sin(inspection.pitch),-Math.cos(inspection.yaw)*Math.cos(inspection.pitch));
+          var right=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),toward).normalize(),up=new THREE.Vector3().crossVectors(toward,right).normalize();
+          var tanY=Math.tan(camera.fov*Math.PI/360),tanX=tanY*camera.aspect,fit=3.6*bodyScale;
+          inspection.corners.forEach(function(point){
+            var x=point.dot(right),y=point.dot(up),depth=point.dot(toward);
+            fit=Math.max(fit,Math.abs(x)/(tanX*0.72)+depth,(y/tanY+(middle+extent)*depth)/extent,(-y/tanY-(middle-extent)*depth)/extent);
+          });
+          var relativeZoom=reset||!inspection.fitDistance?1:inspection.distance/inspection.fitDistance;
+          inspection.fitDistance=Math.max(3.6*bodyScale,Math.min(18*bodyScale,fit));
+          inspection.distance=Math.max(3.6*bodyScale,Math.min(18*bodyScale,inspection.fitDistance*relativeZoom));
+          inspection.frameOffset=-middle;
+        }
         uiButton('Orbit left',function(){orbit(-0.30,0);},inspectionTools);
         uiButton('Orbit right',function(){orbit(0.30,0);},inspectionTools);
         uiButton('Higher',function(){orbit(0,0.15);},inspectionTools);
@@ -13722,9 +13792,9 @@ function createCLHuntAnimal(T, species) {
         var anatomyDescription=document.createElement('p');anatomyDescription.className='cl-inspection-description';anatomyDescription.textContent=labelSpecs.map(function(spec){return spec[0];}).join(' · ');inspectionTitle.appendChild(anatomyDescription);
         function toggleInspection(){
           if(gameState.gameOver)return;
-          if(!inspection.active){inspection.wasPaused=gameState.paused;setPaused(true);inspection.active=true;inspection.yaw=gameState.facingAngle+1.15;inspection.pitch=0.18;inspection.distance=6*bodyScale/Math.min(1,camera.aspect);inspection.touchAction=canvasEl.style.touchAction;canvasEl.style.touchAction='none';pauseOverlay.style.display='none';camera.fov=44;}
+          if(!inspection.active){inspection.wasPaused=gameState.paused;setPaused(true);inspection.active=true;inspection.yaw=gameState.facingAngle+1.42;inspection.pitch=0.18;inspection.touchAction=canvasEl.style.touchAction;canvasEl.style.touchAction='none';pauseOverlay.style.display='none';camera.fov=44;}
           else{inspection.active=false;inspection.drag=null;canvasEl.style.touchAction=inspection.touchAction||'';setPaused(inspection.wasPaused);camera.fov=70;}
-          camera.updateProjectionMatrix();stage.classList.toggle('cl-inspecting',inspection.active);inspectionPanel.hidden=!inspection.active;canvasEl.focus();clAnnounce(inspection.active?'Inspection. Dive paused. Drag or use orbit controls to examine '+species.name+'. Escape returns.':inspection.wasPaused?'Inspection closed. Dive remains paused.':'Inspection closed. Dive resumed.');
+          camera.updateProjectionMatrix();stage.classList.toggle('cl-inspecting',inspection.active);inspectionPanel.hidden=!inspection.active;if(inspection.active)frameInspection(true);canvasEl.focus();clAnnounce(inspection.active?'Inspection. Dive paused. Drag or use orbit controls to examine '+species.name+'. Escape returns.':inspection.wasPaused?'Inspection closed. Dive remains paused.':'Inspection closed. Dive resumed.');
         }
         function inspectKey(e){
           if(!inspection.active)return;
@@ -13745,7 +13815,11 @@ function createCLHuntAnimal(T, species) {
         function updateDiveCamera(dt){
           var view=gameState.cameraMode||0,camAngle=inspection.active?inspection.yaw:gameState.facingAngle+(view===1?Math.PI/2:0);
           var camOff=inspection.active?new THREE.Vector3(-Math.sin(camAngle)*Math.cos(inspection.pitch)*inspection.distance,Math.sin(inspection.pitch)*inspection.distance,-Math.cos(camAngle)*Math.cos(inspection.pitch)*inspection.distance):new THREE.Vector3(-Math.sin(camAngle)*(view===2?3:4.6),view===2?9:2.2,-Math.cos(camAngle)*(view===2?3:4.6));
-          var cameraLook=new THREE.Vector3(octopus.position.x,octopus.position.y+0.15,octopus.position.z);
+          var cameraLook=inspection.active&&inspection.center?inspection.center.clone():new THREE.Vector3(octopus.position.x,octopus.position.y+0.15,octopus.position.z);
+          if(inspection.active){
+            var inspectionUp=new THREE.Vector3(Math.sin(camAngle)*Math.sin(inspection.pitch),Math.cos(inspection.pitch),Math.cos(camAngle)*Math.sin(inspection.pitch));
+            cameraLook.addScaledVector(inspectionUp,(inspection.frameOffset||0)*inspection.distance*Math.tan(camera.fov*Math.PI/360));
+          }
           var camTarget=cameraLook.clone().add(camOff),camDir=camOff.clone().normalize();
           cameraRay.set(cameraLook,camDir);cameraRay.far=camOff.length();
           var cameraHits=cameraRay.intersectObjects(rocks,false);
@@ -14739,13 +14813,15 @@ function createCLHuntAnimal(T, species) {
               floor.position.set(groundX,0,groundZ);var fp=floorGeo.attributes.position;
               for(var v=0;v<fp.count;v++)fp.setZ(v,terrainHeight(fp.getX(v)+groundX,-fp.getY(v)+groundZ));
               fp.needsUpdate=true;floorGeo.computeVertexNormals();
+              causticsGeo.attributes.position.copy(fp);causticsGeo.attributes.position.needsUpdate=true;
             }
-            sandTex.offset.x=groundX*0.07;sandTex.offset.y=-groundZ*0.07;
+            sandTex.offset.x=groundX*0.14;sandTex.offset.y=-groundZ*0.14;
             sun.position.set(octopus.position.x+14,32,octopus.position.z+10);sun.target.position.copy(octopus.position);
             updateGround();
-            caustics.position.x = octopus.position.x + Math.sin(now * 0.0003) * 4;
-            caustics.position.z = octopus.position.z + Math.cos(now * 0.00025) * 4;
-            caustics.material.opacity = (0.06 + Math.sin(now * 0.001) * 0.015) * dayMix;caustics.visible=gameState.verticalY>-1;
+            if(!gameState.a11y.reducedMotion)causticPhase+=dt;
+            caustics.position.x=groundX;caustics.position.z=groundZ;
+            causticsTex.offset.set(groundX*0.08+causticPhase*0.012,-groundZ*0.08+Math.sin(causticPhase*0.16)*0.05);
+            caustics.material.opacity=0.045*dayMix*depthLight;caustics.visible=gameState.verticalY>-1;
             // Backdrop rides on the camera; tints derive from the frame's
             // background so zones and night still own the palette.
             backdrop.position.copy(camera.position);
@@ -14764,8 +14840,8 @@ function createCLHuntAnimal(T, species) {
             var shaftDepthMix = Math.max(0, Math.min(1, (gameState.verticalY + 30) / 40));
             for (var shU = 0; shU < shafts.length; shU++) {
               var shf = shafts[shU];
-              if (!shaftReducedMotion) shf.mesh.rotation.z = shf.baseZ + Math.sin(now * 0.00035 + shf.phase) * 0.06;
-              shf.mesh.material.opacity = shf.baseOpacity * (0.7 + 0.3 * Math.sin(now * 0.0007 + shf.phase)) * dayMix * shaftDepthMix;
+              if (!gameState.a11y.reducedMotion) shf.mesh.rotation.z = shf.baseZ + Math.sin(now * 0.00035 + shf.phase) * 0.06;
+              shf.mesh.material.opacity = shf.baseOpacity * (gameState.a11y.reducedMotion?0.7:0.7 + 0.3 * Math.sin(now * 0.0007 + shf.phase)) * dayMix * shaftDepthMix;
             }
 
             // ─── Endless-ocean object recycling ──────────────────
@@ -15645,6 +15721,7 @@ function createCLHuntAnimal(T, species) {
           bioPopup.style.display=nW<600?'none':'block';tutorial.style.display='none';
           camera.aspect = nW / nH;
           camera.updateProjectionMatrix();
+          if(inspection.active)frameInspection(false);
           renderer.setSize(nW, nH, false);
           try{ if(renderer._alloComposer){ renderer._alloComposer.setSize(nW, nH); } }catch(e){}
         }

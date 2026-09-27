@@ -1,0 +1,84 @@
+{
+  "date": "2026-09-27",
+  "status": "complete",
+  "unit": {
+    "passed": 194,
+    "total": 194,
+    "files": 9,
+    "note": "Full focused suite before the last material-only opacity, pattern and color refinement."
+  },
+  "finalContracts": {
+    "passed": 4,
+    "total": 4
+  },
+  "browser": {
+    "distinctScenariosWithPassingLatestResult": 7,
+    "retries": 0,
+    "runs": [
+      {
+        "file": "visual-polish-initial.json",
+        "startTime": "2026-09-27T05:13:15.971Z",
+        "duration": 150542.536,
+        "expected": 2,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      {
+        "file": "visual-polish-render-retest.json",
+        "startTime": "2026-09-27T05:16:16.942Z",
+        "duration": 75312.878,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      {
+        "file": "inspection-regression.json",
+        "startTime": "2026-09-27T05:22:35.593Z",
+        "duration": 159124.801,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    ],
+    "note": "Three new visual checks and four existing rig/inspection checks. Initial visual run had one harness selector error; unchanged assertions passed after correcting the container selector. Existing rig check cycled all 12 species. Final material-only refinement was followed by fresh desktop/mobile captures and canvas contracts."
+  },
+  "visual": {
+    "errors": [],
+    "viewportChecks": [
+      "desktop 1280×1100",
+      "mobile 390×844"
+    ],
+    "screenshots": [
+      "humboldt-inspection.png",
+      "humboldt-fins.png",
+      "mobile-inspection.png",
+      "reef-scene.png"
+    ],
+    "reviewed": true,
+    "note": "Final source captures; initial 30-second preview mount timeout was diagnosed as slow initialization. Capture timeout is 90 seconds. Runtime errors remained empty."
+  },
+  "mirrors": [
+    {
+      "path": "stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "5c50a657d494299fdf5789105b7f97e0757beeabe09d12a65e168cfcf421e2a3"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "5c50a657d494299fdf5789105b7f97e0757beeabe09d12a65e168cfcf421e2a3"
+    },
+    {
+      "path": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "5c50a657d494299fdf5789105b7f97e0757beeabe09d12a65e168cfcf421e2a3"
+    },
+    {
+      "path": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "5c50a657d494299fdf5789105b7f97e0757beeabe09d12a65e168cfcf421e2a3"
+    }
+  ],
+  "syntax": "passed",
+  "whitespace": "passed",
+  "deployed": false
+}
