@@ -153,7 +153,7 @@ async function mountPanel(h) {
       handleSetStandardModeToAi: noop, handleSetStandardModeToManual: noop,
       setAiStandardQuery: noop, setAiStandardRegion: noop, setIncludeSourceCitations: noop,
       setSourceCustomInstructions: noop, setSourceLength: noop, setSourceLevel: noop, setSourceTone: noop,
-      setSourceTopic: noop, setSourceVocabulary: noop, setStandardInputValue: noop, setTargetStandards: noop, setUseOwnSources: noop,
+      setSourceTopic: h.state.setSourceTopic || noop, setSourceVocabulary: noop, setStandardInputValue: noop, setTargetStandards: noop, setUseOwnSources: noop,
       handleGenerateSource: () => { operation = h.engine.handleGenerateSource({}, false); },
     });
   }
@@ -162,6 +162,51 @@ async function mountPanel(h) {
 }
 
 describe('Generate Source preserves the research phase', () => {
+  it.each(['gemini', 'localai', 'ollama', 'openai', 'claude', 'custom'])('explains rejected public topics before %s search or generation starts', async backend => {
+    const ai = publicSearchChain();
+    const generateText = vi.fn();
+    const h = harness(ai, {
+      sourceTopic: 'How clouds form', inputText: 'Existing source',
+      generatedContent: { text: 'Existing adaptation' }, activeView: 'output',
+      ai: { backend, generateText }, webSearchProvider: ai.web,
+    });
+    await finish(h.engine.handleGenerateSource());
+    expect(h.state.error).toMatch(/supported public topic/i);
+    expect(h.state.error).toContain('Supported web-search topics');
+    expect(ai.callGemini).not.toHaveBeenCalled();
+    expect(ai.transport).not.toHaveBeenCalled();
+    expect(generateText).not.toHaveBeenCalled();
+    expect(h.state.inputText).toBe('Existing source');
+    expect(h.state.generatedContent).toEqual({ text: 'Existing adaptation' });
+    expect(h.state.activeView).toBe('output');
+    expect(h.state.isGeneratingSource).toBe(false);
+  });
+
+  it('leaves native Gemini research available for topics outside the bridge list', async () => {
+    const ai = provider(() => groundedBrief());
+    const h = harness(ai, { sourceTopic: 'How clouds form', webSearchProvider: window.WebSearchProvider });
+    await finish(h.engine.handleGenerateSource());
+    expect(h.state.error).toBeNull();
+    expect(ai.researchCalls).toHaveLength(1);
+    expect(ai.articleCalls.length).toBeGreaterThan(0);
+  });
+
+  it('offers the real supported topics and changes only the selected topic', async () => {
+    const ai = provider(() => groundedBrief());
+    const h = harness(ai);
+    h.state.setSourceTopic = vi.fn();
+    await mountPanel(h);
+    const select = host.querySelector('#sourceWebTopic');
+    expect(select).not.toBeNull();
+    expect([...select.options].slice(1).map(option => option.value)).toEqual(window.WebSearchProvider.publicSearchQuery.topics);
+    await act(async () => {
+      select.value = 'water cycle';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(h.state.setSourceTopic).toHaveBeenCalledWith('water cycle');
+    expect(ai.callGemini).not.toHaveBeenCalled();
+  });
+
   it('shows real research progress in the panel and waits before writing', async () => {
     const research = deferred();
     const ai = provider(() => research.promise);

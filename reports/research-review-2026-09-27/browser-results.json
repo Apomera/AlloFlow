@@ -1,0 +1,49 @@
+{
+  "checks": [
+    {
+      "width": 1280,
+      "check": "optional keyboard review, additive search, exclusion preservation and rejected-query recovery",
+      "passed": true
+    },
+    {
+      "width": 1280,
+      "check": "real upload and retrieval, webpage/paste additions, visible passages and activity, responsive layout",
+      "passed": true
+    },
+    {
+      "width": 1280,
+      "check": "unknown citation preserves reading; reviewed writing supplies only included evidence without new search",
+      "passed": true
+    },
+    {
+      "width": 1280,
+      "check": "reviewed document citation and exported source survive reload",
+      "passed": true
+    },
+    {
+      "width": 390,
+      "check": "optional keyboard review, additive search, exclusion preservation and rejected-query recovery",
+      "passed": true
+    },
+    {
+      "width": 390,
+      "check": "real upload and retrieval, webpage/paste additions, visible passages and activity, responsive layout",
+      "passed": true
+    },
+    {
+      "width": 390,
+      "check": "unknown citation preserves reading; reviewed writing supplies only included evidence without new search",
+      "passed": true
+    },
+    {
+      "width": 390,
+      "check": "reviewed document citation and exported source survive reload",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "model": "synthetic",
+  "searchTransport": "synthetic",
+  "pageReader": "synthetic",
+  "modules": "actual rebuilt modules"
+}

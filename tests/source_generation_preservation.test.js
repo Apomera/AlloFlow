@@ -138,6 +138,44 @@ function ownDocuments() {
 }
 
 describe('source generation preserves the current reading until usable publication', () => {
+  it('repairs a malformed local citation before numbering the second section', async () => {
+    const ai = provider({ article: (_call, number) => ({
+      text: number === 1 ? 'Water evaporates into the air [Source 1].' : 'Cooling produces droplets [¹⁾](https://broken.example.test/).',
+      groundingMetadata: { groundingChunks: [{ web: {
+        uri: `https://science.example.edu/${number === 1 ? 'evaporation' : 'condensation'}`,
+        title: number === 1 ? 'Evaporation reference' : 'Condensation reference',
+      } }] },
+    }) });
+    const h = harness(ai, { includeSourceCitations: true, sourceLength: '1200' });
+    await finish(h.engine.handleGenerateSource());
+    const secondSection = h.state.inputText.split('## Condensation')[1].split('## Source Text References')[0];
+    expect(secondSection).toContain('https://science.example.edu/condensation');
+    expect(secondSection).not.toContain('https://science.example.edu/evaporation');
+    expect(secondSection).not.toContain('https://broken.example.test/');
+  });
+
+  it.each(['[⁽²⁾](https://invented.example.test/)', '⁽²⁾', '[²⁾](https://invented.example.test/)', '[⁽²⁾](https://invented.example.test/', '⁽⁰⁾'])('never binds invalid local citation %s to another section source', async marker => {
+    const ai = provider({ article: (_call, number) => ({
+      text: number === 1
+        ? 'Evaporation is powered by heat [⁽¹⁾](https://science.example.edu/evaporation). Invented attribution ' + marker + '\n'
+        : 'Cooling water vapor forms droplets [Source 1].',
+      groundingMetadata: { groundingChunks: [{ web: {
+        uri: `https://science.example.edu/${number === 1 ? 'evaporation' : 'condensation'}`,
+        title: number === 1 ? 'Evaporation reference' : 'Condensation reference',
+      } }] },
+    }) });
+    const h = harness(ai, { includeSourceCitations: true, sourceLength: '1200' });
+    await finish(h.engine.handleGenerateSource());
+    expect(h.state.error).toBeNull();
+    const firstSection = h.state.inputText.split('## Condensation')[0];
+    expect(firstSection).toContain('https://science.example.edu/evaporation');
+    expect(firstSection).not.toContain('https://science.example.edu/condensation');
+    expect(firstSection).not.toContain('https://invented.example.test/');
+    expect(h.state.inputText).toContain('https://science.example.edu/condensation');
+    expect(h.state.inputText).not.toMatch(/^#+\s*$/m);
+    expect(h.state.inputText).toContain('## Evaporation');
+  });
+
   it.each(['empty', 'insufficient', 'ungrounded', 'throw'])('preserves existing work after %s web research', async outcome => {
     const ai = provider({ research: () => {
       if (outcome === 'throw') throw new Error('Research provider unavailable');

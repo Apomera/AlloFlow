@@ -14581,7 +14581,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     };
     loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=37bdb2883');
     loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=37bdb2883');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=37bdb2883');
+    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=ad6fa052');
     // The teacher's own imported documents, shared by the source generator,
     // its toggle, the Quick Start toggle and the import control. No
     // dependencies of its own: it reaches Lumen lazily, loading those STEM
@@ -14625,7 +14625,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=718a3342');
     loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=37bdb2883');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=60e5be9c');
+    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=607cdf6e');
     loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=37bdb2883');
     loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=37bdb2883');
     // Capability index (dev-tools/build_tool_index.cjs): what each STEM tool

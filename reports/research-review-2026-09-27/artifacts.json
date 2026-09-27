@@ -1,0 +1,25 @@
+{
+  "content_engine_module.js": {
+    "sha256": "607cdf6e9f17ea786efe13838b1bdaa9a194e14851e8b22844bd9d591951b6e4",
+    "pin": "607cdf6e",
+    "mirrors": [
+      "desktop/web-app/public/content_engine_module.js",
+      "desktop/app-build/content_engine_module.js",
+      "desktop/web-app/build/content_engine_module.js"
+    ]
+  },
+  "view_misc_panels_module.js": {
+    "sha256": "ad6fa052e477456e524cb0bcdf4d9dea3774b10bbe8ab16d54bee73f5eb8c923",
+    "pin": "ad6fa052",
+    "mirrors": [
+      "desktop/web-app/public/view_misc_panels_module.js",
+      "desktop/app-build/view_misc_panels_module.js",
+      "desktop/web-app/build/view_misc_panels_module.js"
+    ]
+  },
+  "hosts": [
+    "AlloFlowANTI.txt",
+    "desktop/web-app/src/AlloFlowANTI.txt",
+    "desktop/web-app/src/App.jsx"
+  ]
+}

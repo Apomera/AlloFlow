@@ -231,9 +231,13 @@ describe('rigor regeneration citation guard', () => {
     expect(moduleSource).toContain("newText = [candidateBody, originalParts.references]");
     expect(moduleSource).toContain("citationError.code = 'citation-conservation-failed'");
     expect(moduleSource).toContain('SimplifiedView.regenerateWithRigor = regenerateSimplifiedWithRigor');
+    const hostHandlers = readFileSync('host_handlers_source.jsx', 'utf8');
+    expect(hostHandlers.includes('return api.regenerateWithRigor({')).toBe(true);
+    expect(hostHandlers.includes('const api = __d.getSimplifiedRigorApi();')).toBe(true);
+    expect(hostHandlers.includes('if (!api) return;')).toBe(true);
     for (const path of HOST_PATHS) {
       const host = readFileSync(path, 'utf8');
-      expect(host, path).toContain('return api.regenerateWithRigor({');
+      expect(host.includes('const handleRegenerateWithRigor = async (...__a) => _alloHostHandlers().handleRegenerateWithRigor(...__a);'), path).toBe(true);
       expect(host, path).toContain("addToast('Leveled-text alignment tools are still loading. Try again in a moment.', 'info')");
       expect(host, path).not.toContain('const validateRigorCitations = (original, candidate) => {');
     }

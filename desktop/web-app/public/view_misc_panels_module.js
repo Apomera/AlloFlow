@@ -1776,6 +1776,78 @@ function sourcePanelImportSummary(outcome, text) {
   };
   return text("input.my_sources_import_summary", "Saved {saved} document(s), including {replaced} replacement(s). Skipped {skipped}; failed {failed}.").replace(/\{(saved|replaced|skipped|failed)\}/g, (_, key) => String(counts[key]));
 }
+function SourceResearchReviewPanel({ topic, includeWeb, includeDocuments, documentsOnly, selectedIds, sources, libraryReady, busy, generate, sourceText }) {
+  const [packet, setPacket] = React.useState(null);
+  const [working, setWorking] = React.useState("");
+  const [error, setError] = React.useState("");
+  const [query, setQuery] = React.useState("");
+  const [url, setUrl] = React.useState("");
+  const [title, setTitle] = React.useState("");
+  const [passage, setPassage] = React.useState("");
+  const epoch = React.useRef(0);
+  const context = JSON.stringify([topic.trim(), documentsOnly, includeDocuments, selectedIds, sources.map((s) => [s.id, s.version, s.allowAI])]);
+  const currentContext = React.useRef(context);
+  currentContext.current = context;
+  React.useEffect(() => {
+    epoch.current++;
+    setWorking("");
+    setError("");
+    return () => {
+      epoch.current++;
+    };
+  }, [context]);
+  const eligible = (item) => item.kind !== "document" || includeDocuments && libraryReady && sources.some((source) => source.id === item.sourceId && source.allowAI !== false && source.version === item.version && (Array.isArray(selectedIds) ? selectedIds.includes(source.id) : source.active !== false));
+  const visiblePacket = packet?.topic === topic.trim() ? packet : null;
+  const items = (visiblePacket?.items || []).map((item) => ({ ...item, included: item.included && eligible(item) && (!documentsOnly || item.kind !== "web") }));
+  const selected = items.filter((item) => item.included);
+  const disabled = busy || !!working;
+  const run = async (action, options = {}) => {
+    if (disabled || !topic.trim()) return;
+    const revision = ++epoch.current, startContext = context;
+    const isCurrent = () => revision === epoch.current && currentContext.current === startContext;
+    setWorking(action);
+    setError("");
+    try {
+      const result = await generate({
+        topic: topic.trim(),
+        selectedOwnSourceIds: selectedIds,
+        documentsOnly,
+        ...action === "write" ? { reviewedResearch: { ...visiblePacket, items } } : { researchAction: action, researchPacket: visiblePacket },
+        ...options,
+        isCurrent
+      });
+      if (!isCurrent()) return;
+      if (result?.packet) setPacket(result.packet);
+      if (!result?.ok && !result?.cancelled) setError(result?.error || sourceText("input.review_unavailable", "Research could not finish. Your existing source is unchanged. Try again."));
+      if (result?.ok && action === "paste") {
+        setPassage("");
+        setTitle("");
+        setUrl("");
+      }
+    } catch (failure) {
+      if (isCurrent()) setError(failure?.message || sourceText("input.review_unavailable", "Research could not finish. Your existing source is unchanged. Try again."));
+    } finally {
+      if (isCurrent()) setWorking("");
+    }
+  };
+  const edit = (id, remove) => setPacket((previous) => {
+    if (!previous) return previous;
+    const item = previous.items.find((row) => row.id === id);
+    return {
+      ...previous,
+      items: remove ? previous.items.filter((row) => row.id !== id) : previous.items.map((row) => row.id === id ? { ...row, included: !row.included } : row),
+      activity: [...previous.activity, { at: (/* @__PURE__ */ new Date()).toISOString(), type: "selection", detail: (remove ? "Removed: " : item.included ? "Excluded: " : "Included: ") + item.title }].slice(-40)
+    };
+  });
+  const button = "min-h-11 px-3 py-2 rounded border border-indigo-300 bg-white text-indigo-900 disabled:opacity-50";
+  const field = "w-full min-h-11 p-2 rounded border border-indigo-200 bg-white text-slate-900";
+  const ready = !!topic.trim();
+  return /* @__PURE__ */ React.createElement("section", { "aria-label": sourceText("input.review_heading", "Review research sources"), className: "rounded-md border border-indigo-200 bg-white p-3 space-y-3 text-sm text-slate-800" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-indigo-900" }, sourceText("input.review_heading", "Review research sources")), /* @__PURE__ */ React.createElement("p", null, sourceText("input.review_explanation", "Find evidence, inspect the passages, and choose what the writer may use. Only included passages are supplied when you generate. Citations identify supporting evidence; they do not verify every claim.")), !ready && /* @__PURE__ */ React.createElement("p", { role: "status" }, sourceText("input.review_topic_required", "Enter a topic above to start reviewing sources.")), /* @__PURE__ */ React.createElement("button", { type: "button", className: button, disabled: disabled || !ready || !(includeWeb && !documentsOnly || includeDocuments && libraryReady), onClick: () => run("prepare", { includeWeb: includeWeb && !documentsOnly, includeDocuments }) }, sourceText("input.review_find", "Find sources to review")), includeDocuments && /* @__PURE__ */ React.createElement("button", { type: "button", className: button + " ml-1", disabled: disabled || !ready || !libraryReady, onClick: () => run("documents", { includeDocuments: true }) }, sourceText("input.review_refresh_documents", "Refresh document passages")), /* @__PURE__ */ React.createElement("p", { className: "text-xs" }, sourceText("input.review_upload_hint", "Use Add documents above to upload files, then refresh their passages here. Excluding a passage here keeps your library document.")), /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite" }, items.length, " ", sourceText("input.review_collected", "passages collected"), " \xB7 ", selected.length, " ", sourceText("input.review_included", "included for writing")), items.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, items.map((item) => /* @__PURE__ */ React.createElement("li", { key: item.id, className: "border border-slate-200 rounded p-2 space-y-1", "data-research-id": item.id }, /* @__PURE__ */ React.createElement("label", { className: "flex gap-2 items-start min-h-11 cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", className: "mt-1", checked: item.included, disabled: disabled || item.passage.length < 20 || !eligible(item) || documentsOnly && item.kind === "web", onChange: () => edit(item.id, false) }), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 break-words" }, /* @__PURE__ */ React.createElement("strong", null, item.title), /* @__PURE__ */ React.createElement("span", { className: "block text-xs" }, item.evidenceType, item.locatorLabel ? " \xB7 " + item.locatorLabel : ""))), item.url && /* @__PURE__ */ React.createElement("a", { className: "inline-flex items-center min-h-11 underline text-indigo-800 break-all", href: item.url, target: "_blank", rel: "noopener noreferrer" }, sourceText("input.review_open", "Open source")), !eligible(item) && /* @__PURE__ */ React.createElement("p", { className: "text-amber-900 text-xs" }, sourceText("input.review_stale_document", "This document is no longer selected, available, or unchanged. Refresh document passages before including it.")), /* @__PURE__ */ React.createElement("details", null, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 flex items-center cursor-pointer font-medium" }, sourceText("input.review_passage", "Inspect passage supplied to the writer")), /* @__PURE__ */ React.createElement("blockquote", { className: "border-l-2 border-indigo-200 pl-2 whitespace-pre-wrap break-words" }, item.passage || sourceText("input.review_link_only", "A link was found, but no readable passage was returned. Read the page or paste a passage before including it.")), item.evidenceType === "Source-linked AI note" && /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-2" }, sourceText("input.review_ai_note", "This is an AI summary linked to this source, not a verbatim page excerpt. Open the source to check it."))), /* @__PURE__ */ React.createElement("button", { type: "button", className: button, disabled, onClick: () => edit(item.id, true), "aria-label": sourceText("input.review_remove", "Remove from review") + ": " + item.title }, sourceText("input.review_remove", "Remove from review"))))), !documentsOnly && /* @__PURE__ */ React.createElement("details", null, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 flex items-center cursor-pointer font-medium" }, sourceText("input.review_search_more", "Search for more sources")), /* @__PURE__ */ React.createElement("label", { className: "block" }, sourceText("input.review_query", "Public search topic"), /* @__PURE__ */ React.createElement("input", { className: field, value: query, onChange: (e) => setQuery(e.target.value), maxLength: 200, disabled })), /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-1" }, sourceText("input.review_public_hint", "Use public subject terms only. Some connections require a topic from Supported web-search topics above. Existing selections are kept.")), /* @__PURE__ */ React.createElement("button", { type: "button", className: button + " mt-2", disabled: disabled || !ready || query.trim().length < 3, onClick: () => run("search", { includeWeb: true, query }) }, sourceText("input.review_search", "Search and add results"))), /* @__PURE__ */ React.createElement("details", null, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 flex items-center cursor-pointer font-medium" }, sourceText("input.review_add", "Add a webpage or your own text")), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, !documentsOnly && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "block" }, sourceText("input.review_url", "Source URL (optional for pasted text)"), /* @__PURE__ */ React.createElement("input", { type: "url", className: field, value: url, onChange: (e) => setUrl(e.target.value), disabled })), /* @__PURE__ */ React.createElement("button", { type: "button", className: button, disabled: disabled || !ready || !url.trim(), onClick: () => run("url", { url }) }, sourceText("input.review_read_url", "Read webpage excerpt"))), /* @__PURE__ */ React.createElement("label", { className: "block" }, sourceText("input.review_title", "Passage title"), /* @__PURE__ */ React.createElement("input", { className: field, value: title, onChange: (e) => setTitle(e.target.value), maxLength: 300, disabled })), /* @__PURE__ */ React.createElement("label", { className: "block" }, sourceText("input.review_text", "Paste a relevant passage (20\u20131,200 characters)"), /* @__PURE__ */ React.createElement("textarea", { className: field, value: passage, onChange: (e) => setPassage(e.target.value), rows: 5, maxLength: 1200, disabled })), /* @__PURE__ */ React.createElement("p", { className: "text-xs" }, sourceText("input.review_send_hint", "Included passages will be sent to your configured AI provider when you generate. Add separate passages for longer resources.")), /* @__PURE__ */ React.createElement("button", { type: "button", className: button, disabled: disabled || !ready || passage.trim().length < 20, onClick: () => run("paste", { title, passage, url: documentsOnly ? "" : url }) }, sourceText("input.review_add_passage", "Add passage")))), visiblePacket?.activity?.length > 0 && /* @__PURE__ */ React.createElement("details", null, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 flex items-center cursor-pointer font-medium" }, sourceText("input.review_activity", "Research activity")), /* @__PURE__ */ React.createElement("p", { className: "text-xs" }, sourceText("input.review_activity_hint", "This record shows searches, retrieved evidence, selection changes, and errors.")), /* @__PURE__ */ React.createElement("ol", { className: "list-decimal pl-5 space-y-2 mt-2" }, visiblePacket.activity.map((entry, index) => /* @__PURE__ */ React.createElement("li", { key: index, className: "break-words" }, /* @__PURE__ */ React.createElement("time", { dateTime: entry.at, className: "text-xs text-slate-600" }, new Date(entry.at).toLocaleTimeString()), " ", entry.detail)))), working && /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite" }, working === "write" ? sourceText("input.review_writing", "Writing from reviewed sources\u2026") : sourceText("input.review_finding", "Collecting passages for review\u2026")), working && working !== "write" && /* @__PURE__ */ React.createElement("button", { type: "button", className: button, onClick: () => {
+    epoch.current++;
+    setWorking("");
+    setError("");
+  } }, sourceText("input.review_cancel", "Cancel research")), error && /* @__PURE__ */ React.createElement("p", { role: "alert", className: "text-rose-800 break-words" }, error), /* @__PURE__ */ React.createElement("button", { type: "button", className: "w-full min-h-11 p-2 bg-indigo-600 text-white rounded disabled:opacity-50", disabled: disabled || !ready || !selected.length, onClick: () => run("write") }, sourceText("input.review_generate", "Generate from included passages")), /* @__PURE__ */ React.createElement("p", { className: "text-xs" }, sourceText("input.review_frozen", "Writing uses this selection without additional web searches. If you need more evidence, add it before generating.")));
+}
 function SourceGenPanel(props) {
   const {
     addToast,
@@ -1832,6 +1904,8 @@ function SourceGenPanel(props) {
       return fallback;
     }
   };
+  const supportedWebTopics = window.WebSearchProvider?.publicSearchQuery?.topics || [];
+  const [reviewBeforeWriting, setReviewBeforeWriting] = React.useState(false);
   const [ownSourcesLoaded, setOwnSourcesLoaded] = React.useState(false);
   const [ownSourceLoading, setOwnSourceLoading] = React.useState(true);
   const [ownSourceReadError, setOwnSourceReadError] = React.useState("");
@@ -1867,7 +1941,7 @@ function SourceGenPanel(props) {
   const ownSourceControlsBusy = ownSourceBusy || ownSourceImporting || isGeneratingSource;
   const canGenerateSource = (!!sourceTopic.trim() || targetStandards.length > 0) && !ownSourceControlsBusy && (!documentsOnly || ownSourceCount > 0 && !ownSourceLoading && !ownSourceReadError);
   const submitSource = (event) => {
-    if (canGenerateSource) return handleGenerateSource(event);
+    if (canGenerateSource && !reviewBeforeWriting) return handleGenerateSource(event);
   };
   const ownSourcesApi = typeof window !== "undefined" && window.AlloOwnSources || null;
   React.useEffect(() => {
@@ -2233,7 +2307,21 @@ function SourceGenPanel(props) {
       },
       className: "w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-purple-500 cursor-pointer"
     }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "includeCitations", className: "text-xs font-bold text-purple-900 cursor-pointer select-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Search, { size: 12, className: "text-purple-600" }), " ", t("input.verify_facts"))), includeSourceCitations && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-purple-700 ml-6 leading-relaxed" }, t("input.verify_facts_desc"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2 bg-purple-50 p-2.5 rounded-lg border-2 border-purple-200 shadow-sm" }, (useOwnSources || ownSourceCount !== null && ownSourceList.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 ml-6 pt-1.5 border-t border-purple-200/70" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "includeCitations", className: "text-xs font-bold text-purple-900 cursor-pointer select-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Search, { size: 12, className: "text-purple-600" }), " ", t("input.verify_facts"))), includeSourceCitations && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-purple-700 ml-6 leading-relaxed" }, t("input.verify_facts_desc")), includeSourceCitations && !documentsOnly && supportedWebTopics.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "ml-6 text-xs text-purple-900" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 py-3 cursor-pointer font-bold" }, sourceText("input.web_supported_topics", "Supported web-search topics")), /* @__PURE__ */ React.createElement("p", { id: "sourceWebTopicHelp", className: "mb-2 leading-relaxed" }, sourceText("input.web_supported_topics_desc", "Canvas and connected search providers support these public topics. Choosing one replaces the topic above. Your instructions and selected documents stay in place.")), /* @__PURE__ */ React.createElement("label", { htmlFor: "sourceWebTopic", className: "block font-bold mb-1" }, sourceText("input.web_choose_topic", "Choose a public topic")), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      id: "sourceWebTopic",
+      value: "",
+      disabled: ownSourceControlsBusy,
+      "aria-describedby": "sourceWebTopicHelp",
+      onChange: (event) => {
+        if (event.target.value) setSourceTopic(event.target.value);
+      },
+      className: "w-full min-h-11 rounded border border-purple-300 bg-white p-2 text-purple-900"
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "" }, sourceText("input.web_choose_topic", "Choose a public topic")),
+    supportedWebTopics.map((topic) => /* @__PURE__ */ React.createElement("option", { key: topic, value: topic }, topic))
+  ))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2 bg-purple-50 p-2.5 rounded-lg border-2 border-purple-200 shadow-sm" }, (useOwnSources || ownSourceCount !== null && ownSourceList.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 ml-6 pt-1.5 border-t border-purple-200/70" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("input.use_my_sources"),
@@ -2318,7 +2406,21 @@ function SourceGenPanel(props) {
       className: "min-h-11 px-2 rounded border border-slate-300 bg-white font-bold text-slate-700 hover:bg-slate-50"
     },
     t("common.cancel")
-  )))))))), /* @__PURE__ */ React.createElement(
+  )))))))), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 min-h-11 text-sm font-medium text-indigo-900" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: reviewBeforeWriting, disabled: ownSourceControlsBusy, onChange: (event) => setReviewBeforeWriting(event.target.checked) }), sourceText("input.review_before_writing", "Review sources before writing")), reviewBeforeWriting && /* @__PURE__ */ React.createElement(
+    SourceResearchReviewPanel,
+    {
+      topic: sourceTopic,
+      includeWeb: includeSourceCitations,
+      includeDocuments: useOwnSources || documentsOnly,
+      documentsOnly,
+      selectedIds,
+      sources: ownSourceList,
+      libraryReady: ownSourcesLoaded && !ownSourceLoading && !ownSourceReadError,
+      busy: ownSourceControlsBusy,
+      generate: handleGenerateSource,
+      sourceText
+    }
+  ), !reviewBeforeWriting && /* @__PURE__ */ React.createElement(
     "button",
     {
       "data-help-key": "source_generate_button",

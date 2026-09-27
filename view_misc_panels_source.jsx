@@ -2215,6 +2215,104 @@ function sourcePanelImportSummary(outcome, text) {
     .replace(/\{(saved|replaced|skipped|failed)\}/g, (_, key) => String(counts[key]));
 }
 
+// Discovery and approval live separately from the quick-generation button.
+// Every asynchronous result belongs to the visible topic/document selection.
+function SourceResearchReviewPanel({ topic, includeWeb, includeDocuments, documentsOnly, selectedIds, sources, libraryReady, busy, generate, sourceText }) {
+  const [packet, setPacket] = React.useState(null);
+  const [working, setWorking] = React.useState('');
+  const [error, setError] = React.useState('');
+  const [query, setQuery] = React.useState('');
+  const [url, setUrl] = React.useState('');
+  const [title, setTitle] = React.useState('');
+  const [passage, setPassage] = React.useState('');
+  const epoch = React.useRef(0);
+  const context = JSON.stringify([topic.trim(), documentsOnly, includeDocuments, selectedIds, sources.map(s => [s.id, s.version, s.allowAI])]);
+  const currentContext = React.useRef(context);
+  currentContext.current = context;
+  React.useEffect(() => { epoch.current++; setWorking(''); setError(''); return () => { epoch.current++; }; }, [context]);
+  const eligible = item => item.kind !== 'document' || includeDocuments && libraryReady && sources.some(source => source.id === item.sourceId && source.allowAI !== false && source.version === item.version && (Array.isArray(selectedIds) ? selectedIds.includes(source.id) : source.active !== false));
+  const visiblePacket = packet?.topic === topic.trim() ? packet : null;
+  const items = (visiblePacket?.items || []).map(item => ({ ...item, included: item.included && eligible(item) && (!documentsOnly || item.kind !== 'web') }));
+  const selected = items.filter(item => item.included);
+  const disabled = busy || !!working;
+  const run = async (action, options = {}) => {
+    if (disabled || !topic.trim()) return;
+    const revision = ++epoch.current, startContext = context;
+    const isCurrent = () => revision === epoch.current && currentContext.current === startContext;
+    setWorking(action); setError('');
+    try {
+      const result = await generate({ topic: topic.trim(), selectedOwnSourceIds: selectedIds, documentsOnly,
+        ...(action === 'write' ? { reviewedResearch: { ...visiblePacket, items } } : { researchAction: action, researchPacket: visiblePacket }),
+        ...options, isCurrent });
+      if (!isCurrent()) return;
+      if (result?.packet) setPacket(result.packet);
+      if (!result?.ok && !result?.cancelled) setError(result?.error || sourceText('input.review_unavailable', 'Research could not finish. Your existing source is unchanged. Try again.'));
+      if (result?.ok && action === 'paste') { setPassage(''); setTitle(''); setUrl(''); }
+    } catch (failure) {
+      if (isCurrent()) setError(failure?.message || sourceText('input.review_unavailable', 'Research could not finish. Your existing source is unchanged. Try again.'));
+    } finally { if (isCurrent()) setWorking(''); }
+  };
+  const edit = (id, remove) => setPacket(previous => {
+    if (!previous) return previous;
+    const item = previous.items.find(row => row.id === id);
+    return { ...previous, items: remove ? previous.items.filter(row => row.id !== id) : previous.items.map(row => row.id === id ? { ...row, included: !row.included } : row),
+      activity: [...previous.activity, { at: new Date().toISOString(), type: 'selection', detail: (remove ? 'Removed: ' : item.included ? 'Excluded: ' : 'Included: ') + item.title }].slice(-40) };
+  });
+  const button = 'min-h-11 px-3 py-2 rounded border border-indigo-300 bg-white text-indigo-900 disabled:opacity-50';
+  const field = 'w-full min-h-11 p-2 rounded border border-indigo-200 bg-white text-slate-900';
+  const ready = !!topic.trim();
+  return <section aria-label={sourceText('input.review_heading', 'Review research sources')} className="rounded-md border border-indigo-200 bg-white p-3 space-y-3 text-sm text-slate-800">
+    <h3 className="font-bold text-indigo-900">{sourceText('input.review_heading', 'Review research sources')}</h3>
+    <p>{sourceText('input.review_explanation', 'Find evidence, inspect the passages, and choose what the writer may use. Only included passages are supplied when you generate. Citations identify supporting evidence; they do not verify every claim.')}</p>
+    {!ready && <p role="status">{sourceText('input.review_topic_required', 'Enter a topic above to start reviewing sources.')}</p>}
+    <button type="button" className={button} disabled={disabled || !ready || !(includeWeb && !documentsOnly || includeDocuments && libraryReady)} onClick={() => run('prepare', { includeWeb: includeWeb && !documentsOnly, includeDocuments })}>
+      {sourceText('input.review_find', 'Find sources to review')}
+    </button>
+    {includeDocuments && <button type="button" className={button + ' ml-1'} disabled={disabled || !ready || !libraryReady} onClick={() => run('documents', { includeDocuments: true })}>{sourceText('input.review_refresh_documents', 'Refresh document passages')}</button>}
+    <p className="text-xs">{sourceText('input.review_upload_hint', 'Use Add documents above to upload files, then refresh their passages here. Excluding a passage here keeps your library document.')}</p>
+    <p role="status" aria-live="polite">{items.length} {sourceText('input.review_collected', 'passages collected')} · {selected.length} {sourceText('input.review_included', 'included for writing')}</p>
+    {items.length > 0 && <ul className="space-y-2">{items.map(item => <li key={item.id} className="border border-slate-200 rounded p-2 space-y-1" data-research-id={item.id}>
+      <label className="flex gap-2 items-start min-h-11 cursor-pointer">
+        <input type="checkbox" className="mt-1" checked={item.included} disabled={disabled || item.passage.length < 20 || !eligible(item) || documentsOnly && item.kind === 'web'} onChange={() => edit(item.id, false)} />
+        <span className="min-w-0 break-words"><strong>{item.title}</strong><span className="block text-xs">{item.evidenceType}{item.locatorLabel ? ' · ' + item.locatorLabel : ''}</span></span>
+      </label>
+      {item.url && <a className="inline-flex items-center min-h-11 underline text-indigo-800 break-all" href={item.url} target="_blank" rel="noopener noreferrer">{sourceText('input.review_open', 'Open source')}</a>}
+      {!eligible(item) && <p className="text-amber-900 text-xs">{sourceText('input.review_stale_document', 'This document is no longer selected, available, or unchanged. Refresh document passages before including it.')}</p>}
+      <details><summary className="min-h-11 flex items-center cursor-pointer font-medium">{sourceText('input.review_passage', 'Inspect passage supplied to the writer')}</summary>
+        <blockquote className="border-l-2 border-indigo-200 pl-2 whitespace-pre-wrap break-words">{item.passage || sourceText('input.review_link_only', 'A link was found, but no readable passage was returned. Read the page or paste a passage before including it.')}</blockquote>
+        {item.evidenceType === 'Source-linked AI note' && <p className="text-xs mt-2">{sourceText('input.review_ai_note', 'This is an AI summary linked to this source, not a verbatim page excerpt. Open the source to check it.')}</p>}
+      </details>
+      <button type="button" className={button} disabled={disabled} onClick={() => edit(item.id, true)} aria-label={sourceText('input.review_remove', 'Remove from review') + ': ' + item.title}>{sourceText('input.review_remove', 'Remove from review')}</button>
+    </li>)}</ul>}
+    {!documentsOnly && <details><summary className="min-h-11 flex items-center cursor-pointer font-medium">{sourceText('input.review_search_more', 'Search for more sources')}</summary>
+      <label className="block">{sourceText('input.review_query', 'Public search topic')}<input className={field} value={query} onChange={e => setQuery(e.target.value)} maxLength={200} disabled={disabled} /></label>
+      <p className="text-xs mt-1">{sourceText('input.review_public_hint', 'Use public subject terms only. Some connections require a topic from Supported web-search topics above. Existing selections are kept.')}</p>
+      <button type="button" className={button + ' mt-2'} disabled={disabled || !ready || query.trim().length < 3} onClick={() => run('search', { includeWeb: true, query })}>{sourceText('input.review_search', 'Search and add results')}</button>
+    </details>}
+    <details><summary className="min-h-11 flex items-center cursor-pointer font-medium">{sourceText('input.review_add', 'Add a webpage or your own text')}</summary>
+      <div className="space-y-2">
+        {!documentsOnly && <><label className="block">{sourceText('input.review_url', 'Source URL (optional for pasted text)')}<input type="url" className={field} value={url} onChange={e => setUrl(e.target.value)} disabled={disabled} /></label>
+          <button type="button" className={button} disabled={disabled || !ready || !url.trim()} onClick={() => run('url', { url })}>{sourceText('input.review_read_url', 'Read webpage excerpt')}</button></>}
+        <label className="block">{sourceText('input.review_title', 'Passage title')}<input className={field} value={title} onChange={e => setTitle(e.target.value)} maxLength={300} disabled={disabled} /></label>
+        <label className="block">{sourceText('input.review_text', 'Paste a relevant passage (20–1,200 characters)')}<textarea className={field} value={passage} onChange={e => setPassage(e.target.value)} rows={5} maxLength={1200} disabled={disabled} /></label>
+        <p className="text-xs">{sourceText('input.review_send_hint', 'Included passages will be sent to your configured AI provider when you generate. Add separate passages for longer resources.')}</p>
+        <button type="button" className={button} disabled={disabled || !ready || passage.trim().length < 20} onClick={() => run('paste', { title, passage, url: documentsOnly ? '' : url })}>{sourceText('input.review_add_passage', 'Add passage')}</button>
+      </div>
+    </details>
+    {visiblePacket?.activity?.length > 0 && <details><summary className="min-h-11 flex items-center cursor-pointer font-medium">{sourceText('input.review_activity', 'Research activity')}</summary>
+      <p className="text-xs">{sourceText('input.review_activity_hint', 'This record shows searches, retrieved evidence, selection changes, and errors.')}</p>
+      <ol className="list-decimal pl-5 space-y-2 mt-2">{visiblePacket.activity.map((entry, index) => <li key={index} className="break-words"><time dateTime={entry.at} className="text-xs text-slate-600">{new Date(entry.at).toLocaleTimeString()}</time> {entry.detail}</li>)}</ol>
+    </details>}
+    {working && <p role="status" aria-live="polite">{working === 'write' ? sourceText('input.review_writing', 'Writing from reviewed sources…') : sourceText('input.review_finding', 'Collecting passages for review…')}</p>}
+    {working && working !== 'write' && <button type="button" className={button} onClick={() => { epoch.current++; setWorking(''); setError(''); }}>{sourceText('input.review_cancel', 'Cancel research')}</button>}
+    {error && <p role="alert" className="text-rose-800 break-words">{error}</p>}
+    <button type="button" className="w-full min-h-11 p-2 bg-indigo-600 text-white rounded disabled:opacity-50" disabled={disabled || !ready || !selected.length} onClick={() => run('write')}>
+      {sourceText('input.review_generate', 'Generate from included passages')}
+    </button>
+    <p className="text-xs">{sourceText('input.review_frozen', 'Writing uses this selection without additional web searches. If you need more evidence, add it before generating.')}</p>
+  </section>;
+}
+
 function SourceGenPanel(props) {
   const {
     addToast, aiStandardQuery, aiStandardRegion, gradeLevel,
@@ -2234,6 +2332,8 @@ function SourceGenPanel(props) {
   // silently does nothing is worse than one that explains why it is unavailable.
   // Reads local storage only — no network, nothing sent anywhere.
   const sourceText = (key, fallback) => { try { const value = t(key); return value && value !== key ? value : fallback; } catch (_) { return fallback; } };
+  const supportedWebTopics = window.WebSearchProvider?.publicSearchQuery?.topics || [];
+  const [reviewBeforeWriting, setReviewBeforeWriting] = React.useState(false);
   const [ownSourcesLoaded, setOwnSourcesLoaded] = React.useState(false);
   const [ownSourceLoading, setOwnSourceLoading] = React.useState(true);
   const [ownSourceReadError, setOwnSourceReadError] = React.useState('');
@@ -2269,7 +2369,7 @@ function SourceGenPanel(props) {
   const ownSourceControlsBusy = ownSourceBusy || ownSourceImporting || isGeneratingSource;
   const canGenerateSource = (!!sourceTopic.trim() || targetStandards.length > 0)
     && !ownSourceControlsBusy && (!documentsOnly || (ownSourceCount > 0 && !ownSourceLoading && !ownSourceReadError));
-  const submitSource = (event) => { if (canGenerateSource) return handleGenerateSource(event); };
+  const submitSource = (event) => { if (canGenerateSource && !reviewBeforeWriting) return handleGenerateSource(event); };
   const ownSourcesApi = (typeof window !== 'undefined' && window.AlloOwnSources) || null;
   React.useEffect(() => {
     if (ownSourceCount === 0 && !ownSourceLoading && !ownSourceReadError && !ownSourceImporting && useOwnSources && !documentsOnly && setUseOwnSources) setUseOwnSources(false);
@@ -2717,6 +2817,20 @@ function SourceGenPanel(props) {
                           {includeSourceCitations && (
                               <p className="text-[11px] text-purple-700 ml-6 leading-relaxed">{t('input.verify_facts_desc')}</p>
                           )}
+                          {includeSourceCitations && !documentsOnly && supportedWebTopics.length > 0 && (
+                              <details className="ml-6 text-xs text-purple-900">
+                                  <summary className="min-h-11 py-3 cursor-pointer font-bold">{sourceText('input.web_supported_topics', 'Supported web-search topics')}</summary>
+                                  <p id="sourceWebTopicHelp" className="mb-2 leading-relaxed">{sourceText('input.web_supported_topics_desc', 'Canvas and connected search providers support these public topics. Choosing one replaces the topic above. Your instructions and selected documents stay in place.')}</p>
+                                  <label htmlFor="sourceWebTopic" className="block font-bold mb-1">{sourceText('input.web_choose_topic', 'Choose a public topic')}</label>
+                                  <select id="sourceWebTopic" value="" disabled={ownSourceControlsBusy}
+                                      aria-describedby="sourceWebTopicHelp"
+                                      onChange={(event) => { if (event.target.value) setSourceTopic(event.target.value); }}
+                                      className="w-full min-h-11 rounded border border-purple-300 bg-white p-2 text-purple-900">
+                                      <option value="">{sourceText('input.web_choose_topic', 'Choose a public topic')}</option>
+                                      {supportedWebTopics.map(topic => <option key={topic} value={topic}>{topic}</option>)}
+                                  </select>
+                              </details>
+                          )}
                       </div>
                       <div className="flex flex-col gap-2 bg-purple-50 p-2.5 rounded-lg border-2 border-purple-200 shadow-sm">
                           {/* Documents and web search are independent options. Keep
@@ -2863,7 +2977,14 @@ function SourceGenPanel(props) {
                               </div>
                           )}
                       </div>
-                      <button
+                      <label className="flex items-center gap-2 min-h-11 text-sm font-medium text-indigo-900">
+                        <input type="checkbox" checked={reviewBeforeWriting} disabled={ownSourceControlsBusy} onChange={event => setReviewBeforeWriting(event.target.checked)} />
+                        {sourceText('input.review_before_writing', 'Review sources before writing')}
+                      </label>
+                      {reviewBeforeWriting && <SourceResearchReviewPanel topic={sourceTopic} includeWeb={includeSourceCitations} includeDocuments={useOwnSources || documentsOnly}
+                        documentsOnly={documentsOnly} selectedIds={selectedIds} sources={ownSourceList} libraryReady={ownSourcesLoaded && !ownSourceLoading && !ownSourceReadError}
+                        busy={ownSourceControlsBusy} generate={handleGenerateSource} sourceText={sourceText} />}
+                      {!reviewBeforeWriting && <button
                         data-help-key="source_generate_button"
                         onClick={submitSource}
                         disabled={!canGenerateSource} aria-busy={isGeneratingSource}
@@ -2871,7 +2992,7 @@ function SourceGenPanel(props) {
                       >
                         {isGeneratingSource ? <RefreshCw className="animate-spin motion-reduce:animate-none" size={14} /> : <Pencil size={14} />}
                         <span role={isGeneratingSource ? 'status' : undefined} aria-live="polite" aria-atomic="true">{isGeneratingSource ? (generationStep || t('input.writing')) : t('input.generate')}</span>
-                      </button>
+                      </button>}
                   </div>
   );
 }
