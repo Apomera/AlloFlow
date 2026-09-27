@@ -1,0 +1,101 @@
+{
+  "baseHead": "16e3ea214bea20953b79b0e86e41f6d0beef9deb",
+  "headAtVerification": "16e3ea214bea20953b79b0e86e41f6d0beef9deb",
+  "final": {
+    "total": 137,
+    "passed": 137,
+    "failed": 0,
+    "files": 8,
+    "durationMs": 151886
+  },
+  "preservationCases": 40,
+  "inputCount": 22,
+  "inputDrift": [],
+  "sourceSha256": "950596ba17105254739eae9ff050ead93b3aceda4c989e8e38e100a9035ce425",
+  "mirrors": [
+    {
+      "file": "content_engine_module.js",
+      "sha256": "c43fc2aada72a2b6d90f065ca6189e4280c8b11606ac3768c98655049a633ace"
+    },
+    {
+      "file": "desktop/web-app/public/content_engine_module.js",
+      "sha256": "c43fc2aada72a2b6d90f065ca6189e4280c8b11606ac3768c98655049a633ace"
+    },
+    {
+      "file": "desktop/web-app/build/content_engine_module.js",
+      "sha256": "c43fc2aada72a2b6d90f065ca6189e4280c8b11606ac3768c98655049a633ace"
+    },
+    {
+      "file": "desktop/app-build/content_engine_module.js",
+      "sha256": "c43fc2aada72a2b6d90f065ca6189e4280c8b11606ac3768c98655049a633ace"
+    }
+  ],
+  "hostPins": {
+    "pin": "c43fc2aa",
+    "hosts": [
+      "AlloFlowANTI.txt",
+      "desktop/web-app/src/AlloFlowANTI.txt",
+      "desktop/web-app/src/App.jsx"
+    ]
+  },
+  "deployment": "None",
+  "limits": [
+    "Controlled providers; no live Gemini Canvas or AI evaluation",
+    "No full CI, full host build, push, deployment or installer",
+    "English fallbacks included; catalogue handoff remains separate"
+  ],
+  "committedArtifacts": {
+    "normalization": [
+      {
+        "file": "content_engine_source.jsx",
+        "beforeSha256": "950596ba17105254739eae9ff050ead93b3aceda4c989e8e38e100a9035ce425",
+        "afterSha256": "ce52a114f9d842a0431f3e12819bab3af2f62395cffb50234e279fc61c695b4e",
+        "change": "CRLF to LF only, per .gitattributes"
+      },
+      {
+        "file": "content_engine_module.js",
+        "beforeSha256": "c43fc2aada72a2b6d90f065ca6189e4280c8b11606ac3768c98655049a633ace",
+        "afterSha256": "60e5be9cbafbe92722c80676f003ff1b46ec85b338bf89bb375edec637e98661",
+        "change": "CRLF to LF only, per .gitattributes"
+      },
+      {
+        "file": "desktop/web-app/public/content_engine_module.js",
+        "beforeSha256": "c43fc2aada72a2b6d90f065ca6189e4280c8b11606ac3768c98655049a633ace",
+        "afterSha256": "60e5be9cbafbe92722c80676f003ff1b46ec85b338bf89bb375edec637e98661",
+        "change": "CRLF to LF only, per .gitattributes"
+      },
+      {
+        "file": "desktop/web-app/build/content_engine_module.js",
+        "beforeSha256": "c43fc2aada72a2b6d90f065ca6189e4280c8b11606ac3768c98655049a633ace",
+        "afterSha256": "60e5be9cbafbe92722c80676f003ff1b46ec85b338bf89bb375edec637e98661",
+        "change": "CRLF to LF only, per .gitattributes"
+      },
+      {
+        "file": "desktop/app-build/content_engine_module.js",
+        "beforeSha256": "c43fc2aada72a2b6d90f065ca6189e4280c8b11606ac3768c98655049a633ace",
+        "afterSha256": "60e5be9cbafbe92722c80676f003ff1b46ec85b338bf89bb375edec637e98661",
+        "change": "CRLF to LF only, per .gitattributes"
+      }
+    ],
+    "syntax": "passed",
+    "sourceModuleEquality": true,
+    "moduleSha256": "60e5be9cbafbe92722c80676f003ff1b46ec85b338bf89bb375edec637e98661",
+    "pin": "60e5be9c",
+    "hostPins": [
+      "AlloFlowANTI.txt",
+      "desktop/web-app/src/AlloFlowANTI.txt",
+      "desktop/web-app/src/App.jsx"
+    ]
+  },
+  "finalArtifactChecks": {
+    "total": 44,
+    "passed": 44,
+    "failed": 0
+  },
+  "sourceMirror": {
+    "file": "desktop/web-app/src/content_engine_source.jsx",
+    "sha256": "ce52a114f9d842a0431f3e12819bab3af2f62395cffb50234e279fc61c695b4e",
+    "parity": true
+  },
+  "normalCommitFirstAttempt": "Source-pair hook correctly rejected stale desktop source mirror; exact uncontested pair synchronized before retry."
+}

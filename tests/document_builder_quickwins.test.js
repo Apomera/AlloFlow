@@ -69,7 +69,9 @@ describe('anti-drift: content_engine quick-wins shipped', () => {
   it('the no-grounding section fallback is wrapped so one failure no longer aborts the whole doc', () => {
     expect(ce).toMatch(/} catch \(fallbackErr\) \{/);
     expect(ce).toMatch(/_sectionFailures\+\+;/);
-    expect(ce).toMatch(/could not be generated \(the AI service was rate-limited\)/);
+    // Empty provider replies are also skipped; do not invent a rate-limit cause.
+    expect(ce).toContain("sourceMessage('input.source_partial_generation'");
+    expect(ce).toMatch(/could not be generated\. The rest were kept/);
   });
 });
 

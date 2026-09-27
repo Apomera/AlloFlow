@@ -94,9 +94,9 @@ describe('source generation state ownership', () => {
 
     expect(getState).toHaveBeenCalledTimes(1);
     expect(bagA.mutations.setIsGeneratingSource).toHaveBeenNthCalledWith(1, true);
-    expect(bagA.mutations.setInputText.mock.calls.map(([value]) => value)).toEqual([
-      'Title: Instance-owned water cycle\n\n',
-    ]);
+    expect(bagA.mutations.setInputText).not.toHaveBeenCalled();
+    expect(bagA.mutations.setGeneratedContent).not.toHaveBeenCalled();
+    expect(bagA.mutations.setActiveView).not.toHaveBeenCalled();
     for (const mutation of Object.values(bagB.mutations)) {
       expect(mutation).not.toHaveBeenCalled();
     }
@@ -105,9 +105,10 @@ describe('source generation state ownership', () => {
     await generation;
 
     const inputWrites = bagA.mutations.setInputText.mock.calls.map(([value]) => value);
-    expect(inputWrites.length).toBeGreaterThanOrEqual(3);
-    expect(inputWrites.slice(1, -1).some((value) => value.includes('Water on the move'))).toBe(true);
+    expect(inputWrites).toHaveLength(1);
     expect(inputWrites.at(-1)).toContain('Water evaporates, cools into clouds, and returns as rain.');
+    expect(bagA.mutations.setGeneratedContent).toHaveBeenCalledExactlyOnceWith(null);
+    expect(bagA.mutations.setActiveView).toHaveBeenCalledExactlyOnceWith('input');
     expect(bagA.mutations.setShowSourceGen).toHaveBeenCalledWith(false);
     expect(bagA.mutations.setIsGeneratingSource).toHaveBeenLastCalledWith(false);
     for (const mutation of Object.values(bagB.mutations)) {

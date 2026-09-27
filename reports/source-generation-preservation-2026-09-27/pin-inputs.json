@@ -1,0 +1,23 @@
+{
+  "moduleSha256": "60e5be9cbafbe92722c80676f003ff1b46ec85b338bf89bb375edec637e98661",
+  "hosts": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "oldPin": "content_engine_module.js?v=37bdb2883",
+      "newPin": "60e5be9c",
+      "beforeSha256": "2630d0976a3f6b784a3545e6ac37a8ed8966eccd45a59d3acdae94475d3a900e"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "oldPin": "content_engine_module.js?v=37bdb2883",
+      "newPin": "60e5be9c",
+      "beforeSha256": "2630d0976a3f6b784a3545e6ac37a8ed8966eccd45a59d3acdae94475d3a900e"
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "oldPin": "content_engine_module.js?v=37bdb2883",
+      "newPin": "60e5be9c",
+      "beforeSha256": "2630d0976a3f6b784a3545e6ac37a8ed8966eccd45a59d3acdae94475d3a900e"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "english": {
+    "input.error_no_source_content": "No usable source text was generated. Your existing source and reading have been kept. Please try again.",
+    "input.source_partial_generation": "{failed} of {total} sections could not be generated. The rest were kept. Try again to fill the gaps."
+  },
+  "owner": "Audit localization and RTL",
+  "threadId": "01a0df8f-84ca-7d70-96d3-a0c6439a6f80",
+  "status": "Sent to current catalogue owner. Safe runtime English fallback is included; shared catalogs are outside parent scope."
+}

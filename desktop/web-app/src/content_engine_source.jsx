@@ -951,10 +951,43 @@ var createContentEngine = function(deps) {
     setIsGeneratingSource(true);
     setGenerationStep(t('status_steps.generating_source'));
     setError(null);
-    if (switchView && !effDocumentsOnly) {
-        setGeneratedContent(null);
-        setActiveView('input');
-    }
+    // Keep the teacher's current work while research and writing are pending.
+    // Publish only a usable result; restoring a captured old value on failure
+    // could overwrite edits made while the provider was running.
+    const publishSource = function(text) {
+        setInputText(text);
+        if (switchView) { setGeneratedContent(null); setActiveView('input'); }
+        setShowSourceGen(false);
+    };
+    const sourceMessage = function(key, fallback, values = {}) {
+        let translated;
+        try { translated = t(key, values); } catch (_) {}
+        if (typeof translated === 'string' && translated.trim() && translated !== key) return translated;
+        return fallback.replace(/\{(\w+)\}/g, (match, name) => values[name] === undefined ? match : String(values[name]));
+    };
+    const emptySourceError = function() {
+        return Object.assign(new Error(sourceMessage('input.error_no_source_content', 'No usable source text was generated. Your existing source and reading have been kept. Please try again.')), { code: 'source-generation-empty' });
+    };
+    const hasSourceBody = function(value) {
+        if (typeof value !== 'string') return false;
+        // Headings, citation scaffolding and provider metadata are not a reading.
+        // Do not impose an English word count: short and non-Latin text is valid.
+        const withoutReferenceLines = value
+            .replace(/\[Your document \d+\]/gi, '')
+            .replace(/\[[^\]\n]*\]\(#allo-doc-[^)\s]*\)/gi, '')
+            .replace(/^\s*(?:(?:[-*]|\d+[.)])\s*)?\[[^\]\n]+\]\(https?:\/\/[^\n]+\)\s*$/gm, '');
+        const body = stripUngroundedCitationArtifacts(withoutReferenceLines, true)
+            .replace(/^\s*```[^\n]*$/gm, '')
+            .replace(/^\s*(?:#{1,6}\s*|Title:\s*)[^\n]*$/gmi, '')
+            .replace(/^\s*\*\*([^*\n]+)\*\*\s*$/gm, (line, inner) => /[.!?:]\s*$/.test(inner) ? line : '')
+            .replace(/https?:\/\/\S+/g, '')
+            .trim();
+        try {
+            const metadata = JSON.parse(body);
+            if (metadata && typeof metadata === 'object') return false;
+        } catch (_) {}
+        return /[\p{L}\p{N}]/u.test(body);
+    };
     addToast(t('input.status_generating'), "info");
     const targetWords = parseInt(effLength) || 250;
     const chunkCapacity = 600;
@@ -1247,9 +1280,7 @@ var createContentEngine = function(deps) {
           if (!exact) throw Object.assign(new Error('The selected documents did not produce valid exact excerpts for this topic. No outside information was added. Your existing source has been kept.'), { documentResearch: true });
           const documentText = finishOwnResearch(exact);
           if (typeof recordSourceProvenance === 'function') recordSourceProvenance({ title: effTopic || 'Selected document excerpts', type: 'document-excerpts', importMethod: 'documents-only', researchEvidence: ownResearchReport }, documentText);
-          setInputText(documentText);
-          if (switchView) { setGeneratedContent(null); setActiveView('input'); }
-          setShowSourceGen(false);
+          publishSource(documentText);
           addToast('Exact excerpts are ready. Open a Document citation to inspect its passage.', 'success');
           return;
       }
@@ -1304,7 +1335,7 @@ var createContentEngine = function(deps) {
            // A3: doc-level aggregation of the engine's own claim↔source support map.
            let _supportAgg = { totalChars: 0, supportedChars: 0, citationsTotal: 0, citationsUnsupported: 0, sectionsWithSupports: 0 };
            let currentCitationOffset = 0;
-           let _sectionFailures = 0; // sections skipped because even the no-grounding fallback hard-failed (rate-limit) — surfaced after the loop instead of aborting the whole doc
+           let _sectionFailures = 0; // failed or empty sections — keep any usable sections and disclose the gaps
            let _publishedSourceCount = 0;
            let _ungroundedFallbackSections = [];
            let _sectionsWithoutAttributableSources = [];
@@ -1314,7 +1345,6 @@ var createContentEngine = function(deps) {
            // identical chunks that each re-establish the introduction, definitions,
            // and high-level framing instead of continuing the article.
            const sectionTexts = [];
-           setInputText(fullDocument);
            for (let i = 0; i < sections.length; i++) {
                const sectionTitle = sections[i];
                setGenerationStep(t('status_steps.writing_part', { current: i + 1, total: sections.length, title: sectionTitle }));
@@ -1326,7 +1356,7 @@ var createContentEngine = function(deps) {
                // numbers don't carry over and conflict with the current section's
                // grounding offsets.
                const outlineSnapshot = sections.map((st, idx) => {
-                   const marker = idx < i ? 'DONE' : idx === i ? 'WRITING NOW' : 'upcoming';
+                   const marker = idx < i ? (sectionTexts.some(section => section.index === idx) ? 'DONE' : 'SKIPPED (no usable text)') : idx === i ? 'WRITING NOW' : 'upcoming';
                    return `  ${idx + 1}. ${st}  ← ${marker}`;
                }).join('\n');
                const _trimPrior = (text, maxWords) => {
@@ -1341,7 +1371,7 @@ var createContentEngine = function(deps) {
                };
                const priorRecap = i === 0
                    ? ''
-                   : sectionTexts.map((st, idx) => `===== SECTION ${idx + 1}: ${sections[idx]} =====\n${_trimPrior(st, 250)}`).join('\n\n');
+                   : sectionTexts.map(section => `===== SECTION ${section.index + 1}: ${section.title} =====\n${_trimPrior(section.text, 250)}`).join('\n\n');
                // Single-section (N=1) path takes a different prompt shape:
                // no section-N-of-M framing, no "## SectionTitle" header (would
                // duplicate the topic as a redundant subheading), combined
@@ -1418,7 +1448,7 @@ ${outlineSnapshot}
                    ${ownSourceRule}
                    READING LEVEL OVERRIDE: the brief and the sources it came from are written for adults. Take the FACTS from them and re-express them at the reading level required below. Do not carry a term, a phrase, or a sentence shape over from the brief just because it appeared there. Research raises reading level when it is copied; it must not here.
                    ` : ''}
-                   ${i === 0 ? 'This is the FIRST section. Write an engaging opening that sets up the article.' : `
+                   ${sectionTexts.length === 0 ? 'This is the FIRST usable section. Write an engaging opening that sets up the article.' : `
 --- PREVIOUSLY WRITTEN SECTIONS (READ CAREFULLY — DO NOT REPEAT) ---
 ${priorRecap}
 ---------------------------------------------------------------
@@ -1427,9 +1457,9 @@ CRITICAL: The sections above are already written. You MUST NOT:
   • Repeat facts, examples, or analogies already covered
   • Start with framing like "In this article we will explore..."
 You MUST:
-  • Continue naturally from where section ${i} ended
+  • Continue naturally from where section ${sectionTexts[sectionTexts.length - 1].index + 1} ended
   • Cover genuinely NEW ground specific to "${sectionTitle}"
-  • Assume the reader has just finished reading the prior sections
+  • Assume the reader has only read the successful sections shown above; skipped sections contain no text
 `}
                    ${effStandards ? `STANDARD ALIGNMENT: This article supports "${effStandards}". Embed examples, vocabulary, and rhetorical structures that let a student demonstrate the skills/knowledge in the standard — don't just touch the topic. If the standard calls for a cognitive move (compare, cite evidence, analyze structure, evaluate, etc.), the prose should model that move explicitly when this section's content makes it natural to do so.` : ''}
                    STRICT INSTRUCTIONS:
@@ -1479,24 +1509,22 @@ FALLBACK MODE: Web search is unavailable for this section. Do not invent citatio
                                // discarding all prior sections with no bibliography and no resume.)
                                warnLog(`[Citations] ✗ Section ${i + 1}/${sections.length} ("${sectionTitle}") failed even without grounding: ${fallbackErr && fallbackErr.message}. Skipping it; keeping the rest of the document.`);
                                result = '';
-                               _sectionFailures++;
                                groundingSuccess = true; // stop retrying this section; move on
                            }
                        }
                    }
                }
                const rawSectionForAccounting = (typeof result === 'object' && result !== null)
-                   ? String(result.text || '') : String(result || '');
+                   ? (typeof result.text === 'string' ? result.text : '')
+                   : (typeof result === 'string' ? result : '');
+               if (!hasSourceBody(rawSectionForAccounting)) {
+                   _sectionFailures++;
+                   continue;
+               }
                const hasAttributableGrounding = !usedNoSearchFallback
                    && Boolean(result?.groundingMetadata?.groundingChunks?.length);
-               if (effIncludeCitations && rawSectionForAccounting && !hasAttributableGrounding) {
-                   _supportAgg.totalChars += rawSectionForAccounting.length;
-                   if (usedNoSearchFallback) {
-                       _ungroundedFallbackSections.push(sectionTitle);
-                   } else {
-                       _sectionsWithoutAttributableSources.push(sectionTitle);
-                   }
-               }
+               let sectionGroundingChunks = [];
+               let sectionSupportStats = null;
                let sectionText = "";
                if (typeof result === 'object' && result !== null) {
                    const rawSection = result.text || "";
@@ -1504,7 +1532,6 @@ FALLBACK MODE: Web search is unavailable for this section. Do not invent citatio
                         let processedSection = processGroundedResponseText(rawSection, result);
                         processedSection = cleanPostGroundingPlaceholders(processedSection).trim();
                         if (result.groundingMetadata?.groundingChunks) {
-                             const chunkCount = result.groundingMetadata.groundingChunks.length;
                              processedSection = processedSection.replace(/⁽([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾/g, (match, digits) => {
                                  const reverseMap = { '⁰':0, '¹':1, '²':2, '³':3, '⁴':4, '⁵':5, '⁶':6, '⁷':7, '⁸':8, '⁹':9 };
                                  const val = parseInt(digits.split('').map(d => reverseMap[d]).join(''), 10);
@@ -1528,19 +1555,13 @@ FALLBACK MODE: Web search is unavailable for this section. Do not invent citatio
                                  }).filter(Boolean);
                                  return converted.length > 0 ? ' ' + converted.join(' ') : '';
                              });
-                             allGroundingChunks = [...allGroundingChunks, ...result.groundingMetadata.groundingChunks];
+                             sectionGroundingChunks = result.groundingMetadata.groundingChunks;
                              // A3: score this section against the engine's own support map
                              // BEFORE any text mutation (segment indices refer to the raw
                              // response). Failure is non-fatal — stats simply stay zero.
                              try {
-                                 const _sup = computeGroundingSupportStats(rawSection, metadataWithGroundingTextParts(result), result.textParts);
-                                 _supportAgg.totalChars += _sup.totalChars;
-                                 _supportAgg.supportedChars += _sup.supportedChars;
-                                 _supportAgg.citationsTotal += _sup.citationsTotal;
-                                 _supportAgg.citationsUnsupported += _sup.citationsUnsupported;
-                                 if (_sup.hasSupports) _supportAgg.sectionsWithSupports++;
+                                 sectionSupportStats = computeGroundingSupportStats(rawSection, metadataWithGroundingTextParts(result), result.textParts);
                              } catch (_) {}
-                             currentCitationOffset += chunkCount;
                         }
                         // Sanitize orphan brackets that could break markdown link rendering
                         processedSection = processedSection
@@ -1560,16 +1581,34 @@ FALLBACK MODE: Web search is unavailable for this section. Do not invent citatio
                if (effIncludeCitations && sectionText && !hasAttributableGrounding) {
                    sectionText = stripUngroundedCitationArtifacts(sectionText);
                }
+               sectionText = cleanSourceMetaCommentary(sectionText);
+               if (!hasSourceBody(sectionText)) {
+                   _sectionFailures++;
+                   continue;
+               }
+               // Merge citation accounting only after the section survives cleanup.
+               allGroundingChunks.push(...sectionGroundingChunks);
+               currentCitationOffset += sectionGroundingChunks.length;
+               if (sectionSupportStats) {
+                   _supportAgg.totalChars += sectionSupportStats.totalChars;
+                   _supportAgg.supportedChars += sectionSupportStats.supportedChars;
+                   _supportAgg.citationsTotal += sectionSupportStats.citationsTotal;
+                   _supportAgg.citationsUnsupported += sectionSupportStats.citationsUnsupported;
+                   if (sectionSupportStats.hasSupports) _supportAgg.sectionsWithSupports++;
+               } else if (effIncludeCitations && !hasAttributableGrounding) {
+                   _supportAgg.totalChars += rawSectionForAccounting.length;
+                   (usedNoSearchFallback ? _ungroundedFallbackSections : _sectionsWithoutAttributableSources).push(sectionTitle);
+               }
                // Deterministic guard: the prompt asks for '## ${sectionTitle}' but the
                // model sometimes skips it or emits bold/wrong level — enforce it so the
                // H2 always survives. Single-section docs skip this (a '## topic' header
                // under the '# topic' title would be a redundant duplicate).
                if (sections.length > 1) sectionText = ensureSectionHeader(sectionText, sectionTitle);
-               sectionTexts.push(sectionText);
+               sectionTexts.push({ index: i, title: sectionTitle, text: sectionText });
                fullDocument += sectionText + "\n\n";
-               setInputText(fullDocument);
                if (i < sections.length - 1) await new Promise(r => setTimeout(r, 1000));
            }
+           if (!sectionTexts.length) throw emptySourceError();
            if (effIncludeCitations && allGroundingChunks.length > 0) {
                 // Strip any LLM-emitted bibliography trailer BEFORE we do citation
                 // repair.  Despite the prompt forbidding it, Gemini occasionally emits
@@ -1698,8 +1737,8 @@ FALLBACK MODE: Web search is unavailable for this section. Do not invent citatio
            // Surface a partial generation instead of silently shipping a doc with empty sections (the
            // no-grounding fallback above now degrades a hard-failed section to empty rather than aborting).
            if (_sectionFailures > 0) {
-               warnLog(`[Generate] ${_sectionFailures} of ${sections.length} section(s) could not be generated (AI rate-limited) — kept the rest.`);
-               try { addToast('⚠ ' + _sectionFailures + ' of ' + sections.length + ' section(s) could not be generated (the AI service was rate-limited) — the rest were kept. Re-run to fill the gaps.', 'warning'); } catch (_) {}
+               warnLog(`[Generate] ${_sectionFailures} of ${sections.length} section(s) returned no usable text — kept the rest.`);
+               try { addToast(sourceMessage('input.source_partial_generation', '{failed} of {total} sections could not be generated. The rest were kept. Try again to fill the gaps.', { failed: _sectionFailures, total: sections.length }), 'warning'); } catch (_) {}
            }
            if (effIncludeCitations) {
                 const finalCitCount = (fullDocument.match(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/g) || []).length;
@@ -1722,8 +1761,7 @@ FALLBACK MODE: Web search is unavailable for this section. Do not invent citatio
            fullDocument = repairSourceMarkdown(fullDocument);
            fullDocument = finishOwnResearch(fullDocument);
            recordGeneratedSource(fullDocument);
-           setInputText(fullDocument);
-           setShowSourceGen(false);
+           publishSource(fullDocument);
            addToast(t('input.success_long_form'), "success");
            setIsGeneratingSource(false);
            flyToElement('tour-source-input');
@@ -1926,7 +1964,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
       // otherwise valid response and forces the raw-JSON fallback.
       let deferredDialogueBibliography = '';
       if (typeof result === 'object' && result !== null && 'text' in result) {
-          const rawText = result.text || "";
+          const rawText = typeof result.text === 'string' ? result.text : '';
           if (effIncludeCitations && rawText) {
               const rawWithCitations = cleanPostGroundingPlaceholders(processGroundedResponseText(rawText, result, isDialogueMode));
               // Gate narrowed: non-dialogue short text now routes through the
@@ -2037,7 +2075,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
               text = rawText;
           }
       } else {
-          text = String(result || "");
+          text = typeof result === 'string' ? result : '';
       }
       if (usedLegacyNoSearchFallback && text) {
           text = stripUngroundedCitationArtifacts(text);
@@ -2047,25 +2085,33 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
           try { return safeJsonParse(text); } catch (e) { return null; }
         })();
         if (dialogueData && dialogueData.dialogue && Array.isArray(dialogueData.dialogue)) {
+          const dialogueLines = dialogueData.dialogue.filter(line => line &&
+              ((typeof line.line === 'string' && hasSourceBody(line.line)) ||
+               (typeof line.action === 'string' && hasSourceBody(line.action))));
+          if (!dialogueLines.length) throw emptySourceError();
           let formattedScript = '';
-          if (dialogueData.title) {
+          if (typeof dialogueData.title === 'string' && dialogueData.title.trim()) {
             formattedScript += `# ${dialogueData.title}\n\n`;
           }
-          if (dialogueData.setting) {
+          if (typeof dialogueData.setting === 'string' && dialogueData.setting.trim()) {
             formattedScript += `*${dialogueData.setting}*\n\n`;
           }
-          const learnerName = dialogueData.characters?.learner?.name || 'LEARNER';
-          const guideName = dialogueData.characters?.guide?.name || 'GUIDE';
-          for (const line of dialogueData.dialogue) {
+          const characterName = (character, fallback) => typeof character?.name === 'string' && character.name.trim() ? character.name.trim() : fallback;
+          const learnerName = characterName(dialogueData.characters?.learner, 'LEARNER');
+          const guideName = characterName(dialogueData.characters?.guide, 'GUIDE');
+          for (const line of dialogueLines) {
             const speakerName = line.speaker === 'learner' ? learnerName.toUpperCase() : guideName.toUpperCase();
-            const action = line.action ? ` ${line.action}` : '';
+            const action = typeof line.action === 'string' && line.action.trim() ? ` ${line.action}` : '';
             // B8 (2026-06-28): guard line.line the same way as line.action — a dialogue object missing
             // its `line` field otherwise interpolates the literal string "undefined" into the script.
-            const lineText = line.line ? ` ${line.line}` : '';
+            const lineText = typeof line.line === 'string' && line.line.trim() ? ` ${line.line}` : '';
             formattedScript += `**${speakerName}:**${action}${lineText}\n\n`;
           }
           text = formattedScript.trim();
         } else {
+          // Valid JSON without any dialogue is metadata, not recoverable prose.
+          const rawDialogue = text.replace(/^\s*```(?:json)?\s*/i, '');
+          if (dialogueData || /^\s*(?:\{|\[\s*\{)/.test(rawDialogue)) throw emptySourceError();
           // Parse failed — preserve the dialogue lines but strip JSON syntax
           // so the user sees readable text instead of `# { "title": ... }`.
           // Keeps the LLM's actual content; signals via toast that the user
@@ -2080,6 +2126,8 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
             .trim();
         }
       }
+      text = cleanSourceMetaCommentary(text);
+      if (!hasSourceBody(text)) throw emptySourceError();
       if (isDialogueMode && deferredDialogueBibliography && text) {
           text += deferredDialogueBibliography;
       }
@@ -2147,13 +2195,12 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
       text = repairSourceMarkdown(text);
       text = finishOwnResearch(text);
       recordGeneratedSource(text);
-      setInputText(text);
-      setShowSourceGen(false);
+      publishSource(text);
     } catch (err) {
       if (!err.message?.includes("401")) {
           warnLog("Unhandled error:", err);
       }
-      const errMsg = (err.documentResearch || err.code === 'source-research-unavailable') ? err.message :
+      const errMsg = (err.documentResearch || err.code === 'source-research-unavailable' || err.code === 'source-generation-empty') ? err.message :
                      err.message?.includes("Blocked") ? "Content blocked by safety filters." :
                      err.message?.includes("Stopped") ? "Generation stopped by AI model." :
                      err.message?.includes("401") ? "Daily Usage Limit Reached. Please try again later." :
