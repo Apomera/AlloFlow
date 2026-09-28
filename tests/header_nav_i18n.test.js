@@ -18,7 +18,8 @@ import { resolve } from 'node:path';
 
 let source, module_, ui;
 
-const NAV_KEYS = ['nav_ai', 'nav_tools', 'nav_learn', 'nav_bridge', 'nav_documents'];
+// nav_educator_tools replaced nav_tools (2026-09-28): the bare "Tools" cap icon was not findable.
+const NAV_KEYS = ['nav_ai', 'nav_educator_tools', 'nav_learn', 'nav_bridge', 'nav_documents'];
 
 beforeAll(() => {
   source = readFileSync(resolve(process.cwd(), 'view_header_source.jsx'), 'utf8');
@@ -49,7 +50,7 @@ describe('header nav labels are localized', () => {
   });
 
   it('each nav label keeps an English fallback', () => {
-    for (const [key, english] of [['nav_ai', 'AI'], ['nav_tools', 'Tools'], ['nav_learn', 'Learn'],
+    for (const [key, english] of [['nav_ai', 'AI'], ['nav_educator_tools', 'Educator tools'], ['nav_learn', 'Learn'],
       ['nav_bridge', 'Bridge'], ['nav_documents', 'Documents']]) {
       expect(module_).toContain(`t("header.${key}") || "${english}"`);
     }

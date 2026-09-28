@@ -900,7 +900,9 @@ function HeaderBar(props) {
                       aria-label={t('header.educator_tools_aria') || 'Educator Tools'}
                     >
                       <GraduationCap size={18} aria-hidden="true" />
-                      <span className="hidden 2xl:inline text-xs font-bold">{t('header.nav_tools') || 'Tools'}</span>
+                      {/* Labeled wherever it shows (an unlabeled cap icon was not findable). Below
+                          1280px it no longer fits the bar; the expanded header carries it (2026-09-28). */}
+                      <span className="text-xs font-bold whitespace-nowrap">{t('header.nav_educator_tools') || 'Educator tools'}</span>
                     </button>
                   )}
                   {!isTeacherMode && (
@@ -1963,7 +1965,7 @@ function HeaderBar(props) {
                           aria-label={t('header.educator_tools_aria') || 'Educator Tools'}
                         >
                           <span style={{fontSize:'14px',lineHeight:1}}>🎓</span>
-                          <span className="hidden lg:inline">{t('header.nav_tools') || 'Tools'}</span>
+                          <span className="whitespace-nowrap">{t('header.nav_educator_tools') || 'Educator tools'}</span>
                         </button>
                         )}
                         {/* All roles — see the note on the expanded-header twin. */}

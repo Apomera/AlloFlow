@@ -154,8 +154,13 @@ describe('header Documents menu and Student tools are translatable', () => {
   it('localizes the Student tools control a student is meant to reach for', () => {
     expect(get('student_tools.title')).toBe('Student tools');
     expect(get('student_tools.subtitle')).toBe('Read, focus, and practice your way');
-    // It was hardcoded in two places — the panel heading and the closed pill.
-    expect((fab.match(/t\('student_tools\.title'\)/g) || []).length).toBe(2);
+    // One localized title feeds both the panel heading and the closed pill;
+    // teachers get the Reading tools pair instead (2026-09-28).
+    expect((fab.match(/t\('student_tools\.title'\)/g) || []).length).toBe(1);
+    expect(fab).toContain('<h2 id="alloflow-student-tools-title" className="text-sm font-black tracking-tight text-slate-900">{toolsTitle}</h2>');
+    expect(fab).toContain('<span className="text-sm font-black tracking-tight">{toolsTitle}</span>');
+    expect(get('student_tools.teacher_title')).toBe('Reading tools');
+    expect(get('student_tools.teacher_subtitle')).toBe('Try the supports your students get');
     expect(fab).not.toContain('tracking-tight text-slate-900">Student tools<');
   });
 });

@@ -3755,7 +3755,8 @@
     "voice_active_language": "Reading language",
     "voice_lang_no_offline": "Cloud voice, then the device voice. There is no offline voice for this language yet.",
     "voice_lang_offline_ready": "An offline voice for this language is saved on this device.",
-    "voice_lang_offline_on_demand": "Cloud voice first. An offline voice for this language downloads the first time it is needed."
+    "voice_lang_offline_on_demand": "Cloud voice first. An offline voice for this language downloads the first time it is needed.",
+    "nav_educator_tools": "Educator tools"
   },
   "translate": {
     "target_label": "Target Language",
@@ -12872,7 +12873,9 @@
     "start_setup": "Start & setup",
     "start_setup_aria": "Open Start and setup options",
     "start_setup_desc": "Return to Start, adjust setup, or use Guided Mode. Your current workspace stays saved.",
-    "start_setup_title": "Start & setup"
+    "start_setup_title": "Start & setup",
+    "reading_tools_open": "Open reading tools",
+    "reading_tools_close": "Close reading tools"
   },
   "about": {
     "title": "About AlloFlow v1.0",
@@ -108911,7 +108914,9 @@
     "subtitle": "Read, focus, and practice your way",
     "paragraph_focus": "Paragraph focus",
     "paragraph_focus_hint": "Keeps the active paragraph clear",
-    "title": "Student tools"
+    "title": "Student tools",
+    "teacher_title": "Reading tools",
+    "teacher_subtitle": "Try the supports your students get"
   },
   "catalog_accessibility_preflight_is_unavailable": "Accessibility preflight is unavailable.",
   "catalog_accessibility_verification_state_is_missing": "Accessibility verification state is missing from verification response.",

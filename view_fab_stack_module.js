@@ -63,6 +63,10 @@ function FabStack(props) {
     studentAiFeaturesHidden,
     t
   } = props;
+  const toolsTitle = isTeacherMode ? t("student_tools.teacher_title") || "Reading tools" : t("student_tools.title") || "Student tools";
+  const toolsSubtitle = isTeacherMode ? t("student_tools.teacher_subtitle") || "Try the supports your students get" : t("student_tools.subtitle") || "Read, focus, and practice your way";
+  const toolsOpenLabel = isTeacherMode ? t("toolbar.reading_tools_open") || "Open reading tools" : t("toolbar.student_tools_open");
+  const toolsCloseLabel = isTeacherMode ? t("toolbar.reading_tools_close") || "Close reading tools" : t("toolbar.student_tools_close");
   const panelRef = React.useRef(null);
   const toggleRef = React.useRef(null);
   const dictationPhase = dictationStatus?.state || (isDictationMode ? "listening" : "idle");
@@ -245,13 +249,13 @@ function FabStack(props) {
         className: "alloflow-student-tools-panel backdrop-blur-xl animate-in slide-in-from-bottom-3 fade-in duration-200 motion-reduce:animate-none"
       },
       /* @__PURE__ */ React.createElement("div", { className: "alloflow-student-tools-handle mx-auto mt-2 h-1 w-10 rounded-full bg-slate-300", "aria-hidden": "true" }),
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 border-b border-slate-200/80 px-4 py-3" }, /* @__PURE__ */ React.createElement("span", { className: "flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-100 to-violet-100 text-indigo-700 shadow-inner", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Wrench, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("h2", { id: "alloflow-student-tools-title", className: "text-sm font-black tracking-tight text-slate-900" }, t("student_tools.title") || "Student tools"), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-xs font-medium text-slate-500" }, t("student_tools.subtitle") || "Read, focus, and practice your way")), /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 border-b border-slate-200/80 px-4 py-3" }, /* @__PURE__ */ React.createElement("span", { className: "flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-100 to-violet-100 text-indigo-700 shadow-inner", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Wrench, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("h2", { id: "alloflow-student-tools-title", className: "text-sm font-black tracking-tight text-slate-900" }, toolsTitle), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-xs font-medium text-slate-500" }, toolsSubtitle)), /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
           onClick: closeStudentTools,
           className: "alloflow-student-tools-close inline-flex items-center justify-center rounded-xl text-2xl leading-none text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 motion-reduce:transition-none",
-          "aria-label": t("toolbar.student_tools_close")
+          "aria-label": toolsCloseLabel
         },
         /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\xD7")
       )),
@@ -451,12 +455,12 @@ function FabStack(props) {
         "aria-haspopup": "dialog",
         onClick: handleToggleIsFabExpanded,
         className: `alloflow-student-tools-launcher h-12 rounded-2xl px-3.5 text-white shadow-lg flex items-center gap-2.5 transition-all hover:-translate-y-0.5 active:translate-y-0 motion-reduce:transition-none motion-reduce:transform-none ${dictationIsActive ? "bg-gradient-to-br from-rose-600 to-red-700 shadow-rose-600/30" : "bg-gradient-to-br from-indigo-600 to-violet-700 shadow-indigo-600/30 hover:from-indigo-700 hover:to-violet-800"}`,
-        "aria-label": isFabExpanded ? t("toolbar.student_tools_close") : t("toolbar.student_tools_open"),
+        "aria-label": isFabExpanded ? toolsCloseLabel : toolsOpenLabel,
         "data-dictation-active": dictationIsActive ? "true" : "false",
         "data-help-key": "fab_toggle"
       },
       /* @__PURE__ */ React.createElement(Wrench, { size: 20, "aria-hidden": "true" }),
-      /* @__PURE__ */ React.createElement("span", { className: "text-sm font-black tracking-tight" }, t("student_tools.title") || "Student tools"),
+      /* @__PURE__ */ React.createElement("span", { className: "text-sm font-black tracking-tight" }, toolsTitle),
       dictationIsActive && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 rounded-full bg-white/20 px-2 py-1 text-[10px] font-black uppercase tracking-wide" }, /* @__PURE__ */ React.createElement("span", { className: "h-1.5 w-1.5 rounded-full bg-white animate-pulse motion-reduce:animate-none", "aria-hidden": "true" }), dictationPhase === "transcribing" ? "Working" : "Listening")
     )
   ));

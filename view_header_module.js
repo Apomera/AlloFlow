@@ -753,7 +753,7 @@ function HeaderBar(props) {
       "aria-label": t("header.educator_tools_aria") || "Educator Tools"
     },
     /* @__PURE__ */ React.createElement(GraduationCap, { size: 18, "aria-hidden": "true" }),
-    /* @__PURE__ */ React.createElement("span", { className: "hidden 2xl:inline text-xs font-bold" }, t("header.nav_tools") || "Tools")
+    /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold whitespace-nowrap" }, t("header.nav_educator_tools") || "Educator tools")
   ), !isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1580,7 +1580,7 @@ function HeaderBar(props) {
       "aria-label": t("header.educator_tools_aria") || "Educator Tools"
     },
     /* @__PURE__ */ React.createElement("span", { style: { fontSize: "14px", lineHeight: 1 } }, "\u{1F393}"),
-    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("header.nav_tools") || "Tools")
+    /* @__PURE__ */ React.createElement("span", { className: "whitespace-nowrap" }, t("header.nav_educator_tools") || "Educator tools")
   ), setShowLearningHub && /* @__PURE__ */ React.createElement(
     "button",
     {
