@@ -19177,17 +19177,6 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setHasSelectedMode(true);
       setGuidedMode(key === 'teacher');
-      // A first-time Guided teacher starts on "Adapt a reading" (7 steps), not an
-      // 8-way chooser above the fold; the banner shows it as one line with Change.
-      if (key === 'teacher') {
-          let hasSaved = false;
-          try { hasSaved = !!localStorage.getItem('allo_guided_progress'); } catch (_) {}
-          const reading = (GUIDED_PRESETS || []).find(p => p && p.id === 'reading-access');
-          if (!hasSaved && reading) {
-              applyGuidedPreset(reading);
-              try { localStorage.setItem('allo_guided_path_prompt_seen', 'true'); } catch (_) {}
-          }
-      }
       if (key === 'teacher' || key === 'teacher_full') viaGate('teacher');
       else if (key === 'family') viaGate('parent');
       else if (key === 'adult') viaGate('independent');
@@ -34186,7 +34175,9 @@ const parseTaggedContent = (text) => {
       setUser(sessionUser);
     } catch (error) {
       warnLog('Live session authentication failed:', error);
-      addToast('Live session sign-in failed. Check the connection and try again.', 'error');
+      // No class server in this build is not a connection fault; retrying cannot fix it.
+      if (error && error.code === 'allo/no-backend-configured') addToast(t('live_session.no_backend') || 'Live sessions need a class server, and this copy of AlloFlow does not have one set up. Use a Class Mailbox QR session, or open AlloFlow in Gemini Canvas or the desktop app.', 'error');
+      else addToast('Live session sign-in failed. Check the connection and try again.', 'error');
       return;
     }
     const _m = window.AlloModules && window.AlloModules.PhaseOHandlers;

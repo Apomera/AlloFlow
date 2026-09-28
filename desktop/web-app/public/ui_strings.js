@@ -752,7 +752,15 @@
     "sample_accuracy_label": "Accuracy",
     "sample_accuracy": "Accurate for an introduction. It leaves out the light and dark reactions, which is fine at this level.",
     "sample_grammar_label": "Readability note",
-    "sample_grammar": "One long sentence joins two ideas with a dash. Splitting it helps younger readers."
+    "sample_grammar": "One long sentence joins two ideas with a dash. Splitting it helps younger readers.",
+    "choose_path_counter": "Choose a path",
+    "choose_path_title": "Step 1: Choose a path",
+    "choose_path_hint": "Pick what you want to make. The steps that follow depend on it, and you can change the path later.",
+    "preset_recommended": "Recommended for a first lesson",
+    "path_custom": "Custom path",
+    "path_step_count": "{count} steps",
+    "path_change_button": "Change path",
+    "keep_path": "Keep current path"
   },
   "lesson_import": {
     "button": "Import lesson deck",
@@ -118156,5 +118164,8 @@
     "next_guided": "Follow the next step on the left.",
     "next_family": "Now choose a simpler version, a word list, or a story on the left.",
     "next_tools": "Choose a tool on the left to create from it."
+  },
+  "live_session": {
+    "no_backend": "Live sessions need a class server, and this copy of AlloFlow does not have one set up. Use a Class Mailbox QR session, or open AlloFlow in Gemini Canvas or the desktop app."
   }
 }
