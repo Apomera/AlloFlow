@@ -1214,6 +1214,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const linkedSyncKey = rosterKey?.classId ? (classroomSyncKeys.byClass[rosterKey.classId]?.key || '') : '';
   const [classroomHelperBlocked, setClassroomHelperBlocked] = useState(false);
   const [showPrintOptions, setShowPrintOptions] = useState(false);
+  const [showRosterTools, setShowRosterTools] = useState(false);
   const [printLocationPosition, setPrintLocationPosition] = useState('after-name');
   const [printRowSize, setPrintRowSize] = useState('standard');
   const [printSortBy, setPrintSortBy] = useState('codename');
@@ -2113,75 +2114,10 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
           <button type="button" onClick={() => rosterUpdateFileRef.current?.click()} disabled={!rosterKey?.classId} className="px-3 py-1.5 bg-indigo-700 text-white rounded-lg text-xs font-bold hover:bg-indigo-800 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40">
             <Upload size={14} /> Update roster safely
           </button>
-          <button type="button" onClick={() => fileInputRef.current?.click()} className="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5">
-            <Upload size={14} /> Import / replace roster
-          </button>
           {privateLabelsAllowed && <button type="button" onClick={openClassroomHelper} className="px-3 py-1.5 bg-blue-50 text-blue-800 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors motion-reduce:transition-none" title={linkedSyncKey ? 'Reads the linked Google Classroom class again. Returning students keep their codenames; you review every change before it applies.' : 'Opens the Google Classroom roster helper in a new tab. It can send the codename-only roster straight back here and link the class for later syncs.'}>{linkedSyncKey ? 'Sync with Google Classroom' : 'Google Classroom setup'}</button>}
-          {privateLabelsAllowed && rosterKey?.classId && <span className="w-full flex flex-wrap items-center gap-2 text-xs text-slate-700">
-            {linkedSyncKey ? <>
-              <span className="font-bold text-blue-900">Linked to Google Classroom on this device.</span>
-              <button type="button" onClick={handleSaveSyncKey} className="underline font-bold text-blue-900">Save sync key</button>
-              <button type="button" onClick={handleUnlinkClassroom} className="underline font-bold text-red-800">Unlink</button>
-            </> : <button type="button" onClick={() => syncKeyFileRef.current?.click()} className="underline font-bold text-blue-900" title="Linked this class on another device? Load the sync key you saved there.">Load sync key</button>}
-            <input ref={syncKeyFileRef} type="file" accept=".json,application/json" onChange={handleLoadSyncKey} className="hidden" aria-label="Choose a Google Classroom sync key file" />
-          </span>}
-          {privateLabelsAllowed && classroomHelperBlocked && <a href={ALLO_TEACHER_CLASSROOM_IMPORT_URL} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-blue-50 text-blue-800 rounded-lg text-xs font-bold underline hover:bg-blue-100 transition-colors motion-reduce:transition-none">Open the Classroom helper (download the roster there)</a>}
           {privateLabelsAllowed && <button type="button" onClick={() => setShowPrivateLabels(value => !value)} aria-pressed={showPrivateLabels} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none flex items-center gap-1.5 ${showPrivateLabels ? 'bg-slate-800 text-white hover:bg-slate-900' : 'bg-slate-100 text-slate-800 hover:bg-slate-200'}`} title="Your own note beside each codename, kept only in this browser. Hidden again every time the roster closes.">
             <Eye size={14} /> {showPrivateLabels ? (t('roster.hide_private_labels') || 'Hide my private labels') : (t('roster.show_private_labels') || 'Show my private labels')}
           </button>}
-          {privateLabelsAllowed && showPrivateLabels && <p className="w-full text-xs text-slate-700" role="note">Private labels stay in this browser only. They are never exported, printed, shared to a live session, sent to the Store, or given to an AI. Hide them before projecting.{Object.keys(classPrivateLabels).length > 0 && <> <button type="button" onClick={() => { if (window.confirm('Delete every private label for this class from this browser?')) setPrivateLabels(store => alloClearTeacherPrivateLabels(store, privateLabelClassKey)); }} className="underline font-bold text-red-800">Clear private labels for this class</button></>}</p>}
-          <button type="button" onClick={handleExport} disabled={!rosterKey} className="px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40">
-            <Download size={14} /> {t('roster.export') || 'Export JSON'}
-          </button>
-          {!isParentMode && !isIndependentMode && <button type="button" onClick={handleStoreRosterExport} disabled={!rosterKey?.classId || !Object.keys(rosterKey?.students || {}).length} aria-describedby="roster-store-export-note" className="px-3 py-1.5 min-h-[44px] bg-purple-50 text-purple-800 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40">
-            <Download size={14} /> Store review file
-          </button>}
-          <button type="button" onClick={handlePrintRosterWorksheet} disabled={!Object.keys(rosterKey?.students || {}).length} className="px-3 py-1.5 bg-cyan-50 text-cyan-800 rounded-lg text-xs font-bold hover:bg-cyan-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40">
-            <Printer size={14} /> Print worksheet
-          </button>
-          {!isParentMode && !isIndependentMode && <p id="roster-store-export-note" className="w-full text-xs text-slate-600">Store review shares only class/learner IDs and codenames. An authorized Store administrator must review each match; no learning records or points are transferred.</p>}
-          <button type="button" onClick={() => setShowPrintOptions(value => !value)} aria-expanded={showPrintOptions} aria-controls="roster-print-options" className="px-3 py-1.5 rounded-lg border border-cyan-200 bg-white text-xs font-bold text-cyan-900 hover:bg-cyan-50 transition-colors motion-reduce:transition-none">
-            Worksheet options
-          </button>
-          <button type="button"
-            onClick={requestOfflineSubmissionSetup}
-            disabled={!rosterKey}
-            title={rosterKey?.submissionKey?.publicJwk
-              ? 'Offline submissions are active for this class. Click to regenerate (invalidates the existing key).'
-              : 'Generate a class keypair so students can save HTML worksheets back to you.'}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 ${
-              rosterKey?.submissionKey?.publicJwk
-                ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300'
-                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-            }`}
-          >
-            <Lock size={14} />
-            {rosterKey?.submissionKey?.publicJwk
-              ? (t('roster.submissions_active') || 'Submissions On')
-              : (t('roster.setup_submissions') || 'Set up offline submissions')}
-          </button>
-          {typeof onOpenSubmissionInbox === 'function' && (
-            <button type="button"
-              onClick={onOpenSubmissionInbox}
-              disabled={!rosterKey?.submissionKey?.publicJwk}
-              title={rosterKey?.submissionKey?.publicJwk
-                ? 'Open the submission inbox to decrypt and review student-submitted HTML files.'
-                : 'Set up offline submissions first to use the inbox.'}
-              className="px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40"
-            >
-              📥 {t('roster.import_submissions') || 'Import submissions'}
-            </button>
-          )}
-          {typeof onOpenSeatingChart === 'function' && (
-            <button type="button"
-              onClick={onOpenSeatingChart}
-              disabled={!rosterKey || Object.keys(rosterKey?.students || {}).length === 0}
-              title="Design your classroom map, encode seating needs as constraints, and auto-arrange. Everything stays on this device inside the roster."
-              className="px-3 py-1.5 bg-sky-50 text-sky-700 rounded-lg text-xs font-bold hover:bg-sky-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40"
-            >
-              🪑 {t('roster.seating_chart') || 'Seating Chart'}
-            </button>
-          )}
           <button type="button" onClick={() => setShowBatchConfig(true)} disabled={!rosterKey || Object.keys(rosterKey?.groups || {}).length === 0} className="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 border border-amber-200">
             <Layers size={14} /> {t('roster.batch_generate') || 'Differentiate by Group'}
           </button>
@@ -2190,6 +2126,77 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
               <RefreshCw size={14} /> {t('roster.sync_session') || 'Sync to Live Session'}
             </button>
           )}
+          <button type="button" onClick={() => setShowRosterTools(value => !value)} aria-expanded={showRosterTools} aria-controls="roster-more-tools" className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-800 hover:bg-slate-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5">
+            {t('roster.more_tools') || 'More roster tools'} <span aria-hidden="true">{showRosterTools ? '▴' : '▾'}</span>
+          </button>
+          {privateLabelsAllowed && rosterKey?.classId && <span className="w-full flex flex-wrap items-center gap-2 text-xs text-slate-700">
+            {linkedSyncKey ? <>
+              <span className="font-bold text-blue-900">Linked to Google Classroom on this device.</span>
+              <button type="button" onClick={handleSaveSyncKey} className="underline font-bold text-blue-900">Save sync key</button>
+              <button type="button" onClick={handleUnlinkClassroom} className="underline font-bold text-red-800">Unlink</button>
+            </> : <button type="button" onClick={() => syncKeyFileRef.current?.click()} className="underline font-bold text-blue-900" title="Linked this class on another device? Load the sync key you saved there.">Load sync key</button>}
+            <input ref={syncKeyFileRef} type="file" accept=".json,application/json" onChange={handleLoadSyncKey} className="hidden" aria-label="Choose a Google Classroom sync key file" />
+          </span>}
+          {privateLabelsAllowed && showPrivateLabels && <p className="w-full text-xs text-slate-700" role="note">Private labels stay in this browser only. They are never exported, printed, shared to a live session, sent to the Store, or given to an AI. Hide them before projecting.{Object.keys(classPrivateLabels).length > 0 && <> <button type="button" onClick={() => { if (window.confirm('Delete every private label for this class from this browser?')) setPrivateLabels(store => alloClearTeacherPrivateLabels(store, privateLabelClassKey)); }} className="underline font-bold text-red-800">Clear private labels for this class</button></>}</p>}
+          {/* One row of everyday actions; the rest wait here so the roster itself gets the room (2026-09-28). */}
+          <div id="roster-more-tools" hidden={!showRosterTools} className={`w-full flex-wrap gap-2 border-t border-slate-200 pt-2 ${showRosterTools ? 'flex' : 'hidden'}`}>
+            <button type="button" onClick={() => fileInputRef.current?.click()} className="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5">
+              <Upload size={14} /> Import / replace roster
+            </button>
+            <button type="button" onClick={handleExport} disabled={!rosterKey} className="px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40">
+              <Download size={14} /> {t('roster.export') || 'Export JSON'}
+            </button>
+            {!isParentMode && !isIndependentMode && <button type="button" onClick={handleStoreRosterExport} disabled={!rosterKey?.classId || !Object.keys(rosterKey?.students || {}).length} aria-describedby="roster-store-export-note" className="px-3 py-1.5 min-h-[44px] bg-purple-50 text-purple-800 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40">
+              <Download size={14} /> Store review file
+            </button>}
+            <button type="button" onClick={handlePrintRosterWorksheet} disabled={!Object.keys(rosterKey?.students || {}).length} className="px-3 py-1.5 bg-cyan-50 text-cyan-800 rounded-lg text-xs font-bold hover:bg-cyan-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40">
+              <Printer size={14} /> Print worksheet
+            </button>
+            <button type="button" onClick={() => setShowPrintOptions(value => !value)} aria-expanded={showPrintOptions} aria-controls="roster-print-options" className="px-3 py-1.5 rounded-lg border border-cyan-200 bg-white text-xs font-bold text-cyan-900 hover:bg-cyan-50 transition-colors motion-reduce:transition-none">
+              Worksheet options
+            </button>
+            <button type="button"
+              onClick={requestOfflineSubmissionSetup}
+              disabled={!rosterKey}
+              title={rosterKey?.submissionKey?.publicJwk
+                ? 'Offline submissions are active for this class. Click to regenerate (invalidates the existing key).'
+                : 'Generate a class keypair so students can save HTML worksheets back to you.'}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 ${
+                rosterKey?.submissionKey?.publicJwk
+                  ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300'
+                  : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+              }`}
+            >
+              <Lock size={14} />
+              {rosterKey?.submissionKey?.publicJwk
+                ? (t('roster.submissions_active') || 'Submissions On')
+                : (t('roster.setup_submissions') || 'Set up offline submissions')}
+            </button>
+            {typeof onOpenSubmissionInbox === 'function' && (
+              <button type="button"
+                onClick={onOpenSubmissionInbox}
+                disabled={!rosterKey?.submissionKey?.publicJwk}
+                title={rosterKey?.submissionKey?.publicJwk
+                  ? 'Open the submission inbox to decrypt and review student-submitted HTML files.'
+                  : 'Set up offline submissions first to use the inbox.'}
+                className="px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40"
+              >
+                📥 {t('roster.import_submissions') || 'Import submissions'}
+              </button>
+            )}
+            {typeof onOpenSeatingChart === 'function' && (
+              <button type="button"
+                onClick={onOpenSeatingChart}
+                disabled={!rosterKey || Object.keys(rosterKey?.students || {}).length === 0}
+                title="Design your classroom map, encode seating needs as constraints, and auto-arrange. Everything stays on this device inside the roster."
+                className="px-3 py-1.5 bg-sky-50 text-sky-700 rounded-lg text-xs font-bold hover:bg-sky-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40"
+              >
+                🪑 {t('roster.seating_chart') || 'Seating Chart'}
+              </button>
+            )}
+            {!isParentMode && !isIndependentMode && <p id="roster-store-export-note" className="w-full text-xs text-slate-600">Store review shares only class/learner IDs and codenames. An authorized Store administrator must review each match; no learning records or points are transferred.</p>}
+            {privateLabelsAllowed && classroomHelperBlocked && <a href={ALLO_TEACHER_CLASSROOM_IMPORT_URL} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-blue-50 text-blue-800 rounded-lg text-xs font-bold underline hover:bg-blue-100 transition-colors motion-reduce:transition-none">Open the Classroom helper (download the roster there)</a>}
+          </div>
           <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} className="hidden" aria-label={t('roster.import') || 'Import roster JSON'} />
           <input ref={rosterUpdateFileRef} type="file" accept=".json,application/json" onChange={handleRosterUpdateFile} className="hidden" aria-label="Choose same-class roster update JSON" />
         </div>

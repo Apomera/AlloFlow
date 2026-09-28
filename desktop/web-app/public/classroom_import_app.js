@@ -250,6 +250,17 @@
       say('AlloFlow has not confirmed the roster yet. If nothing appeared there, download the roster instead.');
     }, 20000);
   };
+  // Once AlloFlow has the roster this tab's job is done: close it so the teacher
+  // lands back in AlloFlow (any review happens there), taking the private preview
+  // with it. A browser that will not close the tab gets a plain instruction.
+  const returnToAlloFlow = note => {
+    clearSession(note + ' Returning you to AlloFlow…');
+    setTimeout(() => {
+      try { handoff.focus(); } catch (_) {}
+      try { window.close(); } catch (_) {}
+      setTimeout(() => { if (!window.closed) say(note + ' You can close this tab and go back to AlloFlow.'); }, 400);
+    }, 900);
+  };
   window.addEventListener('message', event => {
     if (!handoff || event.origin !== location.origin || event.source !== handoff) return;
     const data = event.data;
@@ -267,9 +278,8 @@
     if (!data || typeof data !== 'object' || data.type !== 'alloflow-classroom-roster-received') return;
     if (handoffTimer) { clearTimeout(handoffTimer); handoffTimer = null; }
     const message = String(data.message || '').slice(0, 320);
-    if (data.pending === true && data.ok) { say(message || 'Switch to the AlloFlow tab to confirm the roster there.'); return; }
-    say(data.ok ? (linkMode() === 'sync' ? 'AlloFlow received the update. ' : 'AlloFlow imported the roster. ') + message + ' Keep this private preview only as long as needed.'
-      : 'AlloFlow did not import the roster. ' + (message || 'Download the roster instead.'));
+    if (data.ok) { returnToAlloFlow(data.pending === true ? 'AlloFlow has the roster. Confirm it there.' : (linkMode() === 'sync' ? 'AlloFlow received the update.' : 'AlloFlow imported the roster.')); return; }
+    say('AlloFlow did not import the roster. ' + (message || 'Download the roster instead.'));
   });
   $('clear-classroom').onclick = () => clearSession('Session cleared. Local access token and private roster preview were discarded. Google’s authorization grant still exists until revoked.');
   $('cancel-classroom').onclick = () => clearSession('Import cancelled and private data cleared. Late responses cannot restore the preview.');

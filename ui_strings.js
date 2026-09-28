@@ -11744,7 +11744,8 @@
     "quick_add": "Add group",
     "quick_duplicate": "You already have a group with that name.",
     "quick_need_name": "Give the group a name first.",
-    "open_full": "Open the full class roster"
+    "open_full": "Open the full class roster",
+    "more_tools": "More roster tools"
   },
   "adventure": {
     "title": "Adventure Mode",

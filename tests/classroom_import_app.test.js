@@ -379,23 +379,39 @@ describe('in-app handoff to the AlloFlow tab that opened the helper', () => {
         reply(h, o, { type: 'alloflow-classroom-roster-received', ok: false, message: 'Roster replacement cancelled. Nothing changed.' });
         expect(h.$('import-status').textContent).toBe('AlloFlow did not import the roster. Roster replacement cancelled. Nothing changed.');
         h.acknowledge(); h.click('send-classroom');
+        // Success: the helper clears its private preview and closes itself, so the
+        // teacher lands back in AlloFlow (2026-09-28).
+        const close = vi.spyOn(h.w, 'close').mockImplementation(() => {});
+        o.focus.mockClear();
         reply(h, o, { type: 'alloflow-classroom-roster-received', ok: true, message: 'Roster imported: 0 groups and 1 codenames. Legacy real-name fields were removed.' });
-        expect(h.$('import-status').textContent).toContain('AlloFlow imported the roster. Roster imported: 0 groups and 1 codenames.');
+        expect(h.$('import-status').textContent).toBe('AlloFlow imported the roster. Returning you to AlloFlow…');
+        expect(h.$('roster-preview').children).toHaveLength(0);
+        const closing = [...h.timers.values()].find(timer => timer.ms === 900);
+        expect(closing).toBeTruthy();
+        closing.fn();
+        expect(close).toHaveBeenCalledTimes(1);
+        expect(o.focus).toHaveBeenCalled();
+        // A browser that refuses to close the tab leaves a plain instruction instead.
+        [...h.timers.values()].find(timer => timer.ms === 400).fn();
+        expect(h.$('import-status').textContent).toBe('AlloFlow imported the roster. You can close this tab and go back to AlloFlow.');
         expect(h.$('import-status').textContent).not.toContain('<');
+        close.mockRestore();
     });
 
-    it('tells the teacher to switch tabs while AlloFlow waits for confirmation, without the no-reply warning', async () => {
+    it('returns the teacher to AlloFlow while it waits for confirmation, without the no-reply warning', async () => {
         const o = opener();
         const h = harness({ opener: o });
         await reviewed(h);
         h.click('send-classroom');
         const pending = [...h.timers.values()].find(timer => timer.ms === 20000);
+        const close = vi.spyOn(h.w, 'close').mockImplementation(() => {});
         reply(h, o, { type: 'alloflow-classroom-roster-received', ok: true, pending: true, message: 'Switch to the AlloFlow tab: the roster is waiting there for your confirmation.' });
-        expect(h.$('import-status').textContent).toBe('Switch to the AlloFlow tab: the roster is waiting there for your confirmation.');
+        expect(h.$('import-status').textContent).toBe('AlloFlow has the roster. Confirm it there. Returning you to AlloFlow…');
         expect(h.w.clearTimeout).toHaveBeenCalled();
         expect([...h.timers.values()]).not.toContain(pending);
-        reply(h, o, { type: 'alloflow-classroom-roster-received', ok: true, pending: false, message: 'Roster imported: 0 groups and 1 codenames.' });
-        expect(h.$('import-status').textContent).toContain('AlloFlow imported the roster. Roster imported');
+        [...h.timers.values()].find(timer => timer.ms === 900).fn();
+        expect(close).toHaveBeenCalledTimes(1);
+        close.mockRestore();
     });
 
     it('tells the teacher to download instead when AlloFlow never confirms, and cannot be spoofed by markup', async () => {
