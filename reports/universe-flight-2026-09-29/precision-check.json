@@ -1,0 +1,16 @@
+{
+  "errors": [],
+  "accessibility": [],
+  "checks": [
+    "six axes",
+    "fine steps",
+    "undo",
+    "key repeat",
+    "input isolation",
+    "scene scales",
+    "orbit handoff",
+    "fullscreen",
+    "relativity restriction",
+    "320px layout"
+  ]
+}

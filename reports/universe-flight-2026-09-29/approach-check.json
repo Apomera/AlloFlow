@@ -1,0 +1,20 @@
+{
+  "errors": [],
+  "radii": [
+    "0.6 ly",
+    "1.2 ly",
+    "2.4 ly"
+  ],
+  "estimate": "47 seconds of playback",
+  "checks": [
+    "stationary planning",
+    "pace match",
+    "progress",
+    "pause",
+    "fullscreen",
+    "clean view",
+    "cancel",
+    "wide arrival",
+    "mobile layout"
+  ]
+}

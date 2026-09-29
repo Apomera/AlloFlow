@@ -1,0 +1,95 @@
+const fs=require('node:fs');
+const path=require('node:path');
+const assert=require('node:assert/strict');
+const {chromium}=require('playwright');
+const report=path.resolve('reports/universe-flight-2026-09-29');
+(async()=>{
+  const browser=await chromium.launch({args:['--enable-webgl','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+  try {
+    const page=await browser.newPage({viewport:{width:1440,height:1000},hasTouch:true});
+    const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+    await page.goto('file:///'+path.join(report,'preview.html').replaceAll('\\','/'));
+    await page.waitForFunction(()=>document.querySelector('.uf-transport button')?.disabled===false);
+    const button=name=>page.getByRole('button',{name,exact:true});
+    const canvas=page.locator('.uf-stage canvas');
+    const fov=async()=>Number(await page.locator('#uf-fov').inputValue());
+    const readout=()=>page.locator('.uf-readouts').innerText();
+    const aim=()=>page.locator('.uf-scene-bottom span').first().innerText();
+    const before=await readout();
+    await button('Narrow view').click();assert.ok(await fov()<65);
+    await button('Widen view').click();assert.ok(Math.abs(await fov()-65)<=1);
+    await canvas.press('0');assert.equal(await fov(),65);
+    await canvas.press('+');assert.ok(await fov()<65);await canvas.press('-');assert.ok(Math.abs(await fov()-65)<=1);
+    for(let i=0;i<20;i++)await canvas.press('+');
+    assert.equal(await fov(),30);assert.equal(await button('Narrow view').isDisabled(),true);
+    for(let i=0;i<20;i++)await canvas.press('-');
+    assert.equal(await fov(),100);assert.equal(await button('Widen view').isDisabled(),true);
+    await button('Reset field of view to 65 degrees').click();assert.equal(await fov(),65);
+    assert.equal(await readout(),before,'Lens changes preserve position and clocks');
+    const wheel=async init=>canvas.evaluate((node,init)=>{
+      const event=new WheelEvent('wheel',{bubbles:true,cancelable:true,...init});node.dispatchEvent(event);return event.defaultPrevented;
+    },init);
+    assert.equal(await wheel({deltaY:120}),false);assert.equal(await fov(),65,'Ordinary scrolling leaves the lens alone');
+    assert.equal(await wheel({deltaY:-120,ctrlKey:true,shiftKey:true}),false);assert.equal(await fov(),65,'Browser zoom modifiers are preserved');
+    assert.equal(await wheel({deltaY:-120,shiftKey:true}),true);assert.ok(await fov()<65);
+    await canvas.press('0');await wheel({deltaX:-4,deltaMode:1,shiftKey:true});assert.ok(await fov()<65,'Horizontal line-mode wheel input works');
+    // Real mouse input scales angular movement with the lens.
+    async function dragAt(value){
+      await page.locator('#uf-fov').evaluate((input,value)=>{Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,String(value));input.dispatchEvent(new Event('input',{bubbles:true}));},value);
+      await button('Forward').click();await canvas.scrollIntoViewIfNeeded();
+      const box=await canvas.boundingBox(),x=box.x+box.width*.35,y=box.y+box.height*.5;
+      await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x+80,y,{steps:5});await page.mouse.up();
+      await page.waitForTimeout(300);return parseFloat(await aim());
+    }
+    const wide=await dragAt(100),narrow=await dragAt(30);
+    assert.ok(wide>narrow*3,'Narrow framing provides finer drag control');
+    await canvas.press('0');await button('Forward').click();await canvas.scrollIntoViewIfNeeded();
+    // Chromium touch events exercise pointer capture and actual multi-touch dispatch.
+    const cdp=await page.context().newCDPSession(page);
+    const box=await canvas.boundingBox(),cx=box.x+box.width*.45,cy=box.y+box.height*.5;
+    const touch=(type,points)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:points.map(([id,x,y])=>({id,x,y,radiusX:2,radiusY:2,force:1}))});
+    const initialAim=await aim();
+    await touch('touchStart',[[1,cx-40,cy],[2,cx+40,cy]]);
+    await touch('touchMove',[[1,cx-80,cy],[2,cx+80,cy]]);
+    await page.waitForTimeout(150);
+    assert.ok(Math.abs(await fov()-35)<=1,'Doubling finger separation doubles focal magnification');
+    assert.equal(await aim(),initialAim,'Pinching does not rotate the camera');
+    await touch('touchEnd',[]);
+    await canvas.press('0');await touch('touchStart',[[1,cx-80,cy],[2,cx+80,cy]]);
+    await touch('touchMove',[[1,cx-30,cy],[2,cx+30,cy]]);await page.waitForTimeout(100);
+    assert.equal(await fov(),100);await touch('touchCancel',[]);
+    const afterCancel=await aim();await page.mouse.move(cx+150,cy+30);await page.waitForTimeout(150);
+    assert.equal(await aim(),afterCancel,'Canceled touch leaves no active drag');
+    await canvas.press('0');await touch('touchStart',[[1,cx-40,cy],[2,cx+40,cy]]);
+    await touch('touchMove',[[1,cx-70,cy],[2,cx+70,cy]]);await touch('touchEnd',[[2,cx+70,cy]]);
+    const beforeSingle=await aim();await touch('touchMove',[[1,cx-50,cy]]);await touch('touchEnd',[]);
+    await page.waitForTimeout(300);assert.notEqual(await aim(),beforeSingle,'One-finger looking resumes after a pinch');
+    assert.equal(await readout(),before);
+    await button('Einstein’s light chase').click();const physical=await readout();
+    await canvas.press('+');await canvas.press('-');assert.equal(await readout(),physical,'Lens controls do not advance relativistic clocks');
+    await button('Free exploration').click();await page.locator('#uf-region').selectOption('galaxy');
+    await page.getByRole('button',{name:/Spiral portrait/}).click();
+    await button('Orbit destination').click();await button('Narrow view').click();
+    assert.equal(await button('End orbit').count(),1,'Zoom preserves an active orbit');
+    await button('Pause travel').click();
+    await button('Toggle full screen for the 3D view').click();await button('Narrow view').click();
+    assert.equal(await page.locator('.uf-lens-controls').isVisible(),true);
+    await page.locator('.uf-stage').screenshot({path:path.join(report,'lens-fullscreen.png')});
+    await button('Hide overlay').click();assert.equal(await page.locator('.uf-lens-controls').isVisible(),false);
+    await canvas.press('0');assert.equal(await fov(),65,'Keyboard zoom works with the overlay hidden');
+    await button('Show overlay').click();await button('Toggle full screen for the 3D view').click();
+    await page.locator('#uf-field-notes summary').click();await page.locator('#uf-view-name').fill('+ - 0');
+    await page.locator('#uf-view-name').press('+');assert.equal(await fov(),65,'Text input does not zoom');
+    await page.setViewportSize({width:320,height:800});
+    await button('Behind').click();
+    await page.locator('.uf-stage').screenshot({path:path.join(report,'lens-phone.png')});
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+    const lens=await page.locator('.uf-lens-controls').boundingBox(),finder=await page.locator('.uf-target-finder').boundingBox();
+    assert.ok(finder&&lens.y+lens.height<=finder.y,'Lens and target finder do not overlap on narrow screens');
+    await page.addScriptTag({path:'node_modules/axe-core/axe.min.js'});
+    const accessibility=await page.evaluate(async()=>{const result=await axe.run(document.querySelector('.uf-stage'),{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa']}});return result.violations.map(v=>({id:v.id,targets:v.nodes.map(n=>n.target)}));});
+    assert.deepEqual(accessibility,[]);assert.deepEqual(errors,[]);
+    fs.writeFileSync(path.join(report,'lens-check.json'),JSON.stringify({errors,accessibility,wideDragDegrees:wide,narrowDragDegrees:narrow,checks:['button and keyboard zoom','lens bounds','scroll isolation','browser modifier isolation','wheel modes','lens-scaled drag','real touch pinch','touch cancel','pinch to one-finger handoff','position and clock invariants','orbit preservation','fullscreen','clean overlay','text input','320px layout']},null,2));
+    console.log('Direct lens browser checks passed.');
+  } finally {await browser.close();}
+})().catch(e=>{console.error(e);process.exit(1);});

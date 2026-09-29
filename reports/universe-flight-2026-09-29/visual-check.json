@@ -1,0 +1,28 @@
+{
+  "errors": [],
+  "viewpoints": 9,
+  "webglErrors": 0,
+  "pngBytes": 136752,
+  "dimensions": [
+    1100,
+    550
+  ],
+  "overlay": true,
+  "narrowLayout": true,
+  "chart": [
+    "select",
+    "projection",
+    "find target",
+    "path",
+    "pause"
+  ],
+  "orbit": [
+    "travel",
+    "fixed distance",
+    "pause",
+    "reverse",
+    "manual look",
+    "fullscreen pause",
+    "end"
+  ]
+}

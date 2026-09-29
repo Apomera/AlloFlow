@@ -1,0 +1,18 @@
+{
+  "errors": [],
+  "accessibility": [],
+  "checks": [
+    "draft isolation and retention",
+    "arrival gating",
+    "pause on writing",
+    "keyboard text entry",
+    "snapshot with observation",
+    "empty and duplicate prevention",
+    "landmark metadata export",
+    "edit/cancel validation",
+    "snapshot preserved through edit",
+    "close/reopen restore",
+    "12-view capacity and recovery",
+    "320px layout"
+  ]
+}

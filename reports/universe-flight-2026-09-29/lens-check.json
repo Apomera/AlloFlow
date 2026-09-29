@@ -1,0 +1,23 @@
+{
+  "errors": [],
+  "accessibility": [],
+  "wideDragDegrees": 20,
+  "narrowDragDegrees": 4,
+  "checks": [
+    "button and keyboard zoom",
+    "lens bounds",
+    "scroll isolation",
+    "browser modifier isolation",
+    "wheel modes",
+    "lens-scaled drag",
+    "real touch pinch",
+    "touch cancel",
+    "pinch to one-finger handoff",
+    "position and clock invariants",
+    "orbit preservation",
+    "fullscreen",
+    "clean overlay",
+    "text input",
+    "320px layout"
+  ]
+}

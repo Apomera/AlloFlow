@@ -1,0 +1,18 @@
+{
+  "errors": [],
+  "accessibility": [],
+  "checks": [
+    "prepare paused",
+    "complete three-stop tour",
+    "pause/resume",
+    "arrival holds",
+    "skip counts",
+    "three scenes",
+    "end during travel",
+    "manual destination",
+    "scenic view",
+    "mode change",
+    "close/reopen",
+    "mobile layout"
+  ]
+}

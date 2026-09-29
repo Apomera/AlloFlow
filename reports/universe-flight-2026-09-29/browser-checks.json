@@ -1,0 +1,92 @@
+{
+  "errors": [],
+  "axe": [],
+  "widths": [
+    {
+      "width": 800,
+      "scroll": 720,
+      "client": 720
+    },
+    {
+      "width": 390,
+      "scroll": 330,
+      "client": 330
+    },
+    {
+      "width": 320,
+      "scroll": 260,
+      "client": 260
+    }
+  ],
+  "clocks": [
+    "0.56 ly",
+    "0.57 yr",
+    "0.08 yr",
+    "7.09",
+    "14.11×"
+  ],
+  "boundary": {
+    "distanceLy": 100000,
+    "universeYears": 0,
+    "travelerYears": 0,
+    "position": [
+      0,
+      0,
+      100000
+    ],
+    "yaw": 0,
+    "pitch": 0,
+    "running": false,
+    "target": null,
+    "navigation": {
+      "active": false,
+      "targetId": null,
+      "completed": false,
+      "alreadyWithin": false,
+      "remainingLy": 0,
+      "arrivalRadiusLy": 0,
+      "estimatedSeconds": 0,
+      "progress": 0
+    },
+    "orbit": {
+      "active": false,
+      "targetId": null
+    },
+    "trail": [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        100000
+      ]
+    ],
+    "cameraMoves": 0
+  },
+  "checks": [
+    "paused free look",
+    "travel advances",
+    "pause holds position",
+    "three scales",
+    "destination inspection and aim",
+    "zoom/exposure/quality controls",
+    "save and download field notes",
+    "restore across scenes",
+    "cancel guided approach",
+    "directional spectral experiments",
+    "emitted wavelength changes",
+    "two-frame light clock including rest",
+    "proper time",
+    "rest comparison",
+    "keyboard play/pause/look",
+    "fullscreen play/pause",
+    "close/reopen retains saved observations",
+    "WebGL failure",
+    "fullscreen rejection preserves graphics error",
+    "retry recovery",
+    "model boundary stops"
+  ]
+}

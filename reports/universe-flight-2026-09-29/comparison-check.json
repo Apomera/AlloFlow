@@ -1,0 +1,27 @@
+{
+  "errors": [],
+  "accessibility": [],
+  "overlayAccessibility": [],
+  "checks": [
+    "capture and focus",
+    "frozen reference",
+    "same-scene displacement",
+    "lens differences",
+    "sweep keyboard bounds",
+    "direct mouse drag",
+    "real touch drag",
+    "frozen sweep images",
+    "sweep journey invariant",
+    "mismatched frame fallback",
+    "restore each snapshot",
+    "exact PNG export",
+    "replace second capture",
+    "separate-scene warning",
+    "replace reference",
+    "clear and release",
+    "relativity comparison",
+    "close/reopen retention",
+    "capture pauses travel",
+    "mobile proportions and layout"
+  ]
+}
