@@ -333,6 +333,80 @@ describe('Mystery reports and pending revisions', { timeout: 20000 }, () => {
 
 });
 
+describe('Mystery pending revision navigation', { timeout: 20000 }, () => {
+  function savedCases(active = 'unresolved', revised = ['pond', 'wall']) {
+    const cases = {};
+    for (const id of core().ids) {
+      const record = { claim: answers[id], evidence: ['structure', 'behavior'], reasoning: 'Recorded reasoning for ' + id + '.', limitation: 'bounded' };
+      cases[id] = {
+        ...record, revealed: ['context', 'size', 'structure', 'behavior'], collapsed: ['structure'], checked: true, reportView: 'recorded',
+        reasoning: revised.includes(id) ? 'Unfinished reasoning for ' + id + '.' : record.reasoning,
+        record, previousRecord: { ...record, reasoning: 'Earlier recorded reasoning for ' + id + '.' }
+      };
+    }
+    return core().normalize({ active, cases });
+  }
+
+  it('cycles through other pending reports after all cases are recorded and preserves all evidence', () => {
+    vi.useFakeTimers();
+    const initial = savedCases();
+    mount({ mysteryLab: initial });
+    const expected = JSON.parse(JSON.stringify(initial));
+    expect(mounted.container.textContent).toContain('6/6 reports recorded');
+    expect(mounted.container.textContent).toContain('All six reports are recorded. Some working notes still contain pending revisions');
+    expect(mounted.container.textContent).not.toContain('Next unrecorded case:');
+    for (const [id, name] of [['pond', 'A · Freshwater drifter'], ['wall', 'C · The wall is the clue'], ['pond', 'A · Freshwater drifter']]) {
+      const next = button('Next report with working revisions: ' + name);
+      expect(next.dataset.mysteryNextRevision).toBe(id);
+      click(next); act(() => vi.runOnlyPendingTimers());
+      expected.active = id;
+      expected.cases[id].reportView = 'working';
+      expect(data()).toEqual(expected);
+      expect(document.activeElement.id).toBe('micro-mystery-report-heading');
+      expect(document.activeElement.getAttribute('data-case')).toBe(id);
+      expect(document.activeElement.getAttribute('data-report-view')).toBe('working');
+      expect(mounted.container.querySelector('#micro-mystery-reasoning').value).toBe(initial.cases[id].reasoning);
+      expect(button('Show: Cell structure and chemistry').getAttribute('aria-expanded')).toBe('false');
+      expect(mounted.container.textContent).toContain('Reports with pending revisions: 2');
+    }
+  });
+
+  it('does not offer the active revision or an unrecorded draft as another pending report', () => {
+    const state = savedCases('pond', ['pond']);
+    state.cases.budding.record = null;
+    state.cases.budding.previousRecord = null;
+    state.cases.budding.reasoning = 'An unrecorded working explanation.';
+    state.cases.budding.reportView = 'working';
+    mount({ mysteryLab: state });
+    expect(mounted.container.querySelector('[data-mystery-next-revision]')).toBeNull();
+    expect(button('Next unrecorded case: B · A growing neighbor')).toBeTruthy();
+    expect(data()).toEqual(state);
+  });
+
+  it('does not focus a different case after a queued revision shortcut', () => {
+    vi.useFakeTimers(); mount({ mysteryLab: savedCases() });
+    click('Next report with working revisions: A · Freshwater drifter');
+    openCase('budding');
+    act(() => vi.runOnlyPendingTimers());
+    expect(data().active).toBe('budding');
+    expect(data().cases.budding.reportView).toBe('recorded');
+    expect(document.activeElement.id).toBe('micro-mystery-observation-heading');
+    expect(document.activeElement.getAttribute('data-case')).toBe('budding');
+  });
+
+  it('does not focus a newly reopened panel after a queued revision shortcut', () => {
+    vi.useFakeTimers(); mount({ mysteryLab: savedCases() });
+    click('Next report with working revisions: A · Freshwater drifter');
+    click('Practice with the microscope');
+    click(mounted.container.querySelector('#micro-tab-mystery'));
+    const tab = mounted.container.querySelector('#micro-tab-mystery'); tab.focus();
+    act(() => vi.runOnlyPendingTimers());
+    expect(document.activeElement).toBe(tab);
+    expect(data().active).toBe('pond');
+    expect(button('Working notes').getAttribute('aria-pressed')).toBe('true');
+  });
+});
+
 describe('Mystery revision comparisons', { timeout: 20000 }, () => {
   it('compares all changed report fields and complete evidence without mutating either version', () => {
     mount(); build('wall'); click('Check my evidence'); click('Record specimen report');

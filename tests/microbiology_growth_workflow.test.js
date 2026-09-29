@@ -581,6 +581,87 @@ describe('Microbiology growth investigation workflow', { timeout: 20000 }, () =>
     expect(mounted.container.querySelector('#gl-hypothesis').value).toBe('Next prediction draft');
   });
 
+  it('cycles through other unexplained trials in notebook order while preserving settings, saved evidence, and inspection hour', () => {
+    vi.useFakeTimers();
+    const trials = [
+      { id: 40, explanation: ' \n ' }, { id: 8, explanation: 'Already explained' },
+      { id: 3, explanation: '' }, { id: 25, explanation: 'Also explained' },
+    ].map(trial => ({ control: baseConditions, conditions: { ...baseConditions, oxygen: 0 }, prediction: 'lower', hypothesis: 'Original reasoning ' + trial.id, ...trial }));
+    const live = { ...baseConditions, tempC: 25, hypothesis: 'Legacy note', log: [{ preserved: true }] };
+    mount({ growthLab: live, growthReviewHour: 6, growthInvestigation: { trials, selectedId: 8, nextId: 41, control: { ...baseConditions, tempC: 20 }, prediction: 'higher', hypothesis: 'Next run reasoning', sweepVariable: 'pH', sweep: { variable: 'pH', conditions: baseConditions } } });
+    const before = JSON.parse(JSON.stringify(book()));
+    expect(trialButton(0).textContent).toContain('Add an explanation');
+    for (const id of [3, 40, 3]) {
+      const next = button('Next trial without an explanation · Trial ' + id);
+      expect(next.getAttribute('data-next-unexplained-trial')).toBe(String(id));
+      next.focus();
+      click(next);
+      act(() => vi.runOnlyPendingTimers());
+      expect(book()).toEqual({ ...before, selectedId: id });
+      expect(document.activeElement).toBe(mounted.container.querySelector('#gl-explanation'));
+      expect(mounted.container.querySelector('#gl-saved-result').getAttribute('data-micro-growth-result')).toBe(String(id));
+      expect(mounted.state.growthLab).toEqual(live);
+      expect(mounted.state.growthReviewHour).toBe(6);
+      expect(mounted.container.querySelector('#gl-hypothesis').value).toBe('Next run reasoning');
+    }
+    write('#gl-explanation', 'The lower oxygen availability reduces modeled growth.');
+    click('Next trial without an explanation · Trial 40');
+    act(() => vi.runOnlyPendingTimers());
+    expect(mounted.container.querySelector('[data-next-unexplained-trial]')).toBe(null);
+    expect(book().selectedId).toBe(40);
+    expect(book().trials.find(trial => trial.id === 3).explanation).toContain('lower oxygen availability');
+    write('#gl-explanation', 'A written explanation now replaces whitespace.');
+    expect(mounted.container.querySelector('[data-next-unexplained-trial]')).toBe(null);
+    expect(trialButton(0).textContent).toContain('Explanation recorded');
+  });
+
+  it('opens the explanation for a recovered trial without inventing its missing control', () => {
+    vi.useFakeTimers();
+    const trials = [
+      { id: 7, control: baseConditions, conditions: { ...baseConditions, oxygen: 0 }, prediction: 'lower', explanation: 'Existing explanation' },
+      { id: 2, control: null, conditions: baseConditions, prediction: 'higher', hypothesis: 'Original recovered reasoning', explanation: '' },
+    ];
+    mount({ growthReviewHour: 0, growthInvestigation: { trials, selectedId: 7, nextId: 11, prediction: 'unsure', hypothesis: 'Next question' } });
+    const before = JSON.parse(JSON.stringify(book()));
+    click('Next trial without an explanation · Trial 2');
+    act(() => vi.runOnlyPendingTimers());
+    expect(book()).toEqual({ ...before, selectedId: 2 });
+    expect(mounted.state.growthReviewHour).toBe(0);
+    expect(mounted.container.querySelector('[data-micro-growth-recovered="2"]')).not.toBe(null);
+    expect(document.activeElement).toBe(mounted.container.querySelector('#gl-explanation'));
+    expect(text()).toContain('This saved trial has no control snapshot');
+    expect(mounted.container.querySelector('[data-next-unexplained-trial]')).toBe(null);
+    expect(mounted.container.querySelector('#gl-hypothesis').value).toBe('Next question');
+  });
+
+  it('does not move focus to a different trial when the selected trial changes before the navigation callback', () => {
+    vi.useFakeTimers();
+    const trials = [1, 5, 9].map(id => ({ id, control: baseConditions, conditions: baseConditions, explanation: id === 5 ? '' : 'Recorded explanation' }));
+    mount({ growthInvestigation: { trials, selectedId: 1 } });
+    click('Next trial without an explanation · Trial 5');
+    click(trialButton(2));
+    const draft = mounted.container.querySelector('#gl-hypothesis');
+    draft.focus();
+    act(() => vi.runOnlyPendingTimers());
+    expect(book().selectedId).toBe(9);
+    expect(document.activeElement).toBe(draft);
+  });
+
+  it('does not move focus into a reopened Growth Lab from a stale next-explanation request', () => {
+    vi.useFakeTimers();
+    const trials = [1, 5].map(id => ({ id, control: baseConditions, conditions: baseConditions, explanation: id === 5 ? '' : 'Recorded explanation' }));
+    mount({ growthInvestigation: { trials, selectedId: 1 }, growthReviewHour: 12 });
+    click('Next trial without an explanation · Trial 5');
+    click(mounted.container.querySelector('#micro-tab-home'));
+    click(mounted.container.querySelector('#micro-tab-growthLab'));
+    const tab = mounted.container.querySelector('#micro-tab-growthLab');
+    tab.focus();
+    act(() => vi.runOnlyPendingTimers());
+    expect(document.activeElement).toBe(tab);
+    expect(book().selectedId).toBe(5);
+    expect(mounted.state.growthReviewHour).toBe(12);
+  });
+
   it('reports unavailable comparisons and absent predictions without claiming a mismatch', () => {
     const trials = [
       { id: 4, control: baseConditions, conditions: { ...baseConditions, oxygen: 0 }, prediction: '' },

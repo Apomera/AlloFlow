@@ -1,0 +1,46 @@
+{
+  "date": "2026-09-29",
+  "sourceFile": "stem_lab/stem_tool_microbiology.js",
+  "sourceSha256": "587b0c485e9f833be3f444f6a87591d8fc2142c14642d3e364221234c7d7d3ac",
+  "unit": {
+    "passed": 245,
+    "failed": 0,
+    "files": 13,
+    "report": "unit-results.json",
+    "priorRuns": [
+      "unit-initial-results.json"
+    ],
+    "note": "The final consolidated focused regression run passes. Earlier attempt reports, if any, are retained."
+  },
+  "browser": {
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "project": "chromium",
+    "report": "browser-results.json",
+    "priorRuns": [
+      "browser-initial-results.json",
+      "browser-recovery-results.json"
+    ],
+    "scope": "Contextual Home navigation, local Mystery and Growth review queues, Gram next-step focus, and quiz continuation plus saved-work regressions, served from the local working tree."
+  },
+  "interface": {
+    "keys": 1526,
+    "missing": 0,
+    "changedFallbacks": 0,
+    "runtimeMirrored": true,
+    "microbiologyNamespacesMatch": true,
+    "syntaxChecksPassed": true
+  },
+  "visualReview": [
+    "guided-home-desktop.png",
+    "guided-home-phone.png",
+    "unchecked-estimate-destination-phone.png",
+    "growth-explanation-navigation-phone.png",
+    "gram-next-step-phone.png",
+    "quiz-practice-destination-phone.png",
+    "mystery-revision-navigation-phone.png"
+  ],
+  "scope": "Micro Lab source, desktop mirror, Micro Lab translation entries, focused tests, and validation artifacts."
+}

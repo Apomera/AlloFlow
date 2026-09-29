@@ -5,7 +5,7 @@ import path from 'node:path';
 
 test.use({ video: 'off' });
 test.describe.configure({ mode: 'serial', retries: 0, timeout: 90000 });
-const out = path.resolve('reports/micro-lab-workspace-evidence-2026-09-28');
+const out = path.resolve(process.env.MICROBIOLOGY_REPORT_DIR || 'reports/micro-lab-workspace-evidence-2026-09-28');
 const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_microbiology.js', toolId: 'microbiology', width: 1280, height: 960, layout: 'document' });
 test.beforeAll(async () => { mkdirSync(out, { recursive: true }); await harness.start(); });
 test.afterAll(async () => { await harness.stop(); });
