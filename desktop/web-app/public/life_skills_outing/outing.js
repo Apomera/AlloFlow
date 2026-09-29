@@ -21,6 +21,7 @@
   var PLAN_PREFIX = 'alloflow-life-outing-plan:v1:';
   var plan = null;
   var rehearsalPreview = null;
+  var exploredDeparture = null;
   var notes = Object.create(null), comparison = null, reviewRevision = null, importSerial = 0, lastSaveOk = false;
   var icons = { kitchen: '◒', wardrobe: '♧', entry: '▣', travel: '↗' };
   var supportNames = { guided: 'Guided', try: 'Try it', independent: 'Independent' };
@@ -85,6 +86,9 @@
   function changeRun(run, extras) {
     abortStory();
     clearRehearsal(true);
+    exploredDeparture = null;
+    byId('travelLab').open = false;
+    text('travelLabStatus', '');
     importSerial += 1;
     text('backupStatus', '');
     if (current) notes[current.runId] = { reflection: byId('reflection').value.slice(0,600), comparison: comparison, plan: plan };
@@ -148,6 +152,7 @@
       var next = E.dispatch(current, id, current.commands.length, 'ui-' + Date.now().toString(36) + '-' + (++eventSerial));
       abortStory();
       clearRehearsal(true);
+      exploredDeparture = null;
       current = next;
       if (id === 'hint') shownHint = true;
       render();
@@ -187,6 +192,7 @@
     });
     text('stationTitle', station.label);
     text('stationDescription', station.description);
+    byId('exploreTravel').hidden = station.id !== 'travel';
     text('stepTag', v.completed ? 'Practice complete' : 'Step ' + (current.commands.length + 1));
     var list = byId('actionList');
     list.replaceChildren();
@@ -360,6 +366,55 @@
     byId('planDebrief').hidden=!plan||!plan.steps.length;
     text('planDebrief',plan?'Planning support: used a plan board'+(plan.checkedAt!==null?' and its plan check':'')+'. '+v.steps.filter(function(step){return step.doneAt!==null;}).length+' of '+v.steps.length+' planned actions were recorded. You can discuss why your plan changed.':'');
   }
+  function renderTravelLab() {
+    function minutes(value){return value+' minute'+(value===1?'':'s');}
+    var timing=E.travelAt(current,exploredDeparture===null?undefined:exploredDeparture);
+    var slider=byId('departureTime');
+    slider.min=String(timing.minimumDeparture);slider.value=String(timing.departureMinute);
+    slider.setAttribute('aria-valuetext',timing.departure+' example departure');
+    text('departureOutput',timing.departure);
+    byId('earlierDeparture').disabled=timing.departureMinute<=timing.minimumDeparture;
+    byId('laterDeparture').disabled=timing.departureMinute>=60;
+    byId('resetDeparture').disabled=!timing.hypothetical;
+    text('resetDeparture',timing.completed?'Use actual departure':'Use practice clock');
+    text('returnToTravel',timing.completed?'Review your completed travel plan':'Review travel choices in the outing');
+    text('travelTimeNote',timing.completed?'Your outing departed at '+timing.preparationTime+' and arrived at '+timing.practiceClock+'. These examples keep that outcome saved.':'Practice clock: '+timing.practiceClock+'. '+(timing.preparationReady?'Your clothes and bag are ready. Compare routes for the example departure.':'Finish preparing your clothes and bag before leaving. These examples compare travel timing.'));
+    var rows=byId('travelTimelines');rows.replaceChildren();
+    timing.routes.forEach(function(route){
+      var row=node('li','travel-timeline'+(route.selected?' actual-route':''));row.dataset.route=route.id;
+      var heading=node('div','timeline-heading'),name=node('h3','',route.label);
+      if(route.selected)name.appendChild(node('span','timeline-selected','Chosen in outing'));
+      heading.append(name,node('strong','timeline-arrival',route.available?'Arrive '+route.arrival:'Bus missed'));row.appendChild(heading);
+      var outcome=!route.available?'This bus leaves at '+(route.id==='bus'?'09:20':'09:40')+'. It would have gone before '+timing.departure+'.':route.minutesBeforeStart>0?minutes(route.minutesBeforeStart)+' before the 09:35 start.':route.onTime?'Arrives at the 09:35 start, with no extra time.':minutes(Math.abs(route.minutesBeforeStart))+' after the 09:35 start.';
+      row.appendChild(node('p','timeline-outcome'+(route.onTime?'':' timeline-caution'),outcome));
+      var diagram=node('div','timeline-diagram');diagram.setAttribute('aria-hidden','true');
+      var axis=node('div','timeline-axis');axis.append(node('span','','09:00'),node('span','timeline-start','09:35'),node('span','','10:20'));diagram.appendChild(axis);
+      var track=node('div','timeline-track');
+      var marker=node('span','timeline-deadline');marker.style.left=(100*timing.deadlineMinute/timing.axisEnd)+'%';track.appendChild(marker);
+      if(route.available){
+        if(route.waitingMinutes){var wait=node('span','timeline-wait');wait.style.left=(100*timing.departureMinute/timing.axisEnd)+'%';wait.style.width=(100*route.waitingMinutes/timing.axisEnd)+'%';track.appendChild(wait);}
+        var journey=node('span','timeline-journey');journey.style.left=(100*(timing.departureMinute+route.waitingMinutes)/timing.axisEnd)+'%';journey.style.width=(100*route.travelMinutes/timing.axisEnd)+'%';track.appendChild(journey);
+        var leave=node('span','timeline-leave');leave.style.left=(100*timing.departureMinute/timing.axisEnd)+'%';track.appendChild(leave);
+      }
+      diagram.appendChild(track);row.appendChild(diagram);
+      if(route.available)row.appendChild(node('p','timeline-duration',route.scheduledDeparture===null?minutes(route.travelMinutes)+' of travel.':minutes(route.waitingMinutes)+' waiting at the stop + '+minutes(route.travelMinutes)+' of travel.'));
+      row.appendChild(node('p','timeline-latest',route.latestOnTimeDeparture?'To arrive by 09:35, leave by '+route.latestOnTimeDeparture+'.':'This service arrives after the 09:35 start. Compare another route.'));
+      rows.appendChild(row);
+    });
+    text('travelKnowledge',timing.forecastMayChange?'These examples use the information available now. Recheck after a forecast or travel update.':'These examples use the latest forecast and travel information.');
+    return timing;
+  }
+  function openTravelExplorer() {
+    byId('travelLab').open=true;
+    renderTravelLab();byId('departureTime').focus();
+    announce('Travel time explorer. Move the example departure to compare routes. The practice clock stays the same.');
+  }
+  function exploreDeparture(value,announceChange) {
+    var minimum=E.travelAt(current).minimumDeparture;
+    exploredDeparture=Math.max(minimum,Math.min(60,value));
+    var timing=renderTravelLab();
+    if(announceChange)text('travelLabStatus','At '+timing.departure+', '+timing.routes.filter(function(route){return route.onTime;}).length+' of '+timing.routes.length+' routes arrive by 09:35. The practice clock stays '+timing.practiceClock+'.');
+  }
   function render() {
     latestView = E.view(current);
     var v = latestView;
@@ -414,6 +469,7 @@
     byId('travelPreview').classList.toggle('route-late', !!travel && !travel.onTime);
     var routes = byId('routeComparison'); routes.replaceChildren();
     v.routes.forEach(function (route) { var li = node('li'); li.append(node('span', '', route.label + (route.selected ? ' · selected' : '')), node('strong', '', route.arrival)); routes.appendChild(li); });
+    renderTravelLab();
     var recent = byId('recentChoices'); recent.replaceChildren();
     v.recent.forEach(function (entry) { var li = node('li'); li.append(node('strong', '', 'Step ' + entry.revision + ' · ' + entry.clock), node('span', '', entry.consequence)); recent.appendChild(li); });
     if (!v.recent.length) recent.appendChild(node('li', 'muted', 'Your choices and their effects will appear here.'));
@@ -684,6 +740,14 @@
     announce(closeView?'Closer view of the selected station. Use the action buttons below the room.':'Whole room shown.');
   });
   byId('travelPreview').addEventListener('click',function(){selectObject('route',true);});
+  byId('exploreTravel').addEventListener('click',openTravelExplorer);
+  byId('openTravelLab').addEventListener('click',openTravelExplorer);
+  byId('departureTime').addEventListener('input',function(){exploreDeparture(Number(this.value),false);});
+  byId('departureTime').addEventListener('change',function(){exploreDeparture(Number(this.value),true);});
+  byId('earlierDeparture').addEventListener('click',function(){exploreDeparture(Number(byId('departureTime').value)-1,true);if(this.disabled)byId('departureTime').focus();});
+  byId('laterDeparture').addEventListener('click',function(){exploreDeparture(Number(byId('departureTime').value)+1,true);if(this.disabled)byId('departureTime').focus();});
+  byId('resetDeparture').addEventListener('click',function(){exploredDeparture=null;var timing=renderTravelLab();text('travelLabStatus','Example reset to '+timing.preparationTime+'.');byId('departureTime').focus();});
+  byId('returnToTravel').addEventListener('click',function(){selectObject('route',true);});
   byId('rehearsalAction').addEventListener('change',function(){clearRehearsal(false);});
   byId('prediction').addEventListener('input',function(){clearRehearsal(false);});
   byId('previewActionButton').addEventListener('click',function(){

@@ -53,6 +53,73 @@ async function openBackup(h, source) {
 }
 
 describe('Life Skills outing interaction', () => {
+  it('explores departure times and returns to real choices without saving or acting',()=>{
+    let calls=0;const h=mount({provider:()=>{calls++;return Promise.resolve({text:'Hello.',status:'generated'});}});
+    const saved=h.save();h.$('#openTravelLab').click();
+    expect(h.$('#travelLab').open).toBe(true);
+    expect(h.w.document.activeElement.id).toBe('departureTime');
+    h.$('#departureTime').value='21';h.$('#departureTime').dispatchEvent(new h.w.Event('input'));
+    h.$('#departureTime').dispatchEvent(new h.w.Event('change'));
+    expect(h.$('#departureOutput').textContent).toBe('09:21');
+    expect(h.$('#travelTimelines [data-route="bus"]').textContent).toContain('Bus missed');
+    expect(h.$('#travelTimelines [data-route="late_bus"]').textContent).toContain('19 minutes waiting');
+    expect(h.$('#travelLabStatus').textContent).toContain('practice clock stays 09:00');
+    expect(h.$('#clock').textContent).toBe('09:00');expect(h.save()).toEqual(saved);expect(calls).toBe(0);
+    h.$('#returnToTravel').click();expect(h.w.document.activeElement.id).toBe('stationActions');
+    expect(h.$('#stationTitle').textContent).toBe('Travel plan');expect(h.run().commands).toHaveLength(0);
+    expect(h.$('#travelPreview').textContent).toContain('Choose a route');
+  });
+  it('offers keyboard buttons, clamps the bounds and resets to the current preparation time',()=>{
+    const h=mount();h.act('fill_water');h.$('#openTravelLab').click();
+    expect(h.$('#departureTime').min).toBe('1');expect(h.$('#earlierDeparture').disabled).toBe(true);
+    h.$('#laterDeparture').click();expect(h.$('#departureOutput').textContent).toBe('09:02');
+    h.$('#earlierDeparture').focus();h.$('#earlierDeparture').click();
+    expect(h.$('#departureOutput').textContent).toBe('09:01');expect(h.w.document.activeElement.id).toBe('departureTime');
+    h.$('#departureTime').value='59';h.$('#departureTime').dispatchEvent(new h.w.Event('input'));
+    h.$('#laterDeparture').focus();h.$('#laterDeparture').click();
+    expect(h.$('#departureOutput').textContent).toBe('10:00');expect(h.$('#laterDeparture').disabled).toBe(true);
+    expect(h.w.document.activeElement.id).toBe('departureTime');
+    h.$('#resetDeparture').click();expect(h.$('#departureOutput').textContent).toBe('09:01');
+    expect(h.$('#resetDeparture').disabled).toBe(true);expect(h.run().commands).toHaveLength(1);
+  });
+  it('explains preparation separately and gives concise timing announcements',()=>{
+    const h=mount();expect(h.$('#travelTimeNote').textContent).toContain('Finish preparing');
+    h.$('#departureTime').value='19';h.$('#departureTime').dispatchEvent(new h.w.Event('change'));
+    expect(h.$('#travelLabStatus').textContent).toContain('2 of 4 routes arrive by 09:35');
+    expect(h.$('#travelTimelines [data-route="ride"]').textContent).toContain('1 minute before');
+    expect(h.$('#travelTimelines [data-route="bus"]').textContent).toContain('1 minute waiting');
+    expect(h.$('#departureTime').getAttribute('aria-valuetext')).toBe('09:19 example departure');
+    h.station('Wardrobe');h.act('wear_ready');h.station('Kitchen');h.act('fill_water');h.act('pack_water');
+    h.station('Doorway');h.act('pack_document');h.act('pack_raincoat');
+    expect(h.$('#travelTimeNote').textContent).toContain('Your clothes and bag are ready');
+    expect(h.run().commands).toHaveLength(5);expect(h.$('#travelPreview').textContent).toContain('Choose a route');
+  });
+  it('refreshes the explorer after an actual action and uses a received bus delay',()=>{
+    const h=mount();h.$('#scenarioSelect').value='bus-delay';h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
+    h.$('#departureTime').value='15';h.$('#departureTime').dispatchEvent(new h.w.Event('input'));
+    expect(h.$('#travelTimelines [data-route="bus"]').textContent).toContain('Arrive 09:30');
+    h.act('fill_water');expect(h.$('#departureOutput').textContent).toBe('09:01');
+    h.act('pack_water');h.station('Wardrobe');h.act('wear_ready');
+    expect(h.$('#departureOutput').textContent).toBe('09:04');
+    expect(h.$('#travelTimelines [data-route="bus"]').textContent).toContain('25 minutes of travel');
+    expect(h.$('#travelTimelines [data-route="bus"]').textContent).toContain('Arrive 09:45');
+    expect(h.$('#travelKnowledge').textContent).toContain('latest forecast');
+    h.station('Travel');h.act('choose_ride');
+    expect(h.$('#travelTimelines [data-route="ride"] .timeline-selected').textContent).toBe('Chosen in outing');
+  });
+  it('keeps the completed outcome intact and starts a replay with a fresh explorer',()=>{
+    const h=mount();complete(h);const saved=h.save();h.$('#openTravelLab').click();
+    expect(h.$('#departureOutput').textContent).toBe('09:06');
+    expect(h.$('#travelTimeNote').textContent).toContain('departed at 09:06 and arrived at 09:30');
+    h.$('#laterDeparture').click();expect(h.$('#clock').textContent).toBe('09:30');expect(h.save()).toEqual(saved);
+    h.$('#sameReplayButton').click();expect(h.$('#travelLab').open).toBe(false);
+    expect(h.$('#departureOutput').textContent).toBe('09:00');expect(h.$('#travelLabStatus').textContent).toBe('');
+  },15000);
+  it('keeps timing exploration available without storage or 3D',()=>{
+    const h=mount({noStorage:true,noScene:true});h.station('Travel');h.$('#exploreTravel').click();
+    h.$('#laterDeparture').click();expect(h.$('#departureOutput').textContent).toBe('09:01');
+    expect(h.$('#clock').textContent).toBe('09:00');expect(h.$('#travelTimelines').children).toHaveLength(4);
+  });
   it('rehearses an action and prediction, then takes that action only when requested',()=>{
     let calls=0;const h=mount({provider:()=>{calls++;return Promise.resolve({text:'Hello.',status:'generated'});}});
     h.$('#rehearsal').open=true;h.$('#prediction').value='The bottle fills but still needs packing.';

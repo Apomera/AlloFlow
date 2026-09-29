@@ -126,6 +126,22 @@
     original.forEach(function(fact,index){if(fact.value!==revised[index].value)changes.push({label:fact.label,before:fact.value,after:revised[index].value});});
     return freeze({actionId:id,label:action.label,revision:run.commands.length,changes:changes,feedback:after.feedback,forecastMayChange:!before.forecastUpdated});
   }
+  function travelAt(raw,departureMinute) {
+    var s=materialize(raw);
+    if(departureMinute===undefined)departureMinute=s.minutes;
+    if(!Number.isInteger(departureMinute)||departureMinute<s.minutes||departureMinute>60)throw Error('Choose a departure from the preparation time through 10:00.');
+    var projected=copy(s);projected.minutes=departureMinute;
+    var ids=s.manifestVersion===2?['walk','bus','ride','late_bus']:['walk','bus','late_bus'];
+    var labels={walk:'Walk',bus:'09:20 bus',ride:'Arranged ride',late_bus:'09:40 bus'};
+    var routes=ids.map(function(id){
+      var scheduled=id==='bus'?20:id==='late_bus'?40:null;
+      var duration=id==='walk'?18:id==='ride'?15:id==='bus'?(s.busDelayed?25:10):10;
+      var at=arrival(projected,id),available=at!==null;
+      var latest=scheduled===null?s.deadline-duration:scheduled+duration<=s.deadline?scheduled:null;
+      return {id:id,label:labels[id],selected:s.route===id,scheduledDeparture:scheduled,travelMinutes:duration,waitingMinutes:available?(scheduled===null?0:scheduled-departureMinute):null,arrivalMinute:at,arrival:available?clock(at):null,available:available,onTime:available&&at<=s.deadline,minutesBeforeStart:available?s.deadline-at:null,latestOnTimeDeparture:latest===null?null:clock(latest)};
+    });
+    return freeze({departureMinute:departureMinute,departure:clock(departureMinute),minimumDeparture:s.minutes,preparationTime:clock(s.minutes),preparationReady:s.clothingReady&&s.bottlePacked&&s.documentPacked&&s.forecastUpdated&&s.weatherItem===item(s),practiceClock:clock(s.departed?s.arrival:s.minutes),completed:s.departed,hypothetical:departureMinute!==s.minutes,deadlineMinute:s.deadline,deadline:clock(s.deadline),axisEnd:80,forecastMayChange:!s.forecastUpdated,routes:routes});
+  }
   function view(raw) {
     var result=copy(basicView(raw)),s=materialize(raw);
     result.scenarioLabel=({'rain':'Changing weather','warm':'Warm-weather outing','bus-delay':'Rain and a bus delay'})[s.config.variation];
@@ -214,5 +230,5 @@
   function saveRun(storage,raw){var r;try{r=validateRun(raw);}catch(e){return {ok:false,message:e.message};}try{var key=saveKey(r),existing=storage.getItem(key);if(existing!==null){var old;try{old=validateRun(JSON.parse(existing));}catch(e){return {ok:false,message:'The existing saved outing needs recovery. It was left untouched. Download this outing to keep your work.'};}if(old.manifestVersion!==r.manifestVersion||old.runId!==r.runId||old.createdAt!==r.createdAt||JSON.stringify(old.config)!==JSON.stringify(r.config)||old.commands.some(function(e,i){return JSON.stringify(e)!==JSON.stringify(r.commands[i]);})||old.content.some(function(e,i){return JSON.stringify(e)!==JSON.stringify(r.content[i]);}))return {ok:false,message:'Another version of this outing is already saved. It was left untouched. Download this outing before reopening the saved version.'};}storage.setItem(key,JSON.stringify(r));return {ok:true,key:key};}catch(e){return {ok:false,message:'This browser could not save your outing. Keep this page open and download it to keep your work.'};}}
   function readRun(storage,key){if(typeof key!=='string'||key.indexOf(PREFIX)!==0)throw Error('Only Life Skills outing saves can be opened here.');var text=storage.getItem(key);if(!text||text.length>100000)throw Error('This outing save cannot be read. Original data was retained.');var r=validateRun(JSON.parse(text));if(saveKey(r)!==key)throw Error('The outing ID does not match its storage key.');return r;}
   function listRuns(storage){var result=[];for(var i=0;i<storage.length;i++){var key=storage.key(i);if(typeof key!=='string'||key.indexOf(PREFIX)!==0)continue;try{result.push({key:key,run:readRun(storage,key)});}catch(e){result.push({key:key,error:'Saved outing needs recovery; original data retained.'});}}return result.sort(function(a,b){return ((b.run&&b.run.createdAt)||'').localeCompare((a.run&&a.run.createdAt)||'');});}
-  return freeze({PREFIX:PREFIX,createRun:createRun,validateRun:validateRun,materialize:materialize,view:view,history:history,previewAction:previewAction,dispatch:dispatch,forkRun:forkRun,branchRun:branchRun,copyRun:copyRun,validateComparison:validateComparison,planOptions:planOptions,validatePlan:validatePlan,planView:planView,createBackup:createBackup,readBackup:readBackup,saveRun:saveRun,listRuns:listRuns,readRun:readRun,saveKey:saveKey,addContent:addContent});
+  return freeze({PREFIX:PREFIX,createRun:createRun,validateRun:validateRun,materialize:materialize,view:view,history:history,previewAction:previewAction,travelAt:travelAt,dispatch:dispatch,forkRun:forkRun,branchRun:branchRun,copyRun:copyRun,validateComparison:validateComparison,planOptions:planOptions,validatePlan:validatePlan,planView:planView,createBackup:createBackup,readBackup:readBackup,saveRun:saveRun,listRuns:listRuns,readRun:readRun,saveKey:saveKey,addContent:addContent});
 });

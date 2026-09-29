@@ -65,6 +65,7 @@
 <div class="action-panel" id="stationActions" tabindex="-1">
 <div class="section-header"><div><p class="eyebrow">Your next choice</p><h3 id="stationTitle">Kitchen</h3></div><span class="step-tag" id="stepTag">Step 1</span></div>
 <p id="stationDescription" class="muted"></p>
+<button id="exploreTravel" class="quiet-button travel-entry" type="button" aria-controls="travelLab" hidden>Explore departure and arrival times</button>
 <div id="objectChoices" class="object-choices" role="group" aria-label="Inspect an object"></div>
 <section id="objectInspector" class="object-inspector" aria-labelledby="objectTitle" hidden><div class="section-header"><h4 id="objectTitle"></h4><span id="objectStatus" class="object-status"></span></div><p id="objectDescription"></p></section>
 <details id="rehearsal" class="rehearsal-panel"><summary>Rehearse a choice before you take it</summary><p class="muted">Think about what might change, then preview one action. The room and clock stay as they are while you rehearse.</p>
@@ -82,6 +83,22 @@
 <h4>Most recent choices</h4><ol id="recentChoices"></ol></details>
 </div>
 </section>
+<details id="travelLab" class="card travel-lab">
+<summary>Explore departure and arrival times <span class="planner-optional">Optional</span></summary>
+<div class="travel-lab-body">
+<p class="muted">Which route would still work if you left later? Move the example time and compare. Exploring takes no practice time.</p>
+<div class="travel-time-controls"><label for="departureTime">Imagine leaving at <output id="departureOutput" for="departureTime" aria-live="off">09:00</output></label>
+<input id="departureTime" type="range" min="0" max="60" step="1" value="0" aria-describedby="travelTimeNote">
+<div class="button-row"><button id="earlierDeparture" class="quiet-button" type="button" aria-label="Move example departure one minute earlier">1 minute earlier</button><button id="laterDeparture" class="quiet-button" type="button" aria-label="Move example departure one minute later">1 minute later</button><button id="resetDeparture" class="quiet-button" type="button">Use practice clock</button></div></div>
+<p id="travelTimeNote" class="muted small"></p>
+<div class="timeline-key" aria-hidden="true"><span><i class="leaving-key"></i>Leave</span><span><i class="waiting-key"></i>Waiting</span><span><i class="journey-key"></i>Travel</span><span><i class="deadline-key"></i>09:35 start</span></div>
+<ol id="travelTimelines" class="travel-timelines" aria-label="Routes at the example departure time"></ol>
+<p id="travelKnowledge" class="muted small"></p>
+<p class="muted small">Bus examples assume you reach the stop by its departure time. The trip to the stop needs a separate check on a real outing.</p>
+<p class="travel-reflection">What would you allow extra time for? What would you check if your plan changed?</p>
+<button id="returnToTravel" class="quiet-button" type="button">Review travel choices in the outing</button>
+<p id="travelLabStatus" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
+</div></details>
 <section id="comparisonCard" class="card comparison-card" aria-labelledby="comparisonTitle" hidden>
 <p class="eyebrow">Try, notice, compare</p><h2 id="comparisonTitle">What changes with a different choice?</h2><p id="comparisonContext" class="muted"></p>
 <div class="choice-comparison"><div><h3>Original choice</h3><p id="originalChoice"></p></div><div><h3>Your new choice</h3><p id="revisedChoice"></p></div></div>
@@ -98,7 +115,7 @@
 </div>
 <aside class="companion-column" aria-label="Mission plan and practice support">
 <section class="card plan-card" aria-labelledby="planTitle"><div class="section-header"><h2 id="planTitle">The plan</h2><span id="progressCount" class="progress-count">0 ready</span></div><p id="goal"></p><ul id="objectives" class="objective-list"></ul><div class="progress-track" aria-hidden="true"><span id="progressBar"></span></div><p id="summary" class="muted"></p><details class="mission-facts"><summary>Check the outing details</summary><ul id="missionFacts"></ul></details></section>
-<section class="card travel-card" aria-labelledby="travelTitle"><p class="eyebrow">Timing your plan</p><h2 id="travelTitle">Will you arrive in time?</h2><button id="travelPreview" class="travel-preview" type="button"></button><details class="route-details"><summary>Compare arrival times</summary><ul id="routeComparison"></ul></details><p class="muted small">Times update as you prepare. The outing begins at 09:35.</p></section>
+<section class="card travel-card" aria-labelledby="travelTitle"><p class="eyebrow">Timing your plan</p><h2 id="travelTitle">Will you arrive in time?</h2><button id="travelPreview" class="travel-preview" type="button"></button><details class="route-details"><summary>Compare current arrival times</summary><ul id="routeComparison"></ul></details><button id="openTravelLab" class="quiet-button travel-entry" type="button" aria-controls="travelLab">Explore departure times</button><p class="muted small">Times update as you prepare. The outing begins at 09:35.</p></section>
 <section class="card bag-card" aria-labelledby="bagTitle"><h2 id="bagTitle">In your bag</h2><ul id="inventory" class="inventory-list"></ul></section>
 <section class="card coach-card" aria-labelledby="coachTitle"><div class="section-header"><h2 id="coachTitle">A little support</h2><span id="supportLabel" class="small-tag">Guided</span></div><button id="hintButton" class="quiet-button">Show a useful cue</button><div id="hintContent" hidden><dl><dt>Notice</dt><dd id="hintNotice"></dd><dt>Connect</dt><dd id="hintConnect"></dd><dt>Try</dt><dd id="hintTry"></dd></dl></div><p class="muted small">Cues and retries are always available. The practice records coaching separately.</p></section>
 <section class="card story-card" aria-labelledby="storyTitle"><div class="section-header"><div><p class="eyebrow">Optional story moments</p><h2 id="storyTitle">Check in with Sam</h2></div><span class="sam-avatar" aria-hidden="true">S</span></div><p class="muted">Sam is a fictional practice companion. Pick a topic for one short exchange.</p><div class="story-buttons"><button id="introButton" class="quiet-button">Tell the story</button><button class="quiet-button dialogue-button" data-intent="plan">Talk about the plan</button><button class="quiet-button dialogue-button" data-intent="change">Talk about a change</button><button class="quiet-button dialogue-button" data-intent="help">Ask for encouragement</button></div><p id="storyAvailability" class="muted small">The prepared story is ready to use.</p><div id="storyMoment" class="story-moment" hidden><span id="storyLabel" class="eyebrow"></span><p id="storyText"></p></div><p id="storyStatus" class="muted small" role="status" aria-live="polite"></p></section>
