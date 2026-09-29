@@ -53,11 +53,11 @@ describe('Circuit Lab SVG alternatives', () => {
     );
   });
 
-  it('gives all twenty SVG declarations an explicit image role and name', () => {
+  it('names each SVG and exposes the interactive schematic as a group', () => {
     const declarations = [...source.matchAll(/h\('svg', \{([^}]*)\}/g)];
     expect(declarations).toHaveLength(20);
     for (const declaration of declarations) {
-      expect(declaration[1]).toContain("role: 'img'");
+      expect(declaration[1]).toContain(declaration[1].includes("'Interactive ' + mode") ? "role: 'group'" : "role: 'img'");
       expect(declaration[1]).toContain("'aria-label':");
     }
   });

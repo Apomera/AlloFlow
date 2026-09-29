@@ -61,6 +61,22 @@ describe('Circuit Builder part reordering', () => {
   const schematicIds = () => Array.from(host.querySelectorAll('[data-circuit-schematic-part]')).map((g) => Number(g.getAttribute('data-circuit-schematic-part')));
   const three = [{ type: 'resistor', value: 100, id: 1 }, { type: 'bulb', value: 50, id: 2 }, { type: 'switch', closed: true, id: 3 }];
 
+  it.each(['series','parallel'])('keeps schematic switches operable inside a named %s diagram group',async(mode)=>{
+    await mount({mode,pauseMotion:true,components:three});
+    const svg=host.querySelector('svg[aria-label^="Interactive "]');
+    expect(svg.getAttribute('role')).toBe('group');
+    const control=svg.querySelector('[data-circuit-schematic-part="3"] [role="button"]');
+    control.focus();expect(document.activeElement).toBe(control);
+    expect(control.getAttribute('aria-pressed')).toBe('true');
+    await act(async()=>control.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true})));
+    expect(latest.components[2].closed).toBe(false);expect(control.getAttribute('aria-pressed')).toBe('false');
+    await act(async()=>control.dispatchEvent(new KeyboardEvent('keydown',{key:' ',bubbles:true,cancelable:true})));
+    expect(latest.components[2].closed).toBe(true);
+    await act(async()=>control.dispatchEvent(new MouseEvent('click',{bubbles:true})));
+    expect(latest.components[2].closed).toBe(false);
+    expect(latest.components.map(c=>c.id)).toEqual([1,2,3]);expect(document.activeElement).toBe(control);
+  });
+
   it('keeps the shipped mirror byte-identical to the source', () => {
     expect(fs.readFileSync(deployPath, 'utf8')).toBe(source);
   });
@@ -169,5 +185,19 @@ describe('Circuit Builder part reordering', () => {
     const before = readings();
     await act(async () => host.querySelector('[data-circuit-move="fwd"][data-circuit-move-id="1"]').click());
     expect(readings()).toBe(before);
+  });
+
+  it('drags between the first and last rows of the expanded eight-branch parallel diagram', async () => {
+    await mount({mode:'parallel',pauseMotion:true,components:Array.from({length:8},(_,i)=>({id:i+1,type:'resistor',value:100}))});
+    const svg=host.querySelector('svg[aria-label^="Interactive parallel circuit schematic"]');
+    expect(svg.getAttribute('viewBox')).toBe('0 0 440 390');
+    svg.getBoundingClientRect=()=>({left:0,top:0,width:440,height:390,right:440,bottom:390});
+    const first=svg.querySelector('[data-circuit-schematic-part="1"]');
+    await act(async()=>pointer('pointerdown',first,{pointerId:11,pointerType:'touch',clientX:220,clientY:40}));
+    await act(async()=>pointer('pointermove',first,{pointerId:11,pointerType:'touch',clientX:220,clientY:320}));
+    expect(svg.querySelector('[data-circuit-drop-slot]').getAttribute('data-circuit-drop-slot')).toBe('7');
+    await act(async()=>pointer('pointerup',first,{pointerId:11,pointerType:'touch',clientX:220,clientY:320}));
+    expect(latest.components.map(p=>p.id)).toEqual([2,3,4,5,6,7,8,1]);
+    expect(latest.selectedPart).toBe(7);
   });
 });

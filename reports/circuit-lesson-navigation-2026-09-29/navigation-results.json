@@ -1,0 +1,3206 @@
+{
+  "sourceSha256": "b45f885a5398ce9b44181b3f3750cccaff66ae539550349fdcad0a7004ec963c",
+  "baseline": false,
+  "checks": [
+    {
+      "name": "A fresh learner sees the invitation and open chooser; Start opens the loop question with compact navigation and preserved notes"
+    },
+    {
+      "name": "Keyboard chooser toggles change no saved state; selecting the current untested lesson preserves an edited circuit, draft prediction, and Undo history"
+    },
+    {
+      "name": "Resume focuses the untested question or saved result; new and saved lesson selection close the chooser and preserve existing circuits and explanations"
+    }
+  ],
+  "errors": [],
+  "axe": [
+    {
+      "name": "fresh-invitation",
+      "width": 1280,
+      "textScale": 1,
+      "violations": []
+    },
+    {
+      "name": "fresh-invitation",
+      "width": 390,
+      "textScale": 1,
+      "violations": []
+    },
+    {
+      "name": "fresh-invitation",
+      "width": 320,
+      "textScale": 1,
+      "violations": []
+    },
+    {
+      "name": "start-active",
+      "width": 1280,
+      "textScale": 1,
+      "violations": []
+    },
+    {
+      "name": "start-active",
+      "width": 390,
+      "textScale": 1,
+      "violations": []
+    },
+    {
+      "name": "start-active",
+      "width": 320,
+      "textScale": 1,
+      "violations": []
+    },
+    {
+      "name": "chooser-open",
+      "width": 1280,
+      "textScale": 1,
+      "violations": []
+    },
+    {
+      "name": "chooser-open",
+      "width": 390,
+      "textScale": 1,
+      "violations": []
+    },
+    {
+      "name": "chooser-open",
+      "width": 320,
+      "textScale": 1,
+      "violations": []
+    },
+    {
+      "name": "resumed-result",
+      "width": 1280,
+      "textScale": 1,
+      "violations": []
+    },
+    {
+      "name": "resumed-result",
+      "width": 390,
+      "textScale": 1,
+      "violations": []
+    },
+    {
+      "name": "resumed-result",
+      "width": 320,
+      "textScale": 1,
+      "violations": []
+    },
+    {
+      "name": "resumed-result-200pct-text",
+      "width": 390,
+      "textScale": 2,
+      "violations": []
+    },
+    {
+      "name": "resumed-result-200pct-text",
+      "width": 320,
+      "textScale": 2,
+      "violations": []
+    },
+    {
+      "name": "paths-result-200pct-text",
+      "width": 320,
+      "textScale": 2,
+      "violations": []
+    }
+  ],
+  "layouts": [
+    {
+      "name": "fresh-invitation",
+      "textScale": 1,
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "name": "fresh-invitation",
+      "textScale": 1,
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "fresh-invitation",
+      "textScale": 1,
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "start-active",
+      "textScale": 1,
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "name": "start-active",
+      "textScale": 1,
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "start-active",
+      "textScale": 1,
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "chooser-open",
+      "textScale": 1,
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "name": "chooser-open",
+      "textScale": 1,
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "chooser-open",
+      "textScale": 1,
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "resumed-result",
+      "textScale": 1,
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "name": "resumed-result",
+      "textScale": 1,
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "resumed-result",
+      "textScale": 1,
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "resumed-result-200pct-text",
+      "textScale": 2,
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "resumed-result-200pct-text",
+      "textScale": 2,
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "paths-result-200pct-text",
+      "textScale": 2,
+      "width": 320,
+      "scrollWidth": 320
+    }
+  ],
+  "actions": [
+    {
+      "name": "fresh-invitation",
+      "width": 1280,
+      "textScale": 1,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Start with a bulb",
+          "width": 124.171875,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Build on my own",
+          "width": 125.34375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "SUMMARY",
+          "label": "Choose an experiment",
+          "width": 810,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "01 / ResistanceTurn down the currentNot tried yet",
+          "width": 254,
+          "height": 115.140625,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "02 / Parallel pathsGive charge another pathNot tried yet",
+          "width": 254,
+          "height": 115.140625,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "03 / SwitchesComplete the loopNot tried yet",
+          "width": 254,
+          "height": 115.140625,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "fresh-invitation",
+      "width": 390,
+      "textScale": 1,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Start with a bulb",
+          "width": 288,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Build on my own",
+          "width": 288,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "SUMMARY",
+          "label": "Choose an experiment",
+          "width": 312,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "01 / ResistanceTurn down the currentNot tried yet",
+          "width": 292,
+          "height": 71.296875,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "02 / Parallel pathsGive charge another pathNot tried yet",
+          "width": 292,
+          "height": 71.296875,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "03 / SwitchesComplete the loopNot tried yet",
+          "width": 292,
+          "height": 71.296875,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "fresh-invitation",
+      "width": 320,
+      "textScale": 1,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Start with a bulb",
+          "width": 218,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Build on my own",
+          "width": 218,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "SUMMARY",
+          "label": "Choose an experiment",
+          "width": 242,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "01 / ResistanceTurn down the currentNot tried yet",
+          "width": 222,
+          "height": 91.59375,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "02 / Parallel pathsGive charge another pathNot tried yet",
+          "width": 222,
+          "height": 91.59375,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "03 / SwitchesComplete the loopNot tried yet",
+          "width": 222,
+          "height": 71.296875,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "start-active",
+      "width": 1280,
+      "textScale": 1,
+      "actions": [
+        {
+          "tag": "SUMMARY",
+          "label": "Change experimentComplete the loop",
+          "width": 810,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "It starts flowing",
+          "width": 119.65625,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "It stays at zero",
+          "width": 111.984375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Only the switch carries current",
+          "width": 201.671875,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Test my prediction",
+          "width": 134.40625,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "start-active",
+      "width": 390,
+      "textScale": 1,
+      "actions": [
+        {
+          "tag": "SUMMARY",
+          "label": "Change experimentComplete the loop",
+          "width": 312,
+          "height": 69,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "It starts flowing",
+          "width": 119.65625,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "It stays at zero",
+          "width": 111.984375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Only the switch carries current",
+          "width": 201.671875,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Test my prediction",
+          "width": 134.40625,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "start-active",
+      "width": 320,
+      "textScale": 1,
+      "actions": [
+        {
+          "tag": "SUMMARY",
+          "label": "Change experimentComplete the loop",
+          "width": 242,
+          "height": 69,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "It starts flowing",
+          "width": 119.65625,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "It stays at zero",
+          "width": 111.984375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Only the switch carries current",
+          "width": 201.671875,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Test my prediction",
+          "width": 134.40625,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "chooser-open",
+      "width": 1280,
+      "textScale": 1,
+      "actions": [
+        {
+          "tag": "SUMMARY",
+          "label": "Change experimentComplete the loop",
+          "width": 810,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "01 / ResistanceTurn down the currentNot tried yet",
+          "width": 254,
+          "height": 115.140625,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "02 / Parallel pathsGive charge another pathNot tried yet",
+          "width": 254,
+          "height": 115.140625,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "03 / SwitchesComplete the loopPrediction saved",
+          "width": 254,
+          "height": 115.140625,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "It starts flowing",
+          "width": 119.65625,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "It stays at zero",
+          "width": 111.984375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Only the switch carries current",
+          "width": 201.671875,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Test my prediction",
+          "width": 134.40625,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "chooser-open",
+      "width": 390,
+      "textScale": 1,
+      "actions": [
+        {
+          "tag": "SUMMARY",
+          "label": "Change experimentComplete the loop",
+          "width": 312,
+          "height": 69,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "01 / ResistanceTurn down the currentNot tried yet",
+          "width": 292,
+          "height": 71.296875,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "02 / Parallel pathsGive charge another pathNot tried yet",
+          "width": 292,
+          "height": 71.296875,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "03 / SwitchesComplete the loopPrediction saved",
+          "width": 292,
+          "height": 71.296875,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "It starts flowing",
+          "width": 119.65625,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "It stays at zero",
+          "width": 111.984375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Only the switch carries current",
+          "width": 201.671875,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Test my prediction",
+          "width": 134.40625,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "chooser-open",
+      "width": 320,
+      "textScale": 1,
+      "actions": [
+        {
+          "tag": "SUMMARY",
+          "label": "Change experimentComplete the loop",
+          "width": 242,
+          "height": 69,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "01 / ResistanceTurn down the currentNot tried yet",
+          "width": 222,
+          "height": 91.59375,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "02 / Parallel pathsGive charge another pathNot tried yet",
+          "width": 222,
+          "height": 91.59375,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "03 / SwitchesComplete the loopPrediction saved",
+          "width": 222,
+          "height": 91.59375,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "It starts flowing",
+          "width": 119.65625,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "It stays at zero",
+          "width": 111.984375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Only the switch carries current",
+          "width": 201.671875,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Test my prediction",
+          "width": 134.40625,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "resumed-result",
+      "width": 1280,
+      "textScale": 1,
+      "actions": [
+        {
+          "tag": "SUMMARY",
+          "label": "Change experimentComplete the loop",
+          "width": 810,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load experiment baseline",
+          "width": 385,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load this experiment result",
+          "width": 385,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Next: Turn down the current",
+          "width": 190.234375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Try this experiment again",
+          "width": 174.078125,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Save experiment evidence",
+          "width": 177.234375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "resumed-result",
+      "width": 390,
+      "textScale": 1,
+      "actions": [
+        {
+          "tag": "SUMMARY",
+          "label": "Change experimentComplete the loop",
+          "width": 312,
+          "height": 69,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load experiment baseline",
+          "width": 288,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load this experiment result",
+          "width": 288,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Next: Turn down the current",
+          "width": 287,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Try this experiment again",
+          "width": 174.078125,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Save experiment evidence",
+          "width": 177.234375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "resumed-result",
+      "width": 320,
+      "textScale": 1,
+      "actions": [
+        {
+          "tag": "SUMMARY",
+          "label": "Change experimentComplete the loop",
+          "width": 242,
+          "height": 69,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load experiment baseline",
+          "width": 218,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load this experiment result",
+          "width": 218,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Next: Turn down the current",
+          "width": 217,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Try this experiment again",
+          "width": 174.078125,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Save experiment evidence",
+          "width": 177.234375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "resumed-result-200pct-text",
+      "width": 390,
+      "textScale": 2,
+      "actions": [
+        {
+          "tag": "SUMMARY",
+          "label": "Change experimentComplete the loop",
+          "width": 312,
+          "height": 102,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load experiment baseline",
+          "width": 288,
+          "height": 94,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load this experiment result",
+          "width": 288,
+          "height": 94,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Next: Turn down the current",
+          "width": 287,
+          "height": 94,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Try this experiment again",
+          "width": 314,
+          "height": 94,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Save experiment evidence",
+          "width": 314,
+          "height": 94,
+          "transitionDuration": "0s"
+        }
+      ]
+    },
+    {
+      "name": "resumed-result-200pct-text",
+      "width": 320,
+      "textScale": 2,
+      "actions": [
+        {
+          "tag": "SUMMARY",
+          "label": "Change experimentComplete the loop",
+          "width": 242,
+          "height": 208,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load experiment baseline",
+          "width": 218,
+          "height": 94,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load this experiment result",
+          "width": 218,
+          "height": 130,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Next: Turn down the current",
+          "width": 217,
+          "height": 130,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Try this experiment again",
+          "width": 244,
+          "height": 94,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Save experiment evidence",
+          "width": 244,
+          "height": 94,
+          "transitionDuration": "0s"
+        }
+      ]
+    },
+    {
+      "name": "paths-result-200pct-text",
+      "width": 320,
+      "textScale": 2,
+      "actions": [
+        {
+          "tag": "SUMMARY",
+          "label": "Change experimentGive charge another path",
+          "width": 242,
+          "height": 208,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load experiment baseline",
+          "width": 218,
+          "height": 94,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load this experiment result",
+          "width": 218,
+          "height": 130,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Next: Turn down the current",
+          "width": 217,
+          "height": 130,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Try this experiment again",
+          "width": 244,
+          "height": 94,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Save experiment evidence",
+          "width": 244,
+          "height": 94,
+          "transitionDuration": "0s"
+        }
+      ]
+    }
+  ],
+  "focus": [
+    {
+      "name": "fresh-invitation [data-circuit-start-experiment]",
+      "width": 1280,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "fresh-invitation .circuit-lesson-chooser > summary",
+      "width": 1280,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(217, 238, 233)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "fresh-invitation [data-circuit-start-experiment]",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "fresh-invitation .circuit-lesson-chooser > summary",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "fresh-invitation [data-circuit-start-experiment]",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "fresh-invitation .circuit-lesson-chooser > summary",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(217, 238, 233)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "start-active .circuit-lesson-chooser > summary",
+      "width": 1280,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(217, 238, 233)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "start-active #circuit-lesson-question",
+      "width": 1280,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(237, 247, 248)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "start-active .circuit-lesson-chooser > summary",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(217, 238, 233)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "start-active #circuit-lesson-question",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(237, 247, 248)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "start-active .circuit-lesson-chooser > summary",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(217, 238, 233)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "start-active #circuit-lesson-question",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(237, 247, 248)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "chooser-open .circuit-lesson-chooser > summary",
+      "width": 1280,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(217, 238, 233)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "chooser-open .circuit-lesson-chooser > summary",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(217, 238, 233)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "chooser-open .circuit-lesson-chooser > summary",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(217, 238, 233)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "resumed-result .circuit-lesson-chooser > summary",
+      "width": 1280,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(217, 238, 233)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "resumed-result #circuit-lesson-result",
+      "width": 1280,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(231, 250, 242)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "resumed-result .circuit-lesson-chooser > summary",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(217, 238, 233)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "resumed-result #circuit-lesson-result",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(231, 250, 242)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "resumed-result .circuit-lesson-chooser > summary",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(217, 238, 233)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "resumed-result #circuit-lesson-result",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(231, 250, 242)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "resumed-result-200pct-text .circuit-lesson-chooser > summary",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "resumed-result-200pct-text #circuit-lesson-result",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "resumed-result-200pct-text .circuit-lesson-chooser > summary",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "resumed-result-200pct-text #circuit-lesson-result",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "paths-result-200pct-text .circuit-lesson-chooser > summary",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "paths-result-200pct-text #circuit-lesson-result",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    }
+  ],
+  "motion": [
+    {
+      "before": {
+        "tick": 0,
+        "reduced": true,
+        "paused": false
+      },
+      "after": {
+        "tick": 0,
+        "animations": []
+      }
+    }
+  ],
+  "textResize": [
+    {
+      "scope": ".circuit-lessons",
+      "scale": 2,
+      "elements": 84,
+      "beforeQuestionSize": 18,
+      "afterQuestionSize": 36,
+      "questionStyle": "transition: none !important; animation: auto ease 0s 1 normal none running none !important; font-size: 36px !important;",
+      "questionTransition": "none"
+    }
+  ],
+  "contentBounds": [
+    {
+      "name": "fresh-invitation",
+      "width": 1280,
+      "textScale": 1,
+      "cards": []
+    },
+    {
+      "name": "fresh-invitation",
+      "width": 390,
+      "textScale": 1,
+      "cards": []
+    },
+    {
+      "name": "fresh-invitation",
+      "width": 320,
+      "textScale": 1,
+      "cards": []
+    },
+    {
+      "name": "start-active",
+      "width": 1280,
+      "textScale": 1,
+      "cards": []
+    },
+    {
+      "name": "start-active",
+      "width": 390,
+      "textScale": 1,
+      "cards": []
+    },
+    {
+      "name": "start-active",
+      "width": 320,
+      "textScale": 1,
+      "cards": []
+    },
+    {
+      "name": "chooser-open",
+      "width": 1280,
+      "textScale": 1,
+      "cards": []
+    },
+    {
+      "name": "chooser-open",
+      "width": 390,
+      "textScale": 1,
+      "cards": []
+    },
+    {
+      "name": "chooser-open",
+      "width": 320,
+      "textScale": 1,
+      "cards": []
+    },
+    {
+      "name": "resumed-result",
+      "width": 1280,
+      "textScale": 1,
+      "cards": [
+        {
+          "selector": "#circuit-lesson-result",
+          "stage": null,
+          "left": 234,
+          "right": 458.71875,
+          "clientWidth": 225,
+          "scrollWidth": 225,
+          "lines": [
+            {
+              "text": "Current starts flowing",
+              "left": 234,
+              "right": 458.71875,
+              "top": -1.421875,
+              "bottom": 29.578125
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-delta",
+          "stage": null,
+          "left": 959.328125,
+          "right": 1046,
+          "clientWidth": 87,
+          "scrollWidth": 87,
+          "lines": [
+            {
+              "text": "Change in current",
+              "left": 959.328125,
+              "right": 1046,
+              "top": -31.421875,
+              "bottom": -16.421875
+            },
+            {
+              "text": "+90.00 mA",
+              "left": 961.1875,
+              "right": 1046,
+              "top": -7.921875,
+              "bottom": 14.078125
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-bar",
+          "stage": "before",
+          "left": 252,
+          "right": 368.796875,
+          "clientWidth": 151,
+          "scrollWidth": 151,
+          "lines": [
+            {
+              "text": "Before · source current",
+              "left": 252,
+              "right": 361.609375,
+              "top": 125.96875,
+              "bottom": 140.96875
+            },
+            {
+              "text": "0 A",
+              "left": 252,
+              "right": 293.375,
+              "top": 150.46875,
+              "bottom": 188.46875
+            },
+            {
+              "text": "9 V · series · 100 Ω bulb + switch open",
+              "left": 252,
+              "right": 349.125,
+              "top": 228.71875,
+              "bottom": 244.71875
+            },
+            {
+              "text": "9 V · series · 100 Ω bulb + switch open",
+              "left": 252,
+              "right": 354.109375,
+              "top": 247.90625,
+              "bottom": 263.90625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-bar",
+          "stage": "after",
+          "left": 416.796875,
+          "right": 533.59375,
+          "clientWidth": 151,
+          "scrollWidth": 151,
+          "lines": [
+            {
+              "text": "After · source current",
+              "left": 416.796875,
+              "right": 518.71875,
+              "top": 125.96875,
+              "bottom": 140.96875
+            },
+            {
+              "text": "90.00 mA",
+              "left": 416.796875,
+              "right": 484.578125,
+              "top": 150.46875,
+              "bottom": 188.46875
+            },
+            {
+              "text": "90.00 mA",
+              "left": 416.796875,
+              "right": 460.515625,
+              "top": 186.71875,
+              "bottom": 224.71875
+            },
+            {
+              "text": "9 V · series · 100 Ω bulb + switch closed",
+              "left": 416.796875,
+              "right": 513.921875,
+              "top": 264.96875,
+              "bottom": 280.96875
+            },
+            {
+              "text": "9 V · series · 100 Ω bulb + switch closed",
+              "left": 416.796875,
+              "right": 525.671875,
+              "top": 284.15625,
+              "bottom": 300.15625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-change",
+          "stage": null,
+          "left": 251,
+          "right": 1029,
+          "clientWidth": 810,
+          "scrollWidth": 810,
+          "lines": [
+            {
+              "text": "Single change",
+              "left": 251,
+              "right": 319,
+              "top": 348.34375,
+              "bottom": 363.34375
+            },
+            {
+              "text": "part 2 switch: closed",
+              "left": 912.734375,
+              "right": 1029,
+              "top": 346.34375,
+              "bottom": 363.34375
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "resumed-result",
+      "width": 390,
+      "textScale": 1,
+      "cards": [
+        {
+          "selector": "#circuit-lesson-result",
+          "stage": null,
+          "left": 38,
+          "right": 243.1875,
+          "clientWidth": 205,
+          "scrollWidth": 205,
+          "lines": [
+            {
+              "text": "Current starts flowing",
+              "left": 38,
+              "right": 243.1875,
+              "top": 490.203125,
+              "bottom": 518.203125
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-delta",
+          "stage": null,
+          "left": 38,
+          "right": 209.5,
+          "clientWidth": 172,
+          "scrollWidth": 172,
+          "lines": [
+            {
+              "text": "Change in current",
+              "left": 38,
+              "right": 124.671875,
+              "top": 535.5,
+              "bottom": 550.5
+            },
+            {
+              "text": "+90.00 mA",
+              "left": 134.671875,
+              "right": 209.5,
+              "top": 531.5,
+              "bottom": 551.5
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-bar",
+          "stage": "before",
+          "left": 49,
+          "right": 180,
+          "clientWidth": 151,
+          "scrollWidth": 151,
+          "lines": [
+            {
+              "text": "Before · source current",
+              "left": 49,
+              "right": 158.609375,
+              "top": 690,
+              "bottom": 705
+            },
+            {
+              "text": "0 A",
+              "left": 49,
+              "right": 76.640625,
+              "top": 714.5,
+              "bottom": 741.5
+            },
+            {
+              "text": "9 V · series · 100 Ω bulb + switch open",
+              "left": 49,
+              "right": 173.21875,
+              "top": 781.5,
+              "bottom": 797.5
+            },
+            {
+              "text": "9 V · series · 100 Ω bulb + switch open",
+              "left": 49,
+              "right": 124.015625,
+              "top": 800.6875,
+              "bottom": 816.6875
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-bar",
+          "stage": "after",
+          "left": 210,
+          "right": 341,
+          "clientWidth": 151,
+          "scrollWidth": 151,
+          "lines": [
+            {
+              "text": "After · source current",
+              "left": 210,
+              "right": 311.921875,
+              "top": 690,
+              "bottom": 705
+            },
+            {
+              "text": "90.00 mA",
+              "left": 210,
+              "right": 289.484375,
+              "top": 714.5,
+              "bottom": 741.5
+            },
+            {
+              "text": "9 V · series · 100 Ω bulb + switch closed",
+              "left": 210,
+              "right": 334.21875,
+              "top": 781.5,
+              "bottom": 797.5
+            },
+            {
+              "text": "9 V · series · 100 Ω bulb + switch closed",
+              "left": 210,
+              "right": 291.78125,
+              "top": 800.6875,
+              "bottom": 816.6875
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-change",
+          "stage": null,
+          "left": 50,
+          "right": 340,
+          "clientWidth": 312,
+          "scrollWidth": 312,
+          "lines": [
+            {
+              "text": "Single change",
+              "left": 50,
+              "right": 118,
+              "top": 851.875,
+              "bottom": 866.875
+            },
+            {
+              "text": "part 2 switch: closed",
+              "left": 50,
+              "right": 166.265625,
+              "top": 873.375,
+              "bottom": 890.375
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "resumed-result",
+      "width": 320,
+      "textScale": 1,
+      "cards": [
+        {
+          "selector": "#circuit-lesson-result",
+          "stage": null,
+          "left": 38,
+          "right": 243.1875,
+          "clientWidth": 205,
+          "scrollWidth": 205,
+          "lines": [
+            {
+              "text": "Current starts flowing",
+              "left": 38,
+              "right": 243.1875,
+              "top": 525.09375,
+              "bottom": 553.09375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-delta",
+          "stage": null,
+          "left": 38,
+          "right": 209.5,
+          "clientWidth": 172,
+          "scrollWidth": 172,
+          "lines": [
+            {
+              "text": "Change in current",
+              "left": 38,
+              "right": 124.671875,
+              "top": 570.390625,
+              "bottom": 585.390625
+            },
+            {
+              "text": "+90.00 mA",
+              "left": 134.671875,
+              "right": 209.5,
+              "top": 566.390625,
+              "bottom": 586.390625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-bar",
+          "stage": "before",
+          "left": 49,
+          "right": 271,
+          "clientWidth": 242,
+          "scrollWidth": 242,
+          "lines": [
+            {
+              "text": "Before · source current",
+              "left": 49,
+              "right": 158.609375,
+              "top": 747.640625,
+              "bottom": 762.640625
+            },
+            {
+              "text": "0 A",
+              "left": 49,
+              "right": 76.640625,
+              "top": 772.140625,
+              "bottom": 799.140625
+            },
+            {
+              "text": "9 V · series · 100 Ω bulb + switch open",
+              "left": 49,
+              "right": 251.515625,
+              "top": 839.140625,
+              "bottom": 855.140625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-bar",
+          "stage": "after",
+          "left": 49,
+          "right": 271,
+          "clientWidth": 242,
+          "scrollWidth": 242,
+          "lines": [
+            {
+              "text": "After · source current",
+              "left": 49,
+              "right": 150.921875,
+              "top": 891.328125,
+              "bottom": 906.328125
+            },
+            {
+              "text": "90.00 mA",
+              "left": 49,
+              "right": 128.484375,
+              "top": 915.828125,
+              "bottom": 942.828125
+            },
+            {
+              "text": "9 V · series · 100 Ω bulb + switch closed",
+              "left": 49,
+              "right": 258.28125,
+              "top": 982.828125,
+              "bottom": 998.828125
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-change",
+          "stage": null,
+          "left": 50,
+          "right": 270,
+          "clientWidth": 242,
+          "scrollWidth": 242,
+          "lines": [
+            {
+              "text": "Single change",
+              "left": 50,
+              "right": 118,
+              "top": 1034.015625,
+              "bottom": 1049.015625
+            },
+            {
+              "text": "part 2 switch: closed",
+              "left": 50,
+              "right": 166.265625,
+              "top": 1055.515625,
+              "bottom": 1072.515625
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "resumed-result-200pct-text",
+      "width": 390,
+      "textScale": 2,
+      "cards": [
+        {
+          "selector": "#circuit-lesson-result",
+          "stage": null,
+          "left": 38,
+          "right": 352,
+          "clientWidth": 314,
+          "scrollWidth": 314,
+          "lines": [
+            {
+              "text": "Current starts flowing",
+              "left": 38,
+              "right": 318.84375,
+              "top": 1195.984375,
+              "bottom": 1257.984375
+            },
+            {
+              "text": "Current starts flowing",
+              "left": 38,
+              "right": 195.0625,
+              "top": 1255.78125,
+              "bottom": 1317.78125
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-delta",
+          "stage": null,
+          "left": 38,
+          "right": 352,
+          "clientWidth": 314,
+          "scrollWidth": 314,
+          "lines": [
+            {
+              "text": "Change in current",
+              "left": 38,
+              "right": 211.328125,
+              "top": 1330.578125,
+              "bottom": 1360.578125
+            },
+            {
+              "text": "+90.00 mA",
+              "left": 38,
+              "right": 207.609375,
+              "top": 1370.578125,
+              "bottom": 1416.578125
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-bar",
+          "stage": "before",
+          "left": 49,
+          "right": 341,
+          "clientWidth": 312,
+          "scrollWidth": 312,
+          "lines": [
+            {
+              "text": "Before · source current",
+              "left": 49,
+              "right": 268.21875,
+              "top": 1830.578125,
+              "bottom": 1860.578125
+            },
+            {
+              "text": "0 A",
+              "left": 49,
+              "right": 129.125,
+              "top": 1868.578125,
+              "bottom": 1946.578125
+            },
+            {
+              "text": "9 V · series · 100 Ω bulb + switch open",
+              "left": 49,
+              "right": 320.4375,
+              "top": 1987.078125,
+              "bottom": 2019.078125
+            },
+            {
+              "text": "9 V · series · 100 Ω bulb + switch open",
+              "left": 49,
+              "right": 176.03125,
+              "top": 2025.46875,
+              "bottom": 2057.46875
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-bar",
+          "stage": "after",
+          "left": 49,
+          "right": 341,
+          "clientWidth": 312,
+          "scrollWidth": 312,
+          "lines": [
+            {
+              "text": "After · source current",
+              "left": 49,
+              "right": 252.84375,
+              "top": 2095.859375,
+              "bottom": 2125.859375
+            },
+            {
+              "text": "90.00 mA",
+              "left": 49,
+              "right": 279.5,
+              "top": 2133.859375,
+              "bottom": 2211.859375
+            },
+            {
+              "text": "9 V · series · 100 Ω bulb + switch closed",
+              "left": 49,
+              "right": 320.4375,
+              "top": 2252.359375,
+              "bottom": 2284.359375
+            },
+            {
+              "text": "9 V · series · 100 Ω bulb + switch closed",
+              "left": 49,
+              "right": 189.546875,
+              "top": 2290.75,
+              "bottom": 2322.75
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-change",
+          "stage": null,
+          "left": 50,
+          "right": 340,
+          "clientWidth": 312,
+          "scrollWidth": 312,
+          "lines": [
+            {
+              "text": "Single change",
+              "left": 50,
+              "right": 186,
+              "top": 2360.140625,
+              "bottom": 2390.140625
+            },
+            {
+              "text": "part 2 switch: closed",
+              "left": 50,
+              "right": 282.515625,
+              "top": 2399.140625,
+              "bottom": 2434.140625
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "resumed-result-200pct-text",
+      "width": 320,
+      "textScale": 2,
+      "cards": [
+        {
+          "selector": "#circuit-lesson-result",
+          "stage": null,
+          "left": 38,
+          "right": 282,
+          "clientWidth": 244,
+          "scrollWidth": 244,
+          "lines": [
+            {
+              "text": "Current starts flowing",
+              "left": 38,
+              "right": 193.546875,
+              "top": 495.875,
+              "bottom": 557.875
+            },
+            {
+              "text": "Current starts flowing",
+              "left": 38,
+              "right": 151.765625,
+              "top": 555.671875,
+              "bottom": 617.671875
+            },
+            {
+              "text": "Current starts flowing",
+              "left": 38,
+              "right": 195.0625,
+              "top": 615.46875,
+              "bottom": 677.46875
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-delta",
+          "stage": null,
+          "left": 38,
+          "right": 282,
+          "clientWidth": 244,
+          "scrollWidth": 244,
+          "lines": [
+            {
+              "text": "Change in current",
+              "left": 38,
+              "right": 211.328125,
+              "top": 690.265625,
+              "bottom": 720.265625
+            },
+            {
+              "text": "+90.00 mA",
+              "left": 38,
+              "right": 207.609375,
+              "top": 730.265625,
+              "bottom": 776.265625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-bar",
+          "stage": "before",
+          "left": 49,
+          "right": 271,
+          "clientWidth": 242,
+          "scrollWidth": 242,
+          "lines": [
+            {
+              "text": "Before · source current",
+              "left": 49,
+              "right": 268.21875,
+              "top": 1281.265625,
+              "bottom": 1311.265625
+            },
+            {
+              "text": "0 A",
+              "left": 49,
+              "right": 129.125,
+              "top": 1319.265625,
+              "bottom": 1397.265625
+            },
+            {
+              "text": "9 V · series · 100 Ω bulb + switch open",
+              "left": 49,
+              "right": 243.25,
+              "top": 1437.765625,
+              "bottom": 1469.765625
+            },
+            {
+              "text": "9 V · series · 100 Ω bulb + switch open",
+              "left": 49,
+              "right": 253.203125,
+              "top": 1476.15625,
+              "bottom": 1508.15625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-bar",
+          "stage": "after",
+          "left": 49,
+          "right": 271,
+          "clientWidth": 242,
+          "scrollWidth": 242,
+          "lines": [
+            {
+              "text": "After · source current",
+              "left": 49,
+              "right": 252.84375,
+              "top": 1546.546875,
+              "bottom": 1576.546875
+            },
+            {
+              "text": "90.00 mA",
+              "left": 49,
+              "right": 180.203125,
+              "top": 1584.546875,
+              "bottom": 1662.546875
+            },
+            {
+              "text": "90.00 mA",
+              "left": 49,
+              "right": 134.6875,
+              "top": 1657.046875,
+              "bottom": 1735.046875
+            },
+            {
+              "text": "9 V · series · 100 Ω bulb + switch closed",
+              "left": 49,
+              "right": 243.25,
+              "top": 1775.546875,
+              "bottom": 1807.546875
+            },
+            {
+              "text": "9 V · series · 100 Ω bulb + switch closed",
+              "left": 49,
+              "right": 266.734375,
+              "top": 1813.9375,
+              "bottom": 1845.9375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-change",
+          "stage": null,
+          "left": 50,
+          "right": 270,
+          "clientWidth": 242,
+          "scrollWidth": 242,
+          "lines": [
+            {
+              "text": "Single change",
+              "left": 50,
+              "right": 186,
+              "top": 1883.328125,
+              "bottom": 1913.328125
+            },
+            {
+              "text": "part 2 switch: closed",
+              "left": 50,
+              "right": 201.921875,
+              "top": 1922.328125,
+              "bottom": 1957.328125
+            },
+            {
+              "text": "part 2 switch: closed",
+              "left": 50,
+              "right": 123.484375,
+              "top": 1963.921875,
+              "bottom": 1998.921875
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "paths-result-200pct-text",
+      "width": 320,
+      "textScale": 2,
+      "cards": [
+        {
+          "selector": "#circuit-lesson-result",
+          "stage": null,
+          "left": 38,
+          "right": 282,
+          "clientWidth": 244,
+          "scrollWidth": 244,
+          "lines": [
+            {
+              "text": "Current increased",
+              "left": 38,
+              "right": 193.546875,
+              "top": 1650.0625,
+              "bottom": 1712.0625
+            },
+            {
+              "text": "Current increased",
+              "left": 38,
+              "right": 232,
+              "top": 1709.859375,
+              "bottom": 1771.859375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-delta",
+          "stage": null,
+          "left": 38,
+          "right": 282,
+          "clientWidth": 244,
+          "scrollWidth": 244,
+          "lines": [
+            {
+              "text": "Change in current",
+              "left": 38,
+              "right": 211.328125,
+              "top": 1784.65625,
+              "bottom": 1814.65625
+            },
+            {
+              "text": "+90.00 mA",
+              "left": 38,
+              "right": 207.609375,
+              "top": 1824.65625,
+              "bottom": 1870.65625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-bar",
+          "stage": "before",
+          "left": 49,
+          "right": 271,
+          "clientWidth": 242,
+          "scrollWidth": 242,
+          "lines": [
+            {
+              "text": "Before · source current",
+              "left": 49,
+              "right": 268.21875,
+              "top": 2330.15625,
+              "bottom": 2360.15625
+            },
+            {
+              "text": "90.00 mA",
+              "left": 49,
+              "right": 180.203125,
+              "top": 2368.15625,
+              "bottom": 2446.15625
+            },
+            {
+              "text": "90.00 mA",
+              "left": 49,
+              "right": 134.6875,
+              "top": 2440.65625,
+              "bottom": 2518.65625
+            },
+            {
+              "text": "9 V · parallel · 100 Ω resistor",
+              "left": 49,
+              "right": 260.5,
+              "top": 2559.15625,
+              "bottom": 2591.15625
+            },
+            {
+              "text": "9 V · parallel · 100 Ω resistor",
+              "left": 49,
+              "right": 126.625,
+              "top": 2597.546875,
+              "bottom": 2629.546875
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-bar",
+          "stage": "after",
+          "left": 49,
+          "right": 271,
+          "clientWidth": 242,
+          "scrollWidth": 242,
+          "lines": [
+            {
+              "text": "After · source current",
+              "left": 49,
+              "right": 252.84375,
+              "top": 2667.9375,
+              "bottom": 2697.9375
+            },
+            {
+              "text": "180.00 mA",
+              "left": 49,
+              "right": 210.078125,
+              "top": 2705.9375,
+              "bottom": 2783.9375
+            },
+            {
+              "text": "180.00 mA",
+              "left": 49,
+              "right": 134.6875,
+              "top": 2778.4375,
+              "bottom": 2856.4375
+            },
+            {
+              "text": "9 V · parallel · 100 Ω resistor + 100 Ω resistor",
+              "left": 49,
+              "right": 260.5,
+              "top": 2896.9375,
+              "bottom": 2928.9375
+            },
+            {
+              "text": "9 V · parallel · 100 Ω resistor + 100 Ω resistor",
+              "left": 49,
+              "right": 219.6875,
+              "top": 2935.328125,
+              "bottom": 2967.328125
+            },
+            {
+              "text": "9 V · parallel · 100 Ω resistor + 100 Ω resistor",
+              "left": 49,
+              "right": 126.625,
+              "top": 2973.71875,
+              "bottom": 3005.71875
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-evidence-change",
+          "stage": null,
+          "left": 50,
+          "right": 270,
+          "clientWidth": 242,
+          "scrollWidth": 242,
+          "lines": [
+            {
+              "text": "Single change",
+              "left": 50,
+              "right": 186,
+              "top": 3043.109375,
+              "bottom": 3073.109375
+            },
+            {
+              "text": "part 1: added resistor",
+              "left": 50,
+              "right": 203.03125,
+              "top": 3082.109375,
+              "bottom": 3117.109375
+            },
+            {
+              "text": "part 1: added resistor",
+              "left": 50,
+              "right": 134.09375,
+              "top": 3123.703125,
+              "bottom": 3158.703125
+            }
+          ],
+          "violations": []
+        }
+      ]
+    }
+  ],
+  "readingStress": {
+    "screenshots": [
+      {
+        "name": "paths-result-200pct-text",
+        "width": 320,
+        "file": "paths-result-200pct-text-320.png",
+        "clip": {
+          "x": 19,
+          "y": 1146,
+          "width": 282,
+          "height": 5602
+        }
+      }
+    ],
+    "lesson": "paths",
+    "width": 320,
+    "textScale": 2,
+    "readings": [
+      "90.00 mA",
+      "180.00 mA"
+    ],
+    "delta": "+90.00 mA",
+    "resize": {
+      "scope": ".circuit-lessons",
+      "scale": 2,
+      "elements": 84,
+      "beforeQuestionSize": 18,
+      "afterQuestionSize": 36,
+      "questionStyle": "transition: none !important; animation: auto ease 0s 1 normal none running none !important; font-size: 36px !important;",
+      "questionTransition": "none"
+    },
+    "passed": true
+  },
+  "screenshots": [
+    {
+      "name": "fresh-invitation",
+      "width": 1280,
+      "file": "fresh-invitation-1280.png",
+      "clip": {
+        "x": 207,
+        "y": 320,
+        "width": 866,
+        "height": 737
+      }
+    },
+    {
+      "name": "fresh-chooser",
+      "width": 1280,
+      "file": "fresh-chooser-1280.png",
+      "clip": {
+        "x": 207,
+        "y": 1215,
+        "width": 866,
+        "height": 505
+      }
+    },
+    {
+      "name": "fresh-invitation",
+      "width": 390,
+      "file": "fresh-invitation-390.png",
+      "clip": {
+        "x": 19,
+        "y": 400,
+        "width": 352,
+        "height": 1090
+      }
+    },
+    {
+      "name": "fresh-chooser",
+      "width": 390,
+      "file": "fresh-chooser-390.png",
+      "clip": {
+        "x": 19,
+        "y": 1687,
+        "width": 352,
+        "height": 693
+      }
+    },
+    {
+      "name": "fresh-invitation",
+      "width": 320,
+      "file": "fresh-invitation-320.png",
+      "clip": {
+        "x": 19,
+        "y": 438,
+        "width": 282,
+        "height": 1180
+      }
+    },
+    {
+      "name": "fresh-chooser",
+      "width": 320,
+      "file": "fresh-chooser-320.png",
+      "clip": {
+        "x": 19,
+        "y": 1839,
+        "width": 282,
+        "height": 769
+      }
+    },
+    {
+      "name": "start-active",
+      "width": 1280,
+      "file": "start-active-1280.png",
+      "clip": {
+        "x": 207,
+        "y": 833,
+        "width": 866,
+        "height": 468
+      }
+    },
+    {
+      "name": "start-active",
+      "width": 390,
+      "file": "start-active-390.png",
+      "clip": {
+        "x": 19,
+        "y": 1029,
+        "width": 352,
+        "height": 601
+      }
+    },
+    {
+      "name": "start-active",
+      "width": 320,
+      "file": "start-active-320.png",
+      "clip": {
+        "x": 19,
+        "y": 1146,
+        "width": 282,
+        "height": 661
+      }
+    },
+    {
+      "name": "chooser-open",
+      "width": 1280,
+      "file": "chooser-open-1280.png",
+      "clip": {
+        "x": 207,
+        "y": 833,
+        "width": 866,
+        "height": 697
+      }
+    },
+    {
+      "name": "chooser-open",
+      "width": 390,
+      "file": "chooser-open-390.png",
+      "clip": {
+        "x": 19,
+        "y": 1029,
+        "width": 352,
+        "height": 1031
+      }
+    },
+    {
+      "name": "chooser-open",
+      "width": 320,
+      "file": "chooser-open-320.png",
+      "clip": {
+        "x": 19,
+        "y": 1146,
+        "width": 282,
+        "height": 1172
+      }
+    },
+    {
+      "name": "resumed-result",
+      "width": 1280,
+      "file": "resumed-result-1280.png",
+      "clip": {
+        "x": 207,
+        "y": 833,
+        "width": 866,
+        "height": 1584
+      }
+    },
+    {
+      "name": "resumed-result",
+      "width": 390,
+      "file": "resumed-result-390.png",
+      "clip": {
+        "x": 19,
+        "y": 1060,
+        "width": 352,
+        "height": 1878
+      }
+    },
+    {
+      "name": "resumed-result",
+      "width": 320,
+      "file": "resumed-result-320.png",
+      "clip": {
+        "x": 19,
+        "y": 1146,
+        "width": 282,
+        "height": 2135
+      }
+    },
+    {
+      "name": "resumed-result-200pct-text",
+      "width": 390,
+      "file": "resumed-result-200pct-text-390.png",
+      "clip": {
+        "x": 19,
+        "y": 1060,
+        "width": 352,
+        "height": 4410
+      }
+    },
+    {
+      "name": "resumed-result-200pct-text",
+      "width": 320,
+      "file": "resumed-result-200pct-text-320.png",
+      "clip": {
+        "x": 19,
+        "y": 1146,
+        "width": 282,
+        "height": 5434
+      }
+    }
+  ],
+  "visualIssues": [],
+  "diagnostics": [
+    {
+      "name": "fresh-invitation",
+      "width": 1280,
+      "target": {
+        "disabled": true,
+        "matchesDisabled": true,
+        "opacity": "0.45",
+        "color": "rgb(18, 59, 53)",
+        "backgroundColor": "rgb(180, 239, 220)",
+        "backgroundImage": "none",
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "className": "circuit-target-panel mt-3 rounded-lg border border-slate-600 bg-slate-950 p-3",
+            "opacity": "1",
+            "backgroundColor": "rgb(11, 32, 41)"
+          },
+          {
+            "tag": "SECTION",
+            "className": "circuit-targets mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "max-w-4xl mx-auto p-5 rounded-2xl border bg-slate-950/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200 motion-reduce:animate-none",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "MAIN",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "fresh-invitation",
+      "width": 390,
+      "target": {
+        "disabled": true,
+        "matchesDisabled": true,
+        "opacity": "0.45",
+        "color": "rgb(18, 59, 53)",
+        "backgroundColor": "rgb(180, 239, 220)",
+        "backgroundImage": "none",
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "className": "circuit-target-panel mt-3 rounded-lg border border-slate-600 bg-slate-950 p-3",
+            "opacity": "1",
+            "backgroundColor": "rgb(11, 32, 41)"
+          },
+          {
+            "tag": "SECTION",
+            "className": "circuit-targets mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "max-w-4xl mx-auto p-5 rounded-2xl border bg-slate-950/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200 motion-reduce:animate-none",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "MAIN",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "fresh-invitation",
+      "width": 320,
+      "target": {
+        "disabled": true,
+        "matchesDisabled": true,
+        "opacity": "0.45",
+        "color": "rgb(18, 59, 53)",
+        "backgroundColor": "rgb(180, 239, 220)",
+        "backgroundImage": "none",
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "className": "circuit-target-panel mt-3 rounded-lg border border-slate-600 bg-slate-950 p-3",
+            "opacity": "1",
+            "backgroundColor": "rgb(11, 32, 41)"
+          },
+          {
+            "tag": "SECTION",
+            "className": "circuit-targets mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "max-w-4xl mx-auto p-5 rounded-2xl border bg-slate-950/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200 motion-reduce:animate-none",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "MAIN",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "start-active",
+      "width": 1280,
+      "target": {
+        "disabled": false,
+        "matchesDisabled": false,
+        "opacity": "1",
+        "color": "rgb(18, 59, 53)",
+        "backgroundColor": "rgb(180, 239, 220)",
+        "backgroundImage": "none",
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "className": "circuit-target-panel mt-3 rounded-lg border border-slate-600 bg-slate-950 p-3",
+            "opacity": "1",
+            "backgroundColor": "rgb(11, 32, 41)"
+          },
+          {
+            "tag": "SECTION",
+            "className": "circuit-targets mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "max-w-4xl mx-auto p-5 rounded-2xl border bg-slate-950/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200 motion-reduce:animate-none",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "MAIN",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "start-active",
+      "width": 390,
+      "target": {
+        "disabled": false,
+        "matchesDisabled": false,
+        "opacity": "1",
+        "color": "rgb(18, 59, 53)",
+        "backgroundColor": "rgb(180, 239, 220)",
+        "backgroundImage": "none",
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "className": "circuit-target-panel mt-3 rounded-lg border border-slate-600 bg-slate-950 p-3",
+            "opacity": "1",
+            "backgroundColor": "rgb(11, 32, 41)"
+          },
+          {
+            "tag": "SECTION",
+            "className": "circuit-targets mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "max-w-4xl mx-auto p-5 rounded-2xl border bg-slate-950/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200 motion-reduce:animate-none",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "MAIN",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "start-active",
+      "width": 320,
+      "target": {
+        "disabled": false,
+        "matchesDisabled": false,
+        "opacity": "1",
+        "color": "rgb(18, 59, 53)",
+        "backgroundColor": "rgb(180, 239, 220)",
+        "backgroundImage": "none",
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "className": "circuit-target-panel mt-3 rounded-lg border border-slate-600 bg-slate-950 p-3",
+            "opacity": "1",
+            "backgroundColor": "rgb(11, 32, 41)"
+          },
+          {
+            "tag": "SECTION",
+            "className": "circuit-targets mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "max-w-4xl mx-auto p-5 rounded-2xl border bg-slate-950/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200 motion-reduce:animate-none",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "MAIN",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "chooser-open",
+      "width": 1280,
+      "target": {
+        "disabled": false,
+        "matchesDisabled": false,
+        "opacity": "1",
+        "color": "rgb(18, 59, 53)",
+        "backgroundColor": "rgb(180, 239, 220)",
+        "backgroundImage": "none",
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "className": "circuit-target-panel mt-3 rounded-lg border border-slate-600 bg-slate-950 p-3",
+            "opacity": "1",
+            "backgroundColor": "rgb(11, 32, 41)"
+          },
+          {
+            "tag": "SECTION",
+            "className": "circuit-targets mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "max-w-4xl mx-auto p-5 rounded-2xl border bg-slate-950/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200 motion-reduce:animate-none",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "MAIN",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "chooser-open",
+      "width": 390,
+      "target": {
+        "disabled": false,
+        "matchesDisabled": false,
+        "opacity": "1",
+        "color": "rgb(18, 59, 53)",
+        "backgroundColor": "rgb(180, 239, 220)",
+        "backgroundImage": "none",
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "className": "circuit-target-panel mt-3 rounded-lg border border-slate-600 bg-slate-950 p-3",
+            "opacity": "1",
+            "backgroundColor": "rgb(11, 32, 41)"
+          },
+          {
+            "tag": "SECTION",
+            "className": "circuit-targets mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "max-w-4xl mx-auto p-5 rounded-2xl border bg-slate-950/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200 motion-reduce:animate-none",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "MAIN",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "chooser-open",
+      "width": 320,
+      "target": {
+        "disabled": false,
+        "matchesDisabled": false,
+        "opacity": "1",
+        "color": "rgb(18, 59, 53)",
+        "backgroundColor": "rgb(180, 239, 220)",
+        "backgroundImage": "none",
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "className": "circuit-target-panel mt-3 rounded-lg border border-slate-600 bg-slate-950 p-3",
+            "opacity": "1",
+            "backgroundColor": "rgb(11, 32, 41)"
+          },
+          {
+            "tag": "SECTION",
+            "className": "circuit-targets mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "max-w-4xl mx-auto p-5 rounded-2xl border bg-slate-950/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200 motion-reduce:animate-none",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "MAIN",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "resumed-result",
+      "width": 1280,
+      "target": {
+        "disabled": false,
+        "matchesDisabled": false,
+        "opacity": "1",
+        "color": "rgb(18, 59, 53)",
+        "backgroundColor": "rgb(180, 239, 220)",
+        "backgroundImage": "none",
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "className": "circuit-target-panel mt-3 rounded-lg border border-slate-600 bg-slate-950 p-3",
+            "opacity": "1",
+            "backgroundColor": "rgb(11, 32, 41)"
+          },
+          {
+            "tag": "SECTION",
+            "className": "circuit-targets mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "max-w-4xl mx-auto p-5 rounded-2xl border bg-slate-950/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200 motion-reduce:animate-none",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "MAIN",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "resumed-result",
+      "width": 390,
+      "target": {
+        "disabled": false,
+        "matchesDisabled": false,
+        "opacity": "1",
+        "color": "rgb(18, 59, 53)",
+        "backgroundColor": "rgb(180, 239, 220)",
+        "backgroundImage": "none",
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "className": "circuit-target-panel mt-3 rounded-lg border border-slate-600 bg-slate-950 p-3",
+            "opacity": "1",
+            "backgroundColor": "rgb(11, 32, 41)"
+          },
+          {
+            "tag": "SECTION",
+            "className": "circuit-targets mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "max-w-4xl mx-auto p-5 rounded-2xl border bg-slate-950/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200 motion-reduce:animate-none",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "MAIN",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "resumed-result",
+      "width": 320,
+      "target": {
+        "disabled": false,
+        "matchesDisabled": false,
+        "opacity": "1",
+        "color": "rgb(18, 59, 53)",
+        "backgroundColor": "rgb(180, 239, 220)",
+        "backgroundImage": "none",
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "className": "circuit-target-panel mt-3 rounded-lg border border-slate-600 bg-slate-950 p-3",
+            "opacity": "1",
+            "backgroundColor": "rgb(11, 32, 41)"
+          },
+          {
+            "tag": "SECTION",
+            "className": "circuit-targets mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "max-w-4xl mx-auto p-5 rounded-2xl border bg-slate-950/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200 motion-reduce:animate-none",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "MAIN",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "resumed-result-200pct-text",
+      "width": 390,
+      "target": {
+        "disabled": false,
+        "matchesDisabled": false,
+        "opacity": "1",
+        "color": "rgb(18, 59, 53)",
+        "backgroundColor": "rgb(180, 239, 220)",
+        "backgroundImage": "none",
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "className": "circuit-target-panel mt-3 rounded-lg border border-slate-600 bg-slate-950 p-3",
+            "opacity": "1",
+            "backgroundColor": "rgb(11, 32, 41)"
+          },
+          {
+            "tag": "SECTION",
+            "className": "circuit-targets mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "max-w-4xl mx-auto p-5 rounded-2xl border bg-slate-950/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200 motion-reduce:animate-none",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "MAIN",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "resumed-result-200pct-text",
+      "width": 320,
+      "target": {
+        "disabled": false,
+        "matchesDisabled": false,
+        "opacity": "1",
+        "color": "rgb(18, 59, 53)",
+        "backgroundColor": "rgb(180, 239, 220)",
+        "backgroundImage": "none",
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "className": "circuit-target-panel mt-3 rounded-lg border border-slate-600 bg-slate-950 p-3",
+            "opacity": "1",
+            "backgroundColor": "rgb(11, 32, 41)"
+          },
+          {
+            "tag": "SECTION",
+            "className": "circuit-targets mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "max-w-4xl mx-auto p-5 rounded-2xl border bg-slate-950/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200 motion-reduce:animate-none",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "MAIN",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "paths-result-200pct-text",
+      "width": 320,
+      "target": {
+        "disabled": false,
+        "matchesDisabled": false,
+        "opacity": "1",
+        "color": "rgb(18, 59, 53)",
+        "backgroundColor": "rgb(180, 239, 220)",
+        "backgroundImage": "none",
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "className": "circuit-target-panel mt-3 rounded-lg border border-slate-600 bg-slate-950 p-3",
+            "opacity": "1",
+            "backgroundColor": "rgb(11, 32, 41)"
+          },
+          {
+            "tag": "SECTION",
+            "className": "circuit-targets mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "max-w-4xl mx-auto p-5 rounded-2xl border bg-slate-950/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200 motion-reduce:animate-none",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "DIV",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "tag": "MAIN",
+            "className": "",
+            "opacity": "1",
+            "backgroundColor": "rgba(0, 0, 0, 0)"
+          }
+        ]
+      }
+    }
+  ],
+  "passed": true,
+  "sourceSha256AtEnd": "b45f885a5398ce9b44181b3f3750cccaff66ae539550349fdcad0a7004ec963c",
+  "sourceChangedDuringRun": false
+}

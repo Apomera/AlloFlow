@@ -15,6 +15,9 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // Fills {value1}-style placeholders so a translation can reorder them. One copy
+  // here, because the translator is declared per component in this file.
+  var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
 
   // Shared steady-DC model. LED approximation: typical forward drop + 10 ohm slope.
   function circuitNumber(value, fallback, min, max) {
@@ -170,6 +173,26 @@ window.StemLab = window.StemLab || {
     return {id:id,choice:choice,correct:choice===lesson.answer,
       before:JSON.parse(JSON.stringify(lesson.before)),after:JSON.parse(JSON.stringify(lesson.after))};
   }
+  function circuitLessonRecords(state) {
+    state=state||{};var records={},stored=state.lessonRecords||{};
+    CIRCUIT_LESSONS.forEach(function(lesson){
+      var raw=state.lessonId===lesson.id?{choice:state.lessonChoice,trial:state.lessonTrial,explanation:state.lessonExplanation,tested:stored[lesson.id]&&stored[lesson.id].tested}:stored[lesson.id];
+      if(!raw||typeof raw!=='object')return;
+      var choice=Number.isInteger(raw.choice)&&raw.choice>=0&&raw.choice<lesson.choices.length?raw.choice:null;
+      var trial=raw.trial&&raw.trial.id===lesson.id&&Number.isInteger(raw.trial.choice)&&raw.trial.choice>=0&&raw.trial.choice<lesson.choices.length&&raw.trial.before&&raw.trial.after?JSON.parse(JSON.stringify(raw.trial)):null;
+      records[lesson.id]={choice:choice,trial:trial,explanation:typeof raw.explanation==='string'?raw.explanation.slice(0,1000):'',tested:!!trial||raw.tested===true};
+    });
+    return records;
+  }
+  // Lesson navigation keeps each prediction and explanation. Revisiting saved
+  // evidence leaves the live bench alone; reloading that result is explicit.
+  function circuitLessonStart(state,id) {
+    var lesson=CIRCUIT_LESSONS.find(function(l){return l.id===id;});if(!lesson)return null;
+    var records=circuitLessonRecords(state),saved=records[id]||{choice:null,trial:null,explanation:'',tested:false};
+    records[id]=saved;
+    return Object.assign({},saved.trial?{}:JSON.parse(JSON.stringify(lesson.before)),{lessonId:id,lessonChoice:saved.choice,lessonTrial:saved.trial,lessonExplanation:saved.explanation,lessonRecords:records,lessonOpen:true,selectedPart:0});
+  }
+  window.StemLab.circuitLessonStart=circuitLessonStart;
   function circuitCoach(state) {
     var s=solveCircuit(state), index=-1;
     var find=function(fn){return s.components.findIndex(fn);};
@@ -196,35 +219,113 @@ window.StemLab = window.StemLab || {
   window.StemLab.circuitLessonResult=circuitLessonResult;
   window.StemLab.circuitCoach=circuitCoach;
 
+  function CircuitStartGuide(props) {
+    var h=props.React.createElement,d=props.state,t=circuitToolT(props);
+    var active=CIRCUIT_LESSONS.some(function(lesson){return lesson.id===d.lessonId;}),guideRef=props.React.useRef(null);
+    var open=d.startGuideOpen==null?!props.hasParts&&!active:!!d.startGuideOpen;
+    var focus=function(selector){requestAnimationFrame(function(){var scope=guideRef.current&&guideRef.current.closest('[data-circuit-builder-root]'),element=scope&&scope.querySelector(selector);if(scope&&(selector==='#circuit-lesson-question'||selector==='#circuit-lesson-result')){var chooser=scope.querySelector('.circuit-lesson-chooser');if(chooser)chooser.open=false;}if(element){element.focus({preventScroll:true});element.scrollIntoView({block:'start',behavior:'auto'});}});};
+    var begin=function(){
+      var patch=active?{lessonOpen:true}:circuitLessonStart(d,'loop');
+      if(!patch)return;
+      props.updateMany(Object.assign({},patch,{startGuideOpen:false}));
+      var saved=active&&circuitLessonRecords(d)[d.lessonId];
+      focus(saved&&saved.trial?'#circuit-lesson-result':'#circuit-lesson-question');
+    };
+    return h('details',{className:'circuit-start-guide',ref:guideRef,open:open,onToggle:function(e){if(e.currentTarget.open!==open)props.update('startGuideOpen',e.currentTarget.open);}},
+      h('summary',null,t('stem.circuit.quick_start_controls','Quick start & controls'),h('span',null,active?t('stem.circuit.quick_start_resume_note','Your experiment is saved'):t('stem.circuit.quick_start_steps_note','Your first circuit · 3 short steps'))),
+      h('div',{className:'circuit-start-body'},
+        h('h3',null,active?t('stem.circuit.quick_start_continue_title','Continue your experiment'):t('stem.circuit.quick_start_title','What makes a bulb light up?')),
+        h('p',null,active?t('stem.circuit.quick_start_continue_intro','Your prediction, evidence, and explanation stay with each experiment. Open your current question to pick up where you left off.'):t('stem.circuit.quick_start_intro','Start with a bulb and an open switch. Predict what closing the switch will do, then test it on the workbench.')),
+        h('div',{className:'circuit-action-row'},
+          h('button',{type:'button','data-circuit-start-experiment':true,onClick:begin},active?t('stem.circuit.resume_my_experiment','Resume my experiment'):t('stem.circuit.start_with_a_bulb','Start with a bulb')),
+          h('button',{type:'button',onClick:function(){props.update('startGuideOpen',false);focus('#circuit-parts-heading');}},t('stem.circuit.build_on_my_own','Build on my own'))),
+        h('ol',{className:'circuit-start-steps','aria-label':t('stem.circuit.quick_start_plan','First experiment plan')},[
+          ['predict','Predict','Choose what you expect before the circuit changes.'],
+          ['test','Test','Run one change and compare the current before and after.'],
+          ['explain','Explain','Use the readings to explain what you noticed. A different result is useful evidence.']
+        ].map(function(step,index){return h('li',{key:step[0]},h('strong',null,(index+1)+'. '+t('stem.circuit.quick_start_'+step[0],step[1])),h('span',null,t('stem.circuit.quick_start_'+step[0]+'_hint',step[2])));})),
+        h('p',{className:'circuit-help'},active?t('stem.circuit.quick_start_resume_help','Resume opens your current experiment and keeps the circuit as it is.'):t('stem.circuit.quick_start_load_help','Start loads a 9 V bulb-and-switch experiment. Undo restores your previous circuit; notebook notes stay saved.')),
+        h('p',{className:'circuit-help'},t('stem.circuit.quick_start_control_help','Build freely: add a part from the shelf, select it to see its readings, and use Undo to explore another idea. Reopen this guide whenever you need it.'))));
+  }
+
   function CircuitGuidedLab(props) {
-    var h=props.React.createElement,d=props.state,lesson=CIRCUIT_LESSONS.find(function(l){return l.id===d.lessonId;}),trial=d.lessonTrial;
+    var h=props.React.createElement,d=props.state,lesson=CIRCUIT_LESSONS.find(function(l){return l.id===d.lessonId;}),records=circuitLessonRecords(d),trial=lesson&&records[lesson.id]&&records[lesson.id].trial;
+    var questionRef=props.React.useRef(null),pendingQuestionFocus=props.React.useRef(false),resultRef=props.React.useRef(null),pendingResultFocus=props.React.useRef(false),chooserState=props.React.useState(false),chooserOpen=chooserState[0],setChooserOpen=chooserState[1],chooserRef=props.React.useRef(null);
+    props.React.useEffect(function(){if(pendingResultFocus.current&&resultRef.current){pendingResultFocus.current=false;resultRef.current.focus();}else if(pendingQuestionFocus.current&&questionRef.current){pendingQuestionFocus.current=false;questionRef.current.focus();}});
     var __alloT=circuitToolT(props);
     var tested=lesson&&trial&&trial.id===lesson.id, before=tested?solveCircuit(trial.before):null,after=tested?solveCircuit(trial.after):null;
-    var changed=tested&&!circuitExperimentDiff(trial.after,d).unchanged;
+    var changed=tested&&!circuitExperimentDiff(trial.after,d).unchanged,beforeOnBench=tested&&circuitExperimentDiff(trial.before,d).unchanged;
+    var currentScale=tested?Math.max(before.current,after.current):0,currentDelta=tested?after.current-before.current:0;
+    var resultTitle=!tested?'':before.current===0&&after.current>0?__alloT('stem.circuit.lesson_current_starts','Current starts flowing'):currentDelta>0?__alloT('stem.circuit.lesson_current_increased','Current increased'):currentDelta<0?__alloT('stem.circuit.lesson_current_decreased','Current decreased'):__alloT('stem.circuit.lesson_current_unchanged','Current stayed the same');
+    var loadEvidence=function(snapshot){if(!circuitExperimentDiff(snapshot,d).unchanged)props.updateMany(JSON.parse(JSON.stringify(snapshot)));};
+    var describeEvidence=function(snapshot){
+      var parts=snapshot.components.map(function(part){
+        if(part.type==='switch')return part.closed?__alloT('stem.circuit.lesson_switch_closed','switch closed'):__alloT('stem.circuit.lesson_switch_open','switch open');
+        return (part.type==='resistor'||part.type==='bulb'?part.value+' Ω ':'')+__alloT('stem.circuit.part_'+part.type,part.type);
+      });
+      return snapshot.voltage+' V · '+__alloT('stem.circuit.mode_'+snapshot.mode,snapshot.mode)+' · '+parts.join(' + ');
+    };
+    var done=CIRCUIT_LESSONS.filter(function(l){return records[l.id]&&records[l.id].tested;}).length,next=CIRCUIT_LESSONS.find(function(l){return !records[l.id]||!records[l.id].tested;});
+    var saveLesson=function(patch){var nextState=Object.assign({},d,patch);props.updateMany(Object.assign({},patch,{lessonRecords:circuitLessonRecords(nextState)}));};
+    var openLesson=function(id,focusTarget){
+      if(chooserRef.current)chooserRef.current.open=false;
+      pendingQuestionFocus.current=false;pendingResultFocus.current=false;
+      if(id===d.lessonId){
+        setChooserOpen(false);
+        var target=tested?resultRef.current:questionRef.current;if(focusTarget&&target)target.focus();
+        return;
+      }
+      var patch=circuitLessonStart(d,id);if(!patch)return;
+      setChooserOpen(false);
+      if(focusTarget){pendingResultFocus.current=!!patch.lessonTrial;pendingQuestionFocus.current=!patch.lessonTrial;}
+      props.updateMany(patch);
+    };
     return h('details',{className:'circuit-lessons',open:!!d.lessonOpen,onToggle:function(e){if(e.currentTarget.open!==!!d.lessonOpen)props.update('lessonOpen',e.currentTarget.open);}},
       h('summary',null,h('span',null,'Learn with a guided experiment'),h('small',null,'Predict · test · explain')),
-      h('p',{className:'circuit-help'},'Choose a question. Loading an experiment replaces the bench circuit; Undo restores your previous build.'),
-      h('div',{className:'circuit-lesson-cards'},CIRCUIT_LESSONS.map(function(l,i){return h('button',{key:l.id,type:'button','aria-pressed':d.lessonId===l.id,onClick:function(){props.updateMany(Object.assign({},JSON.parse(JSON.stringify(l.before)),{lessonId:l.id,lessonChoice:null,lessonTrial:null,lessonExplanation:'',lessonOpen:true,selectedPart:0}));}},
-        h('span',{className:'circuit-eyebrow'},'0'+(i+1)+' / '+l.concept),h('strong',null,l.title));})),
+      h('div',{className:'circuit-lesson-progress','data-active':!!lesson},h('p',{role:'status'},done+' of '+CIRCUIT_LESSONS.length+' experiments tested'),h('progress',{max:CIRCUIT_LESSONS.length,value:done,'aria-label':'Guided experiments tested'}),!lesson&&h('small',null,'A prediction can change. Progress records experiments you tested, whether your first prediction matched or not.')),
+      h('details',{className:'circuit-lesson-chooser',ref:chooserRef,open:!lesson||chooserOpen,onToggle:function(e){if(lesson&&e.currentTarget.open!==chooserOpen)setChooserOpen(e.currentTarget.open);}},
+        h('summary',null,h('span',null,lesson?__alloT('stem.circuit.change_experiment','Change experiment'):__alloT('stem.circuit.choose_experiment','Choose an experiment')),lesson&&h('small',null,lesson.title)),
+        h('div',{className:'circuit-lesson-chooser-body'},
+          h('p',{className:'circuit-help'},'Choose a question. Your prediction, evidence, and explanation stay with each experiment. Loading a new circuit replaces the bench; Undo restores your previous build.'),
+          h('div',{className:'circuit-lesson-cards'},CIRCUIT_LESSONS.map(function(l,i){var record=records[l.id];return h('button',{key:l.id,type:'button','aria-pressed':d.lessonId===l.id,onClick:function(){openLesson(l.id,true);}},
+            h('span',{className:'circuit-eyebrow'},'0'+(i+1)+' / '+l.concept),h('strong',null,l.title),h('small',{className:'circuit-lesson-card-status'},record&&record.trial?'Evidence saved':record&&record.tested?'Tested · try again':record&&record.choice!=null?'Prediction saved':'Not tried yet'));})),
+          lesson&&h('p',{className:'circuit-help'},'A prediction can change. Progress records experiments you tested, whether your first prediction matched or not.'))),
       lesson&&h('div',{className:'circuit-lesson-body'},
         h('ol',{className:'circuit-learning-steps','aria-label':__alloT('stem.circuit.experiment_progress','Experiment progress')},
           ['Predict', 'Test', 'Explain'].map(function(step,i){return h('li',{key:step,'aria-current':(!tested?(d.lessonChoice==null?0:1):2)===i?'step':undefined},String(i+1)+'  '+step);})),
-        h('fieldset',null,h('legend',null,lesson.question),
-          h('div',{className:'circuit-action-row'},lesson.choices.map(function(choice,i){return h('button',{key:choice,type:'button',disabled:!!tested,'aria-pressed':d.lessonChoice===i,onClick:function(){props.update('lessonChoice',i);}},choice);}))),
+        h('fieldset',null,h('legend',{id:'circuit-lesson-question',ref:questionRef,tabIndex:-1},lesson.question),
+          tested?h('p',{className:'circuit-evidence-saved-prediction'},h('span',null,__alloT('stem.circuit.lesson_saved_prediction','Your prediction')),h('strong',null,lesson.choices[trial.choice])):h('div',{className:'circuit-action-row'},lesson.choices.map(function(choice,i){return h('button',{key:choice,type:'button','aria-pressed':d.lessonChoice===i,onClick:function(){saveLesson({lessonChoice:i});}},choice);}))),
         !tested&&h('div',{className:'circuit-action-row'},
-          h('button',{type:'button',disabled:d.lessonChoice==null,onClick:function(){var result=circuitLessonResult(lesson.id,d.lessonChoice);if(result)props.updateMany(Object.assign({},result.after,{lessonTrial:result}));}},'Test my prediction'),
+          h('button',{type:'button',disabled:d.lessonChoice==null,onClick:function(){var result=circuitLessonResult(lesson.id,d.lessonChoice);if(result){pendingQuestionFocus.current=false;pendingResultFocus.current=true;saveLesson(Object.assign({},result.after,{lessonTrial:result}));}}},'Test my prediction'),
           h('span',{className:'circuit-help'},'Runs the stated change from the experiment baseline.')),
-        tested&&h('div',{className:'circuit-lesson-evidence'},
-          h('p',{role:'status'},h('strong',null,trial.correct?'Your prediction matches the evidence.':'Use this result to revise your prediction.'),' '+lesson.reason),
-          h('div',{className:'circuit-comparison'},
-            h('div',null,h('span',null,'Before · source current'),h('strong',null,circuitCurrentText(before.current))),
-            h('div',null,h('span',null,'After · source current'),h('strong',null,circuitCurrentText(after.current))),
-            h('div',null,h('span',null,'Single change'),h('strong',{className:'circuit-change-label'},circuitExperimentDiff(trial.before,trial.after).changes[0]))),
-          h('p',{className:'circuit-help'},changed?'Saved experiment evidence. Your live bench has changed since this test.':'These readings match the experiment now on your bench.'),
+        tested&&h('section',{className:'circuit-lesson-evidence','aria-labelledby':'circuit-lesson-result'},
+          h('div',{className:'circuit-evidence-heading'},
+            h('div',null,h('span',{className:'circuit-eyebrow'},__alloT('stem.circuit.lesson_observed_result','OBSERVED RESULT')),h('h3',{id:'circuit-lesson-result',ref:resultRef,tabIndex:-1,'aria-describedby':'circuit-lesson-result-summary'},resultTitle)),
+            h('p',{className:'circuit-evidence-delta'},h('span',null,__alloT('stem.circuit.lesson_current_change','Change in current')),h('strong',null,(currentDelta>0?'+':'')+circuitCurrentText(currentDelta)))),
+          h('p',{id:'circuit-lesson-result-summary'},h('strong',null,trial.correct?'Your prediction matches the evidence.':'Use this result to revise your prediction.'),' '+lesson.reason),
+          h('div',{className:'circuit-comparison circuit-evidence-chart','aria-describedby':'circuit-evidence-scale'},[
+            {stage:'before',label:__alloT('stem.circuit.lesson_before_current','Before · source current'),solved:before,circuit:trial.before},
+            {stage:'after',label:__alloT('stem.circuit.lesson_after_current','After · source current'),solved:after,circuit:trial.after}
+          ].map(function(item){return h('div',{key:item.stage,className:'circuit-evidence-bar','data-stage':item.stage},
+            h('span',null,item.label),h('strong',null,circuitCurrentText(item.solved.current)),
+            h('div',{className:'circuit-evidence-track','aria-hidden':'true'},h('span',{style:{width:(currentScale>0?item.solved.current/currentScale*100:0)+'%'}})),
+            h('small',{className:'circuit-evidence-setting'},describeEvidence(item.circuit)));
+          }),h('div',{className:'circuit-evidence-change'},h('span',null,__alloT('stem.circuit.lesson_single_change','Single change')),h('strong',{className:'circuit-change-label'},circuitExperimentDiff(trial.before,trial.after).changes[0]))),
+          h('p',{id:'circuit-evidence-scale',className:'circuit-help'},currentScale>0?__alloT('stem.circuit.lesson_bar_scale','Both bars use the same scale. Full width = ')+circuitCurrentText(currentScale)+'.':__alloT('stem.circuit.lesson_zero_bars','Both readings are zero. The bars have no filled length.')),
+          h('div',{className:'circuit-evidence-replay'},
+            h('h4',null,__alloT('stem.circuit.lesson_revisit_circuit','Revisit the circuit')),
+            h('p',{className:'circuit-help circuit-evidence-bench-note',role:'status'},!changed?'These readings match the experiment now on your bench.':beforeOnBench?__alloT('stem.circuit.lesson_baseline_on_bench','The experiment baseline is now on your bench.'):'Saved experiment evidence. Your live bench has changed since this test.'),
+            h('div',{className:'circuit-action-row'},
+              h('button',{type:'button','aria-pressed':!!beforeOnBench,onClick:function(){loadEvidence(trial.before);}},__alloT('stem.circuit.lesson_load_baseline','Load experiment baseline')),
+              h('button',{type:'button','aria-pressed':!changed,onClick:function(){loadEvidence(trial.after);}},'Load this experiment result')),
+            h('p',{className:'circuit-help'},__alloT('stem.circuit.lesson_replay_help','Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores your previous circuit.'))),
           h('label',{htmlFor:'circuit-lesson-explanation'},'Explain using evidence'),
           h('p',{id:'circuit-lesson-prompt',className:'circuit-help'},lesson.reflect),
-          h('textarea',{id:'circuit-lesson-explanation','aria-describedby':'circuit-lesson-prompt',rows:2,maxLength:1000,value:d.lessonExplanation||'',placeholder:'I observed… This happened because…',onChange:function(e){props.update('lessonExplanation',e.target.value);}}),
-          h('div',{className:'circuit-action-row'},h('button',{type:'button',onClick:function(){props.updateMany(Object.assign({},JSON.parse(JSON.stringify(lesson.before)),{lessonChoice:null,lessonTrial:null,lessonExplanation:''}));}},'Try this experiment again'),
+          h('textarea',{id:'circuit-lesson-explanation','aria-describedby':'circuit-lesson-prompt',rows:2,maxLength:1000,value:d.lessonExplanation||'',placeholder:'I observed… This happened because…',onChange:function(e){saveLesson({lessonExplanation:e.target.value});}}),
+          h('p',{className:'circuit-help'},'Your explanation is kept with this experiment. You can add to it after trying another question.'),
+          h('div',{className:'circuit-lesson-next'},next?h(props.React.Fragment,null,h('strong',null,'Keep investigating'),h('p',null,'Explore '+next.concept.toLowerCase()+' with a different circuit.'),h('div',{className:'circuit-action-row'},h('button',{type:'button',onClick:function(){openLesson(next.id,true);}},'Next: '+next.title))):h(props.React.Fragment,null,h('strong',null,'All three experiments tested'),h('p',null,'Revisit your saved evidence, or use Plan an investigation to test your own question by changing one circuit setting.'))),
+          h('p',{className:'circuit-help'},'Trying again starts a new prediction and replaces this experiment’s saved evidence and explanation.'),
+          h('div',{className:'circuit-action-row'},h('button',{type:'button',onClick:function(){pendingResultFocus.current=false;pendingQuestionFocus.current=true;saveLesson(Object.assign({},JSON.parse(JSON.stringify(lesson.before)),{lessonChoice:null,lessonTrial:null,lessonExplanation:''}));}},'Try this experiment again'),
             h('button',{type:'button',onClick:function(){
               var report={format:'circuit-guided-evidence-v1',question:lesson.question,prediction:lesson.choices[trial.choice],before:trial.before,after:trial.after,beforeCurrent:before.current,afterCurrent:after.current,explanation:d.lessonExplanation||'',model:'Ideal DC teaching model'};
               var url=URL.createObjectURL(new Blob([JSON.stringify(report,null,2)],{type:'application/json'})),link=document.createElement('a');link.href=url;link.download='circuit-'+lesson.id+'-evidence.json';link.click();setTimeout(function(){URL.revokeObjectURL(url);},1000);
@@ -687,7 +788,7 @@ window.StemLab = window.StemLab || {
           h('label',null,'Window ',h('select',{'aria-label':__alloT('stem.circuit.oscilloscope_time_window','Oscilloscope time window'),value:d.timeWindow||'auto',onChange:function(e){props.updateMany({timeWindow:e.target.value,timeCursor:0,simRunning:false});}},[['auto','Automatic'],['0.000001','1 µs'],['0.00001','10 µs'],['0.0001','100 µs'],['0.001','1 ms'],['0.01','10 ms'],['0.1','100 ms'],['1','1 s'],['10','10 s'],['100','100 s']].map(function(v){return h('option',{key:v[0],value:v[0]},v[1]);}))),
           h('label',null,'Trace part ',h('select',{'aria-label':__alloT('stem.circuit.oscilloscope_component','Oscilloscope component'),value:index,onChange:function(e){props.updateMany({selectedPart:Number(e.target.value)});}},cfg.base.rows.map(function(r,i){return h('option',{key:i,value:i},(i+1)+'. '+r.component.type+' · branch '+String.fromCharCode(64+r.branch));})))),
         !cfg.resolved&&h('p',{className:'circuit-warning'},'This window is too wide to resolve the oscillation. Choose a shorter window or Automatic. Cursor readings remain available; trace export waits for a resolved window.'),
-        cfg.resolved&&h('div',{className:'circuit-scope-chart',tabIndex:0,role:'region','aria-label':__alloT('stem.circuit.scrollable_oscilloscope_chart','Scrollable oscilloscope chart')},h('svg', {viewBox:'0 0 720 330',role: 'img','aria-label':'Calculated oscilloscope traces over '+circuitTimeText(cfg.duration)+'. Supply and selected part voltage are on the upper axis; selected branch current is on the lower axis. Cursor at '+circuitTimeText(t)+'. Exact cursor readings follow.'},
+        cfg.resolved&&h('div',{className:'circuit-scope-chart',tabIndex:0,role:'region','aria-label':__alloT('stem.circuit.scrollable_oscilloscope_chart','Scrollable oscilloscope chart')},h('svg', {viewBox:'0 0 720 330',role: 'img','aria-label':__alloFill(__alloT('stem.circuit.a11y_calculated_oscilloscope_traces_over_supply_and', 'Calculated oscilloscope traces over {value1}. Supply and selected part voltage are on the upper axis; selected branch current is on the lower axis. Cursor at {value2}. Exact cursor readings follow.'), { value1: circuitTimeText(cfg.duration), value2: circuitTimeText(t) })},
           h('rect',{x:0,y:0,width:720,height:330,rx:14,fill:'#081c2a'}),
           [100,217.2,334.4,451.6,568.8,686].map(function(gx,i){return h('g',{key:i},h('path',{d:'M '+gx+' 25 V 292',stroke:'#30505f',strokeWidth:1}),h('text',{x:gx,y:315,fill:'#c0d9e6',fontSize:12,textAnchor:'middle'},circuitTimeText(cfg.duration*i/5)));}),
           [45,105,165,195,240,285].map(function(y,i){return h('path',{key:i,d:'M 100 '+y+' H 686',stroke:i===1||i===4?'#7193a5':'#2a4655',strokeWidth:1});}),
@@ -760,7 +861,7 @@ window.StemLab = window.StemLab || {
     var __alloT=circuitToolT(props);
     return h('section',{className:'circuit-mixed-schematic','aria-label':__alloT('stem.circuit.mixed_circuit_schematic','Mixed circuit schematic')},
       h('div',{className:'circuit-mixed-scroll',tabIndex:0,role:'region','aria-label':__alloT('stem.circuit.scrollable_mixed_circuit_diagram','Scrollable mixed circuit diagram')},
-        h('svg', {viewBox:'0 0 900 '+height,role: 'img','aria-label':'Mixed circuit: '+s.branches.length+' parallel branches with components connected in series within each branch. Supply '+s.voltage+' volts; total current '+circuitCurrentText(s.current)+'. Read branch connections and measurements below.'},
+        h('svg', {viewBox:'0 0 900 '+height,role: 'img','aria-label':__alloFill(__alloT('stem.circuit.a11y_mixed_circuit_parallel_branches_with_components', 'Mixed circuit: {value1} parallel branches with components connected in series within each branch. Supply {value2} volts; total current {value3}. Read branch connections and measurements below.'), { value1: s.branches.length, value2: s.voltage, value3: circuitCurrentText(s.current) })},
           h('rect',{width:900,height:height,rx:18,fill:'#0b2232'}),
           h('path',{d:'M 125 55 V '+(height-30),stroke:'#fb7185',strokeWidth:4}),
           h('path',{d:'M 800 55 V '+(height-30),stroke:'#60a5fa',strokeWidth:4}),
@@ -859,9 +960,9 @@ window.StemLab = window.StemLab || {
         h('p',{className:'circuit-help'},'Each branch is wired left to right between the + and − rails. Choose a part to change its value, order, or branch. An empty branch is removed; it never becomes a bare-wire short.'),
         h('div',{className:'circuit-action-row'},h('label',null,'New component ',h('select',{'aria-label':__alloT('stem.circuit.new_mixed_circuit_component','New mixed circuit component'),value:d.addType||'resistor',onChange:function(e){update('addType',e.target.value);}},['resistor','bulb','switch','led','capacitor','inductor','ammeter','voltmeter'].map(function(type){return h('option',{key:type,value:type},type);}))),
           h('button',{type:'button',disabled:!newBranch||solved.rows.length>=8,onClick:function(){add(newBranch);}},'Add parallel branch')),
-        solved.branches.map(function(b){return h('section',{className:'circuit-mixed-branch',key:b.id,'aria-label':'Branch '+b.name},
+        solved.branches.map(function(b){return h('section',{className:'circuit-mixed-branch',key:b.id,'aria-label':__alloFill(__alloT('stem.circuit.a11y_branch', 'Branch {value1}'), { value1: b.name })},
           h('div',{className:'circuit-mixed-branch-heading'},h('strong',null,'Branch '+b.name),h('span',null,circuitCurrentText(b.solved.current)+' · '+(b.solved.isOpen?'open path':circuitPreciseVoltageText(solved.voltage)+' across path'))),
-          h('div',{className:'circuit-mixed-path'},h('span',{className:'circuit-mixed-terminal'},'N0 +'),b.indices.map(function(index){var r=solved.rows[index];return h('button',{type:'button',key:index,'aria-pressed':selectedIndex===index,'aria-label':'Edit mixed part '+(index+1)+' '+r.component.type,onClick:function(){update('selectedPart',index);}},h('strong',null,(index+1)+'. '+r.component.type),h('span',null,'N'+r.nodeA+' → N'+r.nodeB),h('small',null,circuitPreciseVoltageText(r.voltage)));}),h('span',{className:'circuit-mixed-terminal'},'N1 −')),
+          h('div',{className:'circuit-mixed-path'},h('span',{className:'circuit-mixed-terminal'},'N0 +'),b.indices.map(function(index){var r=solved.rows[index];return h('button',{type:'button',key:index,'aria-pressed':selectedIndex===index,'aria-label':__alloFill(__alloT('stem.circuit.a11y_edit_mixed_part', 'Edit mixed part {value1} {value2}'), { value1: (index+1), value2: r.component.type }),onClick:function(){update('selectedPart',index);}},h('strong',null,(index+1)+'. '+r.component.type),h('span',null,'N'+r.nodeA+' → N'+r.nodeB),h('small',null,circuitPreciseVoltageText(r.voltage)));}),h('span',{className:'circuit-mixed-terminal'},'N1 −')),
           h('div',{className:'circuit-action-row'},h('button',{type:'button',disabled:b.indices.length>=4||solved.rows.length>=8,onClick:function(){add(b.id);}},'Add in series to branch '+b.name)));
         }),
         selected&&h('section',{className:'circuit-part-inspector','aria-label':__alloT('stem.circuit.edit_selected_mixed_component','Edit selected mixed component')},
@@ -1855,9 +1956,9 @@ window.StemLab = window.StemLab || {
     return h('details',{className:'circuit-network-orbit-meter',open:props.open,'data-orbit-meter-status':r.status,onToggle:function(e){var open=e.currentTarget.open;if(open!==props.open)props.toggle(open);}},
       h('summary',null,h('span',null,h('strong',null,'Voltage probes'),h('small',null,'R '+r.red.id+' − K '+r.black.id)),h('output',{'aria-label':__alloT('stem.circuit.3d_voltmeter_reading','3D voltmeter reading'),'aria-live':props.playing?'off':'polite','data-orbit-probe-reading':true,'data-value':r.voltage},format(r.voltage))),
       h('div',{className:'circuit-network-orbit-meter-body'},h('p',{className:'circuit-network-orbit-meter-equation'},'V(red) − V(black) · ideal differential voltmeter'),
-        h('div',{className:'circuit-network-orbit-meter-leads'},[['red','R · Red',r.red],['black','K · Black',r.black]].map(function(item){return h('label',{key:item[0],'data-probe-lead':item[0]},h('span',null,item[1]),h('select',{'aria-label':'3D '+item[0]+' probe node',value:item[2].id,onChange:function(e){choose(item[0],e.target.value);}},CIRCUIT_NETWORK_NODES.map(function(id){var n=props.solved.nodes.find(function(n){return n.id===id;});return h('option',{key:id,value:id},id==='0'?'0 · reference':'Node '+id+(n&&n.used?'':' · unused'));})),h('small',null,'Relative to 0'),h('strong',{'data-probe-potential':item[0]},format(item[2].voltage)));})),
+        h('div',{className:'circuit-network-orbit-meter-leads'},[['red','R · Red',r.red],['black','K · Black',r.black]].map(function(item){return h('label',{key:item[0],'data-probe-lead':item[0]},h('span',null,item[1]),h('select',{'aria-label':__alloFill(__alloT('stem.circuit.a11y_3d_probe_node', '3D {value1} probe node'), { value1: item[0] }),value:item[2].id,onChange:function(e){choose(item[0],e.target.value);}},CIRCUIT_NETWORK_NODES.map(function(id){var n=props.solved.nodes.find(function(n){return n.id===id;});return h('option',{key:id,value:id},id==='0'?'0 · reference':'Node '+id+(n&&n.used?'':' · unused'));})),h('small',null,'Relative to 0'),h('strong',{'data-probe-potential':item[0]},format(item[2].voltage)));})),
         h('div',{className:'circuit-network-orbit-meter-actions'},h('button',{type:'button',onClick:function(){props.setProbes(r.black.id,r.red.id,props.lead);}},'Swap 3D probes'),h('button',{type:'button',disabled:!props.selected,onClick:function(){var p=props.selected.component;props.setProbes(p.a,p.b,'red');}},'Probe selected part')),
-        h('div',{className:'circuit-network-orbit-meter-placement',role:'group','aria-label':__alloT('stem.circuit.choose_3d_probe_lead','Choose 3D probe lead')},['red','black'].map(function(lead){return h('button',{key:lead,type:'button','aria-label':'Place 3D '+lead+' probe','aria-pressed':!props.inspecting&&props.lead===lead,onClick:function(){place(lead);}},'Place '+lead);}),h('p',null,props.inspecting?'Node inspection is active. Choose a lead to return to probe placement.':'Choose a lead, then click a named node or use the node selector. '+(props.lead==='black'?'K · Black':'R · Red')+' is active.')),
+        h('div',{className:'circuit-network-orbit-meter-placement',role:'group','aria-label':__alloT('stem.circuit.choose_3d_probe_lead','Choose 3D probe lead')},['red','black'].map(function(lead){return h('button',{key:lead,type:'button','aria-label':__alloFill(__alloT('stem.circuit.a11y_place_3d_probe', 'Place 3D {value1} probe'), { value1: lead }),'aria-pressed':!props.inspecting&&props.lead===lead,onClick:function(){place(lead);}},'Place '+lead);}),h('p',null,props.inspecting?'Node inspection is active. Choose a lead to return to probe placement.':'Choose a lead, then click a named node or use the node selector. '+(props.lead==='black'?'K · Black':'R · Red')+' is active.')),
         h('p',{className:'circuit-network-orbit-meter-explanation'},r.message),
         r.hasHeld&&h('div',{className:'circuit-network-orbit-meter-held'},h('span',null,'Same probe pair at both snapshots'),h('dl',null,[['held','◇ Held · '+stamp(props.held),r.heldVoltage],['delta','Change · cursor − held',r.delta]].map(function(item){return h('div',{key:item[0]},h('dt',null,item[1]),h('dd',{'data-orbit-probe-compare':item[0],'data-value':item[2]},(item[0]==='delta'&&item[2]>0?'+':'')+format(item[2])));}))),
         h('p',{className:'circuit-network-orbit-meter-note'},'Probes draw no current and do not alter this circuit. A negative reading describes polarity; it is not a fault. R and K on the board mark the red and black probes. Wire colors show each node relative to 0, while this meter shows the difference between its two leads.')));
@@ -1975,7 +2076,7 @@ window.StemLab = window.StemLab || {
         row&&h('dl',{className:'circuit-network-dock-readings'},[[circuitNetworkBJTVoltageLabel(row.component),reading(row.voltage,circuitPreciseVoltageText)],[circuitNetworkBJTCurrentLabel(row.component),reading(row.current,circuitCurrentText)],['Power absorbed',reading(row.power,circuitPowerText)],['Stored energy',circuitNetworkEnergyText(row.energy)]].map(function(r){return h('div',{key:r[0]},h('dt',null,r[0]),h('dd',null,r[1]));})),
         h('div',{className:'circuit-network-dock-actions'},h('button',{type:'button',disabled:!row,onClick:props.edit},'Edit selected part'),h('button',{type:'button',disabled:!row,onClick:props.measure},'Probe across part'),timed&&h('button',{type:'button',onClick:props.scope},'Open full scope'))),
       ready?h('div',{className:'circuit-network-dock-time'},h('div',{className:'circuit-network-dock-key'},h('span',null,row&&row.component.bjt?'Voltage · C − E':'Voltage · A − B'),h('span',null,row&&row.component.bjt?'Collector current IC':'Current · A → B'),held&&h('span',{className:'circuit-network-sample-marker-key'},'◇ Held · ● Cursor')),
-        h('div',{className:'circuit-network-dock-plot',role:'group',tabIndex:0,'aria-label':__alloT('stem.circuit.board_scope_preview','Board scope preview'),onKeyDown:key,onPointerDown:function(e){if(e.button!==0)return;var box=e.currentTarget.getBoundingClientRect(),fraction=((e.clientX-box.left)/box.width*600-10)/580;props.seek(Math.max(0,Math.min(run.duration,fraction*run.duration)));e.currentTarget.focus({preventScroll:true});}},h('svg', {viewBox:'0 0 600 164',preserveAspectRatio:'none',role: 'img','aria-label':'Whole-run voltage and current overview of '+row.label+'. Separate scales. Readings at '+circuitTimeText(time)+side+' are shown in the instrument dock. Use the board time cursor or arrow keys to inspect calculated samples.'},traces.map(function(t){return h('g',{key:t.metric},h('rect',{x:0,y:t.top-6,width:600,height:64,fill:'#071a29'}),[0,.25,.5,.75,1].map(function(f){return h('line',{key:f,x1:10+580*f,x2:10+580*f,y1:t.top,y2:t.bottom,stroke:'#31505e',strokeDasharray:'2 6'});}),h('line',{x1:10,x2:590,y1:t.zero,y2:t.zero,stroke:'#637d8b',strokeDasharray:'4 4'}),(run.events||[]).map(function(event){return h('line',{key:event.time,x1:10+580*event.time/run.duration,x2:10+580*event.time/run.duration,y1:t.top,y2:t.bottom,stroke:'#dba47a',strokeDasharray:'2 3'});}),h('path',{'data-board-scope-trace':t.metric,d:t.path,fill:'none',stroke:t.color,strokeWidth:2.5,strokeLinejoin:'round'}),held&&h(CircuitNetworkHeldMarker,{React:React,t:props.t,metric:t.metric,side:held.side,x:10+580*held.time/run.duration,y:heldRow&&Number.isFinite(heldRow[t.metric])?t.y(heldRow[t.metric]):null,top:t.top,bottom:t.bottom}),h('line',{x1:10+580*time/run.duration,x2:10+580*time/run.duration,y1:t.top,y2:t.bottom,stroke:'#faf0d0',strokeWidth:1.5}),row[t.metric]!=null&&h('circle',{cx:10+580*time/run.duration,cy:t.y(row[t.metric]),r:3.6,fill:'#fff1cc'}));}))),
+        h('div',{className:'circuit-network-dock-plot',role:'group',tabIndex:0,'aria-label':__alloT('stem.circuit.board_scope_preview','Board scope preview'),onKeyDown:key,onPointerDown:function(e){if(e.button!==0)return;var box=e.currentTarget.getBoundingClientRect(),fraction=((e.clientX-box.left)/box.width*600-10)/580;props.seek(Math.max(0,Math.min(run.duration,fraction*run.duration)));e.currentTarget.focus({preventScroll:true});}},h('svg', {viewBox:'0 0 600 164',preserveAspectRatio:'none',role: 'img','aria-label':__alloFill(__alloT('stem.circuit.a11y_whole_run_voltage_and_current_overview_of_separ', 'Whole-run voltage and current overview of {value1}. Separate scales. Readings at {value2}{value3} are shown in the instrument dock. Use the board time cursor or arrow keys to inspect calculated samples.'), { value1: row.label, value2: circuitTimeText(time), value3: side })},traces.map(function(t){return h('g',{key:t.metric},h('rect',{x:0,y:t.top-6,width:600,height:64,fill:'#071a29'}),[0,.25,.5,.75,1].map(function(f){return h('line',{key:f,x1:10+580*f,x2:10+580*f,y1:t.top,y2:t.bottom,stroke:'#31505e',strokeDasharray:'2 6'});}),h('line',{x1:10,x2:590,y1:t.zero,y2:t.zero,stroke:'#637d8b',strokeDasharray:'4 4'}),(run.events||[]).map(function(event){return h('line',{key:event.time,x1:10+580*event.time/run.duration,x2:10+580*event.time/run.duration,y1:t.top,y2:t.bottom,stroke:'#dba47a',strokeDasharray:'2 3'});}),h('path',{'data-board-scope-trace':t.metric,d:t.path,fill:'none',stroke:t.color,strokeWidth:2.5,strokeLinejoin:'round'}),held&&h(CircuitNetworkHeldMarker,{React:React,t:props.t,metric:t.metric,side:held.side,x:10+580*held.time/run.duration,y:heldRow&&Number.isFinite(heldRow[t.metric])?t.y(heldRow[t.metric]):null,top:t.top,bottom:t.bottom}),h('line',{x1:10+580*time/run.duration,x2:10+580*time/run.duration,y1:t.top,y2:t.bottom,stroke:'#faf0d0',strokeWidth:1.5}),row[t.metric]!=null&&h('circle',{cx:10+580*time/run.duration,cy:t.y(row[t.metric]),r:3.6,fill:'#fff1cc'}));}))),
         h('label',{className:'circuit-network-dock-cursor'},'Board time cursor',h('input',{type:'range','aria-label':__alloT('stem.circuit.board_time_cursor','Board time cursor'),'aria-valuetext':circuitTimeText(time)+side,min:0,max:run.duration,step:run.duration/10000,value:time,onKeyDown:key,onChange:function(e){props.seek(Number(e.target.value));}})),
         h('div',{className:'circuit-network-dock-transport'},h('button',{type:'button','aria-label':__alloT('stem.circuit.previous_board_sample','Previous board sample'),disabled:index<=0,onClick:function(){step(-1);}},'← Sample'),h('button',{type:'button',onClick:props.toggle},props.playing?'Pause on board':'Play on board'),h('button',{type:'button','aria-label':__alloT('stem.circuit.next_board_sample','Next board sample'),disabled:index>=run.frames.length-1,onClick:function(){step(1);}},'Sample →')),
         (run.events||[]).length>0&&h('div',{className:'circuit-network-dock-events'},h('label',null,'Switch event',h('select',{'aria-label':__alloT('stem.circuit.board_switch_event','Board switch event'),value:s.event?run.events.indexOf(s.event):'',onChange:function(e){if(e.target.value==='')return;props.seek(run.events[Number(e.target.value)].time,'before');}},h('option',{value:''},'Jump to a switch…'),run.events.map(function(event,i){return h('option',{key:event.time,value:i},circuitTimeText(event.time)+' · '+circuitNetworkSwitchText(event));}))),s.event&&['before','after'].map(function(side){return h('button',{key:side,type:'button','aria-label':(side==='before'?'Before':'After')+' switch on board','aria-pressed':s.side===side,onClick:function(){props.seek(s.event.time,side);}},side==='before'?'Before':'After');})),
@@ -1993,8 +2094,8 @@ window.StemLab = window.StemLab || {
       h('dl',{className:'circuit-network-node-balance'},[['Current entering',n.incoming],['Current leaving',n.outgoing],['Leaving − entering',n.residual]].map(function(r){return h('div',{key:r[0]},h('dt',null,r[0]),h('dd',null,format(r[1])));})),
       !n.known&&h('p',{className:'circuit-network-node-notice'},'Some branch currents are undetermined. Their totals and balance cannot be calculated; known terminal readings remain available.'),
       h('div',{className:'circuit-network-node-terminals-heading'},h('strong',null,n.connections.length+' branch '+(n.connections.length===1?'terminal':'terminals')),h('span',null,'Select a terminal to inspect its component in the dock and scope.')),
-      n.connections.length?h('div',{className:'circuit-network-node-branches'},n.connections.map(function(c){var label=c.direction==='in'?'Into node '+n.id:c.direction==='out'?'Out of node '+n.id:c.direction==='zero'?'Zero current':'Current undetermined';return h('button',{type:'button',key:c.id+':'+c.terminal,'aria-label':'Select '+c.label+' terminal '+c.terminal,'aria-pressed':props.selected&&props.selected.component.id===c.id,'data-node-connection':c.id+':'+c.terminal,'data-node-direction':c.direction,onClick:function(){props.select(c.id);}},h('span',null,h('strong',null,c.label+' · terminal '+c.terminal),h('small',null,(c.type==='bjt'?'Other terminals: ':'Other terminal: ')+c.other+(c.other===n.id?' · same node':''))),h('span',{className:'circuit-network-node-flow'},h('strong',null,format(c.leaving==null?null:Math.abs(c.leaving))),h('small',null,(c.direction==='in'?'← ':c.direction==='out'?'→ ':'')+label)));})):h('p',{className:'circuit-help'},'No current-carrying component terminal is attached to this node.'),
-      n.senses.length>0&&h('div',{className:'circuit-network-node-senses'},h('strong',null,'Voltage-sensing connections'),h('p',{className:'circuit-help'},'These ideal inputs draw no current and are excluded from the current totals.'),n.senses.map(function(c){return h('button',{type:'button',key:c.id+':'+c.input,'aria-label':'Select '+c.label+' '+c.input+' sense',onClick:function(){props.select(c.id);}},c.label+' · '+c.input+' input');})),
+      n.connections.length?h('div',{className:'circuit-network-node-branches'},n.connections.map(function(c){var label=c.direction==='in'?'Into node '+n.id:c.direction==='out'?'Out of node '+n.id:c.direction==='zero'?'Zero current':'Current undetermined';return h('button',{type:'button',key:c.id+':'+c.terminal,'aria-label':__alloFill(__alloT('stem.circuit.a11y_select_terminal', 'Select {value1} terminal {value2}'), { value1: c.label, value2: c.terminal }),'aria-pressed':props.selected&&props.selected.component.id===c.id,'data-node-connection':c.id+':'+c.terminal,'data-node-direction':c.direction,onClick:function(){props.select(c.id);}},h('span',null,h('strong',null,c.label+' · terminal '+c.terminal),h('small',null,(c.type==='bjt'?'Other terminals: ':'Other terminal: ')+c.other+(c.other===n.id?' · same node':''))),h('span',{className:'circuit-network-node-flow'},h('strong',null,format(c.leaving==null?null:Math.abs(c.leaving))),h('small',null,(c.direction==='in'?'← ':c.direction==='out'?'→ ':'')+label)));})):h('p',{className:'circuit-help'},'No current-carrying component terminal is attached to this node.'),
+      n.senses.length>0&&h('div',{className:'circuit-network-node-senses'},h('strong',null,'Voltage-sensing connections'),h('p',{className:'circuit-help'},'These ideal inputs draw no current and are excluded from the current totals.'),n.senses.map(function(c){return h('button',{type:'button',key:c.id+':'+c.input,'aria-label':__alloFill(__alloT('stem.circuit.a11y_select_sense', 'Select {value1} {value2} sense'), { value1: c.label, value2: c.input }),onClick:function(){props.select(c.id);}},c.label+' · '+c.input+' input');})),
       h('div',{className:'circuit-network-node-actions'},h('button',{type:'button',onClick:props.focus},'Focus inspected node'),h('button',{type:'button',onClick:props.probe},'Measure node relative to 0')),
       h('details',null,h('summary',null,'Why entering and leaving currents match'),h('p',null,'At an ideal node, current entering equals current leaving. Each listed terminal connects to this same electrical point, even when wires cross elsewhere on the drawing. Capacitors and inductors store energy while their terminal currents still obey this rule.'),h('p',{className:'circuit-help'},'Leaving − entering is the signed numerical residual; small nonzero values can arise from calculation rounding. Voltage can be undetermined relative to 0 while branch currents remain known in a floating circuit. Each current-carrying terminal is listed separately, including terminals tied to the same node.')));
   }
@@ -2009,7 +2110,7 @@ window.StemLab = window.StemLab || {
       h(props.React.Fragment,null,
         h('dl',{className:'circuit-network-energy-totals'},[['Total stored',circuitNetworkEnergyText(total)],['Net power into storage',measure(power,circuitPowerText)]].map(function(r){return h('div',{key:r[0]},h('dt',null,r[0]),h('dd',null,r[1]));})),
         h('p',{className:'circuit-help','data-energy-scale':reference.hasKnown?reference.maximum:undefined},reference.hasKnown?'Shared scale: 0 J to '+circuitNetworkEnergyText(reference.maximum)+(props.timed?' across all storage parts and the whole run.':' across all storage parts in this DC snapshot.')+(reference.maximum===0?' All known stored energies are zero.':''):'Stored energy is undetermined; no gauge level is inferred.'),
-        h('div',{className:'circuit-network-energy-cards'},rows.map(function(row){var r=circuitNetworkEnergyReading(row,reference);return h('button',{type:'button',key:row.component.id,'aria-label':'Inspect '+row.label+' energy','aria-pressed':!!selected&&selected.component.id===row.component.id,'data-energy-part':row.component.id,'data-energy-status':r.status,onClick:function(){props.select(row.component.id);}},h('span',{className:'circuit-network-energy-card-top'},h('strong',null,row.label+' · '+(row.component.type==='capacitor'?'Capacitor':'Inductor')),h('span',{style:{color:r.color}},circuitNetworkEnergyText(r.energy))),h('span',{className:'circuit-network-energy-bar','aria-hidden':true},h('span',{style:{width:((r.fraction||0)*100)+'%',background:r.color}})),h('span',{className:'circuit-network-energy-card-status'},h('span',null,r.label),h('span',null,measure(r.power,circuitPowerText))));})),
+        h('div',{className:'circuit-network-energy-cards'},rows.map(function(row){var r=circuitNetworkEnergyReading(row,reference);return h('button',{type:'button',key:row.component.id,'aria-label':__alloFill(__alloT('stem.circuit.a11y_inspect_energy', 'Inspect {value1} energy'), { value1: row.label }),'aria-pressed':!!selected&&selected.component.id===row.component.id,'data-energy-part':row.component.id,'data-energy-status':r.status,onClick:function(){props.select(row.component.id);}},h('span',{className:'circuit-network-energy-card-top'},h('strong',null,row.label+' · '+(row.component.type==='capacitor'?'Capacitor':'Inductor')),h('span',{style:{color:r.color}},circuitNetworkEnergyText(r.energy))),h('span',{className:'circuit-network-energy-bar','aria-hidden':true},h('span',{style:{width:((r.fraction||0)*100)+'%',background:r.color}})),h('span',{className:'circuit-network-energy-card-status'},h('span',null,r.label),h('span',null,measure(r.power,circuitPowerText))));})),
         reading&&h('div',{className:'circuit-network-energy-explanation',role:'group','aria-label':__alloT('stem.circuit.selected_energy_explanation','Selected energy explanation')},h('div',{className:'circuit-network-energy-formula'},h('strong',null,selected.label+' · '+(selected.component.type==='capacitor'?'Electric-field energy':'Magnetic-field energy')),h('span',null,selected.component.type==='capacitor'?'E = ½CV²':'E = ½LI²')),
           h('p',null,(selected.component.type==='capacitor'?'C = '+selected.component.value+' µF; V(A − B) = '+measure(selected.voltage,circuitPreciseVoltageText):'L = '+selected.component.value+' mH; I(A → B) = '+measure(selected.current,circuitCurrentText))+'. Stored energy: '+circuitNetworkEnergyText(reading.energy)+'.'),
           h('p',{className:'circuit-help'},reading.status==='unknown'?'The power is undetermined. Energy can still be known independently.':reading.status==='storing'?'Positive absorbed power means energy is entering this ideal storage element at this instant.':reading.status==='returning'?'Negative absorbed power means this part is returning stored energy to the rest of the network.': 'Power is zero at this instant. The part may still hold energy; this alone does not prove equilibrium.'),
@@ -2162,7 +2263,7 @@ window.StemLab = window.StemLab || {
         h('p',{className:'circuit-help'},'Actions at the same time on different switches happen together. Each switch can have up to 8 actions; use distinct times for its own actions.'),
         h('div',{className:'circuit-network-switch-actions'},events.map(function(e){return h('div',{key:e.id,className:'circuit-network-switch-action'},h('div',{className:'circuit-network-switch-action-title'},h('strong',null,'Action '+e.id),h('span',null,e.time>props.duration?'After window':circuitTimeText(e.time))),
           h(CircuitActiveControl,{React:React,t:props.t,field:'network-switch-'+p.id+'-'+e.id,label:'Switch action '+e.id+' time (s)',value:e.time,min:.000001,max:60,step:.001,logarithmic:true,onChange:function(value){change(e.id,{time:value});}}),
-          h('div',{className:'circuit-network-switch-action-controls'},h('label',null,'Set connection',h('select',{'aria-label':'Switch action '+e.id+' state',value:e.closed?'closed':'open',onChange:function(ev){change(e.id,{closed:ev.target.value==='closed'});}},h('option',{value:'open'},'Open'),h('option',{value:'closed'},'Closed'))),h('button',{type:'button','aria-label':'Remove switch action '+e.id,onClick:function(){update({events:events.filter(function(a){return a.id!==e.id;})});requestAnimationFrame(function(){var button=document.getElementById('network-add-switch-action');if(button)button.focus();});}},'Remove'))); })),
+          h('div',{className:'circuit-network-switch-action-controls'},h('label',null,'Set connection',h('select',{'aria-label':__alloFill(__alloT('stem.circuit.a11y_switch_action_state', 'Switch action {value1} state'), { value1: e.id }),value:e.closed?'closed':'open',onChange:function(ev){change(e.id,{closed:ev.target.value==='closed'});}},h('option',{value:'open'},'Open'),h('option',{value:'closed'},'Closed'))),h('button',{type:'button','aria-label':__alloFill(__alloT('stem.circuit.a11y_remove_switch_action', 'Remove switch action {value1}'), { value1: e.id }),onClick:function(){update({events:events.filter(function(a){return a.id!==e.id;})});requestAnimationFrame(function(){var button=document.getElementById('network-add-switch-action');if(button)button.focus();});}},'Remove'))); })),
         h('div',{className:'circuit-network-signal-shortcuts'},h('button',{id:'network-add-switch-action',type:'button',disabled:!canAdd,onClick:add},'Add switch action'),h('button',{type:'button',disabled:!events.length,onClick:function(){props.fit(Math.min(60,Math.max(.000001,last.time*1.4)));}},props.timed?'Fit scheduled changes':'Run switch schedule')),
         h('p',{className:'circuit-network-signal-mode'},props.timed?'Amber scope markers locate each change. Compare Before and After to inspect the same instant on either side.':'Scheduled actions run only in Time response. DC equilibrium uses the initial switch state.')),
       h('p',{className:'circuit-help'},'An ideal switch changes immediately. Capacitor voltage and inductor current carry through each change; an incompatible connection stops the calculation with a diagnostic.'));
@@ -2425,7 +2526,7 @@ window.StemLab = window.StemLab || {
         h('div',{className:'circuit-network-meter'},h('div',null,h('span',{className:'circuit-eyebrow'},'DIFFERENTIAL VOLTMETER'),h('output',{'aria-label':__alloT('stem.circuit.connected_voltmeter_reading','Connected voltmeter reading'),'aria-live':playing?'off':'polite'},measurement(probe.voltage,circuitPreciseVoltageText)),h('span',null,probe.red+' minus '+probe.black+(timed?' · '+circuitTimeText(s.time||0):' · DC'))),h('div',{className:'circuit-network-node-selects'},nodeSelect('Network red probe',probe.red,function(id){patch({probeRed:id});}),nodeSelect('Network black probe',probe.black,function(id){patch({probeBlack:id});}),h('button',{type:'button',onClick:function(){patch({probeRed:probe.black,probeBlack:probe.red});}},'Reverse network probes')))),
       h('section',{className:'circuit-active-panel'},h('div',{className:'circuit-active-toolbar'},h('h3',null,'02 · Make the connections'),h('span',null,d.components.length+'/16 components · 8 named nodes')),
         h('div',{className:'circuit-network-add'},h('label',null,'Component to add',h('select',{'aria-label':__alloT('stem.circuit.network_component_to_add','Network component to add'),value:state.addType||'resistor',onChange:function(e){patch({addType:e.target.value});}},Object.keys(CIRCUIT_NETWORK_TYPES).map(function(type){return h('option',{key:type,value:type},CIRCUIT_NETWORK_TYPES[type].name);}))),h('button',{type:'button',disabled:d.components.length>=16,onClick:add},'Add network component')),
-        h('div',{className:'circuit-network-editor'},h('div',{className:'circuit-network-part-list',role:'group','aria-label':__alloT('stem.circuit.network_components','Network components')},s.rows.map(function(row){return h('button',{type:'button',key:row.component.id,'aria-label':'Edit '+row.label,'aria-pressed':!!selected&&selected.component.id===row.component.id,onClick:function(){patch({selected:row.component.id});}},h('strong',null,row.label+' · '+CIRCUIT_NETWORK_TYPES[row.component.type].name),h('span',null,(row.component.bjt?circuitNetworkTerminals(row.component).map(function(t){return t.name+': '+t.node;}).join(' · '):row.component.bjt?'C '+row.component.a+' · B '+row.component.bjt.base+' · E '+row.component.b:row.component.a+' → '+row.component.b)+' · '+circuitNetworkValue(row.component,row.closed)));}),!s.rows.length&&h('p',null,'Add a component or load an example to begin.')),
+        h('div',{className:'circuit-network-editor'},h('div',{className:'circuit-network-part-list',role:'group','aria-label':__alloT('stem.circuit.network_components','Network components')},s.rows.map(function(row){return h('button',{type:'button',key:row.component.id,'aria-label':__alloFill(__alloT('stem.circuit.a11y_edit', 'Edit {value1}'), { value1: row.label }),'aria-pressed':!!selected&&selected.component.id===row.component.id,onClick:function(){patch({selected:row.component.id});}},h('strong',null,row.label+' · '+CIRCUIT_NETWORK_TYPES[row.component.type].name),h('span',null,(row.component.bjt?circuitNetworkTerminals(row.component).map(function(t){return t.name+': '+t.node;}).join(' · '):row.component.bjt?'C '+row.component.a+' · B '+row.component.bjt.base+' · E '+row.component.b:row.component.a+' → '+row.component.b)+' · '+circuitNetworkValue(row.component,row.closed)));}),!s.rows.length&&h('p',null,'Add a component or load an example to begin.')),
           selected&&h('div',{className:'circuit-network-inspector'},h('h4',null,selected.label+' · '+CIRCUIT_NETWORK_TYPES[selected.component.type].name),h('div',{className:'circuit-network-terminals'},nodeSelect(selected.component.bjt?'Collector node C':selected.component.opamp?'Output node A':'Terminal A'+(selected.component.type==='voltage'?' (+)':selected.component.type==='diode'?' (anode)':''),selected.component.a,function(id){edit({a:id});}),nodeSelect(selected.component.bjt?'Emitter node E':selected.component.opamp?'Output reference B':'Terminal B'+(selected.component.type==='voltage'?' (−)':selected.component.type==='diode'?' (cathode)':''),selected.component.b,function(id){edit({b:id});})),
             ['resistor','voltage','current','capacitor','inductor'].includes(selected.component.type)&&h(CircuitActiveControl,{React:React,t:cktT,key:selected.component.id,field:'network-'+selected.component.id,logarithmic:['capacitor','inductor'].includes(selected.component.type),label:selected.component.waveform&&selected.component.waveform.shape!=='dc'?'DC level ('+(selected.component.type==='current'?'mA':'V')+')':selected.component.type==='resistor'?'Resistance (Ω)':selected.component.type==='voltage'?'Source voltage (V)':selected.component.type==='capacitor'?'Capacitance (µF)':selected.component.type==='inductor'?'Inductance (mH)':'Source current (mA)',value:selected.component.value*(selected.component.type==='current'?1000:1),min:CIRCUIT_NETWORK_TYPES[selected.component.type].min*(selected.component.type==='current'?1000:1),max:CIRCUIT_NETWORK_TYPES[selected.component.type].max*(selected.component.type==='current'?1000:1),step:selected.component.type==='resistor'?1:.1,onChange:function(value){edit({value:value/(selected.component.type==='current'?1000:1)});}}),
             selected.component.bjt&&h(CircuitNetworkBJTEditor,{key:selected.component.id,React:React,t:cktT,row:selected,edit:edit,measure:function(red,black){patch({probeRed:red,probeBlack:black});}}),
@@ -2631,7 +2732,7 @@ window.StemLab = window.StemLab || {
     return h('div',{className:'circuit-active-diagram-scroll',role:'region',tabIndex:0,'aria-label':__alloT('stem.circuit.scrollable_active_circuit_diagram','Scrollable active circuit diagram')},
       h('div',{className:'circuit-active-board-frame'},h('svg', {viewBox:'0 0 900 485',role: 'img','aria-label':(solid?'3D experiment board':'NPN schematic')+'. '+(s.sensor?(d.project==='light'?'Photoresistor above':'Photoresistor below')+' the loaded divider junction.':'Manual input through a base resistor.')+' Lamp connects from VCC to collector; emitter returns to zero volts. '+s.region+'. Base current '+circuitCurrentText(s.baseCurrent)+'; collector current '+circuitCurrentText(s.collectorCurrent)+'. Measurements and node connections follow below.'},
         h('defs',null,h('radialGradient',{id:'active-lamp-glow'},h('stop',{offset:'0%',stopColor:'#f7c66b',stopOpacity:.65}),h('stop',{offset:'100%',stopColor:'#f7c66b',stopOpacity:0})),h('radialGradient',{id:'active-lamp-glass',cx:'35%',cy:'25%'},h('stop',{offset:'0%',stopColor:'#fff5d9'}),h('stop',{offset:'50%',stopColor:'#b5985d'}),h('stop',{offset:'100%',stopColor:'#594d39'}))),
-        h('rect',{width:900,height:485,rx:20,fill:'#091c2b'}),solid&&h('g',null,h('polygon',{points:pts([[70,40,-14],[830,40,-14],[830,453,-14],[70,453,-14]]),fill:'#132d3b',stroke:'#527286',strokeWidth:2}),h('polygon',{points:pts([[70,40,-8],[830,40,-8],[830,453,-8],[70,453,-8]]),fill:'#163b43',stroke:'#6d9295'}),Array.from({length:12},function(_,i){return h('polyline',{key:i,points:pts([[90+i*64,50,-7],[90+i*64,440,-7]]),fill:'none',stroke:'#547b7b',strokeWidth:.5,opacity:.35});})),wires,parts,dots,labels),props.onPlace&&h('div',{className:'circuit-active-node-layer',role:'group','aria-label':__alloT('stem.circuit.place_selected_probe_on_a_circuit_node','Place selected probe on a circuit node')},Object.keys(positions).map(function(node){var a=point(positions[node]),mark=(probe.red===node?'R':'')+(probe.black===node?'K':'');return h('button',{key:node,type:'button',className:'circuit-active-node','data-lead':lead,'aria-label':'Place '+lead+' probe on '+nodeNames[node],'aria-pressed':probe[lead]===node,title:nodeNames[node]+' · '+circuitPreciseVoltageText(s.nodes[node]),style:{left:(a[0]/900*100)+'%',top:(a[1]/485*100)+'%'},onClick:function(){props.onPlace(node);}},node==='supply'?'+':node==='drive'?(s.sensor?'D':'IN'):node==='base'?'B':node==='collector'?'C':'E',mark&&h('small',{'aria-hidden':true},mark));}))));
+        h('rect',{width:900,height:485,rx:20,fill:'#091c2b'}),solid&&h('g',null,h('polygon',{points:pts([[70,40,-14],[830,40,-14],[830,453,-14],[70,453,-14]]),fill:'#132d3b',stroke:'#527286',strokeWidth:2}),h('polygon',{points:pts([[70,40,-8],[830,40,-8],[830,453,-8],[70,453,-8]]),fill:'#163b43',stroke:'#6d9295'}),Array.from({length:12},function(_,i){return h('polyline',{key:i,points:pts([[90+i*64,50,-7],[90+i*64,440,-7]]),fill:'none',stroke:'#547b7b',strokeWidth:.5,opacity:.35});})),wires,parts,dots,labels),props.onPlace&&h('div',{className:'circuit-active-node-layer',role:'group','aria-label':__alloT('stem.circuit.place_selected_probe_on_a_circuit_node','Place selected probe on a circuit node')},Object.keys(positions).map(function(node){var a=point(positions[node]),mark=(probe.red===node?'R':'')+(probe.black===node?'K':'');return h('button',{key:node,type:'button',className:'circuit-active-node','data-lead':lead,'aria-label':__alloFill(__alloT('stem.circuit.a11y_place_probe_on', 'Place {value1} probe on {value2}'), { value1: lead, value2: nodeNames[node] }),'aria-pressed':probe[lead]===node,title:nodeNames[node]+' · '+circuitPreciseVoltageText(s.nodes[node]),style:{left:(a[0]/900*100)+'%',top:(a[1]/485*100)+'%'},onClick:function(){props.onPlace(node);}},node==='supply'?'+':node==='drive'?(s.sensor?'D':'IN'):node==='base'?'B':node==='collector'?'C':'E',mark&&h('small',{'aria-hidden':true},mark));}))));
   }
 
   // Portable investigations contain only validated circuit settings and authored evidence.
@@ -2723,7 +2824,7 @@ window.StemLab = window.StemLab || {
           h('div',{className:'circuit-notebook-observation-body'},h('p',{className:'circuit-help'},s.region+' · '+(s.sensor?'Relative light '+s.design.light+'/100':'Input '+s.design.input+' V')+' · Supply '+s.design.supply+' V · RB '+circuitActiveResistanceText(s.design.baseResistance)+' · Lamp '+circuitActiveResistanceText(s.design.loadResistance)+' · β '+s.design.beta+(s.sensor?' · Divider '+circuitActiveResistanceText(s.design.dividerResistance):'')),
             h('div',{className:'circuit-notebook-readings'},[['IB',circuitCurrentText(s.baseCurrent)],['IC',circuitCurrentText(s.collectorCurrent)],['VCE',circuitPreciseVoltageText(s.collectorVoltage)],['Probe',circuitPreciseVoltageText(probe.voltage)]].map(function(pair){return h('div',{key:pair[0]},h('span',null,pair[0]),h('strong',null,pair[1]));})),
             h('p',{className:'circuit-help'},'Probe: '+probe.red+' − '+probe.black+'. These readings belong to this recorded circuit.'),
-            h('label',{className:'circuit-notebook-field'},'What I noticed',h('textarea',{'aria-label':'Observation '+(index+1)+' note',rows:2,maxLength:1000,value:o.note||'',onChange:function(e){props.note(index,e.target.value);},placeholder:__alloT('stem.circuit.describe_the_reading_and_what_changed','Describe the reading and what changed.')})),
+            h('label',{className:'circuit-notebook-field'},'What I noticed',h('textarea',{'aria-label':__alloFill(__alloT('stem.circuit.a11y_observation_note', 'Observation {value1} note'), { value1: (index+1) }),rows:2,maxLength:1000,value:o.note||'',onChange:function(e){props.note(index,e.target.value);},placeholder:__alloT('stem.circuit.describe_the_reading_and_what_changed','Describe the reading and what changed.')})),
             h('div',{className:'circuit-notebook-record-actions'},h('button',{type:'button',onClick:function(){props.revisit(index);}},'Revisit observation '+(index+1)),h('button',{type:'button',onClick:function(){props.reference(index);}},'Use observation '+(index+1)+' as reference'),h('button',{type:'button',onClick:function(){props.remove(index);}},'Remove observation '+(index+1)))));
         })),
         field('My evidence-based explanation','reflection',4000,3,'Use your recorded readings to support or revise your prediction.'),
@@ -2783,7 +2884,7 @@ window.StemLab = window.StemLab || {
         h('div',{className:'circuit-active-probe-placement',role:'group','aria-label':__alloT('stem.circuit.choose_probe_to_place','Choose probe to place')},h('span',null,'Place a probe on the board'),['red','black'].map(function(lead){return h('button',{type:'button',key:lead,'data-lead':lead,'aria-pressed':(state.placeLead==='black'?'black':'red')===lead,onClick:function(){patch({placeLead:lead});}},'Place '+lead+' probe');})),
         h(CircuitActiveDiagram,{React:React,t:cktT,solved:s,solid:solid,probe:probe,lead:state.placeLead,onPlace:function(node){var v={};v[state.placeLead==='black'?'probeBlack':'probeRed']=node;patch(v);}}),
         h('p',{className:'circuit-help'},'Gold: base input · Mint: lamp path · Blue: common return. Arrows show conventional current. This board is prewired; B, C, and E label circuit terminals, not a real package’s pin order. Select a lead, then choose a labeled node on the board or use the menus below. Scroll the diagram on a narrow screen.'),
-        h('div',{className:'circuit-active-probes'},h('strong',null,'Measure between nodes'),h('div',null,selectNode('Red probe','red'),selectNode('Black probe','black'),h('button',{type:'button',onClick:function(){patch({probeRed:probe.black,probeBlack:probe.red});}},'Reverse active probes')),h('div',{className:'circuit-active-probe-shortcuts'},[['Transistor','collector','emitter'],['Base resistor','drive','base'],['Supply','supply','emitter']].map(function(p){return h('button',{type:'button',key:p[0],'aria-label':'Measure '+p[0].toLowerCase(),onClick:function(){patch({probeRed:p[1],probeBlack:p[2]});}},p[0]);})),h('output',{'aria-label':__alloT('stem.circuit.active_voltmeter_reading','Active voltmeter reading')},circuitPreciseVoltageText(probe.voltage)),h('span',null,'Red minus black · R / K markers on the board'))),
+        h('div',{className:'circuit-active-probes'},h('strong',null,'Measure between nodes'),h('div',null,selectNode('Red probe','red'),selectNode('Black probe','black'),h('button',{type:'button',onClick:function(){patch({probeRed:probe.black,probeBlack:probe.red});}},'Reverse active probes')),h('div',{className:'circuit-active-probe-shortcuts'},[['Transistor','collector','emitter'],['Base resistor','drive','base'],['Supply','supply','emitter']].map(function(p){return h('button',{type:'button',key:p[0],'aria-label':__alloFill(__alloT('stem.circuit.a11y_measure', 'Measure {value1}'), { value1: p[0].toLowerCase() }),onClick:function(){patch({probeRed:p[1],probeBlack:p[2]});}},p[0]);})),h('output',{'aria-label':__alloT('stem.circuit.active_voltmeter_reading','Active voltmeter reading')},circuitPreciseVoltageText(probe.voltage)),h('span',null,'Red minus black · R / K markers on the board'))),
       h('details',{className:'circuit-active-panel'},h('summary',null,'Tune the components'),h('div',{className:'circuit-active-tuning'},range('Supply voltage (V)','supply',3,12,.1,function(v){return v.toFixed(1)+' V';}),range('Base resistance (Ω)','baseResistance',1000,100000,1000,circuitActiveResistanceText),range('Lamp resistance (Ω)','loadResistance',100,2000,10,circuitActiveResistanceText),range('Transistor gain β','beta',20,300,10),s.sensor&&range('Divider resistance (Ω)','dividerResistance',1000,100000,1000,circuitActiveResistanceText)),h('p',{className:'circuit-help'},'The lamp has fixed resistance in this model. Its glow indicates calculated power; filament temperature and real brightness are not simulated.')),
       h('section',{className:'circuit-active-panel'},h('div',{className:'circuit-active-toolbar'},h('h3',null,'03 · Discover the response'),h('button',{type:'button',onClick:download},'Export active sweep CSV')),
         h(CircuitActiveReference,{React:React,t:cktT,comparison:comparison,capture:function(){patch({reference:{version:1,design:circuitActiveDesign(d)}});},restore:function(){if(comparison)patch(comparison.before.design,true);},clear:function(){patch({reference:null});}}),
@@ -3219,7 +3320,7 @@ window.StemLab = window.StemLab || {
           h('button',{type:'button','aria-label':__alloT('stem.circuit.zoom_in','Zoom in'),disabled:camera.zoom>=1.8,onClick:function(){props.update('cameraZoom',Math.min(1.8,Math.round((camera.zoom+.1)*100)/100));}},'+')),
         h('button',{type:'button',className:'circuit-frame-center',disabled:!camera.x&&!camera.y,onClick:function(){props.updateMany({cameraPanX:0,cameraPanY:0});}},'Center view')),
       h('div',{className:'circuit-scene-viewport','data-dragging':dragging,'data-drag-mode':panning?'pan':'orbit','aria-describedby':'circuit-camera-help',onPointerDown:startDrag,onPointerMove:moveDrag,onPointerUp:endDrag,onPointerCancel:endDrag,onLostPointerCapture:endDrag},
-      h('svg', {ref:sceneRef,viewBox:'0 0 640 410',role: 'img','aria-label':'Rotatable 3D representation of the '+solved.mode+' circuit with '+count+' parts. '+circuitCurrentText(solved.current)+'. Read individual measurements below.','aria-describedby':[d.sceneCurrent?'circuit-flow-note':'',d.sceneProbes?'circuit-probe-help':''].filter(Boolean).join(' ')||undefined},
+      h('svg', {ref:sceneRef,viewBox:'0 0 640 410',role: 'img','aria-label':__alloFill(__alloT('stem.circuit.a11y_rotatable_3d_representation_of_the_circuit_with', 'Rotatable 3D representation of the {value1} circuit with {value2} parts. {value3}. Read individual measurements below.'), { value1: solved.mode, value2: count, value3: circuitCurrentText(solved.current) }),'aria-describedby':[d.sceneCurrent?'circuit-flow-note':'',d.sceneProbes?'circuit-probe-help':''].filter(Boolean).join(' ')||undefined},
         h('defs',null,
           solved.rows.map(function(r,i){return h('radialGradient',{key:i,id:'circuit-light-pool-'+i},h('stop',{offset:'0%',stopColor:r.component.type==='led'?(r.component.ledColor||'#ef4444'):'#fbbf24',stopOpacity:.45}),h('stop',{offset:'100%',stopColor:'#153744',stopOpacity:0}));}),
           h('radialGradient',{id:'circuit-3d-backdrop',cx:'48%',cy:'45%',r:'70%'},h('stop',{offset:'0%',stopColor:'#21495c'}),h('stop',{offset:'100%',stopColor:'#081723'})),
@@ -3243,7 +3344,7 @@ window.StemLab = window.StemLab || {
             var p=positions[i],height=row.component.type==='bulb'?(focus?90:120):row.component.type==='capacitor'?(focus?70:95):row.component.type==='led'?(focus?60:85):(focus?45:75);
             var anchor=project(p.x,p.y,height);
             if(anchor[0]<12||anchor[0]>628||anchor[1]<12||anchor[1]>398)return null;
-            return h('button',{key:i,type:'button',className:'circuit-scene-pin','aria-label':'Select '+row.component.type+' '+(i+1)+' in 3D scene','aria-pressed':selectedIndex===i,
+            return h('button',{key:i,type:'button',className:'circuit-scene-pin','aria-label':__alloFill(__alloT('stem.circuit.a11y_select_in_3d_scene', 'Select {value1} {value2} in 3D scene'), { value1: row.component.type, value2: (i+1) }),'aria-pressed':selectedIndex===i,
               title:(i+1)+'. '+row.component.type+' · '+circuitCurrentText(row.current),
               style:{left:(anchor[0]/640*100)+'%',top:(anchor[1]/410*100)+'%'},
               onClick:function(){props.update('selectedPart',i);}},String(i+1));
@@ -3317,7 +3418,7 @@ window.StemLab = window.StemLab || {
           compareUnknown&&h('p',null,'Striped bars mean undetermined, not zero.'))),
       h('div',{className:'circuit-action-row circuit-part-picker','aria-label':__alloT('stem.circuit.select_a_part_on_the_3d_bench','Select a part on the 3D bench')},solved.rows.map(function(r,i){
         var c=r.component,detail=c.type==='resistor'?c.value+' Ω':c.type==='capacitor'?c.value+' µF':c.type==='inductor'?c.value+' mH':c.type==='switch'?(c.closed?'Closed':'Open'):c.type==='voltmeter'?circuitPreciseVoltageText(r.voltage):circuitCurrentText(r.current);
-        return h('button',{key:i,type:'button','aria-pressed':selectedIndex===i,'aria-label':'Inspect 3D part '+(i+1)+' '+c.type,'aria-describedby':'circuit-part-reading-'+i,onClick:function(){props.update('selectedPart',i);}},
+        return h('button',{key:i,type:'button','aria-pressed':selectedIndex===i,'aria-label':__alloFill(__alloT('stem.circuit.a11y_inspect_3d_part', 'Inspect 3D part {value1} {value2}'), { value1: (i+1), value2: c.type }),'aria-describedby':'circuit-part-reading-'+i,onClick:function(){props.update('selectedPart',i);}},
           h('span',{className:'circuit-part-number'},String(i+1).padStart(2,'0')),
           h('span',{className:'circuit-part-copy'},h('strong',null,c.type==='led'?'LED':c.type),
             h('small',{id:'circuit-part-reading-'+i},comparing?compareText(r[compareMetric]):detail),
@@ -3377,6 +3478,7 @@ window.StemLab = window.StemLab || {
     ].join('\n');
     circStyle.textContent += "\n[data-circuit-builder-root] .circuit-lab-workflow,[data-circuit-builder-root] .circuit-part-inspector{border:1px solid #315066;border-radius:16px;background:linear-gradient(125deg,#0d2636,#0f172a);padding:18px;margin:16px 0}\n[data-circuit-builder-root] .circuit-step-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}\n[data-circuit-builder-root] .circuit-eyebrow{font-size:11px;letter-spacing:.13em;color:#67e8f9;font-weight:800}\n[data-circuit-builder-root] .circuit-step-heading h3{font-size:20px;font-weight:750;margin:6px 0}\n[data-circuit-builder-root] .circuit-model-chip{font-size:11px;color:#bae6fd;border:1px solid #155e75;border-radius:20px;padding:5px 10px}\n[data-circuit-builder-root] .circuit-help{font-size:12px;line-height:1.65;color:#cbd5e1;margin:8px 0}\n[data-circuit-builder-root] .circuit-prediction-label{display:block;font-size:12px;font-weight:700;color:#e2e8f0;margin:12px 0 6px}\n[data-circuit-builder-root] textarea{width:100%;background:#071520;border:1px solid #527286;color:#f1f5f9;border-radius:9px;padding:10px;font-size:14px;resize:vertical}\n[data-circuit-builder-root] textarea::placeholder{color:#94a3b8}\n[data-circuit-builder-root] .circuit-action-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:10px 0}\n[data-circuit-builder-root] .circuit-action-row button,[data-circuit-builder-root] .circuit-camera button,[data-circuit-builder-root] .circuit-part-inspector button{min-height:40px;border:1px solid #547086;border-radius:9px;padding:8px 12px;background:#122d40;color:#e0f2fe;font-size:12px;font-weight:700}\n[data-circuit-builder-root] .circuit-action-row button[aria-pressed=true]{background:#a5f3fc;color:#083344;border-color:#a5f3fc}\n[data-circuit-builder-root] button:disabled{opacity:.45;cursor:not-allowed}\n[data-circuit-builder-root] .circuit-comparison{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}\n[data-circuit-builder-root] .circuit-comparison>div{padding:10px;border:1px solid #315066;border-radius:10px;background:#071520}\n[data-circuit-builder-root] .circuit-comparison span{display:block;font-size:11px;color:#cbd5e1}\n[data-circuit-builder-root] .circuit-comparison strong{display:block;font-size:18px;color:#a5f3fc;font-variant-numeric:tabular-nums;margin-top:5px}\n[data-circuit-builder-root] .circuit-evidence{color:#a7f3d0;font-size:13px;margin:12px 0}\n[data-circuit-builder-root] .circuit-notebook,[data-circuit-builder-root] .circuit-model-details{font-size:12px;line-height:1.7;color:#cbd5e1;margin:12px 0}\n[data-circuit-builder-root] summary{cursor:pointer;font-weight:700;min-height:32px}\n[data-circuit-builder-root] .circuit-notebook li{padding:10px;border-top:1px solid #315066}\n[data-circuit-builder-root] .circuit-view-toolbar{border-top:1px solid #315066;margin-top:20px;padding-top:16px}\n[data-circuit-builder-root] .circuit-3d{border:1px solid #315066;border-radius:16px;overflow:hidden;background:#071520}\n[data-circuit-builder-root] .circuit-3d svg{width:100%;height:auto;display:block}\n[data-circuit-builder-root] .circuit-camera{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:12px}\n[data-circuit-builder-root] .circuit-camera label{display:flex;align-items:center;gap:8px;font-size:12px;flex:1;min-width:180px}\n[data-circuit-builder-root] .circuit-camera input{width:100%;accent-color:#22d3ee;min-height:32px}\n[data-circuit-builder-root] .circuit-3d>.circuit-help{padding:0 14px 8px}\n[data-circuit-builder-root] .circuit-part-inspector{font-size:13px;padding:12px}\n[data-circuit-builder-root] .circuit-part-inspector select{background:#071520;border:1px solid #527286;border-radius:6px;color:#f1f5f9;padding:8px;max-width:100%}\n[data-circuit-builder-root] .circuit-part-inspector p{margin:10px 0;color:#a5f3fc;font-variant-numeric:tabular-nums}\n[data-circuit-builder-root] .circuit-model-note,[data-circuit-builder-root] .circuit-warning{padding:12px;border-left:3px solid #38bdf8;background:#0c2435;color:#e0f2fe;font-size:12px;line-height:1.6;margin:10px 0}\n[data-circuit-builder-root] .circuit-warning{border-color:#fbbf24;background:#362817;color:#fef3c7}\n[data-circuit-builder-root] .circuit-model-details a{color:#67e8f9;text-decoration:underline}\n@media(max-width:480px){[data-circuit-builder-root]{padding:12px!important}[data-circuit-builder-root] .circuit-lab-workflow{padding:12px}[data-circuit-builder-root] .circuit-comparison strong{font-size:14px}[data-circuit-builder-root] .circuit-comparison>div{padding:7px}}\n";
     circStyle.textContent += '\n[data-circuit-motion=paused] *,[data-circuit-motion=paused] *::before,[data-circuit-motion=paused] *::after {animation-play-state:paused!important;transition:none!important}';
+    circStyle.textContent += '\n.circuit-start-guide{margin:16px 0;border:1px solid #4e7c86;border-radius:14px;background:#0d2a36;color:#e2f4f5;overflow:hidden}.circuit-start-guide>summary{padding:13px 16px;min-height:48px;font-size:14px;color:#b2f3df}.circuit-start-guide>summary>span{display:block;margin:5px 0 0 17px;color:#d1e4e9;font-size:12px;font-weight:400}.circuit-start-body{border-top:1px solid #3c626d;padding:16px}.circuit-start-body h3{margin:0 0 8px;font-size:19px;font-weight:750;color:#f0fdfa}.circuit-start-body>p{font-size:13px;line-height:1.65}.circuit-start-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:0;margin:16px 0;list-style:none}.circuit-start-steps li{border-left:2px solid #6ec8b6;padding-left:10px;min-width:0}.circuit-start-steps strong{display:block;color:#b2f3df;font-size:13px}.circuit-start-steps span{display:block;margin-top:5px;font-size:12px;line-height:1.6;color:#d1e4e9}[data-circuit-builder-root] .circuit-start-guide .circuit-action-row button{min-height:44px}[data-circuit-builder-root] .circuit-start-guide [data-circuit-start-experiment]{background:#b2f3df;border-color:#b2f3df;color:#113b36}@media(max-width:540px){.circuit-start-steps{grid-template-columns:1fr;gap:12px}.circuit-start-body{padding:12px}.circuit-start-guide .circuit-action-row>button{width:100%}}';
     circStyle.textContent += "\n[data-circuit-builder-root] .circuit-time-lab{margin:18px 0;padding:16px;border:1px solid #4b6580;border-radius:14px;background:linear-gradient(135deg,#17243a,#092d36);color:#e2e8f0}\n[data-circuit-builder-root] .circuit-time-lab>summary{color:#a5f3fc;font-size:15px}\n[data-circuit-builder-root] .circuit-time-lab svg{width:100%;height:auto;margin:12px 0}\n[data-circuit-builder-root] .circuit-time-slider{display:block;font-size:13px;color:#e2e8f0;margin:12px 0}\n[data-circuit-builder-root] .circuit-time-slider input{display:block;width:100%;accent-color:#fbbf24;min-height:36px;margin:5px 0}\n[data-circuit-builder-root] .circuit-part-picker{padding:0 12px}\n[data-circuit-builder-root] #circuit-inspector-value{max-width:120px;padding:8px;border:1px solid #527286;border-radius:8px;background:#071520;color:#f1f5f9}\n[data-circuit-builder-root] [data-circuit-comparison] ul{padding-left:18px;list-style:disc;margin-top:6px}\n";
     circStyle.textContent += "\n/* Material bench presentation: scoped to the circuit tool. */\n[data-circuit-builder-root] {background:radial-gradient(ellipse at 8% 0%,#122b3a 0%,#081521 46%)!important;border-color:#2a4355!important;box-shadow:0 20px 65px #02091355!important}\n[data-circuit-builder-root] [data-circuit-bench] {padding:12px 0 18px;border-bottom:1px solid #263e50;margin-bottom:18px}\n[data-circuit-builder-root] #circuit-bench-title {font-size:clamp(26px,3.4vw,36px);line-height:1.13;letter-spacing:-.045em;font-weight:750;margin:10px 0 12px;color:#f0f7fb}\n[data-circuit-builder-root] [data-circuit-bench]>.circuit-help {max-width:640px;line-height:1.75;color:#b8cbd8;font-size:13px}\n[data-circuit-builder-root] .circuit-eyebrow {font-size:10px;letter-spacing:.16em;color:#95e1d6;font-weight:750}\n[data-circuit-builder-root] .circuit-action-row button {border-color:#365568;background:linear-gradient(180deg,#173244,#102735);box-shadow:inset 0 1px #ffffff06;transition:background .15s,border-color .15s}\n[data-circuit-builder-root] .circuit-action-row button:hover:not(:disabled) {background:#204557;border-color:#6d9caa}[data-circuit-builder-root] .circuit-action-row button[aria-pressed=true]:hover:not(:disabled){background:#a5f3fc;color:#083344;border-color:#a5f3fc}\n[data-circuit-builder-root] .circuit-action-row button[aria-pressed=true] {background:#b2eee1;border-color:#b2eee1;color:#0b353b;box-shadow:0 2px 12px #5edec316}\n[data-circuit-builder-root] .circuit-lab-workflow {background:#102330;border-color:#294354;border-radius:14px;padding:16px}\n[data-circuit-builder-root] .circuit-step-heading h3 {font-size:18px;line-height:1.35;letter-spacing:-.02em}\n[data-circuit-builder-root] .circuit-model-chip {color:#c3d7e0;border-color:#3c5b6d;background:#132a38;font-size:10px}\n[data-circuit-builder-root] .circuit-guided-lab>summary {color:#d6e8ef;font-size:12px;line-height:1.7;padding-top:7px}\n[data-circuit-builder-root] .circuit-view-toolbar {border-color:#294354;padding-top:18px;margin-top:22px}\n[data-circuit-builder-root] .circuit-3d {border:1px solid #345566;border-radius:18px;box-shadow:0 16px 38px #02091455,inset 0 1px #ffffff08;background:#0a1b28;isolation:isolate}\n[data-circuit-builder-root] .circuit-scene-heading {display:flex;align-items:center;justify-content:space-between;gap:12px;padding:19px 20px 13px;background:linear-gradient(115deg,#122d3d,#0d2231)}\n[data-circuit-builder-root] .circuit-scene-heading h3 {font-size:20px;font-weight:650;letter-spacing:-.03em;line-height:1.3;margin-top:4px;color:#eef8fc}\n[data-circuit-builder-root] .circuit-scene-status {display:flex;align-items:center;gap:7px;font-size:11px;color:#b9cbd8;background:#102534;border:1px solid #345364;border-radius:30px;padding:7px 10px;white-space:nowrap}\n[data-circuit-builder-root] .circuit-scene-status>span {width:6px;height:6px;border-radius:50%;background:#94a3b8;flex:none}\n[data-circuit-builder-root] .circuit-scene-status[data-state=active] {color:#c1f3da;border-color:#386553}\n[data-circuit-builder-root] .circuit-scene-status[data-state=active]>span {background:#86efac;box-shadow:0 0 9px #86efac33}\n[data-circuit-builder-root] .circuit-scene-status[data-state=warning] {color:#fecaca;border-color:#7d4148}\n[data-circuit-builder-root] .circuit-scene-status[data-state=warning]>span {background:#fda4af}\n[data-circuit-builder-root] .circuit-scene-metrics {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-bottom:1px solid #294353;padding:0 20px 14px;background:#102635}\n[data-circuit-builder-root] .circuit-scene-metrics>div {padding:4px 16px;border-left:1px solid #2a4351;min-width:0}\n[data-circuit-builder-root] .circuit-scene-metrics>div:first-child {padding-left:0;border:0}\n[data-circuit-builder-root] .circuit-scene-metrics span {display:block;font-size:9px;letter-spacing:.13em;color:#a6bfcd;margin-bottom:6px}\n[data-circuit-builder-root] .circuit-scene-metrics strong {font-family:ui-monospace,SFMono-Regular,Consolas,monospace;display:block;font-size:clamp(14px,2.1vw,21px);font-weight:500;color:#e2f6fa;line-height:1.2;overflow-wrap:anywhere}\n[data-circuit-builder-root] .circuit-scene-metrics small {font:inherit;color:#9dbbca;font-size:.7em}\n[data-circuit-builder-root] .circuit-3d>svg {background:#081725}\n[data-circuit-builder-root] .circuit-camera {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 24px;padding:16px 20px;background:#102330;border-top:1px solid #294453;border-bottom:1px solid #294453}\n[data-circuit-builder-root] .circuit-camera label {min-width:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;color:#bcd0dc;font-size:11px}\n[data-circuit-builder-root] .circuit-camera input {min-width:0;accent-color:#a5e8db}\n[data-circuit-builder-root] .circuit-camera-actions {grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px}\n[data-circuit-builder-root] .circuit-camera button {min-height:34px;background:#142f40;border-color:#385969;padding:6px 12px;font-size:11px;color:#d8eaf1}\n[data-circuit-builder-root] .circuit-camera button[aria-pressed=true] {background:#234a4d;color:#c5f6eb;border-color:#548782}\n[data-circuit-builder-root] .circuit-part-picker-heading {display:flex;justify-content:space-between;gap:8px;color:#aac2cf;font-size:9px;letter-spacing:.12em;padding:19px 20px 0}\n[data-circuit-builder-root] .circuit-part-picker-heading span {letter-spacing:0;color:#bed0dc;font-size:10px}\n[data-circuit-builder-root] .circuit-part-picker {display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:9px;padding:0 20px;margin:10px 0 12px}\n[data-circuit-builder-root] .circuit-part-picker button {position:relative;display:flex;gap:10px;align-items:center;text-align:left;min-height:65px;padding:10px 12px;border-radius:10px;background:#102735;border-color:#2e4c5d;min-width:0}\n[data-circuit-builder-root] .circuit-part-picker button[aria-pressed=true] {background:#193f47;border-color:#7ad4cb;color:#e6fffa;box-shadow:inset 0 0 0 1px #82d8cf22}\n[data-circuit-builder-root] .circuit-part-number {display:grid;place-items:center;flex:none;width:28px;height:28px;border-radius:8px;background:#233e4f;color:#c3d3df;font:11px ui-monospace,Consolas,monospace}\n[data-circuit-builder-root] .circuit-part-picker button[aria-pressed=true] .circuit-part-number {background:#b1ecdf;color:#123c40}\n[data-circuit-builder-root] .circuit-part-copy {display:grid;gap:4px;min-width:0}\n[data-circuit-builder-root] .circuit-part-copy strong {font-size:12px;font-weight:650;text-transform:capitalize;line-height:1.3}\n[data-circuit-builder-root] .circuit-part-copy small {font-size:11px;color:#bbd0db;font-weight:400;line-height:1.3}\n[data-circuit-builder-root] .circuit-3d>.circuit-help {padding:0 20px 16px;margin:0;color:#b6cbd6;font-size:11px;line-height:1.7}\n[data-circuit-builder-root] .circuit-part-inspector {border-color:#3c6470;background:linear-gradient(120deg,#173340,#102430);box-shadow:inset 3px 0 #85dbcf;padding:16px}\n[data-circuit-builder-root] .circuit-part-inspector>label {font-size:12px;color:#d8e9ef;font-weight:650;margin-right:8px}\n[data-circuit-builder-root] .circuit-part-inspector>p {color:#c7f4e8;font-size:13px;line-height:1.8}\n[data-circuit-builder-root] .circuit-comparison>div {background:#0c2130;border-color:#335363;border-radius:10px}\n[data-circuit-builder-root] .circuit-comparison strong {color:#b8ece2}\n[data-circuit-builder-root] .circuit-time-lab {background:linear-gradient(135deg,#142d3d,#11343b);border-color:#3c6070}\n@media(max-width:600px) {\n[data-circuit-builder-root] .circuit-scene-heading {padding:15px 13px 12px;align-items:flex-start;flex-wrap:wrap}\n[data-circuit-builder-root] .circuit-scene-heading h3 {font-size:19px}\n[data-circuit-builder-root] .circuit-scene-status {padding:5px 8px;font-size:10px}\n[data-circuit-builder-root] .circuit-scene-metrics {padding:0 13px 13px}\n[data-circuit-builder-root] .circuit-scene-metrics>div {padding:3px 8px}\n[data-circuit-builder-root] .circuit-scene-metrics strong {font-size:14px}\n[data-circuit-builder-root] .circuit-camera {padding:13px;gap:8px 15px}\n[data-circuit-builder-root] .circuit-camera-actions {gap:6px}\n[data-circuit-builder-root] .circuit-camera button {padding:6px 10px}\n[data-circuit-builder-root] .circuit-part-picker-heading {padding:16px 13px 0}\n[data-circuit-builder-root] .circuit-part-picker {padding:0 13px;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}\n[data-circuit-builder-root] .circuit-part-picker button {padding:9px;gap:7px}\n[data-circuit-builder-root] .circuit-part-number {width:23px;height:27px}\n[data-circuit-builder-root] .circuit-3d>.circuit-help {padding:0 13px 14px}\n[data-circuit-builder-root] .circuit-part-inspector {padding:13px}\n}\n@media(prefers-reduced-motion:reduce) {[data-circuit-builder-root] .circuit-action-row button{transition:none}}\n";
     circStyle.textContent += "\n[data-circuit-builder-root] .circuit-parts-shelf{margin:14px 0 18px;padding:16px;background:#102633;border:1px solid #355261;border-radius:16px}\n[data-circuit-builder-root] .circuit-parts-shelf h3{font-size:16px;color:#ecf9fc;font-weight:700;margin:0 0 10px}\n[data-circuit-builder-root] .circuit-parts-shelf .circuit-supply-row{display:flex;align-items:center;gap:12px;border-bottom:1px solid #34515f;padding-bottom:12px;margin-bottom:12px}\n[data-circuit-builder-root] .circuit-supply-row input{min-width:40px;accent-color:#a5e8db;min-height:36px}\n[data-circuit-builder-root] .circuit-supply-row>span:first-child{font-size:12px;color:#d2e6ee}\n[data-circuit-builder-root] .circuit-supply-row>span:last-child{color:#b1eddf;font-size:18px;width:64px}\n[data-circuit-builder-root] .circuit-parts-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}\n[data-circuit-builder-root] .circuit-parts-grid button{display:block;text-align:left;min-height:66px;padding:10px;border:1px solid #456474;border-radius:10px;background:#163241;color:#e1f2f7;font-size:12px;line-height:1.4}\n[data-circuit-builder-root] .circuit-parts-grid button:hover{background:#254a58;border-color:#9ad4cf}\n[data-circuit-builder-root] .circuit-parts-grid button small{display:block;margin-top:5px;font-size:10px;line-height:1.4;color:#b9d2dd;font-weight:400}\n[data-circuit-builder-root] .circuit-parts-grid button[data-circuit-clear]{background:#322735;border-color:#735361;color:#f5d6dc}\n[data-circuit-builder-root] .circuit-parts-grid>span{grid-column:1/-1;font-size:11px}\n[data-circuit-builder-root] .circuit-lessons{margin:14px 0;padding:14px 16px;border:1px solid #4b687a;border-radius:14px;background:linear-gradient(130deg,#152f42,#182b3a);color:#dbeaf2}\n[data-circuit-builder-root] .circuit-lessons>summary{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;list-style:none;font-size:14px;min-height:32px}\n[data-circuit-builder-root] .circuit-lessons>summary::before{content:'+';font-size:20px;color:#a9eee0}\n[data-circuit-builder-root] .circuit-lessons[open]>summary::before{content:'−'}\n[data-circuit-builder-root] .circuit-lessons>summary>span{flex:1;min-width:150px}\n[data-circuit-builder-root] .circuit-lessons>summary small{font-size:10px;color:#bdd0de;font-weight:400}\n[data-circuit-builder-root] .circuit-lesson-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}\n[data-circuit-builder-root] .circuit-lesson-cards button{padding:14px 12px;text-align:left;background:#102431;border:1px solid #456171;border-radius:10px;color:#e1eff7;min-width:0}\n[data-circuit-builder-root] .circuit-lesson-cards strong{display:block;font-size:14px;line-height:1.4;margin-top:8px}\n[data-circuit-builder-root] .circuit-lesson-cards button[aria-pressed=true]{border-color:#a9e8d9;background:#214650}\n[data-circuit-builder-root] .circuit-learning-steps{list-style:none;display:flex;gap:8px;margin:18px 0;padding:0}\n[data-circuit-builder-root] .circuit-learning-steps li{flex:1;border-bottom:2px solid #476373;padding:8px 2px;font-size:12px;color:#b9cbd6}\n[data-circuit-builder-root] .circuit-learning-steps li[aria-current=step]{color:#c9fff0;border-color:#9eedcf;font-weight:700}\n[data-circuit-builder-root] .circuit-lesson-body fieldset{border:0;padding:0;margin:14px 0;min-width:0}\n[data-circuit-builder-root] .circuit-lesson-body legend{font-size:15px;line-height:1.6;font-weight:600}\n[data-circuit-builder-root] .circuit-lesson-evidence>p{font-size:13px;line-height:1.8;margin:14px 0;color:#d8ecef}\n[data-circuit-builder-root] .circuit-lesson-evidence .circuit-change-label{font:12px/1.6 system-ui;overflow-wrap:anywhere}\n[data-circuit-builder-root] .circuit-lesson-evidence>label{display:block;margin-top:18px;font-size:13px;font-weight:700}\n[data-circuit-builder-root] .circuit-lessons textarea{box-sizing:border-box;width:100%;padding:12px;resize:vertical;background:#081d2b;color:#e6f5fa;border:1px solid #628192;border-radius:9px;font-size:13px;line-height:1.6}\n[data-circuit-builder-root] .circuit-live-coach{padding:16px 18px;margin:12px 0 18px;border:1px solid #3a696b;border-radius:14px;background:linear-gradient(110deg,#173c42,#112c39);color:#d3e9ed}\n[data-circuit-builder-root] .circuit-live-coach[data-tone=warning]{background:#352c25;border-color:#97764d}\n[data-circuit-builder-root] .circuit-live-coach h3{margin:6px 0;font-size:18px;font-weight:650;color:#effcff;letter-spacing:-.02em}\n[data-circuit-builder-root] .circuit-live-coach p{font-size:13px;line-height:1.8;margin:6px 0}\n[data-circuit-builder-root] .circuit-live-coach>button{margin-top:8px;border:1px solid #7aabae;padding:7px 12px;border-radius:8px;color:#e1fcf4;background:#244852;font-size:12px}\n[data-circuit-builder-root] .circuit-reading-map{margin-top:12px;padding-top:12px;border-top:1px solid #41616c}\n[data-circuit-builder-root] .circuit-reading-map summary{font-size:12px;color:#cef0e7}\n[data-circuit-builder-root] .circuit-reading-map ul{list-style:none;padding:0;margin:12px 0;display:grid;gap:14px}\n[data-circuit-builder-root] .circuit-reading-label{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px}\n[data-circuit-builder-root] .circuit-reading-label strong{text-transform:capitalize}\n[data-circuit-builder-root] .circuit-reading-label span{font-variant-numeric:tabular-nums;color:#c8e9ee}\n[data-circuit-builder-root] .circuit-reading-track{height:7px;background:#071d29;border-radius:7px;overflow:hidden;margin:7px 0 4px}\n[data-circuit-builder-root] .circuit-reading-track span{display:block;height:100%;background:linear-gradient(90deg,#70bccc,#b3eed7);border-radius:7px}\n[data-circuit-builder-root] .circuit-reading-map small{font-size:10px;color:#bbd7de}\n[data-circuit-builder-root] .circuit-concept-key{border-top:1px solid #41616c;padding-top:8px}\n[data-circuit-builder-root] .circuit-concept-key p{font-size:11px}\n@media(max-width:600px){[data-circuit-builder-root] .circuit-parts-grid{grid-template-columns:repeat(2,minmax(0,1fr))}[data-circuit-builder-root] .circuit-lesson-cards{grid-template-columns:1fr}[data-circuit-builder-root] .circuit-lesson-cards button{padding:11px;display:flex;align-items:center;gap:12px}[data-circuit-builder-root] .circuit-lesson-cards strong{margin:0;font-size:12px}[data-circuit-builder-root] .circuit-lesson-cards .circuit-eyebrow{max-width:90px;font-size:9px}[data-circuit-builder-root] .circuit-parts-shelf,[data-circuit-builder-root] .circuit-lessons,[data-circuit-builder-root] .circuit-live-coach{padding:13px}}\n";
@@ -3478,6 +3580,377 @@ window.StemLab = window.StemLab || {
     ".circuit-network-orbit-timeline{border:1px solid #537d87;background:#122f3b;border-radius:10px;padding:12px;margin:12px 0}.circuit-network-orbit-timeline>div:first-child{display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;font-size:.78rem;color:#d7ebe6}.circuit-network-orbit-timeline output{font-variant-numeric:tabular-nums;color:#c9f0de}.circuit-network-orbit-timeline input{width:100%;min-height:32px;accent-color:#a1ead1}.circuit-network-orbit-timeline input:focus-visible{outline:3px solid #ffe199;outline-offset:2px}.circuit-network-orbit-time-actions{display:flex;gap:6px;flex-wrap:wrap}.circuit-network-orbit-time-actions>button{flex:1;font-size:.73rem}.circuit-network-orbit-timeline p{color:#c2d8dc;line-height:1.6;font-size:.72rem;margin:8px 0 0}.circuit-network-orbit[data-expanded=true][data-timed=true] canvas{height:clamp(260px,calc(100vh - 435px),700px);height:clamp(260px,calc(100dvh - 435px),700px)}@media(max-width:900px){.circuit-network-orbit[data-expanded=true][data-timed=true] canvas{height:clamp(260px,43vh,430px);height:clamp(260px,43dvh,430px)}}"+
     "@media(max-width:900px){.circuit-network-orbit[data-expanded=true] canvas,.circuit-network-orbit[data-expanded=true][data-timed=true] canvas{height:auto;aspect-ratio:1.25;min-height:230px;max-height:min(480px,60dvh)}}@media(max-width:540px){.circuit-network-orbit:not([data-expanded=true]) canvas{height:auto;aspect-ratio:1.2;min-height:230px;max-height:370px}}"+
     '.circuit-network-orbit{margin:14px 0;border:1px solid #58778f;border-radius:16px;background:linear-gradient(145deg,#172e43,#0e2933);padding:16px;color:#e9f4fa;min-width:0}.circuit-network-orbit h4{font-size:1.17rem;font-weight:700;margin:5px 0}.circuit-network-orbit-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px}.circuit-network-orbit-badge{padding:6px 10px;border:1px solid #77908d;border-radius:8px;background:#1a3843;color:#c6f7e9;font-size:.79rem}.circuit-network-orbit button{background:#243e52;border:1px solid #7891a5;color:#edf6fd;border-radius:8px;padding:8px 11px;min-height:40px;font-size:.79rem;line-height:1.4}.circuit-network-orbit button:hover:not(:disabled){background:#34576c}.circuit-network-orbit button[aria-pressed=true]{color:#effbfa;background:#32625f;border-color:#a6e5d6}.circuit-network-orbit button:disabled{opacity:.5}.circuit-network-orbit button:focus-visible,.circuit-network-orbit canvas:focus-visible,.circuit-network-orbit select:focus-visible{outline:3px solid #ffe199;outline-offset:3px}.circuit-network-orbit canvas:focus-visible{outline-offset:-4px}.circuit-network-orbit-presets,.circuit-network-orbit-navigation,.circuit-network-orbit-options{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}.circuit-network-orbit-presets button{flex:1;white-space:nowrap}.circuit-network-orbit-viewport{position:relative;background:#071522;border:1px solid #536d83;border-radius:12px;overflow:hidden}.circuit-network-orbit canvas{display:block;width:100%;height:460px;touch-action:pan-y;cursor:crosshair}.circuit-network-orbit-status{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;padding:24px;text-align:center;background:#102536;color:#e5f3fc}.circuit-network-orbit-status p{font-size:.84rem;max-width:380px;line-height:1.6}.circuit-network-orbit-camera-readings{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:.76rem;color:#c8dce8;margin:10px 0}.circuit-network-orbit-camera-readings output{color:#e3f4fc;font-variant-numeric:tabular-nums}.circuit-network-orbit-options{padding-top:10px;border-top:1px solid #4a697e}.circuit-network-orbit-selectors{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}.circuit-network-orbit-selectors label{display:grid;gap:6px;min-width:0}.circuit-network-orbit-selectors select{background:#0d2738;border:1px solid #7690a3;color:#edf7fc;border-radius:8px;min-height:40px;width:100%;padding:8px;min-width:0}.circuit-network-orbit-reading{display:flex;gap:10px 22px;align-items:center;flex-wrap:wrap;border:1px solid #4f7e83;border-radius:10px;padding:12px;background:#183d44;color:#dff9ee;font-size:.86rem}.circuit-network-orbit-reading strong{color:#c2f5dd}.circuit-network-orbit .circuit-help{font-size:.79rem;line-height:1.7;margin:10px 0;color:#c6dbe7}@media(max-width:540px){.circuit-network-orbit{padding:11px}.circuit-network-orbit canvas{height:370px}.circuit-network-orbit-navigation button{flex:1 1 28%}.circuit-network-orbit-selectors{grid-template-columns:1fr}.circuit-network-orbit-presets button{flex:1 1 28%}.circuit-network-orbit-options button{flex:1}.circuit-network-orbit-reading{gap:7px 15px}.circuit-network-orbit-reading strong{width:100%}}';
+    circStyle.textContent += '[data-circuit-builder-root] .circuit-workspace-guide{flex-basis:100%;min-width:0;border-top:1px solid #456675;padding-top:5px}' +
+      '[data-circuit-builder-root] .circuit-workspace-guide>summary{min-height:44px;padding:12px 4px;box-sizing:border-box;cursor:pointer;color:#eaf5fb;font-weight:700;font-size:13px;line-height:1.5}' +
+      '[data-circuit-builder-root] .circuit-workspace-guide-intro{margin:4px 0 12px;line-height:1.7;color:#c9deeb}' +
+      '[data-circuit-builder-root] .circuit-workspace-guide-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;list-style:none;margin:0;padding:0}' +
+      '[data-circuit-builder-root] .circuit-workspace-guide-grid>li{min-width:0;padding:13px;border:1px solid #456675;border-radius:10px;background:#102b3b;display:flex;flex-direction:column;align-items:flex-start;gap:8px;overflow-wrap:anywhere}' +
+      '[data-circuit-builder-root] .circuit-workspace-guide-grid strong{font-size:14px;color:#f0f8fc}[data-circuit-builder-root] .circuit-workspace-guide-grid p{margin:0 0 3px;line-height:1.7;color:#c9deeb}' +
+      '[data-circuit-builder-root] .circuit-workspace-guide-grid button{min-height:44px;max-width:100%;margin-top:auto;white-space:normal;text-align:left;line-height:1.5}' +
+      '[data-circuit-builder-root] .circuit-workspace-guide-grid small{font-size:12px;color:#b5efd9}@media(max-width:600px){[data-circuit-builder-root] .circuit-workspace-guide-grid{grid-template-columns:minmax(0,1fr)}}';
+  circStyle.textContent += "[data-circuit-builder-root] .circuit-lesson-progress{padding:12px;background:#102431;border:1px solid #456171;border-radius:10px;margin:14px 0}[data-circuit-builder-root] .circuit-lesson-progress p{margin:0;color:#e1f5ed;font-size:13px;font-weight:650}[data-circuit-builder-root] .circuit-lesson-progress progress{display:block;width:100%;height:8px;margin:9px 0;accent-color:#a9e8d9}[data-circuit-builder-root] .circuit-lesson-progress small{display:block;font-size:11px;line-height:1.6;color:#c3dce5}[data-circuit-builder-root] .circuit-lesson-card-status{display:block;margin-top:8px;font-size:11px;line-height:1.4;color:#c5f0df}[data-circuit-builder-root] .circuit-lesson-next{padding:14px;border:1px solid #628c8b;border-radius:10px;background:#133239;margin:16px 0}[data-circuit-builder-root] .circuit-lesson-next>strong{font-size:14px;color:#def7e9}[data-circuit-builder-root] .circuit-lesson-next>p{font-size:12px;line-height:1.6;color:#d1e7e6;margin:6px 0 12px}@media(max-width:600px){[data-circuit-builder-root] .circuit-lesson-cards button{flex-wrap:wrap}[data-circuit-builder-root] .circuit-lesson-card-status{flex-basis:100%;margin-top:0;text-align:left}}";
+  // Shared visual finish for the entry path, learning cards, and Simple bench.
+  circStyle.textContent += `
+    [data-circuit-builder-root]{--circuit-surface:#102532;--circuit-inset:#0b1c28;--circuit-line:#35515e;--circuit-ink:#edf7f8;--circuit-muted:#b8ced8;--circuit-mint:#b4efdc;--circuit-gold:#f4d48b}
+    [data-circuit-builder-root] [data-circuit-bench]{padding:24px;border:1px solid #36525c;border-radius:20px;background:radial-gradient(ellipse at 100% 0%,#25474080,transparent 62%),#102632;box-shadow:inset 0 1px #ffffff08;margin:18px 0 24px}
+    [data-circuit-builder-root] [data-circuit-bench]>.circuit-eyebrow{display:flex;align-items:center;gap:9px;letter-spacing:.15em;font-size:10px;color:var(--circuit-mint)}
+    [data-circuit-builder-root] [data-circuit-bench]>.circuit-eyebrow::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--circuit-mint);box-shadow:0 0 0 5px #b4efdc0c;flex:none}
+    [data-circuit-builder-root] #circuit-bench-title{max-width:600px;font-size:clamp(28px,3.6vw,40px);line-height:1.12;letter-spacing:-.035em;margin:16px 0 12px;text-wrap:balance}
+    [data-circuit-builder-root] [data-circuit-bench]>.circuit-help{font-size:14px;line-height:1.7;color:var(--circuit-muted);max-width:620px}
+    [data-circuit-builder-root] [data-circuit-bench]>.circuit-action-row{margin:18px 0 0;gap:8px}
+    [data-circuit-builder-root] .circuit-action-row button{min-height:44px;border-radius:11px;padding:10px 14px;font-size:12px;line-height:1.5}
+    [data-circuit-builder-root] [data-circuit-bench]>.circuit-action-row button{background:#132d3a;border-color:#43606c}
+    [data-circuit-builder-root] [data-circuit-bench]>.circuit-action-row>.circuit-model-chip{margin-left:auto;line-height:1.5;padding:7px 11px}
+    [data-circuit-builder-root] .circuit-start-guide{margin:22px 0 0;background:#0c202b;border-color:#48656d;border-radius:14px}
+    [data-circuit-builder-root] .circuit-start-guide>summary{padding:14px 18px;font-size:14px;color:var(--circuit-mint)}
+    [data-circuit-builder-root] .circuit-start-guide>summary>span{font-size:12px;color:var(--circuit-muted)}
+    [data-circuit-builder-root] .circuit-start-body{padding:20px;border-top-color:#2e4955}
+    [data-circuit-builder-root] .circuit-start-body h3{font-size:22px;line-height:1.35;letter-spacing:-.02em;margin-bottom:10px;text-wrap:balance}
+    [data-circuit-builder-root] .circuit-start-body>p{color:#d2e3e9;max-width:640px}
+    [data-circuit-builder-root] .circuit-start-body>.circuit-action-row{margin:18px 0}
+    [data-circuit-builder-root] .circuit-start-guide [data-circuit-start-experiment]{background:linear-gradient(135deg,#c5f5e6,#a5e6d4);border-color:#b4efdc;color:#12382f;box-shadow:0 5px 18px #70dab912}
+    [data-circuit-builder-root] .circuit-start-guide [data-circuit-start-experiment]:hover:not(:disabled){background:#d4faee;border-color:#d4faee;color:#12382f}
+    [data-circuit-builder-root] .circuit-start-steps{gap:10px;margin:20px 0}
+    [data-circuit-builder-root] .circuit-start-steps li{padding:13px;border:0;border-radius:10px;background:#16313b;box-shadow:inset 0 1px #ffffff05}
+    [data-circuit-builder-root] .circuit-start-steps strong{font-size:13px;color:var(--circuit-mint)}
+    [data-circuit-builder-root] .circuit-start-steps span{color:#c9dde3;line-height:1.6}
+    [data-circuit-builder-root] .circuit-start-body>p.circuit-help{font-size:12px;color:var(--circuit-muted);line-height:1.65;margin:10px 0 0}
+    [data-circuit-builder-root].circuit-workspace-switch{padding:12px;border-radius:16px;gap:8px;box-shadow:none!important}
+    [data-circuit-builder-root].circuit-workspace-switch>button{flex:1 1 145px;min-height:44px;padding:10px 12px;border-radius:10px;font-size:12px;border-color:#3e5a69;background:#102733;color:#d6e7ed;text-align:center}
+    [data-circuit-builder-root].circuit-workspace-switch>button[aria-pressed=true]{background:var(--circuit-mint);border-color:var(--circuit-mint);color:#123b35;box-shadow:0 3px 12px #6ed7b914}
+    [data-circuit-builder-root].circuit-workspace-switch>span{flex-basis:100%;font-size:12px;color:var(--circuit-muted);padding:5px 3px}
+    [data-circuit-builder-root] .circuit-workspace-guide{border-top-color:#2e4959;padding-top:2px}
+    [data-circuit-builder-root] .circuit-workspace-guide>summary{font-size:13px;color:#dcecf1}
+    [data-circuit-builder-root] .circuit-workspace-guide-grid{gap:12px;margin:14px 0 2px}
+    [data-circuit-builder-root] .circuit-workspace-guide-grid>li{padding:16px;background:var(--circuit-inset);border-color:#344f5e;border-radius:12px;gap:12px}
+    [data-circuit-builder-root] .circuit-workspace-guide-grid>li[data-workbench-active=true]{background:#15332f;border-color:#729f91}
+    [data-circuit-builder-root] .circuit-workspace-guide-heading{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-height:26px}
+    [data-circuit-builder-root] .circuit-workspace-guide-heading small{font-size:10px;border-radius:20px;padding:3px 7px;background:#254c42;color:#d1f7e8;line-height:1.5}
+    [data-circuit-builder-root] .circuit-workspace-guide-grid p{font-size:13px;color:var(--circuit-muted)}
+    [data-circuit-builder-root] .circuit-workspace-guide-grid button{width:100%;background:#18333f;border-color:#4b6874;border-radius:9px;text-align:center;padding:10px 12px}
+    [data-circuit-builder-root] .circuit-workspace-guide-grid button[aria-pressed=true]{background:#b4efdc;color:#123b35;border-color:#b4efdc}
+    [data-circuit-builder-root] .circuit-lessons{padding:20px;background:#102632;border-color:#3c5968;border-radius:18px;margin:20px 0}
+    [data-circuit-builder-root] .circuit-lessons>summary{min-height:44px;font-size:15px;line-height:1.5;gap:12px}
+    [data-circuit-builder-root] .circuit-lessons>summary::before{display:grid;place-items:center;width:28px;height:28px;background:#23483f;border-radius:8px;flex:none;font-size:18px}
+    [data-circuit-builder-root] .circuit-lessons>summary small{font-size:11px;color:var(--circuit-muted)}
+    [data-circuit-builder-root] .circuit-lessons[open]>summary{margin-bottom:12px}
+    [data-circuit-builder-root] .circuit-lesson-progress{background:#0c2029;border:0;padding:16px;border-radius:12px;margin:18px 0}
+    [data-circuit-builder-root] .circuit-lesson-progress p{font-size:14px;color:#e0f4eb}
+    [data-circuit-builder-root] .circuit-lesson-progress progress{appearance:none;-webkit-appearance:none;height:7px;border:0;border-radius:10px;overflow:hidden;background:#294551;color:var(--circuit-mint);margin:12px 0}
+    [data-circuit-builder-root] .circuit-lesson-progress progress::-webkit-progress-bar{background:#294551;border-radius:10px}
+    [data-circuit-builder-root] .circuit-lesson-progress progress::-webkit-progress-value{background:linear-gradient(90deg,#70c4b1,#b4efdc);border-radius:10px}
+    [data-circuit-builder-root] .circuit-lesson-progress progress::-moz-progress-bar{background:#a0dfcc;border-radius:10px}
+    [data-circuit-builder-root] .circuit-lesson-progress small{font-size:12px;color:var(--circuit-muted)}
+    [data-circuit-builder-root] .circuit-lesson-cards{gap:10px;margin:18px 0 22px}
+    [data-circuit-builder-root] .circuit-lesson-cards button{padding:16px 14px;border-radius:12px;background:#0c202b;border-color:#42606c}
+    [data-circuit-builder-root] .circuit-lesson-cards button[aria-pressed=true]{background:#1b3d39;border-color:#9fd9c7;box-shadow:inset 0 3px #a9e8d9}
+    [data-circuit-builder-root] .circuit-lesson-cards strong{font-size:15px;font-weight:650;line-height:1.45;margin-top:10px}
+    [data-circuit-builder-root] .circuit-lesson-card-status{color:#c4d8df;font-size:11px;margin-top:10px}
+    [data-circuit-builder-root] .circuit-learning-steps{gap:6px;margin:22px 0}
+    [data-circuit-builder-root] .circuit-learning-steps li{border:0;border-radius:8px;background:#18303d;padding:10px;color:var(--circuit-muted)}
+    [data-circuit-builder-root] .circuit-learning-steps li[aria-current=step]{background:#294d43;color:#def8eb;box-shadow:inset 0 -2px #a4e6cd}
+    [data-circuit-builder-root] .circuit-lesson-body legend{font-size:18px;line-height:1.55;letter-spacing:-.012em;color:var(--circuit-ink);margin-bottom:5px}
+    [data-circuit-builder-root] .circuit-lesson-body fieldset{margin:22px 0}
+    [data-circuit-builder-root] .circuit-lesson-evidence>.circuit-comparison{gap:10px;margin:18px 0}
+    [data-circuit-builder-root] .circuit-comparison>div{padding:15px;background:#0a1f2b;border-color:#304d5b;border-radius:12px}
+    [data-circuit-builder-root] .circuit-comparison span{color:var(--circuit-muted);font-size:11px;line-height:1.5}
+    [data-circuit-builder-root] .circuit-comparison strong{font-size:24px;line-height:1.25;font-weight:600;letter-spacing:-.025em;margin-top:9px;font-variant-numeric:tabular-nums;color:#d0f5e8}
+    [data-circuit-builder-root] .circuit-comparison strong.circuit-change-label{font-size:13px;letter-spacing:0;line-height:1.6;color:#d8e9ef}
+    [data-circuit-builder-root] .circuit-lesson-evidence>label{display:block;font-size:14px;margin-top:22px;color:var(--circuit-ink);font-weight:650}
+    [data-circuit-builder-root] .circuit-lesson-next{border:0;border-left:3px solid #92d3bc;background:#19382f;border-radius:0 12px 12px 0;padding:18px;margin:22px 0}
+    [data-circuit-builder-root] .circuit-lesson-next>strong{font-size:16px}
+    [data-circuit-builder-root] .circuit-lesson-next button{background:var(--circuit-mint);color:#123b35;border-color:var(--circuit-mint)}
+    [data-circuit-builder-root] .circuit-lesson-next button:hover:not(:disabled){background:#d4faee;color:#123b35;border-color:#d4faee}
+    [data-circuit-builder-root] .circuit-parts-shelf{padding:20px;border-radius:18px;border-color:#3c5968;background:#102632;margin:20px 0}
+    [data-circuit-builder-root] .circuit-parts-shelf h3{font-size:19px;letter-spacing:-.02em;margin-bottom:18px}
+    [data-circuit-builder-root] .circuit-parts-shelf .circuit-supply-row{padding:12px 14px;background:#0a1e29;border:1px solid #314f5e;border-radius:10px;margin-bottom:16px;gap:12px}
+    [data-circuit-builder-root] .circuit-supply-row>span:last-child{color:var(--circuit-gold);font-size:21px;white-space:nowrap}
+    [data-circuit-builder-root] .circuit-supply-row input[type=range]{appearance:none;-webkit-appearance:none;background:transparent;min-height:44px;height:44px;border:0;border-radius:0;cursor:pointer}
+    [data-circuit-builder-root] .circuit-supply-row input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:10px;background:#405f6d}
+    [data-circuit-builder-root] .circuit-supply-row input[type=range]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:20px;height:20px;margin-top:-7px;border-radius:50%;border:2px solid #e0faef;background:#a5e6d4;box-shadow:0 0 0 4px #b4efdc12}
+    [data-circuit-builder-root] .circuit-supply-row input[type=range]::-moz-range-track{height:6px;border-radius:10px;background:#405f6d}
+    [data-circuit-builder-root] .circuit-supply-row input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;border:2px solid #e0faef;background:#a5e6d4;box-shadow:0 0 0 4px #b4efdc12}
+    [data-circuit-builder-root] .circuit-parts-grid{gap:10px}
+    [data-circuit-builder-root] .circuit-parts-grid button{padding:14px 12px;min-height:82px;border-color:#486674;background:#17333f;border-radius:12px;box-shadow:inset 0 1px #ffffff06}
+    [data-circuit-builder-root] .circuit-parts-grid button small{font-size:11px;line-height:1.5;color:#c5dbe3;margin-top:9px}
+    [data-circuit-builder-root] [data-circuit-row-index]{padding:12px;border-radius:12px;border-color:#3b5666;background:#0c202d;gap:10px}
+    [data-circuit-builder-root] [data-circuit-row-index] input{min-height:40px;border-radius:7px}
+    [data-circuit-builder-root] .circuit-readouts{gap:10px;margin:18px 0}
+    [data-circuit-builder-root] .circuit-readouts>div:not(.short-active-flash){padding:17px 12px;border-color:#375462;background:#102632;border-radius:14px;text-align:left;box-shadow:inset 0 2px #b4efdc19}
+    [data-circuit-builder-root] .circuit-readouts>div>p:first-child{color:#c0d4de;font-size:10px;letter-spacing:.09em;margin-bottom:10px;line-height:1.5}
+    [data-circuit-builder-root] .circuit-readouts>div>p:last-child{font-size:clamp(18px,2.3vw,25px);font-weight:550;line-height:1.25;letter-spacing:-.04em;color:#d3f2ea;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+    [data-circuit-builder-root] .circuit-readouts>.short-active-flash>p{color:#fecaca}
+    [data-circuit-builder-root] .circuit-targets{padding:20px;margin:22px 0;border-color:#43605f;border-radius:18px;background:linear-gradient(145deg,#17312e,#102430 60%)}
+    [data-circuit-builder-root] #circuit-challenges-title{font-size:20px;line-height:1.35;letter-spacing:-.02em;color:var(--circuit-ink);margin-bottom:10px}
+    [data-circuit-builder-root] .circuit-targets>p{font-size:13px;line-height:1.7;color:var(--circuit-muted);margin-bottom:18px}
+    [data-circuit-builder-root] .circuit-target-choices{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+    [data-circuit-builder-root] [data-circuit-target]{min-width:0;min-height:64px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;padding:12px;text-align:left;line-height:1.4;border-color:#4a6570;background:#0d222d;color:#daeaf0;border-radius:10px}
+    [data-circuit-builder-root] [data-circuit-target][aria-pressed=true]{background:#284b3f;border-color:#a4dfc5;color:#ecfff5;box-shadow:inset 0 2px #a4dfc5}
+    [data-circuit-builder-root] .circuit-target-saved{font-size:10px;font-weight:500;color:#b2efd3}
+    [data-circuit-builder-root] .circuit-target-panel{margin-top:18px;padding:20px;border-color:#4c7169;border-radius:13px;background:#0b2029}
+    [data-circuit-builder-root] .circuit-target-panel>h4{font-size:16px;color:#edf7ef}
+    [data-circuit-builder-root] .circuit-target-panel dl{grid-template-columns:repeat(2,minmax(0,1fr))!important;margin:18px 0;gap:14px!important}
+    [data-circuit-builder-root] .circuit-target-panel dl>div{padding:12px 14px;background:#15303a;border-radius:10px;min-width:0}
+    [data-circuit-builder-root] .circuit-target-panel dt{color:var(--circuit-muted);font-size:11px;margin-bottom:8px}
+    [data-circuit-builder-root] .circuit-target-panel dd{font-size:26px;line-height:1.2;font-weight:600;letter-spacing:-.035em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;color:#e4f8ef}
+    [data-circuit-builder-root] [data-target-live-status]{font-size:14px;line-height:1.6;padding-top:16px;border-top:1px solid #365259;color:var(--circuit-gold)}
+    [data-circuit-builder-root] [data-target-state=met] [data-target-live-status]{color:var(--circuit-mint)}
+    [data-circuit-builder-root] [data-target-hint]{font-size:13px;line-height:1.75;color:#d4e6ec;margin:10px 0}
+    [data-circuit-builder-root] [data-target-range],[data-circuit-builder-root] [data-target-saved-status]{font-size:12px;line-height:1.65;color:var(--circuit-muted)}
+    [data-circuit-builder-root] .circuit-target-panel>button{min-height:44px;background:var(--circuit-mint);border-color:var(--circuit-mint);color:#123b35;border-radius:10px;padding:11px 20px;margin-top:16px}
+    [data-circuit-builder-root] .circuit-target-panel>button:hover:not(:disabled){background:#d4faee;border-color:#d4faee}
+    @media(hover:hover){[data-circuit-builder-root] .circuit-lesson-cards button:hover,[data-circuit-builder-root] [data-circuit-target]:hover{border-color:#b0ded0}}
+    @media(max-width:760px){[data-circuit-builder-root] .circuit-target-choices{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:540px){
+      [data-circuit-builder-root] [data-circuit-bench]{padding:16px 12px;border-radius:15px;margin-top:14px}
+      [data-circuit-builder-root] #circuit-bench-title{font-size:29px;margin-top:15px}
+      [data-circuit-builder-root] [data-circuit-bench]>.circuit-help{font-size:13px}
+      [data-circuit-builder-root] [data-circuit-bench]>.circuit-action-row{align-items:stretch}
+      [data-circuit-builder-root] [data-circuit-bench]>.circuit-action-row button{flex:1 1 100px;padding:9px 10px}
+      [data-circuit-builder-root] [data-circuit-bench]>.circuit-action-row>.circuit-model-chip{margin:4px 0 0}
+      [data-circuit-builder-root] .circuit-start-guide{margin-top:18px}
+      [data-circuit-builder-root] .circuit-start-guide>summary{padding:12px;font-size:13px}
+      [data-circuit-builder-root] .circuit-start-body{padding:14px 12px}
+      [data-circuit-builder-root] .circuit-start-body h3{font-size:20px;text-wrap:initial}
+      [data-circuit-builder-root] .circuit-start-steps{gap:8px;margin:16px 0}
+      [data-circuit-builder-root] .circuit-start-steps li{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;padding:11px 10px}
+      [data-circuit-builder-root] .circuit-start-steps span{margin:0;font-size:12px}
+      [data-circuit-builder-root] .circuit-start-steps strong{font-size:12px}
+      [data-circuit-builder-root].circuit-workspace-switch>button{flex-basis:calc(50% - 8px);font-size:11px;padding:9px 6px}
+      [data-circuit-builder-root] .circuit-lessons,[data-circuit-builder-root] .circuit-parts-shelf,[data-circuit-builder-root] .circuit-targets{padding:14px 12px;border-radius:14px}
+      [data-circuit-builder-root] .circuit-lessons>summary{font-size:14px;gap:8px}
+      [data-circuit-builder-root] .circuit-lessons>summary small{margin-left:36px}
+      [data-circuit-builder-root] .circuit-lesson-progress{padding:13px 12px}
+      [data-circuit-builder-root] .circuit-lesson-cards button{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;align-items:center;padding:13px}
+      [data-circuit-builder-root] .circuit-lesson-cards .circuit-eyebrow{grid-column:1/-1;max-width:none;font-size:10px}
+      [data-circuit-builder-root] .circuit-lesson-cards strong{margin:0;font-size:14px}
+      [data-circuit-builder-root] .circuit-lesson-card-status{margin:0;text-align:right;max-width:74px;font-size:10px}
+      [data-circuit-builder-root] .circuit-lesson-body legend{font-size:16px;line-height:1.6}
+      [data-circuit-builder-root] .circuit-learning-steps li{padding:10px 6px;font-size:11px}
+      [data-circuit-builder-root] .circuit-lesson-evidence>.circuit-comparison{grid-template-columns:repeat(2,minmax(0,1fr))}
+      [data-circuit-builder-root] .circuit-comparison>div{padding:12px}
+      [data-circuit-builder-root] .circuit-lesson-evidence>.circuit-comparison>div:last-child{grid-column:1/-1}
+      [data-circuit-builder-root] .circuit-comparison strong{font-size:22px}
+      [data-circuit-builder-root] .circuit-lesson-next{padding:15px 12px}
+      [data-circuit-builder-root] .circuit-lesson-next button{width:100%}
+      [data-circuit-builder-root] .circuit-parts-shelf .circuit-supply-row{padding:10px;flex-wrap:wrap}
+      [data-circuit-builder-root] .circuit-supply-row>span:first-child{flex-basis:100%}
+      [data-circuit-builder-root] .circuit-parts-grid{gap:8px}
+      [data-circuit-builder-root] .circuit-parts-grid button{padding:12px 10px}
+      [data-circuit-builder-root] .circuit-readouts>div:not(.short-active-flash){padding:14px 10px}
+      [data-circuit-builder-root] .circuit-target-panel{padding:14px 12px}
+      [data-circuit-builder-root] .circuit-target-panel dl{gap:8px!important}
+      [data-circuit-builder-root] .circuit-target-panel dl>div{padding:12px 9px}
+      [data-circuit-builder-root] .circuit-target-panel dd{font-size:22px}
+      [data-circuit-builder-root] .circuit-target-panel>button{width:100%}
+    }
+    [data-circuit-builder-root] .circuit-component-editor{margin:22px 0;padding:20px;border:1px solid #3c5968;border-radius:18px;background:var(--circuit-surface);min-width:0}
+    [data-circuit-builder-root] .circuit-component-editor-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+    [data-circuit-builder-root] .circuit-component-editor-heading h3{margin:0;font-size:19px;line-height:1.4;letter-spacing:-.02em;color:var(--circuit-ink);font-weight:700}
+    [data-circuit-builder-root] .circuit-component-editor-heading>span{font:11px/1.6 ui-monospace,monospace;color:var(--circuit-muted);white-space:nowrap}
+    [data-circuit-builder-root] .circuit-component-editor>.circuit-help{font-size:12px;line-height:1.7;color:var(--circuit-muted);margin:10px 0 16px;max-width:650px}
+    [data-circuit-builder-root] .circuit-component-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+    [data-circuit-builder-root] .circuit-component-list>.circuit-component-row{display:flex;flex-direction:column;gap:14px;min-width:0;padding:14px;border:1px solid #3b5867;border-radius:12px;background:var(--circuit-inset)}
+    [data-circuit-builder-root] .circuit-component-row button{min-width:44px;min-height:44px;border-radius:9px}
+    [data-circuit-builder-root] .circuit-component-heading{display:grid;grid-template-columns:32px minmax(0,1fr) 44px;align-items:center;gap:8px;min-width:0}
+    [data-circuit-builder-root] .circuit-component-icon{display:grid;place-items:center;width:32px;height:32px;border-radius:8px;background:#203b46;font-size:18px}
+    [data-circuit-builder-root] .circuit-component-heading strong{font-size:14px;line-height:1.45;font-weight:650;color:var(--circuit-ink);overflow-wrap:anywhere}
+    [data-circuit-builder-root] .circuit-component-heading .circuit-component-remove{width:44px;padding:0;border:1px solid #3b5461;background:#102632;color:#d0e2e8;font-size:24px;line-height:1}
+    [data-circuit-builder-root] .circuit-component-heading .circuit-component-remove:hover{color:#ffd5dc;background:#3c2830;border-color:#a68089}
+    [data-circuit-builder-root] .circuit-component-controls{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-width:0;padding:0 0 2px}
+    [data-circuit-builder-root] .circuit-component-setting-label{flex-basis:100%;font-size:11px;line-height:1.5;color:var(--circuit-muted)}
+    [data-circuit-builder-root] .circuit-component-controls input{flex:1 1 96px;width:140px;max-width:180px;min-width:0;min-height:44px;padding:9px 10px;border:1px solid #567584;border-radius:8px;background:#102733;color:var(--circuit-ink);font:16px/1.5 ui-monospace,monospace;text-align:left}
+    [data-circuit-builder-root] .circuit-component-controls>span:not(.circuit-component-setting-label){font-size:13px;color:#c5dce5}
+    [data-circuit-builder-root] .circuit-component-controls>button:not(.circuit-component-color){padding:10px 14px;border:1px solid #537380;background:#183741;color:#e0f2ed;font-size:12px;line-height:1.5}
+    [data-circuit-builder-root] .circuit-component-controls .circuit-component-color{width:44px;height:44px;padding:0;border:2px solid #bbdce0;border-radius:50%;flex:none}
+    [data-circuit-builder-root] .circuit-component-controls>.circuit-help{margin:0;font-size:12px;line-height:1.65;color:var(--circuit-muted)}
+    [data-circuit-builder-root] .circuit-component-reorder{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px;border-top:1px solid #304b58;padding-top:12px;margin-top:auto;min-width:0}
+    [data-circuit-builder-root] .circuit-component-reorder .circuit-drag-handle{width:44px;padding:0;border:1px solid #45616e;background:#152f3b;color:#c9dde5;font-size:22px}
+    [data-circuit-builder-root] .circuit-component-moves{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;min-width:0}
+    [data-circuit-builder-root] .circuit-component-moves .circuit-move-btn{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px;padding:8px 6px;border:1px solid #45616e;background:#152f3b;color:#d6e8ee;font-size:12px;line-height:1.4;overflow-wrap:anywhere}
+    [data-circuit-builder-root] .circuit-component-moves .circuit-move-btn>span{font-size:9px}
+    [data-circuit-builder-root] .circuit-component-row button:disabled{opacity:1;color:#91aab7;background:#0d212c;border-color:#2f4855;cursor:default}
+    [data-circuit-builder-root] .circuit-component-list>[data-circuit-dragging=true]{opacity:.55}
+    [data-circuit-builder-root] .circuit-component-list>[data-circuit-drop-target=true]{outline:2px dashed #facc15;outline-offset:2px;border-color:#c8b977}
+    @media(hover:hover){[data-circuit-builder-root] .circuit-component-moves .circuit-move-btn:hover:not(:disabled),[data-circuit-builder-root] .circuit-component-reorder .circuit-drag-handle:hover{background:#244753;border-color:#85b3ba;color:#effcf9}}
+    @media(max-width:640px){[data-circuit-builder-root] .circuit-component-editor{padding:14px 12px;border-radius:14px}[data-circuit-builder-root] .circuit-component-list{grid-template-columns:minmax(0,1fr)}[data-circuit-builder-root] .circuit-component-list>.circuit-component-row{padding:12px}}
+    @media(forced-colors:active){
+      [data-circuit-builder-root] .circuit-lesson-progress progress{appearance:auto}
+      [data-circuit-builder-root] .circuit-learning-steps li[aria-current=step]{outline:2px solid Highlight}
+      [data-circuit-builder-root] .circuit-lesson-cards button[aria-pressed=true],[data-circuit-builder-root] [data-circuit-target][aria-pressed=true]{outline:2px solid Highlight}
+    }
+  `;
+  // Keep views, measurements, and adjustments close to the circuit they describe.
+  circStyle.textContent += `
+    [data-circuit-builder-root] .circuit-view-toolbar{border:0;padding:0;margin:24px 0 16px}
+    [data-circuit-builder-root] .circuit-view-controls{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:12px 0}
+    [data-circuit-builder-root] .circuit-view-controls .circuit-action-row{margin:0}
+    [data-circuit-builder-root] .circuit-view-choice{padding:4px;gap:4px;background:#0a1e29;border:1px solid #3d5967;border-radius:13px}
+    [data-circuit-builder-root] .circuit-view-choice button{min-width:112px;border-color:transparent;background:transparent;box-shadow:none}
+    [data-circuit-builder-root] .circuit-view-choice button[aria-pressed=true]{background:#b4efdc;border-color:#b4efdc;color:#123b35}
+    [data-circuit-builder-root] .circuit-history-controls{gap:6px}
+    [data-circuit-builder-root] .circuit-history-controls button{font-size:11px;padding:10px 12px}
+    [data-circuit-builder-root] .circuit-history-controls button[aria-pressed=true]{background:#25433f;color:#d2f3e5;border-color:#639083;box-shadow:none}
+    [data-circuit-builder-root] .circuit-schematic-frame{border:1px solid #426371;border-radius:18px;overflow:hidden;background:#0c202c;box-shadow:0 12px 30px #020e171f;margin:16px 0}
+    [data-circuit-builder-root] .circuit-diagram-heading{padding:20px 20px 8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
+    [data-circuit-builder-root] #circuit-diagram-title{font-size:23px;font-weight:650;letter-spacing:-.025em;line-height:1.35;color:#eef8fa;margin:5px 0 0}
+    [data-circuit-builder-root] .circuit-diagram-status{display:inline-flex;align-items:center;gap:8px;max-width:100%;font-size:12px;line-height:1.5;color:#c5d9e2;border:1px solid #4b6471;border-radius:24px;background:#152d39;padding:7px 11px}
+    [data-circuit-builder-root] .circuit-diagram-status>span{width:7px;height:7px;flex:none;border-radius:50%;background:#9fb1be}
+    [data-circuit-builder-root] .circuit-diagram-status[data-state=active]{color:#cbf2df;border-color:#527f6c;background:#193c31}
+    [data-circuit-builder-root] .circuit-diagram-status[data-state=active]>span{background:#a7e9c9}
+    [data-circuit-builder-root] .circuit-diagram-status[data-state=warning]{color:#ffe0dd;border-color:#bb7676;background:#482c32}
+    [data-circuit-builder-root] .circuit-diagram-status[data-state=warning]>span{background:#ffa5a5}
+    [data-circuit-builder-root] .circuit-schematic{padding:0 18px 18px;scrollbar-color:#80b9ad #102532;outline-offset:-3px}
+    [data-circuit-builder-root] .circuit-schematic>.circuit-help{font-size:12px;line-height:1.7;color:#bed3de;margin:10px 0 14px}
+    [data-circuit-builder-root] .circuit-schematic>svg{display:block;border-color:#34525f;border-radius:12px}
+    [data-circuit-builder-root] .circuit-diagram-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:13px 20px;border-top:1px solid #34505e;background:#132d38;color:#c3dce4;font-size:12px;line-height:1.6;font-variant-numeric:tabular-nums}
+    [data-circuit-builder-root] .circuit-diagram-footer>span:last-child{color:#c7f3e2}
+    [data-circuit-builder-root] .circuit-part-inspector{background:#102a36;border-color:#4b707a;border-radius:16px;box-shadow:inset 3px 0 #8acebd;padding:20px;margin:20px 0}
+    [data-circuit-builder-root] .circuit-inspector-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+    [data-circuit-builder-root] .circuit-inspector-heading>label{font-size:19px;font-weight:650;letter-spacing:-.02em;color:#eff9fb}
+    [data-circuit-builder-root] .circuit-inspector-heading>select{min-height:44px;min-width:180px;max-width:100%;padding:10px 12px;border-radius:9px;border-color:#61838e;font-size:14px;background:#0a202c}
+    [data-circuit-builder-root] .circuit-inspector-readings{gap:10px;margin:20px 0}
+    [data-circuit-builder-root] .circuit-inspector-readings>div{padding:16px 14px;border-radius:12px;border-color:#365c6b;background:#0a202b}
+    [data-circuit-builder-root] .circuit-inspector-readings dt{font-size:12px;color:#c4dce4;line-height:1.6}
+    [data-circuit-builder-root] .circuit-inspector-readings dd{font-size:clamp(17px,2.2vw,23px);font-weight:550;letter-spacing:-.04em;line-height:1.35;color:#cff4e7;margin-top:10px;font-variant-numeric:tabular-nums}
+    [data-circuit-builder-root] .circuit-part-inspector button{min-height:44px;line-height:1.5}
+    [data-circuit-builder-root] .circuit-value-editor{padding-top:18px;border-color:#3d5e6c}
+    [data-circuit-builder-root] .circuit-value-editor>label{font-size:13px;margin:0 0 10px}
+    [data-circuit-builder-root] .circuit-value-controls{display:grid;grid-template-columns:minmax(80px,1fr) auto auto;align-items:center;gap:10px;max-width:480px}
+    [data-circuit-builder-root] .circuit-value-editor #circuit-inspector-value{width:100%;max-width:none;min-height:44px;font-size:16px;text-align:left;padding:10px 12px;border-radius:9px;background:#0a202b}
+    [data-circuit-builder-root] .circuit-value-controls>span{color:#c5dee6;font-size:14px}
+    [data-circuit-builder-root] .circuit-value-controls>button{background:#b4efdc;color:#123b35;border-color:#b4efdc;padding:10px 14px;border-radius:9px}
+    [data-circuit-builder-root] .circuit-value-editor .circuit-action-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;max-width:480px;margin-top:16px}
+    [data-circuit-builder-root] .circuit-value-editor .circuit-action-row>.circuit-help{grid-column:1/-1;margin:0}
+    [data-circuit-builder-root] .circuit-value-editor .circuit-help{font-size:12px;line-height:1.7}
+    [data-circuit-builder-root] .circuit-inspector-order{padding-top:18px;margin:20px 0 0;border-top:1px solid #3b5967;gap:9px}
+    [data-circuit-builder-root] .circuit-inspector-order button{flex:1 1 190px;background:#15313e;border-color:#496977}
+    [data-circuit-builder-root] .circuit-inspector-order .circuit-help{flex-basis:100%;font-size:12px;line-height:1.7;margin:2px 0 0;color:#bdd3de}
+    [data-circuit-builder-root] .circuit-live-coach{background:#142e35;border-color:#477379;border-radius:16px;padding:22px;margin:20px 0;color:#d8ebef}
+    [data-circuit-builder-root] .circuit-live-coach h3{font-size:21px;line-height:1.4;margin:9px 0}
+    [data-circuit-builder-root] .circuit-live-coach>p{font-size:14px;line-height:1.8;max-width:720px}
+    [data-circuit-builder-root] .circuit-live-coach>button{min-height:44px;padding:10px 14px;border-radius:9px}
+    [data-circuit-builder-root] .circuit-reading-map{border-color:#43616b;margin-top:18px;padding-top:10px}
+    [data-circuit-builder-root] .circuit-reading-map summary{min-height:44px;padding:11px 0;font-size:13px;line-height:1.6;color:#d6f5e7}
+    [data-circuit-builder-root] .circuit-reading-map ul{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}
+    [data-circuit-builder-root] .circuit-reading-map li{padding:14px;background:#0c2530;border-radius:10px;min-width:0}
+    [data-circuit-builder-root] .circuit-reading-label{gap:6px 12px;line-height:1.6}
+    [data-circuit-builder-root] .circuit-reading-label strong{font-size:13px;color:#e4f4f4}
+    [data-circuit-builder-root] .circuit-reading-label span{font-size:12px;color:#c7e7e9}
+    [data-circuit-builder-root] .circuit-reading-track{height:6px;margin:12px 0 8px;background:#274754}
+    [data-circuit-builder-root] .circuit-reading-map small{font-size:11px;line-height:1.6;color:#bdd9e1}
+    [data-circuit-builder-root] .circuit-concept-key{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding-top:15px;border-color:#43616b}
+    [data-circuit-builder-root] .circuit-concept-key p{font-size:12px;line-height:1.8;margin:0;color:#c6dfe4}
+    [data-circuit-builder-root] .circuit-concept-key strong{color:#def4ec}
+    [data-circuit-builder-root] .circuit-camera button{min-height:44px}
+    @media(max-width:600px){
+      [data-circuit-builder-root] .circuit-view-controls{gap:10px}
+      [data-circuit-builder-root] .circuit-view-choice{width:100%;flex-wrap:nowrap}
+      [data-circuit-builder-root] .circuit-view-choice button{flex:1;min-width:0}
+      [data-circuit-builder-root] .circuit-history-controls{width:100%}
+      [data-circuit-builder-root] .circuit-history-controls button{flex:1;padding:10px 8px}
+      [data-circuit-builder-root] .circuit-schematic-frame{border-radius:14px}
+      [data-circuit-builder-root] .circuit-diagram-heading{padding:16px 13px 6px;gap:12px}
+      [data-circuit-builder-root] #circuit-diagram-title{font-size:21px}
+      [data-circuit-builder-root] .circuit-schematic{padding:0 12px 14px}
+      [data-circuit-builder-root] .circuit-diagram-footer{padding:12px 14px;font-size:11px;gap:5px}
+      [data-circuit-builder-root] .circuit-part-inspector{padding:16px 13px}
+      [data-circuit-builder-root] .circuit-inspector-heading{gap:12px}
+      [data-circuit-builder-root] .circuit-inspector-heading>select{width:100%}
+      [data-circuit-builder-root] .circuit-inspector-readings{grid-template-columns:1fr;gap:8px;margin:17px 0}
+      [data-circuit-builder-root] .circuit-inspector-readings>div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 12px}
+      [data-circuit-builder-root] .circuit-inspector-readings dt{font-size:12px;min-width:0}
+      [data-circuit-builder-root] .circuit-inspector-readings dd{font-size:18px;letter-spacing:-.03em;margin:0;text-align:right;flex:none}
+      [data-circuit-builder-root] .circuit-value-controls{gap:8px;grid-template-columns:minmax(65px,1fr) auto auto}
+      [data-circuit-builder-root] .circuit-value-controls>button{padding:10px;font-size:11px}
+      [data-circuit-builder-root] .circuit-value-editor .circuit-action-row button{padding:10px 8px;font-size:11px}
+      [data-circuit-builder-root] .circuit-live-coach{padding:18px 14px}
+      [data-circuit-builder-root] .circuit-live-coach h3{font-size:20px}
+      [data-circuit-builder-root] .circuit-live-coach>p{font-size:13px}
+      [data-circuit-builder-root] .circuit-reading-map ul{grid-template-columns:1fr}
+      [data-circuit-builder-root] .circuit-concept-key{grid-template-columns:1fr;gap:8px}
+    }
+  `;
+  circStyle.textContent += `
+    /* Guided evidence: compare measurements and revisit saved circuits. */
+    [data-circuit-builder-root] .circuit-evidence-saved-prediction{display:grid;gap:6px;margin:14px 0 0;padding:12px 15px;border-left:3px solid #7c9aaa;border-radius:0 10px 10px 0;background:#142c38}
+    [data-circuit-builder-root] .circuit-evidence-saved-prediction>span{font-size:11px;color:#b5cbd5}
+    [data-circuit-builder-root] .circuit-evidence-saved-prediction>strong{font-size:14px;font-weight:600;color:#eef6f9}
+    [data-circuit-builder-root] .circuit-evidence-heading{display:flex;align-items:start;justify-content:space-between;gap:16px;border-top:1px solid #35525e;padding-top:22px}
+    [data-circuit-builder-root] .circuit-evidence-heading h3{font-size:23px;font-weight:650;line-height:1.3;letter-spacing:-.025em;color:#e7faf2;margin:7px 0 0}
+    [data-circuit-builder-root] .circuit-evidence-delta{margin:0;text-align:right;flex:none;max-width:100%}
+    [data-circuit-builder-root] .circuit-evidence-delta>span{display:block;color:#afc9d3;font-size:11px}
+    [data-circuit-builder-root] .circuit-evidence-delta>strong{display:block;font-size:17px;color:#d1f1e6;font-weight:600;margin-top:6px;font-variant-numeric:tabular-nums;white-space:normal}
+    [data-circuit-builder-root] #circuit-lesson-result-summary{font-size:13px;line-height:1.75;color:#c9dce3;margin:15px 0}
+    [data-circuit-builder-root] .circuit-lesson-evidence>.circuit-evidence-chart{grid-template-columns:repeat(auto-fit,minmax(min(100%,8em),1fr));gap:12px;margin:18px 0 10px}
+    [data-circuit-builder-root] .circuit-evidence-chart>.circuit-evidence-bar{background:#0a202d;border:1px solid #486472;min-width:0;padding:17px}
+    [data-circuit-builder-root] .circuit-evidence-chart>.circuit-evidence-bar[data-stage=after]{background:#102e2e;border-color:#578d7d}
+    [data-circuit-builder-root] .circuit-evidence-chart .circuit-evidence-bar>strong{font-size:clamp(20px,2.7vw,29px);white-space:normal;font-variant-numeric:tabular-nums}
+    [data-circuit-builder-root] .circuit-evidence-track{height:10px;background:#294750;border:1px solid #688793;border-radius:20px;overflow:hidden;margin:15px 0}
+    [data-circuit-builder-root] .circuit-evidence-track>span{display:block;height:100%;background:#b3cddd;border-radius:20px;min-width:0}
+    [data-circuit-builder-root] .circuit-evidence-bar[data-stage=after] .circuit-evidence-track>span{background:#b2ebd6}
+    [data-circuit-builder-root] .circuit-evidence-setting{display:block;font-size:12px;line-height:1.6;color:#c0d6dd;overflow-wrap:anywhere}
+    [data-circuit-builder-root] .circuit-evidence-chart>.circuit-evidence-change{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:12px 16px;background:#132b34;border-color:#3b5965}
+    [data-circuit-builder-root] .circuit-evidence-change>strong.circuit-change-label{margin:0;text-align:right}
+    [data-circuit-builder-root] .circuit-evidence-replay{padding:16px;margin:20px 0;border:1px solid #3f6170;border-radius:12px;background:#102732}
+    [data-circuit-builder-root] .circuit-evidence-replay>h4{font-size:15px;font-weight:650;color:#e2f2f5;margin:0}
+    [data-circuit-builder-root] .circuit-evidence-replay>.circuit-help{font-size:12px;line-height:1.65;margin:10px 0}
+    [data-circuit-builder-root] .circuit-evidence-replay>.circuit-help:last-child{margin-bottom:0}
+    [data-circuit-builder-root] .circuit-evidence-replay .circuit-action-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+    [data-circuit-builder-root] .circuit-evidence-replay button{min-height:44px;padding:10px 12px;line-height:1.5}
+    @media(max-width:540px){
+      [data-circuit-builder-root] .circuit-evidence-heading{flex-direction:column;gap:12px}
+      [data-circuit-builder-root] .circuit-evidence-heading h3{font-size:21px}
+      [data-circuit-builder-root] .circuit-evidence-delta{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 10px;text-align:left}
+      [data-circuit-builder-root] .circuit-evidence-delta>strong{margin:0;font-size:15px}
+      [data-circuit-builder-root] .circuit-lesson-evidence>.circuit-evidence-chart{gap:8px}
+      [data-circuit-builder-root] .circuit-evidence-chart>.circuit-evidence-bar{padding:12px 10px}
+      [data-circuit-builder-root] .circuit-evidence-chart .circuit-evidence-bar>strong{font-size:20px;letter-spacing:-.04em}
+      [data-circuit-builder-root] .circuit-evidence-chart>.circuit-evidence-change{display:block;padding:11px}
+      [data-circuit-builder-root] .circuit-evidence-change>strong.circuit-change-label{margin-top:4px;text-align:left}
+      [data-circuit-builder-root] .circuit-evidence-replay{padding:13px 12px}
+      [data-circuit-builder-root] .circuit-evidence-replay .circuit-action-row{grid-template-columns:1fr}
+    }
+    @media(forced-colors:active){
+      [data-circuit-builder-root] .circuit-evidence-track{border-color:CanvasText;background:Canvas}
+      [data-circuit-builder-root] .circuit-evidence-track>span,[data-circuit-builder-root] .circuit-evidence-bar[data-stage=after] .circuit-evidence-track>span{forced-color-adjust:none;background:Highlight}
+    }
+`;
+  circStyle.textContent += `
+    /* Keep the active question close to its experiment controls. */
+    [data-circuit-builder-root] .circuit-lesson-progress[data-active=true]{display:grid;grid-template-columns:auto minmax(100px,1fr);align-items:center;gap:18px;padding:12px 14px;margin:12px 0}
+    [data-circuit-builder-root] .circuit-lesson-progress[data-active=true] p{margin:0;font-size:13px;line-height:1.5}
+    [data-circuit-builder-root] .circuit-lesson-progress[data-active=true] progress{width:100%;margin:0}
+    [data-circuit-builder-root] .circuit-lesson-chooser{border:1px solid #3f6170;border-radius:11px;background:#102732;margin:12px 0}
+    [data-circuit-builder-root] .circuit-lesson-chooser>summary{display:flex;align-items:center;flex-wrap:wrap;gap:7px 10px;min-height:44px;padding:10px 12px;font-size:13px;font-weight:650;color:#d9eee9;list-style:none}
+    [data-circuit-builder-root] .circuit-lesson-chooser>summary::-webkit-details-marker{display:none}
+    [data-circuit-builder-root] .circuit-lesson-chooser>summary::before{content:'+';display:grid;place-items:center;width:24px;height:24px;flex:none;border-radius:6px;background:#264a42;color:#d4f4e7;font-size:18px}
+    [data-circuit-builder-root] .circuit-lesson-chooser[open]>summary::before{content:'−'}
+    [data-circuit-builder-root] .circuit-lesson-chooser>summary>small{margin-left:auto;font-weight:400;font-size:12px;line-height:1.5;color:#b8d1d9;max-width:60%;overflow-wrap:anywhere}
+    [data-circuit-builder-root] .circuit-lesson-chooser-body{border-top:1px solid #355764;padding:12px 14px}
+    [data-circuit-builder-root] .circuit-lesson-chooser-body>.circuit-help{font-size:12px;line-height:1.7;margin:0}
+    [data-circuit-builder-root] .circuit-lesson-chooser-body>.circuit-lesson-cards{margin:14px 0}
+    [data-circuit-builder-root] #circuit-lesson-question:focus-visible,[data-circuit-builder-root] #circuit-lesson-result:focus-visible{outline:3px solid #b4efdc;outline-offset:5px;border-radius:3px}
+    @media(max-width:540px){
+      [data-circuit-builder-root] .circuit-lesson-progress[data-active=true]{grid-template-columns:1fr;gap:8px;padding:11px 12px}
+      [data-circuit-builder-root] .circuit-lesson-chooser>summary{padding:10px;font-size:12px}
+      [data-circuit-builder-root] .circuit-lesson-chooser>summary>small{flex-basis:100%;max-width:none;margin:0 0 0 34px}
+      [data-circuit-builder-root] .circuit-lesson-chooser-body{padding:12px 10px}
+      [data-circuit-builder-root] .circuit-lesson-body>.circuit-learning-steps{margin:16px 0}
+      [data-circuit-builder-root] .circuit-lesson-body>fieldset{margin:16px 0}
+    }
+    @media(forced-colors:active){
+      [data-circuit-builder-root] .circuit-lesson-chooser{border-color:CanvasText}
+      [data-circuit-builder-root] #circuit-lesson-question:focus-visible,[data-circuit-builder-root] #circuit-lesson-result:focus-visible{outline-color:Highlight}
+    }
+`;
+  circStyle.textContent += `
+    /* Enabling a target action must restore its text contrast immediately. */
+    [data-circuit-builder-root] .circuit-target-panel>button{transition-property:background-color,border-color}
+    @media(prefers-reduced-motion:reduce){
+      [data-circuit-builder-root] .circuit-target-panel>button{transition:none}
+    }
+`;
   document.head.appendChild(circStyle);
   }
 
@@ -3655,12 +4128,104 @@ window.StemLab = window.StemLab || {
     { label: 'Total R = 200\u03A9', target: 200, type: 'resistance', unit: '\u03A9' },
     { label: 'Power = 24W', target: 24, type: 'power', unit: 'W' },
     { label: 'Total R = 50\u03A9', target: 50, type: 'resistance', unit: '\u03A9' },
-    { label: 'Get exactly 0.1A', target: 0.1, type: 'current', unit: 'A' },
+    { label: 'Get 0.1 A current', target: 0.1, type: 'current', unit: 'A' },
     { label: 'Power = 1W', target: 1, type: 'power', unit: 'W' },
     { label: 'Total R = 500\u03A9', target: 500, type: 'resistance', unit: '\u03A9' },
     { label: 'Get 3A current', target: 3, type: 'current', unit: 'A' },
     { label: 'Power = 100W', target: 100, type: 'power', unit: 'W' }
   ];
+
+  // Saved challenges use their electrical target, so older display labels remain valid.
+  function circuitChallengeIndex(challenge) {
+    return CHALLENGES.findIndex(function(ch){return !!challenge&&ch.type===challenge.type&&ch.target===challenge.target;});
+  }
+  function circuitChallengeReading(solved, challenge) {
+    var index=circuitChallengeIndex(challenge);
+    if(index<0)return null;
+    var ch=CHALLENGES[index],format=ch.type==='current'?circuitCurrentText:ch.type==='power'?circuitPowerText:circuitActiveResistanceText;
+    var actual=ch.type==='current'?solved.current:ch.type==='power'?solved.power:solved.totalR;
+    var empty=!solved.components.length,valid=!empty&&Number.isFinite(actual),difference=actual-ch.target;
+    var onTarget=valid&&Math.abs(difference)<ch.target*.05;
+    return {index:index,challenge:ch,actual:actual,empty:empty,onTarget:onTarget,
+      status:!valid?'Build a circuit':onTarget?'In range':difference<0?'Below target':'Above target',
+      actualText:empty?'No components':format(actual),goalText:format(ch.target),
+      lowerText:format(ch.target*.95),upperText:format(ch.target*1.05),
+      differenceText:!valid?'Add a component to compare readings.':difference===0?'At the goal':format(Math.abs(difference))+(difference<0?' below the goal':' above the goal')};
+  }
+  function circuitChallengeHint(solved, reading) {
+    if(reading.empty)return 'Add a resistor to start, then adjust its resistance and the supply.';
+    if(reading.onTarget)return 'This reading is within the target range. Check target to save this completion.';
+    if(solved.isShort)return 'This layout has a very low-resistance path. Add a resistor in that path before tuning the target.';
+    var ch=reading.challenge,parts=solved.components;
+    if(ch.type!=='resistance'&&solved.voltage===0)return 'Increase the supply above 0 V before tuning '+(ch.type==='current'?'current':'power')+'.';
+    if(solved.current===0&&parts.some(function(p){return p.type==='switch'&&!p.closed;}))return 'Close the open switch to make a conducting path, then check the reading again.';
+    if(solved.current===0&&parts.some(function(p){return p.type==='capacitor';}))return 'A capacitor blocks steady DC in this Simple model. Use a resistor path for this target; explore charging in the capacitor study.';
+    if(solved.hasLED)return ch.type==='resistance'?'With an LED, total resistance is V/I at this operating point. Try a resistor-only circuit to explore series and parallel resistance.':'An LED has a forward voltage drop. Try a resistor-only circuit for this target, then compare how adding an LED changes the reading.';
+    if(ch.type==='resistance')return reading.actual>ch.target?'Lower a resistor value to reduce total resistance.'+(solved.mode==='parallel'?' Adding another resistor branch also reduces it.':''):'Raise a resistor value to increase total resistance.'+(solved.mode==='series'?' Adding another series resistor also increases it.':'');
+    return 'At a fixed positive supply, '+(reading.actual>ch.target?'raise total resistance to reduce':'lower total resistance to increase')+' the '+(ch.type==='current'?'source current':'source power')+'. Change one setting and compare the reading.';
+  }
+  function circuitChallengeAttempt(state, index, attempt) {
+    var ch=CHALLENGES[index];
+    if(!ch)return state;
+    var reading=circuitChallengeReading(solveCircuit(state),ch),done=Object.assign({},state.challengesDoneSet||{});
+    var outcome=!reading.onTarget?'retry':done[index]?'already':'completed';
+    if(outcome==='completed')done[index]=true;
+    return Object.assign({},state,{challenge:ch,challengesDoneSet:done,
+      challengesDone:CHALLENGES.filter(function(_,i){return !!done[i];}).length,
+      challengeCheck:{attempt:attempt,index:index,outcome:outcome,actualText:reading.actualText,
+        message:outcome==='completed'?'Target completed at '+reading.actualText+'. Completion saved.':outcome==='already'?'This target is already completed. Your current reading is '+reading.actualText+'.':reading.empty?'Add a component before checking this target.':'Current reading: '+reading.actualText+'. '+reading.differenceText+'. Keep tuning and check again.'}});
+  }
+  window.StemLab.circuitChallengeIndex=circuitChallengeIndex;
+  window.StemLab.circuitChallengeReading=circuitChallengeReading;
+  window.StemLab.circuitChallengeHint=circuitChallengeHint;
+  window.StemLab.circuitChallengeAttempt=circuitChallengeAttempt;
+
+  function CircuitChallengePanel(props) {
+    var React=props.React,h=React.createElement,state=props.state,done=state.challengesDoneSet||{},t=circuitToolT(props);
+    var selected=circuitChallengeIndex(state.challenge);if(selected<0)selected=0;
+    var reading=circuitChallengeReading(props.solved,CHALLENGES[selected]);
+    var pending=React.useRef(null),sequence=React.useRef(0),feedback=state.challengeCheck;
+    // Reward only a committed new completion. The updater stays pure under React
+    // StrictMode; the pending guard also prevents double clicks before a render.
+    React.useEffect(function(){
+      if(!feedback||pending.current!==feedback.attempt)return;
+      pending.current=null;
+      if(feedback.outcome==='completed') {
+        circuitSound('challengeComplete');
+        if(typeof props.awardXP==='function')props.awardXP('circuitChallenge',10,CHALLENGES[feedback.index].label);
+        props.checkBadges(state.challengesDone);
+      }
+      if(typeof props.addToast==='function')props.addToast(feedback.message,feedback.outcome==='completed'?'success':'info');
+    },[feedback]);
+    var check=function(){
+      if(pending.current!==null||typeof props.setToolData!=='function')return;
+      var attempt=++sequence.current;pending.current=attempt;
+      props.setToolData(function(prev){
+        var prior=prev&&prev._circuit||{};
+        return Object.assign({},prev,{_circuit:circuitChallengeAttempt(prior,selected,attempt)});
+      });
+    };
+    var count=CHALLENGES.filter(function(_,i){return !!done[i];}).length;
+    return h('section',{className:'circuit-targets mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md','aria-labelledby':'circuit-challenges-title'},
+      h('h3',{id:'circuit-challenges-title',className:'text-sm font-bold text-amber-200 mb-2'},t('stem.circuit.circuit_challenges_title','Circuit Challenges')),
+      h('p',{className:'text-xs text-slate-200 mb-3'},'Choose a target, tune your circuit, then check your reading. '+count+' of '+CHALLENGES.length+' completions saved.'),
+      h('div',{className:'circuit-target-choices flex flex-wrap gap-2',role:'group','aria-label':'Choose a circuit target'},CHALLENGES.map(function(ch,index){return h('button',{
+        key:index,type:'button','data-circuit-target':index,'aria-pressed':selected===index,
+        onClick:function(){props.select(ch);},
+        className:'min-h-11 px-3 py-2 rounded-lg text-xs font-bold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 '+(selected===index?'bg-amber-900/40 border-amber-300 text-amber-100':'bg-slate-900 border-slate-600 text-slate-200 hover:bg-slate-800')
+      },h('span',null,ch.label),done[index]&&h('span',{className:'circuit-target-saved'},' · Saved'));})),
+      h('div',{className:'circuit-target-panel mt-3 rounded-lg border border-slate-600 bg-slate-950 p-3','data-target-state':reading.onTarget?'met':reading.empty?'empty':'tuning',role:'region','aria-label':'Active circuit target'},
+        h('h4',{className:'text-sm font-bold text-amber-200'},CHALLENGES[selected].label),
+        h('dl',{className:'mt-3 text-sm',style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:'.75rem'}},
+          h('div',null,h('dt',{className:'text-xs text-slate-300'},'Current reading'),h('dd',{'data-target-reading':true,className:'font-bold text-white'},reading.actualText)),
+          h('div',null,h('dt',{className:'text-xs text-slate-300'},'Goal'),h('dd',{'data-target-goal':true,className:'font-bold text-white'},reading.goalText))),
+        h('p',{'data-target-range':true,className:'mt-2 text-xs text-slate-300'},'Less than 5% from the goal: strictly between '+reading.lowerText+' and '+reading.upperText+'.'),
+        h('p',{'data-target-live-status':true,className:'mt-3 text-sm font-bold '+(reading.onTarget?'text-emerald-200':'text-amber-200')},reading.status+' · '+reading.differenceText),
+        h('p',{'data-target-hint':true,className:'mt-2 text-sm text-slate-200'},circuitChallengeHint(props.solved,reading)),
+        h('p',{'data-target-saved-status':true,className:'mt-2 text-xs text-slate-300'},done[selected]?'Completion saved. Changing the circuit keeps this achievement.':'Completion not saved yet.'),
+        h('button',{type:'button',onClick:check,disabled:reading.empty,className:'mt-3 min-h-11 rounded-lg border border-amber-300 bg-amber-300 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-amber-200 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300'},'Check target'),
+        h('p',{role:'status','aria-live':'polite',className:'mt-2 text-sm text-slate-200'},feedback&&feedback.index===selected?'Last check: '+feedback.message:'')));
+  }
 
   // ── Quiz question generators (8 types) ──
   function makeOhmQuestion() {
@@ -3757,15 +4322,15 @@ window.StemLab = window.StemLab || {
     var path = [{ x: 35, y: 20 }];
     if (components.length === 0) {
       path.push({ x: 400, y: 20 });
-      path.push({ x: 400, y: 140 });
-      path.push({ x: 35, y: 140 });
+      path.push({ x: 400, y: 170 });
+      path.push({ x: 35, y: 170 });
       return path;
     }
     for (var i = 0; i < components.length; i++) {
       var cx = 80 + i * spacing;
       var comp = components[i];
-      var compTopY = 55;
-      var compBottomY = comp.type === 'resistor' ? 100 : (comp.type === 'switch' ? 95 : (comp.type === 'ammeter' || comp.type === 'voltmeter' ? 90 : (comp.type === 'capacitor' ? 100 : 92)));
+      var compTopY = comp.type === 'led' ? 65 : (comp.type === 'ammeter' || comp.type === 'voltmeter' ? 60 : (comp.type === 'bulb' || comp.type === 'inductor' ? 62 : 55));
+      var compBottomY = comp.type === 'resistor' ? 100 : (comp.type === 'switch' ? 95 : (comp.type === 'ammeter' || comp.type === 'voltmeter' ? 90 : (comp.type === 'capacitor' ? 100 : comp.type === 'led' ? 85 : 92)));
       
       if (i % 2 === 0) {
         path.push({ x: cx, y: 20 });
@@ -3781,16 +4346,18 @@ window.StemLab = window.StemLab || {
     }
     var lastCx = 80 + (components.length - 1) * spacing;
     if ((components.length - 1) % 2 === 0) {
-      path.push({ x: 35, y: 140 });
+      path.push({ x: lastCx, y: 170 });
+      path.push({ x: 35, y: 170 });
     } else {
       path.push({ x: 400, y: 20 });
-      path.push({ x: 400, y: 140 });
-      path.push({ x: 35, y: 140 });
+      path.push({ x: 400, y: 170 });
+      path.push({ x: 35, y: 170 });
     }
     return path;
   }
 
-  function getParallelPath(cy) {
+  function getParallelPath(cy, returnY) {
+    var bottomY=returnY==null?Math.max(170,cy+40):returnY;
     return [
       { x: 35, y: 20 },
       { x: 180, y: 20 },
@@ -3798,8 +4365,8 @@ window.StemLab = window.StemLab || {
       { x: 200, y: cy },
       { x: 240, y: cy },
       { x: 260, y: cy },
-      { x: 260, y: 140 },
-      { x: 35, y: 140 }
+      { x: 260, y: bottomY },
+      { x: 35, y: bottomY }
     ];
   }
 
@@ -3977,6 +4544,8 @@ window.StemLab = window.StemLab || {
     ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // Fills {value1}-style placeholders, so a translation can reorder them.
+      var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       var React = ctx.React;
       var h = React.createElement;
 
@@ -4227,7 +4796,9 @@ window.StemLab = window.StemLab || {
           }, [mode, components.length, isShort, shortTriggered, JSON.stringify(badges)]);
 
           // ── Conventional-current animation; cleaned up on unmount and pause ──
-          var W = 440, H = 200;
+          var parallelGap=40,parallelMaxCy=40+(Math.max(components.length,1)-1)*parallelGap;
+          var parallelReturnY=Math.max(170,parallelMaxCy+40);
+          var W = 440, H = mode==='parallel'?parallelReturnY+30:200;
 
           React.useEffect(function() {
           if (current > 0.001 && !isShort && !_prefersReducedMotion) {
@@ -4256,14 +4827,13 @@ window.StemLab = window.StemLab || {
               }
             } else {
               // Parallel mode: split dots proportional to branch current
-              var maxCy = 40 + (components.length - 1) * Math.min(30, 80 / Math.max(components.length, 1));
               for (var ci = 0; ci < components.length; ci++) {
                 var comp = components[ci];
                 var compR = getCompR(comp);
                 var compI = reading(comp).current;
                 if (compI > 0.001) {
-                  var cy = 40 + ci * Math.min(30, 80 / Math.max(components.length, 1));
-                  var path = getParallelPath(cy);
+                  var cy = 40 + ci * parallelGap;
+                  var path = getParallelPath(cy,parallelReturnY);
                   var numDots = Math.min(Math.ceil(compI * 8), 15);
                   var speed = 0.025 * compI;
                   for (var ei = 0; ei < numDots; ei++) {
@@ -4339,7 +4909,7 @@ window.StemLab = window.StemLab || {
             var rect = svg.getBoundingClientRect();
             if (!rect.width || !rect.height) return -1;
             if (mode === 'series') { var spacing = Math.min(70, 280 / n); return Math.max(0, Math.min(n - 1, Math.round(((x - rect.left) / rect.width * W - 80) / spacing))); }
-            var gap = Math.min(30, 80 / n);
+            var gap = parallelGap;
             return Math.max(0, Math.min(n - 1, Math.round(((y - rect.top) / rect.height * H - 40) / gap)));
           };
           var reorderPointerHandlers = function(index, comp, source) {
@@ -4393,7 +4963,7 @@ window.StemLab = window.StemLab || {
             if (action.type === 'remove') {
               var remaining = components.filter(function(component) { return component.id !== action.componentId; });
               updMulti({ components: remaining, confirmAction: null });
-              if (typeof announceToSR === 'function') announceToSR('Component removed. ' + remaining.length + ' components remain.');
+              if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.circuit.sr_component_removed_components_remain', 'Component removed. {value1} components remain.'), { value1: remaining.length }));
             } else if (action.type === 'clear') {
               updMulti({ components: [], confirmAction: null });
               if (typeof announceToSR === 'function') announceToSR(__alloT('stem.circuit.sr_circuit_cleared', 'Circuit cleared.'));
@@ -4556,7 +5126,7 @@ window.StemLab = window.StemLab || {
             { title: __alloT('stem.circuit.route_load_starter', 'Load Starter Circuit'), icon: '\uD83D\uDD34', note: __alloT('stem.circuit.route_load_starter_note', 'LED + resistor baseline'), action: function() { loadPreset(CIRCUIT_PRESETS[0]); }, tone: '#f97316' },
             { title: __alloT('stem.circuit.route_open_presets', 'Open Presets'), icon: '\uD83D\uDCCB', note: __alloT('stem.circuit.route_open_presets_note', 'Voltage dividers, meters, short demo'), action: function() { upd('showPresets', true); setTimeout(function() { var panel=document.getElementById('circuit-presets-panel'); if(panel) panel.scrollIntoView({block:'start'}); },0); }, tone: '#facc15' },
             { title: __alloT('stem.circuit.route_advanced_sim', 'Advanced Simulator'), icon: '\uD83D\uDD0C', note: __alloT('stem.circuit.route_advanced_sim_note', 'CircuitJS meters and real-world challenges'), action: function() { if (typeof ctx.setToolData === 'function') ctx.setToolData(function(prev) { var cur = Object.assign({}, (prev && prev._circuitShelf) || {}); cur.returnTool = 'circuit'; var next = Object.assign({}, prev); next._circuitShelf = cur; return next; }); if (typeof setStemLabTab === 'function') setStemLabTab('explore'); if (typeof setStemLabTool === 'function') { setStemLabTool('circuitShelf'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.circuit.sr_opening_circuit_shelf_advanced_simulator', 'Opening Circuit Shelf advanced simulator.')); } else if (typeof addToast === 'function') addToast('Advanced simulator is not available right now.', 'info'); }, tone: '#fb923c' },
-            { title: __alloT('stem.circuit.route_try_target', 'Try a Target'), icon: '\uD83C\uDFAF', note: challengeProgress + '/' + CHALLENGES.length + ' solved', action: function() { upd('challenge', CHALLENGES[0]); if (typeof addToast === 'function') addToast('Target ready: ' + CHALLENGES[0].label, 'info'); }, tone: '#34d399' },
+            { title: __alloT('stem.circuit.route_try_target', 'Try a Target'), icon: '\uD83C\uDFAF', note: challengeProgress + '/' + CHALLENGES.length + ' solved', action: function() { upd('challenge', CHALLENGES[0]); window.setTimeout(function(){var target=document.querySelector('[data-circuit-target="0"]');if(target){if(typeof target.scrollIntoView==='function')target.scrollIntoView({behavior:_prefersReducedMotion?'auto':'smooth',block:'center'});target.focus({preventScroll:true});}},0); if (typeof addToast === 'function') addToast('Target ready: ' + CHALLENGES[0].label, 'info'); }, tone: '#34d399' },
             { title: band === 'g68' || band === 'g912' ? __alloT('stem.circuit.route_show_laws', 'Show Laws') : __alloT('stem.circuit.route_ask_tutor', 'Ask Tutor'), icon: band === 'g68' || band === 'g912' ? '\u2696' : '\uD83E\uDD16', note: band === 'g68' || band === 'g912' ? __alloT('stem.circuit.route_kirchhoff_support', 'Kirchhoff support') : __alloT('stem.circuit.route_circuit_hint', 'Get a circuit hint'), action: function() { if (band === 'g68' || band === 'g912') upd('showKirchhoff', true); else upd('showAI', true); }, tone: '#a78bfa' }
           ];
           var renderCircuitBench = function() {
@@ -4564,7 +5134,8 @@ window.StemLab = window.StemLab || {
               h('span',{className:'circuit-eyebrow'},'ELECTRONICS / EXPLORATION LAB'),
               h('h2',{id:'circuit-bench-title',className:'text-2xl sm:text-3xl font-black text-white mt-2'},'Small circuits. Big discoveries.'),
               h('p',{className:'circuit-help'},introText),
-              h('div',{className:'circuit-action-row'},benchRoutes.slice(0,3).map(function(route){return h('button',{key:route.title,type:'button',onClick:route.action},route.title);}),
+              h(CircuitStartGuide,{React:React,t:cktT,state:d,hasParts:components.length>0,update:upd,updateMany:updMulti}),
+              h('div',{className:'circuit-action-row'},benchRoutes.slice(0,components.length?4:3).map(function(route){return h('button',{key:route.title,type:'button',onClick:route.action},route.title);}),
                 h('span',{className:'circuit-model-chip'},circuitState.label+' · '+circuitCurrentText(current))));
           };
 
@@ -4586,7 +5157,7 @@ window.StemLab = window.StemLab || {
                 h('div',{className:'circuit-concept-key'},h('p',null,h('strong',null,'Voltage (V)'),' — energy transferred per unit charge.'),h('p',null,h('strong',null,'Current (A)'),' — charge passing a point each second.'),h('p',null,h('strong',null,'Power (W)'),' — energy transferred each second. P = VI.'))));
           };
 
-          var renderPartsShelf = function() { return h('section',{className:'circuit-parts-shelf','aria-label':__alloT('stem.circuit.power_supply_and_parts_shelf','Power supply and parts shelf')},h('h3',null,'Build your circuit'),// Voltage slider row
+          var renderPartsShelf = function() { return h('section',{className:'circuit-parts-shelf','aria-label':__alloT('stem.circuit.power_supply_and_parts_shelf','Power supply and parts shelf')},h('h3',{id:'circuit-parts-heading',tabIndex:-1},'Build your circuit'),// Voltage slider row
               h('div', { className: 'circuit-supply-row' },
                 h('span', { className: 'text-xl' }, 'Power supply'),
                 h('input', {
@@ -4640,17 +5211,18 @@ window.StemLab = window.StemLab || {
 
               components.length > 0 && h('span', { className: 'self-center text-xs text-slate-400 ml-auto font-mono' }, components.length + ' / 8 parts' + (components.length >= 8 ? ' · bench full' : ''))
             )); };
-          var renderSchematic = function() { return h('div', { className: 'relative', hidden: d.benchView === '3d', tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.circuit.schematic_scroll_region', 'Circuit schematic'), style:{maxWidth:'100%',overflowX:'auto'} },
+          var renderSchematic = function() { return h('div', { className: 'circuit-schematic relative', hidden: d.benchView === '3d', tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.circuit.schematic_scroll_region', 'Circuit schematic'), style:{maxWidth:'100%',overflowX:'auto'} },
               h('p', {className:'circuit-help'}, 'Schematic: scroll sideways on small screens. Exact measurements are available in Inspect part.' + (components.length > 1 ? ' ' + __alloT('stem.circuit.schematic_drag_hint', 'Drag a part along the wire to move it, or click one to inspect it; readings do not change with position.') : '')),
               h('svg', {
                 viewBox: '0 0 ' + W + ' ' + H,
                 className: 'w-full rounded-xl border transition-all ' + (isShort ? 'bg-red-950/20 border-red-500/50 shadow-lg shadow-red-500/10' : 'bg-slate-900 border-slate-800 shadow-inner'),
-                role: 'img',
-                'aria-label': 'Interactive ' + mode + ' circuit schematic. Battery ' + voltage + ' volts, ' + components.length + ' components, current ' + current.toFixed(3) + ' amps, source power ' + power.toFixed(2) + ' watts. ' + (isShort ? 'Warning: short circuit.' : (current > 0.001 ? 'Circuit energized; animated charge carriers show current flow.' : 'No current is flowing.')),
+                role: 'group',
+                'aria-label': 'Interactive ' + mode + ' circuit schematic. Battery ' + voltage + ' volts, ' + components.length + ' components, current ' + circuitCurrentText(current) + ', source power ' + circuitPowerText(power) + '. ' + (isShort ? 'Warning: short circuit.' : (current > 0 ? 'Current is flowing; charge markers are illustrative.' : 'No current is flowing.')),
                 style: { minWidth: '600px' }
               },
                 // Definitions for gradients & patterns
                 h('defs', null,
+                  h('clipPath',{id:'circuit-signal-feed'},h('rect',{x:35,y:10,width:mode==='series'?45:145,height:20})),
                   h('pattern', { id: 'grid', width: 20, height: 20, patternUnits: 'userSpaceOnUse' },
                     h('path', { d: 'M 20 0 L 0 0 0 20', fill: 'none', stroke: 'rgba(255,255,255,0.03)', strokeWidth: 1 })
                   ),
@@ -4702,9 +5274,10 @@ window.StemLab = window.StemLab || {
                   var wWidth = isShort ? 2.5 : 2;
                   
                   if (components.length === 0) {
-                    wires.push(h('line', { key: 'w0', x1: 35, y1: 20, x2: 400, y2: 20, stroke: wireColor, strokeWidth: wWidth }));
-                    wires.push(h('line', { key: 'w1', x1: 400, y1: 20, x2: 400, y2: 140, stroke: wireColor, strokeWidth: wWidth }));
-                    wires.push(h('line', { key: 'w2', x1: 400, y1: 140, x2: 35, y2: 140, stroke: wireColor, strokeWidth: wWidth }));
+                    wires.push(h('line', { key: 'w0', x1: 35, y1: 20, x2: 70, y2: 20, stroke: wireColor, strokeWidth: wWidth }));
+                    wires.push(h('line', { key: 'w0b', x1: 110, y1: 20, x2: 400, y2: 20, stroke: wireColor, strokeWidth: wWidth }));
+                    wires.push(h('line', { key: 'w1', x1: 400, y1: 20, x2: 400, y2: 170, stroke: wireColor, strokeWidth: wWidth }));
+                    wires.push(h('line', { key: 'w2', x1: 400, y1: 170, x2: 35, y2: 170, stroke: wireColor, strokeWidth: wWidth }));
                   } else if (mode === 'series') {
                     var spacing = Math.min(70, 280 / Math.max(components.length, 1));
                     var cx0 = 80;
@@ -4713,8 +5286,8 @@ window.StemLab = window.StemLab || {
                     for (var i = 0; i < components.length; i++) {
                       var cx = 80 + i * spacing;
                       var comp = components[i];
-                      var compTopY = 55;
-                      var compBottomY = comp.type === 'resistor' ? 100 : (comp.type === 'switch' ? 95 : (comp.type === 'ammeter' || comp.type === 'voltmeter' ? 90 : (comp.type === 'capacitor' ? 100 : 92)));
+                      var compTopY = comp.type === 'led' ? 65 : (comp.type === 'ammeter' || comp.type === 'voltmeter' ? 60 : (comp.type === 'bulb' || comp.type === 'inductor' ? 62 : 55));
+                      var compBottomY = comp.type === 'resistor' ? 100 : (comp.type === 'switch' ? 95 : (comp.type === 'ammeter' || comp.type === 'voltmeter' ? 90 : (comp.type === 'capacitor' ? 100 : comp.type === 'led' ? 85 : 92)));
                       
                       wires.push(h('line', { key: 'wv1-' + i, x1: cx, y1: 20, x2: cx, y2: compTopY, stroke: wireColor, strokeWidth: wWidth }));
                       wires.push(h('line', { key: 'wv2-' + i, x1: cx, y1: compBottomY, x2: cx, y2: 140, stroke: wireColor, strokeWidth: wWidth }));
@@ -4730,42 +5303,45 @@ window.StemLab = window.StemLab || {
                     }
                     
                     var lastCx = 80 + (components.length - 1) * spacing;
+                    // Keep the battery return below every inter-part bridge. A
+                    // return at y=140 would join those bridges and bypass parts.
                     if ((components.length - 1) % 2 === 0) {
-                      wires.push(h('line', { key: 'wret', x1: lastCx, y1: 140, x2: 35, y2: 140, stroke: wireColor, strokeWidth: wWidth }));
+                      wires.push(h('line', { key: 'wret-down', x1: lastCx, y1: 140, x2: lastCx, y2: 170, stroke: wireColor, strokeWidth: wWidth }));
+                      wires.push(h('line', { key: 'wret', x1: lastCx, y1: 170, x2: 35, y2: 170, stroke: wireColor, strokeWidth: wWidth }));
                     } else {
                       wires.push(h('line', { key: 'wret1', x1: lastCx, y1: 20, x2: 400, y2: 20, stroke: wireColor, strokeWidth: wWidth }));
-                      wires.push(h('line', { key: 'wret2', x1: 400, y1: 20, x2: 400, y2: 140, stroke: wireColor, strokeWidth: wWidth }));
-                      wires.push(h('line', { key: 'wret3', x1: 400, y1: 140, x2: 35, y2: 140, stroke: wireColor, strokeWidth: wWidth }));
+                      wires.push(h('line', { key: 'wret2', x1: 400, y1: 20, x2: 400, y2: 170, stroke: wireColor, strokeWidth: wWidth }));
+                      wires.push(h('line', { key: 'wret3', x1: 400, y1: 170, x2: 35, y2: 170, stroke: wireColor, strokeWidth: wWidth }));
                     }
                   } else {
                     // Parallel mode
-                    var maxCy = 40 + (components.length - 1) * Math.min(30, 80 / Math.max(components.length, 1));
+                    var maxCy = parallelMaxCy;
                     wires.push(h('line', { key: 'w0', x1: 35, y1: 20, x2: 180, y2: 20, stroke: wireColor, strokeWidth: wWidth }));
                     wires.push(h('line', { key: 'w1', x1: 180, y1: 20, x2: 180, y2: maxCy, stroke: wireColor, strokeWidth: wWidth }));
-                    wires.push(h('line', { key: 'w2', x1: 260, y1: maxCy, x2: 260, y2: 140, stroke: wireColor, strokeWidth: wWidth }));
-                    wires.push(h('line', { key: 'w3', x1: 260, y1: 140, x2: 35, y2: 140, stroke: wireColor, strokeWidth: wWidth }));
+                    wires.push(h('line', { key: 'w2', x1: 260, y1: 40, x2: 260, y2: parallelReturnY, stroke: wireColor, strokeWidth: wWidth }));
+                    wires.push(h('line', { key: 'w3', x1: 260, y1: parallelReturnY, x2: 35, y2: parallelReturnY, stroke: wireColor, strokeWidth: wWidth }));
                   }
-                  return h('g', { filter: current > 0.001 || isShort ? 'url(#circuit-wire-glow)' : null, opacity: current > 0.001 ? 0.95 : 1 }, wires);
+                  return h('g', { 'data-circuit-wires':mode,filter: current > 0.001 || isShort ? 'url(#circuit-wire-glow)' : null, opacity: current > 0.001 ? 0.95 : 1 }, wires);
                 })(),
 
                 // Battery connections
-                h('line', { x1: 35, y1: 40, x2: 35, y2: 20, stroke: isShort ? '#ef4444' : '#475569', strokeWidth: 2 }),
-                h('line', { x1: 35, y1: 100, x2: 35, y2: 140, stroke: isShort ? '#ef4444' : '#475569', strokeWidth: 2 }),
+                h('line', { 'data-circuit-battery-lead':'positive',x1: 35, y1: 40, x2: 35, y2: 20, stroke: isShort ? '#ef4444' : '#475569', strokeWidth: 2 }),
+                h('line', { 'data-circuit-battery-lead':'negative',x1: 35, y1: 100, x2: 35, y2: mode==='parallel'?parallelReturnY:170, stroke: isShort ? '#ef4444' : '#475569', strokeWidth: 2 }),
 
                 // Electric-field signal pulse: it races around the conductor while
                 // individual charge carriers below remain discrete and visibly slower.
-                !isShort && current > 0.001 && h('g', { 'aria-hidden': 'true', pointerEvents: 'none' },
+                !isShort && current > 0.001 && h('g', { 'aria-hidden': 'true', pointerEvents: 'none',clipPath:'url(#circuit-signal-feed)' },
                   h('g', { className: 'circ-signal-pulse' },
                     h('rect', { x: 45, y: 16, width: 24, height: 8, rx: 4, fill: '#67e8f9', opacity: 0.24, filter: 'url(#circuit-wire-glow)' }),
                     h('circle', { cx: 57, cy: 20, r: 3.2, fill: '#ecfeff', stroke: '#22d3ee', strokeWidth: 1 }),
                     h('path', { d: 'M51 20 H63', stroke: '#ffffff', strokeWidth: 1.2, opacity: 0.9 })
-                  ),
-                  h('text', { x: 302, y: 15, fill: '#a5f3fc', style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' } }, __alloT('stem.circuit.field_signal_light_speed', 'field signal ≈ light speed'))
+                  )
                 ),
+                !isShort && current > 0.001 && h('text', { x: 302, y: 15, fill: '#a5f3fc', style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' } }, __alloT('stem.circuit.field_signal_light_speed', 'field signal ≈ light speed')),
                 // Current direction arrow
                 !isShort && current > 0.01 && h('g', null,
-                  h('polygon', { points: '210,12 220,8 220,16', fill: '#06b6d4', filter: 'drop-shadow(0 0 2px #06b6d4)' }),
-                  h('text', { x: 225, y: 15, fill: '#06b6d4', style: { fontSize: '8px', fontWeight: 'bold', fontFamily: 'monospace' } }, 'I = ' + current.toFixed(2) + 'A')
+                  h('polygon', { 'data-circuit-current-direction':'source',points: '66,12 59,8 59,16', fill: '#06b6d4', filter: 'drop-shadow(0 0 2px #06b6d4)' }),
+                  h('text', { x: 75, y: 15, fill: '#06b6d4', style: { fontSize: '8px', fontWeight: 'bold', fontFamily: 'monospace' } }, 'I = ' + circuitCurrentText(current))
                 ),
 
                 // ── Components: Series layout ──
@@ -4802,11 +5378,12 @@ window.StemLab = window.StemLab || {
                           : comp.type === 'switch'
                           ? h('g', { onClick: function() { toggleSwitch(comp.id); }, role: 'button', tabIndex: 0, 'aria-label': 'Switch ' + comp.id + ' (currently ' + (comp.closed ? 'closed/ON' : 'open/OFF') + '). Press Enter to toggle.', 'aria-pressed': !!comp.closed, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSwitch(comp.id); } }, style: { cursor: 'pointer' } },
                               h('rect', { x: cx - 14, y: 55, width: 28, height: 40, fill: comp.closed ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', stroke: comp.closed ? '#10b981' : '#ef4444', strokeWidth: 1.5, rx: 5 }),
-                              h('circle', { cx: cx - 6, cy: 75, r: 3, fill: '#94a3b8' }),
-                              h('circle', { cx: cx + 6, cy: 75, r: 3, fill: '#94a3b8' }),
-                              // Animated rotating switch arm
-                              h('line', { x1: cx - 6, y1: 75, x2: cx + 8, y2: 75, stroke: comp.closed ? '#10b981' : '#ef4444', strokeWidth: 2.5, style: { transform: comp.closed ? 'none' : 'rotate(-35deg)', transformOrigin: (cx - 6) + 'px 75px', transition: 'transform 0.25s ease' } }),
-                              h('text', { x: cx, y: 66, textAnchor: 'middle', style: { fontSize: '7px', fontWeight: '900', fontFamily: 'system-ui' }, fill: comp.closed ? '#10b981' : '#ef4444' }, comp.closed ? __alloT('stem.circuit.switch_on', 'ON') : __alloT('stem.circuit.switch_off', 'OFF'))
+                              h('line', { 'data-circuit-switch-lead':'top',x1:cx,y1:55,x2:cx,y2:68,stroke:'#94a3b8',strokeWidth:1.5 }),
+                              h('line', { 'data-circuit-switch-lead':'bottom',x1:cx,y1:86,x2:cx,y2:95,stroke:'#94a3b8',strokeWidth:1.5 }),
+                              h('circle', { cx: cx, cy: 68, r: 3, fill: '#94a3b8' }),
+                              h('circle', { cx: cx, cy: 86, r: 3, fill: '#94a3b8' }),
+                              h('line', { 'data-circuit-switch-arm':true,x1:cx,y1:68,x2:comp.closed?cx:cx+10,y2:comp.closed?86:80,stroke:comp.closed?'#10b981':'#ef4444',strokeWidth:2.5 }),
+                              h('text', { x: cx-11, y: 62, textAnchor: 'start', style: { fontSize: '6px', fontWeight: '900', fontFamily: 'system-ui' }, fill: comp.closed ? '#10b981' : '#ef4444' }, comp.closed ? __alloT('stem.circuit.switch_on', 'ON') : __alloT('stem.circuit.switch_off', 'OFF'))
                             )
 
                           : comp.type === 'led'
@@ -4835,6 +5412,8 @@ window.StemLab = window.StemLab || {
                           : comp.type === 'capacitor'
                           ? h('g', null,
                               h('rect', { x: cx - 14, y: 55, width: 28, height: 45, fill: '#0f172a', stroke: '#38bdf8', strokeWidth: 1.5, rx: 4 }),
+                              h('line', { 'data-circuit-capacitor-lead':'top',x1:cx,y1:55,x2:cx,y2:72,stroke:'#38bdf8',strokeWidth:1.5 }),
+                              h('line', { 'data-circuit-capacitor-lead':'bottom',x1:cx,y1:80,x2:cx,y2:100,stroke:'#38bdf8',strokeWidth:1.5 }),
                               // Parallel plates
                               h('line', { x1: cx - 8, y1: 72, x2: cx + 8, y2: 72, stroke: '#38bdf8', strokeWidth: 2.5 }),
                               h('line', { x1: cx - 8, y1: 80, x2: cx + 8, y2: 80, stroke: '#38bdf8', strokeWidth: 2.5 }),
@@ -4880,7 +5459,7 @@ window.StemLab = window.StemLab || {
 
                   // ── Components: Parallel layout ──
                   : components.map(function(comp, i) {
-                      var cy = 40 + i * Math.min(30, 80 / Math.max(components.length, 1));
+                      var cy = 40 + i * parallelGap;
                       var compR2 = getCompR(comp);
                       var compI2 = reading(comp).current;
                       var compP2 = voltage * compI2;
@@ -4889,6 +5468,8 @@ window.StemLab = window.StemLab || {
                       var bulbBright2 = comp.type === 'bulb' ? Math.min(compP2 / 12, 1) : 0;
                       var ledGlow2 = comp.type === 'led' && compI2 > 0.005 ? Math.min(compI2 * 20, 1) : 0;
                       var chargeLvl = Math.min(tick / 120, 1);
+                      var terminalLeft=comp.type==='led'?(comp.reversed?213:215):['bulb','ammeter','voltmeter','inductor'].includes(comp.type)?210:200;
+                      var terminalRight=comp.type==='led'?(comp.reversed?225:227):['bulb','ammeter','voltmeter','inductor'].includes(comp.type)?230:240;
 
                       return h('g', Object.assign({ key: comp.id, className: 'circuit-schematic-part', 'data-circuit-schematic-part': comp.id, style: { cursor: components.length > 1 ? 'grab' : 'pointer', touchAction: 'none' }, opacity: reorderDrag && reorderDrag.source === 'schematic' && reorderDrag.id === comp.id ? 0.5 : 1 }, reorderPointerHandlers(i, comp, 'schematic')),
                         // Each branch gets its own P = VI aura, making parallel power sharing visible.
@@ -4899,13 +5480,13 @@ window.StemLab = window.StemLab || {
                         }),
                         // Branch glow and junction nodes encode how total current divides.
                         !isShort && compI2 > 0.001 && h('g', { 'aria-hidden': 'true', pointerEvents: 'none', filter: 'url(#circuit-wire-glow)' },
-                          h('line', { x1: 180, y1: cy, x2: 202, y2: cy, stroke: '#22d3ee', strokeWidth: 2 + branchStrength * 4, opacity: 0.24 + branchStrength * 0.6 }),
-                          h('line', { x1: 238, y1: cy, x2: 260, y2: cy, stroke: '#22d3ee', strokeWidth: 2 + branchStrength * 4, opacity: 0.24 + branchStrength * 0.6 }),
+                          h('line', { x1: 180, y1: cy, x2: terminalLeft, y2: cy, stroke: '#22d3ee', strokeWidth: 2 + branchStrength * 4, opacity: 0.24 + branchStrength * 0.6 }),
+                          h('line', { x1: terminalRight, y1: cy, x2: 260, y2: cy, stroke: '#22d3ee', strokeWidth: 2 + branchStrength * 4, opacity: 0.24 + branchStrength * 0.6 }),
                           h('circle', { cx: 180, cy: cy, r: 2.5 + branchStrength * 1.8, fill: '#a5f3fc', stroke: '#0891b2', strokeWidth: 1 }),
                           h('circle', { cx: 260, cy: cy, r: 2.5 + branchStrength * 1.8, fill: '#a5f3fc', stroke: '#0891b2', strokeWidth: 1 })
                         ),                        // Leads connecting to bus lines
-                        h('line', { x1: 180, y1: cy, x2: 200, y2: cy, stroke: '#475569', strokeWidth: 1.5 }),
-                        h('line', { x1: 240, y1: cy, x2: 260, y2: cy, stroke: '#475569', strokeWidth: 1.5 }),
+                        h('line', { 'data-circuit-branch-lead':'left',x1: 180, y1: cy, x2: terminalLeft, y2: cy, stroke: '#475569', strokeWidth: 1.5 }),
+                        h('line', { 'data-circuit-branch-lead':'right',x1: terminalRight, y1: cy, x2: 260, y2: cy, stroke: '#475569', strokeWidth: 1.5 }),
 
                         // Component body (parallel - horizontal)
                         comp.type === 'resistor'
@@ -4919,6 +5500,8 @@ window.StemLab = window.StemLab || {
                           : comp.type === 'switch'
                           ? h('g', { onClick: function() { toggleSwitch(comp.id); }, role: 'button', tabIndex: 0, 'aria-label': 'Switch ' + comp.id + ' (currently ' + (comp.closed ? 'closed/ON' : 'open/OFF') + '). Press Enter to toggle.', 'aria-pressed': !!comp.closed, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSwitch(comp.id); } }, style: { cursor: 'pointer' } },
                               h('rect', { x: 200, y: cy - 8, width: 40, height: 16, fill: comp.closed ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', stroke: comp.closed ? '#10b981' : '#ef4444', strokeWidth: 1.5, rx: 3 }),
+                              h('line', { 'data-circuit-switch-lead':'left',x1:200,y1:cy,x2:208,y2:cy,stroke:'#94a3b8',strokeWidth:1.5 }),
+                              h('line', { 'data-circuit-switch-lead':'right',x1:232,y1:cy,x2:240,y2:cy,stroke:'#94a3b8',strokeWidth:1.5 }),
                               h('circle', { cx: 208, cy: cy, r: 2.5, fill: '#94a3b8' }),
                               h('circle', { cx: 232, cy: cy, r: 2.5, fill: '#94a3b8' }),
                               h('line', { x1: 208, y1: cy, x2: 232, y2: cy, stroke: comp.closed ? '#10b981' : '#ef4444', strokeWidth: 2, style: { transform: comp.closed ? 'none' : 'rotate(-35deg)', transformOrigin: '208px ' + cy + 'px', transition: 'transform 0.25s ease' } }),
@@ -4947,6 +5530,8 @@ window.StemLab = window.StemLab || {
                           : comp.type === 'capacitor'
                           ? h('g', null,
                               h('rect', { x: 200, y: cy - 8, width: 40, height: 16, fill: '#0f172a', stroke: '#38bdf8', strokeWidth: 1.5, rx: 3 }),
+                              h('line', { 'data-circuit-capacitor-lead':'left',x1:200,y1:cy,x2:216,y2:cy,stroke:'#38bdf8',strokeWidth:1.5 }),
+                              h('line', { 'data-circuit-capacitor-lead':'right',x1:224,y1:cy,x2:240,y2:cy,stroke:'#38bdf8',strokeWidth:1.5 }),
                               h('line', { x1: 216, y1: cy - 6, x2: 216, y2: cy + 6, stroke: '#38bdf8', strokeWidth: 2 }),
                               h('line', { x1: 224, y1: cy - 6, x2: 224, y2: cy + 6, stroke: '#38bdf8', strokeWidth: 2 })
                             )
@@ -4961,17 +5546,17 @@ window.StemLab = window.StemLab || {
                         comp.type !== 'switch' && comp.type !== 'ammeter' && comp.type !== 'voltmeter'
                           && h('text', { x: 220, y: cy - 10, textAnchor: 'middle', style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#cbd5e1' }, comp.type === 'led' ? circuitForwardVoltage(comp) + 'V LED' : (comp.type === 'capacitor' ? comp.value + '\u00B5F' : comp.value + '\u03A9')),
 
-                        comp.type === 'ammeter' && h('text', { x: 272, y: cy + 3.5, style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#22d3ee' }, isIdealParallelBranch2 ? __alloT('stem.circuit.meter_reading_short', 'short') : compI2.toFixed(3) + 'A'),
+                        comp.type === 'ammeter' && h('text', { x: 272, y: cy + 3.5, style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#22d3ee' }, isIdealParallelBranch2 ? __alloT('stem.circuit.meter_reading_short', 'short') : circuitCurrentText(compI2)),
                         comp.type === 'voltmeter' && h('text', { x: 272, y: cy + 3.5, style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#fbbf24' }, voltage.toFixed(1) + 'V'),
-                        comp.type !== 'ammeter' && comp.type !== 'voltmeter' && h('text', { x: 272, y: cy + 3.5, style: { fontSize: '7px', fontFamily: 'monospace' }, fill: '#38bdf8' }, isIdealParallelBranch2 ? __alloT('stem.circuit.meter_reading_short', 'short') : compI2.toFixed(2) + 'A')
+                        comp.type !== 'ammeter' && comp.type !== 'voltmeter' && h('text', { x: 272, y: cy + 3.5, style: { fontSize: '7px', fontFamily: 'monospace' }, fill: '#38bdf8' }, isIdealParallelBranch2 ? __alloT('stem.circuit.meter_reading_short', 'short') : circuitCurrentText(compI2))
                       );
                     }),
                 // Drop slot while a part is dragged along the wire.
                 reorderDrag && reorderDrag.source === 'schematic' && reorderDrag.over != null && reorderDrag.over !== reorderDrag.from && (function() {
                   var n = Math.max(components.length, 1);
                   if (mode === 'series') { var sx = 80 + reorderDrag.over * Math.min(70, 280 / n); return h('rect', { 'data-circuit-drop-slot': reorderDrag.over, 'aria-hidden': 'true', pointerEvents: 'none', x: sx - 17, y: 48, width: 34, height: 58, rx: 6, fill: 'rgba(250,204,21,0.14)', stroke: '#facc15', strokeWidth: 1.5, strokeDasharray: '4 3' }); }
-                  var sy = 40 + reorderDrag.over * Math.min(30, 80 / n);
-                  return h('rect', { 'data-circuit-drop-slot': reorderDrag.over, 'aria-hidden': 'true', pointerEvents: 'none', x: 196, y: sy - 12, width: 48, height: 24, rx: 6, fill: 'rgba(250,204,21,0.14)', stroke: '#facc15', strokeWidth: 1.5, strokeDasharray: '4 3' });
+                  var sy = 40 + reorderDrag.over * parallelGap;
+                  return h('rect', { 'data-circuit-drop-slot': reorderDrag.over, 'aria-hidden': 'true', pointerEvents: 'none', x: 196, y: sy - 18, width: 48, height: 36, rx: 6, fill: 'rgba(250,204,21,0.14)', stroke: '#facc15', strokeWidth: 1.5, strokeDasharray: '4 3' });
                 })(),
 
                 // Persistent schematic fault marker: visible even without canvas animation.
@@ -5199,25 +5784,30 @@ window.StemLab = window.StemLab || {
               ),
               ),
               h(CircuitGuidedLab,{React:React,t:cktT,state:d,update:upd,updateMany:updMulti}),
-              h('section',{className:'circuit-view-toolbar','aria-label':__alloT('stem.circuit.circuit_view_and_editing_controls','Circuit view and editing controls')},
-                h('span',{className:'circuit-eyebrow'},'02 / BUILD & MEASURE'),
-                h('div',{className:'circuit-action-row'},
-                  ['schematic','3d'].map(function(view){return h('button',{key:view,type:'button','aria-pressed':(d.benchView||'schematic')===view,onClick:function(){upd('benchView',view);}},view==='3d'?'3D bench':'Schematic');}),
-                  h('button',{type:'button',disabled:!(d.undo||[]).length,onClick:function(){travelHistory('undo');}},'Undo'),
-                  h('button',{type:'button',disabled:!(d.redo||[]).length,onClick:function(){travelHistory('redo');}},'Redo'),
-                  h('button',{type:'button','aria-pressed':!!d.pauseMotion,onClick:function(){upd('pauseMotion',!d.pauseMotion);}},d.pauseMotion?'Resume motion':'Pause motion')),
-                h('p',{className:'circuit-help'},mode==='series'?'One continuous path: every part carries the same current.':'Each part is a separate branch across the battery. A switch here controls only its own branch.')),
               h(CircuitFileTools,{React:React,t:cktT,state:d,updateMany:updMulti}),
               renderPartsShelf(),
+              h('section',{className:'circuit-view-toolbar','aria-label':__alloT('stem.circuit.circuit_view_and_editing_controls','Circuit view and editing controls')},
+                h('span',{className:'circuit-eyebrow'},'02 / BUILD & MEASURE'),
+                h('div',{className:'circuit-view-controls'},
+                h('div',{className:'circuit-action-row circuit-view-choice',role:'group','aria-label':__alloT('stem.circuit.choose_circuit_view','Choose a circuit view')},
+                  ['schematic','3d'].map(function(view){return h('button',{key:view,type:'button','aria-pressed':(d.benchView||'schematic')===view,onClick:function(){upd('benchView',view);}},view==='3d'?'3D bench':'Schematic');})),
+                h('div',{className:'circuit-action-row circuit-history-controls'},
+                  h('button',{type:'button',disabled:!(d.undo||[]).length,onClick:function(){travelHistory('undo');}},'Undo'),
+                  h('button',{type:'button',disabled:!(d.redo||[]).length,onClick:function(){travelHistory('redo');}},'Redo'),
+                  h('button',{type:'button','aria-pressed':!!d.pauseMotion,onClick:function(){upd('pauseMotion',!d.pauseMotion);}},d.pauseMotion?'Resume motion':'Pause motion'))),
+                h('p',{className:'circuit-help'},mode==='series'?'One continuous path: every part carries the same current.':'Each part is a separate branch across the battery. A switch here controls only its own branch.')),
               spatialView,
-              d.benchView!=='3d'&&renderSchematic(),
+              d.benchView!=='3d'&&h('section',{className:'circuit-schematic-frame','aria-labelledby':'circuit-diagram-title'},
+                h('div',{className:'circuit-diagram-heading'},
+                  h('div',null,h('span',{className:'circuit-eyebrow'},__alloT('stem.circuit.diagram_view','SCHEMATIC VIEW')),h('h3',{id:'circuit-diagram-title'},__alloT('stem.circuit.circuit_diagram','Circuit diagram'))),
+                  h('span',{className:'circuit-diagram-status','data-state':isShort?'warning':current>0?'active':'idle'},h('span',{'aria-hidden':true}),circuitState.label)),
+                renderSchematic(),
+                h('div',{className:'circuit-diagram-footer'},
+                  h('span',null,mode==='series'?__alloT('stem.circuit.diagram_series_path','Series · one path'):__alloT('stem.circuit.diagram_parallel_paths','Parallel · separate branches')),
+                  h('span',null,__alloT('stem.circuit.diagram_source_current','Source current')+' · '+circuitCurrentText(current)))),
               components.length>0&&h('section',{className:'circuit-part-inspector','aria-label':__alloT('stem.circuit.inspect_a_circuit_component','Inspect a circuit component')},
-                h('label',{htmlFor:'circuit-inspect-part'},'Inspect part '),
-                h('select',{id:'circuit-inspect-part',value:selectedIndex,onChange:function(e){upd('selectedPart',Number(e.target.value));}},components.map(function(c,i){return h('option',{key:i,value:i},(i+1)+'. '+c.type);})),
-                components.length>1&&h('div',{className:'circuit-action-row','aria-label':__alloT('stem.circuit.move_the_selected_part','Move the selected part')},
-                  h('button',{type:'button',disabled:selectedIndex===0,onClick:function(){moveComponent(selectedIndex,selectedIndex-1);}},mode==='series'?__alloT('stem.circuit.move_earlier_loop','Move earlier in the loop'):__alloT('stem.circuit.move_up_branch','Move up a branch')),
-                  h('button',{type:'button',disabled:selectedIndex===components.length-1,onClick:function(){moveComponent(selectedIndex,selectedIndex+1);}},mode==='series'?__alloT('stem.circuit.move_later_loop','Move later in the loop'):__alloT('stem.circuit.move_down_branch','Move down a branch')),
-                  h('span',{className:'circuit-help'},reorderNote)),
+                h('div',{className:'circuit-inspector-heading'},h('label',{htmlFor:'circuit-inspect-part'},'Inspect part '),
+                h('select',{id:'circuit-inspect-part',value:selectedIndex,onChange:function(e){upd('selectedPart',Number(e.target.value));}},components.map(function(c,i){return h('option',{key:i,value:i},(i+1)+'. '+c.type);}))),
 
                 selected&&h('dl',{className:'circuit-inspector-readings'},
                   h('div',null,h('dt',null,'Voltage across'),h('dd',null,circuitPreciseVoltageText(selected.voltage))),
@@ -5229,7 +5819,11 @@ window.StemLab = window.StemLab || {
                   unit:selected.component.type==='capacitor'?'µF':'Ω',quantity:selected.component.type==='capacitor'?'capacitance':'resistance',
                   onApply:function(value){upd('components',components.map(function(c,i){return i===selectedIndex?Object.assign({},c,{value:value}):c;}));}}),
                 selected&&selected.component.type==='switch'&&h('button',{type:'button',onClick:function(){toggleSwitch(selected.component.id);}},selected.component.closed?'Open selected switch':'Close selected switch'),
-                selected&&selected.component.type==='led'&&h('button',{type:'button',onClick:function(){upd('components',components.map(function(c,i){return i===selectedIndex?Object.assign({},c,{reversed:!c.reversed}):c;}));}},selected.component.reversed?'LED reversed — restore polarity':'Reverse LED polarity')),
+                selected&&selected.component.type==='led'&&h('button',{type:'button',onClick:function(){upd('components',components.map(function(c,i){return i===selectedIndex?Object.assign({},c,{reversed:!c.reversed}):c;}));}},selected.component.reversed?'LED reversed — restore polarity':'Reverse LED polarity'),
+                components.length>1&&h('div',{className:'circuit-action-row circuit-inspector-order','aria-label':__alloT('stem.circuit.move_the_selected_part','Move the selected part')},
+                  h('button',{type:'button',disabled:selectedIndex===0,onClick:function(){moveComponent(selectedIndex,selectedIndex-1);}},mode==='series'?__alloT('stem.circuit.move_earlier_loop','Move earlier in the loop'):__alloT('stem.circuit.move_up_branch','Move up a branch')),
+                  h('button',{type:'button',disabled:selectedIndex===components.length-1,onClick:function(){moveComponent(selectedIndex,selectedIndex+1);}},mode==='series'?__alloT('stem.circuit.move_later_loop','Move later in the loop'):__alloT('stem.circuit.move_down_branch','Move down a branch')),
+                  h('span',{className:'circuit-help'},reorderNote))),
               renderCircuitCoach(),
               solved.hasLED&&h('p',{className:'circuit-model-note'},'LED model: typical forward voltage plus a 10 Ω slope resistance. Polarity matters. V/I is an operating-point ratio, not a fixed LED resistance.'),
               solved.ledOvercurrent&&h('p',{role:'status',className:'circuit-warning'},'LED current exceeds the illustrative 20 mA rating. Add series resistance or reduce voltage. In parallel, a resistor on a different branch does not protect the LED.'),
@@ -5300,13 +5894,18 @@ window.StemLab = window.StemLab || {
             // ══════════════════════════════════════
             // Voltage slider + component editor
             // ══════════════════════════════════════
-            h('div', { className: 'bg-slate-900/60 border border-slate-800 p-4 rounded-xl backdrop-blur-md mt-4' },
+            h('section', { className: 'circuit-component-editor', 'aria-labelledby': 'circuit-component-editor-title' },
+              h('header', { className: 'circuit-component-editor-heading' },
+                h('h3', { id: 'circuit-component-editor-title' }, __alloT('stem.circuit.tune_components', 'Tune components')),
+                h('span', null, __alloT('stem.circuit.component_editor_count', '{value1} / 8 parts').replace('{value1}', components.length))),
               // Component editor list
-              components.length > 1 && h('p', { className: 'circuit-help mb-2', id: 'circuit-reorder-hint' }, __alloT('stem.circuit.reorder_hint', 'Drag the \u2807 handle, use the arrow buttons, or drag a part along the wire in the drawing to move it.') + ' ' + reorderNote),
-              components.length > 0 && h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
+              components.length > 1 && h('p', { className: 'circuit-help', id: 'circuit-reorder-hint' }, __alloT('stem.circuit.component_editor_move_hint', 'Drag a handle or use the arrows to move a part. Position changes the drawing, not the readings.')),
+              components.length === 0 && h('p', { className: 'circuit-help' }, __alloT('stem.circuit.component_editor_empty', 'Add a part from the shelf to start tuning.')),
+              components.length > 0 && h('div', { className: 'circuit-component-list' },
                 components.map(function(comp, i) {
                   var compIcon = getCompIcon(comp.type);
                   var compLabel = getCompLabel(comp);
+                  var compName = __alloT('stem.circuit.component_name_' + comp.type, {resistor:'Resistor',bulb:'Bulb',switch:'Switch',led:'LED',ammeter:'Ammeter',voltmeter:'Voltmeter',capacitor:'Capacitor'}[comp.type] || compLabel);
 
                   var dragging = !!(reorderDrag && reorderDrag.source === 'list' && reorderDrag.id === comp.id);
                   var dropTarget = !!(reorderDrag && reorderDrag.source === 'list' && reorderDrag.over === i && reorderDrag.id !== comp.id);
@@ -5315,22 +5914,15 @@ window.StemLab = window.StemLab || {
                     var fb = mode === 'series' ? (dir < 0 ? 'Move {value1} earlier in the loop' : 'Move {value1} later in the loop') : (dir < 0 ? 'Move {value1} up a branch' : 'Move {value1} down a branch');
                     return __alloT(key, fb).replace('{value1}', compLabel + ' ' + (i + 1));
                   };
-                  return h('div', { key: comp.id, 'data-circuit-row-index': i, 'data-circuit-dragging': dragging ? 'true' : undefined, 'data-circuit-drop-target': dropTarget ? 'true' : undefined, className: 'flex items-center gap-2 bg-slate-950/60 rounded-lg px-3 py-2 border border-slate-800/80 hover:border-slate-700 transition-all' },
-                    components.length > 1 && h('button', Object.assign({
-                      type: 'button', 'data-circuit-drag-handle': comp.id, className: 'circuit-drag-handle',
-                      'aria-label': __alloT('stem.circuit.aria_drag_handle', 'Drag {value1} to a new position, or press the arrow keys').replace('{value1}', compLabel + ' ' + (i + 1)),
-                      title: __alloT('stem.circuit.drag_handle_title', 'Drag to move · arrow keys move · Home/End to the ends'),
-                      onKeyDown: function(e) {
-                        var back = e.key === 'ArrowLeft' || e.key === 'ArrowUp', fwd = e.key === 'ArrowRight' || e.key === 'ArrowDown';
-                        if (!back && !fwd && e.key !== 'Home' && e.key !== 'End') return;
-                        e.preventDefault();
-                        var to = e.key === 'Home' ? 0 : e.key === 'End' ? components.length - 1 : back ? i - 1 : i + 1;
-                        moveComponent(i, to);
-                        refocusReorder(e.currentTarget.closest('[data-circuit-builder-root]'), '[data-circuit-drag-handle="' + comp.id + '"]');
-                      }
-                    }, reorderPointerHandlers(i, comp, 'list')), h('span', { 'aria-hidden': 'true' }, '\u2807')),
-                    h('span', { className: 'text-base' }, compIcon),
-                    h('span', { className: 'text-xs font-bold text-slate-300 min-w-[50px] truncate' }, compLabel),
+                  return h('div', { key: comp.id, 'data-circuit-row-index': i, 'data-circuit-dragging': dragging ? 'true' : undefined, 'data-circuit-drop-target': dropTarget ? 'true' : undefined, className: 'circuit-component-row' },
+                    h('div', { className: 'circuit-component-heading' },
+                      h('span', { className: 'circuit-component-icon', 'aria-hidden': 'true' }, compIcon),
+                      h('strong', null, (i + 1) + '. ' + compName),
+                      h('button', { type: 'button', 'data-circuit-remove-id': comp.id, 'aria-label': __alloT('stem.circuit.aria_remove_component', 'Remove Component'),
+                        onClick: function() { removeComponent(i); }, className: 'circuit-component-remove'
+                      }, '\u00D7')),
+                    h('div', { className: 'circuit-component-controls' },
+                    ['resistor','bulb','capacitor'].indexOf(comp.type) !== -1 && h('span', { className: 'circuit-component-setting-label' }, comp.type === 'capacitor' ? __alloT('stem.circuit.component_capacitance', 'Capacitance') : __alloT('stem.circuit.component_resistance', 'Resistance')),
 
                     // Resistor/Bulb value input
                     (comp.type === 'resistor' || comp.type === 'bulb') && h('input', {
@@ -5395,31 +5987,43 @@ window.StemLab = window.StemLab || {
                     comp.type === 'capacitor' && h('span', { className: 'text-xs text-slate-400' }, '\u00B5F'),
 
                     // Switch toggle button
-                    comp.type === 'switch' && h('button', { 'aria-label': __alloT('stem.circuit.aria_toggle_switch', 'Toggle Switch'),
+                    comp.type === 'switch' && h('span', { className: 'circuit-component-setting-label' }, compLabel),
+                    comp.type === 'switch' && h('button', { type: 'button', 'aria-label': __alloT('stem.circuit.aria_toggle_switch', 'Toggle Switch'),
                       onClick: function() { toggleSwitch(comp.id); },
                       className: 'px-2 py-1 text-xs font-bold rounded border transition-all ' + (comp.closed ? 'transition-colors bg-emerald-950/30 text-emerald-400 border-emerald-800 hover:bg-emerald-900/40 active:scale-[0.97]' : 'transition-colors bg-red-950/30 text-red-400 border-red-800 hover:bg-red-900/40 active:scale-[0.97]')
                     }, comp.closed ? __alloT('stem.circuit.action_open_switch', 'Open switch') : __alloT('stem.circuit.action_close_switch', 'Close switch')),
 
                     // LED color cycle button
-                    comp.type === 'led' && h('button', { 'aria-label': __alloT('stem.circuit.aria_cycle_led_color', 'Cycle LED Color'),
+                    comp.type === 'led' && h('span', { className: 'circuit-component-setting-label' }, __alloT('stem.circuit.component_led_color', 'LED color')),
+                    comp.type === 'led' && h('button', { type: 'button', 'aria-label': __alloT('stem.circuit.aria_cycle_led_color', 'Cycle LED Color'),
                       onClick: function() { cycleLedColor(comp.id); },
-                      className: 'w-8 h-8 rounded-full border-2 border-slate-700 hover:scale-110 transition-transform',
+                      className: 'circuit-component-color',
                       style: { backgroundColor: comp.ledColor || '#ef4444' }
                     }),
+                    (comp.type === 'ammeter' || comp.type === 'voltmeter') && h('p', { className: 'circuit-help' }, __alloT('stem.circuit.component_meter_hint', 'Select this part in Inspect part to read its measurements.'))),
 
                     // Move buttons (series: earlier/later along the loop; parallel: up/down a branch)
-                    components.length > 1 && h('span', { className: 'ml-auto flex items-center gap-1' },
+                    components.length > 1 && h('div', { className: 'circuit-component-reorder' },
+                      h('button', Object.assign({
+                        type: 'button', 'data-circuit-drag-handle': comp.id, className: 'circuit-drag-handle',
+                        'aria-label': __alloT('stem.circuit.aria_drag_handle', 'Drag {value1} to a new position, or press the arrow keys').replace('{value1}', compLabel + ' ' + (i + 1)),
+                        title: __alloT('stem.circuit.drag_handle_title', 'Drag to move · arrow keys move · Home/End to the ends'),
+                        onKeyDown: function(e) {
+                          var back = e.key === 'ArrowLeft' || e.key === 'ArrowUp', fwd = e.key === 'ArrowRight' || e.key === 'ArrowDown';
+                          if (!back && !fwd && e.key !== 'Home' && e.key !== 'End') return;
+                          e.preventDefault();
+                          var to = e.key === 'Home' ? 0 : e.key === 'End' ? components.length - 1 : back ? i - 1 : i + 1;
+                          moveComponent(i, to);
+                          refocusReorder(e.currentTarget.closest('[data-circuit-builder-root]'), '[data-circuit-drag-handle="' + comp.id + '"]');
+                        }
+                      }, reorderPointerHandlers(i, comp, 'list')), h('span', { 'aria-hidden': 'true' }, '\u2807')),
+                      h('div', { className: 'circuit-component-moves' },
                       h('button', { type: 'button', className: 'circuit-move-btn', 'data-circuit-move': 'back', 'data-circuit-move-id': comp.id, disabled: i === 0, 'aria-label': moveLabel(-1),
                         onClick: function(e) { var rootEl = e.currentTarget.closest('[data-circuit-builder-root]'); moveComponent(i, i - 1); refocusReorder(rootEl, i - 1 === 0 ? '[data-circuit-move="fwd"][data-circuit-move-id="' + comp.id + '"]' : '[data-circuit-move="back"][data-circuit-move-id="' + comp.id + '"]'); }
-                      }, h('span', { 'aria-hidden': 'true' }, mode === 'series' ? '\u25C0' : '\u25B2')),
+                      }, h('span', { 'aria-hidden': 'true' }, mode === 'series' ? '\u25C0' : '\u25B2'), mode === 'series' ? __alloT('stem.circuit.component_move_earlier', 'Earlier') : __alloT('stem.circuit.component_move_up', 'Up')),
                       h('button', { type: 'button', className: 'circuit-move-btn', 'data-circuit-move': 'fwd', 'data-circuit-move-id': comp.id, disabled: i === components.length - 1, 'aria-label': moveLabel(1),
                         onClick: function(e) { var rootEl = e.currentTarget.closest('[data-circuit-builder-root]'); moveComponent(i, i + 1); refocusReorder(rootEl, i + 1 === components.length - 1 ? '[data-circuit-move="back"][data-circuit-move-id="' + comp.id + '"]' : '[data-circuit-move="fwd"][data-circuit-move-id="' + comp.id + '"]'); }
-                      }, h('span', { 'aria-hidden': 'true' }, mode === 'series' ? '\u25B6' : '\u25BC'))),
-                    // Remove button
-                    h('button', { 'data-circuit-remove-id': comp.id, 'aria-label': __alloT('stem.circuit.aria_remove_component', 'Remove Component'),
-                      onClick: function() { removeComponent(i); },
-                      className: 'transition-colors text-slate-500 hover:text-red-400 ' + (components.length > 1 ? '' : 'ml-auto ') + 'font-bold text-lg px-1 tracking-tight'
-                    }, '\u00D7')
+                      }, h('span', { 'aria-hidden': 'true' }, mode === 'series' ? '\u25B6' : '\u25BC'), mode === 'series' ? __alloT('stem.circuit.component_move_later', 'Later') : __alloT('stem.circuit.component_move_down', 'Down'))))
                   );
                 })
               )
@@ -5430,12 +6034,12 @@ window.StemLab = window.StemLab || {
             // ══════════════════════════════════════
             h(CircuitTimeLab,{React:React,t:cktT,state:d,update:upd,updateMany:updMulti,loadStarter:function(){updMulti({mode:'series',voltage:9,components:[{id:1,type:'resistor',value:1000},{id:2,type:'capacitor',value:1000}],rcTime:0,rcPhase:'charge',showTimeLab:true});}}),
 
-            h('div', { className: 'mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2', role: 'status', 'aria-live': 'polite' },
+            h('div', { className: 'circuit-readouts mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2', role: 'status', 'aria-live': 'polite' },
               [
                 { label: __alloT('stem.circuit.readout_mode', 'Mode'), val: mode, color: 'slate', icon: mode === 'series' ? '\u2192' : '\u2261', textCls: 'text-slate-400', valCls: 'text-slate-200', borderCls: 'border-slate-800 bg-slate-900/40' },
                 { label: __alloT('stem.circuit.readout_resistance', 'Resistance'), val: totalR >= 1e8 ? '\u221E' : totalR.toFixed(1) + '\u03A9', color: 'yellow', icon: '\u2AE8', textCls: 'text-yellow-400/80', valCls: 'text-yellow-400', borderCls: 'border-yellow-500/20 bg-yellow-950/10' },
-                { label: __alloT('stem.circuit.stat_current', 'Current'), val: current.toFixed(3) + 'A', color: 'blue', icon: '\u26A1', textCls: 'text-blue-400/80', valCls: 'text-blue-400', borderCls: 'border-blue-500/20 bg-blue-950/10' },
-                { label: __alloT('stem.circuit.readout_power', 'Power'), val: power.toFixed(2) + 'W', color: 'red', icon: '\uD83D\uDD25', textCls: 'text-rose-300', valCls: 'text-rose-400', borderCls: 'border-rose-500/20 bg-rose-950/10' }
+                { label: __alloT('stem.circuit.stat_current', 'Current'), val: circuitCurrentText(current), color: 'blue', icon: '\u26A1', textCls: 'text-blue-400/80', valCls: 'text-blue-400', borderCls: 'border-blue-500/20 bg-blue-950/10' },
+                { label: __alloT('stem.circuit.readout_power', 'Power'), val: circuitPowerText(power), color: 'red', icon: '\uD83D\uDD25', textCls: 'text-rose-300', valCls: 'text-rose-400', borderCls: 'border-rose-500/20 bg-rose-950/10' }
               ].map(function(m) {
                 var isSh = isShort && m.label !== __alloT('stem.circuit.readout_mode', 'Mode');
                 return h('div', {
@@ -5683,7 +6287,7 @@ window.StemLab = window.StemLab || {
               return h('div', { className: 'circuit-card mt-4 bg-slate-900/40 border border-amber-500/25 rounded-xl p-4 backdrop-blur-md' },
                 h('p', { className: 'text-[0.6875rem] font-bold text-amber-400 uppercase tracking-wider mb-1' }, '📏 How big is ' + current.toFixed(3) + ' A, really?'),
                 h('p', { className: 'text-[0.6875rem] text-slate-400 mb-3 leading-snug' }, 'Current spans an enormous range — this ladder is logarithmic (each step is 10× bigger). Your circuit sits here compared with things you know.'),
-                h('svg', { viewBox: '0 0 360 78', width: '100%', role: 'img', 'aria-label': 'Logarithmic current ladder from a microamp to 100 kiloamps. Your circuit draws ' + current.toFixed(3) + ' amps, between ' + (function(){ var below=marks[0].label; marks.forEach(function(m){ if (m.a <= current) below = m.label; }); return below; })() + ' and larger loads.' },
+                h('svg', { viewBox: '0 0 360 78', width: '100%', role: 'img', 'aria-label': __alloFill(__alloT('stem.circuit.a11y_logarithmic_current_ladder_from_a_microamp_to_1', 'Logarithmic current ladder from a microamp to 100 kiloamps. Your circuit draws {value1} amps, between {value2} and larger loads.'), { value1: current.toFixed(3), value2: (function(){ var below=marks[0].label; marks.forEach(function(m){ if (m.a <= current) below = m.label; }); return below; })() })},
                   h('defs', null,
                     h('linearGradient', { id: 'circAmpGrad', x1: 0, y1: 0, x2: 1, y2: 0 },
                       h('stop', { offset: '0%', stopColor: '#0891b2' }),
@@ -5786,38 +6390,9 @@ window.StemLab = window.StemLab || {
             // ══════════════════════════════════════
             // Circuit Challenges (10)
             // ══════════════════════════════════════
-            h('div', { className: 'mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md' },
-              h('p', { className: 'text-[0.6875rem] font-bold text-amber-500 uppercase tracking-wider mb-2' }, '\uD83C\uDFAF ' + __alloT('stem.circuit.circuit_challenges_title', 'Circuit Challenges')),
-              h('div', { className: 'flex flex-wrap gap-2' },
-                CHALLENGES.map(function(ch, ci) {
-                  var actual = ch.type === 'current' ? current : ch.type === 'resistance' ? totalR : power;
-                  var close = Math.abs(actual - ch.target) < ch.target * 0.05;
-
-                  return h('button', { key: ci,
-                    onClick: function() {
-                      if (close) {
-                        var newDoneSet = Object.assign({}, challengesDoneSet);
-                        if (!newDoneSet[ci]) {
-                          newDoneSet[ci] = true;
-                          var newDone = Object.keys(newDoneSet).length;
-                          updMulti({ challengesDone: newDone, challengesDoneSet: newDoneSet, challenge: ch });
-                          circuitSound('challengeComplete');
-                          if (typeof addToast === 'function') addToast('\u2705 Challenge complete! You hit ' + actual.toFixed(3) + ch.unit + ' (target: ' + ch.target + ch.unit + ')', 'success');
-                          if (typeof awardXP === 'function') awardXP('circuitChallenge', 10, ch.label);
-                          checkBadges(getBadgeUpdates({ challengesDone: newDone }));
-                        } else {
-                          if (typeof addToast === 'function') addToast('\u2705 Already completed! ' + actual.toFixed(3) + ch.unit, 'info');
-                        }
-                      } else {
-                        if (typeof addToast === 'function') addToast('\uD83C\uDFAF Target: ' + ch.target + ch.unit + ' | Current: ' + actual.toFixed(3) + ch.unit + '. Adjust components!', 'info');
-                        upd('challenge', ch);
-                      }
-                    },
-                    className: 'px-2.5 py-1 rounded-lg text-[0.625rem] font-bold border transition-all ' + (close ? 'bg-emerald-950/30 text-emerald-400 border-emerald-500/40 shadow-sm' : challengesDoneSet[ci] ? 'bg-emerald-950/20 text-emerald-400/80 border-emerald-700' : 'transition-colors bg-slate-900 border-slate-800 text-amber-500 hover:bg-slate-800 active:scale-[0.97]')
-                  }, (close || challengesDoneSet[ci] ? '\u2705 ' : '\uD83C\uDFAF ') + ch.label);
-                })
-              )
-            ),
+            h(CircuitChallengePanel,{React:React,t:ctx.t,state:d,solved:solved,setToolData:ctx.setToolData,
+              select:function(ch){upd('challenge',ch);},awardXP:awardXP,addToast:addToast,
+              checkBadges:function(count){checkBadges(getBadgeUpdates({challengesDone:count}));}}),
 
             // ══════════════════════════════════════
             // Ohm's Law Quiz
@@ -6301,10 +6876,27 @@ window.StemLab = window.StemLab || {
         };
       }
       var coverage=(ctx.toolData||{})._circuit||{},networkActive=!!coverage.networkWorkbench,activeElectronics=!networkActive&&!!coverage.activeWorkbench,mixedActive=!networkActive&&!activeElectronics&&!!coverage.mixedWorkbench;
+      var workbenchIndex=networkActive?3:activeElectronics?2:mixedActive?1:0;
+      var openWorkbench=function(index){ctx.setToolData(function(prev){return Object.assign({},prev,{_circuit:Object.assign({},prev._circuit,{mixedWorkbench:index===1,activeWorkbench:index===2,networkWorkbench:index===3})});});};
+      var workbenchGuide=[
+        {id:'simple',title:__alloT('stem.circuit.guide_simple_title','Simple circuits'),purpose:__alloT('stem.circuit.guide_simple_purpose','Light a bulb, close a switch, and compare series with parallel circuits.'),action:__alloT('stem.circuit.guide_simple_open','Open Simple circuits')},
+        {id:'mixed',title:__alloT('stem.circuit.guide_mixed_title','Mixed circuits'),purpose:__alloT('stem.circuit.guide_mixed_purpose','Combine series paths in parallel branches, then explore how stored energy changes over time.'),action:__alloT('stem.circuit.guide_mixed_open','Open Mixed circuits')},
+        {id:'active',title:__alloT('stem.circuit.guide_active_title','Active electronics'),purpose:__alloT('stem.circuit.guide_active_purpose','Use a transistor or light sensor to control a lamp and investigate a small signal.'),action:__alloT('stem.circuit.guide_active_open','Open Active electronics')},
+        {id:'connected',title:__alloT('stem.circuit.guide_connected_title','Connected circuits'),purpose:__alloT('stem.circuit.guide_connected_purpose','Choose which nodes each part connects to. Explore bridges, rectifiers, and amplifiers.'),action:__alloT('stem.circuit.guide_connected_open','Open Connected circuits')}
+      ];
       var __circuitMainView = h(React.Fragment,null,
         h('div',{'data-circuit-builder-root':'true',className:'circuit-workspace-switch',role:'group','aria-label':__alloT('stem.circuit.circuit_workbench_coverage','Circuit workbench coverage')},
-          ['Simple circuits','Mixed circuits','Active electronics','Connected circuits'].map(function(label,i){return h('button',{key:label,type:'button','aria-pressed':(networkActive?3:activeElectronics?2:mixedActive?1:0)===i,onClick:function(){ctx.setToolData(function(prev){return Object.assign({},prev,{_circuit:Object.assign({},prev._circuit,{mixedWorkbench:i===1,activeWorkbench:i===2,networkWorkbench:i===3})});});}},label);}),
-          h('span',null,networkActive?'Bridges, shared loads, and multiple sources':activeElectronics?'Transistors, sensors, and control':mixedActive?'Series paths across parallel branches':'Learn the foundations')),
+          ['Simple circuits','Mixed circuits','Active electronics','Connected circuits'].map(function(label,i){return h('button',{key:label,type:'button','aria-pressed':workbenchIndex===i,onClick:function(){openWorkbench(i);}},label);}),
+          h('span',null,networkActive?'Bridges, shared loads, and multiple sources':activeElectronics?'Transistors, sensors, and control':mixedActive?'Series paths across parallel branches':'Learn the foundations'),
+          h('details',{className:'circuit-workspace-guide',onKeyDown:function(event){if(event.key==='Escape'&&event.currentTarget.open){event.preventDefault();event.stopPropagation();event.currentTarget.open=false;event.currentTarget.querySelector('summary').focus();}}},
+            h('summary',{'aria-controls':'circuit-workspace-guide-content'},__alloT('stem.circuit.guide_workbench_question','Which workbench should I use?')),
+            h('div',{id:'circuit-workspace-guide-content'},
+              h('p',{className:'circuit-workspace-guide-intro'},__alloT('stem.circuit.guide_workbench_preservation','Choose a workbench for your question. Your circuit in each workbench stays in place when you switch.')),
+              h('ul',{className:'circuit-workspace-guide-grid'},workbenchGuide.map(function(item,index){return h('li',{key:item.id,'data-workbench-active':workbenchIndex===index?'true':undefined},
+                h('div',{className:'circuit-workspace-guide-heading'},h('strong',null,item.title),workbenchIndex===index&&h('small',null,__alloT('stem.circuit.guide_workbench_current','Current workbench'))),
+                h('p',{id:'circuit-workspace-guide-'+item.id},item.purpose),
+                h('button',{type:'button','data-circuit-open-workbench':item.id,'aria-pressed':workbenchIndex===index,'aria-describedby':'circuit-workspace-guide-'+item.id,onClick:function(){openWorkbench(index);if(typeof ctx.announceToSR==='function')ctx.announceToSR(__alloFill(__alloT('stem.circuit.guide_workbench_opened','Opened {value1}. Your circuits are unchanged.'),{value1:item.title}));}},item.action));
+              }))))),
         networkActive?h(CircuitNetworkWorkbench,{ctx:ctx,t:ctx.t}):activeElectronics?h(CircuitActiveWorkbench,{ctx:ctx,t:ctx.t}):mixedActive?h(CircuitMixedWorkbench,{ctx:ctx,t:ctx.t}):h(this._CircuitComponent, { ctx: ctx, t: ctx.t }));
 
       // ═══════════════════════════════════════════════════════════════════
@@ -6846,12 +7438,12 @@ window.StemLab = window.StemLab || {
               ),
               stg.revealed && h('div', { className: 'mt-2 p-2 rounded bg-amber-50 border-l-4 border-l-amber-400 text-[0.6875rem] text-slate-700 leading-relaxed' },
                 h('strong', { className: 'text-amber-900' }, 'Evidence and reasoning: '), __alloT('stem.circuit.' + (scenario.id) + '_explanation', scenario.explanation),
-                h('div', {className:'mt-2'},h('button', {type:'button','aria-label':'Try this circuit: '+scenario.title,'data-circuit-poe-try':scenario.id,onClick:function(){tryScenario(scenario);},className:'rounded-md bg-cyan-800 px-3 py-2 text-xs font-bold text-white focus:ring-2 focus:ring-cyan-500 focus:outline-none'},'Try this circuit'),
+                h('div', {className:'mt-2'},h('button', {type:'button','aria-label':__alloFill(__alloT('stem.circuit.a11y_try_this_circuit', 'Try this circuit: {value1}'), { value1: scenario.title }),'data-circuit-poe-try':scenario.id,onClick:function(){tryScenario(scenario);},className:'rounded-md bg-cyan-800 px-3 py-2 text-xs font-bold text-white focus:ring-2 focus:ring-cyan-500 focus:outline-none'},'Try this circuit'),
                   h('p', {className:'mt-1'},'Opens this example in Simple circuits. Undo restores your previous build; your notebook and lesson progress stay saved.'))),
               stg.revealed && h('fieldset', { className: 'mt-2 rounded-lg border border-violet-500 bg-white p-2', 'data-circuit-poe-revision': scenario.id },
                 h('legend', { className: 'px-1 text-[0.625rem] font-black uppercase tracking-wide text-violet-800' }, 'Revise from the evidence'),
                 h('p', { className: 'text-[0.625rem] leading-relaxed text-slate-600' }, 'Choose the honest reflection; no option is scored as correct.'),
-                h('div', { className: 'mt-1 grid gap-1 sm:grid-cols-3', role: 'radiogroup', 'aria-label': 'How the circuit evidence affected your thinking for scenario ' + (i + 1) },
+                h('div', { className: 'mt-1 grid gap-1 sm:grid-cols-3', role: 'radiogroup', 'aria-label': __alloFill(__alloT('stem.circuit.a11y_how_the_circuit_evidence_affected_your_thinking', 'How the circuit evidence affected your thinking for scenario {value1}'), { value1: (i + 1) })},
                   [
                     { id: 'supported', label: 'It strengthened my reasoning' },
                     { id: 'revised', label: 'I need to revise my reasoning' },
@@ -7567,7 +8159,7 @@ window.StemLab = window.StemLab || {
               );
             })
           ),
-          h('svg', { width: '100%', height: 160, viewBox: '0 0 320 160', role: 'img', 'aria-label': 'Ohm inquiry current-versus-resistance graph at ' + iq.voltage + ' volts. Current decreases as resistance increases. Current point: ' + iq.resistance + ' ohms, ' + current.toFixed(3) + ' amps, ' + power.toFixed(3) + ' watts; dissipation state: ' + sm.label + '.', style: { background: 'var(--allo-stem-deeper, #0a0a1a)', borderRadius: 6, marginBottom: 10 } },
+          h('svg', { width: '100%', height: 160, viewBox: '0 0 320 160', role: 'img', 'aria-label': __alloFill(__alloT('stem.circuit.a11y_ohm_inquiry_current_versus_resistance_graph_at', 'Ohm inquiry current-versus-resistance graph at {value1} volts. Current decreases as resistance increases. Current point: {value2} ohms, {value3} amps, {value4} watts; dissipation state: {value5}.'), { value1: iq.voltage, value2: iq.resistance, value3: current.toFixed(3), value4: power.toFixed(3), value5: sm.label }), style: { background: 'var(--allo-stem-deeper, #0a0a1a)', borderRadius: 6, marginBottom: 10 } },
             h('line', { x1: 30, y1: 130, x2: 310, y2: 130, stroke: '#1e293b' }),
             h('line', { x1: 30, y1: 10, x2: 30, y2: 130, stroke: '#1e293b' }),
             [0, 250, 500, 750, 1000].map(function(r, i) { return h('text', { key: 'rx' + i, x: 30 + (r / 1000) * 280, y: 145, fill: '#64748b', fontSize: 8, textAnchor: 'middle' }, r + 'Ω'); }),
