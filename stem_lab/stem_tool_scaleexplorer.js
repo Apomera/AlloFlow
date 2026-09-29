@@ -502,7 +502,37 @@
     return result;
   }
 
-  function createScaleAtlas(T, canvas, read, pick, fail, inspect, markers) {
+  // The bridge's positions are exact multiples of the smaller measurement.
+  // A nearby catalog specimen is an example, never a replacement for a step.
+  function compareMeasurements(a, b) {
+    if (!a || !b || !(a.size > 0) || !(b.size > 0) || !isFinite(a.size) || !isFinite(b.size)) return null;
+    var big = a.size >= b.size ? a : b, small = a.size >= b.size ? b : a;
+    var ratio = big.size / small.size;
+    if (!isFinite(ratio)) return null;
+    return { a: a, b: b, big: big, small: small, ratio: ratio, decades: log10(ratio) };
+  }
+  function scaleBridge(pair, items) {
+    if (!pair) return [];
+    var from = log10(pair.small.size), steps = [{ exp: from, size: pair.small.size, item: pair.small, endpoint: true, factor: 1 }];
+    for (var k = 1; k < pair.decades - 1e-8; k++) {
+      var at = from + k, example = null, best = .5;
+      items.forEach(function (item) {
+        if (item.size <= pair.small.size || item.size >= pair.big.size) return;
+        var distance = Math.abs(log10(item.size) - at);
+        if (distance < best) { example = item; best = distance; }
+      });
+      steps.push({ exp: at, size: Math.pow(10, at), item: example, endpoint: false, factor: 10 });
+    }
+    if (pair.decades > 1e-8) steps.push({ exp: log10(pair.big.size), size: pair.big.size, item: pair.big, endpoint: true,
+      factor: Math.pow(10, pair.decades - (steps.length - 1)) });
+    return steps;
+  }
+  function readComparison(raw, fallbackA, fallbackB) {
+    function known(id) { return typeof id === 'string' && ITEMS.some(function (item) { return item.id === id; }); }
+    return { a: raw && known(raw.a) ? raw.a : fallbackA, b: raw && known(raw.b) ? raw.b : fallbackB };
+  }
+
+  function createScaleAtlas(T, canvas, read, pick, fail, inspect, markers, comparisonLabels) {
     var renderer = new T.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'low-power' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.7));
     renderer.outputEncoding = T.sRGBEncoding;
@@ -511,6 +541,10 @@
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = T.PCFSoftShadowMap;
     var scene = new T.Scene(), camera = new T.PerspectiveCamera(43, 1, 0.05, 160);
+    // Parallel projection preserves the shared unit even when the specimens
+    // have different depths. Both roots keep their actual measured ratio.
+    var comparisonCamera = new T.OrthographicCamera(-5, 5, 5, -5, .01, 160), activeCamera = camera;
+    var comparisonLayoutKey = '', comparisonBounds = new T.Box3(), comparisonCenter = new T.Vector3(), comparisonRadius = 3;
     var space = new T.Group(); scene.add(space);
     var hemisphere = new T.HemisphereLight(0xd8e8f5, 0x505348, 0.75); scene.add(hemisphere);
     var key = new T.DirectionalLight(0xfff2dc, 2.25); key.position.set(-3.8, 5.5, 5); scene.add(key);
@@ -1077,12 +1111,93 @@
       root.userData.resources=Array.from(resources).filter(function(r){return !previousResources.has(r);});
       space.add(root);models[id]=root;if(id==='human')loadHumanSurface(root);return root;
     }
+    function trimModelCache() {
+      var cached=Object.keys(models), evict=cached.filter(function(id){return !models[id].visible;}).sort(function(a,b){return models[a].userData.lastSeen-models[b].userData.lastSeen;});
+      while(cached.length>10&&evict.length){var oldId=evict.shift(),old=models[oldId];old.userData.model.userData.released=true;space.remove(old);old.userData.resources.forEach(function(r){r.dispose();resources.delete(r);});delete models[oldId];cached.pop();}
+    }
+    function paintComparison(state, width, height) {
+      var pair = state.comparison, visible = [], list = pair.a.id === pair.b.id ? [pair.a] : [pair.a, pair.b];
+      activeCamera = comparisonCamera; cameraSettling = false; paintCount++;
+      scene.background = new T.Color(state.contrast ? '#000000' : '#101f2a'); scene.fog = null;
+      ground.visible = garden.visible = microBackdrop.visible = leafWorld.visible = floor.visible = motes.visible = false;
+      if (focusRing) focusRing.visible = false;
+      key.castShadow = false; key.intensity = 1.7; hemisphere.intensity = .55; rim.intensity = .7; fill.intensity = .28;
+      haze.material.opacity = haze2.material.opacity = .025;
+      if (markers) Array.prototype.forEach.call(markers.querySelectorAll('[data-scale-marker]'), function (button) { button.hidden = true; });
+      Object.keys(models).forEach(function (id) { models[id].visible = false; });
+      list.forEach(function (item) {
+        var root = models[item.id] || model(item);
+        root.visible = true; root.userData.lastSeen = paintCount;
+        root.scale.setScalar(3 * item.size / pair.big.size);
+        root.userData.ruler.visible = state.measure;
+        root.userData.model.rotation.y = root.userData.initialYaw;
+        if (root.userData.model.userData.outerMembrane) root.userData.model.userData.outerMembrane.visible = !state.cutaway;
+        root.userData.materials.forEach(function (n) {
+          if (n.material.transparent !== n.userData.baseTransparent) { n.material.transparent = n.userData.baseTransparent; n.material.needsUpdate = true; }
+          n.material.opacity = n.userData.baseOpacity;
+        });
+        visible.push(root);
+      });
+      var layoutKey = list.map(function (item) { return item.id + ':' + item.size + ':' + !!models[item.id].userData.model.userData.surfaceReady; }).join('|') + ':' + state.cutaway + ':' + state.measure;
+      if (layoutKey !== comparisonLayoutKey) {
+        comparisonLayoutKey = layoutKey;
+        var left = 0;
+        visible.forEach(function (root) {
+          root.position.set(0, 0, 0); root.updateMatrixWorld(true);
+          var bounds = new T.Box3().setFromObject(root.userData.model);
+          root.position.set(left - bounds.min.x, -bounds.min.y, 0);
+          left += bounds.max.x - bounds.min.x + .65;
+        });
+        scene.updateMatrixWorld(true); comparisonBounds.makeEmpty();
+        visible.forEach(function (root) { comparisonBounds.union(new T.Box3().setFromObject(root)); });
+        comparisonBounds.getCenter(comparisonCenter);
+        comparisonRadius = Math.max(1.5, comparisonBounds.getSize(new T.Vector3()).length() / 2);
+      }
+      // Fit the bounds projected onto this camera's right and up axes, leaving
+      // a clear heading band. A locator never changes either model's size.
+      var aspect = width / height, extent = comparisonBounds.getSize(new T.Vector3()).multiplyScalar(.5);
+      var upAxis = new T.Vector3(-Math.sin(yaw) * Math.sin(pitch), Math.cos(pitch), -Math.cos(yaw) * Math.sin(pitch));
+      var halfWidth = Math.abs(Math.cos(yaw)) * extent.x + Math.abs(Math.sin(yaw)) * extent.z;
+      var halfHeight = Math.abs(upAxis.x) * extent.x + Math.abs(upAxis.y) * extent.y + Math.abs(upAxis.z) * extent.z;
+      var halfH = Math.max(halfHeight / Math.max(.3, (height - 210) / height), halfWidth / (aspect * Math.max(.4, (width - 60) / width))) * 1.06 / cameraZoom;
+      comparisonCamera.left = -halfH * aspect; comparisonCamera.right = halfH * aspect;
+      comparisonCamera.top = halfH; comparisonCamera.bottom = -halfH;
+      var distance = comparisonRadius * 3 + 10;
+      comparisonCamera.far = distance + comparisonRadius * 4 + 10;
+      comparisonCamera.updateProjectionMatrix();
+      cameraAim.copy(comparisonCenter).addScaledVector(upAxis, halfH * 80 / height);
+      comparisonCamera.position.set(Math.sin(yaw) * Math.cos(pitch) * distance, Math.sin(pitch) * distance, Math.cos(yaw) * Math.cos(pitch) * distance).add(cameraAim);
+      comparisonCamera.lookAt(cameraAim); comparisonCamera.updateMatrixWorld(true);
+      if (comparisonLabels) Array.prototype.forEach.call(comparisonLabels.querySelectorAll('[data-scale-comparison-point]'), function (button) {
+        var root = visible.filter(function (r) { return r.userData.itemId === button.dataset.scaleComparisonPoint; })[0];
+        var pixels = root ? root.scale.x * height / (2 * halfH) : 0;
+        button.hidden = !root || pixels >= 2;
+        if (root && pixels < 2) {
+          markerPoint.copy(root.position).project(comparisonCamera);
+          var px = clamp((markerPoint.x * .5 + .5) * width, 94, width - 94), py = clamp((-markerPoint.y * .5 + .5) * height, 145, height - 85);
+          button.style.transform = 'translate(' + px.toFixed(1) + 'px,' + py.toFixed(1) + 'px) translate(-50%,-50%)';
+        }
+      });
+      trimModelCache(); renderer.render(scene, comparisonCamera);
+      canvas.dataset.atlasReady = 'true'; canvas.dataset.atlasObjects = visible.map(function (r) { return r.userData.itemId; }).join(',');
+      canvas.dataset.atlasComparison = pair.a.id + ':' + pair.b.id; canvas.dataset.atlasProjection = 'orthographic';
+      canvas.dataset.atlasSmallPixels = (3 / pair.ratio * height / (2 * halfH)).toPrecision(5);
+      canvas.dataset.atlasExponent = canvas.dataset.atlasTarget = log10(pair.big.size).toFixed(4);
+      canvas.dataset.atlasYaw = yaw.toFixed(4); canvas.dataset.atlasZoom = cameraZoom.toFixed(2);
+      canvas.dataset.atlasDetail = ''; canvas.dataset.atlasHabitat = 'studio';
+      canvas.dataset.atlasCutaway = state.cutaway ? 'open' : 'closed';
+      dirty = false;
+    }
     function paint() {
       if(disposed)return;
       var state=read(), e=state.exp, realm=realmAt(e), width=canvas.clientWidth,height=canvas.clientHeight;
       if(!width||!height)return;
       if(state.inspectionZoom!==lastZoomInput){cameraZoom=clamp(state.inspectionZoom||1,1,2.5);lastZoomInput=state.inspectionZoom;}
       var ratio=renderer.getPixelRatio();if(canvas.width!==Math.floor(width*ratio)||canvas.height!==Math.floor(height*ratio)){renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();}
+      if (state.comparison) { paintComparison(state, width, height); return; }
+      activeCamera = camera; comparisonLayoutKey = '';
+      canvas.dataset.atlasComparison = ''; canvas.dataset.atlasProjection = 'perspective'; delete canvas.dataset.atlasSmallPixels;
+      if (comparisonLabels) Array.prototype.forEach.call(comparisonLabels.querySelectorAll('[data-scale-comparison-point]'), function (button) { button.hidden = true; });
       scene.background=new T.Color(state.contrast?'#000000':realm.bg);haze.material.color.set(realm.color);haze2.material.color.set(realm.color);
       motes.visible=!state.contrast&&realm.id!=='human';motes.rotation.y=e*0.027+(state.motion?time*0.001:0);
       motes.material.size = realm.id === 'micro' ? 0.1 : 0.045;
@@ -1130,8 +1245,7 @@
       });
       // Keep only the recent neighborhood. In particular, a tour through the
       // whole catalog must not retain every model, shader, and texture on GPU.
-      var cached=Object.keys(models), evict=cached.filter(function(id){return !models[id].visible;}).sort(function(a,b){return models[a].userData.lastSeen-models[b].userData.lastSeen;});
-      while(cached.length>10&&evict.length){var oldId=evict.shift(),old=models[oldId];old.userData.model.userData.released=true;space.remove(old);old.userData.resources.forEach(function(r){r.dispose();resources.delete(r);});delete models[oldId];cached.pop();}
+      trimModelCache();
       var isLeafWorld=!!focal&&['honeybee','ladybird'].indexOf(focal.id)>=0&&close>.25;
       leafWorld.visible=isLeafWorld;
       floor.visible=!isLeafWorld;
@@ -1194,7 +1308,7 @@
       drag=null;
       if(fingers.size===1){var entry=Array.from(fingers.entries())[0],p=entry[1];drag={id:entry[0],x:p.x,y:p.y,startX:p.x,startY:p.y,moved:true};}
       if(canvas.hasPointerCapture(ev.pointerId))canvas.releasePointerCapture(ev.pointerId);if(didMove||!allowPick)return;
-      var rect=canvas.getBoundingClientRect();pointer.set((ev.clientX-rect.left)/rect.width*2-1,-(ev.clientY-rect.top)/rect.height*2+1);ray.setFromCamera(pointer,camera);
+      var rect=canvas.getBoundingClientRect();pointer.set((ev.clientX-rect.left)/rect.width*2-1,-(ev.clientY-rect.top)/rect.height*2+1);ray.setFromCamera(pointer,activeCamera);
       var hits=ray.intersectObjects(Object.keys(models).map(function(id){return models[id];}).filter(function(m){return m.visible;}),true);
       for(var i=0;i<hits.length;i++){if(!hits[i].object.isMesh)continue;var obj=hits[i].object;while(obj&&!obj.userData.itemId)obj=obj.parent;if(obj){pick(obj.userData.itemId);break;}}
     }
@@ -1300,8 +1414,11 @@
       // from it, against the person, so the first comparison is about the thing
       // the link was for.
       var linkedFocus = start.focusId && start.focusId !== 'human' ? start.focusId : null;
-      var _cmpA = React.useState(linkedFocus || 'human'); var cmpA = _cmpA[0], setCmpA = _cmpA[1];
-      var _cmpB = React.useState(linkedFocus ? 'human' : 'rbc'); var cmpB = _cmpB[0], setCmpB = _cmpB[1];
+      var initialComparison = React.useMemo(function () { return linkedFocus ? { a: linkedFocus, b: 'human' } : readComparison(slice.comparison, 'human', 'rbc'); }, []);
+      var _cmpA = React.useState(initialComparison.a); var cmpA = _cmpA[0], setCmpA = _cmpA[1];
+      var _cmpB = React.useState(initialComparison.b); var cmpB = _cmpB[0], setCmpB = _cmpB[1];
+      var _comparisonActive = React.useState(false); var comparisonActive = _comparisonActive[0], setComparisonActive = _comparisonActive[1];
+      var _bridgeIndex = React.useState(0); var bridgeIndex = _bridgeIndex[0], setBridgeIndex = _bridgeIndex[1];
       var _speaking = React.useState(''); var speaking = _speaking[0], setSpeaking = _speaking[1];
       var _journey = React.useState(0); var journey = _journey[0], setJourney = _journey[1];
       var journeyRef = React.useRef(null);
@@ -1332,6 +1449,7 @@
       var canvasRef = React.useRef(null);
       var atlasCanvasRef = React.useRef(null);
       var markerLayerRef = React.useRef(null);
+      var comparisonLayerRef = React.useRef(null);
       var atlasRef = React.useRef(null);
       var _viewMode = React.useState('atlas'); var viewMode = _viewMode[0], setViewMode = _viewMode[1];
       var viewModeRef = React.useRef(viewMode); viewModeRef.current = viewMode;
@@ -1381,6 +1499,8 @@
       var byId = React.useMemo(function () {
         var m = {}; items.forEach(function (i) { m[i.id] = i; }); return m;
       }, [items]);
+      var compare = React.useMemo(function () { return compareMeasurements(byId[cmpA], byId[cmpB]); }, [cmpA, cmpB, byId]);
+      var bridge = React.useMemo(function () { return scaleBridge(compare, sorted); }, [compare, sorted]);
       // The animation loop outlives the render that started it, so the stage
       // and the nearest-item search read the list through a ref, as they do
       // the focus id; otherwise the last frame after "Use my height" would
@@ -1404,6 +1524,7 @@
         setNotebookMessage('');
       }
       function saveObservation() {
+        if (comparisonActive) return;
         if (!savedObservation && observations.length >= NOTEBOOK_LIMIT) return;
         var angle = viewMode === 'atlas' && atlasRef.current ? atlasRef.current.capture() : { yaw: 0, pitch: .12 };
         var entry = { itemId: focused.id, detailId: observationDetail, size: focused.size, you: !!focused.you,
@@ -1486,9 +1607,12 @@
         try { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) { return false; }
       }); var reduceMotion = _reduceMotion[0], setReduceMotion = _reduceMotion[1];
       var atlasState = React.useRef(null);
-      atlasState.current = { items: sorted, exp: expRef.current, motion: ambient && !reduceMotion, reduceMotion:reduceMotion, contrast: theme === 'contrast', neighbors: neighbors, measure: measure, inspectionZoom: inspectionZoom, cutaway: cutaway, focusId:focusId, details:details, detailId:detailId, showDetails:showDetails };
+      atlasState.current = { items: sorted, exp: expRef.current, motion: !comparisonActive && ambient && !reduceMotion, reduceMotion:reduceMotion, contrast: theme === 'contrast', neighbors: neighbors, measure: measure, inspectionZoom: inspectionZoom, cutaway: cutaway, focusId:focusId, details:details, detailId:detailId, showDetails:showDetails, comparison: comparisonActive ? compare : null };
       var atlasActions = React.useRef(null);
-      atlasActions.current = { pick: function (id) { if (byId[id]) openItem(byId[id]); }, zoom: zoomBy };
+      atlasActions.current = { pick: function (id) { if (byId[id]) openItem(byId[id]); }, zoom: function (delta) {
+        if (comparisonActive) setInspectionZoom(function (prev) { return Math.round(clamp(prev + delta, 1, 2.5) * 10) / 10; });
+        else zoomBy(delta);
+      } };
       // Apply a saved feature after navigation has reset the inspection state.
       // Wait for a newly mounted atlas before restoring its camera angle.
       React.useEffect(function () {
@@ -1529,13 +1653,14 @@
           clearTimeout(timeout);
           atlasRef.current = createScaleAtlas(window.THREE, cv, function () {
             return Object.assign({}, atlasState.current, { exp: expRef.current, target: targetRef.current });
-          }, function (id) { atlasActions.current.pick(id); }, failed, function(value){if(alive)setInspectionZoom(value);},markerLayerRef.current);
+          }, function (id) { atlasActions.current.pick(id); }, failed, function(value){if(alive)setInspectionZoom(value);},markerLayerRef.current,comparisonLayerRef.current);
           setAtlasStatus('ready');
         }).catch(failed);
         return function () { alive = false; clearTimeout(timeout); cv.removeEventListener('wheel', wheel); if (atlasRef.current) { atlasRef.current.dispose(); atlasRef.current = null; } };
       }, [viewMode]);
-      React.useEffect(function () { if (atlasRef.current) atlasRef.current.update(); }, [ambient, reduceMotion, theme, items, neighbors, measure, inspectionZoom, cutaway, detailId, showDetails, focusId]);
+      React.useEffect(function () { if (atlasRef.current) atlasRef.current.update(); }, [ambient, reduceMotion, theme, items, neighbors, measure, inspectionZoom, cutaway, detailId, showDetails, focusId, comparisonActive, compare]);
       function goTo(nextExp, opts) {
+        setComparisonActive(false);
         setDetailId('');
         opts = opts || {};
         var target = clamp(nextExp, MIN_EXP, MAX_EXP);
@@ -1632,6 +1757,7 @@
         }
       }
       function startFilm(dir) {
+        setComparisonActive(false);
         if (reduceMotion) { startJourney(dir); return; }
         stopJourney();
         if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0; }
@@ -1922,6 +2048,7 @@
       // ── Keyboard on the canvas ──────────────────────────────────────────
       function onCanvasKey(ev) {
         var k = ev.key;
+        if (k === 'Escape' && comparisonActive) { ev.preventDefault(); inspectCompared(focused); return; }
         if (atlasRef.current && /^(a|d|w|s|r)$/i.test(k)) {
           ev.preventDefault();
           if (k.toLowerCase() === 'r') { atlasRef.current.reset(); setInspectionZoom(1); setDetailId(''); }
@@ -1980,13 +2107,6 @@
       }
 
       // ── Compare ─────────────────────────────────────────────────────────
-      var compare = React.useMemo(function () {
-        var a = byId[cmpA], b = byId[cmpB];
-        if (!a || !b) return null;
-        var big = a.size >= b.size ? a : b, small = a.size >= b.size ? b : a;
-        var ratio = big.size / small.size;
-        return { big: big, small: small, ratio: ratio, decades: log10(ratio) };
-      }, [cmpA, cmpB, byId]);
       // ── Estimate first ──────────────────────────────────────────────────
       // Every other tool in this lab makes the student commit to a guess before
       // it shows an answer. Browsing alone does not build a feel for orders of
@@ -2061,38 +2181,58 @@
       function compareFocused() {
         if (cmpDetailsRef.current) cmpDetailsRef.current.open = true;
         var item = focused;
-        setCmpA(item.id);
-        if (cmpB === item.id) setCmpB(item.id === 'human' ? 'rbc' : 'human');
+        changeComparison(item.id, cmpB === item.id ? (item.id === 'human' ? 'rbc' : 'human') : cmpB);
         say(S('cmp_from_focus_sr', '{name} is now the first thing to compare. Choose the second.', { name: itemText(item, 'name') }));
         setTimeout(function () { var el = cmpSecondRef.current; if (el && el.focus) { try { el.scrollIntoView({ block: 'nearest' }); } catch (_) {} el.focus(); } }, 0);
       }
       function runCompare() {
         if (!compare) return;
+        flyTo(compare.big, { instant: true });
+        setInspectionZoom(1); setDetailId('');
+        if (atlasRef.current) atlasRef.current.reset();
+        setComparisonActive(true);
+        var cv = viewMode === 'atlas' ? atlasCanvasRef.current : canvasRef.current;
+        if (cv && cv.parentElement) cv.parentElement.scrollIntoView({ block: 'center', behavior: 'auto' });
         updateSlice(function (cur) { cur.compareCount = (cur.compareCount || 0) + 1; });
         say(compareSentence());
+      }
+      function changeComparison(a, b) {
+        if (!byId[a] || !byId[b]) return;
+        setCmpA(a); setCmpB(b); setBridgeIndex(0); setInspectionZoom(1); setDetailId('');
+        updateSlice(function (cur) { cur.comparison = { a: a, b: b }; });
+        if (atlasRef.current) atlasRef.current.reset();
+      }
+      function inspectCompared(item) {
+        setInspectionZoom(1); if (atlasRef.current) atlasRef.current.reset();
+        openItem(item);
+        setTimeout(function () { var cv = viewModeRef.current === 'atlas' ? atlasCanvasRef.current : canvasRef.current; if (cv) { cv.scrollIntoView({ block: 'center' }); cv.focus({ preventScroll: true }); } }, 0);
+      }
+      function visitBridge(index) {
+        var step = bridge[index]; if (!step) return;
+        setBridgeIndex(index); setInspectionZoom(1); stopJourney();
+        if (atlasRef.current) atlasRef.current.reset();
+        if (step.endpoint) flyTo(step.item); else goTo(step.exp);
+        var cv = viewMode === 'atlas' ? atlasCanvasRef.current : canvasRef.current;
+        if (cv && cv.parentElement) cv.parentElement.scrollIntoView({ block: 'center', behavior: 'auto' });
+        say(S('atlas_bridge_arrived', 'Scale step {n} of {total}: {len}.', { n: index + 1, total: bridge.length, len: humanLength(step.size) }));
       }
       // The ×10 staircase: the ratio as a chain of tens, each step carrying a
       // real object at that decade. "5.36 powers of ten" is a number; five
       // visible steps from a person up to the Earth, each ten times the last,
       // is the idea. Steps are the whole decades; the remainder is said in words.
-      function staircaseSteps() {
-        if (!compare) return [];
-        var whole = Math.floor(compare.decades);
-        var steps = [];
-        for (var k = 1; k <= whole; k++) {
-          var target = log10(compare.small.size) + k;
-          var best = null, bestD = Infinity;
-          for (var i = 0; i < sorted.length; i++) {
-            var it = sorted[i];
-            if (it.id === compare.small.id || it.id === compare.big.id) continue;
-            var d = Math.abs(log10(it.size) - target);
-            if (d < bestD) { bestD = d; best = it; }
-          }
-          // Only a real neighbour counts as an example; past the ends of the
-          // ladder the step is drawn bare so the chain still adds up.
-          steps.push({ k: k, item: bestD <= 0.5 ? best : null, size: Math.pow(10, target) });
-        }
-        return steps;
+      function comparisonDiagram() {
+        if (!compare) return null;
+        var W = 600, children = [];
+        [compare.a, compare.b].forEach(function (item, index) {
+          var y = 90 + index * 120, width = 520 * item.size / compare.big.size;
+          children.push(h('text', { key: 'label' + index, x: 40, y: y - 16, fill: '#dbeaf4', fontSize: 16 }, index === 0 ? S('cmp_a', 'First thing') : S('cmp_b', 'Second thing')));
+          children.push(h('rect', { key: 'bar' + index, 'data-comparison-bar': item.id, x: 40, y: y, width: width, height: 18, rx: Math.min(3, width / 2), fill: index === 0 ? '#9ee4da' : '#e3c698' }));
+          if (width < 2) children.push(h('path', { key: 'locator' + index, 'data-comparison-locator': item.id, d: 'M40 ' + (y - 6) + 'v30m-5 -15h10', fill: 'none', stroke: '#dbeaf4', strokeDasharray: '2 3', strokeWidth: 1 }));
+          children.push(h('text', { key: 'size' + index, className: 'sx-diagram-size', x: 40, y: y + 44, fill: '#bacfdd', fontSize: 13 }, humanLength(item.size) + ' · ' + S('dim_' + item.dim.replace(/\s+/g, '_'), item.dim)));
+        });
+        return h('svg', { className: 'sx-comparison-diagram', viewBox: '0 0 ' + W + ' 310', role: 'img',
+          'aria-label': S('atlas_comparison_diagram', 'Length diagram at one shared scale. {line}', { line: compareSentence() }),
+          style: { position: 'absolute', inset: '90px 0 35px', width: '100%', height: 'calc(100% - 125px)' } }, children);
       }
       // Side-by-side tiling for near neighbours (under two powers of ten): the
       // small thing repeated across the width of the big one. "Four basketballs
@@ -2132,34 +2272,27 @@
             h('span', null, compare.big.emoji + ' ' + itemText(compare.big, 'name'))));
       }
       function staircase() {
-        var steps = staircaseSteps();
-        if (!steps.length) return null;
-        var rem = compare.decades - steps.length;
-        var chip = function (key, emoji, label, sub, strong) {
-          return h('li', { key: key, style: { display: 'inline-flex', flexDirection: 'column', alignItems: 'center', minWidth: 54, padding: '4px 6px', borderRadius: 8, background: strong ? P.selBg : 'transparent', color: strong ? P.selFg : P.text, border: '1px solid ' + (strong ? P.accent : P.line), fontSize: '0.65625rem', lineHeight: 1.25, textAlign: 'center' } },
-            h('span', { 'aria-hidden': 'true', style: { fontSize: '1.125rem' } }, emoji),
-            h('span', { style: { fontWeight: strong ? 700 : 500 } }, label),
-            sub ? h('span', { style: { color: strong ? P.selFg : P.dim, opacity: strong ? 0.85 : 1 } }, sub) : null);
-        };
-        var arrow = function (key, text) {
-          return h('li', { key: key, 'aria-hidden': 'true', style: { display: 'inline-flex', alignItems: 'center', color: P.accent, fontWeight: 700, fontSize: '0.75rem', padding: '0 2px' } }, text);
-        };
-        var kids = [chip('s0', compare.small.emoji, itemText(compare.small, 'name'), lengthText(compare.small.size), true)];
-        steps.forEach(function (st) {
-          kids.push(arrow('a' + st.k, '×10 →'));
-          kids.push(st.item
-            ? chip('c' + st.k, st.item.emoji, itemText(st.item, 'name'), lengthText(st.item.size), false)
-            : chip('c' + st.k, '·', humanLength(st.size), null, false));
-        });
-        if (rem >= 0.05) kids.push(arrow('ar', '×' + round2(Math.pow(10, rem)) + ' →'));
-        else kids.push(arrow('ar', '→'));
-        kids.push(chip('sN', compare.big.emoji, itemText(compare.big, 'name'), lengthText(compare.big.size), true));
-        return h('div', { style: { marginTop: 4 } },
-          h('div', { style: { fontSize: '0.71875rem', color: P.dim, marginBottom: 4 } },
-            S('stair_caption', '{n} steps of ten from {small} to {big}. Each arrow is one power of ten; each chip is something that size.',
-              { n: steps.length, small: lowerArticle(itemText(compare.small, 'name')), big: lowerArticle(itemText(compare.big, 'name')) })),
-          h('ol', { 'aria-label': S('stair_aria', 'Steps of ten from {small} to {big}', { small: itemText(compare.small, 'name'), big: itemText(compare.big, 'name') }),
-            style: { listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' } }, kids));
+        if (bridge.length < 2) return null;
+        var current = Math.min(bridgeIndex, bridge.length - 1);
+        return h('section', { className: 'sx-scale-bridge', 'aria-label': S('atlas_bridge', 'Scale bridge'), style: { marginTop: 8 } },
+          h('h4', { style: { margin: '0 0 6px', fontSize: '.8125rem' } }, S('atlas_bridge', 'Scale bridge')),
+          h('p', { style: { margin: '0 0 8px', fontSize: '.71875rem', color: P.dim, lineHeight: 1.5 } },
+            S('atlas_bridge_hint', 'Each full step is exactly ten times the last. The final step closes the remaining gap. Nearby specimens are examples with their own measurements.')),
+          h('div', { style: { display: 'flex', gap: 6, marginBottom: 8 } },
+            h('button', { type: 'button', style: btn, disabled: current === 0, onClick: function () { visitBridge(current - 1); } }, S('atlas_bridge_previous', 'Previous scale step')),
+            h('button', { type: 'button', style: btn, disabled: current === bridge.length - 1, onClick: function () { visitBridge(current + 1); } }, S('atlas_bridge_next', 'Next scale step'))),
+          h('ol', { style: { listStyle: 'none', margin: 0, padding: '2px 4px', display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 290, overflowY: 'auto' } }, bridge.map(function (step, index) {
+            var on = !comparisonActive && Math.abs(exp - step.exp) < .002;
+            return h('li', { key: index, 'data-bridge-step': index, style: { borderLeft: '2px solid ' + (on ? P.accent : P.line), paddingLeft: 8 } },
+              index ? h('p', { style: { margin: '0 0 3px', fontSize: '.6875rem', color: P.dim } }, '×' + round2(step.factor) + ' ↓') : null,
+              h('button', { type: 'button', style: on ? goBtn : btn, 'aria-current': on ? 'step' : undefined,
+                'aria-label': S('atlas_bridge_visit', 'Go to scale step {n}: {len}', { n: index + 1, len: humanLength(step.size) }),
+                onClick: function () { visitBridge(index); } }, lengthText(step.size) + (step.endpoint ? ' · ' + itemText(step.item, 'name') : '')),
+              !step.endpoint && step.item ? h('p', { style: { fontSize: '.6875rem', color: P.dim, margin: '5px 0 0', lineHeight: 1.4 } },
+                S('atlas_bridge_example', 'Nearby example: {name}, {len}.', { name: itemText(step.item, 'name'), len: lengthText(step.item.size) }),
+                ' ', h('button', { type: 'button', onClick: function () { inspectCompared(step.item); }, style: Object.assign({}, btn, { padding: '3px 6px', fontSize: '.6875rem' }),
+                  'aria-label': S('atlas_comparison_inspect', 'Inspect {name}', { name: itemText(step.item, 'name') }) }, S('atlas_bridge_inspect', 'Inspect example'))) : null);
+          })));
       }
       function compareSentence() {
         if (!compare) return '';
@@ -2168,7 +2301,7 @@
         if (compare.ratio < 1.02) return S('cmp_same', '{a} and {b} are about the same size.', { a: bigName, b: smallName });
         // "bigger across" and not just "bigger": this is a ratio of lengths, so
         // saying it plainly avoids implying anything about volume or mass.
-        return S('cmp_line', '{big} is about {times} bigger across than {small}. That is {dec} powers of ten.',
+        return S('atlas_comparison_line', '{big} measures about {times} as long as {small}, using their stated dimensions. The gap is {dec} powers of ten.',
           { big: bigName, times: timesPhrase(compare.ratio), small: smallName, dec: round2(compare.decades) });
       }
 
@@ -2188,6 +2321,7 @@
           { len: humanLength(Math.pow(10, e)), p: powerLabel(Math.round(e)) });
       }
       var viewLine = viewLineFor(exp);
+      if (comparisonActive) viewLine = S('atlas_comparison_readout', 'Both specimens use the same scale. {line}', { line: compareSentence() });
       // Past the ends of the ladder there is nothing to draw. That is not a bug
       // and it is not nothing: it is the edge of what is known, or the edge of
       // what "how wide is it?" still means. Say which.
@@ -2280,6 +2414,8 @@
           S('atlas_blurb', 'Travel from the familiar to the almost unimaginable. Orbit a world, find your next destination, and feel what a power of ten changes.')),
 
         h('style', null, '.sx-panel{align-self:flex-start}.sx-stage:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(3,9,17,.38),transparent 29%,transparent 82%,rgba(3,9,17,.45))}.sx-hud,.sx-stage-note{z-index:1}.sx-hud h3{letter-spacing:-.025em}.sx-stage canvas:active{cursor:grabbing!important}.sx-markers{position:absolute;inset:0;pointer-events:none;z-index:2}.sx-marker{position:absolute;left:0;top:0;width:44px;height:44px;padding:6px;background:transparent;border:0;pointer-events:auto;cursor:pointer;color:#f2f8ec;font:600 12px system-ui}.sx-marker[hidden]{display:none}.sx-marker span{display:grid;place-items:center;width:30px;height:30px;border:1px solid #d0dec2;border-radius:50%;background:rgba(11,27,23,.88);box-shadow:0 0 0 4px rgba(180,215,162,.10),0 3px 12px #0005}.sx-marker:hover span,.sx-marker[aria-pressed="true"] span{background:#deebbe;color:#172819;border-color:#eff5de}.sx-detail-choices{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.sx-detail-choices button{flex:1 1 130px;text-align:left}.sx-detail-note a:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}'),
+        h('style', null, '.sx-comparison-points{position:absolute;inset:0;pointer-events:none;z-index:2}.sx-comparison-point{position:absolute;left:0;top:0;pointer-events:auto;width:172px;border:1px dashed #bed3de;border-radius:8px;padding:7px 9px;color:#eef6fc;background:rgba(9,22,32,.93);font:12px system-ui;cursor:pointer}.sx-comparison-point:before{content:"+";display:block;font-size:20px;line-height:22px}.sx-comparison-point[hidden]{display:none}.sx-comparison-pair{display:flex;gap:8px;flex-wrap:wrap}.sx-comparison-pair article{flex:1 1 200px;min-width:0;overflow-wrap:anywhere}.sx-scale-bridge button{text-align:left;max-width:100%}.sx-explorer textarea:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}'),
+        h('style', null, '@media(max-width:700px){.sx-comparison-diagram text{font-size:30px}.sx-comparison-diagram .sx-diagram-size{font-size:26px}}'),
         h('nav', { className: 'sx-regions', 'aria-label': S('atlas_realms', 'Scale destinations') }, REALMS.map(function (r, i) {
           var active = realm.id === r.id;
           return h('button', { key: r.id, type: 'button', 'aria-current': active ? 'true' : undefined, onClick: function () { openItem(byId[r.at]); },
@@ -2303,24 +2439,41 @@
             atlasStatus === 'failed' ? h('p', { role: 'status', style: { margin: 0, color: P.dim, fontSize: '0.8125rem' } }, S('atlas_failed', 'The 3D view is unavailable. The scale chart and all destinations are ready to explore.')) : null,
             h('div', { className: 'sx-stage' },
               viewMode === 'atlas' ? h('canvas', { ref: atlasCanvasRef, tabIndex: 0, role: 'application',
-                'aria-label': S('atlas_canvas_aria', 'Interactive scale atlas. Scroll or use arrow keys to travel through scale. Drag to orbit, or use W A S D. Pinch to inspect more closely. R resets the camera. Home returns to human scale. Space plays or pauses the journey.'),
+                'aria-label': comparisonActive ? S('atlas_comparison_canvas_aria', 'Shared scale comparison. Drag or use W A S D to orbit. Scroll or pinch to inspect. R resets the camera. Escape returns to exploration.') : S('atlas_canvas_aria', 'Interactive scale atlas. Scroll or use arrow keys to travel through scale. Drag to orbit, or use W A S D. Pinch to inspect more closely. R resets the camera. Home returns to human scale. Space plays or pauses the journey.'),
                 'aria-describedby': descId, onKeyDown: onCanvasKey, style: { touchAction: 'none', cursor: 'grab', outlineOffset: '-4px' } }) : null,
               h('canvas', { ref: canvasRef, tabIndex: 0, role: 'application',
                 'aria-label': S('canvas_aria', 'Scale view. Left and right arrows zoom by a quarter of a power of ten, hold shift for a whole one, Page Up and Page Down jump three, Home returns to human scale, space plays or pauses the zoom.'),
                 'aria-describedby': descId,
                 onKeyDown: onCanvasKey, onWheel: onWheel,
-                style: { display: viewMode === 'chart' ? 'block' : 'none', width: '100%', height: '100%', outlineOffset: '-3px' } }),
+                style: { display: viewMode === 'chart' && !comparisonActive ? 'block' : 'none', width: '100%', height: '100%', outlineOffset: '-3px' } }),
+              viewMode === 'chart' && comparisonActive ? comparisonDiagram() : null,
               viewMode==='atlas'?h('div',{ref:markerLayerRef,className:'sx-markers'},details.map(function(detail,index){return h('button',{key:focusId+'-'+detail.id,type:'button',className:'sx-marker',hidden:true,'data-scale-marker':detail.id,'aria-label':S('atlas_inspect_part', 'Inspect {part}',{part:detail.label}),'aria-pressed':detailId===detail.id,title:detail.label,onClick:function(){chooseDetail(detail);}},h('span',null,index+1));})):null,
-              viewMode === 'atlas' ? h('div', { className: 'sx-hud', 'aria-hidden': 'true' },
-                h('p', { style: { color: theme === 'contrast' ? '#ffffff' : realm.color, textTransform: 'uppercase', fontWeight: 700 } }, S('atlas_realm_' + realm.id, realm.name)),
-                h('h3', null, itemText(focused, 'name')),
-                h('p', null, lengthText(focused.size) + ' ' + S('dim_' + focused.dim.replace(/\s+/g, '_'), focused.dim)),
-                selectedDetail?h('p',{style:{marginTop:14,letterSpacing:'.02em',color:'#deebbe'}},S('atlas_inspecting', 'Inspecting: {part}',{part:selectedDetail.label})):null,
+              viewMode === 'atlas' ? h('div', { ref: comparisonLayerRef, className: 'sx-comparison-points' }, compare ? [compare.a, compare.b].map(function (item, index) {
+                return h('button', { key: index, type: 'button', className: 'sx-comparison-point', hidden: true, 'data-scale-comparison-point': item.id,
+                  'aria-label': S('atlas_comparison_inspect', 'Inspect {name}', { name: itemText(item, 'name') }), onClick: function () { inspectCompared(item); } },
+                  S('atlas_comparison_locator', 'Position only · too small to resolve'), h('span', { style: { display: 'block', marginTop: 4, fontWeight: 700 } }, itemText(item, 'name')));
+              }) : null) : null,
+              viewMode === 'atlas' || comparisonActive ? h('div', { className: 'sx-hud', 'aria-hidden': 'true' },
+                h('p', { style: { color: comparisonActive ? '#a5dcd8' : theme === 'contrast' ? '#ffffff' : realm.color, textTransform: 'uppercase', fontWeight: 700 } }, comparisonActive ? S('atlas_comparison_studio', 'Comparison studio') : S('atlas_realm_' + realm.id, realm.name)),
+                h('h3', null, comparisonActive ? S('atlas_comparison_shared', 'One shared scale') : itemText(focused, 'name')),
+                h('p', null, comparisonActive ? (viewMode === 'atlas' ? S('atlas_comparison_projection', 'Measured proportions · parallel projection') : S('atlas_comparison_diagram_tag', 'Measured lengths · one shared unit')) : lengthText(focused.size) + ' ' + S('dim_' + focused.dim.replace(/\s+/g, '_'), focused.dim)),
+                !comparisonActive&&selectedDetail?h('p',{style:{marginTop:14,letterSpacing:'.02em',color:'#deebbe'}},S('atlas_inspecting', 'Inspecting: {part}',{part:selectedDetail.label})):null,
                 atlasStatus === 'loading' ? h('p', { style: { marginTop: 20 } }, S('atlas_loading', 'Preparing your observatory…')) : null) : null,
               viewMode === 'atlas' ? h('div', { className: 'sx-stage-note', 'aria-hidden': 'true' },
-                h('span', null, S('atlas_gesture', 'Drag to orbit · Pinch to inspect · Scroll to travel')),
+                h('span', null, comparisonActive ? S('atlas_comparison_gesture', 'Drag to orbit · Scroll to inspect · Esc to explore') : S('atlas_gesture', 'Drag to orbit · Pinch to inspect · Scroll to travel')),
                 h('span', null, S('atlas_model_tag', 'Illustrated models / measured dimensions'))) : null
             ),
+            comparisonActive ? h('section', { className: 'sx-comparison-summary', 'aria-label': S('atlas_comparison_dimensions', 'Compared measurements') },
+              h('div', { className: 'sx-comparison-pair' }, [compare.a, compare.b].map(function (item, index) {
+                return h('article', { key: index, style: Object.assign({}, card, { borderTop: '3px solid ' + (index === 0 ? '#9ee4da' : '#e3c698') }) },
+                  h('p', { style: { margin: '0 0 3px', fontSize: '.6875rem', color: P.dim } }, index === 0 ? S('cmp_a', 'First thing') : S('cmp_b', 'Second thing')),
+                  h('strong', null, itemText(item, 'name')),
+                  h('p', { style: { margin: '4px 0 8px', fontSize: '.75rem' } }, lengthText(item.size) + ' · ' + S('dim_' + item.dim.replace(/\s+/g, '_'), item.dim)),
+                  h('button', { type: 'button', style: btn, onClick: function () { inspectCompared(item); } }, S('atlas_comparison_inspect', 'Inspect {name}', { name: itemText(item, 'name') })));
+              })),
+              h('p', { style: { fontSize: '.75rem', color: P.dim, lineHeight: 1.5 } }, S('atlas_comparison_scope', 'The ratio compares the stated length, height, width or distance. Areas and volumes need additional shape assumptions.')),
+              compare.ratio >= 100 ? h('p', { style: { fontSize: '.75rem', color: P.dim, lineHeight: 1.5 } }, S('atlas_comparison_resolution', 'A smaller specimen may fall below a screen pixel at this scale. A dashed locator marks its position; Inspect brings it into view at its own scale.')) : null,
+              h('button', { type: 'button', style: btn, onClick: function () { inspectCompared(focused); } }, S('atlas_comparison_exit', 'Back to exploration'))) : null,
             viewMode === 'atlas' ? h('div', { className: 'sx-inspection', style: { display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',padding:'9px 12px',border:'1px solid '+P.line,borderRadius:10,background:P.panel } },
               h('label', { style:{display:'flex',gap:10,alignItems:'center',flex:'1 1 230px',fontSize:'0.75rem'} },
                 S('atlas_inspection_zoom', 'Inspection zoom'),
@@ -2328,7 +2481,7 @@
                 h('output', { style:{fontVariantNumeric:'tabular-nums',minWidth:34} },inspectionZoom.toFixed(1)+'×')),
               h('button', { type:'button',style:btn,disabled:inspectionZoom===1&&!detailId,onClick:function(){setInspectionZoom(1);setDetailId('');} },S('atlas_fit', 'Fit object')),
               focused.id==='mitochondrion'?h('button',{type:'button',style:cutaway?goBtn:btn,'aria-pressed':cutaway,onClick:function(){setCutaway(!cutaway);setDetailId('');}},S('atlas_cutaway', 'Open cutaway')):null) : null,
-            viewMode==='atlas'&&details.length?h('section',{className:'sx-details','aria-label':S('atlas_detail_section', 'Explore this specimen'),style:{padding:'14px 16px',border:'1px solid '+P.line,borderRadius:12,background:P.panel}},
+            viewMode==='atlas'&&!comparisonActive&&details.length?h('section',{className:'sx-details','aria-label':S('atlas_detail_section', 'Explore this specimen'),style:{padding:'14px 16px',border:'1px solid '+P.line,borderRadius:12,background:P.panel}},
               h('div',{style:{display:'flex',gap:12,justifyContent:'space-between',alignItems:'center'}},h('h3',{style:{fontSize:'0.9rem',margin:0}},S('atlas_detail_section', 'Explore this specimen')),h('button',{type:'button',style:btn,'aria-pressed':showDetails,onClick:function(){setShowDetails(!showDetails);}},S('atlas_markers', 'Landmarks'))),
               h('div',{className:'sx-detail-choices'},details.map(function(detail,index){return h('button',{key:detail.id,type:'button',style:detailId===detail.id?goBtn:btn,'aria-pressed':detailId===detail.id,onClick:function(){chooseDetail(detail);}},h('span',{'aria-hidden':'true',style:{opacity:.7,marginRight:6}},String(index+1).padStart(2,'0')),detail.label);})),
               selectedDetail?h('div',{className:'sx-detail-note',style:{borderLeft:'2px solid '+P.accent,paddingLeft:12}},h('p',{style:{fontSize:'0.875rem',lineHeight:1.65,margin:'10px 0 6px'}},selectedDetail.body),h('a',{href:selectedDetail.source,target:'_blank',rel:'noopener noreferrer',style:{fontSize:'0.75rem',color:P.accent}},S('atlas_detail_source', 'Read the science source'))):h('p',{style:{fontSize:'0.8rem',lineHeight:1.6,color:P.dim,margin:'10px 0 0'}},S('atlas_detail_invite', 'Choose a numbered landmark to move closer. Orbit around the feature, then use Fit object to see the whole specimen.'))):null,
@@ -2336,7 +2489,7 @@
             viewMode === 'atlas' ? h('div', { className: 'sx-flight-controls', role: 'group', 'aria-label': S('atlas_orbit_controls', 'Orbit the 3D scene') },
               h('button', { type: 'button', style: btn, onClick: function () { if (atlasRef.current) atlasRef.current.orbit(-0.2, 0); } }, S('atlas_orbit_left', 'Orbit left')),
               h('button', { type: 'button', style: btn, onClick: function () { if (atlasRef.current) atlasRef.current.orbit(0.2, 0); } }, S('atlas_orbit_right', 'Orbit right')),
-              h('button', { type: 'button', style: neighbors ? goBtn : btn, 'aria-pressed': neighbors, onClick: function () { setNeighbors(!neighbors); updateSlice(function(cur){cur.atlasNeighbors=!neighbors;}); } }, S('atlas_show_neighbors', 'Size neighbors')),
+              h('button', { type: 'button', style: neighbors ? goBtn : btn, disabled: comparisonActive, 'aria-pressed': neighbors, onClick: function () { setNeighbors(!neighbors); updateSlice(function(cur){cur.atlasNeighbors=!neighbors;}); } }, S('atlas_show_neighbors', 'Size neighbors')),
               h('button', { type: 'button', style: measure ? goBtn : btn, 'aria-pressed': measure, onClick: function () { setMeasure(!measure); } }, S('atlas_measure', 'Measurement')),
               h('button', { type: 'button', style: btn, onClick: function () { zoomBy(-1); } }, S('atlas_shrink', 'Explore 10× smaller')),
               h('button', { type: 'button', style: btn, onClick: function () { zoomBy(1); } }, S('atlas_grow', 'Explore 10× larger'))) : null,
@@ -2471,7 +2624,8 @@
                 h('textarea', { value: observationDraft, onChange: function (e) { editObservation(e.target.value); }, rows: 3, maxLength: NOTE_LIMIT,
                   style: Object.assign({}, sel, { display: 'block', width: '100%', boxSizing: 'border-box', marginTop: 5, resize: 'vertical', font: 'inherit', minHeight: 76 }) })),
               h('p', { style: { margin: 0, fontSize: '0.6875rem', color: P.dim } }, S('atlas_notebook_hint', 'Drafts stay with their specimen or landmark. Save an observation to include it in your download.')),
-              h('button', { type: 'button', style: goBtn, disabled: !savedObservation && observations.length >= NOTEBOOK_LIMIT, onClick: saveObservation },
+              comparisonActive ? h('p', { style: { margin: 0, color: P.dim, fontSize: '.75rem' } }, S('atlas_comparison_observe', 'Inspect a specimen to save its view and observation in your notebook.')) : null,
+              h('button', { type: 'button', style: goBtn, disabled: comparisonActive || (!savedObservation && observations.length >= NOTEBOOK_LIMIT), onClick: saveObservation },
                 savedObservation ? S('atlas_observation_update', 'Update observation') : S('atlas_observation_save', 'Save observation')),
               !savedObservation && observations.length >= NOTEBOOK_LIMIT ? h('p', { style: { margin: 0, color: P.warn, fontSize: '0.75rem' } }, S('atlas_notebook_full', 'Your notebook has 24 observations. Remove one to save another; existing observations can still be updated.')) : null,
               h('details', { ref: savedObservationsRef },
@@ -2511,17 +2665,22 @@
                   estimateVerdict(parseFloat(guess)) + ' ' + challengeReveal()) : null)) : null,
 
             // Compare
-            h('details', { ref: cmpDetailsRef },
+            h('details', { ref: cmpDetailsRef, className: 'sx-comparison-workbench' },
               h('summary', { style: { padding: '10px 0', cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 700, color: P.text } }, S('cmp_heading', 'Compare two sizes')),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                 h('label', { style: { fontSize: '0.71875rem', color: P.dim } }, S('cmp_a', 'First thing'),
-                  h('select', { value: cmpA, onChange: function (e) { setCmpA(e.target.value); }, style: Object.assign({}, sel, { width: '100%', marginTop: 2 }) }, itemOptions())),
+                  h('select', { value: cmpA, onChange: function (e) { changeComparison(e.target.value, cmpB); }, style: Object.assign({}, sel, { width: '100%', marginTop: 2 }) }, itemOptions())),
                 h('label', { style: { fontSize: '0.71875rem', color: P.dim } }, S('cmp_b', 'Second thing'),
-                  h('select', { ref: cmpSecondRef, value: cmpB, onChange: function (e) { setCmpB(e.target.value); }, style: Object.assign({}, sel, { width: '100%', marginTop: 2 }) }, itemOptions())),
-                h('button', { type: 'button', style: goBtn, onClick: runCompare }, S('cmp_go', 'Compare them')),
+                  h('select', { ref: cmpSecondRef, value: cmpB, onChange: function (e) { changeComparison(cmpA, e.target.value); }, style: Object.assign({}, sel, { width: '100%', marginTop: 2 }) }, itemOptions())),
+                h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                  h('button', { type: 'button', style: goBtn, onClick: runCompare, 'aria-pressed': comparisonActive }, S('cmp_go', 'Compare them')),
+                  h('button', { type: 'button', style: btn, onClick: function () { changeComparison(cmpB, cmpA); } }, S('atlas_comparison_swap', 'Swap specimens'))),
                 compare ? h('p', { role: 'status', style: Object.assign({}, card, { margin: 0, borderColor: P.accent }) }, compareSentence()) : null,
+                compare && (compare.a.note || compare.b.note || compare.a.dim === 'distance' || compare.b.dim === 'distance') ? h('details', { className: 'sx-comparison-evidence', style: { fontSize: '.75rem', lineHeight: 1.5 } },
+                  h('summary', { style: { padding: '6px 0', cursor: 'pointer', color: P.dim } }, S('atlas_comparison_notes', 'Measurement notes')),
+                  [compare.a, compare.b].map(function (item, index) { return item.note || item.dim === 'distance' ? h('p', { key: index }, h('strong', null, itemText(item, 'name') + ': '), item.dim === 'distance' ? itemText(item, 'describe') + ' ' : '', item.note ? itemText(item, 'note') : '') : null; })) : null,
                 compare && compare.ratio >= 1.02 && compare.decades < 2 ? tiling() : null,
-                compare && compare.decades >= 1 ? staircase() : null)),
+                compare && compare.decades > 0.000001 ? staircase() : null)),
 
             h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.71875rem', color: P.dim, cursor: 'pointer' } },
               h('input', { type: 'checkbox', checked: sci, onChange: function (e) { var on = !!e.target.checked; setSci(on); updateSlice(function (cur) { cur.sci = on; }); } }),

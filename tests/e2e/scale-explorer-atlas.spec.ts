@@ -116,9 +116,10 @@ test('phone, reduced motion, all destinations, height, comparisons, and context 
     record.ctx.getExtension('WEBGL_lose_context').loseContext();
   });
   await expect(page.getByRole('status').filter({ hasText: 'The 3D view is unavailable.' })).toBeVisible();
-  await expect(page.getByRole('application', { name: /^Scale view/ })).toBeVisible();
+  await expect(page.locator('.sx-comparison-diagram')).toBeVisible();
   await page.getByRole('combobox', { name: 'Choose a destination', exact: true }).selectOption('dna');
   await expect(page.getByRole('combobox', { name: 'Choose a destination', exact: true })).toHaveValue('dna');
+  await expect(page.getByRole('application', { name: /^Scale view/ })).toBeVisible();
 });
 
 test('unavailable model and texture assets retain an interactive scene', async ({ page }) => {

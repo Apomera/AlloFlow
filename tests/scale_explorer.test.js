@@ -552,15 +552,15 @@ describe('Scale Explorer shareable views', () => {
 describe('Scale Explorer compare follows the thing in focus', () => {
   it('a link that names a focus preselects it in Compare, against the person', () => {
     expect(src).toMatch(/var linkedFocus = start\.focusId && start\.focusId !== 'human' \? start\.focusId : null;/);
-    expect(src).toMatch(/React\.useState\(linkedFocus \|\| 'human'\)/);
-    expect(src).toMatch(/React\.useState\(linkedFocus \? 'human' : 'rbc'\)/);
+    expect(src).toContain("linkedFocus ? { a: linkedFocus, b: 'human' } : readComparison(slice.comparison, 'human', 'rbc')");
+    expect(src).toMatch(/React\.useState\(initialComparison\.a\)/);
+    expect(src).toMatch(/React\.useState\(initialComparison\.b\)/);
   });
   it('the focus card offers "Compare this", which fills the first slot and moves focus to the second', () => {
     expect(src).toMatch(/onClick: compareFocused/);
     expect(src).toMatch(/'aria-label': S\('cmp_from_focus_aria', 'Compare \{name\} with something else'/);
     const fn = src.slice(src.indexOf('function compareFocused'), src.indexOf('function runCompare'));
-    expect(fn).toMatch(/setCmpA\(item\.id\)/);
-    expect(fn).toMatch(/if \(cmpB === item\.id\) setCmpB/); // never the same thing twice
+    expect(fn).toMatch(/changeComparison\(item\.id, cmpB === item\.id \?/); // offers a different second item
     expect(fn).toMatch(/cmpSecondRef\.current/);
     expect(src).toMatch(/h\('select', \{ ref: cmpSecondRef, value: cmpB/);
     for (const rel of UI_COPIES) {
@@ -591,22 +591,25 @@ describe('Scale Explorer shows orders of magnitude, not just names them', () => 
     expect(ctx.sci(0)).toBe('');
   });
 
-  it('the staircase is one chip per whole decade, with a real neighbour as the example or a bare step', () => {
+  it('the scale bridge has exact decade steps and keeps nearby examples separate', () => {
     const sorted = ITEMS.slice().sort((a, b) => b.size - a.size);
     const by = Object.fromEntries(ITEMS.map((i) => [i.id, i]));
     const log10 = (v) => Math.log(v) / Math.LN10;
     const mk = (small, big) => ({ small: by[small], big: by[big], decades: log10(by[big].size / by[small].size) });
-    const body = src.slice(src.indexOf('function staircaseSteps'), src.indexOf('function staircase()'));
-    const run = (compare) => { const ctx = { compare, sorted, log10, Math }; vm.runInNewContext(body + '\nthis.steps = staircaseSteps();', ctx); return ctx.steps; };
+    const body = src.slice(src.indexOf('function scaleBridge('), src.indexOf('function readComparison('));
+    const run = (compare) => { const ctx = { compare, sorted, log10, Math }; vm.runInNewContext(body + '\nthis.steps = scaleBridge(compare, sorted);', ctx); return ctx.steps; };
     const s1 = run(mk('human', 'earth'));
-    expect(s1.length).toBe(6); // 6.87 decades -> six whole steps, the rest is the last arrow
-    expect(s1.map((st) => st.item && st.item.id)).toEqual(['trex', 'pyramid', null, 'everest', 'chicxulub', 'reef']);
+    expect(s1.length).toBe(8); // six complete decade steps between the two endpoints
+    const internal = s1.slice(1, -1);
+    expect(internal.map((st) => st.item && st.item.id)).toEqual(['trex', 'pyramid', null, 'everest', 'chicxulub', 'reef']);
     // the bare step is drawn at exactly 10^k times the small thing
-    expect(s1[2].size).toBeCloseTo(1.7e3, 6);
+    expect(internal[2].size).toBeCloseTo(1.7e3, 6);
+    expect(s1[0].size).toBe(by.human.size);
+    expect(s1[s1.length - 1].size).toBe(by.earth.size);
     // endpoints are never used as their own example
-    for (const st of s1) if (st.item) expect(['human', 'earth']).not.toContain(st.item.id);
-    expect(run(mk('proton', 'universe')).length).toBe(41); // 43 chips in the UI = 41 steps + the two endpoints
-    expect(run(mk('human', 'door')).length).toBe(0); // under one decade: sentence only
+    for (const st of internal) if (st.item) expect(['human', 'earth']).not.toContain(st.item.id);
+    expect(run(mk('proton', 'universe')).length).toBe(43);
+    expect(run(mk('human', 'door')).length).toBe(2); // nearby endpoints remain navigable
   });
 
   it('nested frames are drawn for the focus only, backed for legibility, with a guide to one tick left', () => {
