@@ -286,7 +286,7 @@ describe('Anatomy Lab quiz transition integrity', () => {
     expect(html).not.toContain('Question 0/');
 
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain('rawQuizRoundIdx >= 0 ? Math.floor(rawQuizRoundIdx) : 0');
+    expect(source).toContain('var quizRoundIdx = normalizedQuizIndex(d.quizIdx);');
     expect(source).not.toContain('(d.quizIdx || 0)');
   });
 
@@ -342,7 +342,7 @@ describe('Anatomy Lab navigation recovery', () => {
     expect(source).toContain('var tourPatch = { _activeTab: tab, quizMode: false, _tourActive: true, _tourStepIdx: nextTourIndex, _tourSystem: tourActive ? tourSystemId : sysKey };');
     expect(source).toContain('changeTab(structureFocusPatch(tabTourStep.structureId, tourPatch));');
     // Completion also clears the end-of-tour recap state.
-    expect(source).toContain("updMulti({ _tourCompleted: true, _tourActive: false, _activeTab: 'explore', _tourRecap: null })");
+    expect(source).toContain("updMulti({ _tourCompleted: true, _tourActive: false, _activeTab: 'explore', _tourRecap: null, _tourRecapReturn: null })");
     expect(source).not.toContain("upd('_activeTab', 'tour'); if (!tourActive)");
   });
 });
@@ -412,7 +412,8 @@ describe('Anatomy Lab AI Tutor resilience', () => {
     window.__alloAnatomyAiPending = null;
     const html = renderAnatomy({ _activeTab: 'aiTutor', _aiLoading: true, _aiInput: 'Retry the question' });
     expect(html).toContain('The previous AI request was interrupted. You can ask again.');
-    expect(html).toContain('value="Retry the question"');
+    const root = document.createElement('div'); root.innerHTML = html;
+    expect(root.querySelector('[data-anatomy-tutor-input]').value).toBe('Retry the question');
     expect(html).toContain('maxLength="500"');
     expect(html).toContain('>Ask</button>');
     expect(html).not.toContain('Thinking...');
@@ -444,10 +445,10 @@ describe('Anatomy Lab AI Tutor resilience', () => {
 
   it('guards asynchronous responses with request tokens and atomic updates', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain('if (window.__alloAnatomyAiPending !== token) return;');
+    expect(source).toContain('if (!tutorRequest(token)) return;');
     expect(source).toContain('Promise.resolve(request).then(function(resp)');
     expect(source).toContain("updMulti({ _aiMessages: newMsgs, _aiLoading: true, _aiInput: '', _aiQuestions: newAiQ, _aiRequestToken:requestToken, _aiConversationBand:gradeBand })");
-    expect(source).toContain("function clearTutorConversation(){releaseTutorRequest();");
+    expect(source).toContain("function clearTutorConversation(){releaseTutorRequest(d._aiRequestToken);");
     expect(source).not.toContain("upd('_aiLoading', true)");
   });
 });

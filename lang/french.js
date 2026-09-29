@@ -31901,7 +31901,20 @@
       "restart_quiz_2": "↺ Recommencer",
       "end_quiz": "Terminer le quiz",
       "end_quiz_and_explore": "Terminer le quiz et revenir à Explorer",
-      "quiz_misses_go_to_review": "Les réponses incorrectes sont ajoutées à votre liste de révision."
+      "quiz_misses_go_to_review": "Les réponses incorrectes sont ajoutées à votre liste de révision.",
+      "tutor_flow_draft_again": "Reprendre cette question",
+      "tutor_flow_latest": "Aller à la dernière réponse",
+      "tutor_flow_context": "Question sur : {context}",
+      "tutor_flow_question": "Ta question",
+      "tutor_flow_input_help": "Entrée envoie ta question. Maj+Entrée ajoute une ligne. Ton explication reste enregistrée dans la leçon de référence.",
+      "tutor_flow_keep_draft": "Ta question en cours est conservée. Efface-la pour reprendre une question précédente.",
+      "tutor_flow_starters": "Questions pour commencer",
+      "tutor_flow_reference": "Leçon de référence et écrits enregistrés",
+      "tour_flow_saved": "Tes réponses au bilan sont enregistrées. Revois cette étape, puis reviens au même indice.",
+      "tour_flow_return": "Retour au bilan · Indice {clue}",
+      "tour_flow_restart": "Recommencer le bilan",
+      "tour_flow_restart_help": "Recommencer efface les réponses de ce bilan et lance une nouvelle tentative.",
+      "tour_flow_resume_announce": "Retour à l’indice {clue} du bilan."
     },
     "dna": {
       "back_to_tools": "Retour aux outils",

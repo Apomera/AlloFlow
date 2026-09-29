@@ -1,0 +1,116 @@
+[
+  {
+    "path": "lang/french.js",
+    "keys": [
+      "tutor_flow_draft_again",
+      "tutor_flow_latest",
+      "tutor_flow_context",
+      "tutor_flow_question",
+      "tutor_flow_input_help",
+      "tutor_flow_keep_draft",
+      "tutor_flow_starters",
+      "tutor_flow_reference",
+      "tour_flow_saved",
+      "tour_flow_return",
+      "tour_flow_restart",
+      "tour_flow_restart_help",
+      "tour_flow_resume_announce"
+    ],
+    "hash": "faf4b3dc5e653ac4dc4d6c63c9c9e0de710dd1126f10a11a76d53600696ad22f"
+  },
+  {
+    "path": "desktop/web-app/public/lang/french.js",
+    "keys": [
+      "tutor_flow_draft_again",
+      "tutor_flow_latest",
+      "tutor_flow_context",
+      "tutor_flow_question",
+      "tutor_flow_input_help",
+      "tutor_flow_keep_draft",
+      "tutor_flow_starters",
+      "tutor_flow_reference",
+      "tour_flow_saved",
+      "tour_flow_return",
+      "tour_flow_restart",
+      "tour_flow_restart_help",
+      "tour_flow_resume_announce"
+    ],
+    "hash": "faf4b3dc5e653ac4dc4d6c63c9c9e0de710dd1126f10a11a76d53600696ad22f"
+  },
+  {
+    "path": "lang/spanish_latin_america.js",
+    "keys": [
+      "tutor_flow_draft_again",
+      "tutor_flow_latest",
+      "tutor_flow_context",
+      "tutor_flow_question",
+      "tutor_flow_input_help",
+      "tutor_flow_keep_draft",
+      "tutor_flow_starters",
+      "tutor_flow_reference",
+      "tour_flow_saved",
+      "tour_flow_return",
+      "tour_flow_restart",
+      "tour_flow_restart_help",
+      "tour_flow_resume_announce"
+    ],
+    "hash": "d29c86bd917ff7eed181c79d498b6c6fbe0090741dfcff7f2077897537f6b699"
+  },
+  {
+    "path": "desktop/web-app/public/lang/spanish_latin_america.js",
+    "keys": [
+      "tutor_flow_draft_again",
+      "tutor_flow_latest",
+      "tutor_flow_context",
+      "tutor_flow_question",
+      "tutor_flow_input_help",
+      "tutor_flow_keep_draft",
+      "tutor_flow_starters",
+      "tutor_flow_reference",
+      "tour_flow_saved",
+      "tour_flow_return",
+      "tour_flow_restart",
+      "tour_flow_restart_help",
+      "tour_flow_resume_announce"
+    ],
+    "hash": "d29c86bd917ff7eed181c79d498b6c6fbe0090741dfcff7f2077897537f6b699"
+  },
+  {
+    "path": "lang/arabic.js",
+    "keys": [
+      "tutor_flow_draft_again",
+      "tutor_flow_latest",
+      "tutor_flow_context",
+      "tutor_flow_question",
+      "tutor_flow_input_help",
+      "tutor_flow_keep_draft",
+      "tutor_flow_starters",
+      "tutor_flow_reference",
+      "tour_flow_saved",
+      "tour_flow_return",
+      "tour_flow_restart",
+      "tour_flow_restart_help",
+      "tour_flow_resume_announce"
+    ],
+    "hash": "80dd255ad81d5846e8876541267e043c6b5d494f7b902ca70a174693ff464d31"
+  },
+  {
+    "path": "desktop/web-app/public/lang/arabic.js",
+    "keys": [
+      "tutor_flow_draft_again",
+      "tutor_flow_latest",
+      "tutor_flow_context",
+      "tutor_flow_question",
+      "tutor_flow_input_help",
+      "tutor_flow_keep_draft",
+      "tutor_flow_starters",
+      "tutor_flow_reference",
+      "tour_flow_saved",
+      "tour_flow_return",
+      "tour_flow_restart",
+      "tour_flow_restart_help",
+      "tour_flow_resume_announce"
+    ],
+    "hash": "80dd255ad81d5846e8876541267e043c6b5d494f7b902ca70a174693ff464d31"
+  }
+]

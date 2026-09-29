@@ -42,9 +42,9 @@ describe('Anatomy compact study controls', () => {
     }
   });
   it.each(paths)('keeps Explore settings separate from compact study controls in %s', file => {
-    for (const _activeTab of ['quiz', 'flashcards', 'explore', 'homeoHunt', 'tour', 'spotter']) {
+    for (const _activeTab of ['quiz', 'flashcards', 'explore', 'homeoHunt', 'tour', 'aiTutor', 'spotter']) {
       const s = session(file, { _activeTab }); const root = s.html();
-      expect(!!root.querySelector('[data-anatomy-study-controls]')).toBe(['quiz', 'flashcards', 'homeoHunt'].includes(_activeTab));
+      expect(!!root.querySelector('[data-anatomy-study-controls]')).toBe(['quiz', 'flashcards', 'homeoHunt', 'tour', 'aiTutor'].includes(_activeTab));
       expect(!!root.querySelector('#anatomy-explorer-system')).toBe(_activeTab === 'explore');
       expect(!!root.querySelector('#anatomy-explorer-level')).toBe(_activeTab === 'explore');
     }

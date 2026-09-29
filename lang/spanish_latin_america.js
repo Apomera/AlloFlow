@@ -33483,7 +33483,20 @@
       "restart_quiz_2": "↺ Reiniciar",
       "end_quiz": "Terminar cuestionario",
       "end_quiz_and_explore": "Terminar el cuestionario y volver a Explorar",
-      "quiz_misses_go_to_review": "Las respuestas incorrectas se añaden a tu lista de repaso."
+      "quiz_misses_go_to_review": "Las respuestas incorrectas se añaden a tu lista de repaso.",
+      "tutor_flow_draft_again": "Volver a redactar esta pregunta",
+      "tutor_flow_latest": "Ir a la última respuesta",
+      "tutor_flow_context": "Pregunta sobre: {context}",
+      "tutor_flow_question": "Tu pregunta",
+      "tutor_flow_input_help": "Enter envía tu pregunta. Shift+Enter agrega una línea. Tu explicación queda guardada en la lección de referencia.",
+      "tutor_flow_keep_draft": "Tu borrador actual se conserva. Bórralo para reutilizar una pregunta anterior.",
+      "tutor_flow_starters": "Preguntas para empezar",
+      "tutor_flow_reference": "Lección de referencia y textos guardados",
+      "tour_flow_saved": "Tus respuestas al repaso están guardadas. Revisa este paso y luego vuelve a la misma pista.",
+      "tour_flow_return": "Volver al repaso · Pista {clue}",
+      "tour_flow_restart": "Reiniciar el repaso",
+      "tour_flow_restart_help": "Reiniciar borra estas respuestas del repaso y comienza un nuevo intento.",
+      "tour_flow_resume_announce": "De vuelta en la pista {clue} del repaso."
     },
     "dna": {
       "back_to_tools": "Volver a las herramientas",

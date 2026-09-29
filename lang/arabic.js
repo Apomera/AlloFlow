@@ -30849,7 +30849,20 @@
       "restart_quiz_2": "↺ إعادة البدء",
       "end_quiz": "إنهاء الاختبار",
       "end_quiz_and_explore": "إنهاء الاختبار والعودة إلى الاستكشاف",
-      "quiz_misses_go_to_review": "تُضاف الإجابات غير الصحيحة إلى قائمة المراجعة."
+      "quiz_misses_go_to_review": "تُضاف الإجابات غير الصحيحة إلى قائمة المراجعة.",
+      "tutor_flow_draft_again": "إعادة كتابة هذا السؤال",
+      "tutor_flow_latest": "الانتقال إلى أحدث إجابة",
+      "tutor_flow_context": "السؤال عن: {context}",
+      "tutor_flow_question": "سؤالك",
+      "tutor_flow_input_help": "يرسل مفتاح Enter سؤالك. يضيف Shift+Enter سطرًا جديدًا. يبقى تفسيرك محفوظًا في الدرس المرجعي.",
+      "tutor_flow_keep_draft": "مسودتك الحالية محفوظة. امسحها لإعادة استخدام سؤال سابق.",
+      "tutor_flow_starters": "أسئلة للبدء",
+      "tutor_flow_reference": "الدرس المرجعي والنصوص المحفوظة",
+      "tour_flow_saved": "إجابات المراجعة محفوظة. راجع هذه الخطوة، ثم عد إلى الدليل نفسه.",
+      "tour_flow_return": "العودة إلى المراجعة · الدليل {clue}",
+      "tour_flow_restart": "بدء المراجعة من جديد",
+      "tour_flow_restart_help": "البدء من جديد يمسح إجابات هذه المراجعة ويبدأ محاولة جديدة.",
+      "tour_flow_resume_announce": "العودة إلى الدليل {clue} في المراجعة."
     },
     "dna": {
       "back_to_tools": "العودة إلى الأدوات",
