@@ -1,0 +1,91 @@
+{
+  "capturedAt": "2026-09-29T23:42:53.265Z",
+  "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005",
+  "mirrorSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005",
+  "provenance": "Product source bytes captured before server launch; isolated localhost server and owned headless browser; no learner preview or browser tabs used.",
+  "checks": [
+    {
+      "label": "source and deployed copy are identical at capture",
+      "pass": true
+    },
+    {
+      "label": "light-1280 keeps a 3px keyboard focus outline while hovered",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "hovered": true,
+        "width": "3px",
+        "style": "solid"
+      }
+    },
+    {
+      "label": "light-1280 targeted follow-up fits viewport",
+      "pass": true
+    },
+    {
+      "label": "dark-320 keeps a 3px keyboard focus outline while hovered",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "hovered": true,
+        "width": "3px",
+        "style": "solid"
+      }
+    },
+    {
+      "label": "dark-320 targeted follow-up fits viewport",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 keeps a 3px keyboard focus outline while hovered",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "hovered": true,
+        "width": "3px",
+        "style": "solid"
+      }
+    },
+    {
+      "label": "contrast-320 targeted follow-up fits viewport",
+      "pass": true
+    },
+    {
+      "label": "forced colors displays visible keyboard focus",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "hovered": true,
+        "width": "3px",
+        "style": "solid"
+      }
+    },
+    {
+      "label": "forced-colors-320 targeted follow-up fits viewport",
+      "pass": true
+    }
+  ],
+  "audits": [
+    {
+      "label": "light-1280-targeted-follow-up",
+      "violations": []
+    },
+    {
+      "label": "dark-320-targeted-follow-up",
+      "violations": []
+    },
+    {
+      "label": "contrast-320-targeted-follow-up",
+      "violations": []
+    },
+    {
+      "label": "forced-colors-320-targeted-follow-up",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "failures": [],
+  "lastStep": "mount paused Explorer",
+  "completedAt": "2026-09-29T23:44:10.774Z",
+  "sourceUnchangedAtCompletion": true
+}

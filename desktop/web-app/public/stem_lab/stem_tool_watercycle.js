@@ -1144,6 +1144,77 @@
     mixed: { label: 'A small modeled shift', shortLabel: 'Small shift', emoji: '\u2194\uFE0F' }
   };
 
+  var WCProcessCompare = (function() {
+    var ids = ['evaporation', 'condensation', 'precipitation', 'collection', 'transpiration', 'infiltration'];
+    var answers = ['first', 'second', 'both', 'neither'];
+    function validId(id) { return ids.indexOf(id) !== -1; }
+    function pairKey(first, second) { return first + '|' + second; }
+    function normalize(raw) {
+      raw = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+      var first = validId(raw.first) ? raw.first : 'evaporation';
+      var second = validId(raw.second) && raw.second !== first ? raw.second : first === 'transpiration' ? 'evaporation' : 'transpiration';
+      var notes = {};
+      if (raw.notes && typeof raw.notes === 'object' && !Array.isArray(raw.notes)) {
+        Object.keys(raw.notes).forEach(function(key) {
+          var pair = key.split('|');
+          if (pair.length === 2 && validId(pair[0]) && validId(pair[1]) && pair[0] !== pair[1] && typeof raw.notes[key] === 'string') notes[key] = raw.notes[key].slice(0, 800);
+        });
+      }
+      var validPair = validId(raw.first) && validId(raw.second) && raw.first !== raw.second;
+      var validQuestion = raw.question === 'phase' || raw.question === 'energy';
+      var answer = validPair && validQuestion && answers.indexOf(raw.answer) !== -1 ? raw.answer : '';
+      return { first: first, second: second, question: raw.question === 'energy' ? 'energy' : 'phase', answer: answer, checked: raw.checked === true && answer !== '', notes: notes };
+    }
+    function transition(raw, action) {
+      var next = normalize(raw);
+      action = action && typeof action === 'object' ? action : {};
+      if (action.type === 'pair') {
+        var pair = normalize({ first: action.first, second: action.second });
+        if (pair.first !== next.first || pair.second !== next.second) {
+          next.first = pair.first; next.second = pair.second; next.answer = ''; next.checked = false;
+        }
+      } else if (action.type === 'question') {
+        var question = action.value === 'energy' ? 'energy' : 'phase';
+        if (question !== next.question) { next.question = question; next.answer = ''; next.checked = false; }
+      } else if (action.type === 'answer') {
+        var answer = answers.indexOf(action.value) !== -1 ? action.value : '';
+        if (answer !== next.answer) { next.answer = answer; next.checked = false; }
+      } else if (action.type === 'check') {
+        next.checked = next.answer !== '';
+      } else if (action.type === 'note') {
+        next.notes[pairKey(next.first, next.second)] = typeof action.value === 'string' ? action.value.slice(0, 800) : '';
+      }
+      return next;
+    }
+    function descriptor(id, traces) {
+      if (!validId(id) || !traces || typeof traces !== 'object' || !Object.prototype.hasOwnProperty.call(traces, id)) return null;
+      var trace = traces[id];
+      if (!trace || typeof trace !== 'object' || Array.isArray(trace)) return null;
+      var fields = ['phaseFrom', 'phaseTo', 'energyTransfer', 'energyLabel', 'driver', 'source', 'destination'];
+      if (!fields.every(function(key) { return typeof trace[key] === 'string' && trace[key].trim() !== ''; }) || ['absorbed', 'released', 'none'].indexOf(trace.energyTransfer) === -1) return null;
+      var result = { id: id };
+      fields.forEach(function(key) { result[key] = trace[key]; });
+      // The comparison scopes condensation to liquid droplets. Ice growth and
+      // deposition belong to the cloud lesson, rather than this named process.
+      if (id === 'condensation') { result.phaseTo = 'Liquid droplets'; result.destination = 'Cloud droplets'; }
+      // Entering soil pores does not by itself establish groundwater recharge.
+      if (id === 'infiltration') { result.phaseTo = 'Liquid soil pore water'; result.destination = 'Soil pore water'; }
+      result.stateChange = trace.energyTransfer !== 'none';
+      result.absorbsVaporEnergy = trace.energyTransfer === 'absorbed';
+      return result;
+    }
+    function evaluate(first, second, question, traces) {
+      if (first === second || (question !== 'phase' && question !== 'energy')) return null;
+      var a = descriptor(first, traces), b = descriptor(second, traces);
+      if (!a || !b) return null;
+      var key = question === 'energy' ? 'absorbsVaporEnergy' : 'stateChange';
+      var firstValue = a[key], secondValue = b[key];
+      return { expected: firstValue ? (secondValue ? 'both' : 'first') : (secondValue ? 'second' : 'neither'), first: firstValue, second: secondValue };
+    }
+    return { ids: ids.slice(), normalize: normalize, transition: transition, descriptor: descriptor, evaluate: evaluate };
+  })();
+  // End process comparison helpers.
+
   var WCExploreNotebook = (function() {
     var defaults = { climSolar: 1, climTemp: 15, climWind: 1, landRainIntensity: 55, landSaturation: 45, landPermeability: 'medium', landSlope: 'moderate', landCover: 'grass' };
     var labels = { climSolar: 'Sunlight', climTemp: 'Temperature', climWind: 'Wind', landRainIntensity: 'Rainfall intensity', landSaturation: 'Soil saturation', landPermeability: 'Soil permeability', landSlope: 'Slope', landCover: 'Land cover' };
@@ -4261,6 +4332,8 @@
       '.wc-notebook-reflection{border-top:1px solid var(--wc-viz-line);margin-top:3px}.wc-notebook-reflection summary{min-height:44px;padding:11px 0;font-size:13px;font-weight:800;cursor:pointer;color:var(--wc-viz-ink)}.wc-notebook-reflection p,.wc-notebook-reflection li{font-size:12px;line-height:1.55;color:var(--wc-viz-muted);overflow-wrap:anywhere}.wc-notebook-reflection ul{margin:8px 0;padding-left:18px}.wc-notebook-note{margin-top:12px}.wc-notebook-note label{display:block;font-size:13px;font-weight:800;color:var(--wc-viz-ink)}.wc-notebook-note p{margin:4px 0 7px}.wc-notebook-note textarea{display:block;width:100%;max-width:100%;box-sizing:border-box;resize:vertical;min-height:84px;padding:10px;border:1px solid var(--wc-viz-line);border-radius:8px;background:var(--wc-viz-card);color:var(--wc-viz-ink);font:inherit;font-size:13px;line-height:1.5}.wc-notebook-values{max-width:100%;overflow-x:auto;margin:10px 0}.wc-notebook-values table{width:100%;border-collapse:collapse;font-size:12px;color:var(--wc-viz-ink)}.wc-notebook-values caption{text-align:left;font-size:13px;font-weight:800;margin:0 0 6px}.wc-notebook-values th,.wc-notebook-values td{padding:7px 5px;border-bottom:1px solid var(--wc-viz-line);text-align:left;overflow-wrap:anywhere}.wc-notebook-values th{font-weight:750}.wc-notebook-values th:first-child{width:50%}',
       '@media(max-width:700px){.wc-fair-inputs{grid-template-columns:1fr}.wc-fair-isolate{grid-template-columns:1fr}.wc-fair-isolate label,.wc-fair-isolate small{grid-column:1}.wc-notebook-undo{display:block}.wc-notebook-undo button{margin-top:8px;width:100%}}@media(forced-colors:active){.wc-explorer-root :is(.wc-fair-test,.wc-notebook-capacity,.wc-notebook-undo,.wc-notebook-note textarea){background:Canvas;color:CanvasText;border-color:CanvasText}.wc-explorer-root :is(.wc-fair-isolate,.wc-notebook-undo,.wc-log-entry-actions) :is(button,select){background:ButtonFace;color:ButtonText;border-color:ButtonText}.wc-explorer-root :is(.wc-fair-test,.wc-notebook-reflection,.wc-notebook-undo,.wc-log-entry-actions) :focus-visible{outline-color:Highlight}}'
     ].join('\n');
+    // Optional process comparison follows the Explore surface palette.
+    wcFiveStyle.textContent += "/* Process comparison activity */\n.wc-explorer-root .wc-process-compare {\n  --wc-process-earth: #805733;\n  --wc-process-earth-tint: #f5eee4;\n  margin: 16px 0;\n  border: 1px solid var(--wc-viz-line);\n  border-radius: 17px;\n  background: var(--wc-viz-card);\n  color: var(--wc-viz-ink);\n  overflow: visible;\n}\n.wc-explorer-root .wc-process-compare,\n.wc-explorer-root .wc-process-compare * { box-sizing: border-box; }\n.wc-explorer-root .wc-process-compare-summary {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  min-height: 68px;\n  padding: 15px 17px;\n  border-radius: 16px;\n  list-style: none;\n  cursor: pointer;\n  color: var(--wc-viz-ink);\n}\n.wc-explorer-root .wc-process-compare-summary::-webkit-details-marker { display: none; }\n.wc-explorer-root .wc-process-compare-summary > svg {\n  flex: 0 0 38px;\n  width: 38px;\n  height: 38px;\n  padding: 7px;\n  border: 1px solid var(--wc-viz-line);\n  border-radius: 12px;\n  background: var(--wc-viz-tint);\n  color: var(--wc-viz-accent);\n}\n.wc-explorer-root .wc-process-compare-summary > span:not(.wc-process-disclosure-indicator) { flex: 1; min-width: 0; }\n.wc-explorer-root .wc-process-compare-summary strong { display: block; font-size: 16px; font-weight: 800; line-height: 1.35; letter-spacing: -.015em; }\n.wc-explorer-root .wc-process-compare-summary small { display: block; margin-top: 3px; color: var(--wc-viz-muted); font-size: 12px; font-weight: 450; line-height: 1.5; }\n.wc-explorer-root .wc-process-disclosure-indicator { display: grid; place-items: center; flex: 0 0 28px; width: 28px; height: 28px; border: 1px solid var(--wc-viz-line); border-radius: 50%; color: var(--wc-viz-ink); background: var(--wc-viz-paper); font-size: 0; }\n.wc-explorer-root .wc-process-disclosure-indicator::before { content: ''; width: 7px; height: 7px; margin-top: -3px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); }\n.wc-explorer-root .wc-process-compare[open] .wc-process-disclosure-indicator::before { margin-top: 3px; transform: rotate(225deg); }\n.wc-explorer-root .wc-process-compare[open] > summary { border-radius: 16px 16px 0 0; border-bottom: 1px solid var(--wc-viz-line); }\n.wc-explorer-root .wc-process-compare-summary:hover { background: var(--wc-viz-tint); }\n.wc-explorer-root .wc-process-compare-body { display: grid; gap: 17px; min-width: 0; padding: 17px; }\n.wc-explorer-root .wc-process-intro { margin: 0; max-width: 74ch; color: var(--wc-viz-muted); font-size: 13px; line-height: 1.65; }\n.wc-explorer-root .wc-process-pairs { display: flex; flex-wrap: wrap; gap: 7px; }\n.wc-explorer-root .wc-process-pairs > button { flex: 1 1 180px; min-height: 44px; min-width: 0; padding: 10px 12px; border: 1px solid var(--wc-viz-line); border-radius: 10px; background: var(--wc-viz-paper); color: var(--wc-viz-ink); font: inherit; font-size: 12px; font-weight: 700; line-height: 1.45; text-align: left; white-space: normal; cursor: pointer; box-shadow: none; }\n.wc-explorer-root .wc-process-pairs > button:hover { background: var(--wc-viz-tint); border-color: var(--wc-viz-accent); }\n.wc-explorer-root .wc-process-pairs > button[aria-pressed=true] { border-color: var(--wc-viz-accent); background: var(--wc-viz-tint); box-shadow: inset 0 0 0 1px var(--wc-viz-accent); text-decoration: underline; text-underline-offset: 3px; }\n.wc-explorer-root .wc-process-selectors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }\n.wc-explorer-root .wc-process-selectors > * { min-width: 0; }\n.wc-explorer-root .wc-process-selectors label { display: block; margin-bottom: 6px; color: var(--wc-viz-ink); font-size: 12px; font-weight: 800; line-height: 1.45; }\n.wc-explorer-root .wc-process-selectors select { display: block; width: 100%; max-width: 100%; min-width: 0; min-height: 44px; padding: 9px 30px 9px 11px; border: 1px solid var(--wc-viz-line); border-radius: 10px; background: var(--wc-viz-paper); color: var(--wc-viz-ink); font: inherit; font-size: 13px; line-height: 1.45; }\n.wc-explorer-root .wc-process-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }\n.wc-explorer-root .wc-process-card { --wc-process-slot-color: var(--wc-viz-accent); --wc-process-slot-tint: var(--wc-viz-tint); min-width: 0; padding: 15px; border: 1px solid var(--wc-viz-line); border-top: 3px solid var(--wc-process-slot-color); border-radius: 13px; background: var(--wc-viz-paper); }\n.wc-explorer-root .wc-process-card[data-slot=second] { --wc-process-slot-color: var(--wc-process-earth); --wc-process-slot-tint: var(--wc-process-earth-tint); }\n.wc-explorer-root .wc-process-card > header { display: flex; align-items: center; gap: 9px; margin-bottom: 15px; }\n.wc-explorer-root .wc-process-letter { display: grid; place-items: center; flex: 0 0 28px; width: 28px; height: 28px; border: 1px solid var(--wc-process-slot-color); border-radius: 9px; color: var(--wc-process-slot-color); background: var(--wc-process-slot-tint); font-size: 13px; font-weight: 800; }\n.wc-explorer-root .wc-process-card h4 { min-width: 0; margin: 0; color: var(--wc-viz-ink); font-size: 17px; font-weight: 800; line-height: 1.35; letter-spacing: -.015em; }\n.wc-explorer-root .wc-process-state-flow { display: grid; grid-template-columns: minmax(0, 1fr) 20px minmax(0, 1fr); align-items: center; gap: 7px; min-width: 0; margin-bottom: 15px; }\n.wc-explorer-root .wc-process-state { display: grid; justify-items: center; align-content: center; gap: 5px; min-width: 0; min-height: 124px; padding: 12px 7px; border: 1px solid var(--wc-viz-line); border-radius: 11px; background: var(--wc-viz-card); text-align: center; }\n.wc-explorer-root .wc-process-state svg { display: block; width: 40px; height: 40px; color: var(--wc-process-slot-color); }\n.wc-explorer-root .wc-process-state strong { color: var(--wc-viz-ink); font-size: 13px; font-weight: 800; line-height: 1.35; }\n.wc-explorer-root .wc-process-state small { color: var(--wc-viz-muted); font-size: 11px; line-height: 1.45; }\n.wc-explorer-root .wc-process-state-arrow { color: var(--wc-process-slot-color); font-size: 22px; font-weight: 600; line-height: 1; text-align: center; }\n.wc-explorer-root .wc-process-facts { display: grid; gap: 10px; margin: 0; }\n.wc-explorer-root .wc-process-facts > div { min-width: 0; padding-top: 10px; border-top: 1px solid var(--wc-viz-line); }\n.wc-explorer-root .wc-process-facts dt { color: var(--wc-viz-muted); font-size: 11px; font-weight: 750; line-height: 1.4; }\n.wc-explorer-root .wc-process-facts dd { margin: 3px 0 0; color: var(--wc-viz-ink); font-size: 13px; line-height: 1.6; }\n.wc-explorer-root .wc-process-caveat { display: block; margin-top: 12px; padding: 10px 11px; border-left: 2px solid var(--wc-process-slot-color); border-radius: 0 8px 8px 0; background: var(--wc-process-slot-tint); color: var(--wc-viz-muted); font-size: 11px; line-height: 1.6; }\n.wc-explorer-root .wc-process-card .wc-process-energy { min-width: 0; margin-top: 13px; padding: 12px; border: 1px solid var(--wc-viz-line); border-left: 3px solid var(--wc-process-slot-color); border-radius: 10px; background: var(--wc-process-slot-tint); color: var(--wc-viz-ink); }\n.wc-explorer-root .wc-process-card .wc-process-energy > strong { display: block; margin: 0; color: var(--wc-viz-ink); font-size: 13px; font-weight: 800; line-height: 1.45; }\n.wc-explorer-root .wc-process-card .wc-process-energy > p { margin: 5px 0 0; color: var(--wc-viz-muted); font-size: 12px; line-height: 1.65; }\n.wc-explorer-root .wc-process-question-modes,\n.wc-explorer-root .wc-process-answer { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; min-width: 0; margin: 0; padding: 0; border: 0; }\n.wc-explorer-root .wc-process-question-modes legend,\n.wc-explorer-root .wc-process-answer legend { display: block; width: 100%; margin-bottom: 10px; padding: 0; color: var(--wc-viz-ink); font-size: 14px; font-weight: 800; line-height: 1.5; }\n.wc-explorer-root .wc-process-question-modes label,\n.wc-explorer-root .wc-process-answer label { display: grid; grid-template-columns: 18px minmax(0, 1fr); align-items: start; column-gap: 9px; row-gap: 3px; min-width: 0; min-height: 48px; padding: 12px; border: 1px solid var(--wc-viz-line); border-radius: 11px; background: var(--wc-viz-paper); color: var(--wc-viz-ink); cursor: pointer; }\n.wc-explorer-root .wc-process-question-modes label:hover,\n.wc-explorer-root .wc-process-answer label:hover { background: var(--wc-viz-tint); border-color: var(--wc-viz-accent); }\n.wc-explorer-root .wc-process-question-modes input[type=radio],\n.wc-explorer-root .wc-process-answer input[type=radio] { grid-column: 1; grid-row: 1 / span 2; width: 16px; height: 16px; margin: 2px 0 0; accent-color: var(--wc-viz-accent); }\n.wc-explorer-root .wc-process-question-modes label > :not(input),\n.wc-explorer-root .wc-process-answer label > :not(input) { grid-column: 2; min-width: 0; }\n.wc-explorer-root .wc-process-question-modes label > span,\n.wc-explorer-root .wc-process-answer label > span { display: grid; gap: 3px; max-width: 100%; white-space: normal; overflow: visible; }\n.wc-explorer-root .wc-process-question-modes strong,\n.wc-explorer-root .wc-process-answer strong { min-width: 0; max-width: 100%; color: inherit; font-size: 13px; font-weight: 750; line-height: 1.45; white-space: normal; overflow: visible; text-overflow: clip; }\n.wc-explorer-root .wc-process-question-modes small,\n.wc-explorer-root .wc-process-answer small { display: block; min-width: 0; max-width: 100%; color: var(--wc-viz-muted); font-size: 12px; line-height: 1.55; white-space: normal; overflow: visible; text-overflow: clip; }\n.wc-explorer-root .wc-process-question-modes label:has(input:checked),\n.wc-explorer-root .wc-process-answer label:has(input:checked) { border-color: var(--wc-viz-accent); background: var(--wc-viz-tint); box-shadow: inset 0 0 0 1px var(--wc-viz-accent); }\n.wc-explorer-root .wc-process-question-modes label:has(input:checked) strong,\n.wc-explorer-root .wc-process-answer label:has(input:checked) strong { text-decoration: underline; text-underline-offset: 3px; }\n.wc-explorer-root .wc-process-question-modes > button { min-width: 0; min-height: 44px; padding: 10px 12px; border: 1px solid var(--wc-viz-line); border-radius: 10px; background: var(--wc-viz-paper); color: var(--wc-viz-ink); font: inherit; font-size: 13px; font-weight: 750; line-height: 1.45; white-space: normal; cursor: pointer; }\n.wc-explorer-root .wc-process-question-modes > button[aria-pressed=true] { border-color: var(--wc-viz-accent); background: var(--wc-viz-tint); box-shadow: inset 0 0 0 1px var(--wc-viz-accent); text-decoration: underline; text-underline-offset: 3px; }\n.wc-explorer-root .wc-process-check { justify-self: start; min-width: 150px; min-height: 44px; max-width: 100%; padding: 11px 16px; border: 1px solid var(--wc-viz-accent); border-radius: 11px; background: var(--wc-viz-accent); color: #fff; font: inherit; font-size: 13px; font-weight: 800; line-height: 1.45; white-space: normal; cursor: pointer; box-shadow: none; }\n.wc-explorer-root .wc-process-check:hover:not(:disabled):not(:focus-visible) { outline: 1px solid var(--wc-viz-accent); outline-offset: 2px; }\n.wc-explorer-root .wc-process-check:disabled { border-color: var(--wc-viz-line); background: var(--wc-viz-paper); color: var(--wc-viz-muted); cursor: default; }\n.wc-explorer-root .wc-process-feedback { min-width: 0; padding: 15px; border: 1px solid var(--wc-viz-line); border-left: 3px solid var(--wc-viz-accent); border-radius: 12px; background: var(--wc-viz-tint); color: var(--wc-viz-ink); }\n.wc-explorer-root .wc-process-feedback h4 { margin: 0 0 6px; color: var(--wc-viz-ink); font-size: 15px; font-weight: 800; line-height: 1.4; }\n.wc-explorer-root .wc-process-feedback p { margin: 0; color: var(--wc-viz-ink); font-size: 13px; line-height: 1.65; }\n.wc-explorer-root .wc-process-feedback ul { display: grid; gap: 6px; margin: 10px 0 0; padding-left: 18px; color: var(--wc-viz-muted); font-size: 12px; line-height: 1.65; }\n.wc-explorer-root .wc-process-reflection { padding-top: 15px; border-top: 1px solid var(--wc-viz-line); min-width: 0; }\n.wc-explorer-root .wc-process-reflection label { display: block; color: var(--wc-viz-ink); font-size: 13px; font-weight: 800; line-height: 1.5; }\n.wc-explorer-root .wc-process-reflection p { margin: 4px 0 8px; color: var(--wc-viz-muted); font-size: 12px; line-height: 1.6; }\n.wc-explorer-root .wc-process-reflection textarea { display: block; width: 100%; max-width: 100%; min-height: 100px; padding: 11px 12px; border: 1px solid var(--wc-viz-line); border-radius: 10px; background: var(--wc-viz-paper); color: var(--wc-viz-ink); font: inherit; font-size: 13px; line-height: 1.6; resize: vertical; }\n.wc-explorer-root .wc-process-compare :is(button, select, input, textarea, summary):focus-visible { outline: 3px solid var(--wc-viz-focus); outline-offset: 3px; }\n.wc-explorer-root .wc-process-question-modes label:has(input:focus-visible),\n.wc-explorer-root .wc-process-answer label:has(input:focus-visible) { outline: 3px solid var(--wc-viz-focus); outline-offset: 3px; }\n.wc-explorer-root .wc-process-compare :is(strong, small, h4, p, li, dd, label, button) { overflow-wrap: anywhere; }\n.wc-explorer-root.dark .wc-process-compare { --wc-process-earth: #e9c39a; --wc-process-earth-tint: #343b37; }\n.wc-explorer-root[data-visual-contrast=true] .wc-process-compare { --wc-process-earth: var(--wc-viz-ink); --wc-process-earth-tint: var(--wc-viz-paper); }\n.wc-explorer-root[data-visual-contrast=true] .wc-process-check:not(:disabled) { color: #000; }\n@media (max-width: 700px) {\n  .wc-explorer-root .wc-process-compare { margin: 12px 0; border-radius: 14px; }\n  .wc-explorer-root .wc-process-compare-summary { min-height: 64px; gap: 9px; padding: 13px 12px; border-radius: 13px; }\n  .wc-explorer-root .wc-process-compare[open] > summary { border-radius: 13px 13px 0 0; }\n  .wc-explorer-root .wc-process-compare-summary > svg { flex-basis: 32px; width: 32px; height: 32px; padding: 5px; border-radius: 10px; }\n  .wc-explorer-root .wc-process-compare-summary strong { font-size: 15px; }\n  .wc-explorer-root .wc-process-compare-body { gap: 15px; padding: 12px; }\n  .wc-explorer-root .wc-process-cards { grid-template-columns: 1fr; gap: 10px; }\n  .wc-explorer-root .wc-process-pairs > button { flex-basis: 100%; }\n  .wc-explorer-root .wc-process-card { padding: 13px; }\n  .wc-explorer-root .wc-process-feedback { padding: 13px; }\n}\n@media (max-width: 440px) {\n  .wc-explorer-root .wc-process-selectors,\n  .wc-explorer-root .wc-process-question-modes,\n  .wc-explorer-root .wc-process-answer { grid-template-columns: 1fr; }\n  .wc-explorer-root .wc-process-check { width: 100%; }\n  .wc-explorer-root .wc-process-compare-summary small { font-size: 11px; }\n}\n@media (forced-colors: active) {\n  .wc-explorer-root .wc-process-compare,\n  .wc-explorer-root.dark .wc-process-compare,\n  .wc-explorer-root[data-visual-contrast=true] .wc-process-compare { --wc-process-earth: CanvasText; --wc-process-earth-tint: Canvas; }\n  .wc-explorer-root .wc-process-card { --wc-process-slot-color: CanvasText; --wc-process-slot-tint: Canvas; }\n  .wc-explorer-root .wc-process-compare :is(button, select, textarea) { background: ButtonFace; color: ButtonText; border-color: ButtonText; box-shadow: none; }\n  .wc-explorer-root .wc-process-pairs > button[aria-pressed=true],\n  .wc-explorer-root .wc-process-question-modes > button[aria-pressed=true],\n  .wc-explorer-root .wc-process-question-modes label:has(input:checked),\n  .wc-explorer-root .wc-process-answer label:has(input:checked),\n  .wc-explorer-root .wc-process-check:not(:disabled),\n  .wc-explorer-root[data-visual-contrast=true] .wc-process-check:not(:disabled) { forced-color-adjust: none; border-color: ButtonText; background: Highlight; color: HighlightText; box-shadow: none; }\n  .wc-explorer-root .wc-process-compare :is(label:has(input:checked), button[aria-pressed=true]) :is(strong, small, span) { background: transparent; color: inherit; }\n  .wc-explorer-root .wc-process-check:disabled { background: Canvas; color: GrayText; border-color: GrayText; }\n  .wc-explorer-root .wc-process-compare :focus-visible,\n  .wc-explorer-root .wc-process-compare label:has(input:focus-visible) { outline-color: Highlight; }\n  .wc-explorer-root .wc-process-state svg { color: CanvasText; }\n}\n@media (prefers-reduced-motion: reduce) {\n  .wc-explorer-root .wc-process-compare * { animation: none; transition: none; scroll-behavior: auto; }\n}\n";
     document.head.appendChild(wcFiveStyle);
     wcFiveStyle.textContent += '.wc-explorer-root .wc-log-entry:only-child{grid-column:1/-1}@media(max-width:400px){.wc-notebook-values th:first-child{width:44%}.wc-notebook-values th,.wc-notebook-values td{font-size:11px;padding:6px 3px}.wc-notebook-values thead th:not(:first-child){white-space:nowrap}}';
   }
@@ -30317,6 +30390,139 @@ const d = labToolData.waterCycle || {};
             : (STAGE_FLOW[resolvedStageId] || STAGE_FLOW.collection);
           var currentMatterEnergyPhaseLabel = currentMatterEnergy.phaseFrom + ' → ' + currentMatterEnergy.phaseTo;
           var resolvedStageIndex = Math.max(0, STAGES.findIndex(function(stage) { return stage.id === resolvedStageId; })) + 1;
+          // Compare named processes without changing the active parcel or scene.
+          var wcProcessComparison = WCProcessCompare.normalize(d.wcProcessCompare);
+          function updateWcProcessComparison(action) {
+            upd('wcProcessCompare', WCProcessCompare.transition(d.wcProcessCompare, action));
+            if (action.type === 'check') window.setTimeout(function() {
+              var heading = document.getElementById('wcProcessFeedbackTitle');
+              if (heading) heading.focus();
+            }, 0);
+          }
+          function wcComparedProcessLabel(id) {
+            var stage = STAGES.find(function(item) { return item.id === id; });
+            return stage ? stage.label : id;
+          }
+          function wcProcessDiagram(id, after) {
+            var kind = id === 'condensation' ? (after ? 'liquid' : 'vapor') :
+              id === 'evaporation' ? (after ? 'vapor' : 'liquid') :
+              id === 'transpiration' ? (after ? 'vapor' : 'leaf') :
+              id === 'infiltration' ? (after ? 'soil' : 'liquid') : after && id === 'collection' ? 'store' : 'mixed';
+            var lines = [];
+            var lineProps = { fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' };
+            function path(drawing, key, extra) { return React.createElement('path', Object.assign({ key: key, d: drawing }, lineProps, extra || {})); }
+            if (kind === 'vapor') {
+              lines = [path('M12 32c-5-6 5-8 0-14M24 34c-5-7 5-10 0-17M36 32c-5-6 5-8 0-14', 'vapor', { strokeDasharray: '3 4' }), React.createElement('circle', { key: 'molecule', cx: 24, cy: 10, r: 2.5, fill: 'currentColor' })];
+            } else if (kind === 'leaf') {
+              lines = [path('M12 34C6 15 23 10 36 11c1 14-7 27-24 23Z', 'leaf'), path('M12 34l18-17M21 25l-2-7M21 25l8 1', 'vein')];
+            } else if (kind === 'soil') {
+              lines = [path('M8 22h32M8 31h32M8 39h32M24 7v10m-4-4 4 4 4-4', 'soil'), React.createElement('circle', { key: 'pore1', cx: 17, cy: 27, r: 2, fill: 'currentColor' }), React.createElement('circle', { key: 'pore2', cx: 30, cy: 35, r: 2, fill: 'currentColor' })];
+            } else if (kind === 'store') {
+              lines = [path('M7 25c5-5 10 5 16 0s11 5 18 0M7 33c5-5 10 5 16 0s11 5 18 0M10 13v7M38 13v7', 'store')];
+            } else if (kind === 'mixed') {
+              lines = [path('M16 10c0 0-7 8-7 13a7 7 0 0 0 14 0c0-5-7-13-7-13Z', 'drop'), path('M34 23v15M27 27l14 7M27 34l14-7', 'ice')];
+            } else {
+              lines = [path('M24 8S12 22 12 29a12 12 0 0 0 24 0C36 22 24 8 24 8Z', 'drop'), path('M18 29c0 5 3 7 6 7', 'shine')];
+            }
+            return React.createElement('svg', { viewBox: '0 0 48 48', 'aria-hidden': 'true', focusable: 'false' }, React.createElement('circle', { cx: 24, cy: 24, r: 23, fill: 'currentColor', opacity: 0.07 }), lines);
+          }
+          function wcProcessCaveat(id) {
+            var notes = {
+              evaporation: __alloT('stem.watercycle.process_compare_vapor_note', 'Water vapor is an invisible gas. Diagram marks represent its movement.'),
+              condensation: __alloT('stem.watercycle.process_compare_condensation_note', 'This comparison shows vapor becoming liquid droplets. Ice forming directly from vapor is called deposition.'),
+              precipitation: __alloT('stem.watercycle.process_compare_precipitation_note', 'The fall does not require a state change. Falling water can also melt, freeze, or evaporate along its path.'),
+              collection: __alloT('stem.watercycle.process_compare_collection_note', 'Storage can last different lengths of time. Freezing and melting are separate possible processes.'),
+              transpiration: __alloT('stem.watercycle.process_compare_transpiration_note', 'Roots and xylem move liquid water. Liquid evaporates from leaf surfaces before vapor leaves the plant.'),
+              infiltration: __alloT('stem.watercycle.process_compare_infiltration_note', 'Water can remain in shallow soil or move onward. Infiltration does not guarantee groundwater recharge.')
+            };
+            return notes[id] || '';
+          }
+          function renderWcComparedProcess(id, slot) {
+            var process = WCProcessCompare.descriptor(id, MATTER_ENERGY_TRACE);
+            if (!process) return null;
+            var letter = slot === 'first' ? 'A' : 'B';
+            return React.createElement('article', { className: 'wc-process-card', 'data-slot': slot, 'data-process': id },
+              React.createElement('header', null, React.createElement('span', { className: 'wc-process-letter', 'aria-hidden': 'true' }, letter), React.createElement('h4', null, wcComparedProcessLabel(id))),
+              React.createElement('div', { className: 'wc-process-state-flow' },
+                React.createElement('div', { className: 'wc-process-state' }, wcProcessDiagram(id, false), React.createElement('strong', null, process.phaseFrom), React.createElement('small', null, __alloT('stem.watercycle.process_compare_before', 'Before'))),
+                React.createElement('span', { className: 'wc-process-state-arrow', 'aria-hidden': 'true' }, '\u2192'),
+                React.createElement('span', { className: 'sr-only' }, __alloT('stem.watercycle.process_compare_to', 'to')),
+                React.createElement('div', { className: 'wc-process-state' }, wcProcessDiagram(id, true), React.createElement('strong', null, process.phaseTo), React.createElement('small', null, __alloT('stem.watercycle.process_compare_after', 'After')))
+              ),
+              React.createElement('dl', { className: 'wc-process-facts' },
+                React.createElement('div', null, React.createElement('dt', null, __alloT('stem.watercycle.process_compare_source', 'From')), React.createElement('dd', null, process.source)),
+                React.createElement('div', null, React.createElement('dt', null, __alloT('stem.watercycle.process_compare_destination', 'To')), React.createElement('dd', null, process.destination)),
+                React.createElement('div', null, React.createElement('dt', null, __alloT('stem.watercycle.process_compare_driver', 'What drives it')), React.createElement('dd', null, process.driver))
+              ),
+              wcProcessComparison.checked && React.createElement('div', { className: 'wc-process-energy' },
+                React.createElement('strong', null, __alloT('stem.watercycle.process_compare_latent_heat', 'Latent heat')),
+                React.createElement('p', null, process.energyTransfer === 'none' ? __alloT('stem.watercycle.process_compare_no_latent', 'No latent heat transfer is required by this process.') : process.energyLabel)
+              ),
+              React.createElement('small', { className: 'wc-process-caveat' }, wcProcessCaveat(id))
+            );
+          }
+          function renderWcProcessComparison() {
+            var state = wcProcessComparison;
+            var evaluation = WCProcessCompare.evaluate(state.first, state.second, state.question, MATTER_ENERGY_TRACE);
+            var pairs = [['evaporation', 'transpiration'], ['condensation', 'precipitation'], ['infiltration', 'collection']];
+            var question = state.question === 'energy' ? __alloT('stem.watercycle.process_compare_energy_question', 'Which process absorbs latent heat to make water vapor?') : __alloT('stem.watercycle.process_compare_phase_question', 'Which process requires a change of water state?');
+            function selector(slot, label) {
+              return React.createElement('div', null,
+                React.createElement('label', { htmlFor: slot === 'first' ? 'wcProcessFirst' : 'wcProcessSecond' }, label),
+                React.createElement('select', { id: slot === 'first' ? 'wcProcessFirst' : 'wcProcessSecond', value: state[slot], onChange: function(e) {
+                  updateWcProcessComparison({ type: 'pair', first: slot === 'first' ? e.target.value : state.first, second: slot === 'second' ? e.target.value : state.second });
+                } }, STAGES.map(function(stage) { return React.createElement('option', { key: stage.id, value: stage.id, disabled: stage.id === state[slot === 'first' ? 'second' : 'first'] }, stage.label); }))
+              );
+            }
+            function evidenceLine(id, supported) {
+              var descriptor = WCProcessCompare.descriptor(id, MATTER_ENERGY_TRACE);
+              var explanation = state.question === 'phase'
+                ? supported ? __alloT('stem.watercycle.process_compare_phase_yes', 'A water state change is part of this process.') : __alloT('stem.watercycle.process_compare_phase_no', 'Water moves or is stored; a state change is not required.')
+                : supported ? __alloT('stem.watercycle.process_compare_energy_yes', 'Liquid becomes vapor and absorbs latent heat.') : descriptor.energyTransfer === 'released' ? __alloT('stem.watercycle.process_compare_energy_release', 'Vapor becomes liquid and releases latent heat.') : __alloT('stem.watercycle.process_compare_energy_other', 'A liquid-to-vapor change is not required by this process.');
+              return React.createElement('li', { key: id }, React.createElement('strong', null, wcComparedProcessLabel(id) + ': '), explanation);
+            }
+            return React.createElement('details', { className: 'wc-process-compare wc-focus-secondary', 'data-wc-process-compare': 'true' },
+              React.createElement('summary', { className: 'wc-process-compare-summary' },
+                React.createElement('svg', { viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false' }, React.createElement('path', { d: 'M6 3s-4 5-4 8a4 4 0 0 0 8 0C10 8 6 3 6 3Zm12 6s-4 5-4 8a4 4 0 0 0 8 0c0-3-4-8-4-8Z', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7 }), React.createElement('path', { d: 'M12 5h7l-2-2m2 2-2 2M12 19H5l2-2m-2 2 2 2', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' })),
+                React.createElement('span', null, React.createElement('strong', null, __alloT('stem.watercycle.process_compare_title', 'Compare processes')), React.createElement('small', null, __alloT('stem.watercycle.process_compare_hint', 'Water state, energy, and movement'))),
+                React.createElement('span', { className: 'wc-process-disclosure-indicator', 'aria-hidden': 'true' })
+              ),
+              React.createElement('div', { className: 'wc-process-compare-body' },
+                React.createElement('p', { className: 'wc-process-intro' }, __alloT('stem.watercycle.process_compare_intro', 'Compare two named processes. Water can follow many routes through this connected system.')),
+                React.createElement('div', { className: 'wc-process-pairs', role: 'group', 'aria-label': __alloT('stem.watercycle.process_compare_suggested', 'Suggested process comparisons') }, pairs.map(function(pair) {
+                  return React.createElement('button', { type: 'button', key: pair.join('|'), 'data-wc-process-pair': pair.join('|'), 'aria-pressed': state.first === pair[0] && state.second === pair[1], onClick: function() { updateWcProcessComparison({ type: 'pair', first: pair[0], second: pair[1] }); } }, wcComparedProcessLabel(pair[0]) + ' + ' + wcComparedProcessLabel(pair[1]));
+                })),
+                React.createElement('div', { className: 'wc-process-selectors' }, selector('first', __alloT('stem.watercycle.process_compare_first', 'Process A')), selector('second', __alloT('stem.watercycle.process_compare_second', 'Process B'))),
+                React.createElement('div', { className: 'wc-process-cards' }, renderWcComparedProcess(state.first, 'first'), renderWcComparedProcess(state.second, 'second')),
+                React.createElement('fieldset', { className: 'wc-process-question-modes' },
+                  React.createElement('legend', null, __alloT('stem.watercycle.process_compare_lens', 'Choose a question')),
+                  [{ id: 'phase', label: __alloT('stem.watercycle.process_compare_state_lens', 'Water state'), detail: __alloT('stem.watercycle.process_compare_state_hint', 'A change of physical state') }, { id: 'energy', label: __alloT('stem.watercycle.process_compare_energy_lens', 'Latent heat'), detail: __alloT('stem.watercycle.process_compare_energy_hint', 'Energy used to make vapor') }].map(function(mode) {
+                    return React.createElement('label', { key: mode.id }, React.createElement('input', { type: 'radio', name: 'wcProcessQuestion', value: mode.id, checked: state.question === mode.id, onChange: function() { updateWcProcessComparison({ type: 'question', value: mode.id }); } }), React.createElement('span', null, React.createElement('strong', null, mode.label), React.createElement('small', null, mode.detail)));
+                  })
+                ),
+                React.createElement('p', { className: 'wc-process-intro' }, __alloT('stem.watercycle.process_compare_latent_definition', 'Latent heat is energy absorbed or released when water changes physical state. Movement can also be driven by gravity without a state change.')),
+                React.createElement('fieldset', { className: 'wc-process-answer' },
+                  React.createElement('legend', null, question),
+                  [{ id: 'first', label: 'A \u00b7 ' + wcComparedProcessLabel(state.first), detail: __alloT('stem.watercycle.process_compare_only_first', 'Only process A') }, { id: 'second', label: 'B \u00b7 ' + wcComparedProcessLabel(state.second), detail: __alloT('stem.watercycle.process_compare_only_second', 'Only process B') }, { id: 'both', label: __alloT('stem.watercycle.process_compare_both', 'Both processes'), detail: __alloT('stem.watercycle.process_compare_both_hint', 'A and B') }, { id: 'neither', label: __alloT('stem.watercycle.process_compare_neither', 'Neither process'), detail: __alloT('stem.watercycle.process_compare_neither_hint', 'Neither A nor B') }].map(function(answer) {
+                    return React.createElement('label', { key: answer.id }, React.createElement('input', { type: 'radio', name: 'wcProcessAnswer', value: answer.id, checked: state.answer === answer.id, onChange: function() { updateWcProcessComparison({ type: 'answer', value: answer.id }); } }), React.createElement('span', null, React.createElement('strong', null, answer.label), React.createElement('small', null, answer.detail)));
+                  })
+                ),
+                React.createElement('button', { type: 'button', className: 'wc-process-check', disabled: !state.answer || !evaluation, onClick: function() { updateWcProcessComparison({ type: 'check' }); } }, __alloT('stem.watercycle.process_compare_check', 'Check this comparison')),
+                state.checked && evaluation && React.createElement('section', { className: 'wc-process-feedback', role: 'status', 'aria-live': 'polite', 'data-match': state.answer === evaluation.expected ? 'agree' : 'revisit' },
+                  React.createElement('h4', { id: 'wcProcessFeedbackTitle', tabIndex: -1 }, __alloT('stem.watercycle.process_compare_evidence_heading', 'What the process descriptions show')),
+                  React.createElement('p', null, state.answer === evaluation.expected ? __alloT('stem.watercycle.process_compare_agree', 'Your choice fits these process descriptions.') : __alloT('stem.watercycle.process_compare_revisit', 'Revisit the water state and energy evidence for each process.')),
+                  React.createElement('ul', null, evidenceLine(state.first, evaluation.first), evidenceLine(state.second, evaluation.second)),
+                  React.createElement('p', null, __alloT('stem.watercycle.process_compare_boundary', 'This compares named processes, not the amount or speed of water moving in the current scene. Several processes can happen together.'))
+                ),
+                React.createElement('div', { className: 'wc-process-reflection' },
+                  React.createElement('label', { htmlFor: 'wcProcessExplain' }, __alloT('stem.watercycle.process_compare_explain', 'Explain the connection')),
+                  React.createElement('p', null, __alloT('stem.watercycle.process_compare_explain_hint', 'How are these processes alike or different? Use their water states, places, and drivers as evidence. Your writing stays with this pair.')),
+                  React.createElement('textarea', { id: 'wcProcessExplain', rows: 3, maxLength: 800, value: state.notes[state.first + '|' + state.second] || '', onChange: function(e) { updateWcProcessComparison({ type: 'note', value: e.target.value }); } })
+                )
+              )
+            );
+          }
+
           var wcWalkthroughActive = !!d.wcWalkthroughActive;
           var wcWalkthroughIndex = typeof d.wcWalkthroughIndex === 'number' ? Math.max(0, Math.min(STAGES.length - 1, d.wcWalkthroughIndex)) : Math.max(0, resolvedStageIndex - 1);
           var completedChallengeCount = (Array.isArray(d.completedChallenges) ? d.completedChallenges : []).length;
@@ -32299,6 +32505,8 @@ React.createElement("div", {
                 React.createElement("span", { "aria-hidden": "true" }, resolvedStageIndex + "/" + STAGES.length)
               )
             ),
+
+            renderWcProcessComparison(),
 
             // ═══ CLIMATE LAB  -  Interactive Controls ═══
             React.createElement("details", {

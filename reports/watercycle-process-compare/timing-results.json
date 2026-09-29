@@ -1,0 +1,193 @@
+{
+  "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005",
+  "capturedAt": "2026-09-29T23:36:49.995Z",
+  "completedAt": "2026-09-29T23:38:12.955Z",
+  "method": "performance.now around each native DOM control event, including synchronous React handler and render work; total case time also includes the timer and focus settlement. These measurements are a local diagnostic, not Core Web Vitals.",
+  "eventCount": 30,
+  "minEventMs": 1.5,
+  "maxEventMs": 77.29999999888241,
+  "minCaseMs": 439.30000000074506,
+  "maxCaseMs": 862.3999999985099,
+  "cases": [
+    {
+      "first": "evaporation",
+      "second": "transpiration",
+      "question": "phase",
+      "events": [
+        {
+          "label": "first process select",
+          "synchronousMs": 33
+        },
+        {
+          "label": "second process select",
+          "synchronousMs": 24.199999999254942
+        },
+        {
+          "label": "question radio",
+          "synchronousMs": 1.5
+        },
+        {
+          "label": "answer radio",
+          "synchronousMs": 22
+        },
+        {
+          "label": "check button",
+          "synchronousMs": 25
+        }
+      ],
+      "totalMs": 502.90000000037253,
+      "focus": "wcProcessFeedbackTitle",
+      "match": "agree"
+    },
+    {
+      "first": "evaporation",
+      "second": "transpiration",
+      "question": "energy",
+      "events": [
+        {
+          "label": "first process select",
+          "synchronousMs": 13.299999998882413
+        },
+        {
+          "label": "second process select",
+          "synchronousMs": 21.90000000037253
+        },
+        {
+          "label": "question radio",
+          "synchronousMs": 21
+        },
+        {
+          "label": "answer radio",
+          "synchronousMs": 17.700000001117587
+        },
+        {
+          "label": "check button",
+          "synchronousMs": 77.29999999888241
+        }
+      ],
+      "totalMs": 862.3999999985099,
+      "focus": "wcProcessFeedbackTitle",
+      "match": "agree"
+    },
+    {
+      "first": "condensation",
+      "second": "precipitation",
+      "question": "phase",
+      "events": [
+        {
+          "label": "first process select",
+          "synchronousMs": 49.19999999925494
+        },
+        {
+          "label": "second process select",
+          "synchronousMs": 26.40000000037253
+        },
+        {
+          "label": "question radio",
+          "synchronousMs": 22.59999999962747
+        },
+        {
+          "label": "answer radio",
+          "synchronousMs": 11.900000000372529
+        },
+        {
+          "label": "check button",
+          "synchronousMs": 7.599999999627471
+        }
+      ],
+      "totalMs": 482.09999999962747,
+      "focus": "wcProcessFeedbackTitle",
+      "match": "agree"
+    },
+    {
+      "first": "condensation",
+      "second": "precipitation",
+      "question": "energy",
+      "events": [
+        {
+          "label": "first process select",
+          "synchronousMs": 9.099999999627471
+        },
+        {
+          "label": "second process select",
+          "synchronousMs": 7.700000001117587
+        },
+        {
+          "label": "question radio",
+          "synchronousMs": 9.699999999254942
+        },
+        {
+          "label": "answer radio",
+          "synchronousMs": 8.400000000372529
+        },
+        {
+          "label": "check button",
+          "synchronousMs": 11
+        }
+      ],
+      "totalMs": 439.30000000074506,
+      "focus": "wcProcessFeedbackTitle",
+      "match": "agree"
+    },
+    {
+      "first": "infiltration",
+      "second": "collection",
+      "question": "phase",
+      "events": [
+        {
+          "label": "first process select",
+          "synchronousMs": 11.699999999254942
+        },
+        {
+          "label": "second process select",
+          "synchronousMs": 9.099999999627471
+        },
+        {
+          "label": "question radio",
+          "synchronousMs": 9.100000001490116
+        },
+        {
+          "label": "answer radio",
+          "synchronousMs": 12.799999998882413
+        },
+        {
+          "label": "check button",
+          "synchronousMs": 9.599999999627471
+        }
+      ],
+      "totalMs": 500.59999999962747,
+      "focus": "wcProcessFeedbackTitle",
+      "match": "agree"
+    },
+    {
+      "first": "infiltration",
+      "second": "collection",
+      "question": "energy",
+      "events": [
+        {
+          "label": "first process select",
+          "synchronousMs": 10.300000000745058
+        },
+        {
+          "label": "second process select",
+          "synchronousMs": 8.599999999627471
+        },
+        {
+          "label": "question radio",
+          "synchronousMs": 13
+        },
+        {
+          "label": "answer radio",
+          "synchronousMs": 9.300000000745058
+        },
+        {
+          "label": "check button",
+          "synchronousMs": 9.299999998882413
+        }
+      ],
+      "totalMs": 656.5999999996275,
+      "focus": "wcProcessFeedbackTitle",
+      "match": "agree"
+    }
+  ]
+}

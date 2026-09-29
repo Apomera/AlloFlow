@@ -56,3 +56,15 @@ Water Worlds adds **Account for this change** to a pair of saved observations. F
 The account includes process prompts and a disclosure explaining numerical reconstruction and rounding. The solver equations are unchanged. See [Water Worlds accounting review](../reports/water-worlds-observation-budget/README.md) for model tests, browser checks, and representative captures.
 
 See [Explore evidence review](../reports/watercycle-explore-notebook/README.md) for notebook, claim, fair-test, and keyboard verification.
+
+## Compare processes
+
+An optional **Compare processes** disclosure adds relational reasoning beside the process story. Learners choose two named processes independently of the live scene, then consider which requires a physical state change or absorbs latent heat to make vapor. Suggested pairs connect evaporation with transpiration, condensation with precipitation, and infiltration with collection.
+
+The comparison uses readable state diagrams, source and destination descriptions, and process drivers. Checking a choice reveals latent-heat evidence and a description of each process. Feedback stays separate from the live scene summary. It does not award points or change the active journey, stage progress, climate, or scenario evidence.
+
+Writing is retained for each ordered process pair, so changing questions or exploring another pair preserves the explanation. A changed pair, question, or answer clears old feedback. Malformed restored comparisons also clear stale answers while retaining valid writing.
+
+The cards explain the scope of each named process. Condensation is presented as vapor becoming liquid droplets, with direct vapor-to-ice identified as deposition. Precipitation does not require a state change during the fall; infiltration into soil does not guarantee aquifer recharge. These descriptions use the existing matter and energy traces and make no water-volume or timing calculation.
+
+See [process comparison review](../reports/watercycle-process-compare/README.md) for behavioral, browser, and visual verification.

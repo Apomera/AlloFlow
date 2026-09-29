@@ -1,0 +1,4322 @@
+{
+  "capturedAt": "2026-09-29T23:26:57.385Z",
+  "completedAt": "2026-09-29T23:44:10.774Z",
+  "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005",
+  "mirrorSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005",
+  "sourceUnchangedAtCompletion": true,
+  "provenance": "Owned ephemeral previews and headless browsers served captured source bytes. No learner browser tabs or preview state were touched. Raw failed assertions remain in the individual run reports; this summary includes only passing checks and records their source hashes.",
+  "scopeSinceMatrix": "The only product change after the complete matrix was the check-button hover selector, which now excludes :focus-visible. Process helper, UI text, control handlers, and state logic were unchanged.",
+  "verificationRuns": [
+    {
+      "name": "initial",
+      "method": "All 60 ordered pair/question cases through native DOM control events in one bounded browser call per case; separate Playwright keyboard, note, reset, theme, and accessibility workflows.",
+      "capturedAt": "2026-09-29T23:26:57.385Z",
+      "completedAt": "2026-09-29T23:32:08.840Z",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844",
+      "mirrorSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844",
+      "checkCount": 549,
+      "passingCheckCount": 547,
+      "failedCheckLabels": [
+        "precipitation explanation addresses phase change explicitly",
+        "forced colors displays visible keyboard focus"
+      ],
+      "auditCount": 13,
+      "rawReport": "initial-results.json"
+    },
+    {
+      "name": "followup",
+      "method": "Only targeted follow-up: six native event timing cases, an active paused parcel, equivalent state-change wording, and four focus/theme audits.",
+      "capturedAt": "2026-09-29T23:36:49.995Z",
+      "completedAt": "2026-09-29T23:38:12.955Z",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005",
+      "mirrorSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005",
+      "checkCount": 15,
+      "passingCheckCount": 13,
+      "failedCheckLabels": [
+        "dark-320 keeps a 3px keyboard focus outline while hovered",
+        "contrast-320 keeps a 3px keyboard focus outline while hovered"
+      ],
+      "auditCount": 4,
+      "rawReport": "followup-results.json"
+    },
+    {
+      "name": "focus",
+      "method": "Only four focus states: hover restored after keyboard scrolling; all current-source captures and scoped audits refreshed.",
+      "capturedAt": "2026-09-29T23:42:53.265Z",
+      "completedAt": "2026-09-29T23:44:10.774Z",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005",
+      "mirrorSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005",
+      "checkCount": 9,
+      "passingCheckCount": 9,
+      "failedCheckLabels": [],
+      "auditCount": 4,
+      "rawReport": "focus-results.json"
+    }
+  ],
+  "resolvedFailures": [
+    {
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844",
+      "label": "precipitation explanation addresses phase change explicitly",
+      "reason": "The assertion now accepts equivalent state-change wording.",
+      "correctiveRun": "followup",
+      "correctiveLabel": "precipitation explanation addresses phase change explicitly"
+    },
+    {
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844",
+      "label": "forced colors displays visible keyboard focus",
+      "reason": "The check-button hover rule no longer overrides the 3px keyboard focus outline.",
+      "correctiveRun": "focus",
+      "correctiveLabel": "forced colors displays visible keyboard focus"
+    },
+    {
+      "verificationRun": "followup",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005",
+      "label": "dark-320 keeps a 3px keyboard focus outline while hovered",
+      "reason": "Keyboard scrolling moved the control away from the stationary pointer; the final probe restores hover without clicking and verifies hover plus keyboard focus together.",
+      "correctiveRun": "focus",
+      "correctiveLabel": "dark-320 keeps a 3px keyboard focus outline while hovered"
+    },
+    {
+      "verificationRun": "followup",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005",
+      "label": "contrast-320 keeps a 3px keyboard focus outline while hovered",
+      "reason": "Keyboard scrolling moved the control away from the stationary pointer; the final probe restores hover without clicking and verifies hover plus keyboard focus together.",
+      "correctiveRun": "focus",
+      "correctiveLabel": "contrast-320 keeps a 3px keyboard focus outline while hovered"
+    }
+  ],
+  "unresolvedFailures": [],
+  "checks": [
+    {
+      "label": "source and deployed copy are identical at capture",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "process comparison starts collapsed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "comparison is outside the stage focus live region",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "keyboard opens the native comparison disclosure",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "both process cards show source and destination states before checking",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "latent heat explanations are withheld before checking",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/condensation phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/condensation phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/condensation phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/condensation phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/condensation phase accepts both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/condensation phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/condensation phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/condensation phase invites revision of neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/condensation energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/condensation energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/condensation energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/condensation energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/condensation energy accepts first",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/condensation energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/condensation energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/condensation energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/precipitation phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/precipitation phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/precipitation phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/precipitation phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/precipitation phase accepts first",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/precipitation phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/precipitation phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/precipitation phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/precipitation energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/precipitation energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/precipitation energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/precipitation energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/precipitation energy accepts first",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/precipitation energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/precipitation energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/precipitation energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/infiltration phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/infiltration phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/infiltration phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/infiltration phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/infiltration phase accepts first",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/infiltration phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/infiltration phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/infiltration phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/infiltration energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/infiltration energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/infiltration energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/infiltration energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/infiltration energy accepts first",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/infiltration energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/infiltration energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/infiltration energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/collection phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/collection phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/collection phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/collection phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/collection phase accepts first",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/collection phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/collection phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/collection phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/collection energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/collection energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/collection energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/collection energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/collection energy accepts first",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/collection energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/collection energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/collection energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/transpiration phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/transpiration phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/transpiration phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/transpiration phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/transpiration phase accepts both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/transpiration phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/transpiration phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/transpiration phase invites revision of neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/transpiration energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/transpiration energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/transpiration energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/transpiration energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/transpiration energy accepts both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/transpiration energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/transpiration energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "evaporation/transpiration energy invites revision of neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/evaporation phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/evaporation phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/evaporation phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/evaporation phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/evaporation phase accepts both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/evaporation phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/evaporation phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/evaporation phase invites revision of neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/evaporation energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/evaporation energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/evaporation energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/evaporation energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/evaporation energy accepts second",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/evaporation energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/evaporation energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/evaporation energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/precipitation phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/precipitation phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/precipitation phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/precipitation phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/precipitation phase accepts first",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/precipitation phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/precipitation phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/precipitation phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/precipitation energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/precipitation energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/precipitation energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/precipitation energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/precipitation energy accepts neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/precipitation energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/precipitation energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/precipitation energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/infiltration phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/infiltration phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/infiltration phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/infiltration phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/infiltration phase accepts first",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/infiltration phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/infiltration phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/infiltration phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/infiltration energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/infiltration energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/infiltration energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/infiltration energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/infiltration energy accepts neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/infiltration energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/infiltration energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/infiltration energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/collection phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/collection phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/collection phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/collection phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/collection phase accepts first",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/collection phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/collection phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/collection phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/collection energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/collection energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/collection energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/collection energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/collection energy accepts neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/collection energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/collection energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/collection energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/transpiration phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/transpiration phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/transpiration phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/transpiration phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/transpiration phase accepts both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/transpiration phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/transpiration phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/transpiration phase invites revision of neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/transpiration energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/transpiration energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/transpiration energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/transpiration energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/transpiration energy accepts second",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/transpiration energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/transpiration energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation/transpiration energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/evaporation phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/evaporation phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/evaporation phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/evaporation phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/evaporation phase accepts second",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/evaporation phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/evaporation phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/evaporation phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/evaporation energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/evaporation energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/evaporation energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/evaporation energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/evaporation energy accepts second",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/evaporation energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/evaporation energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/evaporation energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/condensation phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/condensation phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/condensation phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/condensation phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/condensation phase accepts second",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/condensation phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/condensation phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/condensation phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/condensation energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/condensation energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/condensation energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/condensation energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/condensation energy accepts neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/condensation energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/condensation energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/condensation energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/infiltration phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/infiltration phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/infiltration phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/infiltration phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/infiltration phase accepts neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/infiltration phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/infiltration phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/infiltration phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/infiltration energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/infiltration energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/infiltration energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/infiltration energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/infiltration energy accepts neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/infiltration energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/infiltration energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/infiltration energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/collection phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/collection phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/collection phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/collection phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/collection phase accepts neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/collection phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/collection phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/collection phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/collection energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/collection energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/collection energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/collection energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/collection energy accepts neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/collection energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/collection energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/collection energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/transpiration phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/transpiration phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/transpiration phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/transpiration phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/transpiration phase accepts second",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/transpiration phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/transpiration phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/transpiration phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/transpiration energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/transpiration energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/transpiration energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/transpiration energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/transpiration energy accepts second",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/transpiration energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/transpiration energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "precipitation/transpiration energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/evaporation phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/evaporation phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/evaporation phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/evaporation phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/evaporation phase accepts second",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/evaporation phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/evaporation phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/evaporation phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/evaporation energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/evaporation energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/evaporation energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/evaporation energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/evaporation energy accepts second",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/evaporation energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/evaporation energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/evaporation energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/condensation phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/condensation phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/condensation phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/condensation phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/condensation phase accepts second",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/condensation phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/condensation phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/condensation phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/condensation energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/condensation energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/condensation energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/condensation energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/condensation energy accepts neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/condensation energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/condensation energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/condensation energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/precipitation phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/precipitation phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/precipitation phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/precipitation phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/precipitation phase accepts neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/precipitation phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/precipitation phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/precipitation phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/precipitation energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/precipitation energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/precipitation energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/precipitation energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/precipitation energy accepts neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/precipitation energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/precipitation energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/precipitation energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/collection phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/collection phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/collection phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/collection phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/collection phase accepts neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/collection phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/collection phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/collection phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/collection energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/collection energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/collection energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/collection energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/collection energy accepts neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/collection energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/collection energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/collection energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/transpiration phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/transpiration phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/transpiration phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/transpiration phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/transpiration phase accepts second",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/transpiration phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/transpiration phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/transpiration phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/transpiration energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/transpiration energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/transpiration energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/transpiration energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/transpiration energy accepts second",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/transpiration energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/transpiration energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration/transpiration energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/evaporation phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/evaporation phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/evaporation phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/evaporation phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/evaporation phase accepts second",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/evaporation phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/evaporation phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/evaporation phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/evaporation energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/evaporation energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/evaporation energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/evaporation energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/evaporation energy accepts second",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/evaporation energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/evaporation energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/evaporation energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/condensation phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/condensation phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/condensation phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/condensation phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/condensation phase accepts second",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/condensation phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/condensation phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/condensation phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/condensation energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/condensation energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/condensation energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/condensation energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/condensation energy accepts neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/condensation energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/condensation energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/condensation energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/precipitation phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/precipitation phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/precipitation phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/precipitation phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/precipitation phase accepts neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/precipitation phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/precipitation phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/precipitation phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/precipitation energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/precipitation energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/precipitation energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/precipitation energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/precipitation energy accepts neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/precipitation energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/precipitation energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/precipitation energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/infiltration phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/infiltration phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/infiltration phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/infiltration phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/infiltration phase accepts neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/infiltration phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/infiltration phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/infiltration phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/infiltration energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/infiltration energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/infiltration energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/infiltration energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/infiltration energy accepts neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/infiltration energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/infiltration energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/infiltration energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/transpiration phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/transpiration phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/transpiration phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/transpiration phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/transpiration phase accepts second",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/transpiration phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/transpiration phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/transpiration phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/transpiration energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/transpiration energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/transpiration energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/transpiration energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/transpiration energy accepts second",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/transpiration energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/transpiration energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collection/transpiration energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/evaporation phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/evaporation phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/evaporation phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/evaporation phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/evaporation phase accepts both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/evaporation phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/evaporation phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/evaporation phase invites revision of neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/evaporation energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/evaporation energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/evaporation energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/evaporation energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/evaporation energy accepts both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/evaporation energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/evaporation energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/evaporation energy invites revision of neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/condensation phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/condensation phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/condensation phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/condensation phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/condensation phase accepts both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/condensation phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/condensation phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/condensation phase invites revision of neither",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/condensation energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/condensation energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/condensation energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/condensation energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/condensation energy accepts first",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/condensation energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/condensation energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/condensation energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/precipitation phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/precipitation phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/precipitation phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/precipitation phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/precipitation phase accepts first",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/precipitation phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/precipitation phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/precipitation phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/precipitation energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/precipitation energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/precipitation energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/precipitation energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/precipitation energy accepts first",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/precipitation energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/precipitation energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/precipitation energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/infiltration phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/infiltration phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/infiltration phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/infiltration phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/infiltration phase accepts first",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/infiltration phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/infiltration phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/infiltration phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/infiltration energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/infiltration energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/infiltration energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/infiltration energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/infiltration energy accepts first",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/infiltration energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/infiltration energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/infiltration energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/collection phase controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/collection phase begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/collection phase explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/collection phase cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/collection phase accepts first",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/collection phase check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/collection phase changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/collection phase invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/collection energy controls retain selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/collection energy begins unchecked",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/collection energy explanation stays unrevealed",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/collection energy cards identify the selected pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/collection energy accepts first",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/collection energy check focuses the feedback heading",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/collection energy changing an answer hides stale feedback",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "transpiration/collection energy invites revision of both",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "all process comparisons preserve active stage, journey, and condition state",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "comparison checking makes no XP calls",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "keyboard selects a native answer radio",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "keyboard checks the chosen answer",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "changing the question clears checked feedback and the answer",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "changing the question retains writing for the same ordered pair",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "changing a process clears checked feedback and the answer",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "a different ordered pair receives its own explanation",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "the reversed pair receives independent writing",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "returning to an ordered pair restores its writing",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "collapsing and reopening preserves the explanation",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "section switching preserves comparison state and writing",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "explanations have the stated 800 character limit",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "infiltration explanation includes a groundwater caveat",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "condensation explanation distinguishes liquid droplets and deposition",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "the vapor diagram explains its schematic representation",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "energy explanation distinguishes absorption and release",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "light-1280 feedback is hidden before checking",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "light-1280 visible controls have 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "tag": "SUMMARY",
+          "id": "",
+          "text": "Compare processesWater state, energy, and movement",
+          "height": 73.59375
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Evaporation + Transpiration",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Condensation + Precipitation",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Infiltration + Collection",
+          "height": 44
+        },
+        {
+          "tag": "SELECT",
+          "id": "wcProcessFirst",
+          "text": "EvaporationCondensationPrecipitationCollectionTranspirationInfiltration",
+          "height": 44
+        },
+        {
+          "tag": "SELECT",
+          "id": "wcProcessSecond",
+          "text": "EvaporationCondensationPrecipitationCollectionTranspirationInfiltration",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Check this comparison",
+          "height": 44
+        },
+        {
+          "tag": "TEXTAREA",
+          "id": "wcProcessExplain",
+          "text": "",
+          "height": 100
+        }
+      ],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "light-1280 radio labels have 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        }
+      ],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "light-1280 page fits the viewport",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "light-1280 comparison fits its container",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "light-1280 checking reveals both energy explanations",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "light-1280 energy explanation fits the viewport",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "light-320 feedback is hidden before checking",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "light-320 visible controls have 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "tag": "SUMMARY",
+          "id": "",
+          "text": "Compare processesWater state, energy, and movement",
+          "height": 83.25
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Evaporation + Transpiration",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Condensation + Precipitation",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Infiltration + Collection",
+          "height": 44
+        },
+        {
+          "tag": "SELECT",
+          "id": "wcProcessFirst",
+          "text": "EvaporationCondensationPrecipitationCollectionTranspirationInfiltration",
+          "height": 44
+        },
+        {
+          "tag": "SELECT",
+          "id": "wcProcessSecond",
+          "text": "EvaporationCondensationPrecipitationCollectionTranspirationInfiltration",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Check this comparison",
+          "height": 44
+        },
+        {
+          "tag": "TEXTAREA",
+          "id": "wcProcessExplain",
+          "text": "",
+          "height": 100
+        }
+      ],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "light-320 radio labels have 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        }
+      ],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "light-320 page fits the viewport",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "light-320 comparison fits its container",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "light-320 checking reveals both energy explanations",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "light-320 energy explanation fits the viewport",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "dark-1280 feedback is hidden before checking",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "dark-1280 visible controls have 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "tag": "SUMMARY",
+          "id": "",
+          "text": "Compare processesWater state, energy, and movement",
+          "height": 73.59375
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Evaporation + Transpiration",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Condensation + Precipitation",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Infiltration + Collection",
+          "height": 44
+        },
+        {
+          "tag": "SELECT",
+          "id": "wcProcessFirst",
+          "text": "EvaporationCondensationPrecipitationCollectionTranspirationInfiltration",
+          "height": 44
+        },
+        {
+          "tag": "SELECT",
+          "id": "wcProcessSecond",
+          "text": "EvaporationCondensationPrecipitationCollectionTranspirationInfiltration",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Check this comparison",
+          "height": 44
+        },
+        {
+          "tag": "TEXTAREA",
+          "id": "wcProcessExplain",
+          "text": "",
+          "height": 100
+        }
+      ],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "dark-1280 radio labels have 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        }
+      ],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "dark-1280 page fits the viewport",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "dark-1280 comparison fits its container",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "dark-1280 checking reveals both energy explanations",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "dark-1280 energy explanation fits the viewport",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "dark-320 feedback is hidden before checking",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "dark-320 visible controls have 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "tag": "SUMMARY",
+          "id": "",
+          "text": "Compare processesWater state, energy, and movement",
+          "height": 83.25
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Evaporation + Transpiration",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Condensation + Precipitation",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Infiltration + Collection",
+          "height": 44
+        },
+        {
+          "tag": "SELECT",
+          "id": "wcProcessFirst",
+          "text": "EvaporationCondensationPrecipitationCollectionTranspirationInfiltration",
+          "height": 44
+        },
+        {
+          "tag": "SELECT",
+          "id": "wcProcessSecond",
+          "text": "EvaporationCondensationPrecipitationCollectionTranspirationInfiltration",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Check this comparison",
+          "height": 44
+        },
+        {
+          "tag": "TEXTAREA",
+          "id": "wcProcessExplain",
+          "text": "",
+          "height": 100
+        }
+      ],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "dark-320 radio labels have 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        }
+      ],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "dark-320 page fits the viewport",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "dark-320 comparison fits its container",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "dark-320 checking reveals both energy explanations",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "dark-320 energy explanation fits the viewport",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "contrast-1280 feedback is hidden before checking",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "contrast-1280 visible controls have 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "tag": "SUMMARY",
+          "id": "",
+          "text": "Compare processesWater state, energy, and movement",
+          "height": 73.59375
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Evaporation + Transpiration",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Condensation + Precipitation",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Infiltration + Collection",
+          "height": 44
+        },
+        {
+          "tag": "SELECT",
+          "id": "wcProcessFirst",
+          "text": "EvaporationCondensationPrecipitationCollectionTranspirationInfiltration",
+          "height": 44
+        },
+        {
+          "tag": "SELECT",
+          "id": "wcProcessSecond",
+          "text": "EvaporationCondensationPrecipitationCollectionTranspirationInfiltration",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Check this comparison",
+          "height": 44
+        },
+        {
+          "tag": "TEXTAREA",
+          "id": "wcProcessExplain",
+          "text": "",
+          "height": 100
+        }
+      ],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "contrast-1280 radio labels have 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        }
+      ],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "contrast-1280 page fits the viewport",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "contrast-1280 comparison fits its container",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "contrast-1280 checking reveals both energy explanations",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "contrast-1280 energy explanation fits the viewport",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "contrast-320 feedback is hidden before checking",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "contrast-320 visible controls have 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "tag": "SUMMARY",
+          "id": "",
+          "text": "Compare processesWater state, energy, and movement",
+          "height": 83.25
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Evaporation + Transpiration",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Condensation + Precipitation",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Infiltration + Collection",
+          "height": 44
+        },
+        {
+          "tag": "SELECT",
+          "id": "wcProcessFirst",
+          "text": "EvaporationCondensationPrecipitationCollectionTranspirationInfiltration",
+          "height": 44
+        },
+        {
+          "tag": "SELECT",
+          "id": "wcProcessSecond",
+          "text": "EvaporationCondensationPrecipitationCollectionTranspirationInfiltration",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Check this comparison",
+          "height": 44
+        },
+        {
+          "tag": "TEXTAREA",
+          "id": "wcProcessExplain",
+          "text": "",
+          "height": 100
+        }
+      ],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "contrast-320 radio labels have 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        },
+        {
+          "id": "",
+          "height": 69.4375
+        }
+      ],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "contrast-320 page fits the viewport",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "contrast-320 comparison fits its container",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "contrast-320 checking reveals both energy explanations",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "contrast-320 energy explanation fits the viewport",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "forced colors retains the selected answer",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "forced colors comparison fits 320px",
+      "pass": true,
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "source and deployed copy are identical at capture",
+      "pass": true,
+      "verificationRun": "followup",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "timed native comparison cases retain agreement and focus",
+      "pass": true,
+      "verificationRun": "followup",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "active paused journey comparison preserves parcel, stage, history, baseline, and observations",
+      "pass": true,
+      "verificationRun": "followup",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "active paused parcel canvas remains on its selected route",
+      "pass": true,
+      "verificationRun": "followup",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "precipitation explanation addresses phase change explicitly",
+      "pass": true,
+      "verificationRun": "followup",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "infiltration explanation includes a groundwater caveat",
+      "pass": true,
+      "verificationRun": "followup",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "active paused journey comparison awards no XP",
+      "pass": true,
+      "verificationRun": "followup",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "light-1280 keeps a 3px keyboard focus outline while hovered",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "hovered": true,
+        "width": "3px",
+        "style": "solid"
+      },
+      "verificationRun": "followup",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "light-1280 targeted follow-up fits viewport",
+      "pass": true,
+      "verificationRun": "followup",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "dark-320 targeted follow-up fits viewport",
+      "pass": true,
+      "verificationRun": "followup",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "contrast-320 targeted follow-up fits viewport",
+      "pass": true,
+      "verificationRun": "followup",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "forced colors displays visible keyboard focus",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "hovered": true,
+        "width": "3px",
+        "style": "solid"
+      },
+      "verificationRun": "followup",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "forced-colors-320 targeted follow-up fits viewport",
+      "pass": true,
+      "verificationRun": "followup",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "source and deployed copy are identical at capture",
+      "pass": true,
+      "verificationRun": "focus",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "light-1280 keeps a 3px keyboard focus outline while hovered",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "hovered": true,
+        "width": "3px",
+        "style": "solid"
+      },
+      "verificationRun": "focus",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "light-1280 targeted follow-up fits viewport",
+      "pass": true,
+      "verificationRun": "focus",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "dark-320 keeps a 3px keyboard focus outline while hovered",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "hovered": true,
+        "width": "3px",
+        "style": "solid"
+      },
+      "verificationRun": "focus",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "dark-320 targeted follow-up fits viewport",
+      "pass": true,
+      "verificationRun": "focus",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "contrast-320 keeps a 3px keyboard focus outline while hovered",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "hovered": true,
+        "width": "3px",
+        "style": "solid"
+      },
+      "verificationRun": "focus",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "contrast-320 targeted follow-up fits viewport",
+      "pass": true,
+      "verificationRun": "focus",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "forced colors displays visible keyboard focus",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "hovered": true,
+        "width": "3px",
+        "style": "solid"
+      },
+      "verificationRun": "focus",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "forced-colors-320 targeted follow-up fits viewport",
+      "pass": true,
+      "verificationRun": "focus",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    }
+  ],
+  "audits": [
+    {
+      "label": "light-1280-phase",
+      "violations": [],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "light-1280-energy",
+      "violations": [],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "light-320-phase",
+      "violations": [],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "light-320-energy",
+      "violations": [],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "dark-1280-phase",
+      "violations": [],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "dark-1280-energy",
+      "violations": [],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "dark-320-phase",
+      "violations": [],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "dark-320-energy",
+      "violations": [],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "contrast-1280-phase",
+      "violations": [],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "contrast-1280-energy",
+      "violations": [],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "contrast-320-phase",
+      "violations": [],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "contrast-320-energy",
+      "violations": [],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "forced-colors-320",
+      "violations": [],
+      "verificationRun": "initial",
+      "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844"
+    },
+    {
+      "label": "light-1280-targeted-follow-up",
+      "violations": [],
+      "verificationRun": "followup",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "dark-320-targeted-follow-up",
+      "violations": [],
+      "verificationRun": "followup",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "contrast-320-targeted-follow-up",
+      "violations": [],
+      "verificationRun": "followup",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "forced-colors-320-targeted-follow-up",
+      "violations": [],
+      "verificationRun": "followup",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "light-1280-targeted-follow-up",
+      "violations": [],
+      "verificationRun": "focus",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "dark-320-targeted-follow-up",
+      "violations": [],
+      "verificationRun": "focus",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "contrast-320-targeted-follow-up",
+      "violations": [],
+      "verificationRun": "focus",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    },
+    {
+      "label": "forced-colors-320-targeted-follow-up",
+      "violations": [],
+      "verificationRun": "focus",
+      "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005"
+    }
+  ],
+  "errors": [],
+  "failures": [],
+  "nativeEventTiming": {
+    "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005",
+    "capturedAt": "2026-09-29T23:36:49.995Z",
+    "completedAt": "2026-09-29T23:38:12.955Z",
+    "method": "performance.now around each native DOM control event, including synchronous React handler and render work; total case time also includes the timer and focus settlement. These measurements are a local diagnostic, not Core Web Vitals.",
+    "eventCount": 30,
+    "minEventMs": 1.5,
+    "maxEventMs": 77.29999999888241,
+    "minCaseMs": 439.30000000074506,
+    "maxCaseMs": 862.3999999985099,
+    "cases": [
+      {
+        "first": "evaporation",
+        "second": "transpiration",
+        "question": "phase",
+        "events": [
+          {
+            "label": "first process select",
+            "synchronousMs": 33
+          },
+          {
+            "label": "second process select",
+            "synchronousMs": 24.199999999254942
+          },
+          {
+            "label": "question radio",
+            "synchronousMs": 1.5
+          },
+          {
+            "label": "answer radio",
+            "synchronousMs": 22
+          },
+          {
+            "label": "check button",
+            "synchronousMs": 25
+          }
+        ],
+        "totalMs": 502.90000000037253,
+        "focus": "wcProcessFeedbackTitle",
+        "match": "agree"
+      },
+      {
+        "first": "evaporation",
+        "second": "transpiration",
+        "question": "energy",
+        "events": [
+          {
+            "label": "first process select",
+            "synchronousMs": 13.299999998882413
+          },
+          {
+            "label": "second process select",
+            "synchronousMs": 21.90000000037253
+          },
+          {
+            "label": "question radio",
+            "synchronousMs": 21
+          },
+          {
+            "label": "answer radio",
+            "synchronousMs": 17.700000001117587
+          },
+          {
+            "label": "check button",
+            "synchronousMs": 77.29999999888241
+          }
+        ],
+        "totalMs": 862.3999999985099,
+        "focus": "wcProcessFeedbackTitle",
+        "match": "agree"
+      },
+      {
+        "first": "condensation",
+        "second": "precipitation",
+        "question": "phase",
+        "events": [
+          {
+            "label": "first process select",
+            "synchronousMs": 49.19999999925494
+          },
+          {
+            "label": "second process select",
+            "synchronousMs": 26.40000000037253
+          },
+          {
+            "label": "question radio",
+            "synchronousMs": 22.59999999962747
+          },
+          {
+            "label": "answer radio",
+            "synchronousMs": 11.900000000372529
+          },
+          {
+            "label": "check button",
+            "synchronousMs": 7.599999999627471
+          }
+        ],
+        "totalMs": 482.09999999962747,
+        "focus": "wcProcessFeedbackTitle",
+        "match": "agree"
+      },
+      {
+        "first": "condensation",
+        "second": "precipitation",
+        "question": "energy",
+        "events": [
+          {
+            "label": "first process select",
+            "synchronousMs": 9.099999999627471
+          },
+          {
+            "label": "second process select",
+            "synchronousMs": 7.700000001117587
+          },
+          {
+            "label": "question radio",
+            "synchronousMs": 9.699999999254942
+          },
+          {
+            "label": "answer radio",
+            "synchronousMs": 8.400000000372529
+          },
+          {
+            "label": "check button",
+            "synchronousMs": 11
+          }
+        ],
+        "totalMs": 439.30000000074506,
+        "focus": "wcProcessFeedbackTitle",
+        "match": "agree"
+      },
+      {
+        "first": "infiltration",
+        "second": "collection",
+        "question": "phase",
+        "events": [
+          {
+            "label": "first process select",
+            "synchronousMs": 11.699999999254942
+          },
+          {
+            "label": "second process select",
+            "synchronousMs": 9.099999999627471
+          },
+          {
+            "label": "question radio",
+            "synchronousMs": 9.100000001490116
+          },
+          {
+            "label": "answer radio",
+            "synchronousMs": 12.799999998882413
+          },
+          {
+            "label": "check button",
+            "synchronousMs": 9.599999999627471
+          }
+        ],
+        "totalMs": 500.59999999962747,
+        "focus": "wcProcessFeedbackTitle",
+        "match": "agree"
+      },
+      {
+        "first": "infiltration",
+        "second": "collection",
+        "question": "energy",
+        "events": [
+          {
+            "label": "first process select",
+            "synchronousMs": 10.300000000745058
+          },
+          {
+            "label": "second process select",
+            "synchronousMs": 8.599999999627471
+          },
+          {
+            "label": "question radio",
+            "synchronousMs": 13
+          },
+          {
+            "label": "answer radio",
+            "synchronousMs": 9.300000000745058
+          },
+          {
+            "label": "check button",
+            "synchronousMs": 9.299999998882413
+          }
+        ],
+        "totalMs": 656.5999999996275,
+        "focus": "wcProcessFeedbackTitle",
+        "match": "agree"
+      }
+    ]
+  }
+}

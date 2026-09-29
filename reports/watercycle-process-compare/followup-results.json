@@ -1,0 +1,300 @@
+{
+  "capturedAt": "2026-09-29T23:36:49.995Z",
+  "sourceSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005",
+  "mirrorSha256": "d539315632821ffe00b7048293e9a1f4d5be3da611052cb0f0c1816eb6332005",
+  "provenance": "Product source bytes captured before server launch; isolated localhost server and owned headless browser; no learner preview or browser tabs used.",
+  "checks": [
+    {
+      "label": "source and deployed copy are identical at capture",
+      "pass": true
+    },
+    {
+      "label": "timed native comparison cases retain agreement and focus",
+      "pass": true
+    },
+    {
+      "label": "active paused journey comparison preserves parcel, stage, history, baseline, and observations",
+      "pass": true
+    },
+    {
+      "label": "active paused parcel canvas remains on its selected route",
+      "pass": true
+    },
+    {
+      "label": "precipitation explanation addresses phase change explicitly",
+      "pass": true
+    },
+    {
+      "label": "infiltration explanation includes a groundwater caveat",
+      "pass": true
+    },
+    {
+      "label": "active paused journey comparison awards no XP",
+      "pass": true
+    },
+    {
+      "label": "light-1280 keeps a 3px keyboard focus outline while hovered",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "hovered": true,
+        "width": "3px",
+        "style": "solid"
+      }
+    },
+    {
+      "label": "light-1280 targeted follow-up fits viewport",
+      "pass": true
+    },
+    {
+      "label": "dark-320 keeps a 3px keyboard focus outline while hovered",
+      "pass": false,
+      "detail": {
+        "visible": true,
+        "hovered": false,
+        "width": "3px",
+        "style": "solid"
+      }
+    },
+    {
+      "label": "dark-320 targeted follow-up fits viewport",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 keeps a 3px keyboard focus outline while hovered",
+      "pass": false,
+      "detail": {
+        "visible": true,
+        "hovered": false,
+        "width": "3px",
+        "style": "solid"
+      }
+    },
+    {
+      "label": "contrast-320 targeted follow-up fits viewport",
+      "pass": true
+    },
+    {
+      "label": "forced colors displays visible keyboard focus",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "hovered": true,
+        "width": "3px",
+        "style": "solid"
+      }
+    },
+    {
+      "label": "forced-colors-320 targeted follow-up fits viewport",
+      "pass": true
+    }
+  ],
+  "audits": [
+    {
+      "label": "light-1280-targeted-follow-up",
+      "violations": []
+    },
+    {
+      "label": "dark-320-targeted-follow-up",
+      "violations": []
+    },
+    {
+      "label": "contrast-320-targeted-follow-up",
+      "violations": []
+    },
+    {
+      "label": "forced-colors-320-targeted-follow-up",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "failures": [
+    "dark-320 keeps a 3px keyboard focus outline while hovered",
+    "contrast-320 keeps a 3px keyboard focus outline while hovered"
+  ],
+  "lastStep": "mount paused Explorer",
+  "timings": [
+    {
+      "first": "evaporation",
+      "second": "transpiration",
+      "question": "phase",
+      "events": [
+        {
+          "label": "first process select",
+          "synchronousMs": 33
+        },
+        {
+          "label": "second process select",
+          "synchronousMs": 24.199999999254942
+        },
+        {
+          "label": "question radio",
+          "synchronousMs": 1.5
+        },
+        {
+          "label": "answer radio",
+          "synchronousMs": 22
+        },
+        {
+          "label": "check button",
+          "synchronousMs": 25
+        }
+      ],
+      "totalMs": 502.90000000037253,
+      "focus": "wcProcessFeedbackTitle",
+      "match": "agree"
+    },
+    {
+      "first": "evaporation",
+      "second": "transpiration",
+      "question": "energy",
+      "events": [
+        {
+          "label": "first process select",
+          "synchronousMs": 13.299999998882413
+        },
+        {
+          "label": "second process select",
+          "synchronousMs": 21.90000000037253
+        },
+        {
+          "label": "question radio",
+          "synchronousMs": 21
+        },
+        {
+          "label": "answer radio",
+          "synchronousMs": 17.700000001117587
+        },
+        {
+          "label": "check button",
+          "synchronousMs": 77.29999999888241
+        }
+      ],
+      "totalMs": 862.3999999985099,
+      "focus": "wcProcessFeedbackTitle",
+      "match": "agree"
+    },
+    {
+      "first": "condensation",
+      "second": "precipitation",
+      "question": "phase",
+      "events": [
+        {
+          "label": "first process select",
+          "synchronousMs": 49.19999999925494
+        },
+        {
+          "label": "second process select",
+          "synchronousMs": 26.40000000037253
+        },
+        {
+          "label": "question radio",
+          "synchronousMs": 22.59999999962747
+        },
+        {
+          "label": "answer radio",
+          "synchronousMs": 11.900000000372529
+        },
+        {
+          "label": "check button",
+          "synchronousMs": 7.599999999627471
+        }
+      ],
+      "totalMs": 482.09999999962747,
+      "focus": "wcProcessFeedbackTitle",
+      "match": "agree"
+    },
+    {
+      "first": "condensation",
+      "second": "precipitation",
+      "question": "energy",
+      "events": [
+        {
+          "label": "first process select",
+          "synchronousMs": 9.099999999627471
+        },
+        {
+          "label": "second process select",
+          "synchronousMs": 7.700000001117587
+        },
+        {
+          "label": "question radio",
+          "synchronousMs": 9.699999999254942
+        },
+        {
+          "label": "answer radio",
+          "synchronousMs": 8.400000000372529
+        },
+        {
+          "label": "check button",
+          "synchronousMs": 11
+        }
+      ],
+      "totalMs": 439.30000000074506,
+      "focus": "wcProcessFeedbackTitle",
+      "match": "agree"
+    },
+    {
+      "first": "infiltration",
+      "second": "collection",
+      "question": "phase",
+      "events": [
+        {
+          "label": "first process select",
+          "synchronousMs": 11.699999999254942
+        },
+        {
+          "label": "second process select",
+          "synchronousMs": 9.099999999627471
+        },
+        {
+          "label": "question radio",
+          "synchronousMs": 9.100000001490116
+        },
+        {
+          "label": "answer radio",
+          "synchronousMs": 12.799999998882413
+        },
+        {
+          "label": "check button",
+          "synchronousMs": 9.599999999627471
+        }
+      ],
+      "totalMs": 500.59999999962747,
+      "focus": "wcProcessFeedbackTitle",
+      "match": "agree"
+    },
+    {
+      "first": "infiltration",
+      "second": "collection",
+      "question": "energy",
+      "events": [
+        {
+          "label": "first process select",
+          "synchronousMs": 10.300000000745058
+        },
+        {
+          "label": "second process select",
+          "synchronousMs": 8.599999999627471
+        },
+        {
+          "label": "question radio",
+          "synchronousMs": 13
+        },
+        {
+          "label": "answer radio",
+          "synchronousMs": 9.300000000745058
+        },
+        {
+          "label": "check button",
+          "synchronousMs": 9.299999998882413
+        }
+      ],
+      "totalMs": 656.5999999996275,
+      "focus": "wcProcessFeedbackTitle",
+      "match": "agree"
+    }
+  ],
+  "completedAt": "2026-09-29T23:38:12.955Z",
+  "sourceUnchangedAtCompletion": true
+}
