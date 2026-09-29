@@ -56,6 +56,7 @@ test('a guided experiment saves immutable evidence and exports it after restorat
   const runs = await page.evaluate(() => (window as any).__toolData.physics.runLog);
   expect(runs[1].vel / runs[0].vel).toBe(2);
   expect(runs[1].range / runs[0].range).toBeCloseTo(4, 8);
+  expect(runs.every((run: any) => run.launchHeight === 0 && run.modelVersion === 'projectile-v3')).toBe(true);
   await notebook.getByRole('checkbox', { name: 'Run 1', exact: true }).check();
   await notebook.getByRole('checkbox', { name: 'Run 2', exact: true }).check();
   await expect(notebook.locator('[data-physics-investigation-comparison]')).toContainText(/range/i);
@@ -77,7 +78,8 @@ test('a guided experiment saves immutable evidence and exports it after restorat
   expect(report).toMatch(/Run 1/);
   expect(report).toMatch(/Run 2/);
   expect(report).toMatch(/m\/s/);
-  expect(report).toContain('projectile-v2');
+  expect(report).toContain('projectile-v3');
+  expect(report).toContain('Launch height above ground: 0 m');
   expect(report).toContain('Doubling speed will give four times the range.');
   expect(errors).toEqual([]);
 });

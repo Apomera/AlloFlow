@@ -1,0 +1,2206 @@
+[
+  {
+    "theme": "default",
+    "width": 1100,
+    "measures": {
+      "overflow": 0,
+      "canvas": {
+        "width": 1020,
+        "height": 476
+      },
+      "view": {
+        "height": 10,
+        "scale": 12,
+        "x": 40,
+        "y": 252,
+        "groundY": 372
+      },
+      "ball": {
+        "y": 9.9939975,
+        "t": 0.035,
+        "E0": 421
+      },
+      "controlsOverflow": 0,
+      "formulasOverflow": 0,
+      "fieldFonts": [
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "formulaContrast": [
+        {
+          "text": "Flight Time:",
+          "ratio": 5.483924052498799
+        },
+        {
+          "text": "Range:",
+          "ratio": 6.701618401398807
+        },
+        {
+          "text": "Max height above ground:",
+          "ratio": 6.983283814899468
+        },
+        {
+          "text": "= (0.00 + √(0.00² + 2 × 9.8 × 10)) / 9.8",
+          "ratio": 7.577663953533317
+        },
+        {
+          "text": "= 15.00 × 1.429",
+          "ratio": 7.577663953533317
+        },
+        {
+          "text": "= 10 + 0.00² / (2 × 9.8)",
+          "ratio": 7.577663953533317
+        },
+        {
+          "text": "📝 Show Your Work (no-drag ideal)",
+          "ratio": 8.237384749700691
+        },
+        {
+          "text": "= 1.43 s",
+          "ratio": 8.237384749700691
+        },
+        {
+          "text": "= 21.43 m",
+          "ratio": 8.237384749700691
+        },
+        {
+          "text": "= 10.00 m",
+          "ratio": 8.237384749700691
+        },
+        {
+          "text": "h₀ is launch height above ground; landing is y = 0",
+          "ratio": 10.35474573184942
+        },
+        {
+          "text": "T = (vy₀ + √(vy₀² + 2gh₀)) / g",
+          "ratio": 10.35474573184942
+        },
+        {
+          "text": "R = vx₀ × T",
+          "ratio": 10.35474573184942
+        },
+        {
+          "text": "H = h₀ + vy₀² / (2g)",
+          "ratio": 10.35474573184942
+        }
+      ],
+      "canvasText": [
+        {
+          "text": "0",
+          "font": 12
+        },
+        {
+          "text": "10",
+          "font": 12
+        },
+        {
+          "text": "20",
+          "font": 12
+        },
+        {
+          "text": "30",
+          "font": 12
+        },
+        {
+          "text": "40",
+          "font": 12
+        },
+        {
+          "text": "50",
+          "font": 12
+        },
+        {
+          "text": "60",
+          "font": 12
+        },
+        {
+          "text": "70",
+          "font": 12
+        },
+        {
+          "text": "5",
+          "font": 12
+        },
+        {
+          "text": "10",
+          "font": 12
+        },
+        {
+          "text": "15",
+          "font": 12
+        },
+        {
+          "text": "Height (m)",
+          "font": 12
+        },
+        {
+          "text": "Distance (m)",
+          "font": 12
+        },
+        {
+          "text": "0°  ·  15 m/s  ·  h₀ 10 m",
+          "font": 14
+        },
+        {
+          "text": "g 9.8 m/s²  ·  2 kg",
+          "font": 12
+        },
+        {
+          "text": "No air drag  ·  Paused",
+          "font": 12
+        },
+        {
+          "text": "t 0.04 s",
+          "font": 12
+        },
+        {
+          "text": "Vx 15.0",
+          "font": 12
+        },
+        {
+          "text": "Vy -0.3",
+          "font": 12
+        },
+        {
+          "text": "0",
+          "font": 12
+        },
+        {
+          "text": "≥60 m/s",
+          "font": 12
+        },
+        {
+          "text": "Energy · 421 J",
+          "font": 12
+        },
+        {
+          "text": "KE 225 J",
+          "font": 12
+        },
+        {
+          "text": "PE 196 J",
+          "font": 12
+        },
+        {
+          "text": "Drag 0 J",
+          "font": 12
+        },
+        {
+          "text": "Prediction 21.4 m",
+          "font": 12
+        },
+        {
+          "text": "h₀ = 10 m",
+          "font": 12
+        }
+      ],
+      "annotationLayout": {
+        "width": 1020,
+        "height": 476,
+        "plotTop": 128,
+        "groundY": 372,
+        "fontMin": 12,
+        "labels": [
+          {
+            "x": 313.1428571428571,
+            "y": 335,
+            "width": 117.369140625,
+            "height": 29,
+            "id": "prediction",
+            "fontSize": 12
+          },
+          {
+            "x": 91,
+            "y": 292,
+            "width": 69.955078125,
+            "height": 29,
+            "id": "height",
+            "fontSize": 12
+          }
+        ],
+        "vectorScale": 1.4
+      },
+      "graphFonts": [
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        24.922981194690266,
+        24.922981194690266,
+        24.922981194690266,
+        24.922981194690266,
+        24.922981194690266,
+        24.922981194690266,
+        24.922981194690266,
+        24.922981194690266,
+        24.922981194690266
+      ],
+      "formulaText": "📝 SHOW YOUR WORK (NO-DRAG IDEAL)\n\nh₀ is launch height above ground; landing is y = 0. Initial horizontal velocity is vx₀ = v cos(θ), and initial vertical velocity is vy₀ = v sin(θ).\n\nFlight Time:\nT = (vy₀ + √(vy₀² + 2gh₀)) / g\n= (0.00 + √(0.00² + 2 × 9.8 × 10)) / 9.8\n= 1.43 s\nRange:\nR = vx₀ × T\n= 15.00 × 1.429\n= 21.43 m\nMax height above ground:\nH = h₀ + vy₀² / (2g)\n= 10 + 0.00² / (2 × 9.8)\n= 10.00 m",
+      "optimum": 36.16886748293949
+    },
+    "screenshots": [
+      "visual-default-1100-canvas.png",
+      "visual-default-1100-controls.png",
+      "visual-default-1100-formulas.png",
+      "visual-default-1100-range.png",
+      "visual-default-1100-motion.png"
+    ]
+  },
+  {
+    "theme": "default",
+    "width": 375,
+    "measures": {
+      "overflow": 0,
+      "canvas": {
+        "width": 331,
+        "height": 476
+      },
+      "view": {
+        "height": 10,
+        "scale": 9.450000000000001,
+        "x": 40,
+        "y": 277.5,
+        "groundY": 372
+      },
+      "ball": {
+        "y": 9.9939975,
+        "t": 0.035,
+        "E0": 421
+      },
+      "controlsOverflow": 0,
+      "formulasOverflow": 0,
+      "fieldFonts": [
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "formulaContrast": [
+        {
+          "text": "Flight Time:",
+          "ratio": 5.483924052498799
+        },
+        {
+          "text": "Range:",
+          "ratio": 6.701618401398807
+        },
+        {
+          "text": "Max height above ground:",
+          "ratio": 6.983283814899468
+        },
+        {
+          "text": "= (0.00 + √(0.00² + 2 × 9.8 × 10)) / 9.8",
+          "ratio": 7.577663953533317
+        },
+        {
+          "text": "= 15.00 × 1.429",
+          "ratio": 7.577663953533317
+        },
+        {
+          "text": "= 10 + 0.00² / (2 × 9.8)",
+          "ratio": 7.577663953533317
+        },
+        {
+          "text": "📝 Show Your Work (no-drag ideal)",
+          "ratio": 8.237384749700691
+        },
+        {
+          "text": "= 1.43 s",
+          "ratio": 8.237384749700691
+        },
+        {
+          "text": "= 21.43 m",
+          "ratio": 8.237384749700691
+        },
+        {
+          "text": "= 10.00 m",
+          "ratio": 8.237384749700691
+        },
+        {
+          "text": "h₀ is launch height above ground; landing is y = 0",
+          "ratio": 10.35474573184942
+        },
+        {
+          "text": "T = (vy₀ + √(vy₀² + 2gh₀)) / g",
+          "ratio": 10.35474573184942
+        },
+        {
+          "text": "R = vx₀ × T",
+          "ratio": 10.35474573184942
+        },
+        {
+          "text": "H = h₀ + vy₀² / (2g)",
+          "ratio": 10.35474573184942
+        }
+      ],
+      "canvasText": [
+        {
+          "text": "0",
+          "font": 12
+        },
+        {
+          "text": "10",
+          "font": 12
+        },
+        {
+          "text": "20",
+          "font": 12
+        },
+        {
+          "text": "10",
+          "font": 12
+        },
+        {
+          "text": "20",
+          "font": 12
+        },
+        {
+          "text": "Height (m)",
+          "font": 12
+        },
+        {
+          "text": "Distance (m)",
+          "font": 12
+        },
+        {
+          "text": "0°  ·  15 m/s  ·  h₀ 10 m",
+          "font": 14
+        },
+        {
+          "text": "g 9.8 m/s²  ·  2 kg",
+          "font": 12
+        },
+        {
+          "text": "No air drag  ·  Paused",
+          "font": 12
+        },
+        {
+          "text": "t 0.04 s",
+          "font": 12
+        },
+        {
+          "text": "Vx 15.0",
+          "font": 12
+        },
+        {
+          "text": "Vy -0.3",
+          "font": 12
+        },
+        {
+          "text": "0",
+          "font": 12
+        },
+        {
+          "text": "≥60 m/s",
+          "font": 12
+        },
+        {
+          "text": "Energy · 421 J",
+          "font": 12
+        },
+        {
+          "text": "KE 225 J",
+          "font": 12
+        },
+        {
+          "text": "PE 196 J",
+          "font": 12
+        },
+        {
+          "text": "Drag 0 J",
+          "font": 12
+        },
+        {
+          "text": "Prediction 21.4 m",
+          "font": 12
+        },
+        {
+          "text": "h₀ = 10 m",
+          "font": 12
+        }
+      ],
+      "annotationLayout": {
+        "width": 331,
+        "height": 476,
+        "plotTop": 128,
+        "groundY": 372,
+        "fontMin": 12,
+        "labels": [
+          {
+            "x": 203.630859375,
+            "y": 335,
+            "width": 117.369140625,
+            "height": 29,
+            "id": "prediction",
+            "fontSize": 12
+          },
+          {
+            "x": 91,
+            "y": 317.5,
+            "width": 69.955078125,
+            "height": 29,
+            "id": "height",
+            "fontSize": 12
+          }
+        ],
+        "vectorScale": 1.4
+      },
+      "graphFonts": [
+        20.42276785714286,
+        20.42276785714286,
+        20.42276785714286,
+        20.42276785714286,
+        20.42276785714286,
+        20.42276785714286,
+        20.42276785714286,
+        20.42276785714286,
+        20.42276785714286,
+        20.42276785714286,
+        20.42276785714286,
+        20.42276785714286,
+        20.42276785714286,
+        20.42276785714286,
+        20.422981194690266,
+        20.422981194690266,
+        20.422981194690266,
+        20.422981194690266,
+        20.422981194690266,
+        20.422981194690266,
+        20.422981194690266,
+        20.422981194690266,
+        20.422981194690266
+      ],
+      "formulaText": "📝 SHOW YOUR WORK (NO-DRAG IDEAL)\n\nh₀ is launch height above ground; landing is y = 0. Initial horizontal velocity is vx₀ = v cos(θ), and initial vertical velocity is vy₀ = v sin(θ).\n\nFlight Time:\nT = (vy₀ + √(vy₀² + 2gh₀)) / g\n= (0.00 + √(0.00² + 2 × 9.8 × 10)) / 9.8\n= 1.43 s\nRange:\nR = vx₀ × T\n= 15.00 × 1.429\n= 21.43 m\nMax height above ground:\nH = h₀ + vy₀² / (2g)\n= 10 + 0.00² / (2 × 9.8)\n= 10.00 m",
+      "optimum": 36.16886748293949
+    },
+    "screenshots": [
+      "visual-default-375-canvas.png",
+      "visual-default-375-controls.png",
+      "visual-default-375-formulas.png",
+      "visual-default-375-range.png",
+      "visual-default-375-motion.png"
+    ]
+  },
+  {
+    "theme": "default",
+    "width": 320,
+    "measures": {
+      "overflow": 0,
+      "canvas": {
+        "width": 276,
+        "height": 476
+      },
+      "view": {
+        "height": 10,
+        "scale": 7.311111111111112,
+        "x": 40,
+        "y": 298.8888888888889,
+        "groundY": 372
+      },
+      "ball": {
+        "y": 9.9939975,
+        "t": 0.035,
+        "E0": 421
+      },
+      "controlsOverflow": 0,
+      "formulasOverflow": 0,
+      "fieldFonts": [
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "formulaContrast": [
+        {
+          "text": "Flight Time:",
+          "ratio": 5.483924052498799
+        },
+        {
+          "text": "Range:",
+          "ratio": 6.701618401398807
+        },
+        {
+          "text": "Max height above ground:",
+          "ratio": 6.983283814899468
+        },
+        {
+          "text": "= (0.00 + √(0.00² + 2 × 9.8 × 10)) / 9.8",
+          "ratio": 7.577663953533317
+        },
+        {
+          "text": "= 15.00 × 1.429",
+          "ratio": 7.577663953533317
+        },
+        {
+          "text": "= 10 + 0.00² / (2 × 9.8)",
+          "ratio": 7.577663953533317
+        },
+        {
+          "text": "📝 Show Your Work (no-drag ideal)",
+          "ratio": 8.237384749700691
+        },
+        {
+          "text": "= 1.43 s",
+          "ratio": 8.237384749700691
+        },
+        {
+          "text": "= 21.43 m",
+          "ratio": 8.237384749700691
+        },
+        {
+          "text": "= 10.00 m",
+          "ratio": 8.237384749700691
+        },
+        {
+          "text": "h₀ is launch height above ground; landing is y = 0",
+          "ratio": 10.35474573184942
+        },
+        {
+          "text": "T = (vy₀ + √(vy₀² + 2gh₀)) / g",
+          "ratio": 10.35474573184942
+        },
+        {
+          "text": "R = vx₀ × T",
+          "ratio": 10.35474573184942
+        },
+        {
+          "text": "H = h₀ + vy₀² / (2g)",
+          "ratio": 10.35474573184942
+        }
+      ],
+      "canvasText": [
+        {
+          "text": "0",
+          "font": 12
+        },
+        {
+          "text": "10",
+          "font": 12
+        },
+        {
+          "text": "20",
+          "font": 12
+        },
+        {
+          "text": "10",
+          "font": 12
+        },
+        {
+          "text": "20",
+          "font": 12
+        },
+        {
+          "text": "30",
+          "font": 12
+        },
+        {
+          "text": "Height (m)",
+          "font": 12
+        },
+        {
+          "text": "Distance (m)",
+          "font": 12
+        },
+        {
+          "text": "0°  ·  15 m/s  ·  h₀ 10 m",
+          "font": 14
+        },
+        {
+          "text": "g 9.8 m/s²  ·  2 kg",
+          "font": 12
+        },
+        {
+          "text": "No air drag  ·  Paused",
+          "font": 12
+        },
+        {
+          "text": "t 0.04 s",
+          "font": 12
+        },
+        {
+          "text": "Vx 15.0",
+          "font": 12
+        },
+        {
+          "text": "Vy -0.3",
+          "font": 12
+        },
+        {
+          "text": "0",
+          "font": 12
+        },
+        {
+          "text": "≥60 m/s",
+          "font": 12
+        },
+        {
+          "text": "Energy · 421 J",
+          "font": 12
+        },
+        {
+          "text": "KE 225 J",
+          "font": 12
+        },
+        {
+          "text": "PE 196 J",
+          "font": 12
+        },
+        {
+          "text": "Drag 0 J",
+          "font": 12
+        },
+        {
+          "text": "Prediction 21.4 m",
+          "font": 12
+        },
+        {
+          "text": "h₀ = 10 m",
+          "font": 12
+        }
+      ],
+      "annotationLayout": {
+        "width": 276,
+        "height": 476,
+        "plotTop": 128,
+        "groundY": 372,
+        "fontMin": 12,
+        "labels": [
+          {
+            "x": 148.630859375,
+            "y": 335,
+            "width": 117.369140625,
+            "height": 29,
+            "id": "prediction",
+            "fontSize": 12
+          },
+          {
+            "x": 10,
+            "y": 335,
+            "width": 69.955078125,
+            "height": 29,
+            "id": "height",
+            "fontSize": 12
+          }
+        ],
+        "vectorScale": 1.4
+      },
+      "graphFonts": [
+        16.615178571428572,
+        16.615178571428572,
+        16.615178571428572,
+        16.615178571428572,
+        16.615178571428572,
+        16.615178571428572,
+        16.615178571428572,
+        16.615178571428572,
+        16.615178571428572,
+        16.615178571428572,
+        16.615178571428572,
+        16.615178571428572,
+        16.615178571428572,
+        16.615178571428572,
+        16.61490597345133,
+        16.61490597345133,
+        16.61490597345133,
+        16.61490597345133,
+        16.61490597345133,
+        16.61490597345133,
+        16.61490597345133,
+        16.61490597345133,
+        16.61490597345133
+      ],
+      "formulaText": "📝 SHOW YOUR WORK (NO-DRAG IDEAL)\n\nh₀ is launch height above ground; landing is y = 0. Initial horizontal velocity is vx₀ = v cos(θ), and initial vertical velocity is vy₀ = v sin(θ).\n\nFlight Time:\nT = (vy₀ + √(vy₀² + 2gh₀)) / g\n= (0.00 + √(0.00² + 2 × 9.8 × 10)) / 9.8\n= 1.43 s\nRange:\nR = vx₀ × T\n= 15.00 × 1.429\n= 21.43 m\nMax height above ground:\nH = h₀ + vy₀² / (2g)\n= 10 + 0.00² / (2 × 9.8)\n= 10.00 m",
+      "optimum": 36.16886748293949
+    },
+    "screenshots": [
+      "visual-default-320-canvas.png",
+      "visual-default-320-controls.png",
+      "visual-default-320-formulas.png",
+      "visual-default-320-range.png",
+      "visual-default-320-motion.png"
+    ]
+  },
+  {
+    "theme": "dark",
+    "width": 1100,
+    "measures": {
+      "overflow": 0,
+      "canvas": {
+        "width": 1020,
+        "height": 476
+      },
+      "view": {
+        "height": 10,
+        "scale": 12,
+        "x": 40,
+        "y": 252,
+        "groundY": 372
+      },
+      "ball": {
+        "y": 9.9939975,
+        "t": 0.035,
+        "E0": 421
+      },
+      "controlsOverflow": 0,
+      "formulasOverflow": 0,
+      "fieldFonts": [
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "formulaContrast": [
+        {
+          "text": "Range:",
+          "ratio": 8.112306521825603
+        },
+        {
+          "text": "Max height above ground:",
+          "ratio": 8.275285154408348
+        },
+        {
+          "text": "= 1.43 s",
+          "ratio": 8.31459553544538
+        },
+        {
+          "text": "= 21.43 m",
+          "ratio": 8.31459553544538
+        },
+        {
+          "text": "= 10.00 m",
+          "ratio": 8.31459553544538
+        },
+        {
+          "text": "📝 Show Your Work (no-drag ideal)",
+          "ratio": 8.912689722940108
+        },
+        {
+          "text": "Flight Time:",
+          "ratio": 9.597236233711946
+        },
+        {
+          "text": "= (0.00 + √(0.00² + 2 × 9.8 × 10)) / 9.8",
+          "ratio": 9.852964414874924
+        },
+        {
+          "text": "= 15.00 × 1.429",
+          "ratio": 9.852964414874924
+        },
+        {
+          "text": "= 10 + 0.00² / (2 × 9.8)",
+          "ratio": 9.852964414874924
+        },
+        {
+          "text": "T = (vy₀ + √(vy₀² + 2gh₀)) / g",
+          "ratio": 11.86643256027928
+        },
+        {
+          "text": "R = vx₀ × T",
+          "ratio": 11.86643256027928
+        },
+        {
+          "text": "H = h₀ + vy₀² / (2g)",
+          "ratio": 11.86643256027928
+        },
+        {
+          "text": "h₀ is launch height above ground; landing is y = 0",
+          "ratio": 12.720021205733584
+        }
+      ],
+      "canvasText": [
+        {
+          "text": "0",
+          "font": 12
+        },
+        {
+          "text": "10",
+          "font": 12
+        },
+        {
+          "text": "20",
+          "font": 12
+        },
+        {
+          "text": "30",
+          "font": 12
+        },
+        {
+          "text": "40",
+          "font": 12
+        },
+        {
+          "text": "50",
+          "font": 12
+        },
+        {
+          "text": "60",
+          "font": 12
+        },
+        {
+          "text": "70",
+          "font": 12
+        },
+        {
+          "text": "5",
+          "font": 12
+        },
+        {
+          "text": "10",
+          "font": 12
+        },
+        {
+          "text": "15",
+          "font": 12
+        },
+        {
+          "text": "Height (m)",
+          "font": 12
+        },
+        {
+          "text": "Distance (m)",
+          "font": 12
+        },
+        {
+          "text": "0°  ·  15 m/s  ·  h₀ 10 m",
+          "font": 14
+        },
+        {
+          "text": "g 9.8 m/s²  ·  2 kg",
+          "font": 12
+        },
+        {
+          "text": "No air drag  ·  Paused",
+          "font": 12
+        },
+        {
+          "text": "t 0.04 s",
+          "font": 12
+        },
+        {
+          "text": "Vx 15.0",
+          "font": 12
+        },
+        {
+          "text": "Vy -0.3",
+          "font": 12
+        },
+        {
+          "text": "0",
+          "font": 12
+        },
+        {
+          "text": "≥60 m/s",
+          "font": 12
+        },
+        {
+          "text": "Energy · 421 J",
+          "font": 12
+        },
+        {
+          "text": "KE 225 J",
+          "font": 12
+        },
+        {
+          "text": "PE 196 J",
+          "font": 12
+        },
+        {
+          "text": "Drag 0 J",
+          "font": 12
+        },
+        {
+          "text": "Prediction 21.4 m",
+          "font": 12
+        },
+        {
+          "text": "h₀ = 10 m",
+          "font": 12
+        }
+      ],
+      "annotationLayout": {
+        "width": 1020,
+        "height": 476,
+        "plotTop": 128,
+        "groundY": 372,
+        "fontMin": 12,
+        "labels": [
+          {
+            "x": 313.1428571428571,
+            "y": 335,
+            "width": 117.369140625,
+            "height": 29,
+            "id": "prediction",
+            "fontSize": 12
+          },
+          {
+            "x": 91,
+            "y": 292,
+            "width": 69.955078125,
+            "height": 29,
+            "id": "height",
+            "fontSize": 12
+          }
+        ],
+        "vectorScale": 1.4
+      },
+      "graphFonts": [
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        24.922981194690266,
+        24.922981194690266,
+        24.922981194690266,
+        24.922981194690266,
+        24.922981194690266,
+        24.922981194690266,
+        24.922981194690266,
+        24.922981194690266,
+        24.922981194690266
+      ],
+      "formulaText": "📝 SHOW YOUR WORK (NO-DRAG IDEAL)\n\nh₀ is launch height above ground; landing is y = 0. Initial horizontal velocity is vx₀ = v cos(θ), and initial vertical velocity is vy₀ = v sin(θ).\n\nFlight Time:\nT = (vy₀ + √(vy₀² + 2gh₀)) / g\n= (0.00 + √(0.00² + 2 × 9.8 × 10)) / 9.8\n= 1.43 s\nRange:\nR = vx₀ × T\n= 15.00 × 1.429\n= 21.43 m\nMax height above ground:\nH = h₀ + vy₀² / (2g)\n= 10 + 0.00² / (2 × 9.8)\n= 10.00 m",
+      "optimum": 36.16886748293949
+    },
+    "screenshots": [
+      "visual-dark-1100-canvas.png",
+      "visual-dark-1100-controls.png",
+      "visual-dark-1100-formulas.png",
+      "visual-dark-1100-range.png",
+      "visual-dark-1100-motion.png"
+    ]
+  },
+  {
+    "theme": "dark",
+    "width": 375,
+    "measures": {
+      "overflow": 0,
+      "canvas": {
+        "width": 307,
+        "height": 476
+      },
+      "view": {
+        "height": 10,
+        "scale": 8.516666666666667,
+        "x": 40,
+        "y": 286.8333333333333,
+        "groundY": 372
+      },
+      "ball": {
+        "y": 9.9939975,
+        "t": 0.035,
+        "E0": 421
+      },
+      "controlsOverflow": 0,
+      "formulasOverflow": 0,
+      "fieldFonts": [
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "formulaContrast": [
+        {
+          "text": "Range:",
+          "ratio": 8.112306521825603
+        },
+        {
+          "text": "Max height above ground:",
+          "ratio": 8.275285154408348
+        },
+        {
+          "text": "= 1.43 s",
+          "ratio": 8.31459553544538
+        },
+        {
+          "text": "= 21.43 m",
+          "ratio": 8.31459553544538
+        },
+        {
+          "text": "= 10.00 m",
+          "ratio": 8.31459553544538
+        },
+        {
+          "text": "📝 Show Your Work (no-drag ideal)",
+          "ratio": 8.912689722940108
+        },
+        {
+          "text": "Flight Time:",
+          "ratio": 9.597236233711946
+        },
+        {
+          "text": "= (0.00 + √(0.00² + 2 × 9.8 × 10)) / 9.8",
+          "ratio": 9.852964414874924
+        },
+        {
+          "text": "= 15.00 × 1.429",
+          "ratio": 9.852964414874924
+        },
+        {
+          "text": "= 10 + 0.00² / (2 × 9.8)",
+          "ratio": 9.852964414874924
+        },
+        {
+          "text": "T = (vy₀ + √(vy₀² + 2gh₀)) / g",
+          "ratio": 11.86643256027928
+        },
+        {
+          "text": "R = vx₀ × T",
+          "ratio": 11.86643256027928
+        },
+        {
+          "text": "H = h₀ + vy₀² / (2g)",
+          "ratio": 11.86643256027928
+        },
+        {
+          "text": "h₀ is launch height above ground; landing is y = 0",
+          "ratio": 12.720021205733584
+        }
+      ],
+      "canvasText": [
+        {
+          "text": "0",
+          "font": 12
+        },
+        {
+          "text": "10",
+          "font": 12
+        },
+        {
+          "text": "20",
+          "font": 12
+        },
+        {
+          "text": "10",
+          "font": 12
+        },
+        {
+          "text": "20",
+          "font": 12
+        },
+        {
+          "text": "Height (m)",
+          "font": 12
+        },
+        {
+          "text": "Distance (m)",
+          "font": 12
+        },
+        {
+          "text": "0°  ·  15 m/s  ·  h₀ 10 m",
+          "font": 14
+        },
+        {
+          "text": "g 9.8 m/s²  ·  2 kg",
+          "font": 12
+        },
+        {
+          "text": "No air drag  ·  Paused",
+          "font": 12
+        },
+        {
+          "text": "t 0.04 s",
+          "font": 12
+        },
+        {
+          "text": "Vx 15.0",
+          "font": 12
+        },
+        {
+          "text": "Vy -0.3",
+          "font": 12
+        },
+        {
+          "text": "0",
+          "font": 12
+        },
+        {
+          "text": "≥60 m/s",
+          "font": 12
+        },
+        {
+          "text": "Energy · 421 J",
+          "font": 12
+        },
+        {
+          "text": "KE 225 J",
+          "font": 12
+        },
+        {
+          "text": "PE 196 J",
+          "font": 12
+        },
+        {
+          "text": "Drag 0 J",
+          "font": 12
+        },
+        {
+          "text": "Prediction 21.4 m",
+          "font": 12
+        },
+        {
+          "text": "h₀ = 10 m",
+          "font": 12
+        }
+      ],
+      "annotationLayout": {
+        "width": 307,
+        "height": 476,
+        "plotTop": 128,
+        "groundY": 372,
+        "fontMin": 12,
+        "labels": [
+          {
+            "x": 179.630859375,
+            "y": 335,
+            "width": 117.369140625,
+            "height": 29,
+            "id": "prediction",
+            "fontSize": 12
+          },
+          {
+            "x": 91,
+            "y": 326.8333333333333,
+            "width": 69.955078125,
+            "height": 29,
+            "id": "height",
+            "fontSize": 12
+          }
+        ],
+        "vectorScale": 1.4
+      },
+      "graphFonts": [
+        18.760714285714286,
+        18.760714285714286,
+        18.760714285714286,
+        18.760714285714286,
+        18.760714285714286,
+        18.760714285714286,
+        18.760714285714286,
+        18.760714285714286,
+        18.760714285714286,
+        18.760714285714286,
+        18.760714285714286,
+        18.760714285714286,
+        18.760714285714286,
+        18.760714285714286,
+        18.76037057522124,
+        18.76037057522124,
+        18.76037057522124,
+        18.76037057522124,
+        18.76037057522124,
+        18.76037057522124,
+        18.76037057522124,
+        18.76037057522124,
+        18.76037057522124
+      ],
+      "formulaText": "📝 SHOW YOUR WORK (NO-DRAG IDEAL)\n\nh₀ is launch height above ground; landing is y = 0. Initial horizontal velocity is vx₀ = v cos(θ), and initial vertical velocity is vy₀ = v sin(θ).\n\nFlight Time:\nT = (vy₀ + √(vy₀² + 2gh₀)) / g\n= (0.00 + √(0.00² + 2 × 9.8 × 10)) / 9.8\n= 1.43 s\nRange:\nR = vx₀ × T\n= 15.00 × 1.429\n= 21.43 m\nMax height above ground:\nH = h₀ + vy₀² / (2g)\n= 10 + 0.00² / (2 × 9.8)\n= 10.00 m",
+      "optimum": 36.16886748293949
+    },
+    "screenshots": [
+      "visual-dark-375-canvas.png",
+      "visual-dark-375-controls.png",
+      "visual-dark-375-formulas.png",
+      "visual-dark-375-range.png",
+      "visual-dark-375-motion.png"
+    ]
+  },
+  {
+    "theme": "dark",
+    "width": 320,
+    "measures": {
+      "overflow": 0,
+      "canvas": {
+        "width": 252,
+        "height": 476
+      },
+      "view": {
+        "height": 10,
+        "scale": 6.377777777777778,
+        "x": 40,
+        "y": 308.22222222222223,
+        "groundY": 372
+      },
+      "ball": {
+        "y": 9.9939975,
+        "t": 0.035,
+        "E0": 421
+      },
+      "controlsOverflow": 0,
+      "formulasOverflow": 0,
+      "fieldFonts": [
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "formulaContrast": [
+        {
+          "text": "Range:",
+          "ratio": 8.112306521825603
+        },
+        {
+          "text": "Max height above ground:",
+          "ratio": 8.275285154408348
+        },
+        {
+          "text": "= 1.43 s",
+          "ratio": 8.31459553544538
+        },
+        {
+          "text": "= 21.43 m",
+          "ratio": 8.31459553544538
+        },
+        {
+          "text": "= 10.00 m",
+          "ratio": 8.31459553544538
+        },
+        {
+          "text": "📝 Show Your Work (no-drag ideal)",
+          "ratio": 8.912689722940108
+        },
+        {
+          "text": "Flight Time:",
+          "ratio": 9.597236233711946
+        },
+        {
+          "text": "= (0.00 + √(0.00² + 2 × 9.8 × 10)) / 9.8",
+          "ratio": 9.852964414874924
+        },
+        {
+          "text": "= 15.00 × 1.429",
+          "ratio": 9.852964414874924
+        },
+        {
+          "text": "= 10 + 0.00² / (2 × 9.8)",
+          "ratio": 9.852964414874924
+        },
+        {
+          "text": "T = (vy₀ + √(vy₀² + 2gh₀)) / g",
+          "ratio": 11.86643256027928
+        },
+        {
+          "text": "R = vx₀ × T",
+          "ratio": 11.86643256027928
+        },
+        {
+          "text": "H = h₀ + vy₀² / (2g)",
+          "ratio": 11.86643256027928
+        },
+        {
+          "text": "h₀ is launch height above ground; landing is y = 0",
+          "ratio": 12.720021205733584
+        }
+      ],
+      "canvasText": [
+        {
+          "text": "0",
+          "font": 12
+        },
+        {
+          "text": "20",
+          "font": 12
+        },
+        {
+          "text": "10",
+          "font": 12
+        },
+        {
+          "text": "20",
+          "font": 12
+        },
+        {
+          "text": "30",
+          "font": 12
+        },
+        {
+          "text": "Height (m)",
+          "font": 12
+        },
+        {
+          "text": "Distance (m)",
+          "font": 12
+        },
+        {
+          "text": "0°  ·  15 m/s  ·  h₀ 10 m",
+          "font": 14
+        },
+        {
+          "text": "g 9.8 m/s²  ·  2 kg",
+          "font": 12
+        },
+        {
+          "text": "No air drag  ·  Paused",
+          "font": 12
+        },
+        {
+          "text": "t 0.04 s",
+          "font": 12
+        },
+        {
+          "text": "Vx 15.0",
+          "font": 12
+        },
+        {
+          "text": "Vy -0.3",
+          "font": 12
+        },
+        {
+          "text": "0",
+          "font": 12
+        },
+        {
+          "text": "≥60 m/s",
+          "font": 12
+        },
+        {
+          "text": "Energy · 421 J",
+          "font": 12
+        },
+        {
+          "text": "KE 225 J",
+          "font": 12
+        },
+        {
+          "text": "PE 196 J",
+          "font": 12
+        },
+        {
+          "text": "Drag 0 J",
+          "font": 12
+        },
+        {
+          "text": "Prediction 21.4 m",
+          "font": 12
+        },
+        {
+          "text": "h₀ = 10 m",
+          "font": 12
+        }
+      ],
+      "annotationLayout": {
+        "width": 252,
+        "height": 476,
+        "plotTop": 128,
+        "groundY": 372,
+        "fontMin": 12,
+        "labels": [
+          {
+            "x": 124.630859375,
+            "y": 335,
+            "width": 117.369140625,
+            "height": 29,
+            "id": "prediction",
+            "fontSize": 12
+          },
+          {
+            "x": 10,
+            "y": 335,
+            "width": 69.955078125,
+            "height": 29,
+            "id": "height",
+            "fontSize": 12
+          }
+        ],
+        "vectorScale": 1.4
+      },
+      "graphFonts": [
+        14.953125,
+        14.953125,
+        14.953125,
+        14.953125,
+        14.953125,
+        14.953125,
+        14.953125,
+        14.953125,
+        14.953125,
+        14.953125,
+        14.953125,
+        14.953125,
+        14.953125,
+        14.953125,
+        14.95353982300885,
+        14.95353982300885,
+        14.95353982300885,
+        14.95353982300885,
+        14.95353982300885,
+        14.95353982300885,
+        14.95353982300885,
+        14.95353982300885,
+        14.95353982300885
+      ],
+      "formulaText": "📝 SHOW YOUR WORK (NO-DRAG IDEAL)\n\nh₀ is launch height above ground; landing is y = 0. Initial horizontal velocity is vx₀ = v cos(θ), and initial vertical velocity is vy₀ = v sin(θ).\n\nFlight Time:\nT = (vy₀ + √(vy₀² + 2gh₀)) / g\n= (0.00 + √(0.00² + 2 × 9.8 × 10)) / 9.8\n= 1.43 s\nRange:\nR = vx₀ × T\n= 15.00 × 1.429\n= 21.43 m\nMax height above ground:\nH = h₀ + vy₀² / (2g)\n= 10 + 0.00² / (2 × 9.8)\n= 10.00 m",
+      "optimum": 36.16886748293949
+    },
+    "screenshots": [
+      "visual-dark-320-canvas.png",
+      "visual-dark-320-controls.png",
+      "visual-dark-320-formulas.png",
+      "visual-dark-320-range.png",
+      "visual-dark-320-motion.png"
+    ]
+  },
+  {
+    "theme": "contrast",
+    "width": 1100,
+    "measures": {
+      "overflow": 0,
+      "canvas": {
+        "width": 1020,
+        "height": 476
+      },
+      "view": {
+        "height": 10,
+        "scale": 12,
+        "x": 40,
+        "y": 252,
+        "groundY": 372
+      },
+      "ball": {
+        "y": 9.9939975,
+        "t": 0.035,
+        "E0": 421
+      },
+      "controlsOverflow": 0,
+      "formulasOverflow": 0,
+      "fieldFonts": [
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "formulaContrast": [
+        {
+          "text": "📝 Show Your Work (no-drag ideal)",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "h₀ is launch height above ground; landing is y = 0",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "Flight Time:",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "T = (vy₀ + √(vy₀² + 2gh₀)) / g",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "= (0.00 + √(0.00² + 2 × 9.8 × 10)) / 9.8",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "= 1.43 s",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "Range:",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "R = vx₀ × T",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "= 15.00 × 1.429",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "= 21.43 m",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "Max height above ground:",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "H = h₀ + vy₀² / (2g)",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "= 10 + 0.00² / (2 × 9.8)",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "= 10.00 m",
+          "ratio": 19.555999999999997
+        }
+      ],
+      "canvasText": [
+        {
+          "text": "0",
+          "font": 12
+        },
+        {
+          "text": "10",
+          "font": 12
+        },
+        {
+          "text": "20",
+          "font": 12
+        },
+        {
+          "text": "30",
+          "font": 12
+        },
+        {
+          "text": "40",
+          "font": 12
+        },
+        {
+          "text": "50",
+          "font": 12
+        },
+        {
+          "text": "60",
+          "font": 12
+        },
+        {
+          "text": "70",
+          "font": 12
+        },
+        {
+          "text": "5",
+          "font": 12
+        },
+        {
+          "text": "10",
+          "font": 12
+        },
+        {
+          "text": "15",
+          "font": 12
+        },
+        {
+          "text": "Height (m)",
+          "font": 12
+        },
+        {
+          "text": "Distance (m)",
+          "font": 12
+        },
+        {
+          "text": "0°  ·  15 m/s  ·  h₀ 10 m",
+          "font": 14
+        },
+        {
+          "text": "g 9.8 m/s²  ·  2 kg",
+          "font": 12
+        },
+        {
+          "text": "No air drag  ·  Paused",
+          "font": 12
+        },
+        {
+          "text": "t 0.04 s",
+          "font": 12
+        },
+        {
+          "text": "Vx 15.0",
+          "font": 12
+        },
+        {
+          "text": "Vy -0.3",
+          "font": 12
+        },
+        {
+          "text": "0",
+          "font": 12
+        },
+        {
+          "text": "≥60 m/s",
+          "font": 12
+        },
+        {
+          "text": "Energy · 421 J",
+          "font": 12
+        },
+        {
+          "text": "KE 225 J",
+          "font": 12
+        },
+        {
+          "text": "PE 196 J",
+          "font": 12
+        },
+        {
+          "text": "Drag 0 J",
+          "font": 12
+        },
+        {
+          "text": "Prediction 21.4 m",
+          "font": 12
+        },
+        {
+          "text": "h₀ = 10 m",
+          "font": 12
+        }
+      ],
+      "annotationLayout": {
+        "width": 1020,
+        "height": 476,
+        "plotTop": 128,
+        "groundY": 372,
+        "fontMin": 12,
+        "labels": [
+          {
+            "x": 313.1428571428571,
+            "y": 335,
+            "width": 117.369140625,
+            "height": 29,
+            "id": "prediction",
+            "fontSize": 12
+          },
+          {
+            "x": 91,
+            "y": 292,
+            "width": 69.955078125,
+            "height": 29,
+            "id": "height",
+            "fontSize": 12
+          }
+        ],
+        "vectorScale": 1.4
+      },
+      "graphFonts": [
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        22.153125,
+        24.922981194690266,
+        24.922981194690266,
+        24.922981194690266,
+        24.922981194690266,
+        24.922981194690266,
+        24.922981194690266,
+        24.922981194690266,
+        24.922981194690266,
+        24.922981194690266
+      ],
+      "formulaText": "📝 SHOW YOUR WORK (NO-DRAG IDEAL)\n\nh₀ is launch height above ground; landing is y = 0. Initial horizontal velocity is vx₀ = v cos(θ), and initial vertical velocity is vy₀ = v sin(θ).\n\nFlight Time:\nT = (vy₀ + √(vy₀² + 2gh₀)) / g\n= (0.00 + √(0.00² + 2 × 9.8 × 10)) / 9.8\n= 1.43 s\nRange:\nR = vx₀ × T\n= 15.00 × 1.429\n= 21.43 m\nMax height above ground:\nH = h₀ + vy₀² / (2g)\n= 10 + 0.00² / (2 × 9.8)\n= 10.00 m",
+      "optimum": 36.16886748293949
+    },
+    "screenshots": [
+      "visual-contrast-1100-canvas.png",
+      "visual-contrast-1100-controls.png",
+      "visual-contrast-1100-formulas.png",
+      "visual-contrast-1100-range.png",
+      "visual-contrast-1100-motion.png"
+    ]
+  },
+  {
+    "theme": "contrast",
+    "width": 375,
+    "measures": {
+      "overflow": 0,
+      "canvas": {
+        "width": 327,
+        "height": 476
+      },
+      "view": {
+        "height": 10,
+        "scale": 9.294444444444446,
+        "x": 40,
+        "y": 279.05555555555554,
+        "groundY": 372
+      },
+      "ball": {
+        "y": 9.9939975,
+        "t": 0.035,
+        "E0": 421
+      },
+      "controlsOverflow": 0,
+      "formulasOverflow": 0,
+      "fieldFonts": [
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "formulaContrast": [
+        {
+          "text": "📝 Show Your Work (no-drag ideal)",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "h₀ is launch height above ground; landing is y = 0",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "Flight Time:",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "T = (vy₀ + √(vy₀² + 2gh₀)) / g",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "= (0.00 + √(0.00² + 2 × 9.8 × 10)) / 9.8",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "= 1.43 s",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "Range:",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "R = vx₀ × T",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "= 15.00 × 1.429",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "= 21.43 m",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "Max height above ground:",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "H = h₀ + vy₀² / (2g)",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "= 10 + 0.00² / (2 × 9.8)",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "= 10.00 m",
+          "ratio": 19.555999999999997
+        }
+      ],
+      "canvasText": [
+        {
+          "text": "0",
+          "font": 12
+        },
+        {
+          "text": "10",
+          "font": 12
+        },
+        {
+          "text": "20",
+          "font": 12
+        },
+        {
+          "text": "10",
+          "font": 12
+        },
+        {
+          "text": "20",
+          "font": 12
+        },
+        {
+          "text": "Height (m)",
+          "font": 12
+        },
+        {
+          "text": "Distance (m)",
+          "font": 12
+        },
+        {
+          "text": "0°  ·  15 m/s  ·  h₀ 10 m",
+          "font": 14
+        },
+        {
+          "text": "g 9.8 m/s²  ·  2 kg",
+          "font": 12
+        },
+        {
+          "text": "No air drag  ·  Paused",
+          "font": 12
+        },
+        {
+          "text": "t 0.04 s",
+          "font": 12
+        },
+        {
+          "text": "Vx 15.0",
+          "font": 12
+        },
+        {
+          "text": "Vy -0.3",
+          "font": 12
+        },
+        {
+          "text": "0",
+          "font": 12
+        },
+        {
+          "text": "≥60 m/s",
+          "font": 12
+        },
+        {
+          "text": "Energy · 421 J",
+          "font": 12
+        },
+        {
+          "text": "KE 225 J",
+          "font": 12
+        },
+        {
+          "text": "PE 196 J",
+          "font": 12
+        },
+        {
+          "text": "Drag 0 J",
+          "font": 12
+        },
+        {
+          "text": "Prediction 21.4 m",
+          "font": 12
+        },
+        {
+          "text": "h₀ = 10 m",
+          "font": 12
+        }
+      ],
+      "annotationLayout": {
+        "width": 327,
+        "height": 476,
+        "plotTop": 128,
+        "groundY": 372,
+        "fontMin": 12,
+        "labels": [
+          {
+            "x": 199.630859375,
+            "y": 335,
+            "width": 117.369140625,
+            "height": 29,
+            "id": "prediction",
+            "fontSize": 12
+          },
+          {
+            "x": 91,
+            "y": 319.05555555555554,
+            "width": 69.955078125,
+            "height": 29,
+            "id": "height",
+            "fontSize": 12
+          }
+        ],
+        "vectorScale": 1.4
+      },
+      "graphFonts": [
+        20.145535714285714,
+        20.145535714285714,
+        20.145535714285714,
+        20.145535714285714,
+        20.145535714285714,
+        20.145535714285714,
+        20.145535714285714,
+        20.145535714285714,
+        20.145535714285714,
+        20.145535714285714,
+        20.145535714285714,
+        20.145535714285714,
+        20.145535714285714,
+        20.145535714285714,
+        20.145464601769913,
+        20.145464601769913,
+        20.145464601769913,
+        20.145464601769913,
+        20.145464601769913,
+        20.145464601769913,
+        20.145464601769913,
+        20.145464601769913,
+        20.145464601769913
+      ],
+      "formulaText": "📝 SHOW YOUR WORK (NO-DRAG IDEAL)\n\nh₀ is launch height above ground; landing is y = 0. Initial horizontal velocity is vx₀ = v cos(θ), and initial vertical velocity is vy₀ = v sin(θ).\n\nFlight Time:\nT = (vy₀ + √(vy₀² + 2gh₀)) / g\n= (0.00 + √(0.00² + 2 × 9.8 × 10)) / 9.8\n= 1.43 s\nRange:\nR = vx₀ × T\n= 15.00 × 1.429\n= 21.43 m\nMax height above ground:\nH = h₀ + vy₀² / (2g)\n= 10 + 0.00² / (2 × 9.8)\n= 10.00 m",
+      "optimum": 36.16886748293949
+    },
+    "screenshots": [
+      "visual-contrast-375-canvas.png",
+      "visual-contrast-375-controls.png",
+      "visual-contrast-375-formulas.png",
+      "visual-contrast-375-range.png",
+      "visual-contrast-375-motion.png"
+    ]
+  },
+  {
+    "theme": "contrast",
+    "width": 320,
+    "measures": {
+      "overflow": 0,
+      "canvas": {
+        "width": 272,
+        "height": 476
+      },
+      "view": {
+        "height": 10,
+        "scale": 7.155555555555556,
+        "x": 40,
+        "y": 300.44444444444446,
+        "groundY": 372
+      },
+      "ball": {
+        "y": 9.9939975,
+        "t": 0.035,
+        "E0": 421
+      },
+      "controlsOverflow": 0,
+      "formulasOverflow": 0,
+      "fieldFonts": [
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "formulaContrast": [
+        {
+          "text": "📝 Show Your Work (no-drag ideal)",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "h₀ is launch height above ground; landing is y = 0",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "Flight Time:",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "T = (vy₀ + √(vy₀² + 2gh₀)) / g",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "= (0.00 + √(0.00² + 2 × 9.8 × 10)) / 9.8",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "= 1.43 s",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "Range:",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "R = vx₀ × T",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "= 15.00 × 1.429",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "= 21.43 m",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "Max height above ground:",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "H = h₀ + vy₀² / (2g)",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "= 10 + 0.00² / (2 × 9.8)",
+          "ratio": 19.555999999999997
+        },
+        {
+          "text": "= 10.00 m",
+          "ratio": 19.555999999999997
+        }
+      ],
+      "canvasText": [
+        {
+          "text": "0",
+          "font": 12
+        },
+        {
+          "text": "10",
+          "font": 12
+        },
+        {
+          "text": "20",
+          "font": 12
+        },
+        {
+          "text": "10",
+          "font": 12
+        },
+        {
+          "text": "20",
+          "font": 12
+        },
+        {
+          "text": "30",
+          "font": 12
+        },
+        {
+          "text": "Height (m)",
+          "font": 12
+        },
+        {
+          "text": "Distance (m)",
+          "font": 12
+        },
+        {
+          "text": "0°  ·  15 m/s  ·  h₀ 10 m",
+          "font": 14
+        },
+        {
+          "text": "g 9.8 m/s²  ·  2 kg",
+          "font": 12
+        },
+        {
+          "text": "No air drag  ·  Paused",
+          "font": 12
+        },
+        {
+          "text": "t 0.04 s",
+          "font": 12
+        },
+        {
+          "text": "Vx 15.0",
+          "font": 12
+        },
+        {
+          "text": "Vy -0.3",
+          "font": 12
+        },
+        {
+          "text": "0",
+          "font": 12
+        },
+        {
+          "text": "≥60 m/s",
+          "font": 12
+        },
+        {
+          "text": "Energy · 421 J",
+          "font": 12
+        },
+        {
+          "text": "KE 225 J",
+          "font": 12
+        },
+        {
+          "text": "PE 196 J",
+          "font": 12
+        },
+        {
+          "text": "Drag 0 J",
+          "font": 12
+        },
+        {
+          "text": "Prediction 21.4 m",
+          "font": 12
+        },
+        {
+          "text": "h₀ = 10 m",
+          "font": 12
+        }
+      ],
+      "annotationLayout": {
+        "width": 272,
+        "height": 476,
+        "plotTop": 128,
+        "groundY": 372,
+        "fontMin": 12,
+        "labels": [
+          {
+            "x": 144.630859375,
+            "y": 335,
+            "width": 117.369140625,
+            "height": 29,
+            "id": "prediction",
+            "fontSize": 12
+          },
+          {
+            "x": 10,
+            "y": 335,
+            "width": 69.955078125,
+            "height": 29,
+            "id": "height",
+            "fontSize": 12
+          }
+        ],
+        "vectorScale": 1.4
+      },
+      "graphFonts": [
+        16.337946428571428,
+        16.337946428571428,
+        16.337946428571428,
+        16.337946428571428,
+        16.337946428571428,
+        16.337946428571428,
+        16.337946428571428,
+        16.337946428571428,
+        16.337946428571428,
+        16.337946428571428,
+        16.337946428571428,
+        16.337946428571428,
+        16.337946428571428,
+        16.337946428571428,
+        16.337389380530972,
+        16.337389380530972,
+        16.337389380530972,
+        16.337389380530972,
+        16.337389380530972,
+        16.337389380530972,
+        16.337389380530972,
+        16.337389380530972,
+        16.337389380530972
+      ],
+      "formulaText": "📝 SHOW YOUR WORK (NO-DRAG IDEAL)\n\nh₀ is launch height above ground; landing is y = 0. Initial horizontal velocity is vx₀ = v cos(θ), and initial vertical velocity is vy₀ = v sin(θ).\n\nFlight Time:\nT = (vy₀ + √(vy₀² + 2gh₀)) / g\n= (0.00 + √(0.00² + 2 × 9.8 × 10)) / 9.8\n= 1.43 s\nRange:\nR = vx₀ × T\n= 15.00 × 1.429\n= 21.43 m\nMax height above ground:\nH = h₀ + vy₀² / (2g)\n= 10 + 0.00² / (2 × 9.8)\n= 10.00 m",
+      "optimum": 36.16886748293949
+    },
+    "screenshots": [
+      "visual-contrast-320-canvas.png",
+      "visual-contrast-320-controls.png",
+      "visual-contrast-320-formulas.png",
+      "visual-contrast-320-range.png",
+      "visual-contrast-320-motion.png"
+    ]
+  }
+]

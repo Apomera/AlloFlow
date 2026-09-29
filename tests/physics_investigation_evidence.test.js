@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 let physics;
 const iso = '2026-09-27T18:00:00.000Z';
-const run = (n, extra = {}) => ({ n, angle: 45, vel: 25, grav: 9.8, mass: 1, drag: false, range: 60, maxH: 15, time: 3.6, modelVersion: 'projectile-v2', ...extra });
+const run = (n, extra = {}) => ({ n, angle: 45, vel: 25, grav: 9.8, mass: 1, launchHeight: 0, drag: false, range: 60, maxH: 15, time: 3.6, modelVersion: 'projectile-v2', ...extra });
 const draft = (selectedRunIds = [10, 11]) => ({ title: 'Changing speed', question: 'How does launch speed affect range?', prediction: 'Twice the speed should travel four times as far.', observation: 'The second range was four times the first.', claim: 'The measurements support a squared relationship.', activityId: 'speed', selectedRunIds });
 const evidence = () => [run(10), run(11, { vel: 50, range: 240, maxH: 60, time: 7.2 })];
 const save = (id = 'notebook-1', rows = evidence(), input = draft(rows.map(r => r.n))) => physics.createInvestigation(input, rows, id, iso);
@@ -106,7 +106,7 @@ describe('saved notebook recovery', () => {
   });
 
   it('rejects invalid comparison snapshots and preserves captured model parameters', () => {
-    const pair = { parameters: { angle: 45, velocity: 25, gravity: 9.8, mass: 2 }, vacuum: { range: 63, maxH: 15, time: 3.6 }, drag: { range: 59, maxH: 14, time: 3.5 } };
+    const pair = { parameters: { angle: 45, velocity: 25, gravity: 9.8, mass: 2, launchHeight: 0 }, vacuum: { range: 63, maxH: 15, time: 3.6 }, drag: { range: 59, maxH: 14, time: 3.5 } };
     expect(physics.normalizeState({ mass: 9, gravity: 3.7, modelComparison: pair }).modelComparison).toEqual(pair);
     for (const bad of [{ ...pair, drag: null }, { ...pair, vacuum: { range: 63 } }, { ...pair, parameters: { ...pair.parameters, mass: 0 } }, { ...pair, drag: { ...pair.drag, time: Infinity } }]) {
       expect(physics.normalizeState({ modelComparison: bad }).modelComparison).toBeNull();

@@ -1,0 +1,49 @@
+{
+  "keyboardConstraint": {
+    "before": {
+      "angle": 45,
+      "disabled": true
+    },
+    "after": {
+      "angle": 50,
+      "constraint": {
+        "type": "fixedAngle",
+        "value": 45
+      }
+    }
+  },
+  "mobile": [
+    {
+      "width": 375,
+      "graph": {
+        "width": 130.5,
+        "height": 110,
+        "viewBox": "0 0 220 110",
+        "axisTextDeclaredSize": "8",
+        "axisTextRenderedWidth": 5.6060638427734375,
+        "axisTextRenderedHeight": 5,
+        "transformScale": 0.5931818181818181,
+        "accessibleName": "Horizontal velocity over time, a flat line",
+        "documentScrollWidth": 375,
+        "viewport": 375
+      },
+      "screenshot": "mobile-graphs-375.png"
+    },
+    {
+      "width": 320,
+      "graph": {
+        "width": 103,
+        "height": 110,
+        "viewBox": "0 0 220 110",
+        "axisTextDeclaredSize": "8",
+        "axisTextRenderedWidth": 5.0562591552734375,
+        "axisTextRenderedHeight": 4,
+        "transformScale": 0.4681818181818182,
+        "accessibleName": "Horizontal velocity over time, a flat line",
+        "documentScrollWidth": 320,
+        "viewport": 320
+      },
+      "screenshot": "mobile-graphs-320.png"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+Physics architecture audit validation — 2026-09-27
+
+Command:
+node node_modules/vitest/vitest.mjs run tests/physics_drag_integrator.test.js tests/physics_canvas_loop.test.js tests/physics_form_controls_a11y.test.js tests/physics_focus_scope_a11y.test.js --maxWorkers=1 --testTimeout=180000
+
+Output:
+RUN v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+Test Files 4 passed (4)
+Tests 17 passed (17)
+Start at 11:57:27
+Duration 14.51s (transform 201ms, setup 118ms, import 204ms, tests 1.96s, environment 9.48s)
+
+Read-only in-memory render probes:
+baseline => render succeeded
+predictionResult: {errPct: 5} => TypeError: Cannot read properties of undefined (reading 'toFixed') at source line 2596
+runLog: [{range: 'oops'}] => TypeError: r.range.toFixed is not a function at source line 2961
+runLog: {} => render succeeded
+lastFlight: {range: 63.5} => TypeError: Cannot read properties of undefined (reading 'toFixed') at source line 2873
+gravity: 0 => render succeeded (this probe checks synchronous render only)
+
+SHA-256 / byte parity:
+stem_lab/stem_tool_physics.js
+245621 bytes
+f2e6b7fc4fcca7f9a343714b2389bdc0c2fba11fe8d47b5d52a7d8993ac00116
+
+desktop/web-app/public/stem_lab/stem_tool_physics.js
+245621 bytes
+f2e6b7fc4fcca7f9a343714b2389bdc0c2fba11fe8d47b5d52a7d8993ac00116
+
+No browser test was run by this reviewer. No application source was changed.

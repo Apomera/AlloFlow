@@ -1,0 +1,713 @@
+[
+  {
+    "theme": "default",
+    "width": 1100,
+    "minFont": 12,
+    "minContrast": 5.197302355022151,
+    "overflow": 0,
+    "snapshot": {
+      "index": 55,
+      "count": 128,
+      "t": 1.9249999999999985,
+      "x": 52.040436740597315,
+      "y": 28.93897002903666,
+      "vx": 25.61940694071698,
+      "vy": 0.04241427473311343,
+      "speed": 25.619442050223473,
+      "ax": -1.3127098229575835,
+      "ay": -9.802173260107255,
+      "fx": -2.625419645915167,
+      "fy": -19.60434652021451,
+      "gravityForce": 19.6,
+      "dragForce": 2.625423243859035,
+      "ke": 656.3558109647587,
+      "pe": 567.2038125691186,
+      "totalEnergy": 1223.5596235338771,
+      "initialEnergy": 1421,
+      "dragLoss": 197.44037646612276,
+      "parameters": {
+        "angle": 35,
+        "velocity": 35,
+        "gravity": 9.8,
+        "mass": 2,
+        "launchHeight": 10,
+        "airResist": true,
+        "modelVersion": "projectile-v3"
+      },
+      "run": 1,
+      "impact": false
+    },
+    "marker": {
+      "x": 350.11464456320016,
+      "y": 199.54951790059096,
+      "t": 1.9249999999999985,
+      "index": 55
+    },
+    "graph": [
+      {
+        "field": "vx",
+        "t": 1.9249999999999985,
+        "index": 55,
+        "value": 25.61940694071698
+      },
+      {
+        "field": "vy",
+        "t": 1.9249999999999985,
+        "index": 55,
+        "value": 0.04241427473311343
+      }
+    ],
+    "tableIndices": [
+      0,
+      13,
+      25,
+      38,
+      51,
+      55,
+      64,
+      76,
+      89,
+      102,
+      114,
+      127
+    ],
+    "screenshots": [
+      "inspection-default-1100-canvas.png",
+      "inspection-default-1100-inspector.png",
+      "inspection-default-1100-graphs.png",
+      "inspection-default-1100-data.png"
+    ]
+  },
+  {
+    "theme": "default",
+    "width": 375,
+    "minFont": 12,
+    "minContrast": 5.197302355022151,
+    "overflow": 0,
+    "snapshot": {
+      "index": 55,
+      "count": 128,
+      "t": 1.9249999999999985,
+      "x": 52.040436740597315,
+      "y": 28.93897002903666,
+      "vx": 25.61940694071698,
+      "vy": 0.04241427473311343,
+      "speed": 25.619442050223473,
+      "ax": -1.3127098229575835,
+      "ay": -9.802173260107255,
+      "fx": -2.625419645915167,
+      "fy": -19.60434652021451,
+      "gravityForce": 19.6,
+      "dragForce": 2.625423243859035,
+      "ke": 656.3558109647587,
+      "pe": 567.2038125691186,
+      "totalEnergy": 1223.5596235338771,
+      "initialEnergy": 1421,
+      "dragLoss": 197.44037646612276,
+      "parameters": {
+        "angle": 35,
+        "velocity": 35,
+        "gravity": 9.8,
+        "mass": 2,
+        "launchHeight": 10,
+        "airResist": true,
+        "modelVersion": "projectile-v3"
+      },
+      "run": 1,
+      "impact": false
+    },
+    "marker": {
+      "x": 120.8560714901906,
+      "y": 327.0370524139953,
+      "t": 1.9249999999999985,
+      "index": 55
+    },
+    "graph": [
+      {
+        "field": "vx",
+        "t": 1.9249999999999985,
+        "index": 55,
+        "value": 25.61940694071698
+      },
+      {
+        "field": "vy",
+        "t": 1.9249999999999985,
+        "index": 55,
+        "value": 0.04241427473311343
+      }
+    ],
+    "tableIndices": [
+      0,
+      13,
+      25,
+      38,
+      51,
+      55,
+      64,
+      76,
+      89,
+      102,
+      114,
+      127
+    ],
+    "screenshots": [
+      "inspection-default-375-canvas.png",
+      "inspection-default-375-inspector.png",
+      "inspection-default-375-graphs.png",
+      "inspection-default-375-data.png"
+    ]
+  },
+  {
+    "theme": "default",
+    "width": 320,
+    "minFont": 12,
+    "minContrast": 5.197302355022151,
+    "overflow": 0,
+    "snapshot": {
+      "index": 55,
+      "count": 128,
+      "t": 1.9249999999999985,
+      "x": 52.040436740597315,
+      "y": 28.93897002903666,
+      "vx": 25.61940694071698,
+      "vy": 0.04241427473311343,
+      "speed": 25.619442050223473,
+      "ax": -1.3127098229575835,
+      "ay": -9.802173260107255,
+      "fx": -2.625419645915167,
+      "fy": -19.60434652021451,
+      "gravityForce": 19.6,
+      "dragForce": 2.625423243859035,
+      "ke": 656.3558109647587,
+      "pe": 567.2038125691186,
+      "totalEnergy": 1223.5596235338771,
+      "initialEnergy": 1421,
+      "dragLoss": 197.44037646612276,
+      "parameters": {
+        "angle": 35,
+        "velocity": 35,
+        "gravity": 9.8,
+        "mass": 2,
+        "launchHeight": 10,
+        "airResist": true,
+        "modelVersion": "projectile-v3"
+      },
+      "run": 1,
+      "impact": false
+    },
+    "marker": {
+      "x": 102.55531456854251,
+      "y": 337.2138512503338,
+      "t": 1.9249999999999985,
+      "index": 55
+    },
+    "graph": [
+      {
+        "field": "vx",
+        "t": 1.9249999999999985,
+        "index": 55,
+        "value": 25.61940694071698
+      },
+      {
+        "field": "vy",
+        "t": 1.9249999999999985,
+        "index": 55,
+        "value": 0.04241427473311343
+      }
+    ],
+    "tableIndices": [
+      0,
+      13,
+      25,
+      38,
+      51,
+      55,
+      64,
+      76,
+      89,
+      102,
+      114,
+      127
+    ],
+    "screenshots": [
+      "inspection-default-320-canvas.png",
+      "inspection-default-320-inspector.png",
+      "inspection-default-320-graphs.png",
+      "inspection-default-320-data.png"
+    ]
+  },
+  {
+    "theme": "dark",
+    "width": 1100,
+    "minFont": 12,
+    "minContrast": 6.790209197824105,
+    "overflow": 0,
+    "snapshot": {
+      "index": 55,
+      "count": 128,
+      "t": 1.9249999999999985,
+      "x": 52.040436740597315,
+      "y": 28.93897002903666,
+      "vx": 25.61940694071698,
+      "vy": 0.04241427473311343,
+      "speed": 25.619442050223473,
+      "ax": -1.3127098229575835,
+      "ay": -9.802173260107255,
+      "fx": -2.625419645915167,
+      "fy": -19.60434652021451,
+      "gravityForce": 19.6,
+      "dragForce": 2.625423243859035,
+      "ke": 656.3558109647587,
+      "pe": 567.2038125691186,
+      "totalEnergy": 1223.5596235338771,
+      "initialEnergy": 1421,
+      "dragLoss": 197.44037646612276,
+      "parameters": {
+        "angle": 35,
+        "velocity": 35,
+        "gravity": 9.8,
+        "mass": 2,
+        "launchHeight": 10,
+        "airResist": true,
+        "modelVersion": "projectile-v3"
+      },
+      "run": 1,
+      "impact": false
+    },
+    "marker": {
+      "x": 350.11464456320016,
+      "y": 199.54951790059096,
+      "t": 1.9249999999999985,
+      "index": 55
+    },
+    "graph": [
+      {
+        "field": "vx",
+        "t": 1.9249999999999985,
+        "index": 55,
+        "value": 25.61940694071698
+      },
+      {
+        "field": "vy",
+        "t": 1.9249999999999985,
+        "index": 55,
+        "value": 0.04241427473311343
+      }
+    ],
+    "tableIndices": [
+      0,
+      13,
+      25,
+      38,
+      51,
+      55,
+      64,
+      76,
+      89,
+      102,
+      114,
+      127
+    ],
+    "screenshots": [
+      "inspection-dark-1100-canvas.png",
+      "inspection-dark-1100-inspector.png",
+      "inspection-dark-1100-graphs.png",
+      "inspection-dark-1100-data.png"
+    ]
+  },
+  {
+    "theme": "dark",
+    "width": 375,
+    "minFont": 12,
+    "minContrast": 6.790209197824105,
+    "overflow": 0,
+    "snapshot": {
+      "index": 55,
+      "count": 128,
+      "t": 1.9249999999999985,
+      "x": 52.040436740597315,
+      "y": 28.93897002903666,
+      "vx": 25.61940694071698,
+      "vy": 0.04241427473311343,
+      "speed": 25.619442050223473,
+      "ax": -1.3127098229575835,
+      "ay": -9.802173260107255,
+      "fx": -2.625419645915167,
+      "fy": -19.60434652021451,
+      "gravityForce": 19.6,
+      "dragForce": 2.625423243859035,
+      "ke": 656.3558109647587,
+      "pe": 567.2038125691186,
+      "totalEnergy": 1223.5596235338771,
+      "initialEnergy": 1421,
+      "dragLoss": 197.44037646612276,
+      "parameters": {
+        "angle": 35,
+        "velocity": 35,
+        "gravity": 9.8,
+        "mass": 2,
+        "launchHeight": 10,
+        "airResist": true,
+        "modelVersion": "projectile-v3"
+      },
+      "run": 1,
+      "impact": false
+    },
+    "marker": {
+      "x": 112.87028665165326,
+      "y": 331.47783736076116,
+      "t": 1.9249999999999985,
+      "index": 55
+    },
+    "graph": [
+      {
+        "field": "vx",
+        "t": 1.9249999999999985,
+        "index": 55,
+        "value": 25.61940694071698
+      },
+      {
+        "field": "vy",
+        "t": 1.9249999999999985,
+        "index": 55,
+        "value": 0.04241427473311343
+      }
+    ],
+    "tableIndices": [
+      0,
+      13,
+      25,
+      38,
+      51,
+      55,
+      64,
+      76,
+      89,
+      102,
+      114,
+      127
+    ],
+    "screenshots": [
+      "inspection-dark-375-canvas.png",
+      "inspection-dark-375-inspector.png",
+      "inspection-dark-375-graphs.png",
+      "inspection-dark-375-data.png"
+    ]
+  },
+  {
+    "theme": "dark",
+    "width": 320,
+    "minFont": 12,
+    "minContrast": 6.790209197824105,
+    "overflow": 0,
+    "snapshot": {
+      "index": 55,
+      "count": 128,
+      "t": 1.9249999999999985,
+      "x": 52.040436740597315,
+      "y": 28.93897002903666,
+      "vx": 25.61940694071698,
+      "vy": 0.04241427473311343,
+      "speed": 25.619442050223473,
+      "ax": -1.3127098229575835,
+      "ay": -9.802173260107255,
+      "fx": -2.625419645915167,
+      "fy": -19.60434652021451,
+      "gravityForce": 19.6,
+      "dragForce": 2.625423243859035,
+      "ke": 656.3558109647587,
+      "pe": 567.2038125691186,
+      "totalEnergy": 1223.5596235338771,
+      "initialEnergy": 1421,
+      "dragLoss": 197.44037646612276,
+      "parameters": {
+        "angle": 35,
+        "velocity": 35,
+        "gravity": 9.8,
+        "mass": 2,
+        "launchHeight": 10,
+        "airResist": true,
+        "modelVersion": "projectile-v3"
+      },
+      "run": 1,
+      "impact": false
+    },
+    "marker": {
+      "x": 94.56952973000517,
+      "y": 341.6546361970997,
+      "t": 1.9249999999999985,
+      "index": 55
+    },
+    "graph": [
+      {
+        "field": "vx",
+        "t": 1.9249999999999985,
+        "index": 55,
+        "value": 25.61940694071698
+      },
+      {
+        "field": "vy",
+        "t": 1.9249999999999985,
+        "index": 55,
+        "value": 0.04241427473311343
+      }
+    ],
+    "tableIndices": [
+      0,
+      13,
+      25,
+      38,
+      51,
+      55,
+      64,
+      76,
+      89,
+      102,
+      114,
+      127
+    ],
+    "screenshots": [
+      "inspection-dark-320-canvas.png",
+      "inspection-dark-320-inspector.png",
+      "inspection-dark-320-graphs.png",
+      "inspection-dark-320-data.png"
+    ]
+  },
+  {
+    "theme": "contrast",
+    "width": 1100,
+    "minFont": 12,
+    "minContrast": 15.303999999999998,
+    "overflow": 0,
+    "snapshot": {
+      "index": 55,
+      "count": 128,
+      "t": 1.9249999999999985,
+      "x": 52.040436740597315,
+      "y": 28.93897002903666,
+      "vx": 25.61940694071698,
+      "vy": 0.04241427473311343,
+      "speed": 25.619442050223473,
+      "ax": -1.3127098229575835,
+      "ay": -9.802173260107255,
+      "fx": -2.625419645915167,
+      "fy": -19.60434652021451,
+      "gravityForce": 19.6,
+      "dragForce": 2.625423243859035,
+      "ke": 656.3558109647587,
+      "pe": 567.2038125691186,
+      "totalEnergy": 1223.5596235338771,
+      "initialEnergy": 1421,
+      "dragLoss": 197.44037646612276,
+      "parameters": {
+        "angle": 35,
+        "velocity": 35,
+        "gravity": 9.8,
+        "mass": 2,
+        "launchHeight": 10,
+        "airResist": true,
+        "modelVersion": "projectile-v3"
+      },
+      "run": 1,
+      "impact": false
+    },
+    "marker": {
+      "x": 350.11464456320016,
+      "y": 199.54951790059096,
+      "t": 1.9249999999999985,
+      "index": 55
+    },
+    "graph": [
+      {
+        "field": "vx",
+        "t": 1.9249999999999985,
+        "index": 55,
+        "value": 25.61940694071698
+      },
+      {
+        "field": "vy",
+        "t": 1.9249999999999985,
+        "index": 55,
+        "value": 0.04241427473311343
+      }
+    ],
+    "tableIndices": [
+      0,
+      13,
+      25,
+      38,
+      51,
+      55,
+      64,
+      76,
+      89,
+      102,
+      114,
+      127
+    ],
+    "screenshots": [
+      "inspection-contrast-1100-canvas.png",
+      "inspection-contrast-1100-inspector.png",
+      "inspection-contrast-1100-graphs.png",
+      "inspection-contrast-1100-data.png"
+    ]
+  },
+  {
+    "theme": "contrast",
+    "width": 375,
+    "minFont": 12,
+    "minContrast": 15.303999999999998,
+    "overflow": 0,
+    "snapshot": {
+      "index": 55,
+      "count": 128,
+      "t": 1.9249999999999985,
+      "x": 52.040436740597315,
+      "y": 28.93897002903666,
+      "vx": 25.61940694071698,
+      "vy": 0.04241427473311343,
+      "speed": 25.619442050223473,
+      "ax": -1.3127098229575835,
+      "ay": -9.802173260107255,
+      "fx": -2.625419645915167,
+      "fy": -19.60434652021451,
+      "gravityForce": 19.6,
+      "dragForce": 2.625423243859035,
+      "ke": 656.3558109647587,
+      "pe": 567.2038125691186,
+      "totalEnergy": 1223.5596235338771,
+      "initialEnergy": 1421,
+      "dragLoss": 197.44037646612276,
+      "parameters": {
+        "angle": 35,
+        "velocity": 35,
+        "gravity": 9.8,
+        "mass": 2,
+        "launchHeight": 10,
+        "airResist": true,
+        "modelVersion": "projectile-v3"
+      },
+      "run": 1,
+      "impact": false
+    },
+    "marker": {
+      "x": 119.52510735043438,
+      "y": 327.77718323845625,
+      "t": 1.9249999999999985,
+      "index": 55
+    },
+    "graph": [
+      {
+        "field": "vx",
+        "t": 1.9249999999999985,
+        "index": 55,
+        "value": 25.61940694071698
+      },
+      {
+        "field": "vy",
+        "t": 1.9249999999999985,
+        "index": 55,
+        "value": 0.04241427473311343
+      }
+    ],
+    "tableIndices": [
+      0,
+      13,
+      25,
+      38,
+      51,
+      55,
+      64,
+      76,
+      89,
+      102,
+      114,
+      127
+    ],
+    "screenshots": [
+      "inspection-contrast-375-canvas.png",
+      "inspection-contrast-375-inspector.png",
+      "inspection-contrast-375-graphs.png",
+      "inspection-contrast-375-data.png"
+    ]
+  },
+  {
+    "theme": "contrast",
+    "width": 320,
+    "minFont": 12,
+    "minContrast": 15.303999999999998,
+    "overflow": 0,
+    "snapshot": {
+      "index": 55,
+      "count": 128,
+      "t": 1.9249999999999985,
+      "x": 52.040436740597315,
+      "y": 28.93897002903666,
+      "vx": 25.61940694071698,
+      "vy": 0.04241427473311343,
+      "speed": 25.619442050223473,
+      "ax": -1.3127098229575835,
+      "ay": -9.802173260107255,
+      "fx": -2.625419645915167,
+      "fy": -19.60434652021451,
+      "gravityForce": 19.6,
+      "dragForce": 2.625423243859035,
+      "ke": 656.3558109647587,
+      "pe": 567.2038125691186,
+      "totalEnergy": 1223.5596235338771,
+      "initialEnergy": 1421,
+      "dragLoss": 197.44037646612276,
+      "parameters": {
+        "angle": 35,
+        "velocity": 35,
+        "gravity": 9.8,
+        "mass": 2,
+        "launchHeight": 10,
+        "airResist": true,
+        "modelVersion": "projectile-v3"
+      },
+      "run": 1,
+      "impact": false
+    },
+    "marker": {
+      "x": 101.2243504287863,
+      "y": 337.9539820747948,
+      "t": 1.9249999999999985,
+      "index": 55
+    },
+    "graph": [
+      {
+        "field": "vx",
+        "t": 1.9249999999999985,
+        "index": 55,
+        "value": 25.61940694071698
+      },
+      {
+        "field": "vy",
+        "t": 1.9249999999999985,
+        "index": 55,
+        "value": 0.04241427473311343
+      }
+    ],
+    "tableIndices": [
+      0,
+      13,
+      25,
+      38,
+      51,
+      55,
+      64,
+      76,
+      89,
+      102,
+      114,
+      127
+    ],
+    "screenshots": [
+      "inspection-contrast-320-canvas.png",
+      "inspection-contrast-320-inspector.png",
+      "inspection-contrast-320-graphs.png",
+      "inspection-contrast-320-data.png"
+    ]
+  }
+]

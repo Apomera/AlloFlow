@@ -79,7 +79,7 @@ describe('physics learning controls and recorded explanations', () => {
   it('starts symmetry through the controller and prevents target-mode comparisons', () => {
     const start = vi.fn();
     canvas({ _startSymmetryDemo: start });
-    const label = 'Vacuum symmetry comparison: launch at 30 and 60 degrees with the same speed and gravity';
+    const label = 'Vacuum symmetry comparison: launch at 30 and 60 degrees from ground level with the same speed and gravity';
     const app = render();
     button(app.tree, label).props.onClick();
     expect(start).toHaveBeenCalledTimes(1);

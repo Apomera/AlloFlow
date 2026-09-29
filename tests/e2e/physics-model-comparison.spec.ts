@@ -41,7 +41,7 @@ async function finishFlight(page: Page) {
 
 test('paired models use two actual landings, preserve controls, and respect pause and stepping', async ({ page }) => {
   await mount(page);
-  const parameters = { angle: 35, velocity: 20, gravity: 9.8, mass: 3 };
+  const parameters = { angle: 35, velocity: 20, gravity: 9.8, mass: 3, launchHeight: 0 };
   await setState(page, { ...parameters, airResist: true, simSpeed: 0 });
   await page.locator('[data-physics-model-comparison-start]').click();
   await page.evaluate(() => { for (let i = 0; i < 20; i++) (window as any).__tickPhysics(50); });
@@ -72,23 +72,27 @@ test('paired models use two actual landings, preserve controls, and respect paus
     const w = window as any, cv = document.getElementById('physicsCanvas') as any, d = w.__toolData.physics;
     return {
       result: d.modelComparison,
-      controls: { angle: d.angle, velocity: d.velocity, gravity: d.gravity, mass: d.mass, airResist: d.airResist },
+      controls: { angle: d.angle, velocity: d.velocity, gravity: d.gravity, mass: d.mass, launchHeight: d.launchHeight, airResist: d.airResist },
       log: d.runLog,
       shots: cv._trails.map((tr: any) => ({ parameters: tr.parameters, last: tr.at(-1), first: tr[0] })),
-      expectedVacuum: w.StemLab._physics.simulate(d.angle, d.velocity, d.gravity, false, d.mass),
-      expectedDrag: w.StemLab._physics.simulate(d.angle, d.velocity, d.gravity, true, d.mass)
+      expectedVacuum: w.StemLab._physics.simulate(d.angle, d.velocity, d.gravity, false, d.mass, d.launchHeight),
+      expectedDrag: w.StemLab._physics.simulate(d.angle, d.velocity, d.gravity, true, d.mass, d.launchHeight)
     };
   });
   expect(state.controls).toEqual({ ...parameters, airResist: true });
   expect(state.result.parameters).toEqual(parameters);
   expect(state.log.map((r: any) => ({ n: r.n, drag: r.drag }))).toEqual([{ n: 1, drag: false }, { n: 2, drag: true }]);
   for (const [index, model, actual, expected] of [[0, 'vacuum', vacuum, state.expectedVacuum], [1, 'drag', drag, state.expectedDrag]] as const) {
+    expect(state.log[index].launchHeight).toBe(0);
+    expect(state.log[index].modelVersion).toBe('projectile-v3');
+    expect(state.shots[index].parameters).toMatchObject(parameters);
     for (const key of ['range', 'maxH', 'time'] as const) {
       expect(state.result[model][key]).toBeCloseTo(actual[key], 12);
       expect(state.result[model][key]).toBeCloseTo(expected[key], 10);
       expect(state.log[index][key]).toBeCloseTo(actual[key], 12);
     }
     expect(state.shots[index].first.t).toBe(0);
+    expect(state.shots[index].first.mY).toBe(parameters.launchHeight);
     expect(state.shots[index].last.mY).toBe(0);
     expect(state.shots[index].last.mX).toBe(actual.range);
     expect(state.shots[index].last.t).toBe(actual.time);

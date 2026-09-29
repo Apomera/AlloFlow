@@ -47,6 +47,9 @@ async function mountPhysics(page: Page) {
     null,
     { timeout: 30_000 },
   );
+  // The simulator must retain a usable width inside this flex-row host.
+  // Inline-size containment once collapsed it to zero despite a live hook.
+  await expect.poll(() => page.locator('#physicsCanvas').evaluate(canvas => canvas.clientWidth)).toBeGreaterThan(500);
 }
 
 async function setState(page: Page, patch: Record<string, unknown>) {

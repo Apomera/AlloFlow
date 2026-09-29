@@ -1,0 +1,710 @@
+{
+  "sourcePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_physics.js",
+  "sourceSha256": "f2e6b7fc4fcca7f9a343714b2389bdc0c2fba11fe8d47b5d52a7d8993ac00116",
+  "scope": "Actual source predictor and step functions; deterministic reproduction of canvas integration/landing formulas, not a browser test.",
+  "cases": [
+    {
+      "settings": {
+        "angle": 45,
+        "velocity": 25,
+        "gravity": 9.8,
+        "drag": false,
+        "mass": 1
+      },
+      "exactVacuum": {
+        "range": 63.77551020408163,
+        "time": 3.6076876591150375,
+        "maxH": 15.943877551020401
+      },
+      "reference": {
+        "range": 63.77551019877115,
+        "time": 3.607687658818328,
+        "maxH": 15.943877541609327
+      },
+      "sourcePrediction": {
+        "range": 63.15636559722941,
+        "maxH": 15.636010110449682,
+        "time": 3.5726635511118245,
+        "apexT": 1.8199999999999987
+      },
+      "canvasEquivalent": {
+        "30fps": {
+          "range": 63.18528435780874,
+          "reportedTime": 3.599999999999997,
+          "interpolatedTime": 3.574299443248545,
+          "maxH": 15.64980515339464,
+          "terminalSample": {
+            "mX": 63.63961030678928,
+            "mY": -0.45238969321069633,
+            "mVx": 17.67766952966369,
+            "mVy": -17.602330470336295,
+            "grav": 9.8,
+            "drag": 0,
+            "mass": 1,
+            "t": 3.599999999999997
+          },
+          "energyAtUncorrectedEndpoint": 306.73759999999993
+        },
+        "60fps": {
+          "range": 63.48054269592919,
+          "reportedTime": 3.599999999999992,
+          "interpolatedTime": 3.591001777095487,
+          "maxH": 15.796805153394587,
+          "terminalSample": {
+            "mX": 63.63961030678928,
+            "mY": -0.158389693210846,
+            "mVx": 17.67766952966369,
+            "mVy": -17.602330470336376,
+            "grav": 9.8,
+            "drag": 0,
+            "mass": 1,
+            "t": 3.599999999999992
+          },
+          "energyAtUncorrectedEndpoint": 309.6187999999999
+        },
+        "144fps": {
+          "range": 63.65268943026215,
+          "reportedTime": 3.604166666666706,
+          "interpolatedTime": 3.600739866951972,
+          "maxH": 15.882540643245246,
+          "terminalSample": {
+            "mX": 63.713267263163566,
+            "mY": -0.060459588689425206,
+            "mVx": 17.67766952966369,
+            "mVy": -17.64316380366989,
+            "grav": 9.8,
+            "drag": 0,
+            "mass": 1,
+            "t": 3.604166666666706
+          },
+          "energyAtUncorrectedEndpoint": 311.2981105324073
+        },
+        "quarterSpeedAt60fps": {
+          "range": 63.70184208619151,
+          "reportedTime": 3.6041666666667407,
+          "interpolatedTime": 3.6035203610577886,
+          "maxH": 15.907055153394701,
+          "terminalSample": {
+            "mX": 63.71326726316173,
+            "mY": -0.01140287572597272,
+            "mVx": 17.67766952966369,
+            "mVy": -17.643163803669626,
+            "grav": 9.8,
+            "drag": 0,
+            "mass": 1,
+            "t": 3.6041666666667407
+          },
+          "energyAtUncorrectedEndpoint": 311.77886631944455
+        },
+        "manualStep": {
+          "range": 63.15636559722941,
+          "reportedTime": 3.605000000000005,
+          "interpolatedTime": 3.5726635511118245,
+          "maxH": 15.636010110449682,
+          "terminalSample": {
+            "mX": 63.72799865443752,
+            "mY": -0.5707813455624107,
+            "mVx": 17.67766952966369,
+            "mVy": -17.651330470336315,
+            "grav": 9.8,
+            "drag": 0,
+            "mass": 1,
+            "t": 3.605000000000005
+          },
+          "energyAtUncorrectedEndpoint": 306.4410765
+        }
+      }
+    },
+    {
+      "settings": {
+        "angle": 5,
+        "velocity": 5,
+        "gravity": 25,
+        "drag": false,
+        "mass": 1
+      },
+      "exactVacuum": {
+        "range": 0.17364817766693033,
+        "time": 0.034862297099063265,
+        "maxH": 0.0037980617469479836
+      },
+      "reference": {
+        "range": 0.17364784184634938,
+        "time": 0.0348622296783908,
+        "maxH": 0.0037980496190462565
+      },
+      "sourcePrediction": {
+        "range": 0.34866814433211096,
+        "maxH": 0,
+        "time": 0.07,
+        "apexT": 0.035
+      },
+      "canvasEquivalent": {
+        "30fps": {
+          "range": 0.16603244968195757,
+          "reportedTime": 0.03333333333333333,
+          "interpolatedTime": 0.03333333333333333,
+          "maxH": 0,
+          "terminalSample": {
+            "mX": 0.16603244968195757,
+            "mY": -0.013251820653168085,
+            "mVx": 4.9809734904587275,
+            "mVy": -0.39755461959504257,
+            "grav": 25,
+            "drag": 0,
+            "mass": 1,
+            "t": 0.03333333333333333
+          },
+          "energyAtUncorrectedEndpoint": 12.152777777777777
+        },
+        "60fps": {
+          "range": 0.08700714814727938,
+          "reportedTime": 0.03333333333333333,
+          "interpolatedTime": 0.01746790026366239,
+          "maxH": 0.0003185341178604019,
+          "terminalSample": {
+            "mX": 0.16603244968195757,
+            "mY": -0.006307376208723641,
+            "mVx": 4.9809734904587275,
+            "mVy": -0.39755461959504257,
+            "grav": 25,
+            "drag": 0,
+            "mass": 1,
+            "t": 0.03333333333333333
+          },
+          "energyAtUncorrectedEndpoint": 12.326388888888888
+        },
+        "144fps": {
+          "range": 0.13892080298880094,
+          "reportedTime": 0.034722222222222224,
+          "interpolatedTime": 0.027890291577521906,
+          "maxH": 0.002435583987105891,
+          "terminalSample": {
+            "mX": 0.17295046841870582,
+            "mY": -0.0029532854026056423,
+            "mVx": 4.9809734904587275,
+            "mVy": -0.4322768418172647,
+            "grav": 25,
+            "drag": 0,
+            "mass": 1,
+            "t": 0.034722222222222224
+          },
+          "energyAtUncorrectedEndpoint": 12.424647955246913
+        },
+        "quarterSpeedAt60fps": {
+          "range": 0.1522625092577389,
+          "reportedTime": 0.03333333333333333,
+          "interpolatedTime": 0.030568825461409176,
+          "maxH": 0.002922700784527068,
+          "terminalSample": {
+            "mX": 0.1660324496819576,
+            "mY": -0.0010990428753903084,
+            "mVx": 4.9809734904587275,
+            "mVy": -0.3975546195950426,
+            "grav": 25,
+            "drag": 0,
+            "mass": 1,
+            "t": 0.03333333333333333
+          },
+          "energyAtUncorrectedEndpoint": 12.456597222222221
+        },
+        "manualStep": {
+          "range": 0.17433407216605548,
+          "reportedTime": 0.035,
+          "interpolatedTime": 0.035,
+          "maxH": 0,
+          "terminalSample": {
+            "mX": 0.17433407216605548,
+            "mY": -0.015372745019159827,
+            "mVx": 4.9809734904587275,
+            "mVy": -0.4392212862617093,
+            "grav": 25,
+            "drag": 0,
+            "mass": 1,
+            "t": 0.035
+          },
+          "energyAtUncorrectedEndpoint": 12.1171875
+        }
+      }
+    },
+    {
+      "settings": {
+        "angle": 5,
+        "velocity": 5,
+        "gravity": 25,
+        "drag": true,
+        "mass": 1
+      },
+      "exactVacuum": {
+        "range": 0.17364817766693033,
+        "time": 0.034862297099063265,
+        "maxH": 0.0037980617469479836
+      },
+      "reference": {
+        "range": 0.1735673440641449,
+        "time": 0.034858183151981796,
+        "maxH": 0.003797170786250159
+      },
+      "sourcePrediction": {
+        "range": 0.34830220491362807,
+        "maxH": 0,
+        "time": 0.07,
+        "apexT": 0.035
+      },
+      "canvasEquivalent": {
+        "30fps": {
+          "range": 0.16592176138216963,
+          "reportedTime": 0.03333333333333333,
+          "interpolatedTime": 0.03333333333333333,
+          "maxH": 0,
+          "terminalSample": {
+            "mX": 0.16592176138216963,
+            "mY": -0.01326150462458449,
+            "mVx": 4.977652841465089,
+            "mVy": -0.39784513873753474,
+            "grav": 25,
+            "drag": 0.004,
+            "mass": 1,
+            "t": 0.03333333333333333
+          },
+          "energyAtUncorrectedEndpoint": 12.136116666666668
+        },
+        "60fps": {
+          "range": 0.086945000602408,
+          "reportedTime": 0.03333333333333333,
+          "interpolatedTime": 0.01746150754323686,
+          "maxH": 0.00031611312500630004,
+          "terminalSample": {
+            "mX": 0.16594955693264848,
+            "mY": -0.006312323130276132,
+            "mVx": 4.977660249997002,
+            "mVy": -0.3977061753169459,
+            "grav": 25,
+            "drag": 0.004,
+            "mass": 1,
+            "t": 0.03333333333333333
+          },
+          "energyAtUncorrectedEndpoint": 12.309827804885822
+        },
+        "144fps": {
+          "range": 0.13884331396312777,
+          "reportedTime": 0.034722222222222224,
+          "interpolatedTime": 0.027884433224557113,
+          "maxH": 0.002434491209178518,
+          "terminalSample": {
+            "mX": 0.1728785784733377,
+            "mY": -0.0029562380965622733,
+            "mVx": 4.97752482883457,
+            "mVy": -0.43233830373703186,
+            "grav": 25,
+            "drag": 0.004,
+            "mass": 1,
+            "t": 0.034722222222222224
+          },
+          "energyAtUncorrectedEndpoint": 12.407428962857356
+        },
+        "quarterSpeedAt60fps": {
+          "range": 0.1521810826629484,
+          "reportedTime": 0.03333333333333333,
+          "interpolatedTime": 0.03056310439863009,
+          "maxH": 0.0029215506697623903,
+          "terminalSample": {
+            "mX": 0.16597034948435782,
+            "mY": -0.0011014486819628771,
+            "mVx": 4.9776632713160875,
+            "mVy": -0.39760204225896184,
+            "grav": 25,
+            "drag": 0.004,
+            "mass": 1,
+            "t": 0.03333333333333333
+          },
+          "energyAtUncorrectedEndpoint": 12.440073296259763
+        },
+        "manualStep": {
+          "range": 0.17421203831553925,
+          "reportedTime": 0.035,
+          "interpolatedTime": 0.035,
+          "maxH": 0,
+          "terminalSample": {
+            "mX": 0.17421203831553925,
+            "mY": -0.015383421597646416,
+            "mVx": 4.9774868090154065,
+            "mVy": -0.43952633136132613,
+            "grav": 25,
+            "drag": 0.004,
+            "mass": 1,
+            "t": 0.035
+          },
+          "energyAtUncorrectedEndpoint": 12.099693625
+        }
+      }
+    },
+    {
+      "settings": {
+        "angle": 45,
+        "velocity": 50,
+        "gravity": 9.8,
+        "drag": true,
+        "mass": 1
+      },
+      "exactVacuum": {
+        "range": 255.1020408163265,
+        "time": 7.215375318230075,
+        "maxH": 63.775510204081606
+      },
+      "reference": {
+        "range": 149.11351571536875,
+        "time": 6.1309097041286185,
+        "maxH": 46.39439950114724
+      },
+      "sourcePrediction": {
+        "range": 147.50631877616496,
+        "maxH": 45.58974839227063,
+        "time": 6.070856844802593,
+        "apexT": 2.905000000000002
+      },
+      "canvasEquivalent": {
+        "30fps": {
+          "range": 147.5832754208119,
+          "reportedTime": 6.099999999999988,
+          "interpolatedTime": 6.0737321371793405,
+          "maxH": 45.628511350146226,
+          "terminalSample": {
+            "mX": 148.03280808402363,
+            "mY": -0.6999161659105383,
+            "mVx": 17.113408360667357,
+            "mVy": -26.645341141357957,
+            "grav": 9.8,
+            "drag": 0.004,
+            "mass": 1,
+            "t": 6.099999999999988
+          },
+          "energyAtUncorrectedEndpoint": 494.5622967032279
+        },
+        "60fps": {
+          "range": 148.3490571984288,
+          "reportedTime": 6.11666666666665,
+          "interpolatedTime": 6.102343136415427,
+          "maxH": 46.0113477013043,
+          "terminalSample": {
+            "mX": 148.59394737509052,
+            "mY": -0.3824449163246205,
+            "mVx": 17.097054452816515,
+            "mVy": -26.700464872613665,
+            "grav": 9.8,
+            "drag": 0.004,
+            "mass": 1,
+            "t": 6.11666666666665
+          },
+          "energyAtUncorrectedEndpoint": 498.8640875081433
+        },
+        "144fps": {
+          "range": 148.79513202654664,
+          "reportedTime": 6.125000000000111,
+          "interpolatedTime": 6.119011587636222,
+          "maxH": 46.23471521771306,
+          "terminalSample": {
+            "mX": 148.89747688856247,
+            "mY": -0.1600321252953561,
+            "mVx": 17.090483386379116,
+            "mVy": -26.72363150212745,
+            "grav": 9.8,
+            "drag": 0.004,
+            "mass": 1,
+            "t": 6.125000000000111
+          },
+          "energyAtUncorrectedEndpoint": 501.5502366929052
+        },
+        "quarterSpeedAt60fps": {
+          "range": 148.92250457755762,
+          "reportedTime": 6.1249999999999725,
+          "interpolatedTime": 6.123771432575074,
+          "maxH": 46.29858509077996,
+          "terminalSample": {
+            "mX": 148.94350541865106,
+            "mY": -0.032821152575847626,
+            "mVx": 17.09376357197659,
+            "mVy": -26.71497869038044,
+            "grav": 9.8,
+            "drag": 0.004,
+            "mass": 1,
+            "t": 6.1249999999999725
+          },
+          "energyAtUncorrectedEndpoint": 502.6217724458142
+        },
+        "manualStep": {
+          "range": 147.50631877616496,
+          "reportedTime": 6.090000000000015,
+          "interpolatedTime": 6.070856844802593,
+          "maxH": 45.58974839227063,
+          "terminalSample": {
+            "mX": 147.83430036315937,
+            "mY": -0.5089406984277726,
+            "mVx": 17.133099722171227,
+            "mVy": -26.58604045044366,
+            "grav": 9.8,
+            "drag": 0.004,
+            "mass": 1,
+            "t": 6.090000000000015
+          },
+          "energyAtUncorrectedEndpoint": 495.19270761665297
+        }
+      }
+    },
+    {
+      "settings": {
+        "angle": 30,
+        "velocity": 25,
+        "gravity": 9.8,
+        "drag": false,
+        "mass": 1
+      },
+      "exactVacuum": {
+        "range": 55.23121197604838,
+        "time": 2.551020408163265,
+        "maxH": 7.971938775510201
+      },
+      "reference": {
+        "range": 55.23121196223621,
+        "time": 2.551020407527067,
+        "maxH": 7.971938774998392
+      },
+      "sourcePrediction": {
+        "range": 54.472365918204005,
+        "maxH": 7.754669999999999,
+        "time": 2.5159708101016727,
+        "apexT": 1.295
+      },
+      "canvasEquivalent": {
+        "30fps": {
+          "range": 54.507142436676205,
+          "reportedTime": 2.533333333333334,
+          "interpolatedTime": 2.517577068685779,
+          "maxH": 7.764666666666676,
+          "terminalSample": {
+            "mX": 54.84827557301453,
+            "mY": -0.1942222222221931,
+            "mVx": 21.65063509461097,
+            "mVy": -12.326666666666645,
+            "grav": 9.8,
+            "drag": 0,
+            "mass": 1,
+            "t": 2.533333333333334
+          },
+          "energyAtUncorrectedEndpoint": 308.44497777777786
+        },
+        "60fps": {
+          "range": 54.870232448744346,
+          "reportedTime": 2.549999999999996,
+          "interpolatedTime": 2.5343474779823794,
+          "maxH": 7.868111111111094,
+          "terminalSample": {
+            "mX": 55.20911949125813,
+            "mY": -0.1955000000000313,
+            "mVx": 21.65063509461097,
+            "mVy": -12.490000000000022,
+            "grav": 9.8,
+            "drag": 0,
+            "mass": 1,
+            "t": 2.549999999999996
+          },
+          "energyAtUncorrectedEndpoint": 310.45915
+        },
+        "144fps": {
+          "range": 55.08076743406396,
+          "reportedTime": 2.5486111111111205,
+          "interpolatedTime": 2.5440716724182693,
+          "maxH": 7.928587962962902,
+          "terminalSample": {
+            "mX": 55.179049164737236,
+            "mY": -0.056635802469282556,
+            "mVx": 21.65063509461097,
+            "mVy": -12.476388888889002,
+            "grav": 9.8,
+            "drag": 0,
+            "mass": 1,
+            "t": 2.5486111111111205
+          },
+          "energyAtUncorrectedEndpoint": 311.6501089891976
+        },
+        "quarterSpeedAt60fps": {
+          "range": 55.14097372727425,
+          "reportedTime": 2.5500000000000216,
+          "interpolatedTime": 2.546852481985601,
+          "maxH": 7.945906249999965,
+          "terminalSample": {
+            "mX": 55.209119491258186,
+            "mY": -0.03931250000011185,
+            "mVx": 21.65063509461097,
+            "mVy": -12.490000000000082,
+            "grav": 9.8,
+            "drag": 0,
+            "mass": 1,
+            "t": 2.5500000000000216
+          },
+          "energyAtUncorrectedEndpoint": 311.9897875
+        },
+        "manualStep": {
+          "range": 54.472365918204005,
+          "reportedTime": 2.5200000000000005,
+          "interpolatedTime": 2.5159708101016727,
+          "maxH": 7.754669999999999,
+          "terminalSample": {
+            "mX": 54.55960043841959,
+            "mY": -0.0491400000000039,
+            "mVx": 21.65063509461097,
+            "mVy": -12.196000000000002,
+            "grav": 9.8,
+            "drag": 0,
+            "mass": 1,
+            "t": 2.5200000000000005
+          },
+          "energyAtUncorrectedEndpoint": 308.26463600000005
+        }
+      }
+    },
+    {
+      "settings": {
+        "angle": 60,
+        "velocity": 25,
+        "gravity": 9.8,
+        "drag": false,
+        "mass": 1
+      },
+      "exactVacuum": {
+        "range": 55.23121197604838,
+        "time": 4.41849695808387,
+        "maxH": 23.91581632653061
+      },
+      "reference": {
+        "range": 55.23121197519771,
+        "time": 4.418496958021426,
+        "maxH": 23.91581631502929
+      },
+      "sourcePrediction": {
+        "range": 54.79307243532187,
+        "maxH": 23.537570383617183,
+        "time": 4.383445794825757,
+        "apexT": 2.2399999999999993
+      },
+      "canvasEquivalent": {
+        "30fps": {
+          "range": 54.81376239365474,
+          "reportedTime": 4.399999999999994,
+          "interpolatedTime": 4.38510099149238,
+          "maxH": 23.556063874810757,
+          "terminalSample": {
+            "mX": 54.99999999999991,
+            "mY": -0.319872250378451,
+            "mVx": 12.500000000000004,
+            "mVy": -21.469364905389046,
+            "grav": 9.8,
+            "drag": 0,
+            "mass": 1,
+            "t": 4.399999999999994
+          },
+          "energyAtUncorrectedEndpoint": 305.4570666666666
+        },
+        "60fps": {
+          "range": 55.022801757390354,
+          "reportedTime": 4.416666666666656,
+          "interpolatedTime": 4.401824140591202,
+          "maxH": 23.735730541477377,
+          "terminalSample": {
+            "mX": 55.20833333333353,
+            "mY": -0.32108388769066815,
+            "mVx": 12.500000000000004,
+            "mVy": -21.632698238722462,
+            "grav": 9.8,
+            "drag": 0,
+            "mass": 1,
+            "t": 4.416666666666656
+          },
+          "energyAtUncorrectedEndpoint": 308.9651944444445
+        },
+        "144fps": {
+          "range": 55.144379917839295,
+          "reportedTime": 4.416666666666729,
+          "interpolatedTime": 4.411550393427152,
+          "maxH": 23.840667546895254,
+          "terminalSample": {
+            "mX": 55.20833333333401,
+            "mY": -0.11067879509862577,
+            "mVx": 12.500000000000004,
+            "mVy": -21.63269823872271,
+            "grav": 9.8,
+            "drag": 0,
+            "mass": 1,
+            "t": 4.416666666666729
+          },
+          "energyAtUncorrectedEndpoint": 311.0271643518518
+        },
+        "quarterSpeedAt60fps": {
+          "range": 55.179116535111326,
+          "reportedTime": 4.416666666666736,
+          "interpolatedTime": 4.414329322808915,
+          "maxH": 23.870725417266257,
+          "terminalSample": {
+            "mX": 55.208333333334096,
+            "mY": -0.05056305435637963,
+            "mVx": 12.500000000000004,
+            "mVy": -21.632698238722032,
+            "grav": 9.8,
+            "drag": 0,
+            "mass": 1,
+            "t": 4.416666666666736
+          },
+          "energyAtUncorrectedEndpoint": 311.6162986111112
+        },
+        "manualStep": {
+          "range": 54.79307243532187,
+          "reportedTime": 4.410000000000008,
+          "interpolatedTime": 4.383445794825757,
+          "maxH": 23.537570383617183,
+          "terminalSample": {
+            "mX": 55.12500000000001,
+            "mY": -0.5727042327656404,
+            "mVx": 12.500000000000004,
+            "mVy": -21.567364905389034,
+            "grav": 9.8,
+            "drag": 0,
+            "mass": 1,
+            "t": 4.410000000000008
+          },
+          "energyAtUncorrectedEndpoint": 305.0881130000001
+        }
+      }
+    }
+  ],
+  "pauseThenLaunch": {
+    "range": 0,
+    "reportedTime": 0,
+    "interpolatedTime": 0,
+    "maxH": 0,
+    "terminalSample": {
+      "mX": 0,
+      "mY": 0,
+      "mVx": 17.67766952966369,
+      "mVy": 17.677669529663685,
+      "grav": 9.8,
+      "drag": 0,
+      "mass": 1,
+      "t": 0
+    },
+    "energyAtUncorrectedEndpoint": 312.49999999999994
+  },
+  "acceptedSavedStateEdges": {
+    "zeroGravity": {
+      "range": 12374.368670762628,
+      "maxH": 12374.368670762628,
+      "time": 699.9999999999902,
+      "apexT": 0
+    },
+    "veryLightFastProjectile": {
+      "range": 0.0000667572021484375,
+      "maxH": 57915.286780132585,
+      "time": 0.0700010565961765,
+      "apexT": 0.10500000000000001
+    }
+  }
+}

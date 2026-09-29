@@ -1,0 +1,242 @@
+[
+  {
+    "theme": "default",
+    "width": 375,
+    "measurements": {
+      "overflow": 0,
+      "graphs": [
+        {
+          "top": 305.25,
+          "height": 140,
+          "effectiveText": 14,
+          "name": "Horizontal velocity decreases because drag opposes motion."
+        },
+        {
+          "top": 537.25,
+          "height": 140,
+          "effectiveText": 14,
+          "name": "Vertical velocity curves over time. Drag and gravity determine its slope; Vy is zero at the apex."
+        }
+      ]
+    },
+    "original": {
+      "range": 53.48200442745176,
+      "maxH": 14.458546243843244,
+      "time": 3.4337377531379496,
+      "apexT": 1.68145736893245,
+      "angle": 45,
+      "vel": 25,
+      "grav": 9.8,
+      "drag": true,
+      "mass": 1,
+      "prediction": null,
+      "mission": {
+        "targetMode": false,
+        "targetRound": 0,
+        "challengeTier": null
+      },
+      "modelVersion": "projectile-v2"
+    },
+    "screenshot": "after-default-375.png"
+  },
+  {
+    "theme": "default",
+    "width": 320,
+    "measurements": {
+      "overflow": 0,
+      "graphs": [
+        {
+          "top": 346.25,
+          "height": 140,
+          "effectiveText": 13.766666666666666,
+          "name": "Horizontal velocity decreases because drag opposes motion."
+        },
+        {
+          "top": 578.25,
+          "height": 140,
+          "effectiveText": 13.766666666666666,
+          "name": "Vertical velocity curves over time. Drag and gravity determine its slope; Vy is zero at the apex."
+        }
+      ]
+    },
+    "original": {
+      "range": 53.48200442745176,
+      "maxH": 14.458546243843244,
+      "time": 3.4337377531379496,
+      "apexT": 1.68145736893245,
+      "angle": 45,
+      "vel": 25,
+      "grav": 9.8,
+      "drag": true,
+      "mass": 1,
+      "prediction": null,
+      "mission": {
+        "targetMode": false,
+        "targetRound": 0,
+        "challengeTier": null
+      },
+      "modelVersion": "projectile-v2"
+    },
+    "screenshot": "after-default-320.png"
+  },
+  {
+    "theme": "dark",
+    "width": 375,
+    "measurements": {
+      "overflow": 0,
+      "graphs": [
+        {
+          "top": 304.75,
+          "height": 140,
+          "effectiveText": 14,
+          "name": "Horizontal velocity decreases because drag opposes motion."
+        },
+        {
+          "top": 536.75,
+          "height": 140,
+          "effectiveText": 14,
+          "name": "Vertical velocity curves over time. Drag and gravity determine its slope; Vy is zero at the apex."
+        }
+      ]
+    },
+    "original": {
+      "range": 53.48200442745176,
+      "maxH": 14.458546243843244,
+      "time": 3.4337377531379496,
+      "apexT": 1.68145736893245,
+      "angle": 45,
+      "vel": 25,
+      "grav": 9.8,
+      "drag": true,
+      "mass": 1,
+      "prediction": null,
+      "mission": {
+        "targetMode": false,
+        "targetRound": 0,
+        "challengeTier": null
+      },
+      "modelVersion": "projectile-v2"
+    },
+    "screenshot": "after-dark-375.png"
+  },
+  {
+    "theme": "dark",
+    "width": 320,
+    "measurements": {
+      "overflow": 0,
+      "graphs": [
+        {
+          "top": 321.75,
+          "height": 140,
+          "effectiveText": 12.366666666666667,
+          "name": "Horizontal velocity decreases because drag opposes motion."
+        },
+        {
+          "top": 553.75,
+          "height": 140,
+          "effectiveText": 12.366666666666667,
+          "name": "Vertical velocity curves over time. Drag and gravity determine its slope; Vy is zero at the apex."
+        }
+      ]
+    },
+    "original": {
+      "range": 53.48200442745176,
+      "maxH": 14.458546243843244,
+      "time": 3.4337377531379496,
+      "apexT": 1.68145736893245,
+      "angle": 45,
+      "vel": 25,
+      "grav": 9.8,
+      "drag": true,
+      "mass": 1,
+      "prediction": null,
+      "mission": {
+        "targetMode": false,
+        "targetRound": 0,
+        "challengeTier": null
+      },
+      "modelVersion": "projectile-v2"
+    },
+    "screenshot": "after-dark-320.png"
+  },
+  {
+    "theme": "contrast",
+    "width": 375,
+    "measurements": {
+      "overflow": 0,
+      "graphs": [
+        {
+          "top": 304.25,
+          "height": 140,
+          "effectiveText": 14,
+          "name": "Horizontal velocity decreases because drag opposes motion."
+        },
+        {
+          "top": 538.25,
+          "height": 140,
+          "effectiveText": 14,
+          "name": "Vertical velocity curves over time. Drag and gravity determine its slope; Vy is zero at the apex."
+        }
+      ]
+    },
+    "original": {
+      "range": 53.48200442745176,
+      "maxH": 14.458546243843244,
+      "time": 3.4337377531379496,
+      "apexT": 1.68145736893245,
+      "angle": 45,
+      "vel": 25,
+      "grav": 9.8,
+      "drag": true,
+      "mass": 1,
+      "prediction": null,
+      "mission": {
+        "targetMode": false,
+        "targetRound": 0,
+        "challengeTier": null
+      },
+      "modelVersion": "projectile-v2"
+    },
+    "screenshot": "after-contrast-375.png"
+  },
+  {
+    "theme": "contrast",
+    "width": 320,
+    "measurements": {
+      "overflow": 0,
+      "graphs": [
+        {
+          "top": 345.25,
+          "height": 140,
+          "effectiveText": 13.416666666666668,
+          "name": "Horizontal velocity decreases because drag opposes motion."
+        },
+        {
+          "top": 579.25,
+          "height": 140,
+          "effectiveText": 13.416666666666668,
+          "name": "Vertical velocity curves over time. Drag and gravity determine its slope; Vy is zero at the apex."
+        }
+      ]
+    },
+    "original": {
+      "range": 53.48200442745176,
+      "maxH": 14.458546243843244,
+      "time": 3.4337377531379496,
+      "apexT": 1.68145736893245,
+      "angle": 45,
+      "vel": 25,
+      "grav": 9.8,
+      "drag": true,
+      "mass": 1,
+      "prediction": null,
+      "mission": {
+        "targetMode": false,
+        "targetRound": 0,
+        "challengeTier": null
+      },
+      "modelVersion": "projectile-v2"
+    },
+    "screenshot": "after-contrast-320.png"
+  }
+]

@@ -1,7 +1,7 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 
-const flight = (extra = {}) => ({ n: 10, angle: 45, vel: 25, grav: 9.8, mass: 1, drag: false, range: 63.78, maxH: 15.94, time: 3.608, ...extra });
+const flight = (extra = {}) => ({ n: 10, angle: 45, vel: 25, grav: 9.8, mass: 1, launchHeight: 0, drag: false, range: 63.78, maxH: 15.94, time: 3.608, ...extra });
 let normalize;
 let clipboard;
 

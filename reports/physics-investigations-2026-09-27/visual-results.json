@@ -1,0 +1,374 @@
+[
+  {
+    "theme": "default",
+    "width": 375,
+    "measurements": {
+      "overflow": 0,
+      "notebookOverflow": 0,
+      "checked": 53,
+      "worst": {
+        "text": "Guided investigations",
+        "ratio": 9.933329874512658
+      },
+      "fields": [
+        {
+          "id": "physics-investigation-activity",
+          "width": 283,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-title",
+          "width": 309,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-question",
+          "width": 309,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-prediction",
+          "width": 309,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-observation",
+          "width": 309,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-claim",
+          "width": 309,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-select",
+          "width": 283,
+          "font": 14
+        }
+      ]
+    },
+    "modelMeasurements": {
+      "overflow": 0,
+      "notebookOverflow": 0,
+      "checked": 18,
+      "worst": {
+        "text": "Both flights used: 45°, 25 m/s, g = 9.8 m/s², 1 kg.",
+        "ratio": 17.062933971317335
+      },
+      "fields": []
+    },
+    "screenshot": "notebook-default-375.png",
+    "modelScreenshot": "models-default-375.png"
+  },
+  {
+    "theme": "default",
+    "width": 320,
+    "measurements": {
+      "overflow": 0,
+      "notebookOverflow": 0,
+      "checked": 53,
+      "worst": {
+        "text": "Guided investigations",
+        "ratio": 9.933329874512658
+      },
+      "fields": [
+        {
+          "id": "physics-investigation-activity",
+          "width": 228,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-title",
+          "width": 254,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-question",
+          "width": 254,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-prediction",
+          "width": 254,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-observation",
+          "width": 254,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-claim",
+          "width": 254,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-select",
+          "width": 228,
+          "font": 14
+        }
+      ]
+    },
+    "modelMeasurements": {
+      "overflow": 0,
+      "notebookOverflow": 0,
+      "checked": 18,
+      "worst": {
+        "text": "Both flights used: 45°, 25 m/s, g = 9.8 m/s², 1 kg.",
+        "ratio": 17.062933971317335
+      },
+      "fields": []
+    },
+    "screenshot": "notebook-default-320.png",
+    "modelScreenshot": "models-default-320.png"
+  },
+  {
+    "theme": "dark",
+    "width": 375,
+    "measurements": {
+      "overflow": 0,
+      "notebookOverflow": 0,
+      "checked": 53,
+      "worst": {
+        "text": "Teacher activity",
+        "ratio": 11.86643256027928
+      },
+      "fields": [
+        {
+          "id": "physics-investigation-activity",
+          "width": 259,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-title",
+          "width": 285,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-question",
+          "width": 285,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-prediction",
+          "width": 285,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-observation",
+          "width": 285,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-claim",
+          "width": 285,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-select",
+          "width": 259,
+          "font": 14
+        }
+      ]
+    },
+    "modelMeasurements": {
+      "overflow": 0,
+      "notebookOverflow": 0,
+      "checked": 18,
+      "worst": {
+        "text": "Both flights used: 45°, 25 m/s, g = 9.8 m/s², 1 kg.",
+        "ratio": 17.062933971317335
+      },
+      "fields": []
+    },
+    "screenshot": "notebook-dark-375.png",
+    "modelScreenshot": "models-dark-375.png"
+  },
+  {
+    "theme": "dark",
+    "width": 320,
+    "measurements": {
+      "overflow": 0,
+      "notebookOverflow": 0,
+      "checked": 53,
+      "worst": {
+        "text": "Teacher activity",
+        "ratio": 11.86643256027928
+      },
+      "fields": [
+        {
+          "id": "physics-investigation-activity",
+          "width": 204,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-title",
+          "width": 230,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-question",
+          "width": 230,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-prediction",
+          "width": 230,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-observation",
+          "width": 230,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-claim",
+          "width": 230,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-select",
+          "width": 204,
+          "font": 14
+        }
+      ]
+    },
+    "modelMeasurements": {
+      "overflow": 0,
+      "notebookOverflow": 0,
+      "checked": 18,
+      "worst": {
+        "text": "Both flights used: 45°, 25 m/s, g = 9.8 m/s², 1 kg.",
+        "ratio": 17.062933971317335
+      },
+      "fields": []
+    },
+    "screenshot": "notebook-dark-320.png",
+    "modelScreenshot": "models-dark-320.png"
+  },
+  {
+    "theme": "contrast",
+    "width": 375,
+    "measurements": {
+      "overflow": 0,
+      "notebookOverflow": 0,
+      "checked": 53,
+      "worst": {
+        "text": "Apply trial 1: 15 m/s",
+        "ratio": 15.303999999999998
+      },
+      "fields": [
+        {
+          "id": "physics-investigation-activity",
+          "width": 279,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-title",
+          "width": 305,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-question",
+          "width": 305,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-prediction",
+          "width": 305,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-observation",
+          "width": 305,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-claim",
+          "width": 305,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-select",
+          "width": 279,
+          "font": 14
+        }
+      ]
+    },
+    "modelMeasurements": {
+      "overflow": 0,
+      "notebookOverflow": 0,
+      "checked": 18,
+      "worst": {
+        "text": "Both flights used: 45°, 25 m/s, g = 9.8 m/s², 1 kg.",
+        "ratio": 19.555999999999997
+      },
+      "fields": []
+    },
+    "screenshot": "notebook-contrast-375.png",
+    "modelScreenshot": "models-contrast-375.png"
+  },
+  {
+    "theme": "contrast",
+    "width": 320,
+    "measurements": {
+      "overflow": 0,
+      "notebookOverflow": 0,
+      "checked": 53,
+      "worst": {
+        "text": "Apply trial 1: 15 m/s",
+        "ratio": 15.303999999999998
+      },
+      "fields": [
+        {
+          "id": "physics-investigation-activity",
+          "width": 224,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-title",
+          "width": 250,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-question",
+          "width": 250,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-prediction",
+          "width": 250,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-observation",
+          "width": 250,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-claim",
+          "width": 250,
+          "font": 14
+        },
+        {
+          "id": "physics-investigation-select",
+          "width": 224,
+          "font": 14
+        }
+      ]
+    },
+    "modelMeasurements": {
+      "overflow": 0,
+      "notebookOverflow": 0,
+      "checked": 18,
+      "worst": {
+        "text": "Both flights used: 45°, 25 m/s, g = 9.8 m/s², 1 kg.",
+        "ratio": 19.555999999999997
+      },
+      "fields": []
+    },
+    "screenshot": "notebook-contrast-320.png",
+    "modelScreenshot": "models-contrast-320.png"
+  }
+]
