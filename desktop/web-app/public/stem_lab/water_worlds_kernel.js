@@ -273,6 +273,43 @@
     return { canRevisit: reached, reason: !s.run ? 'no-run' : !same ? 'different-run' : !reached ? 'not-yet-reached' : null,
       minute: entry ? entry.minute : null, selected: entry ? entry.selected : null };
   }
+  // Reconstruct process totals at each saved moment using the existing solver.
+  // Subtract the two cumulative traces so fractional saved times reproduce
+  // atTime's fixed-step cadence and its final partial step exactly.
+  function observationBudget(first, second) {
+    function valid(entry) {
+      var p=entry&&entry.provenance,f=p&&p.forcing,clean=settings(f);
+      return !!(p&&validWorld(p.start)&&f&&['rain','duration','wetness','pattern'].every(function(k){return f[k]===clean[k];})&&
+        typeof entry.minute==='number'&&isFinite(entry.minute)&&entry.minute>=0&&entry.minute<=f.duration+60&&
+        typeof entry.selected==='number'&&entry.selected===Math.floor(entry.selected)&&entry.selected>=0&&entry.selected<COLS*ROWS);
+    }
+    if(!valid(first)||!valid(second))return {eligible:false,reason:'invalid-observation'};
+    if(JSON.stringify(first.provenance.start)!==JSON.stringify(second.provenance.start)||JSON.stringify(settings(first.provenance.forcing))!==JSON.stringify(settings(second.provenance.forcing)))return {eligible:false,reason:'different-setup'};
+    if(first.selected!==second.selected)return {eligible:false,reason:'different-cell'};
+    if(first.minute===second.minute)return {eligible:false,reason:'same-minute'};
+    var earlier=first.minute<second.minute?first:second,later=first.minute<second.minute?second:first,selected=earlier.selected;
+    var keys=['rainMm','infiltrationMm','drainageMm','releaseMm','surfaceEvaporationMm','soilEvapotranspirationMm','incomingSurfaceMm','outgoingSurfaceMm','streamReceiptMm'];
+    function cumulative(entry) {
+      var w=copy(entry.provenance.start),target=w.minutes+entry.minute,forcing=entry.provenance.forcing,totals={};keys.forEach(function(k){totals[k]=0;});
+      while(w.minutes<target-1e-9){
+        var dt=Math.min(STEP,target-w.minutes),rain=rainDuring(forcing,w.minutes-entry.provenance.start.minutes,dt),trace={};
+        w=step(w,rain,dt,{trace:trace});var local=trace.cells[selected];
+        totals.rainMm+=rain*dt/60;
+        ['infiltrationMm','drainageMm','releaseMm','surfaceEvaporationMm','soilEvapotranspirationMm'].forEach(function(k){totals[k]+=local[k];});
+        trace.routes.forEach(function(route){if(route.to===selected)totals.incomingSurfaceMm+=route.depthMm;if(route.from===selected)totals.outgoingSurfaceMm+=route.depthMm;});
+        if(w.cells[selected].cover==='stream')totals.streamReceiptMm+=trace.cells.reduce(function(value,c){return value+c.releaseMm;},0)/(ROWS*2);
+      }
+      return {cell:w.cells[selected],transfers:totals};
+    }
+    var a=cumulative(earlier),b=cumulative(later),t={};keys.forEach(function(k){t[k]=b.transfers[k]-a.transfers[k];});
+    function store(key,inputs,outputs){var before=a.cell[key],after=b.cell[key];return {beforeMm:before,afterMm:after,inputsMm:inputs,outputsMm:outputs,changeMm:after-before,errorMm:before+inputs-outputs-after};}
+    var stores={surface:store('surface',t.rainMm+t.incomingSurfaceMm+t.streamReceiptMm,t.infiltrationMm+t.outgoingSurfaceMm+t.surfaceEvaporationMm),
+      soil:store('soil',t.infiltrationMm,t.drainageMm+t.soilEvapotranspirationMm),ground:store('ground',t.drainageMm,t.releaseMm)};
+    var before=stores.surface.beforeMm+stores.soil.beforeMm+stores.ground.beforeMm,after=stores.surface.afterMm+stores.soil.afterMm+stores.ground.afterMm,
+      inputs=t.rainMm+t.incomingSurfaceMm+t.streamReceiptMm,outputs=t.outgoingSurfaceMm+t.releaseMm+t.surfaceEvaporationMm+t.soilEvapotranspirationMm;
+    return {eligible:true,reason:null,selected:selected,cover:a.cell.cover,fromMinute:earlier.minute,toMinute:later.minute,fromId:earlier.id,toId:later.id,reverseSelection:first.minute>second.minute,
+      transfers:t,stores:stores,balance:{beforeMm:before,afterMm:after,inputsMm:inputs,outputsMm:outputs,changeMm:after-before,errorMm:before+inputs-outputs-after}};
+  }
   function restoreObservation(entry) {
     if (!entry || typeof entry.id !== 'string' || !/^observation-[1-9]\d{0,12}$/.test(entry.id) || !entry.provenance || !validWorld(entry.provenance.start)) return null;
     var forcing = entry.provenance.forcing, clean = settings(forcing);
@@ -342,6 +379,6 @@
   }
   root.WaterWorldsKernel = { version: VERSION, cols: COLS, rows: ROWS, area: AREA, covers: COVERS, patterns: PATTERNS, rainAt: rainAt, rainDuring: rainDuring, timingComparison: timingComparison,
     create: create, validWorld: validWorld, total: total, measure: measure, step: step, diagnose: diagnose, cellBudget: cellBudget, settings: settings,
-    observationLimit: OBSERVATION_LIMIT, observe: observe, removeObservation: removeObservation, updateObservationNote: updateObservationNote, observationContext: observationContext,
+    observationLimit: OBSERVATION_LIMIT, observe: observe, removeObservation: removeObservation, updateObservationNote: updateObservationNote, observationContext: observationContext, observationBudget: observationBudget,
     initial: initial, restore: restore, begin: begin, advance: advance, landPlan: landPlan, edit: edit, undo: undo, record: record, result: result, atTime: atTime, comparison: comparison, spatialDifference: spatialDifference, report: report, evidence: evidence };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -40,3 +40,19 @@ See [shared visual review](../reports/watercycle-visual-system/README.md) and [S
 The continuation extends the palette into Be the Water, Water Worlds, and Explore's experiment workspace. Climate values and explanations are larger, ground choices have clearer selected states, and prediction choices use generous targets. Baseline and current comparison bars occupy separate rows so both remain visible. The climate readout describes the selected scenario instead of diagnosing fog, snow, or rainbows from inputs that do not establish those conditions.
 
 The pilot's route cards and notebook use quieter surfaces, larger evidence text, and controls that wrap on phones. Water Worlds groups its scene lenses, adds decorative icons, shows a check on selected ground cover, and arranges readings as rows on the smallest screens. See [Explore follow-up](../reports/watercycle-learning-polish/README.md), [pilot review](../reports/watercycle-pilot-visual-finish/README.md), and [Water Worlds review](../reports/watercycle-worlds-visual-finish/README.md).
+
+## Explain and test the evidence
+
+Explore now shows which inputs differ from the baseline and identifies comparisons with one changed input or several. For a preset with several changes, learners can choose one input and **Keep only this change**. The other seven inputs return to their baseline values, while saved observations remain available. The resulting comparison stays visible and receives keyboard focus.
+
+The evidence notebook identifies a comparison by both its baseline and current inputs. The same current temperature against two different baselines can therefore produce two separate records. Saving stops at four observations instead of replacing the oldest one. Learners can remove entries, undo multiple removals in their original order, or download their notebook. A new save ends the pending undo history.
+
+Each record keeps its inputs, signed changes, model readings, and original claim labels. **Explain this observation** adds writing about the explanation, supporting evidence, and the next test. Changing the live controls does not rewrite these saved values or move the writing to another comparison. Older records retain their original evidence; missing inputs and readings are identified rather than filled in.
+
+Claim checks use each reading independently. A decrease can support **Evaporation changes**, and a crossing below zero supports the explicitly named temperature claim. Several effects can be supported together. Runoff and infiltration use independent teaching indices; their scores are not percentages of a measured water budget.
+
+Water Worlds adds **Account for this change** to a pair of saved observations. For the same ground cell and storm setup, learners choose surface water, soil water, or delayed storage and inspect the modeled inputs and outputs between the earlier and later moment. The account balances water before, water entering, water leaving, and water after. It reconstructs the existing solver from saved conditions, so later changes to the live valley do not change the account. Different places or storm setups explain why one local account cannot establish the cause of their difference.
+
+The account includes process prompts and a disclosure explaining numerical reconstruction and rounding. The solver equations are unchanged. See [Water Worlds accounting review](../reports/water-worlds-observation-budget/README.md) for model tests, browser checks, and representative captures.
+
+See [Explore evidence review](../reports/watercycle-explore-notebook/README.md) for notebook, claim, fair-test, and keyboard verification.

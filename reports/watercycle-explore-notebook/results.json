@@ -1,0 +1,681 @@
+{
+  "capturedAt": "2026-09-29T22:14:28.056Z",
+  "checks": [
+    {
+      "label": "light-1280 identifies a comparison with one changed input",
+      "pass": true
+    },
+    {
+      "label": "light-1280 saves all three labeled notes",
+      "pass": true
+    },
+    {
+      "label": "light-1280 saves both recorded setups and their evidence values",
+      "pass": true
+    },
+    {
+      "label": "light-1280 saved notes remain visible in the trail",
+      "pass": true
+    },
+    {
+      "label": "light-1280 section switching preserves complete records",
+      "pass": true
+    },
+    {
+      "label": "light-1280 downloaded report retains notes and model limitations",
+      "pass": true
+    },
+    {
+      "label": "light-1280 keyboard removal removes the selected record",
+      "pass": true
+    },
+    {
+      "label": "light-1280 removal offers undo",
+      "pass": true
+    },
+    {
+      "label": "light-1280 removal retains meaningful focus",
+      "pass": true
+    },
+    {
+      "label": "light-1280 undo restores the exact recorded evidence",
+      "pass": true
+    },
+    {
+      "label": "light-1280 notebook actions have at least 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "text": "Download trail",
+          "height": 44
+        },
+        {
+          "text": "Clear trail",
+          "height": 44
+        },
+        {
+          "text": "Replay",
+          "height": 44
+        },
+        {
+          "text": "Remove",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "label": "light-1280 notebook fits viewport",
+      "pass": true
+    },
+    {
+      "label": "light-320 identifies a comparison with one changed input",
+      "pass": true
+    },
+    {
+      "label": "light-320 saves all three labeled notes",
+      "pass": true
+    },
+    {
+      "label": "light-320 saves both recorded setups and their evidence values",
+      "pass": true
+    },
+    {
+      "label": "light-320 saved notes remain visible in the trail",
+      "pass": true
+    },
+    {
+      "label": "light-320 section switching preserves complete records",
+      "pass": true
+    },
+    {
+      "label": "light-320 downloaded report retains notes and model limitations",
+      "pass": true
+    },
+    {
+      "label": "light-320 keyboard removal removes the selected record",
+      "pass": true
+    },
+    {
+      "label": "light-320 removal offers undo",
+      "pass": true
+    },
+    {
+      "label": "light-320 removal retains meaningful focus",
+      "pass": true
+    },
+    {
+      "label": "light-320 undo restores the exact recorded evidence",
+      "pass": true
+    },
+    {
+      "label": "light-320 notebook actions have at least 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "text": "Download trail",
+          "height": 44
+        },
+        {
+          "text": "Clear trail",
+          "height": 44
+        },
+        {
+          "text": "Replay",
+          "height": 44
+        },
+        {
+          "text": "Remove",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "label": "light-320 notebook fits viewport",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 identifies a comparison with one changed input",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 saves all three labeled notes",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 saves both recorded setups and their evidence values",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 saved notes remain visible in the trail",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 section switching preserves complete records",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 downloaded report retains notes and model limitations",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 keyboard removal removes the selected record",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 removal offers undo",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 removal retains meaningful focus",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 undo restores the exact recorded evidence",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 notebook actions have at least 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "text": "Download trail",
+          "height": 44
+        },
+        {
+          "text": "Clear trail",
+          "height": 44
+        },
+        {
+          "text": "Replay",
+          "height": 44
+        },
+        {
+          "text": "Remove",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "label": "dark-1280 notebook fits viewport",
+      "pass": true
+    },
+    {
+      "label": "dark-320 identifies a comparison with one changed input",
+      "pass": true
+    },
+    {
+      "label": "dark-320 saves all three labeled notes",
+      "pass": true
+    },
+    {
+      "label": "dark-320 saves both recorded setups and their evidence values",
+      "pass": true
+    },
+    {
+      "label": "dark-320 saved notes remain visible in the trail",
+      "pass": true
+    },
+    {
+      "label": "dark-320 section switching preserves complete records",
+      "pass": true
+    },
+    {
+      "label": "dark-320 downloaded report retains notes and model limitations",
+      "pass": true
+    },
+    {
+      "label": "dark-320 keyboard removal removes the selected record",
+      "pass": true
+    },
+    {
+      "label": "dark-320 removal offers undo",
+      "pass": true
+    },
+    {
+      "label": "dark-320 removal retains meaningful focus",
+      "pass": true
+    },
+    {
+      "label": "dark-320 undo restores the exact recorded evidence",
+      "pass": true
+    },
+    {
+      "label": "dark-320 notebook actions have at least 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "text": "Download trail",
+          "height": 44
+        },
+        {
+          "text": "Clear trail",
+          "height": 44
+        },
+        {
+          "text": "Replay",
+          "height": 44
+        },
+        {
+          "text": "Remove",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "label": "dark-320 notebook fits viewport",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 identifies a comparison with one changed input",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 saves all three labeled notes",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 saves both recorded setups and their evidence values",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 saved notes remain visible in the trail",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 section switching preserves complete records",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 downloaded report retains notes and model limitations",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 keyboard removal removes the selected record",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 removal offers undo",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 removal retains meaningful focus",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 undo restores the exact recorded evidence",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 notebook actions have at least 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "text": "Download trail",
+          "height": 44
+        },
+        {
+          "text": "Clear trail",
+          "height": 44
+        },
+        {
+          "text": "Replay",
+          "height": 44
+        },
+        {
+          "text": "Remove",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "label": "contrast-1280 notebook fits viewport",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 identifies a comparison with one changed input",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 saves all three labeled notes",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 saves both recorded setups and their evidence values",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 saved notes remain visible in the trail",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 section switching preserves complete records",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 downloaded report retains notes and model limitations",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 keyboard removal removes the selected record",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 removal offers undo",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 removal retains meaningful focus",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 undo restores the exact recorded evidence",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 notebook actions have at least 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "text": "Download trail",
+          "height": 44
+        },
+        {
+          "text": "Clear trail",
+          "height": 44
+        },
+        {
+          "text": "Replay",
+          "height": 44
+        },
+        {
+          "text": "Remove",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "label": "contrast-320 notebook fits viewport",
+      "pass": true
+    },
+    {
+      "label": "notebook capacity is four records",
+      "pass": true
+    },
+    {
+      "label": "fifth comparison leaves all prior records intact",
+      "pass": true
+    },
+    {
+      "label": "save is disabled while notebook is full",
+      "pass": true
+    },
+    {
+      "label": "capacity guidance explains how to make room",
+      "pass": true
+    },
+    {
+      "label": "removing one record makes room for the pending comparison",
+      "pass": true
+    },
+    {
+      "label": "pending comparison saves after making room",
+      "pass": true
+    },
+    {
+      "label": "cooling supports a direction-neutral evaporation-change claim",
+      "pass": true
+    },
+    {
+      "label": "cooling evidence reports its negative direction",
+      "pass": true
+    },
+    {
+      "label": "same current setup against a different baseline can save",
+      "pass": true
+    },
+    {
+      "label": "two different baselines retain distinct comparisons",
+      "pass": true
+    },
+    {
+      "label": "two sequential removals remove only their selected records",
+      "pass": true
+    },
+    {
+      "label": "one undo restores multiple removals in original order with all notes",
+      "pass": true
+    },
+    {
+      "label": "preset-light-1280 experiment selector is visibly available",
+      "pass": true
+    },
+    {
+      "label": "preset-light-1280 experiment selector has a 44px target",
+      "pass": true
+    },
+    {
+      "label": "preset-light-1280 preset displays all eight changed inputs",
+      "pass": true
+    },
+    {
+      "label": "preset-light-1280 multi-input preset states its attribution limit",
+      "pass": true
+    },
+    {
+      "label": "preset-light-1280 restored selector and fairness panel fit the viewport",
+      "pass": true
+    },
+    {
+      "label": "preset-light-320 experiment selector is visibly available",
+      "pass": true
+    },
+    {
+      "label": "preset-light-320 experiment selector has a 44px target",
+      "pass": true
+    },
+    {
+      "label": "preset-light-320 preset displays all eight changed inputs",
+      "pass": true
+    },
+    {
+      "label": "preset-light-320 multi-input preset states its attribution limit",
+      "pass": true
+    },
+    {
+      "label": "preset-light-320 restored selector and fairness panel fit the viewport",
+      "pass": true
+    },
+    {
+      "label": "preset-dark-1280 experiment selector is visibly available",
+      "pass": true
+    },
+    {
+      "label": "preset-dark-1280 experiment selector has a 44px target",
+      "pass": true
+    },
+    {
+      "label": "preset-dark-1280 preset displays all eight changed inputs",
+      "pass": true
+    },
+    {
+      "label": "preset-dark-1280 multi-input preset states its attribution limit",
+      "pass": true
+    },
+    {
+      "label": "preset-dark-1280 restored selector and fairness panel fit the viewport",
+      "pass": true
+    },
+    {
+      "label": "preset-dark-320 experiment selector is visibly available",
+      "pass": true
+    },
+    {
+      "label": "preset-dark-320 experiment selector has a 44px target",
+      "pass": true
+    },
+    {
+      "label": "preset-dark-320 preset displays all eight changed inputs",
+      "pass": true
+    },
+    {
+      "label": "preset-dark-320 multi-input preset states its attribution limit",
+      "pass": true
+    },
+    {
+      "label": "preset-dark-320 restored selector and fairness panel fit the viewport",
+      "pass": true
+    },
+    {
+      "label": "preset-contrast-1280 experiment selector is visibly available",
+      "pass": true
+    },
+    {
+      "label": "preset-contrast-1280 experiment selector has a 44px target",
+      "pass": true
+    },
+    {
+      "label": "preset-contrast-1280 preset displays all eight changed inputs",
+      "pass": true
+    },
+    {
+      "label": "preset-contrast-1280 multi-input preset states its attribution limit",
+      "pass": true
+    },
+    {
+      "label": "preset-contrast-1280 restored selector and fairness panel fit the viewport",
+      "pass": true
+    },
+    {
+      "label": "preset-contrast-320 experiment selector is visibly available",
+      "pass": true
+    },
+    {
+      "label": "preset-contrast-320 experiment selector has a 44px target",
+      "pass": true
+    },
+    {
+      "label": "preset-contrast-320 preset displays all eight changed inputs",
+      "pass": true
+    },
+    {
+      "label": "preset-contrast-320 multi-input preset states its attribution limit",
+      "pass": true
+    },
+    {
+      "label": "preset-contrast-320 restored selector and fairness panel fit the viewport",
+      "pass": true
+    },
+    {
+      "label": "multi-input preset explains its attribution limit",
+      "pass": true
+    },
+    {
+      "label": "isolation keeps selected cover change and restores the other seven inputs",
+      "pass": true
+    },
+    {
+      "label": "isolating one change clears the prior claim",
+      "pass": true
+    },
+    {
+      "label": "isolating one change preserves saved records and notes",
+      "pass": true
+    },
+    {
+      "label": "isolated scenario visibly identifies one changed input",
+      "pass": true
+    },
+    {
+      "label": "isolation moves focus to the visible comparison method heading",
+      "pass": true
+    },
+    {
+      "label": "isolation exposes five choices for the new comparison",
+      "pass": true
+    },
+    {
+      "label": "forced-colors notebook action has visible keyboard focus",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "width": "3px",
+        "outline": "solid"
+      }
+    },
+    {
+      "label": "forced-colors notebook fits 320px",
+      "pass": true
+    }
+  ],
+  "audits": [
+    {
+      "label": "light-1280",
+      "violations": []
+    },
+    {
+      "label": "light-320",
+      "violations": []
+    },
+    {
+      "label": "dark-1280",
+      "violations": []
+    },
+    {
+      "label": "dark-320",
+      "violations": []
+    },
+    {
+      "label": "contrast-1280",
+      "violations": []
+    },
+    {
+      "label": "contrast-320",
+      "violations": []
+    },
+    {
+      "label": "preset-light-1280",
+      "violations": []
+    },
+    {
+      "label": "preset-light-320",
+      "violations": []
+    },
+    {
+      "label": "preset-dark-1280",
+      "violations": []
+    },
+    {
+      "label": "preset-dark-320",
+      "violations": []
+    },
+    {
+      "label": "preset-contrast-1280",
+      "violations": []
+    },
+    {
+      "label": "preset-contrast-320",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "failures": [],
+  "verificationRuns": [
+    {
+      "sourceSha256": "1a23a1cabee5d3ebf4e73b0ca55ad109965cbc73cea3d9137218ef3a1455ff46",
+      "capturedAt": "2026-09-29T22:01:30.083Z",
+      "completedChecks": 84,
+      "completedAudits": 6,
+      "coverage": "Notebook editing, export, viewport/contrast audits, capacity, signed cooling, baseline identity, and accumulated undo.",
+      "stoppedAt": "Experiment preset was hidden by the legacy details first-child CSS rule.",
+      "correction": "The scoped Climate Lab header display:flex rule overrides that hidden ancestor."
+    },
+    {
+      "sourceSha256": "4bc9cc4407db88f42c41ad517ff9eaef7a4aebc7b8685bb5c21e324c248fd1a0",
+      "capturedAt": "2026-09-29T22:14:28.056Z",
+      "completedChecks": 39,
+      "completedAudits": 6,
+      "coverage": "Visible experiment presets, climate/fair-comparison audits, one-input isolation, retained writing, focus, and forced colors."
+    }
+  ],
+  "sourceSha256": "4bc9cc4407db88f42c41ad517ff9eaef7a4aebc7b8685bb5c21e324c248fd1a0"
+}

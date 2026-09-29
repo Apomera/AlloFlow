@@ -12,13 +12,13 @@ describe('Water Cycle experiment trail', () => {
       const source = readFileSync(filePath, 'utf8');
 
       expect(source).toContain('var wcExperimentLog = Array.isArray(d.wcExperimentLog)');
-      expect(source).toContain('d.wcExperimentLog.slice(-4)');
-      expect(source).toContain('var wcExperimentKey = [');
-      expect(source).toContain('return entry && entry.key === wcExperimentKey;');
+      expect(source.includes('d.wcExperimentLog.slice(-4)')).toBe(false);
+      expect(source.includes('var wcExperimentKey = WCExploreNotebook.identity(wcScenarioBaseline, wcCurrentSnapshot);')).toBe(true);
+      expect(source.includes('WCExploreNotebook.identity(entry.baseline, entry.snapshot) === wcExperimentKey')).toBe(true);
       expect(source).toContain('var saveWcObservation = function()');
-      expect(source).toContain('var nextLog = wcExperimentLog.concat([{');
-      expect(source).toContain(".slice(-4);");
-      expect(source).toContain("upd('wcExperimentLog', nextLog);");
+      expect(source.includes('var nextLog = WCExploreNotebook.append(wcExperimentLog, {')).toBe(true);
+      expect(source.includes("if (nextLog.status !== 'saved') return;")).toBe(true);
+      expect(source.includes('wcExperimentLog: nextLog.entries')).toBe(true);
       expect(source).toContain('snapshot: {');
       expect(source).toContain('baseline: wcScenarioBaseline ? Object.assign({}, wcScenarioBaseline) : null');
       expect(source).toContain('routeShares: wcRouteShares ? {');
@@ -55,15 +55,14 @@ describe('Water Cycle experiment trail', () => {
       expect(source).toContain('var evidencePrediction = WATER_CYCLE_PREDICTIONS[entry.answer];');
       expect(source).toContain('className: "wc-log-entry-evidence"');
       expect(source).toContain('entry.matched ? "Evidence agrees" : "Evidence differs"');
-      expect(source).toContain('" · Claim: " + prediction.shortLabel');
-      expect(source).toContain('Claim: " + prediction.label');
+      expect(source.includes('" · Claim: " + recordedClaimLabel')).toBe(true);
+      expect(source.includes('Claim: " + recordedClaimLabel')).toBe(true);
       expect(
         source.includes('". Evidence " + (entry.matched ? "agrees with" : "differs from") + " the claim.') ||
         (source.includes('"The evidence agrees with the claim."') && source.includes('"The evidence differs from the claim."'))
       ).toBe(true);
       expect(
-        source.includes('"Strongest modeled shift: " + evidenceLabel') ||
-        source.includes('"Evidence supports: " + evidenceLabel')
+        source.includes('"Evidence summary: " + evidenceLabel')
       ).toBe(true);
       expect(source).not.toContain('Prediction matched the evidence.');
       expect(source).not.toContain('Prediction differed from the evidence.');

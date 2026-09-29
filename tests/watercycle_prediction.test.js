@@ -7,26 +7,26 @@ const WATER_CYCLE_PATHS = [
 ];
 
 describe('Water Cycle prediction-and-evidence loop', () => {
-  it('asks for a prediction before revealing comparison evidence', () => {
+  it('offers an evidence claim alongside a visible, independently scaled comparison', () => {
     WATER_CYCLE_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
       expect(source).toContain('var WATER_CYCLE_PREDICTIONS = {');
       expect(source).toContain("runoff: { label: 'More surface runoff'");
       expect(source).toContain("infiltration: { label: 'More underground movement'");
-      expect(source).toContain("evaporation: { label: 'More evaporation'");
-      expect(source).toContain("storage: { label: 'More snow or ice storage'");
-      expect(source).toContain("mixed: { label: 'A mixed or small shift'");
+      expect(source).toContain("evaporation: { label: 'Evaporation changes'");
+      expect(source).toContain("storage: { label: 'Temperature crosses below 0°C'");
+      expect(source).toContain("mixed: { label: 'A small modeled shift'");
       expect(source).toContain('className: "wc-prediction-strip" +');
       expect(source).toContain('"data-watercycle-evidence-interpretation": "true"');
       expect(source).toMatch(/"aria-label": __alloT\('stem\.watercycle\.a11y_(?:scenario_evidence_interpretation|evidence_interpretation_check)', '(?:Scenario evidence interpretation|Evidence interpretation check)'\)/);
       expect(source).toContain('"Read the evidence"');
-      expect(source).toContain('"Make a prediction"');
-      expect(source).toContain('Before reading the evidence, what will shift most?');
-      expect(source).toContain('Choose one claim before the comparison is revealed. This is evidence-reading practice, not a score.');
+      expect(source).toContain('Choose a claim');
+      expect(source).toContain('Which effect will you investigate?');
+      expect(source).toContain('Choose a claim and check the signed changes. Several effects can change together. This is evidence-reading practice, not a score.');
       expect(source).toContain('onClick: function() { recordWcPrediction(predictionId); }');
 
-      expect(source).toContain('wcScenarioBaseline && (!wcScenarioChanges.length || wcPrediction) && React.createElement("div", {');
+      expect(source.includes('wcScenarioBaseline && (!wcScenarioChanges.length || wcPrediction) && React.createElement("div", {')).toBe(false);
       expect(source).toContain('className: "wc-compare-bars"');
       expect(source).toContain('"data-watercycle-evidence-interpretation": "true"');
 
@@ -42,12 +42,10 @@ describe('Water Cycle prediction-and-evidence loop', () => {
       const source = readFileSync(filePath, 'utf8');
 
       expect(source).toContain('function classifyWcScenarioShift()');
-      expect(source).toContain("if (wcRunoffDelta >= 8 && wcInfiltrationDelta <= -8) return 'runoff';");
-      expect(source).toContain("if (wcInfiltrationDelta >= 8 && wcRunoffDelta <= -8) return 'infiltration';");
-      expect(source).toContain("if (wcEvaporationDelta >= 0.15 || wcEvaporationDelta <= -0.15) return 'evaporation';");
-      expect(source).toContain("if (currentTemp < 0) return 'storage';");
+      expect(source).toContain('var wcEvidenceClaims = Object.keys(WATER_CYCLE_PREDICTIONS).filter');
+      expect(source).toContain('WCExploreNotebook.evaluateClaim(id, wcComparisonDeltas, wcScenarioBaseline, wcCurrentSnapshot)');
       expect(source).toContain('var wcPredictionMatched = null;');
-      expect(source).toContain('wcPredictionMatched = wcPrediction === wcPredictionAnswer;');
+      expect(source).toContain('wcPredictionMatched = WCExploreNotebook.evaluateClaim(wcPrediction, wcComparisonDeltas, wcScenarioBaseline, wcCurrentSnapshot);');
       expect(source).toContain('var wcPredictionEvidence = \'\';');
       expect(source).toContain('var wcPredictionEvidenceMetrics = [];');
       expect(source).toContain('Evidence to check: runoff ');

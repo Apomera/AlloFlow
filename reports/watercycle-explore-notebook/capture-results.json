@@ -1,0 +1,17 @@
+{
+  "capturedAt": "2026-09-29T22:17:32.090Z",
+  "checks": [
+    {
+      "label": "light-1280 restored experiment selector is visible",
+      "pass": true
+    },
+    {
+      "label": "dark-320 restored experiment selector is visible",
+      "pass": true
+    }
+  ],
+  "audits": [],
+  "errors": [],
+  "failures": [],
+  "sourceSha256": "4bc9cc4407db88f42c41ad517ff9eaef7a4aebc7b8685bb5c21e324c248fd1a0"
+}

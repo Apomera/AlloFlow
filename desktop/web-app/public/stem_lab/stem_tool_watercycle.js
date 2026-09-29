@@ -1139,10 +1139,99 @@
   var WATER_CYCLE_PREDICTIONS = {
     runoff: { label: 'More surface runoff', shortLabel: 'Surface runoff', emoji: '\uD83C\uDF0A' },
     infiltration: { label: 'More underground movement', shortLabel: 'Infiltration', emoji: '\u2B07\uFE0F' },
-    evaporation: { label: 'More evaporation', shortLabel: 'Evaporation', emoji: '\u2600\uFE0F' },
-    storage: { label: 'More snow or ice storage', shortLabel: 'Snow / ice', emoji: '\u2744\uFE0F' },
-    mixed: { label: 'A mixed or small shift', shortLabel: 'Mixed / small', emoji: '\u2194\uFE0F' }
+    evaporation: { label: 'Evaporation changes', shortLabel: 'Evaporation changes', emoji: '\u2600\uFE0F' },
+    storage: { label: 'Temperature crosses below 0°C', shortLabel: 'Crosses below 0°C', emoji: '\u2744\uFE0F' },
+    mixed: { label: 'A small modeled shift', shortLabel: 'Small shift', emoji: '\u2194\uFE0F' }
   };
+
+  var WCExploreNotebook = (function() {
+    var defaults = { climSolar: 1, climTemp: 15, climWind: 1, landRainIntensity: 55, landSaturation: 45, landPermeability: 'medium', landSlope: 'moderate', landCover: 'grass' };
+    var labels = { climSolar: 'Sunlight', climTemp: 'Temperature', climWind: 'Wind', landRainIntensity: 'Rainfall intensity', landSaturation: 'Soil saturation', landPermeability: 'Soil permeability', landSlope: 'Slope', landCover: 'Land cover' };
+    var keys = Object.keys(defaults);
+    var options = { landPermeability: ['low', 'medium', 'high'], landSlope: ['gentle', 'moderate', 'steep'], landCover: ['forest', 'grass', 'urban'] };
+    var legacyClaims = { runoff: 'More surface runoff', infiltration: 'More underground movement', evaporation: 'More evaporation', storage: 'More snow or ice storage', mixed: 'A mixed or small shift' };
+    function normalizeScenario(value) {
+      var result = {};
+      keys.forEach(function(key) {
+        var item = value && value[key];
+        result[key] = typeof defaults[key] === 'number'
+          ? (typeof item === 'number' && isFinite(item) ? Number(item.toFixed(6)) : defaults[key])
+          : (options[key].indexOf(item) >= 0 ? item : defaults[key]);
+      });
+      return result;
+    }
+    function complete(value) {
+      return !!value && keys.every(function(key) {
+        return typeof defaults[key] === 'number' ? typeof value[key] === 'number' && isFinite(value[key]) : options[key].indexOf(value[key]) >= 0;
+      });
+    }
+    function identity(baseline, current) {
+      if (!complete(baseline) || !complete(current)) return '';
+      var a = normalizeScenario(baseline), b = normalizeScenario(current);
+      return 'compare-v2|' + JSON.stringify(keys.map(function(key) { return a[key]; })) + '>' + JSON.stringify(keys.map(function(key) { return b[key]; }));
+    }
+    function changedInputs(baseline, current) {
+      var a = normalizeScenario(baseline), b = normalizeScenario(current);
+      return keys.filter(function(key) { return baseline && current && baseline[key] != null && current[key] != null && (options[key] ? options[key].indexOf(baseline[key]) >= 0 && options[key].indexOf(current[key]) >= 0 : typeof baseline[key] === 'number' && isFinite(baseline[key]) && typeof current[key] === 'number' && isFinite(current[key])) && a[key] !== b[key]; })
+        .map(function(key) { return { key: key, label: labels[key], before: a[key], after: b[key] }; });
+    }
+    function append(log, entry, limit) {
+      var entries = Array.isArray(log) ? log.slice() : [];
+      var id = identity(entry.baseline, entry.snapshot);
+      if (id && entries.some(function(saved) { return saved && identity(saved.baseline, saved.snapshot) === id; })) return { status: 'duplicate', entries: entries };
+      if (entries.length >= (limit == null ? 4 : limit)) return { status: 'full', entries: entries };
+      return { status: 'saved', entries: entries.concat([entry]) };
+    }
+    function evaluateClaim(id, deltas, baseline, current) {
+      var values = deltas || {};
+      var evaporation = typeof values.evaporation === 'number' && isFinite(values.evaporation) ? values.evaporation : 0;
+      var runoff = typeof values.runoff === 'number' && isFinite(values.runoff) ? values.runoff : 0;
+      var infiltration = typeof values.infiltration === 'number' && isFinite(values.infiltration) ? values.infiltration : 0;
+      var freezing = baseline && current && typeof baseline.climTemp === 'number' && typeof current.climTemp === 'number' && baseline.climTemp >= 0 && current.climTemp < 0;
+      if (id === 'runoff') return runoff >= 8;
+      if (id === 'infiltration') return infiltration >= 8;
+      if (id === 'evaporation') return Math.abs(evaporation) >= 0.15 - 1e-9;
+      if (id === 'storage') return !!freezing;
+      if (id === 'mixed') return Math.abs(runoff) < 8 && Math.abs(infiltration) < 8 && Math.abs(evaporation) < 0.15 - 1e-9 && !freezing;
+      return false;
+    }
+    function formatInput(key, value) {
+      if (value == null) return 'not recorded';
+      if (key === 'climSolar') return Math.round(value * 100) + '%';
+      if (key === 'climTemp') return value + ' °C';
+      if (key === 'climWind') return value + 'x';
+      if (key === 'landRainIntensity' || key === 'landSaturation') return value + '/100';
+      return String(value);
+    }
+    function claimLabel(entry) { return entry.predictionLabel || legacyClaims[entry.prediction] || 'Recorded claim'; }
+    function evidenceLabel(entry) { return Array.isArray(entry.evidenceLabels) ? entry.evidenceLabels.join('; ') || 'Read the recorded signed changes' : legacyClaims[entry.answer] || 'not recorded'; }
+    function buildReport(log) {
+      var lines = ['Water Cycle — Explore evidence notebook', 'Recorded comparisons from a simplified teaching model.',
+        'Runoff and infiltration are independent indices, not measured percentages or a forecast.',
+        'Pathway shares are relative teaching shares, not measured water volumes. Frozen storage is not measured.', ''];
+      (log || []).forEach(function(entry, index) {
+        var changes = changedInputs(entry.baseline, entry.snapshot);
+        lines.push((index + 1) + '. ' + (entry.label || 'Custom controls'), 'Saved: ' + (typeof entry.savedAt === 'number' && isFinite(entry.savedAt) ? new Date(entry.savedAt).toISOString() : 'not recorded'),
+          'Claim: ' + claimLabel(entry), 'Evidence: ' + evidenceLabel(entry));
+        lines.push(!complete(entry.baseline) || !complete(entry.snapshot) ? 'Comparison method: some input values were not recorded; one-input attribution is unavailable.'
+          : changes.length === 1 ? 'Comparison method: one input changed; the other seven inputs were held fixed.'
+          : changes.length > 1 ? 'Comparison method: multiple inputs changed; this cannot isolate the effect of one input.' : 'Comparison method: recorded inputs are identical.');
+        keys.forEach(function(key) { lines.push(labels[key] + ': ' + formatInput(key, entry.baseline && entry.baseline[key]) + ' -> ' + formatInput(key, entry.snapshot && entry.snapshot[key])); });
+        ['evaporation', 'runoff', 'infiltration'].forEach(function(metric) {
+          var before = entry.metrics && entry.metrics.baseline && entry.metrics.baseline[metric];
+          var after = entry.metrics && entry.metrics.current && entry.metrics.current[metric];
+          var delta = entry.deltas && entry.deltas[metric];
+          lines.push(metric + ': baseline ' + (before == null ? 'not recorded' : before) + '; current ' + (after == null ? 'not recorded' : after) + '; recorded delta ' + (delta == null ? 'not recorded' : delta));
+        });
+        if (entry.routeShares) lines.push('Relative pathway shares: runoff ' + entry.routeShares.runoff + '%; infiltration ' + entry.routeShares.infiltration + '%; plant ' + entry.routeShares.plant + '%');
+        var notes = entry.notes || {};
+        lines.push('My explanation: ' + (notes.explanation || ''), 'Evidence I used: ' + (notes.evidence || ''), 'My next test: ' + (notes.nextTest || ''), '');
+      });
+      return lines.join('\n');
+    }
+    return { normalizeScenario: normalizeScenario, complete: complete, identity: identity, changedInputs: changedInputs, append: append, evaluateClaim: evaluateClaim, formatInput: formatInput, claimLabel: claimLabel, evidenceLabel: evidenceLabel, buildReport: buildReport };
+  })();
+  // End Explore notebook helpers.
 
   // Present quiz options in a random order. The authored banks are heavily
   // position-biased (59% of correct answers sat at index 1 and index 3 was
@@ -4153,7 +4242,7 @@
     // Experiment controls use the same surface palette as the surrounding map.
     wcFiveStyle.textContent += [
       '.wc-explorer-root :is(.wc-climate-lab,.wc-land-lab){padding:16px!important;border:1px solid var(--wc-viz-line);border-radius:17px;background:var(--wc-viz-card);box-shadow:none}.wc-explorer-root :is(.wc-climate-lab,.wc-land-lab)[open]{box-shadow:none}.wc-explorer-root .wc-lab-summary{min-height:48px;padding:4px 0;color:var(--wc-viz-ink)}.wc-explorer-root .wc-lab-summary-title{font-size:16px;letter-spacing:-.015em}.wc-explorer-root .wc-lab-summary-note{color:var(--wc-viz-muted);font-size:12px}.wc-explorer-root .wc-lab-summary::after{background:var(--wc-viz-tint);color:var(--wc-viz-ink)}.wc-explorer-root details[open]>.wc-lab-summary::after{background:var(--wc-viz-accent);color:#fff}',
-      '.wc-explorer-root .wc-climate-head{flex-wrap:wrap;gap:10px;margin:10px 0 12px}.wc-explorer-root .wc-climate-head h4,.wc-explorer-root .wc-land-head strong{color:var(--wc-viz-ink);font-size:15px}.wc-explorer-root .wc-preset-control{margin-left:auto;flex-wrap:wrap;gap:7px;color:var(--wc-viz-muted);font-size:12px}.wc-explorer-root .wc-preset-control select{min-height:44px;max-width:100%;padding:8px 12px;border:1px solid var(--wc-viz-line);border-radius:10px;background:var(--wc-viz-card);color:var(--wc-viz-ink);font-size:13px}.wc-explorer-root .wc-preset-lesson{padding:12px 14px;border:1px solid var(--wc-viz-line);border-radius:12px;background:var(--wc-viz-tint);color:var(--wc-viz-muted)}.wc-explorer-root .wc-preset-lesson-kicker{color:var(--wc-viz-ink);font-size:11px}.wc-explorer-root .wc-preset-lesson-copy{font-size:13px;line-height:1.55}',
+      '.wc-explorer-root .wc-climate-lab>.wc-climate-head{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 12px}.wc-explorer-root .wc-climate-head h4,.wc-explorer-root .wc-land-head strong{color:var(--wc-viz-ink);font-size:15px}.wc-explorer-root .wc-preset-control{margin-left:auto;flex-wrap:wrap;gap:7px;color:var(--wc-viz-muted);font-size:12px}.wc-explorer-root .wc-preset-control select{min-height:44px;max-width:100%;padding:8px 12px;border:1px solid var(--wc-viz-line);border-radius:10px;background:var(--wc-viz-card);color:var(--wc-viz-ink);font-size:13px}.wc-explorer-root .wc-preset-lesson{padding:12px 14px;border:1px solid var(--wc-viz-line);border-radius:12px;background:var(--wc-viz-tint);color:var(--wc-viz-muted)}.wc-explorer-root .wc-preset-lesson-kicker{color:var(--wc-viz-ink);font-size:11px}.wc-explorer-root .wc-preset-lesson-copy{font-size:13px;line-height:1.55}',
       '.wc-explorer-root .wc-climate-control-grid{gap:12px}.wc-explorer-root .wc-climate-control{padding:14px;border-radius:13px;background:var(--wc-viz-paper);border-color:var(--wc-viz-line);box-shadow:none}.wc-explorer-root .wc-climate-control label{color:var(--wc-viz-ink);font-size:13px!important;flex-wrap:wrap}.wc-explorer-root .wc-climate-value{padding:5px 8px;background:var(--wc-viz-card);color:var(--wc-viz-ink);border:1px solid var(--wc-viz-line);border-radius:8px;font-size:15px;font-variant-numeric:tabular-nums;box-shadow:none}.wc-explorer-root .wc-climate-control input[type=range]{min-height:34px}.wc-explorer-root .wc-climate-control>div{color:var(--wc-viz-muted);font-size:11px}.wc-explorer-root .wc-control-effect{font-size:12px;line-height:1.55;color:var(--wc-viz-muted);margin-top:8px}.wc-explorer-root .wc-climate-delta{font-size:11px;color:var(--wc-viz-ink);background:var(--wc-viz-tint);border-color:var(--wc-viz-line)}.wc-explorer-root .wc-climate-control[data-wc-delta=true]{outline:1px solid var(--wc-viz-accent);outline-offset:2px}',
       '.wc-explorer-root .wc-climate-response{padding:14px;border:1px solid var(--wc-viz-line);border-radius:13px;background:var(--wc-viz-tint)}.wc-explorer-root .wc-climate-response-kicker,.wc-explorer-root .wc-evap-meter-head{color:var(--wc-viz-ink);font-size:11px}.wc-explorer-root .wc-climate-response strong{font-size:15px;color:var(--wc-viz-ink)}.wc-explorer-root .wc-climate-response p,.wc-explorer-root .wc-climate-model-note{font-size:12px;line-height:1.55;color:var(--wc-viz-muted)}.wc-explorer-root .wc-land-control label,.wc-explorer-root .wc-land-control legend{font-size:13px;color:var(--wc-viz-ink)}.wc-explorer-root .wc-land-control input[type=range]{min-height:36px}.wc-explorer-root .wc-land-segments{gap:5px}.wc-explorer-root .wc-land-segments button{min-height:44px;padding:8px 10px;border:1px solid var(--wc-viz-line);border-radius:9px;background:var(--wc-viz-paper);color:var(--wc-viz-ink);font-size:13px;box-shadow:none}.wc-explorer-root .wc-land-segments button[aria-pressed=true]{background:var(--wc-viz-accent);border-color:var(--wc-viz-accent);color:#fff;text-decoration:underline;text-underline-offset:4px}.wc-explorer-root .wc-land-segments button:hover{box-shadow:inset 0 0 0 1px var(--wc-viz-accent)}',
       '.wc-explorer-root .wc-land-result{padding:12px;border-color:var(--wc-viz-line);background:var(--wc-viz-paper);border-radius:11px}.wc-explorer-root .wc-land-result span{font-size:12px;color:var(--wc-viz-muted)}.wc-explorer-root .wc-land-result strong{font-size:16px;color:var(--wc-viz-ink);font-variant-numeric:tabular-nums}.wc-explorer-root .wc-land-driver,.wc-explorer-root .wc-land-interpretation,.wc-explorer-root .wc-land-prompt{color:var(--wc-viz-muted);font-size:12px;line-height:1.6}.wc-explorer-root .wc-land-reset{min-height:40px;background:var(--wc-viz-tint);color:var(--wc-viz-ink);border-color:var(--wc-viz-line);border-radius:9px;font-size:12px}',
@@ -4165,7 +4254,15 @@
       '.wc-explorer-root[data-visual-contrast=true] :is(.wc-land-segments button[aria-pressed=true],details[open]>.wc-lab-summary::after){color:#000}.wc-explorer-root[data-visual-contrast=true] .wc-prediction-result-badge{background:#fff;color:#000;border:1px solid #fff}',
       '@media(forced-colors:active){.wc-explorer-root .wc-land-segments button[aria-pressed=true],.wc-explorer-root[data-visual-contrast=true] .wc-land-segments button[aria-pressed=true]{forced-color-adjust:none;background:Highlight;color:HighlightText;border-color:ButtonText}.wc-explorer-root .wc-land-segments button[aria-pressed=true] *{color:inherit;background:transparent}.wc-explorer-root details[open]>.wc-lab-summary::after,.wc-explorer-root[data-visual-contrast=true] details[open]>.wc-lab-summary::after{background:Highlight;color:HighlightText}.wc-explorer-root .wc-compare-bar-base{background:GrayText;forced-color-adjust:none}.wc-explorer-root .wc-compare-bar-current{background:Highlight;forced-color-adjust:none}.wc-explorer-root .wc-prediction-result-badge{background:Canvas;color:CanvasText;border-color:CanvasText}}'
     ].join('\n');
+    wcFiveStyle.textContent += [
+      '.wc-explorer-root .wc-fair-test{grid-column:1/-1;padding:14px;border:1px solid var(--wc-viz-line);border-left:4px solid var(--wc-viz-accent);border-radius:12px;background:var(--wc-viz-paper);color:var(--wc-viz-ink);min-width:0}.wc-fair-test h4{font-size:15px;font-weight:800;margin:0 0 7px}.wc-fair-test p{font-size:13px;line-height:1.55;margin:0}.wc-fair-inputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 16px;list-style:none;padding:0;margin:12px 0 0}.wc-fair-inputs li{font-size:12px;line-height:1.5;overflow-wrap:anywhere}.wc-fair-inputs strong{display:block}.wc-fair-isolate{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:14px}.wc-fair-isolate label,.wc-fair-isolate small{grid-column:1/-1;font-size:12px;line-height:1.5}.wc-fair-isolate label{font-weight:800}.wc-fair-isolate select{width:100%;min-width:0}',
+      '.wc-explorer-root .wc-log-entry{display:grid;grid-template-columns:24px minmax(0,1fr);align-items:start;gap:8px;min-width:0}.wc-explorer-root .wc-log-entry-index{grid-column:1;grid-row:1}.wc-explorer-root .wc-log-entry-copy{grid-column:2;grid-row:1}.wc-explorer-root .wc-log-entry-actions,.wc-explorer-root .wc-notebook-reflection{grid-column:1/-1;min-width:0}.wc-log-entry-actions{display:flex;gap:8px;flex-wrap:wrap}.wc-log-entry-actions button{flex:1}.wc-explorer-root .wc-experiment-log-head{flex-wrap:wrap;gap:10px}.wc-explorer-root .wc-experiment-log-copy{flex:1 1 240px}.wc-explorer-root .wc-experiment-log-kicker{margin:0;font-size:14px;color:var(--wc-viz-accent)}.wc-notebook-capacity,.wc-notebook-undo{grid-column:1/-1;margin:0;padding:12px;border:1px solid var(--wc-viz-line);border-radius:10px;background:var(--wc-viz-paper);color:var(--wc-viz-ink);font-size:13px;line-height:1.5}.wc-notebook-undo{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.wc-notebook-undo p{flex:1;margin:0}',
+      '.wc-explorer-root :is(.wc-fair-isolate,.wc-notebook-undo,.wc-log-entry-actions) :is(button,select){min-height:44px;padding:8px 11px;border:1px solid var(--wc-viz-accent);border-radius:9px;background:var(--wc-viz-card);color:var(--wc-viz-ink);font-size:13px;font-weight:750;line-height:1.4}.wc-explorer-root :is(.wc-fair-isolate,.wc-notebook-undo,.wc-log-entry-actions) button{cursor:pointer}.wc-explorer-root :is(.wc-fair-test,.wc-notebook-reflection,.wc-notebook-undo,.wc-log-entry-actions) :is(button,select,textarea,summary):focus-visible{outline:3px solid var(--wc-viz-accent);outline-offset:3px}',
+      '.wc-notebook-reflection{border-top:1px solid var(--wc-viz-line);margin-top:3px}.wc-notebook-reflection summary{min-height:44px;padding:11px 0;font-size:13px;font-weight:800;cursor:pointer;color:var(--wc-viz-ink)}.wc-notebook-reflection p,.wc-notebook-reflection li{font-size:12px;line-height:1.55;color:var(--wc-viz-muted);overflow-wrap:anywhere}.wc-notebook-reflection ul{margin:8px 0;padding-left:18px}.wc-notebook-note{margin-top:12px}.wc-notebook-note label{display:block;font-size:13px;font-weight:800;color:var(--wc-viz-ink)}.wc-notebook-note p{margin:4px 0 7px}.wc-notebook-note textarea{display:block;width:100%;max-width:100%;box-sizing:border-box;resize:vertical;min-height:84px;padding:10px;border:1px solid var(--wc-viz-line);border-radius:8px;background:var(--wc-viz-card);color:var(--wc-viz-ink);font:inherit;font-size:13px;line-height:1.5}.wc-notebook-values{max-width:100%;overflow-x:auto;margin:10px 0}.wc-notebook-values table{width:100%;border-collapse:collapse;font-size:12px;color:var(--wc-viz-ink)}.wc-notebook-values caption{text-align:left;font-size:13px;font-weight:800;margin:0 0 6px}.wc-notebook-values th,.wc-notebook-values td{padding:7px 5px;border-bottom:1px solid var(--wc-viz-line);text-align:left;overflow-wrap:anywhere}.wc-notebook-values th{font-weight:750}.wc-notebook-values th:first-child{width:50%}',
+      '@media(max-width:700px){.wc-fair-inputs{grid-template-columns:1fr}.wc-fair-isolate{grid-template-columns:1fr}.wc-fair-isolate label,.wc-fair-isolate small{grid-column:1}.wc-notebook-undo{display:block}.wc-notebook-undo button{margin-top:8px;width:100%}}@media(forced-colors:active){.wc-explorer-root :is(.wc-fair-test,.wc-notebook-capacity,.wc-notebook-undo,.wc-notebook-note textarea){background:Canvas;color:CanvasText;border-color:CanvasText}.wc-explorer-root :is(.wc-fair-isolate,.wc-notebook-undo,.wc-log-entry-actions) :is(button,select){background:ButtonFace;color:ButtonText;border-color:ButtonText}.wc-explorer-root :is(.wc-fair-test,.wc-notebook-reflection,.wc-notebook-undo,.wc-log-entry-actions) :focus-visible{outline-color:Highlight}}'
+    ].join('\n');
     document.head.appendChild(wcFiveStyle);
+    wcFiveStyle.textContent += '.wc-explorer-root .wc-log-entry:only-child{grid-column:1/-1}@media(max-width:400px){.wc-notebook-values th:first-child{width:44%}.wc-notebook-values th,.wc-notebook-values td{font-size:11px;padding:6px 3px}.wc-notebook-values thead th:not(:first-child){white-space:nowrap}}';
   }
   var wcWorldsLoading = null;
   function loadWaterWorlds() {
@@ -4482,7 +4579,7 @@ const d = labToolData.waterCycle || {};
             var prediction = WATER_CYCLE_PREDICTIONS[predictionId];
             if (!prediction) return;
             upd('wcPrediction', predictionId);
-            if (typeof announceToSR === 'function') announceToSR('Evidence claim selected: ' + prediction.label + '. Compare it with the strongest modeled shift.');
+            if (typeof announceToSR === 'function') announceToSR('Evidence claim selected: ' + prediction.label + '. Check the recorded readings; more than one effect can be supported.');
           };
 
           var resetWcPrediction = function() {
@@ -4492,13 +4589,20 @@ const d = labToolData.waterCycle || {};
 
           var saveWcObservation = function() {
             if (!wcPrediction || !wcPredictionAnswer || wcObservationSaved) return;
-            var nextLog = wcExperimentLog.concat([{
+            var nextLog = WCExploreNotebook.append(wcExperimentLog, {
               key: wcExperimentKey,
               preset: wcScenarioPreset,
               label: wcScenarioLabel,
               prediction: wcPrediction,
               answer: wcPredictionAnswer,
               matched: wcPredictionMatched === true,
+              predictionLabel: WATER_CYCLE_PREDICTIONS[wcPrediction].label,
+              evidenceLabels: wcEvidenceClaims.map(function(id) { return WATER_CYCLE_PREDICTIONS[id].label; }),
+              notes: { explanation: '', evidence: '', nextTest: '' },
+              metrics: {
+                baseline: { evaporation: Number(wcBaselineEvaporationIndex.toFixed(2)), runoff: wcBaselineLandIndices.runoff, infiltration: wcBaselineLandIndices.infiltration },
+                current: { evaporation: Number(evaporationIndex.toFixed(2)), runoff: runoffTendency, infiltration: infiltrationOpportunity }
+              },
               headline: wcScenarioHeadline,
               deltas: {
                 evaporation: Number(wcEvaporationDelta.toFixed(2)),
@@ -4522,15 +4626,66 @@ const d = labToolData.waterCycle || {};
               },
               baseline: wcScenarioBaseline ? Object.assign({}, wcScenarioBaseline) : null,
               savedAt: Date.now()
-            }]).slice(-4);
-            upd('wcExperimentLog', nextLog);
+            }, 4);
+            if (nextLog.status !== 'saved') return;
+            updMulti({ wcExperimentLog: nextLog.entries, wcExperimentUndo: null });
             if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_observation_saved_to_the_experiment_trail', 'Observation saved to the experiment trail.'));
             if (typeof addToast === 'function') addToast('📝 Observation saved. Try another scenario to build the trail.', 'success');
           };
 
+          var collectWcRemovedEntries = function(indices) {
+            var previous = Array.isArray(d.wcExperimentUndo) ? d.wcExperimentUndo : [];
+            var positions = previous.map(function(item) { return item.index; }).sort(function(a, b) { return a - b; });
+            return previous.concat(indices.map(function(index) {
+              var originalIndex = index;
+              positions.forEach(function(position) { if (position <= originalIndex) originalIndex++; });
+              return { entry: wcExperimentLog[index], index: originalIndex };
+            }));
+          };
+          var focusWcNotebookHeading = function() {
+            requestAnimationFrame(function() { var heading = document.getElementById('wcExperimentNotebookTitle'); if (heading) heading.focus(); });
+          };
           var clearWcExperimentLog = function() {
-            updMulti({ wcExperimentLog: [], wcReplayedObservation: '' });
-            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_experiment_trail_cleared', 'Experiment trail cleared.'));
+            updMulti({ wcExperimentLog: [], wcReplayedObservation: '', wcExperimentUndo: collectWcRemovedEntries(wcExperimentLog.map(function(_, index) { return index; })) });
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.inquiry_cleared', 'Trail cleared. Undo removal is available until the next observation is saved.'));
+            focusWcNotebookHeading();
+          };
+
+          var removeWcObservation = function(index) {
+            var entry = wcExperimentLog[index];
+            if (!entry) return;
+            updMulti({ wcExperimentLog: wcExperimentLog.filter(function(_, i) { return i !== index; }), wcExperimentUndo: collectWcRemovedEntries([index]) });
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.inquiry_removed', 'Observation removed. Undo removal is available until the next observation is saved.'));
+            focusWcNotebookHeading();
+          };
+          var undoWcObservationRemoval = function() {
+            var restored = wcExperimentLog.slice();
+            (d.wcExperimentUndo || []).slice().sort(function(a, b) { return a.index - b.index; }).forEach(function(item) { restored.splice(Math.min(item.index, restored.length), 0, item.entry); });
+            updMulti({ wcExperimentLog: restored, wcExperimentUndo: null });
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.inquiry_restored', 'Removed observations and their writing restored.'));
+            focusWcNotebookHeading();
+          };
+          var updateWcObservationNote = function(index, key, value) {
+            if (['explanation', 'evidence', 'nextTest'].indexOf(key) < 0) return;
+            upd('wcExperimentLog', wcExperimentLog.map(function(entry, i) {
+              return i === index ? Object.assign({}, entry, { notes: Object.assign({}, entry.notes || {}, { [key]: String(value).slice(0, 1200) }) }) : entry;
+            }));
+          };
+          var downloadWcExperimentLog = function() {
+            if (!wcExperimentLog.length) return;
+            var url = URL.createObjectURL(new Blob([WCExploreNotebook.buildReport(wcExperimentLog)], { type: 'text/plain;charset=utf-8' }));
+            var link = document.createElement('a'); link.href = url; link.download = 'water-cycle-evidence-notebook.txt';
+            document.body.appendChild(link); link.click(); link.remove(); setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+          };
+          var isolateWcComparisonInput = function(key) {
+            if (!wcScenarioBaseline || !wcCurrentSnapshot || !wcChangedInputs.some(function(input) { return input.key === key; })) return;
+            var next = WCExploreNotebook.normalizeScenario(wcScenarioBaseline);
+            next[key] = wcCurrentSnapshot[key];
+            updMulti(Object.assign({}, next, { wcScenarioPreset: 'custom', wcPrediction: '', wcReplayedObservation: '', climateAdjusted: true, landAdjusted: true, precipLab3dActive: false }));
+            var canvas = document.getElementById('wcCanvas');
+            if (canvas) ['climSolar', 'climTemp', 'climWind'].forEach(function(field) { canvas.dataset[field] = String(next[field]); });
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.inquiry_isolated', 'One changed input retained; the other seven inputs restored to the baseline. Saved evidence remains available.'));
+            requestAnimationFrame(function() { var heading = document.getElementById('wcFairTestHeading'); if (heading) heading.focus(); });
           };
 
           var replayWcObservation = function(entry) {
@@ -30601,18 +30756,19 @@ const d = labToolData.waterCycle || {};
           var wcPredictionFeedback = '';
           var wcPredictionEvidence = '';
           var wcPredictionEvidenceMetrics = [];
-          var wcExperimentLog = Array.isArray(d.wcExperimentLog) ? d.wcExperimentLog.slice(-4) : [];
+          var wcExperimentLog = Array.isArray(d.wcExperimentLog) ? d.wcExperimentLog.filter(function(entry) { return entry && typeof entry === 'object'; }) : [];
           var wcScenarioLabel = WATER_CYCLE_PRESETS[wcScenarioPreset] ? WATER_CYCLE_PRESETS[wcScenarioPreset].label : 'Custom controls';
           var wcScenarioPresetInfo = WATER_CYCLE_PRESETS[wcScenarioPreset] || null;
           var wcScenarioPresetLesson = wcScenarioPresetInfo
             ? wcScenarioPresetInfo.lesson
             : 'Choose a preset or tune one control at a time; compare the resulting indices.';
-          var wcExperimentKey = [
-            wcScenarioPreset, currentSolar, currentTemp, currentWind,
-            landRainIntensity, landSaturation, landPermeability, landSlope, landCover
-          ].join('|');
+          var wcCurrentSnapshot = { climSolar: currentSolar, climTemp: currentTemp, climWind: currentWind, landRainIntensity: landRainIntensity, landSaturation: landSaturation, landPermeability: landPermeability, landSlope: landSlope, landCover: landCover };
+          var wcExperimentKey = WCExploreNotebook.identity(wcScenarioBaseline, wcCurrentSnapshot);
+          var wcChangedInputs = WCExploreNotebook.changedInputs(wcScenarioBaseline, wcCurrentSnapshot);
+          var wcComparisonComplete = WCExploreNotebook.complete(wcScenarioBaseline) && WCExploreNotebook.complete(wcCurrentSnapshot);
+          var wcNotebookFull = wcExperimentLog.length >= 4;
           var wcObservationSaved = wcExperimentLog.some(function(entry) {
-            return entry && entry.key === wcExperimentKey;
+            return !!wcExperimentKey && WCExploreNotebook.identity(entry.baseline, entry.snapshot) === wcExperimentKey;
           });
 
           function formatWcDelta(value, suffix, digits) {
@@ -30621,47 +30777,44 @@ const d = labToolData.waterCycle || {};
           }
 
           function classifyWcScenarioShift() {
-            if (wcRunoffDelta >= 8 && wcInfiltrationDelta <= -8) return 'runoff';
-            if (wcInfiltrationDelta >= 8 && wcRunoffDelta <= -8) return 'infiltration';
-            if (wcEvaporationDelta >= 0.15 || wcEvaporationDelta <= -0.15) return 'evaporation';
-            if (currentTemp < 0) return 'storage';
-            return 'mixed';
+            return wcEvidenceClaims[0] || 'mixed';
           }
 
+          var wcComparisonDeltas = { evaporation: wcEvaporationDelta, runoff: wcRunoffDelta, infiltration: wcInfiltrationDelta };
+          var wcEvidenceClaims = Object.keys(WATER_CYCLE_PREDICTIONS).filter(function(id) { return WCExploreNotebook.evaluateClaim(id, wcComparisonDeltas, wcScenarioBaseline, wcCurrentSnapshot); });
           if (wcScenarioBaseline && wcScenarioChanges.length) {
             wcPredictionAnswer = classifyWcScenarioShift();
             if (WATER_CYCLE_PREDICTIONS[wcPrediction]) {
-              wcPredictionMatched = wcPrediction === wcPredictionAnswer;
-              var predictionAnswer = WATER_CYCLE_PREDICTIONS[wcPredictionAnswer];
+              wcPredictionMatched = WCExploreNotebook.evaluateClaim(wcPrediction, wcComparisonDeltas, wcScenarioBaseline, wcCurrentSnapshot);
               wcPredictionFeedback = wcPredictionMatched
-                ? 'Evidence agrees: ' + predictionAnswer.label + ' was the strongest modeled shift.'
-                : 'Evidence differs from your claim: the strongest modeled shift was ' + predictionAnswer.label.toLowerCase() + '.';
-              if (wcPredictionAnswer === 'runoff') {
+                ? 'The readings support this claim. Other changes may be supported too; explain the direction using the recorded values.'
+                : 'Revisit this claim using the signed changes below. A decrease does not support a claim of more runoff or infiltration.';
+              if (wcPrediction === 'runoff') {
                 wcPredictionEvidence = 'Evidence to check: runoff ' + formatWcDelta(wcRunoffDelta, ' pts', 0) + '; infiltration ' + formatWcDelta(wcInfiltrationDelta, ' pts', 0) + '.';
-              } else if (wcPredictionAnswer === 'infiltration') {
+              } else if (wcPrediction === 'infiltration') {
                 wcPredictionEvidence = 'Evidence to check: infiltration ' + formatWcDelta(wcInfiltrationDelta, ' pts', 0) + '; runoff ' + formatWcDelta(wcRunoffDelta, ' pts', 0) + '.';
-              } else if (wcPredictionAnswer === 'evaporation') {
+              } else if (wcPrediction === 'evaporation') {
                 wcPredictionEvidence = 'Evidence to check: evaporation shifted ' + formatWcDelta(wcEvaporationDelta, 'x', 2) + ' from baseline.';
-              } else if (wcPredictionAnswer === 'storage') {
-                wcPredictionEvidence = 'Evidence to check: below-freezing air can store precipitation as snow or ice before collection.';
+              } else if (wcPrediction === 'storage') {
+                wcPredictionEvidence = 'Evidence to check: surface scenario temperature ' + wcScenarioBaseline.climTemp + '°C → ' + currentTemp + '°C. Snow and ice amounts are not measured by these indices.';
               } else {
                 wcPredictionEvidence = 'Evidence to check: no single shift crossed the teaching thresholds; compare evaporation, runoff, and infiltration together.';
               }
-              wcPredictionEvidenceMetrics = wcPredictionAnswer === 'runoff' || wcPredictionAnswer === 'infiltration'
+              wcPredictionEvidenceMetrics = wcPrediction === 'runoff' || wcPrediction === 'infiltration'
                 ? ['runoff', 'infiltration']
-                : wcPredictionAnswer === 'evaporation'
+                : wcPrediction === 'evaporation'
                   ? ['evaporation']
-                  : wcPredictionAnswer === 'mixed'
+                  : wcPrediction === 'mixed'
                     ? ['evaporation', 'runoff', 'infiltration']
                     : [];
             }
           }
 
           var wcPredictionLabel = wcPrediction && WATER_CYCLE_PREDICTIONS[wcPrediction] ? WATER_CYCLE_PREDICTIONS[wcPrediction].label : '';
-          var wcPredictionAnswerLabel = wcPredictionAnswer && WATER_CYCLE_PREDICTIONS[wcPredictionAnswer] ? WATER_CYCLE_PREDICTIONS[wcPredictionAnswer].label : '';
+          var wcPredictionAnswerLabel = wcEvidenceClaims.map(function(id) { return WATER_CYCLE_PREDICTIONS[id].label; }).join('; ');
           var wcDataEvidenceStatus = wcPrediction
             ? (wcPredictionAnswerLabel
-              ? (wcPredictionMatched ? 'Evidence agrees with claim: ' + wcPredictionLabel : 'Claim: ' + wcPredictionLabel + "; strongest modeled shift: " + wcPredictionAnswerLabel)
+              ? (wcPredictionMatched ? 'Evidence agrees with claim: ' + wcPredictionLabel : 'Claim: ' + wcPredictionLabel + "; supported claims: " + wcPredictionAnswerLabel)
               : 'Claim selected: ' + wcPredictionLabel)
             : (wcScenarioBaseline && wcScenarioChanges.length ? 'Evidence claim pending' : 'No evidence claim selected');
           var wcDataEvidenceDetail = wcPrediction
@@ -30672,7 +30825,7 @@ const d = labToolData.waterCycle || {};
             : !wcScenarioChanges.length
               ? 'Baseline ready: change one control or choose a preset to create a comparison.'
               : !wcPrediction
-                ? 'Comparison ready: read the evidence and select the strongest modeled shift.'
+                ? 'Comparison ready: select a claim and check it against the readings. Several effects can change together.'
                 : wcObservationSaved
                   ? 'Observation saved: restore the baseline or change one control to begin a new comparison.'
                   : 'Evidence claim selected: compare the bars and pathway mix, then save the observation.';
@@ -30684,7 +30837,7 @@ const d = labToolData.waterCycle || {};
           var wcDataTrailDetail = wcReplayedObservation
             ? 'Replaying: ' + wcReplayedObservation + '. Adjust a control to branch from this observation.'
             : wcExperimentLog.length
-              ? 'The trail preserves recent claims, modeled evidence, pathway-mix snapshots, and qualitative deltas.'
+              ? 'The trail preserves claims, modeled evidence, pathway-mix snapshots, recorded inputs, and your explanations. Download or remove an entry when it is full.'
               : 'Save an observation after interpreting the evidence to build a trail.';
           var wcDataViewStatus = currentStageLabel + ' selected. ' +
             'Climate ' + currentTemp + ' degrees C, solar ' + currentSolar.toFixed(2) + ' times baseline, wind ' + currentWind.toFixed(1) + ' times baseline. ' +
@@ -32522,7 +32675,7 @@ React.createElement("div", {
                 "Qualitative teaching indices, not measured percentages or a forecast. They are independent: water can also be stored, evaporated, taken up by organisms, or move laterally. Infiltration does not automatically become groundwater recharge."
               )
             ),
-            wcScenarioBaseline && (!wcScenarioChanges.length || wcPrediction) && React.createElement("div", {
+            wcScenarioBaseline && React.createElement("div", {
               className: "wc-compare-strip",
               role: "region",
               "aria-label": __alloT('stem.watercycle.a11y_scenario_comparison', 'Scenario comparison'),
@@ -32542,6 +32695,29 @@ React.createElement("div", {
               },
                 React.createElement("strong", null, "Experiment steps"),
                 wcScenarioWorkflowStatus
+              ),
+              React.createElement("section", { className: "wc-fair-test", "data-wc-fair-test": "true", "aria-labelledby": "wcFairTestHeading" },
+                React.createElement("h4", { id: "wcFairTestHeading", tabIndex: -1 }, __alloT('stem.watercycle.inquiry_method', 'How fair is this comparison?')),
+                React.createElement("p", null, !wcComparisonComplete ? __alloT('stem.watercycle.inquiry_incomplete_method', 'Some baseline inputs were not recorded. This comparison cannot isolate one input; update the baseline to start a complete test.') : wcChangedInputs.length === 1
+                  ? __alloT('stem.watercycle.inquiry_one_input', 'One input changed. The other seven inputs are held fixed, so you can investigate this input in the model.')
+                  : wcChangedInputs.length > 1
+                    ? __alloT('stem.watercycle.inquiry_many_inputs', 'Several inputs changed. Compare the overall result, but this test cannot isolate the effect of one input.')
+                    : __alloT('stem.watercycle.inquiry_no_input', 'The inputs match the baseline. Change one input to investigate its effect.')),
+                wcChangedInputs.length > 0 && React.createElement("ul", { className: "wc-fair-inputs" }, wcChangedInputs.map(function(input) {
+                  return React.createElement("li", { key: input.key },
+                    React.createElement("strong", null, __alloT('stem.watercycle.inquiry_input_' + input.key, input.label)),
+                    WCExploreNotebook.formatInput(input.key, input.before) + " → " + WCExploreNotebook.formatInput(input.key, input.after));
+                })),
+                wcComparisonComplete && wcChangedInputs.length > 1 && React.createElement("div", { className: "wc-fair-isolate" },
+                  React.createElement("label", { htmlFor: "wcIsolateInput" }, __alloT('stem.watercycle.inquiry_keep_label', 'Choose one change to test')),
+                  React.createElement("select", { id: "wcIsolateInput", value: wcChangedInputs.some(function(input) { return input.key === d.wcIsolateInput; }) ? d.wcIsolateInput : wcChangedInputs[0].key,
+                    onChange: function(event) { upd('wcIsolateInput', event.target.value); } }, wcChangedInputs.map(function(input) {
+                      return React.createElement("option", { key: input.key, value: input.key }, __alloT('stem.watercycle.inquiry_input_' + input.key, input.label));
+                    })),
+                  React.createElement("button", { type: "button", onClick: function() {
+                    isolateWcComparisonInput(wcChangedInputs.some(function(input) { return input.key === d.wcIsolateInput; }) ? d.wcIsolateInput : wcChangedInputs[0].key);
+                  } }, __alloT('stem.watercycle.inquiry_keep_only', 'Keep only this change')),
+                  React.createElement("small", null, __alloT('stem.watercycle.inquiry_keep_hint', 'This restores the other inputs to the baseline. Saved observations and writing stay in your notebook.')))
               ),
               React.createElement("div", { className: "wc-compare-actions" },
                 React.createElement("button", {
@@ -32733,19 +32909,19 @@ React.createElement("div", {
               "aria-live": wcPrediction ? "polite" : undefined
             },
               React.createElement("div", { className: "wc-prediction-copy" },
-                React.createElement("span", { className: "wc-prediction-kicker" }, wcPrediction ? "Read the evidence" : "Make a prediction"),
+                React.createElement("span", { className: "wc-prediction-kicker" }, wcPrediction ? "Read the evidence" : __alloT('stem.watercycle.inquiry_choose_heading', 'Choose a claim')),
                 React.createElement("strong", null, wcPrediction
                   ? (wcPredictionMatched ? "The evidence agrees with your claim." : "The evidence differs from your claim.")
-                  : "Before reading the evidence, what will shift most?"),
+                  : __alloT('stem.watercycle.inquiry_claim_question', 'Which effect will you investigate?')),
                 React.createElement("span", null, wcPrediction
                   ? wcPredictionFeedback
-                  : "Choose one claim before the comparison is revealed. This is evidence-reading practice, not a score."),
+                  : __alloT('stem.watercycle.inquiry_claim_hint', 'Choose a claim and check the signed changes. Several effects can change together. This is evidence-reading practice, not a score.')),
                 wcPrediction && wcPredictionEvidence && React.createElement("span", { className: "wc-prediction-evidence" }, wcPredictionEvidence)
               ),
               !wcPrediction && React.createElement("div", {
                 className: "wc-prediction-options",
                 role: "group",
-                "aria-label": __alloT('stem.watercycle.a11y_choose_the_strongest_modeled_shift', 'Choose the strongest modeled shift')
+                "aria-label": __alloT('stem.watercycle.inquiry_choose_claim', 'Choose an evidence claim')
               },
                 Object.keys(WATER_CYCLE_PREDICTIONS).map(function(predictionId) {
                   var prediction = WATER_CYCLE_PREDICTIONS[predictionId];
@@ -32753,7 +32929,7 @@ React.createElement("div", {
                     key: predictionId,
                     type: "button",
                     className: "wc-prediction-option",
-                    "aria-label": "Choose " + prediction.label + " as the strongest modeled shift",
+                    "aria-label": "Choose " + prediction.label + " as an evidence claim",
                     onClick: function() { recordWcPrediction(predictionId); }
                   },
                     React.createElement("span", { "aria-hidden": "true" }, prediction.emoji),
@@ -32769,10 +32945,10 @@ React.createElement("div", {
                 React.createElement("button", {
                   type: "button",
                   className: "wc-prediction-reset wc-prediction-save",
-                  disabled: wcObservationSaved,
-                  "aria-label": wcObservationSaved ? "Observation already saved" : "Save current observation to experiment trail",
+                  disabled: wcObservationSaved || wcNotebookFull,
+                  "aria-label": wcObservationSaved ? "Observation already saved" : wcNotebookFull ? __alloT('stem.watercycle.inquiry_full_name', 'Notebook full; remove an observation before saving') : "Save current observation to experiment trail",
                   onClick: saveWcObservation
-                }, wcObservationSaved ? "Saved" : "Save observation"),
+                }, wcObservationSaved ? "Saved" : wcNotebookFull ? __alloT('stem.watercycle.inquiry_full_short', 'Notebook full') : "Save observation"),
                 React.createElement("button", {
                   type: "button",
                   className: "wc-prediction-reset",
@@ -32781,15 +32957,16 @@ React.createElement("div", {
                 }, "Choose again")
               )
             ),
-            wcExperimentLog.length > 0 && React.createElement("div", {
+            (wcExperimentLog.length > 0 || (d.wcExperimentUndo || []).length > 0) && React.createElement("div", {
               className: "wc-experiment-log wc-focus-secondary" + (wcReplayedObservation ? " is-replaying" : ""),
+              "data-wc-notebook": "true",
               role: "region",
               "aria-label": __alloT('stem.watercycle.a11y_experiment_trail', 'Experiment trail'),
               "aria-describedby": "wcExperimentTrailStatus"
             },
               React.createElement("div", { className: "wc-experiment-log-head" },
                 React.createElement("div", { className: "wc-experiment-log-copy" },
-                  React.createElement("span", { className: "wc-experiment-log-kicker" }, "Experiment trail"),
+                  React.createElement("h4", { id: "wcExperimentNotebookTitle", tabIndex: -1, className: "wc-experiment-log-kicker" }, __alloT('stem.watercycle.inquiry_notebook_title', 'Evidence notebook')),
                   React.createElement("strong", null, wcExperimentLog.length + "/4 observations saved"),
                   React.createElement("span", {
                     id: "wcExperimentTrailStatus",
@@ -32798,16 +32975,22 @@ React.createElement("div", {
                     "aria-atomic": "true"
                   }, wcReplayedObservation
                     ? "Replaying: " + wcReplayedObservation + ". Adjust a control to branch from this observation."
-                    : "Revisit the claim you selected and what the modeled evidence showed.")
+                    : __alloT('stem.watercycle.inquiry_notebook_hint', 'Revisit the exact comparison, explain your evidence, and plan the next test.'))
                 ),
                 wcReplayedObservation && React.createElement("span", { className: "wc-experiment-log-replay-badge", "aria-hidden": "true" }, "Replay active"),
+                React.createElement("button", { type: "button", className: "wc-experiment-log-clear", disabled: !wcExperimentLog.length, onClick: downloadWcExperimentLog }, __alloT('stem.watercycle.inquiry_download', 'Download trail')),
                 React.createElement("button", {
                   type: "button",
                   className: "wc-experiment-log-clear",
                   "aria-label": __alloT('stem.watercycle.a11y_clear_experiment_trail', 'Clear experiment trail'),
+                  disabled: !wcExperimentLog.length,
                   onClick: clearWcExperimentLog
                 }, "Clear trail")
               ),
+              wcNotebookFull && React.createElement("p", { className: "wc-notebook-capacity", role: "status" }, __alloT('stem.watercycle.inquiry_full_hint', 'Four observations are stored. Download your notebook, then remove an observation to make room. Saving never replaces older evidence.')),
+              (d.wcExperimentUndo || []).length > 0 && React.createElement("div", { className: "wc-notebook-undo" },
+                React.createElement("p", { role: "status" }, __alloT('stem.watercycle.inquiry_undo_hint', 'Removed evidence can be restored until the next observation is saved.')),
+                React.createElement("button", { type: "button", onClick: undoWcObservationRemoval }, __alloT('stem.watercycle.inquiry_undo', 'Undo removal'))),
               React.createElement("div", {
                 className: "wc-log-list",
                 role: "list",
@@ -32816,7 +32999,10 @@ React.createElement("div", {
                 wcExperimentLog.slice().reverse().map(function(entry, entryIndex) {
                   var prediction = WATER_CYCLE_PREDICTIONS[entry.prediction] || WATER_CYCLE_PREDICTIONS.mixed;
                   var evidencePrediction = WATER_CYCLE_PREDICTIONS[entry.answer];
-                  var evidenceLabel = evidencePrediction ? evidencePrediction.label : 'Recorded shift';
+                  var evidenceLabel = WCExploreNotebook.evidenceLabel(entry);
+                  var recordedClaimLabel = WCExploreNotebook.claimLabel(entry);
+                  var originalIndex = wcExperimentLog.length - 1 - entryIndex;
+                  var recordedChanges = WCExploreNotebook.changedInputs(entry.baseline, entry.snapshot);
                   var deltas = entry.deltas || {};
                   var evaporationDelta = typeof deltas.evaporation === 'number' ? deltas.evaporation : 0;
                   var runoffDelta = typeof deltas.runoff === 'number' ? deltas.runoff : 0;
@@ -32830,22 +33016,51 @@ React.createElement("div", {
                     key: entry.key || entry.savedAt || entryIndex,
                     className: "wc-log-entry",
                     role: "listitem",
-                    "aria-label": (entry.label || "Custom controls") + ". Evidence " + (entry.matched ? "agrees with" : "differs from") + " the claim. Claim: " + prediction.label + ". Strongest modeled shift: " + evidenceLabel + "." + routeMixAccessibility
+                    "aria-label": (entry.label || "Custom controls") + ". Evidence " + (entry.matched ? "agrees with" : "differs from") + " the claim. Claim: " + recordedClaimLabel + ". Evidence summary: " + evidenceLabel + "." + routeMixAccessibility
                   },
                     React.createElement("span", { className: "wc-log-entry-index", "aria-hidden": "true" }, String(wcExperimentLog.length - entryIndex)),
                     React.createElement("div", { className: "wc-log-entry-copy" },
                       React.createElement("strong", null, entry.label || "Custom controls"),
-                      React.createElement("span", null, (entry.matched ? "Evidence agrees" : "Evidence differs") + " · Claim: " + prediction.shortLabel),
-                      React.createElement("span", { className: "wc-log-entry-evidence" }, "Strongest modeled shift: " + evidenceLabel),
+                      React.createElement("span", null, (entry.matched ? "Evidence agrees" : "Evidence differs") + " · Claim: " + recordedClaimLabel),
+                      React.createElement("span", { className: "wc-log-entry-evidence" }, "Evidence summary: " + evidenceLabel),
                       hasRouteShares && React.createElement("span", { className: "wc-log-entry-route-mix" }, "Path mix (relative): Runoff " + routeShares.runoff + "% · Underground " + routeShares.infiltration + "% · Plant " + routeShares.plant + "%"),
                       React.createElement("small", null, "Evap " + formatWcDelta(evaporationDelta, "x", 2) + " · Runoff " + formatWcDelta(runoffDelta, "", 0) + " · Infiltration " + formatWcDelta(infiltrationDelta, "", 0))
                     ),
-                    entry.snapshot && React.createElement("button", {
+                    React.createElement("div", { className: "wc-log-entry-actions" }, entry.snapshot && React.createElement("button", {
                       type: "button",
                       className: "wc-log-replay",
                       "aria-label": "Replay saved observation: " + (entry.label || "Custom controls"),
                       onClick: function() { replayWcObservation(entry); }
-                    }, "Replay")
+                    }, "Replay"),
+                    React.createElement("button", { type: "button", "aria-label": __alloT('stem.watercycle.inquiry_remove_name', 'Remove observation: {label}').replace('{label}', entry.label || 'Custom controls'), onClick: function() { removeWcObservation(originalIndex); } }, __alloT('stem.watercycle.inquiry_remove', 'Remove'))),
+                    React.createElement("details", { className: "wc-notebook-reflection" },
+                      React.createElement("summary", null, __alloT('stem.watercycle.inquiry_explain', 'Explain this observation')),
+                      React.createElement("p", { className: "wc-notebook-method" }, !WCExploreNotebook.complete(entry.baseline) || !WCExploreNotebook.complete(entry.snapshot)
+                        ? __alloT('stem.watercycle.inquiry_legacy', 'Some inputs were not recorded in this earlier observation. Its original claim and signed deltas are preserved.')
+                        : recordedChanges.length === 1 ? __alloT('stem.watercycle.inquiry_record_one', 'One input changed; the other seven were held fixed.')
+                        : recordedChanges.length > 1 ? __alloT('stem.watercycle.inquiry_record_many', 'Multiple inputs changed. This comparison cannot isolate one cause.')
+                        : __alloT('stem.watercycle.inquiry_record_same', 'The recorded inputs are identical.')),
+                      recordedChanges.length > 0 && React.createElement("ul", null, recordedChanges.map(function(input) { return React.createElement("li", { key: input.key }, __alloT('stem.watercycle.inquiry_input_' + input.key, input.label) + ': ' + WCExploreNotebook.formatInput(input.key, input.before) + ' → ' + WCExploreNotebook.formatInput(input.key, input.after)); })),
+                      entry.metrics && React.createElement("div", { className: "wc-notebook-values" }, React.createElement("table", null,
+                        React.createElement("caption", null, __alloT('stem.watercycle.inquiry_recorded_values', 'Recorded model values')),
+                        React.createElement("thead", null, React.createElement("tr", null, ['Reading', 'Baseline', 'Current'].map(function(label) { return React.createElement("th", { key: label, scope: 'col' }, __alloT('stem.watercycle.inquiry_table_' + label.toLowerCase(), label)); }))),
+                        React.createElement("tbody", null, ['evaporation', 'runoff', 'infiltration'].map(function(metric) {
+                          var before = entry.metrics.baseline && entry.metrics.baseline[metric], after = entry.metrics.current && entry.metrics.current[metric];
+                          return React.createElement("tr", { key: metric }, React.createElement("th", { scope: 'row' }, metric === 'evaporation' ? __alloT('stem.watercycle.inquiry_metric_evap', 'Evaporation (x)') : metric === 'runoff' ? __alloT('stem.watercycle.inquiry_metric_runoff', 'Runoff (/100)') : __alloT('stem.watercycle.inquiry_metric_infiltration', 'Infiltration (/100)')),
+                            React.createElement("td", null, before == null ? '—' : before), React.createElement("td", null, after == null ? '—' : after));
+                        })))),
+                      React.createElement("p", null, __alloT('stem.watercycle.inquiry_boundary', 'Independent teaching indices are not a measured water budget. Use the saved values to explain a change, then name a limitation.')),
+                      [
+                        { key: 'explanation', label: __alloT('stem.watercycle.inquiry_explanation', 'My explanation'), hint: __alloT('stem.watercycle.inquiry_explanation_hint', 'What changed, and which modeled relationship could explain it?') },
+                        { key: 'evidence', label: __alloT('stem.watercycle.inquiry_evidence', 'Evidence I used'), hint: __alloT('stem.watercycle.inquiry_evidence_hint', 'Refer to the baseline, current reading, and signed change. What can this comparison not establish?') },
+                        { key: 'nextTest', label: __alloT('stem.watercycle.inquiry_next', 'My next test'), hint: __alloT('stem.watercycle.inquiry_next_hint', 'Which one input would you change next, and what would you hold fixed?') }
+                      ].map(function(field) {
+                        var id = 'wcNotebookNote-' + originalIndex + '-' + field.key;
+                        return React.createElement("div", { className: "wc-notebook-note", key: field.key }, React.createElement("label", { htmlFor: id }, field.label),
+                          React.createElement("p", { id: id + '-hint' }, field.hint),
+                          React.createElement("textarea", { id: id, rows: 2, maxLength: 1200, 'aria-describedby': id + '-hint', value: entry.notes && entry.notes[field.key] || '', onChange: function(event) { updateWcObservationNote(originalIndex, field.key, event.target.value); } }));
+                      })
+                    )
                   );
                 })
               )

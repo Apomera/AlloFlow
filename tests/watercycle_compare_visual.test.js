@@ -19,7 +19,7 @@ describe('Water Cycle visual Scenario Compare', () => {
       expect(source).toContain('role: "status"');
       expect(source).toContain('"aria-atomic": "true"');
       expect(source).toContain('Experiment steps');
-      expect(source).toMatch(/Comparison ready: read the evidence(?:, then| and) select the strongest modeled shift\./);
+      expect(source.includes('Comparison ready: select a claim and check it against the readings. Several effects can change together.')).toBe(true);
       expect(source).toMatch(/Evidence claim (?:selected|recorded): compare the (?:highlighted )?bars and pathway mix, then save the observation\./);
       expect(source).toContain('className: "wc-compare-bar-card"');
       expect(source).toContain('"aria-label": "Evaporation baseline " + wcBaselineEvaporationIndex.toFixed(2)');

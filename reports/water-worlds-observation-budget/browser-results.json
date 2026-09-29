@@ -1,0 +1,182 @@
+{
+  "checks": [
+    "collapsed accounting accessibility",
+    "light 1440 same-cell account available",
+    "surface exact and displayed amounts match reconstructed evidence",
+    "light 1440 surface selected",
+    "soil exact and displayed amounts match reconstructed evidence",
+    "light 1440 soil selected",
+    "ground exact and displayed amounts match reconstructed evidence",
+    "light 1440 ground selected",
+    "light 1440 fits viewport",
+    "light 1440 accounting targets at least 44px",
+    "light 1440 accounting preserves investigation",
+    "light 1440 open account accessibility",
+    "light 390 same-cell account available",
+    "surface exact and displayed amounts match reconstructed evidence",
+    "light 390 surface selected",
+    "soil exact and displayed amounts match reconstructed evidence",
+    "light 390 soil selected",
+    "ground exact and displayed amounts match reconstructed evidence",
+    "light 390 ground selected",
+    "light 390 fits viewport",
+    "light 390 accounting targets at least 44px",
+    "light 390 accounting preserves investigation",
+    "light 390 open account accessibility",
+    "light 320 same-cell account available",
+    "surface exact and displayed amounts match reconstructed evidence",
+    "light 320 surface selected",
+    "soil exact and displayed amounts match reconstructed evidence",
+    "light 320 soil selected",
+    "ground exact and displayed amounts match reconstructed evidence",
+    "light 320 ground selected",
+    "light 320 fits viewport",
+    "light 320 accounting targets at least 44px",
+    "light 320 accounting preserves investigation",
+    "light 320 open account accessibility",
+    "dark 1440 same-cell account available",
+    "surface exact and displayed amounts match reconstructed evidence",
+    "dark 1440 surface selected",
+    "soil exact and displayed amounts match reconstructed evidence",
+    "dark 1440 soil selected",
+    "ground exact and displayed amounts match reconstructed evidence",
+    "dark 1440 ground selected",
+    "dark 1440 fits viewport",
+    "dark 1440 accounting targets at least 44px",
+    "dark 1440 accounting preserves investigation",
+    "dark 1440 open account accessibility",
+    "dark 390 same-cell account available",
+    "surface exact and displayed amounts match reconstructed evidence",
+    "dark 390 surface selected",
+    "soil exact and displayed amounts match reconstructed evidence",
+    "dark 390 soil selected",
+    "ground exact and displayed amounts match reconstructed evidence",
+    "dark 390 ground selected",
+    "dark 390 fits viewport",
+    "dark 390 accounting targets at least 44px",
+    "dark 390 accounting preserves investigation",
+    "dark 390 open account accessibility",
+    "dark 320 same-cell account available",
+    "surface exact and displayed amounts match reconstructed evidence",
+    "dark 320 surface selected",
+    "soil exact and displayed amounts match reconstructed evidence",
+    "dark 320 soil selected",
+    "ground exact and displayed amounts match reconstructed evidence",
+    "dark 320 ground selected",
+    "dark 320 fits viewport",
+    "dark 320 accounting targets at least 44px",
+    "dark 320 accounting preserves investigation",
+    "dark 320 open account accessibility",
+    "contrast 1440 same-cell account available",
+    "surface exact and displayed amounts match reconstructed evidence",
+    "contrast 1440 surface selected",
+    "soil exact and displayed amounts match reconstructed evidence",
+    "contrast 1440 soil selected",
+    "ground exact and displayed amounts match reconstructed evidence",
+    "contrast 1440 ground selected",
+    "contrast 1440 fits viewport",
+    "contrast 1440 accounting targets at least 44px",
+    "contrast 1440 accounting preserves investigation",
+    "contrast 1440 open account accessibility",
+    "contrast 390 same-cell account available",
+    "surface exact and displayed amounts match reconstructed evidence",
+    "contrast 390 surface selected",
+    "soil exact and displayed amounts match reconstructed evidence",
+    "contrast 390 soil selected",
+    "ground exact and displayed amounts match reconstructed evidence",
+    "contrast 390 ground selected",
+    "contrast 390 fits viewport",
+    "contrast 390 accounting targets at least 44px",
+    "contrast 390 accounting preserves investigation",
+    "contrast 390 open account accessibility",
+    "contrast 320 same-cell account available",
+    "surface exact and displayed amounts match reconstructed evidence",
+    "contrast 320 surface selected",
+    "soil exact and displayed amounts match reconstructed evidence",
+    "contrast 320 soil selected",
+    "ground exact and displayed amounts match reconstructed evidence",
+    "contrast 320 ground selected",
+    "contrast 320 fits viewport",
+    "contrast 320 accounting targets at least 44px",
+    "contrast 320 accounting preserves investigation",
+    "contrast 320 open account accessibility",
+    "Reverse selection explains chronological accounting",
+    "Keyboard selects accounting store",
+    "Accounting keyboard focus visible",
+    "Accounting can be collapsed",
+    "Saved accounting remains available after the live valley changes",
+    "surface exact and displayed amounts match reconstructed evidence",
+    "differentCell explains incompatible pair",
+    "differentCell has no invented transfer amounts",
+    "differentCell account explanation accessibility",
+    "differentSetup explains incompatible pair",
+    "differentSetup has no invented transfer amounts",
+    "differentSetup account explanation accessibility",
+    "sameMinute explains incompatible pair",
+    "sameMinute has no invented transfer amounts",
+    "sameMinute account explanation accessibility",
+    "forced colors account accessibility",
+    "Forced colors account visible",
+    "No browser errors"
+  ],
+  "audits": [
+    {
+      "label": "collapsed accounting",
+      "violations": []
+    },
+    {
+      "label": "light 1440 open account",
+      "violations": []
+    },
+    {
+      "label": "light 390 open account",
+      "violations": []
+    },
+    {
+      "label": "light 320 open account",
+      "violations": []
+    },
+    {
+      "label": "dark 1440 open account",
+      "violations": []
+    },
+    {
+      "label": "dark 390 open account",
+      "violations": []
+    },
+    {
+      "label": "dark 320 open account",
+      "violations": []
+    },
+    {
+      "label": "contrast 1440 open account",
+      "violations": []
+    },
+    {
+      "label": "contrast 390 open account",
+      "violations": []
+    },
+    {
+      "label": "contrast 320 open account",
+      "violations": []
+    },
+    {
+      "label": "differentCell account explanation",
+      "violations": []
+    },
+    {
+      "label": "differentSetup account explanation",
+      "violations": []
+    },
+    {
+      "label": "sameMinute account explanation",
+      "violations": []
+    },
+    {
+      "label": "forced colors account",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "capturedAt": "2026-09-29T21:34:16.448Z"
+}
