@@ -15,6 +15,7 @@
     ['pour','pan','Add saved water','Carry & pour','Hold the saved-water jug over the pan to add a splash.','M4 4h10v14H6zM14 7h4v6h-4M19 19l2 2'],
     ['pan','pan','Move off heat','Lift to trivet','Carry the pan onto the trivet to remove its heat source.','M3 14a6 4 0 1 0 12 0a6 4 0 1 0-12 0M15 13l6-4M17 18h5M17 21h5'],
     ['serve','serve','Share the dish','Scoop & balance','Carry spoonfuls onto plates; return some to rebalance.','M2 16a5 4 0 1 0 10 0a5 4 0 1 0-10 0M14 16a4 4 0 1 0 8 0a4 4 0 1 0-8 0M12 3l-4 8'],
+    ['burner','general','Turn the heat','Rotate a dial','Turn a stove dial; release to apply its preview heat setting.','M12 3a9 9 0 1 0 9 9M12 7v5l4 2M17 2h5v5'],
     ['move','general','Move ingredients','Carry to cookware','Drag ingredients to the matching cookware.','M4 8h7v11H4zM8 4h9M14 1l3 3-3 3M15 13h6v7h-6z'],
     ['camera','general','Explore the bench','Orbit & zoom','Drag to orbit; scroll or pinch to zoom.','M3 8h5l2-3h5l2 3h4v12H3zM9 14a3 3 0 1 0 6 0a3 3 0 1 0-6 0']
   ];
@@ -40,6 +41,7 @@
   function target(s,id,hit,locked){
     if(!hit||id==='camera')return null;var name=null;
     if(id==='move')name={oil:'Olive oil',pasta:'Pasta packet',produce:'Prepared produce',garlic:'Garlic bowl',cooked:'Pasta colander'}[hit.item];
+    if(id==='burner'&&hit.burner)name=(hit.burner==='pot'?'Pot':'Pan')+' burner dial';
     if(id==='weigh')name=hit.scale?'Pasta scale':hit.item==='pasta'?'Pasta packet':null;
     if(id==='cut'&&(hit.board||hit.item==='produce'))name='Cutting board';
     if(id==='mince'&&hit.garlic!==undefined)name='Garlic clove '+(hit.garlic+1);
@@ -50,7 +52,7 @@
     if((id==='stir'||id==='pan'||id==='serve')&&(hit.pan||hit.piece!==undefined))name='Sauce pan';
     if((id==='arrange'||id==='crush')&&hit.piece!==undefined)name='Piece '+(hit.piece+1);
     if(id==='serve'&&hit.servingPlate!==undefined)name='Plate '+(hit.servingPlate+1);
-    if(!name)return null;var status=availability(s,id,locked),R=root.KitchenRecipes;if(status.ready&&id==='mince'){var clove=R.garlicPreparation(s).cloves[hit.garlic];if(!clove||clove.stage===3)status={ready:false,detail:'This clove is already minced. Choose another clove.'};}if(status.ready&&id==='crush'){var tomato=R.tomatoHandling(s).pieces[hit.piece];if(!tomato||tomato.stage===2)status={ready:false,detail:'This piece has released its juice. Fold it through the sauce.'};}if(status.ready&&id==='serve'){var portion=R.serving(s);if(hit.servingPlate!==undefined&&!portion.plates[hit.servingPlate])status={ready:false,detail:'This plate is empty. Carry a spoonful from the pan onto it.'};else if(hit.servingPlate===undefined&&!portion.remaining)status={ready:false,detail:'The pan is empty. Rebalance the plates or finish serving.'};}return {name:name,ready:status.ready,detail:status.detail};
+    if(!name)return null;var status=id==='burner'?root.KitchenBurnerDials.available(s,hit.burner,locked):availability(s,id,locked),R=root.KitchenRecipes;if(status.ready&&id==='mince'){var clove=R.garlicPreparation(s).cloves[hit.garlic];if(!clove||clove.stage===3)status={ready:false,detail:'This clove is already minced. Choose another clove.'};}if(status.ready&&id==='crush'){var tomato=R.tomatoHandling(s).pieces[hit.piece];if(!tomato||tomato.stage===2)status={ready:false,detail:'This piece has released its juice. Fold it through the sauce.'};}if(status.ready&&id==='serve'){var portion=R.serving(s);if(hit.servingPlate!==undefined&&!portion.plates[hit.servingPlate])status={ready:false,detail:'This plate is empty. Carry a spoonful from the pan onto it.'};else if(hit.servingPlate===undefined&&!portion.remaining)status={ready:false,detail:'The pan is empty. Rebalance the plates or finish serving.'};}return {name:name,ready:status.ready,detail:status.detail};
   }
   function mountTools(host){
     var $=function(id){return document.getElementById(id);},group='general',lastTool=null,container=host.container,shelf=document.createElement('div');shelf.className='kitchen-tool-shelf';

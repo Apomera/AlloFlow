@@ -7,7 +7,8 @@
     if(!g)return null;c=c||{};var R=root.KitchenRecipes,p=g.current,pan=R.panPosition(s),pot={x:-1.1,z:-.45},jug={x:-1.2,z:1.06},a={title:'Working in the kitchen',phase:'move',instruction:'Move deliberately, then release.',detail:'Cooking time is paused while you handle a tool.',progress:null,progressLabel:'Gesture progress',target:null,over:false,invalid:false};
     function set(title,phase,instruction,detail){a.title=title;a.phase=phase;a.instruction=instruction;a.detail=detail;}
     function destination(hit,over){a.target=hit;a.over=!!over;}
-    if(g.kind==='weigh'){
+    if(g.kind==='burner'){var t=g.trace,levels=root.KitchenBurnerDials.levels,label=(g.station==='pot'?'Pot':'Pan')+' burner';a.invalid=t.invalid;set(label,t.invalid?'retry':root.KitchenBurnerDials.value(t)!==null?'release':'turn',t.invalid?'Release to cancel; turn steadily near the rim.':'Preview: '+levels[t.preview]+'. Release to apply.', 'Clockwise raises heat · counterclockwise lowers heat. Cookware temperature does not change until time advances.');destination({burner:g.station},!t.invalid);
+    }else if(g.kind==='weigh'){
       var amount=c.amount||0,goal=R.ingredients(s).pasta,flow=g.over&&g.tilt>18;
       set('Weigh pasta',!g.over?'carry':flow?'pour':'tilt',!g.over?'Carry the packet over the scale.':flow?'Raise the pointer to stop the flow.':'Pull down to tilt; lift back up to stop.',amount+' g on the tray · recipe target '+goal+' g');
       a.progress=fraction(amount/goal);a.progressLabel='Portion compared with recipe target';destination({scale:true},g.over);
