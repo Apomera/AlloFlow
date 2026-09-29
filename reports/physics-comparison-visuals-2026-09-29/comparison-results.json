@@ -1,0 +1,3080 @@
+{
+  "createdAt": "2026-09-29T23:03:44.721Z",
+  "sourceSha256": "63cab3f44b6ec290ada365ebbe40e85833f4a0ac134908836da72f5da016417a",
+  "passed": true,
+  "configurations": [
+    {
+      "theme": "default",
+      "overflow": 0,
+      "bars": [
+        {
+          "key": "range",
+          "model": "vacuum",
+          "value": 130.33267936161678,
+          "scale": 130.33267936161678,
+          "width": 276,
+          "trackWidth": 276
+        },
+        {
+          "key": "range",
+          "model": "drag",
+          "value": 111.81353615412624,
+          "scale": 130.33267936161678,
+          "width": 236.78125,
+          "trackWidth": 276
+        },
+        {
+          "key": "maxH",
+          "model": "vacuum",
+          "value": 30.56187052107281,
+          "scale": 30.56187052107281,
+          "width": 276,
+          "trackWidth": 276
+        },
+        {
+          "key": "maxH",
+          "model": "drag",
+          "value": 28.939061799689668,
+          "scale": 30.56187052107281,
+          "width": 261.34375,
+          "trackWidth": 276
+        },
+        {
+          "key": "time",
+          "model": "vacuum",
+          "value": 4.545909229995897,
+          "scale": 4.545909229995897,
+          "width": 276,
+          "trackWidth": 276
+        },
+        {
+          "key": "time",
+          "model": "drag",
+          "value": 4.414204972534277,
+          "scale": 4.545909229995897,
+          "width": 268,
+          "trackWidth": 276
+        }
+      ],
+      "text": [
+        {
+          "text": "Measured model comparison",
+          "font": 18,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Two completed flights",
+          "font": 12,
+          "contrast": 5.197302355022151
+        },
+        {
+          "text": "Both flights used: 35°, 35 m/s, g = 9.8 m/s², 2 kg, launch height = 10 m.",
+          "font": 12,
+          "contrast": 6.467463986628363
+        },
+        {
+          "text": "Inspect no-drag flight · Run 1",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Inspect air-drag flight · Run 2",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Inspect either flight to explore its original samples on the canvas, graphs, and data table.",
+          "font": 12,
+          "contrast": 6.467463986628363
+        },
+        {
+          "text": "Range",
+          "font": 14,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "130.333 m",
+          "font": 16,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "111.814 m",
+          "font": 16,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "−18.519 m",
+          "font": 23,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "14.2% shorter with air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "Max height above ground",
+          "font": 14,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "30.562 m",
+          "font": 16,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "28.939 m",
+          "font": 16,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "−1.623 m",
+          "font": 23,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "5.3% lower with air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "Flight Time",
+          "font": 14,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "4.546 s",
+          "font": 16,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "4.414 s",
+          "font": 16,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "−0.132 s",
+          "font": 23,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "2.9% shorter with air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "Both bars start at zero and share a scale within each measure. Change is air drag minus no drag; percentages use no drag as the baseline.",
+          "font": 12,
+          "contrast": 6.467463986628363
+        },
+        {
+          "text": "Detailed measurements",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Values are rounded to three decimal places.",
+          "font": 12,
+          "contrast": 6.467463986628363
+        },
+        {
+          "text": "Measure",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "Δ",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "Range (m)",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "130.333",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "111.814",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "-18.519",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Maximum height above ground (m)",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "30.562",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "28.939",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "-1.623",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Flight time (s)",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "4.546",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "4.414",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "-0.132",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Air drag opposes motion in still air with a fixed drag coefficient.",
+          "font": 12,
+          "contrast": 6.467463986628363
+        }
+      ],
+      "comparison": {
+        "parameters": {
+          "angle": 35,
+          "velocity": 35,
+          "gravity": 9.8,
+          "mass": 2,
+          "launchHeight": 10
+        },
+        "vacuum": {
+          "range": 130.33267936161678,
+          "maxH": 30.56187052107281,
+          "time": 4.545909229995897,
+          "run": 1,
+          "modelVersion": "projectile-v3"
+        },
+        "drag": {
+          "range": 111.81353615412624,
+          "maxH": 28.939061799689668,
+          "time": 4.414204972534277,
+          "run": 2,
+          "modelVersion": "projectile-v3"
+        }
+      },
+      "evidenceSha256": "031259d67f989d35fc3325e1edf4de3fd73cb014178ef23b3035fb410b496a23",
+      "evidenceUnchanged": true,
+      "screenshots": [
+        "comparison-default-1100.png",
+        "comparison-default-1100-exact.png"
+      ],
+      "pageErrors": [],
+      "viewportWidth": 1100,
+      "panelWidth": 986
+    },
+    {
+      "theme": "default",
+      "overflow": 0,
+      "bars": [
+        {
+          "key": "range",
+          "model": "vacuum",
+          "value": 130.33267936161678,
+          "scale": 130.33267936161678,
+          "width": 255,
+          "trackWidth": 255
+        },
+        {
+          "key": "range",
+          "model": "drag",
+          "value": 111.81353615412624,
+          "scale": 130.33267936161678,
+          "width": 218.765625,
+          "trackWidth": 255
+        },
+        {
+          "key": "maxH",
+          "model": "vacuum",
+          "value": 30.56187052107281,
+          "scale": 30.56187052107281,
+          "width": 255,
+          "trackWidth": 255
+        },
+        {
+          "key": "maxH",
+          "model": "drag",
+          "value": 28.939061799689668,
+          "scale": 30.56187052107281,
+          "width": 241.453125,
+          "trackWidth": 255
+        },
+        {
+          "key": "time",
+          "model": "vacuum",
+          "value": 4.545909229995897,
+          "scale": 4.545909229995897,
+          "width": 255,
+          "trackWidth": 255
+        },
+        {
+          "key": "time",
+          "model": "drag",
+          "value": 4.414204972534277,
+          "scale": 4.545909229995897,
+          "width": 247.609375,
+          "trackWidth": 255
+        }
+      ],
+      "text": [
+        {
+          "text": "Measured model comparison",
+          "font": 16,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Two completed flights",
+          "font": 12,
+          "contrast": 5.197302355022151
+        },
+        {
+          "text": "Both flights used: 35°, 35 m/s, g = 9.8 m/s², 2 kg, launch height = 10 m.",
+          "font": 12,
+          "contrast": 6.467463986628363
+        },
+        {
+          "text": "Inspect no-drag flight · Run 1",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Inspect air-drag flight · Run 2",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Inspect either flight to explore its original samples on the canvas, graphs, and data table.",
+          "font": 12,
+          "contrast": 6.467463986628363
+        },
+        {
+          "text": "Range",
+          "font": 14,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "130.333 m",
+          "font": 14,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "111.814 m",
+          "font": 14,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "−18.519 m",
+          "font": 18,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "14.2% shorter with air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "Max height above ground",
+          "font": 14,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "30.562 m",
+          "font": 14,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "28.939 m",
+          "font": 14,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "−1.623 m",
+          "font": 18,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "5.3% lower with air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "Flight Time",
+          "font": 14,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "4.546 s",
+          "font": 14,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "4.414 s",
+          "font": 14,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "−0.132 s",
+          "font": 18,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "2.9% shorter with air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "Both bars start at zero and share a scale within each measure. Change is air drag minus no drag; percentages use no drag as the baseline.",
+          "font": 12,
+          "contrast": 6.467463986628363
+        },
+        {
+          "text": "Detailed measurements",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Values are rounded to three decimal places.",
+          "font": 12,
+          "contrast": 6.467463986628363
+        },
+        {
+          "text": "↔ Scroll sideways for all measurements. The measure stays visible.",
+          "font": 12,
+          "contrast": 6.467463986628363
+        },
+        {
+          "text": "Measure",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "Δ",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "Range (m)",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "130.333",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "111.814",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "-18.519",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Maximum height above ground (m)",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "30.562",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "28.939",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "-1.623",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Flight time (s)",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "4.546",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "4.414",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "-0.132",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Air drag opposes motion in still air with a fixed drag coefficient.",
+          "font": 12,
+          "contrast": 6.467463986628363
+        }
+      ],
+      "comparison": {
+        "parameters": {
+          "angle": 35,
+          "velocity": 35,
+          "gravity": 9.8,
+          "mass": 2,
+          "launchHeight": 10
+        },
+        "vacuum": {
+          "range": 130.33267936161678,
+          "maxH": 30.56187052107281,
+          "time": 4.545909229995897,
+          "run": 1,
+          "modelVersion": "projectile-v3"
+        },
+        "drag": {
+          "range": 111.81353615412624,
+          "maxH": 28.939061799689668,
+          "time": 4.414204972534277,
+          "run": 2,
+          "modelVersion": "projectile-v3"
+        }
+      },
+      "evidenceSha256": "031259d67f989d35fc3325e1edf4de3fd73cb014178ef23b3035fb410b496a23",
+      "evidenceUnchanged": true,
+      "screenshots": [
+        "comparison-default-375.png",
+        "comparison-default-375-exact.png"
+      ],
+      "pageErrors": [],
+      "viewportWidth": 375,
+      "panelWidth": 309
+    },
+    {
+      "theme": "default",
+      "overflow": 0,
+      "bars": [
+        {
+          "key": "range",
+          "model": "vacuum",
+          "value": 130.33267936161678,
+          "scale": 130.33267936161678,
+          "width": 200,
+          "trackWidth": 200
+        },
+        {
+          "key": "range",
+          "model": "drag",
+          "value": 111.81353615412624,
+          "scale": 130.33267936161678,
+          "width": 171.578125,
+          "trackWidth": 200
+        },
+        {
+          "key": "maxH",
+          "model": "vacuum",
+          "value": 30.56187052107281,
+          "scale": 30.56187052107281,
+          "width": 200,
+          "trackWidth": 200
+        },
+        {
+          "key": "maxH",
+          "model": "drag",
+          "value": 28.939061799689668,
+          "scale": 30.56187052107281,
+          "width": 189.375,
+          "trackWidth": 200
+        },
+        {
+          "key": "time",
+          "model": "vacuum",
+          "value": 4.545909229995897,
+          "scale": 4.545909229995897,
+          "width": 200,
+          "trackWidth": 200
+        },
+        {
+          "key": "time",
+          "model": "drag",
+          "value": 4.414204972534277,
+          "scale": 4.545909229995897,
+          "width": 194.203125,
+          "trackWidth": 200
+        }
+      ],
+      "text": [
+        {
+          "text": "Measured model comparison",
+          "font": 16,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Two completed flights",
+          "font": 12,
+          "contrast": 5.197302355022151
+        },
+        {
+          "text": "Both flights used: 35°, 35 m/s, g = 9.8 m/s², 2 kg, launch height = 10 m.",
+          "font": 12,
+          "contrast": 6.467463986628363
+        },
+        {
+          "text": "Inspect no-drag flight · Run 1",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Inspect air-drag flight · Run 2",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Inspect either flight to explore its original samples on the canvas, graphs, and data table.",
+          "font": 12,
+          "contrast": 6.467463986628363
+        },
+        {
+          "text": "Range",
+          "font": 14,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "130.333 m",
+          "font": 14,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "111.814 m",
+          "font": 14,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "−18.519 m",
+          "font": 18,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "14.2% shorter with air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "Max height above ground",
+          "font": 14,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "30.562 m",
+          "font": 14,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "28.939 m",
+          "font": 14,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "−1.623 m",
+          "font": 18,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "5.3% lower with air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "Flight Time",
+          "font": 14,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "4.546 s",
+          "font": 14,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "4.414 s",
+          "font": 14,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "−0.132 s",
+          "font": 18,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "2.9% shorter with air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "Both bars start at zero and share a scale within each measure. Change is air drag minus no drag; percentages use no drag as the baseline.",
+          "font": 12,
+          "contrast": 6.467463986628363
+        },
+        {
+          "text": "Detailed measurements",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Values are rounded to three decimal places.",
+          "font": 12,
+          "contrast": 6.467463986628363
+        },
+        {
+          "text": "↔ Scroll sideways for all measurements. The measure stays visible.",
+          "font": 12,
+          "contrast": 6.467463986628363
+        },
+        {
+          "text": "Measure",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "Δ",
+          "font": 12,
+          "contrast": 6.004168291355272
+        },
+        {
+          "text": "Range (m)",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "130.333",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "111.814",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "-18.519",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Maximum height above ground (m)",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "30.562",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "28.939",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "-1.623",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Flight time (s)",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "4.546",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "4.414",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "-0.132",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Air drag opposes motion in still air with a fixed drag coefficient.",
+          "font": 12,
+          "contrast": 6.467463986628363
+        }
+      ],
+      "comparison": {
+        "parameters": {
+          "angle": 35,
+          "velocity": 35,
+          "gravity": 9.8,
+          "mass": 2,
+          "launchHeight": 10
+        },
+        "vacuum": {
+          "range": 130.33267936161678,
+          "maxH": 30.56187052107281,
+          "time": 4.545909229995897,
+          "run": 1,
+          "modelVersion": "projectile-v3"
+        },
+        "drag": {
+          "range": 111.81353615412624,
+          "maxH": 28.939061799689668,
+          "time": 4.414204972534277,
+          "run": 2,
+          "modelVersion": "projectile-v3"
+        }
+      },
+      "evidenceSha256": "031259d67f989d35fc3325e1edf4de3fd73cb014178ef23b3035fb410b496a23",
+      "evidenceUnchanged": true,
+      "screenshots": [
+        "comparison-default-320.png",
+        "comparison-default-320-exact.png"
+      ],
+      "pageErrors": [],
+      "viewportWidth": 320,
+      "panelWidth": 254
+    },
+    {
+      "theme": "dark",
+      "overflow": 0,
+      "bars": [
+        {
+          "key": "range",
+          "model": "vacuum",
+          "value": 130.33267936161678,
+          "scale": 130.33267936161678,
+          "width": 276,
+          "trackWidth": 276
+        },
+        {
+          "key": "range",
+          "model": "drag",
+          "value": 111.81353615412624,
+          "scale": 130.33267936161678,
+          "width": 236.78125,
+          "trackWidth": 276
+        },
+        {
+          "key": "maxH",
+          "model": "vacuum",
+          "value": 30.56187052107281,
+          "scale": 30.56187052107281,
+          "width": 276,
+          "trackWidth": 276
+        },
+        {
+          "key": "maxH",
+          "model": "drag",
+          "value": 28.939061799689668,
+          "scale": 30.56187052107281,
+          "width": 261.34375,
+          "trackWidth": 276
+        },
+        {
+          "key": "time",
+          "model": "vacuum",
+          "value": 4.545909229995897,
+          "scale": 4.545909229995897,
+          "width": 276,
+          "trackWidth": 276
+        },
+        {
+          "key": "time",
+          "model": "drag",
+          "value": 4.414204972534277,
+          "scale": 4.545909229995897,
+          "width": 268,
+          "trackWidth": 276
+        }
+      ],
+      "text": [
+        {
+          "text": "Measured model comparison",
+          "font": 18,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Two completed flights",
+          "font": 12,
+          "contrast": 6.790209197824105
+        },
+        {
+          "text": "Both flights used: 35°, 35 m/s, g = 9.8 m/s², 2 kg, launch height = 10 m.",
+          "font": 12,
+          "contrast": 9.516201944392245
+        },
+        {
+          "text": "Inspect no-drag flight · Run 1",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Inspect air-drag flight · Run 2",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Inspect either flight to explore its original samples on the canvas, graphs, and data table.",
+          "font": 12,
+          "contrast": 9.516201944392245
+        },
+        {
+          "text": "Range",
+          "font": 14,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "130.333 m",
+          "font": 16,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "111.814 m",
+          "font": 16,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "−18.519 m",
+          "font": 23,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "14.2% shorter with air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "Max height above ground",
+          "font": 14,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "30.562 m",
+          "font": 16,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "28.939 m",
+          "font": 16,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "−1.623 m",
+          "font": 23,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "5.3% lower with air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "Flight Time",
+          "font": 14,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "4.546 s",
+          "font": 16,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "4.414 s",
+          "font": 16,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "−0.132 s",
+          "font": 23,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "2.9% shorter with air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "Both bars start at zero and share a scale within each measure. Change is air drag minus no drag; percentages use no drag as the baseline.",
+          "font": 12,
+          "contrast": 9.516201944392245
+        },
+        {
+          "text": "Detailed measurements",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Values are rounded to three decimal places.",
+          "font": 12,
+          "contrast": 9.516201944392245
+        },
+        {
+          "text": "Measure",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "Δ",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "Range (m)",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "130.333",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "111.814",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "-18.519",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Maximum height above ground (m)",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "30.562",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "28.939",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "-1.623",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Flight time (s)",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "4.546",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "4.414",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "-0.132",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Air drag opposes motion in still air with a fixed drag coefficient.",
+          "font": 12,
+          "contrast": 9.516201944392245
+        }
+      ],
+      "comparison": {
+        "parameters": {
+          "angle": 35,
+          "velocity": 35,
+          "gravity": 9.8,
+          "mass": 2,
+          "launchHeight": 10
+        },
+        "vacuum": {
+          "range": 130.33267936161678,
+          "maxH": 30.56187052107281,
+          "time": 4.545909229995897,
+          "run": 1,
+          "modelVersion": "projectile-v3"
+        },
+        "drag": {
+          "range": 111.81353615412624,
+          "maxH": 28.939061799689668,
+          "time": 4.414204972534277,
+          "run": 2,
+          "modelVersion": "projectile-v3"
+        }
+      },
+      "evidenceSha256": "031259d67f989d35fc3325e1edf4de3fd73cb014178ef23b3035fb410b496a23",
+      "evidenceUnchanged": true,
+      "screenshots": [
+        "comparison-dark-1100.png",
+        "comparison-dark-1100-exact.png"
+      ],
+      "pageErrors": [],
+      "viewportWidth": 1100,
+      "panelWidth": 986
+    },
+    {
+      "theme": "dark",
+      "overflow": 0,
+      "bars": [
+        {
+          "key": "range",
+          "model": "vacuum",
+          "value": 130.33267936161678,
+          "scale": 130.33267936161678,
+          "width": 231,
+          "trackWidth": 231
+        },
+        {
+          "key": "range",
+          "model": "drag",
+          "value": 111.81353615412624,
+          "scale": 130.33267936161678,
+          "width": 198.171875,
+          "trackWidth": 231
+        },
+        {
+          "key": "maxH",
+          "model": "vacuum",
+          "value": 30.56187052107281,
+          "scale": 30.56187052107281,
+          "width": 231,
+          "trackWidth": 231
+        },
+        {
+          "key": "maxH",
+          "model": "drag",
+          "value": 28.939061799689668,
+          "scale": 30.56187052107281,
+          "width": 218.71875,
+          "trackWidth": 231
+        },
+        {
+          "key": "time",
+          "model": "vacuum",
+          "value": 4.545909229995897,
+          "scale": 4.545909229995897,
+          "width": 231,
+          "trackWidth": 231
+        },
+        {
+          "key": "time",
+          "model": "drag",
+          "value": 4.414204972534277,
+          "scale": 4.545909229995897,
+          "width": 224.296875,
+          "trackWidth": 231
+        }
+      ],
+      "text": [
+        {
+          "text": "Measured model comparison",
+          "font": 16,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Two completed flights",
+          "font": 12,
+          "contrast": 6.790209197824105
+        },
+        {
+          "text": "Both flights used: 35°, 35 m/s, g = 9.8 m/s², 2 kg, launch height = 10 m.",
+          "font": 12,
+          "contrast": 9.516201944392245
+        },
+        {
+          "text": "Inspect no-drag flight · Run 1",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Inspect air-drag flight · Run 2",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Inspect either flight to explore its original samples on the canvas, graphs, and data table.",
+          "font": 12,
+          "contrast": 9.516201944392245
+        },
+        {
+          "text": "Range",
+          "font": 14,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "130.333 m",
+          "font": 14,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "111.814 m",
+          "font": 14,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "−18.519 m",
+          "font": 18,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "14.2% shorter with air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "Max height above ground",
+          "font": 14,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "30.562 m",
+          "font": 14,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "28.939 m",
+          "font": 14,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "−1.623 m",
+          "font": 18,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "5.3% lower with air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "Flight Time",
+          "font": 14,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "4.546 s",
+          "font": 14,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "4.414 s",
+          "font": 14,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "−0.132 s",
+          "font": 18,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "2.9% shorter with air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "Both bars start at zero and share a scale within each measure. Change is air drag minus no drag; percentages use no drag as the baseline.",
+          "font": 12,
+          "contrast": 9.516201944392245
+        },
+        {
+          "text": "Detailed measurements",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Values are rounded to three decimal places.",
+          "font": 12,
+          "contrast": 9.516201944392245
+        },
+        {
+          "text": "↔ Scroll sideways for all measurements. The measure stays visible.",
+          "font": 12,
+          "contrast": 9.516201944392245
+        },
+        {
+          "text": "Measure",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "Δ",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "Range (m)",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "130.333",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "111.814",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "-18.519",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Maximum height above ground (m)",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "30.562",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "28.939",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "-1.623",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Flight time (s)",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "4.546",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "4.414",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "-0.132",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Air drag opposes motion in still air with a fixed drag coefficient.",
+          "font": 12,
+          "contrast": 9.516201944392245
+        }
+      ],
+      "comparison": {
+        "parameters": {
+          "angle": 35,
+          "velocity": 35,
+          "gravity": 9.8,
+          "mass": 2,
+          "launchHeight": 10
+        },
+        "vacuum": {
+          "range": 130.33267936161678,
+          "maxH": 30.56187052107281,
+          "time": 4.545909229995897,
+          "run": 1,
+          "modelVersion": "projectile-v3"
+        },
+        "drag": {
+          "range": 111.81353615412624,
+          "maxH": 28.939061799689668,
+          "time": 4.414204972534277,
+          "run": 2,
+          "modelVersion": "projectile-v3"
+        }
+      },
+      "evidenceSha256": "031259d67f989d35fc3325e1edf4de3fd73cb014178ef23b3035fb410b496a23",
+      "evidenceUnchanged": true,
+      "screenshots": [
+        "comparison-dark-375.png",
+        "comparison-dark-375-exact.png"
+      ],
+      "pageErrors": [],
+      "viewportWidth": 375,
+      "panelWidth": 285
+    },
+    {
+      "theme": "dark",
+      "overflow": 0,
+      "bars": [
+        {
+          "key": "range",
+          "model": "vacuum",
+          "value": 130.33267936161678,
+          "scale": 130.33267936161678,
+          "width": 176,
+          "trackWidth": 176
+        },
+        {
+          "key": "range",
+          "model": "drag",
+          "value": 111.81353615412624,
+          "scale": 130.33267936161678,
+          "width": 150.984375,
+          "trackWidth": 176
+        },
+        {
+          "key": "maxH",
+          "model": "vacuum",
+          "value": 30.56187052107281,
+          "scale": 30.56187052107281,
+          "width": 176,
+          "trackWidth": 176
+        },
+        {
+          "key": "maxH",
+          "model": "drag",
+          "value": 28.939061799689668,
+          "scale": 30.56187052107281,
+          "width": 166.640625,
+          "trackWidth": 176
+        },
+        {
+          "key": "time",
+          "model": "vacuum",
+          "value": 4.545909229995897,
+          "scale": 4.545909229995897,
+          "width": 176,
+          "trackWidth": 176
+        },
+        {
+          "key": "time",
+          "model": "drag",
+          "value": 4.414204972534277,
+          "scale": 4.545909229995897,
+          "width": 170.890625,
+          "trackWidth": 176
+        }
+      ],
+      "text": [
+        {
+          "text": "Measured model comparison",
+          "font": 16,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Two completed flights",
+          "font": 12,
+          "contrast": 6.790209197824105
+        },
+        {
+          "text": "Both flights used: 35°, 35 m/s, g = 9.8 m/s², 2 kg, launch height = 10 m.",
+          "font": 12,
+          "contrast": 9.516201944392245
+        },
+        {
+          "text": "Inspect no-drag flight · Run 1",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Inspect air-drag flight · Run 2",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Inspect either flight to explore its original samples on the canvas, graphs, and data table.",
+          "font": 12,
+          "contrast": 9.516201944392245
+        },
+        {
+          "text": "Range",
+          "font": 14,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "130.333 m",
+          "font": 14,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "111.814 m",
+          "font": 14,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "−18.519 m",
+          "font": 18,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "14.2% shorter with air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "Max height above ground",
+          "font": 14,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "30.562 m",
+          "font": 14,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "28.939 m",
+          "font": 14,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "−1.623 m",
+          "font": 18,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "5.3% lower with air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "Flight Time",
+          "font": 14,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "4.546 s",
+          "font": 14,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "4.414 s",
+          "font": 14,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "−0.132 s",
+          "font": 18,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "2.9% shorter with air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "Both bars start at zero and share a scale within each measure. Change is air drag minus no drag; percentages use no drag as the baseline.",
+          "font": 12,
+          "contrast": 9.516201944392245
+        },
+        {
+          "text": "Detailed measurements",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Values are rounded to three decimal places.",
+          "font": 12,
+          "contrast": 9.516201944392245
+        },
+        {
+          "text": "↔ Scroll sideways for all measurements. The measure stays visible.",
+          "font": 12,
+          "contrast": 9.516201944392245
+        },
+        {
+          "text": "Measure",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "Δ",
+          "font": 12,
+          "contrast": 8.194807881706202
+        },
+        {
+          "text": "Range (m)",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "130.333",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "111.814",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "-18.519",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Maximum height above ground (m)",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "30.562",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "28.939",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "-1.623",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Flight time (s)",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "4.546",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "4.414",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "-0.132",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Air drag opposes motion in still air with a fixed drag coefficient.",
+          "font": 12,
+          "contrast": 9.516201944392245
+        }
+      ],
+      "comparison": {
+        "parameters": {
+          "angle": 35,
+          "velocity": 35,
+          "gravity": 9.8,
+          "mass": 2,
+          "launchHeight": 10
+        },
+        "vacuum": {
+          "range": 130.33267936161678,
+          "maxH": 30.56187052107281,
+          "time": 4.545909229995897,
+          "run": 1,
+          "modelVersion": "projectile-v3"
+        },
+        "drag": {
+          "range": 111.81353615412624,
+          "maxH": 28.939061799689668,
+          "time": 4.414204972534277,
+          "run": 2,
+          "modelVersion": "projectile-v3"
+        }
+      },
+      "evidenceSha256": "031259d67f989d35fc3325e1edf4de3fd73cb014178ef23b3035fb410b496a23",
+      "evidenceUnchanged": true,
+      "screenshots": [
+        "comparison-dark-320.png",
+        "comparison-dark-320-exact.png"
+      ],
+      "pageErrors": [],
+      "viewportWidth": 320,
+      "panelWidth": 230
+    },
+    {
+      "theme": "contrast",
+      "overflow": 0,
+      "bars": [
+        {
+          "key": "range",
+          "model": "vacuum",
+          "value": 130.33267936161678,
+          "scale": 130.33267936161678,
+          "width": 276,
+          "trackWidth": 276
+        },
+        {
+          "key": "range",
+          "model": "drag",
+          "value": 111.81353615412624,
+          "scale": 130.33267936161678,
+          "width": 236.78125,
+          "trackWidth": 276
+        },
+        {
+          "key": "maxH",
+          "model": "vacuum",
+          "value": 30.56187052107281,
+          "scale": 30.56187052107281,
+          "width": 276,
+          "trackWidth": 276
+        },
+        {
+          "key": "maxH",
+          "model": "drag",
+          "value": 28.939061799689668,
+          "scale": 30.56187052107281,
+          "width": 261.34375,
+          "trackWidth": 276
+        },
+        {
+          "key": "time",
+          "model": "vacuum",
+          "value": 4.545909229995897,
+          "scale": 4.545909229995897,
+          "width": 276,
+          "trackWidth": 276
+        },
+        {
+          "key": "time",
+          "model": "drag",
+          "value": 4.414204972534277,
+          "scale": 4.545909229995897,
+          "width": 268,
+          "trackWidth": 276
+        }
+      ],
+      "text": [
+        {
+          "text": "Measured model comparison",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Two completed flights",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Both flights used: 35°, 35 m/s, g = 9.8 m/s², 2 kg, launch height = 10 m.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Inspect no-drag flight · Run 1",
+          "font": 12,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Inspect air-drag flight · Run 2",
+          "font": 12,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Inspect either flight to explore its original samples on the canvas, graphs, and data table.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Range",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "130.333 m",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "111.814 m",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "−18.519 m",
+          "font": 23,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "14.2% shorter with air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Max height above ground",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "30.562 m",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "28.939 m",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "−1.623 m",
+          "font": 23,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "5.3% lower with air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Flight Time",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "4.546 s",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "4.414 s",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "−0.132 s",
+          "font": 23,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "2.9% shorter with air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Both bars start at zero and share a scale within each measure. Change is air drag minus no drag; percentages use no drag as the baseline.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Detailed measurements",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Values are rounded to three decimal places.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Measure",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Δ",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Range (m)",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "130.333",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "111.814",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "-18.519",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Maximum height above ground (m)",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "30.562",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "28.939",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "-1.623",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Flight time (s)",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "4.546",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "4.414",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "-0.132",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Air drag opposes motion in still air with a fixed drag coefficient.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        }
+      ],
+      "comparison": {
+        "parameters": {
+          "angle": 35,
+          "velocity": 35,
+          "gravity": 9.8,
+          "mass": 2,
+          "launchHeight": 10
+        },
+        "vacuum": {
+          "range": 130.33267936161678,
+          "maxH": 30.56187052107281,
+          "time": 4.545909229995897,
+          "run": 1,
+          "modelVersion": "projectile-v3"
+        },
+        "drag": {
+          "range": 111.81353615412624,
+          "maxH": 28.939061799689668,
+          "time": 4.414204972534277,
+          "run": 2,
+          "modelVersion": "projectile-v3"
+        }
+      },
+      "evidenceSha256": "031259d67f989d35fc3325e1edf4de3fd73cb014178ef23b3035fb410b496a23",
+      "evidenceUnchanged": true,
+      "screenshots": [
+        "comparison-contrast-1100.png",
+        "comparison-contrast-1100-exact.png"
+      ],
+      "pageErrors": [],
+      "viewportWidth": 1100,
+      "panelWidth": 986
+    },
+    {
+      "theme": "contrast",
+      "overflow": 0,
+      "bars": [
+        {
+          "key": "range",
+          "model": "vacuum",
+          "value": 130.33267936161678,
+          "scale": 130.33267936161678,
+          "width": 251,
+          "trackWidth": 251
+        },
+        {
+          "key": "range",
+          "model": "drag",
+          "value": 111.81353615412624,
+          "scale": 130.33267936161678,
+          "width": 215.328125,
+          "trackWidth": 251
+        },
+        {
+          "key": "maxH",
+          "model": "vacuum",
+          "value": 30.56187052107281,
+          "scale": 30.56187052107281,
+          "width": 251,
+          "trackWidth": 251
+        },
+        {
+          "key": "maxH",
+          "model": "drag",
+          "value": 28.939061799689668,
+          "scale": 30.56187052107281,
+          "width": 237.671875,
+          "trackWidth": 251
+        },
+        {
+          "key": "time",
+          "model": "vacuum",
+          "value": 4.545909229995897,
+          "scale": 4.545909229995897,
+          "width": 251,
+          "trackWidth": 251
+        },
+        {
+          "key": "time",
+          "model": "drag",
+          "value": 4.414204972534277,
+          "scale": 4.545909229995897,
+          "width": 243.71875,
+          "trackWidth": 251
+        }
+      ],
+      "text": [
+        {
+          "text": "Measured model comparison",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Two completed flights",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Both flights used: 35°, 35 m/s, g = 9.8 m/s², 2 kg, launch height = 10 m.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Inspect no-drag flight · Run 1",
+          "font": 12,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Inspect air-drag flight · Run 2",
+          "font": 12,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Inspect either flight to explore its original samples on the canvas, graphs, and data table.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Range",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "130.333 m",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "111.814 m",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "−18.519 m",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "14.2% shorter with air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Max height above ground",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "30.562 m",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "28.939 m",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "−1.623 m",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "5.3% lower with air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Flight Time",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "4.546 s",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "4.414 s",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "−0.132 s",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "2.9% shorter with air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Both bars start at zero and share a scale within each measure. Change is air drag minus no drag; percentages use no drag as the baseline.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Detailed measurements",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Values are rounded to three decimal places.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "↔ Scroll sideways for all measurements. The measure stays visible.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Measure",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Δ",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Range (m)",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "130.333",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "111.814",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "-18.519",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Maximum height above ground (m)",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "30.562",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "28.939",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "-1.623",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Flight time (s)",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "4.546",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "4.414",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "-0.132",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Air drag opposes motion in still air with a fixed drag coefficient.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        }
+      ],
+      "comparison": {
+        "parameters": {
+          "angle": 35,
+          "velocity": 35,
+          "gravity": 9.8,
+          "mass": 2,
+          "launchHeight": 10
+        },
+        "vacuum": {
+          "range": 130.33267936161678,
+          "maxH": 30.56187052107281,
+          "time": 4.545909229995897,
+          "run": 1,
+          "modelVersion": "projectile-v3"
+        },
+        "drag": {
+          "range": 111.81353615412624,
+          "maxH": 28.939061799689668,
+          "time": 4.414204972534277,
+          "run": 2,
+          "modelVersion": "projectile-v3"
+        }
+      },
+      "evidenceSha256": "031259d67f989d35fc3325e1edf4de3fd73cb014178ef23b3035fb410b496a23",
+      "evidenceUnchanged": true,
+      "screenshots": [
+        "comparison-contrast-375.png",
+        "comparison-contrast-375-exact.png"
+      ],
+      "pageErrors": [],
+      "viewportWidth": 375,
+      "panelWidth": 305
+    },
+    {
+      "theme": "contrast",
+      "overflow": 0,
+      "bars": [
+        {
+          "key": "range",
+          "model": "vacuum",
+          "value": 130.33267936161678,
+          "scale": 130.33267936161678,
+          "width": 196,
+          "trackWidth": 196
+        },
+        {
+          "key": "range",
+          "model": "drag",
+          "value": 111.81353615412624,
+          "scale": 130.33267936161678,
+          "width": 168.140625,
+          "trackWidth": 196
+        },
+        {
+          "key": "maxH",
+          "model": "vacuum",
+          "value": 30.56187052107281,
+          "scale": 30.56187052107281,
+          "width": 196,
+          "trackWidth": 196
+        },
+        {
+          "key": "maxH",
+          "model": "drag",
+          "value": 28.939061799689668,
+          "scale": 30.56187052107281,
+          "width": 185.578125,
+          "trackWidth": 196
+        },
+        {
+          "key": "time",
+          "model": "vacuum",
+          "value": 4.545909229995897,
+          "scale": 4.545909229995897,
+          "width": 196,
+          "trackWidth": 196
+        },
+        {
+          "key": "time",
+          "model": "drag",
+          "value": 4.414204972534277,
+          "scale": 4.545909229995897,
+          "width": 190.3125,
+          "trackWidth": 196
+        }
+      ],
+      "text": [
+        {
+          "text": "Measured model comparison",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Two completed flights",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Both flights used: 35°, 35 m/s, g = 9.8 m/s², 2 kg, launch height = 10 m.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Inspect no-drag flight · Run 1",
+          "font": 12,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Inspect air-drag flight · Run 2",
+          "font": 12,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Inspect either flight to explore its original samples on the canvas, graphs, and data table.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Range",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "130.333 m",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "111.814 m",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "−18.519 m",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "14.2% shorter with air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Max height above ground",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "30.562 m",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "28.939 m",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "−1.623 m",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "5.3% lower with air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Flight Time",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "4.546 s",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "4.414 s",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Change with air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "−0.132 s",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "2.9% shorter with air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Both bars start at zero and share a scale within each measure. Change is air drag minus no drag; percentages use no drag as the baseline.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Detailed measurements",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Values are rounded to three decimal places.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "↔ Scroll sideways for all measurements. The measure stays visible.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Measure",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "No drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Δ",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Range (m)",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "130.333",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "111.814",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "-18.519",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Maximum height above ground (m)",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "30.562",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "28.939",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "-1.623",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Flight time (s)",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "4.546",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "4.414",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "-0.132",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Air drag opposes motion in still air with a fixed drag coefficient.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        }
+      ],
+      "comparison": {
+        "parameters": {
+          "angle": 35,
+          "velocity": 35,
+          "gravity": 9.8,
+          "mass": 2,
+          "launchHeight": 10
+        },
+        "vacuum": {
+          "range": 130.33267936161678,
+          "maxH": 30.56187052107281,
+          "time": 4.545909229995897,
+          "run": 1,
+          "modelVersion": "projectile-v3"
+        },
+        "drag": {
+          "range": 111.81353615412624,
+          "maxH": 28.939061799689668,
+          "time": 4.414204972534277,
+          "run": 2,
+          "modelVersion": "projectile-v3"
+        }
+      },
+      "evidenceSha256": "031259d67f989d35fc3325e1edf4de3fd73cb014178ef23b3035fb410b496a23",
+      "evidenceUnchanged": true,
+      "screenshots": [
+        "comparison-contrast-320.png",
+        "comparison-contrast-320-exact.png"
+      ],
+      "pageErrors": [],
+      "viewportWidth": 320,
+      "panelWidth": 250
+    }
+  ],
+  "failures": []
+}

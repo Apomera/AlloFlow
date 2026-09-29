@@ -1,0 +1,72 @@
+{
+  "createdAt": "2026-09-29T22:29:37.630Z",
+  "sourceSha256": "4d8fac59568e4d1346634519c062e09043f05c94c26e9e0e429bea42f1336bb5",
+  "passed": true,
+  "configurations": [
+    {
+      "theme": "default",
+      "overflow": 0,
+      "bars": [],
+      "comparison": {
+        "parameters": {
+          "angle": 35,
+          "velocity": 35,
+          "gravity": 9.8,
+          "mass": 2,
+          "launchHeight": 10
+        },
+        "vacuum": {
+          "range": 130.33267936161678,
+          "maxH": 30.56187052107281,
+          "time": 4.545909229995897
+        },
+        "drag": {
+          "range": 111.81353615412624,
+          "maxH": 28.939061799689668,
+          "time": 4.414204972534277
+        }
+      },
+      "evidenceSha256": "175673a7a16f7541302b04a2c16d03ead19e70843683aef9b7296b33494ed093",
+      "evidenceUnchanged": true,
+      "screenshots": [
+        "comparison-before-default-1100.png"
+      ],
+      "pageErrors": [],
+      "viewportWidth": 1100,
+      "panelWidth": 986
+    },
+    {
+      "theme": "default",
+      "overflow": 0,
+      "bars": [],
+      "comparison": {
+        "parameters": {
+          "angle": 35,
+          "velocity": 35,
+          "gravity": 9.8,
+          "mass": 2,
+          "launchHeight": 10
+        },
+        "vacuum": {
+          "range": 130.33267936161678,
+          "maxH": 30.56187052107281,
+          "time": 4.545909229995897
+        },
+        "drag": {
+          "range": 111.81353615412624,
+          "maxH": 28.939061799689668,
+          "time": 4.414204972534277
+        }
+      },
+      "evidenceSha256": "175673a7a16f7541302b04a2c16d03ead19e70843683aef9b7296b33494ed093",
+      "evidenceUnchanged": true,
+      "screenshots": [
+        "comparison-before-default-320.png"
+      ],
+      "pageErrors": [],
+      "viewportWidth": 320,
+      "panelWidth": 254
+    }
+  ],
+  "failures": []
+}

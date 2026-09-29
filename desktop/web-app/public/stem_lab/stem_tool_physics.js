@@ -397,8 +397,18 @@ window.StemLab = window.StemLab || {
       selection.trail[selection.index] && selection.snapshot
       ? selection.snapshot : null;
   }
+  function physCompareMeasurements(vacuum, drag) {
+    if (!physFinite(vacuum) || !physFinite(drag) || vacuum < 0 || drag < 0) return null;
+    var delta = drag - vacuum;
+    var percent = vacuum > 0 ? (delta / vacuum) * 100 : null;
+    var scaleMax = Math.max(vacuum, drag);
+    return Object.freeze({ vacuum: vacuum, drag: drag, delta: delta,
+      percent: physFinite(percent) ? percent : null, scaleMax: scaleMax,
+      vacuumWidth: scaleMax > 0 ? (vacuum / scaleMax) * 100 : 0,
+      dragWidth: scaleMax > 0 ? (drag / scaleMax) * 100 : 0 });
+  }
   try {
-    window.StemLab._physics = { DT: PHYS_DT, DRAG_K: PHYS_DRAG_K, MODEL_VERSION: PHYS_MODEL_VERSION, step: physStep, simulate: physSimulate, vacuum: physVacuum, solveVelocity: physSolveVelocity, solveAngle: physSolveAngle, inspectSample: physInspectSample,
+    window.StemLab._physics = { DT: PHYS_DT, DRAG_K: PHYS_DRAG_K, MODEL_VERSION: PHYS_MODEL_VERSION, step: physStep, simulate: physSimulate, vacuum: physVacuum, solveVelocity: physSolveVelocity, solveAngle: physSolveAngle, inspectSample: physInspectSample, compareMeasurements: physCompareMeasurements,
       normalizeInvestigationDraft: physNormalizeInvestigationDraft, normalizeInvestigations: physNormalizeInvestigations, compareRuns: physCompareRuns, createInvestigation: physCreateInvestigation, formatInvestigationReport: physFormatInvestigationReport };
   } catch (e) {}
 
@@ -602,10 +612,16 @@ window.StemLab = window.StemLab || {
               var bounds = { angle: [pairHeight > 0 ? 0 : 5, 85], velocity: [5, 50], gravity: [1, 25], mass: [1, 10] };
               var validParameters = pairHeight !== null && Object.keys(bounds).every(function(k) { return finite(parameters[k]) && parameters[k] >= bounds[k][0] && parameters[k] <= bounds[k][1]; });
               var validResults = ['vacuum', 'drag'].every(function(k) { var r = paired[k]; return isRecord(r) && finite(r.range) && r.range >= 0 && finite(r.maxH) && r.maxH >= pairHeight && finite(r.time) && r.time > 0; });
+              function pairedResult(value) {
+                var result = { range: value.range, maxH: value.maxH, time: value.time };
+                if (validId(value.run)) result.run = value.run;
+                if (typeof value.modelVersion === 'string' && value.modelVersion.trim()) result.modelVersion = value.modelVersion.slice(0, 80);
+                return result;
+              }
               if (validParameters && validResults) state.modelComparison = {
                 parameters: { angle: parameters.angle, velocity: parameters.velocity, gravity: parameters.gravity, mass: parameters.mass, launchHeight: pairHeight },
-                vacuum: { range: paired.vacuum.range, maxH: paired.vacuum.maxH, time: paired.vacuum.time },
-                drag: { range: paired.drag.range, maxH: paired.drag.maxH, time: paired.drag.time }
+                vacuum: pairedResult(paired.vacuum),
+                drag: pairedResult(paired.drag)
               };
             }
             return state;
@@ -1846,7 +1862,7 @@ window.StemLab = window.StemLab || {
                   if (canvasEl._demo) {
                     var demo = canvasEl._demo;
                     demo.ranges.push(exactLandX);
-                    if (demo.kind === 'models') demo.results.push(Object.freeze({ range: exactLandX, maxH: _landMaxH, time: ball.t }));
+                    if (demo.kind === 'models') demo.results.push(Object.freeze({ range: exactLandX, maxH: _landMaxH, time: ball.t, run: _runNo, modelVersion: PHYS_MODEL_VERSION }));
                     canvasEl._demoTimer = setTimeout(function () {
                       canvasEl._demoTimer = null;
                       if (!physAlive || !canvasEl.isConnected || canvasEl._demo !== demo) return;
@@ -2478,6 +2494,45 @@ window.StemLab = window.StemLab || {
               #physics-fs-outer :is([data-physics-run-log],[data-physics-learning-panel],[data-physics-estimation-reflection]) button[aria-pressed="true"]{background:var(--phys-selected);color:var(--phys-accent);border-color:var(--phys-accent);box-shadow:inset 0 -2px var(--phys-accent)}
               #physics-fs-outer [data-physics-learning-panel="mission"]>div:first-child>button,#physics-fs-outer [data-physics-investigation-save]{background:var(--phys-accent)!important;color:var(--phys-panel)!important;border-color:var(--phys-accent)!important}
               #physics-fs-outer [data-physics-run-log] :is(td,th,div,span){color:var(--phys-ink)}
+              #physics-fs-outer [data-physics-model-comparison]{--phys-comparison-vacuum:#1767b2;--phys-comparison-drag:#945006}
+              #physics-fs-outer[data-physics-theme="dark"] [data-physics-model-comparison]{--phys-comparison-vacuum:#7dd3fc;--phys-comparison-drag:#fbbf24}
+              #physics-fs-outer[data-physics-theme="contrast"] [data-physics-model-comparison]{--phys-comparison-vacuum:#fff;--phys-comparison-drag:#ff0}
+              #physics-fs-outer .phys-comparison-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 14px;margin-bottom:8px}
+              #physics-fs-outer .phys-comparison-heading h3{margin:0;font-size:18px;line-height:1.4;font-weight:750;color:var(--phys-ink)}
+              #physics-fs-outer .phys-comparison-badge{font-size:12px;line-height:1.5;padding:4px 8px;border-radius:6px;border:1px solid var(--phys-line);color:var(--phys-accent);background:var(--phys-selected)}
+              #physics-fs-outer [data-physics-model-comparison-settings]{font-size:12px;line-height:1.7;margin:0 0 12px;color:var(--phys-muted)}
+              #physics-fs-outer .phys-comparison-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+              #physics-fs-outer .phys-comparison-actions button{flex:1 1 190px;display:flex;align-items:center;justify-content:center;gap:7px}
+              #physics-fs-outer .phys-comparison-actions button:disabled{opacity:1!important;color:var(--phys-muted)!important;border-style:dashed!important;cursor:default}
+              #physics-fs-outer .phys-comparison-swatch{display:inline-block;flex-shrink:0;width:13px;height:10px;border-radius:2px;background:var(--phys-comparison-vacuum)}
+              #physics-fs-outer .phys-comparison-swatch[data-model="drag"]{background:repeating-linear-gradient(135deg,var(--phys-comparison-drag),var(--phys-comparison-drag) 3px,var(--phys-panel) 3px,var(--phys-panel) 5px)}
+              #physics-fs-outer .phys-comparison-help{margin:8px 0 12px;font-size:12px;line-height:1.65;color:var(--phys-muted)}
+              #physics-fs-outer .phys-comparison-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px;margin-bottom:12px}
+              #physics-fs-outer [data-physics-comparison-card]{min-width:0;padding:15px;background:var(--phys-soft);border:1px solid var(--phys-line);border-radius:12px}
+              #physics-fs-outer [data-physics-comparison-card] h4{margin:0 0 12px;color:var(--phys-ink);font-size:14px;font-weight:750;line-height:1.5}
+              #physics-fs-outer .phys-comparison-readings{margin:0;display:grid;gap:10px}
+              #physics-fs-outer .phys-comparison-value{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 8px;margin-bottom:5px}
+              #physics-fs-outer .phys-comparison-value>span{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--phys-muted)}
+              #physics-fs-outer .phys-comparison-value>strong{margin:0;font-size:16px;font-weight:750;line-height:1.4;color:var(--phys-ink);overflow-wrap:anywhere}
+              #physics-fs-outer .phys-comparison-track{height:12px;border-radius:3px;background:var(--phys-panel);box-shadow:inset 0 0 0 1px var(--phys-line);overflow:hidden}
+              #physics-fs-outer [data-physics-comparison-bar]{height:100%;border-radius:3px;background:var(--phys-comparison-vacuum)}
+              #physics-fs-outer [data-physics-comparison-bar="drag"]{background:repeating-linear-gradient(135deg,var(--phys-comparison-drag),var(--phys-comparison-drag) 5px,var(--phys-panel) 5px,var(--phys-panel) 7px)}
+              #physics-fs-outer .phys-comparison-axis{display:flex;justify-content:space-between;gap:8px;margin:6px 0 12px;font-size:12px;color:var(--phys-muted)}
+              #physics-fs-outer .phys-comparison-difference{padding-top:10px;border-top:1px solid var(--phys-line)}
+              #physics-fs-outer .phys-comparison-difference p{margin:0;color:var(--phys-muted);font-size:12px;line-height:1.6}
+              #physics-fs-outer .phys-comparison-difference strong{display:block;margin:3px 0;font-size:23px;font-weight:750;line-height:1.4;letter-spacing:-.025em;color:var(--phys-ink);overflow-wrap:anywhere}
+              #physics-fs-outer [data-physics-comparison-exact]{border:1px solid var(--phys-line);border-radius:10px;background:var(--phys-panel)}
+              #physics-fs-outer [data-physics-comparison-exact]>summary{min-height:44px;padding:11px 12px;font-size:13px;font-weight:750;line-height:1.6;color:var(--phys-ink);cursor:pointer}
+              #physics-fs-outer [data-physics-comparison-exact]>.phys-comparison-help{margin:0;padding:0 12px 10px}
+              #physics-fs-outer .phys-comparison-table-wrap{max-width:100%;overflow-x:auto;padding-bottom:4px;border-top:1px solid var(--phys-line)}
+              #physics-fs-outer .phys-comparison-table-wrap table{width:100%;min-width:440px;border-collapse:collapse;font-size:12px;color:var(--phys-ink);font-variant-numeric:tabular-nums}
+              #physics-fs-outer .phys-comparison-table-wrap :is(th,td){padding:10px 12px;text-align:left;border-bottom:1px solid var(--phys-line);line-height:1.6}
+              #physics-fs-outer .phys-comparison-table-wrap td{white-space:nowrap}
+              #physics-fs-outer .phys-comparison-table-wrap thead th{background:var(--phys-soft);color:var(--phys-muted)}
+              #physics-fs-outer .phys-comparison-table-wrap tr>:first-child{position:sticky;left:0;z-index:1;max-width:150px;background:var(--phys-soft);box-shadow:1px 0 var(--phys-line);overflow-wrap:anywhere}
+              #physics-fs-outer .phys-comparison-scroll-help{display:none;margin:0;padding:0 12px 10px;font-size:12px;line-height:1.6;color:var(--phys-muted)}
+              @container(max-width:560px){#physics-fs-outer .phys-comparison-scroll-help{display:block}}
+              @container(max-width:460px){#physics-fs-outer .phys-comparison-heading h3{font-size:16px}#physics-fs-outer [data-physics-comparison-card]{padding:12px}#physics-fs-outer [data-physics-comparison-card] h4{margin-bottom:9px}#physics-fs-outer .phys-comparison-readings{gap:8px}#physics-fs-outer .phys-comparison-value>strong{font-size:14px}#physics-fs-outer .phys-comparison-track{height:10px}#physics-fs-outer .phys-comparison-axis{margin-bottom:9px}#physics-fs-outer .phys-comparison-difference{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;padding-top:8px}#physics-fs-outer .phys-comparison-difference strong{font-size:18px;margin:0}#physics-fs-outer .phys-comparison-difference p:last-child{flex-basis:100%}}
               #physics-fs-outer .phys-command-eyebrow,#physics-fs-outer .phys-command-metric>div:last-child,#physics-fs-outer .phys-next-label,#physics-fs-outer .phys-parameter-limits{font-size:11px}
               #physics-fs-outer .phys-parameter label,#physics-fs-outer .phys-outcome>div:nth-child(3){font-size:12px}
               #physics-fs-outer [data-physics-last-flight]>.phys-flight-heading{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px;margin-bottom:14px}
@@ -3095,33 +3150,93 @@ window.StemLab = window.StemLab || {
                 var comparison = d.modelComparison;
                 var parameters = comparison.parameters;
                 var rows = [
-                  { key: 'range', label: __alloT('stem.physics.model_comparison_range', 'Range (m)') },
-                  { key: 'maxH', label: __alloT('stem.physics.model_comparison_height_ground', 'Maximum height above ground (m)') },
-                  { key: 'time', label: __alloT('stem.physics.model_comparison_time', 'Flight time (s)') }
+                  { key: 'range', title: __alloT('stem.physics.label_range', 'Range'), label: __alloT('stem.physics.model_comparison_range', 'Range (m)'), unit: 'm', lower: __alloT('stem.physics.comparison_shorter', 'shorter'), higher: __alloT('stem.physics.comparison_longer', 'longer') },
+                  { key: 'maxH', title: __alloT('stem.physics.label_max_height_ground', 'Max height above ground'), label: __alloT('stem.physics.model_comparison_height_ground', 'Maximum height above ground (m)'), unit: 'm', lower: __alloT('stem.physics.comparison_lower', 'lower'), higher: __alloT('stem.physics.comparison_higher', 'higher') },
+                  { key: 'time', title: __alloT('stem.physics.label_flight_time', 'Flight Time'), label: __alloT('stem.physics.model_comparison_time', 'Flight time (s)'), unit: 's', lower: __alloT('stem.physics.comparison_shorter', 'shorter'), higher: __alloT('stem.physics.comparison_longer', 'longer') }
                 ];
+                var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
+                var trails = cv && cv._trails || [];
+                function recordedTrail(model) {
+                  var result = comparison[model];
+                  return trails.find(function(trail) {
+                    var p = trail.parameters, end = trail[trail.length - 1];
+                    return result.run != null && trail.run === result.run && trail.modelVersion === result.modelVersion && p && end &&
+                      p.angle === parameters.angle && p.velocity === parameters.velocity && p.gravity === parameters.gravity && p.mass === parameters.mass &&
+                      p.launchHeight === parameters.launchHeight && p.drag === (model === 'drag') && end.t === result.time && end.mX === result.range &&
+                      (trail.apex ? trail.apex.mY : trail[0].mY) === result.maxH;
+                  });
+                }
+                var recorded = { vacuum: recordedTrail('vacuum'), drag: recordedTrail('drag') };
+                function modelLabel(model) {
+                  return model === 'vacuum' ? __alloT('stem.physics.model_comparison_vacuum_short', 'No drag') : __alloT('stem.physics.model_comparison_drag', 'Air drag');
+                }
+                function swatch(model) { return React.createElement('span', { className: 'phys-comparison-swatch', 'data-model': model, 'aria-hidden': true }); }
                 return React.createElement('section', {
                   'data-physics-model-comparison': true, 'aria-labelledby': 'physics-model-comparison-heading',
                   style: { flexBasis: '100%', minWidth: 0, backgroundColor: themeSurface, color: themeInk, borderColor: isContrast ? '#ffffff' : (isDark ? '#67e8f9' : '#0e7490') }, className: 'rounded-xl border p-3'
                 },
-                  React.createElement('h3', { id: 'physics-model-comparison-heading', style: { color: themeInk }, className: 'text-sm font-bold' }, __alloT('stem.physics.model_comparison_heading', 'Measured model comparison')),
+                  React.createElement('div', { className: 'phys-comparison-heading' },
+                    React.createElement('h3', { id: 'physics-model-comparison-heading' }, __alloT('stem.physics.model_comparison_heading', 'Measured model comparison')),
+                    React.createElement('span', { className: 'phys-comparison-badge' }, __alloT('stem.physics.comparison_completed', 'Two completed flights'))),
                   React.createElement('p', { 'data-physics-model-comparison-settings': true, className: 'mt-1 text-xs leading-relaxed' },
                     __alloT('stem.physics.model_comparison_settings', 'Both flights used:') + ' ' + parameters.angle + '°, ' + parameters.velocity + ' m/s, g = ' + parameters.gravity + ' m/s², ' + parameters.mass + ' kg, ' + __alloT('stem.physics.var_launch_height', 'launch height') + ' = ' + (parameters.launchHeight || 0) + ' m.'),
-                  React.createElement('table', { className: 'mt-2 w-full text-xs', style: { tableLayout: 'auto', borderCollapse: 'collapse', color: themeInk, fontVariantNumeric: 'tabular-nums' } },
+                  React.createElement('div', { className: 'phys-comparison-actions' }, ['vacuum', 'drag'].map(function(model) {
+                    var result = comparison[model], trail = recorded[model];
+                    return React.createElement('button', { key: model, type: 'button', 'data-physics-comparison-inspect': model, disabled: !trail,
+                      'aria-describedby': 'physics-comparison-inspect-help',
+                      onClick: function() { if (trail && physSelectSample(trail.length - 1, trail)) physRevealInspection(); }
+                    }, swatch(model), (model === 'vacuum' ? __alloT('stem.physics.comparison_inspect_vacuum', 'Inspect no-drag flight') : __alloT('stem.physics.comparison_inspect_drag', 'Inspect air-drag flight')) + (result.run != null ? ' · ' + __alloT('stem.physics.investigation_run', 'Run') + ' ' + result.run : ''));
+                  })),
+                  React.createElement('p', { id: 'physics-comparison-inspect-help', className: 'phys-comparison-help' },
+                    recorded.vacuum && recorded.drag ? __alloT('stem.physics.comparison_inspect_help', 'Inspect either flight to explore its original samples on the canvas, graphs, and data table.') : __alloT('stem.physics.comparison_samples_unavailable', 'Original samples are unavailable for one or both flights. Their recorded summary measurements remain available below.')),
+                  React.createElement('div', { className: 'phys-comparison-cards' }, rows.map(function(row) {
+                    var measure = physCompareMeasurements(comparison.vacuum[row.key], comparison.drag[row.key]);
+                    var magnitude = Math.abs(measure.delta);
+                    var signedChange = magnitude > 0 && magnitude < .001
+                      ? '<0.001 ' + row.unit + ' ' + (measure.delta < 0 ? row.lower : row.higher)
+                      : (measure.delta < 0 ? '−' : measure.delta > 0 ? '+' : '') + magnitude.toFixed(3) + ' ' + row.unit;
+                    var relative = measure.delta === 0 ? __alloT('stem.physics.comparison_same', 'Same recorded value') :
+                      measure.percent == null ? __alloT('stem.physics.comparison_percent_unavailable', 'Percentage unavailable for this baseline.') :
+                        (Math.abs(measure.percent) < .1 ? '<0.1' : Math.abs(measure.percent).toFixed(1)) + '% ' + (measure.delta < 0 ? row.lower : row.higher) + ' ' + __alloT('stem.physics.comparison_with_drag', 'with air drag');
+                    return React.createElement('section', { key: row.key, 'data-physics-comparison-card': row.key, 'aria-labelledby': 'physics-comparison-' + row.key },
+                      React.createElement('h4', { id: 'physics-comparison-' + row.key }, row.title),
+                      React.createElement('div', { className: 'phys-comparison-readings' }, ['vacuum', 'drag'].map(function(model) {
+                        return React.createElement('div', { key: model },
+                          React.createElement('div', { className: 'phys-comparison-value' },
+                            React.createElement('span', null, swatch(model), modelLabel(model)),
+                            React.createElement('strong', { 'data-physics-comparison-value': model, 'data-comparison-key': row.key }, comparison[model][row.key].toFixed(3) + ' ' + row.unit)),
+                          React.createElement('div', { className: 'phys-comparison-track', 'aria-hidden': true },
+                            React.createElement('div', { 'data-physics-comparison-bar': model, 'data-comparison-key': row.key, 'data-value': comparison[model][row.key], 'data-scale-max': measure.scaleMax,
+                              style: { width: (model === 'vacuum' ? measure.vacuumWidth : measure.dragWidth) + '%' } })));
+                      })),
+                      React.createElement('div', { className: 'phys-comparison-axis', 'aria-hidden': true }, React.createElement('span', null, '0'), React.createElement('span', null, measure.scaleMax.toFixed(3) + ' ' + row.unit)),
+                      React.createElement('div', { className: 'phys-comparison-difference' },
+                        React.createElement('p', null, __alloT('stem.physics.comparison_change_with_drag', 'Change with air drag')),
+                        React.createElement('strong', { 'data-physics-comparison-delta': row.key, 'data-value': measure.delta }, signedChange),
+                        React.createElement('p', { 'data-physics-comparison-relative': row.key }, relative)));
+                  })),
+                  React.createElement('p', { className: 'phys-comparison-help', id: 'physics-comparison-scale-help' }, __alloT('stem.physics.comparison_scale_help', 'Both bars start at zero and share a scale within each measure. Change is air drag minus no drag; percentages use no drag as the baseline.')),
+                  React.createElement('details', { 'data-physics-comparison-exact': true },
+                    React.createElement('summary', null, __alloT('stem.physics.comparison_exact', 'Detailed measurements')),
+                    React.createElement('p', { className: 'phys-comparison-help', id: 'physics-comparison-precision' }, __alloT('stem.physics.comparison_precision', 'Values are rounded to three decimal places.')),
+                    React.createElement('p', { className: 'phys-comparison-scroll-help', id: 'physics-comparison-scroll-help' }, '↔ ' + __alloT('stem.physics.comparison_scroll_help', 'Scroll sideways for all measurements. The measure stays visible.')),
+                    React.createElement('div', { className: 'phys-comparison-table-wrap', role: 'region', tabIndex: 0, 'aria-label': __alloT('stem.physics.comparison_exact_region', 'Detailed comparison measurements; scroll for all columns'), 'aria-describedby': 'physics-comparison-scale-help physics-comparison-scroll-help physics-comparison-precision' },
+                  React.createElement('table', null,
                     React.createElement('caption', { className: 'sr-only' }, __alloT('stem.physics.model_comparison_caption', 'Two completed flights with identical launch settings. Change is the air-drag measurement minus the vacuum measurement.')),
                     React.createElement('thead', null, React.createElement('tr', null,
                       [__alloT('stem.physics.model_comparison_measure_short', 'Measure'), __alloT('stem.physics.model_comparison_vacuum_short', 'No drag'), __alloT('stem.physics.model_comparison_drag', 'Air drag'), 'Δ'].map(function (label, i) {
-                        return React.createElement('th', { key: i, scope: 'col', 'aria-label': i === 3 ? __alloT('stem.physics.model_comparison_change', 'Change') : undefined, className: 'text-left border-b', style: { padding: '6px 2px', overflowWrap: 'anywhere', borderColor: isContrast ? '#ffffff' : (isDark ? '#67e8f9' : '#0e7490') } }, label);
+                        return React.createElement('th', { key: i, scope: 'col', 'aria-label': i === 3 ? __alloT('stem.physics.model_comparison_change', 'Change') : undefined }, label);
                       }))),
                     React.createElement('tbody', null, rows.map(function (row) {
                       var delta = comparison.drag[row.key] - comparison.vacuum[row.key];
                       var change = (delta > 0.0005 ? '+' : '') + (Math.abs(delta) < 0.0005 ? 0 : delta).toFixed(3);
                       return React.createElement('tr', { key: row.key, 'data-comparison-measurement': row.key },
-                        React.createElement('th', { scope: 'row', className: 'text-left font-semibold', style: { padding: '6px 2px', overflowWrap: 'anywhere' } }, row.label),
-                        React.createElement('td', { style: { padding: '6px 2px', whiteSpace: 'nowrap' } }, comparison.vacuum[row.key].toFixed(3)),
-                        React.createElement('td', { style: { padding: '6px 2px', whiteSpace: 'nowrap' } }, comparison.drag[row.key].toFixed(3)),
-                        React.createElement('td', { style: { padding: '6px 2px', whiteSpace: 'nowrap' } }, change));
-                    }))),
-                  React.createElement('p', { className: 'mt-2 text-xs leading-relaxed' }, __alloT('stem.physics.model_comparison_explanation', 'Change = air drag minus vacuum. Air drag opposes motion; this model uses still air and a fixed drag coefficient. The experiment log contains both completed flights.')));
+                        React.createElement('th', { scope: 'row' }, row.label),
+                        React.createElement('td', null, comparison.vacuum[row.key].toFixed(3)),
+                        React.createElement('td', null, comparison.drag[row.key].toFixed(3)),
+                        React.createElement('td', null, change));
+                    }))))),
+                  React.createElement('p', { className: 'phys-comparison-help' }, __alloT('stem.physics.comparison_assumptions', 'Air drag opposes motion in still air with a fixed drag coefficient.')));
               })(),
 
               React.createElement('fieldset', { 'data-physics-gravity-presets': true, 'aria-describedby': 'physics-gravity-presets-help', style: { width: '100%', minWidth: 0 }, className: 'rounded-xl border border-sky-200 p-3' },

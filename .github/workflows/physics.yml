@@ -31,4 +31,4 @@ jobs:
       - name: Numerical, saved-state and learning contracts
         run: npx vitest run tests/physics_ --maxWorkers=1
       - name: Local browser behavior, flight integrity and themes
-        run: npx playwright test tests/e2e/72-physics-lab-behaviour.spec.ts tests/e2e/75-physics-theme-contrast.spec.ts tests/e2e/physics-flight-integrity.spec.ts tests/e2e/physics-model-comparison.spec.ts tests/e2e/physics-investigations.spec.ts tests/e2e/physics-launch-height.spec.ts tests/e2e/physics-visual-layout.spec.ts tests/e2e/physics-sample-inspection.spec.ts tests/e2e/physics-clarity.spec.ts tests/e2e/physics-flight-history.spec.ts --workers=1 --retries=0
+        run: npx playwright test tests/e2e/72-physics-lab-behaviour.spec.ts tests/e2e/75-physics-theme-contrast.spec.ts tests/e2e/physics-flight-integrity.spec.ts tests/e2e/physics-model-comparison.spec.ts tests/e2e/physics-investigations.spec.ts tests/e2e/physics-launch-height.spec.ts tests/e2e/physics-visual-layout.spec.ts tests/e2e/physics-sample-inspection.spec.ts tests/e2e/physics-clarity.spec.ts tests/e2e/physics-flight-history.spec.ts tests/e2e/physics-comparison-visuals.spec.ts --workers=1 --retries=0
