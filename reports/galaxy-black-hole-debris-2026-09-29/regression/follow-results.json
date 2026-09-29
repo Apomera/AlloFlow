@@ -1,0 +1,28 @@
+{
+  "escapeTracking": true,
+  "overviewRestored": true,
+  "opticalViewPreserved": true,
+  "idleRendering": true,
+  "appearanceRefresh": true,
+  "reducedMotion": true,
+  "layouts": [
+    {
+      "width": 1440,
+      "allSurvivingCentersFit": true,
+      "rewindExact": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "allSurvivingCentersFit": true,
+      "rewindExact": true,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "allSurvivingCentersFit": true,
+      "rewindExact": true,
+      "overflow": false
+    }
+  ]
+}

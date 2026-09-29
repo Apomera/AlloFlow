@@ -7,7 +7,7 @@ const THREE = createRequire(import.meta.url)('../vendor/three-r128/three.min.js'
 // of its equations or a WebGL stub pretending to verify their behavior.
 const source = readFileSync('stem_lab/stem_tool_galaxy.js', 'utf8');
 const kernel = source.split('// BEGIN BLACK HOLE EXPERIMENT MODEL')[1].split('// END BLACK HOLE EXPERIMENT MODEL')[0];
-const { trajectory, sample, tides, fragments, launchThrow, events, prediction, adjustThrow, cameraFit, distanceProfile } = new Function(kernel + ';return {trajectory:blackHoleTrajectory,sample:blackHoleSample,tides:blackHoleTides,fragments:blackHoleFragments,launchThrow:blackHoleThrow,events:blackHoleEvents,prediction:blackHolePrediction,adjustThrow:blackHoleAdjustThrow,cameraFit:blackHoleCameraFit,distanceProfile:blackHoleDistanceProfile};')();
+const { trajectory, sample, tides, fragments, launchThrow, events, prediction, adjustThrow, cameraFit, distanceProfile, fragmentState, integrate } = new Function(kernel + ';return {trajectory:blackHoleTrajectory,sample:blackHoleSample,tides:blackHoleTides,fragments:blackHoleFragments,launchThrow:blackHoleThrow,events:blackHoleEvents,prediction:blackHolePrediction,adjustThrow:blackHoleAdjustThrow,cameraFit:blackHoleCameraFit,distanceProfile:blackHoleDistanceProfile,fragmentState:blackHoleFragmentState,integrate:blackHoleIntegrate};')();
 
 describe('black hole experiment dynamics', () => {
   it.each([4,5,8])('radial release at %s Rs reaches the horizon in the analytical proper time', radius => {
@@ -230,7 +230,7 @@ describe('black hole experiment dynamics', () => {
     expect(profile.points.filter(p=>p.time<debris.time).every(p=>p.near===null)).toBe(true);
     for(const point of profile.points.filter(p=>p.time>=debris.time)){
       const elapsed=point.time-debris.time;
-      const radii=debris.paths.filter(p=>p.trajectory&&!(p.trajectory.outcome==='captured'&&elapsed>=p.trajectory.duration)).map(p=>sample(p.trajectory,elapsed).radius);
+      const radii=debris.paths.filter(p=>p.trajectory&&!(p.trajectory.outcome==='captured'&&point.time>=debris.time+p.trajectory.duration)).map(p=>sample(p.trajectory,elapsed).radius);
       expect(point.near).toBe(radii.length?Math.min(...radii):null);
       expect(point.far).toBe(radii.length?Math.max(...radii):null);
     }
@@ -242,5 +242,73 @@ describe('black hole experiment dynamics', () => {
     const run=trajectory({radius:5}),duration=run.duration/2,profile=distanceProfile(run,null,duration);
     expect(profile.points.every(p=>p.time<=duration&&p.center>1)).toBe(true);
     expect(profile.points.at(-1).center).toBe(sample(run,duration).radius);
+  });
+
+  it('keeps orbital debris moving for the full center revolution', () => {
+    const run=trajectory({radius:5,sideways:1}),debris=fragments(run,'stellar','star',[{x:0,y:0,z:0}]);
+    const plan=debris.paths[0],end=sample(plan.trajectory,plan.trajectory.duration);
+    expect(debris.duration).toBe(run.duration);
+    expect(plan.trajectory.duration+debris.time).toBeCloseTo(run.duration,9);
+    expect(plan.trajectory.duration).toBeGreaterThan(12);
+    expect(end.angle+plan.angle).toBeCloseTo(Math.PI*2,3);
+    expect(sample(plan.trajectory,20).angle).toBeGreaterThan(sample(plan.trajectory,19).angle);
+    expect(end.radius).toBeCloseTo(5,8);
+  });
+
+  it('continues outside parcels past their old escape cutoff without freezing', () => {
+    const run=trajectory({radius:4,sideways:1}),debris=fragments(run,'stellar','star',[{x:0,y:0,z:-.14}]);
+    const plan=debris.paths[0],path=plan.trajectory;
+    expect(path.energySquared).toBeGreaterThan(1);
+    expect(path.duration+debris.time).toBeCloseTo(debris.duration,9);
+    expect(sample(path,path.duration).radius).toBeGreaterThan(path.releaseRadius*1.8);
+    expect(sample(path,path.duration).radius).toBeGreaterThan(sample(path,path.duration-1).radius);
+    expect(fragmentState(debris,0,debris.duration).phase).toBe('outside');
+    expect(fragmentState(debris,0,debris.duration).energy).toBe('unbound');
+  });
+
+  it('covers long bound observations with compact samples and conserved energy', () => {
+    const run=trajectory({radius:5,sideways:1,radialVelocity:-.1}),debris=fragments(run,'stellar','star',[{x:0,y:0,z:0}]),path=debris.paths[0].trajectory;
+    expect(run.duration).toBeCloseTo(120,8);
+    expect(path.duration+debris.time).toBeCloseTo(run.duration,8);
+    expect(path.samples.length).toBeLessThan(5000);
+    for(const p of path.samples){
+      const energy=p.radialVelocity**2+(1-1/p.radius)*(1+path.angularMomentum**2/p.radius**2);
+      expect(Math.abs(energy-path.energySquared)).toBeLessThan(1e-7);
+    }
+    expect(sample(path,110)).not.toEqual(sample(path,100));
+  });
+
+  it('keeps sparse fragment interpolation close to dense integration through capture', () => {
+    const dense=integrate(5,-.1,1.1,30,{stopAtOutcome:false}),sparse=integrate(5,-.1,1.1,30,{stopAtOutcome:false,sampleEvery:8});
+    expect(sparse.outcome).toBe('captured');
+    expect(sparse.duration).toBe(dense.duration);
+    expect(sparse.samples.at(-1)).toEqual(dense.samples.at(-1));
+    for(let i=0;i<200;i++){
+      const t=dense.duration*i/199,a=sample(dense,t),b=sample(sparse,t);
+      expect(Math.abs(a.radius-b.radius)).toBeLessThan(2e-5);
+      expect(Math.abs(a.angle-b.angle)).toBeLessThan(2e-5);
+    }
+  });
+
+  it('reports waiting and exact capture without showing a captured fragment outside', () => {
+    const run=trajectory({radius:5}),debris=fragments(run,'stellar','probe',[{x:0,y:0,z:0},{x:0,y:0,z:.4}]);
+    const capture=debris.time+debris.paths[0].trajectory.duration;
+    expect(fragmentState(debris,0,0)).toEqual({phase:'waiting'});
+    expect(fragmentState(debris,0,capture-1e-6).phase).toBe('outside');
+    expect(fragmentState(debris,0,capture).phase).toBe('captured');
+    expect(fragmentState(debris,0,capture).radius).toBe(1);
+    expect(fragmentState(debris,1,debris.time)).toEqual({phase:'captured',radius:1});
+    expect(fragmentState(debris,-1,1)).toBeNull();expect(fragmentState(debris,2,1)).toBeNull();
+    expect(fragmentState(null,0,1)).toBeNull();
+  });
+
+  it('reports radial direction and bound energy without promising survival', () => {
+    const run=trajectory({radius:5}),debris=fragments(run,'stellar','probe',[{x:0,y:0,z:0}]);
+    const middle=debris.time+debris.paths[0].trajectory.duration/2;
+    expect(fragmentState(debris,0,middle)).toMatchObject({phase:'outside',motion:'inward',energy:'bound'});
+    expect(debris.paths[0].trajectory.outcome).toBe('captured');
+    const end=fragmentState(debris,0,debris.duration);
+    expect(fragmentState(debris,0,middle).phase).toBe('outside');
+    expect(end.phase).toBe('captured');
   });
 });

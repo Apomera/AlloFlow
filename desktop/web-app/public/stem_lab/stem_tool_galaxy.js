@@ -47,32 +47,37 @@ window.StemLab = window.StemLab || {
     run.initialRadialVelocity = radialVelocity;
     return run;
   }
-  function blackHoleIntegrate(releaseRadius, radialVelocity, angularMomentum, duration) {
+  function blackHoleIntegrate(releaseRadius, radialVelocity, angularMomentum, duration, options) {
+    options=options||{};
+    var stopAtOutcome=options.stopAtOutcome!==false,sampleEvery=options.sampleEvery||1;
     var energySquared = radialVelocity*radialVelocity + (1 - 1 / releaseRadius) * (1 + angularMomentum * angularMomentum / (releaseRadius * releaseRadius));
     var circular = Math.abs(radialVelocity)<1e-8 && Math.abs(angularMomentum*angularMomentum-releaseRadius*releaseRadius/(2*releaseRadius-3))<1e-8;
-    var state = [releaseRadius, radialVelocity, 0], tau = 0, h = 1 / 120, samples = [], outcome = energySquared>=1?'unbound':'bound';
-    function derivative(s) {
-      var r = Math.max(.95, s[0]), l2 = angularMomentum * angularMomentum;
-      return [s[1], -.5 / (r*r) + l2 / (r*r*r) - 1.5*l2 / (r*r*r*r), angularMomentum / (r*r)];
-    }
-    function shifted(s, k, scale) { return s.map(function(v, i) { return v + k[i]*scale; }); }
-    function sample() { return { radius: state[0], radialVelocity: state[1], angle: state[2], time: tau / 2.5 }; }
+    var r=releaseRadius,vr=radialVelocity,angle=0,tau=0,h=1/120,samples=[],outcome=energySquared>=1?'unbound':'bound',l2=angularMomentum*angularMomentum;
+    function acceleration(radius){radius=Math.max(.95,radius);return -.5/(radius*radius)+l2/(radius*radius*radius)-1.5*l2/(radius*radius*radius*radius);}
+    function angularRate(radius){radius=Math.max(.95,radius);return angularMomentum/(radius*radius);}
+    function sample(){return {radius:r,radialVelocity:vr,angle:angle,time:tau/2.5};}
     samples.push(sample());
     for (var step = 0; step < Math.ceil(duration*2.5/h); step++) {
-      var previous = state.slice(), k1 = derivative(state), k2 = derivative(shifted(state,k1,h/2));
-      var k3 = derivative(shifted(state,k2,h/2)), k4 = derivative(shifted(state,k3,h));
-      state = state.map(function(v,i) { return v + h*(k1[i]+2*k2[i]+2*k3[i]+k4[i])/6; });
-      tau += h;
-      if (state[0] <= 1) {
-        var fraction = (previous[0]-1)/(previous[0]-state[0]);
-        state = previous.map(function(v,i) { return v+(state[i]-v)*fraction; });
-        state[0] = 1; tau -= h*(1-fraction); outcome = 'captured'; samples.push(sample()); break;
+      // Scalar RK4 avoids allocating temporary vectors for every parcel step.
+      // Integration stays fine; only stored outer-path samples are thinned.
+      var dt=Math.min(h,Math.max(0,duration*2.5-tau)),previousR=r,previousVr=vr,previousAngle=angle;
+      var a1=acceleration(r),v2=vr+a1*dt/2,r2=r+vr*dt/2,a2=acceleration(r2);
+      var v3=vr+a2*dt/2,r3=r+v2*dt/2,a3=acceleration(r3),v4=vr+a3*dt,r4=r+v3*dt;
+      r+=dt*(vr+2*v2+2*v3+v4)/6;vr+=dt*(a1+2*a2+2*a3+acceleration(r4))/6;
+      angle+=dt*(angularRate(previousR)+2*angularRate(r2)+2*angularRate(r3)+angularRate(r4))/6;tau+=dt;
+      if(r<=1){
+        var fraction=(previousR-1)/(previousR-r);
+        r=1;vr=previousVr+(vr-previousVr)*fraction;angle=previousAngle+(angle-previousAngle)*fraction;
+        tau-=dt*(1-fraction);outcome='captured';samples.push(sample());break;
       }
-      samples.push(sample());
-      if (energySquared >= 1 && state[0] >= releaseRadius * 1.8 && state[1] > 0) { outcome = 'escaped'; break; }
+      var escaped=stopAtOutcome&&energySquared>=1&&r>=releaseRadius*1.8&&vr>0;
       // A revolution is a completion criterion only for a circular orbit.
       // Eccentric orbits can whirl before capture; do not stop them prematurely.
-      if (Math.abs(state[2]) >= Math.PI * 2 && circular) { outcome = 'orbit'; break; }
+      var orbited=stopAtOutcome&&Math.abs(angle)>=Math.PI*2&&circular;
+      var ended=step+1===Math.ceil(duration*2.5/h);
+      if((step+1)%sampleEvery===0||r<3||escaped||orbited||ended)samples.push(sample());
+      if(escaped){outcome='escaped';break;}
+      if(orbited){outcome='orbit';break;}
     }
     return { samples: samples, duration: samples[samples.length-1].time, outcome: outcome, releaseRadius: releaseRadius, angularMomentum: angularMomentum, energySquared: energySquared };
   }
@@ -103,7 +108,10 @@ window.StemLab = window.StemLab || {
     if(!start||start.radius<=1)return null;
     // A brief visual formation interval avoids an instantaneous star-to-debris jump.
     start=blackHoleSample(run,Math.min(run.duration,Math.max(.45,start.time)));
-    var stretch=blackHoleTides(start.radius,massMode,type).stretch, vt=run.angularMomentum/start.radius;
+    var stretch=blackHoleTides(start.radius,massMode,type).stretch,vt=run.angularMomentum/start.radius;
+    // Keep the full center observation, with a short tail after center capture.
+    // Outside parcels keep moving even after crossing the preview exit radius.
+    var duration=run.duration+(run.outcome==='captured'?3:0);
     var paths=offsets.map(function(offset){
       // Offsets are drawn model dimensions, deliberately enlarged. Each parcel
       // inherits the center's velocity, then follows its own geodesic. This
@@ -115,9 +123,19 @@ window.StemLab = window.StemLab || {
       var offsetSquared=dr*dr+dt*dt,closest=offsetSquared?Math.max(0,Math.min(1,-start.radius*dr/offsetSquared)):0;
       if(Math.hypot(start.radius+closest*dr,closest*dt)<=1.001)return {captured:true};
       var vr=(start.radialVelocity*x+vt*z)/r,l=x*vt-z*start.radialVelocity;
-      return {trajectory:blackHoleIntegrate(r,vr,l,Math.min(12,run.duration-start.time+3)),angle:start.angle+angle,vertical:offset.y/Math.sqrt(stretch),initialRadius:r};
+      return {trajectory:blackHoleIntegrate(r,vr,l,duration-start.time,{stopAtOutcome:false,sampleEvery:8}),angle:start.angle+angle,vertical:offset.y/Math.sqrt(stretch),initialRadius:r};
     });
-    return {time:start.time,stretch:stretch,angle:start.angle,paths:paths};
+    return {time:start.time,duration:duration,stretch:stretch,angle:start.angle,paths:paths};
+  }
+  function blackHoleFragmentState(debris,index,time){
+    if(!debris||!Number.isInteger(index)||index<0||index>=debris.paths.length)return null;
+    var plan=debris.paths[index];
+    if(time<debris.time)return {phase:'waiting'};
+    if(plan.captured)return {phase:'captured',radius:1};
+    var elapsed=time-debris.time,p=blackHoleSample(plan.trajectory,elapsed);
+    var captured=plan.trajectory.outcome==='captured'&&time>=debris.time+plan.trajectory.duration;
+    return {phase:captured?'captured':'outside',radius:captured?1:p.radius,radialVelocity:p.radialVelocity,
+      motion:p.radialVelocity<-.001?'inward':p.radialVelocity>.001?'outward':'turning',energy:plan.trajectory.energySquared>=1?'unbound':'bound'};
   }
   function blackHoleEvents(run, debris, duration) {
     var events=[{key:'release',time:0}];
@@ -176,7 +194,7 @@ window.StemLab = window.StemLab || {
       if(debris&&time>=debris.time)debris.paths.forEach(function(plan){
         if(!plan.trajectory)return;
         var elapsed=time-debris.time;
-        if(plan.trajectory.outcome==='captured'&&elapsed>=plan.trajectory.duration)return;
+        if(plan.trajectory.outcome==='captured'&&time>=debris.time+plan.trajectory.duration)return;
         var radius=blackHoleSample(plan.trajectory,elapsed).radius;
         near=near===null?radius:Math.min(near,radius);far=far===null?radius:Math.max(far,radius);
       });
@@ -368,7 +386,12 @@ window.StemLab = window.StemLab || {
       [data-bh-distance-key] { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 6px; }
       [data-bh-distance-key] span { display: inline-flex; align-items: center; gap: 6px; }
       [data-bh-distance-key] i { width: 18px; height: 3px; background: #67e8f9; }
-      [data-bh-distance-key] span:last-child i { height: 10px; background: #fbbf2466; border: 1px solid #fbbf24; }
+      [data-bh-distance-key] span:nth-child(2) i { height: 10px; background: #fbbf2466; border: 1px solid #fbbf24; }
+      [data-bh-distance-key] [data-bh-selected-key] i { height: 3px; background: #c4b5fd; border: 0; }
+      [data-bh-inspector] { margin-top: 12px; padding: 12px; border: 1px solid #8b7aba; border-radius: 10px; background: #161b35; }
+      [data-bh-inspector][hidden], [data-bh-selected-key][hidden] { display: none; }
+      [data-bh-inspector] select { width: 100%; min-height: 44px; margin: 6px 0; padding: 8px; border: 1px solid #a69bc5; border-radius: 8px; background: #243550; color: #f5f3ff; font-size: 13px; }
+      [data-bh-inspector] p { margin-top: 8px; font-size: 12px; line-height: 1.5; }
       [data-bh-workspace] > aside { display: flex; flex-direction: column; gap: 12px; }
       [data-bh-workspace] > aside > * { margin: 0; }
       [data-bh-experiment] { order: -1; }
@@ -2727,6 +2750,7 @@ if (!window._galaxyHasLoadedOnce) {
           blackHoleLaunchCommit.current = function(values){patchGalaxy(values);};
           var blackHoleReadyState = React.useState(false), blackHoleReady = blackHoleReadyState[0], setBlackHoleReady = blackHoleReadyState[1];
           var blackHoleRunState = React.useState(false), blackHoleHasRun = blackHoleRunState[0], setBlackHoleHasRun = blackHoleRunState[1];
+          var blackHoleDebrisUiState=React.useState({available:false,outside:false,selected:false}),blackHoleDebrisUi=blackHoleDebrisUiState[0],setBlackHoleDebrisUi=blackHoleDebrisUiState[1];
           // Holds the Real Sky container across renders so its Aladin Lite instance
           // can be disposed when the node genuinely unmounts. Declared here, with the
           // other refs, to keep the hook budget fixed and unconditional.
@@ -2882,8 +2906,12 @@ if (!window._galaxyHasLoadedOnce) {
               }
               function setText(id, text) { var el=document.getElementById(id); if(el && el.textContent!==text)el.textContent=text; }
               function announce(text) { setText('black-hole-status',text); }
-              var configuration = '', experiment = null, experimentTime = 0, released = false, lastPhase = '', previewPath = null, playbackDuration = 0, experimentEvents = [], experimentPrediction = null, comparison = null, distanceProfile = null;
-              var launchAngle = .72, scratch = new THREE.Vector3(), redshiftColor = new THREE.Color(0xef583f);
+              var configuration = '', experiment = null, experimentTime = 0, released = false, lastPhase = '', previewPath = null, playbackDuration = 0, experimentEvents = [], experimentPrediction = null, comparison = null, distanceProfile = null, inspectedFragment = -1;
+              var launchAngle = .72, scratch = new THREE.Vector3(), redshiftColor = new THREE.Color(0xef583f), debrisUiSignature='';
+              var ringCanvas=document.createElement('canvas');ringCanvas.width=ringCanvas.height=64;
+              var ringContext=ringCanvas.getContext('2d');ringContext.strokeStyle='#c4b5fd';ringContext.lineWidth=5;ringContext.beginPath();ringContext.arc(32,32,25,0,Math.PI*2);ringContext.stroke();
+              var fragmentHighlight=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(ringCanvas),transparent:true,depthWrite:false,toneMapped:false}));
+              fragmentHighlight.scale.set(.3,.3,1);fragmentHighlight.visible=false;scene.add(fragmentHighlight);
               function place(position, sample) { position.set(Math.cos(launchAngle+sample.angle)*sample.radius*.43,0,Math.sin(launchAngle+sample.angle)*sample.radius*.43); }
               disposeFalling=function(item) {
                 scene.remove(item.group); scene.remove(item.trail); scene.remove(item.debris);
@@ -2987,7 +3015,52 @@ if (!window._galaxyHasLoadedOnce) {
                   var line=new THREE.Line(lineGeo,new THREE.LineBasicMaterial({color:item.type==='star'?0xffb965:0x8ee4fb,transparent:true,opacity:item.type==='star'?.22:.4,depthWrite:false}));
                   item.debris.add(fragment);item.debris.add(line);item.fragments.push({mesh:fragment,line:line,positions:positions,plan:plan});
                 });
-                playbackDuration=Math.min(experiment.duration+3,data.time+12);
+                playbackDuration=data.duration;
+                var selector=document.getElementById('black-hole-fragment-select');
+                if(selector){
+                  while(selector.options.length>1)selector.remove(1);
+                  data.paths.forEach(function(plan,i){var option=document.createElement('option');option.value=String(i);option.textContent=fragmentLabel(i);selector.appendChild(option);});
+                  selector.value=String(inspectedFragment);
+                }
+              }
+              function fragmentLabel(index){return __alloT('stem.galaxy.bh_fragment_number','Fragment {number}').replace('{number}',String(index+1));}
+              function paintFragmentInspectionProfile(){
+                var item=fallingObjects[0],line=document.getElementById('black-hole-distance-selected'),points=[];
+                if(line&&distanceProfile&&item&&item.fragmentData&&inspectedFragment>=0){
+                  var data=item.fragmentData,plan=data.paths[inspectedFragment];
+                  if(plan.trajectory)distanceProfile.points.forEach(function(row){
+                    var elapsed=row.time-data.time;
+                    if(elapsed<0||(plan.trajectory.outcome==='captured'&&row.time>data.time+plan.trajectory.duration))return;
+                    points.push((row.time/playbackDuration*600).toFixed(2)+','+distanceY(blackHoleSample(plan.trajectory,elapsed).radius).toFixed(2));
+                  });
+                }
+                if(line)line.setAttribute('d',points.length?'M'+points.join(' L'):'');
+              }
+              function paintFragmentInspection(item){
+                var data=item.fragmentData;
+                var state=blackHoleFragmentState(data,inspectedFragment,experimentTime),selected=state&&item.fragments[inspectedFragment];
+                // React owns disabled controls so its event handlers agree with
+                // their visible state. Update only when availability changes.
+                var ui={available:!!(released&&data),outside:!!(item.debris.visible&&item.visibleFragments),selected:!!state},signature=[ui.available,ui.outside,ui.selected].join(':');
+                if(signature!==debrisUiSignature){debrisUiSignature=signature;setBlackHoleDebrisUi(ui);}
+                var selector=document.getElementById('black-hole-fragment-select');if(selector)selector.value=String(inspectedFragment);
+                var key=document.getElementById('black-hole-distance-selected-key');if(key)key.hidden=!state;
+                var readout=__alloT('stem.galaxy.bh_fragment_all','All debris shown. Choose one fragment to compare its violet distance line with the full debris range.');
+                if(state){
+                  var label=fragmentLabel(inspectedFragment);
+                  if(state.phase==='waiting')readout=__alloT('stem.galaxy.bh_fragment_waiting','{fragment} · Still part of the intact object. Jump to Breakup starts to inspect its separate path.').replace('{fragment}',label);
+                  else if(state.phase==='captured')readout=__alloT('stem.galaxy.bh_fragment_captured','{fragment} · Crossed the horizon. Scrub backward to inspect its approach.').replace('{fragment}',label);
+                  else {
+                    var motion=state.motion==='inward'?__alloT('stem.galaxy.bh_fragment_inward','Moving inward'):state.motion==='outward'?__alloT('stem.galaxy.bh_fragment_outward','Moving outward'):__alloT('stem.galaxy.bh_fragment_turning','Little radial motion');
+                    var energy=state.energy==='unbound'?__alloT('stem.galaxy.bh_fragment_unbound','Unbound energy'):__alloT('stem.galaxy.bh_fragment_bound','Bound energy');
+                    readout=__alloT('stem.galaxy.bh_fragment_measurement','{fragment} · {radius} horizon radii · {motion} · {energy}').replace('{fragment}',label).replace('{radius}',state.radius.toFixed(2)).replace('{motion}',motion).replace('{energy}',energy);
+                  }
+                }
+                setText('black-hole-fragment-inspection-readout',readout);
+                fragmentHighlight.visible=!!(selected&&state.phase==='outside'&&selected.mesh.visible);
+                if(fragmentHighlight.visible)fragmentHighlight.position.copy(selected.mesh.position);
+                var dot=document.getElementById('black-hole-distance-selected-dot');
+                if(dot){dot.style.display=state&&state.phase==='outside'?'':'none';if(state&&state.phase==='outside'){dot.setAttribute('cx',String(experimentTime/playbackDuration*600));dot.setAttribute('cy',String(distanceY(state.radius)));}}
               }
               function placeFragment(position,plan,time) {
                 var p=blackHoleSample(plan.trajectory,time),angle=launchAngle+plan.angle+p.angle;
@@ -3004,7 +3077,7 @@ if (!window._galaxyHasLoadedOnce) {
                 item.fragmentBlend=item.type==='star'?blend*blend*(3-2*blend):1;
                 item.fragments.forEach(function(fragment,i){
                   var plan=fragment.plan;if(plan.captured){fragment.mesh.visible=false;fragment.line.visible=false;return;}
-                  var p=placeFragment(fragment.mesh.position,plan,elapsed),captured=plan.trajectory.outcome==='captured'&&elapsed>=plan.trajectory.duration;
+                  var p=placeFragment(fragment.mesh.position,plan,elapsed),captured=plan.trajectory.outcome==='captured'&&experimentTime>=data.time+plan.trajectory.duration;
                   fragment.mesh.visible=!captured;
                   if(!captured){
                     item.visibleFragments++;item.markerPosition.add(fragment.mesh.position);
@@ -3023,7 +3096,8 @@ if (!window._galaxyHasLoadedOnce) {
                   var end=Math.min(elapsed,plan.trajectory.duration),count=Math.min(48,Math.ceil(end*24)+1);
                   for(var j=0;j<count;j++){placeFragment(scratch,plan,Math.max(0,end-1.6)+Math.min(1.6,end)*j/Math.max(1,count-1));fragment.positions[j*3]=scratch.x;fragment.positions[j*3+1]=scratch.y;fragment.positions[j*3+2]=scratch.z;}
                   fragment.line.geometry.attributes.position.needsUpdate=true;fragment.line.geometry.setDrawRange(0,count);
-                  fragment.line.material.opacity=(item.type==='star'?.22:.4)*item.fragmentBlend*Math.max(0,1-Math.max(0,elapsed-plan.trajectory.duration)/1.5);
+                  fragment.line.material.color.setHex(inspectedFragment===i?0xc4b5fd:item.type==='star'?0xffb965:0x8ee4fb);
+                  fragment.line.material.opacity=(inspectedFragment===i?.85:item.type==='star'?.22:.4)*item.fragmentBlend*Math.max(0,1-Math.max(0,elapsed-plan.trajectory.duration)/1.5);
                 });
                 if(item.visibleFragments)item.markerPosition.divideScalar(item.visibleFragments);
                 return true;
@@ -3100,6 +3174,7 @@ if (!window._galaxyHasLoadedOnce) {
                 var scrub=document.getElementById('black-hole-timeline');if(scrub){scrub.value=String(experimentTime/playbackDuration*100);scrub.setAttribute('aria-valuetext',Math.round(experimentTime/playbackDuration*100)+'%');}
                 setText('black-hole-timeline-label',__alloT('stem.galaxy.bh_timeline_value','Playback: {percent}%').replace('{percent}',String(Math.round(experimentTime/playbackDuration*100))));
                 paintDistanceCursor(sample,item);
+                paintFragmentInspection(item);
                 ['release','breakup','closest','capture','end'].forEach(function(key){
                   var button=document.getElementById('black-hole-event-'+key),event=experimentEvents.find(function(value){return value.key===key;});
                   if(!button)return;button.hidden=!event;
@@ -3114,7 +3189,7 @@ if (!window._galaxyHasLoadedOnce) {
                 // A drag changes trajectory coordinates, not the model's meshes.
                 // Reuse the intact object and preview buffer throughout an edit.
                 var reuse=!force&&!released&&fallingObjects.length&&fallingObjects[0].type===type&&fallingObjects[0].massMode===massMode;
-                configuration=key;if(!reuse)clearExperiment();experiment=blackHoleTrajectory({radius:radius,sideways:sideways,radialVelocity:radial});experimentPrediction=blackHolePrediction(experiment);playbackDuration=experiment.duration;experimentTime=0;released=false;lastPhase='';experimentEvents=[];distanceProfile=null;setBlackHoleHasRun(false);
+                configuration=key;if(!reuse)clearExperiment();experiment=blackHoleTrajectory({radius:radius,sideways:sideways,radialVelocity:radial});experimentPrediction=blackHolePrediction(experiment);playbackDuration=experiment.duration;experimentTime=0;released=false;lastPhase='';experimentEvents=[];distanceProfile=null;inspectedFragment=-1;fragmentHighlight.visible=false;setBlackHoleHasRun(false);
                 if(!reuse)fallingObjects.push(buildObject(type,massMode));
                 var pathArray=previewPath?previewPath.geometry.attributes.position.array:new Float32Array(240*3);
                 for(var pi=0;pi<240;pi++){place(scratch,blackHoleSample(experiment,experiment.duration*pi/239));pathArray[pi*3]=scratch.x;pathArray[pi*3+1]=scratch.y;pathArray[pi*3+2]=scratch.z;}
@@ -3148,7 +3223,7 @@ if (!window._galaxyHasLoadedOnce) {
               };
               canvas._blackHolePredictionState=function(){return {current:experimentPrediction&&Object.assign({},experimentPrediction),comparison:comparison?{prediction:Object.assign({},comparison.prediction),settings:Object.assign({},comparison.settings),positions:Array.from(comparison.line.geometry.attributes.position.array)}:null,cameraDistance:distance};};
               canvas._dropIntoBlackHole=function(){
-                canvas._configureBlackHoleExperiment();prepareFragments(fallingObjects[0]);experimentEvents=blackHoleEvents(experiment,fallingObjects[0].fragmentData,playbackDuration);distanceProfile=blackHoleDistanceProfile(experiment,fallingObjects[0].fragmentData,playbackDuration);paintDistanceProfile();experimentTime=0;released=true;lastPhase='';setBlackHoleHasRun(true);paintExperiment();
+                canvas._configureBlackHoleExperiment();prepareFragments(fallingObjects[0]);experimentEvents=blackHoleEvents(experiment,fallingObjects[0].fragmentData,playbackDuration);distanceProfile=blackHoleDistanceProfile(experiment,fallingObjects[0].fragmentData,playbackDuration);paintDistanceProfile();paintFragmentInspectionProfile();experimentTime=0;released=true;lastPhase='';setBlackHoleHasRun(true);paintExperiment();
                 if(blackHoleLaunchCommit.current)blackHoleLaunchCommit.current({blackHoleInteraction:'camera'});
                 var bounds=canvas.getBoundingClientRect();if(bounds.bottom<0||bounds.top>window.innerHeight||bounds.top< -bounds.height*.5)canvas.scrollIntoView({block:'center',behavior:'auto'});
                 if(paused)announce(__alloT('stem.galaxy.bh_experiment_paused_release','Object released at the marker. Use Step forward or Start animation to move it.'));
@@ -3157,9 +3232,20 @@ if (!window._galaxyHasLoadedOnce) {
               canvas._seekBlackHoleExperiment=function(fraction){if(!experiment||!released)return;experimentTime=Math.max(0,Math.min(1,fraction))*playbackDuration;paintExperiment();};
               canvas._stepBlackHoleExperiment=function(direction){if(!experiment||!released)return;experimentTime=Math.max(0,Math.min(playbackDuration,experimentTime+(direction===-1?-.25:.25)));paintExperiment();};
               canvas._seekBlackHoleEvent=function(key){var event=experimentEvents.find(function(value){return value.key===key;});if(event&&released){experimentTime=event.time;paintExperiment();}};
+              canvas._inspectBlackHoleFragment=function(index){
+                var item=fallingObjects[0];if(!released||!item||!item.fragmentData)return;
+                if(index==='nearest'||index==='farthest'){
+                  if(!item.debris.visible)return;
+                  var chosen=-1,best=index==='nearest'?Infinity:-Infinity;
+                  item.fragments.forEach(function(fragment,i){if(!fragment.mesh.visible)return;var radius=Math.hypot(fragment.mesh.position.x,fragment.mesh.position.z);if(index==='nearest'?radius<best:radius>best){best=radius;chosen=i;}});index=chosen;
+                }
+                index=Number(index);if(!Number.isInteger(index)||index< -1||index>=item.fragments.length)return;
+                inspectedFragment=index;paintFragmentInspectionProfile();paintExperiment();
+                var readout=document.getElementById('black-hole-fragment-inspection-readout');if(readout)setText('black-hole-fragment-announcement',readout.textContent);
+              };
               canvas._blackHoleExperimentState=function(){
                 if(!experiment)return null;var item=fallingObjects[0],visible=item&&item.debris.visible?item.fragments.filter(function(f){return f.mesh.visible;}):[];
-                return Object.assign(blackHoleSample(experiment,experimentTime),{releaseRadius:experiment.releaseRadius,duration:playbackDuration,centerDuration:experiment.duration,launchAngle:launchAngle,sideways:experiment.sideways,radialVelocityAtRelease:experiment.initialRadialVelocity,cameraYaw:yaw,time:experimentTime,visibleFragments:item?item.visibleFragments:0,fragmentPositions:visible.map(function(f){return f.mesh.position.toArray();}),fragmentOpacities:visible.map(function(f){return f.mesh.children[0].material.opacity;}),fragmentColors:visible.map(function(f){return f.mesh.children[0].material.color.toArray();}),fragmentBlend:item?item.fragmentBlend:0,intactOpacity:item?item.parts[0].children[0].material.opacity:0,events:experimentEvents.map(function(event){return {key:event.key,time:event.time};}),outcome:experiment.outcome,released:released,paused:paused,complete:released&&experimentTime>=playbackDuration});
+                return Object.assign(blackHoleSample(experiment,experimentTime),{releaseRadius:experiment.releaseRadius,duration:playbackDuration,centerDuration:experiment.duration,launchAngle:launchAngle,sideways:experiment.sideways,radialVelocityAtRelease:experiment.initialRadialVelocity,cameraYaw:yaw,time:experimentTime,visibleFragments:item?item.visibleFragments:0,fragmentPositions:visible.map(function(f){return f.mesh.position.toArray();}),fragmentIndices:visible.map(function(f){return item.fragments.indexOf(f);}),inspectedFragment:inspectedFragment,inspection:item?blackHoleFragmentState(item.fragmentData,inspectedFragment,experimentTime):null,highlightVisible:fragmentHighlight.visible,fragmentOpacities:visible.map(function(f){return f.mesh.children[0].material.opacity;}),fragmentColors:visible.map(function(f){return f.mesh.children[0].material.color.toArray();}),fragmentBlend:item?item.fragmentBlend:0,intactOpacity:item?item.parts[0].children[0].material.opacity:0,events:experimentEvents.map(function(event){return {key:event.key,time:event.time};}),outcome:experiment.outcome,released:released,paused:paused,complete:released&&experimentTime>=playbackDuration});
               };
               updateFalling=function(dt){if(!released||!experiment||experimentTime>=playbackDuration)return;var rate=Number(canvas.getAttribute('data-playback'))||.5;experimentTime=Math.min(playbackDuration,experimentTime+dt*rate);paintExperiment();};
               var followBounds=new THREE.Box3(),partBounds=new THREE.Box3(),boundsCenter=new THREE.Vector3(),followRevision=-1,followAspect=0;
@@ -3169,7 +3255,10 @@ if (!window._galaxyHasLoadedOnce) {
                 if(!followActive||!fallingObjects.length)return;
                 if(followRevision===sceneRevision&&followAspect===camera.aspect)return;
                 var item=fallingObjects[0];followBounds.makeEmpty();
-                if(item.debris.visible){
+                if(item.debris.visible&&inspectedFragment>=0){
+                  var selected=item.fragments[inspectedFragment];
+                  if(selected.plan.trajectory)followBounds.setFromObject(selected.mesh);
+                }else if(item.debris.visible){
                   // Retain captured parcels at their final horizon positions.
                   // Removing them from the frame would make the camera jump.
                   item.fragments.forEach(function(fragment){if(!fragment.plan.captured)followBounds.union(partBounds.setFromObject(fragment.mesh));});
@@ -3196,7 +3285,7 @@ if (!window._galaxyHasLoadedOnce) {
               updateMarker=function(){
                 var marker=document.getElementById('black-hole-object-marker');if(!marker||!fallingObjects.length||!experiment)return;
                 if(opticalEnabled){marker.hidden=true;markerState='hidden';return;}
-                var item=fallingObjects[0],debris=item.debris.visible&&item.fragmentBlend>=.5,target=debris?item.markerPosition:item.group.position;
+                var item=fallingObjects[0],debris=item.debris.visible&&item.fragmentBlend>=.5,selected=debris&&inspectedFragment>=0?item.fragments[inspectedFragment]:null,target=selected?selected.mesh.position:debris?item.markerPosition:item.group.position;
                 function isVisible(position){
                   scratch.copy(position).project(camera);
                   if(scratch.z<=-1||scratch.z>=1||Math.abs(scratch.x)>=.86||Math.abs(scratch.y)>=.8)return false;
@@ -3204,14 +3293,14 @@ if (!window._galaxyHasLoadedOnce) {
                   var nearest=camera.position.clone().addScaledVector(toObject,Math.max(0,Math.min(1,along)));
                   return !(along>0&&along<1&&nearest.length()<.45);
                 }
-                var visible=(debris?item.visibleFragments>0:item.group.visible)&&isVisible(target);
-                if(debris&&!visible){
+                var visible=(selected?selected.mesh.visible:debris?item.visibleFragments>0:item.group.visible)&&isVisible(target);
+                if(debris&&!selected&&!visible){
                   var best=Infinity;
                   item.fragments.forEach(function(fragment){if(!fragment.mesh.visible)return;var separation=fragment.mesh.position.distanceToSquared(item.markerPosition);if(separation<best&&isVisible(fragment.mesh.position)){best=separation;target=fragment.mesh.position;visible=true;}});
                 }
                 marker.hidden=!visible;
-                markerState=visible?(debris?'debris':'object'):'hidden';
-                if(visible){scratch.copy(target).project(camera);marker.style.left=((scratch.x+1)*50)+'%';marker.style.top=((1-scratch.y)*50)+'%';var label=marker.firstChild;if(label)label.textContent=debris?__alloT('stem.galaxy.bh_debris_marker','Debris · {count} outside').replace('{count}',String(item.visibleFragments)):item.label;}
+                markerState=visible?(selected?'fragment':debris?'debris':'object'):'hidden';
+                if(visible){scratch.copy(target).project(camera);marker.style.left=((scratch.x+1)*50)+'%';marker.style.top=((1-scratch.y)*50)+'%';var label=marker.firstChild;if(label)label.textContent=selected?fragmentLabel(inspectedFragment):debris?__alloT('stem.galaxy.bh_debris_marker','Debris · {count} outside').replace('{count}',String(item.visibleFragments)):item.label;}
               };
               var launchGuides=new THREE.Group();scene.add(launchGuides);
               [4,8].forEach(function(r){var guide=new THREE.Mesh(new THREE.RingGeometry(r*.43-.007,r*.43+.007,128),new THREE.MeshBasicMaterial({color:0x67e8f9,side:THREE.DoubleSide,transparent:true,opacity:.45,depthWrite:false}));guide.rotation.x=-Math.PI/2;guide.position.y=.014;launchGuides.add(guide);});
@@ -3442,7 +3531,7 @@ if (!window._galaxyHasLoadedOnce) {
                 // immediately instead of waiting for browser garbage collection.
                 if(renderer.forceContextLoss)renderer.forceContextLoss();
               }
-              ['_dropIntoBlackHole','_configureBlackHoleExperiment','_resetBlackHoleExperiment','_seekBlackHoleExperiment','_seekBlackHoleEvent','_stepBlackHoleExperiment','_blackHoleExperimentState','_keepBlackHoleComparison','_clearBlackHoleComparison','_restoreBlackHoleComparison','_blackHolePredictionState','_setBlackHoleFollow','_blackHoleCameraState','_setBlackHoleSpin','_setBlackHoleDisk','_setBlackHolePaused','_setBlackHoleCamera','_setBlackHoleInteraction','_nudgeBlackHoleLaunch','_setBlackHoleOptics','_blackHoleOpticalState'].forEach(function(key){delete canvas[key];});
+              ['_dropIntoBlackHole','_configureBlackHoleExperiment','_resetBlackHoleExperiment','_seekBlackHoleExperiment','_seekBlackHoleEvent','_stepBlackHoleExperiment','_blackHoleExperimentState','_inspectBlackHoleFragment','_keepBlackHoleComparison','_clearBlackHoleComparison','_restoreBlackHoleComparison','_blackHolePredictionState','_setBlackHoleFollow','_blackHoleCameraState','_setBlackHoleSpin','_setBlackHoleDisk','_setBlackHolePaused','_setBlackHoleCamera','_setBlackHoleInteraction','_nudgeBlackHoleLaunch','_setBlackHoleOptics','_blackHoleOpticalState'].forEach(function(key){delete canvas[key];});
               canvas._blackHoleInit=false;
             };
             if (window.THREE) init(); else { window.StemLab.ensureThree({ orbit: false }).then(init).catch(function(){ var fallback=document.getElementById('black-hole-status'); if(!stopped&&fallback)fallback.textContent=__alloT('stem.galaxy.bh_three_failed', 'The 3-D library could not load. The labeled black-hole explanation remains available.'); }); }
@@ -12445,13 +12534,22 @@ if (!window._galaxyHasLoadedOnce) {
                         React.createElement("line",{x1:0,x2:600,y1:144,y2:144,stroke:'#fbbf24',strokeDasharray:'6 4','vectorEffect':'non-scaling-stroke','aria-hidden':true}),
                         React.createElement("path",{id:'black-hole-distance-debris',d:'',fill:'#fbbf2433',stroke:'#fbbf24',strokeWidth:1,'vectorEffect':'non-scaling-stroke','aria-hidden':true}),
                         React.createElement("path",{id:'black-hole-distance-center',d:'',fill:'none',stroke:'#67e8f9',strokeWidth:2,'vectorEffect':'non-scaling-stroke','aria-hidden':true}),
+                        React.createElement("path",{id:'black-hole-distance-selected',d:'',fill:'none',stroke:'#c4b5fd',strokeWidth:2.5,'vectorEffect':'non-scaling-stroke','aria-hidden':true}),
                         React.createElement("line",{id:'black-hole-distance-cursor',x1:0,x2:0,y1:8,y2:152,stroke:'#e2e8f0',strokeWidth:1,strokeDasharray:'3 3','vectorEffect':'non-scaling-stroke','aria-hidden':true}),
                         React.createElement("line",{id:'black-hole-distance-range',x1:0,x2:0,y1:0,y2:0,stroke:'#fbbf24',strokeWidth:4,'vectorEffect':'non-scaling-stroke','aria-hidden':true}),
-                        React.createElement("circle",{id:'black-hole-distance-dot',cx:0,cy:0,r:4,fill:'#67e8f9',stroke:'#67e8f9',strokeWidth:2,'vectorEffect':'non-scaling-stroke','aria-hidden':true})),
+                        React.createElement("circle",{id:'black-hole-distance-dot',cx:0,cy:0,r:4,fill:'#67e8f9',stroke:'#67e8f9',strokeWidth:2,'vectorEffect':'non-scaling-stroke','aria-hidden':true}),
+                        React.createElement("circle",{id:'black-hole-distance-selected-dot',cx:0,cy:0,r:5,fill:'#c4b5fd',stroke:'#f5f3ff',strokeWidth:1,'vectorEffect':'non-scaling-stroke','aria-hidden':true,style:{display:'none'}})),
                       React.createElement("div",{className:'flex justify-between text-xs text-slate-300','aria-hidden':true},React.createElement("span",null,'0%'),React.createElement("span",null,'100%'))),
-                    React.createElement("p",{"data-bh-distance-key":"true"},React.createElement("span",null,React.createElement("i",{'aria-hidden':true}),__alloT('stem.galaxy.bh_distance_center','Modeled center')),React.createElement("span",null,React.createElement("i",{'aria-hidden':true}),__alloT('stem.galaxy.bh_distance_debris','Debris range'))),
+                    React.createElement("p",{"data-bh-distance-key":"true"},React.createElement("span",null,React.createElement("i",{'aria-hidden':true}),__alloT('stem.galaxy.bh_distance_center','Modeled center')),React.createElement("span",null,React.createElement("i",{'aria-hidden':true}),__alloT('stem.galaxy.bh_distance_debris','Debris range')),React.createElement("span",{id:'black-hole-distance-selected-key','data-bh-selected-key':'true',hidden:true},React.createElement("i",{'aria-hidden':true}),__alloT('stem.galaxy.bh_fragment_selected','Selected fragment'))),
                     React.createElement("p",{id:'black-hole-distance-readout',className:'mt-2 font-semibold text-slate-100'},''),
                     React.createElement("p",{id:'black-hole-distance-help',className:'mt-1 text-slate-300'},__alloT('stem.galaxy.bh_distance_help','Select a point to pause there. Arrow keys move 1%; Shift + arrows move 10%. Home and End jump to the endpoints. The shaded band spans surviving fragments after breakup.'))),
+                  React.createElement("div",{id:'black-hole-fragment-inspector','data-bh-inspector':'true',hidden:!blackHoleHasRun||!blackHoleDebrisUi.available},
+                    React.createElement("label",{htmlFor:'black-hole-fragment-select',className:'text-xs font-bold text-violet-100'},__alloT('stem.galaxy.bh_fragment_inspect','Inspect debris')),
+                    React.createElement("select",{id:'black-hole-fragment-select',defaultValue:-1,'aria-describedby':'black-hole-fragment-inspection-readout black-hole-fragment-inspection-help',onChange:function(e){pauseBlackHoleForInspection();var cv=blackHoleCanvasActive.current;if(cv&&cv._inspectBlackHoleFragment)cv._inspectBlackHoleFragment(Number(e.target.value));}},React.createElement("option",{value:-1},__alloT('stem.galaxy.bh_fragment_all_option','All debris'))),
+                    React.createElement("div",{className:'flex flex-wrap gap-2'},['nearest','farthest'].map(function(which){return React.createElement("button",{key:which,id:'black-hole-fragment-'+which,type:'button',disabled:!blackHoleReady||!blackHoleDebrisUi.outside,onClick:function(){pauseBlackHoleForInspection();var cv=blackHoleCanvasActive.current;if(cv&&cv._inspectBlackHoleFragment)cv._inspectBlackHoleFragment(which);}},which==='nearest'?__alloT('stem.galaxy.bh_fragment_nearest','Nearest outside'):__alloT('stem.galaxy.bh_fragment_farthest','Farthest outside'));}),React.createElement("button",{id:'black-hole-fragment-follow',type:'button',disabled:!blackHoleReady||!blackHoleDebrisUi.selected,onClick:function(){patchGalaxy({blackHoleFollow:true,blackHoleInteraction:'camera'});}},__alloT('stem.galaxy.bh_fragment_follow','Follow selected fragment'))),
+                    React.createElement("p",{id:'black-hole-fragment-inspection-readout',className:'font-semibold text-violet-100'}),
+                    React.createElement("span",{id:'black-hole-fragment-announcement',className:'sr-only',role:'status','aria-live':'polite','aria-atomic':true}),
+                    React.createElement("p",{id:'black-hole-fragment-inspection-help',className:'text-slate-300'},__alloT('stem.galaxy.bh_fragment_inspection_help','Selection pauses playback. The violet ring, line, and readout identify the same fragment. Follow selected fragment tracks it; choose All debris to frame the whole stream. Bound energy can still lead to capture.'))),
                   React.createElement("p", { id: "black-hole-timeline-help", className: "text-xs text-slate-300" }, __alloT('stem.galaxy.bh_timeline_help','Scrub to inspect any moment. Step forward works while paused, including with reduced motion.')),
                   React.createElement("div", { className: "mt-3 flex flex-wrap items-center gap-2" },
                     React.createElement("label", { htmlFor: "black-hole-playback", className: "text-xs font-bold" }, __alloT('stem.galaxy.bh_playback_speed','Playback speed')),

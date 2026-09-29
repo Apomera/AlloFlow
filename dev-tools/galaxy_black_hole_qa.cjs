@@ -4,13 +4,88 @@ const path = require('path');
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
 const ROOT = path.resolve(__dirname, '..');
-const OUT = path.join(ROOT, process.argv.includes('--optics') ? 'reports/galaxy-black-hole-optics-2026-09-29' : (process.argv.includes('--distance')||process.argv.includes('--distance-only')) ? 'reports/galaxy-black-hole-distance-2026-09-29' : process.argv.includes('--follow') ? 'reports/galaxy-black-hole-follow-2026-09-29' : process.argv.includes('--planning') ? 'reports/galaxy-black-hole-planning-2026-09-29' : process.argv.includes('--breakup') ? 'reports/galaxy-black-hole-breakup-2026-09-29' : 'reports/galaxy-black-hole-interaction-2026-09-28');
+const OUT = path.join(ROOT, process.argv.includes('--regression') ? 'reports/galaxy-black-hole-debris-2026-09-29/regression' : process.argv.includes('--debris') ? 'reports/galaxy-black-hole-debris-2026-09-29' : process.argv.includes('--optics') ? 'reports/galaxy-black-hole-optics-2026-09-29' : (process.argv.includes('--distance')||process.argv.includes('--distance-only')) ? 'reports/galaxy-black-hole-distance-2026-09-29' : process.argv.includes('--follow') ? 'reports/galaxy-black-hole-follow-2026-09-29' : process.argv.includes('--planning') ? 'reports/galaxy-black-hole-planning-2026-09-29' : process.argv.includes('--breakup') ? 'reports/galaxy-black-hole-breakup-2026-09-29' : 'reports/galaxy-black-hole-interaction-2026-09-28');
 const before = process.argv.includes('--before');
 const optical = process.argv.includes('--optics');
 const read = p => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const cssAsset = 'desktop/web-app/public/app/' + JSON.parse(read('desktop/web-app/public/app/asset-manifest.json')).files['main.css'].replace(/^\//,'');
 const src = read('dev-tools/galaxy_core_clipping.cjs');
 const shell = src.slice(src.indexOf('const SHELL = `') + 15, src.indexOf('`;\n\n(async'));
+
+async function debrisChecks(page,canvas,errors){
+  const state=()=>canvas.evaluate(c=>c._blackHoleExperimentState());
+  const settle=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  const act=async name=>{await page.getByRole('button',{name,exact:true}).click();await settle();};
+  const mount=async settings=>{await page.evaluate(settings=>window.__mount({simMode:'blackHole',blackHolePaused:true,...settings}),settings);await page.waitForFunction(()=>!!document.querySelector('[data-black-hole-canvas]')?._inspectBlackHoleFragment);await settle();};
+  const seek=async fraction=>{await canvas.evaluate((c,f)=>c._seekBlackHoleExperiment(f),fraction);await settle();};
+  const selector=page.locator('#black-hole-fragment-select'),readout=page.locator('#black-hole-fragment-inspection-readout');
+  const layouts=[],performance=[];
+  await mount({blackHoleDropObject:'star',blackHoleReleaseRadius:4,blackHoleSideways:1});
+  await act('Release object');
+  let s=await state();assert.equal(s.duration,s.centerDuration,'Breakup keeps the full center revolution');assert(s.duration>12.45);
+  assert.equal(await selector.locator('option').count(),49);
+  assert(await page.getByRole('button',{name:'Farthest outside',exact:true}).isDisabled());
+  assert(await page.getByRole('button',{name:'Follow selected fragment',exact:true}).isDisabled());
+  await selector.selectOption('0');await settle();assert.equal((await state()).inspection.phase,'waiting');assert.match(await readout.textContent(),/Still part/);
+  await act('Breakup starts');await seek(.3);
+  await act('Farthest outside');s=await state();assert(s.highlightVisible&&s.paused);
+  assert.equal(s.inspection.phase,'outside');assert.match(await readout.textContent(),new RegExp('Fragment '+(s.inspectedFragment+1)));
+  const radii=s.fragmentPositions.map(p=>Math.hypot(p[0],p[2])/.43);
+  assert(Math.abs(s.inspection.radius-Math.max(...radii))<1e-9,'Farthest selection uses the scene paths');
+  const chart=await page.locator('#black-hole-distance-chart').evaluate(svg=>({d:svg.querySelector('#black-hole-distance-selected').getAttribute('d'),y:Number(svg.querySelector('#black-hole-distance-selected-dot').getAttribute('cy')),max:Number(document.getElementById('black-hole-distance-max').textContent)}));
+  assert(chart.d.startsWith('M'));assert(Math.abs(1+(144-chart.y)/126*(chart.max-1)-s.inspection.radius)<1e-9);
+  const colors=await page.locator('[data-bh-distance-key]').evaluate(key=>Array.from(key.querySelectorAll('i')).map(i=>getComputedStyle(i).backgroundColor));
+  assert.deepEqual(colors,['rgb(103, 232, 249)','rgba(251, 191, 36, 0.4)','rgb(196, 181, 253)'],'Legend matches the center, debris and selected-fragment paths');
+  await act('Follow selected fragment');
+  let camera=await canvas.evaluate(c=>c._blackHoleCameraState());
+  const selectedPosition=s.fragmentPositions[s.fragmentIndices.indexOf(s.inspectedFragment)];
+  assert(camera.active);assert(Math.hypot(...camera.target.map((v,i)=>v-selectedPosition[i]))<1e-6,'Follow camera centers the selected parcel');
+  assert.equal(camera.marker,'fragment');
+  const selected=s.inspectedFragment;
+  await seek(.9);const late=await state();assert(late.inspection.radius>s.inspection.radius,'Outward parcel keeps moving late in playback');
+  await seek(.8);const a=await state();await seek(1);const b=await state();assert(b.inspection.radius>a.inspection.radius,'Unbound fragment does not freeze at its old exit boundary');
+  await seek(.3);assert.deepEqual((await state()).fragmentPositions,s.fragmentPositions,'Rewind reconstructs the same debris');
+  await act('Light bending');await act('Object experiment');assert.equal((await state()).inspectedFragment,selected);
+  assert.deepEqual((await state()).fragmentPositions,s.fragmentPositions,'Light view preserves fragment inspection');
+  for(const width of [1440,390,320]){
+    await page.setViewportSize({width,height:1050});await canvas.scrollIntoViewIfNeeded();await settle();
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,'No inspector overflow at '+width);
+    const frame=await canvas.evaluate(c=>{const s=c._blackHoleExperimentState(),a=c._blackHoleCameraState();return {index:s.inspectedFragment,projection:a.projections[s.fragmentIndices.indexOf(s.inspectedFragment)],target:a.target};});
+    assert(Math.abs(frame.projection[0])<.1&&Math.abs(frame.projection[1])<.1,'Selected parcel remains centered at '+width);
+    await page.screenshot({path:path.join(OUT,'selected-fragment-'+width+'.png')});layouts.push({width,overflow:false,projection:frame.projection});
+  }
+  await page.evaluate(()=>{document.documentElement.dir='rtl';});await selector.scrollIntoViewIfNeeded();await settle();
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,'RTL inspector fits phone');
+  await page.screenshot({path:path.join(OUT,'inspector-rtl-320.png')});await page.evaluate(()=>{document.documentElement.dir='ltr';});
+  await selector.selectOption('-1');await settle();assert.equal((await state()).highlightVisible,false);assert.equal(await page.locator('#black-hole-distance-selected').getAttribute('d'),'');
+  assert(await page.getByRole('button',{name:'Follow selected fragment',exact:true}).isDisabled());
+  await canvas.scrollIntoViewIfNeeded();await settle();
+  const allFrame=await canvas.evaluate(c=>c._blackHoleCameraState());assert(allFrame.projections.every(p=>Math.abs(p[0])<.85&&Math.abs(p[1])<.85),'All debris restores stream framing');
+  await act('Nearest outside');s=await state();assert(Math.abs(s.inspection.radius-Math.min(...s.fragmentPositions.map(p=>Math.hypot(p[0],p[2])/.43)))<1e-9);
+  // Capture updates the readout, removes the ring and ends the selected line.
+  await mount({blackHoleDropObject:'probe',blackHoleSideways:0});await act('Release object');
+  await selector.selectOption('0');await settle();await act('Breakup starts');assert.equal((await state()).inspection.phase,'outside');
+  await act('Observation end');s=await state();assert.equal(s.inspection.phase,'captured');assert.equal(s.highlightVisible,false);assert.match(await readout.textContent(),/Crossed the horizon/);
+  assert.equal(await page.locator('#black-hole-distance-selected-dot').evaluate(e=>getComputedStyle(e).display),'none');
+  await act('Release moment');assert.equal((await state()).inspection.phase,'waiting');
+  await selector.focus();await page.keyboard.press('ArrowDown');await settle();assert.equal((await state()).inspectedFragment,1,'Native selector supports keyboard selection');
+  await act('Replay experiment');assert.equal((await state()).inspectedFragment,1);assert.equal((await state()).inspection.phase,'waiting');
+  await act('Reset experiment');assert.equal((await state()).inspectedFragment,-1);assert.equal(await page.locator('#black-hole-fragment-inspector').isVisible(),false);
+  await mount({blackHoleDropObject:'probe',blackHoleMassMode:'supermassive'});await act('Release object');assert.equal(await page.locator('#black-hole-fragment-inspector').isVisible(),false,'Intact experiment does not show an empty inspector');
+  await page.setViewportSize({width:1440,height:1050});
+  for(const settings of [{blackHoleSideways:1},{blackHoleSideways:1,blackHoleRadialVelocity:-.1}]){
+    await mount({blackHoleDropObject:'star',...settings});
+    const measurement=await canvas.evaluate(c=>{const started=performance.now();c._dropIntoBlackHole();const s=c._blackHoleExperimentState();return {releaseMs:performance.now()-started,duration:s.duration};});
+    await settle();performance.push(measurement);await seek(.9);await act('Farthest outside');s=await state();assert.equal(s.inspection.phase,'outside');
+    const before=s.inspection.radius;await seek(.95);assert.notEqual((await state()).inspection.radius,before,'Long-observation fragments still move');
+  }
+  await canvas.scrollIntoViewIfNeeded();
+  const context=await canvas.evaluate(c=>{const gl=c.getContext('webgl2')||c.getContext('webgl'),ext=gl.getExtension('WEBGL_lose_context');if(!ext)return false;ext.loseContext();setTimeout(()=>ext.restoreContext(),120);return true;});
+  if(context){await page.waitForFunction(()=>/recovered/.test(document.getElementById('black-hole-status').textContent));await settle();assert((await state()).highlightVisible);}
+  const result={errors,layouts,performance,fullObservation:true,noFrozenEscape:true,selection:true,rewind:true,capture:true,keyboard:true,viewPreserved:true,contextRecovered:context};
+  const cleanup=await canvas.evaluate(c=>{window.__mount({simMode:'star'});return !c._inspectBlackHoleFragment&&!c.isConnected;});assert(cleanup,'Inspector API disposes with the scene');
+  fs.writeFileSync(path.join(OUT,'debris-browser-results.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));assert.equal(errors.length,0,errors.join('\n'));
+}
 
 async function distanceChecks(page,canvas){
   const state=()=>canvas.evaluate(c=>c._blackHoleExperimentState()),chart=page.locator('#black-hole-distance-chart');
@@ -276,6 +351,7 @@ async function opticalChecks(page,canvas,errors){
     const canvas = page.locator('[data-black-hole-canvas]');
     await canvas.scrollIntoViewIfNeeded();
     if(optical){await opticalChecks(page,canvas,errors);return;}
+    if(process.argv.includes('--debris')){await debrisChecks(page,canvas,errors);return;}
     if(process.argv.includes('--distance')||process.argv.includes('--distance-only'))await distanceChecks(page,canvas);
     if(process.argv.includes('--distance-only')){assert.equal(errors.length,0,errors.join('\n'));const result={errors,distanceChecks:true};fs.writeFileSync(path.join(OUT,'distance-browser-results.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));return;}
     if(process.argv.includes('--planning'))await planningChecks(page,canvas);

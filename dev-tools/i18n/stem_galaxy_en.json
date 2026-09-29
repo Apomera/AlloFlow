@@ -756,5 +756,22 @@
   "bh_optical_grid": "Show sky grid",
   "bh_optical_map": "Show frequency-shift map",
   "bh_optical_scope": "Light paths use a Schwarzschild model and a thin disk in circular motion. The sky and gas texture are illustrative. Fine photon subrings, time delays, and light from the dropped objects are not modeled here.",
-  "bh_optical_saved": "Your object release and timeline are preserved. Choose Object experiment to return."
+  "bh_optical_saved": "Your object release and timeline are preserved. Choose Object experiment to return.",
+  "bh_fragment_number": "Fragment {number}",
+  "bh_fragment_all": "All debris shown. Choose one fragment to compare its violet distance line with the full debris range.",
+  "bh_fragment_waiting": "{fragment} · Still part of the intact object. Jump to Breakup starts to inspect its separate path.",
+  "bh_fragment_captured": "{fragment} · Crossed the horizon. Scrub backward to inspect its approach.",
+  "bh_fragment_inward": "Moving inward",
+  "bh_fragment_outward": "Moving outward",
+  "bh_fragment_turning": "Little radial motion",
+  "bh_fragment_unbound": "Unbound energy",
+  "bh_fragment_bound": "Bound energy",
+  "bh_fragment_measurement": "{fragment} · {radius} horizon radii · {motion} · {energy}",
+  "bh_fragment_selected": "Selected fragment",
+  "bh_fragment_inspect": "Inspect debris",
+  "bh_fragment_all_option": "All debris",
+  "bh_fragment_nearest": "Nearest outside",
+  "bh_fragment_farthest": "Farthest outside",
+  "bh_fragment_follow": "Follow selected fragment",
+  "bh_fragment_inspection_help": "Selection pauses playback. The violet ring, line, and readout identify the same fragment. Follow selected fragment tracks it; choose All debris to frame the whole stream. Bound energy can still lead to capture."
 }
