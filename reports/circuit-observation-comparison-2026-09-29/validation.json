@@ -1,0 +1,48 @@
+{
+  "passed": true,
+  "validatedAt": "2026-09-29T22:52:39.030Z",
+  "sourceSha256": "73968f271b68e6050edb981cecdd9167d6cc7718f8f05872021c3bf8d5ed1bdd",
+  "mirrored": true,
+  "sourceCompiles": true,
+  "regression": {
+    "passedTests": 259,
+    "files": 18,
+    "startedAt": "2026-09-29T22:47:24.115Z",
+    "finishedAt": "2026-09-29T22:48:19.106Z"
+  },
+  "browser": {
+    "workflows": 3,
+    "axeScans": 19,
+    "focusChecks": 62,
+    "focusTransitions": 11,
+    "screenshots": 19,
+    "visualIssues": 0
+  },
+  "reportHashes": {
+    "regression.json": "736b1b9bb217633a1022c33b5c80dc691832d754d705fa0b1b86bfa9dab26921",
+    "regression-receipt.json": "d2a00553a9139e3e04932d9ff3acad6facdd0399855afb99578ee3fb49dea5dc",
+    "browser-results.json": "9e7e6ed464484eb2ab47d179696e8b4b04dcbcf747f6ec7f9011c4e830f32657"
+  },
+  "screenshotHashes": {
+    "single-setting-comparison-1280.png": "3eca2b69ca31c173f4f3bb0d96ad1af00ce76f74bc62f2074406571f80651bd4",
+    "single-setting-comparison-390.png": "97bb389a889748e3129d5f8940c4314a3154e7be3af42fe331cd9704f5ab9ef8",
+    "single-setting-comparison-320.png": "91fb5de660dd3203180e0517470e893dd4bde8091964a9aa14b1b918f4228eb7",
+    "single-setting-comparison-200pct-text-320.png": "3f97807e98affbf4c7b2f0545f640c43a5d68bd1ff6f53e1de6a7100ebfc10cd",
+    "recorded-notebook-390.png": "88b8bff04a9e74c2059f60ca2189d3dde815fcdc341604d795868dd151114bab",
+    "saturation-comparison-1280.png": "b483032417a6ccebb9cc5a01b84d4eb627dcfe419536072a7d8a4522a471ed46",
+    "saturation-comparison-390.png": "2b20739b6abf8348d27911e9a7044d12e4c117fb7a4d85d65ee86373cb354ac5",
+    "saturation-comparison-320.png": "002986ecd58ac5f3ca3d2317a3683b30d654882c67894cdb6410f48f907d5256",
+    "probe-pair-comparison-1280.png": "698621886b1c15ae8afe14990f6368ebf4e4f2ef403c574b98a6f2378a9274f8",
+    "probe-pair-comparison-390.png": "e94a01f15719a4ede65df788f25b9b6116a4bd267e0350d96e3b9f9496f7b682",
+    "probe-pair-comparison-320.png": "fef27f3e2b32e76164e67d4e6e2cb5c39f618e8756aa76fb40e64aecdbd156a0",
+    "different-circuits-comparison-1280.png": "1655d586c90f691dc253ff0e4f2bcb208cc01113a7cbbffec5d129d26a72d865",
+    "different-circuits-comparison-390.png": "472d021990891766e2afb4d68385f9681b9ae0903aaefd6e5338560abf73f81c",
+    "different-circuits-comparison-320.png": "ec17dd33d546e6cba712ad92a2ff764c11f76bad351648545e9d5385f1fd2529",
+    "different-circuits-comparison-200pct-text-320.png": "628ec8bbf558ddab66c3527a00f6e38273fd8124f2cda6b96733b6ba6070eadf",
+    "pending-recoveries-1280.png": "7c3c443b86241157402ec5b1bbc23944e0582e65b4520362e02f2d0eaecbe1cc",
+    "pending-recoveries-390.png": "b95ff8e3bdd751e273f36904ef7e1bfc66548921455e7c0f155db09bc2ad77d8",
+    "pending-recoveries-320.png": "70cdf40a7feb1102aa29b6ac6af66d868094cccf6db68b4e9701f917b0a61e55",
+    "pending-recoveries-200pct-text-320.png": "133b71444777ed719c87066e03959b995512eb8532c70225b920b3a19332d6a3"
+  },
+  "whitespaceCheck": true
+}

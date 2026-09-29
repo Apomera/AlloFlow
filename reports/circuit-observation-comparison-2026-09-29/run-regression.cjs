@@ -1,0 +1,11 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict'),{spawnSync}=require('node:child_process');
+const root=path.resolve(__dirname,'../..'),source='stem_lab/stem_tool_circuit.js',mirror='desktop/web-app/public/stem_lab/stem_tool_circuit.js';
+const hash=file=>crypto.createHash('sha256').update(fs.readFileSync(path.join(root,file))).digest('hex');
+const tests=['circuit_active_notebook_continuity','circuit_active_observation_comparison','circuit_inquiry_evidence','circuit_active_lesson_records','circuit_active_electronics','circuit_active_refinements','circuit_active_regions','circuit_investigation','circuit_learning','circuit_learning_regressions','circuit_guided_evidence','circuit_guided_journey','circuit_lesson_navigation','circuit_localization','circuit_form_labels_a11y','circuit_files','circuit_reference_workflows','circuit_model'].map(name=>'tests/'+name+'.test.js');
+const files=Object.fromEntries([source,mirror,...tests].map(file=>[file,hash(file)]));assert.equal(files[source],files[mirror]);
+const args=['node_modules/vitest/vitest.mjs','run',...tests,'--pool=threads','--maxWorkers=1','--testTimeout=30000','--hookTimeout=60000','--silent','--reporter=dot','--reporter=json','--outputFile=reports/circuit-observation-comparison-2026-09-29/regression.json'];
+const startedAt=new Date().toISOString(),run=spawnSync(process.execPath,args,{cwd:root,stdio:'inherit'}),finishedAt=new Date().toISOString(),changed=Object.keys(files).filter(file=>hash(file)!==files[file]);
+fs.writeFileSync(path.join(__dirname,'regression-receipt.json'),JSON.stringify({startedAt,finishedAt,command:[process.execPath,...args],exitCode:run.status,files,changedDuringRun:changed},null,2));
+assert.equal(run.status,0,'Circuit regression command failed');assert.deepEqual(changed,[],'Tested files changed during run');
+const results=JSON.parse(fs.readFileSync(path.join(__dirname,'regression.json')));assert.equal(results.success,true);assert.equal(results.numFailedTests,0);assert.equal(results.testResults.length,tests.length);assert.ok(results.testResults.every(result=>result.status==='passed'));
+console.log('Circuit regression: '+results.numPassedTests+' passing tests across '+tests.length+' files on '+files[source]);
