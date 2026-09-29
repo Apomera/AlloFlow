@@ -1,0 +1,49 @@
+{
+  "passed": true,
+  "validatedAt": "2026-09-29T23:36:39.975Z",
+  "sourceSha256": "4d4835112d86c8a154335b7c77d9257ae1a80cfe9747e4f5015fe0c6b5b6fab7",
+  "mirrored": true,
+  "sourceCompiles": true,
+  "regression": {
+    "passedTests": 298,
+    "files": 20,
+    "startedAt": "2026-09-29T23:27:57.559Z",
+    "finishedAt": "2026-09-29T23:31:18.362Z"
+  },
+  "browser": {
+    "workflows": 3,
+    "axeScans": 20,
+    "focusChecks": 26,
+    "focusTransitions": 8,
+    "screenshots": 20,
+    "visualIssues": 0
+  },
+  "reportHashes": {
+    "regression.json": "831840e2b17c92556d5f04589ec0d64e992770b34c9be9843b813bca070791c3",
+    "regression-receipt.json": "b2dd79572a9252e10d32d682b080714608a589e39ae840b65fb737d97cd0c4f3",
+    "browser-results.json": "be03418e07fd93abac3babe5e25f47ec1687520f51484e7a54af09ecec792485"
+  },
+  "screenshotHashes": {
+    "one-reading-next-step-1280.png": "305b4cdc44a9217f7a267cff0fd90bf5049c715cad02907249a571aa6ad3a140",
+    "one-reading-next-step-390.png": "bb996041fbfa41479ab51a30bd86bc779f00a9f3fa406165c55980f249f742fd",
+    "one-reading-next-step-320.png": "3c55f3c7199d8f9b1ce9de0bcdbf68f13f3bce10bef9bfc45a7986d0173b344d",
+    "readings-preview-1280.png": "3966fb11c045c15d214529825d24385f24adbb74e4f62635696df31eee1bd0e3",
+    "readings-preview-390.png": "b6ab2cf5f33b2af3e642ef13a7026bc6739582108b0f1a54fb2986fc457d66f1",
+    "readings-preview-320.png": "2814fcbfa95304fa656b526ae653e73a252af29d6470fc091539cb662202889b",
+    "readings-preview-200pct-text-320.png": "7ffa86c513b955a928189ee59a6a9aa14dcbd51ad04e4734379fb4ba3bc9c055",
+    "appended-explanation-1280.png": "3f4c8fc237047fe118b4cb7857e0047b27ceec538c4d8063a08eb0247f228dec",
+    "appended-explanation-390.png": "54f3e7379ecfdaa32ef77e72bd41cc48aefb71365c22abf961c4406d4e92dd8d",
+    "appended-explanation-320.png": "7b15eaaedd0cb960068114886418dcf548bd7f5001869d5fb90e7eea1b590b98",
+    "appended-explanation-200pct-text-320.png": "670051a6c909895a7b9e3b2cf4271856bc8c387ceca5ed0aabcc99699cc0e10e",
+    "same-point-guidance-320.png": "17df8c754222b89bb033cf406996f9fdf42fad32bd0e86e9d413bd3b8af3a68f",
+    "explanation-capacity-notice-320.png": "bed41c4847d9c7bc8e2fbb7f9f53d17886e86c7845509b0a5de3948aff5cd4a4",
+    "reversed-probe-writing-1280.png": "d1b7f5af12cefd11fa3970c3e9f8738ac94fc4430359420d8ea6efba5de0c007",
+    "reversed-probe-writing-390.png": "10e5d6523a6a19e5138828e5bf158e22b85f0256ecb516ca9aeb36cb3c87dbaf",
+    "reversed-probe-writing-320.png": "61c5d8226f581ff60f0a57594d7cc3ed376f18415a1e7fcb3648f2389230c755",
+    "different-circuits-writing-1280.png": "7e10ab9619ee48f990a330468be05ead85ca06d54605272aa96346c665ec945b",
+    "different-circuits-writing-390.png": "af732e1a790c5b3283f2ba80bb8c990f1ff923f1c8970968a114da6319307ccb",
+    "different-circuits-writing-320.png": "977e9e5c29254e1a12ba24603048b8b4118c9028b038dfd50ffd4ffc1bbb971d",
+    "different-circuits-writing-200pct-text-320.png": "879088a9a11fce196d7cc08a2662f836b5ee25a3afe9d4e13e50490e40a80f07"
+  },
+  "whitespaceCheck": true
+}

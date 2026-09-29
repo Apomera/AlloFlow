@@ -2802,6 +2802,32 @@ window.StemLab = window.StemLab || {
     var merge=function(values){return Object.assign({},state,values);};
     var focus=function(index,notice,values){var token=Number.isSafeInteger(state.notebookFocusToken)&&state.notebookFocusToken<Number.MAX_SAFE_INTEGER?state.notebookFocusToken:0;return merge(Object.assign({},values||{},{notebookOpen:true,notebookFocusIndex:index,notebookFocusToken:token+1,investigationNotice:notice}));};
     var recovery=function(observations,pending,notice){return merge({observations:observations,removedObservations:pending,removedObservation:pending[0]||null,investigationNotice:notice});};
+    if(action==='appendEvidence'){
+      var appendNotice=function(message){return merge({investigationNotice:message});};
+      var shown=target&&Array.isArray(target.observations)?target.observations:null;
+      if(!target||!target.first||!target.second||target.first===target.second)return appendNotice('Choose two different saved observations before adding readings.');
+      var resolveEvidencePoint=function(point){
+        if(!shown||shown.indexOf(point)<0)return null;
+        var key=circuitActiveObservationKey(point);if(key===null)return null;
+        if(list.indexOf(point)>=0)return point;
+        // Editing only a note replaces the entry while preserving its design object.
+        // Never use an electrical match alone: imports and other historical rows may match.
+        var matches=function(entry){return entry&&entry.design===point.design&&circuitActiveObservationKey(entry)===key;};
+        var displayed=shown.filter(matches),current=list.filter(matches);
+        return displayed.length===1&&current.length===1?current[0]:null;
+      };
+      var evidenceFirst=resolveEvidencePoint(target.first),evidenceSecond=resolveEvidencePoint(target.second);
+      if(!evidenceFirst||!evidenceSecond)return appendNotice('Those saved points are no longer available or have changed. Choose two saved observations again.');
+      if(evidenceFirst===evidenceSecond)return appendNotice('Choose two different saved observations before adding readings.');
+      var evidence=circuitActiveComparisonEvidence(evidenceFirst,evidenceSecond);if(!evidence)return appendNotice('Choose two valid saved observations before adding readings.');
+      if(state.reflection!=null&&typeof state.reflection!=='string')return appendNotice('The explanation must be text before readings can be added.');
+      var reflection=typeof state.reflection==='string'?state.reflection:'';
+      var focusReflection=function(message,writing){var token=Number.isSafeInteger(state.reflectionFocusToken)&&state.reflectionFocusToken<Number.MAX_SAFE_INTEGER?state.reflectionFocusToken:0;return merge({reflection:writing,notebookOpen:true,reflectionFocusToken:token+1,investigationNotice:message});};
+      if(reflection.indexOf(evidence.text)>=0)return focusReflection('These saved readings are already in your explanation. Your writing is unchanged.',reflection);
+      var combined=reflection+(reflection.length?'\n\n':'')+evidence.text;
+      if(combined.length>4000)return appendNotice('Adding these readings would exceed the 4000-character explanation limit. Shorten the explanation before adding them.');
+      return focusReflection('Saved readings added. Explain what the evidence shows in your own words.',combined);
+    }
     if(action==='record'){
       var entry=circuitActiveObservation(state,''),key=circuitActiveObservationKey(entry),existing=list.findIndex(function(o){return circuitActiveObservationKey(o)===key;});
       if(existing>=0)return focus(existing,'This operating point and probe placement are already saved as observation '+(existing+1)+'. Add or revise its note.');
@@ -2839,6 +2865,31 @@ window.StemLab = window.StemLab || {
     var kind=comparison.typeChanged?'different-circuits':comparison.controlled?'one-setting':comparison.changes.length?'multiple-settings':!probeSame?'probe-only':'unchanged';
     return Object.assign({},comparison,{circuitUnchanged:comparison.unchanged,unchanged:comparison.unchanged&&probeSame,kind:kind,probeBefore:probeBefore,probeAfter:probeAfter,probeSame:probeSame,probeComparable:probeSame,delta:Object.assign({},comparison.delta,{probeVoltage:probeSame?probeAfter.voltage-probeBefore.voltage:null})});
   }
+  function circuitActiveComparisonEvidence(first,second) {
+    if(!first||!second||first===second)return null;
+    var comparison=circuitActiveObservationComparison(first,second);if(!comparison)return null;
+    var signed=function(value,format){return (value>0?'+':'')+format(value);};
+    var project=function(value){return {manual:'Manual control',light:'Light sensor',dark:'Dark sensor'}[value];};
+    var describe=function(label,solved,probe){
+      var d=solved.design,settings=[project(d.project),d.project==='manual'?'input '+d.input+' V':'relative light '+d.light+' / 100','supply '+d.supply+' V','base resistance '+d.baseResistance+' Ω','lamp resistance '+d.loadResistance+' Ω','gain β '+d.beta];
+      if(solved.sensor)settings.push('divider resistance '+d.dividerResistance+' Ω');
+      return label+': '+settings.join('; ')+'. Region: '+solved.region+'. Base current '+circuitCurrentText(solved.baseCurrent)+'; lamp current '+circuitCurrentText(solved.collectorCurrent)+'; transistor voltage '+circuitPreciseVoltageText(solved.collectorVoltage)+'; lamp power '+circuitPowerText(solved.loadPower)+'; probe red '+probe.red+' − black '+probe.black+' = '+circuitPreciseVoltageText(probe.voltage)+'.';
+    };
+    var delta=comparison.delta,changes='Changes (second − first): base current '+signed(delta.baseCurrent,circuitCurrentText)+'; lamp current '+signed(delta.collectorCurrent,circuitCurrentText)+'; transistor voltage '+signed(delta.collectorVoltage,circuitPreciseVoltageText)+'; lamp power '+signed(delta.loadPower,circuitPowerText)+'.';
+    changes+=comparison.probeSame?' Same captured probe pair; probe-voltage change '+signed(delta.probeVoltage,circuitPreciseVoltageText)+'.':' The captured probe connections differ; no probe-voltage change is calculated between unlike pairs.';
+    var context=comparison.kind==='different-circuits'?'The circuit types differ. These are separate operating points, not a one-setting test.':comparison.kind==='probe-only'?'Circuit settings match; only the captured probe connections differ.':comparison.kind==='unchanged'?'Circuit settings and captured probe connections match.':(comparison.kind==='one-setting'?'One circuit setting differs: ':'Several circuit settings differ: ')+comparison.changes.map(function(change){return change.text;}).join('; ')+'.';
+    var prompts={
+      'different-circuits':'What do these separate circuit observations show, and what additional comparison would isolate one cause?',
+      'multiple-settings':'Which one-setting comparison would test the explanation you are considering?',
+      'probe-only':'How do the selected terminals and lead direction explain the signed probe readings?',
+      'unchanged':'Do these points test a change? Which additional operating point would help answer your question?',
+      'one-setting':'What changed, and which readings support your explanation in this DC model?'
+    };
+    var prompt=prompts[comparison.kind];
+    if(comparison.kind==='one-setting'&&comparison.before.region==='saturated'&&comparison.after.region==='saturated'&&delta.collectorCurrent===0&&delta.baseCurrent!==0)prompt='What sets the lamp-current limit when the base current changes?';
+    return {text:['Saved comparison — NPN settled DC model.',describe('First',comparison.before,comparison.probeBefore),describe('Second',comparison.after,comparison.probeAfter),changes,context+' Displayed readings are rounded.'].join("\n\n"),kind:comparison.kind,prompt:prompt};
+  }
+  window.StemLab.circuitActiveComparisonEvidence=circuitActiveComparisonEvidence;
   window.StemLab.circuitActiveObservationKey=circuitActiveObservationKey;
   window.StemLab.circuitActiveNotebookUpdate=circuitActiveNotebookUpdate;
   window.StemLab.circuitActiveObservationComparison=circuitActiveObservationComparison;
@@ -2969,6 +3020,8 @@ function CircuitActiveObservationCompare(props) {
     if(missingFirst||missingSecond)notice[1](true);
   },[signature,firstState[0],secondState[0]]);
   var comparison=first&&second?circuitActiveObservationComparison(first.observation,second.observation):null;
+  var evidence=comparison?circuitActiveComparisonEvidence(first.observation,second.observation):null;
+  var evidenceIncluded=!!(evidence&&evidence.text&&typeof props.reflection==='string'&&props.reflection.indexOf(evidence.text)!==-1);
   var project=function(value){return t('stem.circuit.observation_project_'+value,{manual:'Manual control',light:'Light sensor',dark:'Dark sensor'}[value]||value);};
   var region=function(value){return t('stem.circuit.observation_region_'+value,{cutoff:'Cutoff',active:'Active region',saturated:'Saturation'}[value]||value);};
   var number=function(point){return t('stem.circuit.saved_observation_number','Observation {number}').replace('{number}',String(point.index+1));};
@@ -3010,16 +3063,23 @@ function CircuitActiveObservationCompare(props) {
         h('section',{className:'circuit-observation-probe-comparison'},h('h5',null,t('stem.circuit.saved_probe_voltage','Probe voltage')),
           comparison.probeSame?h(React.Fragment,null,h('p',{className:'circuit-help'},t('stem.circuit.saved_same_pair','Same captured leads: red {red} − black {black}.').replace('{red}',comparison.probeBefore.red).replace('{black}',comparison.probeBefore.black)),rows(comparison.probeBefore.voltage,comparison.probeAfter.voltage,comparison.delta.probeVoltage,circuitPreciseVoltageText)):
           h(React.Fragment,null,h('p',{className:'circuit-help'},t('stem.circuit.saved_different_pairs','These readings measure different connections. Choose points with the same red and black leads to compare a probe-voltage change.')),h('dl',null,[{key:'before',point:first,probe:comparison.probeBefore},{key:'after',point:second,probe:comparison.probeAfter}].map(function(item){return h('div',{key:item.key},h('dt',null,number(item.point)+' · '+pair(item.probe)),h('dd',null,circuitPreciseVoltageText(item.probe.voltage)));})))),
-        h('p',{className:'circuit-help'},t('stem.circuit.saved_use_in_explanation','Use these saved readings in your evidence-based explanation below. Choosing points here keeps the live circuit unchanged.')))));
+        h('section',{className:'circuit-comparison-writing','aria-labelledby':uid+'-writing-heading'},
+          h('h5',{id:uid+'-writing-heading'},t('stem.circuit.evidence_writing_heading','Write from evidence')),
+          h('p',{id:uid+'-writing-prompt',className:'circuit-comparison-writing-prompt'},evidence?t('stem.circuit.evidence_writing_prompt_'+evidence.kind,evidence.prompt):t('stem.circuit.evidence_writing_choose_different','Choose two different saved observations to write from a comparison.')),
+          evidence&&h('details',{className:'circuit-comparison-writing-readings'},h('summary',null,t('stem.circuit.evidence_writing_preview','Readings that will be added')),h('pre',{className:'circuit-comparison-writing-preview'},evidence.text)),
+          h('p',{id:uid+'-writing-help',className:'circuit-help'},t('stem.circuit.evidence_writing_help','This adds measurements after your existing writing. You write the claim and explain what the readings show.')),
+          h('div',{className:'circuit-comparison-writing-actions'},h('button',{type:'button',disabled:!evidence||typeof props.appendEvidence!=='function','aria-describedby':uid+'-writing-prompt '+uid+'-writing-help',onClick:function(){if(evidence&&typeof props.appendEvidence==='function')props.appendEvidence({first:first.observation,second:second.observation,observations:observations});}},evidenceIncluded?t('stem.circuit.evidence_writing_review','Review explanation'):t('stem.circuit.evidence_writing_add','Add readings to explanation')))))));
 }
 
   function CircuitActiveInvestigationTools(props) {
     var React=props.React,h=React.createElement,state=props.state,observations=Array.isArray(state.observations)?state.observations:[];
     var __alloT=circuitToolT(props);
     var notebookRef=React.useRef(null),seenFocus=React.useRef(state.notebookFocusToken||0);
+    var reflectionRef=React.useRef(null),seenReflectionFocus=React.useRef(state.reflectionFocusToken||0);
     var removed=Array.isArray(state.removedObservations)?state.removedObservations:state.removedObservation?[state.removedObservation]:[],recoveryFull=removed.length>=8;
     var currentKey=circuitActiveObservationKey(circuitActiveObservation(state,'')),recordedIndex=observations.findIndex(function(o){return circuitActiveObservationKey(o)===currentKey;});
     React.useEffect(function(){var token=state.notebookFocusToken||0;if(token===seenFocus.current)return;seenFocus.current=token;var notebook=notebookRef.current,card=notebook&&notebook.querySelectorAll('.circuit-notebook-observation')[state.notebookFocusIndex],note=card&&card.querySelector('textarea');if(note){card.open=true;note.focus();}},[state.notebookFocusToken,state.notebookFocusIndex,observations]);
+    React.useEffect(function(){var token=state.reflectionFocusToken||0;if(token===seenReflectionFocus.current)return;seenReflectionFocus.current=token;if(token&&reflectionRef.current)reflectionRef.current.focus();},[state.reflectionFocusToken]);
     var focusNotebook=function(event){var notebook=event&&event.currentTarget&&event.currentTarget.closest('.circuit-active-notebook'),summary=notebook&&notebook.querySelector(':scope > summary');if(summary)requestAnimationFrame(function(){if(summary.isConnected)summary.focus();});};
     var pending=React.useState(null),candidate=pending[0],setCandidate=pending[1],feedback=React.useState(''),message=feedback[0],setMessage=feedback[1];
     var fail=React.useState(false),error=fail[0],setError=fail[1],reading=React.useState(false),busy=reading[0],setBusy=reading[1],generation=React.useRef(0),input=React.useRef(null),candidateRef=React.useRef(null);
@@ -3028,7 +3088,7 @@ function CircuitActiveObservationCompare(props) {
     var readFile=function(e){var file=e.target.files&&e.target.files[0],request=++generation.current;candidateRef.current=null;setCandidate(null);setMessage('');setError(false);if(!file){setBusy(false);return;}if(file.size>131072){setBusy(false);setError(true);setMessage('Choose an investigation JSON file smaller than 128 KB.');return;}setBusy(true);
       file.text().then(function(text){if(generation.current!==request)return;try{var parsed=parseCircuitInvestigation(text);candidateRef.current={value:parsed,generation:request};setCandidate(parsed);setMessage('Preview ready. Review the investigation before loading it.');}catch(err){setError(true);setMessage(err.message);}}).catch(function(){if(generation.current===request){setError(true);setMessage('The investigation could not be read. Choose it again.');}}).finally(function(){if(generation.current===request)setBusy(false);});};
     var consumeCandidate=function(){var current=candidateRef.current;if(!candidate||!current||current.value!==candidate||current.generation!==generation.current)return false;candidateRef.current=null;generation.current++;setBusy(false);return true;};
-    var field=function(label,key,max,rows,placeholder){var attributes={'aria-label':label,value:state[key]||'',maxLength:max,onChange:function(e){var update={};update[key]=e.target.value;props.patch(update);},placeholder:placeholder};return h('label',{className:'circuit-notebook-field'},label,rows?h('textarea',Object.assign({rows:rows},attributes)):h('input',Object.assign({type:'text'},attributes)));};
+    var field=function(label,key,max,rows,placeholder){var attributes={'aria-label':label,value:state[key]||'',maxLength:max,onChange:function(e){var update={};update[key]=e.target.value;props.patch(update);},placeholder:placeholder};if(key==='reflection'){attributes.ref=reflectionRef;attributes.className='circuit-notebook-reflection';}return h('label',{className:'circuit-notebook-field'},label,rows?h('textarea',Object.assign({rows:rows},attributes)):h('input',Object.assign({type:'text'},attributes)));};
     return h('details',{id:'circuit-active-notebook',ref:notebookRef,className:'circuit-active-notebook',open:!!state.notebookOpen,onToggle:function(e){if(e.target===e.currentTarget&&e.currentTarget.open!==!!state.notebookOpen)props.patch({notebookOpen:e.currentTarget.open});}},
       h('summary',null,h('span',null,'Investigation notebook'),h('small',null,observations.length+'/8 observations')),
       h('div',{className:'circuit-notebook-content'},h('p',{className:'circuit-help'},'Ask a question, keep readings as evidence, and explain what you found. Recorded points stay fixed as the live circuit changes.'),
@@ -3037,7 +3097,8 @@ function CircuitActiveObservationCompare(props) {
         h('div',{className:'circuit-notebook-record-actions'},h('button',{type:'button',disabled:observations.length>=8&&recordedIndex<0,onClick:props.record},recordedIndex>=0?'Open saved observation '+(recordedIndex+1):'Record current readings'),h('span',null,recordedIndex>=0?'These settings and probe positions are already saved. Open the observation to revise its note.':observations.length>=8?'Notebook full. Remove an observation to record another.':'Keep up to eight operating points. Recording opens a note for what you noticed.')),
         state.investigationNotice&&h('p',{role:'status',className:'circuit-notebook-notice'},state.investigationNotice),
         !observations.length&&h('div',{className:'circuit-notebook-empty'},h('strong',null,'Your evidence starts with one reading.'),h('p',null,'Set the input and place the probes, then record the operating point. You can return to its settings or use it as a reference.')),
-        h(CircuitActiveObservationCompare,{React:React,t:props.t,observations:observations}),
+        observations.length===1&&h('div',{className:'circuit-notebook-next-reading'},h('strong',null,__alloT('stem.circuit.evidence_second_reading_heading','Record a second reading')),h('p',null,__alloT('stem.circuit.evidence_second_reading_help','Change one input or component setting, keep the other settings and probe positions the same, then record again. Two saved readings let you compare what changed.'))),
+        h(CircuitActiveObservationCompare,{React:React,t:props.t,observations:observations,reflection:state.reflection||'',appendEvidence:props.appendEvidence}),
         recoveryFull&&h('p',{className:'circuit-notebook-notice'},'Eight removed observations are saved for recovery. Restore or discard one before removing another.'),
         h('div',{className:'circuit-notebook-observations'},observations.map(function(o,index){var s=solveActiveCircuit(o.design),probe=circuitActiveProbe(s,o.probeRed,o.probeBlack);return h('details',{key:index,className:'circuit-notebook-observation'},
           h('summary',null,h('span',null,h('b',null,String(index+1).padStart(2,'0')),' '+({manual:'Manual control',light:'Light sensor',dark:'Dark sensor'})[s.design.project]),h('strong',null,circuitCurrentText(s.collectorCurrent))),
@@ -3136,8 +3197,8 @@ function CircuitActiveLessonLab(props) {
     var notebookAction=function(action,target,value){ctx.setToolData(function(prev){var prior=prev._circuitActive||{},next=circuitActiveNotebookUpdate(prior,action,target,value);return next===prior?prev:Object.assign({},prev,{_circuitActive:next});});};
     var record=function(){notebookAction('record');};
     var recordedIndex=observations.findIndex(function(o){return circuitActiveObservationKey(o)===circuitActiveObservationKey(circuitActiveObservation(state,''));});
-    var loadInvestigation=function(candidate){ctx.setToolData(function(prev){var previous=Object.assign({},prev._circuitActive||{});delete previous.previousInvestigation;return Object.assign({},prev,{_circuitActive:Object.assign({},candidate,{undo:[],redo:[],previousInvestigation:previous,notebookOpen:true})});});};
-    var restoreInvestigation=function(){ctx.setToolData(function(prev){var old=prev._circuitActive||{};return old.previousInvestigation?Object.assign({},prev,{_circuitActive:Object.assign({},old.previousInvestigation,{notebookOpen:true})}):prev;});};
+    var loadInvestigation=function(candidate){ctx.setToolData(function(prev){var previous=Object.assign({},prev._circuitActive||{});delete previous.previousInvestigation;return Object.assign({},prev,{_circuitActive:Object.assign({},candidate,{undo:[],redo:[],previousInvestigation:previous,notebookOpen:true,reflectionFocusToken:0})});});};
+    var restoreInvestigation=function(){ctx.setToolData(function(prev){var old=prev._circuitActive||{};return old.previousInvestigation?Object.assign({},prev,{_circuitActive:Object.assign({},old.previousInvestigation,{notebookOpen:true,reflectionFocusToken:0})}):prev;});};
     var openNotebook=function(){patch({notebookOpen:true});requestAnimationFrame(function(){var el=document.getElementById('circuit-active-notebook');if(el){el.scrollIntoView({block:'start'});el.querySelector('summary').focus();}});};
     var probe=circuitActiveProbe(s,state.probeRed,state.probeBlack),solid=state.view!=='schematic';
     var comparison=circuitActiveComparison(state.reference,d),sameAxis=!!comparison&&comparison.sameAxis;
@@ -3155,7 +3216,7 @@ function CircuitActiveLessonLab(props) {
     var download=function(){var url;try{url=URL.createObjectURL(new Blob([circuitActiveCSV(d)],{type:'text/csv;charset=utf-8'}));var a=document.createElement('a');a.href=url;a.download='npn-'+d.project+'-dc-sweep.csv';document.body.appendChild(a);a.click();a.remove();setDownloadMessage('Saved 201 calculated DC operating points with circuit settings and model constants.');setTimeout(function(){URL.revokeObjectURL(url);},1000);}catch(e){if(url)URL.revokeObjectURL(url);setDownloadMessage('The sweep could not be saved. Try again.');}};
     return h('section',{'data-circuit-builder-root':'true',className:'circuit-active-root','aria-label':__alloT('stem.circuit.active_electronics_workbench','Active electronics workbench')},
       h('header',{className:'circuit-active-hero'},h('span',{className:'circuit-eyebrow'},'ACTIVE ELECTRONICS · NPN TRANSISTOR'),h('h2',null,'A small signal. A brighter idea.'),h('p',null,'Control a lamp with a transistor, then let light become the input. Follow the base, collector, and emitter through three connected experiments.')),
-      h(CircuitActiveInvestigationTools,{React:React,t:cktT,state:state,patch:patch,record:record,load:loadInvestigation,restore:restoreInvestigation,
+      h(CircuitActiveInvestigationTools,{React:React,t:cktT,state:state,patch:patch,record:record,appendEvidence:function(target){notebookAction('appendEvidence',target);},load:loadInvestigation,restore:restoreInvestigation,
         note:function(entry,note){notebookAction('note',entry,note);},
         revisit:function(entry){notebookAction('revisit',entry);},reference:function(entry){notebookAction('reference',entry);},remove:function(entry){notebookAction('remove',entry);},
         restoreObservation:function(item){notebookAction('restore',item);},discardObservation:function(item){notebookAction('discard',item);}}),
@@ -4388,6 +4449,25 @@ function CircuitActiveLessonLab(props) {
 .circuit-active-root .circuit-observation-probe-comparison{margin:16px 0}
 @media(max-width:600px){.circuit-active-root .circuit-observation-compare-body{padding:0 11px 13px}.circuit-active-root .circuit-observation-current-chart{gap:9px}.circuit-active-root .circuit-observation-current-card{padding:11px}.circuit-active-root .circuit-notebook-removed-observation{padding:12px}.circuit-active-root .circuit-notebook-observation>summary strong{padding-top:0;font-size:14px}}
 @media(forced-colors:active){.circuit-active-root .circuit-observation-current-track{border-color:CanvasText}.circuit-active-root .circuit-observation-current-track>span{background:Highlight;forced-color-adjust:none}.circuit-active-root .circuit-observation-comparison-status{border:1px solid CanvasText;border-left-width:3px}}
+/* Active notebook: optional comparison-to-writing handoff. */
+.circuit-active-root .circuit-comparison-writing{min-width:0;margin:20px 0 0;padding:17px 0 0;border-top:1px solid #63888e;color:#dceee8}
+.circuit-active-root .circuit-comparison-writing h5{margin:0 0 9px;color:#e2f3ec;font-size:16px;line-height:1.6;overflow-wrap:anywhere}
+.circuit-active-root .circuit-comparison-writing-prompt{margin:8px 0 13px;color:#d1e6df;font-size:14px;line-height:1.75;overflow-wrap:anywhere}
+.circuit-active-root .circuit-comparison-writing-readings{min-width:0;border:1px solid #63858e;border-radius:9px;background:#102b35;margin:13px 0}
+.circuit-active-root .circuit-comparison-writing-readings>summary{box-sizing:border-box;min-height:44px;min-width:0;padding:10px 12px;color:#dfefef;font-size:13px;font-weight:650;line-height:1.7;white-space:normal;overflow-wrap:anywhere;cursor:pointer}
+.circuit-active-root .circuit-comparison-writing-preview{box-sizing:border-box;min-width:0;max-width:100%;margin:0;padding:5px 12px 13px;border:0;background:transparent;color:#cee0e1;font:400 13px/1.8 system-ui;white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;tab-size:2}
+.circuit-active-root .circuit-comparison-writing-actions{display:flex;flex-wrap:wrap;gap:10px;min-width:0;margin:13px 0 2px}
+.circuit-active-root .circuit-comparison-writing-actions button{box-sizing:border-box;min-height:44px;min-width:0;max-width:100%;padding:10px 14px;border:1px solid #9bccbb;border-radius:9px;background:#254c42;color:#e5f5ed;font-size:14px;font-weight:650;line-height:1.6;white-space:normal;overflow-wrap:anywhere;transition:background-color .15s,border-color .15s}
+.circuit-active-root .circuit-comparison-writing-actions button:hover:not(:disabled){background:#315d4f;border-color:#c1e6d5}
+.circuit-active-root .circuit-comparison-writing-actions button:disabled{opacity:1;cursor:not-allowed;border-color:#607983;background:#18323a;color:#b8cbd1}
+.circuit-active-root .circuit-comparison-writing button:focus-visible,.circuit-active-root .circuit-comparison-writing summary:focus-visible,.circuit-active-root .circuit-notebook-reflection:focus{outline:3px solid #f2d296;outline-offset:3px}
+.circuit-active-root .circuit-notebook-reflection{scroll-margin-block:24px}
+.circuit-active-root .circuit-notebook-next-reading{box-sizing:border-box;min-width:0;margin:16px 0;padding:11px 13px;border-left:3px solid #9ecaba;background:#173a36;color:#d7e9e2}
+.circuit-active-root .circuit-notebook-next-reading strong{display:block;font-size:14px;line-height:1.6;color:#e0f1e8;overflow-wrap:anywhere}
+.circuit-active-root .circuit-notebook-next-reading p{margin:6px 0 0;font-size:13px;line-height:1.75;color:#cbded8;overflow-wrap:anywhere}
+@media(max-width:600px){.circuit-active-root .circuit-comparison-writing-actions button{flex:1 1 180px}.circuit-active-root .circuit-comparison-writing-readings>summary{padding:10px}.circuit-active-root .circuit-comparison-writing-preview{padding:4px 10px 12px}}
+@media(prefers-reduced-motion:reduce){.circuit-active-root .circuit-comparison-writing-actions button{transition:none!important;transition-duration:0s!important}}
+@media(forced-colors:active){.circuit-active-root .circuit-comparison-writing,.circuit-active-root .circuit-comparison-writing-readings,.circuit-active-root .circuit-notebook-next-reading{border-color:CanvasText;background:Canvas;color:CanvasText}.circuit-active-root .circuit-comparison-writing-actions button{border-color:ButtonText;background:ButtonFace;color:ButtonText}.circuit-active-root .circuit-comparison-writing-actions button:disabled{border-color:GrayText;color:GrayText}.circuit-active-root .circuit-comparison-writing button:focus-visible,.circuit-active-root .circuit-comparison-writing summary:focus-visible,.circuit-active-root .circuit-notebook-reflection:focus{outline-color:Highlight}}
 `;
   document.head.appendChild(circStyle);
   }
