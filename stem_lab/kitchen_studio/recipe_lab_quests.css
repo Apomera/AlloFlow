@@ -1,0 +1,20 @@
+.skill-quests{margin:12px 0;border:1px solid #c8d6cb;border-radius:14px;background:#f7f9f2;color:#244b3f;overflow:hidden}
+.skill-quests>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;cursor:pointer;list-style:none}
+.skill-quests>summary::-webkit-details-marker{display:none}
+.skill-quests>summary strong::before{content:'＋';margin-right:9px;font-weight:500}
+.skill-quests[open]>summary strong::before{content:'−'}
+.skill-quests>summary span{font-size:.78rem;font-weight:700;color:#3e6558;white-space:nowrap}
+.quest-body{padding:0 16px 16px}.quest-intro{margin:0 0 12px;font-size:.85rem;line-height:1.5}
+.quest-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.quest-choices button{display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding:12px;text-align:left;border:1px solid #b7cbbb;background:#fffdf5;border-radius:10px;min-width:0;color:#244b3f}
+.quest-choices button[aria-pressed=true]{background:#244b3f;color:#fffdf5;border-color:#244b3f}
+.quest-choices strong{font-size:.84rem}.quest-choices span{font-size:.75rem;line-height:1.4}
+.quest-content{margin-top:12px;padding:16px;border-radius:12px;background:#fffdf5;border:1px solid #dce3d7}
+.quest-mark{margin:0;color:#4c6d58;font-size:.7rem;font-weight:800;letter-spacing:.12em}.quest-content h3{font-size:1.15rem;margin:5px 0 8px}
+.quest-question{margin:0 0 14px;font-weight:650;line-height:1.5}.quest-steps{list-style:none;padding:0;display:grid;gap:7px;margin:0 0 14px}
+.quest-steps li{display:flex;align-items:center;gap:9px;font-size:.85rem;line-height:1.5;color:#405c50}.quest-step-mark{display:grid;place-items:center;flex:0 0 25px;height:25px;border-radius:50%;border:1px solid #bac9b7;background:#f1f4e9;font-size:.73rem;font-weight:800}.quest-step-done .quest-step-mark{background:#244b3f;border-color:#244b3f;color:white}
+.quest-instruction,.quest-notice,.quest-status{font-size:.82rem;line-height:1.55;margin:10px 0}.quest-notice{padding:10px 12px;border-left:3px solid #b09050;background:#f5efdf}.quest-status{color:#506755;font-size:.75rem}
+.quest-actions{display:flex;flex-wrap:wrap;gap:8px}.quest-actions button{min-height:42px;font-size:.8rem;padding:9px 13px}.quest-actions button:first-child{background:#244b3f;color:#fffdf5;border-color:#244b3f}.quest-actions button:disabled{opacity:.65}
+.skill-quests :focus-visible{outline:3px solid #a76424;outline-offset:3px}.quest-live{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(max-width:480px){.quest-choices{grid-template-columns:1fr}.quest-choices button{flex-direction:row;align-items:center;justify-content:space-between}.quest-body{padding:0 10px 12px}.quest-content{padding:12px}.quest-actions button{flex:1 1 140px}.skill-quests>summary{padding:13px 12px}}
+@media(forced-colors:active){.skill-quests,.quest-choices button,.quest-content,.quest-step-mark,.quest-notice{border:1px solid CanvasText}.quest-choices button[aria-pressed=true],.quest-step-done .quest-step-mark{border:2px solid Highlight}.skill-quests :focus-visible{outline-color:Highlight}}
