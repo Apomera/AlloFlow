@@ -1,0 +1,150 @@
+{
+  "date": "2026-09-29",
+  "preview": "http://127.0.0.1:51574",
+  "galaxyTests": {
+    "passed": 401,
+    "failed": 0,
+    "files": 14,
+    "workerStartTimeoutResolvedByLifecycleRetry": true
+  },
+  "finalTargetedTests": {
+    "passed": 80,
+    "failed": 0
+  },
+  "browser": {
+    "before": false,
+    "errors": [],
+    "overflow": false
+  },
+  "distanceBrowser": {
+    "errors": [],
+    "distanceChecks": true
+  },
+  "distance": {
+    "keyboardSeeking": true,
+    "tapSeeking": true,
+    "rtlAxis": true,
+    "inspectionPausesPlayback": true,
+    "viewPreservation": true,
+    "orbitAndEscapeShapes": true,
+    "centerCapture": true,
+    "layouts": [
+      {
+        "width": 1440,
+        "overflow": false,
+        "debrisRangeSynchronized": true,
+        "rewindExact": true
+      },
+      {
+        "width": 390,
+        "overflow": false,
+        "debrisRangeSynchronized": true,
+        "rewindExact": true
+      },
+      {
+        "width": 320,
+        "overflow": false,
+        "debrisRangeSynchronized": true,
+        "rewindExact": true
+      }
+    ]
+  },
+  "follow": {
+    "escapeTracking": true,
+    "overviewRestored": true,
+    "opticalViewPreserved": true,
+    "idleRendering": true,
+    "appearanceRefresh": true,
+    "reducedMotion": true,
+    "layouts": [
+      {
+        "width": 1440,
+        "allSurvivingCentersFit": true,
+        "rewindExact": true,
+        "overflow": false
+      },
+      {
+        "width": 390,
+        "allSurvivingCentersFit": true,
+        "rewindExact": true,
+        "overflow": false
+      },
+      {
+        "width": 320,
+        "allSurvivingCentersFit": true,
+        "rewindExact": true,
+        "overflow": false
+      }
+    ]
+  },
+  "planning": {
+    "anchoredAim": true,
+    "comparisonPreserved": true,
+    "restoreSettings": true,
+    "starCameraReset": true,
+    "layouts": [
+      {
+        "width": 390,
+        "overflow": false,
+        "releaseFromScene": true
+      },
+      {
+        "width": 320,
+        "overflow": false,
+        "releaseFromScene": true
+      }
+    ]
+  },
+  "optics": {
+    "errors": [],
+    "initialViewMs": 701,
+    "shadow": {
+      "measuredRadius": 70.5,
+      "expectedRadius": 70.35484774735733
+    },
+    "cameraFramePairMs": [
+      47.39999999990687,
+      50.10000000009313,
+      46.699999999953434,
+      51.60000000009313,
+      71.5,
+      43.199999999953434,
+      66.89999999990687,
+      54,
+      57.200000000186265,
+      40,
+      50.10000000009313,
+      71.89999999990687,
+      57.4000000001397,
+      51.5,
+      49.89999999990687
+    ],
+    "layouts": [
+      {
+        "width": 1440,
+        "overflow": false,
+        "bufferWidth": 908,
+        "bufferHeight": 500
+      },
+      {
+        "width": 390,
+        "overflow": false,
+        "bufferWidth": 338,
+        "bufferHeight": 300
+      },
+      {
+        "width": 320,
+        "overflow": false,
+        "bufferWidth": 268,
+        "bufferHeight": 300
+      }
+    ],
+    "pausedRendering": true,
+    "experimentPreserved": true,
+    "contextRecovered": true
+  },
+  "sourceCopiesMatch": true,
+  "sourceSha256": "f59b6c53093f64d618f4c1913ce595dddfe6139d1f5ce621694530083e12ce84",
+  "catalogCommitScope": "Only stem.galaxy in both shared UI registries; other staged catalog edits preserved.",
+  "whitespaceCheck": "passed"
+}

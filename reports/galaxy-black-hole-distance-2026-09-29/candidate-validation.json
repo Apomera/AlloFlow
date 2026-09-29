@@ -1,0 +1,9 @@
+{
+  "base": "b0dd2c5680db1a0d898ff8839aa0dcffd86ce2db",
+  "catalogBlobs": {
+    "ui_strings.js": "484d223870912a6fc01727c1ad5a4ce5c34132d5",
+    "desktop/web-app/public/ui_strings.js": "484d223870912a6fc01727c1ad5a4ce5c34132d5"
+  },
+  "onlyGalaxyNamespaceChanged": true,
+  "catalogMirrorsMatch": true
+}

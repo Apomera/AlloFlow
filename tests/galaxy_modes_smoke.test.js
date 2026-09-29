@@ -72,7 +72,7 @@ describe('galaxy explorer mode/state smoke', () => {
     expect(html).toContain('data-black-hole-canvas');
     expect(html).toContain('Relativistic controls');
     expect(html).toContain('Tidal forces experiment');
-    expect(html).toContain('Drop object into black hole');
+    expect(html).toContain('Release object');
     expect(html).toContain('black-hole-mass');
     expect(html).toContain('black-hole-drop-readout');
     expect(html).toContain('black-hole-signal-bar');
