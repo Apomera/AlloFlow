@@ -53,6 +53,98 @@ async function openBackup(h, source) {
 }
 
 describe('Life Skills outing interaction', () => {
+  it('compares wardrobe choices and route timing without saving, acting or changing the room', () => {
+    let calls = 0;
+    const h = mount({ provider: () => { calls++; return Promise.resolve({ text: 'Hello.', status: 'generated' }); } });
+    h.station('Travel'); h.act('choose_walk'); h.station('Wardrobe'); const saved = h.save();
+    h.$('#openWardrobe').click();
+    expect(h.$('#wardrobeWorkbench').open).toBe(true);
+    expect(h.w.document.activeElement.dataset.outfit).toBe('wear_ready');
+    h.$('[data-outfit="wear_ready"]').click();
+    expect(h.$('#wardrobeClock').textContent).toContain('09:00 → clothes ready 09:02 · 2 minutes');
+    expect(h.$('[data-outfit-route="walk"]').textContent).toContain('Arrive 09:20');
+    expect(h.$('[data-outfit-route="walk"]').textContent).toContain('Chosen in outing');
+    expect(h.$('#wardrobeStatus').textContent).toContain('practice clock stays 09:00');
+    h.$('[data-outfit="prepare_clothes"]').click();
+    expect(h.$('#wardrobeClock').textContent).toContain('09:00 → clothes ready 09:08 · 8 minutes');
+    expect(h.$('[data-outfit-route="walk"]').textContent).toContain('Arrive 09:26');
+    expect(h.$('[data-outfit-route="walk"]').textContent).toContain('9 min before the start');
+    expect(h.$('[data-outfit="prepare_clothes"]').getAttribute('aria-pressed')).toBe('true');
+    expect(h.w.document.activeElement.id).toBe('prepareOutfit');
+    expect(h.$('#shirtObject a-box').getAttribute('color')).toBe('#f3d27f');
+    expect(h.$('#clothesFolded').getAttribute('visible')).toBe('false');
+    expect(h.save()).toEqual(saved); expect(calls).toBe(0);
+    expect(h.$('#wardrobePreviewResult').textContent).toContain('Allow time for your other preparation');
+  });
+  it.each([['wear_ready', 2], ['prepare_clothes', 8]])('prepares %s once and continues to a complete outing with %s minutes spent on clothes', (id, minutes) => {
+    const h = mount(); h.$('#supportSelect').value = 'independent';
+    h.$('#settingsForm').dispatchEvent(new h.w.Event('submit', { cancelable: true }));
+    h.station('Wardrobe'); h.$('#openWardrobe').click(); h.$('[data-outfit="' + id + '"]').click(); h.$('#prepareOutfit').click();
+    expect(h.run().commands.map(c => c.actionId)).toEqual([id]);
+    expect(h.$('#clock').textContent).toBe('09:0' + minutes);
+    expect(h.$('#wardrobeReady').hidden).toBe(false); expect(h.$('#wardrobeOptions').hidden).toBe(true);
+    expect(h.$('#wardrobeReadyCopy').textContent).toContain(minutes + ' min');
+    expect(h.w.document.activeElement.id).toBe('wardrobeReadyTitle');
+    expect(h.$('#shirtObject a-box').getAttribute('color')).toBe('#659884');
+    h.$('#prepareOutfit').dispatchEvent(new h.w.MouseEvent('click')); expect(h.run().commands).toHaveLength(1);
+    h.$('#wardrobeToBag').click(); expect(h.$('#packingWorkbench').open).toBe(true);
+    h.station('Kitchen'); h.act('fill_water'); h.act('pack_water');
+    h.station('Doorway'); h.act('pack_document'); h.act('pack_raincoat');
+    h.station('Travel'); h.act('choose_walk'); h.act('depart');
+    const view = h.E.view(h.run()); expect(view.completed).toBe(true);
+    expect(view.clock).toBe(minutes === 2 ? '09:24' : '09:30');
+    expect(h.run().commands.some(c => c.actionId === 'hint')).toBe(false);
+  });
+  it('keeps an unannounced bus delay out of wardrobe examples and announces the real update after preparation', () => {
+    const h = mount(); h.$('#scenarioSelect').value = 'bus-delay';
+    h.$('#settingsForm').dispatchEvent(new h.w.Event('submit', { cancelable: true }));
+    h.act('fill_water'); h.station('Doorway'); h.act('pack_document');
+    h.station('Wardrobe'); h.$('#openWardrobe').click(); const saved = h.save();
+    h.$('[data-outfit="prepare_clothes"]').click();
+    expect(h.$('#wardrobeClock').textContent).toContain('09:02 → clothes ready 09:10');
+    expect(h.$('[data-outfit-route="bus"]').textContent).toContain('Arrive 09:30');
+    expect(h.$('#wardrobeKnowledge').textContent).toContain('updates may change your plan');
+    expect(h.$('#eventCard').hidden).toBe(true); expect(h.save()).toEqual(saved);
+    h.$('#prepareOutfit').click();
+    expect(h.E.materialize(h.run()).busDelayed).toBe(true);
+    expect(h.$('#eventCard').hidden).toBe(false);
+    expect(h.$('#announcer').textContent).toContain('09:45');
+    expect(h.$('#wardrobePreviewResult').hidden).toBe(true);
+    h.$('#sameReplayButton').click(); h.act('fill_water'); h.act('pack_water');
+    h.station('Doorway'); h.act('pack_document'); h.station('Wardrobe'); h.$('#openWardrobe').click(); h.$('[data-outfit="wear_ready"]').click();
+    expect(h.$('[data-outfit-route="bus"]').textContent).toContain('Arrive 09:45');
+    expect(h.$('[data-outfit-route="bus"]').textContent).toContain('10 min after the start');
+    expect(h.$('#wardrobeKnowledge').textContent).toContain('latest forecast and travel updates');
+  });
+  it('opens from room clothes and clears wardrobe examples after navigation, actual scene choices, resume and replay', () => {
+    const h = mount(); h.$('#shirtObject').dispatchEvent(new h.w.MouseEvent('click', { bubbles: true }));
+    expect(h.$('#wardrobeWorkbench').open).toBe(true); h.$('[data-outfit="prepare_clothes"]').click();
+    h.station('Kitchen'); expect(h.$('#wardrobePreviewResult').hidden).toBe(true);
+    h.$('#prepareOutfit').dispatchEvent(new h.w.MouseEvent('click')); expect(h.run().commands).toHaveLength(0);
+    h.station('Wardrobe'); h.$('#openWardrobe').click(); h.$('[data-outfit="wear_ready"]').click();
+    h.$('#resumeButton').click(); expect(h.$('#wardrobeWorkbench').open).toBe(false);
+    h.station('Wardrobe'); h.$('#openWardrobe').click(); expect(h.$('#prepareOutfit').disabled).toBe(true);
+    h.$('[data-outfit="prepare_clothes"]').click(); h.$('#sameReplayButton').click();
+    h.station('Wardrobe'); h.$('#openWardrobe').click(); expect(h.$('#wardrobePreviewResult').hidden).toBe(true);
+    h.$('[data-outfit="prepare_clothes"]').click(); h.act('wear_ready', 'scene');
+    expect(h.$('#wardrobeReady').hidden).toBe(false); expect(h.$('#prepareOutfit').disabled).toBe(true);
+    expect(h.$('#wardrobeStatus').textContent).toBe('');
+    expect(h.run().commands.map(c => c.actionId)).toEqual(['wear_ready']);
+  });
+  it('shows the actual clothing decision after resume and supports unavailable 3D or storage', () => {
+    const h = mount(); h.station('Wardrobe'); h.act('prepare_clothes');
+    const resumed = mount({ saved: h.save() }); resumed.station('Wardrobe'); resumed.$('#openWardrobe').click();
+    expect(resumed.$('#wardrobeReadyCopy').textContent).toContain('Finish drying the other outfit · 8 min');
+    expect(resumed.$('#wardrobeReadyCopy').textContent).toContain('09:08');
+    expect(resumed.w.document.activeElement.id).toBe('wardrobeReadyTitle');
+    const offline = mount({ noScene: true, noStorage: true }); offline.station('Wardrobe'); offline.$('#openWardrobe').click();
+    offline.$('[data-outfit="prepare_clothes"]').click(); expect(offline.$('#clock').textContent).toBe('09:00');
+    offline.$('#prepareOutfit').click(); expect(offline.$('#clock').textContent).toBe('09:08');
+    const done = mount(); complete(done); const saved = done.save();
+    done.station('Wardrobe'); done.$('#openWardrobe').click(); done.$('#prepareOutfit').dispatchEvent(new done.w.MouseEvent('click'));
+    expect(done.$('#openWardrobe').hidden).toBe(true); expect(done.$('#wardrobeWorkbench').hidden).toBe(true);
+    expect(done.save()).toEqual(saved);
+  });
   it('packs an object at the bag table using the real action while selection stays untimed and unsaved', () => {
     let calls = 0;
     const h = mount({ provider: () => { calls++; return Promise.resolve({ text: 'Hello.', status: 'generated' }); } });

@@ -24,6 +24,8 @@
   var exploredDeparture = null;
   var packingSelection = null;
   var packingActions = { bottle: 'pack_water', card: 'pack_document', raincoat: 'pack_raincoat', hat: 'pack_hat' };
+  var wardrobePreview = null;
+  var wardrobeNames = { wear_ready: 'Clean, dry outfit', prepare_clothes: 'Outfit that needs drying' };
   var notes = Object.create(null), comparison = null, reviewRevision = null, importSerial = 0, lastSaveOk = false;
   var icons = { kitchen: '◒', wardrobe: '♧', entry: '▣', travel: '↗' };
   var supportNames = { guided: 'Guided', try: 'Try it', independent: 'Independent' };
@@ -89,6 +91,7 @@
     abortStory();
     clearRehearsal(true);
     clearPacking(true);
+    clearWardrobe(true);
     exploredDeparture = null;
     byId('travelLab').open = false;
     text('travelLabStatus', '');
@@ -133,6 +136,7 @@
     if (!latestView.stations.some(function (s) { return s.id === id; })) return;
     clearRehearsal(true);
     clearPacking(true);
+    clearWardrobe(true);
     activeStation = id;
     selectedObject = null;
     renderActions();
@@ -144,10 +148,12 @@
     if (!object) return;
     clearRehearsal(true);
     clearPacking(true);
+    clearWardrobe(true);
     selectedObject = id;
     activeStation = object.station;
     renderActions();
     if (id === 'bag' && !latestView.completed) byId('packingWorkbench').open = true;
+    if (id === 'outfit' && !latestView.completed) byId('wardrobeWorkbench').open = true;
     if (moveFocus) byId('stationActions').focus();
     announce(object.label + '. ' + object.status + '. ' + object.description);
   }
@@ -159,6 +165,7 @@
       abortStory();
       clearRehearsal(true);
       clearPacking(false);
+      clearWardrobe(false);
       exploredDeparture = null;
       current = next;
       if (id === 'hint') shownHint = true;
@@ -166,6 +173,7 @@
       persist();
       if (id === 'hint') byId('hintButton').focus({ preventScroll: true });
       else if (source === 'packing') (byId('packingItems').querySelector('button:not(:disabled)') || byId('packingWorkbench').querySelector('summary')).focus();
+      else if (source === 'wardrobe') byId('wardrobeReadyTitle').focus();
       else if (source !== 'scene' && focusedAction) {
         var exact = Array.from(byId('actionList').querySelectorAll('button')).find(function (button) { return button.dataset.action === focusedAction && !button.disabled; });
         var nextButton = byId('actionList').querySelector('button:not(:disabled)');
@@ -201,6 +209,7 @@
     text('stationTitle', station.label);
     text('stationDescription', station.description);
     byId('openPacking').hidden = v.completed || (station.id !== 'kitchen' && station.id !== 'entry');
+    byId('openWardrobe').hidden = v.completed || station.id !== 'wardrobe';
     byId('exploreTravel').hidden = station.id !== 'travel';
     text('stepTag', v.completed ? 'Practice complete' : 'Step ' + (current.commands.length + 1));
     var list = byId('actionList');
@@ -221,6 +230,7 @@
     byId('objectInspector').hidden = !object;
     if (object) { text('objectTitle', object.label); text('objectStatus', object.status); text('objectDescription', object.description); }
     renderPackingWorkbench();
+    renderWardrobeWorkbench();
     visibleActions.forEach(function (action) {
       var button = node('button', 'action-button');
       button.type = 'button';
@@ -335,6 +345,94 @@
       return;
     }
     act(action.id, 'packing');
+  }
+  function clearWardrobe(collapse) {
+    wardrobePreview = null;
+    text('wardrobeStatus', '');
+    byId('wardrobePreviewResult').hidden = true;
+    byId('prepareOutfit').disabled = true;
+    if (collapse) byId('wardrobeWorkbench').open = false;
+  }
+  function wardrobeTiming(preview) {
+    var clockChange = preview.changes.find(function (change) { return change.label === 'Practice clock'; });
+    function minute(value) { var parts = value.split(':'); return Number(parts[0]) * 60 + Number(parts[1]) - 540; }
+    var after = minute(clockChange.after), before = minute(clockChange.before);
+    return { before: clockChange.before, after: clockChange.after, minutes: after - before, travel: E.travelAt(current, after) };
+  }
+  function wardrobeIcon(needsDrying) {
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 100 100'); svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('focusable', 'false');
+    function shape(tag, attrs) {
+      var el = document.createElementNS(svg.namespaceURI, tag);
+      Object.keys(attrs).forEach(function (key) { el.setAttribute(key, attrs[key]); }); svg.appendChild(el);
+    }
+    shape('path', {d:'M46 11Q46 3 52 5Q60 9 51 16V20M27 30L51 20L75 30Z',fill:'none',stroke:'#7b6048','stroke-width':2,'stroke-linejoin':'round'});
+    shape('path', {d:'M38 27Q50 37 62 27L81 39L73 53L63 47V74H37V47L27 53L19 39Z',fill:needsDrying?'#f3d27f':'#659884',stroke:'#496557','stroke-width':2,'stroke-linejoin':'round'});
+    shape('path', {d:'M38 76H62L67 95H54L50 83L46 95H33Z',fill:'#5e7784',stroke:'#375762','stroke-width':2,'stroke-linejoin':'round'});
+    if (needsDrying) shape('path', {d:'M87 56Q79 66 79 71A8 8 0 0 0 95 71Q95 66 87 56Z',fill:'#a8d2dc',stroke:'#375762','stroke-width':2});
+    return svg;
+  }
+  function renderWardrobeWorkbench() {
+    var v = latestView, panel = byId('wardrobeWorkbench');
+    panel.hidden = selectedObject !== 'outfit' || v.completed;
+    if (panel.hidden) return;
+    var ready = v.scene.clothingReady, options = byId('wardrobeOptions'); options.replaceChildren();
+    options.hidden = ready; byId('wardrobeTimeKey').hidden = ready;
+    text('wardrobeInstructions', ready ? 'Your outfit is prepared. Continue packing, or use your choice history to try another way.' : 'Explore an outfit to see when it would be ready. Compare the time for getting dressed with your travel plan.');
+    Object.keys(wardrobeNames).forEach(function (id) {
+      var preview = ready ? null : E.previewAction(current, id), timing = preview && wardrobeTiming(preview);
+      var button = node('button', 'wardrobe-option'); button.type = 'button'; button.dataset.outfit = id; button.disabled = ready;
+      button.setAttribute('aria-pressed', String(!!wardrobePreview && wardrobePreview.actionId === id));
+      button.append(wardrobeIcon(id === 'prepare_clothes'), node('strong', 'wardrobe-option-name', wardrobeNames[id]), node('span', 'wardrobe-condition', id === 'prepare_clothes' ? 'Dry before wearing' : 'Ready to wear'));
+      if (timing) {
+        button.appendChild(node('span', 'wardrobe-duration', timing.minutes + ' minutes to get ready'));
+        var bar = node('span', 'wardrobe-time-bar'); bar.setAttribute('aria-hidden', 'true');
+        for (var i = 0; i < 8; i++) bar.appendChild(node('i', i < timing.minutes ? 'time-used' : ''));
+        button.appendChild(bar);
+      }
+      if (wardrobePreview && wardrobePreview.actionId === id) button.appendChild(node('span', 'wardrobe-selected', 'Selected for the example'));
+      button.addEventListener('click', function () {
+        if (latestView.completed || latestView.scene.clothingReady || selectedObject !== 'outfit') return;
+        wardrobePreview = E.previewAction(current, id); renderWardrobeWorkbench();
+        var example = wardrobeTiming(wardrobePreview), route = example.travel.routes.find(function (item) { return item.selected; });
+        text('wardrobeStatus', wardrobeNames[id] + ' would be ready at ' + example.after + '.' + (route ? ' Your chosen ' + route.label + (route.available ? ' would arrive at ' + route.arrival + '.' : ' would have left by then.') : '') + ' The practice clock stays ' + latestView.clock + '.');
+        byId('prepareOutfit').focus();
+      });
+      options.appendChild(button);
+    });
+    byId('wardrobeReady').hidden = !ready;
+    if (ready) {
+      var choice = E.history(current).find(function (entry) { return entry.actionId === 'wear_ready' || entry.actionId === 'prepare_clothes'; });
+      text('wardrobeReadyCopy', choice.label + '. Your clothes were ready at ' + choice.clock + '. Review this choice in your history if you want to try another way.');
+      clearWardrobe(false); return;
+    }
+    byId('wardrobePreviewResult').hidden = !wardrobePreview;
+    byId('prepareOutfit').disabled = !wardrobePreview;
+    if (!wardrobePreview) return;
+    var example = wardrobeTiming(wardrobePreview);
+    text('wardrobePreviewTitle', wardrobeNames[wardrobePreview.actionId]);
+    text('wardrobeClock', 'Now ' + example.before + ' → clothes ready ' + example.after + ' · ' + example.minutes + ' minutes');
+    var routes = byId('wardrobeRoutes'); routes.replaceChildren();
+    example.travel.routes.forEach(function (route) {
+      var li = node('li', route.selected ? 'wardrobe-chosen-route' : ''); li.dataset.outfitRoute = route.id;
+      var label = node('span', '', route.label);
+      if (route.selected) label.appendChild(node('small', '', 'Chosen in outing'));
+      var result = node('span'); result.appendChild(node('strong', '', route.available ? 'Arrive ' + route.arrival : 'Bus missed'));
+      result.appendChild(node('small', '', !route.available ? 'It would have left already' : route.minutesBeforeStart > 0 ? route.minutesBeforeStart + ' min before the start' : route.onTime ? 'At the start · no extra time' : Math.abs(route.minutesBeforeStart) + ' min after the start'));
+      li.append(label, result); routes.appendChild(li);
+    });
+    text('wardrobeKnowledge', wardrobePreview.forecastMayChange ? 'This example uses the information you have now. Forecast and travel updates may change your plan as you prepare.' : 'This example uses the latest forecast and travel updates. Your other preparation still needs time.');
+    text('prepareOutfit', wardrobePreview.label);
+  }
+  function openWardrobeWorkbench() {
+    if (latestView.completed) return;
+    selectObject('outfit', false);
+    (latestView.scene.clothingReady ? byId('wardrobeReadyTitle') : byId('wardrobeOptions').querySelector('button:not(:disabled)')).focus();
+  }
+  function prepareSelectedOutfit() {
+    if (latestView.completed || latestView.scene.clothingReady || selectedObject !== 'outfit' || !wardrobePreview) return;
+    if (wardrobePreview.revision !== current.commands.length) { clearWardrobe(false); renderWardrobeWorkbench(); text('wardrobeStatus', 'The outing changed. Explore an outfit again.'); return; }
+    act(wardrobePreview.actionId, 'wardrobe');
   }
   function renderStory() {
     var entries = current.content || [];
@@ -844,6 +942,9 @@
   });
   byId('travelPreview').addEventListener('click',function(){selectObject('route',true);});
   byId('openPacking').addEventListener('click', openPackingWorkbench);
+  byId('openWardrobe').addEventListener('click', openWardrobeWorkbench);
+  byId('prepareOutfit').addEventListener('click', prepareSelectedOutfit);
+  byId('wardrobeToBag').addEventListener('click', openPackingWorkbench);
   byId('packingPlace').addEventListener('click', placePackingItem);
   byId('packingFill').addEventListener('click', function () {
     if (latestView.completed || packingSelection !== 'bottle' || latestView.scene.bottleFilled) return;

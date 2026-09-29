@@ -66,9 +66,23 @@
 <div class="section-header"><div><p class="eyebrow">Your next choice</p><h3 id="stationTitle">Kitchen</h3></div><span class="step-tag" id="stepTag">Step 1</span></div>
 <p id="stationDescription" class="muted"></p>
 <button id="openPacking" class="quiet-button packing-entry" type="button" aria-controls="packingWorkbench" hidden>Open bag table</button>
+<button id="openWardrobe" class="quiet-button wardrobe-entry" type="button" aria-controls="wardrobeWorkbench" hidden>Compare the outfits</button>
 <button id="exploreTravel" class="quiet-button travel-entry" type="button" aria-controls="travelLab" hidden>Explore departure and arrival times</button>
 <div id="objectChoices" class="object-choices" role="group" aria-label="Inspect an object"></div>
 <section id="objectInspector" class="object-inspector" aria-labelledby="objectTitle" hidden><div class="section-header"><h4 id="objectTitle"></h4><span id="objectStatus" class="object-status"></span></div><p id="objectDescription"></p></section>
+<details id="wardrobeWorkbench" class="wardrobe-workbench" hidden>
+<summary>Choose clothes and compare preparation time</summary>
+<div class="wardrobe-body"><p id="wardrobeInstructions" class="muted">Explore an outfit to see when it would be ready. Compare the time for getting dressed with your travel plan.</p>
+<div id="wardrobeOptions" class="wardrobe-options" role="group" aria-label="Outfit choices" aria-describedby="wardrobeInstructions"></div>
+<p id="wardrobeTimeKey" class="muted small">Each filled square shows one minute of preparation.</p>
+<section id="wardrobePreviewResult" class="wardrobe-preview" aria-labelledby="wardrobePreviewTitle" hidden><p class="eyebrow">An example before you act</p><h4 id="wardrobePreviewTitle"></h4><p id="wardrobeClock" class="wardrobe-clock"></p>
+<p class="muted small">These arrivals assume you leave as soon as this outfit is ready. Allow time for your other preparation and for reaching the bus stop.</p>
+<ul id="wardrobeRoutes" class="wardrobe-routes" aria-label="Example arrivals after preparing this outfit"></ul>
+<p id="wardrobeKnowledge" class="muted small"></p><p class="wardrobe-question">Which choice leaves enough time for the rest of your preparation?</p>
+<button id="prepareOutfit" class="primary-button" type="button" aria-describedby="wardrobeClock" disabled>Prepare the selected outfit</button></section>
+<section id="wardrobeReady" class="wardrobe-ready" aria-labelledby="wardrobeReadyTitle" hidden><h4 id="wardrobeReadyTitle" tabindex="-1">Your clothes are ready</h4><p id="wardrobeReadyCopy"></p><button id="wardrobeToBag" class="quiet-button" type="button">Go to the bag table</button></section>
+<p id="wardrobeStatus" class="wardrobe-status" role="status" aria-live="polite" aria-atomic="true"></p>
+</div></details>
 <details id="packingWorkbench" class="packing-workbench" hidden>
 <summary>Pack at the bag table</summary>
 <div class="packing-body"><p id="packingInstructions" class="muted">Choose an item, then put it in your bag. Check what is inside the bottle and which weather item you need.</p>
