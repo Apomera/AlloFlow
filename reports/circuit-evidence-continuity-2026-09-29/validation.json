@@ -1,0 +1,39 @@
+{
+  "passed": true,
+  "validatedAt": "2026-09-29T22:17:05.684Z",
+  "sourceSha256": "fe76b62c2edd564f0c092b1b02ab97b5fa9b9094773115a86b04476863178449",
+  "mirrored": true,
+  "sourceCompiles": true,
+  "regression": {
+    "passedTests": 229,
+    "files": 16,
+    "startedAt": "2026-09-29T22:15:47.601Z",
+    "finishedAt": "2026-09-29T22:16:37.288Z"
+  },
+  "browser": {
+    "workflows": 3,
+    "axeScans": 12,
+    "screenshots": 12,
+    "visualIssues": 0
+  },
+  "reportHashes": {
+    "regression.json": "b0e98c287a40eaa3381bb568562a9cb2e8962f2b246cd45e875553997a1c1dfa",
+    "regression-receipt.json": "b65e5d846f4fa2876baf7b1ea4b4709887930b95184aa043e3ec053205dac562",
+    "evidence-results.json": "57298d1af5f61b369b13f2063062cbd4a0ef0fd2473256cd50d410803f533f86"
+  },
+  "screenshotHashes": {
+    "simple-notebook-1280.png": "a77e6cac6b37fa412e543ef9409c91cd8b16b5b9340534c10897dedb10e06257",
+    "simple-notebook-390.png": "5fc9285cedb0f8293774fb79a7c248a0e1e2b7f9b967ca06503c9cde14c6df23",
+    "simple-notebook-320.png": "33685c2998c1354983ec004618ccc25aed21965a6ddfb4904f534eb0314fe39a",
+    "simple-notebook-200pct-text-320.png": "c5ff3c81d3ee84892067b4a6a661b61ffbf30a5fc40da3002dc7810f4c567588",
+    "simple-recovery-200pct-text-320.png": "ca6574a4f5e726e70fb69b386ac73f444adea4c2832d2b40e7cab2b0e81a1b6a",
+    "active-baseline-1280.png": "ea3390657dfddda19be8c0a749032fdedb5070976291a1556b84cdf01361bc1f",
+    "active-baseline-390.png": "9d472c07feeb6a34d5f8cb722e77ad2eb2ac0c2fd8ee091af9e9b91053f3c423",
+    "active-baseline-320.png": "45897107244f776df0eaae88712665ab8b9ac694a39f52acaf59e7eea49057b1",
+    "active-edited-result-1280.png": "f2644fafa6f3f77c0975d9fec71075b5727ceef37788a1616272dabd69ea6f8e",
+    "active-edited-result-390.png": "363298d8192d9ced8a6b1d19e5be2c1e4631e99b44667636d298e2af955fca8e",
+    "active-edited-result-320.png": "6931372438c5c9aa12ad1d53d8767dafdd7bce956a669029e4904375f1480f87",
+    "active-edited-result-200pct-text-320.png": "476d4586b4bcb1f453a71834dbdf7af3e2274b07dde7f4efcdbc7c619898a65b"
+  },
+  "whitespaceCheck": true
+}

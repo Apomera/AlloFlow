@@ -1,0 +1,3847 @@
+{
+  "sourceSha256": "fe76b62c2edd564f0c092b1b02ab97b5fa9b9094773115a86b04476863178449",
+  "checks": [
+    {
+      "name": "Simple recorded explanation remains editable, both editors agree, download contains the revision, import deduplicates regenerated IDs, and preset Undo retains the baseline"
+    },
+    {
+      "name": "Full Simple notebook preserves all eight trials; making room again retains both removals; the first can be restored and the second explicitly discarded, with notebook-summary focus after each action"
+    },
+    {
+      "name": "Active lessons retain wrong prediction, each explanation, and modeled evidence across live edits and lesson switches; replay is undoable; notebook/reference/probes survive; JSON round-trips all three records"
+    }
+  ],
+  "errors": [],
+  "axe": [
+    {
+      "name": "simple-notebook",
+      "width": 1280,
+      "scale": 1,
+      "violations": []
+    },
+    {
+      "name": "simple-notebook",
+      "width": 390,
+      "scale": 1,
+      "violations": []
+    },
+    {
+      "name": "simple-notebook",
+      "width": 320,
+      "scale": 1,
+      "violations": []
+    },
+    {
+      "name": "simple-notebook-200pct-text",
+      "width": 320,
+      "scale": 2,
+      "violations": []
+    },
+    {
+      "name": "simple-recovery-200pct-text",
+      "width": 320,
+      "scale": 2,
+      "violations": []
+    },
+    {
+      "name": "active-baseline",
+      "width": 1280,
+      "scale": 1,
+      "violations": []
+    },
+    {
+      "name": "active-baseline",
+      "width": 390,
+      "scale": 1,
+      "violations": []
+    },
+    {
+      "name": "active-baseline",
+      "width": 320,
+      "scale": 1,
+      "violations": []
+    },
+    {
+      "name": "active-edited-result",
+      "width": 1280,
+      "scale": 1,
+      "violations": []
+    },
+    {
+      "name": "active-edited-result",
+      "width": 390,
+      "scale": 1,
+      "violations": []
+    },
+    {
+      "name": "active-edited-result",
+      "width": 320,
+      "scale": 1,
+      "violations": []
+    },
+    {
+      "name": "active-edited-result-200pct-text",
+      "width": 320,
+      "scale": 2,
+      "violations": []
+    }
+  ],
+  "layouts": [
+    {
+      "name": "simple-notebook",
+      "scale": 1,
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "name": "simple-notebook",
+      "scale": 1,
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "simple-notebook",
+      "scale": 1,
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "simple-notebook-200pct-text",
+      "scale": 2,
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "simple-recovery-200pct-text",
+      "scale": 2,
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "active-baseline",
+      "scale": 1,
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "name": "active-baseline",
+      "scale": 1,
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "active-baseline",
+      "scale": 1,
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "active-edited-result",
+      "scale": 1,
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "name": "active-edited-result",
+      "scale": 1,
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "active-edited-result",
+      "scale": 1,
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "active-edited-result-200pct-text",
+      "scale": 2,
+      "width": 320,
+      "scrollWidth": 320
+    }
+  ],
+  "contentBounds": [
+    {
+      "name": "simple-notebook",
+      "width": 1280,
+      "scale": 1,
+      "cards": [
+        {
+          "selector": ".",
+          "stage": null,
+          "left": 246,
+          "right": 482,
+          "clientWidth": 266,
+          "scrollWidth": 266,
+          "lines": [
+            {
+              "text": "Baseline current",
+              "left": 246,
+              "right": 323.3125,
+              "top": -601.140625,
+              "bottom": -586.140625
+            },
+            {
+              "text": "90.00 mA",
+              "left": 246,
+              "right": 344.265625,
+              "top": -576.640625,
+              "bottom": -544.640625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".",
+          "stage": null,
+          "left": 522,
+          "right": 758,
+          "clientWidth": 266,
+          "scrollWidth": 266,
+          "lines": [
+            {
+              "text": "Current now",
+              "left": 522,
+              "right": 582.03125,
+              "top": -601.140625,
+              "bottom": -586.140625
+            },
+            {
+              "text": "45.00 mA",
+              "left": 522,
+              "right": 620.265625,
+              "top": -576.640625,
+              "bottom": -544.640625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".",
+          "stage": null,
+          "left": 798,
+          "right": 1034,
+          "clientWidth": 266,
+          "scrollWidth": 266,
+          "lines": [
+            {
+              "text": "Change",
+              "left": 798,
+              "right": 835.09375,
+              "top": -601.140625,
+              "bottom": -586.140625
+            },
+            {
+              "text": "-45.00 mA",
+              "left": 798,
+              "right": 905.3125,
+              "top": -576.640625,
+              "bottom": -544.640625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-inquiry-trial",
+          "stage": null,
+          "left": 241,
+          "right": 1039,
+          "clientWidth": 818,
+          "scrollWidth": 818,
+          "lines": [
+            {
+              "text": "Trial 1 · one variable:",
+              "left": 241,
+              "right": 375.421875,
+              "top": -321.046875,
+              "bottom": -301.046875
+            },
+            {
+              "text": "series at 9 V: 1. resistor 100 Ω → series at 9 V: 1. resistor 200 Ω",
+              "left": 241,
+              "right": 597.046875,
+              "top": -287.046875,
+              "bottom": -270.046875
+            },
+            {
+              "text": "Change in source current: -45.00 mA",
+              "left": 241,
+              "right": 450.375,
+              "top": -256.953125,
+              "bottom": -239.953125
+            },
+            {
+              "text": "Prediction: I predict the current will halve when resistance doubles.",
+              "left": 241,
+              "right": 622.09375,
+              "top": -234.859375,
+              "bottom": -217.859375
+            },
+            {
+              "text": "Explanation using evidence",
+              "left": 241,
+              "right": 394.828125,
+              "top": -200.765625,
+              "bottom": -184.765625
+            },
+            {
+              "text": "Remove trial 1",
+              "left": 255,
+              "right": 330.703125,
+              "top": -56.984375,
+              "bottom": -40.984375
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "simple-notebook",
+      "width": 390,
+      "scale": 1,
+      "cards": [
+        {
+          "selector": ".",
+          "stage": null,
+          "left": 55,
+          "right": 178,
+          "clientWidth": 147,
+          "scrollWidth": 147,
+          "lines": [
+            {
+              "text": "Baseline current",
+              "left": 55,
+              "right": 132.3125,
+              "top": 318.578125,
+              "bottom": 333.578125
+            },
+            {
+              "text": "90.00 mA",
+              "left": 55,
+              "right": 145.078125,
+              "top": 342.078125,
+              "bottom": 372.078125
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".",
+          "stage": null,
+          "left": 212,
+          "right": 335,
+          "clientWidth": 147,
+          "scrollWidth": 147,
+          "lines": [
+            {
+              "text": "Current now",
+              "left": 212,
+              "right": 272.03125,
+              "top": 318.578125,
+              "bottom": 333.578125
+            },
+            {
+              "text": "45.00 mA",
+              "left": 212,
+              "right": 302.078125,
+              "top": 342.078125,
+              "bottom": 372.078125
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".",
+          "stage": null,
+          "left": 55,
+          "right": 178,
+          "clientWidth": 147,
+          "scrollWidth": 147,
+          "lines": [
+            {
+              "text": "Change",
+              "left": 55,
+              "right": 92.09375,
+              "top": 405.578125,
+              "bottom": 420.578125
+            },
+            {
+              "text": "-45.00 mA",
+              "left": 55,
+              "right": 153.359375,
+              "top": 429.078125,
+              "bottom": 459.078125
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-inquiry-trial",
+          "stage": null,
+          "left": 53,
+          "right": 337,
+          "clientWidth": 304,
+          "scrollWidth": 304,
+          "lines": [
+            {
+              "text": "Trial 1 · one variable:",
+              "left": 53,
+              "right": 187.421875,
+              "top": 739.5625,
+              "bottom": 759.5625
+            },
+            {
+              "text": "series at 9 V: 1. resistor 100 Ω → series at 9 V: 1. resistor 200 Ω",
+              "left": 53,
+              "right": 325.484375,
+              "top": 773.5625,
+              "bottom": 790.5625
+            },
+            {
+              "text": "series at 9 V: 1. resistor 100 Ω → series at 9 V: 1. resistor 200 Ω",
+              "left": 53,
+              "right": 133,
+              "top": 795.65625,
+              "bottom": 812.65625
+            },
+            {
+              "text": "Change in source current: -45.00 mA",
+              "left": 53,
+              "right": 262.375,
+              "top": 825.75,
+              "bottom": 842.75
+            },
+            {
+              "text": "Prediction: I predict the current will halve when resistance doubles.",
+              "left": 53,
+              "right": 321.734375,
+              "top": 847.84375,
+              "bottom": 864.84375
+            },
+            {
+              "text": "Prediction: I predict the current will halve when resistance doubles.",
+              "left": 53,
+              "right": 161.796875,
+              "top": 869.9375,
+              "bottom": 886.9375
+            },
+            {
+              "text": "Explanation using evidence",
+              "left": 53,
+              "right": 206.828125,
+              "top": 904.03125,
+              "bottom": 920.03125
+            },
+            {
+              "text": "Remove trial 1",
+              "left": 157.140625,
+              "right": 232.84375,
+              "top": 1047.8125,
+              "bottom": 1063.8125
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "simple-notebook",
+      "width": 320,
+      "scale": 1,
+      "cards": [
+        {
+          "selector": ".",
+          "stage": null,
+          "left": 55,
+          "right": 265,
+          "clientWidth": 234,
+          "scrollWidth": 234,
+          "lines": [
+            {
+              "text": "Baseline current",
+              "left": 55,
+              "right": 132.3125,
+              "top": -395.328125,
+              "bottom": -380.328125
+            },
+            {
+              "text": "90.00 mA",
+              "left": 55,
+              "right": 145.078125,
+              "top": -371.828125,
+              "bottom": -341.828125
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".",
+          "stage": null,
+          "left": 55,
+          "right": 265,
+          "clientWidth": 234,
+          "scrollWidth": 234,
+          "lines": [
+            {
+              "text": "Current now",
+              "left": 55,
+              "right": 115.03125,
+              "top": -308.328125,
+              "bottom": -293.328125
+            },
+            {
+              "text": "45.00 mA",
+              "left": 55,
+              "right": 145.078125,
+              "top": -284.828125,
+              "bottom": -254.828125
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".",
+          "stage": null,
+          "left": 55,
+          "right": 265,
+          "clientWidth": 234,
+          "scrollWidth": 234,
+          "lines": [
+            {
+              "text": "Change",
+              "left": 55,
+              "right": 92.09375,
+              "top": -221.328125,
+              "bottom": -206.328125
+            },
+            {
+              "text": "-45.00 mA",
+              "left": 55,
+              "right": 153.359375,
+              "top": -197.828125,
+              "bottom": -167.828125
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-inquiry-trial",
+          "stage": null,
+          "left": 53,
+          "right": 267,
+          "clientWidth": 234,
+          "scrollWidth": 234,
+          "lines": [
+            {
+              "text": "Trial 1 · one variable:",
+              "left": 53,
+              "right": 187.421875,
+              "top": 132.453125,
+              "bottom": 152.453125
+            },
+            {
+              "text": "series at 9 V: 1. resistor 100 Ω → series at 9 V: 1. resistor 200 Ω",
+              "left": 53,
+              "right": 236.625,
+              "top": 166.453125,
+              "bottom": 183.453125
+            },
+            {
+              "text": "series at 9 V: 1. resistor 100 Ω → series at 9 V: 1. resistor 200 Ω",
+              "left": 53,
+              "right": 221.859375,
+              "top": 188.546875,
+              "bottom": 205.546875
+            },
+            {
+              "text": "Change in source current: -45.00 mA",
+              "left": 53,
+              "right": 262.375,
+              "top": 218.640625,
+              "bottom": 235.640625
+            },
+            {
+              "text": "Prediction: I predict the current will halve when resistance doubles.",
+              "left": 53,
+              "right": 253.5625,
+              "top": 240.734375,
+              "bottom": 257.734375
+            },
+            {
+              "text": "Prediction: I predict the current will halve when resistance doubles.",
+              "left": 53,
+              "right": 229.96875,
+              "top": 262.828125,
+              "bottom": 279.828125
+            },
+            {
+              "text": "Explanation using evidence",
+              "left": 53,
+              "right": 206.828125,
+              "top": 296.921875,
+              "bottom": 312.921875
+            },
+            {
+              "text": "Remove trial 1",
+              "left": 122.140625,
+              "right": 197.84375,
+              "top": 440.703125,
+              "bottom": 456.703125
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "simple-notebook-200pct-text",
+      "width": 320,
+      "scale": 2,
+      "cards": [
+        {
+          "selector": ".",
+          "stage": null,
+          "left": 55,
+          "right": 265,
+          "clientWidth": 234,
+          "scrollWidth": 234,
+          "lines": [
+            {
+              "text": "Baseline current",
+              "left": 55,
+              "right": 209.609375,
+              "top": -1253.625,
+              "bottom": -1223.625
+            },
+            {
+              "text": "90.00 mA",
+              "left": 55,
+              "right": 251.515625,
+              "top": -1214.625,
+              "bottom": -1150.625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".",
+          "stage": null,
+          "left": 55,
+          "right": 265,
+          "clientWidth": 234,
+          "scrollWidth": 234,
+          "lines": [
+            {
+              "text": "Current now",
+              "left": 55,
+              "right": 175.046875,
+              "top": -1117.625,
+              "bottom": -1087.625
+            },
+            {
+              "text": "45.00 mA",
+              "left": 55,
+              "right": 251.515625,
+              "top": -1078.625,
+              "bottom": -1014.625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".",
+          "stage": null,
+          "left": 55,
+          "right": 265,
+          "clientWidth": 234,
+          "scrollWidth": 234,
+          "lines": [
+            {
+              "text": "Change",
+              "left": 55,
+              "right": 129.1875,
+              "top": -981.625,
+              "bottom": -951.625
+            },
+            {
+              "text": "-45.00 mA",
+              "left": 55,
+              "right": 185.265625,
+              "top": -942.625,
+              "bottom": -878.625
+            },
+            {
+              "text": "-45.00 mA",
+              "left": 55,
+              "right": 127.34375,
+              "top": -882.625,
+              "bottom": -818.625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-inquiry-trial",
+          "stage": null,
+          "left": 53,
+          "right": 267,
+          "clientWidth": 234,
+          "scrollWidth": 234,
+          "lines": [
+            {
+              "text": "Trial 1 · one variable:",
+              "left": 53,
+              "right": 203.921875,
+              "top": -114.734375,
+              "bottom": -74.734375
+            },
+            {
+              "text": "Trial 1 · one variable:",
+              "left": 53,
+              "right": 162.6875,
+              "top": -66.734375,
+              "bottom": -26.734375
+            },
+            {
+              "text": "series at 9 V: 1. resistor 100 Ω → series at 9 V: 1. resistor 200 Ω",
+              "left": 53,
+              "right": 223.578125,
+              "top": -8.734375,
+              "bottom": 26.265625
+            },
+            {
+              "text": "series at 9 V: 1. resistor 100 Ω → series at 9 V: 1. resistor 200 Ω",
+              "left": 53,
+              "right": 242.5625,
+              "top": 35.453125,
+              "bottom": 70.453125
+            },
+            {
+              "text": "series at 9 V: 1. resistor 100 Ω → series at 9 V: 1. resistor 200 Ω",
+              "left": 53,
+              "right": 223.578125,
+              "top": 79.640625,
+              "bottom": 114.640625
+            },
+            {
+              "text": "series at 9 V: 1. resistor 100 Ω → series at 9 V: 1. resistor 200 Ω",
+              "left": 53,
+              "right": 213,
+              "top": 123.828125,
+              "bottom": 158.828125
+            },
+            {
+              "text": "Change in source current: -45.00 mA",
+              "left": 53,
+              "right": 251.546875,
+              "top": 176.015625,
+              "bottom": 211.015625
+            },
+            {
+              "text": "Change in source current: -45.00 mA",
+              "left": 53,
+              "right": 266.078125,
+              "top": 220.203125,
+              "bottom": 255.203125
+            },
+            {
+              "text": "Prediction: I predict the current will halve when resistance doubles.",
+              "left": 53,
+              "right": 188.5625,
+              "top": 264.390625,
+              "bottom": 299.390625
+            },
+            {
+              "text": "Prediction: I predict the current will halve when resistance doubles.",
+              "left": 53,
+              "right": 266.640625,
+              "top": 308.578125,
+              "bottom": 343.578125
+            },
+            {
+              "text": "Prediction: I predict the current will halve when resistance doubles.",
+              "left": 53,
+              "right": 227.03125,
+              "top": 352.765625,
+              "bottom": 387.765625
+            },
+            {
+              "text": "Prediction: I predict the current will halve when resistance doubles.",
+              "left": 53,
+              "right": 166.359375,
+              "top": 396.953125,
+              "bottom": 431.953125
+            },
+            {
+              "text": "Prediction: I predict the current will halve when resistance doubles.",
+              "left": 53,
+              "right": 150.109375,
+              "top": 441.140625,
+              "bottom": 476.140625
+            },
+            {
+              "text": "Explanation using evidence",
+              "left": 53,
+              "right": 254.328125,
+              "top": 497.328125,
+              "bottom": 529.328125
+            },
+            {
+              "text": "Explanation using evidence",
+              "left": 53,
+              "right": 152.6875,
+              "top": 538.125,
+              "bottom": 570.125
+            },
+            {
+              "text": "Remove trial 1",
+              "left": 84.296875,
+              "right": 235.6875,
+              "top": 736.3125,
+              "bottom": 768.3125
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "simple-recovery-200pct-text",
+      "width": 320,
+      "scale": 2,
+      "cards": [
+        {
+          "selector": ".circuit-inquiry-removed",
+          "stage": null,
+          "left": 55,
+          "right": 265,
+          "clientWidth": 234,
+          "scrollWidth": 234,
+          "lines": [
+            {
+              "text": "Removed trial 1",
+              "left": 55,
+              "right": 248.109375,
+              "top": 3444.203125,
+              "bottom": 3481.203125
+            },
+            {
+              "text": "series at 9 V: 1. resistor 100 Ω → series at 2 V: 1. resistor 100 Ω",
+              "left": 55,
+              "right": 212.453125,
+              "top": 3497,
+              "bottom": 3529
+            },
+            {
+              "text": "series at 9 V: 1. resistor 100 Ω → series at 2 V: 1. resistor 100 Ω",
+              "left": 55,
+              "right": 229.984375,
+              "top": 3536.59375,
+              "bottom": 3568.59375
+            },
+            {
+              "text": "series at 9 V: 1. resistor 100 Ω → series at 2 V: 1. resistor 100 Ω",
+              "left": 55,
+              "right": 212.453125,
+              "top": 3576.1875,
+              "bottom": 3608.1875
+            },
+            {
+              "text": "series at 9 V: 1. resistor 100 Ω → series at 2 V: 1. resistor 100 Ω",
+              "left": 55,
+              "right": 202.703125,
+              "top": 3615.78125,
+              "bottom": 3647.78125
+            },
+            {
+              "text": "Removed trial explanation: Keep trial 2",
+              "left": 55,
+              "right": 201.015625,
+              "top": 3664.375,
+              "bottom": 3696.375
+            },
+            {
+              "text": "Removed trial explanation: Keep trial 2",
+              "left": 55,
+              "right": 242.6875,
+              "top": 3705.171875,
+              "bottom": 3737.171875
+            },
+            {
+              "text": "Removed trial explanation: Keep trial 2",
+              "left": 55,
+              "right": 114.828125,
+              "top": 3745.96875,
+              "bottom": 3777.96875
+            },
+            {
+              "text": "Restore removed trial",
+              "left": 117.5,
+              "right": 202.484375,
+              "top": 3806.765625,
+              "bottom": 3838.765625
+            },
+            {
+              "text": "Restore removed trial",
+              "left": 84.0625,
+              "right": 235.9375,
+              "top": 3845.15625,
+              "bottom": 3877.15625
+            },
+            {
+              "text": "Discard removed trial",
+              "left": 118.078125,
+              "right": 201.90625,
+              "top": 3915.546875,
+              "bottom": 3947.546875
+            },
+            {
+              "text": "Discard removed trial",
+              "left": 84.0625,
+              "right": 235.9375,
+              "top": 3953.9375,
+              "bottom": 3985.9375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-inquiry-removed",
+          "stage": null,
+          "left": 55,
+          "right": 265,
+          "clientWidth": 234,
+          "scrollWidth": 234,
+          "lines": [
+            {
+              "text": "Removed trial 2",
+              "left": 55,
+              "right": 248.109375,
+              "top": 4051.328125,
+              "bottom": 4088.328125
+            },
+            {
+              "text": "series at 9 V: 1. resistor 100 Ω → series at 1 V: 1. resistor 100 Ω",
+              "left": 55,
+              "right": 212.453125,
+              "top": 4104.125,
+              "bottom": 4136.125
+            },
+            {
+              "text": "series at 9 V: 1. resistor 100 Ω → series at 1 V: 1. resistor 100 Ω",
+              "left": 55,
+              "right": 229.984375,
+              "top": 4143.71875,
+              "bottom": 4175.71875
+            },
+            {
+              "text": "series at 9 V: 1. resistor 100 Ω → series at 1 V: 1. resistor 100 Ω",
+              "left": 55,
+              "right": 212.453125,
+              "top": 4183.3125,
+              "bottom": 4215.3125
+            },
+            {
+              "text": "series at 9 V: 1. resistor 100 Ω → series at 1 V: 1. resistor 100 Ω",
+              "left": 55,
+              "right": 202.703125,
+              "top": 4222.90625,
+              "bottom": 4254.90625
+            },
+            {
+              "text": "Removed trial explanation: Keep trial 1",
+              "left": 55,
+              "right": 201.015625,
+              "top": 4271.5,
+              "bottom": 4303.5
+            },
+            {
+              "text": "Removed trial explanation: Keep trial 1",
+              "left": 55,
+              "right": 242.6875,
+              "top": 4312.296875,
+              "bottom": 4344.296875
+            },
+            {
+              "text": "Removed trial explanation: Keep trial 1",
+              "left": 55,
+              "right": 114.828125,
+              "top": 4353.09375,
+              "bottom": 4385.09375
+            },
+            {
+              "text": "Restore removed trial 2",
+              "left": 117.5,
+              "right": 202.484375,
+              "top": 4413.890625,
+              "bottom": 4445.890625
+            },
+            {
+              "text": "Restore removed trial 2",
+              "left": 73.84375,
+              "right": 246.15625,
+              "top": 4452.28125,
+              "bottom": 4484.28125
+            },
+            {
+              "text": "Discard removed trial 2",
+              "left": 118.078125,
+              "right": 201.90625,
+              "top": 4522.671875,
+              "bottom": 4554.671875
+            },
+            {
+              "text": "Discard removed trial 2",
+              "left": 73.84375,
+              "right": 246.15625,
+              "top": 4561.0625,
+              "bottom": 4593.0625
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "active-baseline",
+      "width": 1280,
+      "scale": 1,
+      "cards": [
+        {
+          "selector": ".circuit-active-lesson-replay",
+          "stage": null,
+          "left": 270,
+          "right": 1010,
+          "clientWidth": 768,
+          "scrollWidth": 768,
+          "lines": [
+            {
+              "text": "Revisit the circuit",
+              "left": 270,
+              "right": 381.828125,
+              "top": 933.625,
+              "bottom": 953.625
+            },
+            {
+              "text": "The experiment baseline is on your bench.",
+              "left": 270,
+              "right": 511.390625,
+              "top": 967.125,
+              "bottom": 984.125
+            },
+            {
+              "text": "Load experiment baseline",
+              "left": 561.625,
+              "right": 718.375,
+              "top": 1013.125,
+              "bottom": 1030.125
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 270,
+              "right": 855.734375,
+              "top": 1057.875,
+              "bottom": 1073.875
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "active-baseline",
+      "width": 390,
+      "scale": 1,
+      "cards": [
+        {
+          "selector": ".circuit-active-lesson-replay",
+          "stage": null,
+          "left": 63,
+          "right": 327,
+          "clientWidth": 288,
+          "scrollWidth": 288,
+          "lines": [
+            {
+              "text": "Revisit the circuit",
+              "left": 63,
+              "right": 174.828125,
+              "top": 765.453125,
+              "bottom": 785.453125
+            },
+            {
+              "text": "The experiment baseline is on your bench.",
+              "left": 63,
+              "right": 304.390625,
+              "top": 798.953125,
+              "bottom": 815.953125
+            },
+            {
+              "text": "Load experiment baseline",
+              "left": 116.625,
+              "right": 273.375,
+              "top": 844.953125,
+              "bottom": 861.953125
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 63,
+              "right": 315.65625,
+              "top": 889.703125,
+              "bottom": 905.703125
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 63,
+              "right": 306.640625,
+              "top": 910.703125,
+              "bottom": 926.703125
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 63,
+              "right": 145.890625,
+              "top": 931.703125,
+              "bottom": 947.703125
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "active-baseline",
+      "width": 320,
+      "scale": 1,
+      "cards": [
+        {
+          "selector": ".circuit-active-lesson-replay",
+          "stage": null,
+          "left": 63,
+          "right": 257,
+          "clientWidth": 218,
+          "scrollWidth": 218,
+          "lines": [
+            {
+              "text": "Revisit the circuit",
+              "left": 63,
+              "right": 174.828125,
+              "top": 887.34375,
+              "bottom": 907.34375
+            },
+            {
+              "text": "The experiment baseline is on your bench.",
+              "left": 63,
+              "right": 233.515625,
+              "top": 920.84375,
+              "bottom": 937.84375
+            },
+            {
+              "text": "The experiment baseline is on your bench.",
+              "left": 63,
+              "right": 130.328125,
+              "top": 943.59375,
+              "bottom": 960.59375
+            },
+            {
+              "text": "Load experiment baseline",
+              "left": 81.625,
+              "right": 238.375,
+              "top": 989.59375,
+              "bottom": 1006.59375
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 63,
+              "right": 231.6875,
+              "top": 1034.34375,
+              "bottom": 1050.34375
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 63,
+              "right": 256.109375,
+              "top": 1055.34375,
+              "bottom": 1071.34375
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 63,
+              "right": 242.5625,
+              "top": 1076.34375,
+              "bottom": 1092.34375
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 63,
+              "right": 97.53125,
+              "top": 1097.34375,
+              "bottom": 1113.34375
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "active-edited-result",
+      "width": 1280,
+      "scale": 1,
+      "cards": [
+        {
+          "selector": ".circuit-active-lesson-saved-prediction",
+          "stage": null,
+          "left": 272,
+          "right": 1011,
+          "clientWidth": 767,
+          "scrollWidth": 767,
+          "lines": [
+            {
+              "text": "Your prediction",
+              "left": 272,
+              "right": 352.671875,
+              "top": 3678.53125,
+              "bottom": 3694.53125
+            },
+            {
+              "text": "Decreases",
+              "left": 272,
+              "right": 337.140625,
+              "top": 3702.921875,
+              "bottom": 3721.921875
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": "#:r0:-result",
+          "stage": null,
+          "left": 255,
+          "right": 786.578125,
+          "clientWidth": 532,
+          "scrollWidth": 532,
+          "lines": [
+            {
+              "text": "Lamp current increased",
+              "left": 255,
+              "right": 481.890625,
+              "top": 3807.109375,
+              "bottom": 3837.109375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-delta",
+          "stage": null,
+          "left": 810.578125,
+          "right": 1025,
+          "clientWidth": 214,
+          "scrollWidth": 214,
+          "lines": [
+            {
+              "text": "Change in lamp current",
+              "left": 810.578125,
+              "right": 934.8125,
+              "top": 3791.3125,
+              "bottom": 3807.3125
+            },
+            {
+              "text": "+5.00 mA",
+              "left": 946.8125,
+              "right": 1025,
+              "top": 3786.3125,
+              "bottom": 3808.3125
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-reading",
+          "stage": "before",
+          "left": 270,
+          "right": 619,
+          "clientWidth": 377,
+          "scrollWidth": 377,
+          "lines": [
+            {
+              "text": "Before · lamp current",
+              "left": 270,
+              "right": 381.078125,
+              "top": 3935.40625,
+              "bottom": 3951.40625
+            },
+            {
+              "text": "3.00 mA",
+              "left": 270,
+              "right": 371.1875,
+              "top": 3961.40625,
+              "bottom": 3996.40625
+            },
+            {
+              "text": "Active region",
+              "left": 270,
+              "right": 351.390625,
+              "top": 4032.09375,
+              "bottom": 4049.09375
+            },
+            {
+              "text": "Input: 1.00 V",
+              "left": 270,
+              "right": 336.546875,
+              "top": 4057.59375,
+              "bottom": 4073.59375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-reading",
+          "stage": "after",
+          "left": 661,
+          "right": 1010,
+          "clientWidth": 377,
+          "scrollWidth": 377,
+          "lines": [
+            {
+              "text": "After · lamp current",
+              "left": 661,
+              "right": 763.6875,
+              "top": 3935.40625,
+              "bottom": 3951.40625
+            },
+            {
+              "text": "8.00 mA",
+              "left": 661,
+              "right": 762.1875,
+              "top": 3961.40625,
+              "bottom": 3996.40625
+            },
+            {
+              "text": "Active region",
+              "left": 661,
+              "right": 742.390625,
+              "top": 4032.09375,
+              "bottom": 4049.09375
+            },
+            {
+              "text": "Input: 1.50 V",
+              "left": 661,
+              "right": 727.546875,
+              "top": 4057.59375,
+              "bottom": 4073.59375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-replay",
+          "stage": null,
+          "left": 270,
+          "right": 1010,
+          "clientWidth": 768,
+          "scrollWidth": 768,
+          "lines": [
+            {
+              "text": "Revisit the circuit",
+              "left": 270,
+              "right": 381.828125,
+              "top": 4157.984375,
+              "bottom": 4177.984375
+            },
+            {
+              "text": "Saved experiment evidence. Your live bench has changed since this test.",
+              "left": 270,
+              "right": 680.203125,
+              "top": 4191.484375,
+              "bottom": 4208.484375
+            },
+            {
+              "text": "Load experiment baseline",
+              "left": 374.625,
+              "right": 531.375,
+              "top": 4237.484375,
+              "bottom": 4254.484375
+            },
+            {
+              "text": "Load this experiment result",
+              "left": 743.421875,
+              "right": 910.578125,
+              "top": 4237.484375,
+              "bottom": 4254.484375
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 270,
+              "right": 855.734375,
+              "top": 4282.234375,
+              "bottom": 4298.234375
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "active-edited-result",
+      "width": 390,
+      "scale": 1,
+      "cards": [
+        {
+          "selector": ".circuit-active-lesson-saved-prediction",
+          "stage": null,
+          "left": 67,
+          "right": 326,
+          "clientWidth": 287,
+          "scrollWidth": 287,
+          "lines": [
+            {
+              "text": "Your prediction",
+              "left": 67,
+              "right": 147.671875,
+              "top": -527.640625,
+              "bottom": -511.640625
+            },
+            {
+              "text": "Decreases",
+              "left": 67,
+              "right": 132.140625,
+              "top": -503.25,
+              "bottom": -484.25
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": "#:r0:-result",
+          "stage": null,
+          "left": 50,
+          "right": 340,
+          "clientWidth": 290,
+          "scrollWidth": 290,
+          "lines": [
+            {
+              "text": "Lamp current increased",
+              "left": 50,
+              "right": 256.265625,
+              "top": -399.0625,
+              "bottom": -372.0625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-delta",
+          "stage": null,
+          "left": 50,
+          "right": 264.421875,
+          "clientWidth": 214,
+          "scrollWidth": 214,
+          "lines": [
+            {
+              "text": "Change in lamp current",
+              "left": 50,
+              "right": 174.234375,
+              "top": -333.0625,
+              "bottom": -317.0625
+            },
+            {
+              "text": "+5.00 mA",
+              "left": 186.234375,
+              "right": 264.421875,
+              "top": -338.0625,
+              "bottom": -316.0625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-reading",
+          "stage": "before",
+          "left": 62,
+          "right": 179,
+          "clientWidth": 139,
+          "scrollWidth": 139,
+          "lines": [
+            {
+              "text": "Before · lamp current",
+              "left": 62,
+              "right": 173.078125,
+              "top": -171.5625,
+              "bottom": -155.5625
+            },
+            {
+              "text": "3.00 mA",
+              "left": 62,
+              "right": 151.515625,
+              "top": -145.5625,
+              "bottom": -114.5625
+            },
+            {
+              "text": "Active region",
+              "left": 62,
+              "right": 143.390625,
+              "top": -79.21875,
+              "bottom": -62.21875
+            },
+            {
+              "text": "Input: 1.00 V",
+              "left": 62,
+              "right": 128.546875,
+              "top": -53.71875,
+              "bottom": -37.71875
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-reading",
+          "stage": "after",
+          "left": 211,
+          "right": 328,
+          "clientWidth": 139,
+          "scrollWidth": 139,
+          "lines": [
+            {
+              "text": "After · lamp current",
+              "left": 211,
+              "right": 313.6875,
+              "top": -171.5625,
+              "bottom": -155.5625
+            },
+            {
+              "text": "8.00 mA",
+              "left": 211,
+              "right": 300.515625,
+              "top": -145.5625,
+              "bottom": -114.5625
+            },
+            {
+              "text": "Active region",
+              "left": 211,
+              "right": 292.390625,
+              "top": -79.21875,
+              "bottom": -62.21875
+            },
+            {
+              "text": "Input: 1.50 V",
+              "left": 211,
+              "right": 277.546875,
+              "top": -53.71875,
+              "bottom": -37.71875
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-replay",
+          "stage": null,
+          "left": 63,
+          "right": 327,
+          "clientWidth": 288,
+          "scrollWidth": 288,
+          "lines": [
+            {
+              "text": "Revisit the circuit",
+              "left": 63,
+              "right": 174.828125,
+              "top": 41.671875,
+              "bottom": 61.671875
+            },
+            {
+              "text": "Saved experiment evidence. Your live bench has changed since this test.",
+              "left": 63,
+              "right": 313.265625,
+              "top": 75.171875,
+              "bottom": 92.171875
+            },
+            {
+              "text": "Saved experiment evidence. Your live bench has changed since this test.",
+              "left": 63,
+              "right": 219.375,
+              "top": 97.921875,
+              "bottom": 114.921875
+            },
+            {
+              "text": "Load experiment baseline",
+              "left": 116.625,
+              "right": 273.375,
+              "top": 143.921875,
+              "bottom": 160.921875
+            },
+            {
+              "text": "Load this experiment result",
+              "left": 111.421875,
+              "right": 278.578125,
+              "top": 195.921875,
+              "bottom": 212.921875
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 63,
+              "right": 315.65625,
+              "top": 240.671875,
+              "bottom": 256.671875
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 63,
+              "right": 306.640625,
+              "top": 261.671875,
+              "bottom": 277.671875
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 63,
+              "right": 145.890625,
+              "top": 282.671875,
+              "bottom": 298.671875
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "active-edited-result",
+      "width": 320,
+      "scale": 1,
+      "cards": [
+        {
+          "selector": ".circuit-active-lesson-saved-prediction",
+          "stage": null,
+          "left": 67,
+          "right": 256,
+          "clientWidth": 217,
+          "scrollWidth": 217,
+          "lines": [
+            {
+              "text": "Your prediction",
+              "left": 67,
+              "right": 147.671875,
+              "top": -180.9375,
+              "bottom": -164.9375
+            },
+            {
+              "text": "Decreases",
+              "left": 67,
+              "right": 132.140625,
+              "top": -156.546875,
+              "bottom": -137.546875
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": "#:r0:-result",
+          "stage": null,
+          "left": 50,
+          "right": 270,
+          "clientWidth": 220,
+          "scrollWidth": 220,
+          "lines": [
+            {
+              "text": "Lamp current increased",
+              "left": 50,
+              "right": 256.265625,
+              "top": -52.359375,
+              "bottom": -25.359375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-delta",
+          "stage": null,
+          "left": 50,
+          "right": 264.421875,
+          "clientWidth": 214,
+          "scrollWidth": 214,
+          "lines": [
+            {
+              "text": "Change in lamp current",
+              "left": 50,
+              "right": 174.234375,
+              "top": 13.640625,
+              "bottom": 29.640625
+            },
+            {
+              "text": "+5.00 mA",
+              "left": 186.234375,
+              "right": 264.421875,
+              "top": 8.640625,
+              "bottom": 30.640625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-reading",
+          "stage": "before",
+          "left": 62,
+          "right": 258,
+          "clientWidth": 218,
+          "scrollWidth": 218,
+          "lines": [
+            {
+              "text": "Before · lamp current",
+              "left": 62,
+              "right": 173.078125,
+              "top": 197.890625,
+              "bottom": 213.890625
+            },
+            {
+              "text": "3.00 mA",
+              "left": 62,
+              "right": 151.515625,
+              "top": 223.890625,
+              "bottom": 254.890625
+            },
+            {
+              "text": "Active region",
+              "left": 62,
+              "right": 143.390625,
+              "top": 290.234375,
+              "bottom": 307.234375
+            },
+            {
+              "text": "Input: 1.00 V",
+              "left": 62,
+              "right": 128.546875,
+              "top": 315.734375,
+              "bottom": 331.734375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-reading",
+          "stage": "after",
+          "left": 62,
+          "right": 258,
+          "clientWidth": 218,
+          "scrollWidth": 218,
+          "lines": [
+            {
+              "text": "After · lamp current",
+              "left": 62,
+              "right": 164.6875,
+              "top": 367.125,
+              "bottom": 383.125
+            },
+            {
+              "text": "8.00 mA",
+              "left": 62,
+              "right": 151.515625,
+              "top": 393.125,
+              "bottom": 424.125
+            },
+            {
+              "text": "Active region",
+              "left": 62,
+              "right": 143.390625,
+              "top": 459.46875,
+              "bottom": 476.46875
+            },
+            {
+              "text": "Input: 1.50 V",
+              "left": 62,
+              "right": 128.546875,
+              "top": 484.96875,
+              "bottom": 500.96875
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-replay",
+          "stage": null,
+          "left": 63,
+          "right": 257,
+          "clientWidth": 218,
+          "scrollWidth": 218,
+          "lines": [
+            {
+              "text": "Revisit the circuit",
+              "left": 63,
+              "right": 174.828125,
+              "top": 601.359375,
+              "bottom": 621.359375
+            },
+            {
+              "text": "Saved experiment evidence. Your live bench has changed since this test.",
+              "left": 63,
+              "right": 251.671875,
+              "top": 634.859375,
+              "bottom": 651.859375
+            },
+            {
+              "text": "Saved experiment evidence. Your live bench has changed since this test.",
+              "left": 63,
+              "right": 253.46875,
+              "top": 657.609375,
+              "bottom": 674.609375
+            },
+            {
+              "text": "Saved experiment evidence. Your live bench has changed since this test.",
+              "left": 63,
+              "right": 86.953125,
+              "top": 680.359375,
+              "bottom": 697.359375
+            },
+            {
+              "text": "Load experiment baseline",
+              "left": 81.625,
+              "right": 238.375,
+              "top": 726.359375,
+              "bottom": 743.359375
+            },
+            {
+              "text": "Load this experiment result",
+              "left": 76.421875,
+              "right": 243.578125,
+              "top": 778.359375,
+              "bottom": 795.359375
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 63,
+              "right": 231.6875,
+              "top": 823.109375,
+              "bottom": 839.109375
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 63,
+              "right": 256.109375,
+              "top": 844.109375,
+              "bottom": 860.109375
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 63,
+              "right": 242.5625,
+              "top": 865.109375,
+              "bottom": 881.109375
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 63,
+              "right": 97.53125,
+              "top": 886.109375,
+              "bottom": 902.109375
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "active-edited-result-200pct-text",
+      "width": 320,
+      "scale": 2,
+      "cards": [
+        {
+          "selector": ".circuit-active-lesson-saved-prediction",
+          "stage": null,
+          "left": 67,
+          "right": 256,
+          "clientWidth": 217,
+          "scrollWidth": 217,
+          "lines": [
+            {
+              "text": "Your prediction",
+              "left": 67,
+              "right": 228.34375,
+              "top": 2877.84375,
+              "bottom": 2909.84375
+            },
+            {
+              "text": "Decreases",
+              "left": 67,
+              "right": 197.265625,
+              "top": 2922.640625,
+              "bottom": 2959.640625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": "#:r0:-result",
+          "stage": null,
+          "left": 50,
+          "right": 270,
+          "clientWidth": 220,
+          "scrollWidth": 220,
+          "lines": [
+            {
+              "text": "Lamp current increased",
+              "left": 50,
+              "right": 156.875,
+              "top": 3119.625,
+              "bottom": 3177.625
+            },
+            {
+              "text": "Lamp current increased",
+              "left": 50,
+              "right": 188.640625,
+              "top": 3181.21875,
+              "bottom": 3239.21875
+            },
+            {
+              "text": "Lamp current increased",
+              "left": 50,
+              "right": 234.171875,
+              "top": 3242.8125,
+              "bottom": 3300.8125
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-delta",
+          "stage": null,
+          "left": 50,
+          "right": 270,
+          "clientWidth": 220,
+          "scrollWidth": 220,
+          "lines": [
+            {
+              "text": "Change in lamp current",
+              "left": 50,
+              "right": 216.265625,
+              "top": 3340.40625,
+              "bottom": 3372.40625
+            },
+            {
+              "text": "Change in lamp current",
+              "left": 50,
+              "right": 125.625,
+              "top": 3382.40625,
+              "bottom": 3414.40625
+            },
+            {
+              "text": "+5.00 mA",
+              "left": 50,
+              "right": 206.359375,
+              "top": 3427.40625,
+              "bottom": 3473.40625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-reading",
+          "stage": "before",
+          "left": 62,
+          "right": 258,
+          "clientWidth": 218,
+          "scrollWidth": 218,
+          "lines": [
+            {
+              "text": "Before · lamp current",
+              "left": 62,
+              "right": 201.9375,
+              "top": 3983.40625,
+              "bottom": 4015.40625
+            },
+            {
+              "text": "Before · lamp current",
+              "left": 62,
+              "right": 137.625,
+              "top": 4019.40625,
+              "bottom": 4051.40625
+            },
+            {
+              "text": "3.00 mA",
+              "left": 62,
+              "right": 165.828125,
+              "top": 4064.40625,
+              "bottom": 4133.40625
+            },
+            {
+              "text": "3.00 mA",
+              "left": 62,
+              "right": 146.203125,
+              "top": 4139.796875,
+              "bottom": 4208.796875
+            },
+            {
+              "text": "Active region",
+              "left": 62,
+              "right": 224.78125,
+              "top": 4247.1875,
+              "bottom": 4282.1875
+            },
+            {
+              "text": "Input: 1.00 V",
+              "left": 62,
+              "right": 195.078125,
+              "top": 4293.1875,
+              "bottom": 4325.1875
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-reading",
+          "stage": "after",
+          "left": 62,
+          "right": 258,
+          "clientWidth": 218,
+          "scrollWidth": 218,
+          "lines": [
+            {
+              "text": "After · lamp current",
+              "left": 62,
+              "right": 185.1875,
+              "top": 4363.984375,
+              "bottom": 4395.984375
+            },
+            {
+              "text": "After · lamp current",
+              "left": 62,
+              "right": 137.625,
+              "top": 4399.984375,
+              "bottom": 4431.984375
+            },
+            {
+              "text": "8.00 mA",
+              "left": 62,
+              "right": 165.828125,
+              "top": 4444.984375,
+              "bottom": 4513.984375
+            },
+            {
+              "text": "8.00 mA",
+              "left": 62,
+              "right": 146.203125,
+              "top": 4520.375,
+              "bottom": 4589.375
+            },
+            {
+              "text": "Active region",
+              "left": 62,
+              "right": 224.78125,
+              "top": 4627.765625,
+              "bottom": 4662.765625
+            },
+            {
+              "text": "Input: 1.50 V",
+              "left": 62,
+              "right": 195.078125,
+              "top": 4673.765625,
+              "bottom": 4705.765625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-replay",
+          "stage": null,
+          "left": 63,
+          "right": 257,
+          "clientWidth": 218,
+          "scrollWidth": 218,
+          "lines": [
+            {
+              "text": "Revisit the circuit",
+              "left": 63,
+              "right": 198.609375,
+              "top": 4893.5625,
+              "bottom": 4933.5625
+            },
+            {
+              "text": "Revisit the circuit",
+              "left": 63,
+              "right": 142.828125,
+              "top": 4938.5625,
+              "bottom": 4978.5625
+            },
+            {
+              "text": "Saved experiment evidence. Your live bench has changed since this test.",
+              "left": 63,
+              "right": 131.40625,
+              "top": 4996.5625,
+              "bottom": 5031.5625
+            },
+            {
+              "text": "Saved experiment evidence. Your live bench has changed since this test.",
+              "left": 63,
+              "right": 192.265625,
+              "top": 5042.0625,
+              "bottom": 5077.0625
+            },
+            {
+              "text": "Saved experiment evidence. Your live bench has changed since this test.",
+              "left": 63,
+              "right": 228.421875,
+              "top": 5087.5625,
+              "bottom": 5122.5625
+            },
+            {
+              "text": "Saved experiment evidence. Your live bench has changed since this test.",
+              "left": 63,
+              "right": 225.1875,
+              "top": 5133.0625,
+              "bottom": 5168.0625
+            },
+            {
+              "text": "Saved experiment evidence. Your live bench has changed since this test.",
+              "left": 63,
+              "right": 226.65625,
+              "top": 5178.5625,
+              "bottom": 5213.5625
+            },
+            {
+              "text": "Saved experiment evidence. Your live bench has changed since this test.",
+              "left": 63,
+              "right": 158.875,
+              "top": 5224.0625,
+              "bottom": 5259.0625
+            },
+            {
+              "text": "Load experiment baseline",
+              "left": 130.484375,
+              "right": 189.515625,
+              "top": 5289.5625,
+              "bottom": 5324.5625
+            },
+            {
+              "text": "Load experiment baseline",
+              "left": 89.90625,
+              "right": 230.09375,
+              "top": 5328.5625,
+              "bottom": 5363.5625
+            },
+            {
+              "text": "Load experiment baseline",
+              "left": 110.03125,
+              "right": 209.96875,
+              "top": 5367.5625,
+              "bottom": 5402.5625
+            },
+            {
+              "text": "Load this experiment result",
+              "left": 104.59375,
+              "right": 215.390625,
+              "top": 5436.5625,
+              "bottom": 5471.5625
+            },
+            {
+              "text": "Load this experiment result",
+              "left": 89.90625,
+              "right": 230.09375,
+              "top": 5475.5625,
+              "bottom": 5510.5625
+            },
+            {
+              "text": "Load this experiment result",
+              "left": 125.5,
+              "right": 194.5,
+              "top": 5514.5625,
+              "bottom": 5549.5625
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 63,
+              "right": 241.65625,
+              "top": 5579.5625,
+              "bottom": 5611.5625
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 63,
+              "right": 215.15625,
+              "top": 5621.5625,
+              "bottom": 5653.5625
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 63,
+              "right": 224.34375,
+              "top": 5663.5625,
+              "bottom": 5695.5625
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 63,
+              "right": 232.59375,
+              "top": 5705.5625,
+              "bottom": 5737.5625
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 63,
+              "right": 242.34375,
+              "top": 5747.5625,
+              "bottom": 5779.5625
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 63,
+              "right": 188.203125,
+              "top": 5789.5625,
+              "bottom": 5821.5625
+            },
+            {
+              "text": "Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.",
+              "left": 63,
+              "right": 228.78125,
+              "top": 5831.5625,
+              "bottom": 5863.5625
+            }
+          ],
+          "violations": []
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "name": "simple-notebook",
+      "width": 1280,
+      "scale": 1,
+      "actions": [
+        {
+          "tag": "SUMMARY",
+          "label": "Plan an investigation",
+          "width": 820,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "I predict the current will halve when resistance doubles.",
+          "width": 820,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Replace baseline",
+          "width": 123.03125,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Record comparison",
+          "width": 138.578125,
+          "height": 44,
+          "disabled": true,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "Revised evidence: the supply stayed at 9 V while resistance doubled.",
+          "width": 820,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Download evidence",
+          "width": 138.6875,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "SUMMARY",
+          "label": "Evidence notebook (1 / 8 trials)",
+          "width": 820,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "Trial 1 explanation",
+          "width": 798,
+          "height": 80,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Remove trial 1",
+          "width": 103.703125,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "SUMMARY",
+          "label": "Guided investigations",
+          "width": 820,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "simple-notebook",
+      "width": 390,
+      "scale": 1,
+      "actions": [
+        {
+          "tag": "SUMMARY",
+          "label": "Plan an investigation",
+          "width": 306,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "I predict the current will halve when resistance doubles.",
+          "width": 306,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Replace baseline",
+          "width": 123.03125,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Record comparison",
+          "width": 138.578125,
+          "height": 44,
+          "disabled": true,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "Revised evidence: the supply stayed at 9 V while resistance doubled.",
+          "width": 306,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Download evidence",
+          "width": 138.6875,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "SUMMARY",
+          "label": "Evidence notebook (1 / 8 trials)",
+          "width": 306,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "Trial 1 explanation",
+          "width": 284,
+          "height": 80,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Remove trial 1",
+          "width": 284,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "SUMMARY",
+          "label": "Guided investigations",
+          "width": 306,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "simple-notebook",
+      "width": 320,
+      "scale": 1,
+      "actions": [
+        {
+          "tag": "SUMMARY",
+          "label": "Plan an investigation",
+          "width": 236,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "I predict the current will halve when resistance doubles.",
+          "width": 236,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Replace baseline",
+          "width": 123.03125,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Record comparison",
+          "width": 138.578125,
+          "height": 44,
+          "disabled": true,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "Revised evidence: the supply stayed at 9 V while resistance doubled.",
+          "width": 236,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Download evidence",
+          "width": 138.6875,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "SUMMARY",
+          "label": "Evidence notebook (1 / 8 trials)",
+          "width": 236,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "Trial 1 explanation",
+          "width": 214,
+          "height": 80,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Remove trial 1",
+          "width": 214,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "SUMMARY",
+          "label": "Guided investigations",
+          "width": 236,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "simple-notebook-200pct-text",
+      "width": 320,
+      "scale": 2,
+      "actions": [
+        {
+          "tag": "SUMMARY",
+          "label": "Plan an investigation",
+          "width": 236,
+          "height": 83.78125,
+          "disabled": false,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "I predict the current will halve when resistance doubles.",
+          "width": 236,
+          "height": 106,
+          "disabled": false,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Replace baseline",
+          "width": 216.046875,
+          "height": 58,
+          "disabled": false,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Record comparison",
+          "width": 236,
+          "height": 94,
+          "disabled": true,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "Revised evidence: the supply stayed at 9 V while resistance doubled.",
+          "width": 236,
+          "height": 106,
+          "disabled": false,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Download evidence",
+          "width": 236,
+          "height": 98.78125,
+          "disabled": false,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "SUMMARY",
+          "label": "Evidence notebook (1 / 8 trials)",
+          "width": 236,
+          "height": 115.171875,
+          "disabled": false,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "Trial 1 explanation",
+          "width": 214,
+          "height": 111.59375,
+          "disabled": false,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Remove trial 1",
+          "width": 214,
+          "height": 58,
+          "disabled": false,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "SUMMARY",
+          "label": "Guided investigations",
+          "width": 236,
+          "height": 76.78125,
+          "disabled": false,
+          "transitionDuration": "0s"
+        }
+      ]
+    },
+    {
+      "name": "simple-recovery-200pct-text",
+      "width": 320,
+      "scale": 2,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Restore removed trial",
+          "width": 210,
+          "height": 98.78125,
+          "disabled": false,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Discard removed trial",
+          "width": 210,
+          "height": 98.78125,
+          "disabled": false,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Restore removed trial 2",
+          "width": 210,
+          "height": 98.78125,
+          "disabled": false,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Discard removed trial 2",
+          "width": 210,
+          "height": 98.78125,
+          "disabled": false,
+          "transitionDuration": "0s"
+        }
+      ]
+    },
+    {
+      "name": "active-baseline",
+      "width": 1280,
+      "scale": 1,
+      "actions": [
+        {
+          "tag": "SELECT",
+          "label": "Transistor prediction experiment",
+          "width": 770,
+          "height": 45,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Increases",
+          "width": 81.859375,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Stays the same",
+          "width": 116.484375,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Decreases",
+          "width": 86.484375,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Test transistor prediction",
+          "width": 178.5625,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load experiment baseline",
+          "width": 740,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "Transistor experiment explanation",
+          "width": 770,
+          "height": 105.171875,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Start transistor prediction",
+          "width": 183.921875,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "active-baseline",
+      "width": 390,
+      "scale": 1,
+      "actions": [
+        {
+          "tag": "SELECT",
+          "label": "Transistor prediction experiment",
+          "width": 290,
+          "height": 45,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Increases",
+          "width": 81.859375,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Stays the same",
+          "width": 116.484375,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Decreases",
+          "width": 86.484375,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Test transistor prediction",
+          "width": 178.5625,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load experiment baseline",
+          "width": 264,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "Transistor experiment explanation",
+          "width": 290,
+          "height": 105.171875,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Start transistor prediction",
+          "width": 183.921875,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "active-baseline",
+      "width": 320,
+      "scale": 1,
+      "actions": [
+        {
+          "tag": "SELECT",
+          "label": "Transistor prediction experiment",
+          "width": 220,
+          "height": 45,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Increases",
+          "width": 220,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Stays the same",
+          "width": 220,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Decreases",
+          "width": 220,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Test transistor prediction",
+          "width": 178.5625,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load experiment baseline",
+          "width": 194,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "Transistor experiment explanation",
+          "width": 220,
+          "height": 105.171875,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Start transistor prediction",
+          "width": 183.921875,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "active-edited-result",
+      "width": 1280,
+      "scale": 1,
+      "actions": [
+        {
+          "tag": "SELECT",
+          "label": "Transistor prediction experiment",
+          "width": 770,
+          "height": 45,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load experiment baseline",
+          "width": 366,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load this experiment result",
+          "width": 366,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "Transistor experiment explanation",
+          "width": 770,
+          "height": 105.171875,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Next: Find the limit",
+          "width": 144.171875,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Start transistor prediction",
+          "width": 183.921875,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "active-edited-result",
+      "width": 390,
+      "scale": 1,
+      "actions": [
+        {
+          "tag": "SELECT",
+          "label": "Transistor prediction experiment",
+          "width": 290,
+          "height": 45,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load experiment baseline",
+          "width": 264,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load this experiment result",
+          "width": 264,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "Transistor experiment explanation",
+          "width": 290,
+          "height": 105.171875,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Next: Find the limit",
+          "width": 259,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Start transistor prediction",
+          "width": 183.921875,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "active-edited-result",
+      "width": 320,
+      "scale": 1,
+      "actions": [
+        {
+          "tag": "SELECT",
+          "label": "Transistor prediction experiment",
+          "width": 220,
+          "height": 45,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load experiment baseline",
+          "width": 194,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load this experiment result",
+          "width": 194,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "Transistor experiment explanation",
+          "width": 220,
+          "height": 105.171875,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Next: Find the limit",
+          "width": 189,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Start transistor prediction",
+          "width": 183.921875,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "active-edited-result-200pct-text",
+      "width": 320,
+      "scale": 2,
+      "actions": [
+        {
+          "tag": "SELECT",
+          "label": "Transistor prediction experiment",
+          "width": 220,
+          "height": 67,
+          "disabled": false,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load experiment baseline",
+          "width": 194,
+          "height": 139,
+          "disabled": false,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Load this experiment result",
+          "width": 194,
+          "height": 139,
+          "disabled": false,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "Transistor experiment explanation",
+          "width": 220,
+          "height": 184.390625,
+          "disabled": false,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Next: Find the limit",
+          "width": 189,
+          "height": 100,
+          "disabled": false,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Start transistor prediction",
+          "width": 220,
+          "height": 100,
+          "disabled": false,
+          "transitionDuration": "0s"
+        }
+      ]
+    }
+  ],
+  "focus": [
+    {
+      "name": "simple-notebook",
+      "width": 1280,
+      "selector": "#circuit-explanation",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(241, 245, 249)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook",
+      "width": 1280,
+      "selector": "textarea[aria-label=\"Trial 1 explanation\"]",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook",
+      "width": 1280,
+      "selector": ".circuit-inquiry-notebook > summary",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(203, 213, 225)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook",
+      "width": 1280,
+      "selector": ".circuit-guided-lab > summary",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(214, 232, 239)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook",
+      "width": 1280,
+      "selector": "button:text-is(\"Download evidence\")",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(213, 245, 232)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook",
+      "width": 1280,
+      "selector": "details.circuit-notebook:not(.circuit-inquiry-notebook) > summary",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(203, 213, 225)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook",
+      "width": 390,
+      "selector": "#circuit-explanation",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(241, 245, 249)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook",
+      "width": 390,
+      "selector": "textarea[aria-label=\"Trial 1 explanation\"]",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(241, 245, 249)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook",
+      "width": 390,
+      "selector": ".circuit-inquiry-notebook > summary",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(203, 213, 225)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook",
+      "width": 390,
+      "selector": ".circuit-guided-lab > summary",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(214, 232, 239)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook",
+      "width": 390,
+      "selector": "button:text-is(\"Download evidence\")",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(213, 245, 232)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook",
+      "width": 390,
+      "selector": "details.circuit-notebook:not(.circuit-inquiry-notebook) > summary",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(203, 213, 225)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook",
+      "width": 320,
+      "selector": "#circuit-explanation",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(241, 245, 249)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook",
+      "width": 320,
+      "selector": "textarea[aria-label=\"Trial 1 explanation\"]",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(241, 245, 249)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook",
+      "width": 320,
+      "selector": ".circuit-inquiry-notebook > summary",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(203, 213, 225)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook",
+      "width": 320,
+      "selector": ".circuit-guided-lab > summary",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(214, 232, 239)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook",
+      "width": 320,
+      "selector": "button:text-is(\"Download evidence\")",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(213, 245, 232)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook",
+      "width": 320,
+      "selector": "details.circuit-notebook:not(.circuit-inquiry-notebook) > summary",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(203, 213, 225)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook-200pct-text",
+      "width": 320,
+      "selector": "#circuit-explanation",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook-200pct-text",
+      "width": 320,
+      "selector": "textarea[aria-label=\"Trial 1 explanation\"]",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook-200pct-text",
+      "width": 320,
+      "selector": ".circuit-inquiry-notebook > summary",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook-200pct-text",
+      "width": 320,
+      "selector": ".circuit-guided-lab > summary",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook-200pct-text",
+      "width": 320,
+      "selector": "button:text-is(\"Download evidence\")",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "simple-notebook-200pct-text",
+      "width": 320,
+      "selector": "details.circuit-notebook:not(.circuit-inquiry-notebook) > summary",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "simple-recovery-200pct-text",
+      "width": 320,
+      "selector": "button:text-is(\"Restore removed trial\")",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "simple-recovery-200pct-text",
+      "width": 320,
+      "selector": "button:text-is(\"Discard removed trial\")",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "simple-recovery-200pct-text",
+      "width": 320,
+      "selector": "button:text-is(\"Restore removed trial 2\")",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "simple-recovery-200pct-text",
+      "width": 320,
+      "selector": "button:text-is(\"Discard removed trial 2\")",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "active-baseline",
+      "width": 1280,
+      "selector": "select",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "active-baseline",
+      "width": 1280,
+      "selector": "[data-active-lesson-question]",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(237, 248, 248)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "active-baseline",
+      "width": 390,
+      "selector": "select",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "active-baseline",
+      "width": 390,
+      "selector": "[data-active-lesson-question]",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(237, 248, 248)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "active-baseline",
+      "width": 320,
+      "selector": "select",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "active-baseline",
+      "width": 320,
+      "selector": "[data-active-lesson-question]",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(237, 248, 248)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "active-edited-result",
+      "width": 1280,
+      "selector": "select",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "active-edited-result",
+      "width": 1280,
+      "selector": "[data-active-lesson-result]",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(224, 246, 237)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "active-edited-result",
+      "width": 1280,
+      "selector": "textarea",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "active-edited-result",
+      "width": 390,
+      "selector": "select",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "active-edited-result",
+      "width": 390,
+      "selector": "[data-active-lesson-result]",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(224, 246, 237)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "active-edited-result",
+      "width": 390,
+      "selector": "textarea",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "active-edited-result",
+      "width": 320,
+      "selector": "select",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "active-edited-result",
+      "width": 320,
+      "selector": "[data-active-lesson-result]",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(224, 246, 237)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "active-edited-result",
+      "width": 320,
+      "selector": "textarea",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "active-edited-result-200pct-text",
+      "width": 320,
+      "selector": "select",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "active-edited-result-200pct-text",
+      "width": 320,
+      "selector": "[data-active-lesson-result]",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "active-edited-result-200pct-text",
+      "width": 320,
+      "selector": "textarea",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    }
+  ],
+  "focusTransitions": [
+    {
+      "action": "Remove trial 2",
+      "target": ".circuit-inquiry-notebook > summary",
+      "focused": true
+    },
+    {
+      "action": "Restore removed trial",
+      "target": ".circuit-inquiry-notebook > summary",
+      "focused": true
+    },
+    {
+      "action": "Make room for recovery",
+      "target": ".circuit-inquiry-notebook > summary",
+      "focused": true
+    },
+    {
+      "action": "Restore first pending trial",
+      "target": ".circuit-inquiry-notebook > summary",
+      "focused": true
+    },
+    {
+      "action": "Discard pending trial",
+      "target": ".circuit-inquiry-notebook > summary",
+      "focused": true
+    }
+  ],
+  "nodeIds": [
+    {
+      "name": "simple-notebook",
+      "width": 1280,
+      "duplicates": []
+    },
+    {
+      "name": "simple-notebook",
+      "width": 390,
+      "duplicates": []
+    },
+    {
+      "name": "simple-notebook",
+      "width": 320,
+      "duplicates": []
+    },
+    {
+      "name": "simple-notebook-200pct-text",
+      "width": 320,
+      "duplicates": []
+    },
+    {
+      "name": "simple-recovery-200pct-text",
+      "width": 320,
+      "duplicates": []
+    },
+    {
+      "name": "active-baseline",
+      "width": 1280,
+      "duplicates": []
+    },
+    {
+      "name": "active-baseline",
+      "width": 390,
+      "duplicates": []
+    },
+    {
+      "name": "active-baseline",
+      "width": 320,
+      "duplicates": []
+    },
+    {
+      "name": "active-edited-result",
+      "width": 1280,
+      "duplicates": []
+    },
+    {
+      "name": "active-edited-result",
+      "width": 390,
+      "duplicates": []
+    },
+    {
+      "name": "active-edited-result",
+      "width": 320,
+      "duplicates": []
+    },
+    {
+      "name": "active-edited-result-200pct-text",
+      "width": 320,
+      "duplicates": []
+    }
+  ],
+  "textResize": [
+    {
+      "scope": ".circuit-lab-workflow",
+      "scale": 2,
+      "elements": 51,
+      "beforeFontSize": 14,
+      "afterFontSize": 28
+    },
+    {
+      "scope": ".circuit-inquiry-recovery",
+      "scale": 2,
+      "elements": 17,
+      "beforeFontSize": 12,
+      "afterFontSize": 24
+    },
+    {
+      "scope": ".circuit-active-lesson-lab",
+      "scale": 2,
+      "elements": 61,
+      "beforeFontSize": 13,
+      "afterFontSize": 26
+    }
+  ],
+  "motion": [
+    {
+      "before": {
+        "tick": 0,
+        "reduced": true
+      },
+      "after": {
+        "tick": 0,
+        "animations": 0
+      }
+    }
+  ],
+  "styleScope": [
+    {
+      "liveBackground": "rgb(12, 37, 48)",
+      "outsideBackground": "rgba(0, 0, 0, 0)",
+      "liveBorder": "1px",
+      "outsideBorder": "0px",
+      "styleNodes": 4
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "simple-notebook",
+      "width": 1280,
+      "file": "simple-notebook-1280.png",
+      "clip": {
+        "x": 207,
+        "y": 687,
+        "width": 866,
+        "height": 1209
+      }
+    },
+    {
+      "name": "simple-notebook",
+      "width": 390,
+      "file": "simple-notebook-390.png",
+      "clip": {
+        "x": 19,
+        "y": 874,
+        "width": 352,
+        "height": 1513
+      }
+    },
+    {
+      "name": "simple-notebook",
+      "width": 320,
+      "file": "simple-notebook-320.png",
+      "clip": {
+        "x": 19,
+        "y": 936,
+        "width": 282,
+        "height": 1716
+      }
+    },
+    {
+      "name": "simple-notebook-200pct-text",
+      "width": 320,
+      "file": "simple-notebook-200pct-text-320.png",
+      "clip": {
+        "x": 19,
+        "y": 936,
+        "width": 282,
+        "height": 3813
+      }
+    },
+    {
+      "name": "simple-recovery-200pct-text",
+      "width": 320,
+      "file": "simple-recovery-200pct-text-320.png",
+      "clip": {
+        "x": 36,
+        "y": 4765,
+        "width": 248,
+        "height": 1491
+      }
+    },
+    {
+      "name": "active-baseline",
+      "width": 1280,
+      "file": "active-baseline-1280.png",
+      "clip": {
+        "x": 230,
+        "y": 4032,
+        "width": 820,
+        "height": 1098
+      }
+    },
+    {
+      "name": "active-baseline",
+      "width": 390,
+      "file": "active-baseline-390.png",
+      "clip": {
+        "x": 32,
+        "y": 5443,
+        "width": 326,
+        "height": 1329
+      }
+    },
+    {
+      "name": "active-baseline",
+      "width": 320,
+      "file": "active-baseline-320.png",
+      "clip": {
+        "x": 32,
+        "y": 6015,
+        "width": 256,
+        "height": 1562
+      }
+    },
+    {
+      "name": "active-edited-result",
+      "width": 1280,
+      "file": "active-edited-result-1280.png",
+      "clip": {
+        "x": 230,
+        "y": 4032,
+        "width": 820,
+        "height": 1484
+      }
+    },
+    {
+      "name": "active-edited-result",
+      "width": 390,
+      "file": "active-edited-result-390.png",
+      "clip": {
+        "x": 32,
+        "y": 5443,
+        "width": 326,
+        "height": 1844
+      }
+    },
+    {
+      "name": "active-edited-result",
+      "width": 320,
+      "file": "active-edited-result-320.png",
+      "clip": {
+        "x": 32,
+        "y": 6058,
+        "width": 256,
+        "height": 2238
+      }
+    },
+    {
+      "name": "active-edited-result-200pct-text",
+      "width": 320,
+      "file": "active-edited-result-200pct-text-320.png",
+      "clip": {
+        "x": 32,
+        "y": 6058,
+        "width": 256,
+        "height": 6037
+      }
+    }
+  ],
+  "visualIssues": [],
+  "passed": true,
+  "sourceSha256AtEnd": "fe76b62c2edd564f0c092b1b02ab97b5fa9b9094773115a86b04476863178449",
+  "sourceChangedDuringRun": false
+}

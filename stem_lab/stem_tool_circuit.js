@@ -596,6 +596,13 @@ window.StemLab = window.StemLab || {
   window.StemLab.circuitProbeTask=circuitProbeTask;
   window.StemLab.circuitProbeTaskCheck=circuitProbeTaskCheck;
 
+  // Compare electrical designs, independently of regenerated UI part IDs.
+  function circuitInvestigationComparisonKey(before,after) {
+    var meaningful=function(state){var design=circuitDesignDocument(state).circuit;design.components.forEach(function(part){if(part.type==='led'){part.forwardVoltage=circuitForwardVoltage(part);delete part.ledColor;}});return design;};
+    return JSON.stringify([meaningful(before),meaningful(after)]);
+  }
+  window.StemLab.circuitInvestigationComparisonKey=circuitInvestigationComparisonKey;
+
   function CircuitProbePractice(props) {
     var React=props.React,h=React.createElement;
     var __alloT=circuitToolT(props);
@@ -2639,6 +2646,45 @@ window.StemLab = window.StemLab || {
     {id:'sensor',title:'Make a night light',question:'Lower the relative light level from 80 to 20. What happens to the lamp current?',before:{project:'dark',light:80},after:{light:20},answer:'more',reason:'In the dark sensor circuit, the photoresistor is below the divider junction. Less light raises its resistance, raising the junction voltage and base current.'}
   ];
   function circuitActiveLesson(id) {return CIRCUIT_ACTIVE_LESSONS.find(function(l){return l.id===id;})||CIRCUIT_ACTIVE_LESSONS[0];}
+  // Saved lesson evidence belongs to its fixed experiment, independently of the live bench.
+  function circuitActiveLessonRecords(state) {
+    state=state||{};var records={},stored=state.lessonRecords&&typeof state.lessonRecords==='object'&&!Array.isArray(state.lessonRecords)?state.lessonRecords:{};
+    var choice=function(value){return ['more','same','less'].indexOf(value)>=0?value:null;};
+    CIRCUIT_ACTIVE_LESSONS.forEach(function(lesson){
+      var explicit=Object.prototype.hasOwnProperty.call(stored,lesson.id),raw=explicit?stored[lesson.id]:state.challenge&&state.challenge.id===lesson.id?state.challenge:null;
+      if(!raw||typeof raw!=='object'||Array.isArray(raw))return;
+      var selected=choice(raw.choice);
+      records[lesson.id]={choice:selected,tested:raw.tested===true&&selected!==null,explanation:explicit&&typeof raw.explanation==='string'?raw.explanation.slice(0,4000):''};
+    });
+    return records;
+  }
+  function circuitActiveLessonUpdate(state,id,action,value) {
+    state=state||{};
+    var lesson=CIRCUIT_ACTIVE_LESSONS.find(function(item){return item.id===id;});if(!lesson)return state;
+    var records=circuitActiveLessonRecords(state),record=records[id],target=null;
+    if(action==='select'){}
+    else if(action==='start'){record={choice:null,tested:false,explanation:''};records[id]=record;target=circuitActiveDesign(lesson.before);}
+    else if(action==='predict'){
+      if(!record||record.tested||['more','same','less'].indexOf(value)<0)return state;
+      record.choice=value;
+    }else if(action==='test'){
+      if(!record||record.tested||record.choice===null)return state;
+      record.tested=true;target=circuitActiveDesign(Object.assign({},lesson.before,lesson.after));
+    }else if(action==='explain'){
+      if(!record||typeof value!=='string')return state;
+      record.explanation=value.slice(0,4000);
+    }else if(action==='baseline'){
+      if(!record)return state;target=circuitActiveDesign(lesson.before);
+    }else if(action==='result'){
+      if(!record||!record.tested)return state;target=circuitActiveDesign(Object.assign({},lesson.before,lesson.after));
+    }else return state;
+    var next=Object.assign({},state,target||{},{lessonId:id,lessonRecords:records,challenge:record?{id:id,choice:record.choice,tested:record.tested}:null});
+    if(target){var before=circuitActiveDesign(state);if(JSON.stringify(before)!==JSON.stringify(target)){next.undo=(state.undo||[]).slice(-29).concat([before]);next.redo=[];}}
+    return next;
+  }
+  window.StemLab.circuitActiveLessonRecords=circuitActiveLessonRecords;
+  window.StemLab.circuitActiveLessonUpdate=circuitActiveLessonUpdate;
+
   window.StemLab.circuitActiveDesign=circuitActiveDesign;
   window.StemLab.solveActiveCircuit=solveActiveCircuit;
   window.StemLab.circuitActiveSweep=circuitActiveSweep;
@@ -2743,10 +2789,11 @@ window.StemLab = window.StemLab || {
   function circuitActiveInvestigation(state) {
     state=state||{};var s=solveActiveCircuit(state),p=circuitActiveProbe(s,state.probeRed,state.probeBlack),c=circuitActiveComparison(state.reference,state);
     var text=function(value){return typeof value==='string'?value:'';};
-    var activity=null,lesson=state.challenge&&CIRCUIT_ACTIVE_LESSONS.find(function(l){return l.id===state.challenge.id;});
-    if(lesson){var expected=circuitActiveDesign(Object.assign({},lesson.before,state.challenge.tested?lesson.after:{}));if(JSON.stringify(expected)===JSON.stringify(s.design))activity={id:lesson.id,choice:state.challenge.choice==null?null:state.challenge.choice,tested:!!state.challenge.tested};}
+    var records=circuitActiveLessonRecords(state),selected=CIRCUIT_ACTIVE_LESSONS.some(function(l){return l.id===state.lessonId;})?state.lessonId:state.challenge&&CIRCUIT_ACTIVE_LESSONS.some(function(l){return l.id===state.challenge.id;})?state.challenge.id:'gain';
+    var activity=null,lesson=circuitActiveLesson(selected),record=records[selected];
+    if(record){var expected=circuitActiveDesign(Object.assign({},lesson.before,record.tested?lesson.after:{}));if(JSON.stringify(expected)===JSON.stringify(s.design))activity={id:selected,choice:record.choice,tested:record.tested};}
     return {format:'circuit-investigation-v1',model:'npn-piecewise-dc-v1',design:s.design,reference:c?{version:1,design:c.before.design}:null,probes:{red:p.red,black:p.black},view:state.view==='schematic'?'schematic':'3d',
-      lessonId:activity?activity.id:CIRCUIT_ACTIVE_LESSONS.some(function(l){return l.id===state.lessonId;})?state.lessonId:'gain',activity:activity,
+      lessonId:selected,activity:activity,lessonRecords:records,
       notebook:{title:text(state.investigationTitle),question:text(state.investigationQuestion),prediction:text(state.investigationPrediction),explanation:text(state.reflection),
         observations:(Array.isArray(state.observations)?state.observations:[]).map(function(o){return circuitActiveObservation(Object.assign({},o.design,{probeRed:o.probeRed,probeBlack:o.probeBlack}),text(o.note));})}};
   }
@@ -2767,9 +2814,25 @@ window.StemLab = window.StemLab || {
     var book=doc.notebook,observations=book.observations.map(function(o,i){if(!object(o))throw Error('Observation '+(i+1)+' is invalid.');return {design:design(o.design,'Observation '+(i+1)),probeRed:node(o.probeRed),probeBlack:node(o.probeBlack),note:string(o.note,'Observation note',1000)};});
     if(!CIRCUIT_ACTIVE_LESSONS.some(function(l){return l.id===doc.lessonId;}))throw Error('The selected prediction activity is unknown.');
     var challenge=null;
+    // Keep the original v1 activity contract for older readers and files.
     if(doc.activity!==null){var a=doc.activity,l=object(a)&&CIRCUIT_ACTIVE_LESSONS.find(function(x){return x.id===a.id;});if(!l||l.id!==doc.lessonId||typeof a.tested!=='boolean'||![null,'more','same','less'].includes(a.choice)||(a.tested&&a.choice===null))throw Error('The prediction activity is invalid.');
       if(JSON.stringify(circuitActiveDesign(Object.assign({},l.before,a.tested?l.after:{})))!==JSON.stringify(live))throw Error('The prediction activity does not match the saved circuit.');challenge={id:a.id,choice:a.choice,tested:a.tested};}
-    return Object.assign({},live,{reference:reference,probeRed:node(doc.probes.red),probeBlack:node(doc.probes.black),view:doc.view,lessonId:doc.lessonId,challenge:challenge,
+    var records={};
+    if(Object.prototype.hasOwnProperty.call(doc,'lessonRecords')){
+      if(!object(doc.lessonRecords))throw Error('Saved lesson records must be an object.');
+      Object.keys(doc.lessonRecords).forEach(function(id){
+        if(!CIRCUIT_ACTIVE_LESSONS.some(function(l){return l.id===id;}))throw Error('A saved lesson is unknown.');
+        var record=doc.lessonRecords[id];
+        if(!object(record)||Object.keys(record).some(function(key){return ['choice','tested','explanation'].indexOf(key)<0;})||typeof record.tested!=='boolean'||![null,'more','same','less'].includes(record.choice)||(record.tested&&record.choice===null))throw Error('Saved lesson '+id+' is invalid.');
+        records[id]={choice:record.choice,tested:record.tested,explanation:string(record.explanation,'Saved lesson explanation',4000)};
+      });
+    }
+    if(challenge){
+      var saved=records[challenge.id];
+      if(saved&&(saved.choice!==challenge.choice||saved.tested!==challenge.tested))throw Error('The prediction activity conflicts with its saved lesson record.');
+      if(!saved)records[challenge.id]={choice:challenge.choice,tested:challenge.tested,explanation:''};
+    }
+    return Object.assign({},live,{reference:reference,probeRed:node(doc.probes.red),probeBlack:node(doc.probes.black),view:doc.view,lessonId:doc.lessonId,challenge:challenge,lessonRecords:records,
       investigationTitle:string(book.title,'Investigation title',120),investigationQuestion:string(book.question,'Investigation question',1000),investigationPrediction:string(book.prediction,'Investigation prediction',1000),reflection:string(book.explanation,'Explanation',4000),observations:observations});
   }
   function circuitActiveReport(state) {
@@ -2793,7 +2856,20 @@ window.StemLab = window.StemLab || {
     content+='<section class="chart"><h2>Response to the input</h2>'+graph+'<p class="caption">Solid teal / circle: live circuit.'+(sameAxis?' Dashed purple / diamond: reference.':'')+' Brown dashed line: live saturation limit.'+(sameAxis&&comparison.sameResponse?' The response curves overlap; their markers identify the saved operating points.':'')+' Every curve uses settled DC solutions; this is an input sweep, not a time trace.</p></section><section><h2>Recorded observations · '+book.observations.length+'</h2>';
     content+=book.observations.length?book.observations.map(function(o,index){var solved=solveActiveCircuit(o.design);return '<article class="observation"><h3>Observation '+(index+1)+' · '+esc(project(o.design))+'</h3><p>'+esc(solved.region)+'</p>'+reading(solved,o.probeRed,o.probeBlack)+settings(o.design)+'<p class="preserve note">'+esc(o.note||'No observation note recorded.')+'</p></article>';}).join(''):'<p>No operating points have been recorded yet.</p>';
     content+='</section>'+textBlock('Explanation using evidence',book.explanation);
-    if(doc.activity){var activity=doc.activity,lesson=circuitActiveLesson(activity.id);content+='<section><h2>Guided prediction activity</h2><p>'+esc(lesson.question)+'</p><p>Prediction: '+esc(activity.choice?{more:'Increases',same:'Stays the same',less:'Decreases'}[activity.choice]:'Not selected')+'. '+(activity.tested?(activity.choice===lesson.answer?'Matches the model.':'The model gives a different result.'):'Not yet tested.')+'</p>'+(activity.tested?'<p>'+esc(lesson.reason)+'</p>':'')+'</section>';}
+    var savedLessonIds=CIRCUIT_ACTIVE_LESSONS.filter(function(lesson){return Object.prototype.hasOwnProperty.call(clean.lessonRecords,lesson.id);});
+    if(savedLessonIds.length){
+      content+='<section class="guided-experiments"><h2>Saved guided experiments</h2><p>These records belong to the fixed lesson circuits. Their evidence stays saved when the live operating point above changes.</p>';
+      savedLessonIds.forEach(function(lesson){
+        var record=clean.lessonRecords[lesson.id],prediction=record.choice?{more:'Increases',same:'Stays the same',less:'Decreases'}[record.choice]:'Not selected';
+        content+='<article class="guided-experiment" data-lesson="'+esc(lesson.id)+'"><h3>'+esc(lesson.title)+'</h3><p>'+esc(lesson.question)+'</p><p>Original prediction: '+esc(prediction)+'. '+(record.tested?(record.choice===lesson.answer?'Matches the model.':'The model gives a different result.'):'Not yet tested.')+'</p>';
+        if(record.tested){
+          var before=solveActiveCircuit(lesson.before),after=solveActiveCircuit(Object.assign({},lesson.before,lesson.after));
+          content+='<table><caption>Saved lesson evidence, recalculated from its fixed before and after circuits</caption><thead><tr><th scope="col">Measurement</th><th scope="col">Before</th><th scope="col">After</th></tr></thead><tbody>'+[['Base current','baseCurrent',i],['Lamp current','collectorCurrent',i],['Transistor voltage','collectorVoltage',v],['Operating region','region',function(value){return value;}]].map(function(row){return '<tr><th scope="row">'+esc(row[0])+'</th><td>'+esc(row[2](before[row[1]]))+'</td><td>'+esc(row[2](after[row[1]]))+'</td></tr>';}).join('')+'</tbody></table><p>'+esc(lesson.reason)+'</p>';
+        }
+        content+='<p class="preserve"><strong>Lesson explanation:</strong> '+esc(record.explanation||'Not yet recorded.')+'</p></article>';
+      });
+      content+='</section>';
+    }
     content+='<footer><h2>Model and limits</h2><p>Generic, fixed-wiring NPN DC model: VBE = 0.70 V when conducting; VCE saturation = 0.20 V; constant adjustable gain. The lamp has fixed resistance. IB = max(0, (Vth − 0.70)/(Rth + RB)); IC = min(β × IB, (VCC − 0.20)/Rlamp). Sensor dividers include base loading. Relative light maps to 100 kΩ × 100^(−level/100), from 100 kΩ to 1 kΩ; it is not a lux calibration. Temperature, switching transients, leakage, and breakdown are excluded. Displayed measurements are rounded; saved investigation JSON retains the circuit settings.</p><p>Model: npn-piecewise-dc-v1. Recorded readings are recalculated from each saved design, not inferred from the current circuit.</p><p class="screen-only">Use your browser’s Print command to print or save a PDF.</p></footer>';
     return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;"><title>'+esc(book.title||'Circuit investigation')+'</title><style>body{margin:0;background:#edf2f3;color:#243d4b;font:14px/1.6 system-ui,sans-serif}main{max-width:850px;margin:25px auto;padding:38px;background:white;border:1px solid #d2dfe2;border-radius:16px;box-sizing:border-box}header{border-bottom:3px solid #28746e;padding-bottom:18px;margin-bottom:24px}.eyebrow{font-size:11px;letter-spacing:.13em;font-weight:750;color:#346963}h1{font-size:31px;line-height:1.25;margin:10px 0;color:#183b43;overflow-wrap:anywhere}h2{font-size:19px;color:#214e53;margin:8px 0 14px}h3{font-size:15px;margin:15px 0 7px}p{margin:8px 0}.preserve{white-space:pre-wrap;overflow-wrap:anywhere}section{margin:23px 0}.writing{border-left:3px solid #a9c8c0;background:#f3f7f6;padding:12px 17px}.readings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.readings>div{background:#f1f6f6;border:1px solid #bfd3d1;border-radius:9px;padding:9px 11px}.readings span{display:block;font-size:11px}.readings strong{display:block;color:#175e5d;font:650 17px/1.8 ui-monospace,monospace}.settings{display:grid;grid-template-columns:1fr 1fr;gap:7px 24px;margin:17px 0}.settings>div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #e1e9eb;font-size:12px}.settings dt{color:#3e5967}.settings dd{margin:0;font-weight:650;text-align:right;overflow-wrap:anywhere}table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}caption{text-align:left;font-size:11px;margin:8px 0;color:#48606b}th,td{text-align:left;padding:10px 7px;border-bottom:1px solid #cedee0;overflow-wrap:anywhere}thead{background:#eaf2f1}svg{display:block;width:100%;height:auto;font-family:system-ui,sans-serif}.caption{font-size:11px;color:#435d68}.chart{border:1px solid #c5d7da;border-radius:12px;padding:16px}.observation{border:1px solid #c5d7da;border-radius:10px;padding:15px;margin:14px 0}.note{padding-top:9px;border-top:1px solid #d9e4e7}footer{font-size:11px;border-top:2px solid #a9c6c3;padding-top:18px;margin-top:30px}footer h2{font-size:15px}@media(max-width:600px){main{margin:0;border:0;border-radius:0;padding:20px}.readings{grid-template-columns:1fr 1fr}.readings strong{font-size:14px}.settings{grid-template-columns:1fr}th,td{padding:7px 4px;font-size:11px}}@media print{@page{margin:16mm}body{background:white}main{margin:0;padding:0;max-width:none;border:0;border-radius:0}.screen-only{display:none}body{font-size:13px}section{margin:18px 0}.readings{grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.readings>div{padding:8px}.readings strong{font-size:14px}.settings{gap:4px 20px;margin:12px 0}.writing{padding:10px 14px}.observation{padding:12px;margin:12px 0}.comparison-report,.chart,.observation,.writing,.readings,table,.settings{break-inside:avoid}h2,h3{break-after:avoid}thead{display:table-header-group}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><main>'+content+'</main></body></html>';
   }
@@ -2806,11 +2882,12 @@ window.StemLab = window.StemLab || {
     var React=props.React,h=React.createElement,state=props.state,observations=Array.isArray(state.observations)?state.observations:[];
     var __alloT=circuitToolT(props);
     var pending=React.useState(null),candidate=pending[0],setCandidate=pending[1],feedback=React.useState(''),message=feedback[0],setMessage=feedback[1];
-    var fail=React.useState(false),error=fail[0],setError=fail[1],reading=React.useState(false),busy=reading[0],setBusy=reading[1],generation=React.useRef(0),input=React.useRef(null);
-    React.useEffect(function(){return function(){generation.current++;};},[]);
+    var fail=React.useState(false),error=fail[0],setError=fail[1],reading=React.useState(false),busy=reading[0],setBusy=reading[1],generation=React.useRef(0),input=React.useRef(null),candidateRef=React.useRef(null);
+    React.useEffect(function(){return function(){generation.current++;candidateRef.current=null;};},[]);
     var save=function(report){var url;try{var doc=circuitActiveInvestigation(state);parseCircuitInvestigation(JSON.stringify(doc));var content=report?circuitActiveReport(state):JSON.stringify(doc,null,2);url=URL.createObjectURL(new Blob([content],{type:report?'text/html;charset=utf-8':'application/json'}));var a=document.createElement('a');a.href=url;a.download=report?'circuit-investigation-report.html':'circuit-investigation.json';document.body.appendChild(a);a.click();a.remove();setError(false);setMessage(report?'Report downloaded. Open it in a browser to print or save as PDF.':'Investigation saved with its settings, reference, probe positions, observations, and explanation.');setTimeout(function(){URL.revokeObjectURL(url);},1000);}catch(err){if(url)URL.revokeObjectURL(url);setError(true);setMessage(err.message||'The investigation could not be saved.');}};
-    var readFile=function(e){var file=e.target.files&&e.target.files[0],request=++generation.current;setCandidate(null);setMessage('');setError(false);if(!file){setBusy(false);return;}if(file.size>131072){setBusy(false);setError(true);setMessage('Choose an investigation JSON file smaller than 128 KB.');return;}setBusy(true);
-      file.text().then(function(text){if(generation.current!==request)return;try{setCandidate(parseCircuitInvestigation(text));setMessage('Preview ready. Review the investigation before loading it.');}catch(err){setError(true);setMessage(err.message);}}).catch(function(){if(generation.current===request){setError(true);setMessage('The investigation could not be read. Choose it again.');}}).finally(function(){if(generation.current===request)setBusy(false);});};
+    var readFile=function(e){var file=e.target.files&&e.target.files[0],request=++generation.current;candidateRef.current=null;setCandidate(null);setMessage('');setError(false);if(!file){setBusy(false);return;}if(file.size>131072){setBusy(false);setError(true);setMessage('Choose an investigation JSON file smaller than 128 KB.');return;}setBusy(true);
+      file.text().then(function(text){if(generation.current!==request)return;try{var parsed=parseCircuitInvestigation(text);candidateRef.current={value:parsed,generation:request};setCandidate(parsed);setMessage('Preview ready. Review the investigation before loading it.');}catch(err){setError(true);setMessage(err.message);}}).catch(function(){if(generation.current===request){setError(true);setMessage('The investigation could not be read. Choose it again.');}}).finally(function(){if(generation.current===request)setBusy(false);});};
+    var consumeCandidate=function(){var current=candidateRef.current;if(!candidate||!current||current.value!==candidate||current.generation!==generation.current)return false;candidateRef.current=null;generation.current++;setBusy(false);return true;};
     var field=function(label,key,max,rows,placeholder){var attributes={'aria-label':label,value:state[key]||'',maxLength:max,onChange:function(e){var update={};update[key]=e.target.value;props.patch(update);},placeholder:placeholder};return h('label',{className:'circuit-notebook-field'},label,rows?h('textarea',Object.assign({rows:rows},attributes)):h('input',Object.assign({type:'text'},attributes)));};
     return h('details',{id:'circuit-active-notebook',className:'circuit-active-notebook',open:!!state.notebookOpen,onToggle:function(e){if(e.target===e.currentTarget&&e.currentTarget.open!==!!state.notebookOpen)props.patch({notebookOpen:e.currentTarget.open});}},
       h('summary',null,h('span',null,'Investigation notebook'),h('small',null,observations.length+'/8 observations')),
@@ -2832,19 +2909,79 @@ window.StemLab = window.StemLab || {
           h('div',{className:'circuit-notebook-record-actions'},h('button',{type:'button',onClick:function(){save(false);}},'Save investigation JSON'),h('button',{type:'button',onClick:function(){save(true);}},'Download investigation report')),
           h('label',{className:'circuit-notebook-file-label'},'Open investigation file',h('input',{type:'file','aria-label':__alloT('stem.circuit.open_investigation_file','Open investigation file'),accept:'.json,application/json',ref:input,onChange:readFile})),
           h('p',{role:error?'alert':'status',className:error?'circuit-file-error':'circuit-help'},busy?'Reading investigation…':message),
-          candidate&&h('div',{className:'circuit-notebook-preview'},h('span',{className:'circuit-eyebrow'},'REVIEW BEFORE LOADING'),h('h4',null,candidate.investigationTitle||'Untitled investigation'),h('p',null,({manual:'Manual control',light:'Light sensor',dark:'Dark sensor'})[candidate.project]+' · '+candidate.supply+' V supply · '+candidate.observations.length+' observations · '+(candidate.reference?'Reference included':'No reference')),h('p',{className:'circuit-help'},'Replaces the active circuit, reference, and notebook. Restore previous investigation will recover the investigation you have open now.'),h('div',{className:'circuit-notebook-record-actions'},h('button',{type:'button',onClick:function(){props.load(candidate);setCandidate(null);setError(false);setMessage('Investigation loaded. The previous investigation is available below.');if(input.current)input.current.value='';}},'Load investigation'),h('button',{type:'button',onClick:function(){generation.current++;setCandidate(null);setError(false);setMessage('Preview dismissed. Your investigation is unchanged.');if(input.current)input.current.value='';}},'Dismiss investigation preview'))),
+          candidate&&h('div',{className:'circuit-notebook-preview'},h('span',{className:'circuit-eyebrow'},'REVIEW BEFORE LOADING'),h('h4',null,candidate.investigationTitle||'Untitled investigation'),h('p',null,({manual:'Manual control',light:'Light sensor',dark:'Dark sensor'})[candidate.project]+' · '+candidate.supply+' V supply · '+candidate.observations.length+' observations · '+(candidate.reference?'Reference included':'No reference')),h('p',{className:'circuit-help'},'Replaces the active circuit, reference, and notebook. Restore previous investigation will recover the investigation you have open now.'),h('div',{className:'circuit-notebook-record-actions'},h('button',{type:'button',onClick:function(){if(!consumeCandidate())return;props.load(candidate);setCandidate(null);setError(false);setMessage('Investigation loaded. The previous investigation is available below.');if(input.current)input.current.value='';}},'Load investigation'),h('button',{type:'button',onClick:function(){if(!consumeCandidate())return;setCandidate(null);setError(false);setMessage('Preview dismissed. Your investigation is unchanged.');if(input.current)input.current.value='';}},'Dismiss investigation preview'))),
           state.previousInvestigation&&h('button',{type:'button',onClick:function(){props.restore();setError(false);setMessage('Previous investigation restored.');}},'Restore previous investigation'))));
   }
+
+// Product fragment: insert alongside the other Active workbench components.
+// State changes are owned by onAction(id, action, value), not this component.
+function CircuitActiveLessonLab(props) {
+  var React=props.React,h=React.createElement,state=props.state||{},t=circuitToolT(props);
+  var ids=['gain','limit','sensor'],records=circuitActiveLessonRecords(state);
+  var selected=state.lessonId||(state.challenge&&state.challenge.id)||'gain';
+  if(ids.indexOf(selected)<0)selected='gain';
+  var lesson=circuitActiveLesson(selected),record=records[selected]||null,tested=!!(record&&record.tested);
+  var done=ids.filter(function(id){return records[id]&&records[id].tested;}).length;
+  var next=ids.find(function(id){return !records[id]||!records[id].tested;});
+  var before=solveActiveCircuit(circuitActiveDesign(lesson.before));
+  var after=solveActiveCircuit(circuitActiveDesign(Object.assign({},lesson.before,lesson.after)));
+  var baselineMatch=circuitActiveComparison({version:1,design:before.design},state).unchanged;
+  var resultMatch=circuitActiveComparison({version:1,design:after.design},state).unchanged;
+  var scale=Math.max(before.collectorCurrent,after.collectorCurrent),delta=after.collectorCurrent-before.collectorCurrent;
+  var uid=React.useId(),questionRef=React.useRef(null),resultRef=React.useRef(null),pendingFocus=React.useRef(null);
+  var focusState=React.useState(0),focusVersion=focusState[0];
+  React.useEffect(function(){
+    var request=pendingFocus.current;
+    if(!request||request.id!==selected||(request.target==='result'&&!tested))return;
+    var element=request.target==='result'?resultRef.current:questionRef.current;
+    if(element){pendingFocus.current=null;element.focus();}
+  },[focusVersion,selected,tested]);
+  var act=function(id,action,value,focus){
+    pendingFocus.current=focus?{id:id,target:focus}:null;
+    props.onAction(id,action,value);
+    if(focus)focusState[1](function(version){return version+1;});
+  };
+  var select=function(id){act(id,'select',undefined,records[id]&&records[id].tested?'result':'question');};
+  var choiceText=function(value){return t('stem.circuit.active_prediction_'+value,{more:'Increases',same:'Stays the same',less:'Decreases'}[value]||'');};
+  var regionText=function(region){return t('stem.circuit.active_region_'+region,{cutoff:'Cutoff',active:'Active region',saturated:'Saturation'}[region]||region);};
+  var title=t('stem.circuit.active_lesson_'+selected+'_title',lesson.title);
+  var resultTitle=delta>0?t('stem.circuit.active_lamp_increased','Lamp current increased'):delta<0?t('stem.circuit.active_lamp_decreased','Lamp current decreased'):t('stem.circuit.active_lamp_unchanged','Lamp current stayed the same');
+  var replayNote=tested?(resultMatch?t('stem.circuit.active_result_on_bench','These saved readings match the experiment now on your bench.'):baselineMatch?t('stem.circuit.active_baseline_on_bench','The experiment baseline is now on your bench. The result below stays saved.'):t('stem.circuit.active_saved_bench_changed','Saved experiment evidence. Your live bench has changed since this test.')):(baselineMatch?t('stem.circuit.active_baseline_ready','The experiment baseline is on your bench.'):t('stem.circuit.active_prediction_bench_changed','Your live bench differs from the experiment baseline. Test applies the stated change from that baseline; Undo restores your current circuit.'));
+  return h('section',{className:'circuit-active-predict circuit-active-lesson-lab','aria-labelledby':uid+'-title'},
+    h('header',{className:'circuit-active-lesson-heading'},h('span',{className:'circuit-eyebrow'},t('stem.circuit.active_lesson_steps','PREDICT · TEST · EXPLAIN')),h('h4',{id:uid+'-title'},t('stem.circuit.active_lesson_heading','Explore a transistor change'))),
+    h('div',{className:'circuit-active-lesson-progress'},h('p',{role:'status'},t('stem.circuit.active_lesson_count','{count} of 3 experiments tested').replace('{count}',String(done))),h('progress',{max:3,value:done,'aria-label':t('stem.circuit.active_tested_count','Transistor experiments tested')})),
+    h('label',{className:'circuit-active-lesson-picker',htmlFor:uid+'-select'},t('stem.circuit.active_choose_experiment','Choose an experiment'),h('select',{id:uid+'-select','aria-label':t('stem.circuit.transistor_prediction_experiment','Transistor prediction experiment'),value:selected,onChange:function(e){select(e.target.value);}},ids.map(function(id){var item=circuitActiveLesson(id);return h('option',{key:id,value:id},t('stem.circuit.active_lesson_'+id+'_title',item.title));}))),
+    h('p',{className:'circuit-active-lesson-help'},t('stem.circuit.active_lesson_switch_help','Switching experiments keeps your live circuit and saved work.')),
+    h('div',{className:'circuit-active-lesson-question-block'},h('span',{className:'circuit-eyebrow'},title),h('h5',{ref:questionRef,tabIndex:-1,'data-active-lesson-question':true,'aria-describedby':!record?uid+'-start-help':undefined},t('stem.circuit.active_lesson_'+selected+'_question',lesson.question))),
+    !record?h('div',{className:'circuit-active-lesson-start'},h('p',{id:uid+'-start-help'},t('stem.circuit.active_lesson_start_help','Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.')),h('button',{type:'button',onClick:function(){act(selected,'start',undefined,'question');}},t('stem.circuit.start_transistor_prediction','Start transistor prediction'))):h(React.Fragment,null,
+      !tested?h(React.Fragment,null,
+        h('fieldset',{className:'circuit-active-lesson-predictions'},h('legend',null,t('stem.circuit.active_predict_lamp_current','Predict the lamp current')),h('div',{className:'circuit-active-lesson-actions'},['more','same','less'].map(function(choice){return h('button',{key:choice,type:'button','aria-pressed':record.choice===choice,onClick:function(){act(selected,'predict',choice);}},choiceText(choice));}))),
+        h('div',{className:'circuit-active-lesson-actions'},h('button',{type:'button',className:'circuit-active-lesson-primary',disabled:record.choice==null,onClick:function(){act(selected,'test',undefined,'result');}},t('stem.circuit.test_transistor_prediction','Test transistor prediction'))),
+        h('p',{className:'circuit-active-lesson-help'},t('stem.circuit.active_lesson_test_help','Test runs the stated change from the experiment baseline.'))):h(React.Fragment,null,
+        h('div',{className:'circuit-active-lesson-saved-prediction'},h('span',null,t('stem.circuit.active_saved_prediction','Your prediction')),h('strong',null,choiceText(record.choice))),
+        h('section',{className:'circuit-active-lesson-evidence','aria-labelledby':uid+'-result'},
+          h('div',{className:'circuit-active-lesson-result-heading'},h('div',null,h('span',{className:'circuit-eyebrow'},t('stem.circuit.active_observed_result','OBSERVED RESULT')),h('h5',{id:uid+'-result',ref:resultRef,tabIndex:-1,'data-active-lesson-result':true,'aria-describedby':uid+'-result-summary'},resultTitle)),h('p',{className:'circuit-active-lesson-delta'},h('span',null,t('stem.circuit.active_current_change','Change in lamp current')),h('strong',null,(delta>0?'+':'')+circuitCurrentText(delta)))),
+          h('p',{id:uid+'-result-summary'},h('strong',null,record.choice===lesson.answer?t('stem.circuit.active_prediction_matches','Your prediction matches these readings.'):t('stem.circuit.active_prediction_revise','Use these readings to revise your explanation.')),' '+t('stem.circuit.active_lesson_'+selected+'_reason',lesson.reason)),
+          h('div',{className:'circuit-active-lesson-chart','aria-describedby':uid+'-scale'},[{key:'before',label:t('stem.circuit.active_lesson_before','Before · lamp current'),solved:before},{key:'after',label:t('stem.circuit.active_lesson_after','After · lamp current'),solved:after}].map(function(item){return h('div',{key:item.key,className:'circuit-active-lesson-reading','data-stage':item.key},h('span',null,item.label),h('strong',null,circuitCurrentText(item.solved.collectorCurrent)),h('div',{className:'circuit-active-lesson-track','aria-hidden':true},h('span',{style:{width:(scale>0?item.solved.collectorCurrent/scale*100:0)+'%'}})),h('span',{className:'circuit-active-lesson-region'},regionText(item.solved.region)),h('small',null,item.solved.sensor?t('stem.circuit.active_lesson_light_setting','Relative light: {value} / 100').replace('{value}',String(item.solved.design.light)):t('stem.circuit.active_lesson_input_setting','Input: {value} V').replace('{value}',item.solved.design.input.toFixed(2))));})),
+          h('p',{id:uid+'-scale',className:'circuit-active-lesson-help'},scale>0?t('stem.circuit.active_lesson_shared_scale','Both bars use the same scale. Full width = {value}.').replace('{value}',circuitCurrentText(scale)):t('stem.circuit.active_lesson_zero_scale','Both currents are zero; neither bar has a filled length.')))),
+      h('div',{className:'circuit-active-lesson-replay'},h('h5',null,t('stem.circuit.active_revisit_experiment','Revisit the circuit')),h('p',{role:'status',className:'circuit-active-lesson-bench-note'},replayNote),h('div',{className:'circuit-active-lesson-actions'},h('button',{type:'button','aria-pressed':baselineMatch,onClick:function(){act(selected,'baseline');}},t('stem.circuit.active_load_baseline','Load experiment baseline')),tested&&h('button',{type:'button','aria-pressed':resultMatch,onClick:function(){act(selected,'result');}},t('stem.circuit.active_load_result','Load this experiment result'))),h('p',{className:'circuit-active-lesson-help'},t('stem.circuit.active_replay_help','Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.'))),
+      h('label',{className:'circuit-active-lesson-explanation',htmlFor:uid+'-explanation'},t('stem.circuit.active_my_lesson_explanation','My explanation for this experiment')),
+      h('p',{id:uid+'-explanation-help',className:'circuit-active-lesson-help'},t('stem.circuit.active_explanation_help','Use the lamp current and operating regions to explain the change. This response stays with this experiment; your investigation notebook has its own explanation.')),
+      h('textarea',{id:uid+'-explanation','aria-label':t('stem.circuit.transistor_experiment_explanation','Transistor experiment explanation'),'aria-describedby':uid+'-explanation-help',maxLength:4000,rows:3,value:record.explanation||'',placeholder:t('stem.circuit.active_lesson_explanation_placeholder','I observed… The readings show…'),onChange:function(e){act(selected,'explain',e.target.value);}}),
+      tested&&h('div',{className:'circuit-active-lesson-next'},next?h(React.Fragment,null,h('strong',null,t('stem.circuit.active_keep_investigating','Keep investigating')),h('button',{type:'button',onClick:function(){select(next);}},t('stem.circuit.active_next_experiment','Next: {title}').replace('{title}',t('stem.circuit.active_lesson_'+next+'_title',circuitActiveLesson(next).title)))):h('strong',null,t('stem.circuit.active_all_tested','All three experiments tested. Your evidence stays saved.'))),
+      h('div',{className:'circuit-active-lesson-retry'},h('p',{className:'circuit-active-lesson-help'},t('stem.circuit.active_retry_help','Starting again replaces this experiment’s saved prediction, result, and explanation, and loads its baseline. Your investigation notebook stays saved.')),h('button',{type:'button',onClick:function(){act(selected,'start',undefined,'question');}},t('stem.circuit.start_transistor_prediction','Start transistor prediction')))));
+}
 
   function CircuitActiveWorkbench(props) {
     var ctx=props.ctx,React=ctx.React,h=React.createElement,state=(ctx.toolData||{})._circuitActive||{},d=circuitActiveDesign(state),s=solveActiveCircuit(d);
     var __alloT=circuitToolT(props);
     // Derive the translator once for this subtree; children get it as a prop.
     var cktT=(ctx&&typeof ctx.t==='function')?ctx.t:null;
-    var patch=function(values,electrical){ctx.setToolData(function(prev){var old=prev._circuitActive||{},next=Object.assign({},old,values);
-      if(electrical&&JSON.stringify(circuitActiveDesign(old))!==JSON.stringify(circuitActiveDesign(next))){next.undo=(old.undo||[]).slice(-29).concat([circuitActiveDesign(old)]);next.redo=[];next.challenge=null;}
+    var patch=function(values,electrical){ctx.setToolData(function(prev){var old=prev._circuitActive||{},next=Object.assign({},old,{lessonRecords:circuitActiveLessonRecords(old)},values);
+      if(electrical&&JSON.stringify(circuitActiveDesign(old))!==JSON.stringify(circuitActiveDesign(next))){next.undo=(old.undo||[]).slice(-29).concat([circuitActiveDesign(old)]);next.redo=[];}
       return Object.assign({},prev,{_circuitActive:next});});};
-    var history=function(key){ctx.setToolData(function(prev){var old=prev._circuitActive||{},list=old[key]||[];if(!list.length)return prev;var next=Object.assign({},old,circuitActiveDesign(list[list.length-1]),{challenge:null});next[key]=list.slice(0,-1);next[key==='undo'?'redo':'undo']=(old[key==='undo'?'redo':'undo']||[]).slice(-29).concat([circuitActiveDesign(old)]);return Object.assign({},prev,{_circuitActive:next});});};
+    var history=function(key){ctx.setToolData(function(prev){var old=prev._circuitActive||{},list=old[key]||[];if(!list.length)return prev;var next=Object.assign({},old,circuitActiveDesign(list[list.length-1]),{lessonRecords:circuitActiveLessonRecords(old)});next[key]=list.slice(0,-1);next[key==='undo'?'redo':'undo']=(old[key==='undo'?'redo':'undo']||[]).slice(-29).concat([circuitActiveDesign(old)]);return Object.assign({},prev,{_circuitActive:next});});};
+    var lessonAction=function(id,action,value){ctx.setToolData(function(prev){var prior=prev._circuitActive||{},next=circuitActiveLessonUpdate(prior,id,action,value);return next===prior?prev:Object.assign({},prev,{_circuitActive:next});});};
     var observations=Array.isArray(state.observations)?state.observations:[];
     var changeNotebook=function(fn){ctx.setToolData(function(prev){var old=prev._circuitActive||{},values=fn(old);return Object.assign({},prev,{_circuitActive:Object.assign({},old,values)});});};
     var record=function(){changeNotebook(function(old){var list=old.observations||[];return list.length>=8?{investigationNotice:'The notebook is full. Remove an observation before recording another.'}:{observations:list.concat([circuitActiveObservation(old,'')]),investigationNotice:'Recorded observation '+(list.length+1)+'. Open the notebook to add a note.'};});};
@@ -2863,7 +3000,6 @@ window.StemLab = window.StemLab || {
     var status={cutoff:['Cutoff','The base drive is at or below the model’s 0.70 V turn-on. No base or lamp current flows.'],active:['Active region','Base current controls lamp current. IC = β × IB while the load still allows more current.'],saturated:['Saturation','The load sets the current limit. More base drive cannot increase lamp current here.']}[s.region];
     var range=function(label,key,min,max,step,format){return h(CircuitActiveControl,{React:React,t:cktT,key:key,field:key,label:label,min:min,max:max,step:step,value:d[key],format:format,onChange:function(value){var v={};v[key]=value;patch(v,true);}});};
     var selectNode=function(lead,key){return h('label',null,lead,h('select',{'aria-label':lead,value:probe[key],onChange:function(e){var v={};v[key==='red'?'probeRed':'probeBlack']=e.target.value;patch(v);}},Object.keys(s.nodes).map(function(node){return h('option',{key:node,value:node},({supply:'VCC · supply',drive:s.sensor?'D · divider junction':'VIN · input',base:'B · base',collector:'C · collector',emitter:'E · common return'})[node]);})));};
-    var challenge=state.challenge,lesson=circuitActiveLesson(challenge?challenge.id:state.lessonId),tested=challenge&&challenge.tested,before=solveActiveCircuit(lesson.before),after=solveActiveCircuit(Object.assign({},lesson.before,lesson.after));
     var downloadState=React.useState(''),downloadMessage=downloadState[0],setDownloadMessage=downloadState[1];
     var download=function(){var url;try{url=URL.createObjectURL(new Blob([circuitActiveCSV(d)],{type:'text/csv;charset=utf-8'}));var a=document.createElement('a');a.href=url;a.download='npn-'+d.project+'-dc-sweep.csv';document.body.appendChild(a);a.click();a.remove();setDownloadMessage('Saved 201 calculated DC operating points with circuit settings and model constants.');setTimeout(function(){URL.revokeObjectURL(url);},1000);}catch(e){if(url)URL.revokeObjectURL(url);setDownloadMessage('The sweep could not be saved. Try again.');}};
     return h('section',{'data-circuit-builder-root':'true',className:'circuit-active-root','aria-label':__alloT('stem.circuit.active_electronics_workbench','Active electronics workbench')},
@@ -2898,10 +3034,7 @@ window.StemLab = window.StemLab || {
         h('p',null,'Lamp drop '+circuitPreciseVoltageText(s.loadVoltage)+' + transistor drop '+circuitPreciseVoltageText(s.collectorVoltage)+' = supply '+circuitPreciseVoltageText(d.supply)+'.'),
         s.sensor&&h('div',{className:'circuit-active-loading'},h('strong',null,'The sensor divider is loaded'),h('p',null,'LDR: '+(s.ldr/1000).toFixed(2)+' kΩ. Junction with no base connection: '+circuitPreciseVoltageText(s.theveninVoltage)+'. Connected junction: '+circuitPreciseVoltageText(s.driveVoltage)+'.'),h('p',null,'Upper resistor current = lower resistor current + base current: '+circuitCurrentText(s.topCurrent)+' = '+circuitCurrentText(s.bottomCurrent)+' + '+circuitCurrentText(s.baseCurrent)+'. The input branch draws current, so the connected divider voltage can be lower.')),
         h('details',null,h('summary',null,'Where does the energy come from?'),h('p',null,'Main supply: '+circuitPowerText(s.supplyPower)+(s.sensor?'':'. Separate input source: '+circuitPowerText(s.inputPower))+'. Total supplied: '+circuitPowerText(s.totalPower)+'.'),h('p',null,'Lamp '+circuitPowerText(s.loadPower)+' + base resistor '+circuitPowerText(s.basePower)+' + transistor '+circuitPowerText(s.transistorPower)+(s.sensor?' + divider '+circuitPowerText(s.dividerPower):'')+' = '+circuitPowerText(s.lossPower)+'.'),h('p',null,'The transistor controls energy supplied to the lamp. It does not create energy. Transistor dissipation includes both collector and base input power. Values are rounded.')),
-        h('div',{className:'circuit-active-predict'},h('h4',null,'Predict, then test'),h('label',null,'Choose an experiment',h('select',{'aria-label':__alloT('stem.circuit.transistor_prediction_experiment','Transistor prediction experiment'),value:state.lessonId||'gain',onChange:function(e){patch({lessonId:e.target.value,challenge:null});}},CIRCUIT_ACTIVE_LESSONS.map(function(l){return h('option',{key:l.id,value:l.id},l.title);}))),h('button',{type:'button',onClick:function(){patch(circuitActiveDesign(lesson.before),true);patch({challenge:{id:lesson.id,choice:null,tested:false}});}},'Start transistor prediction'),
-          challenge&&h('div',null,h('p',null,lesson.question),h('fieldset',null,h('legend',null,'Predict the lamp current'),h('div',{className:'circuit-active-quick'},[['more','Increases'],['same','Stays the same'],['less','Decreases']].map(function(c){return h('button',{key:c[0],type:'button',disabled:!!tested,'aria-pressed':challenge.choice===c[0],onClick:function(){patch({challenge:Object.assign({},challenge,{choice:c[0]})});}},c[1]);}))),h('button',{type:'button',disabled:!challenge.choice||!!tested,onClick:function(){patch(circuitActiveDesign(Object.assign({},lesson.before,lesson.after)),true);patch({challenge:Object.assign({},challenge,{tested:true})});}},'Test transistor prediction'),
-            tested&&h('div',{className:'circuit-active-feedback',role:'status'},h('strong',null,challenge.choice===lesson.answer?'Your prediction matches the model.':'The readings reveal a different result.'),h('p',null,'Before: '+circuitCurrentText(before.collectorCurrent)+' ('+before.region+'). After: '+circuitCurrentText(after.collectorCurrent)+' ('+after.region+').'),h('p',null,lesson.reason))),
-          h('label',{className:'circuit-active-reflection'},'My explanation',h('textarea',{'aria-label':__alloT('stem.circuit.transistor_experiment_explanation','Transistor experiment explanation'),maxLength:4000,rows:2,value:state.reflection||'',placeholder:__alloT('stem.circuit.use_the_base_current_lamp_current_and_voltag','Use the base current, lamp current, and voltage readings as evidence.'),onChange:function(e){patch({reflection:e.target.value});}})))),
+        h(CircuitActiveLessonLab,{React:React,t:cktT,state:state,onAction:lessonAction})),
       h('details',{className:'circuit-active-panel circuit-model-details'},h('summary',null,'Model and connections'),h('p',null,'These are fixed, prewired DC experiments using a generic NPN model. Conducting VBE = 0.70 V; saturation VCE = 0.20 V. IB = max(0, (Vth − 0.70)/(Rth + RB)); IC = min(β × IB, (VCC − 0.20)/Rlamp). The divider is replaced by its Thevenin equivalent for the base-current calculation, then all actual branch currents are recovered.'),h('p',null,'Relative light 0–100 maps to an illustrative resistance of 100 kΩ × 100^(−level/100), from 100 kΩ to 1 kΩ. This is not a lux calibration. The light sensor places the LDR above the divider junction; the dark sensor places it below. Both use the main supply. Manual control uses a separate ideal input source with the same return.'),h('p',null,'Gain and junction voltages are idealized constants, not device guarantees. Temperature, leakage, breakdown, reverse operation, switching delay, and lamp heating are outside this model. Transistor heat does not change its parameters. No arbitrary wiring or transistor transient simulation is implied.'),h('p',null,h('a',{href:'https://www.onsemi.com/pdf/datasheet/2n3904-d.pdf',target:'_blank',rel:'noopener noreferrer'},'Compare real transistor characteristics'),' · ',h('a',{href:'https://wiki.analog.com/university/courses/electronics/text/light-sensors-photodiodes',target:'_blank',rel:'noopener noreferrer'},'Read about light-sensor interfaces'))));
   }
 
@@ -3950,6 +4083,90 @@ window.StemLab = window.StemLab || {
     @media(prefers-reduced-motion:reduce){
       [data-circuit-builder-root] .circuit-target-panel>button{transition:none}
     }
+`;
+  circStyle.textContent += `
+/* Append after existing Active workbench styles. Scoped to this lesson panel. */
+.circuit-active-root .circuit-active-lesson-lab{min-width:0;margin-top:22px;padding:18px;border:1px solid #54747b;border-radius:14px;background:#102a34;color:#e4f2f2}
+.circuit-active-root .circuit-active-lesson-lab *{box-sizing:border-box}
+.circuit-active-root .circuit-active-lesson-heading h4{font-size:19px;line-height:1.4;margin:7px 0 16px;color:#e9f7f5}
+.circuit-active-root .circuit-active-lesson-lab .circuit-eyebrow{color:#a8dfd3;font-size:11px;line-height:1.6;letter-spacing:.09em}
+.circuit-active-root .circuit-active-lesson-lab p{font-size:13px;line-height:1.75;margin:10px 0;overflow-wrap:anywhere}
+.circuit-active-root .circuit-active-lesson-lab .circuit-active-lesson-help{color:#c4d8df;font-size:12px;line-height:1.75}
+.circuit-active-root .circuit-active-lesson-lab button,.circuit-active-root .circuit-active-lesson-lab select{min-width:0;max-width:100%;min-height:44px;padding:10px 12px;border:1px solid #648591;border-radius:9px;background:#173743;color:#e5f3f5;font-size:13px;line-height:1.5;white-space:normal;overflow-wrap:anywhere}
+.circuit-active-root .circuit-active-lesson-lab button{font-weight:650}
+.circuit-active-root .circuit-active-lesson-lab button:hover:not(:disabled){background:#244956;border-color:#b3ded7}
+.circuit-active-root .circuit-active-lesson-lab button[aria-pressed=true],.circuit-active-root .circuit-active-lesson-lab .circuit-active-lesson-primary:not(:disabled){background:#b5ebdd;border-color:#b5ebdd;color:#143a34}
+.circuit-active-root .circuit-active-lesson-lab button[aria-pressed=true]:hover:not(:disabled),.circuit-active-root .circuit-active-lesson-lab .circuit-active-lesson-primary:hover:not(:disabled){background:#d4f7ed;color:#143a34}
+.circuit-active-root .circuit-active-lesson-lab button:disabled{opacity:1;background:#1a303b;border-color:#47606d;color:#abc0cc;cursor:default}
+.circuit-active-root .circuit-active-lesson-lab :focus-visible{outline:3px solid #f9dd9a;outline-offset:3px}
+.circuit-active-root .circuit-active-lesson-progress{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:10px 12px;background:#0b222b;border-radius:9px;margin:0 0 16px}
+.circuit-active-root .circuit-active-lesson-progress p{margin:0;font-weight:650;color:#dbf1e9}
+.circuit-active-root .circuit-active-lesson-progress progress{flex:1 1 140px;min-width:0;width:100%;height:7px;border:0;border-radius:8px;appearance:none;overflow:hidden;background:#365661;color:#a5e3cd}
+.circuit-active-root .circuit-active-lesson-progress progress::-webkit-progress-bar{background:#365661}
+.circuit-active-root .circuit-active-lesson-progress progress::-webkit-progress-value{background:#a5e3cd}
+.circuit-active-root .circuit-active-lesson-progress progress::-moz-progress-bar{background:#a5e3cd}
+.circuit-active-root .circuit-active-lesson-picker{display:grid;gap:7px;min-width:0;font-size:13px;color:#d5e8eb;font-weight:650}
+.circuit-active-root .circuit-active-lesson-picker select{display:block;width:100%;font-size:16px}
+.circuit-active-root .circuit-active-lesson-question-block{margin:20px 0 16px}
+.circuit-active-root .circuit-active-lesson-question-block h5{margin:6px 0 0;font-size:18px;line-height:1.6;color:#edf8f8;overflow-wrap:anywhere;scroll-margin-block:20px}
+.circuit-active-root .circuit-active-lesson-predictions{border:0;padding:0;margin:16px 0;min-width:0}
+.circuit-active-root .circuit-active-lesson-predictions legend{font-size:13px;font-weight:650;color:#dceef1;margin-bottom:10px}
+.circuit-active-root .circuit-active-lesson-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.circuit-active-root .circuit-active-lesson-saved-prediction{padding:12px 14px;border-left:3px solid #8baab6;background:#17323d;margin:18px 0;border-radius:0 9px 9px 0}
+.circuit-active-root .circuit-active-lesson-saved-prediction span{display:block;font-size:12px;color:#c3d6df;margin-bottom:5px}
+.circuit-active-root .circuit-active-lesson-saved-prediction strong{display:block;font-size:14px;color:#e4eef2;line-height:1.6;overflow-wrap:anywhere}
+.circuit-active-root .circuit-active-lesson-evidence{border-top:1px solid #40616a;padding-top:18px;margin-top:20px;min-width:0}
+.circuit-active-root .circuit-active-lesson-result-heading{display:flex;gap:14px 24px;justify-content:space-between;align-items:start;flex-wrap:wrap;min-width:0}
+.circuit-active-root .circuit-active-lesson-result-heading>div{flex:1 1 240px;min-width:0}
+.circuit-active-root .circuit-active-lesson-result-heading h5{font-size:22px;line-height:1.4;margin:8px 0;color:#e0f6ed;overflow-wrap:anywhere;scroll-margin-block:20px}
+.circuit-active-root .circuit-active-lesson-delta{display:flex;gap:6px 12px;flex-wrap:wrap;align-items:baseline;min-width:0}
+.circuit-active-root .circuit-active-lesson-delta span{font-size:12px;color:#bed6dc}
+.circuit-active-root .circuit-active-lesson-delta strong{font-size:17px;line-height:1.5;color:#c6eadb;white-space:normal;overflow-wrap:anywhere}
+.circuit-active-root .circuit-active-lesson-chart{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,10.5em),1fr));gap:12px;margin:18px 0 10px;min-width:0;font-size:13px}
+.circuit-active-root .circuit-active-lesson-reading{min-width:0;padding:14px;border:1px solid #54717d;border-radius:11px;background:#0c2530}
+.circuit-active-root .circuit-active-lesson-reading[data-stage=after]{background:#143832;border-color:#65978c}
+.circuit-active-root .circuit-active-lesson-reading>span:first-child{display:block;font-size:12px;line-height:1.5;color:#c8dfe5}
+.circuit-active-root .circuit-active-lesson-reading>strong{display:block;font-size:26px;line-height:1.45;font-weight:650;font-variant-numeric:tabular-nums;color:#d2f3e8;margin:8px 0;white-space:normal;overflow-wrap:anywhere}
+.circuit-active-root .circuit-active-lesson-track{height:9px;border:1px solid #69848e;border-radius:6px;background:#2b4853;overflow:hidden;margin:12px 0}
+.circuit-active-root .circuit-active-lesson-track>span{display:block;height:100%;background:#b0cfdc}
+.circuit-active-root .circuit-active-lesson-reading[data-stage=after] .circuit-active-lesson-track>span{background:#adebd9}
+.circuit-active-root .circuit-active-lesson-reading .circuit-active-lesson-region{display:block;font-size:13px;font-weight:650;color:#e3f0ee;line-height:1.5;overflow-wrap:anywhere}
+.circuit-active-root .circuit-active-lesson-reading small{display:block;font-size:12px;line-height:1.7;color:#c4d9de;margin-top:5px;overflow-wrap:anywhere}
+.circuit-active-root .circuit-active-lesson-replay{min-width:0;padding:14px;border:1px solid #4c707a;border-radius:11px;background:#112c37;margin:20px 0}
+.circuit-active-root .circuit-active-lesson-replay h5{font-size:15px;line-height:1.5;margin:0;color:#e2f2f1}
+.circuit-active-root .circuit-active-lesson-replay .circuit-active-lesson-actions{margin:12px 0}
+.circuit-active-root .circuit-active-lesson-replay button{flex:1 1 180px}
+.circuit-active-root .circuit-active-lesson-explanation{display:block;font-size:14px;line-height:1.5;font-weight:650;color:#e4f1f2;margin-top:20px}
+.circuit-active-root .circuit-active-lesson-lab textarea{display:block;width:100%;min-width:0;max-width:100%;min-height:100px;padding:12px;border:1px solid #77939f;border-radius:9px;background:#0b2430;color:#e5f3f5;font-size:16px;line-height:1.65;resize:vertical}
+.circuit-active-root .circuit-active-lesson-lab textarea::placeholder{color:#adc4d0}
+.circuit-active-root .circuit-active-lesson-next{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:14px;border-left:3px solid #a8deca;border-radius:0 9px 9px 0;background:#1a3d35;margin:22px 0 14px}
+.circuit-active-root .circuit-active-lesson-next strong{font-size:14px;line-height:1.6;color:#d6eee2;overflow-wrap:anywhere}
+.circuit-active-root .circuit-active-lesson-retry{border-top:1px solid #40616a;padding-top:12px;margin-top:20px}
+@media(max-width:600px){.circuit-active-root .circuit-active-lesson-lab{padding:13px 11px}.circuit-active-root .circuit-active-lesson-chart{gap:8px}.circuit-active-root .circuit-active-lesson-reading{padding:11px}.circuit-active-root .circuit-active-lesson-reading>strong{font-size:23px}.circuit-active-root .circuit-active-lesson-question-block h5{font-size:17px}.circuit-active-root .circuit-active-lesson-result-heading h5{font-size:20px}.circuit-active-root .circuit-active-lesson-replay{padding:12px}.circuit-active-root .circuit-active-lesson-next button{width:100%}}
+@media(max-width:360px){.circuit-active-root .circuit-active-lesson-chart{grid-template-columns:1fr}.circuit-active-root .circuit-active-lesson-progress progress{flex-basis:100%}.circuit-active-root .circuit-active-lesson-predictions button{flex:1 1 100%}}
+@media(forced-colors:active){.circuit-active-root .circuit-active-lesson-lab button[aria-pressed=true]{outline:2px solid Highlight}.circuit-active-root .circuit-active-lesson-progress progress{appearance:auto}.circuit-active-root .circuit-active-lesson-track{border-color:CanvasText}.circuit-active-root .circuit-active-lesson-track>span{background:Highlight;forced-color-adjust:none}}
+
+[data-circuit-builder-root] .circuit-lab-workflow summary{min-height:44px;line-height:1.6;overflow-wrap:anywhere}
+[data-circuit-builder-root] .circuit-lab-workflow .circuit-comparison{grid-template-columns:repeat(auto-fit,minmax(min(100%,9em),1fr))}
+[data-circuit-builder-root] .circuit-inquiry-download{min-height:44px;min-width:44px;max-width:100%;padding:10px 13px;border:1px solid #648d93;border-radius:9px;background:#163741;color:#d5f5e8;font-size:12px;font-weight:700;line-height:1.6;white-space:normal;overflow-wrap:anywhere;margin:8px 0}
+[data-circuit-builder-root] .circuit-inquiry-download:hover{background:#204a51;border-color:#9cdbcc}
+[data-circuit-builder-root] .circuit-inquiry-notebook>ol{display:grid;gap:14px;list-style:none;padding:0;margin:16px 0}
+[data-circuit-builder-root] .circuit-inquiry-trial{padding:16px;border:1px solid #496b77;border-radius:12px;background:#0e2530;min-width:0}
+[data-circuit-builder-root] .circuit-inquiry-trial h4{margin:0 0 10px;font-size:15px;line-height:1.6;color:#e0f3eb}
+[data-circuit-builder-root] .circuit-inquiry-trial p{font-size:13px;line-height:1.7;overflow-wrap:anywhere}
+[data-circuit-builder-root] .circuit-inquiry-trial textarea{width:100%;min-width:0;min-height:80px;margin:8px 0 12px;line-height:1.6}
+[data-circuit-builder-root] .circuit-inquiry-remove{min-height:44px;padding:10px 13px;border:1px solid #7b6370;border-radius:9px;color:#f5dce5;background:#302936;line-height:1.5}
+[data-circuit-builder-root] .circuit-inquiry-notebook>summary{min-height:44px;line-height:1.6}
+[data-circuit-builder-root] .circuit-inquiry-notebook p{max-width:100%;overflow-wrap:anywhere}
+[data-circuit-builder-root] .circuit-inquiry-recovery{margin-top:18px;padding-top:16px;border-top:1px solid #496b77;min-width:0}
+[data-circuit-builder-root] .circuit-inquiry-recovery h4{margin:0 0 10px;color:#e0f3eb;line-height:1.6}
+[data-circuit-builder-root] .circuit-inquiry-removed{margin:12px 0;padding:14px;border:1px dashed #637487;border-radius:10px;background:#182731;min-width:0}
+[data-circuit-builder-root] .circuit-inquiry-removed h5{margin:0 0 8px;font-size:14px;line-height:1.6;color:#eef1e9}
+[data-circuit-builder-root] .circuit-inquiry-removed .circuit-action-row{gap:10px;min-width:0}
+[data-circuit-builder-root] .circuit-inquiry-removed button{min-height:44px;max-width:100%;white-space:normal;overflow-wrap:anywhere;line-height:1.6}
+@media(max-width:480px){[data-circuit-builder-root] .circuit-inquiry-removed{padding:12px}[data-circuit-builder-root] .circuit-inquiry-removed button{width:100%}}
+@media(max-width:480px){[data-circuit-builder-root] .circuit-inquiry-trial{padding:12px}[data-circuit-builder-root] .circuit-inquiry-trial button{width:100%}}
+@media(forced-colors:active){[data-circuit-builder-root] .circuit-inquiry-trial,[data-circuit-builder-root] .circuit-inquiry-remove{border-color:CanvasText;color:CanvasText}}
 `;
   document.head.appendChild(circStyle);
   }
@@ -5733,8 +5950,41 @@ window.StemLab = window.StemLab || {
             var snapshot = d.experimentBaseline;
             var comparison=snapshot?circuitExperimentDiff(snapshot.circuit,d):null;
             var sameCircuit = comparison && comparison.unchanged;
-            var comparisonKey=snapshot?JSON.stringify([snapshot.circuit,circuitSnapshot(d)]):'';
-            var alreadyRecorded=(d.observations||[]).some(function(o){return o.comparisonKey===comparisonKey;});
+            var comparisonKey=snapshot?circuitInvestigationComparisonKey(snapshot.circuit,d):'';
+            var currentTrial=(d.observations||[]).find(function(o){return o&&o.before&&o.after&&circuitInvestigationComparisonKey(o.before,o.after)===comparisonKey;});
+            var alreadyRecorded=!!currentTrial;
+            var notebookFull=(d.observations||[]).length>=8;
+            var removedTrials=function(state){return Array.isArray(state.removedObservations)?state.removedObservations:state.removedObservation?[state.removedObservation]:[];};
+            var pendingTrials=removedTrials(d),recoveryFull=pendingTrials.length>=8;
+            var focusNotebook=function(event){var card=event&&event.currentTarget&&event.currentTarget.closest('.circuit-inquiry-notebook'),summary=card&&card.querySelector('summary');if(!summary)return;var focus=function(){if(summary.isConnected)summary.focus();};if(typeof requestAnimationFrame==='function')requestAnimationFrame(focus);else setTimeout(focus,0);};
+            var changeExplanation=function(value,index){
+              var shown=index==null?currentTrial:(d.observations||[])[index],targetKey=index==null?comparisonKey:shown&&circuitInvestigationComparisonKey(shown.before,shown.after);
+              if(!targetKey)return;
+              ctx.setToolData(function(prev){
+              var prior=prev._circuit||{},list=prior.observations||[],baseline=prior.experimentBaseline;
+              var liveKey=baseline?circuitInvestigationComparisonKey(baseline.circuit,prior):'';
+              var position=shown?list.indexOf(shown):-1;
+              if(shown&&position<0||!shown&&(index!=null||targetKey!==liveKey))return prev;
+              var text=value.slice(0,600),next=Object.assign({},prior,{observations:list.map(function(o,i){return i===position?Object.assign({},o,{explanation:text}):o;})});
+              if(targetKey===liveKey)next.explanation=text;
+              return Object.assign({},prev,{_circuit:next});
+            });};
+            var removeTrial=function(index,event){
+              var shown=(d.observations||[])[index];if(!shown)return;
+              ctx.setToolData(function(prev){var prior=prev._circuit||{},list=prior.observations||[],pending=removedTrials(prior).slice(),position=list.indexOf(shown);if(position<0||pending.length>=8)return prev;
+                pending.push({entry:list[position],index:position});return Object.assign({},prev,{_circuit:Object.assign({},prior,{observations:list.filter(function(o,i){return i!==position;}),removedObservations:pending,removedObservation:pending[0],evidenceNotice:'Trial removed. Its measurements and explanation are saved in Removed trials below.'})});});focusNotebook(event);
+            };
+            var restoreTrial=function(index,event){
+              var shown=pendingTrials[index||0];if(!shown)return;var key=circuitInvestigationComparisonKey(shown.entry.before,shown.entry.after);
+              ctx.setToolData(function(prev){var prior=prev._circuit||{},list=(prior.observations||[]).slice(),pending=removedTrials(prior).slice(),position=pending.indexOf(shown);if(position<0||list.length>=8)return prev;
+                if(list.some(function(o){return o&&o.before&&o.after&&circuitInvestigationComparisonKey(o.before,o.after)===key;}))return Object.assign({},prev,{_circuit:Object.assign({},prior,{evidenceNotice:'This comparison is already in your notebook. The removed trial and its explanation remain saved below.'})});
+                var removed=pending.splice(position,1)[0];list.splice(Math.min(removed.index,list.length),0,removed.entry);return Object.assign({},prev,{_circuit:Object.assign({},prior,{observations:list,removedObservations:pending,removedObservation:pending[0]||null,evidenceNotice:'Trial restored with its original measurements and explanation.'})});});focusNotebook(event);
+            };
+            var discardTrial=function(index,event){
+              var shown=pendingTrials[index];if(!shown)return;
+              ctx.setToolData(function(prev){var prior=prev._circuit||{},pending=removedTrials(prior),position=pending.indexOf(shown);if(position<0)return prev;
+                var remaining=pending.filter(function(item,i){return i!==position;});return Object.assign({},prev,{_circuit:Object.assign({},prior,{removedObservations:remaining,removedObservation:remaining[0]||null,evidenceNotice:'Removed trial discarded. The other trials remain saved.'})});});focusNotebook(event);
+            };
             var before = snapshot ? solveCircuit(snapshot.circuit) : null;
             var selectedIndex = Math.min(Math.max(0,d.selectedPart||0),Math.max(0,components.length-1));
             var selected = solved.rows[selectedIndex];
@@ -5752,35 +6002,50 @@ window.StemLab = window.StemLab || {
                 h('textarea',{id:'circuit-prediction',rows:2,maxLength:600,value:d.prediction||'',placeholder:'I think the current will… because…',onChange:function(e){upd('prediction',e.target.value);}}),
                 h('div',{className:'circuit-action-row'},
                   h('button',{type:'button',disabled:!components.length,onClick:function(){updMulti({experimentBaseline:{circuit:circuitSnapshot(d),prediction:d.prediction||''},experimentResult:null,explanation:''});}},snapshot?'Replace baseline':'Save baseline'),
-                  h('button',{type:'button',disabled:!snapshot||sameCircuit||alreadyRecorded,onClick:function(){
-                    if(!snapshot||sameCircuit||alreadyRecorded)return;
-                    var observations=(d.observations||[]).concat([{before:snapshot.circuit,after:circuitSnapshot(d),prediction:snapshot.prediction,delta:current-before.current,explanation:d.explanation||'',changes:comparison.changes,controlled:comparison.controlled,comparisonKey:comparisonKey}]).slice(-8);
-                    updMulti({observations:observations,experimentResult:{delta:current-before.current}});
-                  }},'Record comparison'),
-                  h('span',{className:'circuit-help'},!components.length?'Start with a circuit below.':!snapshot?'Save a baseline before making your change.':sameCircuit?'Baseline saved. Now change one variable.':alreadyRecorded?'This comparison is already in your notebook.':comparison&&comparison.controlled?'One variable changed. Record the evidence.':'Multiple variables changed. Record an observation, then repeat with one change to test a cause.')),
+                  h('button',{type:'button',disabled:!snapshot||sameCircuit||alreadyRecorded||notebookFull,onClick:function(){ctx.setToolData(function(prev){
+                    var prior=prev._circuit||{},saved=prior.experimentBaseline,list=prior.observations||[];
+                    if(!saved||list.length>=8)return prev;
+                    var live=circuitSnapshot(prior),diff=circuitExperimentDiff(saved.circuit,live),key=circuitInvestigationComparisonKey(saved.circuit,live);
+                    if(diff.unchanged||list.some(function(o){return o&&o.before&&o.after&&circuitInvestigationComparisonKey(o.before,o.after)===key;}))return prev;
+                    var delta=solveCircuit(live).current-solveCircuit(saved.circuit).current;
+                    var entry={before:saved.circuit,after:live,prediction:saved.prediction,delta:delta,explanation:prior.explanation||'',changes:diff.changes,controlled:diff.controlled,comparisonKey:key};
+                    return Object.assign({},prev,{_circuit:Object.assign({},prior,{observations:list.concat([entry]),experimentResult:{delta:delta,comparisonKey:key},evidenceNotice:'Comparison recorded. Add or revise its explanation below.'})});
+                  });}},'Record comparison'),
+                  h('span',{className:'circuit-help'},!components.length?'Start with a circuit below.':!snapshot?'Save a baseline before making your change.':sameCircuit?'Baseline saved. Now change one variable.':alreadyRecorded?'This comparison is already in your notebook. Revise its explanation below.':notebookFull?'The notebook is full: eight trials saved. Remove a trial before recording another.':comparison&&comparison.controlled?'One variable changed. Record the evidence.':'Multiple variables changed. Record an observation, then repeat with one change to test a cause.')),
                 comparison&&!comparison.unchanged&&h('div',{className:comparison.controlled?'circuit-model-note':'circuit-warning','data-circuit-comparison':comparison.controlled?'controlled':'multiple'},
                   h('strong',null,comparison.controlled?'A controlled comparison':'More than one variable changed'),h('ul',null,comparison.changes.map(function(change,i){return h('li',{key:i},change);}))),
-                snapshot&&h('label',{className:'circuit-prediction-label',htmlFor:'circuit-explanation'},'Explain the result before recording'),
-                snapshot&&h('textarea',{id:'circuit-explanation',rows:2,maxLength:600,value:d.explanation||'',placeholder:'The current changed because… My evidence is…',onChange:function(e){upd('explanation',e.target.value);}}),
+                snapshot&&h('label',{className:'circuit-prediction-label',htmlFor:'circuit-explanation'},alreadyRecorded?'Revise the saved explanation':'Explain the result before recording'),
+                snapshot&&h('textarea',{id:'circuit-explanation',rows:2,maxLength:600,value:currentTrial?currentTrial.explanation||'':d.explanation||'',placeholder:'The current changed because… My evidence is…',onChange:function(e){changeExplanation(e.target.value);}}),
                 snapshot&&h('div',{className:'circuit-comparison'},
                   h('div',null,h('span',null,'Baseline current'),h('strong',null,fmt(before.current))),
                   h('div',null,h('span',null,'Current now'),h('strong',null,fmt(current))),
                   h('div',null,h('span',null,'Change'),h('strong',null,(current-before.current>0?'+':'')+fmt(current-before.current)))),
-                d.experimentResult&&h('p',{role:'status',className:'circuit-evidence'},'Comparison recorded. '+(d.experimentResult.delta>0?'Current increased.':d.experimentResult.delta<0?'Current decreased.':'Current stayed the same.')+' Explain which circuit change caused your result.'),
-                (d.observations||[]).length>0&&h('button',{type:'button',className:'text-xs text-cyan-200 underline',onClick:function(){
+                d.experimentResult&&alreadyRecorded&&h('p',{role:'status',className:'circuit-evidence'},'Comparison recorded. Add or revise the saved explanation above, or open its trial in the evidence notebook.'),
+                d.evidenceNotice&&h('p',{role:'status',className:'circuit-help'},d.evidenceNotice),
+                (d.observations||[]).length>0&&h('button',{type:'button',className:'circuit-inquiry-download',onClick:function(){
                   var blob=new Blob([JSON.stringify({format:'circuit-evidence-v1',model:'steady-dc-led-piecewise',trials:d.observations},null,2)],{type:'application/json'});
                   var url=URL.createObjectURL(blob), link=document.createElement('a');link.href=url;link.download='circuit-evidence.json';link.click();setTimeout(function(){URL.revokeObjectURL(url);},1000);
                 }},'Download evidence'),
-                (d.observations||[]).length>0&&h('details',{className:'circuit-notebook'},
-                  h('summary',null,'Evidence notebook (latest '+d.observations.length+' trials)'),
-                  h('ol',null,d.observations.map(function(o,i){return h('li',{key:i},h('strong',null,'Trial '+(i+1)+(o.controlled?' · one variable: ':' · observation: ')),describeCircuit(o.before)+' → '+describeCircuit(o.after)+'. ΔI = '+(o.delta>0?'+':'')+fmt(o.delta),h('p',null,'Prediction: '+(o.prediction||'No written prediction.')),h('p',null,'Explanation: '+(o.explanation||'Not recorded.')));}))),
+                ((d.observations||[]).length>0||pendingTrials.length>0)&&h('details',{className:'circuit-notebook circuit-inquiry-notebook'},
+                  h('summary',null,'Evidence notebook ('+(d.observations||[]).length+' / 8 trials)'),
+                  h('p',{className:'circuit-help'},'Each trial keeps its original prediction and circuit settings. You can revise its explanation without changing the measurements.'),
+                  notebookFull&&h('p',{className:'circuit-model-note'},'The notebook is full: eight trials saved. Remove a trial before recording another.'),
+                  recoveryFull&&h('p',{className:'circuit-model-note'},'Eight removed trials are saved for recovery. Restore or discard a removed trial before removing another.'),
+                  h('ol',null,(d.observations||[]).map(function(o,i){return h('li',{key:circuitInvestigationComparisonKey(o.before,o.after)+'-'+i,className:'circuit-inquiry-trial'},h('h4',null,'Trial '+(i+1)+(o.controlled?' · one variable: ':' · observation: ')),h('p',{className:'circuit-help'},describeCircuit(o.before)+' → '+describeCircuit(o.after)),h('p',null,'Change in source current: '+(o.delta>0?'+':'')+fmt(o.delta)),h('p',null,'Prediction: '+(o.prediction||'No written prediction.')),h('label',{className:'circuit-prediction-label',htmlFor:'circuit-trial-explanation-'+i},'Explanation using evidence'),h('textarea',{id:'circuit-trial-explanation-'+i,'aria-label':'Trial '+(i+1)+' explanation',rows:2,maxLength:600,value:o.explanation||'',placeholder:'Use the saved readings to explain or revise your prediction.',onChange:function(e){changeExplanation(e.target.value,i);}}),h('button',{type:'button',className:'circuit-inquiry-remove',disabled:recoveryFull,onClick:function(e){removeTrial(i,e);}},'Remove trial '+(i+1)));})),
+                  pendingTrials.length>0&&h('section',{className:'circuit-inquiry-recovery','aria-label':'Removed trials'},
+                    h('h4',null,'Removed trials ('+pendingTrials.length+' / 8)'),
+                    h('p',{className:'circuit-help'},notebookFull?'Remove a saved trial to make room, then restore the removed trial you want.':'Restore any removed trial with its original evidence, or discard it to clear its recovery slot.'),
+                    pendingTrials.map(function(removed,i){return h('div',{key:JSON.stringify(removed)+'-'+i,className:'circuit-inquiry-removed'},
+                      h('h5',null,'Removed trial '+(i+1)),h('p',{className:'circuit-help'},describeCircuit(removed.entry.before)+' → '+describeCircuit(removed.entry.after)),
+                      h('p',null,'Removed trial explanation: '+(removed.entry.explanation||'No explanation recorded.')),
+                      h('div',{className:'circuit-action-row'},h('button',{type:'button',disabled:notebookFull,onClick:function(e){restoreTrial(i,e);}},'Restore removed trial'+(i?' '+(i+1):'')),h('button',{type:'button',className:'circuit-inquiry-remove',onClick:function(e){discardTrial(i,e);}},'Discard removed trial'+(i?' '+(i+1):''))));}))),
                 h('details',{className:'circuit-notebook'},
                   h('summary',null,__alloT('stem.circuit.guided_investigations','Guided investigations')),
                   h('div',{className:'circuit-action-row'},[
                     {label:'1. Share the voltage',mode:'series',voltage:12,components:[{type:'resistor',value:200,id:1},{type:'resistor',value:100,id:2}]},
                     {label:'2. Add another path',mode:'parallel',voltage:9,components:[{type:'resistor',value:100,id:1},{type:'resistor',value:100,id:2}]},
                     {label:'3. Control the loop',mode:'series',voltage:9,components:[{type:'bulb',value:100,id:1},{type:'switch',closed:false,id:2}]}
-                  ].map(function(p){return h('button',{key:p.label,type:'button',onClick:function(){updMulti({mode:p.mode,voltage:p.voltage,components:p.components,experimentBaseline:null,experimentResult:null});}},p.label);})))
+                  ].map(function(p){return h('button',{key:p.label,type:'button',onClick:function(){updMulti({mode:p.mode,voltage:p.voltage,components:p.components,experimentResult:null});}},p.label);})))
               ),
               ),
               h(CircuitGuidedLab,{React:React,t:cktT,state:d,update:upd,updateMany:updMulti}),

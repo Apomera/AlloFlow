@@ -112,7 +112,7 @@ describe('Circuit learning interactions', () => {
     await act(async () => button('Record comparison').click());
     expect(latest.observations).toHaveLength(1);
     expect(latest.observations[0].delta).toBeCloseTo(.0001, 12);
-    expect(host.querySelector('.circuit-lab-workflow').textContent).toContain('ΔI = +100 µA');
+    expect(host.querySelector('.circuit-lab-workflow').textContent).toContain('Change in source current: +100 µA');
     expect(host.querySelector('.circuit-lab-workflow').textContent).not.toContain('0.000 A');
     expect(button('Record comparison').disabled).toBe(true);
   });
