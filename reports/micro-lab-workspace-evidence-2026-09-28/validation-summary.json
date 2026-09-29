@@ -1,0 +1,85 @@
+{
+  "date": "2026-09-28",
+  "scope": "Micro Lab only; local working tree and desktop mirror",
+  "unit": {
+    "total": 162,
+    "passed": 162,
+    "unresolved": []
+  },
+  "browser": {
+    "total": 16,
+    "passed": 16,
+    "unresolved": []
+  },
+  "runtimesMatch": true,
+  "sourceSha256": "1f8a4d334e2443ed79608cfcf0fa8bf7b40fb82587576a21b85fe83aff3f37cf",
+  "notes": [
+    "Latest results replace earlier results for the same test. Initial runner timeouts and interrupted runs are retained in the detailed reports.",
+    "The unit recovery run reuses one worker to reduce startup overhead."
+  ],
+  "runs": [
+    {
+      "file": "unit-results.json",
+      "passed": 99,
+      "failed": 0,
+      "runnerNotes": "Six suites did not start because of worker-startup timeouts; they ran in the recovery report."
+    },
+    {
+      "file": "unit-recovery-results.json",
+      "passed": 61,
+      "failed": 2,
+      "runnerNotes": "Two interaction tests timed out and were rerun separately in the final report."
+    },
+    {
+      "file": "unit-final-results.json",
+      "passed": 2,
+      "failed": 0,
+      "runnerNotes": "Completed successfully."
+    },
+    {
+      "file": "browser-results.json",
+      "startTime": "2026-09-29T03:36:28.719Z",
+      "duration": 922574.278,
+      "expected": 11,
+      "skipped": 3,
+      "unexpected": 2,
+      "flaky": 0
+    },
+    {
+      "file": "browser-recovery-results.json",
+      "startTime": "2026-09-29T03:53:35.341Z",
+      "duration": 395487.472,
+      "expected": 4,
+      "skipped": 0,
+      "unexpected": 1,
+      "flaky": 0
+    },
+    {
+      "file": "browser-final-results.json",
+      "startTime": "2026-09-29T04:05:08.989Z",
+      "duration": 220625.715,
+      "expected": 0,
+      "skipped": 0,
+      "unexpected": 1,
+      "flaky": 0
+    },
+    {
+      "file": "browser-print-results.json",
+      "startTime": "2026-09-29T04:11:25.486Z",
+      "duration": 709.5720000000001,
+      "expected": 0,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    {
+      "file": "browser-print-cleanup-results.json",
+      "startTime": "2026-09-29T04:13:42.746Z",
+      "duration": 50494.505,
+      "expected": 1,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  ]
+}

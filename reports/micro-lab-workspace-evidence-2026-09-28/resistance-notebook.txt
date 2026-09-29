@@ -1,0 +1,14 @@
+Micro Lab resistance evidence notebook
+Random teaching model, not measured culture or treatment data. Each record is a saved snapshot; records may come from different rounds of the same run.
+Capacity: 80 cells. Shares are rounded to whole percentages. Extinction has an undefined resistant share.
+
+Evidence 1
+Status: in-progress
+Exposure strength: 0/100; planned rounds: 3; observed rounds: 1
+Requested initial resistance: 15%; actual resistant cells: 12/80 (15% rounded)
+Original prediction: similar
+Selected explanation: Not recorded
+My written evidence: After one exposure round, 68 sensitive and 12 resistant cells remain. The resistant share is still 15% because zero exposure gives neither group a survival advantage.
+Round	Sensitive	Resistant	Total alive	Resistant share
+0	68	12	80	15%
+1	68	12	80	15%

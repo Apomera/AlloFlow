@@ -1,0 +1,154 @@
+import { test, expect, type Page } from '@playwright/test';
+import { GlHarness } from './helpers/stem_gl_harness';
+import { mkdirSync } from 'node:fs';
+import path from 'node:path';
+
+test.use({ video: 'off' });
+test.describe.configure({ mode: 'serial', retries: 0, timeout: 120000 });
+const out = path.resolve('reports/micro-lab-evidence-refinement-2026-09-29');
+const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_microbiology.js', toolId: 'microbiology', width: 1280, height: 960, layout: 'document' });
+test.beforeAll(async () => { mkdirSync(out, { recursive: true }); await harness.start(); });
+test.afterAll(async () => { await harness.stop(); });
+test.afterEach(async ({ page }) => { await harness.unmount(page); });
+
+async function mount(page: Page, data: Record<string, unknown>) {
+  await harness.mount(page, { microbiology: data }, undefined, { expectCanvas: false });
+  await page.addStyleTag({ content: '#wrap{width:100%!important}body{margin:0;font-family:system-ui,sans-serif}button,input,select,textarea{font-family:inherit}' });
+}
+const state = (page: Page) => page.evaluate(() => (window as any).__toolData.microbiology);
+async function noOverflow(page: Page) {
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+}
+
+test('resumes exact working measurement settings while preserving checked evidence and unresolved phage visibility', async ({ page }) => {
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  await page.setViewportSize({ width: 1280, height: 960 });
+  const phageDraft = { value: '200', unit: 'nm', context: { version: 1, specimen: 'phage', method: 'lightbright', mag: 1000, zoom: 20, fieldUm: 9, scaleUm: 2, referenceUm: 0.2 } };
+  await mount(page, { tab: 'microscope', microscopeMeasurements: { phage: { draft: phageDraft } } });
+  const scope = page.getByRole('region', { name: 'Virtual microscope investigation', exact: true });
+  const estimate = scope.getByLabel('Your size estimate', { exact: true });
+  const units = scope.getByLabel('Estimate units', { exact: true });
+  await scope.getByRole('button', { name: 'Use recommended setup', exact: true }).click();
+  await scope.getByRole('button', { name: 'Focus assist', exact: true }).click();
+  await estimate.fill('2');
+  await scope.getByRole('button', { name: 'Check and save estimate', exact: true }).click();
+  await scope.getByRole('button', { name: '400×', exact: true }).click();
+  await scope.getByLabel('3. Enlarge the display to measure', { exact: true }).selectOption('50');
+  await scope.getByRole('button', { name: 'Start estimate for this view', exact: true }).click();
+  await estimate.fill('3000'); await units.selectOption('nm');
+  const evidence = (await state(page)).microscopeMeasurements;
+  await scope.getByRole('button', { name: 'Open measurement notebook · 1/5', exact: true }).click();
+  const working = scope.locator('[data-measurement-draft="ecoli"]');
+  await expect(working).toContainText('Working estimate (not yet checked): 3000 nm');
+  await expect(working).toContainText('Working view: Light microscope · 400× · display zoom 50× · Scale bar 2 µm');
+  await scope.getByRole('button', { name: 'Review saved view · E. coli', exact: true }).click();
+  await expect(scope.getByRole('button', { name: 'Check and save estimate', exact: true })).toBeDisabled();
+  const resume = working.getByRole('button', { name: 'Resume working view · E. coli', exact: true });
+  await resume.focus(); await page.keyboard.press('Enter');
+  expect(await state(page)).toMatchObject({ scopeOrganism: 'ecoli', selectedScope: 'lightbright', magnification: 400, microscopeZoom: 50, microscopeFocus: 50, microscopeTargetFocus: 50 });
+  expect((await state(page)).microscopeMeasurements).toEqual(evidence);
+  await expect(estimate).toHaveValue('3000'); await expect(units).toHaveValue('nm');
+  await expect(estimate).toBeFocused();
+  await expect(scope.getByRole('button', { name: 'Check and save estimate', exact: true })).toBeEnabled();
+  await expect(scope).toContainText('This saved result belongs to the earlier view');
+  await working.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: path.join(out, 'microscope-working-view-desktop.png') });
+
+  await scope.getByRole('button', { name: 'Resume working view · T4 bacteriophage', exact: true }).click();
+  expect(await state(page)).toMatchObject({ scopeOrganism: 'phage', selectedScope: 'lightbright', magnification: 1000, microscopeZoom: 20, microscopeFocus: 56 });
+  await expect(estimate).toHaveValue('200'); await expect(units).toHaveValue('nm');
+  await expect(scope).toContainText('Use the recommended setup so this feature is visible before measuring.');
+  await expect(scope.getByRole('button', { name: 'Check and save estimate', exact: true })).toBeDisabled();
+  expect((await state(page)).microscopeMeasurements).toEqual(evidence);
+  expect((await state(page)).microscopeMeasurements.phage).toEqual({ draft: phageDraft });
+  const saved = JSON.parse(JSON.stringify(await state(page)));
+  await harness.unmount(page);
+  await page.setViewportSize({ width: 320, height: 800 });
+  await mount(page, saved);
+  await scope.getByRole('button', { name: 'Open measurement notebook · 1/5', exact: true }).click();
+  await scope.getByRole('button', { name: 'Resume working view · T4 bacteriophage', exact: true }).click();
+  await expect(scope.getByRole('button', { name: 'Check and save estimate', exact: true })).toBeDisabled();
+  expect((await state(page)).microscopeMeasurements).toEqual(evidence);
+  await noOverflow(page);
+  await scope.locator('[data-measurement-draft="phage"]').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: path.join(out, 'microscope-unchecked-working-view-phone.png') });
+  expect(errors).toEqual([]);
+});
+
+test('compares changed mystery fields across report views, tabs, and JSON reload without replacing notes', async ({ page }) => {
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  await page.setViewportSize({ width: 1280, height: 960 });
+  await mount(page, { tab: 'mystery' });
+  const reasoning = page.getByRole('textbox', { name: 'My evidence and reasoning', exact: true });
+  const originalReasoning = 'The supplied nucleus and coordinated cilia support a ciliated protist. Species and safety remain unknown.';
+  const revisedReasoning = 'Unfinished revision: compare the nucleus observation.\n<img src=x onerror=alert(1)> is a note, not markup.';
+  for (const name of ['Size and shape', 'Cell structure and chemistry', 'Behavior and reproduction']) {
+    await page.getByRole('button', { name: 'Reveal: ' + name, exact: true }).click();
+  }
+  await page.getByRole('radio', { name: 'Ciliated protist', exact: true }).check();
+  await page.getByRole('checkbox', { name: 'Cell structure and chemistry', exact: true }).check();
+  await page.getByRole('checkbox', { name: 'Behavior and reproduction', exact: true }).check();
+  await page.getByRole('radio', { name: /^The evidence supports a broad group/ }).check();
+  await reasoning.fill(originalReasoning);
+  await page.getByRole('button', { name: 'Check my evidence', exact: true }).click();
+  await page.getByRole('button', { name: 'Record specimen report', exact: true }).click();
+  const recorded = (await state(page)).mysteryLab.cases.pond.record;
+  await expect(page.locator('[data-mystery-comparison]')).toHaveCount(0);
+  await reasoning.fill(revisedReasoning);
+  const comparison = page.locator('[data-mystery-comparison="pond"]');
+  await expect(comparison.locator('[data-mystery-change]')).toHaveCount(1);
+  await expect(comparison.locator('[data-mystery-change]')).toHaveAttribute('data-mystery-change', 'reasoning');
+  await page.getByRole('radio', { name: 'Bacterium', exact: true }).check();
+  await page.getByRole('checkbox', { name: 'Behavior and reproduction', exact: true }).uncheck();
+  await page.getByRole('radio', { name: 'These observations establish the exact species.', exact: true }).check();
+  await page.getByRole('button', { name: 'Hide: Cell structure and chemistry', exact: true }).click();
+  const working = (await state(page)).mysteryLab.cases.pond;
+  const disclosure = comparison.locator('summary');
+  await expect(disclosure).toHaveText('Compare revisions');
+  await disclosure.focus(); await page.keyboard.press('Enter');
+  await expect(comparison).toHaveAttribute('open', '');
+  expect(await comparison.locator('[data-mystery-change]').evaluateAll(nodes => nodes.map(node => node.getAttribute('data-mystery-change')))).toEqual(['claim', 'evidence', 'reasoning', 'limitation']);
+  const value = (field: string, version: string) => comparison.locator(`[data-mystery-change="${field}"] [data-revision-version="${version}"]`);
+  await expect(value('claim', 'recorded')).toContainText('Ciliated protist');
+  await expect(value('claim', 'working')).toContainText('Bacterium');
+  await expect(value('evidence', 'recorded').locator('li')).toHaveCount(2);
+  await expect(value('evidence', 'working').locator('li')).toHaveCount(1);
+  await expect(value('evidence', 'working')).toContainText('Cell structure and chemistry:');
+  await expect(value('reasoning', 'recorded')).toContainText(originalReasoning);
+  await expect(value('reasoning', 'working')).toContainText(revisedReasoning);
+  await expect(value('limitation', 'recorded')).toContainText('species and safety remain unknown');
+  await expect(value('limitation', 'working')).toContainText('These observations establish the exact species.');
+  await expect(comparison.locator('input,textarea,button,img')).toHaveCount(0);
+  expect((await state(page)).mysteryLab.cases.pond).toEqual(working);
+  await comparison.screenshot({ path: path.join(out, 'mystery-revision-comparison-desktop.png') });
+
+  await page.getByRole('button', { name: 'Recorded report', exact: true }).click();
+  await expect(comparison).toHaveAttribute('open', '');
+  await expect(page.locator('[data-recorded-report="pond"]')).toContainText(originalReasoning);
+  await expect(page.locator('[data-recorded-report="pond"]')).not.toContainText(revisedReasoning);
+  expect((await state(page)).mysteryLab.cases.pond).toEqual({ ...working, reportView: 'recorded' });
+  await page.getByRole('tab', { name: 'Home', exact: true }).click();
+  await page.getByRole('tab', { name: 'Mystery specimens', exact: true }).click();
+  await expect(disclosure).toBeVisible();
+  await expect(comparison).not.toHaveAttribute('open', '');
+  await disclosure.click();
+  await expect(value('reasoning', 'working')).toContainText(revisedReasoning);
+  expect((await state(page)).mysteryLab.cases.pond.record).toEqual(recorded);
+  const saved = JSON.parse(JSON.stringify(await state(page)));
+  await harness.unmount(page);
+  await page.setViewportSize({ width: 320, height: 800 });
+  await mount(page, saved);
+  await disclosure.click();
+  await expect(value('reasoning', 'working')).toContainText(revisedReasoning);
+  await expect(value('evidence', 'recorded').locator('li')).toHaveCount(2);
+  await expect(page.locator('#micro-clue-pond-structure')).toBeHidden();
+  expect((await state(page)).mysteryLab.cases.pond).toEqual({ ...working, reportView: 'recorded' });
+  await noOverflow(page);
+  await comparison.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: path.join(out, 'mystery-revision-comparison-phone.png') });
+  await page.getByRole('button', { name: 'Working notes', exact: true }).click();
+  await expect(reasoning).toHaveValue(revisedReasoning);
+  await expect(page.getByRole('checkbox', { name: 'Cell structure and chemistry', exact: true })).toBeChecked();
+  expect((await state(page)).mysteryLab.cases.pond).toEqual(working);
+  expect(errors).toEqual([]);
+});

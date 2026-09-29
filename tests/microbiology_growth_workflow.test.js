@@ -446,6 +446,61 @@ describe('Microbiology growth investigation workflow', { timeout: 20000 }, () =>
     act(() => vi.runAllTimers());
   });
 
+  it('inspects earlier saved populations while keeping original predictions, outcome feedback, and drafts intact', () => {
+    const conditions = { ...baseConditions, tempC: 35 };
+    const trials = [
+      { id: 3, control: baseConditions, conditions, prediction: 'similar', hypothesis: 'Original prediction reasoning', explanation: 'Saved evidence' },
+      { id: 9, control: null, conditions: baseConditions, prediction: 'higher', explanation: 'Recovered evidence' },
+    ];
+    mount({ growthLab: { ...baseConditions, oxygen: 0 }, growthInvestigation: { trials, selectedId: 3, control: conditions, prediction: 'lower', hypothesis: 'Next run draft' } });
+    const disclosure = mounted.container.querySelector('.micro-growth-review');
+    click(disclosure.querySelector('summary'));
+    const selector = mounted.container.querySelector('#gl-review-hour');
+    expect(selector.value).toBe('24');
+    expect(selector.options).toHaveLength(25);
+    const savedBook = JSON.parse(JSON.stringify(book()));
+    const activeConditions = JSON.parse(JSON.stringify(mounted.state.growthLab));
+    const originalFeedback = mounted.container.querySelector('.micro-growth-result-head').textContent;
+    const originalMetrics = mounted.container.querySelector('.micro-growth-metrics').textContent;
+    selector.focus();
+    write('#gl-review-hour', '6');
+    expect(document.activeElement).toBe(selector);
+    expect(mounted.container.querySelector('#gl-review-hour')).toBe(selector);
+    expect(mounted.state.growthReviewHour).toBe(6);
+    expect(mounted.container.querySelector('#gl-review-time-status').textContent).toContain('Original predictions and outcome labels always refer to hour 24.');
+    const table = disclosure.querySelector('table');
+    expect([...table.querySelectorAll('thead th')].slice(3, 6).map(node => node.textContent)).toEqual(['Outcome at hour 24', 'Control at hour 6', 'Trial at hour 6']);
+    const controlAtSix = window.__MicrobiologyCore.growth.simulate(baseConditions).points[6].population;
+    const trialAtSix = window.__MicrobiologyCore.growth.simulate(conditions).points[6].population;
+    expect([...table.tBodies[0].rows[0].cells].slice(3).map(cell => cell.textContent)).toEqual(['Similar population', controlAtSix.toFixed(1), trialAtSix.toFixed(1), (trialAtSix - controlAtSix).toFixed(1)]);
+    expect([...table.tBodies[0].rows[1].cells].slice(3).map(cell => cell.textContent)).toEqual(['Unavailable', 'Unavailable', controlAtSix.toFixed(1), 'Unavailable']);
+    expect(mounted.container.querySelector('.micro-growth-result-head').textContent).toBe(originalFeedback);
+    expect(mounted.container.querySelector('.micro-growth-metrics').textContent).toBe(originalMetrics);
+    expect(book()).toEqual(savedBook);
+    expect(mounted.state.growthLab).toEqual(activeConditions);
+    expect(mounted.container.querySelector('#gl-hypothesis').value).toBe('Next run draft');
+    const restored = JSON.parse(JSON.stringify(mounted.state));
+    act(() => mounted.root.unmount());
+    mounted.container.remove();
+    mounted = null;
+    mount(restored);
+    expect(mounted.container.querySelector('#gl-review-hour').value).toBe('6');
+    expect(book()).toEqual(savedBook);
+    expect(mounted.container.querySelector('.micro-growth-result-head').textContent).toBe(originalFeedback);
+  });
+
+  it('defaults a malformed restored review hour to 24 and shows the shared inoculum at hour zero', () => {
+    mount({ growthReviewHour: '6', growthInvestigation: { trials: [{ id: 7, control: baseConditions, conditions: { ...baseConditions, oxygen: 0 }, prediction: 'lower' }], selectedId: 7 } });
+    expect(mounted.container.querySelector('#gl-review-hour').value).toBe('24');
+    write('#gl-review-hour', '0');
+    const row = mounted.container.querySelector('[data-review-trial="7"]');
+    expect([...row.cells].slice(3).map(cell => cell.textContent)).toEqual(['Lower population', '5.0', '5.0', '0.0']);
+    expect(mounted.container.querySelector('.micro-growth-result-head').textContent).toContain('Your prediction matches this run.');
+    click(mounted.container.querySelector('#micro-tab-home'));
+    click(mounted.container.querySelector('#micro-tab-growthLab'));
+    expect(mounted.container.querySelector('#gl-review-hour').value).toBe('0');
+  });
+
   it('reuses a selected trial setting without changing controls, drafts or saved evidence', () => {
     const conditions = { ...baseConditions, tempC: 30, oxygen: 0 };
     const control = { profile: 'methanogen', tempC: 37, pH: 7, oxygen: 0 };

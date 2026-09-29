@@ -99,6 +99,86 @@ describe('Microbiology resistance investigation', () => {
     expect(source).toContain("role: 'status', 'aria-live': 'polite'");
     expect(source).not.toContain('var killRes = 0.05;');
   });
+
+  it('derives ready, partial, completed and extinct status from observed counts', () => {
+    const api = window.__MicrobiologyCore.resistance;
+    const history = [{ day: 0, sensitive: 68, resistant: 12 }, { day: 1, sensitive: 0, resistant: 12 }];
+    expect(api.status(null)).toBe('ready');
+    expect(api.status({ initRes: 15, history })).toBe('in-progress');
+    expect(api.status({ initRes: 15, duration: 3, history: history.concat([{ day: 2, sensitive: 0, resistant: 12 }, { day: 3, sensitive: 0, resistant: 12 }]) })).toBe('completed');
+    expect(api.evidence({ initRes: 0, history: [{ day: 0, sensitive: 80, resistant: 0 }, { day: 1, sensitive: 0, resistant: 0 }], status: 'completed', finalPct: 100, finalAlive: 80 }))
+      .toMatchObject({ status: 'extinct', finalPct: null, finalAlive: 0, day: 1 });
+  });
+
+  it('copies original conditions and counts into immutable snapshots without random draws', () => {
+    const api = window.__MicrobiologyCore.resistance;
+    const source = { initRes: 15, dose: 35, duration: 6, prediction: 'decrease', notes: 'Evidence before reset', history: [{ day: 0, sensitive: 68, resistant: 12 }, { day: 1, sensitive: 20, resistant: 12 }] };
+    const random = vi.spyOn(Math, 'random');
+    const snapshot = api.evidence(source);
+    expect(random).not.toHaveBeenCalled();
+    random.mockRestore();
+    expect(snapshot).toMatchObject({ initRes: 15, dose: 35, duration: 6, prediction: 'decrease', day: 1, status: 'in-progress', notes: 'Evidence before reset', initialPct: 15, finalAlive: 32, finalPct: 38 });
+    source.history[1].resistant = 0;
+    source.notes = 'Changed later';
+    expect(snapshot.history[1].resistant).toBe(12);
+    expect(snapshot.notes).toBe('Evidence before reset');
+    expect(Object.isFrozen(snapshot)).toBe(true);
+    expect(Object.isFrozen(snapshot.history[0])).toBe(true);
+    expect(api.evidence(JSON.parse(JSON.stringify(snapshot)))).toEqual(snapshot);
+  });
+
+  it('saves and deduplicates explicit evidence without overwriting earlier snapshots', () => {
+    const api = window.__MicrobiologyCore.resistance;
+    const run = { initRes: 15, history: [{ day: 0, sensitive: 68, resistant: 12 }, { day: 1, sensitive: 0, resistant: 12 }], prediction: 'increase', notes: 'First note' };
+    expect(api.save(null, {}).status).toBe('empty');
+    const first = api.save(null, run);
+    expect(first).toMatchObject({ status: 'saved', id: 1, notebook: { selectedId: 1, nextId: 2 } });
+    const same = api.save(first.notebook, JSON.parse(JSON.stringify(run)));
+    expect(same.status).toBe('duplicate');
+    expect(same.notebook.records).toHaveLength(1);
+    const second = api.save(same.notebook, { ...run, notes: 'A later interpretation' });
+    expect(second.status).toBe('saved');
+    expect(second.notebook.records.map(item => item.id)).toEqual([1, 2]);
+    expect(second.notebook.records[0].evidence.notes).toBe('First note');
+    expect(second.notebook.records[1].evidence.notes).toBe('A later interpretation');
+    expect(first.notebook.records).toHaveLength(1);
+  });
+
+  it('bounds notebooks, repairs identifiers and refuses additions at capacity', () => {
+    const api = window.__MicrobiologyCore.resistance;
+    const run = { history: [{ day: 0, sensitive: 78, resistant: 2 }, { day: 1, sensitive: 10, resistant: 2 }] };
+    const notebook = api.normalizeNotebook({ records: Array.from({ length: 12 }, (_, i) => ({ id: i + 1, evidence: { ...run, notes: 'Record ' + i } })), selectedId: 12, nextId: 13 });
+    expect(notebook.records.map(item => item.id)).toEqual([5, 6, 7, 8, 9, 10, 11, 12]);
+    expect(api.save(notebook, { ...run, notes: 'New evidence' })).toMatchObject({ status: 'full', notebook });
+    expect(api.save(notebook, notebook.records[0].evidence).status).toBe('duplicate');
+    const repaired = api.normalizeNotebook({ records: [null, {}, { id: 3, evidence: run }, { id: 3, evidence: run }, { id: Infinity, evidence: run }], selectedId: 9 });
+    expect(new Set(repaired.records.map(item => item.id)).size).toBe(3);
+    expect(repaired.selectedId).toBe(null);
+    expect(repaired.nextId).toBeGreaterThan(Math.max(...repaired.records.map(item => item.id)));
+    expect(api.normalizeNotebook(JSON.parse(JSON.stringify(notebook)))).toEqual(notebook);
+    expect(api.normalizeNotebook({ records: [{ id: 1, evidence: { history: 'invalid' } }] }).records).toEqual([]);
+  });
+
+  it('exports original settings, all observed rounds, notes and undefined extinct shares', () => {
+    const api = window.__MicrobiologyCore.resistance;
+    const evidence = { initRes: 0, dose: 100, duration: 8, prediction: 'extinct', explanation: 'extinction', explanationSubmitted: true,
+      notes: '=SUM(A1:A2), "counts"\nNot percentages alone.', history: [{ day: 0, sensitive: 80, resistant: 0 }, { day: 1, sensitive: 0, resistant: 0 }] };
+    const book = { records: [{ id: 7, evidence }] };
+    const text = api.exportText(book);
+    expect(text).toContain('Evidence 7\nStatus: extinct');
+    expect(text).toContain('Exposure strength: 100/100; planned rounds: 8; observed rounds: 1');
+    expect(text).toContain('Original prediction: extinct');
+    expect(text).toContain('Selected explanation: extinction (submitted)');
+    expect(text).toContain('1\t0\t0\t0\tUndefined');
+    expect(text).toContain(evidence.notes);
+    const csv = api.exportCSV(book);
+    expect(csv).toContain('"actual_initial_resistant_cells"');
+    expect(csv).toContain('"7","extinct","100","8","1","0","0","extinct","extinction","true"');
+    expect(csv).toContain('"\'=SUM(A1:A2), ""counts""\nNot percentages alone."');
+    expect(csv).toContain('"1","0","0","0","Undefined"');
+    expect(csv).toContain('snapshots may share a run');
+    expect(api.evidence({ ...evidence, notes: '\u0000' + 'x'.repeat(2000) }).notes).toBe('x'.repeat(1200));
+  });
 });
 
 describe('Mounted resistance controls', { timeout: 20000 }, () => {
@@ -119,6 +199,7 @@ describe('Mounted resistance controls', { timeout: 20000 }, () => {
     root = null;
     container.remove();
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
     vi.useRealTimers();
     delete globalThis.IS_REACT_ACT_ENVIRONMENT;
   });
@@ -155,8 +236,25 @@ describe('Mounted resistance controls', { timeout: 20000 }, () => {
     act(() => container.querySelector(`input[name="micro-resistance-prediction"][value="${value}"]`).click());
   }
 
+  function writeNotes(value) {
+    const input = container.querySelector('#micro-resistance-notes');
+    act(() => {
+      Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set.call(input, value);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    return input;
+  }
+
+  function openNotebook() {
+    const details = container.querySelector('.micro-resistance-saved');
+    expect(details).not.toBe(null);
+    if (!details.open) act(() => details.querySelector('summary').click());
+    expect(details.open).toBe(true);
+    return details;
+  }
+
   function counts() {
-    return [...container.querySelectorAll('details table tbody tr')].map(row => [...row.cells].map(cell => cell.textContent));
+    return [...container.querySelectorAll('[data-resistance-current-history] tbody tr')].map(row => [...row.cells].map(cell => cell.textContent));
   }
 
   function tab(id) { act(() => container.querySelector('#micro-tab-' + id).click()); }
@@ -168,7 +266,7 @@ describe('Mounted resistance controls', { timeout: 20000 }, () => {
     predict('increase');
     click('Step round');
     expect(counts()[1]).toEqual(['1', '0', '12', '100%']);
-    click('↺ Reset');
+    click('↺ Reset current run');
     predict('increase');
     click('▶ Play');
     expect(counts()).toEqual([['0', '68', '12', '15%']]);
@@ -259,5 +357,196 @@ describe('Mounted resistance controls', { timeout: 20000 }, () => {
     expect(container.textContent).toContain('No prediction was saved for this restored run');
     expect(click('Step round').disabled).toBe(false);
     expect(latestData.microbiology.resistanceInvestigation.day).toBe(2);
+  });
+
+  it('explicitly saves a partial snapshot, pauses playback and retains evidence after reset', () => {
+    mount({ growthLab: { hypothesis: 'Keep other work' } });
+    expect(click('Save evidence').disabled).toBe(true);
+    range('Initial resistance', 15);
+    predict('increase');
+    const notes = container.querySelector('#micro-resistance-notes');
+    notes.focus();
+    writeNotes('The resistant count stayed at 12 while its share rose.');
+    expect(document.activeElement).toBe(notes);
+    expect(notes.maxLength).toBe(1200);
+    click('▶ Play');
+    act(() => vi.advanceTimersByTime(600));
+    click('Save evidence');
+    const book = JSON.parse(JSON.stringify(latestData.microbiology.resistanceNotebook));
+    expect(book.records).toHaveLength(1);
+    expect(book.records[0]).toMatchObject({ id: 1, evidence: { status: 'in-progress', initRes: 15, dose: 60, duration: 14, day: 1, prediction: 'increase', notes: notes.value } });
+    act(() => vi.advanceTimersByTime(3000));
+    expect(latestData.microbiology.resistanceInvestigation.day).toBe(1);
+    click('Save evidence');
+    expect(latestData.microbiology.resistanceNotebook.records).toHaveLength(1);
+    expect(container.textContent).toContain('This exact snapshot was already saved.');
+    click('↺ Reset current run');
+    expect(latestData.microbiology.resistanceInvestigation).toMatchObject({ day: 0, prediction: null, notes: '' });
+    expect(latestData.microbiology.resistanceNotebook).toEqual(book);
+    const saved = openNotebook().querySelector('[data-resistance-evidence="1"]');
+    expect(saved.textContent).toContain('Partial run');
+    expect(saved.textContent).toContain('original prediction has not been evaluated as a final outcome');
+    expect(saved.querySelector('[data-resistance-prediction-review]')).toBe(null);
+    expect(saved.textContent).toContain('The resistant count stayed at 12 while its share rose.');
+    expect(saved.querySelectorAll('tbody tr')).toHaveLength(2);
+    expect(counts()).toHaveLength(1);
+    expect(latestData.microbiology.growthLab.hypothesis).toBe('Keep other work');
+  });
+
+  it('preserves completed settings, submitted explanation and notes after JSON remount', () => {
+    const awardXP = vi.fn();
+    mount({}, awardXP);
+    range('Antibiotic exposure strength in the teaching model', 0);
+    range('Number of exposure rounds in the teaching model', 3);
+    predict('similar');
+    for (let i = 0; i < 3; i++) click('Step round');
+    act(() => container.querySelector('input[name="micro-resistance-explanation"][value="no-selection"]').click());
+    click('Submit explanation');
+    writeNotes('Counts stayed at 78 sensitive and 2 resistant.');
+    click('Save evidence');
+    const savedState = JSON.parse(JSON.stringify(latestData.microbiology));
+    expect(savedState.resistanceNotebook.records[0].evidence).toMatchObject({ status: 'completed', prediction: 'similar', explanation: 'no-selection', explanationSubmitted: true, notes: 'Counts stayed at 78 sensitive and 2 resistant.' });
+    const originalAwards = awardXP.mock.calls.slice();
+    act(() => root.unmount());
+    root = null;
+    mount(savedState, awardXP);
+    const saved = openNotebook().querySelector('[data-resistance-evidence="1"]');
+    expect(saved.textContent).toContain('Planned rounds completed');
+    expect(saved.textContent).toContain('Zero exposure created no survival difference');
+    expect(saved.textContent).toContain('Submitted');
+    expect(saved.querySelectorAll('tbody tr')).toHaveLength(4);
+    expect(container.querySelector('#micro-resistance-notes').value).toBe('Counts stayed at 78 sensitive and 2 resistant.');
+    expect(latestData.microbiology.resistanceNotebook).toEqual(savedState.resistanceNotebook);
+    expect(awardXP.mock.calls).toEqual(originalAwards);
+  });
+
+  it('reviews older snapshots without changing the active culture or its original prediction', () => {
+    mount();
+    predict('increase');
+    click('Step round');
+    writeNotes('First snapshot');
+    click('Save evidence');
+    click('Step round');
+    writeNotes('Second snapshot');
+    click('Save evidence');
+    const active = JSON.parse(JSON.stringify(latestData.microbiology.resistanceInvestigation));
+    const saved = openNotebook();
+    const first = [...saved.querySelectorAll('button')].find(node => node.querySelector('strong')?.textContent === 'Evidence 1');
+    const randomCalls = Math.random.mock.calls.length;
+    act(() => first.click());
+    expect(saved.querySelector('[data-resistance-evidence="1"]').textContent).toContain('First snapshot');
+    expect(latestData.microbiology.resistanceInvestigation).toEqual(active);
+    expect(Math.random.mock.calls).toHaveLength(randomCalls);
+    expect(container.querySelector('#micro-resistance-notes').value).toBe('Second snapshot');
+    expect(container.querySelector('input[name="micro-resistance-prediction"]:checked').value).toBe('increase');
+    expect(latestData.microbiology.resistanceNotebook.records.map(item => item.evidence.notes)).toEqual(['First snapshot', 'Second snapshot']);
+  });
+
+  it('blocks only saving at capacity and frees a slot without renumbering remaining records', () => {
+    const evidence = { initRes: 15, history: [{ day: 0, sensitive: 68, resistant: 12 }, { day: 1, sensitive: 0, resistant: 12 }], prediction: 'increase' };
+    const records = Array.from({ length: 8 }, (_, i) => ({ id: i + 3, evidence: { ...evidence, notes: 'Saved ' + i } }));
+    mount({ resistanceInvestigation: evidence, resistanceNotebook: { records, selectedId: 6, nextId: 11 } });
+    expect(click('Save evidence').disabled).toBe(true);
+    expect(container.textContent).toContain('The notebook is full.');
+    expect([...container.querySelectorAll('button')].find(node => node.textContent === '↺ Reset current run').disabled).toBe(false);
+    openNotebook();
+    click('Remove selected evidence');
+    expect(latestData.microbiology.resistanceNotebook.records.map(item => item.id)).toEqual([3, 4, 5, 7, 8, 9, 10]);
+    click('Save evidence');
+    expect(latestData.microbiology.resistanceNotebook.records.map(item => item.id)).toEqual([3, 4, 5, 7, 8, 9, 10, 11]);
+    click('↺ Reset current run');
+    expect(latestData.microbiology.resistanceNotebook.records).toHaveLength(8);
+    expect(latestData.microbiology.resistanceInvestigation.day).toBe(0);
+  });
+
+  it('announces removal and moves focus to remaining evidence without changing its stable ID or the active run', () => {
+    const evidence = { dose: 0, duration: 3, initRes: 15, prediction: 'similar', notes: 'Saved observations',
+      history: [{ day: 0, sensitive: 68, resistant: 12 }, { day: 1, sensitive: 68, resistant: 12 }] };
+    mount({ resistanceInvestigation: evidence, resistanceNotebook: { records: [{ id: 4, evidence }, { id: 9, evidence: { ...evidence, notes: 'Other observations' } }], selectedId: 4, nextId: 12 } });
+    const active = JSON.parse(JSON.stringify(latestData.microbiology.resistanceInvestigation));
+    const retained = window.__MicrobiologyCore.resistance.normalizeNotebook(latestData.microbiology.resistanceNotebook).records[1];
+    openNotebook();
+    const remove = [...container.querySelectorAll('button')].find(node => node.textContent === 'Remove selected evidence');
+    remove.focus();
+    click('Remove selected evidence');
+    expect(document.activeElement).toBe(container.querySelector('#micro-resistance-evidence-9'));
+    expect(container.querySelector('[data-resistance-notebook-notice]').textContent).toBe('Removed evidence 4. Selected evidence 9.');
+    expect(latestData.microbiology.resistanceNotebook).toEqual({ records: [retained], selectedId: 9, nextId: 12 });
+    expect(latestData.microbiology.resistanceInvestigation).toEqual(active);
+  });
+
+  it('focuses the notebook heading and announces an empty notebook after the last record is removed', () => {
+    const evidence = { dose: 0, duration: 3, initRes: 15, prediction: 'similar', notes: 'Current evidence remains',
+      history: [{ day: 0, sensitive: 68, resistant: 12 }, { day: 1, sensitive: 68, resistant: 12 }] };
+    mount({ resistanceInvestigation: evidence, resistanceNotebook: { records: [{ id: 6, evidence }], selectedId: 6, nextId: 8 } });
+    const active = JSON.parse(JSON.stringify(latestData.microbiology.resistanceInvestigation));
+    openNotebook();
+    const remove = [...container.querySelectorAll('button')].find(node => node.textContent === 'Remove selected evidence');
+    remove.focus();
+    click('Remove selected evidence');
+    const notice = container.querySelector('[data-resistance-notebook-notice]');
+    expect(notice.getAttribute('role')).toBe('status');
+    expect(notice.getAttribute('aria-live')).toBe('polite');
+    expect(notice.textContent).toBe('Removed evidence 6. No saved snapshots remain. Your current run is unchanged.');
+    expect(document.activeElement).toBe(container.querySelector('#micro-resistance-notebook-title'));
+    expect(container.querySelector('.micro-resistance-saved')).toBe(null);
+    expect(latestData.microbiology.resistanceNotebook).toEqual({ records: [], selectedId: null, nextId: 8 });
+    expect(latestData.microbiology.resistanceInvestigation).toEqual(active);
+    click('Save evidence');
+    expect(latestData.microbiology.resistanceNotebook.records.map(item => item.id)).toEqual([8]);
+  });
+
+  it('keeps extinction undefined in the saved table and both downloadable artifacts', () => {
+    mount();
+    range('Initial resistance', 0);
+    range('Antibiotic exposure strength in the teaching model', 100);
+    predict('extinct');
+    click('Step round');
+    writeNotes('No cells remain.');
+    click('Save evidence');
+    const saved = openNotebook().querySelector('[data-resistance-evidence="1"]');
+    expect(saved.textContent).toContain('Ended with no survivors');
+    expect(saved.textContent).toContain('Undefined (no survivors)');
+    expect([...saved.querySelectorAll('tbody tr')][1].lastElementChild.textContent).toBe('Undefined');
+    expect(saved.querySelectorAll('thead th[scope="col"]')).toHaveLength(5);
+    expect(saved.querySelectorAll('tbody th[scope="row"]')).toHaveLength(2);
+    const blobs = [], files = [];
+    vi.stubGlobal('Blob', class { constructor(parts, options) { this.parts = parts; this.type = options.type; } });
+    vi.stubGlobal('URL', { createObjectURL: vi.fn(blob => { blobs.push(blob); return 'blob:resistance-evidence'; }), revokeObjectURL: vi.fn() });
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function() { files.push(this.download); });
+    click('Download resistance notebook');
+    click('Download resistance CSV');
+    expect(files).toEqual(['micro-lab-resistance-notebook.txt', 'micro-lab-resistance-evidence.csv']);
+    expect(blobs[0].parts.join('')).toContain('1\t0\t0\t0\tUndefined');
+    expect(blobs[1].parts.join('')).toContain('"1","0","0","0","Undefined"');
+    act(() => vi.advanceTimersByTime(1000));
+    expect(URL.revokeObjectURL).toHaveBeenCalledTimes(2);
+  });
+
+  it('reports a failed download while keeping saved evidence intact', () => {
+    mount();
+    predict('increase');
+    click('Step round');
+    click('Save evidence');
+    const before = JSON.parse(JSON.stringify(latestData.microbiology.resistanceNotebook));
+    vi.stubGlobal('URL', { createObjectURL: vi.fn(() => { throw new Error('Unavailable'); }), revokeObjectURL: vi.fn() });
+    click('Download resistance notebook');
+    expect(container.textContent).toContain('The download could not start. Your saved evidence is still in this notebook.');
+    expect(latestData.microbiology.resistanceNotebook).toEqual(before);
+  });
+
+  it('reviews submitted choices against the saved outcome without replacing the original answers or awarding XP', () => {
+    const awardXP = vi.fn();
+    const evidence = { dose: 0, duration: 3, initRes: 3, prediction: 'increase', explanation: 'learned', explanationSubmitted: true,
+      history: Array.from({ length: 4 }, (_, day) => ({ day, sensitive: 78, resistant: 2 })), notes: 'Original interpretation' };
+    mount({ resistanceNotebook: { records: [{ id: 5, evidence }], selectedId: 5 } }, awardXP);
+    const saved = openNotebook().querySelector('[data-resistance-evidence="5"]');
+    expect(saved.textContent).toContain('Original prediction: Increase');
+    expect(saved.textContent).toContain('Selected explanation: Individual bacteria learned resistance during the run.');
+    expect(saved.querySelector('[data-resistance-prediction-review="different"]')).not.toBe(null);
+    expect(saved.querySelector('[data-resistance-explanation-review="review"]').textContent).toContain('With zero exposure, neither type is killed');
+    expect(awardXP).not.toHaveBeenCalled();
+    expect(window.__MicrobiologyCore.resistance.normalizeNotebook(latestData.microbiology.resistanceNotebook).records[0].evidence)
+      .toMatchObject({ prediction: 'increase', explanation: 'learned', explanationSubmitted: true, notes: 'Original interpretation' });
   });
 });

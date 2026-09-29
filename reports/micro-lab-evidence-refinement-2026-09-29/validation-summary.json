@@ -1,0 +1,40 @@
+{
+  "date": "2026-09-29",
+  "sourceFile": "stem_lab/stem_tool_microbiology.js",
+  "sourceSha256": "f8c0cff06d92050191cb2d3c177bc2d48a67c752a5d1c4a2ba718938ecfb15d8",
+  "unit": {
+    "passed": 184,
+    "failed": 0,
+    "files": 11,
+    "report": "unit-results.json",
+    "priorRuns": [
+      "unit-initial-results.json",
+      "unit-mock-isolation-results.json"
+    ],
+    "note": "Initial shared-worker runs exposed test-only URL mock isolation and descriptor comparison failures. The final consolidated run passes after both are corrected."
+  },
+  "browser": {
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "project": "chromium",
+    "report": "browser-results.json",
+    "scope": "Six new saved-work scenarios plus six existing workspace and notebook review scenarios, served from the local working tree."
+  },
+  "interface": {
+    "keys": 1469,
+    "missing": 0,
+    "changedFallbacks": 0,
+    "runtimeMirrored": true,
+    "microbiologyNamespacesMatch": true,
+    "syntaxChecksPassed": true
+  },
+  "visualReview": [
+    "mystery-revision-comparison-desktop.png",
+    "growth-hour-six-phone.png",
+    "microscope-unchecked-working-view-phone.png",
+    "gram-home-revision-phone.png"
+  ],
+  "scope": "Micro Lab source, desktop mirror, Micro Lab translation entries, focused tests, and validation artifacts."
+}

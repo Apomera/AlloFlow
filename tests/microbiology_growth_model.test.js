@@ -327,6 +327,62 @@ describe('Microbiology controlled variable sweeps', () => {
 });
 
 describe('Microbiology saved-run review', () => {
+  it('reveals earlier differences while preserving the original hour-24 prediction outcome', () => {
+    const control = optimum('ecoli');
+    const conditions = { ...control, tempC: 35 };
+    const input = { trials: [{ id: 5, control, conditions, prediction: 'similar', explanation: 'Saved reasoning' }] };
+    const before = JSON.parse(JSON.stringify(input));
+    const early = growth.reviewNotebook(input, 6);
+    const final = growth.reviewNotebook(input, 24);
+    expect(early.hour).toBe(6);
+    expect(final.hour).toBe(24);
+    expect(early.rows[0].outcome).toBe('similar');
+    expect(early.rows[0].prediction).toBe('similar');
+    expect(Math.abs(early.rows[0].inspected.difference)).toBeGreaterThan(2);
+    expect(Math.abs(final.rows[0].inspected.difference)).toBeLessThanOrEqual(2);
+    expect(early.rows[0].difference).toBe(final.rows[0].difference);
+    expect(early.rows[0].controlPopulation).toBe(final.rows[0].controlPopulation);
+    expect(early.rows[0].trialPopulation).toBe(final.rows[0].trialPopulation);
+    expect(final.rows[0].inspected).toEqual({
+      controlPopulation: final.rows[0].controlPopulation,
+      trialPopulation: final.rows[0].trialPopulation,
+      difference: final.rows[0].difference,
+    });
+    expect(Object.isFrozen(early.rows[0].inspected)).toBe(true);
+    expect(input).toEqual(before);
+  });
+
+  it('inspects each original control at the selected hour and keeps missing controls unavailable', () => {
+    const conditions = optimum('ecoli');
+    const trials = [
+      { id: 2, control: conditions, conditions: { ...conditions, oxygen: 0 } },
+      { id: 7, control: { ...conditions, oxygen: 0 }, conditions },
+      { id: 9, conditions },
+    ];
+    for (const hour of [0, 6, 12, 24]) {
+      const review = growth.reviewNotebook({ control: optimum('thermus'), trials }, hour);
+      for (const [index, trial] of trials.entries()) {
+        const expectedControl = trial.control ? growth.simulate(trial.control).points[hour].population : null;
+        const expectedTrial = growth.simulate(trial.conditions).points[hour].population;
+        expect(review.rows[index].inspected).toEqual({
+          controlPopulation: expectedControl, trialPopulation: expectedTrial,
+          difference: expectedControl === null ? null : expectedTrial - expectedControl,
+        });
+      }
+      expect(review.rows[2]).toMatchObject({ outcome: null, difference: null, controlPopulation: null });
+    }
+    expect(growth.reviewNotebook({ trials }, 0).rows[0].inspected).toEqual({ controlPopulation: 5, trialPopulation: 5, difference: 0 });
+  });
+
+  it('normalizes restored inspection hours with finite numeric bounds and a final-hour default', () => {
+    for (const value of [undefined, null, '6', true, {}, [], NaN, Infinity, -Infinity]) {
+      expect(growth.reviewNotebook({}, value).hour).toBe(24);
+    }
+    for (const [value, expected] of [[-12, 0], [36, 24], [6.49, 6], [6.5, 7], [0, 0]]) {
+      expect(growth.reviewNotebook({}, value).hour).toBe(expected);
+    }
+  });
+
   it('compares each trial against its own saved control regardless of the current control', () => {
     const first = { id: 2, control: optimum('ecoli', 100), conditions: optimum('ecoli', 0), prediction: 'lower' };
     const second = { id: 9, control: optimum('ecoli', 0), conditions: optimum('ecoli', 100), prediction: 'unsure' };

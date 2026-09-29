@@ -21,9 +21,9 @@ test('investigates an ambiguous specimen, records bounded reasoning, and exports
   const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
   await mount(page, 'mystery');
   await page.getByRole('button', { name: /F An honest unknown/ }).click();
-  await page.getByRole('button', { name: '+ Size and shape', exact: true }).click();
-  await page.getByRole('button', { name: '+ Cell structure and chemistry', exact: true }).click();
-  await page.getByRole('button', { name: '+ Behavior and reproduction', exact: true }).click();
+  await page.getByRole('button', { name: 'Reveal: Size and shape', exact: true }).click();
+  await page.getByRole('button', { name: 'Reveal: Cell structure and chemistry', exact: true }).click();
+  await page.getByRole('button', { name: 'Reveal: Behavior and reproduction', exact: true }).click();
   await page.getByRole('radio', { name: 'Bacterium', exact: true }).check();
   await page.getByRole('checkbox', { name: 'Cell structure and chemistry', exact: true }).check();
   await page.getByRole('checkbox', { name: 'Behavior and reproduction', exact: true }).check();

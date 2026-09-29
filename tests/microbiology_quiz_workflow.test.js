@@ -72,16 +72,28 @@ describe('Microbiology quiz and targeted review', { timeout: 20000 }, () => {
     const view = roundTrip(); expect(view.state.quizSubmitted).not.toBe(true);
     act(() => view.root.unmount()); view.container.remove(); mounted = null;
     mount({ quizSubmitted: true, quizAnswers: [bank[0].answer], quizCorrect: 500 });
-    expect(mounted.container.querySelector('[data-quiz-original-score]').textContent).toBe('Original score: 1/15');
-    expect(mounted.container.querySelectorAll('article')).toHaveLength(14);
-    expect(mounted.container.querySelector('article').textContent).toContain('Original answer: No answer recorded');
+    expect(mounted.container.querySelector('[data-quiz-original-score]')).toBeNull();
+    expect(mounted.container.querySelectorAll('fieldset')).toHaveLength(15);
+    expect(mounted.container.textContent).toContain('Some saved answers are missing or invalid.');
+    expect(mounted.container.textContent).toContain('1/15 questions answered');
+    expect(button('Submit quiz').disabled).toBe(true);
+    expect(mounted.container.querySelector(`input[name="micro-quiz-answer-0"][value="${bank[0].answer}"]`).checked).toBe(true);
     expect(mounted.container.textContent).not.toContain('mastered microbiology');
+    for (let i = 1; i < 15; i++) choose(i, bank[i].answer);
+    expect(mounted.state.quizSubmitted).toBe(false);
+    expect(mounted.container.querySelector('[data-quiz-original-score]')).toBeNull();
+    expect(button('Submit quiz').disabled).toBe(false);
+    expect(mounted.awardXP).not.toHaveBeenCalled();
+    click('Submit quiz');
+    expect(mounted.state.quizSubmitted).toBe(true);
+    expect(mounted.container.querySelector('[data-quiz-original-score]').textContent).toBe('Original score: 15/15');
+    expect(mounted.awardXP).toHaveBeenCalledWith(75);
   });
 
   it('uses the same valid-answer count and strict submission flag on Home', () => {
     mount({ tab: 'home', quizAnswers: Array(15).fill('1'), quizSubmitted: 'false' });
     expect(mounted.container.textContent).toContain('0/15');
-    expect(mounted.container.textContent).toContain('In progress');
+    expect(mounted.container.querySelector('[data-work-card="quiz"]').textContent).toContain('Ready to begin');
     expect(mounted.container.textContent).not.toContain('Submitted');
     const quiz = [...mounted.container.querySelectorAll('[role="tab"]')].find(n => n.textContent.includes('Quiz')); click(quiz);
     expect(mounted.container.textContent).toContain('0/15 questions answered');

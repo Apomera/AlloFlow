@@ -7,7 +7,7 @@ import { React, ReactDOMClient } from './helpers/stem_widgets_smoke_harness.js';
 const require = createRequire(import.meta.url);
 const { act, Simulate } = require(resolve('desktop/web-app/node_modules/react-dom/test-utils'));
 const source = fs.readFileSync('stem_lab/stem_tool_microbiology.js', 'utf8');
-const start = source.indexOf('  function VirtualMicroscope(props)');
+const start = source.indexOf('  var MicroMeasurements =');
 const end = source.indexOf('  // Plugin registration', start);
 const VirtualMicroscope = new Function('R', 'hh', 'microInkFor', '__alloMBT', source.slice(start, end) + '\nreturn VirtualMicroscope;')(
   React, React.createElement, value => value, (_key, fallback) => fallback
@@ -69,6 +69,14 @@ function chooseSlide(name) {
 function zoomTo(value) {
   const select = container.querySelector('select');
   act(() => Simulate.change(select, { target: { value: String(value) } }));
+}
+
+function savedMeasurementContext(id, method, mag, zoom) {
+  const referenceUm = { ecoli: 2, strep: 1, parame: 250, plasmo: 7.5, phage: 0.2 }[id];
+  const fieldUm = (method === 'em' ? 40000 : 180000) / mag / zoom;
+  const raw = fieldUm / 4, power = 10 ** Math.floor(Math.log(raw) / Math.LN10), factor = raw / power;
+  const scaleUm = (factor >= 5 ? 5 : factor >= 2 ? 2 : 1) * power;
+  return { version: 1, specimen: id, method, mag, zoom, fieldUm, scaleUm, referenceUm };
 }
 
 describe('Calibrated virtual microscope', () => {
@@ -189,6 +197,44 @@ describe('Calibrated virtual microscope', () => {
 });
 
 describe('Microscope measurement practice', () => {
+  it.each([
+    { name: 'light-mode phage', id: 'phage', method: 'lightbright', mag: 1000, zoom: 50 },
+    { name: 'low-resolution bacterium enlarged by display zoom', id: 'ecoli', method: 'lightbright', mag: 100, zoom: 50 },
+    { name: 'feature too small for comparison', id: 'ecoli', method: 'lightbright', mag: 1000, zoom: 1 },
+    { name: 'cropped chain of cocci', id: 'strep', method: 'lightbright', mag: 1000, zoom: 50 },
+    { name: 'cropped paramecium', id: 'parame', method: 'lightbright', mag: 1000, zoom: 1 },
+    { name: 'cropped electron-view phage', id: 'phage', method: 'em', mag: 100000, zoom: 4 }
+  ])('rejects a restored checked result for $name while retaining its valid draft', specimen => {
+    const context = savedMeasurementContext(specimen.id, specimen.method, specimen.mag, specimen.zoom);
+    const draft = { value: String(context.referenceUm), unit: 'um', context };
+    const result = { value: context.referenceUm, unit: 'um', context };
+    const raw = { [specimen.id]: { draft, result } }, before = JSON.stringify(raw);
+    const normalized = window.__MicrobiologyCore.measurements.normalize(raw);
+    expect(normalized).toEqual({ [specimen.id]: { draft } });
+    expect(normalized[specimen.id].draft.context).not.toBe(context);
+    expect(window.__MicrobiologyCore.measurements.normalize({ [specimen.id]: { result } })).toEqual({});
+    expect(JSON.stringify(raw)).toBe(before);
+    mount({ scopeOrganism: specimen.id, selectedScope: specimen.method, magnification: specimen.mag, microscopeZoom: specimen.zoom, microscopeFocus: 50, microscopeMeasurements: raw });
+    expect(container.querySelector('input[type="number"]').value).toBe(draft.value);
+    expect(button('Check and save estimate').disabled).toBe(true);
+    expect(text()).not.toContain('Last saved result');
+    expect(text()).toContain('Measurement notebook · 0/5');
+    expect(button('Download measurement notebook').disabled).toBe(true);
+  });
+
+  it('keeps a measurable saved result when a newer draft belongs to an unmeasurable view', () => {
+    const result = { value: 2, unit: 'um', context: savedMeasurementContext('ecoli', 'lightbright', 1000, 20) };
+    const draft = { value: '3', unit: 'um', context: savedMeasurementContext('ecoli', 'lightbright', 1000, 1) };
+    const raw = { ecoli: { result, draft } };
+    expect(window.__MicrobiologyCore.measurements.normalize(raw)).toEqual(raw);
+    mount({ microscopeFocus: 50, microscopeZoom: 1, microscopeMeasurements: raw });
+    expect(container.querySelector('input[type="number"]').value).toBe('3');
+    expect(button('Check and save estimate').disabled).toBe(true);
+    expect(text()).toContain('Last saved result · E. coli: within the practice band');
+    expect(text()).toContain('Measurement notebook · 1/5');
+    expect(latestState.microscopeMeasurements.ecoli).toEqual({ result, draft });
+  });
+
   it.each([
     { id: 'strep', mag: 1000, zoom: 20, expected: 1, type: 'circle' },
     { id: 'parame', mag: 400, zoom: 1, expected: 250, type: 'ellipse' },
@@ -373,8 +419,11 @@ function captureNotebookDownload() {
     }
   }
   class CapturedURL extends NativeURL {}
-  CapturedURL.createObjectURL = vi.fn(() => 'blob:micro-notebook-test');
-  CapturedURL.revokeObjectURL = vi.fn();
+  // Own descriptors also work with read-only methods inherited from a shared worker.
+  Object.defineProperties(CapturedURL, {
+    createObjectURL: { configurable: true, writable: true, value: vi.fn(() => 'blob:micro-notebook-test') },
+    revokeObjectURL: { configurable: true, writable: true, value: vi.fn() }
+  });
   vi.stubGlobal('Blob', CapturedBlob);
   vi.stubGlobal('URL', CapturedURL);
   const linkClick = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function() {
@@ -384,6 +433,35 @@ function captureNotebookDownload() {
 }
 
 describe('Microscope notebook review and export', () => {
+  it('isolates download mocks from inherited read-only URL methods and restores the original global', () => {
+    mount({ microscopeFocus: 50 });
+    enterEstimate(2); click('Check and save estimate');
+    const OriginalURL = globalThis.URL;
+    const originalDescriptors = ['createObjectURL', 'revokeObjectURL'].map(key =>
+      [key, Object.getOwnPropertyDescriptor(OriginalURL, key)]);
+    const inheritedCreate = vi.fn(), inheritedRevoke = vi.fn();
+    class ReadOnlyURL extends OriginalURL {}
+    Object.defineProperties(ReadOnlyURL, {
+      createObjectURL: { configurable: true, writable: false, value: inheritedCreate },
+      revokeObjectURL: { configurable: true, writable: false, value: inheritedRevoke }
+    });
+    vi.stubGlobal('URL', ReadOnlyURL);
+    const download = captureNotebookDownload();
+    vi.useFakeTimers();
+    click('Download measurement notebook');
+    act(() => vi.advanceTimersByTime(1000));
+    expect(download.links).toEqual([{ filename: 'micro-lab-microscope-notebook.txt', href: 'blob:micro-notebook-test' }]);
+    expect(download.revokeUrl).toHaveBeenCalledWith('blob:micro-notebook-test');
+    expect(inheritedCreate).not.toHaveBeenCalled();
+    expect(inheritedRevoke).not.toHaveBeenCalled();
+    expect(Object.getOwnPropertyDescriptor(ReadOnlyURL, 'revokeObjectURL').writable).toBe(false);
+    for (const [key, descriptor] of originalDescriptors) {
+      expect(Object.getOwnPropertyDescriptor(OriginalURL, key)).toEqual(descriptor);
+    }
+    vi.unstubAllGlobals();
+    expect(globalThis.URL).toBe(OriginalURL);
+  });
+
   it('shows notebook progress before the first result and provides accessible shortcuts', () => {
     mount();
     expect(text()).toContain('Measurement notebook · 0/5');
@@ -503,5 +581,74 @@ describe('Microscope notebook review and export', () => {
     expect(document.querySelector('a[download="micro-lab-microscope-notebook.txt"]')).toBeNull();
     act(() => vi.advanceTimersByTime(1000));
     expect(download.revokeUrl).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('Resume microscope working measurements', () => {
+  it('shows both contexts and resumes an edited working estimate without replacing its checked result', () => {
+    mount({ microscopeFocus: 50, microscopeZoom: 20 });
+    enterEstimate(2); click('Check and save estimate');
+    click('400×'); zoomTo(50); click('Start estimate for this view');
+    enterEstimate(3000); estimateUnits('nm');
+    const entry = JSON.parse(JSON.stringify(latestState.microscopeMeasurements.ecoli));
+    click('Prepare slide · T4 bacteriophage');
+    const working = container.querySelector('[data-measurement-draft="ecoli"]');
+    expect(working.textContent).toContain('Working estimate (not yet checked): 3000 nm');
+    expect(working.textContent).toContain('Working view: Light microscope · 400× · display zoom 50× · Scale bar 2 µm');
+    expect(container.querySelector('[data-measurement-slide="ecoli"]').textContent).toContain('Light microscope · 1,000× · display zoom 20×');
+    click('Resume working view · E. coli');
+    expect(latestState).toMatchObject({ scopeOrganism: 'ecoli', selectedScope: 'lightbright', magnification: 400, microscopeZoom: 50, microscopeFocus: 50, microscopeTargetFocus: 50 });
+    expect(latestState.microscopeMeasurements.ecoli).toEqual(entry);
+    expect(container.querySelector('input[type="number"]').value).toBe('3000');
+    expect(container.querySelector('select[aria-label="Estimate units"]').value).toBe('nm');
+    expect(document.activeElement).toBe(container.querySelector('input[type="number"]'));
+    expect(button('Check and save estimate').disabled).toBe(false);
+    expect(text()).toContain('working viewing settings restored with focus assist');
+    expect(text()).toContain('This saved result belongs to the earlier view');
+    click('Review saved view · E. coli');
+    expect(button('Check and save estimate').disabled).toBe(true);
+    expect(text()).toContain('Resume its working view from the notebook');
+    expect(latestState.microscopeMeasurements.ecoli).toEqual(entry);
+  });
+
+  it('resumes an unchecked draft after JSON reload without manufacturing a saved result', () => {
+    const draft = { value: '225', unit: 'nm', context: savedMeasurementContext('phage', 'em', 50000, 1) };
+    mount({ microscopeMeasurements: { phage: { draft } } });
+    const saved = JSON.parse(JSON.stringify(latestState));
+    act(() => root.unmount()); root = null; container.remove();
+    mount(saved);
+    click('Resume working view · T4 bacteriophage');
+    expect(latestState).toMatchObject({ scopeOrganism: 'phage', selectedScope: 'em', magnification: 50000, microscopeZoom: 1, microscopeFocus: 56 });
+    expect(latestState.microscopeMeasurements.phage).toEqual({ draft });
+    expect(button('Check and save estimate').disabled).toBe(false);
+    expect(button('Download measurement notebook').disabled).toBe(true);
+    expect(text()).toContain('Measurement notebook · 0/5');
+  });
+
+  it.each([
+    { id: 'ecoli', name: 'E. coli', method: 'lightbright', mag: 1000, zoom: 1, hint: 'Increase display zoom so the feature is large enough' },
+    { id: 'parame', name: 'Paramecium', method: 'lightbright', mag: 1000, zoom: 1, hint: 'Reduce magnification or display zoom until the whole feature fits' },
+    { id: 'phage', name: 'T4 bacteriophage', method: 'lightbright', mag: 1000, zoom: 20, hint: 'Use the recommended setup so this feature is visible' }
+  ])('restores the $id working view while keeping its unmet readiness checks', specimen => {
+    const draft = { value: '5', unit: 'nm', context: savedMeasurementContext(specimen.id, specimen.method, specimen.mag, specimen.zoom) };
+    mount({ microscopeMeasurements: { [specimen.id]: { draft } } });
+    click('Resume working view · ' + specimen.name);
+    expect(latestState).toMatchObject({ scopeOrganism: specimen.id, selectedScope: specimen.method, magnification: specimen.mag, microscopeZoom: specimen.zoom });
+    expect(latestState.microscopeMeasurements[specimen.id]).toEqual({ draft });
+    expect(button('Check and save estimate').disabled).toBe(true);
+    expect(text()).toContain(specimen.hint);
+    expect(text()).not.toContain('The view changed after this estimate was started');
+  });
+
+  it('does not present blank or already checked estimates as pending work', () => {
+    const context = savedMeasurementContext('ecoli', 'lightbright', 1000, 20);
+    mount({ microscopeMeasurements: {
+      ecoli: { draft: { value: '2', unit: 'um', context }, result: { value: 2, unit: 'um', context } },
+      phage: { draft: { value: '', unit: 'nm', context: savedMeasurementContext('phage', 'em', 100000, 1) } }
+    } });
+    expect(container.querySelectorAll('[data-measurement-draft]')).toHaveLength(0);
+    expect(text()).not.toContain('Resume working view');
+    expect(button('Review saved view · E. coli')).toBeTruthy();
+    expect(button('Prepare slide · T4 bacteriophage')).toBeTruthy();
   });
 });

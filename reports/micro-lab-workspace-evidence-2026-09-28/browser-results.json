@@ -1,0 +1,725 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/micro-lab-workspace-evidence-2026-09-28/browser-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "microbiology-deeper-inquiry.spec.ts",
+      "file": "microbiology-deeper-inquiry.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "investigates an ambiguous specimen, records bounded reasoning, and exports drafts",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 195727,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 90000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 90000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 90000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-deeper-inquiry.spec.ts",
+                        "column": 91,
+                        "line": 28
+                      },
+                      "message": "TimeoutError: locator.check: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('checkbox', { name: 'Cell structure and chemistry', exact: true })\u001b[22m\n\u001b[2m    - locator resolved to <input type=\"checkbox\" value=\"structure\" name=\"micro-mystery-evidence\"/>\u001b[22m\n\n\n  26 |   await page.getByRole('button', { name: 'Reveal: Behavior and reproduction', exact: true }).click();\n  27 |   await page.getByRole('radio', { name: 'Bacterium', exact: true }).check();\n> 28 |   await page.getByRole('checkbox', { name: 'Cell structure and chemistry', exact: true }).check();\n     |                                                                                           ^\n  29 |   await page.getByRole('checkbox', { name: 'Behavior and reproduction', exact: true }).check();\n  30 |   await page.getByRole('radio', { name: /^The evidence supports a broad group/ }).check();\n  31 |   await page.getByRole('textbox', { name: 'My evidence and reasoning', exact: true }).fill('The cells lack nuclei and divide independently. Both domains fit; membrane chemistry or DNA evidence could distinguish them.');\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-deeper-inquiry.spec.ts:28:91"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T03:37:15.319Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-workspace-evidence-2026-09-28\\browser-results\\microbiology-deeper-inquir-9711d-easoning-and-exports-drafts-chromium\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-workspace-evidence-2026-09-28\\browser-results\\microbiology-deeper-inquir-9711d-easoning-and-exports-drafts-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-workspace-evidence-2026-09-28\\browser-results\\microbiology-deeper-inquir-9711d-easoning-and-exports-drafts-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-workspace-evidence-2026-09-28\\browser-results\\microbiology-deeper-inquir-9711d-easoning-and-exports-drafts-chromium\\trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "ad4ee62dd47486e792ce-a0ba590005098f827da9",
+          "file": "microbiology-deeper-inquiry.spec.ts",
+          "line": 20,
+          "column": 5
+        },
+        {
+          "title": "sweeps one variable and keeps saved responses fixed while preparing another trial",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T03:41:03.743Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "ad4ee62dd47486e792ce-c3dbd7931b5765069d68",
+          "file": "microbiology-deeper-inquiry.spec.ts",
+          "line": 64,
+          "column": 5
+        },
+        {
+          "title": "measures with units and preserves measurement and resistance evidence across navigation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T03:41:03.743Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "ad4ee62dd47486e792ce-372b3cd7b392da460dcf",
+          "file": "microbiology-deeper-inquiry.spec.ts",
+          "line": 92,
+          "column": 5
+        },
+        {
+          "title": "explores outbreak evidence with a keyboard and preserves past markers after pump closure",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T03:41:03.743Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "ad4ee62dd47486e792ce-b56542551ee97f5925fc",
+          "file": "microbiology-deeper-inquiry.spec.ts",
+          "line": 127,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "microbiology-investigation.spec.ts",
+      "file": "microbiology-investigation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "predicts, compares, keeps immutable evidence, restores state, and downloads full notebook",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 15482,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T03:41:08.348Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "188f9fc1a33b6ee8066b-a608ddcb97718144bf0b",
+          "file": "microbiology-investigation.spec.ts",
+          "line": 22,
+          "column": 5
+        },
+        {
+          "title": "microscope scale and optical limits, then resistance extinction on a phone",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9483,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T03:41:25.447Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "188f9fc1a33b6ee8066b-e270815b2727cbb4a72b",
+          "file": "microbiology-investigation.spec.ts",
+          "line": 74,
+          "column": 5
+        },
+        {
+          "title": "phone, keyboard tabs, no-growth meaning, and notebook capacity",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 16205,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T03:41:34.945Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "188f9fc1a33b6ee8066b-1ae50cd37e696173e452",
+          "file": "microbiology-investigation.spec.ts",
+          "line": 108,
+          "column": 5
+        },
+        {
+          "title": "visits every section and handles invalid saved growth state",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 21939,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T03:41:51.164Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "188f9fc1a33b6ee8066b-4641e4be8fec116c31a6",
+          "file": "microbiology-investigation.spec.ts",
+          "line": 135,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "microbiology-mystery-revisions.spec.ts",
+      "file": "microbiology-mystery-revisions.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "reviews original evidence while preserving revisions, citations, and the next case across reload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14526,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T03:42:13.157Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "79b3d3f4bc5d53d4972c-d9dfd97923bb2fe56da6",
+          "file": "microbiology-mystery-revisions.spec.ts",
+          "line": 23,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "microbiology-resistance-notebook.spec.ts",
+      "file": "microbiology-resistance-notebook.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "preserves partial resistance evidence through edits, reset, downloads, JSON reload, and mobile review",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 31583,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T03:42:27.848Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7cd29bd580b54b48f070-682816c1e9d2a1f07da7",
+          "file": "microbiology-resistance-notebook.spec.ts",
+          "line": 40,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "microbiology-review-notebooks.spec.ts",
+      "file": "microbiology-review-notebooks.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "uses keyboard quiz answers and preserves the first score while practicing a missed question",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 189545,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T03:43:14.995Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "843ca87b3ed696aa4e26-c52c962a3ddc89ccf070",
+          "file": "microbiology-review-notebooks.spec.ts",
+          "line": 23,
+          "column": 5
+        },
+        {
+          "title": "restores a microscope measurement view and downloads original evidence while keeping a draft",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 21945,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T03:46:31.700Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "843ca87b3ed696aa4e26-caf455ffc3c4acd690cc",
+          "file": "microbiology-review-notebooks.spec.ts",
+          "line": 61,
+          "column": 5
+        },
+        {
+          "title": "compares each saved growth run with its own control and keeps stable IDs when removing a run",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10325,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T03:46:53.668Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "843ca87b3ed696aa4e26-fd6c57707268a6571a72",
+          "file": "microbiology-review-notebooks.spec.ts",
+          "line": 99,
+          "column": 5
+        },
+        {
+          "title": "reads the corrected print reference on a phone and in print media",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 146794,
+                  "error": {
+                    "message": "\u001b[31mTearing down \"context\" exceeded the test timeout of 120000ms.\u001b[39m",
+                    "stack": "\u001b[31mTearing down \"context\" exceeded the test timeout of 120000ms.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTearing down \"context\" exceeded the test timeout of 120000ms.\u001b[39m"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T03:47:04.014Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-workspace-evidence-2026-09-28\\browser-results\\microbiology-review-notebo-ef5bd--a-phone-and-in-print-media-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-workspace-evidence-2026-09-28\\browser-results\\microbiology-review-notebo-ef5bd--a-phone-and-in-print-media-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-workspace-evidence-2026-09-28\\browser-results\\microbiology-review-notebo-ef5bd--a-phone-and-in-print-media-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-workspace-evidence-2026-09-28\\browser-results\\microbiology-review-notebo-ef5bd--a-phone-and-in-print-media-chromium\\trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "843ca87b3ed696aa4e26-1177d2175c56590a7346",
+          "file": "microbiology-review-notebooks.spec.ts",
+          "line": 137,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "microbiology-workspace-evidence.spec.ts",
+      "file": "microbiology-workspace-evidence.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "resumes saved work from Home and repairs an incomplete saved quiz without inventing a score",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 49077,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T03:50:16.103Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "44fe622e4367c8fafa33-39188c31fef80ba58053",
+          "file": "microbiology-workspace-evidence.spec.ts",
+          "line": 20,
+          "column": 5
+        },
+        {
+          "title": "investigates Gram staining, corrects an interpretation, and preserves a recorded report through draft edits and restart",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6646,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T03:51:28.752Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "44fe622e4367c8fafa33-cbc0330ffccd4bf388c4",
+          "file": "microbiology-workspace-evidence.spec.ts",
+          "line": 56,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-29T03:36:28.719Z",
+    "duration": 922574.278,
+    "expected": 11,
+    "skipped": 3,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

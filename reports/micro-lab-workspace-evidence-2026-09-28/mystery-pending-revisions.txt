@@ -1,0 +1,20 @@
+Mystery specimens
+Fictional teaching specimens. The observations support broad classifications, not species identification or safety decisions.
+
+A · Freshwater drifter
+Revision status: Working notes contain revisions that have not replaced the recorded report.
+Recorded claim: Ciliated protist
+Recorded reasoning: The supplied nucleus and cilia support a ciliated protist. Bacteria lack a membrane-bound nucleus; species and safety remain unknown.
+• The supplied cell map shows membrane-bound compartments and two nuclei. This is a eukaryotic cell.
+• In the supplied observation, many cilia beat together and move the cell through water. Food enters a groove along its side.
+The evidence supports a broad group or an unresolved classification; species and safety remain unknown.
+Current working notes
+My classification: Bacterium
+Unfinished revision: I need to compare the supplied nucleus observation before changing my classification.
+Current cited observations: Cell structure and chemistry
+Current conclusion about limits: These observations establish the exact species.
+Revealed observations:
+Sample context: A fictional freshwater sample contains many kinds of microbes. The habitat alone does not identify this specimen.
+Size and shape: The prepared image shows one elongated cell, about 200 µm long. Fine hairlike structures cover its surface.
+Cell structure and chemistry: The supplied cell map shows membrane-bound compartments and two nuclei. This is a eukaryotic cell.
+Behavior and reproduction: In the supplied observation, many cilia beat together and move the cell through water. Food enters a groove along its side.

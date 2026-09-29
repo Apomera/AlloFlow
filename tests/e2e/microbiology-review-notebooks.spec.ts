@@ -4,6 +4,8 @@ import { mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 test.describe.configure({ mode: 'serial', retries: 0, timeout: 90000 });
+// Screenshots capture these review views without a video encoder at context teardown.
+test.use({ video: 'off' });
 const out = path.resolve('reports/micro-lab-review-refinement-2026-09-27');
 const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_microbiology.js', toolId: 'microbiology', width: 1280, height: 960, layout: 'document' });
 const src = readFileSync('stem_lab/stem_tool_microbiology.js', 'utf8');
@@ -149,6 +151,11 @@ test('reads the corrected print reference on a phone and in print media', async 
   await reference.scrollIntoViewIfNeeded();
   await page.screenshot({ path: path.join(out, 'reference-phone.png') });
   await page.setViewportSize({ width: 1000, height: 1000 }); await page.emulateMedia({ media: 'print' });
-  await reference.screenshot({ path: path.join(out, 'reference-print.png') });
+  try {
+    await reference.screenshot({ path: path.join(out, 'reference-print.png') });
+  } finally {
+    // Restore the normal media state before the shared harness cleanup.
+    await page.emulateMedia({ media: 'screen' });
+  }
   expect(errors).toEqual([]);
 });
