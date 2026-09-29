@@ -1,0 +1,325 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass9-2026-09-29/browser-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "moon-mission-powered-approach.spec.ts",
+      "file": "moon-mission-powered-approach.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "approach instruments, thrust direction and both cameras follow the computed trajectory",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 28028,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T22:59:24.349Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "approach-whole",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass9-2026-09-29\\browser-artifacts\\moon-mission-powered-appro-061ea-low-the-computed-trajectory-chromium\\attachments\\approach-whole-24b139dbd81dc4ad9561606326d5d56f92d6751b.png"
+                    },
+                    {
+                      "name": "approach-local",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass9-2026-09-29\\browser-artifacts\\moon-mission-powered-appro-061ea-low-the-computed-trajectory-chromium\\attachments\\approach-local-40a4eeced3b69e3b2a5960c9379916ff84a8fad6.png"
+                    },
+                    {
+                      "name": "approach-low-gate",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass9-2026-09-29\\browser-artifacts\\moon-mission-powered-appro-061ea-low-the-computed-trajectory-chromium\\attachments\\approach-low-gate-9b135e9af59220f3826a821765600afd59fdb402.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "ddb01902db3947842a2c-f4ccbc0897e7da8d03c0",
+          "file": "moon-mission-powered-approach.spec.ts",
+          "line": 14,
+          "column": 5
+        },
+        {
+          "title": "review, rewind, reload and plan changes retain only matching computed evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43277,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T22:59:54.015Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "approach-handover",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass9-2026-09-29\\browser-artifacts\\moon-mission-powered-appro-2a973--matching-computed-evidence-chromium\\attachments\\approach-handover-ca37a163d350d0eaf6a63bc773e39566cc95827e.png"
+                    },
+                    {
+                      "name": "approach-short-plan",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass9-2026-09-29\\browser-artifacts\\moon-mission-powered-appro-2a973--matching-computed-evidence-chromium\\attachments\\approach-short-plan-30a42cd132c55b79a07dbe080a585a968c664c6e.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "ddb01902db3947842a2c-e989a9ac23a5be0979a9",
+          "file": "moon-mission-powered-approach.spec.ts",
+          "line": 20,
+          "column": 5
+        },
+        {
+          "title": "corrupt terminal save restarts unverified and manual landing keeps its practice reserve",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 3045,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeNull\u001b[2m()\u001b[22m\n\nReceived: \u001b[31m{\"altitude\": 299.99999999720603, \"deltaV\": 1967.4408364978792, \"downrange\": 513668.49611169763, \"duration\": 720.0023993750123, \"mass\": 7984.149295460494, \"outcome\": \"handover\", \"planDuration\": 720, \"propellantRemaining\": 974.1492954604937, \"propellantUsed\": 7225.850704539506, \"radialSpeed\": -9.000586675847869, \"saturatedSeconds\": 0, \"tangentialSpeed\": 3.9998687398630643, \"version\": 1}\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeNull\u001b[2m()\u001b[22m\n\nReceived: \u001b[31m{\"altitude\": 299.99999999720603, \"deltaV\": 1967.4408364978792, \"downrange\": 513668.49611169763, \"duration\": 720.0023993750123, \"mass\": 7984.149295460494, \"outcome\": \"handover\", \"planDuration\": 720, \"propellantRemaining\": 974.1492954604937, \"propellantUsed\": 7225.850704539506, \"radialSpeed\": -9.000586675847869, \"saturatedSeconds\": 0, \"tangentialSpeed\": 3.9998687398630643, \"version\": 1}\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-powered-approach.spec.ts:26:241",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-powered-approach.spec.ts",
+                      "column": 241,
+                      "line": 26
+                    },
+                    "snippet": "  24 | });\n  25 | test('corrupt terminal save restarts unverified and manual landing keeps its practice reserve',async({page})=>{\n> 26 |   await mount(page);await page.locator('[data-approach-review]').click();const raw=await saved(page);raw.approachResult.mass+=10;await mount(page,seed(raw));expect((await live(page)).time).toBe(0);expect((await saved(page)).approachResult).toBeNull();await page.waitForTimeout(250);expect((await saved(page)).approachRun.recorded).toBe(false);\n     |                                                                                                                                                                                                                                                 ^\n  27 |   await page.locator('[data-approach-plan]').selectOption('900');await page.locator('[data-approach-review]').click();await page.getByRole('button',{name:/Begin Descent/}).click();await expect(page.locator('[data-descent-canvas]')).toBeVisible();await page.locator('[data-descent-pause]').click();expect(Number(await page.locator('[data-descent-canvas]').getAttribute('data-descent-fuel'))).toBeCloseTo(110,1);expect((await saved(page)).missionXP).toBe(0);await expect(page.locator('[data-approach-canvas]')).toHaveCount(0);\n  28 | });\n  29 | test('approach clock freezes while hidden and resumes without catch-up',async({page})=>{"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-powered-approach.spec.ts",
+                        "column": 241,
+                        "line": 26
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeNull\u001b[2m()\u001b[22m\n\nReceived: \u001b[31m{\"altitude\": 299.99999999720603, \"deltaV\": 1967.4408364978792, \"downrange\": 513668.49611169763, \"duration\": 720.0023993750123, \"mass\": 7984.149295460494, \"outcome\": \"handover\", \"planDuration\": 720, \"propellantRemaining\": 974.1492954604937, \"propellantUsed\": 7225.850704539506, \"radialSpeed\": -9.000586675847869, \"saturatedSeconds\": 0, \"tangentialSpeed\": 3.9998687398630643, \"version\": 1}\u001b[39m\n\n  24 | });\n  25 | test('corrupt terminal save restarts unverified and manual landing keeps its practice reserve',async({page})=>{\n> 26 |   await mount(page);await page.locator('[data-approach-review]').click();const raw=await saved(page);raw.approachResult.mass+=10;await mount(page,seed(raw));expect((await live(page)).time).toBe(0);expect((await saved(page)).approachResult).toBeNull();await page.waitForTimeout(250);expect((await saved(page)).approachRun.recorded).toBe(false);\n     |                                                                                                                                                                                                                                                 ^\n  27 |   await page.locator('[data-approach-plan]').selectOption('900');await page.locator('[data-approach-review]').click();await page.getByRole('button',{name:/Begin Descent/}).click();await expect(page.locator('[data-descent-canvas]')).toBeVisible();await page.locator('[data-descent-pause]').click();expect(Number(await page.locator('[data-descent-canvas]').getAttribute('data-descent-fuel'))).toBeCloseTo(110,1);expect((await saved(page)).missionXP).toBe(0);await expect(page.locator('[data-approach-canvas]')).toHaveCount(0);\n  28 | });\n  29 | test('approach clock freezes while hidden and resumes without catch-up',async({page})=>{\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-powered-approach.spec.ts:26:241"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T23:00:37.313Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass9-2026-09-29\\browser-artifacts\\moon-mission-powered-appro-87ede--keeps-its-practice-reserve-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass9-2026-09-29\\browser-artifacts\\moon-mission-powered-appro-87ede--keeps-its-practice-reserve-chromium\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass9-2026-09-29\\browser-artifacts\\moon-mission-powered-appro-87ede--keeps-its-practice-reserve-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass9-2026-09-29\\browser-artifacts\\moon-mission-powered-appro-87ede--keeps-its-practice-reserve-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass9-2026-09-29\\browser-artifacts\\moon-mission-powered-appro-87ede--keeps-its-practice-reserve-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-powered-approach.spec.ts",
+                    "column": 241,
+                    "line": 26
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "ddb01902db3947842a2c-673dca416677d30e0bda",
+          "file": "moon-mission-powered-approach.spec.ts",
+          "line": 25,
+          "column": 5
+        },
+        {
+          "title": "approach clock freezes while hidden and resumes without catch-up",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2835,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T23:00:53.802Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "ddb01902db3947842a2c-d409cf24486faf9ef034",
+          "file": "moon-mission-powered-approach.spec.ts",
+          "line": 29,
+          "column": 5
+        },
+        {
+          "title": "320px keyboard, resize, reload and accessibility preserve the measured approach",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2625,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T23:00:56.871Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "approach-phone-320",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass9-2026-09-29\\browser-artifacts\\moon-mission-powered-appro-13713-serve-the-measured-approach-chromium\\attachments\\approach-phone-320-9125e6a1cf32d451de249f02c1d95a4174578f6f.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "ddb01902db3947842a2c-f5ffb9844f9d9c95c90e",
+          "file": "moon-mission-powered-approach.spec.ts",
+          "line": 34,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-29T22:59:16.127Z",
+    "duration": 103514.996,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

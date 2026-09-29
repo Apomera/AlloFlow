@@ -1,0 +1,7 @@
+{
+  "workingSHA256": "8716c8a903af6f2c59a07680129febbd6bc8100d0639a06e13ad9e39ab7c543e",
+  "candidateSHA256": "f93f0bef8568e3a45b5a0fe86102f0e0a7e524775fb2c4c8f68e2db84508f48e",
+  "publicMatchesWorking": true,
+  "preservedMoonwalkHunks": 34,
+  "syntaxPassed": true
+}

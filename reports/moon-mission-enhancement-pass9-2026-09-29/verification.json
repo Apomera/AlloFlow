@@ -1,0 +1,37 @@
+{
+  "distinctUnitChecks": 455,
+  "unitFiles": 49,
+  "unitPassed": 455,
+  "unitFailed": 0,
+  "unitReport": "unit-verified.json",
+  "rawFullRun": "unit-final-run.json",
+  "unchangedDashboardRerun": "dashboard-rerun.json",
+  "candidateChecks": 21,
+  "candidateReport": "candidate-tests.json",
+  "browser": {
+    "distinctCases": 5,
+    "passed": 5,
+    "failed": 0,
+    "workers": 1,
+    "retries": 0,
+    "report": "browser-verified.json",
+    "scoped320pxAxeViolations": 0,
+    "axeReport": "browser/phone-axe.json"
+  },
+  "capturesReviewed": [
+    "browser/approach-whole-chromium.png",
+    "browser/approach-local-chromium.png",
+    "browser/approach-low-gate-chromium.png",
+    "browser/approach-handover-chromium.png",
+    "browser/approach-short-plan-chromium.png",
+    "browser/approach-phone-320-chromium.png"
+  ],
+  "source": {
+    "workingSHA256": "8716c8a903af6f2c59a07680129febbd6bc8100d0639a06e13ad9e39ab7c543e",
+    "candidateSHA256": "f93f0bef8568e3a45b5a0fe86102f0e0a7e524775fb2c4c8f68e2db84508f48e",
+    "publicMatchesWorking": true,
+    "preservedMoonwalkHunks": 34,
+    "syntaxPassed": true
+  },
+  "verifiedAtUtc": "2026-09-29T23:22:21.970601+00:00"
+}
