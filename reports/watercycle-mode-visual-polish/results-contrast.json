@@ -1,0 +1,27 @@
+{
+  "checks": [
+    {
+      "mode": "steward-setup",
+      "theme": "contrast",
+      "width": 1280,
+      "overflow": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "scene": null,
+      "violations": []
+    },
+    {
+      "mode": "steward-setup",
+      "theme": "contrast",
+      "width": 320,
+      "overflow": {
+        "width": 320,
+        "scroll": 320
+      },
+      "scene": null,
+      "violations": []
+    }
+  ],
+  "errors": []
+}

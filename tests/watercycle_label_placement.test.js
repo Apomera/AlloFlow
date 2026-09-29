@@ -75,6 +75,22 @@ describe('Water Cycle canvas label placement', () => {
     expect(api.rects.some((r) => r.y === 300)).toBe(true);
   });
 
+  it('clears wrapped corner overlays in a 320px viewport at double pixel density', () => {
+    const canvasEl = {
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 272, height: 322 }),
+      parentElement: { querySelectorAll: () => [
+        { getBoundingClientRect: () => ({ left: 8, top: 8, width: 122, height: 68 }) },
+        { getBoundingClientRect: () => ({ left: 143, top: 8, width: 121, height: 60 }) },
+      ] },
+    };
+    const api = slicePlacement(src)(544, 644, 2, 0, canvasEl);
+    const label = { x: 144, y: 12, w: 186, h: 38 };
+    const y = api.place(label.x, label.y, label.w, label.h);
+    expect(y).toBeGreaterThan(142); // The prior fixed search stopped here.
+    expect(y + label.h).toBeLessThanOrEqual(632);
+    for (const chrome of api.chrome()) expect(api.overlap({ ...label, y }, chrome)).toBe(false);
+  });
+
   it('survives a canvas with no measurable chrome', () => {
     // The measurement is an enhancement wrapped in try/catch: a detached canvas, a zero-size rect
     // or a missing parent must never stop a frame.

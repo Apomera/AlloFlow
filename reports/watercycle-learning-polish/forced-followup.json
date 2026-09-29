@@ -1,0 +1,23 @@
+{
+  "capturedAt": "2026-09-29T20:45:41.447Z",
+  "checks": [
+    {
+      "label": "forced-colors ground selection has distinct text and background",
+      "pass": true,
+      "detail": {
+        "foreground": "rgb(255, 255, 255)",
+        "background": "rgb(55, 0, 110)",
+        "focus": true,
+        "outline": "solid",
+        "width": "3px"
+      }
+    },
+    {
+      "label": "forced-colors ground selection has visible keyboard focus",
+      "pass": true
+    }
+  ],
+  "audits": [],
+  "errors": [],
+  "failures": []
+}

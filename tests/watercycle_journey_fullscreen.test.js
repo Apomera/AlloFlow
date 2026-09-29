@@ -115,8 +115,10 @@ describe('Water Cycle droplet journey full-screen control', () => {
   }, 120000);
 
   afterAll(async () => {
+    // Playwright allows 30s for graceful shutdown before its forced cleanup.
+    // Give that fallback time to finish on Windows after fullscreen checks.
     if (browser) await browser.close();
-  }, 30000);
+  }, 120000);
 
   function journeyMarkup() {
     if (!rendered) rendered = renderJourney();

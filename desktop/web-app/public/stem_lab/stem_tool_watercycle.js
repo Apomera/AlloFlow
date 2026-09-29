@@ -699,6 +699,18 @@
       ,'.wc-pilot-stage{container-type:inline-size}.wc-pilot-stage[data-learning-pause=true] .wc-pilot-canvas{min-height:640px}.wc-pilot-energy-key{display:block;font-size:11px;line-height:1.5;font-weight:500;margin-top:5px;color:#e0f2fe}@container(min-width:900px){.wc-pilot-stage .wc-pilot-notice{left:auto;right:16px;transform:none;width:350px}.wc-pilot-stage .wc-pilot-notice-evidence{grid-template-columns:1fr}}'
       ,'.wc-pilot-notice{display:flex;flex-direction:column;overflow:hidden}.wc-pilot-notice-reading{min-height:0;overflow:auto;scrollbar-gutter:stable;padding-right:3px}.wc-pilot-notice-reading:focus-visible{outline:2px solid #fde68a;outline-offset:-2px}.wc-pilot-notice-actions{position:static;flex-shrink:0;box-shadow:none}.wc-pilot-stage[data-recorded-review=true] .wc-pilot-canvas{height:760px}@media(max-width:700px){.wc-pilot-stage[data-recorded-review=true] .wc-pilot-canvas{height:900px}}'
       ,'.wc-pilot-review-nav{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center;flex-shrink:0;padding-top:10px;border-top:1px solid #47758b;margin-top:8px}.wc-pilot-review-nav>span{font-size:12px;font-weight:750;color:#e0f2fe;white-space:nowrap}.wc-pilot-review-nav button{min-height:44px;min-width:0;padding:7px 8px;border:1px solid #7dd3fc;border-radius:8px;background:#12394f;color:#e0f2fe;font:inherit;font-size:12px;font-weight:750;cursor:pointer}.wc-pilot-review-nav button:disabled{opacity:.5;cursor:default}.wc-pilot-review-nav button:focus-visible,.wc-pilot-notice h3:focus-visible{outline:3px solid #fde68a;outline-offset:2px}.theme-contrast .wc-pilot-review-nav,.theme-contrast .wc-pilot-review-nav button{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}@media(forced-colors:active){.wc-pilot-review-nav{border-color:CanvasText}.wc-pilot-review-nav button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}.wc-pilot-review-nav>span{color:CanvasText!important}}'
+      // Pilot materials frame the 3D view with the same calm paper and forest palette as the map.
+      ,'.wc-pilot-root{--wc-pilot-paper:#f8faf6;--wc-pilot-card:#ffffff;--wc-pilot-tint:#edf4ef;--wc-pilot-ink:#193f47;--wc-pilot-muted:#48676d;--wc-pilot-line:#c4d6cd;--wc-pilot-accent:#206c62;--wc-pilot-active:#ffffff;box-sizing:border-box;padding:16px;border:1px solid var(--wc-pilot-line);border-radius:24px;background:var(--wc-pilot-paper);color:var(--wc-pilot-ink);gap:14px}.wc-pilot-root.is-dark{--wc-pilot-paper:#102830;--wc-pilot-card:#183740;--wc-pilot-tint:#21464c;--wc-pilot-ink:#eef6f2;--wc-pilot-muted:#b9d1ce;--wc-pilot-line:#486b6b;--wc-pilot-accent:#b0e4d3;--wc-pilot-active:#123730;color:var(--wc-pilot-ink)}.theme-contrast .wc-pilot-root{--wc-pilot-paper:#000000;--wc-pilot-card:#000000;--wc-pilot-tint:#000000;--wc-pilot-ink:#ffff00;--wc-pilot-muted:#ffff00;--wc-pilot-line:#ffff00;--wc-pilot-accent:#ffff00;--wc-pilot-active:#000000}'
+      ,'.wc-pilot-root .wc-pilot-topbar{gap:10px;padding:2px 0 4px}.wc-pilot-root .wc-pilot-title strong{font-size:24px;line-height:1.2;letter-spacing:-.025em;color:var(--wc-pilot-ink)}.wc-pilot-root .wc-pilot-title span{font-size:13px;line-height:1.5;color:var(--wc-pilot-muted)}.wc-pilot-root .wc-pilot-loops{padding:7px 12px;border:1px solid var(--wc-pilot-line);background:var(--wc-pilot-tint);color:var(--wc-pilot-accent);font-variant-numeric:tabular-nums}.wc-pilot-root .wc-pilot-stage{border-color:var(--wc-pilot-line);border-radius:18px;box-shadow:0 8px 22px rgba(18,56,57,.13)}.wc-pilot-root .wc-pilot-back{min-height:44px;border-color:var(--wc-pilot-line);background:var(--wc-pilot-card);color:var(--wc-pilot-accent)}'
+      ,'.wc-pilot-root :is(.wc-pilot-navigation,.wc-pilot-climate-drawer,.wc-pilot-missions,.wc-pilot-alt){border-color:var(--wc-pilot-line);border-radius:14px;background:var(--wc-pilot-card);color:var(--wc-pilot-ink)}.wc-pilot-root .wc-pilot-navigation{padding:12px 14px;gap:8px 12px}.wc-pilot-root .wc-pilot-navigation-controls :is(button,select){border-color:var(--wc-pilot-line);background:var(--wc-pilot-card);color:var(--wc-pilot-ink);font-size:13px;border-radius:10px}.wc-pilot-root .wc-pilot-navigation-controls button[aria-pressed=true]{border-color:var(--wc-pilot-accent);background:var(--wc-pilot-accent);color:var(--wc-pilot-active);box-shadow:inset 0 -3px 0 rgba(0,0,0,.16)}.wc-pilot-root .wc-pilot-assist-status{font-size:12px;line-height:1.45;color:var(--wc-pilot-muted)}.wc-pilot-root .wc-pilot-navigation-target{padding-top:8px;border-top:1px solid var(--wc-pilot-line);color:var(--wc-pilot-ink);line-height:1.5}.wc-pilot-root .wc-pilot-flight-options[open]{border-color:var(--wc-pilot-line)}.wc-pilot-root :is(.wc-pilot-climate-drawer,.wc-pilot-missions,.wc-pilot-alt)>summary{min-height:44px;padding:12px 14px;font-size:14px;line-height:1.5;color:var(--wc-pilot-ink)}.wc-pilot-root .wc-pilot-flight-options>summary{font-size:13px;color:var(--wc-pilot-accent)}.wc-pilot-root .wc-pilot-alt p{color:var(--wc-pilot-muted)}'
+      ,'.wc-pilot-root .wc-pilot-scenario{border-color:var(--wc-pilot-line);background:var(--wc-pilot-card);color:var(--wc-pilot-ink);border-radius:12px;box-shadow:none}.wc-pilot-root .wc-pilot-scenario-copy strong{font-size:14px;line-height:1.35}.wc-pilot-root .wc-pilot-scenario-copy small{font-size:12px;line-height:1.45;color:var(--wc-pilot-muted)}.wc-pilot-root .wc-pilot-scenario[aria-pressed=true]{border-color:var(--wc-pilot-accent);background:var(--wc-pilot-accent);color:var(--wc-pilot-active);box-shadow:inset 0 -3px 0 rgba(0,0,0,.16)}.wc-pilot-root .wc-pilot-scenario[aria-pressed=true] .wc-pilot-scenario-copy small{color:var(--wc-pilot-active)}.wc-pilot-root .wc-pilot-scenario-note{border-color:var(--wc-pilot-line);background:var(--wc-pilot-tint);color:var(--wc-pilot-muted);font-size:13px;line-height:1.5}.wc-pilot-root .wc-pilot-mission-option{border-color:var(--wc-pilot-line);background:var(--wc-pilot-tint);color:var(--wc-pilot-ink);border-radius:12px;padding:14px}.wc-pilot-root .wc-pilot-mission-option strong{font-size:15px;line-height:1.35}.wc-pilot-root .wc-pilot-mission-option p{color:var(--wc-pilot-muted)}.wc-pilot-root .wc-pilot-missions button{border-color:var(--wc-pilot-accent);background:var(--wc-pilot-accent);color:var(--wc-pilot-active);font-size:13px;border-radius:10px}.wc-pilot-root .wc-pilot-mission-progress{border-color:var(--wc-pilot-line);background:var(--wc-pilot-card)}'
+      ,'.wc-pilot-root :is(.wc-pilot-journey-guide,.wc-pilot-science,.wc-pilot-ledger,.wc-pilot-ledger[data-complete=true]){border-color:var(--wc-pilot-line);background:var(--wc-pilot-card);color:var(--wc-pilot-ink);box-shadow:0 3px 12px rgba(18,56,57,.045);border-radius:16px}.wc-pilot-root .wc-pilot-journey-guide>h4{font-size:12px;color:var(--wc-pilot-accent)}.wc-pilot-root .wc-pilot-journey-step{border-color:var(--wc-pilot-line);background:var(--wc-pilot-card);box-shadow:none}.wc-pilot-root .wc-pilot-journey-step:is(.is-last,.is-now){background:var(--wc-pilot-tint);border-color:var(--wc-pilot-line)}.wc-pilot-root .wc-pilot-journey-step>span{font-size:11px;letter-spacing:.06em;color:var(--wc-pilot-muted)}.wc-pilot-root .wc-pilot-journey-step>strong{font-size:14px;line-height:1.4;color:var(--wc-pilot-ink)}.wc-pilot-root .wc-pilot-journey-step>small{font-size:12px;line-height:1.5;color:var(--wc-pilot-muted)}.wc-pilot-root :is(.wc-pilot-science,.wc-pilot-ledger) h4{font-size:18px;line-height:1.3;color:var(--wc-pilot-ink)}.wc-pilot-root .wc-pilot-science>p:not(.wc-pilot-model-note){background:var(--wc-pilot-tint);color:var(--wc-pilot-ink)}.wc-pilot-root .wc-pilot-science-numbers div{border-color:var(--wc-pilot-line);background:var(--wc-pilot-tint);box-shadow:none}.wc-pilot-root .wc-pilot-science-numbers dt{font-size:11px;line-height:1.4;color:var(--wc-pilot-muted)}.wc-pilot-root .wc-pilot-science-numbers dd{font-variant-numeric:tabular-nums;color:var(--wc-pilot-ink)}.wc-pilot-root .wc-pilot-model-note{background:var(--wc-pilot-tint);color:var(--wc-pilot-muted)!important;border-color:var(--wc-pilot-line)}.wc-pilot-root :is(.wc-pilot-ledger-list li,.wc-pilot-route-history li,.wc-pilot-ledger-done,.wc-pilot-ledger-hint){background:var(--wc-pilot-tint);border-color:var(--wc-pilot-line);color:var(--wc-pilot-ink);box-shadow:none}.wc-pilot-root .wc-pilot-route-history p{background:var(--wc-pilot-tint);color:var(--wc-pilot-muted)}'
+      ,'.wc-pilot-root .wc-pilot-route-compare{border-color:var(--wc-pilot-line);background:var(--wc-pilot-tint);color:var(--wc-pilot-ink);border-radius:14px}.wc-pilot-root .wc-pilot-route-compare>summary{font-size:15px;line-height:1.45}.wc-pilot-root .wc-pilot-rc-choice{font-size:13px}.wc-pilot-root .wc-pilot-rc-choice select,.wc-pilot-root .wc-pilot-rc-note textarea{border-color:var(--wc-pilot-line);background:var(--wc-pilot-card);color:var(--wc-pilot-ink);font-size:14px;line-height:1.5;border-radius:10px}.wc-pilot-root .wc-pilot-rc-column{border-color:var(--wc-pilot-line);border-top:4px solid var(--wc-pilot-accent);background:var(--wc-pilot-card);color:var(--wc-pilot-ink);padding:16px}.wc-pilot-root .wc-pilot-rc-column:nth-child(2){border-top-style:double;border-top-width:6px}.wc-pilot-root .wc-pilot-rc-column h4{font-size:20px;line-height:1.3;color:var(--wc-pilot-ink)}.wc-pilot-root .wc-pilot-rc-flow li{border-left-color:var(--wc-pilot-accent);background:var(--wc-pilot-tint);padding:11px 12px}.wc-pilot-root .wc-pilot-rc-flow strong{font-size:14px;color:var(--wc-pilot-ink)}.wc-pilot-root .wc-pilot-rc-flow span{font-size:13px;line-height:1.55;color:var(--wc-pilot-muted)}.wc-pilot-root .wc-pilot-rc-kicker{font-size:12px;line-height:1.4;color:var(--wc-pilot-muted)}.wc-pilot-root .wc-pilot-rc-note label{font-size:15px;line-height:1.4}.wc-pilot-root .wc-pilot-rc-note p{font-size:13px;line-height:1.5;color:var(--wc-pilot-muted)}'
+      ,'.wc-pilot-root .wc-pilot-notebook{padding:20px 20px 20px 30px;border-color:var(--wc-pilot-line);border-radius:18px;background:var(--wc-pilot-card);box-shadow:0 3px 12px rgba(18,56,57,.05);color:var(--wc-pilot-ink)}.wc-pilot-root .wc-pilot-notebook::before{background:var(--wc-pilot-accent);opacity:.3}.wc-pilot-root .wc-pilot-notebook::after{background:radial-gradient(circle,var(--wc-pilot-paper) 0 3px,var(--wc-pilot-line) 3.5px 5px,transparent 5.5px) center top/15px 32px repeat-y}.wc-pilot-root .wc-pilot-notebook-head{border-color:var(--wc-pilot-line);align-items:flex-start}.wc-pilot-root .wc-pilot-notebook-kicker{font-size:11px;letter-spacing:.08em;line-height:1.4;color:var(--wc-pilot-accent)}.wc-pilot-root .wc-pilot-notebook h4{font-size:22px;line-height:1.3;color:var(--wc-pilot-ink)}.wc-pilot-root .wc-pilot-notebook-head p{font-size:13px;line-height:1.55;color:var(--wc-pilot-muted)}.wc-pilot-root .wc-pilot-notebook-save-state{font-size:11px;line-height:1.4;padding:6px 9px;white-space:normal;max-width:165px;box-shadow:none}.wc-pilot-root .wc-pilot-notebook-summary{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:16px 0 12px}.wc-pilot-root .wc-pilot-notebook-summary>div{border-color:var(--wc-pilot-line);background:var(--wc-pilot-tint);box-shadow:none;padding:12px}.wc-pilot-root .wc-pilot-notebook-summary>div::before{background:var(--wc-pilot-accent);height:2px;opacity:.35}.wc-pilot-root .wc-pilot-notebook-summary dt{font-size:11px;letter-spacing:.04em;line-height:1.35;color:var(--wc-pilot-muted)}.wc-pilot-root .wc-pilot-notebook-summary dd{font-size:24px;line-height:1.25;color:var(--wc-pilot-accent);font-variant-numeric:tabular-nums}.wc-pilot-root .wc-pilot-notebook-progress{border-color:var(--wc-pilot-line);background:var(--wc-pilot-tint);padding:10px 12px}.wc-pilot-root .wc-pilot-notebook-progress>div{color:var(--wc-pilot-accent)}.wc-pilot-root .wc-pilot-notebook-progress>div span{font-size:11px;letter-spacing:.04em}.wc-pilot-root .wc-pilot-notebook-progress-track i{background:var(--wc-pilot-accent);box-shadow:none}'
+      ,'.wc-pilot-root .wc-pilot-notebook-reflection{gap:7px;margin-top:14px}.wc-pilot-root .wc-pilot-notebook-reflection label{font-size:15px;line-height:1.4;color:var(--wc-pilot-ink)}.wc-pilot-root .wc-pilot-notebook-reflection textarea{min-height:112px;padding:12px;border-color:var(--wc-pilot-line);background:var(--wc-pilot-paper);color:var(--wc-pilot-ink);font-size:14px;line-height:1.6;box-shadow:none}.wc-pilot-root .wc-pilot-notebook-help{font-size:12px;line-height:1.5;color:var(--wc-pilot-muted)}.wc-pilot-root .wc-pilot-notebook-trail{margin-top:16px;padding:14px;border-color:var(--wc-pilot-line);background:var(--wc-pilot-tint)}.wc-pilot-root .wc-pilot-notebook-trail-head strong{font-size:14px;line-height:1.4;color:var(--wc-pilot-ink)}.wc-pilot-root .wc-pilot-notebook-trail-head span{font-size:11px;line-height:1.4;color:var(--wc-pilot-muted)}.wc-pilot-root .wc-pilot-notebook-trail li{font-size:13px;line-height:1.55;padding-bottom:10px;color:var(--wc-pilot-ink)}.wc-pilot-root .wc-pilot-notebook-trail li strong{color:var(--wc-pilot-accent)}.wc-pilot-root .wc-pilot-notebook-trail li span{color:var(--wc-pilot-muted)}.wc-pilot-root .wc-pilot-notebook-empty{font-size:13px;line-height:1.55;color:var(--wc-pilot-muted)}.wc-pilot-root .wc-pilot-notebook-actions{margin-top:16px;gap:8px}.wc-pilot-root .wc-pilot-notebook-btn{min-height:44px;padding:10px 13px;border-color:var(--wc-pilot-line);background:var(--wc-pilot-card);color:var(--wc-pilot-accent);font-size:13px;line-height:1.35;box-shadow:none;transition:background 120ms ease}.wc-pilot-root .wc-pilot-notebook-btn.is-primary{border-color:var(--wc-pilot-accent);background:var(--wc-pilot-accent);color:var(--wc-pilot-active)}.wc-pilot-root .wc-pilot-notebook-btn:hover{transform:none;filter:none}.wc-pilot-root .wc-pilot-notebook-privacy{font-size:12px;line-height:1.55;color:var(--wc-pilot-muted);border-left-color:var(--wc-pilot-line)}.wc-pilot-root .wc-pilot-notebook-status{background:var(--wc-pilot-tint);color:var(--wc-pilot-accent);font-size:13px;line-height:1.5}.wc-pilot-root :is(.wc-pilot-back,.wc-pilot-navigation-controls button,.wc-pilot-navigation-controls select,.wc-pilot-scenario,.wc-pilot-missions button,.wc-pilot-notebook-btn,.wc-pilot-notebook-reflection textarea,.wc-pilot-rc-choice select,.wc-pilot-rc-note textarea):focus-visible{outline:3px solid var(--wc-pilot-accent);outline-offset:3px}'
+      ,'.wc-pilot-root .wc-pilot-notebook-compare{border-color:var(--wc-pilot-line);background:var(--wc-pilot-tint);color:var(--wc-pilot-ink);padding:14px;box-shadow:none}.wc-pilot-root .wc-pilot-notebook-compare-head{gap:8px;flex-wrap:wrap}.wc-pilot-root .wc-pilot-notebook-compare-head strong{font-size:14px;line-height:1.4;color:var(--wc-pilot-ink)}.wc-pilot-root .wc-pilot-notebook-compare-head>span{font-size:11px;line-height:1.4;border-color:var(--wc-pilot-line);background:var(--wc-pilot-card);color:var(--wc-pilot-accent)}.wc-pilot-root :is(.wc-pilot-notebook-compare-empty,.wc-pilot-notebook-compare-hint,.wc-pilot-notebook-compare-cer){font-size:13px;line-height:1.55;background:var(--wc-pilot-card);color:var(--wc-pilot-muted)}.wc-pilot-root .wc-pilot-notebook-climate-copy strong{font-size:14px;line-height:1.4;color:var(--wc-pilot-ink);white-space:normal}.wc-pilot-root .wc-pilot-notebook-climate-copy small{font-size:12px;line-height:1.5;color:var(--wc-pilot-muted)}.wc-pilot-root .wc-pilot-notebook-climates li{border-color:var(--wc-pilot-line);background:var(--wc-pilot-card);box-shadow:none;padding:12px}.wc-pilot-root .wc-pilot-notebook-climates dl>div{background:var(--wc-pilot-tint);padding:7px}.wc-pilot-root .wc-pilot-notebook-climates dt{font-size:11px;line-height:1.4;color:var(--wc-pilot-muted)}.wc-pilot-root .wc-pilot-notebook-climates dd{font-size:13px;line-height:1.4;color:var(--wc-pilot-ink)}.wc-pilot-root .wc-pilot-notebook-compare-cer p{padding:11px 12px;background:var(--wc-pilot-card);box-shadow:none}.wc-pilot-root .wc-pilot-notebook-compare-cer strong{font-size:11px;line-height:1.4;color:var(--wc-pilot-accent)}.wc-pilot-root .wc-pilot-notebook-compare-cer span{font-size:13px;line-height:1.55;color:var(--wc-pilot-ink)}'
+      ,'@media(max-width:700px){.wc-pilot-root{padding:12px;border-radius:18px}.wc-pilot-root .wc-pilot-notebook-summary{grid-template-columns:repeat(3,minmax(0,1fr))}.wc-pilot-root .wc-pilot-notebook-head{flex-wrap:wrap;gap:12px}.wc-pilot-root .wc-pilot-notebook-save-state{max-width:none}.wc-pilot-root .wc-pilot-notebook-trail-head{flex-wrap:wrap}.wc-pilot-root .wc-pilot-scenario{grid-template-rows:48px minmax(82px,auto)}.wc-pilot-root .wc-pilot-notebook-help{flex-wrap:wrap}.wc-pilot-root .wc-pilot-notebook{padding:16px 14px 16px 26px}.wc-pilot-root .wc-pilot-rc-column{padding:13px}}@media(max-width:430px){.wc-pilot-root{padding:10px}.wc-pilot-root .wc-pilot-title strong{font-size:22px}.wc-pilot-root .wc-pilot-loops{margin-left:0}.wc-pilot-root .wc-pilot-navigation{grid-template-columns:1fr;padding:11px}.wc-pilot-root .wc-pilot-nav-primary{gap:6px}.wc-pilot-root .wc-pilot-navigation .wc-pilot-nav-primary>button{font-size:12px;min-height:44px;padding:8px}.wc-pilot-root .wc-pilot-flight-options>summary{padding:8px 0;min-height:44px}.wc-pilot-root .wc-pilot-setup-row{grid-template-columns:1fr}.wc-pilot-root .wc-pilot-setup-row>details>summary{min-height:44px;padding:12px}.wc-pilot-root .wc-pilot-notebook-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-pilot-root .wc-pilot-notebook-summary>div{padding:10px}.wc-pilot-root .wc-pilot-notebook h4{font-size:21px}.wc-pilot-root .wc-pilot-notebook-actions>button{flex:1 1 140px}.wc-pilot-root .wc-pilot-notebook-trail{padding:11px}.wc-pilot-root .wc-pilot-scenario-copy{padding:10px}.wc-pilot-root .wc-pilot-scenario-copy strong{font-size:13px}.wc-pilot-root .wc-pilot-scenario-copy small{font-size:11px}}'
+      ,'@media(forced-colors:active){.wc-pilot-root{--wc-pilot-paper:Canvas;--wc-pilot-card:Canvas;--wc-pilot-tint:Canvas;--wc-pilot-ink:CanvasText;--wc-pilot-muted:CanvasText;--wc-pilot-line:CanvasText;--wc-pilot-accent:Highlight;--wc-pilot-active:HighlightText}.wc-pilot-root .wc-pilot-scenario[aria-pressed=true],.wc-pilot-root .wc-pilot-navigation-controls button[aria-pressed=true],.wc-pilot-root .wc-pilot-notebook-btn.is-primary{background:Highlight!important;color:HighlightText!important;border-color:Highlight!important}.wc-pilot-root .wc-pilot-scenario[aria-pressed=true] .wc-pilot-scenario-copy small{color:HighlightText!important}.wc-pilot-root .wc-pilot-notebook::before,.wc-pilot-root .wc-pilot-notebook::after{display:none}.wc-pilot-root .wc-pilot-notebook{box-shadow:none}}@media(prefers-reduced-motion:reduce){.wc-pilot-root .wc-pilot-notebook-btn{transition:none}}@media print{.wc-pilot-root .wc-pilot-notebook{--wc-pilot-paper:#fff;--wc-pilot-card:#fff;--wc-pilot-tint:#fff;--wc-pilot-ink:#000;--wc-pilot-muted:#000;--wc-pilot-line:#000;--wc-pilot-accent:#000;padding:14px;background:#fff;box-shadow:none}.wc-pilot-root .wc-pilot-notebook::before,.wc-pilot-root .wc-pilot-notebook::after{display:none}}'
     ].join('');
     if (document.head) document.head.appendChild(st);
   })();
@@ -1014,6 +1026,8 @@
       hoursLeft: diff.hoursPerYear,
       components: MAINE_WATERSHED_COMPONENTS.map(function(c) { return Object.assign({ id: c.id }, c.defaultState); }),
       yearActions: [],
+      yearStart: null,
+      decisionPreview: null,
       yearLog: [],
       lastEvent: null,
       cascadesFiredThisYear: [],
@@ -3966,6 +3980,68 @@
     applyCopy: applyPilotCopy
   };
 
+  // A reproducible experiment includes every model condition that can affect
+  // the observed storm, but leaves presentation and learner notes independent.
+  var WC_PRECIP_EXPERIMENT_INPUTS = [
+    { key: 'moisture', label: 'Cloud moisture', unit: '%' },
+    { key: 'tempC', label: 'Cloud temperature', unit: '\u00B0C' },
+    { key: 'midLevelTempC', label: 'Middle-air temperature', unit: '\u00B0C' },
+    { key: 'surfaceTempC', label: 'Surface temperature', unit: '\u00B0C' },
+    { key: 'lowLevelHumidity', label: 'Lower-air humidity', unit: '%' },
+    { key: 'updraft', label: 'Vertical lift / updraft', unit: ' / 100' },
+    { key: 'cloudDepth', label: 'Cloud depth', unit: ' km' },
+    { key: 'wind', label: 'Horizontal wind', unit: ' m/s' },
+    { key: 'windDirection', label: 'Wind direction' },
+    { key: 'terrain', label: 'Terrain' },
+    { key: 'stormTime', label: 'Storm lifecycle position', unit: ' / 100' },
+    { key: 'stormDistanceKm', label: 'Lightning distance', unit: ' km', scope: 'timing' }
+  ];
+
+  function wcPrecipSetupSnapshot(config) {
+    var normalized = normalizeWcPrecipConfig(config);
+    var snapshot = {};
+    WC_PRECIP_EXPERIMENT_INPUTS.forEach(function(input) {
+      snapshot[input.key] = normalized[input.key];
+    });
+    return Object.freeze(snapshot);
+  }
+
+  function wcPrecipExperimentValue(input, value) {
+    if (input.key === 'windDirection') return value === 'west' ? 'East to west' : 'West to east';
+    if (input.key === 'terrain') return ({ plains: 'Open plains', mountains: 'Mountain ridge', coast: 'Coastline' })[value];
+    return String(value) + (input.unit || '');
+  }
+
+  function wcPrecipExperiment(configA, configB) {
+    var before = wcPrecipSetupSnapshot(configA);
+    var after = wcPrecipSetupSnapshot(configB);
+    var changes = [];
+    WC_PRECIP_EXPERIMENT_INPUTS.forEach(function(input) {
+      if (before[input.key] === after[input.key]) return;
+      changes.push(Object.freeze({
+        key: input.key,
+        label: input.label,
+        scope: input.scope || 'precipitation',
+        before: before[input.key],
+        after: after[input.key],
+        beforeLabel: wcPrecipExperimentValue(input, before[input.key]),
+        afterLabel: wcPrecipExperimentValue(input, after[input.key])
+      }));
+    });
+    var modelA = computeWcPrecipitationModel(before);
+    var modelB = computeWcPrecipitationModel(after);
+    return Object.freeze({
+      before: before,
+      after: after,
+      changes: Object.freeze(changes),
+      kind: changes.length === 0 ? 'identical' : changes.length === 1 ? 'single' : 'multiple',
+      modelA: modelA,
+      modelB: modelB,
+      intensityDelta: modelB.relativeIntensity - modelA.relativeIntensity,
+      intensityUnit: 'index points'
+    });
+  }
+
   window.WaterCyclePrecipitationKernel = {
     advanceWeather: advanceWcStormWeather,
     defaults: Object.assign({}, WC_PRECIP_DEFAULTS),
@@ -3973,6 +4049,8 @@
     lightningStudySteps: WC_LIGHTNING_STUDY_STEPS.map(function(step) { return Object.assign({}, step); }),
     studyStepAvailable: isWcLightningStudyStepAvailable,
     normalize: normalizeWcPrecipConfig,
+    setupSnapshot: wcPrecipSetupSnapshot,
+    experiment: wcPrecipExperiment,
     compute: computeWcPrecipitationModel,
     lifecycle: function(config) { return computeWcPrecipitationModel(config).lifecycle; },
     thunderWaveAt: wcThunderWaveAt,
@@ -4043,6 +4121,50 @@
   if (!document.getElementById('wc-five-mode-style')) {
     var wcFiveStyle = document.createElement('style'); wcFiveStyle.id = 'wc-five-mode-style';
     wcFiveStyle.textContent = '.wc-mode-bar.wc-five-mode-bar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));overflow:visible}.wc-five-mode-bar .wc-mode-tab{min-width:0;min-height:44px;white-space:normal}.wc-five-mode-bar .wc-mode-tab strong{white-space:normal;text-align:center}@media(max-width:700px){.wc-mode-bar.wc-five-mode-bar{grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}.wc-five-mode-bar .wc-mode-tab{grid-column:span 2;padding:6px;font-size:11px}.wc-five-mode-bar .wc-mode-tab:nth-child(n+4){grid-column:span 3}}';
+    // Shared navigation and Explore surfaces use a quiet palette drawn from the landscape.
+    wcFiveStyle.textContent += [
+      '.wc-mode-bar.wc-five-mode-bar{--wc-nav-paper:#f5f8f4;--wc-nav-ink:#244d51;--wc-nav-line:#c1d4ca;--wc-nav-hover:#e7f0e9;--wc-nav-active:#206c62;gap:5px;padding:6px;border:1px solid var(--wc-nav-line);border-radius:18px;background:var(--wc-nav-paper);box-shadow:0 3px 12px #214a3610;margin-bottom:14px}',
+      '.wc-mode-bar.wc-five-mode-bar[data-dark=true]{--wc-nav-paper:#132e35;--wc-nav-ink:#dcefeb;--wc-nav-line:#45666c;--wc-nav-hover:#21414a;--wc-nav-active:#236e68}',
+      '.wc-mode-bar.wc-five-mode-bar .wc-mode-tab.is-piloted-3d[aria-pressed=false]{background:transparent;border-color:transparent;color:var(--wc-nav-ink)}.wc-mode-bar.wc-five-mode-bar .wc-mode-tab.is-piloted-3d[aria-pressed=false]:hover{background:var(--wc-nav-hover);border-color:var(--wc-nav-line)}',
+      '.wc-mode-bar.wc-five-mode-bar .wc-mode-tab{position:relative;display:flex;align-items:center;justify-content:center;min-height:56px;padding:10px 8px;border:1px solid transparent;border-radius:12px;background:transparent;color:var(--wc-nav-ink);box-shadow:none;transition:background-color 160ms ease,border-color 160ms ease;overflow-wrap:anywhere}',
+      '.wc-mode-bar.wc-five-mode-bar .wc-mode-tab strong{display:flex;align-items:center;justify-content:center;gap:9px;font-size:13px;font-weight:750;letter-spacing:0;color:inherit;line-height:1.25}.wc-mode-tab .wc-mode-icon{display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;border-radius:9px;background:color-mix(in srgb,currentColor 8%,transparent)}.wc-mode-icon svg{display:block;width:23px;height:23px}',
+      '.wc-mode-bar.wc-five-mode-bar .wc-mode-tab:hover{background:var(--wc-nav-hover);border-color:var(--wc-nav-line)}.wc-mode-bar.wc-five-mode-bar .wc-mode-tab[aria-pressed=true]{background:var(--wc-nav-active);border-color:var(--wc-nav-active);color:#fff;box-shadow:0 3px 8px #193e3920}.wc-mode-bar.wc-five-mode-bar .wc-mode-tab[aria-pressed=true]::after{content:"";position:absolute;bottom:4px;left:calc(50% - 10px);width:20px;height:2px;border-radius:2px;background:currentColor;opacity:.85}.wc-mode-bar.wc-five-mode-bar .wc-mode-tab:focus-visible{outline:3px solid #b56b15;outline-offset:3px}.wc-mode-bar.wc-five-mode-bar[data-dark=true] .wc-mode-tab:focus-visible{outline-color:#f4cf79}',
+      '.wc-mode-bar.wc-five-mode-bar[data-contrast=true]{--wc-nav-paper:#000;--wc-nav-ink:#fff;--wc-nav-line:#fff;--wc-nav-hover:#202020;--wc-nav-active:#fff}.wc-mode-bar.wc-five-mode-bar[data-contrast=true] .wc-mode-tab[aria-pressed=true]{color:#000}.wc-mode-bar.wc-five-mode-bar[data-contrast=true] .wc-mode-tab:focus-visible{outline-color:#ffed70}',
+      '@media(max-width:700px){.wc-mode-bar.wc-five-mode-bar{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;border-radius:15px}.wc-mode-bar.wc-five-mode-bar .wc-mode-tab{grid-column:auto;min-height:48px;padding:7px 6px}.wc-mode-bar.wc-five-mode-bar .wc-mode-tab:last-child{grid-column:1/-1}.wc-mode-bar.wc-five-mode-bar .wc-mode-tab strong{font-size:12px;gap:7px}.wc-mode-tab .wc-mode-icon{flex-basis:25px;width:25px;height:25px}.wc-mode-icon svg{width:21px;height:21px}}',
+      '.wc-explorer-root{--wc-viz-paper:#f8faf6;--wc-viz-card:#fff;--wc-viz-tint:#edf4ef;--wc-viz-ink:#193f47;--wc-viz-muted:#48676d;--wc-viz-line:#c4d6cd;--wc-viz-accent:#206c62;--wc-viz-focus:#ac6514;box-sizing:border-box;padding:16px;border:1px solid var(--wc-viz-line);border-radius:24px;background:var(--wc-viz-paper);box-shadow:0 16px 45px #193e3610;color:var(--wc-viz-ink)}',
+      '.wc-explorer-root.dark{--wc-viz-paper:#102830;--wc-viz-card:#183740;--wc-viz-tint:#1d3e46;--wc-viz-ink:#e5f3ef;--wc-viz-muted:#b5d0d0;--wc-viz-line:#44666d;--wc-viz-accent:#287c73;--wc-viz-focus:#f4cf79}.wc-explorer-root[data-visual-contrast=true]{--wc-viz-paper:#000;--wc-viz-card:#000;--wc-viz-tint:#000;--wc-viz-ink:#fff;--wc-viz-muted:#fff;--wc-viz-line:#fff;--wc-viz-accent:#fff;--wc-viz-focus:#ffed70}',
+      '.wc-explorer-root .wc-explorer-header{gap:10px;padding:0 3px 12px;margin-bottom:0}.wc-explorer-header h2{font-size:25px;line-height:1.2;font-weight:800;letter-spacing:-.035em;color:var(--wc-viz-ink)!important}.wc-explorer-header .wc-watercycle-back{display:grid;place-items:center;min-width:40px;min-height:40px;border:1px solid var(--wc-viz-line);border-radius:12px;background:var(--wc-viz-card);color:var(--wc-viz-ink)}.wc-explorer-header .wc-explorer-badge{padding:4px 8px;border:1px solid var(--wc-viz-line)!important;background:var(--wc-viz-tint)!important;color:var(--wc-viz-muted)!important;font-size:10px;font-weight:750;letter-spacing:.07em}',
+      '.wc-explorer-root .wc-view-switch{gap:10px!important;padding:6px 0 8px!important}.wc-explorer-root .wc-view-switch-label{font-size:12px;color:var(--wc-viz-ink);letter-spacing:.07em}.wc-explorer-root .wc-view-switch-note{font-size:12px;color:var(--wc-viz-muted);margin-top:2px}.wc-explorer-root .wc-view-segments{padding:4px;gap:3px;background:var(--wc-viz-tint);border:1px solid var(--wc-viz-line);border-radius:13px;box-shadow:none}.wc-explorer-root .wc-view-segments button{min-height:42px;border-radius:9px;padding:8px 14px;font-weight:750;color:var(--wc-viz-muted);background:transparent;box-shadow:none}.wc-explorer-root .wc-view-segments button[aria-pressed=true]{background:var(--wc-viz-accent);color:#fff;box-shadow:0 2px 6px #14372e22}',
+      '.wc-explorer-root .wc-view-status{gap:7px;padding:6px 8px;background:var(--wc-viz-card);border:1px solid var(--wc-viz-line);border-radius:11px;color:var(--wc-viz-muted)}.wc-explorer-root .wc-3d-status{color:var(--wc-viz-muted);font-size:11px;font-weight:650}.wc-explorer-root .wc-focus-toggle,.wc-explorer-root .wc-compare-trigger,.wc-explorer-root .wc-camera-reset{min-height:34px;padding:6px 10px;background:var(--wc-viz-card);border:1px solid var(--wc-viz-line);color:var(--wc-viz-ink);font-size:11px;border-radius:8px;box-shadow:none}',
+      '.wc-explorer-root .wc-canvas-shell{border-width:1px!important;border-color:var(--wc-viz-line)!important;border-radius:20px!important;box-shadow:0 12px 26px #183f3820!important}.wc-explorer-root .wc-stage-rack{gap:7px}.wc-explorer-root .wc-stage-rack-label{color:var(--wc-viz-muted);font-size:12px;letter-spacing:.06em}.wc-explorer-root .wc-stage-rack button{min-height:44px;padding:8px 13px;border-radius:11px;font-size:13px;box-shadow:none}.wc-explorer-root .wc-stage-focus{padding:16px;background:var(--wc-viz-card);border-color:var(--wc-viz-line);border-left-color:var(--wc-viz-accent);border-radius:15px}.wc-explorer-root .wc-stage-focus-title{font-size:18px;color:var(--wc-viz-ink)}.wc-explorer-root .wc-stage-focus-kicker{font-size:10px;color:var(--wc-viz-muted)}.wc-explorer-root .wc-stage-focus-summary{color:var(--wc-viz-muted);font-size:14px;line-height:1.6}.wc-explorer-root .wc-stage-focus-meta{background:var(--wc-viz-tint);color:var(--wc-viz-ink)}',
+      '.wc-explorer-root .wc-learning-drawer{border-color:var(--wc-viz-line);background:var(--wc-viz-card);border-radius:14px;padding:0 15px}.wc-explorer-root .wc-learning-drawer>summary{color:var(--wc-viz-ink);padding:14px 0;font-size:13px}.wc-explorer-root .wc-brief-title{color:var(--wc-viz-ink);letter-spacing:-.025em}.wc-explorer-root .wc-brief-copy{color:var(--wc-viz-muted);font-size:15px}.wc-explorer-root .wc-metric{background:var(--wc-viz-card);border-color:var(--wc-viz-line);border-radius:12px;padding:12px}.wc-explorer-root .wc-metric span{font-size:11px;color:var(--wc-viz-muted)}.wc-explorer-root .wc-metric strong{font-size:15px;color:var(--wc-viz-ink)}.wc-explorer-root .wc-start-action{background:var(--wc-viz-card);border-color:var(--wc-viz-line);border-radius:13px;box-shadow:none}.wc-explorer-root .wc-start-action strong{color:var(--wc-viz-ink)}.wc-explorer-root .wc-start-action small{color:var(--wc-viz-muted)}.wc-explorer-root .wc-start-number{background:var(--wc-viz-accent)}',
+      '.wc-explorer-root .wc-section-tabs{padding:5px;border:1px solid var(--wc-viz-line);border-radius:14px;background:var(--wc-viz-tint);gap:5px}.wc-explorer-root .wc-section-tab{min-height:44px;font-size:13px;border-radius:10px;color:var(--wc-viz-muted)}.wc-explorer-root .wc-section-tab[aria-selected=true],.wc-explorer-root .wc-section-tab[aria-pressed=true]{background:var(--wc-viz-card);color:var(--wc-viz-ink);border-color:var(--wc-viz-line);box-shadow:0 2px 5px #163d3012}.wc-explorer-root .wc-signal-dashboard,.wc-explorer-root .wc-next-test{background:var(--wc-viz-card);border-color:var(--wc-viz-line);border-radius:16px}.wc-explorer-root :is(button,select,input,summary):focus-visible{outline:3px solid var(--wc-viz-focus);outline-offset:3px}',
+      '.wc-explorer-root .wc-section-tab small,.wc-explorer-root .wc-section-tab[aria-pressed=true] small{color:var(--wc-viz-muted)}.wc-explorer-root .wc-section-tab[aria-pressed=true] strong{text-decoration:underline;text-underline-offset:4px}.wc-explorer-root .wc-section-tab:hover{background:var(--wc-viz-card)}',
+      '.wc-explorer-root[data-visual-contrast=true] .wc-view-segments button[aria-pressed=true],.wc-explorer-root[data-visual-contrast=true] .wc-start-number{color:#000}.wc-explorer-root[data-visual-contrast=true] .wc-stage-rack button{background:#000!important;border-color:#fff!important;color:#fff!important}.wc-explorer-root[data-visual-contrast=true] .wc-stage-rack button[aria-pressed=true]{background:#fff!important;color:#000!important}',
+      '@media(max-width:700px){.wc-explorer-root{padding:10px;border-radius:18px}.wc-explorer-root .wc-explorer-header{padding-bottom:10px;gap:8px}.wc-explorer-header h2{font-size:22px}.wc-explorer-root .wc-view-status{width:100%;flex-wrap:wrap}.wc-explorer-root .wc-3d-status{flex:1 1 100%}.wc-explorer-root .wc-focus-toggle,.wc-explorer-root .wc-compare-trigger,.wc-explorer-root .wc-camera-reset{min-height:40px;flex:1}.wc-explorer-root .wc-canvas-shell{border-radius:14px!important}.wc-explorer-root .wc-stage-focus{padding:13px}.wc-explorer-root .wc-stage-rack button{flex:1 1 130px}}',
+      '.wc-explorer-root .wc-canvas-shell:fullscreen{border-radius:0!important;border:0!important;margin:0!important}.wc-explorer-root .wc-canvas-shell:-webkit-full-screen{border-radius:0!important;border:0!important;margin:0!important}',
+      '@media(max-width:400px){.wc-explorer-header .wc-explorer-badge{display:none}}@media(prefers-reduced-motion:reduce){.wc-mode-bar.wc-five-mode-bar .wc-mode-tab{transition:none}.wc-explorer-header .wc-explorer-badge{display:none}}',
+      '@media(forced-colors:active){.wc-mode-bar.wc-five-mode-bar,.wc-mode-bar.wc-five-mode-bar[data-dark=true],.wc-mode-bar.wc-five-mode-bar[data-contrast=true]{--wc-nav-paper:Canvas;--wc-nav-ink:CanvasText;--wc-nav-line:CanvasText;--wc-nav-hover:Canvas;--wc-nav-active:Highlight}.wc-mode-bar.wc-five-mode-bar .wc-mode-tab[aria-pressed=true]{color:HighlightText}.wc-mode-bar.wc-five-mode-bar .wc-mode-tab:focus-visible{outline-color:Highlight}.wc-explorer-root,.wc-explorer-root.dark,.wc-explorer-root[data-visual-contrast=true]{--wc-viz-paper:Canvas;--wc-viz-card:Canvas;--wc-viz-tint:Canvas;--wc-viz-ink:CanvasText;--wc-viz-muted:CanvasText;--wc-viz-line:CanvasText;--wc-viz-accent:Highlight;--wc-viz-focus:Highlight}.wc-explorer-root .wc-view-segments button[aria-pressed=true],.wc-explorer-root .wc-start-number{color:HighlightText}.wc-explorer-root .wc-canvas-shell{border-color:CanvasText!important}}'
+    ].join('\n');
+    wcFiveStyle.textContent += '@media(forced-colors:active){.wc-mode-bar.wc-five-mode-bar[data-contrast=true] .wc-mode-tab[aria-pressed=true]{color:HighlightText}.wc-explorer-root[data-visual-contrast=true] .wc-view-segments button[aria-pressed=true],.wc-explorer-root[data-visual-contrast=true] .wc-start-number{color:HighlightText}.wc-explorer-root[data-visual-contrast=true] .wc-stage-rack button{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.wc-explorer-root[data-visual-contrast=true] .wc-stage-rack button[aria-pressed=true]{background:Highlight!important;color:HighlightText!important}}';
+    // These controls already use the user's system palette. Preserve that
+    // palette together so forced-color text backplates do not hide the label.
+    wcFiveStyle.textContent += '@media(forced-colors:active){.wc-mode-bar.wc-five-mode-bar .wc-mode-tab[aria-pressed=true],.wc-explorer-root .wc-view-segments button[aria-pressed=true],.wc-investigation-button:not(.is-secondary){forced-color-adjust:none;background:Highlight!important;color:HighlightText!important;border-color:ButtonText!important;box-shadow:none;text-shadow:none}.wc-mode-bar.wc-five-mode-bar .wc-mode-tab[aria-pressed=true] strong,.wc-mode-bar.wc-five-mode-bar .wc-mode-tab[aria-pressed=true] strong span{background:transparent!important;color:inherit!important}.wc-mode-bar.wc-five-mode-bar .wc-mode-tab:focus-visible,.wc-explorer-root .wc-view-segments button:focus-visible,.wc-investigation-button:focus-visible{outline:3px solid Highlight!important;outline-offset:3px!important}.wc-investigation-button:disabled{background:Canvas!important;color:GrayText!important;border-color:GrayText!important}}';
+    // Experiment controls use the same surface palette as the surrounding map.
+    wcFiveStyle.textContent += [
+      '.wc-explorer-root :is(.wc-climate-lab,.wc-land-lab){padding:16px!important;border:1px solid var(--wc-viz-line);border-radius:17px;background:var(--wc-viz-card);box-shadow:none}.wc-explorer-root :is(.wc-climate-lab,.wc-land-lab)[open]{box-shadow:none}.wc-explorer-root .wc-lab-summary{min-height:48px;padding:4px 0;color:var(--wc-viz-ink)}.wc-explorer-root .wc-lab-summary-title{font-size:16px;letter-spacing:-.015em}.wc-explorer-root .wc-lab-summary-note{color:var(--wc-viz-muted);font-size:12px}.wc-explorer-root .wc-lab-summary::after{background:var(--wc-viz-tint);color:var(--wc-viz-ink)}.wc-explorer-root details[open]>.wc-lab-summary::after{background:var(--wc-viz-accent);color:#fff}',
+      '.wc-explorer-root .wc-climate-head{flex-wrap:wrap;gap:10px;margin:10px 0 12px}.wc-explorer-root .wc-climate-head h4,.wc-explorer-root .wc-land-head strong{color:var(--wc-viz-ink);font-size:15px}.wc-explorer-root .wc-preset-control{margin-left:auto;flex-wrap:wrap;gap:7px;color:var(--wc-viz-muted);font-size:12px}.wc-explorer-root .wc-preset-control select{min-height:44px;max-width:100%;padding:8px 12px;border:1px solid var(--wc-viz-line);border-radius:10px;background:var(--wc-viz-card);color:var(--wc-viz-ink);font-size:13px}.wc-explorer-root .wc-preset-lesson{padding:12px 14px;border:1px solid var(--wc-viz-line);border-radius:12px;background:var(--wc-viz-tint);color:var(--wc-viz-muted)}.wc-explorer-root .wc-preset-lesson-kicker{color:var(--wc-viz-ink);font-size:11px}.wc-explorer-root .wc-preset-lesson-copy{font-size:13px;line-height:1.55}',
+      '.wc-explorer-root .wc-climate-control-grid{gap:12px}.wc-explorer-root .wc-climate-control{padding:14px;border-radius:13px;background:var(--wc-viz-paper);border-color:var(--wc-viz-line);box-shadow:none}.wc-explorer-root .wc-climate-control label{color:var(--wc-viz-ink);font-size:13px!important;flex-wrap:wrap}.wc-explorer-root .wc-climate-value{padding:5px 8px;background:var(--wc-viz-card);color:var(--wc-viz-ink);border:1px solid var(--wc-viz-line);border-radius:8px;font-size:15px;font-variant-numeric:tabular-nums;box-shadow:none}.wc-explorer-root .wc-climate-control input[type=range]{min-height:34px}.wc-explorer-root .wc-climate-control>div{color:var(--wc-viz-muted);font-size:11px}.wc-explorer-root .wc-control-effect{font-size:12px;line-height:1.55;color:var(--wc-viz-muted);margin-top:8px}.wc-explorer-root .wc-climate-delta{font-size:11px;color:var(--wc-viz-ink);background:var(--wc-viz-tint);border-color:var(--wc-viz-line)}.wc-explorer-root .wc-climate-control[data-wc-delta=true]{outline:1px solid var(--wc-viz-accent);outline-offset:2px}',
+      '.wc-explorer-root .wc-climate-response{padding:14px;border:1px solid var(--wc-viz-line);border-radius:13px;background:var(--wc-viz-tint)}.wc-explorer-root .wc-climate-response-kicker,.wc-explorer-root .wc-evap-meter-head{color:var(--wc-viz-ink);font-size:11px}.wc-explorer-root .wc-climate-response strong{font-size:15px;color:var(--wc-viz-ink)}.wc-explorer-root .wc-climate-response p,.wc-explorer-root .wc-climate-model-note{font-size:12px;line-height:1.55;color:var(--wc-viz-muted)}.wc-explorer-root .wc-land-control label,.wc-explorer-root .wc-land-control legend{font-size:13px;color:var(--wc-viz-ink)}.wc-explorer-root .wc-land-control input[type=range]{min-height:36px}.wc-explorer-root .wc-land-segments{gap:5px}.wc-explorer-root .wc-land-segments button{min-height:44px;padding:8px 10px;border:1px solid var(--wc-viz-line);border-radius:9px;background:var(--wc-viz-paper);color:var(--wc-viz-ink);font-size:13px;box-shadow:none}.wc-explorer-root .wc-land-segments button[aria-pressed=true]{background:var(--wc-viz-accent);border-color:var(--wc-viz-accent);color:#fff;text-decoration:underline;text-underline-offset:4px}.wc-explorer-root .wc-land-segments button:hover{box-shadow:inset 0 0 0 1px var(--wc-viz-accent)}',
+      '.wc-explorer-root .wc-land-result{padding:12px;border-color:var(--wc-viz-line);background:var(--wc-viz-paper);border-radius:11px}.wc-explorer-root .wc-land-result span{font-size:12px;color:var(--wc-viz-muted)}.wc-explorer-root .wc-land-result strong{font-size:16px;color:var(--wc-viz-ink);font-variant-numeric:tabular-nums}.wc-explorer-root .wc-land-driver,.wc-explorer-root .wc-land-interpretation,.wc-explorer-root .wc-land-prompt{color:var(--wc-viz-muted);font-size:12px;line-height:1.6}.wc-explorer-root .wc-land-reset{min-height:40px;background:var(--wc-viz-tint);color:var(--wc-viz-ink);border-color:var(--wc-viz-line);border-radius:9px;font-size:12px}',
+      '.wc-explorer-root :is(.wc-compare-strip,.wc-causal-strip,.wc-prediction-strip,.wc-experiment-log){padding:16px;border:1px solid var(--wc-viz-line);border-radius:16px;background:var(--wc-viz-card);color:var(--wc-viz-ink);box-shadow:none}.wc-explorer-root :is(.wc-compare-copy,.wc-causal-copy,.wc-prediction-copy,.wc-experiment-log-copy) strong{font-size:16px;line-height:1.4;color:var(--wc-viz-ink)}.wc-explorer-root :is(.wc-compare-copy,.wc-causal-copy,.wc-prediction-copy,.wc-experiment-log-copy)>span{font-size:12px;line-height:1.55;color:var(--wc-viz-muted)}.wc-explorer-root :is(.wc-compare-kicker,.wc-causal-kicker,.wc-prediction-kicker,.wc-experiment-log-kicker){font-size:11px!important;color:var(--wc-viz-ink)!important;letter-spacing:.07em}.wc-explorer-root .wc-compare-method{font-size:12px;line-height:1.55;color:var(--wc-viz-muted)}',
+      '.wc-explorer-root .wc-compare-bars{gap:12px;margin-top:10px}.wc-explorer-root .wc-compare-bar-card{padding:12px;border:1px solid var(--wc-viz-line);border-radius:12px;background:var(--wc-viz-paper)}.wc-explorer-root .wc-compare-bar-label{font-size:13px;color:var(--wc-viz-ink);flex-wrap:wrap}.wc-explorer-root .wc-compare-bar-scale,.wc-explorer-root .wc-compare-bar-values{font-size:11px;color:var(--wc-viz-muted)}.wc-explorer-root .wc-compare-bar-values strong{color:var(--wc-viz-ink)}.wc-explorer-root .wc-compare-bar-track{height:21px;margin:10px 0 7px;background:var(--wc-viz-tint);border-radius:5px}.wc-explorer-root .wc-compare-bar-base{top:3px;height:5px;background:#738b89;opacity:1;border-radius:3px}.wc-explorer-root .wc-compare-bar-current{top:13px;height:5px;background:var(--wc-viz-accent);border-radius:3px;box-shadow:none}.wc-explorer-root .wc-compare-bar-dot.is-current{background:var(--wc-viz-accent)}.wc-explorer-root .wc-compare-bar-card.is-prediction-evidence{border-width:2px;border-color:var(--wc-viz-accent)}.wc-explorer-root .wc-compare-bar-card.is-prediction-evidence::before{font-size:10px;color:var(--wc-viz-ink)}.wc-explorer-root .wc-compare-bar-delta{font-size:12px}.wc-explorer-root :is(.wc-compare-actions button,.wc-prediction-reset,.wc-experiment-log-clear,.wc-log-replay){min-height:44px;padding:8px 12px;border:1px solid var(--wc-viz-line);border-radius:10px;background:var(--wc-viz-tint);color:var(--wc-viz-ink);font-size:12px;box-shadow:none}',
+      '.wc-explorer-root .wc-prediction-strip{grid-template-columns:minmax(0,1fr) minmax(260px,.8fr);gap:20px;border-left:4px solid var(--wc-viz-accent)}.wc-explorer-root .wc-prediction-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;max-width:none;align-content:start}.wc-explorer-root .wc-prediction-option{min-height:46px;justify-content:flex-start;padding:9px 11px;border:1px solid var(--wc-viz-line);border-radius:10px;background:var(--wc-viz-paper);color:var(--wc-viz-ink);font-size:12px;white-space:normal;line-height:1.4;transform:none;box-shadow:none}.wc-explorer-root .wc-prediction-option:last-child{grid-column:1/-1}.wc-explorer-root .wc-prediction-option:hover{background:var(--wc-viz-tint);border-color:var(--wc-viz-accent);transform:none;box-shadow:none}.wc-explorer-root .wc-prediction-evidence{color:var(--wc-viz-ink);font-size:13px;border-color:var(--wc-viz-line);line-height:1.55}.wc-explorer-root .wc-prediction-result{font-size:13px;color:var(--wc-viz-muted);align-items:flex-start}.wc-explorer-root .wc-prediction-result-badge{font-size:12px;padding:5px 9px}.wc-explorer-root .wc-prediction-reset:disabled{color:var(--wc-viz-muted);opacity:.75;cursor:default}',
+      '.wc-explorer-root .wc-log-entry{padding:13px;border-color:var(--wc-viz-line);border-radius:12px;background:var(--wc-viz-paper)}.wc-explorer-root .wc-log-entry-copy strong{font-size:14px;color:var(--wc-viz-ink)}.wc-explorer-root .wc-log-entry-copy span{font-size:12px;line-height:1.5;color:var(--wc-viz-muted)}.wc-explorer-root .wc-log-entry-index{background:var(--wc-viz-tint);color:var(--wc-viz-ink);border-color:var(--wc-viz-line)}',
+      '@media(max-width:700px){.wc-explorer-root :is(.wc-climate-lab,.wc-land-lab){padding:12px!important}.wc-explorer-root .wc-climate-head .wc-preset-control{flex:1 1 100%;margin-left:0}.wc-explorer-root .wc-preset-control select{flex:1;min-width:0}.wc-explorer-root .wc-prediction-strip{grid-template-columns:1fr;gap:13px}.wc-explorer-root .wc-compare-actions{flex-wrap:wrap}.wc-explorer-root .wc-compare-actions button{flex:1}.wc-explorer-root .wc-climate-response{grid-template-columns:1fr}.wc-explorer-root .wc-log-entry{gap:10px}}',
+      '.wc-explorer-root[data-visual-contrast=true] :is(.wc-land-segments button[aria-pressed=true],details[open]>.wc-lab-summary::after){color:#000}.wc-explorer-root[data-visual-contrast=true] .wc-prediction-result-badge{background:#fff;color:#000;border:1px solid #fff}',
+      '@media(forced-colors:active){.wc-explorer-root .wc-land-segments button[aria-pressed=true],.wc-explorer-root[data-visual-contrast=true] .wc-land-segments button[aria-pressed=true]{forced-color-adjust:none;background:Highlight;color:HighlightText;border-color:ButtonText}.wc-explorer-root .wc-land-segments button[aria-pressed=true] *{color:inherit;background:transparent}.wc-explorer-root details[open]>.wc-lab-summary::after,.wc-explorer-root[data-visual-contrast=true] details[open]>.wc-lab-summary::after{background:Highlight;color:HighlightText}.wc-explorer-root .wc-compare-bar-base{background:GrayText;forced-color-adjust:none}.wc-explorer-root .wc-compare-bar-current{background:Highlight;forced-color-adjust:none}.wc-explorer-root .wc-prediction-result-badge{background:Canvas;color:CanvasText;border-color:CanvasText}}'
+    ].join('\n');
     document.head.appendChild(wcFiveStyle);
   }
   var wcWorldsLoading = null;
@@ -4724,7 +4846,14 @@ const d = labToolData.waterCycle || {};
           }
 
           function renderWcModeBar() {
-            return h(React.Fragment, null, h('nav', { className: 'wc-mode-bar wc-five-mode-bar', 'aria-label': t('stem.watercycle.mode_nav_label', 'Water Cycle modes') },
+            var modeIconPaths = {
+              explorer: ['M3 16c3-4 5 4 8 0s5 4 10 0', 'M3 20c3-4 5 4 8 0s5 4 10 0', 'M4 11l5-7 5 7h-4'],
+              pilot: ['M12 3C9 7 5 11 5 15a7 7 0 0 0 14 0c0-4-4-8-7-12Z', 'M8 15c0 2 1 3 3 3'],
+              precipHunt: ['M6 14a4 4 0 1 1 0-8 6 6 0 0 1 11-1 4.5 4.5 0 1 1 1 9', 'M7 17l-1 3M12 17l-1 3M17 17l-1 3'],
+              steward: ['M5 17C2 8 9 3 20 4c0 11-6 17-15 13Z', 'M4 21 15 10M8 17v-5M11 14h5'],
+              worlds: ['M4 3h16v18H4Z', 'M4 9h16M4 15h6M10 3v11M16 3v6', 'M14 11c-4 4 6 5 2 10']
+            };
+            return h(React.Fragment, null, h('nav', { className: 'wc-mode-bar wc-five-mode-bar', 'data-dark': String(!!isDark), 'data-contrast': String(!!isContrast), 'aria-label': t('stem.watercycle.mode_nav_label', 'Water Cycle modes') },
               WC_MODE_TABS.map(function(tab) {
                 var active = wcMode === tab.id;
                 return h('button', {
@@ -4741,7 +4870,11 @@ const d = labToolData.waterCycle || {};
                     if (typeof announceToSR === 'function') announceToSR(t('stem.watercycle.mode_announce', '{label} opened. {blurb}.').replace('{label}', tab.label).replace('{blurb}', tab.blurb));
                   }
                 },
-                  h('strong', null, tab.icon + ' ' + tab.label),
+                  h('strong', null,
+                    h('span', { className: 'wc-mode-icon', 'aria-hidden': 'true' },
+                      h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round', focusable: 'false' },
+                        (modeIconPaths[tab.id] || modeIconPaths.explorer).map(function(path, index) { return h('path', { key: index, d: path }); }))),
+                    h('span', null, tab.label)),
                   h('small', null, tab.blurb),
                   tab.experienceType === 'piloted3d' && h('span', { className: 'wc-mode-kind' }, t('stem.watercycle.mode_3d_simulation', '3D SIMULATION'))
                 );
@@ -4758,6 +4891,7 @@ const d = labToolData.waterCycle || {};
             fresh.difficulty = diff.id;
             fresh.hoursPerYear = diff.hoursPerYear;
             fresh.hoursLeft = diff.hoursPerYear;
+            fresh.yearStart = fresh.components.map(function(c) { return Object.assign({}, c); });
             if (opts.seed) fresh.seed = opts.seed;
             setSteward(fresh);
             if (addToast) addToast('💧 Watershed Steward begins. Year 1 of 10 on ' + diff.label + '.', 'success');
@@ -4766,13 +4900,14 @@ const d = labToolData.waterCycle || {};
           }
           function resetSteward() { setSteward(defaultStewardState()); }
 
-          function applyStewardTech(techId, componentId) {
+          function applyStewardTech(techId, componentId, previewOnly) {
             var tech = STEWARD_TECHNIQUES.find(function(t) { return t.id === techId; });
             if (!tech) return;
-            if (steward.hoursLeft < tech.hours) { if (addToast) addToast('Not enough stewardship hours left.', 'warn'); return; }
+            var reason = steward.phase !== 'year' ? t('stem.watercycle.steward_decision_begin_year', 'Begin a campaign year to use this action.') : steward.hoursLeft < tech.hours ? t('stem.watercycle.steward_decision_insufficient', 'Not enough stewardship hours left.') : '';
             if (tech.appliesTo !== 'any' && componentId && tech.appliesTo.indexOf(componentId) < 0) {
-              if (addToast) addToast(tech.name + ' does not apply to that component.', 'info'); return;
+              reason = tech.name + ' does not apply to that component.';
             }
+            if (tech.appliesTo !== 'any' && (!componentId || !steward.components.some(function(c) { return c.id === componentId; }))) reason = t('stem.watercycle.steward_decision_choose_component', 'Choose an eligible watershed component.');
             var newComps = steward.components.map(function(c) {
               if (componentId && c.id !== componentId && tech.appliesTo !== 'any') return c;
               if (!componentId && tech.appliesTo !== 'any') return c;
@@ -4782,8 +4917,14 @@ const d = labToolData.waterCycle || {};
               if (tech.effects.support !== undefined) nc.support = stewardClamp(nc.support + tech.effects.support, 0, 100);
               return nc;
             });
-            var actionLog = { tech: tech.name, target: componentId ? (getWatershedComponent(componentId) ? getWatershedComponent(componentId).name : componentId) : 'Watershed-wide', hours: tech.hours };
-            var patch = { components: newComps, hoursLeft: steward.hoursLeft - tech.hours, yearActions: steward.yearActions.concat([actionLog]) };
+            var targetName = componentId ? (getWatershedComponent(componentId) ? getWatershedComponent(componentId).name : componentId) : 'Watershed-wide';
+            var before = steward.components.map(function(c) { return Object.assign({}, c); });
+            var decision = { tech: tech, target: targetName, before: before, after: newComps, hoursAfter: steward.hoursLeft - tech.hours, canApply: !reason, reason: reason };
+            if (previewOnly) return decision;
+            if (reason) { if (addToast) addToast(reason, 'warn'); return; }
+            var actionLog = { tech: tech.name, techId: techId, target: targetName, targetId: componentId || null, hours: tech.hours, before: before, after: newComps.map(function(c) { return Object.assign({}, c); }) };
+            var patch = { components: newComps, hoursLeft: decision.hoursAfter, yearActions: steward.yearActions.concat([actionLog]), decisionPreview: null };
+            if (!steward.yearStart && !steward.yearActions.length) patch.yearStart = before;
             if (techId === 'damRemoval' || techId === 'fishPassage') patch.connectivityBoosts = (steward.connectivityBoosts || 0) + 1;
             setSteward(patch);
             if (typeof announceToSR === 'function') announceToSR(tech.name + ' applied. ' + (steward.hoursLeft - tech.hours) + ' hours left.');
@@ -4800,6 +4941,7 @@ const d = labToolData.waterCycle || {};
               nc.support = stewardClamp(nc.support + (nc.support < 50 ? 1 : -1), 0, 100);
               return nc;
             });
+            var annualStages = [{ id: 'actions', label: t('stem.watercycle.steward_decision_after_actions', 'After your actions'), components: pre }, { id: 'drift', label: t('stem.watercycle.steward_decision_routine', 'Routine yearly change'), components: drifted.map(function(c) { return Object.assign({}, c); }) }];
 
             // Seeded event
             var diff = STEWARD_DIFFICULTIES[steward.difficulty || 'coordinator'];
@@ -4813,6 +4955,7 @@ const d = labToolData.waterCycle || {};
             }
             var eventState = { fundingBonusNextYear: steward.fundingBonusNextYear || 0, connectivityBoosts: steward.connectivityBoosts || 0 };
             ev.apply(drifted, eventState);
+            annualStages.push({ id: 'event', label: ev.name || t('stem.watercycle.steward_decision_event', 'Yearly event'), components: drifted.map(function(c) { return Object.assign({}, c); }) });
             // Severity scaling
             var sev = diff.severity || 1;
             if (sev !== 1) {
@@ -4824,20 +4967,26 @@ const d = labToolData.waterCycle || {};
               }
             }
 
+            annualStages.push({ id: 'difficulty', label: t('stem.watercycle.steward_decision_difficulty', 'Difficulty adjustment'), components: drifted.map(function(c) { return Object.assign({}, c); }) });
+
             // Cascade rules
             var fired = [];
             STEWARD_FEEDBACK_RULES.forEach(function(rule) {
               if (rule.when(drifted)) { rule.apply(drifted); fired.push({ id: rule.id, msg: rule.msg }); }
             });
+            annualStages.push({ id: 'cascade', label: t('stem.watercycle.steward_decision_connected', 'Connected watershed effects'), components: drifted.map(function(c) { return Object.assign({}, c); }) });
 
             var snap = {
               year: steward.year, eventId: ev.id, event: ev.name, eventIcon: ev.icon, eventDesc: ev.desc,
               pre: pre, post: drifted.map(function(c) { return Object.assign({}, c); }),
+              yearStart: steward.yearStart ? steward.yearStart.map(function(c) { return Object.assign({}, c); }) : null,
+              stages: annualStages,
               actions: steward.yearActions.slice(), cascades: fired
             };
 
             setSteward({
               phase: 'review',
+              decisionPreview: null,
               components: drifted,
               lastEvent: ev,
               cascadesFiredThisYear: fired,
@@ -4870,7 +5019,8 @@ const d = labToolData.waterCycle || {};
                 phase: 'year', year: steward.year + 1,
                 hoursLeft: steward.hoursPerYear + (steward.fundingBonusNextYear || 0),
                 fundingBonusNextYear: 0,
-                yearActions: [], lastEvent: null
+                yearActions: [], lastEvent: null, decisionPreview: null,
+                yearStart: steward.components.map(function(c) { return Object.assign({}, c); })
               });
               if (typeof announceToSR === 'function') announceToSR('Year ' + (steward.year + 1) + ' begins.');
             }
@@ -5278,15 +5428,92 @@ const d = labToolData.waterCycle || {};
             );
           }
 
+          function stewardScore(value) { return String(Math.round(value * 10) / 10); }
+          function focusStewardElement(id) {
+            setTimeout(function() { var element = document.getElementById(id); if (element) element.focus(); }, 0);
+          }
+          function openStewardDecision(techId, componentId) {
+            setSteward({ decisionPreview: { techId: techId, componentId: componentId || null } });
+            focusStewardElement('wc-steward-decision-title');
+          }
+          function renderStewardMetricChange(before, after) {
+            return h('div', { className: 'wc-steward-score-grid' }, [['quality', t('stem.watercycle.steward_decision_quality', 'Water quality')], ['connectivity', t('stem.watercycle.steward_decision_connection', 'Habitat connection')], ['support', t('stem.watercycle.steward_decision_support', 'Community support')]].map(function(metric) {
+              var change = after[metric[0]] - before[metric[0]];
+              return h('div', { key: metric[0], className: 'wc-steward-score' },
+                h('span', null, metric[1]),
+                h('strong', null, stewardScore(before[metric[0]]) + ' → ' + stewardScore(after[metric[0]])),
+                h('small', { className: change < 0 ? 'is-loss' : change > 0 ? 'is-gain' : '' }, t('stem.watercycle.steward_decision_points', '{value} points').replace('{value}', (change > 0 ? '+' : '') + stewardScore(change)))
+              );
+            }));
+          }
+          function renderStewardDecision() {
+            var pending = steward.decisionPreview;
+            if (!pending) return null;
+            var decision = applyStewardTech(pending.techId, pending.componentId, true);
+            if (!decision) return null;
+            var affected = decision.after.filter(function(c) { return !pending.componentId || c.id === pending.componentId; });
+            return h('section', { className: 'wc-steward-decision', 'aria-labelledby': 'wc-steward-decision-title' },
+              h('div', { className: 'wc-steward-eyebrow' }, t('stem.watercycle.steward_decision_plan', 'Plan your next move')),
+              h('h4', { id: 'wc-steward-decision-title', tabIndex: -1 }, decision.tech.icon + ' ' + decision.tech.name),
+              h('p', { className: 'wc-steward-decision-target' }, t('stem.watercycle.steward_decision_cost', '{target} · {hours} stewardship hours').replace('{target}', decision.target).replace('{hours}', decision.tech.hours)),
+              h('p', null, decision.tech.desc || (pending.techId === 'rest' ? t('stem.watercycle.steward_decision_rest', 'Keep this year’s current scores and spend no additional hours.') : t('stem.watercycle.steward_decision_inspect', 'Inspect the immediate effects before using your hours.'))),
+              h('div', { className: 'wc-steward-preview-grid' }, affected.map(function(after) {
+                var before = decision.before.find(function(c) { return c.id === after.id; });
+                var def = getWatershedComponent(after.id);
+                return h('div', { key: after.id, className: 'wc-steward-preview-component' }, h('strong', null, def.icon + ' ' + def.name), renderStewardMetricChange(before, after));
+              })),
+              h('p', { className: 'wc-steward-model-note' }, t('stem.watercycle.steward_decision_model_note', 'These are immediate changes to 0–100 game scores, capped at 100. They illustrate tradeoffs; they are not measured water quality or a forecast. Yearly events and connected effects happen when you end the year.')),
+              h('div', { className: 'wc-steward-decision-footer' },
+                h('strong', null, decision.canApply ? t('stem.watercycle.steward_decision_remaining', '{hours} hours remain after this action').replace('{hours}', decision.hoursAfter) : decision.reason),
+                h('div', { className: 'wc-steward-decision-buttons' },
+                  h('button', { type: 'button', className: 'wc-steward-button', onClick: function() { setSteward({ decisionPreview: null }); focusStewardElement('wc-steward-action-' + pending.techId + '-' + (pending.componentId || 'all')); } }, t('stem.watercycle.steward_decision_cancel', 'Cancel')),
+                  h('button', { type: 'button', className: 'wc-steward-button is-primary', disabled: !decision.canApply, onClick: function() { applyStewardTech(pending.techId, pending.componentId); focusStewardElement('wc-steward-action-log'); } }, t('stem.watercycle.steward_decision_apply', 'Apply action · {hours}h').replace('{hours}', decision.tech.hours))
+                )
+              )
+            );
+          }
+          function renderStewardYearLedger(snap) {
+            if (!snap.stages || !snap.stages.length) return h('p', { className: 'wc-steward-model-note' }, t('stem.watercycle.steward_decision_legacy_year', 'This saved year predates detailed change records. Its summary below compares scores after your actions with scores at year end.'));
+            var selectedId = steward.ledgerComponent || 'riverMainstem';
+            var selectedDef = getWatershedComponent(selectedId) || getWatershedComponent(snap.pre[0].id);
+            selectedId = selectedDef.id;
+            var rows = [];
+            if (snap.yearStart) rows.push({ id: 'start', label: t('stem.watercycle.steward_decision_year_start', 'Start of year'), components: snap.yearStart });
+            rows = rows.concat(snap.stages);
+            var first = rows[0].components.find(function(c) { return c.id === selectedId; });
+            var last = rows[rows.length - 1].components.find(function(c) { return c.id === selectedId; });
+            return h('section', { className: 'wc-steward-ledger', 'aria-labelledby': 'wc-steward-ledger-title' },
+              h('div', { className: 'wc-steward-eyebrow' }, t('stem.watercycle.steward_decision_cause', 'Follow the cause and effect')),
+              h('h4', { id: 'wc-steward-ledger-title' }, t('stem.watercycle.steward_decision_ledger_title', 'Where did the change come from?')),
+              h('p', null, t('stem.watercycle.steward_decision_ledger_intro', 'Read down to follow one place through the year. Each row shows the scores after that step; the change is measured from the row above.')),
+              h('label', { htmlFor: 'wc-steward-ledger-place' }, t('stem.watercycle.steward_decision_place', 'Watershed component')),
+              h('select', { id: 'wc-steward-ledger-place', value: selectedId, onChange: function(event) { setSteward({ ledgerComponent: event.target.value }); } }, steward.components.map(function(c) { var def = getWatershedComponent(c.id); return h('option', { key: c.id, value: c.id }, def.name); })),
+              renderStewardMetricChange(first, last),
+              !snap.yearStart ? h('p', { className: 'wc-steward-model-note' }, t('stem.watercycle.steward_decision_legacy_start', 'The start of this saved year was not recorded, so the effects of earlier actions cannot be reconstructed. This record begins after your actions.')) : null,
+              h('ol', { className: 'wc-steward-stage-list' }, rows.map(function(row, index) {
+                var current = row.components.find(function(c) { return c.id === selectedId; });
+                var previous = index ? rows[index - 1].components.find(function(c) { return c.id === selectedId; }) : null;
+                return h('li', { key: row.id },
+                  h('div', { className: 'wc-steward-stage-name' }, h('span', { 'aria-hidden': true }, index + 1), h('strong', null, row.label)),
+                  h('div', { className: 'wc-steward-stage-values' }, [['quality', t('stem.watercycle.steward_decision_quality_short', 'Quality')], ['connectivity', t('stem.watercycle.steward_decision_connection_short', 'Connection')], ['support', t('stem.watercycle.steward_decision_support_short', 'Support')]].map(function(metric) {
+                    var delta = previous ? current[metric[0]] - previous[metric[0]] : null;
+                    return h('span', { key: metric[0] }, metric[1] + ' ', h('strong', null, stewardScore(current[metric[0]])), delta === null ? '' : ' (' + (delta > 0 ? '+' : '') + stewardScore(delta) + ')');
+                  }))
+                );
+              })),
+              h('p', { className: 'wc-steward-model-note' }, t('stem.watercycle.steward_decision_ledger_note', 'Difficulty scales routine change and event effects together. Connected effects follow afterward. Scores are rounded to one decimal place. They describe this simplified strategy game; they do not measure real rivers.'))
+            );
+          }
+
           function renderStewardCampaign() {
             // Deep-dive panel renders at the top of every phase when active
             var stewardDeepDive = steward.deepDiveComponent ? renderStewardDeepDive(steward.deepDiveComponent) : null;
 
             // ── SETUP ──
             if (steward.phase === 'setup') {
-              return h('div', { className: 'max-w-3xl mx-auto space-y-4 ' + (isDark ? 'text-slate-100' : 'text-slate-800') },
+              return h('div', { className: 'wc-steward-campaign wc-steward-setup max-w-3xl mx-auto space-y-4 ' + (isDark ? 'text-slate-100' : 'text-slate-800') },
                 stewardDeepDive,
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                h('div', { className: 'wc-steward-campaign-heading', style: { display: 'flex', alignItems: 'center', gap: 8 } },
                   h('button', {
                     onClick: function() { switchMode('explorer'); },
                     className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700 active:scale-[0.97]" : "transition-colors bg-sky-100 text-sky-800 hover:bg-sky-200 border border-sky-300 active:scale-[0.97]")
@@ -5294,6 +5521,7 @@ const d = labToolData.waterCycle || {};
                   h('h3', { className: 'text-lg font-bold  tracking-tight' + (isDark ? 'text-slate-100' : 'text-slate-800') }, t('stem.watercycle.watershed_steward_maine_campaign', '💧 Watershed Steward: Maine campaign'))
                 ),
                 h('div', {
+                  className: 'wc-steward-intro',
                   style: {
                     padding: 18,
                     borderRadius: 14,
@@ -5319,7 +5547,7 @@ const d = labToolData.waterCycle || {};
                 ),
 
                 // Component preview cards
-                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
+                h('div', { className: 'wc-steward-places', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
                   watershedComponents().map(function(c) {
                     return h('div', {
                       key: c.id,
@@ -5362,6 +5590,7 @@ const d = labToolData.waterCycle || {};
 
                 // Difficulty
                 h('div', {
+                  className: 'wc-steward-difficulty',
                   style: {
                     background: isDark ? 'rgba(15,23,42,0.6)' : '#f8fafc',
                     borderRadius: 10,
@@ -5636,6 +5865,8 @@ const d = labToolData.waterCycle || {};
                   );
                 })(),
 
+                renderStewardYearLedger(lastSnap),
+
                 // Per-component deltas
                 h('div', {
                   style: {
@@ -5645,7 +5876,7 @@ const d = labToolData.waterCycle || {};
                     padding: 10
                   }
                 },
-                  h('div', { style: { fontWeight: 700, color: isDark ? '#cbd5e1' : '#334155', marginBottom: 6, fontSize: 13 } }, t('stem.watercycle.what_changed_this_year', 'What changed this year')),
+                  h('div', { style: { fontWeight: 700, color: isDark ? '#cbd5e1' : '#334155', marginBottom: 6, fontSize: 13 } }, t('stem.watercycle.steward_decision_annual_summary', 'After your actions → year end')),
                   (lastSnap.pre || []).map(function(preC) {
                     var postC = (lastSnap.post || []).find(function(p) { return p.id === preC.id; }) || preC;
                     var def = getWatershedComponent(preC.id);
@@ -5684,9 +5915,9 @@ const d = labToolData.waterCycle || {};
 
             // ── YEAR ──
             var coachingTip = (steward.year === 1 && !steward.firstTipDismissed && steward.yearActions.length === 0) ? stewardCoachingTip() : null;
-            return h('div', { className: 'max-w-3xl mx-auto space-y-3 ' + (isDark ? 'text-slate-100' : 'text-slate-800') },
+            return h('div', { className: 'wc-steward-campaign wc-steward-year max-w-3xl mx-auto space-y-3 ' + (isDark ? 'text-slate-100' : 'text-slate-800') },
               stewardDeepDive,
-              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+              h('div', { className: 'wc-steward-campaign-heading', style: { display: 'flex', alignItems: 'center', gap: 8 } },
                 h('button', {
                   onClick: function() { switchMode('explorer'); },
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700 active:scale-[0.97]" : "transition-colors bg-sky-100 text-sky-800 hover:bg-sky-200 border border-sky-300 active:scale-[0.97]")
@@ -5728,6 +5959,7 @@ const d = labToolData.waterCycle || {};
               renderStewardAIPanel(),
               // HUD
               h('div', {
+                className: 'wc-steward-season',
                 style: {
                   padding: '10px 14px',
                   borderRadius: 12,
@@ -5776,14 +6008,19 @@ const d = labToolData.waterCycle || {};
                   h('button', {
                     onClick: endStewardYear,
                     'aria-label': t('stem.watercycle.end_this_year', 'End this year'),
-                    className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all font-bold rounded-lg",
+                    className: "wc-steward-end-year focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all font-bold rounded-lg",
                     style: { padding: '10px 16px', border: 'none', cursor: 'pointer', background: '#dc2626', color: '#fff', fontSize: 13 }
                   }, t('stem.watercycle.end_year', 'End Year →'))
                 )
               ),
 
+              renderStewardDecision(),
+              h('div', { className: 'wc-steward-planning-note' },
+                h('strong', null, t('stem.watercycle.steward_decision_planning_title', 'Choose a place. Preview a move. See the tradeoff.')),
+                h('p', null, t('stem.watercycle.steward_decision_planning_note', 'Water quality, habitat connection, and community support are 0–100 game scores. A higher score means a healthier condition in the game. Select an action to inspect its effect before spending hours.'))
+              ),
               // Component cards with actions
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 10 } },
+              h('div', { className: 'wc-steward-places', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 310px), 1fr))', gap: 10 } },
                 steward.components.map(function(c) {
                   var def = getWatershedComponent(c.id);
                   if (!def) return null;
@@ -5792,6 +6029,7 @@ const d = labToolData.waterCycle || {};
                   });
                   return h('div', {
                     key: c.id,
+                    className: 'wc-steward-place',
                     style: {
                       background: isDark ? 'rgba(15,23,42,0.6)' : '#ffffff',
                       border: isDark ? '1px solid #334155' : '1px solid #cbd5e1',
@@ -5823,10 +6061,10 @@ const d = labToolData.waterCycle || {};
                         }
                       }, '📚') : null
                     ),
-                    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
-                      [['Q', Math.round(c.quality), c.quality < 40 ? (isDark ? '#ef4444' : '#b91c1c') : c.quality < 65 ? (isDark ? '#f59e0b' : '#b45309') : (isDark ? '#22c55e' : '#15803d'), def.targets.quality],
-                       ['Conn', Math.round(c.connectivity), c.connectivity < 40 ? (isDark ? '#ef4444' : '#b91c1c') : c.connectivity < 65 ? (isDark ? '#f59e0b' : '#b45309') : (isDark ? '#22c55e' : '#15803d'), def.targets.connectivity],
-                       ['Sup', Math.round(c.support), c.support < 40 ? (isDark ? '#ef4444' : '#b91c1c') : c.support < 60 ? (isDark ? '#f59e0b' : '#b45309') : (isDark ? '#22c55e' : '#15803d'), def.targets.support]
+                    h('div', { className: 'wc-steward-place-scores', style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
+                      [[t('stem.watercycle.steward_decision_quality_short', 'Quality'), Math.round(c.quality), c.quality < 40 ? (isDark ? '#ef4444' : '#b91c1c') : c.quality < 65 ? (isDark ? '#f59e0b' : '#b45309') : (isDark ? '#22c55e' : '#15803d'), def.targets.quality],
+                       [t('stem.watercycle.steward_decision_connection_short', 'Connection'), Math.round(c.connectivity), c.connectivity < 40 ? (isDark ? '#ef4444' : '#b91c1c') : c.connectivity < 65 ? (isDark ? '#f59e0b' : '#b45309') : (isDark ? '#22c55e' : '#15803d'), def.targets.connectivity],
+                       [t('stem.watercycle.steward_decision_support_short', 'Support'), Math.round(c.support), c.support < 40 ? (isDark ? '#ef4444' : '#b91c1c') : c.support < 60 ? (isDark ? '#f59e0b' : '#b45309') : (isDark ? '#22c55e' : '#15803d'), def.targets.support]
                       ].map(function(st, si) {
                         return h('div', {
                           key: si,
@@ -5849,12 +6087,14 @@ const d = labToolData.waterCycle || {};
                         var disabled = steward.hoursLeft < t.hours;
                         return h('button', {
                           key: t.id,
-                          onClick: function() { applyStewardTech(t.id, c.id); },
+                          id: 'wc-steward-action-' + t.id + '-' + c.id,
+                          'aria-label': __alloT('stem.watercycle.steward_decision_preview_place', 'Preview {action} for {place}, {hours} hours').replace('{action}', t.name).replace('{place}', def.name).replace('{hours}', t.hours),
+                          onClick: function() { openStewardDecision(t.id, c.id); },
                           disabled: disabled,
                           "data-tooltip": t.desc,
                           className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
                           style: {
-                            padding: '4px 8px',
+                            padding: '8px 10px', minHeight: 42,
                             fontSize: 11,
                             fontWeight: 700,
                             borderRadius: 6,
@@ -5889,12 +6129,14 @@ const d = labToolData.waterCycle || {};
                     var disabled = steward.hoursLeft < t.hours;
                     return h('button', {
                       key: t.id,
-                      onClick: function() { applyStewardTech(t.id, null); },
+                      id: 'wc-steward-action-' + t.id + '-all',
+                      'aria-label': __alloT('stem.watercycle.steward_decision_preview_all', 'Preview {action} watershed-wide, {hours} hours').replace('{action}', t.name).replace('{hours}', t.hours),
+                      onClick: function() { openStewardDecision(t.id, null); },
                       disabled: disabled,
                       "data-tooltip": t.desc,
                       className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
                       style: {
-                        padding: '6px 10px',
+                        padding: '8px 10px', minHeight: 42,
                         fontSize: 12,
                         fontWeight: 700,
                         borderRadius: 6,
@@ -5913,6 +6155,8 @@ const d = labToolData.waterCycle || {};
 
               // Action log
               steward.yearActions.length > 0 ? h('div', {
+                id: 'wc-steward-action-log', tabIndex: -1,
+                'aria-label': __alloT('stem.watercycle.steward_decision_applied', 'Actions applied this year'),
                 style: {
                   background: isDark ? 'rgba(15,23,42,0.6)' : '#f8fafc',
                   border: isDark ? '1px solid #334155' : '1px solid #cbd5e1',
@@ -5939,7 +6183,18 @@ const d = labToolData.waterCycle || {};
             // Wrapped rather than threaded through renderStewardCampaign: that
             // function returns a different tree per campaign phase, and the bar
             // has to appear above all of them.
-            return h('div', { className: 'wc-mode-shell' }, renderWcModeBar(), renderStewardCampaign());
+            return h('div', { className: 'wc-mode-shell wc-steward-experience', 'data-contrast': String(!!isContrast) },
+              h('style', null, '.wc-steward-experience[data-contrast=true] .wc-steward-card>div:first-child strong,.wc-steward-experience[data-contrast=true] .wc-steward-difficulty>div:first-child{color:var(--sw-ink)!important}'),
+              h('style', null,
+                '.wc-steward-experience{padding:clamp(12px,2vw,22px);border:1px solid #c5d7ca;border-radius:24px;background:linear-gradient(145deg,#fafbf5,#edf5ee);box-shadow:0 18px 45px #163c2b0a}.dark .wc-steward-experience{border-color:#36584b;background:linear-gradient(145deg,#102b29,#122c31)}.wc-steward-experience .wc-steward-campaign{max-width:none}.wc-steward-campaign-heading{flex-wrap:wrap!important;gap:10px!important}.wc-steward-campaign-heading h3{font-size:23px;line-height:1.25;letter-spacing:-.025em;color:var(--sw-ink)}.wc-steward-campaign-heading>button{min-height:40px;background:var(--sw-paper);color:var(--sw-ink);border:1px solid var(--sw-line);border-radius:10px}.wc-steward-intro{background:linear-gradient(120deg,var(--sw-paper),var(--sw-tint))!important;border-color:var(--sw-line)!important;border-left-color:#418264!important;border-radius:18px!important;padding:22px!important}.wc-steward-intro h3{color:var(--sw-ink)!important;font-size:25px!important;line-height:1.25}.wc-steward-intro p{color:var(--sw-muted)!important}.wc-steward-places{gap:14px!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}.wc-steward-experience .wc-steward-card,.wc-steward-place{border-top-color:var(--sw-line)!important;border-right-color:var(--sw-line)!important;border-bottom-color:var(--sw-line)!important;border-radius:16px!important;padding:17px!important;background:var(--sw-paper)!important;box-shadow:0 4px 12px #183b2b06}.wc-steward-card>div:nth-child(2),.wc-steward-place>div:first-child>div>div:last-child{font-size:12px!important;line-height:1.45!important;color:var(--sw-muted)!important}.wc-steward-card>div:nth-child(3){font-size:13px!important;line-height:1.6!important;color:var(--sw-muted)!important}.wc-steward-card button,.wc-steward-place button{min-height:44px;border-radius:9px!important;font-size:12px!important;line-height:1.45!important}.wc-steward-place>div:first-child{margin-bottom:15px!important}.wc-steward-place>div:first-child>div>div:first-child{font-size:16px!important}.wc-steward-place-scores{gap:7px!important;margin-bottom:14px!important}.wc-steward-place-scores>div{padding:10px 5px!important;border-color:var(--sw-line)!important;border-radius:10px!important;background:var(--sw-tint)!important}.wc-steward-place-scores>div>div:first-child{font-size:11px!important;color:var(--sw-muted)!important}.wc-steward-place-scores>div>div:nth-child(2){font-size:23px!important;line-height:1.4}.wc-steward-place-scores>div>div:last-child{font-size:11px!important;color:var(--sw-muted)!important}.wc-steward-place>div:last-child{gap:7px!important}.wc-steward-difficulty{padding:16px!important;background:var(--sw-paper)!important;border-color:var(--sw-line)!important;border-radius:16px!important}.wc-steward-difficulty button{min-height:75px;border-radius:11px!important}.wc-steward-difficulty button[aria-pressed=true]{background:var(--sw-tint)!important;border-color:#418264!important;color:var(--sw-ink)!important;box-shadow:inset 0 0 0 1px #418264}.wc-steward-difficulty button[aria-pressed=true]>div:last-child{color:var(--sw-muted)!important}.wc-steward-experience .wc-steward-cta{background:linear-gradient(110deg,#1b624d,#125260)!important;border-radius:14px!important;box-shadow:0 8px 20px #1b624d25!important;min-height:54px}.wc-steward-season{background:var(--sw-paper)!important;border-color:var(--sw-line)!important;border-left-color:#418264!important;border-radius:17px!important;padding:16px 18px!important;gap:22px!important}.wc-steward-season>div:not(:last-child){min-width:90px}.wc-steward-season>div:not(:last-child)>div:first-child{color:var(--sw-muted)!important;font-size:12px!important}.wc-steward-season>div:not(:last-child)>div:last-child{font-size:26px!important;color:var(--sw-ink)!important;letter-spacing:-.03em}.wc-steward-season button{min-height:44px;border-radius:10px!important}.wc-steward-season .wc-steward-end-year{background:#195d46!important}.wc-steward-planning-note{border:1px solid var(--sw-line);padding:15px 18px!important}.wc-steward-place button:disabled{opacity:.58}.wc-steward-experience button:focus-visible{outline-offset:3px!important}@media(max-width:640px){.wc-steward-places{grid-template-columns:1fr!important}.wc-steward-experience{border-radius:18px;padding:12px}.wc-steward-campaign-heading h3{font-size:20px}.wc-steward-intro{padding:16px!important}.wc-steward-intro>div:first-child{align-items:flex-start!important}.wc-steward-intro h3{font-size:22px!important}.wc-steward-season{gap:14px!important}.wc-steward-season>div:last-child{width:100%;margin-left:0!important}.wc-steward-season>div:last-child>button{flex:1}.wc-steward-experience .wc-steward-card,.wc-steward-place{padding:14px!important}.wc-steward-place-scores>div>div:nth-child(2){font-size:22px!important}}@media(prefers-reduced-motion:reduce){.wc-steward-card,.wc-steward-cta{transition:none!important;transform:none!important}}@media(forced-colors:active){.wc-steward-experience{background:Canvas;border-color:CanvasText}.wc-steward-experience .wc-steward-cta,.wc-steward-season .wc-steward-end-year{background:Highlight!important;color:HighlightText!important}.wc-steward-difficulty button[aria-pressed=true]{border-color:Highlight!important;box-shadow:none}}.wc-steward-experience button[id^="wc-steward-action-"]{background:#195d46!important;color:#fff!important;border:1px solid #195d46!important}.wc-steward-card>button{color:var(--sw-ink)!important;background:var(--sw-tint)!important;border-color:var(--sw-line)!important}@media(forced-colors:active){.wc-steward-experience button[id^="wc-steward-action-"]{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}}'
+              ),
+              h('style', null,
+                '.wc-steward-experience{--sw-paper:#fff;--sw-ink:#173a35;--sw-muted:#475e59;--sw-line:#bfd5ca;--sw-tint:#f0f7ef;--sw-gain:#166534;--sw-loss:#991b1b}.dark .wc-steward-experience{--sw-paper:#112a29;--sw-ink:#ecfdf5;--sw-muted:#b8d2c9;--sw-line:#41645b;--sw-tint:#163932;--sw-gain:#86efac;--sw-loss:#fca5a5}' +
+                '.wc-steward-decision,.wc-steward-ledger{padding:clamp(14px,3vw,24px);border:1px solid var(--sw-line);border-radius:20px;background:linear-gradient(135deg,var(--sw-paper),var(--sw-tint));color:var(--sw-ink);box-shadow:0 12px 32px #143d2910;overflow-wrap:anywhere}.wc-steward-decision{border-top:5px solid #418264}.wc-steward-eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--sw-muted)}.wc-steward-experience h4{font-size:22px;line-height:1.25;margin:6px 0 8px;color:var(--sw-ink)}.wc-steward-decision p,.wc-steward-ledger p,.wc-steward-planning-note p{font-size:13px;line-height:1.6;margin:8px 0;color:var(--sw-muted)}.wc-steward-decision-target{font-weight:700}.wc-steward-preview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:10px;margin:16px 0}.wc-steward-preview-component{border:1px solid var(--sw-line);border-radius:12px;padding:12px;background:var(--sw-paper);font-size:14px}' +
+                '.wc-steward-score-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0}.wc-steward-score{padding:9px 7px;border-radius:9px;background:var(--sw-tint);min-width:0}.wc-steward-score span,.wc-steward-score strong,.wc-steward-score small{display:block}.wc-steward-score span{font-size:11px;line-height:1.4;color:var(--sw-muted)}.wc-steward-score strong{font-size:18px;margin:5px 0;color:var(--sw-ink);white-space:nowrap}.wc-steward-score small{font-size:11px;color:var(--sw-muted)}.wc-steward-score .is-gain{color:var(--sw-gain)}.wc-steward-score .is-loss{color:var(--sw-loss)}.wc-steward-model-note{font-size:12px!important;padding:10px 12px;border-left:3px solid var(--sw-line);background:var(--sw-paper);border-radius:0 8px 8px 0}' +
+                '.wc-steward-decision-footer{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;font-size:13px;margin-top:16px}.wc-steward-decision-buttons{display:flex;gap:8px;flex-wrap:wrap}.wc-steward-button{min-height:44px;padding:9px 15px;border:1px solid var(--sw-line);border-radius:10px;color:var(--sw-ink);background:var(--sw-paper);font-size:13px;font-weight:750}.wc-steward-button.is-primary{background:#195d46;color:#fff;border-color:#195d46}.wc-steward-button:disabled{opacity:.55;cursor:not-allowed}.wc-steward-experience button:focus-visible,.wc-steward-experience select:focus-visible,.wc-steward-experience [tabindex="-1"]:focus{outline:3px solid #d69e23;outline-offset:4px}.wc-steward-planning-note{padding:12px 16px;border-radius:12px;background:var(--sw-tint);color:var(--sw-ink)}.wc-steward-planning-note strong{font-size:14px}.wc-steward-ledger label{display:block;font-size:12px;font-weight:800;margin-top:12px}.wc-steward-ledger select{width:100%;min-height:44px;border:1px solid var(--sw-line);border-radius:9px;background:var(--sw-paper);color:var(--sw-ink);padding:8px 12px;font-size:14px;margin:5px 0 8px}' +
+                '.wc-steward-stage-list{list-style:none;margin:16px 0;padding:0}.wc-steward-stage-list li{display:grid;grid-template-columns:minmax(150px,1fr) minmax(0,1.5fr);align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--sw-line)}.wc-steward-stage-name{display:flex;align-items:center;gap:9px;font-size:13px}.wc-steward-stage-name>span{display:grid;place-items:center;flex:0 0 25px;height:25px;border:1px solid var(--sw-line);border-radius:50%;font-size:11px;color:var(--sw-muted)}.wc-steward-stage-values{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--sw-muted)}.wc-steward-stage-values strong{color:var(--sw-ink)}@media(max-width:480px){.wc-steward-stage-list li{grid-template-columns:1fr;gap:8px}.wc-steward-stage-values{padding-left:34px}.wc-steward-score{padding:8px 5px}.wc-steward-score strong{font-size:15px}.wc-steward-score span{font-size:10px}.wc-steward-decision-buttons{width:100%}.wc-steward-decision-buttons button{flex:1}}@media(forced-colors:active){.wc-steward-experience{--sw-paper:Canvas;--sw-ink:CanvasText;--sw-muted:CanvasText;--sw-line:CanvasText;--sw-tint:Canvas;--sw-gain:CanvasText;--sw-loss:CanvasText}.wc-steward-decision,.wc-steward-ledger{background:Canvas}.wc-steward-button.is-primary{background:Highlight;color:HighlightText;border-color:ButtonText}}'
+              ), renderWcModeBar(), renderStewardCampaign());
           }
           // === Inquiry widget: precipitation discovery ===
           if (wcMode === 'precipHunt') {
@@ -5966,6 +6221,203 @@ const d = labToolData.waterCycle || {};
 
             function setIQ(patch) {
               upd('precipHunt', Object.assign({}, iq, patch));
+            }
+
+            // A is a frozen set of model inputs; B always describes the chamber.
+            // Saved pairs own both sets of inputs, so later exploration cannot rewrite evidence.
+            var stormExperiment = iq.experiment && typeof iq.experiment === 'object' ? iq.experiment : {};
+            var stormSavedPairs = Array.isArray(stormExperiment.saved) ? stormExperiment.saved.slice(0, 4) : [];
+            var stormVariables = [
+              { key: 'lowLevelHumidity', label: __alloT("stem.watercycle.storm_experiment_humidity", "Below-cloud humidity"), min: 0, max: 100, step: 1, unit: '%' },
+              { key: 'midLevelTempC', label: __alloT("stem.watercycle.storm_experiment_middle_temp", "Middle-atmosphere temperature"), min: -25, max: 25, step: 1, unit: '\u00B0C' },
+              { key: 'updraft', label: __alloT("stem.watercycle.storm_experiment_updraft", "Vertical lift / updraft"), min: 0, max: 100, step: 1, unit: '/100' },
+              { key: 'moisture', label: __alloT("stem.watercycle.storm_experiment_moisture", "Cloud moisture"), min: 0, max: 100, step: 1, unit: '%' },
+              { key: 'tempC', label: __alloT("stem.watercycle.storm_experiment_cloud_temp", "Cloud temperature"), min: -35, max: 15, step: 1, unit: '\u00B0C' },
+              { key: 'surfaceTempC', label: __alloT("stem.watercycle.storm_experiment_surface_temp", "Surface temperature"), min: -15, max: 35, step: 1, unit: '\u00B0C' },
+              { key: 'cloudDepth', label: __alloT("stem.watercycle.storm_experiment_depth", "Cloud depth"), min: 1, max: 12, step: 0.5, unit: ' km' },
+              { key: 'wind', label: __alloT("stem.watercycle.storm_experiment_wind", "Horizontal wind / drift"), min: 0, max: 40, step: 1, unit: ' m/s' },
+              { key: 'windDirection', label: __alloT("stem.watercycle.storm_experiment_direction", "Wind direction"), options: [['east', __alloT("stem.watercycle.storm_experiment_west_east", "West to east")], ['west', __alloT("stem.watercycle.storm_experiment_east_west", "East to west")]] },
+              { key: 'terrain', label: __alloT("stem.watercycle.storm_experiment_terrain", "Terrain"), options: [['plains', __alloT("stem.watercycle.storm_experiment_plains", "Open plains")], ['mountains', __alloT("stem.watercycle.storm_experiment_mountains", "Mountain ridge")], ['coast', __alloT("stem.watercycle.storm_experiment_coast", "Coastline")]] },
+              { key: 'stormTime', label: __alloT("stem.watercycle.storm_experiment_lifecycle", "Storm time"), min: 0, max: 100, step: 1, unit: '/100' },
+              { key: 'stormDistanceKm', label: __alloT("stem.watercycle.storm_experiment_distance", "Lightning distance"), min: 0.5, max: 20, step: 0.5, unit: ' km' }
+            ];
+            var stormVariable = stormVariables.filter(function(spec) { return spec.key === stormExperiment.variable; })[0] || stormVariables[0];
+            function stormComparisonLabel(change) {
+              var spec = stormVariables.filter(function(item) { return item.key === change.key; })[0];
+              return spec ? spec.label : change.label;
+            }
+            function stormComparisonValue(change, side) {
+              var spec = stormVariables.filter(function(item) { return item.key === change.key; })[0];
+              var option = spec && spec.options && spec.options.filter(function(item) { return item[0] === change[side]; })[0];
+              return option ? option[1] : change[side + 'Label'];
+            }
+            function setStormExperiment(patch, weatherPatch) {
+              setIQ(Object.assign({}, weatherPatch || {}, { experiment: Object.assign({}, stormExperiment, patch) }));
+            }
+            function stormExperimentFocus(id) {
+              setTimeout(function() {
+                var target = document.getElementById(id || 'wcStormExperimentTitle');
+                if (target) { target.focus(); target.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+              }, 0);
+            }
+            function pinStormSetup() {
+              setStormExperiment({ a: window.WaterCyclePrecipitationKernel.setupSnapshot(precipConfig) }, { stormAutoPlay: false });
+              if (typeof announceToSR === 'function') announceToSR(__alloT("stem.watercycle.storm_experiment_pinned_announcement", "Setup A pinned. Storm time is paused. Change one input to create B."));
+            }
+            function startStormExperiment(key) {
+              var setup = key === 'lowLevelHumidity'
+                ? Object.assign({}, WC_PRECIP_PRESETS.virga, { lowLevelHumidity: 20 })
+                : key === 'midLevelTempC'
+                  ? Object.assign({}, WC_PRECIP_PRESETS.mountainSnow, { tempC: -10, midLevelTempC: -6, surfaceTempC: -3, moisture: 85, lowLevelHumidity: 85, updraft: 65, cloudDepth: 8 })
+                  : Object.assign({}, WC_PRECIP_PRESETS.gentleRain, { updraft: 20 });
+              setup = window.WaterCyclePrecipitationKernel.setupSnapshot(Object.assign({}, setup, { stormTime: 52 }));
+              setStormExperiment({ a: setup, variable: key }, Object.assign({}, setup, { preset: 'custom', stormAutoPlay: false }));
+              stormExperimentFocus('wcStormTestValue');
+              if (typeof announceToSR === 'function') announceToSR(__alloT("stem.watercycle.storm_experiment_started_announcement", "Starting storm loaded and pinned as A. Adjust the test value to create B."));
+            }
+            function restoreStormControls() {
+              if (!stormExperiment.a) return;
+              var setup = Object.assign({}, window.WaterCyclePrecipitationKernel.setupSnapshot(stormExperiment.a));
+              setup[stormVariable.key] = precipConfig[stormVariable.key];
+              setIQ(Object.assign({}, setup, { preset: 'custom', stormAutoPlay: false }));
+              if (typeof announceToSR === 'function') announceToSR(__alloT("stem.watercycle.storm_experiment_restored_announcement", "Other model inputs restored to A. Your test value is preserved."));
+            }
+            function saveStormComparison() {
+              if (!stormExperiment.a || stormSavedPairs.length >= 4) return;
+              var comparison = window.WaterCyclePrecipitationKernel.experiment(stormExperiment.a, precipConfig);
+              if (comparison.kind === 'identical') return;
+              var nextId = Math.max(Number(stormExperiment.nextId) || 1, 1);
+              var saved = { id: nextId, a: comparison.before, b: comparison.after,
+                prediction: String(stormExperiment.prediction || '').slice(0, 800),
+                explanation: String(stormExperiment.explanation || '').slice(0, 1200) };
+              setStormExperiment({ saved: stormSavedPairs.concat([saved]), nextId: nextId + 1 }, { stormAutoPlay: false });
+              if (typeof announceToSR === 'function') announceToSR(__alloT("stem.watercycle.storm_experiment_saved_announcement", "Comparison {number} saved with its inputs, prediction, and explanation.").replace('{number}', nextId));
+            }
+            function downloadStormComparison(saved) {
+              var pair = window.WaterCyclePrecipitationKernel.experiment(saved.a, saved.b);
+              var lines = ['Storm Lab comparison ' + saved.id, __alloT("stem.watercycle.storm_experiment_export_note", "Qualitative teaching model; not a weather measurement or forecast."), '',
+                __alloT("stem.watercycle.storm_experiment_export_prediction", "My prediction: ") + (saved.prediction || __alloT("stem.watercycle.storm_experiment_not_recorded", "(not recorded)")),
+                'Comparison: ' + pair.kind + ' input change' + (pair.kind === 'single' ? '' : 's'),
+                'A: ' + pair.modelA.displayLabel + '; intensity index ' + pair.modelA.relativeIntensity + '/100',
+                'B: ' + pair.modelB.displayLabel + '; intensity index ' + pair.modelB.relativeIntensity + '/100',
+                __alloT("stem.watercycle.storm_experiment_thunder_delay", "Flash-to-thunder delay") + ' A: ' + stormThunderEvidence(pair.modelA),
+                __alloT("stem.watercycle.storm_experiment_thunder_delay", "Flash-to-thunder delay") + ' B: ' + stormThunderEvidence(pair.modelB),
+                'Intensity difference B - A: ' + pair.intensityDelta + ' index points', '', __alloT("stem.watercycle.storm_experiment_changed_inputs", "Changed inputs:")];
+              pair.changes.forEach(function(change) { lines.push(stormComparisonLabel(change) + ': ' + stormComparisonValue(change, 'before') + ' -> ' + stormComparisonValue(change, 'after')); });
+              lines.push('', __alloT("stem.watercycle.storm_experiment_export_setup_a", "Complete setup A:"), JSON.stringify(pair.before, null, 2), '', __alloT("stem.watercycle.storm_experiment_export_setup_b", "Complete setup B:"), JSON.stringify(pair.after, null, 2), '',
+                __alloT("stem.watercycle.storm_experiment_export_explanation_a", "Model explanation for A: ") + pair.modelA.description, __alloT("stem.watercycle.storm_experiment_export_explanation_b", "Model explanation for B: ") + pair.modelB.description,
+                '', __alloT("stem.watercycle.storm_experiment_export_explanation", "My explanation: ") + (saved.explanation || __alloT("stem.watercycle.storm_experiment_not_recorded", "(not recorded)")), '',
+                pair.kind === 'multiple' ? __alloT("stem.watercycle.storm_experiment_export_multiple", "Several inputs changed, so this pair does not isolate one cause.") : __alloT("stem.watercycle.storm_experiment_export_single", "This pair isolates one input within this model. It does not establish what every real storm will do."),
+                __alloT("stem.watercycle.storm_experiment_export_model_note", "Intensity is a relative 0-100 index, not a measured rainfall rate. The air column uses three temperature levels."));
+              var url = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' }));
+              var link = document.createElement('a'); link.href = url; link.download = 'storm-comparison-' + saved.id + '.txt';
+              document.body.appendChild(link); link.click(); link.remove(); setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+            }
+            function stormThunderEvidence(model) {
+              return model.lightningEligible
+                ? model.thunder.delaySeconds.toFixed(1) + __alloT("stem.watercycle.storm_experiment_seconds", " seconds")
+                : __alloT("stem.watercycle.storm_experiment_thunder_unavailable", "Unavailable — no eligible lightning");
+            }
+            function renderStormSetup(model, letter) {
+              var cfg = model.config;
+              var points = [cfg.tempC, cfg.midLevelTempC, cfg.surfaceTempC];
+              var temperatureLabel = __alloT("stem.watercycle.storm_experiment_temperatures_label", "Air temperatures: cloud {cloud}, middle {middle}, surface {surface} degrees Celsius. {profile}.").replace('{cloud}', points[0]).replace('{middle}', points[1]).replace('{surface}', points[2]).replace('{profile}', model.profileLabel);
+              var intensityLabel = __alloT("stem.watercycle.storm_experiment_setup_intensity", "Setup {setup} intensity index").replace('{setup}', letter);
+              var phaseMark = { clear: '\u25CB', virga: '\u2193', rain: '\u25C6', snow: '\u2744', mix: '\u25D0', 'freezing-rain': '\u25C7', sleet: '\u25CF', hail: '\u2B22' }[model.visualType];
+              return h('article', { className: 'wc-storm-setup', 'data-setup': letter, 'data-phase': model.visualType },
+                h('div', { className: 'wc-storm-setup-top' }, h('span', { className: 'wc-storm-letter' }, letter),
+                  h('div', null, h('strong', null, letter === 'A' ? __alloT("stem.watercycle.storm_experiment_pinned_setup", "Pinned starting setup") : __alloT("stem.watercycle.storm_experiment_current_setup", "Current chamber setup")),
+                    h('small', null, model.lifecycle.stageLabel + ' · ' + __alloT("stem.watercycle.storm_experiment_stage_position", "storm lifecycle position {position}/100").replace('{position}', cfg.stormTime)))),
+                h('div', { className: 'wc-storm-setup-art' },
+                  h('svg', { viewBox: '0 0 270 135', role: 'img', 'aria-label': temperatureLabel },
+                    h('rect', { x: 2, y: 2, width: 266, height: 131, rx: 16, fill: 'var(--sxp-sky)' }),
+                    h('path', { d: 'M20 112 Q58 95 98 112 T182 108 T268 112 V133 H2 V119 Z', fill: 'var(--sxp-land)' }),
+                    h('path', { d: 'M27 40 C17 40 18 25 29 24 C29 9 50 8 57 21 C70 13 85 22 83 31 C96 31 99 43 89 47 H30 Z', fill: 'var(--sxp-cloud)', stroke: 'var(--sxp-ink)', strokeWidth: 1 }),
+                    h('path', { d: 'M56 57 V90 M50 84 L56 91 L62 84', stroke: 'var(--sxp-accent)', strokeWidth: 2, fill: 'none', strokeDasharray: model.reachesGround ? '0' : '3 4' }),
+                    h('text', { x: 81, y: 85, fontSize: 24, fill: 'var(--sxp-ink)', 'aria-hidden': 'true' }, phaseMark),
+                    points.map(function(temp, index) { return h('g', { key: index },
+                      h('rect', { x: 127, y: 13 + index * 37, width: 129, height: 28, rx: 7, fill: temp > 0 ? 'var(--sxp-warm)' : 'var(--sxp-cold)' }),
+                      h('text', { x: 136, y: 31 + index * 37, fontSize: 11, fontWeight: 600, fill: 'var(--sxp-ink)' }, [__alloT("stem.watercycle.storm_experiment_cloud", "Cloud"), __alloT("stem.watercycle.storm_experiment_middle", "Middle"), __alloT("stem.watercycle.storm_experiment_surface", "Surface")][index]),
+                      h('text', { x: 246, y: 31 + index * 37, textAnchor: 'end', fontSize: 12, fontWeight: 700, fill: 'var(--sxp-ink)' }, temp + '\u00B0C')); })),
+                  h('span', { className: 'wc-storm-outcome' }, model.displayLabel)),
+                h('p', { className: 'wc-storm-reach' }, model.reachesGround ? __alloT("stem.watercycle.storm_experiment_reaches_surface", "Water reaches the surface") : model.virga ? __alloT("stem.watercycle.storm_experiment_evaporates_aloft", "Falling water evaporates aloft") : __alloT("stem.watercycle.storm_experiment_no_precipitation", "No sustained precipitation")),
+                h('div', { className: 'wc-storm-index-label' }, h('span', null, __alloT("stem.watercycle.storm_experiment_intensity", "Intensity index")), h('strong', null, model.relativeIntensity + '/100')),
+                h('meter', { min: 0, max: 100, value: model.relativeIntensity, 'aria-label': intensityLabel }, model.relativeIntensity),
+                h('p', { className: 'wc-storm-mechanism', 'data-thunder-evidence': letter }, h('strong', null, __alloT("stem.watercycle.storm_experiment_thunder_delay", "Flash-to-thunder delay")), ': ', stormThunderEvidence(model)),
+                h('p', { className: 'wc-storm-mechanism' }, model.description));
+            }
+            function renderStormExperiment() {
+              var pair = stormExperiment.a ? window.WaterCyclePrecipitationKernel.experiment(stormExperiment.a, precipConfig) : null;
+              var variableMatches = !!pair && pair.kind === 'single' && pair.changes[0].key === stormVariable.key;
+              var fairCopy = !pair ? __alloT("stem.watercycle.storm_experiment_pin_prompt", "Pin a starting setup, then change one input.") : pair.kind === 'identical'
+                ? __alloT("stem.watercycle.storm_experiment_match_prompt", "A and B match. Change your test value to look for an effect.") : pair.kind === 'multiple'
+                  ? __alloT("stem.watercycle.storm_experiment_multiple_fairness", "{count} inputs changed. You can compare these scenarios, but this pair cannot isolate one cause.").replace('{count}', pair.changes.length)
+                  : __alloT("stem.watercycle.storm_experiment_single_fairness", "One input changed: {input}. ").replace('{input}', stormComparisonLabel(pair.changes[0])) + (variableMatches ? __alloT("stem.watercycle.storm_experiment_others_match", "The other model inputs match A.") : __alloT("stem.watercycle.storm_experiment_different_variable", "This is different from your selected variable."));
+              return h('section', { className: 'wc-storm-experiment', 'data-contrast': String(!!isContrast), 'aria-labelledby': 'wcStormExperimentTitle', 'data-comparison-kind': pair ? pair.kind : 'unstarted' },
+                h('style', null,
+                  '.wc-storm-experiment{--sxp-paper:#f7faf5;--sxp-card:#fff;--sxp-ink:#173c45;--sxp-muted:#46646b;--sxp-line:#b9cec5;--sxp-accent:#176b6e;--sxp-sky:#e5f1f4;--sxp-land:#b9d3ba;--sxp-cloud:#fff;--sxp-warm:#f8dec6;--sxp-cold:#d4e9f5;margin:18px 0;padding:24px;border:1px solid var(--sxp-line);border-radius:22px;background:var(--sxp-paper);color:var(--sxp-ink);font-size:13px;line-height:1.55;min-width:0;box-shadow:0 9px 24px #193d4510}.wc-storm-experiment *{box-sizing:border-box}.wc-storm-experiment h4{font-size:25px;line-height:1.15;margin:3px 0 9px;font-weight:800;letter-spacing:-.025em}.wc-storm-experiment h5{font-size:16px;font-weight:750;margin:0 0 8px}.wc-storm-experiment p{margin:7px 0}.wc-storm-experiment small{display:block;color:var(--sxp-muted);font-size:12px}.wc-storm-experiment button,.wc-storm-experiment select,.wc-storm-experiment textarea{font:inherit;color:var(--sxp-ink);background:var(--sxp-card);border:1px solid var(--sxp-line);border-radius:9px;min-height:42px;padding:9px 12px;max-width:100%}.wc-storm-experiment button{font-weight:700;cursor:pointer;white-space:normal}.wc-storm-experiment button:hover:not(:disabled){border-color:var(--sxp-accent);box-shadow:0 0 0 1px var(--sxp-accent)}.wc-storm-experiment button:disabled{opacity:.55;cursor:default}.wc-storm-experiment :focus-visible{outline:3px solid var(--sxp-accent);outline-offset:3px}.wc-storm-experiment .wc-storm-primary{background:var(--sxp-accent);color:#fff;border-color:var(--sxp-accent)}.wc-storm-kicker{text-transform:uppercase;letter-spacing:.12em;font-weight:750;font-size:10px;color:var(--sxp-accent)}.wc-storm-experiment-head{display:flex;justify-content:space-between;align-items:start;gap:20px}.wc-storm-experiment-head>div{max-width:650px}.wc-storm-experiment-head>span{border:1px solid var(--sxp-line);padding:5px 10px;border-radius:20px;white-space:nowrap;font-size:11px}.wc-storm-questions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0}.wc-storm-question{background:var(--sxp-card);border:1px solid var(--sxp-line);border-radius:13px;padding:15px;display:flex;flex-direction:column;gap:7px}.wc-storm-question>span{font-size:21px;color:var(--sxp-accent)}.wc-storm-question strong{font-size:14px}.wc-storm-question button{margin-top:auto;text-align:left}.wc-storm-workbench{display:grid;grid-template-columns:minmax(230px,.8fr) minmax(0,1.5fr);gap:18px}.wc-storm-plan{background:var(--sxp-card);border:1px solid var(--sxp-line);border-radius:14px;padding:16px;align-self:start}.wc-storm-plan label{display:block;font-weight:700;margin:0 0 5px}.wc-storm-plan textarea,.wc-storm-plan select{width:100%;margin:0 0 14px}.wc-storm-plan input[type=range]{width:100%;accent-color:var(--sxp-accent);min-height:32px}.wc-storm-test-head{display:flex;justify-content:space-between;gap:8px;margin-top:14px}.wc-storm-test-head output{font-weight:800;white-space:nowrap}.wc-storm-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.wc-storm-setup{padding:15px;border:1px solid var(--sxp-line);border-radius:14px;background:var(--sxp-card);min-width:0}.wc-storm-setup-top{display:flex;gap:9px;align-items:center;font-size:12px}.wc-storm-letter{background:var(--sxp-ink);color:var(--sxp-card);border-radius:50%;width:30px;height:30px;display:grid;place-items:center;flex:0 0 30px;font-weight:800}.wc-storm-setup[data-setup=B] .wc-storm-letter{background:var(--sxp-accent);color:#fff}.wc-storm-setup-art{margin-top:14px}.wc-storm-setup svg{display:block;width:100%;height:auto}.wc-storm-outcome{display:block;font-size:17px;line-height:1.25;font-weight:800;margin-top:12px}.wc-storm-reach{color:var(--sxp-muted);font-size:12px;min-height:36px}.wc-storm-index-label{display:flex;justify-content:space-between;gap:8px;font-size:12px}.wc-storm-setup meter{display:block;width:100%;height:13px;accent-color:var(--sxp-accent)}.wc-storm-mechanism{font-size:12px;color:var(--sxp-muted)}.wc-storm-fairness{padding:13px 15px;background:var(--sxp-sky);border:1px solid var(--sxp-line);border-radius:12px;margin-top:12px}.wc-storm-fairness ul{margin:8px 0;padding-left:18px}.wc-storm-fairness[data-kind=multiple]{border-left:4px solid #9a5a24}.wc-storm-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}.wc-storm-reflection{margin-top:18px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end}.wc-storm-reflection label{display:block;font-weight:700;margin-bottom:6px}.wc-storm-reflection textarea{display:block;width:100%}.wc-storm-reflection>div:last-child{max-width:215px}.wc-storm-saved-list{border-top:1px solid var(--sxp-line);margin-top:20px;padding-top:12px}.wc-storm-saved-list summary{font-weight:750;cursor:pointer;min-height:40px;padding:8px 0}.wc-storm-saved{background:var(--sxp-card);padding:15px;border:1px solid var(--sxp-line);border-radius:12px;margin-top:10px;overflow-wrap:anywhere}.wc-storm-saved blockquote{margin:8px 0;padding:0 0 0 12px;border-left:3px solid var(--sxp-line);white-space:pre-wrap}.wc-storm-experiment-note{font-size:11px;color:var(--sxp-muted);margin-top:16px!important}.dark .wc-storm-experiment{--sxp-paper:#122d36;--sxp-card:#193a44;--sxp-ink:#ecf7f4;--sxp-muted:#b7d0d4;--sxp-line:#507078;--sxp-accent:#277c80;--sxp-sky:#244954;--sxp-land:#456455;--sxp-cloud:#507280;--sxp-warm:#6b4833;--sxp-cold:#284d68}.dark .wc-storm-kicker,.dark .wc-storm-question>span{color:#91ded2}.dark .wc-storm-experiment :focus-visible{outline-color:#91ded2}@media(max-width:820px){.wc-storm-workbench{grid-template-columns:1fr}.wc-storm-reflection{grid-template-columns:1fr}.wc-storm-reflection>div:last-child{max-width:none}}@media(max-width:520px){.wc-storm-experiment{padding:15px;border-radius:15px}.wc-storm-experiment-head{display:block}.wc-storm-experiment-head>span{display:inline-block;margin-top:7px}.wc-storm-questions,.wc-storm-pair{grid-template-columns:1fr}.wc-storm-question{padding:12px}.wc-storm-setup-art{max-width:340px}.wc-storm-reach{min-height:0}.wc-storm-experiment h4{font-size:23px}.wc-storm-actions button{flex:1 1 100%}}.wc-storm-experiment[data-contrast=true],.dark .wc-storm-experiment[data-contrast=true]{--sxp-paper:#000;--sxp-card:#000;--sxp-ink:#fff;--sxp-muted:#fff;--sxp-line:#fff;--sxp-accent:#fff;--sxp-sky:#000;--sxp-land:#000;--sxp-cloud:#000;--sxp-warm:#000;--sxp-cold:#000}.wc-storm-experiment[data-contrast=true] .wc-storm-primary,.wc-storm-experiment[data-contrast=true] .wc-storm-letter{background:#fff;color:#000}.wc-storm-experiment[data-contrast=true] .wc-storm-kicker,.wc-storm-experiment[data-contrast=true] .wc-storm-question>span{color:#fff}@media(forced-colors:active){.wc-storm-experiment,.dark .wc-storm-experiment,.wc-storm-experiment[data-contrast=true],.dark .wc-storm-experiment[data-contrast=true]{--sxp-paper:Canvas;--sxp-card:Canvas;--sxp-ink:CanvasText;--sxp-muted:CanvasText;--sxp-line:CanvasText;--sxp-accent:LinkText;--sxp-sky:Canvas;--sxp-land:Canvas;--sxp-cloud:Canvas;--sxp-warm:Canvas;--sxp-cold:Canvas}.wc-storm-experiment .wc-storm-primary{color:ButtonText;background:ButtonFace}.wc-storm-letter{border:1px solid CanvasText;color:CanvasText!important;background:Canvas!important}}'),
+                h('div', { className: 'wc-storm-experiment-head' }, h('div', null,
+                  h('span', { className: 'wc-storm-kicker' }, __alloT("stem.watercycle.storm_experiment_kicker", "Predict · change · explain")),
+                  h('h4', { id: 'wcStormExperimentTitle', tabIndex: -1 }, __alloT("stem.watercycle.storm_experiment_title", "One change, two storms")),
+                  h('p', null, __alloT("stem.watercycle.storm_experiment_intro", "Keep a starting storm beside your experiment. Which input changes where the water goes, or what reaches the ground?"))),
+                  h('span', null, __alloT("stem.watercycle.storm_experiment_key", "A = pinned · B = live"))),
+                h('div', { className: 'wc-storm-questions' }, [
+                  ['lowLevelHumidity', '\u2193', __alloT("stem.watercycle.storm_experiment_dry_question", "Will rain reach the ground?"), __alloT("stem.watercycle.storm_experiment_dry_description", "Keep the cloud steady; change the humidity below it."), __alloT("stem.watercycle.storm_experiment_dry_action", "Test dry air")],
+                  ['midLevelTempC', '0\u00B0', __alloT("stem.watercycle.storm_experiment_warm_question", "Can snow become freezing rain?"), __alloT("stem.watercycle.storm_experiment_warm_description", "Keep cloud and surface temperatures steady; warm the middle layer."), __alloT("stem.watercycle.storm_experiment_warm_action", "Test a warm layer")],
+                  ['updraft', '\u2191', __alloT("stem.watercycle.storm_experiment_lift_question", "What changes when air rises?"), __alloT("stem.watercycle.storm_experiment_lift_description", "Keep moisture and cloud depth steady; change the updraft."), __alloT("stem.watercycle.storm_experiment_lift_action", "Test rising air")]
+                ].map(function(question) { return h('article', { key: question[0], className: 'wc-storm-question' },
+                  h('span', { 'aria-hidden': 'true' }, question[1]), h('strong', null, question[2]), h('small', null, question[3]),
+                  h('button', { type: 'button', onClick: function() { startStormExperiment(question[0]); } }, question[4])); })),
+                h('small', null, __alloT("stem.watercycle.storm_experiment_guide_note", "Each guided test loads a starting storm and pins A. Or pin your own setup below. Your writing and saved comparisons are kept.")),
+                h('div', { className: 'wc-storm-workbench', style: { marginTop: 16 } },
+                  h('div', { className: 'wc-storm-plan' },
+                    h('h5', null, __alloT("stem.watercycle.storm_experiment_plan", "1. Plan your test")),
+                    h('label', { htmlFor: 'wcStormPrediction' }, __alloT("stem.watercycle.storm_experiment_prediction", "My storm prediction")),
+                    h('textarea', { id: 'wcStormPrediction', rows: 3, maxLength: 800, value: stormExperiment.prediction || '', placeholder: __alloT("stem.watercycle.storm_experiment_prediction_placeholder", "If I change… I think… because…"), onChange: function(event) { setStormExperiment({ prediction: event.target.value }); } }),
+                    h('label', { htmlFor: 'wcStormVariable' }, __alloT("stem.watercycle.storm_experiment_variable", "Variable to investigate")),
+                    h('select', { id: 'wcStormVariable', value: stormVariable.key, onChange: function(event) { setStormExperiment({ variable: event.target.value }); } }, stormVariables.map(function(spec) { return h('option', { key: spec.key, value: spec.key }, spec.label); })),
+                    h('button', { type: 'button', onClick: pinStormSetup }, __alloT("stem.watercycle.storm_experiment_pin_action", "Pin current setup as A")),
+                    h('small', { style: { marginTop: 7 } }, __alloT("stem.watercycle.storm_experiment_pin_note", "Pinning pauses storm time so the storm stage stays the same.")),
+                    pair && h(React.Fragment, null,
+                      h('div', { className: 'wc-storm-test-head' }, h('label', { htmlFor: 'wcStormTestValue' }, __alloT("stem.watercycle.storm_experiment_test_value", "Test value for B")),
+                        !stormVariable.options && h('output', { htmlFor: 'wcStormTestValue' }, precipConfig[stormVariable.key] + stormVariable.unit)),
+                      h('small', { id: 'wcStormTestDescription' }, stormVariable.label + '. A: ' + (stormVariable.options ? stormVariable.options.filter(function(option) { return option[0] === pair.before[stormVariable.key]; })[0][1] : pair.before[stormVariable.key] + stormVariable.unit)),
+                      stormVariable.options ? h('select', { id: 'wcStormTestValue', value: precipConfig[stormVariable.key], 'aria-describedby': 'wcStormTestDescription', onChange: function(event) { var patch = { preset: 'custom', stormAutoPlay: false }; patch[stormVariable.key] = event.target.value; setIQ(patch); } }, stormVariable.options.map(function(option) { return h('option', { key: option[0], value: option[0] }, option[1]); }))
+                        : h('input', { id: 'wcStormTestValue', type: 'range', min: stormVariable.min, max: stormVariable.max, step: stormVariable.step, value: precipConfig[stormVariable.key], 'aria-describedby': 'wcStormTestDescription', 'aria-valuetext': precipConfig[stormVariable.key] + stormVariable.unit, onChange: function(event) { var patch = { preset: 'custom', stormAutoPlay: false }; patch[stormVariable.key] = Number(event.target.value); setIQ(patch); } }),
+                      h('button', { type: 'button', onClick: restoreStormControls, style: { marginTop: 9 } }, __alloT("stem.watercycle.storm_experiment_hold_action", "Hold other inputs at A")))),
+                  h('div', null, h('h5', null, __alloT("stem.watercycle.storm_experiment_observe", "2. Observe the evidence")),
+                    pair ? h('div', { className: 'wc-storm-pair' }, renderStormSetup(pair.modelA, 'A'), renderStormSetup(pair.modelB, 'B'))
+                      : h('div', { className: 'wc-storm-fairness' }, h('strong', null, __alloT("stem.watercycle.storm_experiment_ready", "Your chamber is ready to investigate.")), h('p', null, __alloT("stem.watercycle.storm_experiment_start_prompt", "Choose a question above or pin the current setup. A stays fixed while you explore B."))),
+                    h('div', { className: 'wc-storm-fairness', 'data-kind': pair ? pair.kind : 'unstarted' },
+                      h('p', { role: 'status', 'aria-atomic': 'true' }, fairCopy),
+                      pair && pair.changes.length > 0 && h('ul', null, pair.changes.map(function(change) { return h('li', { key: change.key }, h('strong', null, stormComparisonLabel(change) + ': '), stormComparisonValue(change, 'before') + ' \u2192 ' + stormComparisonValue(change, 'after')); })),
+                      pair && pair.kind !== 'identical' && h('p', null, h('strong', null, __alloT("stem.watercycle.storm_experiment_delta", "Intensity change B − A: ")), (pair.intensityDelta > 0 ? '+' : '') + pair.intensityDelta + __alloT("stem.watercycle.storm_experiment_index_points", " index points."), pair.modelA.visualType === pair.modelB.visualType ? __alloT("stem.watercycle.storm_experiment_same_type", " The precipitation type stays the same.") : __alloT("stem.watercycle.storm_experiment_different_type", " The precipitation type also changes.")),
+                      pair && pair.kind === 'single' && pair.intensityDelta === 0 && pair.modelA.visualType === pair.modelB.visualType && h('p', null, __alloT("stem.watercycle.storm_experiment_no_change", "An unchanged result is evidence too. Check airflow or thunder timing, and consider which effects this simplified model represents.")),
+                      precipConfig.stormAutoPlay && h('p', null, __alloT("stem.watercycle.storm_experiment_playing", "Storm time is playing and can become another changed input. Hold other inputs at A to pause it."))))),
+                pair && h('div', { className: 'wc-storm-reflection' }, h('div', null,
+                  h('label', { htmlFor: 'wcStormExplanation' }, __alloT("stem.watercycle.storm_experiment_explain", "3. Explain · My storm explanation")),
+                  h('textarea', { id: 'wcStormExplanation', 'aria-label': __alloT("stem.watercycle.storm_experiment_explanation_label", "My storm explanation"), rows: 3, maxLength: 1200, value: stormExperiment.explanation || '', placeholder: __alloT("stem.watercycle.storm_experiment_explanation_placeholder", "I changed… The evidence was… This supports/challenges my prediction because…"), onChange: function(event) { setStormExperiment({ explanation: event.target.value }); } })),
+                  h('div', null, h('button', { type: 'button', className: 'wc-storm-primary', disabled: pair.kind === 'identical' || stormSavedPairs.length >= 4, onClick: saveStormComparison }, __alloT("stem.watercycle.storm_experiment_save", "Save this comparison")),
+                    h('small', { style: { marginTop: 8 } }, stormSavedPairs.length >= 4 ? __alloT("stem.watercycle.storm_experiment_limit", "Four comparisons saved. Remove one to make room; you can download it first.") : __alloT("stem.watercycle.storm_experiment_save_note", "Saves A, B, your prediction, and your explanation.")))),
+                h('details', { className: 'wc-storm-saved-list', open: stormSavedPairs.length > 0 },
+                  h('summary', null, __alloT("stem.watercycle.storm_experiment_saved_title", "Saved comparisons · {count} of 4").replace('{count}', stormSavedPairs.length)),
+                  stormSavedPairs.length === 0 && h('p', null, __alloT("stem.watercycle.storm_experiment_saved_empty", "Saved evidence stays here when you try a new storm or switch modes.")),
+                  stormSavedPairs.map(function(saved) {
+                    var savedPair = window.WaterCyclePrecipitationKernel.experiment(saved.a, saved.b);
+                    return h('article', { key: saved.id, className: 'wc-storm-saved', 'data-saved-id': saved.id },
+                      h('strong', null, __alloT("stem.watercycle.storm_experiment_comparison_number", "Comparison {number}").replace('{number}', saved.id) + ' · ' + (savedPair.kind === 'single' ? __alloT("stem.watercycle.storm_experiment_single_change", "One input changed") : __alloT("stem.watercycle.storm_experiment_input_count", "{count} inputs changed").replace('{count}', savedPair.changes.length))),
+                      h('p', null, 'A: ' + savedPair.modelA.displayLabel + ' (' + savedPair.modelA.relativeIntensity + '/100) \u2192 B: ' + savedPair.modelB.displayLabel + ' (' + savedPair.modelB.relativeIntensity + '/100)'),
+                      h('ul', { 'aria-label': __alloT("stem.watercycle.storm_experiment_saved_changes", "Changed inputs in this saved comparison") }, savedPair.changes.map(function(change) { return h('li', { key: change.key }, h('strong', null, stormComparisonLabel(change) + ': '), stormComparisonValue(change, 'before') + ' → ' + stormComparisonValue(change, 'after')); })),
+                      savedPair.kind === 'multiple' && h('p', null, __alloT("stem.watercycle.storm_experiment_multiple_note", "Scenario comparison: several inputs changed, so a single cause is not isolated.")),
+                      saved.prediction && h('p', null, h('strong', null, __alloT("stem.watercycle.storm_experiment_prediction_prefix", "Prediction: ")), saved.prediction),
+                      saved.explanation && h('blockquote', null, saved.explanation),
+                      h('div', { className: 'wc-storm-actions' },
+                        h('button', { type: 'button', onClick: function() { setIQ(Object.assign({}, savedPair.before, { preset: 'custom', stormAutoPlay: false })); stormExperimentFocus('wcPrecipLabTitle'); } }, __alloT("stem.watercycle.storm_experiment_view_a", "View saved A in chamber")),
+                        h('button', { type: 'button', onClick: function() { setIQ(Object.assign({}, savedPair.after, { preset: 'custom', stormAutoPlay: false })); stormExperimentFocus('wcPrecipLabTitle'); } }, __alloT("stem.watercycle.storm_experiment_view_b", "View saved B in chamber")),
+                        h('button', { type: 'button', onClick: function() { downloadStormComparison(saved); } }, __alloT("stem.watercycle.storm_experiment_download", "Download comparison {number}").replace('{number}', saved.id)),
+                        h('button', { type: 'button', onClick: function() { setStormExperiment({ saved: stormSavedPairs.filter(function(item) { return item.id !== saved.id; }) }); stormExperimentFocus(); } }, __alloT("stem.watercycle.storm_experiment_remove", "Remove comparison {number}").replace('{number}', saved.id))));
+                  })),
+                h('p', { className: 'wc-storm-experiment-note' }, __alloT("stem.watercycle.storm_experiment_model_note", "Read these as model experiments. Intensity is a relative 0–100 index, not a measured rainfall rate. The air column uses three temperature levels; real storms vary continuously with height and time.")));
             }
 
             function renderCloudComparison() {
@@ -11572,14 +12024,19 @@ const d = labToolData.waterCycle || {};
               'data-precipitation-view': precipViewMode,
               'data-lightning-study-step': activeLightningStudy.key,
               'data-lightning-study-mode': lightningStudyMode },
+              h('style', null,
+                '.wc-precip-lab{--storm-paper:#f8faf5;--storm-card:#fff;--storm-ink:#173c45;--storm-muted:#48656c;--storm-line:#bfd3cf;--storm-tint:#edf5f3;--storm-accent:#176b6e;max-width:72rem;padding:clamp(12px,2vw,24px);border-color:var(--storm-line);border-radius:24px;background:linear-gradient(145deg,var(--storm-paper),#eef6f4);color:var(--storm-ink);box-shadow:0 18px 45px #173c450b}.dark .wc-precip-lab{--storm-paper:#102a32;--storm-card:#173741;--storm-ink:#edf8f4;--storm-muted:#bed4d6;--storm-line:#456a70;--storm-tint:#1d424b;--storm-accent:#2b7b7e;background:linear-gradient(145deg,var(--storm-paper),#102e36);border-color:var(--storm-line)}.wc-precip-lab .wc-precip-head{gap:14px;margin:8px 0 18px;align-items:center}.wc-precip-lab .wc-precip-kicker{font-size:10px;letter-spacing:.14em;color:var(--storm-accent)}.dark .wc-precip-lab .wc-precip-kicker{color:#93ded3}.wc-precip-lab .wc-precip-head h3{font-size:clamp(24px,2.4vw,30px);font-weight:800;letter-spacing:-.035em;line-height:1.2;margin:5px 0 7px;color:var(--storm-ink)}.wc-precip-lab .wc-precip-head p{font-size:13px;line-height:1.6;max-width:630px;color:var(--storm-muted)}.wc-precip-lab .wc-precip-head-actions{gap:7px}.wc-precip-lab .wc-precip-btn{min-height:42px;padding:9px 12px;border-radius:10px;border-color:var(--storm-line);background:var(--storm-card);color:var(--storm-ink);font-size:12px;font-weight:750;box-shadow:none}.wc-precip-lab .wc-precip-btn.is-primary{background:var(--storm-accent);border-color:var(--storm-accent);color:#fff}.wc-precip-lab .wc-precip-btn:hover{border-color:var(--storm-accent);box-shadow:0 3px 9px #173c4512}.wc-precip-lab .wc-precip-layout{gap:18px;grid-template-columns:minmax(0,1.65fr) minmax(255px,.85fr)}.wc-precip-lab .wc-precip-chamber{border-radius:18px;border-width:1px;box-shadow:0 12px 26px #0b263526}.wc-precip-lab .wc-precip-canvas{height:clamp(320px,37vw,490px)}.wc-precip-lab .wc-precip-controls{gap:12px}.wc-precip-lab .wc-precip-control-group{padding:15px;border-radius:14px;border-color:var(--storm-line);background:var(--storm-card);box-shadow:0 3px 10px #173c4505}.wc-precip-lab .wc-precip-control-title{font-size:11px;letter-spacing:.09em;color:var(--storm-ink);margin-bottom:12px}.wc-precip-lab .wc-precip-field-head{font-size:12px;line-height:1.45;color:var(--storm-muted)}.wc-precip-lab .wc-precip-field-head output{font-size:13px;font-variant-numeric:tabular-nums;color:var(--storm-ink);background:var(--storm-tint);padding:2px 6px;border-radius:5px}.wc-precip-lab .wc-precip-field input[type=range]{accent-color:var(--storm-accent);min-height:27px}.wc-precip-lab .wc-precip-switch{font-size:12px;line-height:1.5;color:var(--storm-muted)}.wc-precip-lab .wc-precip-select-grid label{font-size:12px;color:var(--storm-muted)}.wc-precip-lab .wc-precip-select-grid select,.wc-precip-lab .wc-precip-preset{min-height:42px;border-radius:9px;border-color:var(--storm-line);color:var(--storm-ink);background:var(--storm-card);font-size:12px}.wc-precip-lab .wc-precip-result{padding:15px;border-color:var(--storm-line);border-left-color:var(--wc-precip-accent-ink);border-radius:14px}.wc-precip-lab .wc-precip-result-label{font-size:19px;letter-spacing:-.02em;line-height:1.3;color:var(--storm-ink)}.wc-precip-lab .wc-precip-result p{font-size:13px;line-height:1.65;color:var(--storm-muted)}.wc-precip-lab .wc-precip-metrics{gap:9px}.wc-precip-lab .wc-precip-metric{padding:12px;border-radius:12px;border-color:var(--storm-line);background:var(--storm-card)}.wc-precip-lab .wc-precip-metric strong{font-size:19px;color:var(--storm-ink)}.wc-precip-lab .wc-precip-metric small{font-size:11px;line-height:1.4;color:var(--storm-muted)}.wc-precip-lab .wc-precip-path-step{border-radius:10px;padding:11px;background:var(--storm-card)}.wc-precip-lab .wc-precip-notebook{border-color:var(--storm-line)}.wc-precip-lab .wc-precip-notebook>summary{padding:13px 0;color:var(--storm-ink);font-size:14px}.wc-precip-lab .wc-precip-model-note{font-size:12px;line-height:1.6;color:var(--storm-muted)}.wc-precip-lab .wc-precip-view-toggle{border-radius:10px;border-color:var(--storm-line);background:var(--storm-tint);padding:3px}.wc-precip-lab .wc-precip-view-choice{min-height:36px;border-radius:7px;padding:7px 10px;font-size:11px;color:var(--storm-ink)}.wc-precip-lab .wc-precip-view-choice[aria-pressed=true]{background:var(--storm-accent);color:#fff;border-color:var(--storm-accent)}.wc-precip-lab .wc-precip-path-label{font-size:10px!important}.dark .wc-precip-lab .wc-precip-result{border-left-color:var(--wc-precip-accent)}@media(max-width:820px){.wc-precip-lab .wc-precip-layout{grid-template-columns:1fr}.wc-precip-lab .wc-precip-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-precip-lab .wc-precip-control-group:last-child{grid-column:1/-1}.wc-precip-lab .wc-precip-head-actions{width:100%}.wc-precip-lab .wc-precip-canvas{height:clamp(285px,50vw,430px)}}@media(max-width:560px){.wc-precip-lab{border-radius:18px}.wc-precip-lab .wc-precip-head{margin-bottom:14px;gap:12px}.wc-precip-lab .wc-precip-head h3{font-size:25px}.wc-precip-lab .wc-precip-head-actions{display:grid;grid-template-columns:1fr 1fr}.wc-precip-lab .wc-precip-head-actions>.wc-precip-view-toggle{grid-column:1/-1;grid-row:1}.wc-precip-lab .wc-precip-head-actions>.wc-precip-btn{font-size:11px;padding:8px;line-height:1.35;min-height:42px}.wc-precip-lab .wc-precip-controls{grid-template-columns:1fr}.wc-precip-lab .wc-precip-control-group:last-child{grid-column:auto}.wc-precip-lab .wc-precip-control-group{padding:14px}.wc-precip-lab .wc-precip-canvas{height:290px}.wc-precip-lab .wc-precip-metric{padding:11px}.wc-precip-lab .wc-precip-canvas-dock{padding:10px}.wc-precip-lab .wc-precip-live-copy small{font-size:10px}.wc-precip-lab .wc-precip-result{padding:14px}.wc-precip-lab .wc-precip-chamber{border-radius:13px}}@media(forced-colors:active){.wc-precip-lab,.dark .wc-precip-lab{--storm-paper:Canvas;--storm-card:Canvas;--storm-ink:CanvasText;--storm-muted:CanvasText;--storm-line:CanvasText;--storm-tint:Canvas;--storm-accent:Highlight;background:Canvas;box-shadow:none}.wc-precip-lab .wc-precip-btn.is-primary,.wc-precip-lab .wc-precip-view-choice[aria-pressed=true]{background:Highlight;color:HighlightText}}.wc-precip-lab .wc-precip-metric>span{font-size:10px;color:var(--storm-muted)}.dark .wc-precip-lab .wc-precip-path-icon{color:#e0f2fe!important}@media(forced-colors:active){.dark .wc-precip-lab .wc-precip-path-icon{color:CanvasText!important}}'
+              ),
               renderWcModeBar(),
               h('div', { className: 'wc-precip-head' },
+                h('style', null, '@media(max-width:560px){.wc-precip-lab .wc-precip-head-actions>.wc-precip-btn:first-child,.wc-precip-lab .wc-precip-head-actions>.wc-precip-btn.is-primary{grid-row:2}}'),
                 h('div', { className: 'wc-precip-head-copy' },
                   h('span', { className: 'wc-precip-kicker' }, t('stem.watercycle.interactive_storm_chamber', 'Interactive storm chamber')),
-                  h('h3', { id: 'wcPrecipLabTitle' }, t('stem.watercycle.precipitation_lab_title', '\uD83C\uDF27\uFE0F Precipitation Lab')),
+                  h('h3', { id: 'wcPrecipLabTitle', tabIndex: -1 }, t('stem.watercycle.precipitation_lab_title', '\uD83C\uDF27\uFE0F Precipitation Lab')),
                   h('p', null, t('stem.watercycle.build_a_cloud_shape_the_temperature', 'Build a cloud, shape the temperature profile, and watch water reach the surface as rain, snow, wintry mix, freezing rain, hail, or virga.'))
                 ),
                 h('div', { className: 'wc-precip-head-actions' },
+                  h('button', { type: 'button', className: 'wc-precip-btn', onClick: function() { stormExperimentFocus(); } }, __alloT('stem.watercycle.storm_experiment_open', 'Compare two setups')),
                   h('div', { className: 'wc-precip-view-toggle', role: 'group', 'aria-label': t('stem.watercycle.precipitation_lab_visual_mode', 'Precipitation lab visual mode') },
                     h('button', { type: 'button', className: 'wc-precip-view-choice', 'aria-pressed': precipViewMode === '2d',
                       onClick: function() { setPrecipViewMode('2d'); } }, t('stem.watercycle.two_d_chamber', '2D chamber')),
@@ -11645,6 +12102,7 @@ const d = labToolData.waterCycle || {};
                       h('p',null,'The track control steers an illustrative weather column; it is not a forecast track. Wetness, tree movement, and waves are qualitative effects.'),
                       h('button',{type:'button',onClick:function(event){
                         var chamber=event.currentTarget.closest('.wc-precip-chamber');
+                        if(chamber && typeof window.__alloStemFS==='function'){window.__alloStemFS(chamber);return;}
                         if(document.fullscreenElement){document.exitFullscreen();}
                         else if(chamber && chamber.requestFullscreen){chamber.requestFullscreen().catch(function(){if(typeof announceToSR==='function')announceToSR(__alloT('stem.watercycle.sr_full_screen_is_unavailable_in_this_browser', 'Full screen is unavailable in this browser.'));});}
                       }},'Full-screen storm')),
@@ -11926,6 +12384,7 @@ const d = labToolData.waterCycle || {};
                   )
                 )
               ),
+              renderStormExperiment(),
               h('details', { className: 'wc-precip-notebook' },
                 h('summary', null, 'Investigation notebook \u00B7 ' + (iq.log || []).length + ' observations'),
                 h('div', { className: 'wc-precip-notebook-body' },
@@ -22025,7 +22484,10 @@ const d = labToolData.waterCycle || {};
             function wcPlaceLabelY2d(x, y, w, h) {
               var blockers2d = wcCanvasChromeRects2d().concat(wcLabelRects2d);
               var step2d = 5 * dpr;
-              for (var att2d = 0; att2d < 14; att2d++) {
+              // Wrapped corner overlays can be taller than the old 65px search at
+              // narrow widths. Search the available canvas height before falling back.
+              var attempts2d = Math.max(1, Math.ceil((cH - y - h - 6 * dpr) / step2d) + 1);
+              for (var att2d = 0; att2d < attempts2d; att2d++) {
                 var cand2d = { x: x, y: y + att2d * step2d, w: w, h: h };
                 if (cand2d.y + h > cH - 6 * dpr) break;
                 var clash2d = false;
@@ -22407,9 +22869,9 @@ const d = labToolData.waterCycle || {};
                 } else {
                   // Bright day
                   var bf = Math.min(1, (skyBright - 0.6) / 0.4);
-                  g.addColorStop(0, 'hsl(210,' + (60 + dayPhase * 20 + bf * 10) + '%,' + (50 + dayPhase * 25 + bf * 10) + '%)');
-                  g.addColorStop(0.5, 'hsl(200,70%,' + (65 + dayPhase * 15) + '%)');
-                  g.addColorStop(1, 'hsl(190,60%,' + (70 + dayPhase * 10) + '%)');
+                  g.addColorStop(0, 'hsl(207,' + (42 + dayPhase * 10 + bf * 8) + '%,' + (55 + dayPhase * 20 + bf * 8) + '%)');
+                  g.addColorStop(0.5, 'hsl(199,48%,' + (70 + dayPhase * 13) + '%)');
+                  g.addColorStop(1, 'hsl(185,32%,' + (80 + dayPhase * 8) + '%)');
                 }
               }
 
@@ -22582,9 +23044,9 @@ const d = labToolData.waterCycle || {};
 
               // Back mountain
               var backMountainGrad = ctx.createLinearGradient(cW * 0.64, cH * 0.31, cW * 0.86, cH * 0.65);
-              backMountainGrad.addColorStop(0, isDark ? '#64748b' : '#94a3b8');
-              backMountainGrad.addColorStop(0.46, isDark ? '#334155' : '#59697a');
-              backMountainGrad.addColorStop(1, isDark ? '#162132' : '#334155');
+              backMountainGrad.addColorStop(0, isDark ? '#64748b' : '#a4b9bf');
+              backMountainGrad.addColorStop(0.46, isDark ? '#334155' : '#7d979f');
+              backMountainGrad.addColorStop(1, isDark ? '#162132' : '#566f79');
               ctx.fillStyle = backMountainGrad;
 
               ctx.beginPath(); ctx.moveTo(cW * 0.55, cH * 0.65); ctx.lineTo(cW * 0.72, cH * 0.3); ctx.lineTo(cW * 0.9, cH * 0.65); ctx.fill();
@@ -22624,9 +23086,9 @@ const d = labToolData.waterCycle || {};
 
               // Front mountain
               var frontMountainGrad = ctx.createLinearGradient(cW * 0.73, cH * 0.39, cW * 0.96, cH * 0.67);
-              frontMountainGrad.addColorStop(0, isDark ? '#475569' : '#788795');
-              frontMountainGrad.addColorStop(0.5, isDark ? '#1e293b' : '#465565');
-              frontMountainGrad.addColorStop(1, isDark ? '#0b1322' : '#253343');
+              frontMountainGrad.addColorStop(0, isDark ? '#475569' : '#789399');
+              frontMountainGrad.addColorStop(0.5, isDark ? '#1e293b' : '#506e75');
+              frontMountainGrad.addColorStop(1, isDark ? '#0b1322' : '#324e57');
               ctx.fillStyle = frontMountainGrad;
 
               ctx.beginPath(); ctx.moveTo(cW * 0.65, cH * 0.65); ctx.lineTo(cW * 0.82, cH * 0.38); ctx.lineTo(cW * 0.98, cH * 0.65); ctx.fill();
@@ -22662,7 +23124,7 @@ const d = labToolData.waterCycle || {};
                   var ridgeTreeX = cW * (0.39 + ridgeTree * 0.0275);
                   var ridgeTreeBase = cH * (0.64 + Math.sin(ridgeTree * 1.37) * 0.006);
                   var ridgeTreeH = cH * (0.035 + (ridgeTree % 5) * 0.006);
-                  ctx.fillStyle = isDark ? 'rgba(3,46,35,0.82)' : 'rgba(20,83,45,0.72)';
+                  ctx.fillStyle = isDark ? 'rgba(3,46,35,0.82)' : 'rgba(48,92,78,0.72)';
                   ctx.beginPath();
                   ctx.moveTo(ridgeTreeX, ridgeTreeBase - ridgeTreeH);
                   ctx.lineTo(ridgeTreeX - ridgeTreeH * 0.28, ridgeTreeBase);
@@ -22698,17 +23160,18 @@ const d = labToolData.waterCycle || {};
                 groundGrad.addColorStop(0.5, isDark ? '#334155' : '#64748b');
                 groundGrad.addColorStop(1, isDark ? '#1e293b' : '#475569');
               } else if (landCover2d === 'forest') {
-                groundGrad.addColorStop(0, isDark ? '#064e3b' : '#15803d');
-                groundGrad.addColorStop(0.5, isDark ? '#022c22' : '#166534');
-                groundGrad.addColorStop(1, isDark ? '#011c15' : '#14532d');
+                groundGrad.addColorStop(0, isDark ? '#164438' : '#658d65');
+                groundGrad.addColorStop(0.5, isDark ? '#102f29' : '#446f50');
+                groundGrad.addColorStop(1, isDark ? '#0c211f' : '#2d5140');
               } else if (isDark) {
-                groundGrad.addColorStop(0, '#064e3b');
-                groundGrad.addColorStop(0.5, '#022c22');
-                groundGrad.addColorStop(1, '#011c15');
+                groundGrad.addColorStop(0, '#1c4c3e');
+                groundGrad.addColorStop(0.5, '#14382f');
+                groundGrad.addColorStop(1, '#0e2927');
               } else {
-                groundGrad.addColorStop(0, '#4ade80');
-                groundGrad.addColorStop(0.5, '#22c55e');
-                groundGrad.addColorStop(1, '#166534');
+                // Quiet earth colors keep moving water and process marks prominent.
+                groundGrad.addColorStop(0, '#a3bd7e');
+                groundGrad.addColorStop(0.5, '#789b65');
+                groundGrad.addColorStop(1, '#4d7153');
               }
 
               ctx.fillStyle = groundGrad;
@@ -22737,8 +23200,8 @@ const d = labToolData.waterCycle || {};
                   ctx.beginPath();
                   ctx.ellipse(mx2, my2, mw2, mw2 * 0.28, 0, 0, Math.PI * 2);
                   ctx.fillStyle = (mi2 % 2)
-                    ? (isDark ? '#022c22' : '#15803d')
-                    : (isDark ? '#0b3d2e' : '#65cc7d');
+                    ? (isDark ? '#122c26' : '#4e7257')
+                    : (isDark ? '#285343' : '#c2ce94');
                   ctx.fill();
                 }
                 ctx.globalAlpha = 1;
@@ -22761,8 +23224,8 @@ const d = labToolData.waterCycle || {};
                     bx2 + lean2d * bh2 * 0.9, gTop2d - bh2
                   );
                   ctx.strokeStyle = seed2d > 0.62
-                    ? (isDark ? '#065f46' : '#86efac')
-                    : (isDark ? '#043c2c' : '#22c55e');
+                    ? (isDark ? '#437457' : '#c2d59b')
+                    : (isDark ? '#244f3d' : '#739b65');
                   ctx.lineWidth = (0.7 + seed2d * 0.5) * dpr;
                   ctx.stroke();
                 }
@@ -22883,10 +23346,10 @@ const d = labToolData.waterCycle || {};
                 underGrad.addColorStop(0.6, '#020617');
                 underGrad.addColorStop(1, '#000000');
               } else {
-                underGrad.addColorStop(0, '#78350f');
-                underGrad.addColorStop(0.3, '#92400e');
-                underGrad.addColorStop(0.6, '#451a03');
-                underGrad.addColorStop(1, '#1c1917');
+                underGrad.addColorStop(0, '#74614e');
+                underGrad.addColorStop(0.3, '#88745f');
+                underGrad.addColorStop(0.6, '#4b4942');
+                underGrad.addColorStop(1, '#253b3d');
               }
 
               ctx.fillStyle = underGrad;
@@ -22911,14 +23374,14 @@ const d = labToolData.waterCycle || {};
                 ctx.save();
                 // A (organic) horizon: darkest, thin, with a crumb texture.
                 var aGrad = ctx.createLinearGradient(0, soilTop2d, 0, soilB2d);
-                aGrad.addColorStop(0, isDark ? 'rgba(28,25,23,0.9)' : 'rgba(59,37,17,0.92)');
-                aGrad.addColorStop(1, isDark ? 'rgba(20,18,17,0.55)' : 'rgba(87,54,26,0.5)');
+                aGrad.addColorStop(0, isDark ? 'rgba(28,25,23,0.9)' : 'rgba(57,49,40,0.92)');
+                aGrad.addColorStop(1, isDark ? 'rgba(20,18,17,0.55)' : 'rgba(91,76,57,0.5)');
                 ctx.fillStyle = aGrad;
                 ctx.fillRect(0, soilTop2d, cW, soilB2d - soilTop2d);
                 // B (subsoil) horizon: lighter, denser, faintly banded.
                 var bGrad = ctx.createLinearGradient(0, soilB2d, 0, soilRock2d);
-                bGrad.addColorStop(0, isDark ? 'rgba(41,30,22,0.4)' : 'rgba(146,86,38,0.42)');
-                bGrad.addColorStop(1, isDark ? 'rgba(30,24,20,0.25)' : 'rgba(120,70,32,0.2)');
+                bGrad.addColorStop(0, isDark ? 'rgba(41,30,22,0.4)' : 'rgba(160,137,101,0.42)');
+                bGrad.addColorStop(1, isDark ? 'rgba(30,24,20,0.25)' : 'rgba(119,104,80,0.2)');
                 ctx.fillStyle = bGrad;
                 ctx.fillRect(0, soilB2d, cW, soilRock2d - soilB2d);
                 // Horizon boundaries are gradational in the field, not ruled
@@ -23094,11 +23557,13 @@ const d = labToolData.waterCycle || {};
 
               var waterGrad = ctx.createLinearGradient(0, cH * 0.62, 0, cH * 0.72);
               if (isDark) {
-                waterGrad.addColorStop(0, 'rgba(8,47,73,0.85)');
-                waterGrad.addColorStop(1, 'rgba(3,7,18,0.95)');
+                waterGrad.addColorStop(0, 'rgba(31,101,121,0.96)');
+                waterGrad.addColorStop(0.38, 'rgba(17,64,83,0.98)');
+                waterGrad.addColorStop(1, 'rgba(7,27,44,1)');
               } else {
-                waterGrad.addColorStop(0, 'rgba(14,165,233,0.7)');
-                waterGrad.addColorStop(1, 'rgba(3,105,161,0.8)');
+                waterGrad.addColorStop(0, 'rgba(96,190,202,0.98)');
+                waterGrad.addColorStop(0.38, 'rgba(45,150,174,0.98)');
+                waterGrad.addColorStop(1, 'rgba(21,94,125,1)');
               }
 
               ctx.fillStyle = waterGrad;
@@ -23546,15 +24011,20 @@ const d = labToolData.waterCycle || {};
                 // derived from the tree's own x -- deterministic, so it never
                 // shimmers between frames, and stable across re-renders.
                 var treeSeed = Math.abs(Math.sin(tx * 0.37 + ty * 0.11)) % 1;
-                var canopyHue = 118 + treeSeed * 34;
-                var canopyLight = (isDark ? 30 : 41) + treeSeed * 8;
+                var canopyHue = 125 + treeSeed * 24;
+                var canopyLight = (isDark ? 28 : 38) + treeSeed * 8;
                 var lobeSpread = 0.85 + treeSeed * 0.4;
 
-                ctx.fillStyle = 'hsl(' + canopyHue.toFixed(0) + ',68%,' + canopyLight.toFixed(0) + '%)';
+                var canopyGrad2d = ctx.createRadialGradient(
+                  (tx - 3 * sz + sway) * dpr, (ty - 20 * sz) * dpr, 0,
+                  (tx + sway) * dpr, (ty - 15 * sz) * dpr, 13 * sz * dpr);
+                canopyGrad2d.addColorStop(0, 'hsl(' + (canopyHue - 12).toFixed(0) + ',32%,' + (canopyLight + 14).toFixed(0) + '%)');
+                canopyGrad2d.addColorStop(1, 'hsl(' + canopyHue.toFixed(0) + ',35%,' + (canopyLight - 5).toFixed(0) + '%)');
+                ctx.fillStyle = canopyGrad2d;
 
                 ctx.beginPath(); ctx.arc((tx + sway) * dpr, (ty - (15 + treeSeed * 2.5) * sz) * dpr, (8.4 + treeSeed * 1.4) * sz * dpr, 0, Math.PI * 2); ctx.fill();
 
-                ctx.fillStyle = 'hsl(' + (canopyHue - 5).toFixed(0) + ',72%,' + (canopyLight - 9).toFixed(0) + '%)';
+                ctx.fillStyle = 'hsl(' + (canopyHue - 5).toFixed(0) + ',36%,' + (canopyLight - 9).toFixed(0) + '%)';
 
                 ctx.beginPath(); ctx.arc((tx - 4 * sz * lobeSpread + sway * 0.7) * dpr, (ty - 12 * sz) * dpr, (6.6 + treeSeed * 0.9) * sz * dpr, 0, Math.PI * 2); ctx.fill();
 
@@ -30649,7 +31119,7 @@ const d = labToolData.waterCycle || {};
 
           return React.createElement("div", {
               className: "wc-explorer-root max-w-3xl mx-auto animate-in fade-in duration-200 " + (isDark ? "dark text-slate-100" : "text-slate-800"),
-              style: isDark ? { background: "#0f172a", borderRadius: 12 } : undefined,
+              "data-visual-contrast": String(!!isContrast),
               "data-wc-focus-mode": String(wcFocusMode),
               role: "region",
               "aria-label": t('stem.watercycle.water_cycle_keyboard_shortcuts_1_throu', "Water Cycle. Keyboard shortcuts: 1 through 6 select a stage, G starts or stops the Guided Walkthrough, J toggles Journey mode, R U P choose your journey path, Escape exits Focus Canvas mode."),
@@ -30658,7 +31128,7 @@ const d = labToolData.waterCycle || {};
               onKeyDown: onWcKey
             },
 
-            React.createElement("div", { className: "flex items-center gap-3 mb-3 flex-wrap" },
+            React.createElement("div", { className: "wc-explorer-header flex items-center gap-3 mb-3 flex-wrap" },
 
               React.createElement("button", { 
                 onClick: () => setStemLabTool(null), 
@@ -30669,7 +31139,7 @@ const d = labToolData.waterCycle || {};
               React.createElement("h2", { className: "text-lg font-bold tracking-tight", style: { color: isHeaderSurfaceDark ? "#ffffff" : "#1e293b" } }, t('stem.watercycle.water_cycle', "\uD83C\uDF0A Water Cycle")),
 
               React.createElement("span", {
-                className: "px-2 py-0.5 text-[0.6875rem] font-bold rounded-full border",
+                className: "wc-explorer-badge px-2 py-0.5 text-[0.6875rem] font-bold rounded-full border",
                 style: {
                   backgroundColor: isHeaderSurfaceDark ? "#000000" : "#e0f2fe",
                   color: isHeaderSurfaceDark ? "#facc15" : "#075985",
@@ -31816,7 +32286,7 @@ React.createElement("div", {
                 React.createElement("span", { className: "wc-lab-summary-title" }, t('stem.watercycle.climate_lab', "Climate Lab")),
                 React.createElement("span", { className: "wc-lab-summary-note" }, "Tune the weather")
               ),
-              React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+              React.createElement("div", { className: "wc-climate-head flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "text-lg" }, "\uD83C\uDF21"),
                 React.createElement("h4", { className: "text-sm font-bold " + (isDark ? "text-amber-400" : "text-amber-800") }, t('stem.watercycle.climate_lab', "Climate Lab")),
                                 React.createElement("span", { className: "px-2 py-0.5 text-[0.6875rem] font-bold rounded-full " + (isDark ? "bg-amber-950/50 text-amber-300 border border-amber-900/30" : "bg-amber-200 text-amber-800") }, "INTERACTIVE"),
@@ -31941,13 +32411,10 @@ React.createElement("div", {
               React.createElement("p", { className: "wc-climate-model-note", role: "note" },
                 "Science note: sunlight supplies energy, temperature affects molecular motion and phase, and wind transports vapor. Change one control at a time to make a fair comparison."
               ),
-              // Weather readout
+              // Describe the selected inputs. This model does not carry the
+              // moisture/profile conditions needed to diagnose fog or precipitation.
               React.createElement("div", { className: "wc-weather-readout mt-2 flex flex-wrap gap-1.5 text-[0.6875rem] font-bold" },
-                (d.climTemp != null && d.climTemp < 0) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-blue-950/60 text-blue-300 border border-blue-900/50" : "bg-blue-100 text-blue-700") }, t('stem.watercycle.snow_active', "\u2744\uFE0F Snow active")),
-                (d.climTemp != null && d.climTemp > 30) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-amber-950/60 text-amber-300 border border-amber-900/50" : "bg-amber-100 text-amber-700") }, "Hot surface"),
-                (d.climSolar != null && d.climSolar > 0.7 && d.climTemp > 10 && d.climTemp < 35) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-purple-950/60 text-purple-300 border border-purple-900/50" : "bg-purple-100 text-purple-700") }, t('stem.watercycle.rainbow', "\uD83C\uDF08 Rainbow")),
-                (d.climSolar != null && d.climSolar < 0.3) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-indigo-950/60 text-indigo-300 border border-indigo-900/50" : "bg-indigo-100 text-indigo-700") }, t('stem.watercycle.stars_visible', "\u2B50 Stars visible")),
-                (d.climTemp != null && d.climTemp > 2 && d.climTemp < 18) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-slate-800/80 text-slate-300 border border-slate-700/60" : "bg-slate-100 text-slate-600") }, t('stem.watercycle.fog', "\uD83C\uDF2B\uFE0F Fog")),
+                React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-slate-800/80 text-slate-300 border border-slate-700/60" : "bg-slate-100 text-slate-600") }, weatherLabel),
                 React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-sky-950/60 text-sky-300 border border-sky-900/50" : "bg-sky-100 text-sky-800") },
                   "Evaporation index: " + evaporationIndex.toFixed(2) + "x"
                                    ),

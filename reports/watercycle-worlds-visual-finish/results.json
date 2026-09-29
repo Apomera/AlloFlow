@@ -1,0 +1,80 @@
+{
+  "checks": [
+    "light-1440 fits viewport",
+    "light-1440 scene lens targets remain at least 44px",
+    "light-1440 has no accessibility violations",
+    "light-390 fits viewport",
+    "light-390 scene lens targets remain at least 44px",
+    "light-390 has no accessibility violations",
+    "light-320 fits viewport",
+    "light-320 scene lens targets remain at least 44px",
+    "light-320 has no accessibility violations",
+    "dark-1440 fits viewport",
+    "dark-1440 scene lens targets remain at least 44px",
+    "dark-1440 has no accessibility violations",
+    "dark-390 fits viewport",
+    "dark-390 scene lens targets remain at least 44px",
+    "dark-390 has no accessibility violations",
+    "dark-320 fits viewport",
+    "dark-320 scene lens targets remain at least 44px",
+    "dark-320 has no accessibility violations",
+    "contrast-1440 fits viewport",
+    "contrast-1440 scene lens targets remain at least 44px",
+    "contrast-1440 has no accessibility violations",
+    "contrast-390 fits viewport",
+    "contrast-390 scene lens targets remain at least 44px",
+    "contrast-390 has no accessibility violations",
+    "contrast-320 fits viewport",
+    "contrast-320 scene lens targets remain at least 44px",
+    "contrast-320 has no accessibility violations",
+    "Soil moisture remains reachable by its existing name",
+    "Flow paths remains reachable by its existing name",
+    "Differences remains reachable by its existing name",
+    "Surface water remains reachable by its existing name",
+    "Keyboard cover selection remains available",
+    "Selected cover shows a decorative check",
+    "Lens and pending cover selection preserve scientific evidence",
+    "Keyboard focus remains visible",
+    "Forced colors retain plain system surfaces",
+    "No browser errors"
+  ],
+  "audits": [
+    {
+      "label": "light-1440",
+      "violations": []
+    },
+    {
+      "label": "light-390",
+      "violations": []
+    },
+    {
+      "label": "light-320",
+      "violations": []
+    },
+    {
+      "label": "dark-1440",
+      "violations": []
+    },
+    {
+      "label": "dark-390",
+      "violations": []
+    },
+    {
+      "label": "dark-320",
+      "violations": []
+    },
+    {
+      "label": "contrast-1440",
+      "violations": []
+    },
+    {
+      "label": "contrast-390",
+      "violations": []
+    },
+    {
+      "label": "contrast-320",
+      "violations": []
+    }
+  ],
+  "errors": []
+}

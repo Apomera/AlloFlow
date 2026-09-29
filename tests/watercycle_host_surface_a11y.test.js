@@ -14,11 +14,18 @@ describe.each(WATER_CYCLE_PATHS)('Water Cycle host-surface accessibility in %s',
 
   it('keeps simulation theming independent from the light host chrome', () => {
     expect(source).toContain('var isDark = !!(ctx && ctx.isDark) || isContrast;');
-    // The explorer root paints its own #0f172a ground in dark theme (2026-08-25 depth
-    // contrast pass): before that, body inks followed the dark theme while the header
-    // assumed the host's light card, so the header surface flag now follows the theme.
+    // Explore owns its surface and text palette, even inside light host chrome.
+    // The visual refresh moved the dark background from an inline style to CSS
+    // variables so the header, controls, and learning panels share that palette.
     expect(source).toContain('var isHeaderSurfaceDark = isContrast || isDark;');
-    expect(source).toContain('style: isDark ? { background: "#0f172a", borderRadius: 12 } : undefined,');
+    if (filePath.includes('app-build') && !source.includes('--wc-viz-paper:')) {
+      // An optional local build may predate the CSS refresh; its inline surface
+      // must still satisfy the same independence from the host card.
+      expect(source).toContain('style: isDark ? { background: "#0f172a", borderRadius: 12 } : undefined,');
+    } else {
+      expect(source).toMatch(/\.wc-explorer-root\{[^}]*background:var\(--wc-viz-paper\)/);
+      expect(source).toMatch(/\.wc-explorer-root\.dark\{[^}]*--wc-viz-paper:#102830;[^}]*--wc-viz-ink:#e5f3ef;/);
+    }
     expect(source).toContain('backgroundColor: isHeaderSurfaceDark ? "#000000" : "#e0f2fe"');
     expect(source).toContain('backgroundColor: isHeaderSurfaceDark ? "#000000" : "#eef2ff"');
     expect(source).toContain('text-slate-700 hover:bg-indigo-50');

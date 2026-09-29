@@ -1,0 +1,354 @@
+{
+  "capturedAt": "2026-09-29T20:58:00.101Z",
+  "checks": [
+    {
+      "label": "light-1280 controls fit the viewport",
+      "pass": true
+    },
+    {
+      "label": "light-1280 temperature responds to keyboard",
+      "pass": true
+    },
+    {
+      "label": "light-1280 temperature readout matches control",
+      "pass": true
+    },
+    {
+      "label": "light-1280 keyboard selects Urban cover",
+      "pass": true
+    },
+    {
+      "label": "light-1280 one ground-cover choice is selected",
+      "pass": true
+    },
+    {
+      "label": "light-1280 prediction offers five choices",
+      "pass": true
+    },
+    {
+      "label": "light-1280 prediction choices have 44px targets",
+      "pass": true,
+      "detail": [
+        46,
+        46,
+        46,
+        46,
+        46
+      ]
+    },
+    {
+      "label": "light-1280 baseline and current bars are separately visible",
+      "pass": true
+    },
+    {
+      "label": "light-1280 saves the observation",
+      "pass": true
+    },
+    {
+      "label": "light-1280 section switching preserves saved evidence",
+      "pass": true
+    },
+    {
+      "label": "light-1280 evidence fits the viewport",
+      "pass": true
+    },
+    {
+      "label": "light-320 controls fit the viewport",
+      "pass": true
+    },
+    {
+      "label": "light-320 temperature responds to keyboard",
+      "pass": true
+    },
+    {
+      "label": "light-320 temperature readout matches control",
+      "pass": true
+    },
+    {
+      "label": "light-320 keyboard selects Urban cover",
+      "pass": true
+    },
+    {
+      "label": "light-320 one ground-cover choice is selected",
+      "pass": true
+    },
+    {
+      "label": "light-320 prediction offers five choices",
+      "pass": true
+    },
+    {
+      "label": "light-320 prediction choices have 44px targets",
+      "pass": true,
+      "detail": [
+        53.59375,
+        46,
+        46,
+        46,
+        46
+      ]
+    },
+    {
+      "label": "light-320 baseline and current bars are separately visible",
+      "pass": true
+    },
+    {
+      "label": "light-320 saves the observation",
+      "pass": true
+    },
+    {
+      "label": "light-320 section switching preserves saved evidence",
+      "pass": true
+    },
+    {
+      "label": "light-320 evidence fits the viewport",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 controls fit the viewport",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 temperature responds to keyboard",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 temperature readout matches control",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 keyboard selects Urban cover",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 one ground-cover choice is selected",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 prediction offers five choices",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 prediction choices have 44px targets",
+      "pass": true,
+      "detail": [
+        46,
+        46,
+        46,
+        46,
+        46
+      ]
+    },
+    {
+      "label": "dark-1280 baseline and current bars are separately visible",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 saves the observation",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 section switching preserves saved evidence",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 evidence fits the viewport",
+      "pass": true
+    },
+    {
+      "label": "dark-320 controls fit the viewport",
+      "pass": true
+    },
+    {
+      "label": "dark-320 temperature responds to keyboard",
+      "pass": true
+    },
+    {
+      "label": "dark-320 temperature readout matches control",
+      "pass": true
+    },
+    {
+      "label": "dark-320 keyboard selects Urban cover",
+      "pass": true
+    },
+    {
+      "label": "dark-320 one ground-cover choice is selected",
+      "pass": true
+    },
+    {
+      "label": "dark-320 prediction offers five choices",
+      "pass": true
+    },
+    {
+      "label": "dark-320 prediction choices have 44px targets",
+      "pass": true,
+      "detail": [
+        53.59375,
+        46,
+        46,
+        46,
+        46
+      ]
+    },
+    {
+      "label": "dark-320 baseline and current bars are separately visible",
+      "pass": true
+    },
+    {
+      "label": "dark-320 saves the observation",
+      "pass": true
+    },
+    {
+      "label": "dark-320 section switching preserves saved evidence",
+      "pass": true
+    },
+    {
+      "label": "dark-320 evidence fits the viewport",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 controls fit the viewport",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 temperature responds to keyboard",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 temperature readout matches control",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 keyboard selects Urban cover",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 one ground-cover choice is selected",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 prediction offers five choices",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 prediction choices have 44px targets",
+      "pass": true,
+      "detail": [
+        46,
+        46,
+        46,
+        46,
+        46
+      ]
+    },
+    {
+      "label": "contrast-1280 baseline and current bars are separately visible",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 saves the observation",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 section switching preserves saved evidence",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 evidence fits the viewport",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 controls fit the viewport",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 temperature responds to keyboard",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 temperature readout matches control",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 keyboard selects Urban cover",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 one ground-cover choice is selected",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 prediction offers five choices",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 prediction choices have 44px targets",
+      "pass": true,
+      "detail": [
+        53.59375,
+        46,
+        46,
+        46,
+        46
+      ]
+    },
+    {
+      "label": "contrast-320 baseline and current bars are separately visible",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 saves the observation",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 section switching preserves saved evidence",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 evidence fits the viewport",
+      "pass": true
+    },
+    {
+      "label": "forced-colors ground selection has distinct text and background",
+      "pass": true,
+      "detail": {
+        "foreground": "rgb(255, 255, 255)",
+        "background": "rgb(55, 0, 110)",
+        "focus": true,
+        "outline": "solid",
+        "width": "3px"
+      }
+    },
+    {
+      "label": "forced-colors ground selection has visible keyboard focus",
+      "pass": true
+    }
+  ],
+  "audits": [
+    {
+      "id": "light-1280",
+      "violations": []
+    },
+    {
+      "id": "light-320",
+      "violations": []
+    },
+    {
+      "id": "dark-1280",
+      "violations": []
+    },
+    {
+      "id": "dark-320",
+      "violations": []
+    },
+    {
+      "id": "contrast-1280",
+      "violations": []
+    },
+    {
+      "id": "contrast-320",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "failures": []
+}

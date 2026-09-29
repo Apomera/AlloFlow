@@ -1,0 +1,26 @@
+{
+  "sourceSha256": "eba769f57c4f6a33f42d42ecf03b9e338299e333d6c3a886fbf33945465149d1",
+  "baseline": false,
+  "capturedAt": "2026-09-29T04:29:59.925Z",
+  "checks": [
+    {
+      "label": "Source and desktop mirror match",
+      "pass": false
+    }
+  ],
+  "surfaces": [],
+  "audits": [
+    {
+      "label": "forced colors navigation",
+      "selector": ".wc-mode-bar",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "failures": [
+    "Source and desktop mirror match"
+  ],
+  "mirrorSha256": "95fc8abee2d81b522f3124727e5dd9cf37cc3f1785d3e9766cb8be457aae69d4",
+  "finalSourceSha256": "eba769f57c4f6a33f42d42ecf03b9e338299e333d6c3a886fbf33945465149d1",
+  "sourceChangedDuringRun": false
+}

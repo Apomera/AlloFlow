@@ -1,0 +1,233 @@
+{
+  "checks": [
+    {
+      "mode": "storm",
+      "theme": "light",
+      "width": 1280,
+      "overflow": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "scene": {
+        "x": 38,
+        "y": 358.484375,
+        "width": 713.4375,
+        "height": 473.59375
+      },
+      "violations": []
+    },
+    {
+      "mode": "steward-setup",
+      "theme": "light",
+      "width": 1280,
+      "overflow": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "scene": null,
+      "violations": []
+    },
+    {
+      "mode": "steward-year",
+      "theme": "light",
+      "width": 1280,
+      "overflow": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "scene": null,
+      "violations": []
+    },
+    {
+      "mode": "storm",
+      "theme": "light",
+      "width": 390,
+      "overflow": {
+        "width": 390,
+        "scroll": 390
+      },
+      "scene": {
+        "x": 26,
+        "y": 629.984375,
+        "width": 338,
+        "height": 290
+      },
+      "violations": []
+    },
+    {
+      "mode": "steward-setup",
+      "theme": "light",
+      "width": 390,
+      "overflow": {
+        "width": 390,
+        "scroll": 390
+      },
+      "scene": null,
+      "violations": []
+    },
+    {
+      "mode": "steward-year",
+      "theme": "light",
+      "width": 390,
+      "overflow": {
+        "width": 390,
+        "scroll": 390
+      },
+      "scene": null,
+      "violations": []
+    },
+    {
+      "mode": "storm",
+      "theme": "light",
+      "width": 320,
+      "overflow": {
+        "width": 320,
+        "scroll": 320
+      },
+      "scene": {
+        "x": 26,
+        "y": 668.578125,
+        "width": 268,
+        "height": 290
+      },
+      "violations": []
+    },
+    {
+      "mode": "steward-setup",
+      "theme": "light",
+      "width": 320,
+      "overflow": {
+        "width": 320,
+        "scroll": 320
+      },
+      "scene": null,
+      "violations": []
+    },
+    {
+      "mode": "steward-year",
+      "theme": "light",
+      "width": 320,
+      "overflow": {
+        "width": 320,
+        "scroll": 320
+      },
+      "scene": null,
+      "violations": []
+    },
+    {
+      "mode": "storm",
+      "theme": "dark",
+      "width": 1280,
+      "overflow": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "scene": {
+        "x": 38,
+        "y": 358.484375,
+        "width": 713.4375,
+        "height": 473.59375
+      },
+      "violations": []
+    },
+    {
+      "mode": "steward-setup",
+      "theme": "dark",
+      "width": 1280,
+      "overflow": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "scene": null,
+      "violations": []
+    },
+    {
+      "mode": "steward-year",
+      "theme": "dark",
+      "width": 1280,
+      "overflow": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "scene": null,
+      "violations": []
+    },
+    {
+      "mode": "storm",
+      "theme": "dark",
+      "width": 390,
+      "overflow": {
+        "width": 390,
+        "scroll": 390
+      },
+      "scene": {
+        "x": 26,
+        "y": 629.984375,
+        "width": 338,
+        "height": 290
+      },
+      "violations": []
+    },
+    {
+      "mode": "steward-setup",
+      "theme": "dark",
+      "width": 390,
+      "overflow": {
+        "width": 390,
+        "scroll": 390
+      },
+      "scene": null,
+      "violations": []
+    },
+    {
+      "mode": "steward-year",
+      "theme": "dark",
+      "width": 390,
+      "overflow": {
+        "width": 390,
+        "scroll": 390
+      },
+      "scene": null,
+      "violations": []
+    },
+    {
+      "mode": "storm",
+      "theme": "dark",
+      "width": 320,
+      "overflow": {
+        "width": 320,
+        "scroll": 320
+      },
+      "scene": {
+        "x": 26,
+        "y": 668.578125,
+        "width": 268,
+        "height": 290
+      },
+      "violations": []
+    },
+    {
+      "mode": "steward-setup",
+      "theme": "dark",
+      "width": 320,
+      "overflow": {
+        "width": 320,
+        "scroll": 320
+      },
+      "scene": null,
+      "violations": []
+    },
+    {
+      "mode": "steward-year",
+      "theme": "dark",
+      "width": 320,
+      "overflow": {
+        "width": 320,
+        "scroll": 320
+      },
+      "scene": null,
+      "violations": []
+    }
+  ],
+  "errors": []
+}
