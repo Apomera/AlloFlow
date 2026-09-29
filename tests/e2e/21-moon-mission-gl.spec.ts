@@ -398,17 +398,27 @@ test.describe('Moon Mission — real WebGL EVA', () => {
     expect(Buffer.compare(c1, c2), 'canvas did not resume after play').not.toBe(0);
   });
 
-  test('with animation paused the TLI window still opens, so the burn can be flown on time', async ({ page }) => {
-    // Pausing (or the OS reduced-motion setting, which pauses by default) used to
-    // return from the orbit loop before its clock advanced. The window froze at
-    // "Houston is verifying systems", so a reduced-motion student could only ever
-    // burn "early" and was billed a mid-course correction for it.
-    test.setTimeout(120000);
+  test('a paused orbit stays frozen and can be advanced deliberately to the TLI window', async ({ page }) => {
+    // The old workaround advanced the burn clock behind a frozen spacecraft.
+    // Reduced motion now gets an explicit advance control and a matching picture.
     await harness.mount(page, { moonMission: { missionPhase: 2, animPaused: true } }, undefined, { expectCanvas: false });
     const state = page.locator('[data-moonmission-tli-state]');
+    const canvas = page.locator('[data-orbit-canvas]');
     await expect(state).toHaveAttribute('data-moonmission-tli-state', 'systems', { timeout: 20000 });
-    await expect(state).toHaveAttribute('data-moonmission-tli-state', 'go', { timeout: 60000 });
+    await expect(canvas).toHaveAttribute('data-orbit-time', /\d/);
+    const before = await canvas.getAttribute('data-orbit-time');
+    await page.waitForTimeout(700);
+    expect(await canvas.getAttribute('data-orbit-time'), 'pause freezes the model clock').toBe(before);
+    await expect(state).toHaveAttribute('data-moonmission-tli-state', 'systems');
+    await page.getByRole('button', { name: 'Advance to burn window', exact: true }).click();
+    await expect(state).toHaveAttribute('data-moonmission-tli-state', 'go');
+    await expect(canvas).toHaveAttribute('data-orbit-window', 'go');
     await expect(state).toContainText('far side of Earth');
+    const advanced = await canvas.getAttribute('data-orbit-time');
+    expect(Number(advanced)).toBeGreaterThan(Number(before));
+    await expect(page.locator('[data-moonmission-anim-toggle="true"]')).toHaveAttribute('aria-pressed', 'true');
+    await page.waitForTimeout(700);
+    expect(await canvas.getAttribute('data-orbit-time'), 'explicit advance preserves pause').toBe(advanced);
   });
 
   // ── On-screen control pads ──
@@ -535,7 +545,13 @@ test.describe('Moon Mission — real WebGL EVA', () => {
     expect(walked, 'the forward pad never moved the astronaut').not.toBeNull();
 
     // Release must stop him — a control left held walks the astronaut on his own.
-    await page.waitForTimeout(900);
+    // Boots brake on regolith at mu g (1.46 m/s^2), so from a stride he glides a second
+    // or more, as on Apollo: wait for the stop itself (a held control never gets there),
+    // then check he stays put.
+    await expect.poll(() => page.evaluate(() =>
+      (document.querySelector('canvas[data-eva-canvas="true"]') as HTMLElement | null)?.dataset.evaGait || ''),
+      { timeout: 15000, message: 'the astronaut never stopped after the pad was released' }).toBe('standing');
+    await page.waitForTimeout(300);
     const a = await steps();
     await page.waitForTimeout(1800);
     expect(await steps(), 'the astronaut kept walking after the pad was released').toBe(a);

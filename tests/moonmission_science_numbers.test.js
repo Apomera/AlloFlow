@@ -26,31 +26,35 @@ beforeEach(() => {
 });
 
 describe('launch readouts follow an Apollo-like ascent', () => {
-  it('reaches a 185 km orbit at 7.8 km/s and then reads 0 g', () => {
+  it('shows the numerical parking orbit at about 7.8 km/s and then near-zero felt g', () => {
+    const profile = pure.launchProfile();
     const orbit = pure.launchDisplay(1);
-    expect(orbit.altKm).toBe(185);
-    expect(orbit.velMs).toBe(7800);
-    expect(orbit.g).toBe(0);
-    expect(pure.launchDisplay(3).velMs, 'kept accelerating after orbit').toBe(7800);
+    expect(orbit.altKm).toBe(profile.summary.cutoffAltitude / 1000);
+    expect(orbit.velMs).toBe(profile.summary.cutoffSpeed);
+    expect(orbit.g).toBeLessThan(1e-6);
+    expect(orbit.orbit).toBe(true);
+    expect(profile.summary.perigee).toBeGreaterThan(100000);
+    expect(pure.launchDisplay(3).velMs, 'kept accelerating after orbit').toBe(orbit.velMs);
   });
 
-  it('climbs monotonically, never past orbit, with g peaking under 4 and dropping at staging', () => {
-    let prev = pure.launchDisplay(0);
-    let peakG = 0;
-    for (let i = 1; i <= 1000; i++) {
-      const cur = pure.launchDisplay(i / 1000);
-      expect(cur.altKm).toBeGreaterThanOrEqual(prev.altKm);
-      expect(cur.velMs).toBeGreaterThanOrEqual(prev.velMs);
-      expect(cur.altKm).toBeLessThanOrEqual(185);
-      expect(cur.velMs).toBeLessThanOrEqual(7800);
-      if (!cur.orbit) peakG = Math.max(peakG, cur.g);
-      prev = cur;
+  it('maps elapsed launch progress to the same trajectory, including real staging load drops', () => {
+    const profile = pure.launchProfile();
+    for (const fraction of [0, 0.1, 0.3, 0.6, 0.9, 1]) {
+      const shown = pure.launchDisplay(fraction), actual = pure.launchSample(profile, fraction * profile.summary.duration);
+      expect(shown.altKm).toBe(actual.altitude / 1000);
+      expect(shown.velMs).toBe(actual.speed);
+      expect(shown.g).toBe(actual.loadG);
+      expect(shown.stage).toBe(actual.stage);
     }
-    expect(peakG).toBeGreaterThan(3.5);
-    expect(peakG).toBeLessThanOrEqual(4.0);
-    expect(pure.launchDisplay(0.0999).g - pure.launchDisplay(0.1001).g, 'no g drop at S-IC cutoff').toBeGreaterThan(2);
-    expect(pure.launchDisplay(0.3999).g - pure.launchDisplay(0.4001).g, 'no g drop at S-II cutoff').toBeGreaterThan(1);
-    expect(pure.launchDisplay(0.0999).altKm).toBeGreaterThan(60);   // S-IC cutoff ~67 km
+    expect(profile.summary.peakG).toBeGreaterThan(3.5);
+    expect(profile.summary.peakG).toBeLessThan(4.3);
+    for (const event of [profile.events.stage1, profile.events.stage2]) {
+      const before = pure.launchDisplay((event.time - 0.001) / profile.summary.duration);
+      const after = pure.launchDisplay(event.time / profile.summary.duration);
+      expect(before.g - after.g).toBeGreaterThan(1);
+      expect(after.stage).toBe(event.stage);
+    }
+    expect(profile.events.stage1.altitude).toBeGreaterThan(60000);
   });
 });
 

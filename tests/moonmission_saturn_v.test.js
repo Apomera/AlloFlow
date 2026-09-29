@@ -102,10 +102,10 @@ describe('Moon Mission launch loop', () => {
   }
 
   // Run the real loop for `n` frames painted `dt` ms apart; returns what each drew.
-  function flyLaunch(n, dt = 1000 / 60) {
+  function flyLaunch(n, dt = 1000 / 60, state = {}) {
     queue = [];
     document.body.innerHTML = '';   // stops any earlier loop: it only re-arms while its canvas is attached
-    const store = newStore({ moonMission: { missionPhase: 1, animPaused: false } });
+    const store = newStore({ moonMission: { missionPhase: 1, animPaused: false, ...state } });
     const tree = window.StemLab._registry[ID].render(makeCtx({ toolData: store.toolData }, store));
     const ref = findLaunchCanvas(tree);
     expect(typeof ref, 'launch canvas with a ref').toBe('function');
@@ -114,7 +114,7 @@ describe('Moon Mission launch loop', () => {
     el.getContext = () => rec.ctx;
     document.body.appendChild(el);
     const frames = [];
-    const snap = () => { frames.push({ text: rec.frame.text.slice(), grads: rec.frame.grads.slice() }); rec.frame.text.length = 0; rec.frame.grads.length = 0; };
+    const snap = () => { frames.push({ text: rec.frame.text.slice(), grads: rec.frame.grads.slice(), dataset: { ...el.dataset }, mm: { ...store.toolData.moonMission } }); rec.frame.text.length = 0; rec.frame.grads.length = 0; };
     ref(el);   // draws the first frame itself
     snap();
     for (let i = 1; i < n && queue.length; i++) {
@@ -129,9 +129,11 @@ describe('Moon Mission launch loop', () => {
   // Stage-body sections are shaded white to grey; count them to see what is drawn.
   const whiteSections = (f) => f.grads.filter((g) => g.stops.join() === '#ffffff,#ffffff,#9ca3af').length;
   const kerosene = (f) => f.grads.some((g) => /^rgba\(255,120,0,/.test(g.stops[0]));   // fainter as the plume spreads
+  const flightFrames = (fps = 60, through = P.launchProfile().summary.duration) => Math.ceil((5 + through / 30 + 2) * fps);
 
   it('flies the stack in pieces, burns kerosene only on the first stage, and names each separation long enough to read', () => {
-    const frames = flyLaunch(1300);
+    const profile = P.launchProfile();
+    const frames = flyLaunch(flightFrames());
     const last = frames[frames.length - 1];
     expect(last.text.some((s) => /ORBIT ACHIEVED/.test(s)), 'the ascent should reach orbit within the frames run').toBe(true);
 
@@ -152,9 +154,14 @@ describe('Moon Mission launch loop', () => {
     expect(Math.max(...n1), 'the first notice must be gone before the second').toBeLessThan(Math.min(...n2));
     n1.forEach((i) => expect(stageOf(frames[i])).toBe(2));
     n2.forEach((i) => expect(stageOf(frames[i])).toBe(3));
+    for (const [noticeFrames, event] of [[n1, profile.events.stage1], [n2, profile.events.stage2]]) {
+      const first = Number(frames[noticeFrames[0]].dataset.launchTime);
+      expect(first, 'separation is not announced before the physical event').toBeGreaterThanOrEqual(event.time - 1e-6);
+      expect(first - event.time, 'the canvas announces separation on the next displayed sample').toBeLessThanOrEqual(0.51);
+    }
 
     // Orange kerosene exhaust while the S-IC burns, none once the hydrogen stages fly.
-    const flight1 = frames.filter((f) => stageOf(f) === 1);
+    const flight1 = frames.filter((f) => stageOf(f) === 1 && Number(f.dataset.launchTime) >= 0);
     expect(flight1.length).toBeGreaterThan(100);
     expect(flight1.filter(kerosene).length).toBeGreaterThan(flight1.length * 0.9);
     expect(frames.filter((f) => stageOf(f) >= 2 && kerosene(f)).length).toBe(0);
@@ -164,18 +171,22 @@ describe('Moon Mission launch loop', () => {
     // Standard atmosphere: sound at 340 m/s at sea level and 295 m/s at 11 km.
     expect(P.soundSpeed(0)).toBeCloseTo(340.3, 0);
     expect(P.soundSpeed(11)).toBeCloseTo(295.1, 0);
-    const frames = flyLaunch(700);
+    const profile = P.launchProfile();
+    const frames = flyLaunch(flightFrames(60, profile.events.stage1.time));
     const hud = (f) => {
       const t = f.text;
-      const a = t[t.indexOf('ALTITUDE') + 1], v = t[t.indexOf('VELOCITY') + 1];
-      if (!a || !v || t.indexOf('ALTITUDE') < 0) return null;
-      const km = /km$/.test(a) ? parseFloat(a) : parseFloat(a) / 1000;
-      return { km, ms: Number(v.replace(/[^0-9.]/g, '')) };
+      if (t.indexOf('ALTITUDE') < 0) return null;
+      return { km: Number(f.dataset.launchAltitude) / 1000, ms: Number(f.dataset.launchAirSpeed) };
     };
     const first = (re) => frames.findIndex((f) => f.text.some((s) => re.test(s)));
     const mach = first(/^MACH \d/), maxq = first(/^MAX Q/);
     expect(mach, 'a Mach callout').toBeGreaterThan(0);
     expect(maxq, 'a Max Q callout').toBeGreaterThan(mach);
+    for (const [index, event] of [[mach, profile.events.mach1], [maxq, profile.events.maxQ]]) {
+      const time = Number(frames[index].dataset.launchTime);
+      expect(time).toBeGreaterThanOrEqual(event.time - 1e-6);
+      expect(time - event.time).toBeLessThanOrEqual(0.51);
+    }
     // Supersonic by the numbers on the HUD when the callout appears, and not two frames before.
     const hm = hud(frames[mach]), hb = hud(frames[mach - 2]);
     expect(hm.ms / P.soundSpeed(hm.km), 'Mach at the callout').toBeGreaterThanOrEqual(1);
@@ -192,16 +203,21 @@ describe('Moon Mission launch loop', () => {
     const at = {};
     for (const fps of [30, 60, 120]) {
       const dt = 1000 / fps;
-      const frames = flyLaunch(Math.ceil(20000 / dt), dt);
-      const liftoff = frames.findIndex((f) => stageOf(f) === 1);
+      const frames = flyLaunch(flightFrames(fps), dt);
+      const liftoff = frames.findIndex((f) => Number(f.dataset.launchTime) >= 0);
       const orbit = frames.findIndex((f) => f.text.some((s) => /ORBIT ACHIEVED/.test(s)));
       expect(liftoff, fps + ' fps: never lifted off').toBeGreaterThan(0);
       expect(orbit, fps + ' fps: never reached orbit').toBeGreaterThan(liftoff);
+      const sample = frames[orbit];
+      expect(Number(sample.dataset.launchTime)).toBeCloseTo(P.launchProfile().summary.duration, 5);
+      expect(sample.mm.launchRun.recorded).toBe(true);
+      expect(sample.mm.launchResult.outcome).toBe('orbit');
       at[fps] = { dt, liftoff: liftoff * dt, orbit: orbit * dt };
     }
     for (const fps of [30, 60, 120]) {
       expect(Math.abs(at[fps].liftoff - 5000), fps + ' fps liftoff at ' + Math.round(at[fps].liftoff) + ' ms').toBeLessThanOrEqual(2 * at[fps].dt + 1);
       expect(Math.abs(at[fps].orbit - at[60].orbit), fps + ' fps orbit vs 60 fps').toBeLessThanOrEqual(2 * at[fps].dt + 1);
+      expect(Math.abs(at[fps].orbit - (5000 + P.launchProfile().summary.duration / 30 * 1000)), fps + ' fps uses 30x flight time after the real countdown').toBeLessThanOrEqual(2 * at[fps].dt + 1);
     }
   }, 60_000);   // thousands of real loop frames; slow under load, not wrong
 });

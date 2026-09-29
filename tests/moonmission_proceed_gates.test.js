@@ -66,6 +66,45 @@ function finishedEntryState(angle = -6.5) {
   };
 }
 
+function finishedLaunchState() {
+  loadTool(FILE, ID);
+  const profile = window.MoonMissionPure.launchProfile();
+  return {
+    missionPhase: 1, missionXP: 0, missionLog: [], launchStatus: 'orbit',
+    launchRun: { version: 1, time: profile.summary.duration, recorded: true },
+    launchResult: { version: 1, ...profile.summary },
+  };
+}
+
+// Mount the real canvas action dispatcher without painting a browser window. The
+// result button delegates to this live instance rather than mutating saved state.
+function attachLaunchCanvas(app) {
+  let ref;
+  const walk = (node) => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) { node.forEach(walk); return; }
+    if (node.type === 'canvas' && node.props['data-launch-canvas']) ref = node.ref || node.props.ref;
+    walk(node.props && node.props.children);
+  };
+  walk(app.tree());
+  const gradient = { addColorStop() {} };
+  const context = new Proxy({}, { get: (target, key) => {
+    if (key === 'measureText') return text => ({ width: String(text).length * 6 });
+    if (key === 'createLinearGradient' || key === 'createRadialGradient') return () => gradient;
+    return target[key] || (() => {});
+  }, set: (target, key, value) => { target[key] = value; return true; } });
+  const canvas = document.createElement('canvas');
+  canvas.getContext = () => context;
+  document.body.appendChild(canvas);
+  let nextFrame;
+  vi.stubGlobal('requestAnimationFrame', callback => { nextFrame = callback; return 1; });
+  ref(canvas);
+  return {
+    event: { currentTarget: { closest: () => ({ querySelector: () => canvas }) } },
+    close() { canvas.remove(); if (nextFrame) nextFrame(0); vi.unstubAllGlobals(); },
+  };
+}
+
 describe('Moon Mission proceed gates', () => {
   it('a pending event disables the phase button, and its handler refuses too', () => {
     const app = mount({ missionPhase: 1, activeEvent: EVENT, eventPhaseTarget: 2, missionXP: 0 });
@@ -92,23 +131,37 @@ describe('Moon Mission proceed gates', () => {
       expect(app.mm().missionPhase, `handler refuses at ${launchStatus || 'mount'}`).toBe(1);
       expect(app.mm().missionXP).toBe(0);
     }
-    const orbit = mount({ missionPhase: 1, launchStatus: 'orbit', animPaused: false, missionXP: 0, missionLog: [] });
+    const orbit = mount(finishedLaunchState());
     expect(find(orbit, /Proceed to Earth orbit/i).disabled, 'enabled once in orbit').toBe(false);
   });
 
-  it('a paused (or reduced-motion) student is never stranded on the pad', () => {
-    // Pausing freezes the ascent, so waiting for orbit would be a dead end.
+  it('a paused student can show the launch result before proceeding, without claiming orbit on the pad', () => {
+    // Reduced motion retains a deliberate route forward, while the completion
+    // gate still requires the model's insertion result.
     const app = mount({ missionPhase: 1, launchStatus: 'countdown', animPaused: true, missionXP: 0, missionLog: [] });
     const btn = find(app, /Proceed to Earth orbit/i);
-    expect(btn.disabled).toBe(false);
+    expect(btn.disabled).toBe(true);
     btn.onClick();
+    expect(app.mm().missionPhase).toBe(1);
+    expect(app.mm().missionXP).toBe(0);
+    const launchCanvas = attachLaunchCanvas(app);
+    try { find(app, /Show launch result/i).onClick(launchCanvas.event); }
+    finally { launchCanvas.close(); }
+    expect(app.mm().missionPhase).toBe(1);
+    expect(app.mm().launchResult.outcome).toBe('orbit');
+    expect(app.mm().launchRun.recorded).toBe(true);
+    expect(app.mm().missionXP, 'viewing the result does not pay the proceed reward').toBe(0);
+    const ready = find(app, /Proceed to Earth orbit/i);
+    expect(ready.disabled).toBe(false);
+    ready.onClick();
     expect(app.mm().missionPhase).toBe(2);
+    expect(app.mm().missionXP).toBe(20);
   });
 
   it('a double click pays once and advances once', () => {
     // In orbit: the button now waits for the ascent, so orbit is the only moment a
     // double click can happen.
-    const app = mount({ missionPhase: 1, launchStatus: 'orbit', missionXP: 0, missionLog: [] });
+    const app = mount(finishedLaunchState());
     const btn = find(app, /Proceed to Earth orbit/i);
     btn.onClick();
     btn.onClick();

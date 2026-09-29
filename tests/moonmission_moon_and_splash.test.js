@@ -282,45 +282,65 @@ describe('Moon Mission loops', () => {
     expect(d.querySelector('[data-moonmission-true-scale-note]'), 'note only when asked for').toBeNull();
   }, 60_000);   // 2,500 real loop frames; slow under load, not wrong
 
-  it('Earth orbit: the globe fills the view it has, and its shadow is drawn where the chip counts the craft as dark', () => {
-    // Earth was capped at 42px on any screen; the shadow was only a counter.
+  it('Earth orbit: the globe fits the new diagram and physical illumination is independent of viewport size', () => {
     const leoCanvas = (p) => p['aria-describedby'] === 'mm-earth-orbit-description';
+    const time = P.orbitSnapshot(0, 360).period * 0.75;
     for (const width of [500, 1014]) {
-      const { frames } = run({ missionPhase: 2 }, leoCanvas, 5, 1000 / 60, width);
+      const state = { missionPhase: 2, animPaused: true, orbitRun: { version: 1, time } };
+      const { frames } = run(state, leoCanvas, 1, 1000 / 60, width);
       const f = frames[frames.length - 1];
-      const eR = Math.min(260 * 0.3, width * 0.1), eX = width * 0.34, eY = 260 * 0.52;
+      const eR = Math.min(320 * 0.22, width * 0.17), eX = width * (width < 520 ? 0.40 : 0.34), eY = 320 * 0.53;
       expect(f.arcs.some((a) => Math.abs(a.x - eX) < 1e-6 && Math.abs(a.y - eY) < 1e-6 && Math.abs(a.r - eR) < 1e-6), width + 'px: Earth radius').toBe(true);
-      // The band behind Earth is the region the loop tests for "in Earth's shadow".
-      expect(f.rects.some((r) => r.x === 0 && Math.abs(r.y - (eY - eR)) < 1e-6 && Math.abs(r.w - eX) < 1e-6 && Math.abs(r.h - 2 * eR) < 1e-6), width + 'px: the shadow band').toBe(true);
-      expect(f.text.some((t) => t.s === 'Earth\'s shadow')).toBe(true);
+      expect(f.dataset.orbitShadow, width + 'px: far-side craft is in shadow').toBe('true');
+      expect(Number(f.dataset.orbitTime)).toBe(time);
+      expect(f.dataset.orbitEngine, 'being near the burn window does not ignite the engine').toBe('off');
+      const page = document.createElement('div'); page.innerHTML = renderTool(ID, { moonMission: state });
+      expect(page.querySelector('[data-orbit-value="light"]').textContent).toBe('Earth shadow');
+      expect(page.querySelector('[data-orbit-value="engine"]').textContent).toBe('Coasting — engine off');
     }
   });
 
   it('Earth orbit: a sunrise every orbit, and the TLI window opens on the same clock at any frame rate', () => {
-    // Earth used to be lit all the way round. Half of every orbit is now in its shadow,
-    // and the craft counts the sunrises (the crews saw one every 90 minutes).
+    // The sunrise and shadow state follow the physical orbital angle, not the
+    // enlarged ellipse on screen or the number of frames that were painted.
     const leoCanvas = (p) => p['aria-describedby'] === 'mm-earth-orbit-description';
-    const { frames } = run({ missionPhase: 2 }, leoCanvas, 1800);   // 1800 steps x 0.0071 rad = just over 2 orbits
-    const count = (f) => { const i = f.text.findIndex((x) => x.s === 'SUNRISES SEEN' || x.s === 'IN EARTH\'S SHADOW'); return i < 0 ? NaN : Number(f.text[i + 1].s); };
-    const counts = frames.map(count).filter(Number.isFinite);
-    expect(counts[0]).toBe(0);
-    expect(counts[counts.length - 1], 'one sunrise per orbit, two orbits').toBe(2);
-    for (let i = 1; i < counts.length; i++) expect(counts[i] - counts[i - 1]).toBeGreaterThanOrEqual(0);
-    const shadowFrames = frames.filter((f) => f.text.some((x) => x.s === 'IN EARTH\'S SHADOW')).length;
-    expect(shadowFrames / frames.length, 'part of each orbit is in shadow').toBeGreaterThan(0.1);
-    expect(shadowFrames / frames.length).toBeLessThan(0.5);
-    expect(frames.some((f) => f.text.some((x) => /Orbital sunrise/.test(x.s)))).toBe(true);
+    const first = P.orbitSnapshot(0, 360), period = first.period, omega = 2 * Math.PI / period;
+    const shadowHalf = Math.asin(P.orbit.radius / (P.orbit.radius + P.orbit.altitude));
+    const sunrise = (1.5 * Math.PI + shadowHalf) / omega;
+    // Restore immediately before two successive sunrises, then cross each one
+    // using the actual renderer's clock. Pure tests cover the intervening orbit.
+    for (const lap of [0, 1]) {
+      const time = sunrise + lap * period - 15;
+      const { frames } = run({ missionPhase: 2, orbitPlaybackRate: 30, orbitRun: { version: 1, time } }, leoCanvas, 64);
+      const counts = frames.map(f => Number(f.dataset.orbitSunrises));
+      expect(counts[0]).toBe(lap);
+      expect(counts.at(-1), 'one sunrise is counted at this crossing').toBe(lap + 1);
+      expect(frames[0].dataset.orbitShadow).toBe('true');
+      expect(frames.at(-1).dataset.orbitShadow).toBe('false');
+      for (let i = 1; i < counts.length; i++) expect(counts[i] - counts[i - 1]).toBeGreaterThanOrEqual(0);
+      frames.forEach(f => {
+        const expected = P.orbitSnapshot(Number(f.dataset.orbitTime), 30);
+        expect(Number(f.dataset.orbitSunrises)).toBe(expected.sunrises);
+        expect(f.dataset.orbitShadow).toBe(String(expected.inShadow));
+      });
+    }
+    const orbitSamples = Array.from({ length: 16 }, (_, i) => run({ missionPhase: 2, animPaused: true, orbitRun: { version: 1, time: i * period / 16 } }, leoCanvas, 1).frames[0]);
+    const shadowFraction = orbitSamples.filter(f => f.dataset.orbitShadow === 'true').length / orbitSamples.length;
+    expect(shadowFraction, 'part of each orbit is in shadow').toBeGreaterThan(0.1);
+    expect(shadowFraction).toBeLessThan(0.5);
     // The window (and the whole orbit) used to run twice as fast on a 120 Hz screen.
+    const opening = first.nextWindowTime - P.orbit.windowHalfWidth / omega;
     const goAt = {};
     for (const fps of [30, 60, 120]) {
       const dt = 1000 / fps;
-      const r = run({ missionPhase: 2 }, leoCanvas, Math.ceil(30000 / dt), dt);
-      const i = r.frames.findIndex((f) => f.mm.tliWindow && f.mm.tliWindow.state === 'go');
+      const r = run({ missionPhase: 2, orbitPlaybackRate: 360, orbitRun: { version: 1, time: opening - 180 } }, leoCanvas, Math.ceil(1200 / dt), dt);
+      const i = r.frames.findIndex((f) => f.dataset.orbitWindow === 'go');
       expect(i, fps + ' fps: the window never opened').toBeGreaterThan(0);
       goAt[fps] = { t: i * dt, dt };
+      expect(Math.abs(goAt[fps].t - 500), fps + ' fps: opens after half a real second').toBeLessThanOrEqual(2 * dt + 1);
     }
     for (const fps of [30, 120]) expect(Math.abs(goAt[fps].t - goAt[60].t), fps + ' fps vs 60 fps').toBeLessThanOrEqual(2 * goAt[fps].dt + 1);
-  }, 120_000);   // thousands of real loop frames; slow under load, not wrong
+  }, 60_000);
 
   it('trans-Earth coast: the entry corridor on the canvas follows the slider', () => {
     // The corridor was a slider and a bar below the canvas; the coast itself never
@@ -430,34 +450,41 @@ describe('Moon Mission loops', () => {
     const page = (st) => { const d = document.createElement('div'); d.innerHTML = renderTool(ID, { moonMission: st }); return d; };
     const briefing = page({ missionPhase: 0 });
     expect(briefing.querySelectorAll('[data-moonmission-predict="launch_maxq"] [data-moonmission-predict-option]').length, 'asked before launch').toBe(3);
-    const { frames } = run({ missionPhase: 1 }, (p) => !!p['data-launch-canvas'], 700);
+    const profile = P.launchProfile();
+    const count = Math.ceil((5 + (profile.events.maxQ.time + 20) / 30) * 60) + 2;
+    const { frames } = run({ missionPhase: 1 }, (p) => !!p['data-launch-canvas'], count);
     const call = frames.findIndex((f) => f.text.some((t) => /^MAX Q/.test(t.s)));
     expect(call, 'a MAX Q call').toBeGreaterThan(0);
     const rec = frames[call].mm.launchMaxQ;
     expect(rec, 'the launch reports it').toBeTruthy();
     expect(frames[call - 1].mm.launchMaxQ, 'not before the call').toBeFalsy();
-    const t = frames[call].text.map((x) => x.s);
-    const hudKm = parseFloat(t[t.indexOf('ALTITUDE') + 1]);
-    expect(Math.abs(rec.altKm - hudKm), 'reported height vs the HUD at the call').toBeLessThan(0.3);
+    const callTime = Number(frames[call].dataset.launchTime);
+    expect(callTime, 'the event is observed before revealing the answer').toBeGreaterThanOrEqual(profile.events.maxQ.time - 1e-6);
+    expect(callTime - profile.events.maxQ.time).toBeLessThanOrEqual(0.51);
+    expect(rec.altKm, 'the record stores the true pressure peak, not the first falling sample').toBeCloseTo(profile.events.maxQ.altitude / 1000, 1);
+    expect(rec.velMs, 'Max Q uses air-relative speed').toBeCloseTo(profile.events.maxQ.airSpeed, 0);
     const card = page({ missionPhase: 1, launchMaxQ: rec, predictions: { launch_maxq: 'minute' } }).querySelector('[data-moonmission-predict="launch_maxq"]').textContent;
     expect(card).toMatch(/matched the flight/);
     expect(card).toContain('Max Q on this flight: ' + rec.altKm.toFixed(1) + ' km up');
   }, 60_000);
 
-  it('launch: the air-push gauge is the HUD\'s own numbers, and "now" gives way to "passed" after the peak', () => {
+  it('launch: the air-push gauge uses air-relative speed, and "now" gives way to "passed" after the peak', () => {
     // The banner said "pushing hardest now" for the whole first stage, still at
     // 60 km with the push under 1% of its peak.
-    const { frames } = run({ missionPhase: 1 }, (p) => !!p['data-launch-canvas'], 700);
+    const profile = P.launchProfile();
+    const count = Math.ceil((5 + profile.events.stage1.time / 30) * 60) + 2;
+    const { frames } = run({ missionPhase: 1 }, (p) => !!p['data-launch-canvas'], count);
     const hud = (f) => {
-      const t = f.text.map((x) => x.s), a = t[t.indexOf('ALTITUDE') + 1], v = t[t.indexOf('VELOCITY') + 1];
-      return { km: /km$/.test(a) ? parseFloat(a) : parseFloat(a) / 1000, ms: Number(String(v).replace(/[^0-9.]/g, '')) };
+      return { km: Number(f.dataset.launchAltitude) / 1000, ms: Number(f.dataset.launchAirSpeed) };
     };
     const bar = (f) => { const r = f.rects.find((x) => x.fill === '#fbbf24' && x.h === 8 && x.y === 84); return r ? r.w : null; };
     const peakTick = (f) => { const r = f.rects.find((x) => x.fill === '#ffffff' && x.w === 2 && x.h === 14); return r ? r.x + 1 : null; };
     const stage1 = (f) => f.text.some((t) => t.s === 'STAGE 1/3');
     const flying = frames.map((f, i) => i).filter((i) => stage1(frames[i]) && bar(frames[i]) != null && hud(frames[i]).ms > 0);
     expect(flying.length).toBeGreaterThan(100);
-    // Half rho v squared of the height and speed printed beside it (60 kPa full scale).
+    // Air rotates with Earth: the inertial speed is already about 408 m/s on the
+    // pad, while aerodynamic pressure must start from zero air-relative speed.
+    // The gauge is half rho times air speed squared, with a 60 kPa full scale.
     flying.forEach((i) => {
       const h = hud(frames[i]);
       expect(Math.abs(bar(frames[i]) - 130 * Math.min(1, P.dynamicPressure(h.km, h.ms) / 60000)), 'frame ' + i).toBeLessThan(2.5);
@@ -466,17 +493,17 @@ describe('Moon Mission loops', () => {
     const call = frames.findIndex((f) => f.text.some((t) => /^MAX Q/.test(t.s)));
     const widths = flying.map((i) => bar(frames[i])), top = Math.max(...widths);
     expect(Math.abs(flying[widths.indexOf(top)] - call), 'the bar tops out at the call').toBeLessThanOrEqual(1);
-    const late = flying.filter((i) => i > call + 30);
+    const late = flying.filter((i) => Number(frames[i].dataset.launchTime) > profile.events.maxQ.time + 20 && Number(frames[i].dataset.launchPressure) < profile.summary.peakQ * 0.6);
     expect(late.length).toBeGreaterThan(20);
     late.forEach((i) => {
       expect(bar(frames[i]), 'falling').toBeLessThan(top * 0.6);
-      expect(Math.abs(peakTick(frames[i]) - (500 - 148 + top)), 'the tick holds the peak').toBeLessThan(0.01);
+      expect(Math.abs(peakTick(frames[i]) - (500 - 148 + 130 * Math.min(1, profile.summary.peakQ / 60000))), 'the tick holds the physical peak').toBeLessThan(0.01);
     });
     // "now" only right at the peak, then "passed" at the height the card reports.
     const rec = frames[call].mm.launchMaxQ;
     const nowAt = frames.map((f, i) => (f.text.some((t) => /hardest now/.test(t.s)) ? i : -1)).filter((i) => i >= 0);
     expect(nowAt[0]).toBe(call);
-    expect(nowAt.length, 'about half a second').toBeLessThanOrEqual(30);
+    expect(nowAt.length, 'the peak notice lasts briefly, not the rest of the stage').toBeLessThanOrEqual(60);
     late.forEach((i) => {
       const t = frames[i].text.map((x) => x.s);
       expect(t).toContain('MAX Q passed at ' + rec.altKm.toFixed(1) + ' km');
@@ -489,8 +516,9 @@ describe('Moon Mission loops', () => {
   it('launch: the loop paints the sky for the height on the HUD, sinks the horizon by the dip angle, and swells the plume', () => {
     // The sky was three fixed gradients switched on a raw counter: still mid-blue
     // at 160 km, with no horizon at all from 4 km to over 100 km.
-    const { frames } = run({ missionPhase: 1 }, (p) => !!p['data-launch-canvas'], 1000);
-    const hudKm = (f) => { const t = f.text.map((x) => x.s), a = t[t.indexOf('ALTITUDE') + 1]; return /km$/.test(a) ? parseFloat(a) : parseFloat(a) / 1000; };
+    const count = Math.ceil((5 + P.launchProfile().summary.duration / 30) * 60) + 2;
+    const { frames } = run({ missionPhase: 1 }, (p) => !!p['data-launch-canvas'], count);
+    const hudKm = (f) => Number(f.dataset.launchAltitude) / 1000;
     const rgb = (s) => s.match(/\d+/g).map(Number);
     const flying = frames.filter((f) => f.text.some((t) => t.s === 'ALTITUDE'));
     expect(flying.length).toBeGreaterThan(300);
@@ -524,7 +552,9 @@ describe('Moon Mission loops', () => {
 
   it('launch: on a narrow canvas the Mach / Max Q banner sits clear of both HUD boxes', () => {
     for (const width of [300, 500]) {
-      const { frames } = run({ missionPhase: 1 }, (p) => !!p['data-launch-canvas'], 560, 1000 / 60, width);
+      const time = P.launchProfile().events.maxQ.time + 20;
+      const state = { missionPhase: 1, animPaused: true, launchRun: { version: 1, time, recorded: false } };
+      const { frames } = run(state, (p) => !!p['data-launch-canvas'], 1, 1000 / 60, width);
       const f = frames.find((x) => x.text.some((t) => /^MAX Q passed/.test(t.s)));
       expect(f, width + 'px: the banner is up').toBeTruthy();
       const banner = f.rects.find((r) => r.fill === 'rgba(15,23,42,0.55)');
@@ -538,7 +568,12 @@ describe('Moon Mission loops', () => {
   }, 60_000);
 
   it('Fly Another Mission clears what revealed the coast and launch cards', () => {
-    const store = newStore({ moonMission: { missionPhase: 10, lunarSamples: [], coastSlowest: { v: 1.13, toMoonKm: 38376 }, launchMaxQ: { altKm: 10.9, velMs: 539 }, predictions: { coast_speed: 'dip' } } });
+    // Reset only needs a valid compact save. Reintegrating the entire launch here
+    // adds cost without testing any further reset behavior.
+    const result = { version: 1, outcome: 'orbit', duration: 648.4, cutoffAltitude: 185000, cutoffSpeed: 7800,
+      perigee: 180000, apogee: 190000, eccentricity: 0.0008, period: 5300,
+      peakG: 4, peakQ: 35000, propellantRemaining: 74000 };
+    const store = newStore({ moonMission: { missionPhase: 10, lunarSamples: [], coastSlowest: { v: 1.13, toMoonKm: 38376 }, launchMaxQ: { altKm: 10.9, velMs: 539 }, launchRun: { version: 1, time: result.duration, recorded: true }, launchResult: result, predictions: { coast_speed: 'dip' } } });
     const tree = window.StemLab._registry[ID].render(makeCtx({ toolData: store.toolData }, store));
     const btns = [];
     const walk = (n) => { if (n == null || typeof n !== 'object') return; if (Array.isArray(n)) { n.forEach(walk); return; } if (n.type === 'button') btns.push(n.props); walk(n.props && n.props.children); };
@@ -549,6 +584,8 @@ describe('Moon Mission loops', () => {
     const mm = store.toolData.moonMission;
     expect(mm.coastSlowest, 'coast record cleared').toBeNull();
     expect(mm.launchMaxQ, 'launch record cleared').toBeNull();
+    expect(mm.launchRun, 'launch playback clock cleared').toBeNull();
+    expect(mm.launchResult, 'insertion result cleared').toBeNull();
     expect(mm.predictions).toBeNull();
   });
 
@@ -703,7 +740,7 @@ describe('one scope, many models', () => {
     const tool = dupsIn(readFileSync(FILE, 'utf8'));
     expect(tool.scopes, 'function scopes scanned in the tool').toBeGreaterThan(200);
     expect(tool.dups).toEqual([]);
-  });
+  }, 30_000);   // parses the complete mission source; allow for concurrent browser QA
 });
 
 describe('canvas text alternatives', () => {
@@ -725,7 +762,7 @@ describe('canvas text alternatives', () => {
     };
     const must = {
       1: [/real proportions/, /Mach 1/, /Max Q/, /stages each drop away/],
-      2: [/shadow/, /sunrises/],
+      2: [/shadow/, /sunrises/, /S-IVB/, /gravity toward Earth/, /engine stays off/],
       3: [/free-return/, /pull becomes stronger/, /true-scale/],
       4: [/near side/, /Sea of Tranquility/, /Apollo landing site/, /sunrise line/, /earthshine/],
       7: [/Columbia's orbit/, /about 110 kilometers/],
