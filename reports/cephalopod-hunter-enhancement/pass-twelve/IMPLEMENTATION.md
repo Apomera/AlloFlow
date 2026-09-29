@@ -1,6 +1,6 @@
 # Cephalopod Hunter: rooted vegetation pass
 
-Completed 2026-09-29 after the user requested continued environment and model improvements. This builds on the [eye and water checkpoint](../pass-eleven/IMPLEMENTATION.md). Both checkpoints are saved locally; the shared repository commit gate is documented below.
+Completed 2026-09-29 after the user requested continued environment and model improvements. This builds on the [eye and water checkpoint](../pass-eleven/IMPLEMENTATION.md). Both passes are committed together as `ea4f1d845` with all normal repository hooks passing.
 
 ## Visible changes
 
@@ -24,4 +24,4 @@ Final views: [reef](commonOcto-reef.png), [phone](reef-phone.png), [cuttlefish a
 
 All four runtime copies match SHA-256 a1c99a7b4eb58d5e648838ab537f95f047bd1f1f0e3e1c1f2287a7d59e4a905f. The prepared combined source candidate is 1dbfea07e5bab171be86eb58cc3c0a5708ff6dca7eca0470786782d4d4e3ab62; its difference is exactly the twelve pre-existing screen-reader translation wrappers per tracked file, which remain preserved outside this work's staging. No shared host, handoff, translations or unrelated modules were edited.
 
-The normal commit hook is blocked by unrelated drift between content_engine_source.jsx and desktop/web-app/src/content_engine_source.jsx. The twelve other hook commands passed at the previous checkpoint. Automatic approval review rejected a proposed hook bypass because the user had not explicitly authorized it. No bypass commit ran and no hook/configuration was modified. The completed changes are prepared for a normal commit once that gate clears, or explicit user approval. No deployment is included.
+The normal commit hook initially stopped on unrelated drift between content_engine_source.jsx and desktop/web-app/src/content_engine_source.jsx. The twelve other hook commands passed at that checkpoint. Automatic approval review rejected a proposed hook bypass without explicit authorization; no bypass or hook/configuration change occurred. The unrelated drift subsequently cleared externally, and the complete 40-file change committed normally as `ea4f1d845` with the full original hook enabled and passing. Only the twelve pre-existing translation wrappers per tracked runtime file remain outside this commit. No deployment is included.

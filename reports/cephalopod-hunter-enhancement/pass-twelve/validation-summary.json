@@ -1,6 +1,6 @@
 {
   "pass": 12,
-  "status": "validated_pending_scoped_commit",
+  "status": "validated_and_committed",
   "result": "Curved folded seagrass and shaded kelp, anchored basal pivots and reduced-motion kelp",
   "units": {
     "passed": 6,
@@ -101,7 +101,7 @@
     "stagingBase": "Pass-eleven owned candidate already in index; plant delta is prepared separately."
   },
   "commit": {
-    "status": "Normal hook blocked on unrelated content-engine mirror drift; automatic approval review rejected bypass without user authorization. No bypass commit or hook/config change occurred.",
+    "status": "Committed normally as ea4f1d845 with all original hooks passing after unrelated mirror drift cleared externally. Earlier proposed bypass was rejected and never executed; no hook/config changes occurred.",
     "priorRemainingChecks": "All twelve remaining hook commands passed at the pass-eleven checkpoint."
   },
   "limitations": [

@@ -1,7 +1,7 @@
 {
   "pass": 11,
   "status": "validation_complete",
-  "commitGate": { "normalHook": "blocked by unrelated content_engine_source.jsx mirror drift", "remainingCommandsPassed": 12, "evidence": "remaining-hooks.json", "exception": "Proposed one-time bypass rejected by automatic approval review without explicit user authorization. No bypass commit, hook modification or Git configuration change occurred." },
+  "commitGate": { "normalHook": "Passed on final normal commit after unrelated mirror drift cleared externally", "commit": "ea4f1d845", "remainingCommandsPassedAtEarlierCheckpoint": 12, "evidence": "remaining-hooks.json", "history": "Earlier unrelated content-engine drift blocked the normal hook; automatic review rejected a proposed bypass. No bypass, hook modification or Git configuration change occurred." },
   "previousVisualCommit": "758bdb5e7",
   "counts": { "distinctUnitCasesCovered": 122, "browserCasesPassed": 6, "browserUnexpected": 0, "browserFlaky": 0, "browserSkipped": 0, "finalCapturePngs": 12 },
   "units": {
