@@ -9,6 +9,13 @@ function session(file,extra={},grade='9'){
   const render=()=>tool.render(makeCtx({toolData:data,gradeLevel:grade,setToolData:updater=>{data=typeof updater==='function'?updater(data):updater;}}));
   const node=predicate=>{const result=find(render(),predicate);expect(result).not.toBeNull();return result;};
   return {data:()=>data.anatomy,node,
+    pinStructure(id){
+      node(n=>n.props?.['data-anatomy-quiz-panel']).ref({});
+      const saved=data.anatomy._quizQuestion,ids=saved.poolIds.slice();
+      const current=ids.indexOf(saved.structureId),target=ids.indexOf(id);expect(target).toBeGreaterThanOrEqual(0);
+      [ids[current],ids[target]]=[ids[target],ids[current]];
+      data={anatomy:{...data.anatomy,_quizQuestion:{...saved,poolIds:ids,structureId:id}}};
+    },
     html(){const root=document.createElement('div');root.innerHTML=renderTool('anatomy',data,{gradeLevel:grade});return root;},
     patch(patch){data={anatomy:{...data.anatomy,...patch}};},
     answer(id){node(n=>n.props?.['data-anatomy-quiz-option']===id).props.onClick();},
@@ -20,7 +27,7 @@ beforeEach(resetStemLab);
 for(const file of paths)describe('Anatomy science enhancements: '+file,()=>{
   for(const [quizIdx,name,valid,excluded] of [[18,'Thyroid','endocrine',[]],[90,'Thyroid','endocrine',[]],[14,'Pancreas','digestive',['endocrine']],[34,'Bladder','urinary',[]],[10,'Liver','digestive',[]]]){
     it(`grades ${name} using its scientific system, question ${quizIdx}`,()=>{
-      const s=session(file,{system:'organs',quizIdx});const root=s.html();
+      const s=session(file,{system:'organs',quizIdx});s.pinStructure(name.toLowerCase());const root=s.html();
       expect(root.querySelector('[data-anatomy-quiz-panel]').textContent.toLowerCase()).toContain(name.toLowerCase());
       const options=[...root.querySelectorAll('[data-anatomy-quiz-option]')].map(n=>n.dataset.anatomyQuizOption);
       expect(options).toContain(valid);expect(options).not.toContain('organs');for(const id of excluded)expect(options).not.toContain(id);
@@ -31,19 +38,19 @@ for(const file of paths)describe('Anatomy science enhancements: '+file,()=>{
     });
   }
   it('does not use the shared digestive role of the pharynx as an incorrect distractor',()=>{
-    const s=session(file,{system:'respiratory',quizIdx:58});const root=s.html();
+    const s=session(file,{system:'respiratory',quizIdx:58});s.pinStructure('pharynx');const root=s.html();
     expect(root.querySelector('[data-anatomy-quiz-panel]').textContent).toContain('Pharynx');
     expect(root.querySelector('[data-anatomy-quiz-option="digestive"]')).toBeNull();
     s.answer('respiratory');expect(s.data().quizFeedback.correct).toBe(true);
   });
   it('offers both posterior organ structures in system-identification questions',()=>{
     const seen=[];
-    for(const index of [2,6]){const s=session(file,{system:'organs',view:'posterior',quizIdx:index});const options=[...s.html().querySelectorAll('[data-anatomy-quiz-option]')].map(n=>n.dataset.anatomyQuizOption);const answer=index===2?'urinary':'endocrine';expect(options).toContain(answer);s.answer(answer);expect(s.data().quizFeedback.correct).toBe(true);seen.push(s.data()._quizQuestion.poolIds[(index+Math.floor(index/4))%2]);}
+    for(const index of [2,6]){const s=session(file,{system:'organs',view:'posterior',quizIdx:index});const options=[...s.html().querySelectorAll('[data-anatomy-quiz-option]')].map(n=>n.dataset.anatomyQuizOption);const answer=index===2?'urinary':'endocrine';expect(options).toContain(answer);s.answer(answer);expect(s.data().quizFeedback.correct).toBe(true);seen.push(s.data()._quizQuestion.structureId);}
     expect(new Set(seen).size).toBe(2);
   });
   it('discards legacy system feedback so incorrect organ-group grading does not remain locked',()=>{
     const s=session(file,{system:'organs',quizIdx:18,quizFeedback:{chosen:'organs',correct:true},_quizQuestion:{context:'organs|anterior|3|g912',index:18,poolIds:[]}});
-    expect(s.html().querySelectorAll('[data-anatomy-quiz-option]:disabled')).toHaveLength(0);s.answer('endocrine');expect(s.data().quizFeedback.correct).toBe(true);
+    expect(s.html().querySelectorAll('[data-anatomy-quiz-option]:disabled')).toHaveLength(0);s.pinStructure('thyroid');s.answer('endocrine');expect(s.data().quizFeedback.correct).toBe(true);
   });
   it('records one scored answer separately from confidence and preserves it across self-ratings',()=>{
     const s=session(file);const submit=s.node(n=>n.props?.['data-anatomy-quiz-option']==='skull').props.onClick;
@@ -66,17 +73,18 @@ for(const file of paths)describe('Anatomy science enhancements: '+file,()=>{
   });
   for(const grade of ['K','Kindergarten','Pre-K'])it(`defaults ${grade} to the youngest learning level`,()=>{
     const s=session(file,{complexity:undefined,_activeTab:'explore',selectedStructure:'skull'},grade);
-    expect(s.html().querySelector('#anatomy-study-level').value).toBe('1');expect(s.html().querySelector('[data-anatomy-structure-detail]').textContent).toContain('like a helmet');
+    // 66296cfd0: Explore shows its own level select (#anatomy-explorer-level).
+    expect(s.html().querySelector('#anatomy-explorer-level').value).toBe('1');expect(s.html().querySelector('[data-anatomy-structure-detail]').textContent).toContain('like a helmet');
   });
   it('links the fibula correction and displays real organ membership on the relationship card',()=>{
     const s=session(file,{_activeTab:'explore',selectedStructure:'fibula'});const sources=s.html().querySelector('[data-anatomy-science-sources="fibula"]');
     expect(sources.querySelector('a[href*="6705357"]')).not.toBeNull();expect(s.html().querySelector('[data-anatomy-structure-detail]').textContent).toContain('smaller share of load');
     s.patch({system:'organs',selectedStructure:'thyroid'});expect(s.html().querySelector('.anatomy-relation-node[data-kind="system"]').textContent).toContain('Endocrine');
   });
-  it('places recall before round settings and changes modes through the native activity control',()=>{
+  it('places deck choice above recall and changes modes through the native activity control',()=>{
     const s=session(file,{_activeTab:'flashcards'});const root=s.html();
     const card=root.querySelector('[data-anatomy-recall-card]'),settings=root.querySelector('.anatomy-flashcard-deck-controls');
-    expect(card.compareDocumentPosition(settings)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(settings.compareDocumentPosition(card)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     s.change('anatomy-mobile-activity','homeoHunt');expect(s.data()._activeTab).toBe('homeoHunt');expect(s.html().querySelector('[data-anatomy-feedback-experiment]')).not.toBeNull();
   });
   for(const direction of ['warm','cool'])it(`compares bounded ${direction} feedback only after a prediction, and resets on disturbance change`,()=>{

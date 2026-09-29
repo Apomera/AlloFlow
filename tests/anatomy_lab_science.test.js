@@ -100,7 +100,9 @@ describe('Anatomy Lab interaction performance', () => {
 
   it('wraps quiz diagram feedback and presents an unambiguous score', () => {
     const html = renderAnatomy({ system: 'skeletal', complexity: 3, quizMode: true, quizIdx: 25, quizScore: 7 });
-    expect(html).toContain('Continuous practice · 7 correct / 7 answered · Question 26');
+    const root=document.createElement('div');root.innerHTML=html;
+    expect(root.querySelector('[data-anatomy-quiz-score]').textContent).toContain('7 correct · 7 answered');
+    expect(root.querySelector('.anatomy-quiz-number').textContent).toBe('Question 26');
 
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain('var quizQ2 = quizQ;');
@@ -110,8 +112,9 @@ describe('Anatomy Lab interaction performance', () => {
 
   it('offers a recovery action when a search has no results', () => {
     const html = renderAnatomy({ system: 'skeletal', complexity: 3, search: 'not-a-real-structure' });
-    expect(html).toContain('No structures match');
-    expect(html).toContain('Clear search');
+    // 66296cfd0 made the empty state translatable: 'No matches in this view for "{query}".'
+    expect(html).toMatch(/role="status"><p[^>]*>No matches in this view for .not-a-real-structure.\.<\/p>/);
+    expect(html).toContain('Clear search</button>');
     expect(html).toContain('role="status"');
   });
 });
@@ -300,7 +303,10 @@ describe('Anatomy Lab quiz transition integrity', () => {
     const html = renderAnatomy({ system: 'skeletal', complexity: 3 });
     expect(html).toContain('role="group" aria-label="Body system"');
     expect(html).toContain('role="group" aria-label="Body orientation"');
-    expect(html).toContain('role="group" aria-label="Learning level"');
+    // 66296cfd0: Explore picks the level from a labelled select; the other activities keep the group.
+    expect(html).toContain('<label for="anatomy-explorer-level">Learning level<select id="anatomy-explorer-level">');
+    expect(html).not.toContain('role="group" aria-label="Learning level"');
+    expect(renderAnatomy({ system: 'skeletal', complexity: 3, _activeTab: 'quiz' })).toContain('role="group" aria-label="Learning level"');
   });
 });
 describe('Anatomy Lab navigation recovery', () => {
@@ -529,7 +535,9 @@ describe('Anatomy Lab layer and quiz-state resilience', () => {
     expect(inactive).not.toContain('Anatomy Quiz');
 
     const active = renderAnatomy({ complexity: 3, quizMode: true, quizScore: 'bad', quizFeedback: { chosen: 'forged', correct: true } });
-    expect(active).toContain('Continuous practice · 0 correct / 0 answered · Question 1');
+    const root=document.createElement('div');root.innerHTML=active;
+    expect(root.querySelector('[data-anatomy-quiz-score]').textContent).toContain('0 correct · 0 answered');
+    expect(root.querySelector('.anatomy-quiz-number').textContent).toBe('Question 1');
     expect(active).not.toContain('aria-label="Next Question"');
   });
 
@@ -899,12 +907,12 @@ describe('Anatomy Lab visual hierarchy and canvas legibility', () => {
 
   it('explains patient perspective visually and to assistive technology', () => {
     const anterior = renderAnatomy({ view: 'anterior' });
-    expect(anterior).toContain('Patient right is on your left');
+    expect(anterior).toContain('Patient R / L');
     expect(anterior).toContain('Patient perspective. R appears on the viewer left and L appears on the viewer right.');
     expect(anterior).toContain('Patient right is on the viewer left; patient left is on the viewer right.');
 
     const posterior = renderAnatomy({ view: 'posterior' });
-    expect(posterior).toContain('Patient left/right align with you');
+    expect(posterior).toContain('Patient R / L');
     expect(posterior).toContain('Patient perspective. L and R align with the viewer.');
   });
 

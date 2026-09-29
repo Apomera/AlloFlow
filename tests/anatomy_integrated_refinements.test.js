@@ -40,7 +40,7 @@ for(const file of files)describe('Integrated anatomy refinements: '+file,()=>{
   expect(truths.filter(Boolean)).toHaveLength(4);expect(truths.some((truth,i)=>i&&truth===truths[i-1])).toBe(true);
  });
  for(const [id,note]of Object.entries(notes))it('keeps the full reviewed clinical explanation and source after applying '+id,()=>{
-  const s=session(file,{system:note.system,view:note.view,quizIdx:3});s.capture();const saved=s.data()._quizQuestion,ids=saved.poolIds.filter(x=>x!==id);ids.splice(3,0,id);s.patch({_quizQuestion:{...saved,poolIds:ids}});
+  const s=session(file,{system:note.system,view:note.view,quizIdx:3});s.capture();const saved=s.data()._quizQuestion,ids=saved.poolIds.filter(x=>x!==id);ids.splice(3,0,id);s.patch({_quizQuestion:{...saved,poolIds:ids,structureId:id}});
   expect(s.html().querySelector('[data-anatomy-quiz-panel]').textContent).toContain(strings['ref2_case_'+id]);s.answer(id);const card=s.html().querySelector('[data-anatomy-clinical-note="'+id+'"]');expect(card.querySelector('[data-anatomy-clinical-note-text]').textContent).toBe(note.clinical);expect(card.querySelector('a').href).toBe(note.reference);expect(card.textContent).toContain(note.prompt);
  });
  for(const grade of ['1','4'])it('gates brain details and comparison clinical text for grade '+grade,()=>{

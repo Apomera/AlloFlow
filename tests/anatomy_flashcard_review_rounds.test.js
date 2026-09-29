@@ -20,6 +20,8 @@ function session(file, extra = {}) {
     key: (key, extra = {}) => { const card = find(render(), (node) => !!node.props?.['data-anatomy-recall-card']); expect(card).not.toBeNull(); const target = {}; card.props.onKeyDown({ key, target, currentTarget: target, preventDefault() {}, stopPropagation() {}, ...extra }); },
     system: (name) => { const button = find(render(), (node) => node.type === 'button' && String(node.props['aria-label']).startsWith(name + '. ')); expect(button).not.toBeNull(); button.props.onClick(); },
     level: (level) => { const button = find(render(), (node) => node.type === 'button' && node.props.title === ['Elementary level', 'Middle level', 'Advanced level'][level - 1]); expect(button).not.toBeNull(); button.props.onClick(); },
+    // 66296cfd0: Explore picks the level from its own select instead of the level buttons.
+    explorerLevel: (level) => { const select = find(render(), (node) => node.type === 'select' && node.props.id === 'anatomy-explorer-level'); expect(select).not.toBeNull(); select.props.onChange({ target: { value: String(level) } }); },
     html: () => { const root = document.createElement('div'); root.innerHTML = renderTool('anatomy', data); return root; } };
 }
 beforeEach(resetStemLab);
@@ -214,8 +216,8 @@ describe('Anatomy saved rounds across study contexts', () => {
   });
   it.each(paths)('resumes a round after changing systems and levels through Explore in %s', file => {
     const s = session(file); s.key(' '); s.key('2'); s.key('ArrowRight'); s.key(' '); const saved = round(s);
-    s.click('Explore'); s.system('Respiratory'); s.level(1); s.click('Cards'); s.key('ArrowRight');
-    s.click('Explore'); s.system('Skeletal'); s.level(3); s.click('Cards');
+    s.click('Explore'); s.system('Respiratory'); s.explorerLevel(1); expect(s.data().complexity).toBe(1); s.click('Cards'); s.key('ArrowRight');
+    s.click('Explore'); s.system('Skeletal'); s.explorerLevel(3); expect(s.data().complexity).toBe(3); s.click('Cards');
     expect(round(s)).toEqual(saved); expect(s.data()._flashcardFlipped).toBe(false); expectAligned(s);
   });
   it.each(paths)('freezes an unrated card position and preserves the same revealed card when reopening in %s', file => {

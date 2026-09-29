@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { loadTool, makeCtx, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 // Round 13 (2026-09-02): quiz misses explain the difference between the chosen and correct
 // structures, well-known misconceptions become "Myth or fact?" items and a Myth buster box,
@@ -64,7 +64,12 @@ describe('Anatomy myth or fact', () => {
     expect(labels).toEqual(['Fact', 'Myth']);
     expect(mythRound.root.textContent).toMatch(/Myth or fact\?/);
 
-    const answered = render(filePath, { _activeTab: 'quiz', quizMode: true, quizIdx: mythRound.idx, quizFeedback: { chosen: 'true', correct: false } }, OLDER);
+    const tool = loadTool(filePath, 'anatomy');
+    let saved = { anatomy: { system: 'circulatory', view: 'anterior', complexity: 3, _activeTab: 'quiz', quizIdx: mythRound.idx } };
+    const tree = tool.render(makeCtx({ ...OLDER, toolData: saved, setToolData: update => { saved = typeof update === 'function' ? update(saved) : update; } }));
+    function capture(node) { if (!node || typeof node !== 'object') return; if (Array.isArray(node)) return node.forEach(capture); if (node.props?.['data-anatomy-quiz-panel']) node.ref({}); else capture(node.props?.children); }
+    capture(tree);
+    const answered = render(filePath, { ...saved.anatomy, quizFeedback: { chosen: 'true', correct: false } }, OLDER);
     const explanation = answered.querySelector('[data-anatomy-myth-fact="heart"]');
     expect(explanation).not.toBeNull();
     expect(explanation.textContent).toMatch(/Myth: The heart sits on the left side of the chest\./);

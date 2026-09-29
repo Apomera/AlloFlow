@@ -2,11 +2,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import assetChecker from '../dev-tools/check_anatomy_clinical_assets.cjs';
-const { checkClinicalAssets } = assetChecker;
+const { checkClinicalAssets, BUILD_DIR } = assetChecker;
+// desktop/web-app/build is a gitignored build output (absent in CI): its copy is compared only once built.
+const buildMissing = !fs.existsSync(BUILD_DIR);
 
 describe('Anatomy Clinical Atlas assets', () => {
   it('keeps the licensed HRA model, ontology crosswalk, hashes, and public mirror aligned', () => {
-    const result = checkClinicalAssets();
+    const result = checkClinicalAssets({ includeBuild: false });
     expect(result.packCount).toBe(2);
     const kidney = result.packs.find((pack) => pack.id === 'hra-kidney-female-left-v1.3');
     const heart = result.packs.find((pack) => pack.id === 'hra-heart-female-v1.3');
@@ -31,6 +33,10 @@ describe('Anatomy Clinical Atlas assets', () => {
       crosswalkRows: 142,
       ontologyCount: 9,
     });
+  });
+
+  it.skipIf(buildMissing)('keeps the local build mirror aligned too' + (buildMissing ? ' (skipped: gitignored build output not present)' : ''), () => {
+    expect(checkClinicalAssets().packCount).toBe(2);
   });
 
   it('keeps HRA attribution visible in the asset, NOTICES, and in-app credit surfaces', () => {

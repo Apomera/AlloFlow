@@ -129,7 +129,11 @@ describe('Anatomy mobile topbar', () => {
     expect(title?.querySelector('p')?.textContent.trim().length).toBeGreaterThan(0);
     // Comfort text, Study sheet, Snapshot — the study sheet toggle joined the topbar 2026-09-02.
     expect(actions).toHaveLength(3);
-    expect(actions[0].getAttribute('aria-label')).toMatch(/comfortable reading mode/i);
+    // 66296cfd0: the name is the visible "Larger text" (label in name); the mode is described.
+    expect(actions[0].hasAttribute('aria-label')).toBe(false);
+    expect(actions[0].textContent.trim()).toBe('Larger text');
+    expect(actions[0].getAttribute('aria-pressed')).toBe('false');
+    expect(actions[0].getAttribute('aria-description')).toMatch(/comfortable reading mode/i);
     expect(actions[1].getAttribute('aria-controls')).toBe('anatomy-study-sheet');
     expect(snapshot).toBe(actions[2]);
     expect(snapshot?.getAttribute('aria-label')).toMatch(/Snapshot/i);

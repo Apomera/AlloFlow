@@ -1,0 +1,54 @@
+{
+  "broadUnitChecks": 400,
+  "finalTargetedChecks": 65,
+  "finalChange": "Normalize corrupted quiz indices consistently for rendering, answers, and Next.",
+  "browserScenarios": 3,
+  "accessibilityScans": 15,
+  "accessibilityViolations": 0,
+  "quizPanelTop": 246,
+  "cardsPanelTop": 246,
+  "quizSizes": [
+    {
+      "width": 320,
+      "scroll": 320
+    },
+    {
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "width": 768,
+      "scroll": 768
+    },
+    {
+      "width": 1440,
+      "scroll": 1440
+    }
+  ],
+  "cardsSizes": [
+    {
+      "width": 320,
+      "scroll": 320
+    },
+    {
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "width": 768,
+      "scroll": 768
+    },
+    {
+      "width": 1440,
+      "scroll": 1440
+    }
+  ],
+  "browserErrors": [],
+  "sourceSha256": "eb8525312287dbf24d8cda52693aa87dbc7165063085541838a2654b36b9d68f",
+  "sourceHashLineEndings": "LF",
+  "sourceMirrorsMatch": true,
+  "localeCandidateMirrorsMatch": true,
+  "anatomyLabelsPerLocale": 30,
+  "localeScope": "Only card_flow_*, quiz_flow_*, and the five Quiz session-control labels.",
+  "verificationDate": "2026-09-29T20:57:00.624Z"
+}

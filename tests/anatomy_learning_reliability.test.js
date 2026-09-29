@@ -51,7 +51,7 @@ for (const file of paths) {
       s.patch({ _structureConfidence: { ribs: 'practice' } });
       expect(s.prompt()).toBe(original); expect(s.options()).toEqual(originalOptions);
       s.answer('skull'); s.click('Next Question');
-      expect(s.data()._quizQuestion.index).toBe(1); expect(s.data()._quizQuestion.poolIds[0]).toBe('ribs');
+      expect(s.data()._quizQuestion.index).toBe(1); expect(s.data()._quizQuestion.poolIds[0]).toBe('skull');
       expect(s.feedback()).toBeUndefined();
       s.click('Restart quiz');
       expect(s.data()._quizQuestion.index).toBe(0); expect(s.data().quizScore).toBe(0); expect(s.data()._quizAttempts).toBe(0);
