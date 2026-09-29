@@ -1,0 +1,2469 @@
+{
+  "createdAt": "2026-09-29T22:11:11.221Z",
+  "sourceSha256": "4d8fac59568e4d1346634519c062e09043f05c94c26e9e0e429bea42f1336bb5",
+  "passed": true,
+  "configurations": [
+    {
+      "theme": "default",
+      "width": 1100,
+      "snapshot": {
+        "index": 59,
+        "count": 131,
+        "t": 2.0649999999999986,
+        "x": 59.20421400098686,
+        "y": 30.560534437271816,
+        "vx": 28.670321550114714,
+        "vy": -0.16182472771338796,
+        "speed": 28.670778242480125,
+        "ax": 0,
+        "ay": -9.8,
+        "fx": 0,
+        "fy": -19.6,
+        "gravityForce": 19.6,
+        "dragForce": 0,
+        "ke": 822.0135250294717,
+        "pe": 598.9864749705276,
+        "totalEnergy": 1420.9999999999993,
+        "initialEnergy": 1421,
+        "dragLoss": 0,
+        "parameters": {
+          "angle": 35,
+          "velocity": 35,
+          "gravity": 9.8,
+          "mass": 2,
+          "launchHeight": 10,
+          "airResist": false,
+          "modelVersion": "projectile-v3"
+        },
+        "run": 1,
+        "impact": false
+      },
+      "marker": {
+        "x": 388.69457721279355,
+        "y": 174.0078691218857,
+        "t": 2.0649999999999986,
+        "index": 59,
+        "run": 1
+      },
+      "graphRun": "1",
+      "tableRun": "1",
+      "overflow": 0,
+      "evidenceSha256": "03c1599a2723876870150196e077ee503af50599898c6d4142baed1651f79b2c",
+      "evidenceUnchanged": true,
+      "canvas": {
+        "width": 1020,
+        "height": 476,
+        "text": [
+          {
+            "text": "0",
+            "left": 36.6630859375,
+            "right": 43.1630859375,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "20",
+            "left": 151.12000905252972,
+            "right": 164.29383717752972,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "40",
+            "left": 268.91384623005945,
+            "right": 282.08767435505945,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "60",
+            "left": 386.7076834075891,
+            "right": 399.8815115325891,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "80",
+            "left": 504.50152058511884,
+            "right": 517.6753487101189,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "100",
+            "left": 619.9584437001486,
+            "right": 638.8060999501486,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "120",
+            "left": 737.7522808776782,
+            "right": 756.5999371276782,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "140",
+            "left": 855.546118055208,
+            "right": 874.393774305208,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "160",
+            "left": 973.3399552327377,
+            "right": 992.1876114827377,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "10",
+            "left": 18.65234375,
+            "right": 30.826171875,
+            "top": 290.60308141123517,
+            "bottom": 299.10308141123517
+          },
+          {
+            "text": "20",
+            "left": 17.65234375,
+            "right": 30.826171875,
+            "top": 231.70616282247028,
+            "bottom": 240.20616282247028
+          },
+          {
+            "text": "30",
+            "left": 17.65234375,
+            "right": 30.826171875,
+            "top": 172.80924423370544,
+            "bottom": 181.30924423370544
+          },
+          {
+            "text": "Height (m)",
+            "left": 12.5,
+            "right": 68.013671875,
+            "top": 107.5,
+            "bottom": 118.5
+          },
+          {
+            "text": "Distance (m)",
+            "left": 932.490234375,
+            "right": 1000.00390625,
+            "top": 385.5,
+            "bottom": 396.5
+          },
+          {
+            "text": "35°  ·  35 m/s  ·  h₀ 10 m",
+            "left": 14,
+            "right": 167.298828125,
+            "top": 15,
+            "bottom": 25
+          },
+          {
+            "text": "g 9.8 m/s²  ·  2 kg",
+            "left": 14,
+            "right": 107.189453125,
+            "top": 38.5,
+            "bottom": 49.5
+          },
+          {
+            "text": "Run 1 · Recorded point · No air drag",
+            "left": 14.5,
+            "right": 207.923828125,
+            "top": 59.5,
+            "bottom": 70.5
+          },
+          {
+            "text": "t 2.065 s",
+            "left": 14,
+            "right": 60.03125,
+            "top": 80.5,
+            "bottom": 89
+          },
+          {
+            "text": "Vx 28.67 m/s",
+            "left": 344.1666666666667,
+            "right": 414.6979166666667,
+            "top": 80.5,
+            "bottom": 89
+          },
+          {
+            "text": "Vy -0.16 m/s",
+            "left": 674.8333333333334,
+            "right": 742.2415364583334,
+            "top": 80.5,
+            "bottom": 91.5
+          },
+          {
+            "text": "Initial energy · 1421 J",
+            "left": 14.5,
+            "right": 134.71484375,
+            "top": 407.5,
+            "bottom": 418.5
+          },
+          {
+            "text": "Selected point",
+            "left": 14,
+            "right": 90.220703125,
+            "top": 423.5,
+            "bottom": 434.5
+          },
+          {
+            "text": "KE 822 J",
+            "left": 14.5,
+            "right": 62.197265625,
+            "top": 439.5,
+            "bottom": 448
+          },
+          {
+            "text": "PE 599 J",
+            "left": 345.1666666666667,
+            "right": 392.8639322916667,
+            "top": 439.5,
+            "bottom": 448
+          },
+          {
+            "text": "Drag 0 J",
+            "left": 675.8333333333334,
+            "right": 720.1848958333334,
+            "top": 439.5,
+            "bottom": 450.5
+          },
+          {
+            "text": "Recorded point",
+            "left": 414.19457721279355,
+            "right": 502.20043658779355,
+            "top": 164.5078691218857,
+            "bottom": 175.5078691218857
+          },
+          {
+            "text": "t = 2.065 s",
+            "left": 413.69457721279355,
+            "right": 471.22973346279355,
+            "top": 181.5078691218857,
+            "bottom": 190.0078691218857
+          },
+          {
+            "text": "▲ APEX 30.6 m",
+            "left": 266.1249986555669,
+            "right": 352.5371080305669,
+            "top": 164.50000000000023,
+            "bottom": 173.00000000000023
+          },
+          {
+            "text": "t = 2.05 s · Vy = 0",
+            "left": 264.6249986555669,
+            "right": 360.7324205305669,
+            "top": 181.50000000000023,
+            "bottom": 192.50000000000023
+          },
+          {
+            "text": "Landed 130.3 m",
+            "left": 833.1193205816737,
+            "right": 921.9845549566737,
+            "top": 327.5,
+            "bottom": 336
+          },
+          {
+            "text": "h₀ = 10 m",
+            "left": 100.5,
+            "right": 151.28515625,
+            "top": 327.5,
+            "bottom": 336
+          },
+          {
+            "text": "no-drag ideal",
+            "left": 411.406248655567,
+            "right": 485.912108030567,
+            "top": 327.5,
+            "bottom": 338.5
+          }
+        ]
+      },
+      "text": [
+        {
+          "text": "Inspect a recorded flight",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Inspect this flight",
+          "font": 12,
+          "contrast": 5.197302355022151
+        },
+        {
+          "text": "Up to five flights are kept in this session. Choosing a flight pauses playback and links its recorded canvas, graphs, and table.",
+          "font": 12,
+          "contrast": 6.467463986628363
+        },
+        {
+          "text": "Inspect",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Inspect",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Run 1 · θ 35° · v₀ 35 m/s · Air drag off",
+          "font": 12,
+          "contrast": 5.302406823647519
+        }
+      ],
+      "screenshots": [
+        "history-default-1100-canvas.png",
+        "history-default-1100-chooser.png",
+        "history-default-1100-inspector.png",
+        "history-default-1100-graphs.png"
+      ],
+      "pageErrors": []
+    },
+    {
+      "theme": "default",
+      "width": 375,
+      "snapshot": {
+        "index": 59,
+        "count": 131,
+        "t": 2.0649999999999986,
+        "x": 59.20421400098686,
+        "y": 30.560534437271816,
+        "vx": 28.670321550114714,
+        "vy": -0.16182472771338796,
+        "speed": 28.670778242480125,
+        "ax": 0,
+        "ay": -9.8,
+        "fx": 0,
+        "fy": -19.6,
+        "gravityForce": 19.6,
+        "dragForce": 0,
+        "ke": 822.0135250294717,
+        "pe": 598.9864749705276,
+        "totalEnergy": 1420.9999999999993,
+        "initialEnergy": 1421,
+        "dragLoss": 0,
+        "parameters": {
+          "angle": 35,
+          "velocity": 35,
+          "gravity": 9.8,
+          "mass": 2,
+          "launchHeight": 10,
+          "airResist": false,
+          "modelVersion": "projectile-v3"
+        },
+        "run": 1,
+        "impact": false
+      },
+      "marker": {
+        "x": 131.98654853044155,
+        "y": 306.5176014652694,
+        "t": 2.0649999999999986,
+        "index": 59,
+        "run": 1
+      },
+      "graphRun": "1",
+      "tableRun": "1",
+      "overflow": 0,
+      "evidenceSha256": "03c1599a2723876870150196e077ee503af50599898c6d4142baed1651f79b2c",
+      "evidenceUnchanged": true,
+      "canvas": {
+        "width": 331,
+        "height": 476,
+        "text": [
+          {
+            "text": "0",
+            "left": 36.6630859375,
+            "right": 43.1630859375,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "50",
+            "left": 111.01198367288,
+            "right": 124.18581179788,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "100",
+            "left": 186.36088140826,
+            "right": 205.20853765826,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "150",
+            "left": 264.04669320614,
+            "right": 282.89434945614,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "50",
+            "left": 17.65234375,
+            "right": 30.826171875,
+            "top": 271.81418820212,
+            "bottom": 280.31418820212
+          },
+          {
+            "text": "100",
+            "left": 11.978515625,
+            "right": 30.826171875,
+            "top": 194.12837640424,
+            "bottom": 202.62837640424
+          },
+          {
+            "text": "Height (m)",
+            "left": 12.5,
+            "right": 68.013671875,
+            "top": 107.5,
+            "bottom": 118.5
+          },
+          {
+            "text": "Distance (m)",
+            "left": 243.490234375,
+            "right": 311.00390625,
+            "top": 385.5,
+            "bottom": 396.5
+          },
+          {
+            "text": "35°  ·  35 m/s  ·  h₀ 10 m",
+            "left": 14,
+            "right": 167.298828125,
+            "top": 15,
+            "bottom": 25
+          },
+          {
+            "text": "g 9.8 m/s²  ·  2 kg",
+            "left": 14,
+            "right": 107.189453125,
+            "top": 38.5,
+            "bottom": 49.5
+          },
+          {
+            "text": "Run 1 · Recorded point · No air drag",
+            "left": 14.5,
+            "right": 207.923828125,
+            "top": 59.5,
+            "bottom": 70.5
+          },
+          {
+            "text": "t 2.065 s",
+            "left": 14,
+            "right": 60.03125,
+            "top": 80.5,
+            "bottom": 89
+          },
+          {
+            "text": "Vx 28.67 m/s",
+            "left": 114.5,
+            "right": 185.03125,
+            "top": 80.5,
+            "bottom": 89
+          },
+          {
+            "text": "Vy -0.16 m/s",
+            "left": 215.5,
+            "right": 282.908203125,
+            "top": 80.5,
+            "bottom": 91.5
+          },
+          {
+            "text": "Initial energy · 1421 J",
+            "left": 14.5,
+            "right": 134.71484375,
+            "top": 407.5,
+            "bottom": 418.5
+          },
+          {
+            "text": "Selected point",
+            "left": 14,
+            "right": 90.220703125,
+            "top": 423.5,
+            "bottom": 434.5
+          },
+          {
+            "text": "KE 822 J",
+            "left": 14.5,
+            "right": 62.197265625,
+            "top": 439.5,
+            "bottom": 448
+          },
+          {
+            "text": "PE 599 J",
+            "left": 115.5,
+            "right": 163.197265625,
+            "top": 439.5,
+            "bottom": 448
+          },
+          {
+            "text": "Drag 0 J",
+            "left": 216.5,
+            "right": 260.8515625,
+            "top": 439.5,
+            "bottom": 450.5
+          },
+          {
+            "text": "Recorded point",
+            "left": 157.48654853044155,
+            "right": 245.49240790544155,
+            "top": 297.0176014652694,
+            "bottom": 308.0176014652694
+          },
+          {
+            "text": "t = 2.065 s",
+            "left": 156.98654853044155,
+            "right": 214.52170478044155,
+            "top": 314.0176014652694,
+            "bottom": 322.5176014652694
+          },
+          {
+            "text": "▲ APEX 30.6 m",
+            "left": 84.61035510778834,
+            "right": 171.02246448278834,
+            "top": 239.0155255701752,
+            "bottom": 247.5155255701752
+          },
+          {
+            "text": "t = 2.05 s · Vy = 0",
+            "left": 83.11035510778834,
+            "right": 179.21777698278834,
+            "top": 256.0155255701752,
+            "bottom": 267.0155255701752
+          },
+          {
+            "text": "h₀ = 10 m",
+            "left": 49.5224609375,
+            "right": 100.3076171875,
+            "top": 297.962837640424,
+            "bottom": 306.462837640424
+          }
+        ]
+      },
+      "text": [
+        {
+          "text": "Inspect a recorded flight",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Inspect this flight",
+          "font": 12,
+          "contrast": 5.197302355022151
+        },
+        {
+          "text": "Up to five flights are kept in this session. Choosing a flight pauses playback and links its recorded canvas, graphs, and table.",
+          "font": 12,
+          "contrast": 6.467463986628363
+        },
+        {
+          "text": "Inspect",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Inspect",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Run 1 · θ 35° · v₀ 35 m/s · Air drag off",
+          "font": 12,
+          "contrast": 5.302406823647519
+        }
+      ],
+      "screenshots": [
+        "history-default-375-canvas.png",
+        "history-default-375-chooser.png",
+        "history-default-375-inspector.png",
+        "history-default-375-graphs.png"
+      ],
+      "pageErrors": []
+    },
+    {
+      "theme": "default",
+      "width": 320,
+      "snapshot": {
+        "index": 59,
+        "count": 131,
+        "t": 2.0649999999999986,
+        "x": 59.20421400098686,
+        "y": 30.560534437271816,
+        "vx": 28.670321550114714,
+        "vy": -0.16182472771338796,
+        "speed": 28.670778242480125,
+        "ax": 0,
+        "ay": -9.8,
+        "fx": 0,
+        "fy": -19.6,
+        "gravityForce": 19.6,
+        "dragForce": 0,
+        "ke": 822.0135250294717,
+        "pe": 598.9864749705276,
+        "totalEnergy": 1420.9999999999993,
+        "initialEnergy": 1421,
+        "dragLoss": 0,
+        "parameters": {
+          "angle": 35,
+          "velocity": 35,
+          "gravity": 9.8,
+          "mass": 2,
+          "launchHeight": 10,
+          "airResist": false,
+          "modelVersion": "projectile-v3"
+        },
+        "run": 1,
+        "impact": false
+      },
+      "marker": {
+        "x": 111.16654783425106,
+        "y": 317.2646464011138,
+        "t": 2.0649999999999986,
+        "index": 59,
+        "run": 1
+      },
+      "graphRun": "1",
+      "tableRun": "1",
+      "overflow": 0,
+      "evidenceSha256": "03c1599a2723876870150196e077ee503af50599898c6d4142baed1651f79b2c",
+      "evidenceUnchanged": true,
+      "canvas": {
+        "width": 276,
+        "height": 476,
+        "text": [
+          {
+            "text": "0",
+            "left": 36.6630859375,
+            "right": 43.1630859375,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "100",
+            "left": 151.19446454502213,
+            "right": 170.04212079502213,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "50",
+            "left": 17.65234375,
+            "right": 30.826171875,
+            "top": 289.39739663373894,
+            "bottom": 297.89739663373894
+          },
+          {
+            "text": "100",
+            "left": 11.978515625,
+            "right": 30.826171875,
+            "top": 229.29479326747787,
+            "bottom": 237.79479326747787
+          },
+          {
+            "text": "150",
+            "left": 11.978515625,
+            "right": 30.826171875,
+            "top": 169.1921899012168,
+            "bottom": 177.6921899012168
+          },
+          {
+            "text": "Height (m)",
+            "left": 12.5,
+            "right": 68.013671875,
+            "top": 107.5,
+            "bottom": 118.5
+          },
+          {
+            "text": "Distance (m)",
+            "left": 188.490234375,
+            "right": 256.00390625,
+            "top": 385.5,
+            "bottom": 396.5
+          },
+          {
+            "text": "35°  ·  35 m/s  ·  h₀ 10 m",
+            "left": 14,
+            "right": 167.298828125,
+            "top": 15,
+            "bottom": 25
+          },
+          {
+            "text": "g 9.8 m/s²  ·  2 kg",
+            "left": 14,
+            "right": 107.189453125,
+            "top": 38.5,
+            "bottom": 49.5
+          },
+          {
+            "text": "Run 1 · Recorded point · No air drag",
+            "left": 14.5,
+            "right": 207.923828125,
+            "top": 59.5,
+            "bottom": 70.5
+          },
+          {
+            "text": "t 2.065 s",
+            "left": 14,
+            "right": 60.03125,
+            "top": 80.5,
+            "bottom": 89
+          },
+          {
+            "text": "Vx 28.67 m/s",
+            "left": 96.16666666666667,
+            "right": 166.69791666666669,
+            "top": 80.5,
+            "bottom": 89
+          },
+          {
+            "text": "Vy -0.16 m/s",
+            "left": 178.83333333333334,
+            "right": 246.24153645833334,
+            "top": 80.5,
+            "bottom": 91.5
+          },
+          {
+            "text": "Initial energy · 1421 J",
+            "left": 14.5,
+            "right": 134.71484375,
+            "top": 407.5,
+            "bottom": 418.5
+          },
+          {
+            "text": "Selected point",
+            "left": 14,
+            "right": 90.220703125,
+            "top": 423.5,
+            "bottom": 434.5
+          },
+          {
+            "text": "KE 822 J",
+            "left": 14.5,
+            "right": 62.197265625,
+            "top": 439.5,
+            "bottom": 448
+          },
+          {
+            "text": "PE 599 J",
+            "left": 97.16666666666667,
+            "right": 144.86393229166669,
+            "top": 439.5,
+            "bottom": 448
+          },
+          {
+            "text": "Drag 0 J",
+            "left": 179.83333333333334,
+            "right": 224.18489583333334,
+            "top": 439.5,
+            "bottom": 450.5
+          },
+          {
+            "text": "Recorded point",
+            "left": 136.66654783425105,
+            "right": 224.67240720925105,
+            "top": 307.7646464011138,
+            "bottom": 318.7646464011138
+          },
+          {
+            "text": "t = 2.065 s",
+            "left": 136.16654783425105,
+            "right": 193.70170408425105,
+            "top": 324.7646464011138,
+            "bottom": 333.2646464011138
+          },
+          {
+            "text": "▲ APEX 30.6 m",
+            "left": 63.95684109162224,
+            "right": 150.36895046662224,
+            "top": 249.76304035881867,
+            "bottom": 258.26304035881867
+          },
+          {
+            "text": "t = 2.05 s · Vy = 0",
+            "left": 62.45684109162224,
+            "right": 158.56426296662224,
+            "top": 266.76304035881867,
+            "bottom": 277.76304035881867
+          }
+        ]
+      },
+      "text": [
+        {
+          "text": "Inspect a recorded flight",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Inspect this flight",
+          "font": 12,
+          "contrast": 5.197302355022151
+        },
+        {
+          "text": "Up to five flights are kept in this session. Choosing a flight pauses playback and links its recorded canvas, graphs, and table.",
+          "font": 12,
+          "contrast": 6.467463986628363
+        },
+        {
+          "text": "Inspect",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Inspect",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Run 1 · θ 35° · v₀ 35 m/s · Air drag off",
+          "font": 12,
+          "contrast": 5.302406823647519
+        }
+      ],
+      "screenshots": [
+        "history-default-320-canvas.png",
+        "history-default-320-chooser.png",
+        "history-default-320-inspector.png",
+        "history-default-320-graphs.png"
+      ],
+      "pageErrors": []
+    },
+    {
+      "theme": "dark",
+      "width": 1100,
+      "snapshot": {
+        "index": 59,
+        "count": 131,
+        "t": 2.0649999999999986,
+        "x": 59.20421400098686,
+        "y": 30.560534437271816,
+        "vx": 28.670321550114714,
+        "vy": -0.16182472771338796,
+        "speed": 28.670778242480125,
+        "ax": 0,
+        "ay": -9.8,
+        "fx": 0,
+        "fy": -19.6,
+        "gravityForce": 19.6,
+        "dragForce": 0,
+        "ke": 822.0135250294717,
+        "pe": 598.9864749705276,
+        "totalEnergy": 1420.9999999999993,
+        "initialEnergy": 1421,
+        "dragLoss": 0,
+        "parameters": {
+          "angle": 35,
+          "velocity": 35,
+          "gravity": 9.8,
+          "mass": 2,
+          "launchHeight": 10,
+          "airResist": false,
+          "modelVersion": "projectile-v3"
+        },
+        "run": 1,
+        "impact": false
+      },
+      "marker": {
+        "x": 388.69457721279355,
+        "y": 174.0078691218857,
+        "t": 2.0649999999999986,
+        "index": 59,
+        "run": 1
+      },
+      "graphRun": "1",
+      "tableRun": "1",
+      "overflow": 0,
+      "evidenceSha256": "03c1599a2723876870150196e077ee503af50599898c6d4142baed1651f79b2c",
+      "evidenceUnchanged": true,
+      "canvas": {
+        "width": 1020,
+        "height": 476,
+        "text": [
+          {
+            "text": "0",
+            "left": 36.6630859375,
+            "right": 43.1630859375,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "20",
+            "left": 151.12000905252972,
+            "right": 164.29383717752972,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "40",
+            "left": 268.91384623005945,
+            "right": 282.08767435505945,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "60",
+            "left": 386.7076834075891,
+            "right": 399.8815115325891,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "80",
+            "left": 504.50152058511884,
+            "right": 517.6753487101189,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "100",
+            "left": 619.9584437001486,
+            "right": 638.8060999501486,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "120",
+            "left": 737.7522808776782,
+            "right": 756.5999371276782,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "140",
+            "left": 855.546118055208,
+            "right": 874.393774305208,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "160",
+            "left": 973.3399552327377,
+            "right": 992.1876114827377,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "10",
+            "left": 18.65234375,
+            "right": 30.826171875,
+            "top": 290.60308141123517,
+            "bottom": 299.10308141123517
+          },
+          {
+            "text": "20",
+            "left": 17.65234375,
+            "right": 30.826171875,
+            "top": 231.70616282247028,
+            "bottom": 240.20616282247028
+          },
+          {
+            "text": "30",
+            "left": 17.65234375,
+            "right": 30.826171875,
+            "top": 172.80924423370544,
+            "bottom": 181.30924423370544
+          },
+          {
+            "text": "Height (m)",
+            "left": 12.5,
+            "right": 68.013671875,
+            "top": 107.5,
+            "bottom": 118.5
+          },
+          {
+            "text": "Distance (m)",
+            "left": 932.490234375,
+            "right": 1000.00390625,
+            "top": 385.5,
+            "bottom": 396.5
+          },
+          {
+            "text": "35°  ·  35 m/s  ·  h₀ 10 m",
+            "left": 14,
+            "right": 167.298828125,
+            "top": 15,
+            "bottom": 25
+          },
+          {
+            "text": "g 9.8 m/s²  ·  2 kg",
+            "left": 14,
+            "right": 107.189453125,
+            "top": 38.5,
+            "bottom": 49.5
+          },
+          {
+            "text": "Run 1 · Recorded point · No air drag",
+            "left": 14.5,
+            "right": 207.923828125,
+            "top": 59.5,
+            "bottom": 70.5
+          },
+          {
+            "text": "t 2.065 s",
+            "left": 14,
+            "right": 60.03125,
+            "top": 80.5,
+            "bottom": 89
+          },
+          {
+            "text": "Vx 28.67 m/s",
+            "left": 344.1666666666667,
+            "right": 414.6979166666667,
+            "top": 80.5,
+            "bottom": 89
+          },
+          {
+            "text": "Vy -0.16 m/s",
+            "left": 674.8333333333334,
+            "right": 742.2415364583334,
+            "top": 80.5,
+            "bottom": 91.5
+          },
+          {
+            "text": "Initial energy · 1421 J",
+            "left": 14.5,
+            "right": 134.71484375,
+            "top": 407.5,
+            "bottom": 418.5
+          },
+          {
+            "text": "Selected point",
+            "left": 14,
+            "right": 90.220703125,
+            "top": 423.5,
+            "bottom": 434.5
+          },
+          {
+            "text": "KE 822 J",
+            "left": 14.5,
+            "right": 62.197265625,
+            "top": 439.5,
+            "bottom": 448
+          },
+          {
+            "text": "PE 599 J",
+            "left": 345.1666666666667,
+            "right": 392.8639322916667,
+            "top": 439.5,
+            "bottom": 448
+          },
+          {
+            "text": "Drag 0 J",
+            "left": 675.8333333333334,
+            "right": 720.1848958333334,
+            "top": 439.5,
+            "bottom": 450.5
+          },
+          {
+            "text": "Recorded point",
+            "left": 414.19457721279355,
+            "right": 502.20043658779355,
+            "top": 164.5078691218857,
+            "bottom": 175.5078691218857
+          },
+          {
+            "text": "t = 2.065 s",
+            "left": 413.69457721279355,
+            "right": 471.22973346279355,
+            "top": 181.5078691218857,
+            "bottom": 190.0078691218857
+          },
+          {
+            "text": "▲ APEX 30.6 m",
+            "left": 266.1249986555669,
+            "right": 352.5371080305669,
+            "top": 164.50000000000023,
+            "bottom": 173.00000000000023
+          },
+          {
+            "text": "t = 2.05 s · Vy = 0",
+            "left": 264.6249986555669,
+            "right": 360.7324205305669,
+            "top": 181.50000000000023,
+            "bottom": 192.50000000000023
+          },
+          {
+            "text": "Landed 130.3 m",
+            "left": 833.1193205816737,
+            "right": 921.9845549566737,
+            "top": 327.5,
+            "bottom": 336
+          },
+          {
+            "text": "h₀ = 10 m",
+            "left": 100.5,
+            "right": 151.28515625,
+            "top": 327.5,
+            "bottom": 336
+          },
+          {
+            "text": "no-drag ideal",
+            "left": 411.406248655567,
+            "right": 485.912108030567,
+            "top": 327.5,
+            "bottom": 338.5
+          }
+        ]
+      },
+      "text": [
+        {
+          "text": "Inspect a recorded flight",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Inspect this flight",
+          "font": 12,
+          "contrast": 6.790209197824105
+        },
+        {
+          "text": "Up to five flights are kept in this session. Choosing a flight pauses playback and links its recorded canvas, graphs, and table.",
+          "font": 12,
+          "contrast": 9.516201944392245
+        },
+        {
+          "text": "Inspect",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Inspect",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Run 1 · θ 35° · v₀ 35 m/s · Air drag off",
+          "font": 12,
+          "contrast": 9.71785581253207
+        }
+      ],
+      "screenshots": [
+        "history-dark-1100-canvas.png",
+        "history-dark-1100-chooser.png",
+        "history-dark-1100-inspector.png",
+        "history-dark-1100-graphs.png"
+      ],
+      "pageErrors": []
+    },
+    {
+      "theme": "dark",
+      "width": 375,
+      "snapshot": {
+        "index": 59,
+        "count": 131,
+        "t": 2.0649999999999986,
+        "x": 59.20421400098686,
+        "y": 30.560534437271816,
+        "vx": 28.670321550114714,
+        "vy": -0.16182472771338796,
+        "speed": 28.670778242480125,
+        "ax": 0,
+        "ay": -9.8,
+        "fx": 0,
+        "fy": -19.6,
+        "gravityForce": 19.6,
+        "dragForce": 0,
+        "ke": 822.0135250294717,
+        "pe": 598.9864749705276,
+        "totalEnergy": 1420.9999999999993,
+        "initialEnergy": 1421,
+        "dragLoss": 0,
+        "parameters": {
+          "angle": 35,
+          "velocity": 35,
+          "gravity": 9.8,
+          "mass": 2,
+          "launchHeight": 10,
+          "airResist": false,
+          "modelVersion": "projectile-v3"
+        },
+        "run": 1,
+        "impact": false
+      },
+      "marker": {
+        "x": 122.90145731755842,
+        "y": 311.20722107363787,
+        "t": 2.0649999999999986,
+        "index": 59,
+        "run": 1
+      },
+      "graphRun": "1",
+      "tableRun": "1",
+      "overflow": 0,
+      "evidenceSha256": "03c1599a2723876870150196e077ee503af50599898c6d4142baed1651f79b2c",
+      "evidenceUnchanged": true,
+      "canvas": {
+        "width": 307,
+        "height": 476,
+        "text": [
+          {
+            "text": "0",
+            "left": 36.6630859375,
+            "right": 43.1630859375,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "50",
+            "left": 103.339310902719,
+            "right": 116.513139027719,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "100",
+            "left": 171.015535867938,
+            "right": 189.863192117938,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "150",
+            "left": 241.02867489565702,
+            "right": 259.876331145657,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "50",
+            "left": 17.65234375,
+            "right": 30.826171875,
+            "top": 279.48686097228097,
+            "bottom": 287.98686097228097
+          },
+          {
+            "text": "100",
+            "left": 11.978515625,
+            "right": 30.826171875,
+            "top": 209.473721944562,
+            "bottom": 217.973721944562
+          },
+          {
+            "text": "Height (m)",
+            "left": 12.5,
+            "right": 68.013671875,
+            "top": 107.5,
+            "bottom": 118.5
+          },
+          {
+            "text": "Distance (m)",
+            "left": 219.490234375,
+            "right": 287.00390625,
+            "top": 385.5,
+            "bottom": 396.5
+          },
+          {
+            "text": "35°  ·  35 m/s  ·  h₀ 10 m",
+            "left": 14,
+            "right": 167.298828125,
+            "top": 15,
+            "bottom": 25
+          },
+          {
+            "text": "g 9.8 m/s²  ·  2 kg",
+            "left": 14,
+            "right": 107.189453125,
+            "top": 38.5,
+            "bottom": 49.5
+          },
+          {
+            "text": "Run 1 · Recorded point · No air drag",
+            "left": 14.5,
+            "right": 207.923828125,
+            "top": 59.5,
+            "bottom": 70.5
+          },
+          {
+            "text": "t 2.065 s",
+            "left": 14,
+            "right": 60.03125,
+            "top": 80.5,
+            "bottom": 89
+          },
+          {
+            "text": "Vx 28.67 m/s",
+            "left": 106.5,
+            "right": 177.03125,
+            "top": 80.5,
+            "bottom": 89
+          },
+          {
+            "text": "Vy -0.16 m/s",
+            "left": 199.5,
+            "right": 266.908203125,
+            "top": 80.5,
+            "bottom": 91.5
+          },
+          {
+            "text": "Initial energy · 1421 J",
+            "left": 14.5,
+            "right": 134.71484375,
+            "top": 407.5,
+            "bottom": 418.5
+          },
+          {
+            "text": "Selected point",
+            "left": 14,
+            "right": 90.220703125,
+            "top": 423.5,
+            "bottom": 434.5
+          },
+          {
+            "text": "KE 822 J",
+            "left": 14.5,
+            "right": 62.197265625,
+            "top": 439.5,
+            "bottom": 448
+          },
+          {
+            "text": "PE 599 J",
+            "left": 107.5,
+            "right": 155.197265625,
+            "top": 439.5,
+            "bottom": 448
+          },
+          {
+            "text": "Drag 0 J",
+            "left": 200.5,
+            "right": 244.8515625,
+            "top": 439.5,
+            "bottom": 450.5
+          },
+          {
+            "text": "Recorded point",
+            "left": 148.40145731755842,
+            "right": 236.40731669255842,
+            "top": 301.70722107363787,
+            "bottom": 312.70722107363787
+          },
+          {
+            "text": "t = 2.065 s",
+            "left": 147.90145731755842,
+            "right": 205.43661356755842,
+            "top": 318.70722107363787,
+            "bottom": 327.20722107363787
+          },
+          {
+            "text": "▲ APEX 30.6 m",
+            "left": 75.59791262800675,
+            "right": 162.01002200300675,
+            "top": 243.70535020521964,
+            "bottom": 252.20535020521964
+          },
+          {
+            "text": "t = 2.05 s · Vy = 0",
+            "left": 74.09791262800675,
+            "right": 170.20533450300675,
+            "top": 260.70535020521964,
+            "bottom": 271.70535020521964
+          },
+          {
+            "text": "no-drag ideal",
+            "left": 22.398693878006796,
+            "right": 96.9045532530068,
+            "top": 309.7053502052196,
+            "bottom": 320.7053502052196
+          }
+        ]
+      },
+      "text": [
+        {
+          "text": "Inspect a recorded flight",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Inspect this flight",
+          "font": 12,
+          "contrast": 6.790209197824105
+        },
+        {
+          "text": "Up to five flights are kept in this session. Choosing a flight pauses playback and links its recorded canvas, graphs, and table.",
+          "font": 12,
+          "contrast": 9.516201944392245
+        },
+        {
+          "text": "Inspect",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Inspect",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Run 1 · θ 35° · v₀ 35 m/s · Air drag off",
+          "font": 12,
+          "contrast": 9.71785581253207
+        }
+      ],
+      "screenshots": [
+        "history-dark-375-canvas.png",
+        "history-dark-375-chooser.png",
+        "history-dark-375-inspector.png",
+        "history-dark-375-graphs.png"
+      ],
+      "pageErrors": []
+    },
+    {
+      "theme": "dark",
+      "width": 320,
+      "snapshot": {
+        "index": 59,
+        "count": 131,
+        "t": 2.0649999999999986,
+        "x": 59.20421400098686,
+        "y": 30.560534437271816,
+        "vx": 28.670321550114714,
+        "vy": -0.16182472771338796,
+        "speed": 28.670778242480125,
+        "ax": 0,
+        "ay": -9.8,
+        "fx": 0,
+        "fy": -19.6,
+        "gravityForce": 19.6,
+        "dragForce": 0,
+        "ke": 822.0135250294717,
+        "pe": 598.9864749705276,
+        "totalEnergy": 1420.9999999999993,
+        "initialEnergy": 1421,
+        "dragLoss": 0,
+        "parameters": {
+          "angle": 35,
+          "velocity": 35,
+          "gravity": 9.8,
+          "mass": 2,
+          "launchHeight": 10,
+          "airResist": false,
+          "modelVersion": "projectile-v3"
+        },
+        "run": 1,
+        "impact": false
+      },
+      "marker": {
+        "x": 102.08145662136795,
+        "y": 321.95426600948224,
+        "t": 2.0649999999999986,
+        "index": 59,
+        "run": 1
+      },
+      "graphRun": "1",
+      "tableRun": "1",
+      "overflow": 0,
+      "evidenceSha256": "03c1599a2723876870150196e077ee503af50599898c6d4142baed1651f79b2c",
+      "evidenceUnchanged": true,
+      "canvas": {
+        "width": 252,
+        "height": 476,
+        "text": [
+          {
+            "text": "0",
+            "left": 36.6630859375,
+            "right": 43.1630859375,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "100",
+            "left": 135.84911900470019,
+            "right": 154.69677525470019,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "100",
+            "left": 11.978515625,
+            "right": 30.826171875,
+            "top": 244.64013880779981,
+            "bottom": 253.14013880779981
+          },
+          {
+            "text": "200",
+            "left": 10.978515625,
+            "right": 30.826171875,
+            "top": 139.78027761559966,
+            "bottom": 148.28027761559966
+          },
+          {
+            "text": "Height (m)",
+            "left": 12.5,
+            "right": 68.013671875,
+            "top": 107.5,
+            "bottom": 118.5
+          },
+          {
+            "text": "Distance (m)",
+            "left": 164.490234375,
+            "right": 232.00390625,
+            "top": 385.5,
+            "bottom": 396.5
+          },
+          {
+            "text": "35°  ·  35 m/s  ·  h₀ 10 m",
+            "left": 14,
+            "right": 167.298828125,
+            "top": 15,
+            "bottom": 25
+          },
+          {
+            "text": "g 9.8 m/s²  ·  2 kg",
+            "left": 14,
+            "right": 107.189453125,
+            "top": 38.5,
+            "bottom": 49.5
+          },
+          {
+            "text": "Run 1 · Recorded point · No air drag",
+            "left": 14.5,
+            "right": 207.923828125,
+            "top": 59.5,
+            "bottom": 70.5
+          },
+          {
+            "text": "t 2.065 s",
+            "left": 14,
+            "right": 60.03125,
+            "top": 80.5,
+            "bottom": 89
+          },
+          {
+            "text": "Vx 28.67 m/s",
+            "left": 88.16666666666667,
+            "right": 158.69791666666669,
+            "top": 80.5,
+            "bottom": 89
+          },
+          {
+            "text": "Vy -0.16 m/s",
+            "left": 162.83333333333334,
+            "right": 230.24153645833334,
+            "top": 80.5,
+            "bottom": 91.5
+          },
+          {
+            "text": "Initial energy · 1421 J",
+            "left": 14.5,
+            "right": 134.71484375,
+            "top": 407.5,
+            "bottom": 418.5
+          },
+          {
+            "text": "Selected point",
+            "left": 14,
+            "right": 90.220703125,
+            "top": 423.5,
+            "bottom": 434.5
+          },
+          {
+            "text": "KE 822 J",
+            "left": 14.5,
+            "right": 62.197265625,
+            "top": 439.5,
+            "bottom": 448
+          },
+          {
+            "text": "PE 599 J",
+            "left": 89.16666666666667,
+            "right": 136.86393229166669,
+            "top": 439.5,
+            "bottom": 448
+          },
+          {
+            "text": "Drag 0 J",
+            "left": 163.83333333333334,
+            "right": 208.18489583333334,
+            "top": 439.5,
+            "bottom": 450.5
+          },
+          {
+            "text": "Recorded point",
+            "left": 58.58048005886795,
+            "right": 146.58633943386795,
+            "top": 254.45426600948224,
+            "bottom": 265.45426600948224
+          },
+          {
+            "text": "t = 2.065 s",
+            "left": 58.08048005886795,
+            "right": 115.61563630886795,
+            "top": 271.45426600948224,
+            "bottom": 279.95426600948224
+          },
+          {
+            "text": "no-drag ideal",
+            "left": 127.08502361184071,
+            "right": 201.5908829868407,
+            "top": 320.45286499386305,
+            "bottom": 331.45286499386305
+          }
+        ]
+      },
+      "text": [
+        {
+          "text": "Inspect a recorded flight",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Inspect this flight",
+          "font": 12,
+          "contrast": 6.790209197824105
+        },
+        {
+          "text": "Up to five flights are kept in this session. Choosing a flight pauses playback and links its recorded canvas, graphs, and table.",
+          "font": 12,
+          "contrast": 9.516201944392245
+        },
+        {
+          "text": "Inspect",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Inspect",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Run 1 · θ 35° · v₀ 35 m/s · Air drag off",
+          "font": 12,
+          "contrast": 9.71785581253207
+        }
+      ],
+      "screenshots": [
+        "history-dark-320-canvas.png",
+        "history-dark-320-chooser.png",
+        "history-dark-320-inspector.png",
+        "history-dark-320-graphs.png"
+      ],
+      "pageErrors": []
+    },
+    {
+      "theme": "contrast",
+      "width": 1100,
+      "snapshot": {
+        "index": 59,
+        "count": 131,
+        "t": 2.0649999999999986,
+        "x": 59.20421400098686,
+        "y": 30.560534437271816,
+        "vx": 28.670321550114714,
+        "vy": -0.16182472771338796,
+        "speed": 28.670778242480125,
+        "ax": 0,
+        "ay": -9.8,
+        "fx": 0,
+        "fy": -19.6,
+        "gravityForce": 19.6,
+        "dragForce": 0,
+        "ke": 822.0135250294717,
+        "pe": 598.9864749705276,
+        "totalEnergy": 1420.9999999999993,
+        "initialEnergy": 1421,
+        "dragLoss": 0,
+        "parameters": {
+          "angle": 35,
+          "velocity": 35,
+          "gravity": 9.8,
+          "mass": 2,
+          "launchHeight": 10,
+          "airResist": false,
+          "modelVersion": "projectile-v3"
+        },
+        "run": 1,
+        "impact": false
+      },
+      "marker": {
+        "x": 388.69457721279355,
+        "y": 174.0078691218857,
+        "t": 2.0649999999999986,
+        "index": 59,
+        "run": 1
+      },
+      "graphRun": "1",
+      "tableRun": "1",
+      "overflow": 0,
+      "evidenceSha256": "03c1599a2723876870150196e077ee503af50599898c6d4142baed1651f79b2c",
+      "evidenceUnchanged": true,
+      "canvas": {
+        "width": 1020,
+        "height": 476,
+        "text": [
+          {
+            "text": "0",
+            "left": 36.6630859375,
+            "right": 43.1630859375,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "20",
+            "left": 151.12000905252972,
+            "right": 164.29383717752972,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "40",
+            "left": 268.91384623005945,
+            "right": 282.08767435505945,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "60",
+            "left": 386.7076834075891,
+            "right": 399.8815115325891,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "80",
+            "left": 504.50152058511884,
+            "right": 517.6753487101189,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "100",
+            "left": 619.9584437001486,
+            "right": 638.8060999501486,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "120",
+            "left": 737.7522808776782,
+            "right": 756.5999371276782,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "140",
+            "left": 855.546118055208,
+            "right": 874.393774305208,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "160",
+            "left": 973.3399552327377,
+            "right": 992.1876114827377,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "10",
+            "left": 18.65234375,
+            "right": 30.826171875,
+            "top": 290.60308141123517,
+            "bottom": 299.10308141123517
+          },
+          {
+            "text": "20",
+            "left": 17.65234375,
+            "right": 30.826171875,
+            "top": 231.70616282247028,
+            "bottom": 240.20616282247028
+          },
+          {
+            "text": "30",
+            "left": 17.65234375,
+            "right": 30.826171875,
+            "top": 172.80924423370544,
+            "bottom": 181.30924423370544
+          },
+          {
+            "text": "Height (m)",
+            "left": 12.5,
+            "right": 68.013671875,
+            "top": 107.5,
+            "bottom": 118.5
+          },
+          {
+            "text": "Distance (m)",
+            "left": 932.490234375,
+            "right": 1000.00390625,
+            "top": 385.5,
+            "bottom": 396.5
+          },
+          {
+            "text": "35°  ·  35 m/s  ·  h₀ 10 m",
+            "left": 14,
+            "right": 167.298828125,
+            "top": 15,
+            "bottom": 25
+          },
+          {
+            "text": "g 9.8 m/s²  ·  2 kg",
+            "left": 14,
+            "right": 107.189453125,
+            "top": 38.5,
+            "bottom": 49.5
+          },
+          {
+            "text": "Run 1 · Recorded point · No air drag",
+            "left": 14.5,
+            "right": 207.923828125,
+            "top": 59.5,
+            "bottom": 70.5
+          },
+          {
+            "text": "t 2.065 s",
+            "left": 14,
+            "right": 60.03125,
+            "top": 80.5,
+            "bottom": 89
+          },
+          {
+            "text": "Vx 28.67 m/s",
+            "left": 344.1666666666667,
+            "right": 414.6979166666667,
+            "top": 80.5,
+            "bottom": 89
+          },
+          {
+            "text": "Vy -0.16 m/s",
+            "left": 674.8333333333334,
+            "right": 742.2415364583334,
+            "top": 80.5,
+            "bottom": 91.5
+          },
+          {
+            "text": "Initial energy · 1421 J",
+            "left": 14.5,
+            "right": 134.71484375,
+            "top": 407.5,
+            "bottom": 418.5
+          },
+          {
+            "text": "Selected point",
+            "left": 14,
+            "right": 90.220703125,
+            "top": 423.5,
+            "bottom": 434.5
+          },
+          {
+            "text": "KE 822 J",
+            "left": 14.5,
+            "right": 62.197265625,
+            "top": 439.5,
+            "bottom": 448
+          },
+          {
+            "text": "PE 599 J",
+            "left": 345.1666666666667,
+            "right": 392.8639322916667,
+            "top": 439.5,
+            "bottom": 448
+          },
+          {
+            "text": "Drag 0 J",
+            "left": 675.8333333333334,
+            "right": 720.1848958333334,
+            "top": 439.5,
+            "bottom": 450.5
+          },
+          {
+            "text": "Recorded point",
+            "left": 414.19457721279355,
+            "right": 502.20043658779355,
+            "top": 164.5078691218857,
+            "bottom": 175.5078691218857
+          },
+          {
+            "text": "t = 2.065 s",
+            "left": 413.69457721279355,
+            "right": 471.22973346279355,
+            "top": 181.5078691218857,
+            "bottom": 190.0078691218857
+          },
+          {
+            "text": "▲ APEX 30.6 m",
+            "left": 266.1249986555669,
+            "right": 352.5371080305669,
+            "top": 164.50000000000023,
+            "bottom": 173.00000000000023
+          },
+          {
+            "text": "t = 2.05 s · Vy = 0",
+            "left": 264.6249986555669,
+            "right": 360.7324205305669,
+            "top": 181.50000000000023,
+            "bottom": 192.50000000000023
+          },
+          {
+            "text": "Landed 130.3 m",
+            "left": 833.1193205816737,
+            "right": 921.9845549566737,
+            "top": 327.5,
+            "bottom": 336
+          },
+          {
+            "text": "h₀ = 10 m",
+            "left": 100.5,
+            "right": 151.28515625,
+            "top": 327.5,
+            "bottom": 336
+          },
+          {
+            "text": "no-drag ideal",
+            "left": 411.406248655567,
+            "right": 485.912108030567,
+            "top": 327.5,
+            "bottom": 338.5
+          }
+        ]
+      },
+      "text": [
+        {
+          "text": "Inspect a recorded flight",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Inspect this flight",
+          "font": 12,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Up to five flights are kept in this session. Choosing a flight pauses playback and links its recorded canvas, graphs, and table.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Inspect",
+          "font": 12,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Inspect",
+          "font": 12,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Run 1 · θ 35° · v₀ 35 m/s · Air drag off",
+          "font": 12,
+          "contrast": 19.555999999999997
+        }
+      ],
+      "screenshots": [
+        "history-contrast-1100-canvas.png",
+        "history-contrast-1100-chooser.png",
+        "history-contrast-1100-inspector.png",
+        "history-contrast-1100-graphs.png"
+      ],
+      "pageErrors": []
+    },
+    {
+      "theme": "contrast",
+      "width": 375,
+      "snapshot": {
+        "index": 59,
+        "count": 131,
+        "t": 2.0649999999999986,
+        "x": 59.20421400098686,
+        "y": 30.560534437271816,
+        "vx": 28.670321550114714,
+        "vy": -0.16182472771338796,
+        "speed": 28.670778242480125,
+        "ax": 0,
+        "ay": -9.8,
+        "fx": 0,
+        "fy": -19.6,
+        "gravityForce": 19.6,
+        "dragForce": 0,
+        "ke": 822.0135250294717,
+        "pe": 598.9864749705276,
+        "totalEnergy": 1420.9999999999993,
+        "initialEnergy": 1421,
+        "dragLoss": 0,
+        "parameters": {
+          "angle": 35,
+          "velocity": 35,
+          "gravity": 9.8,
+          "mass": 2,
+          "launchHeight": 10,
+          "airResist": false,
+          "modelVersion": "projectile-v3"
+        },
+        "run": 1,
+        "impact": false
+      },
+      "marker": {
+        "x": 130.4723666616277,
+        "y": 307.29920473333084,
+        "t": 2.0649999999999986,
+        "index": 59,
+        "run": 1
+      },
+      "graphRun": "1",
+      "tableRun": "1",
+      "overflow": 0,
+      "evidenceSha256": "03c1599a2723876870150196e077ee503af50599898c6d4142baed1651f79b2c",
+      "evidenceUnchanged": true,
+      "canvas": {
+        "width": 327,
+        "height": 476,
+        "text": [
+          {
+            "text": "0",
+            "left": 36.6630859375,
+            "right": 43.1630859375,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "50",
+            "left": 109.73320487785317,
+            "right": 122.90703300285317,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "100",
+            "left": 183.80332381820634,
+            "right": 202.65098006820634,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "150",
+            "left": 260.21035682105946,
+            "right": 279.05801307105946,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "50",
+            "left": 17.65234375,
+            "right": 30.826171875,
+            "top": 273.09296699714685,
+            "bottom": 281.59296699714685
+          },
+          {
+            "text": "100",
+            "left": 11.978515625,
+            "right": 30.826171875,
+            "top": 196.68593399429366,
+            "bottom": 205.18593399429366
+          },
+          {
+            "text": "Height (m)",
+            "left": 12.5,
+            "right": 68.013671875,
+            "top": 107.5,
+            "bottom": 118.5
+          },
+          {
+            "text": "Distance (m)",
+            "left": 239.490234375,
+            "right": 307.00390625,
+            "top": 385.5,
+            "bottom": 396.5
+          },
+          {
+            "text": "35°  ·  35 m/s  ·  h₀ 10 m",
+            "left": 14,
+            "right": 167.298828125,
+            "top": 15,
+            "bottom": 25
+          },
+          {
+            "text": "g 9.8 m/s²  ·  2 kg",
+            "left": 14,
+            "right": 107.189453125,
+            "top": 38.5,
+            "bottom": 49.5
+          },
+          {
+            "text": "Run 1 · Recorded point · No air drag",
+            "left": 14.5,
+            "right": 207.923828125,
+            "top": 59.5,
+            "bottom": 70.5
+          },
+          {
+            "text": "t 2.065 s",
+            "left": 14,
+            "right": 60.03125,
+            "top": 80.5,
+            "bottom": 89
+          },
+          {
+            "text": "Vx 28.67 m/s",
+            "left": 113.16666666666667,
+            "right": 183.69791666666669,
+            "top": 80.5,
+            "bottom": 89
+          },
+          {
+            "text": "Vy -0.16 m/s",
+            "left": 212.83333333333334,
+            "right": 280.24153645833337,
+            "top": 80.5,
+            "bottom": 91.5
+          },
+          {
+            "text": "Initial energy · 1421 J",
+            "left": 14.5,
+            "right": 134.71484375,
+            "top": 407.5,
+            "bottom": 418.5
+          },
+          {
+            "text": "Selected point",
+            "left": 14,
+            "right": 90.220703125,
+            "top": 423.5,
+            "bottom": 434.5
+          },
+          {
+            "text": "KE 822 J",
+            "left": 14.5,
+            "right": 62.197265625,
+            "top": 439.5,
+            "bottom": 448
+          },
+          {
+            "text": "PE 599 J",
+            "left": 114.16666666666667,
+            "right": 161.86393229166669,
+            "top": 439.5,
+            "bottom": 448
+          },
+          {
+            "text": "Drag 0 J",
+            "left": 213.83333333333334,
+            "right": 258.18489583333337,
+            "top": 439.5,
+            "bottom": 450.5
+          },
+          {
+            "text": "Recorded point",
+            "left": 155.9723666616277,
+            "right": 243.9782260366277,
+            "top": 297.79920473333084,
+            "bottom": 308.79920473333084
+          },
+          {
+            "text": "t = 2.065 s",
+            "left": 155.4723666616277,
+            "right": 213.0075229116277,
+            "top": 314.79920473333084,
+            "bottom": 323.29920473333084
+          },
+          {
+            "text": "▲ APEX 30.6 m",
+            "left": 83.10828136115805,
+            "right": 169.52039073615805,
+            "top": 239.79716300934928,
+            "bottom": 248.29716300934928
+          },
+          {
+            "text": "t = 2.05 s · Vy = 0",
+            "left": 81.60828136115805,
+            "right": 177.71570323615805,
+            "top": 256.7971630093493,
+            "bottom": 267.7971630093493
+          },
+          {
+            "text": "h₀ = 10 m",
+            "left": 49.5224609375,
+            "right": 100.3076171875,
+            "top": 298.2185933994294,
+            "bottom": 306.7185933994294
+          }
+        ]
+      },
+      "text": [
+        {
+          "text": "Inspect a recorded flight",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Inspect this flight",
+          "font": 12,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Up to five flights are kept in this session. Choosing a flight pauses playback and links its recorded canvas, graphs, and table.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Inspect",
+          "font": 12,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Inspect",
+          "font": 12,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Run 1 · θ 35° · v₀ 35 m/s · Air drag off",
+          "font": 12,
+          "contrast": 19.555999999999997
+        }
+      ],
+      "screenshots": [
+        "history-contrast-375-canvas.png",
+        "history-contrast-375-chooser.png",
+        "history-contrast-375-inspector.png",
+        "history-contrast-375-graphs.png"
+      ],
+      "pageErrors": []
+    },
+    {
+      "theme": "contrast",
+      "width": 320,
+      "snapshot": {
+        "index": 59,
+        "count": 131,
+        "t": 2.0649999999999986,
+        "x": 59.20421400098686,
+        "y": 30.560534437271816,
+        "vx": 28.670321550114714,
+        "vy": -0.16182472771338796,
+        "speed": 28.670778242480125,
+        "ax": 0,
+        "ay": -9.8,
+        "fx": 0,
+        "fy": -19.6,
+        "gravityForce": 19.6,
+        "dragForce": 0,
+        "ke": 822.0135250294717,
+        "pe": 598.9864749705276,
+        "totalEnergy": 1420.9999999999993,
+        "initialEnergy": 1421,
+        "dragLoss": 0,
+        "parameters": {
+          "angle": 35,
+          "velocity": 35,
+          "gravity": 9.8,
+          "mass": 2,
+          "launchHeight": 10,
+          "airResist": false,
+          "modelVersion": "projectile-v3"
+        },
+        "run": 1,
+        "impact": false
+      },
+      "marker": {
+        "x": 109.65236596543723,
+        "y": 318.0462496691752,
+        "t": 2.0649999999999986,
+        "index": 59,
+        "run": 1
+      },
+      "graphRun": "1",
+      "tableRun": "1",
+      "overflow": 0,
+      "evidenceSha256": "03c1599a2723876870150196e077ee503af50599898c6d4142baed1651f79b2c",
+      "evidenceUnchanged": true,
+      "canvas": {
+        "width": 272,
+        "height": 476,
+        "text": [
+          {
+            "text": "0",
+            "left": 36.6630859375,
+            "right": 43.1630859375,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "100",
+            "left": 148.63690695496848,
+            "right": 167.48456320496848,
+            "top": 365.5,
+            "bottom": 374
+          },
+          {
+            "text": "50",
+            "left": 17.65234375,
+            "right": 30.826171875,
+            "top": 290.67617542876576,
+            "bottom": 299.17617542876576
+          },
+          {
+            "text": "100",
+            "left": 11.978515625,
+            "right": 30.826171875,
+            "top": 231.85235085753152,
+            "bottom": 240.35235085753152
+          },
+          {
+            "text": "150",
+            "left": 11.978515625,
+            "right": 30.826171875,
+            "top": 173.02852628629728,
+            "bottom": 181.52852628629728
+          },
+          {
+            "text": "Height (m)",
+            "left": 12.5,
+            "right": 68.013671875,
+            "top": 107.5,
+            "bottom": 118.5
+          },
+          {
+            "text": "Distance (m)",
+            "left": 184.490234375,
+            "right": 252.00390625,
+            "top": 385.5,
+            "bottom": 396.5
+          },
+          {
+            "text": "35°  ·  35 m/s  ·  h₀ 10 m",
+            "left": 14,
+            "right": 167.298828125,
+            "top": 15,
+            "bottom": 25
+          },
+          {
+            "text": "g 9.8 m/s²  ·  2 kg",
+            "left": 14,
+            "right": 107.189453125,
+            "top": 38.5,
+            "bottom": 49.5
+          },
+          {
+            "text": "Run 1 · Recorded point · No air drag",
+            "left": 14.5,
+            "right": 207.923828125,
+            "top": 59.5,
+            "bottom": 70.5
+          },
+          {
+            "text": "t 2.065 s",
+            "left": 14,
+            "right": 60.03125,
+            "top": 80.5,
+            "bottom": 89
+          },
+          {
+            "text": "Vx 28.67 m/s",
+            "left": 94.83333333333333,
+            "right": 165.36458333333331,
+            "top": 80.5,
+            "bottom": 89
+          },
+          {
+            "text": "Vy -0.16 m/s",
+            "left": 176.16666666666666,
+            "right": 243.57486979166666,
+            "top": 80.5,
+            "bottom": 91.5
+          },
+          {
+            "text": "Initial energy · 1421 J",
+            "left": 14.5,
+            "right": 134.71484375,
+            "top": 407.5,
+            "bottom": 418.5
+          },
+          {
+            "text": "Selected point",
+            "left": 14,
+            "right": 90.220703125,
+            "top": 423.5,
+            "bottom": 434.5
+          },
+          {
+            "text": "KE 822 J",
+            "left": 14.5,
+            "right": 62.197265625,
+            "top": 439.5,
+            "bottom": 448
+          },
+          {
+            "text": "PE 599 J",
+            "left": 95.83333333333333,
+            "right": 143.53059895833331,
+            "top": 439.5,
+            "bottom": 448
+          },
+          {
+            "text": "Drag 0 J",
+            "left": 177.16666666666666,
+            "right": 221.51822916666666,
+            "top": 439.5,
+            "bottom": 450.5
+          },
+          {
+            "text": "Recorded point",
+            "left": 135.15236596543724,
+            "right": 223.15822534043724,
+            "top": 308.5462496691752,
+            "bottom": 319.5462496691752
+          },
+          {
+            "text": "t = 2.065 s",
+            "left": 134.65236596543724,
+            "right": 192.18752221543724,
+            "top": 325.5462496691752,
+            "bottom": 334.0462496691752
+          },
+          {
+            "text": "▲ APEX 30.6 m",
+            "left": 62.45476734499199,
+            "right": 148.86687671999198,
+            "top": 250.5446777979928,
+            "bottom": 259.0446777979928
+          },
+          {
+            "text": "t = 2.05 s · Vy = 0",
+            "left": 60.95476734499199,
+            "right": 157.06218921999198,
+            "top": 267.5446777979928,
+            "bottom": 278.5446777979928
+          }
+        ]
+      },
+      "text": [
+        {
+          "text": "Inspect a recorded flight",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Inspect this flight",
+          "font": 12,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Up to five flights are kept in this session. Choosing a flight pauses playback and links its recorded canvas, graphs, and table.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Inspect",
+          "font": 12,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Inspect",
+          "font": 12,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Run 1 · θ 35° · v₀ 35 m/s · Air drag off",
+          "font": 12,
+          "contrast": 19.555999999999997
+        }
+      ],
+      "screenshots": [
+        "history-contrast-320-canvas.png",
+        "history-contrast-320-chooser.png",
+        "history-contrast-320-inspector.png",
+        "history-contrast-320-graphs.png"
+      ],
+      "pageErrors": []
+    }
+  ],
+  "failures": []
+}

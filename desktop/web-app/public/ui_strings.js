@@ -66867,6 +66867,16 @@
       "nhu2083": "NH₃"
     },
     "physics": {
+      "plot_selected_trail_speed": "Selected flight speed",
+      "history_title": "Recent recorded flights",
+      "history_choose": "Inspect a recorded flight",
+      "history_unfinished": "Unfinished flight",
+      "history_open": "Inspect this flight",
+      "history_help": "Up to five flights are kept in this session. Choosing a flight pauses playback and links its recorded canvas, graphs, and table.",
+      "history_log_help": "Inspect opens the original samples of a retained flight. Older or saved log rows keep their summary measurements.",
+      "history_inspect_run": "Inspect recorded run",
+      "history_inspect": "Inspect",
+      "motion_components_recorded": "Motion Components (selected recorded flight)",
       "graph_recorded_time": "Recorded time",
       "graph_sample": "sample",
       "graph_inspect_time": "Inspect this time",
