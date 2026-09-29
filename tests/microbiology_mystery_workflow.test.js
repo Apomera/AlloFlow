@@ -390,3 +390,140 @@ describe('Mystery revision comparisons', { timeout: 20000 }, () => {
     expect(core().hasPendingRevision(data().cases.pond)).toBe(false);
   });
 });
+
+describe('Previous mystery report recovery', { timeout: 20000 }, () => {
+  function recordTwoVersions(id = 'wall') {
+    build(id); click('Check my evidence'); click('Record specimen report');
+    const first = JSON.parse(JSON.stringify(data().cases[id].record));
+    write('Second recorded explanation: compare the supplied structure and reproduction; species remains unknown.');
+    if (id === 'wall') { choice('micro-mystery-evidence', 'behavior'); choice('micro-mystery-evidence', 'size'); }
+    click('Check my evidence'); click('Update recorded report');
+    return { first, second: JSON.parse(JSON.stringify(data().cases[id].record)) };
+  }
+
+  it('retains one independent previous snapshot only after an explicit report update', () => {
+    mount(); build('wall'); click('Check my evidence'); click('Record specimen report');
+    const first = JSON.parse(JSON.stringify(data().cases.wall.record));
+    expect(data().cases.wall.previousRecord).toBeNull();
+    expect(mounted.container.querySelector('[data-mystery-history]')).toBeNull();
+    write('Second explanation, still bounded by the supplied evidence.');
+    click('Check my evidence');
+    expect(data().cases.wall.previousRecord).toBeNull();
+    expect(data().cases.wall.record).toEqual(first);
+    click('Update recorded report');
+    const second = JSON.parse(JSON.stringify(data().cases.wall.record));
+    expect(data().cases.wall.previousRecord).toEqual(first);
+    expect(data().cases.wall.previousRecord.evidence).not.toBe(data().cases.wall.record.evidence);
+    write('Third explanation: peptidoglycan supports bacteria but cannot establish a species.');
+    click('Check my evidence'); click('Update recorded report');
+    expect(data().cases.wall.previousRecord).toEqual(second);
+    expect(data().cases.wall.previousRecord).not.toEqual(first);
+    expect(Object.keys(data().cases.wall.previousRecord).sort()).toEqual(['claim', 'evidence', 'limitation', 'reasoning']);
+  });
+
+  it.each(['working', 'recorded'])('previews and reversibly restores a report while preserving the %s view and complete draft', view => {
+    vi.useFakeTimers();
+    mount(); const { first, second } = recordTwoVersions();
+    choice('micro-mystery-claim', 'archaeon'); choice('micro-mystery-limitation', 'species');
+    write('Unfinished draft.\n<img src=x> remains text.');
+    click('Hide: Cell structure and chemistry');
+    if (view === 'recorded') click('Recorded report');
+    act(() => vi.runOnlyPendingTimers());
+    const before = JSON.parse(JSON.stringify(data().cases.wall));
+    const history = mounted.container.querySelector('[data-mystery-history="wall"]');
+    expect(history.open).toBe(false);
+    expect(history.querySelector('summary').textContent).toBe('Review previous report');
+    click(history.querySelector('summary'));
+    const preview = history.querySelector('[data-previous-report="wall"]');
+    expect(preview.querySelectorAll('[data-previous-field]')).toHaveLength(4);
+    expect(preview.textContent).toContain('Bacterium');
+    expect(preview.textContent).toContain('Chemical analysis detects peptidoglycan');
+    expect(preview.textContent).toContain('cells dividing into two');
+    expect(preview.textContent).toContain(first.reasoning);
+    expect(preview.textContent).toContain('species and safety remain unknown');
+    expect(preview.querySelectorAll('input,textarea,button')).toHaveLength(0);
+    expect(data().cases.wall).toEqual(before);
+    expect(button('Restore previous report').getAttribute('aria-describedby')).toBe('micro-mystery-restore-note');
+    click('Restore previous report'); act(() => vi.runOnlyPendingTimers());
+    expect(data().cases.wall).toEqual({ ...before, record: first, previousRecord: second });
+    expect(document.activeElement.id).toBe('micro-mystery-report-heading');
+    expect(document.activeElement.getAttribute('data-report-view')).toBe(view);
+    expect(mounted.container.querySelector('[data-mystery-notice="restored"]').textContent).toContain('Your working notes and current view were kept');
+    expect(mounted.container.querySelector('[data-previous-report="wall"]').textContent).toContain(second.reasoning);
+    expect(mounted.container.textContent).toContain('1/6 reports recorded');
+    expect(core().hasPendingRevision(data().cases.wall)).toBe(true);
+    click('Restore previous report'); act(() => vi.runOnlyPendingTimers());
+    expect(data().cases.wall).toEqual(before);
+  });
+
+  it('keeps history separate by case and survives a JSON reload', () => {
+    mount(); recordTwoVersions('wall');
+    write('Wall draft remains unfinished.');
+    const wall = JSON.parse(JSON.stringify(data().cases.wall));
+    const pond = recordTwoVersions('pond');
+    click('Recorded report');
+    const saved = JSON.parse(JSON.stringify(mounted.state));
+    act(() => mounted.root.unmount()); mounted.container.remove(); mounted = null;
+    mount(saved);
+    const preview = mounted.container.querySelector('[data-mystery-history="pond"]');
+    click(preview.querySelector('summary')); click('Restore previous report');
+    expect(data().cases.pond.record).toEqual(pond.first);
+    expect(data().cases.pond.previousRecord).toEqual(pond.second);
+    expect(data().cases.pond.reportView).toBe('recorded');
+    expect(data().cases.wall).toEqual(wall);
+    expect(core().hasPendingRevision(data().cases.pond)).toBe(true);
+    openCase('wall');
+    expect(data().cases.wall).toEqual(wall);
+    expect(mounted.container.querySelector('#micro-mystery-reasoning').value).toBe('Wall draft remains unfinished.');
+  });
+
+  it('rejects invalid, orphaned and identical history and sanitizes a valid independent snapshot', () => {
+    const record = { claim: 'bacterium', evidence: ['structure', 'behavior'], reasoning: 'Current bounded reasoning.', limitation: 'bounded' };
+    for (const previousRecord of [null, [], 'invalid', { ...record, claim: 'yeast' }, { ...record, evidence: ['size'] }, { ...record, limitation: 'safe' }, { ...record, reasoning: ' ' }, record]) {
+      expect(core().normalize({ cases: { wall: { record, previousRecord } } }).cases.wall.previousRecord).toBeNull();
+    }
+    const previousRecord = { ...record, evidence: ['behavior', 'structure', 'structure', 'unknown'], reasoning: 'Earlier reasoning.', previousRecord: record };
+    const raw = { cases: { wall: { record, previousRecord } } }, before = JSON.stringify(raw);
+    const normalized = core().normalize(raw);
+    expect(normalized.cases.wall.previousRecord).toEqual({ ...record, reasoning: 'Earlier reasoning.' });
+    expect(normalized.cases.wall.previousRecord.evidence).not.toBe(previousRecord.evidence);
+    expect(core().normalize(normalized)).toEqual(normalized);
+    expect(JSON.stringify(raw)).toBe(before);
+    expect(core().normalize({ cases: { wall: { previousRecord } } }).cases.wall.previousRecord).toBeNull();
+  });
+
+  it('exports current, previous and working reports with distinct labels and complete previous evidence', () => {
+    mount(); const { first, second } = recordTwoVersions();
+    write('Unfinished explanation to keep separate.');
+    const before = JSON.parse(JSON.stringify(data()));
+    const download = captureReportDownload('blob:mystery-history');
+    click('Download specimen reports');
+    const text = download.contents[0];
+    const [current, rest] = text.split('Previous recorded report (available to restore)');
+    const [previous, working] = rest.split('Current working notes');
+    expect(current).toContain(second.reasoning); expect(current).not.toContain(first.reasoning);
+    expect(previous).toContain('Previous recorded classification: Bacterium');
+    expect(previous).toContain(first.reasoning);
+    expect(previous).toContain('Cell structure and chemistry: The supplied cell map has no membrane-bound nucleus. Chemical analysis detects peptidoglycan');
+    expect(previous).toContain('Behavior and reproduction: The observation sequence shows cells dividing into two');
+    expect(previous).toContain('Previous conclusion about limits: The evidence supports a broad group');
+    expect(working).toContain('Unfinished explanation to keep separate.');
+    expect(text).not.toContain('A growing neighbor');
+    expect(data()).toEqual(before);
+    act(() => vi.advanceTimersByTime(1000));
+    expect(download.revokeUrl).toHaveBeenCalledWith('blob:mystery-history');
+  });
+
+  it('does not move focus into a reopened panel after a queued restore', () => {
+    vi.useFakeTimers(); mount(); recordTwoVersions(); click('Recorded report');
+    act(() => vi.runOnlyPendingTimers());
+    click(mounted.container.querySelector('[data-mystery-history] summary'));
+    click('Restore previous report');
+    click('Practice with the microscope');
+    click(mounted.container.querySelector('#micro-tab-mystery'));
+    const tab = mounted.container.querySelector('#micro-tab-mystery'); tab.focus();
+    act(() => vi.runOnlyPendingTimers());
+    expect(document.activeElement).toBe(tab);
+    expect(button('Recorded report').getAttribute('aria-pressed')).toBe('true');
+  });
+});

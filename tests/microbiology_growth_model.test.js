@@ -13,6 +13,22 @@ function optimum(id, oxygen) {
   return { profile: id, tempC: profile.temp[1], pH: profile.pH[1], oxygen: oxygen ?? (id === 'methanogen' ? 0 : 100) };
 }
 
+function readQuotedCSV(csv) {
+  const records = [];
+  let row = [];
+  const cells = [...csv.matchAll(/"((?:[^"]|"")*)"(,|\r\n|$)/g)];
+  expect(cells.map(cell => cell[0]).join('')).toBe(csv);
+  for (const cell of cells) {
+    row.push(cell[1].replace(/""/g, '"'));
+    if (cell[2] !== ',') { records.push(row); row = []; }
+  }
+  const [headings, ...data] = records;
+  return data.map(values => {
+    expect(values).toHaveLength(headings.length);
+    return Object.fromEntries(headings.map((heading, index) => [heading, values[index]]));
+  });
+}
+
 describe('Microbiology growth model', () => {
   it('uses the same inoculum, capacity and maximum rate for every profile', () => {
     const runs = Object.keys(growth.profiles).map(id => growth.simulate(optimum(id)));
@@ -327,6 +343,64 @@ describe('Microbiology controlled variable sweeps', () => {
 });
 
 describe('Microbiology saved-run review', () => {
+  it('exports the inspected hour with original paired settings and an unchanged hour-24 prediction outcome', () => {
+    const control = optimum('ecoli');
+    const conditions = { ...control, tempC: 35 };
+    const book = growth.normalizeNotebook({ control: optimum('thermus'), selectedId: 8, nextId: 12,
+      trials: [{ id: 3, control, conditions, prediction: 'similar', hypothesis: 'Original reasoning', explanation: 'Original evidence' },
+        { id: 8, control: conditions, conditions: control, prediction: 'higher' }] });
+    const before = JSON.stringify(book);
+    const usualCSV = growth.csv(book);
+    const rows = readQuotedCSV(growth.reviewCSV(book, 6));
+    expect(rows.map(row => row.trial_id)).toEqual(['3', '8']);
+    expect(rows[0]).toMatchObject({ inspection_hour: '6', control_profile: 'ecoli', control_temperature_C: '37', control_pH: '7', control_oxygen_availability_0_100: '100',
+      trial_profile: 'ecoli', trial_temperature_C: '35', trial_pH: '7', trial_oxygen_availability_0_100: '100', changed_variables: 'tempC', design: 'single',
+      original_prediction: 'similar', outcome_at_24h: 'similar', hypothesis: 'Original reasoning', explanation: 'Original evidence', population_units: 'arbitrary population units' });
+    expect(rows[1]).toMatchObject({ control_temperature_C: '35', trial_temperature_C: '37', original_prediction: 'higher', outcome_at_24h: 'similar' });
+    const expectedControl = growth.simulate(control).points[6].population;
+    const expectedTrial = growth.simulate(conditions).points[6].population;
+    expect(Number(rows[0].control_population_at_inspection_hour)).toBeCloseTo(expectedControl, 3);
+    expect(Number(rows[0].trial_population_at_inspection_hour)).toBeCloseTo(expectedTrial, 3);
+    expect(Number(rows[0].difference_at_inspection_hour)).toBeCloseTo(expectedTrial - expectedControl, 3);
+    expect(rows[0].difference_at_inspection_hour.startsWith("'")).toBe(false);
+    expect(Number(rows[0].difference_at_inspection_hour)).toBeLessThan(-2);
+    expect(rows[0].model_note).toContain('not measurements');
+    expect(rows[0].model_note).toContain('Prediction outcomes refer to hour 24');
+    expect(JSON.stringify(book)).toBe(before);
+    expect(growth.csv(book)).toBe(usualCSV);
+    expect(growth.reviewCSV(JSON.parse(before), 6)).toBe(growth.reviewCSV(book, 6));
+  });
+
+  it('exports a normalized inspection hour and blank comparison fields when the original control is missing', () => {
+    const book = { trials: [{ id: 9, conditions: optimum('ecoli'), prediction: 'lower', explanation: 'Recovered note' }] };
+    const row = readQuotedCSV(growth.reviewCSV(book, 0))[0];
+    expect(row).toMatchObject({ trial_id: '9', inspection_hour: '0', trial_population_at_inspection_hour: '5', original_prediction: 'lower', explanation: 'Recovered note' });
+    for (const key of ['control_profile', 'control_temperature_C', 'control_pH', 'control_oxygen_availability_0_100', 'control_population_at_inspection_hour', 'difference_at_inspection_hour', 'changed_variables', 'design', 'outcome_at_24h']) {
+      expect(row[key], key).toBe('');
+    }
+    expect(row.model_note).toContain('Blank comparison fields mean the control was not recorded.');
+    for (const [value, expected] of [[undefined, '24'], ['6', '24'], [Infinity, '24'], [-1, '0'], [80, '24'], [6.5, '7']]) {
+      expect(readQuotedCSV(growth.reviewCSV(book, value))[0].inspection_hour).toBe(expected);
+    }
+    expect(readQuotedCSV(growth.reviewCSV(null, 6))).toEqual([]);
+  });
+
+  it('quotes multiline comparison notes and protects formula-like text without rewriting saved evidence', () => {
+    const control = optimum('ecoli');
+    const explanation = 'Counts, "not measurements"\nSecond line\r\nThird line';
+    const trials = ['=1+1', '+SUM(A1:A2)', '-formula', '@SUM(A1)', '\t=CMD()'].map((hypothesis, index) =>
+      ({ id: index + 1, control, conditions: { ...control, oxygen: 0 }, prediction: 'lower', hypothesis, explanation }));
+    const before = JSON.stringify(trials);
+    const rows = readQuotedCSV(growth.reviewCSV({ trials }, 6));
+    expect(rows).toHaveLength(5);
+    rows.forEach((row, index) => {
+      expect(row.hypothesis).toBe("'" + trials[index].hypothesis);
+      expect(row.explanation).toBe(explanation);
+      expect(row.trial_id).toBe(String(index + 1));
+    });
+    expect(JSON.stringify(trials)).toBe(before);
+  });
+
   it('reveals earlier differences while preserving the original hour-24 prediction outcome', () => {
     const control = optimum('ecoli');
     const conditions = { ...control, tempC: 35 };

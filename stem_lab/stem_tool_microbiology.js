@@ -1892,6 +1892,28 @@
         sameControl: rows.length > 1 && controls.length === 1 && missingControls === 0
       });
     }
+    function reviewCSV(value, inspectionHour) {
+      var notebook = normalizeNotebook(value), review = reviewNotebook(notebook, inspectionHour);
+      var rows = [['trial_id', 'inspection_hour', 'control_profile', 'control_temperature_C', 'control_pH', 'control_oxygen_availability_0_100',
+        'trial_profile', 'trial_temperature_C', 'trial_pH', 'trial_oxygen_availability_0_100', 'changed_variables', 'design',
+        'control_population_at_inspection_hour', 'trial_population_at_inspection_hour', 'difference_at_inspection_hour',
+        'original_prediction', 'outcome_at_24h', 'hypothesis', 'explanation', 'population_units', 'model_note']];
+      function population(value) { return value === null ? '' : Number(value.toFixed(3)); }
+      review.rows.forEach(function(row, index) {
+        var c = row.control, t = row.conditions, saved = notebook.trials[index];
+        rows.push([row.id, review.hour, c ? c.profile : '', c ? c.tempC : '', c ? c.pH : '', c ? c.oxygen : '',
+          t.profile, t.tempC, t.pH, t.oxygen, c ? row.changed.join('; ') : '', row.design || '',
+          population(row.inspected.controlPopulation), population(row.inspected.trialPopulation), population(row.inspected.difference),
+          row.prediction, row.outcome || '', saved.hypothesis, saved.explanation, 'arbitrary population units',
+          'Illustrative deterministic model v1, not measurements; equal inoculum 5, capacity 100, maximum rate 0.4/hour; no death modeled. Each trial uses its original saved control. Blank comparison fields mean the control was not recorded. Prediction outcomes refer to hour 24; similar means a difference of at most 2 units.']);
+      });
+      function cell(value) {
+        var text = String(value);
+        if (typeof value === 'string' && /^\s*[=+@-]/.test(text)) text = "'" + text;
+        return '"' + text.replace(/"/g, '""') + '"';
+      }
+      return rows.map(function(row) { return row.map(cell).join(','); }).join('\r\n');
+    }
     function csv(value) {
       var notebook = normalizeNotebook(Array.isArray(value) ? { trials: value } : value);
       var headings = ['trial_id', 'control_profile', 'control_temperature_C', 'control_pH', 'control_oxygen_availability_0_100',
@@ -1917,7 +1939,7 @@
     }
     return Object.freeze({
       profiles: profiles, normalizeConditions: normalizeConditions, simulate: simulate, compare: compare, sweep: sweep, sweepSteps: sweepSteps,
-      normalizeNotebook: normalizeNotebook, reviewNotebook: reviewNotebook, csv: csv, similarThreshold: SIMILAR_THRESHOLD, maxRecords: MAX_RECORDS
+      normalizeNotebook: normalizeNotebook, reviewNotebook: reviewNotebook, reviewCSV: reviewCSV, csv: csv, similarThreshold: SIMILAR_THRESHOLD, maxRecords: MAX_RECORDS
     });
   })();
 
@@ -1957,21 +1979,26 @@
       return changes;
     }
     function hasPendingRevision(value) { return reportChanges(value).length > 0; }
+    function normalizeReport(id, value) {
+      var report = object(value);
+      return evaluate(id, report).canRecord ? {
+        claim: report.claim, evidence: unique(report.evidence, evidenceIds), reasoning: text(report.reasoning), limitation: 'bounded'
+      } : null;
+    }
     function normalize(value) {
       var raw = object(value), cases = {};
       ids.forEach(function(id) {
         var entry = object(object(raw.cases)[id]);
         var revealed = unique(['context'].concat(Array.isArray(entry.revealed) ? entry.revealed : []), evidenceIds);
-        var prior = object(entry.record);
-        var record = evaluate(id, prior).canRecord ? {
-          claim: prior.claim, evidence: unique(prior.evidence, evidenceIds), reasoning: text(prior.reasoning), limitation: 'bounded'
-        } : null;
+        var record = normalizeReport(id, entry.record);
+        var previousRecord = record ? normalizeReport(id, entry.previousRecord) : null;
+        if (previousRecord && !hasPendingRevision(Object.assign({}, record, { record: previousRecord }))) previousRecord = null;
         cases[id] = { revealed: revealed, collapsed: unique(entry.collapsed, revealed), reportView: record && entry.reportView === 'recorded' ? 'recorded' : 'working', claim: claims.indexOf(entry.claim) >= 0 ? entry.claim : '',
           evidence: unique(entry.evidence, revealed), reasoning: text(entry.reasoning),
           limitation: ['bounded', 'species', 'safe'].indexOf(entry.limitation) >= 0 ? entry.limitation : '',
-          checked: entry.checked === true, record: record };
+          checked: entry.checked === true, record: record, previousRecord: previousRecord };
       });
-      return { active: ids.indexOf(raw.active) >= 0 ? raw.active : ids[0], cases: cases, notice: typeof raw.notice === 'string' && ['saved', 'download_failed'].indexOf(raw.notice) >= 0 ? raw.notice : '' };
+      return { active: ids.indexOf(raw.active) >= 0 ? raw.active : ids[0], cases: cases, notice: typeof raw.notice === 'string' && ['saved', 'restored', 'download_failed'].indexOf(raw.notice) >= 0 ? raw.notice : '' };
     }
     function catalog() {
       function mt(key, fallback) { return __alloMBT('stem.microbiology.mystery_' + key, fallback); }
@@ -2043,9 +2070,44 @@
       return { state: state, canRecord: code === 'ready', code: code, sameRecord: sameRecord, pendingRevision: !!state.record && !sameRecord, nextStep: nextStep,
         predictionMatches: state.maxStep >= 3 && state.prediction ? state.prediction === 'thick' : null };
     }
-    return { normalize: normalize, evaluate: evaluate };
+    function report(value, legacyStep) {
+      var review = evaluate(value, legacyStep), state = review.state;
+      var working = { prediction: state.prediction, interpretation: state.interpretation, explanation: state.explanation, observedStages: [] };
+      for (var i = 1; i <= state.maxStep; i++) working.observedStages.push(i);
+      var changes = state.record ? ['prediction', 'interpretation', 'explanation'].filter(function(field) {
+        return state.record[field] !== working[field];
+      }) : [];
+      return { saved: state.record, working: working, changes: changes, pendingRevision: review.pendingRevision,
+        canDownload: !!(state.record || state.prediction || state.maxStep || state.interpretation || state.explanation.trim()) };
+    }
+    return { normalize: normalize, evaluate: evaluate, report: report };
   })();
   window.__MicrobiologyCore.gram = MicroGram;
+
+  // Local feedback belongs to this stable child, not to persisted investigation data.
+  function MicroGramDownload(props) {
+    var React = props.React, h = React.createElement;
+    var noticeState = React.useState(null), notice = noticeState[0], setNotice = noticeState[1];
+    function download() {
+      if (props.disabled) return;
+      var url, link;
+      try {
+        url = URL.createObjectURL(new Blob([props.text], { type: 'text/plain;charset=utf-8' }));
+        link = document.createElement('a'); link.href = url; link.download = 'micro-lab-gram-evidence.txt';
+        document.body.appendChild(link); link.click();
+        setNotice({ text: props.text, message: props.started });
+      } catch (error) {
+        setNotice({ text: props.text, message: props.failed });
+      } finally {
+        if (link) link.remove();
+        if (url) setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+      }
+    }
+    return h('div', { className: 'micro-gram-export' },
+      h('button', { type: 'button', disabled: props.disabled, onClick: download, 'aria-describedby': 'micro-gram-export-help' }, props.label),
+      h('p', { id: 'micro-gram-download-status', className: 'micro-gram-notes', role: 'status', 'aria-live': 'polite', 'aria-atomic': true },
+        notice && notice.text === props.text ? notice.message : ''));
+  }
 
   var MicroQuiz = (function() {
     function answers(value) {
@@ -2551,6 +2613,7 @@
         function interactiveGramStain() {
           function glt(key, fallback) { return __alloT('stem.microbiology.gram_lab_' + key, fallback); }
           var review = MicroGram.evaluate(d.gramInvestigation, d.gramStep), state = review.state;
+          var evidenceReport = MicroGram.report(state);
           var step = state.step, started = state.maxStep > 0;
           var labels = [glt('stage0', 'Before staining'), glt('stage1', 'Crystal violet'), glt('stage2', 'Iodine'), glt('stage3', 'Decolorization'), glt('stage4', 'Safranin counterstain')];
           var colorNames = [glt('colorless', 'Colorless'), glt('purple', 'Purple'), glt('purple', 'Purple'), glt('colorless', 'Colorless'), glt('pink', 'Pink')];
@@ -2592,6 +2655,45 @@
           function predictionText(value) {
             var found = predictions.find(function(item) { return item[0] === value; });
             return found ? found[1] : glt('prediction_missing', 'No prediction was saved for this earlier observation.');
+          }
+          var reportFields = {
+            prediction: glt('report_prediction', 'Prediction'),
+            interpretation: glt('report_interpretation', 'Selected interpretation'),
+            explanation: glt('report_explanation', 'Written explanation')
+          };
+          function reportFieldText(field, value, saved) {
+            if (field === 'prediction') return value || saved || state.maxStep ? predictionText(value) : glt('prediction_unselected', 'No prediction selected.');
+            if (field === 'interpretation') {
+              var found = interpretations.find(function(item) { return item[0] === value; });
+              return found ? found[1] : glt('interpretation_unselected', 'No interpretation selected.');
+            }
+            return value.trim() ? value : glt('explanation_unwritten', 'No explanation written.');
+          }
+          function evidenceReportText() {
+            var lines = [glt('export_title', 'Micro Lab · Gram-stain evidence report'),
+              glt('scope', 'This idealized illustration shows staining concepts, not a laboratory protocol or a view at a calibrated magnification.'), '',
+              glt('last_report', 'Last saved Gram-stain report')];
+            if (evidenceReport.saved) {
+              ['prediction', 'interpretation', 'explanation'].forEach(function(field) {
+                lines.push(reportFields[field] + ': ' + reportFieldText(field, evidenceReport.saved[field], true));
+              });
+              lines.push(glt('saved_no_stage_log', 'The saved report stores these written fields. It does not store a historical log of observed stages.'));
+            } else lines.push(glt('no_saved_report', 'No report has been saved.'));
+            lines.push('', glt('working_notes', 'Current working notes'),
+              evidenceReport.saved ? (evidenceReport.pendingRevision ? glt('working_pending', 'The current investigation has not replaced the saved report.') : glt('working_matches', 'Working notes match the saved report.'))
+                : glt('working_unrecorded', 'These notes have not been recorded as a completed report.'));
+            ['prediction', 'interpretation', 'explanation'].forEach(function(field) {
+              lines.push(reportFields[field] + ': ' + reportFieldText(field, evidenceReport.working[field], false));
+            });
+            lines.push('', glt('current_observed_stages', 'Stages observed in the current investigation') + ': ' + evidenceReport.working.observedStages.length + '/4');
+            if (!evidenceReport.working.observedStages.length) lines.push(glt('no_current_stages', 'No staining stages have been observed in the current investigation.'));
+            evidenceReport.working.observedStages.forEach(function(at) {
+              lines.push(at + '. ' + labels[at] + ': ' + glt('model_a_short', 'Model A') + ' — ' + modelText('A', at) + '; ' + glt('model_b_short', 'Model B') + ' — ' + modelText('B', at) + '. ' + descriptions[at]);
+            });
+            lines.push('', glt('limits', 'A Gram result cannot identify a species or establish antibiotic susceptibility. Real samples may stain variably because of cell condition or technique; some cell envelopes need other staining methods.'),
+              glt('sources', 'Concept sources: ').trimEnd(), 'ASM: https://asm.org/protocols/gram-stain-protocols',
+              'OpenStax Microbiology: https://openstax.org/books/microbiology/pages/2-4-staining-microscopic-specimens');
+            return lines.join('\n');
           }
           function modelColor(model, at) { return at === 0 || (model === 'B' && at === 3) ? 'none' : (model === 'B' && at === 4 ? '#f472b6' : '#a78bfa'); }
           function modelText(model, at) { return model === 'A' && at > 0 ? glt('purple', 'Purple') : colorNames[at]; }
@@ -2663,9 +2765,25 @@
             state.record ? h('section', { className: 'micro-gram-record', 'aria-labelledby': 'micro-gram-record-heading' },
               h('h4', { id: 'micro-gram-record-heading', tabIndex: -1 }, glt('last_report', 'Last saved Gram-stain report')),
               h('p', null, glt('original_prediction', 'Original prediction') + ': ' + predictionText(state.record.prediction)),
-              h('p', null, glt('saved_observation', 'Recorded observation: after decolorization A remained purple and B became colorless; after counterstaining A was purple and B was pink.')),
+              h('p', null, glt('record_model_reference', 'Model reference: after decolorization A remained purple and B became colorless; after counterstaining A was purple and B was pink.')),
               h('p', null, interpretations[0][1]), h('blockquote', null, state.record.explanation),
-              h('p', { className: 'micro-gram-notes' }, glt('record_separate', 'This saved explanation stays unchanged while you edit the current draft. Saving again replaces it.'))) : null,
+              h('p', { className: 'micro-gram-notes' }, glt('record_separate', 'This saved explanation stays unchanged while you edit the current draft. Saving again replaces it.')),
+              h('details', { id: 'micro-gram-comparison' },
+                h('summary', null, glt('compare_notes', 'Compare saved and working notes')),
+                h('style', null, '.micro-gram-changes{list-style:none;padding:0;margin:8px 0}.micro-gram-changes>li{border-top:1px solid #64748b;padding:12px 0}.micro-gram-compare-values{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:8px 0}.micro-gram-compare-values>div{min-width:0}.micro-gram-compare-values dt{font-weight:700}.micro-gram-compare-values dd{margin:4px 0;white-space:pre-wrap;overflow-wrap:anywhere}'),
+                evidenceReport.changes.length ? h('ul', { className: 'micro-gram-changes' }, evidenceReport.changes.map(function(field) {
+                  return h('li', { key: field, 'data-gram-change': field }, h('strong', null, reportFields[field]),
+                    h('dl', { className: 'micro-gram-compare-values' },
+                      h('div', null, h('dt', null, glt('saved_value', 'Saved report')), h('dd', { 'data-gram-value': 'saved' }, reportFieldText(field, evidenceReport.saved[field], true))),
+                      h('div', null, h('dt', null, glt('working_value', 'Working notes')), h('dd', { 'data-gram-value': 'working' }, reportFieldText(field, evidenceReport.working[field], false)))));
+                })) : h('p', null, glt('no_written_changes', 'No written fields have changed.')),
+                h('p', { className: 'micro-gram-notes' }, glt('current_observed_stages', 'Stages observed in the current investigation') + ': ' + evidenceReport.working.observedStages.length + '/4. ',
+                  glt('saved_no_stage_log', 'The saved report stores these written fields. It does not store a historical log of observed stages.')))) : null,
+            h('p', { id: 'micro-gram-export-help', className: 'micro-gram-notes' }, glt('export_help', 'The text file separates your saved written report from current working notes and the stages observed in this investigation.')),
+            h(MicroGramDownload, { React: React, disabled: !evidenceReport.canDownload, text: evidenceReportText(),
+              label: glt('download_evidence', 'Download Gram evidence report'),
+              started: glt('export_started', 'The Gram evidence report download has started.'),
+              failed: glt('export_failed', 'The report download could not start. Your saved report and working notes are still here.') }),
             h('p', { className: 'micro-gram-notes' }, glt('limits', 'A Gram result cannot identify a species or establish antibiotic susceptibility. Real samples may stain variably because of cell condition or technique; some cell envelopes need other staining methods.')),
             h('p', { className: 'micro-gram-notes' }, glt('sources', 'Concept sources: '),
               h('a', { href: 'https://asm.org/protocols/gram-stain-protocols', target: '_blank', rel: 'noopener noreferrer' }, 'ASM'), ' · ',
@@ -5849,9 +5967,16 @@
         function record() {
           if (!draft.checked || !review.canRecord || (draft.record && !pendingRevision)) return;
           var updated = Object.assign({}, state.cases);
-          updated[state.active] = Object.assign({}, draft, { record: { claim: draft.claim, evidence: draft.evidence.slice(), reasoning: draft.reasoning, limitation: draft.limitation } });
+          updated[state.active] = Object.assign({}, draft, { previousRecord: draft.record, record: { claim: draft.claim, evidence: draft.evidence.slice(), reasoning: draft.reasoning, limitation: draft.limitation } });
           upd({ mysteryLab: Object.assign({}, state, { cases: updated, notice: 'saved' }) });
           focusReport('working');
+        }
+        function restorePreviousReport() {
+          if (!draft.record || !draft.previousRecord) return;
+          var updated = Object.assign({}, state.cases);
+          updated[state.active] = Object.assign({}, draft, { record: draft.previousRecord, previousRecord: draft.record });
+          upd({ mysteryLab: Object.assign({}, state, { cases: updated, notice: 'restored' }) });
+          focusReport(draft.reportView);
         }
         function focusReport(view) {
           var caseId = state.active;
@@ -5898,6 +6023,13 @@
               lines.push(mt('saved_claim', 'Recorded claim') + ': ' + labelFor(data.record.claim), mt('recorded_reasoning', 'Recorded reasoning') + ': ' + data.record.reasoning);
               data.record.evidence.forEach(function(key) { lines.push('• ' + item[key]); });
               lines.push(mt('bounded', 'The evidence supports a broad group or an unresolved classification; species and safety remain unknown.'));
+            }
+            if (data.previousRecord) {
+              lines.push(mt('previous_export_title', 'Previous recorded report (available to restore)'),
+                mt('previous_claim', 'Previous recorded classification') + ': ' + labelFor(data.previousRecord.claim),
+                mt('previous_reasoning', 'Previous written reasoning') + ': ' + data.previousRecord.reasoning);
+              evidence.forEach(function(pair) { if (data.previousRecord.evidence.indexOf(pair[0]) >= 0) lines.push(pair[1] + ': ' + item[pair[0]]); });
+              lines.push(mt('previous_limit', 'Previous conclusion about limits') + ': ' + limitationLabel(data.previousRecord.limitation));
             }
             lines.push(mt('draft_title', 'Current working notes'), mt('claim', 'My classification') + ': ' + labelFor(data.claim), data.reasoning);
             var cited = evidence.filter(function(pair) { return data.evidence.indexOf(pair[0]) >= 0; }).map(function(pair) { return pair[1]; });
@@ -5959,6 +6091,18 @@
             h('h5', null, mt('recorded_limit', 'Recorded conclusion about limits')),
             h('p', null, limitationLabel(saved.limitation)),
             h('small', null, mt('recorded_read_only', 'This is a read-only view of your recorded report. Switch to Working notes to continue your unfinished revisions.')));
+        }
+        function previousReport() {
+          return h('details', { key: 'history-' + state.active, className: 'micro-mystery-comparison', 'data-mystery-history': state.active },
+            h('summary', null, mt('previous_review', 'Review previous report')),
+            h('p', null, mt('previous_note', 'One previous report is kept for this case. Restoring swaps the two recorded reports and keeps your working notes. Your next report update replaces the previous report.')),
+            h('div', { 'data-previous-report': state.active },
+              [['claim', mt('previous_claim', 'Previous recorded classification')], ['evidence', mt('previous_evidence', 'Previous supporting observations')],
+                ['reasoning', mt('previous_reasoning', 'Previous written reasoning')], ['limitation', mt('previous_limit', 'Previous conclusion about limits')]].map(function(pair) {
+                return h('div', { key: pair[0], 'data-previous-field': pair[0] }, h('h5', null, pair[1]), comparisonValue(pair[0], draft.previousRecord));
+              })),
+            h('button', { type: 'button', onClick: restorePreviousReport, 'aria-describedby': 'micro-mystery-restore-note' }, mt('restore_previous', 'Restore previous report')),
+            h('p', { id: 'micro-mystery-restore-note' }, mt('restore_note', 'This makes the previewed report current. The report it replaces stays available here, and your current working or recorded view stays open.')));
         }
         function specimenDrawing() {
           var visible = draft.revealed.indexOf('size') >= 0;
@@ -6031,9 +6175,10 @@
                 h('strong', null, mt('evidence_check', 'Evidence check')), h('p', null, draft.record && !pendingRevision ? mt('already_recorded', 'Your working notes match the recorded report. There is no revision to record.') : feedback), review.claimCorrect && review.hasEvidence ? h('p', null, current.feedback) : null),
               draft.record && h('div', { className: 'micro-mystery-record' }, h('strong', null, mt('saved_claim', 'Recorded claim') + ': ' + labelFor(draft.record.claim)), h('p', null, draft.record.reasoning),
                 h('small', null, mt('saved_note', 'This recorded report stays intact while you revise your working notes. Update it when you are ready.')))
-              )
+              ),
+              draft.previousRecord ? previousReport() : null
             )),
-          h('div', { role: 'status', 'aria-live': 'polite' }, state.notice === 'saved' ? mt('saved', 'Specimen report recorded. Your working notes are also kept when you change cases or sections.') : state.notice === 'download_failed' ? mt('download_failed', 'The download could not start. Your reports and working notes are still here.') : ''),
+          h('div', { role: 'status', 'aria-live': 'polite', 'data-mystery-notice': state.notice }, state.notice === 'saved' ? mt('saved', 'Specimen report recorded. Your working notes are also kept when you change cases or sections.') : state.notice === 'restored' ? mt('restored', 'Previous report restored. Your working notes and current view were kept. The replaced report is available under Review previous report.') : state.notice === 'download_failed' ? mt('download_failed', 'The download could not start. Your reports and working notes are still here.') : ''),
           completed === cases.length ? h('p', { className: 'micro-mystery-review' }, pendingCount ? mt('complete_pending', 'All six reports are recorded. Some working notes still contain pending revisions; review them before replacing any recorded report.') : mt('complete', 'All six reports are recorded. You can review your evidence and download the reports.')) : draft.record && nextCase ? h('div', { className: 'micro-mystery-actions' },
             h('button', { type: 'button', onClick: function() { chooseCase(nextCase.id); } }, mt('next_case', 'Next unrecorded case') + ': ' + nextCase.code + ' · ' + nextCase.title)) : null,
           h('div', { className: 'micro-mystery-actions' }, h('button', { type: 'button', disabled: !anyNotes, onClick: download }, mt('download', 'Download specimen reports')),
@@ -6129,6 +6274,20 @@
             if (url) setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
           }
         }
+        function exportReviewCSV() {
+          if (!book.trials.length) return;
+          var link, url;
+          try {
+            url = URL.createObjectURL(new Blob([G.reviewCSV(book, review.hour)], { type: 'text/csv;charset=utf-8' }));
+            link = document.createElement('a'); link.href = url; link.download = 'micro-lab-comparison-hour-' + review.hour + '.csv';
+            document.body.appendChild(link); link.click();
+          } catch (error) {
+            if (addToast) addToast(gt('review_export_failed', 'The comparison could not download. Your saved trials and selected hour are unchanged.'), 'error');
+          } finally {
+            if (link) link.remove();
+            if (url) setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+          }
+        }
         function chart(result) {
           var width = 660, height = 290, left = 50, top = 20, plotW = 586, plotH = 224;
           function x(hour) { return left + hour / 24 * plotW; }
@@ -6192,6 +6351,8 @@
               Array.from({ length: 25 }, function(_, hour) { return h('option', { key: hour, value: hour }, hour); })),
             h('p', { id: 'gl-review-time-status', className: 'micro-growth-muted', role: 'status', 'aria-live': 'polite' },
               gt('review_showing_hour', 'Showing saved populations at model hour') + ' ' + review.hour + '. ' + gt('review_fixed_outcomes', 'Original predictions and outcome labels always refer to hour 24.')),
+            h('button', { type: 'button', id: 'gl-review-download', disabled: !book.trials.length, 'aria-describedby': 'gl-review-export-note', onClick: exportReviewCSV }, gt('review_download', 'Download comparison at hour') + ' ' + review.hour),
+            h('p', { id: 'gl-review-export-note', className: 'micro-growth-muted' }, gt('review_export_note', 'The CSV includes every saved trial at this hour, its original conditions and notes, and its prediction outcome at hour 24.')),
             review.hasDifferentControls ? h('p', { className: 'micro-growth-design', 'data-review-controls': 'different' }, gt('review_different_controls', 'These runs use different saved controls. A larger difference alone does not show which environmental change caused it. Review the control settings for each run.')) :
               review.sameControl ? h('p', { className: 'micro-growth-muted', 'data-review-controls': 'same' }, gt('review_same_control', 'These runs share the same saved control. Check which variables changed in each trial before attributing an effect.')) : null,
             review.missingControls ? h('p', { className: 'micro-growth-muted' }, gt('review_missing_controls', 'Some saved trials lack a control snapshot. Their trial populations can be modeled, but a comparison and difference are unavailable.')) : null,

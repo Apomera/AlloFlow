@@ -1,0 +1,20 @@
+Micro Lab · Gram-stain evidence report
+This idealized illustration shows staining concepts, not a laboratory protocol or a view at a calibrated magnification.
+
+Last saved Gram-stain report
+No report has been saved.
+
+Current working notes
+These notes have not been recorded as a completed report.
+Prediction: Both models
+Selected interpretation: No interpretation selected.
+Written explanation: When will the two colors first differ?
+
+Stages observed in the current investigation: 2/4
+1. Crystal violet: Model A — Purple; Model B — Purple. The primary dye colors both models purple. This stage does not distinguish their wall types.
+2. Iodine: Model A — Purple; Model B — Purple. Iodine forms a complex with crystal violet. Both models remain purple.
+
+A Gram result cannot identify a species or establish antibiotic susceptibility. Real samples may stain variably because of cell condition or technique; some cell envelopes need other staining methods.
+Concept sources:
+ASM: https://asm.org/protocols/gram-stain-protocols
+OpenStax Microbiology: https://openstax.org/books/microbiology/pages/2-4-staining-microscopic-specimens

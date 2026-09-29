@@ -23,14 +23,14 @@ afterEach(() => {
   vi.useRealTimers();
   globalThis.IS_REACT_ACT_ENVIRONMENT = previousActSetting;
 });
-function mount(seed = {}) {
+function mount(seed = {}, overrides = {}) {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const view = { container, root: ReactDOMClient.createRoot(container), state: null };
   function Host() {
     const [data, setData] = React.useState({ microbiology: { tab: 'growthLab', ...seed } });
     view.state = data.microbiology;
-    return config.render(makeCtx({ toolData: data, setToolData: setData }));
+    return config.render(makeCtx({ ...overrides, toolData: data, setToolData: setData }));
   }
   mounted = view;
   act(() => view.root.render(React.createElement(Host)));
@@ -499,6 +499,69 @@ describe('Microbiology growth investigation workflow', { timeout: 20000 }, () =>
     click(mounted.container.querySelector('#micro-tab-home'));
     click(mounted.container.querySelector('#micro-tab-growthLab'));
     expect(mounted.container.querySelector('#gl-review-hour').value).toBe('0');
+  });
+
+  it('downloads the restored inspection hour without changing saved evidence, draft settings, or the original CSV export', () => {
+    const trials = [{ id: 3, control: baseConditions, conditions: { ...baseConditions, tempC: 35 }, prediction: 'similar', explanation: 'Saved evidence' },
+      { id: 9, conditions: baseConditions, prediction: 'lower', explanation: 'Recovered record' }];
+    mount({ growthReviewHour: 6, growthLab: { ...baseConditions, oxygen: 0 }, growthInvestigation: { trials, selectedId: 3, nextId: 12, prediction: 'higher', hypothesis: 'Next run draft' } });
+    const restored = JSON.parse(JSON.stringify(mounted.state));
+    act(() => mounted.root.unmount());
+    mounted.container.remove();
+    mounted = null;
+    mount(restored);
+    click(mounted.container.querySelector('.micro-growth-review summary'));
+    const before = JSON.stringify(mounted.state);
+    const originalFeedback = mounted.container.querySelector('.micro-growth-result-head').textContent;
+    const blobs = [], files = [];
+    vi.stubGlobal('Blob', class { constructor(parts, options) { this.parts = parts; this.type = options.type; } });
+    vi.stubGlobal('URL', { createObjectURL: vi.fn(blob => { blobs.push(blob); return 'blob:inspected-hour'; }), revokeObjectURL: vi.fn() });
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function() { files.push(this.download); });
+    vi.useFakeTimers();
+    const download = button('Download comparison at hour 6');
+    expect(download.getAttribute('aria-describedby')).toBe('gl-review-export-note');
+    download.focus();
+    click(download);
+    expect(document.activeElement).toBe(download);
+    expect(files).toEqual(['micro-lab-comparison-hour-6.csv']);
+    expect(blobs[0].type).toBe('text/csv;charset=utf-8');
+    expect(blobs[0].parts.join('')).toBe(window.__MicrobiologyCore.growth.reviewCSV(book(), 6));
+    expect(document.querySelector('a[download="micro-lab-comparison-hour-6.csv"]')).toBe(null);
+    click('Download trial CSV');
+    expect(files[1]).toBe('micro-lab-trials.csv');
+    expect(blobs[1].parts.join('')).toBe(window.__MicrobiologyCore.growth.csv(book()));
+    expect(blobs[1].parts.join('')).toContain('control_population_at_24h');
+    expect(JSON.stringify(mounted.state)).toBe(before);
+    expect(mounted.container.querySelector('.micro-growth-result-head').textContent).toBe(originalFeedback);
+    act(() => vi.runAllTimers());
+    expect(URL.revokeObjectURL).toHaveBeenCalledTimes(2);
+  });
+
+  it('reports comparison download failures, cleans up temporary resources, and keeps the selected hour and evidence', () => {
+    const addToast = vi.fn();
+    mount({ growthReviewHour: 6, growthInvestigation: { trials: [{ id: 4, control: baseConditions, conditions: { ...baseConditions, oxygen: 0 }, prediction: 'lower' }], selectedId: 4 } }, { addToast });
+    const before = JSON.stringify(mounted.state);
+    const createObjectURL = vi.fn(() => { throw new Error('Object URLs unavailable'); });
+    const revokeObjectURL = vi.fn();
+    vi.stubGlobal('URL', { createObjectURL, revokeObjectURL });
+    vi.useFakeTimers();
+    click('Download comparison at hour 6');
+    expect(addToast).toHaveBeenLastCalledWith('The comparison could not download. Your saved trials and selected hour are unchanged.', 'error');
+    expect(JSON.stringify(mounted.state)).toBe(before);
+    expect(revokeObjectURL).not.toHaveBeenCalled();
+    createObjectURL.mockImplementation(() => 'blob:failed-inspection');
+    const anchorClick = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => { throw new Error('Download unavailable'); });
+    click('Download comparison at hour 6');
+    expect(addToast).toHaveBeenCalledTimes(2);
+    expect(document.querySelector('a[download="micro-lab-comparison-hour-6.csv"]')).toBe(null);
+    act(() => vi.advanceTimersByTime(1000));
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:failed-inspection');
+    anchorClick.mockImplementation(() => {});
+    click('Download comparison at hour 6');
+    expect(addToast).toHaveBeenCalledTimes(2);
+    expect(JSON.stringify(mounted.state)).toBe(before);
+    expect(mounted.container.querySelector('#gl-review-hour').value).toBe('6');
+    act(() => vi.runAllTimers());
   });
 
   it('reuses a selected trial setting without changing controls, drafts or saved evidence', () => {

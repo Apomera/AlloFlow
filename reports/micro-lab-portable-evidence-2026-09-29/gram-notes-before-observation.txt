@@ -1,0 +1,19 @@
+Micro Lab · Gram-stain evidence report
+This idealized illustration shows staining concepts, not a laboratory protocol or a view at a calibrated magnification.
+
+Last saved Gram-stain report
+No report has been saved.
+
+Current working notes
+These notes have not been recorded as a completed report.
+Prediction: No prediction selected.
+Selected interpretation: No interpretation selected.
+Written explanation: When will the two colors first differ?
+
+Stages observed in the current investigation: 0/4
+No staining stages have been observed in the current investigation.
+
+A Gram result cannot identify a species or establish antibiotic susceptibility. Real samples may stain variably because of cell condition or technique; some cell envelopes need other staining methods.
+Concept sources:
+ASM: https://asm.org/protocols/gram-stain-protocols
+OpenStax Microbiology: https://openstax.org/books/microbiology/pages/2-4-staining-microscopic-specimens

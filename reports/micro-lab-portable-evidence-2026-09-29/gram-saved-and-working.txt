@@ -1,0 +1,26 @@
+Micro Lab · Gram-stain evidence report
+This idealized illustration shows staining concepts, not a laboratory protocol or a view at a calibrated magnification.
+
+Last saved Gram-stain report
+Prediction: Only model B, with thin peptidoglycan and an outer membrane
+Selected interpretation: Cell-envelope structure changes dye retention; shape alone does not explain the result.
+Written explanation: My prediction was different: A kept purple at decolorization. The cell envelopes explain the difference.
+The saved report stores these written fields. It does not store a historical log of observed stages.
+
+Current working notes
+The current investigation has not replaced the saved report.
+Prediction: Only model B, with thin peptidoglycan and an outer membrane
+Selected interpretation: Round cells retain purple dye, while rod-shaped cells lose it.
+Written explanation: <b>A literal working note</b>
+I am still considering the shape explanation.
+
+Stages observed in the current investigation: 4/4
+1. Crystal violet: Model A — Purple; Model B — Purple. The primary dye colors both models purple. This stage does not distinguish their wall types.
+2. Iodine: Model A — Purple; Model B — Purple. Iodine forms a complex with crystal violet. Both models remain purple.
+3. Decolorization: Model A — Purple; Model B — Colorless. Decolorization dehydrates thick peptidoglycan, helping retain the violet–iodine complex. In the thin-wall model, disruption of the outer membrane and the thin peptidoglycan layer allow the complex to wash out.
+4. Safranin counterstain: Model A — Purple; Model B — Pink. The counterstain colors the decolorized model pink. The retained purple dye masks the counterstain in the thick-wall model.
+
+A Gram result cannot identify a species or establish antibiotic susceptibility. Real samples may stain variably because of cell condition or technique; some cell envelopes need other staining methods.
+Concept sources:
+ASM: https://asm.org/protocols/gram-stain-protocols
+OpenStax Microbiology: https://openstax.org/books/microbiology/pages/2-4-staining-microscopic-specimens

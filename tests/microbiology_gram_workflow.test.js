@@ -10,7 +10,7 @@ beforeEach(() => {
 function unmount() {
   if (mounted) { act(() => mounted.root.unmount()); mounted.container.remove(); mounted = null; }
 }
-afterEach(() => { unmount(); globalThis.IS_REACT_ACT_ENVIRONMENT = priorAct; vi.restoreAllMocks(); vi.useRealTimers(); });
+afterEach(() => { unmount(); globalThis.IS_REACT_ACT_ENVIRONMENT = priorAct; vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.useRealTimers(); });
 const core = () => window.__MicrobiologyCore.gram;
 function mount(seed = {}) {
   const container = document.createElement('div'); document.body.appendChild(container);
@@ -39,6 +39,21 @@ function write(text) {
 function stages() { return [...lab().querySelectorAll('.micro-gram-stages button')]; }
 function observe() { for (let i = 1; i <= 4; i++) click(stages()[i]); }
 function tab(id) { click(mounted.container.querySelector('#micro-tab-' + id)); }
+function captureDownload() {
+  const contents = [], NativeBlob = globalThis.Blob, NativeURL = globalThis.URL;
+  class CapturedBlob extends NativeBlob {
+    constructor(parts, options) { super(parts, options); contents.push(parts.join('')); }
+  }
+  class CapturedURL extends NativeURL {}
+  Object.defineProperties(CapturedURL, {
+    createObjectURL: { configurable: true, writable: true, value: vi.fn(() => 'blob:gram-evidence') },
+    revokeObjectURL: { configurable: true, writable: true, value: vi.fn() }
+  });
+  vi.stubGlobal('Blob', CapturedBlob); vi.stubGlobal('URL', CapturedURL);
+  const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+  vi.useFakeTimers();
+  return { contents, clickSpy, createUrl: CapturedURL.createObjectURL, revokeUrl: CapturedURL.revokeObjectURL };
+}
 
 describe('Gram-stain inquiry model', () => {
   it('bounds malformed legacy and saved data without inventing a completed report', () => {
@@ -94,6 +109,32 @@ describe('Gram-stain inquiry model', () => {
     expect(core().evaluate({ ...complete, record, step: 1 })).toMatchObject({ nextStep: 'saved', sameRecord: true, pendingRevision: false });
     expect(core().evaluate({ ...complete, record, explanation: 'A new explanation.' })).toMatchObject({ nextStep: 'record', sameRecord: false, pendingRevision: true });
     expect(core().evaluate({ record })).toMatchObject({ nextStep: 'prediction', pendingRevision: true });
+  });
+
+  it('projects a saved report independently of current observed stages without inventing historical evidence', () => {
+    const saved = Object.freeze({ prediction: 'thin', interpretation: 'wall', explanation: 'A retained purple despite my prediction.' });
+    const input = Object.freeze({ record: saved, maxStep: 99, step: 0, explanation: '<script>literal notes</script>' });
+    const report = core().report(input);
+    expect(report.saved).toEqual(saved);
+    expect(report.saved).not.toHaveProperty('observedStages');
+    expect(report.working.observedStages).toEqual([]);
+    expect(report.working.explanation).toBe('<script>literal notes</script>');
+    expect(report.changes).toEqual(['prediction', 'interpretation', 'explanation']);
+    expect(report.canDownload).toBe(true);
+    report.saved.explanation = 'Changed copy';
+    expect(saved.explanation).toBe('A retained purple despite my prediction.');
+    expect(core().report(null, 2).working.observedStages).toEqual([1, 2]);
+  });
+
+  it('compares only changed written fields and permits useful unfinished notes to be exported', () => {
+    const record = { prediction: '', interpretation: 'wall', explanation: 'Original legacy explanation.' };
+    const same = { ...record, record, step: 2, maxStep: 4 };
+    expect(core().report(same)).toMatchObject({ changes: [], pendingRevision: false });
+    expect(core().report({ ...same, interpretation: 'shape' }).changes).toEqual(['interpretation']);
+    expect(core().report({ ...same, explanation: 'A revision.' }).changes).toEqual(['explanation']);
+    expect(core().report({ ...same, step: 0, maxStep: 0 })).toMatchObject({ changes: [], pendingRevision: true });
+    for (const raw of [null, {}, { explanation: '  ' }, { step: 99, maxStep: 99 }]) expect(core().report(raw).canDownload).toBe(false);
+    for (const raw of [{ prediction: 'thin' }, { interpretation: 'shape' }, { explanation: 'A question.' }, { record }]) expect(core().report(raw).canDownload).toBe(true);
   });
 });
 
@@ -229,5 +270,116 @@ describe('Gram-stain inquiry workflow', { timeout: 20000 }, () => {
     const surrounding = lab().parentElement;
     expect(surrounding.textContent).toContain('Both Gram-positive and Gram-negative bacteria can cause serious disease');
     expect(surrounding.textContent).not.toMatch(/~3 seconds|Generally susceptible to:|Generally tougher to treat|medically more dangerous/);
+  });
+
+  it('compares only changed fields in a stable native disclosure without replacing the saved explanation', () => {
+    const record = { prediction: 'thin', interpretation: 'wall', explanation: 'My saved explanation.' };
+    mount({ gramInvestigation: { ...record, record, step: 2, maxStep: 4 } });
+    const disclosure = lab().querySelector('#micro-gram-comparison');
+    expect(disclosure.tagName).toBe('DETAILS');
+    expect(disclosure.open).toBe(false);
+    expect(disclosure.textContent).toContain('No written fields have changed.');
+    click(disclosure.querySelector('summary'));
+    expect(disclosure.open).toBe(true);
+    write('<img src=x onerror=alert(1)> My working explanation.');
+    choose('interpretation', 'shape');
+    expect(lab().querySelector('#micro-gram-comparison')).toBe(disclosure);
+    expect(disclosure.open).toBe(true);
+    expect([...disclosure.querySelectorAll('[data-gram-change]')].map(node => node.dataset.gramChange)).toEqual(['interpretation', 'explanation']);
+    const changed = disclosure.querySelector('[data-gram-change="explanation"]');
+    expect(changed.querySelector('[data-gram-value="saved"]').textContent).toBe(record.explanation);
+    expect(changed.querySelector('[data-gram-value="working"]').textContent).toContain('<img src=x onerror=alert(1)>');
+    expect(disclosure.querySelector('img')).toBeNull();
+    expect(mounted.state.gramInvestigation.record).toEqual(record);
+    choose('interpretation', 'wall'); write(record.explanation);
+    expect(disclosure.querySelectorAll('[data-gram-change]')).toHaveLength(0);
+    expect(disclosure.textContent).toContain('No written fields have changed.');
+  });
+
+  it('exports saved and contradictory working explanations as distinct literal text with model limits', () => {
+    const record = { prediction: 'thin', interpretation: 'wall', explanation: 'A kept purple at decolorization despite my original prediction.' };
+    const working = '<script>literal draft</script>\nI am reconsidering the shape explanation.';
+    mount({ gramInvestigation: { ...record, record, step: 1, maxStep: 4, interpretation: 'shape', explanation: working } });
+    const download = captureDownload(), before = JSON.stringify(mounted.state);
+    const control = button('Download Gram evidence report');
+    act(() => control.focus()); click(control);
+    const [saved, draft] = download.contents[0].split('Current working notes');
+    expect(saved).toContain('Prediction: Only model B');
+    expect(saved).toContain(record.explanation);
+    expect(saved).not.toContain(working);
+    expect(saved).toContain('It does not store a historical log of observed stages.');
+    expect(draft).toContain(working);
+    expect(draft).toContain('Selected interpretation: Round cells retain purple dye');
+    expect(draft).toContain('The current investigation has not replaced the saved report.');
+    expect(draft).toContain('Stages observed in the current investigation: 4/4');
+    expect(draft).toContain('4. Safranin counterstain: Model A — Purple; Model B — Pink');
+    expect(draft).toContain('cannot identify a species or establish antibiotic susceptibility');
+    expect(draft).toContain('https://asm.org/protocols/gram-stain-protocols');
+    expect(draft).toContain('https://openstax.org/books/microbiology/pages/2-4-staining-microscopic-specimens');
+    expect(JSON.stringify(mounted.state)).toBe(before);
+    expect(document.activeElement).toBe(control);
+    const status = lab().querySelector('#micro-gram-download-status');
+    expect(status.getAttribute('role')).toBe('status');
+    expect(status.getAttribute('aria-live')).toBe('polite');
+    expect(status.getAttribute('aria-atomic')).toBe('true');
+    expect(status.textContent).toContain('download has started');
+    expect(document.querySelector('a[download="micro-lab-gram-evidence.txt"]')).toBeNull();
+    expect(download.revokeUrl).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(1000));
+    expect(download.revokeUrl).toHaveBeenCalledWith('blob:gram-evidence');
+    write('A later working note.');
+    expect(lab().querySelector('#micro-gram-download-status').textContent).toBe('');
+    expect(button('Download Gram evidence report')).toBe(control);
+  });
+
+  it('downloads note-only and partial investigations without leaking unobserved stage results', () => {
+    mount(); expect(button('Download Gram evidence report').disabled).toBe(true);
+    write('I wonder when the model colors will first differ.');
+    const download = captureDownload(); click('Download Gram evidence report');
+    expect(download.contents[0]).toContain('No report has been saved.');
+    expect(download.contents[0]).toContain('No prediction selected.');
+    expect(download.contents[0]).toContain('No staining stages have been observed');
+    choose('prediction', 'both'); click(stages()[1]); click(stages()[2]);
+    click('Download Gram evidence report');
+    const partial = download.contents[1];
+    expect(partial).toContain('Stages observed in the current investigation: 2/4');
+    expect(partial).toContain('1. Crystal violet: Model A — Purple; Model B — Purple');
+    expect(partial).toContain('2. Iodine: Model A — Purple; Model B — Purple');
+    expect(partial).not.toContain('3. Decolorization:');
+    expect(partial).not.toContain('4. Safranin counterstain:');
+    expect(partial).not.toContain('allow the complex to wash out');
+    act(() => vi.runOnlyPendingTimers()); expect(download.revokeUrl).toHaveBeenCalledTimes(2);
+  });
+
+  it('preserves a legacy saved report after restart and JSON remount without inventing draft observations', () => {
+    mount({ gramStep: 3 }); click(stages()[4]); choose('interpretation', 'wall'); write('My legacy report with no initial prediction.'); click('Save Gram-stain report');
+    const record = JSON.parse(JSON.stringify(mounted.state.gramInvestigation.record));
+    click('Start a new investigation');
+    const download = captureDownload(); click('Download Gram evidence report');
+    const first = download.contents[0], [saved, working] = first.split('Current working notes');
+    expect(saved).toContain('No prediction was saved for this earlier observation.');
+    expect(saved).toContain(record.explanation);
+    expect(working).toContain('No prediction selected.');
+    expect(working).toContain('Stages observed in the current investigation: 0/4');
+    expect(working).not.toContain('1. Crystal violet:');
+    const restored = JSON.parse(JSON.stringify(mounted.state));
+    unmount(); mount(restored); click('Download Gram evidence report');
+    expect(download.contents[1]).toBe(first);
+    expect(mounted.state.gramInvestigation.record).toEqual(record);
+    expect(lab().querySelectorAll('[data-gram-change]')).toHaveLength(2);
+    act(() => vi.runOnlyPendingTimers());
+  });
+
+  it.each(['create', 'click'])('reports a %s download failure and cleans up without changing evidence', failure => {
+    mount({ gramInvestigation: { prediction: 'thin', explanation: 'An unfinished question.' } });
+    const download = captureDownload(), before = JSON.stringify(mounted.state);
+    if (failure === 'create') download.createUrl.mockImplementation(() => { throw new Error('URL unavailable'); });
+    else download.clickSpy.mockImplementation(() => { throw new Error('Download blocked'); });
+    click('Download Gram evidence report');
+    expect(lab().querySelector('#micro-gram-download-status').textContent).toContain('The report download could not start.');
+    expect(JSON.stringify(mounted.state)).toBe(before);
+    expect(document.querySelector('a[download="micro-lab-gram-evidence.txt"]')).toBeNull();
+    act(() => vi.runOnlyPendingTimers());
+    expect(download.revokeUrl).toHaveBeenCalledTimes(failure === 'click' ? 1 : 0);
   });
 });
