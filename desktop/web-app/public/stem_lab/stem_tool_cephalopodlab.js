@@ -11413,6 +11413,44 @@ function createCLHuntAnimal(T, species) {
       var eyeCompatibility=new T.Group();eyeCompatibility.name='cl-eye-highlight';root.add(eyeCompatibility);
       var lid=new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(lidPoints),18,0.010*scale,6,false),skin);lid.name='cl-eye-lid';eyeCompatibility.add(lid);
     }
+  }else if(cuttle||bobtail||dumbo||vampire){
+    // Static curved eyes: a light-adapted W aperture distinguishes cuttlefish without animating dilation.
+    var swimmerIrisMat=new T.MeshStandardMaterial({color:0xffffff,roughness:0.40,metalness:0.12,vertexColors:true});
+    swimmerIrisMat.name='cl-swimmer-iris-material';
+    var swimmerPupilMat=new T.MeshPhysicalMaterial({color:0x040709,roughness:0.19,metalness:0,clearcoat:0.68,clearcoatRoughness:0.12});
+    swimmerPupilMat.name='cl-swimmer-pupil-material';swimmerPupilMat.color.convertSRGBToLinear();
+    // A restrained view-dependent water reflection makes the wet dome readable. No clock, glow or texture.
+    swimmerPupilMat.onBeforeCompile=function(shader){shader.fragmentShader=shader.fragmentShader.replace('gl_FragColor = vec4( outgoingLight, diffuseColor.a );',"vec3 clSwimEyeN=normalize(normal); vec3 clSwimEyeV=normalize(vViewPosition); vec3 clSwimEyeR=inverseTransformDirection(reflect(-clSwimEyeV,clSwimEyeN),viewMatrix); float clSwimEyeEdge=pow(1.0-clamp(dot(clSwimEyeN,clSwimEyeV),0.0,1.0),3.0); float clSwimEyeSky=smoothstep(0.12,0.95,clSwimEyeR.y); vec3 clSwimEyeWater=mix(vec3(0.003,0.006,0.008),vec3(0.085,0.115,0.125),clSwimEyeSky); float clSwimEyeBroad=pow(max(0.0,dot(clSwimEyeR,normalize(vec3(-0.22,0.94,0.26)))),18.0); outgoingLight+=clSwimEyeWater*(0.035+clSwimEyeEdge*0.12)+vec3(0.16,0.20,0.22)*clSwimEyeBroad*0.16; gl_FragColor = vec4( outgoingLight, diffuseColor.a );");};
+    swimmerPupilMat.customProgramCacheKey=function(){return 'cl-swimmer-pupil-water-v11';};
+    var swimmerIrisTint=new T.Color(cuttle?0x8c8978:bobtail?0x7c8278:dumbo?0x797985:0x6f828c).convertSRGBToLinear();
+    function swimmerEyeCap(name,eyeSide,pupil){
+      var wPupil=pupil&&cuttle,radial=wPupil?32:6,segments=wPupil?6:32,positions=[],normals=[],colors=[],indices=[];
+      for(var eyeRing=0;eyeRing<=radial;eyeRing++)for(var eyeSegment=0;eyeSegment<=segments;eyeSegment++){
+        var r=eyeRing/radial,angle=eyeSegment/segments*Math.PI*2,eyeY,eyeZ;
+        if(!pupil){eyeY=Math.sin(angle)*r*0.94;eyeZ=Math.cos(angle)*r*0.94;}
+        else if(wPupil){var along=r*2-1;eyeZ=along*0.85;eyeY=0.16*Math.cos(along*Math.PI*2)+(eyeSegment/segments*2-1)*Math.sqrt(Math.max(0,1-along*along))*0.13;}
+        else{eyeY=Math.sin(angle)*r*0.80*(vampire?0.93:0.32);eyeZ=Math.cos(angle)*r*0.80;}
+        var dome=Math.sqrt(Math.max(0,1-eyeY*eyeY-eyeZ*eyeZ)),lift=pupil?0.0025:0;
+        positions.push(eyeSide*(0.360+0.075*dome+lift)*scale,(0.075+0.126*eyeY)*scale,(0.430+0.142*eyeZ)*scale);
+        var normalX=eyeSide*dome/0.075,normalY=eyeY/0.126,normalZ=eyeZ/0.142,normalLength=Math.hypot(normalX,normalY,normalZ);
+        normals.push(normalX/normalLength,normalY/normalLength,normalZ/normalLength);
+        if(!pupil){var fibers=0.93+Math.sin(angle*31+r*7)*0.045+Math.sin(angle*59-r*9)*0.025,limbus=1-Math.max(0,(r-0.76)/0.24)*0.15;colors.push(swimmerIrisTint.r*fibers*limbus,swimmerIrisTint.g*fibers*limbus,swimmerIrisTint.b*fibers*limbus);}
+      }
+      for(var eyeRing=0;eyeRing<radial;eyeRing++)for(var eyeSegment=0;eyeSegment<segments;eyeSegment++){var q=eyeRing*(segments+1)+eyeSegment,b=q+segments+1;if(eyeSide>0)indices.push(q,q+1,b,b,q+1,b+1);else indices.push(q,b,q+1,b,b+1,q+1);}
+      var geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('normal',new T.Float32BufferAttribute(normals,3));if(!pupil)geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeBoundingBox();geometry.computeBoundingSphere();
+      var mesh=new T.Mesh(geometry,pupil?swimmerPupilMat:swimmerIrisMat);mesh.name=name;root.add(mesh);return mesh;
+    }
+    for(var swimmerEyeSide=-1;swimmerEyeSide<=1;swimmerEyeSide+=2){
+      ellipsoid('cl-eye-rim',0.155,swimmerEyeSide*0.310,0.072,0.418,0.66,0.99,1.07,skin);
+      swimmerEyeCap('cl-iris',swimmerEyeSide,false);swimmerEyeCap('cl-pupil',swimmerEyeSide,true);
+      var swimmerLidPoints=[];
+      for(var swimmerLidIndex=0;swimmerLidIndex<=18;swimmerLidIndex++){var lidAngle=-0.10+swimmerLidIndex/18*(Math.PI+0.20);swimmerLidPoints.push(new T.Vector3(swimmerEyeSide*(0.360+0.075*Math.sqrt(1-0.94*0.94)+0.002)*scale,(0.075+Math.sin(lidAngle)*0.126*0.94)*scale,(0.430+Math.cos(lidAngle)*0.142*0.94)*scale));}
+      var swimmerEyeCompatibility=new T.Group();swimmerEyeCompatibility.name='cl-eye-highlight';root.add(swimmerEyeCompatibility);
+      var swimmerLid=new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(swimmerLidPoints),18,0.009*scale,6,false),skin);swimmerLid.name='cl-eye-lid';swimmerEyeCompatibility.add(swimmerLid);
+    }
+    // Keep the cuttle aperture ahead of its wide mantle and above the moving front skirt.
+    // The socket still overlaps the head; body and fin geometry remain unchanged.
+    if(cuttle)root.traverse(function(eyePart){if(eyePart.isMesh&&(eyePart.name==='cl-eye-rim'||eyePart.name==='cl-iris'||eyePart.name==='cl-pupil'||eyePart.name==='cl-eye-lid')){eyePart.position.y+=0.050*scale;eyePart.position.z+=0.100*scale;}});
   }else{
     var irisMat=new T.MeshStandardMaterial({color:squid?0x756e61:vampire?0x899fba:0xc3a666,roughness:squid?0.38:0.27});
     irisMat.color.convertSRGBToLinear();
@@ -11753,6 +11791,68 @@ function createCLHuntFish(T,index){
       function clHuntPreyIntentText(prey) {
         var u=prey&&prey.userData||{};
         return u.intent==='distracted'?'prey distracted by display':u.intent==='wary'?'prey is wary · use cover':u.intent==='settling'?'prey is settling · stay out of sight':u.alert?'prey is fleeing':'prey is unaware';
+      }
+
+      // Static tapered ribbons: three columns give each blade a shallow folded center vein.
+      // Geometry begins at the basal pivot; all variation comes from the existing plant index.
+      function createCLHuntPlantGeometry(THREE,kind,height,variant) {
+        var kelp=kind==='kelp',sections=kelp?18:10,columns=3,width=kelp?0.65:0.26;
+        var phase=(variant%17)*0.43,variation=((variant*7)%13)/12,sign=variant%2?-1:1;
+        var positions=[],colors=[],uvs=[],indices=[];
+        for(var row=0;row<=sections;row++){
+          var t=row/sections,envelope=kelp?Math.max(0.025,Math.pow(Math.sin(t*Math.PI),0.65)):Math.max(0.022,Math.pow(1-t,0.65))*(0.68+0.32*Math.sin(t*Math.PI));
+          var centerX=kelp?Math.sin(t*4.6+phase)*(0.30+variation*0.12)*t:sign*(0.14+variation*0.10)*t*t*(0.75+0.25*Math.sin(phase+t*2.4));
+          var centerZ=kelp?Math.sin(t*3.2+phase*0.7)*0.20*t:Math.sin(t*Math.PI)*0.06+(0.10+variation*0.08)*t*t;
+          var twist=kelp?Math.sin(t*3.5+phase)*0.35*t:sign*0.38*t*t+Math.sin(t*Math.PI+phase)*0.08*t;
+          for(var column=0;column<columns;column++){
+            var side=column-1,edge=1+(kelp?0.065:0.025)*Math.sin(t*Math.PI*6+phase+side*0.5)*Math.sin(t*Math.PI);
+            var across=side*width*0.5*envelope*edge,fold=width*envelope*(kelp?0.12:0.10)*(1-Math.abs(side))*Math.sin(t*Math.PI);
+            positions.push(centerX+Math.cos(twist)*across,t*height,centerZ+Math.sin(twist)*across+fold);
+            var light=(0.94+variation*0.12)*(side===0?1.06:0.92);
+            if(kelp)colors.push((0.055+t*0.065)*light,(0.10+t*0.10)*light,(0.023+t*0.027)*light);
+            else colors.push((0.06+t*0.10)*light,(0.16+t*0.22)*light,(0.08+t*0.11)*light);
+            uvs.push(column/2,t);
+          }
+        }
+        for(var strip=0;strip<sections;strip++)for(var cell=0;cell<2;cell++){var a=strip*columns+cell,b=a+1,c=a+columns,d=c+1;indices.push(a,b,c,b,d,c);}
+        var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();
+        geometry.userData={clPlantKind:kind,clPlantHeight:height,clPlantVariant:variant,clPlantSections:sections,clPlantColumns:columns};return geometry;
+      }
+
+      // One shared, irregular floc silhouette. Food anchors and gathering remain simulation state.
+      function createCLHuntMarineSnowGeometry(THREE) {
+        var vertices=[],lobes=[[-0.012,0.008,0,0.044],[0.025,-0.007,0.012,0.037],[-0.020,-0.020,0.020,0.026],[0.002,0.027,-0.016,0.030]];
+        lobes.forEach(function(lobe,index){
+          var rotation=new THREE.Euler(index*0.9,index*1.7,index*0.6),center=new THREE.Vector3(lobe[0],lobe[1],lobe[2]),ring=[];
+          for(var edge=0;edge<7;edge++){
+            var angle=edge*Math.PI*2/7,ragged=0.82+0.18*((edge*3+index*5)%7)/6;
+            ring.push(new THREE.Vector3(Math.cos(angle)*lobe[3]*ragged,Math.sin(angle)*lobe[3]*0.62*ragged,Math.sin(angle*2+index)*lobe[3]*0.15).applyEuler(rotation).add(center));
+          }
+          for(var triangle=0;triangle<7;triangle++){
+            var a=ring[triangle],b=ring[(triangle+1)%7];
+            vertices.push(center.x,center.y,center.z,a.x,a.y,a.z,b.x,b.y,b.z);
+          }
+        });
+        var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.computeVertexNormals();geometry.computeBoundingSphere();return geometry;
+      }
+      // Visual positions are independent of the original plankton buffer and its seeded recycle decisions.
+      function updateCLHuntWaterParticles(state,positions,legacy,velocities,center,dt,reducedMotion) {
+        var changed=false,drift=reducedMotion?0:dt;
+        for(var i=0;i<positions.length;i+=3){
+          for(var axis=0;axis<3;axis++){
+            var at=i+axis,half=axis===1?8:18,origin=axis===0?center.x:axis===1?center.y:center.z;
+            var next=state.initialized?positions[at]+velocities[at]*drift:origin+(axis===1?(legacy[at]-5)*2:legacy[at]*0.3);
+            var delta=next-origin;
+            if(delta<-half||delta>=half)next-=Math.floor((delta+half)/(half*2))*(half*2);
+            if(positions[at]!==next){positions[at]=next;changed=true;}
+          }
+        }
+        state.initialized=true;return changed;
+      }
+      function shadeCLHuntWaterParticles(shader,pixelRatio) {
+        shader.uniforms.clParticleMaxSize={value:3*pixelRatio};
+        shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nattribute float clParticleScale; attribute float clParticleBrightness; uniform float clParticleMaxSize; varying float clParticleDepth; varying float clParticleLight;').replace('#include <logdepthbuf_vertex>','gl_PointSize=min(gl_PointSize*clParticleScale,clParticleMaxSize); clParticleDepth=max(0.0,-mvPosition.z); clParticleLight=clParticleBrightness;\n#include <logdepthbuf_vertex>');
+        shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying float clParticleDepth; varying float clParticleLight;').replace('#include <color_fragment>','#include <color_fragment>\nfloat clParticleRadius=length(gl_PointCoord-vec2(0.5)); if(clParticleRadius>0.5)discard; diffuseColor.a*=(1.0-smoothstep(0.08,0.5,clParticleRadius))*smoothstep(0.9,2.4,clParticleDepth)*clParticleLight;');
       }
 
       function clHuntPropulsionText(state, observation) {
@@ -12122,13 +12222,11 @@ function createCLHuntFish(T,index){
           var gx = (Math.random() - 0.5) * 120;
           var gz = (Math.random() - 0.5) * 120;
           var gH = 0.6 + Math.random() * 1.3;
-          var grassGeo = new THREE.PlaneGeometry(0.26,gH,1,8),gp=grassGeo.attributes.position,gColors=[];
-          for(var gv=0;gv<gp.count;gv++){var gt=(gp.getY(gv)+gH/2)/gH;gp.setX(gv,gp.getX(gv)*Math.max(0.03,1-gt*gt)+Math.sin(gt*2.2)*0.2);gp.setZ(gv,gt*gt*0.22);gColors.push(0.06+gt*0.10,0.16+gt*0.22,0.08+gt*0.11);}
-          grassGeo.setAttribute('color',new THREE.Float32BufferAttribute(gColors,3));grassGeo.computeVertexNormals();
+          var grassGeo=createCLHuntPlantGeometry(THREE,'grass',gH,gi);
           var grassMat = new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,side:THREE.DoubleSide,roughness:0.86});
           var gmesh = new THREE.InstancedMesh(grassGeo,grassMat,7),grassDummy=new THREE.Object3D();
-          for(var blade=0;blade<7;blade++){var bladeSize=0.62+(blade%4)*0.12,bladeAngle=blade*2.4;grassDummy.position.set(Math.cos(bladeAngle)*0.24,(bladeSize-1)*gH/2,Math.sin(bladeAngle)*0.24);grassDummy.rotation.y=bladeAngle;grassDummy.scale.set(bladeSize,bladeSize,bladeSize);grassDummy.updateMatrix();gmesh.setMatrixAt(blade,grassDummy.matrix);}gmesh.frustumCulled=false;gmesh.receiveShadow=true;
-          gmesh.position.set(gx, gH / 2 + 0.05, gz);
+          for(var blade=0;blade<7;blade++){var bladeSize=0.62+(blade%4)*0.12,bladeAngle=blade*2.4;grassDummy.position.set(Math.cos(bladeAngle)*0.24,0,Math.sin(bladeAngle)*0.24);grassDummy.rotation.y=bladeAngle;grassDummy.scale.set(bladeSize,bladeSize,bladeSize);grassDummy.updateMatrix();gmesh.setMatrixAt(blade,grassDummy.matrix);}gmesh.frustumCulled=false;gmesh.receiveShadow=true;
+          gmesh.name='cl-seagrass';gmesh.position.set(gx,0.05,gz);
           gmesh.rotation.y = Math.random() * Math.PI;
           gmesh.userData.substrate = 'grass';
           gmesh.userData.substrateRadius = 0.6;
@@ -12994,14 +13092,13 @@ function createCLHuntFish(T,index){
           var kpx = (Math.random() - 0.5) * 100;
           var kpz = (Math.random() - 0.5) * 100;
           var kH = 5 + Math.random() * 4;
-          var kGeo = new THREE.PlaneGeometry(0.65,kH,1,16),kp=kGeo.attributes.position;
-          for(var kv=0;kv<kp.count;kv++){var kt=(kp.getY(kv)+kH/2)/kH;kp.setX(kv,kp.getX(kv)*(0.3+0.7*Math.sin(kt*Math.PI))+Math.sin(kt*5)*0.38);kp.setZ(kv,Math.sin(kt*3)*0.3);}kGeo.computeVertexNormals();
-          var kMat = new THREE.MeshBasicMaterial({
-            color: 0x3a6028, side: THREE.DoubleSide,
-            transparent: true, opacity: 0.85,
+          var kGeo=createCLHuntPlantGeometry(THREE,'kelp',kH,kpi);
+          var kMat = new THREE.MeshStandardMaterial({
+            color:0xffffff,vertexColors:true,side:THREE.DoubleSide,roughness:0.95,
+            transparent:true,opacity:0.85,depthWrite:false,
           });
           var kmesh = new THREE.Mesh(kGeo, kMat);
-          kmesh.position.set(kpx, kH / 2, kpz);
+          kmesh.name='cl-kelp';kmesh.position.set(kpx,0,kpz);
           kmesh.rotation.y = Math.random() * Math.PI;
           kmesh.userData.substrate = 'grass';
           kmesh.userData.substrateRadius = 1.4;
@@ -13428,13 +13525,20 @@ function createCLHuntFish(T,index){
           planktonVel[pp * 3 + 1] = (Math.random() - 0.5) * 0.05;
           planktonVel[pp * 3 + 2] = (Math.random() - 0.5) * 0.15;
         }
-        planktonGeo.setAttribute('position', new THREE.BufferAttribute(planktonPositions, 3));
+        var planktonLegacyAttr=new THREE.BufferAttribute(planktonPositions,3);
+        var planktonRenderPositions=new Float32Array(PLANKTON_COUNT*3),planktonVisualState={initialized:false};
+        var planktonScales=new Float32Array(PLANKTON_COUNT),planktonBrightness=new Float32Array(PLANKTON_COUNT);
+        for(var particleIndex=0;particleIndex<PLANKTON_COUNT;particleIndex++){planktonScales[particleIndex]=0.65+0.70*((particleIndex*73)%199)/198;planktonBrightness[particleIndex]=0.55+0.45*((particleIndex*53)%197)/196;}
+        planktonGeo.setAttribute('position',new THREE.BufferAttribute(planktonRenderPositions,3));
+        planktonGeo.setAttribute('clParticleScale',new THREE.BufferAttribute(planktonScales,1));
+        planktonGeo.setAttribute('clParticleBrightness',new THREE.BufferAttribute(planktonBrightness,1));
         var planktonMat = new THREE.PointsMaterial({
-          color: 0xe6f3ff, size: 0.11, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false,
-          sizeAttenuation: true,
+          color:new THREE.Color(0xc9dddc).convertSRGBToLinear(),size:0.055,transparent:true,opacity:0.30,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true,
         });
-        planktonMat.onBeforeCompile=roundWaterParticle;
+        planktonMat.onBeforeCompile=function(shader){shadeCLHuntWaterParticles(shader,renderer.getPixelRatio());};
+        planktonMat.customProgramCacheKey=function(){return 'cl-water-particles-v1';};
         var plankton = new THREE.Points(planktonGeo, planktonMat);
+        plankton.name='cl-water-particles';plankton.frustumCulled=false;
         scene.add(plankton);
 
         // ─── Jellyfish (ambient drifting bells) ─────────────────────
@@ -14420,8 +14524,8 @@ function createCLHuntFish(T,index){
         }
         var marineSnow=[];
         if(capabilities.diet==='detritus'){
-          var snowGeo=new THREE.IcosahedronGeometry(0.09,1),snowMat=new THREE.MeshStandardMaterial({color:0xe9dab4,emissive:0x756648,emissiveIntensity:0.3,roughness:0.95});
-          for(var si=0;si<28;si++){var snow=new THREE.Mesh(snowGeo,snowMat);snow.name='cl-marine-snow';snow.position.set(42+(Math.random()-0.5)*12,gameState.verticalY+(Math.random()-0.5)*5,(Math.random()-0.5)*12);scene.add(snow);marineSnow.push(snow);}
+          var snowGeo=createCLHuntMarineSnowGeometry(THREE),snowMat=new THREE.MeshStandardMaterial({color:new THREE.Color(0xc5c4b0).convertSRGBToLinear(),emissive:new THREE.Color(0x242822).convertSRGBToLinear(),emissiveIntensity:0.08,roughness:1,transparent:true,opacity:0.72,depthWrite:false,side:THREE.DoubleSide});
+          for(var si=0;si<28;si++){var snow=new THREE.Mesh(snowGeo,snowMat);snow.name='cl-marine-snow';snow.rotation.set(si*0.73,si*1.21,si*0.47);snow.position.set(42+(Math.random()-0.5)*12,gameState.verticalY+(Math.random()-0.5)*5,(Math.random()-0.5)*12);scene.add(snow);marineSnow.push(snow);}
           marineSnow[0].position.copy(octopus.position).add(new THREE.Vector3(0,0,1));
         }
         function updateSnow(dt){
@@ -15148,7 +15252,7 @@ function createCLHuntFish(T,index){
 
             // ─── Kelp + hydrothermal vent animation ────────────────
             kelpStrands.forEach(function(k) {
-              k.mesh.rotation.z = Math.sin(now * 0.0008 + k.phase) * 0.12;
+              k.mesh.rotation.z = gameState.a11y.reducedMotion?0:Math.sin(now * 0.0008 + k.phase) * 0.12;
             });
             // Vent plume rises (texture offset would be ideal but cheap rotate)
             ventPlume.rotation.y += dt * 0.3;
@@ -15727,7 +15831,7 @@ function createCLHuntFish(T,index){
             bubbleMat.opacity = 0.25 + dayMix * 0.4;
 
             // ─── Plankton drift (gentle 3D wander) ────────────────
-            var planktonAttr = plankton.geometry.attributes.position;
+            var planktonAttr = planktonLegacyAttr;
             for (var pli = 0; pli < PLANKTON_COUNT; pli++) {
               planktonAttr.array[pli * 3]     += planktonVel[pli * 3]     * dt;
               planktonAttr.array[pli * 3 + 1] += planktonVel[pli * 3 + 1] * dt;
@@ -15746,8 +15850,9 @@ function createCLHuntFish(T,index){
               if (planktonAttr.array[pli * 3 + 1] > 9) planktonVel[pli * 3 + 1] = -Math.abs(planktonVel[pli * 3 + 1]);
             }
             planktonAttr.needsUpdate = true;
-            // Plankton fades at night (smaller bioluminescent visibility)
-            planktonMat.opacity = 0.35 + dayMix * 0.3;
+            if(updateCLHuntWaterParticles(planktonVisualState,planktonRenderPositions,planktonPositions,planktonVel,octopus.position,dt,gameState.a11y.reducedMotion))plankton.geometry.attributes.position.needsUpdate=true;
+            // Diffuse suspended particles provide depth without glowing foreground discs.
+            planktonMat.opacity = 0.18 + dayMix * 0.12;
 
             // ─── Jellyfish pulse + drift ──────────────────────────
             // Each bell radially expands + contracts via vertex displacement

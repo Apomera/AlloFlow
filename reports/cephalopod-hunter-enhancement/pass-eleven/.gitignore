@@ -1,0 +1,10 @@
+*.log
+*.json
+!validation-summary.json
+*.generated.cjs
+*.patch
+apply-*.cjs
+refine-*.cjs
+*-artifacts/
+initial-*.png
+*-initial.png

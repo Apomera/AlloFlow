@@ -1,0 +1,68 @@
+{
+  "pass": 11,
+  "status": "validation_complete",
+  "commitGate": { "normalHook": "blocked by unrelated content_engine_source.jsx mirror drift", "remainingCommandsPassed": 12, "evidence": "remaining-hooks.json", "exception": "Proposed one-time bypass rejected by automatic approval review without explicit user authorization. No bypass commit, hook modification or Git configuration change occurred." },
+  "previousVisualCommit": "758bdb5e7",
+  "counts": { "distinctUnitCasesCovered": 122, "browserCasesPassed": 6, "browserUnexpected": 0, "browserFlaky": 0, "browserSkipped": 0, "finalCapturePngs": 12 },
+  "units": {
+    "counting": "121 distinct initial cases plus one new cuttlefish placement-clearance case; repeated cases counted once. No single final 122-case run was performed.",
+    "initial": {
+      "json": "unit-initial.json", "log": "unit-initial.log", "jsonParsed": true, "status": "passed", "passed": 121, "failedAssertions": 0,
+      "files": { "cephalopodlab_canvas_focus_a11y.test.js": 4, "cephalopodlab_eye_surfaces.test.js": 7, "cephalopodlab_fact_consistency.test.js": 78, "cephalopodlab_fin_membranes.test.js": 9, "cephalopodlab_prey_memory.test.js": 6, "cephalopodlab_squid_arm_detail.test.js": 7, "cephalopodlab_squid_strike_clock.test.js": 3, "cephalopodlab_water_particles.test.js": 7 }
+    },
+    "placementAttempt": {
+      "json": "unit-placement-final.json", "log": "unit-placement-final.log", "jsonParsed": true, "status": "incomplete_infrastructure_failure", "processExitCode": 1,
+      "passedCollectedCases": 9, "passedFile": "cephalopodlab_fin_membranes.test.js", "failedAssertions": 0, "unhandledInfrastructureErrors": 2,
+      "failedToStart": ["cephalopodlab_eye_surfaces.test.js", "cephalopodlab_squid_arm_detail.test.js"],
+      "reason": "Fork workers timed out waiting to start/respond; log also records timeout terminating the squid-arm worker.",
+      "rawJsonCaveat": "Vitest JSON reports success=true for nine collected cases, omitting startup failures from assertion totals. Nonzero process result and log make the overall run incomplete, not passed."
+    },
+    "placementRecovery": {
+      "json": "unit-placement-recovery.json", "log": "unit-placement-recovery.log", "jsonParsed": true, "pool": "threads", "status": "passed", "passed": 15, "failedAssertions": 0,
+      "files": { "cephalopodlab_eye_surfaces.test.js": 8, "cephalopodlab_squid_arm_detail.test.js": 7 },
+      "newCase": "Cuttlefish apertures clear wide mantle and moving front skirt while sockets remain embedded in the head."
+    }
+  },
+  "browser": {
+    "workers": 1, "retries": 0,
+    "runs": [
+      { "json": "water-visuals-initial.json", "log": "water-visuals-initial.log", "artifacts": "water-visuals-initial-artifacts", "jsonParsed": true, "processExitCode": 0, "expected": 4, "unexpected": 0, "flaky": 0, "skipped": 0, "errors": [], "durationMs": 613784.885, "phase": "Before final cuttlefish-only eye placement refinement" },
+      { "json": "foraging-initial.json", "log": "foraging-initial.log", "artifacts": "foraging-initial-artifacts", "jsonParsed": true, "processExitCode": 0, "expected": 2, "unexpected": 0, "flaky": 0, "skipped": 0, "errors": [], "durationMs": 202056.587, "phase": "Existing vampire gathering/no-ink regressions; unaffected by cuttlefish placement" }
+    ],
+    "coverage": ["Actual low/balanced GPU shader compilation and linking", "Native particle maximum-size uniform at no more than 3.01 CSS pixels", "Finite bounded varied attributes and stable buffer identities", "Visible point projection and real render submission after deep/distant travel", "Inspection/reduced-motion freeze, resume and resource disposal", "Single marine-snow meal per forage action", "Held-key marine-snow gathering and no ink for vampire squid"]
+  },
+  "captures": {
+    "status": "complete_visually_accepted_by_root", "mainJson": "capture-results.json", "placementJson": "cuttle-placement-captures.json", "jsonParsed": true, "errors": [], "finalPlacementProcessExitCode": 0,
+    "placementViews": ["cuttlefish-model.png", "cuttlefish-phone.png", "cuttlefish-eye-detail.png"],
+    "acceptance": "Full W aperture clears mantle and eyelids remain attached in final desktop, phone and detail views.",
+    "recovery": "Earlier capture interrupted by preview-server loss between user turns left corrupt detail PNG/JSON, followed by connection refusal. Fresh server and successful rerun regenerated the three accepted views. Incomplete artifacts replaced; recovery documented in IMPLEMENTATION.md and cuttle-placement-recovery.log.",
+    "fixture": "Ordinary field study and standard paused inspection/orbit/zoom; no camera-coordinate, geometry, material, lighting or pose overrides."
+  },
+  "renderingBudget": {
+    "affectedEyeSpecies": ["cuttlefish", "bobtailSquid", "dumboOcto", "vampireSquid"],
+    "eyePair": { "oldMeshes": 8, "newMeshes": 8, "oldVertices": 3400, "newVertices": 2040, "oldTriangles": 5760, "newTriangles": 3408 },
+    "ambient": { "oldPoints": 200, "newPoints": 200, "drawCalls": 1 },
+    "food": { "oldMeshes": 28, "newMeshes": 28, "sharedGeometryVertices": 84, "sharedGeometryTriangles": 28 },
+    "newTextures": 0, "newLights": 0, "newRenderPasses": 0,
+    "preserved": ["Original ambient seed initialization and legacy drift/recycle RNG calls", "All 28 food anchors and complete updateSnow gathering/reward logic", "Unaffected species and non-eye geometry"]
+  },
+  "source": {
+    "runtimeRawSha256": "afe15987b562098d4d89667999abdf041a34335c3557a692c0612bc2c73f37d0",
+    "runtimeLfSha256": "afe15987b562098d4d89667999abdf041a34335c3557a692c0612bc2c73f37d0",
+    "runtimeParity": true,
+    "runtimeFiles": ["stem_lab/stem_tool_cephalopodlab.js", "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js", "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js", "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js"],
+    "ignoredRuntimeMirrors": ["desktop/app-build/stem_lab/stem_tool_cephalopodlab.js", "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js"],
+    "ownershipEvidence": "ownership-check.json", "candidateLfSha256": "fafaed50ec90eae98117e8e0bebd9f09e8ff7de37e8f6804f88476b0298e2b24",
+    "preExistingWrappersPerTrackedFile": 12,
+    "wrapperFiles": ["stem_lab/stem_tool_cephalopodlab.js", "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js"],
+    "wrapperDisposition": "Preserved in working files, excluded from prepared commit candidates and left unstaged; candidate index check passed without staging.",
+    "deployment": "not_requested"
+  },
+  "limitations": [
+    "Browser travel relocates only X/Z then uses actual Dive input for authoritative depth; it is not a long manual traversal.",
+    "Structural GPU tests complement visual review and do not quantify attractiveness or food recognition at every angle/distance.",
+    "Phone inspection captures are not active phone gathering usability tests.",
+    "Final cuttlefish placement is covered by recovered geometry/body tests and accepted captures, rather than a repeat of the earlier four-case water browser suite.",
+    "The cuttlefish W aperture is illustrative and light-adapted; pupil dilation is not simulated."
+  ]
+}

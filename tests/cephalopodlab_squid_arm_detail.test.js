@@ -209,15 +209,15 @@ describe('Cephalopod squid arm and feeding-club detail', () => {
     }
   });
 
-  it('preserves all geometry outside the explicitly changed swimmer fins and mantle breathing', () => {
-    // Pass-nine baselines. Pass ten intentionally changes four fin pairs and their mantle scale.
+  it('preserves all geometry outside the four explicitly upgraded eye assemblies', () => {
+    // Pass-ten baselines. Pass eleven changes only the four swimmer eye assemblies.
     // Include index/normal buffers and instance matrices, not UUIDs or shaders.
     const baselines = {
       "commonOcto": "2dbf4f4a9910d0303e8a07b0638453ede78f7abefd6002432eb493b284583055",
-      "cuttlefish": "46942a3e16e8ce68256aa44821d0bd589ae1ae2784d5f6c8a93219d60fd1e729",
-      "bobtailSquid": "dfba0cb7228a26749904fed3dd96ec0838a43d4e3911b922649ff5e8eabce188",
-      "dumboOcto": "c97ec9d34cf6a8890be1a6c8fbd1b4228501974c290daf29ecdae9c155ea9a12",
-      "vampireSquid": "5ad8b2aa86760f45a55977cf704a8ecb03d31fc28e6bfb9c932bc04c795d7964",
+      "cuttlefish": "e4bfa8ced94551333e453fe2fec42963b0c68e7f4e3a114b054add85638a5230",
+      "bobtailSquid": "3b849ae9de6904e9ab90c84ed63dd1c1b1e7647860cb2cebb15e3238406fc0fe",
+      "dumboOcto": "9870cb8c0d0aeb3ba2797e9d4628cecc55d8a612a9082998f24539497f212f51",
+      "vampireSquid": "7a32994fd9d8f79ce0543c3c37973b2b5ad2b8cc1e991950a145a071ef58efe8",
       "humboldtSquid": "a1fc46156f2eec1b05486dc63d34714b0427355bd96dac1db2683c0f2d4c3a33",
       "blueRinged": "0487ddcda99700950c5464b561ded205929e3ea0dc00e2c08d4310d0f5be2ea5",
       "giantPacific": "fb20223a54c10d0d400ee04ea4fa179097329db9c808c02fae22dffde0248d1e",
@@ -230,7 +230,7 @@ describe('Cephalopod squid arm and feeding-club detail', () => {
       const animal = rig(id);
       for (const [time, jet, strike] of [[1, false, 0], [1.1, true, 0], [1.2, false, .65]]) animal.update(time, .05, state({ moving: true, jet, strike, camo: .4, substrate: 'rock' }));
       const changed = ['cuttlefish', 'bobtailSquid', 'dumboOcto', 'vampireSquid'].includes(id);
-      const preserved = geometrySnapshot(animal).filter(row => !(changed && row[0].startsWith('cl-fin-'))).map(row => { if (changed && row[0] === 'cl-mantle') row[6] = null; return row; });
+      const preserved = geometrySnapshot(animal).filter(row => !(changed && /^cl-(eye-rim|iris|pupil|eye-highlight|eye-lid)$/.test(row[0])));
       expect(createHash('sha256').update(JSON.stringify(preserved)).digest('hex'), id).toBe(fingerprint);
     }
   });

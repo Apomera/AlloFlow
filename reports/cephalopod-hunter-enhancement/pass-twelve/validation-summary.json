@@ -1,0 +1,113 @@
+{
+  "pass": 12,
+  "status": "validated_pending_scoped_commit",
+  "result": "Curved folded seagrass and shaded kelp, anchored basal pivots and reduced-motion kelp",
+  "units": {
+    "passed": 6,
+    "failed": 0,
+    "evidence": "unit-initial.json",
+    "combinedDistinctWithPassEleven": 128
+  },
+  "browser": {
+    "initial": {
+      "stats": {
+        "startTime": "2026-09-29T04:13:55.186Z",
+        "duration": 779626.6449999999,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      },
+      "errors": [],
+      "evidence": "browser-initial.json",
+      "result": "Two timeout failures retained; no plant assertion mismatch. Low completed all expectations including disposal before context teardown timed out. Balanced completed reduced-motion checks then timed out during final resume, before final five assertions."
+    },
+    "recovery": {
+      "stats": {
+        "startTime": "2026-09-29T04:32:12.297Z",
+        "duration": 134896.823,
+        "expected": 2,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "errors": [],
+      "evidence": "browser-recovery.json",
+      "change": "Only video and trace recording disabled; functional assertions and timeout unchanged.",
+      "workers": 1,
+      "retries": 0
+    },
+    "combinedDistinctPassingWithPassEleven": 8
+  },
+  "captures": {
+    "files": [
+      "commonOcto-reef.png",
+      "reef-phone.png",
+      "cuttlefish-reef.png",
+      "cuttlefish-plants.png",
+      "grass-detail.png",
+      "kelp-detail.png"
+    ],
+    "errors": [],
+    "normalFixture": "Ordinary field study after one second, with simulation delta frozen for reef views. Cuttlefish uses standard paused inspection with one Orbit right and Higher input. No material, geometry, camera-coordinate or light overrides.",
+    "detailFixture": "Diagnostic camera-only closeups of the actual seeded commonOcto field-study scene. Simulation delta is zero from construction. Before mode serves the saved pre-plant source; after mode serves canonical and reuses the same plant indices, XZ identity and exact camera poses. No mesh, geometry, material, light, player or visibility changes. These are detail fixtures, not ordinary player-camera screenshots.",
+    "initialDetailFailure": "First final-mode identity guard failed before coordinates were retained. Cause unconfirmed; no production correction made. The subsequent instrumented run exactly matched original construction/current XZ and camera poses for both plants."
+  },
+  "rendering": {
+    "grassMeshes": 80,
+    "instancesPerGrassMesh": 7,
+    "kelpMeshes": 25,
+    "plantDrawCalls": 105,
+    "addedDrawCalls": 0,
+    "addedTextures": 0,
+    "addedLights": 0,
+    "addedSubmittedTriangles": 14440,
+    "grassGeometry": {
+      "vertices": 33,
+      "triangles": 40
+    },
+    "kelpGeometry": {
+      "vertices": 57,
+      "triangles": 72
+    }
+  },
+  "preservation": {
+    "seededConstructionDraws": 525,
+    "layoutAndSubstrateMetadata": "Guarded baseline comparison passed",
+    "kelpBasalPivot": "fixed at root",
+    "grassRootSwayYBound": 0.028730929749340647,
+    "preExistingWrappersPerTrackedFile": 12
+  },
+  "source": {
+    "runtime": [
+      {
+        "file": "stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "a1c99a7b4eb58d5e648838ab537f95f047bd1f1f0e3e1c1f2287a7d59e4a905f"
+      },
+      {
+        "file": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "a1c99a7b4eb58d5e648838ab537f95f047bd1f1f0e3e1c1f2287a7d59e4a905f"
+      },
+      {
+        "file": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "a1c99a7b4eb58d5e648838ab537f95f047bd1f1f0e3e1c1f2287a7d59e4a905f"
+      },
+      {
+        "file": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "a1c99a7b4eb58d5e648838ab537f95f047bd1f1f0e3e1c1f2287a7d59e4a905f"
+      }
+    ],
+    "candidateLfSha256": "1dbfea07e5bab171be86eb58cc3c0a5708ff6dca7eca0470786782d4d4e3ab62",
+    "stagingBase": "Pass-eleven owned candidate already in index; plant delta is prepared separately."
+  },
+  "commit": {
+    "status": "Normal hook blocked on unrelated content-engine mirror drift; automatic approval review rejected bypass without user authorization. No bypass commit or hook/config change occurred.",
+    "priorRemainingChecks": "All twelve remaining hook commands passed at the pass-eleven checkpoint."
+  },
+  "limitations": [
+    "Static shaped ribbons with whole-mesh sway; no flexible blade simulation or new plant shadows.",
+    "All105 plants have finite/basal-pivot checks; rendered floor-ray assertions sample shallow reef clusters, not every steep shelf position.",
+    "No frame-rate improvement is claimed; extra triangle count is recorded.",
+    "Camera detail fixtures use zero simulation delta with the update/render loop active; pause and reduced-motion behavior are separately tested."
+  ]
+}

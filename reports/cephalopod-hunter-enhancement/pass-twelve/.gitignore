@@ -1,0 +1,9 @@
+*.log
+*.json
+!validation-summary.json
+!plant-detail-fixture.json
+*.generated.cjs
+*.patch
+apply-*.cjs
+*-artifacts/
+initial-*.png
