@@ -1,0 +1,188 @@
+{
+  "pass": 14,
+  "status": "validated",
+  "result": "Coherent cuttlefish camouflage and branch-following coral surface relief",
+  "units": {
+    "latestPassed": 58,
+    "latestFailed": 0,
+    "files": [
+      {
+        "file": "cephalopodlab_canvas_focus_a11y.test.js",
+        "passed": 4,
+        "failed": 0,
+        "evidence": "unit-animal.json"
+      },
+      {
+        "file": "cephalopodlab_coral_surface.test.js",
+        "passed": 4,
+        "failed": 0,
+        "evidence": "unit-environment.json"
+      },
+      {
+        "file": "cephalopodlab_cuttle_surface.test.js",
+        "passed": 6,
+        "failed": 0,
+        "evidence": "unit-cuttle-final.json"
+      },
+      {
+        "file": "cephalopodlab_eye_surfaces.test.js",
+        "passed": 8,
+        "failed": 0,
+        "evidence": "unit-animal.json"
+      },
+      {
+        "file": "cephalopodlab_fin_membranes.test.js",
+        "passed": 9,
+        "failed": 0,
+        "evidence": "unit-animal.json"
+      },
+      {
+        "file": "cephalopodlab_giant_grounding.test.js",
+        "passed": 3,
+        "failed": 0,
+        "evidence": "unit-animal.json"
+      },
+      {
+        "file": "cephalopodlab_octopus_eyes.test.js",
+        "passed": 7,
+        "failed": 0,
+        "evidence": "unit-animal.json"
+      },
+      {
+        "file": "cephalopodlab_reef_placement.test.js",
+        "passed": 6,
+        "failed": 0,
+        "evidence": "unit-environment.json"
+      },
+      {
+        "file": "cephalopodlab_rock_surface.test.js",
+        "passed": 4,
+        "failed": 0,
+        "evidence": "unit-environment.json"
+      },
+      {
+        "file": "cephalopodlab_squid_arm_detail.test.js",
+        "passed": 7,
+        "failed": 0,
+        "evidence": "unit-animal.json"
+      }
+    ],
+    "initialCuttleAssertion": {
+      "evidence": "unit-animal.json",
+      "failed": 1,
+      "resolution": "The polynomial hash has exactly75 attainable levels. The impossible >100 expectation was replaced with actual attainable-support coverage, range and spatial-repeat checks; production source was unchanged. The complete six-case file then passed."
+    }
+  },
+  "browser": {
+    "passed": 2,
+    "failed": 0,
+    "flaky": 0,
+    "qualities": [
+      "low",
+      "balanced"
+    ],
+    "durationMs": 93095.38,
+    "evidence": "browser-results.json",
+    "video": "off",
+    "trace": "off",
+    "workers": 1,
+    "retries": 0,
+    "checks": [
+      "Native submitted Standard shader compile/link for skin, arms, fins and coral",
+      "Native shared root-inverse matrices after ordinary movement",
+      "Actual vec4 coral attribute binding",
+      "Held-H passing-cloud control and phase/release",
+      "Paused inspection and existing reduced-motion behavior",
+      "Static coral buffers, stable resource identity and disposal"
+    ]
+  },
+  "visuals": {
+    "captures": [
+      "cuttlefish-surface.png",
+      "cuttlefish-surface-detail.png",
+      "cuttlefish-phone.png",
+      "humboldtSquid-surface.png",
+      "coral-finger-detail.png",
+      "coral-antler-detail.png",
+      "coral-corymbose-detail.png",
+      "cuttlefish-rock-dorsal.png"
+    ],
+    "errors": [],
+    "review": "Accepted all eight final desktop/phone views. Sand has quiet mottling; actual rock cover has stronger organized mantle patches. Coral pores follow all three original forms. Original lights, fog, geometry, colors and placement are retained.",
+    "coralFixture": "surface-detail-fixture.json",
+    "rockFixture": "cuttle-rock-fixture.json",
+    "rockPattern": 0.9,
+    "rockTicks": 124,
+    "rockElapsed": 5.499999999999989,
+    "fixturePreservation": "Strict before/after identity, bounds and camera equality for coral; strict real-input navigation, pose, tint, phase and tick equality for rock cover.",
+    "captureStartupAttempt": {
+      "evidence": "rock-final.log",
+      "result": "The first final rock-only capture timed out waiting for the application canvas. An unchanged retry passed the exact fixture and returned no errors. Cause was not confirmed; the two separate functional browser cases passed without retries."
+    }
+  },
+  "source": {
+    "runtime": [
+      {
+        "file": "stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "da1109ff865fb837097143c6e96a6542fd4cbf3ab00c4a66f0b42877355c8ffa"
+      },
+      {
+        "file": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "da1109ff865fb837097143c6e96a6542fd4cbf3ab00c4a66f0b42877355c8ffa"
+      },
+      {
+        "file": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "da1109ff865fb837097143c6e96a6542fd4cbf3ab00c4a66f0b42877355c8ffa"
+      },
+      {
+        "file": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "da1109ff865fb837097143c6e96a6542fd4cbf3ab00c4a66f0b42877355c8ffa"
+      }
+    ],
+    "candidateLfSha256": "45cbdcf2ecc0033ab926e2211bc5eb2e198a184bc8a15595bb16d9ea4facdbac",
+    "preservedUnstagedWrappersPerTrackedFile": 12,
+    "scope": "Cuttle-only compiler/frame/cache additions; coral-only static attribute/compiler/wiring and seam guard. Other eleven animal shader/material contracts and all twelve animal geometry/pose contracts remain unchanged."
+  },
+  "preservation": {
+    "animalGeometryPoseComparisons": 48,
+    "otherSpeciesShaderUniformComparisons": 44,
+    "coralGeometryCases": 54,
+    "originalCoralPositionNormalColorIndexBounds": "byte-identical",
+    "seededColonies": 18,
+    "seededRandomDraws": 108,
+    "reefSurfaceFallbackSha256": "b15de7c3fcb96e131a7e97eae8c215a685909cc10ce34f70456c9590c07323b5",
+    "coralSeam": {
+      "integerSamples": 17088,
+      "integerFieldChanges": 0,
+      "perturbedFloat32SeamDifference": 0,
+      "nearSeamMaxFieldCorrection": 0.00013135513125156484
+    }
+  },
+  "cost": {
+    "newMeshes": 0,
+    "newVertices": 0,
+    "newTriangles": 0,
+    "newTextures": 0,
+    "newLights": 0,
+    "newPasses": 0,
+    "newDrawCalls": 0,
+    "cuttle": {
+      "noiseSamplesPerFragment": 3,
+      "latticeHashesPerFragment": 24,
+      "reusableMatrixUniforms": 1,
+      "extraVaryingFloats": 3
+    },
+    "coral": {
+      "extraAttributeFloatsPerVertex": 4,
+      "maximum18ColonyAttributeBytes": 226368,
+      "fieldHashesPerCell": 2,
+      "maximumNormalSlope": 0.08
+    }
+  },
+  "limits": [
+    "Illustrative Sepia-like patches and generic corallite-like pores; not calibrated biological skin/polyp simulation.",
+    "Functional checks and still captures do not establish FPS or prove absence of temporal shimmer on every device.",
+    "Unsupported coral derivative paths retain the original reefSurface; cuttle fallback keeps the anatomy field with fixed medium detail and no new derivative calls.",
+    "No deployment or push performed."
+  ]
+}

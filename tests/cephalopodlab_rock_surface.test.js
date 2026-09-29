@@ -141,7 +141,8 @@ describe('Cephalopod Hunter static rock material', () => {
         expect(mesh.material.onBeforeCompile.name).toBe('shadeCLHuntRockSurface');expect(mesh.material.customProgramCacheKey()).toBe('cl-rock-surface-v1');expect(mesh.material.extensions.derivatives).toBe(true);
       }
       for (const mesh of fixtures[2].scene.children) expect(mesh.material.onBeforeCompile.name).toBe('reefSurface');
-      expect(source).toContain("coral.name='cl-coral-colony';coral.material.onBeforeCompile=reefSurface;");
+      expect(source).toContain("coral.name='cl-coral-colony';");
+      expect(source).toContain('coral.material.onBeforeCompile=shadeCLHuntCoralSurface;');
     } finally { fixtures.forEach(fixture => fixture.dispose()); }
   });
 });
