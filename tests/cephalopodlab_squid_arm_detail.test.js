@@ -209,27 +209,28 @@ describe('Cephalopod squid arm and feeding-club detail', () => {
     }
   });
 
-  it('preserves all geometry outside the four explicitly upgraded eye assemblies', () => {
-    // Pass-ten baselines. Pass eleven changes only the four swimmer eye assemblies.
+  it('preserves all geometry outside the explicitly upgraded eye assemblies', () => {
+    // Pass-ten baselines with named eye exclusions for pass eleven's swimmers and pass thirteen's six benthic octopuses.
+    // Each newly filtered body hash was captured before its eye patch was integrated.
     // Include index/normal buffers and instance matrices, not UUIDs or shaders.
     const baselines = {
-      "commonOcto": "2dbf4f4a9910d0303e8a07b0638453ede78f7abefd6002432eb493b284583055",
+      "commonOcto": "2dc598544f08432585302351e17cb6c6ff9fe10551ee98b06fdc4dbb8537f9f8",
       "cuttlefish": "e4bfa8ced94551333e453fe2fec42963b0c68e7f4e3a114b054add85638a5230",
       "bobtailSquid": "3b849ae9de6904e9ab90c84ed63dd1c1b1e7647860cb2cebb15e3238406fc0fe",
       "dumboOcto": "9870cb8c0d0aeb3ba2797e9d4628cecc55d8a612a9082998f24539497f212f51",
       "vampireSquid": "7a32994fd9d8f79ce0543c3c37973b2b5ad2b8cc1e991950a145a071ef58efe8",
       "humboldtSquid": "a1fc46156f2eec1b05486dc63d34714b0427355bd96dac1db2683c0f2d4c3a33",
-      "blueRinged": "0487ddcda99700950c5464b561ded205929e3ea0dc00e2c08d4310d0f5be2ea5",
-      "giantPacific": "fb20223a54c10d0d400ee04ea4fa179097329db9c808c02fae22dffde0248d1e",
-      "mimicOcto": "2dbf4f4a9910d0303e8a07b0638453ede78f7abefd6002432eb493b284583055",
-      "caribReef": "2dbf4f4a9910d0303e8a07b0638453ede78f7abefd6002432eb493b284583055",
-      "coconutOcto": "2dbf4f4a9910d0303e8a07b0638453ede78f7abefd6002432eb493b284583055",
+      "blueRinged": "de3bfb228c4e0049b5287d92e0f2457404765dfbca9fc2fc66e359e43bf49132",
+      "giantPacific": "3386c40d039355f386ac81e555e0537887e2d7be62e8be62bd19d9cf25af99da",
+      "mimicOcto": "2dc598544f08432585302351e17cb6c6ff9fe10551ee98b06fdc4dbb8537f9f8",
+      "caribReef": "2dc598544f08432585302351e17cb6c6ff9fe10551ee98b06fdc4dbb8537f9f8",
+      "coconutOcto": "2dc598544f08432585302351e17cb6c6ff9fe10551ee98b06fdc4dbb8537f9f8",
       "nautilus": "a03c43f10854e182f47c19b852c5f09b318b2b774e901cfc077db48c8808855b"
 };
     for (const [id, fingerprint] of Object.entries(baselines)) {
       const animal = rig(id);
       for (const [time, jet, strike] of [[1, false, 0], [1.1, true, 0], [1.2, false, .65]]) animal.update(time, .05, state({ moving: true, jet, strike, camo: .4, substrate: 'rock' }));
-      const changed = ['cuttlefish', 'bobtailSquid', 'dumboOcto', 'vampireSquid'].includes(id);
+      const changed = ['cuttlefish', 'bobtailSquid', 'dumboOcto', 'vampireSquid', 'commonOcto', 'blueRinged', 'mimicOcto', 'giantPacific', 'caribReef', 'coconutOcto'].includes(id);
       const preserved = geometrySnapshot(animal).filter(row => !(changed && /^cl-(eye-rim|iris|pupil|eye-highlight|eye-lid)$/.test(row[0])));
       expect(createHash('sha256').update(JSON.stringify(preserved)).digest('hex'), id).toBe(fingerprint);
     }

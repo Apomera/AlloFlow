@@ -11451,6 +11451,40 @@ function createCLHuntAnimal(T, species) {
     // Keep the cuttle aperture ahead of its wide mantle and above the moving front skirt.
     // The socket still overlaps the head; body and fin geometry remain unchanged.
     if(cuttle)root.traverse(function(eyePart){if(eyePart.isMesh&&(eyePart.name==='cl-eye-rim'||eyePart.name==='cl-iris'||eyePart.name==='cl-pupil'||eyePart.name==='cl-eye-lid')){eyePart.position.y+=0.050*scale;eyePart.position.z+=0.100*scale;}});
+  }else if(['commonOcto','blueRinged','mimicOcto','giantPacific','caribReef','coconutOcto'].indexOf(id)>=0){
+    // Benthic octopuses retain a horizontal light-adapted aperture on a curved eye surface.
+    var octopusIrisMat=new T.MeshStandardMaterial({color:0xffffff,roughness:0.40,metalness:0.12,vertexColors:true});
+    octopusIrisMat.name='cl-octopus-iris-material';
+    var octopusPupilMat=new T.MeshPhysicalMaterial({color:0x040709,roughness:0.19,metalness:0,clearcoat:0.68,clearcoatRoughness:0.12});
+    octopusPupilMat.name='cl-octopus-pupil-material';octopusPupilMat.color.convertSRGBToLinear();
+    // A restrained view-dependent water reflection makes the wet dome readable. No clock, glow or texture.
+    octopusPupilMat.onBeforeCompile=function(shader){shader.fragmentShader=shader.fragmentShader.replace('gl_FragColor = vec4( outgoingLight, diffuseColor.a );',"vec3 clOctoEyeN=normalize(normal); vec3 clOctoEyeV=normalize(vViewPosition); vec3 clOctoEyeR=inverseTransformDirection(reflect(-clOctoEyeV,clOctoEyeN),viewMatrix); float clOctoEyeEdge=pow(1.0-clamp(dot(clOctoEyeN,clOctoEyeV),0.0,1.0),3.0); float clOctoEyeSky=smoothstep(0.12,0.95,clOctoEyeR.y); vec3 clOctoEyeWater=mix(vec3(0.003,0.006,0.008),vec3(0.085,0.115,0.125),clOctoEyeSky); float clOctoEyeBroad=pow(max(0.0,dot(clOctoEyeR,normalize(vec3(-0.22,0.94,0.26)))),18.0); outgoingLight+=clOctoEyeWater*(0.035+clOctoEyeEdge*0.12)+vec3(0.16,0.20,0.22)*clOctoEyeBroad*0.16; gl_FragColor = vec4( outgoingLight, diffuseColor.a );");};
+    octopusPupilMat.customProgramCacheKey=function(){return 'cl-octopus-pupil-water-v13';};
+    var octopusIrisTint=new T.Color(0x938775).convertSRGBToLinear();
+    function octopusEyeCap(name,eyeSide,pupil){
+      var radial=6,segments=32,positions=[],normals=[],colors=[],indices=[];
+      for(var eyeRing=0;eyeRing<=radial;eyeRing++)for(var eyeSegment=0;eyeSegment<=segments;eyeSegment++){
+        var r=eyeRing/radial,angle=eyeSegment/segments*Math.PI*2,eyeY,eyeZ;
+        if(!pupil){eyeY=Math.sin(angle)*r*0.94;eyeZ=Math.cos(angle)*r*0.94;}
+        else{eyeY=Math.sin(angle)*r*0.80*0.32;eyeZ=Math.cos(angle)*r*0.80;}
+        var dome=Math.sqrt(Math.max(0,1-eyeY*eyeY-eyeZ*eyeZ)),lift=pupil?0.0025:0;
+        positions.push(eyeSide*(0.360+0.075*dome+lift)*scale,(0.075+0.126*eyeY)*scale,(0.430+0.142*eyeZ)*scale);
+        var normalX=eyeSide*dome/0.075,normalY=eyeY/0.126,normalZ=eyeZ/0.142,normalLength=Math.hypot(normalX,normalY,normalZ);
+        normals.push(normalX/normalLength,normalY/normalLength,normalZ/normalLength);
+        if(!pupil){var fibers=0.93+Math.sin(angle*31+r*7)*0.045+Math.sin(angle*59-r*9)*0.025,limbus=1-Math.max(0,(r-0.76)/0.24)*0.15;colors.push(octopusIrisTint.r*fibers*limbus,octopusIrisTint.g*fibers*limbus,octopusIrisTint.b*fibers*limbus);}
+      }
+      for(var eyeRing=0;eyeRing<radial;eyeRing++)for(var eyeSegment=0;eyeSegment<segments;eyeSegment++){var q=eyeRing*(segments+1)+eyeSegment,b=q+segments+1;if(eyeSide>0)indices.push(q,q+1,b,b,q+1,b+1);else indices.push(q,b,q+1,b,b+1,q+1);}
+      var geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('normal',new T.Float32BufferAttribute(normals,3));if(!pupil)geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeBoundingBox();geometry.computeBoundingSphere();
+      var mesh=new T.Mesh(geometry,pupil?octopusPupilMat:octopusIrisMat);mesh.name=name;root.add(mesh);return mesh;
+    }
+    for(var octopusEyeSide=-1;octopusEyeSide<=1;octopusEyeSide+=2){
+      ellipsoid('cl-eye-rim',0.155,octopusEyeSide*0.310,0.075,0.410,0.66,0.99,1.07,skin);
+      octopusEyeCap('cl-iris',octopusEyeSide,false);octopusEyeCap('cl-pupil',octopusEyeSide,true);
+      var octopusLidPoints=[];
+      for(var octopusLidIndex=0;octopusLidIndex<=18;octopusLidIndex++){var lidAngle=-0.10+octopusLidIndex/18*(Math.PI+0.20);octopusLidPoints.push(new T.Vector3(octopusEyeSide*(0.360+0.075*Math.sqrt(1-0.94*0.94)+0.002)*scale,(0.075+Math.sin(lidAngle)*0.126*0.94)*scale,(0.430+Math.cos(lidAngle)*0.142*0.94)*scale));}
+      var octopusEyeCompatibility=new T.Group();octopusEyeCompatibility.name='cl-eye-highlight';root.add(octopusEyeCompatibility);
+      var octopusLid=new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(octopusLidPoints),18,0.009*scale,6,false),skin);octopusLid.name='cl-eye-lid';octopusEyeCompatibility.add(octopusLid);
+    }
   }else{
     var irisMat=new T.MeshStandardMaterial({color:squid?0x756e61:vampire?0x899fba:0xc3a666,roughness:squid?0.38:0.27});
     irisMat.color.convertSRGBToLinear();
@@ -11793,6 +11827,54 @@ function createCLHuntFish(T,index){
         return u.intent==='distracted'?'prey distracted by display':u.intent==='wary'?'prey is wary · use cover':u.intent==='settling'?'prey is settling · stay out of sight':u.alert?'prey is fleeing':'prey is unaware';
       }
 
+      // Static mineral relief follows the rock's local surface; derivatives filter distant grain.
+      // View-space surface gradients support rotated/nonuniformly scaled rocks without extra maps.
+      function shadeCLHuntRockSurface(shader) {
+        var fields=[
+          'varying vec3 clRockPosition;',
+          // Bounded lattice hash: actual local-rock inputs and all integer intermediates stay below 2048.
+          // No large sine hash, texture fetch, octave loop or changing seed. Period exceeds a rock's diameter.
+          'float clRockHash(float x,float y,float z){float h=mod(x*7.0+19.0,127.0);h=mod(h*mod(h,13.0)+y*5.0+23.0,127.0);h=mod(h*mod(h,11.0)+z*3.0+31.0,127.0);h=mod(h*mod(h,7.0)+17.0,127.0);return h/126.0;}',
+          'float clRockValueNoise(float x,float y,float z){float ix=floor(x),iy=floor(y),iz=floor(z);float fx=x-ix,fy=y-iy,fz=z-iz;fx=fx*fx*(3.0-2.0*fx);fy=fy*fy*(3.0-2.0*fy);fz=fz*fz*(3.0-2.0*fz);float a=mix(clRockHash(ix,iy,iz),clRockHash(ix+1.0,iy,iz),fx);float b=mix(clRockHash(ix,iy+1.0,iz),clRockHash(ix+1.0,iy+1.0,iz),fx);float c=mix(clRockHash(ix,iy,iz+1.0),clRockHash(ix+1.0,iy,iz+1.0),fx);float d=mix(clRockHash(ix,iy+1.0,iz+1.0),clRockHash(ix+1.0,iy+1.0,iz+1.0),fx);return mix(mix(a,b,fy),mix(c,d,fy),fz)*2.0-1.0;}',
+          'float clRockCoarseField(float x,float y,float z){return clRockValueNoise(x*2.8+11.7,y*2.8+3.1,z*2.8+17.3);}',
+          'float clRockGrainField(float x,float y,float z){return clRockValueNoise(x*20.0+29.1,y*20.0+47.7,z*20.0+11.3);}',
+          'float clRockFilter(float footprint){return 1.0-smoothstep(0.35,1.1,footprint);}',
+          'float clRockAlbedo(float coarse,float grain,float grainAA){return 0.90+coarse*0.065+grain*0.018*grainAA;}',
+          'float clRockRoughness(float base,float coarse,float grain,float grainAA){return clamp(base+coarse*0.04+grain*0.015*grainAA,0.86,0.98);}',
+          'float clRockSlopeLimit(float magnitude){return min(1.0,0.12/max(magnitude,0.000001));}'
+        ].join('\n');
+        var sample=[
+          'float clRockCoarse=clRockCoarseField(clRockPosition.x,clRockPosition.y,clRockPosition.z);',
+          'float clRockGrain=clRockGrainField(clRockPosition.x,clRockPosition.y,clRockPosition.z);',
+          'float clRockFootprint=max(max(fwidth(clRockPosition.x),fwidth(clRockPosition.y)),fwidth(clRockPosition.z));',
+          'float clRockCoarseAA=clRockFilter(clRockFootprint*2.8);',
+          'float clRockGrainAA=clRockFilter(clRockFootprint*20.0);',
+          'diffuseColor.rgb*=clRockAlbedo(clRockCoarse*clRockCoarseAA,clRockGrain,clRockGrainAA);'
+        ].join('\n');
+        var relief=[
+          'vec3 clRockDx=dFdx(-vViewPosition),clRockDy=dFdy(-vViewPosition);',
+          'vec3 clRockRx=cross(clRockDy,normal),clRockRy=cross(normal,clRockDx);',
+          'float clRockDet=dot(clRockDx,clRockRx);',
+          // Differentiate raw fields, never the derivative-based anti-aliasing weight.
+          'float clRockHx=dFdx(clRockCoarse)*0.018*clRockCoarseAA+dFdx(clRockGrain)*0.0015*clRockGrainAA;',
+          'float clRockHy=dFdy(clRockCoarse)*0.018*clRockCoarseAA+dFdy(clRockGrain)*0.0015*clRockGrainAA;',
+          'if(abs(clRockDet)>0.0000000001){',
+          '  vec3 clRockGradient=(clRockRx*clRockHx+clRockRy*clRockHy)/clRockDet;',
+          '  clRockGradient-=normal*dot(normal,clRockGradient);',
+          '  clRockGradient*=clRockSlopeLimit(length(clRockGradient));',
+          '  normal=normalize(normal-clRockGradient);',
+          '}'
+        ].join('\n');
+        shader.vertexShader=shader.vertexShader
+          .replace('#include <common>','#include <common>\nvarying vec3 clRockPosition;')
+          .replace('#include <begin_vertex>','#include <begin_vertex>\nclRockPosition=position;');
+        shader.fragmentShader=shader.fragmentShader
+          .replace('#include <common>','#include <common>\n'+fields)
+          .replace('#include <color_fragment>','#include <color_fragment>\n'+sample)
+          .replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=clRockRoughness(roughnessFactor,clRockCoarse*clRockCoarseAA,clRockGrain,clRockGrainAA);')
+          .replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\n'+relief);
+      }
+
       // Static tapered ribbons: three columns give each blade a shallow folded center vein.
       // Geometry begins at the basal pivot; all variation comes from the existing plant index.
       function createCLHuntPlantGeometry(THREE,kind,height,variant) {
@@ -12101,7 +12183,13 @@ function createCLHuntFish(T,index){
           var ROCK_TINTS = [0x55483a, 0x3f4d3d, 0x5c4f3f, 0x46524a, 0x4a3f36];
           var rockTint = new THREE.Color(ROCK_TINTS[Math.floor(Math.random() * ROCK_TINTS.length)]).offsetHSL(0,0,(Math.random()-0.5)*0.05);
           var rockMesh = new THREE.Mesh(rockGeo, new THREE.MeshStandardMaterial({ color: rockTint.clone().convertSRGBToLinear(), roughness: 0.92, flatShading: false }));
-          rockMesh.material.onBeforeCompile=reefSurface;
+          if(renderer.capabilities.isWebGL2||renderer.extensions.has('OES_standard_derivatives')){
+            rockMesh.material.extensions={derivatives:true};
+            rockMesh.material.onBeforeCompile=shadeCLHuntRockSurface;
+            rockMesh.material.customProgramCacheKey=function(){return 'cl-rock-surface-v1';};
+          }else{
+            rockMesh.material.onBeforeCompile=reefSurface;
+          }
           rockMesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
           rockMesh.scale.set(1, 0.7 + Math.random() * 0.5, 1);
           rockMesh.position.set(rx, rs * 0.35, rz);
@@ -12261,13 +12349,14 @@ function createCLHuntFish(T,index){
         var animal = createCLHuntAnimal(THREE, species);
         var octopus=animal.root, mantle=animal.mantle, mantleGeo=animal.mantleGeo, mantleMat=animal.mantleMat;
         var mantleBasePositions=animal.basePositions, bodyScale=animal.scale, arms=animal.arms;
+        var floorRestY=FLOOR_REST_Y*(speciesId==='giantPacific'?bodyScale:1);
         // A visual-only snapshot survives prey disposal; it never feeds the capture decision.
         var squidStrikeVisual=null,squidStrikeAimLocal=new THREE.Vector3(),squidStrikeAimOffset=new THREE.Vector3();
         var isCuttlefish=species.id==='cuttlefish', warningRings=animal.warningRings, dumboFins=animal.dumboFins;
         var vampirePhotophores=animal.vampirePhotophores,bobtailGlow=animal.bobtailGlow;
         var cuttleTentacles=animal.cuttleTentacles,cuttleFins=animal.cuttleFins,passingCloudOverlay=animal.passingCloudOverlay;
         var mimicSpikes=animal.mimicSpikes,nautilusShell=animal.nautilusShell;
-        octopus.position.set(0,0.55,0); scene.add(octopus);
+        octopus.position.set(0,floorRestY,0); scene.add(octopus);
 
         // ─── Crab prey — three varieties with distinct ecology ───
         // rock: baseline, common, modest reward. The default crab.
@@ -14078,7 +14167,7 @@ function createCLHuntFish(T,index){
           dayTime: 0.0,
           dayPeriodMs: mission ? 360000 : 180000,
           lastInputAt: gameNow,
-          verticalY: 0.55,             // current octopus depth altitude
+          verticalY: floorRestY,       // current octopus depth altitude
           pressureStrain: 0,           // 0 safe, -1 warning band, 0..1 taking damage
           pressureCueAt: 0,            // last time a pressure cue fired (ms)
           currentDepthZone: 'reef',    // resolved from verticalY each frame
@@ -14584,9 +14673,9 @@ function createCLHuntFish(T,index){
             if (vertInput !== 0) gameState.lastInputAt = now;
             var vertSpeed = isDeepSpecies(species.id) ? 4 : 2.5;
             var propulsionYBefore=gameState.verticalY;
-            gameState.verticalY = (gameState.verticalY || 0.55) + vertInput * vertSpeed * dt;
+            gameState.verticalY = (gameState.verticalY || floorRestY) + vertInput * vertSpeed * dt;
             // Soft clamp by depth limits
-            var bottomY=terrainHeight(octopus.position.x,octopus.position.z)+FLOOR_REST_Y;
+            var bottomY=terrainHeight(octopus.position.x,octopus.position.z)+floorRestY;
             gameState.verticalY = Math.max(bottomY, Math.max(-45, Math.min(18, gameState.verticalY)));
             if(vertInput===0 && !capabilities.swimming && gameState.verticalY-bottomY<0.45)gameState.verticalY=bottomY;
             rocks.forEach(function(r){var dx=octopus.position.x-r.position.x,dz=octopus.position.z-r.position.z,dist=Math.hypot(dx,dz),limit=r.userData.substrateRadius*0.62+bodyScale*0.22;if(dist>0.001&&dist<limit&&gameState.verticalY<r.position.y+r.userData.substrateRadius){octopus.position.x+=dx/dist*(limit-dist);octopus.position.z+=dz/dist*(limit-dist);}});
@@ -14723,7 +14812,7 @@ function createCLHuntFish(T,index){
             gameState.isJetting = isJetting;
             gameState.isMovingOnFloor = isMoving;
             // Use the effective depth change after clamping, never an unfulfilled rise/dive key.
-            gameState.propulsionState={jetting:isJetting,finPowered:species.specialAbility==='finPropulsion',swimming:capabilities.swimming,forward:moveFwd,turn:turn,vertical:vertInput>0?Math.max(0,gameState.verticalY-propulsionYBefore):vertInput<0?Math.min(0,gameState.verticalY-propulsionYBefore):0,aboveFloor:gameState.verticalY-terrainHeight(octopus.position.x,octopus.position.z)-FLOOR_REST_Y,recovering:!!keys.Space&&moveFwd>0&&!!gameState.jetExhausted};
+            gameState.propulsionState={jetting:isJetting,finPowered:species.specialAbility==='finPropulsion',swimming:capabilities.swimming,forward:moveFwd,turn:turn,vertical:vertInput>0?Math.max(0,gameState.verticalY-propulsionYBefore):vertInput<0?Math.min(0,gameState.verticalY-propulsionYBefore):0,aboveFloor:gameState.verticalY-terrainHeight(octopus.position.x,octopus.position.z)-floorRestY,recovering:!!keys.Space&&moveFwd>0&&!!gameState.jetExhausted};
             gameState.hunger = Math.max(0, gameState.hunger - (observation?0:hungerRate) * dt);
             if (isJetting) gameState.runStats.jetMs += dt * 1000;
             gameState.runStats.caloriesBurned += hungerRate * dt;
@@ -14767,7 +14856,7 @@ function createCLHuntFish(T,index){
             // rather than of substrate matching. Fade the substrate component
             // out as the animal leaves the floor: full on the bottom, gone by
             // SUBSTRATE_CAMO_FADE_M above it.
-            var distFromFloor = Math.abs(gameState.verticalY - terrainHeight(octopus.position.x,octopus.position.z) - FLOOR_REST_Y);
+            var distFromFloor = Math.abs(gameState.verticalY - terrainHeight(octopus.position.x,octopus.position.z) - floorRestY);
             var substrateContact = Math.max(0, 1 - distFromFloor / SUBSTRATE_CAMO_FADE_M);
             gameState.substrateContact = substrateContact;
             gameState.camoEff = Math.min(1,matchScore * stillnessBonus * species.camoQualityMul * substrateContact);

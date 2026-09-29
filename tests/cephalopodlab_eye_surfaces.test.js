@@ -206,16 +206,16 @@ describe('Cephalopod curved swimmer eyes', () => {
   });
 
   it('preserves pre-change non-eye geometry for affected swimmers and complete protected species rigs', () => {
-    // Captured before applying the eye patch; only the explicitly changed eye names are excluded.
+    // Captured before the relevant eye patches. Pass thirteen additionally excludes the named common-octopus eyes, not its body.
     const before = {
       cuttlefish: '86e78517f7209f7bbc6429b8bdfb04844a868e8ea482e8a0297b36caf4201b7a',
       bobtailSquid: 'fd05978c0148e0670fdfb7ddd42e28f06552a03730b23dc544f1f3792b198936',
       dumboOcto: 'ac1328af5fef7d39e22a860ad5c9458e91729b96f211e975906ac73388d1926b',
       vampireSquid: '28a7f2cf71c767b454e657f23840bce3032c7e52531f9f59d977d7bdb6d3d9c3',
       humboldtSquid: 'a546090fcede9d5ecc0124c1431704a64375647fdb4bc76ca93ab26f32603adb',
-      commonOcto: '50137dd412cfedadb47abf1ef6af5c2b5948ff6925ae0916b231df5882c34f7e',
+      commonOcto: '9f67f8a43befbca0672310972a170a6c0b8e374fbb73062affe72b56e3bdbbfb',
       nautilus: 'bbb662b439e5275520bccc959be6dc9a8b362740fdd087ab6f76551bad3fbad7',
     };
-    for (const [id, expected] of Object.entries(before)) expect(hash(rig(id), ids.includes(id)), id).toBe(expected);
+    for (const [id, expected] of Object.entries(before)) expect(hash(rig(id), ids.includes(id)||id==='commonOcto'), id).toBe(expected);
   });
 });

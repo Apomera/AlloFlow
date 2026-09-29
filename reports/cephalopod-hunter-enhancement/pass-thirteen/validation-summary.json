@@ -1,0 +1,255 @@
+{
+  "pass": 13,
+  "status": "validated",
+  "result": "Curved six-octopus eyes, irregular reef-rock surface relief and giant-only scale-aware grounding",
+  "units": {
+    "latestPassed": 148,
+    "latestFailed": 0,
+    "files": [
+      {
+        "file": "cephalopodlab_canvas_focus_a11y.test.js",
+        "passed": 4,
+        "failed": 0,
+        "cases": 4,
+        "evidence": "unit-final.json"
+      },
+      {
+        "file": "cephalopodlab_eye_surfaces.test.js",
+        "passed": 8,
+        "failed": 0,
+        "cases": 8,
+        "evidence": "unit-initial.json"
+      },
+      {
+        "file": "cephalopodlab_fact_consistency.test.js",
+        "passed": 78,
+        "failed": 0,
+        "cases": 78,
+        "evidence": "unit-initial.json"
+      },
+      {
+        "file": "cephalopodlab_fin_membranes.test.js",
+        "passed": 9,
+        "failed": 0,
+        "cases": 9,
+        "evidence": "unit-initial.json"
+      },
+      {
+        "file": "cephalopodlab_giant_grounding.test.js",
+        "passed": 3,
+        "failed": 0,
+        "cases": 3,
+        "evidence": "unit-grounding-recovery.json"
+      },
+      {
+        "file": "cephalopodlab_octopus_eyes.test.js",
+        "passed": 7,
+        "failed": 0,
+        "cases": 7,
+        "evidence": "unit-initial.json"
+      },
+      {
+        "file": "cephalopodlab_plant_geometry.test.js",
+        "passed": 6,
+        "failed": 0,
+        "cases": 6,
+        "evidence": "unit-initial.json"
+      },
+      {
+        "file": "cephalopodlab_prey_memory.test.js",
+        "passed": 6,
+        "failed": 0,
+        "cases": 6,
+        "evidence": "unit-worker-recovery.json"
+      },
+      {
+        "file": "cephalopodlab_reef_placement.test.js",
+        "passed": 6,
+        "failed": 0,
+        "cases": 6,
+        "evidence": "unit-initial.json"
+      },
+      {
+        "file": "cephalopodlab_rock_surface.test.js",
+        "passed": 4,
+        "failed": 0,
+        "cases": 4,
+        "evidence": "unit-final.json"
+      },
+      {
+        "file": "cephalopodlab_squid_arm_detail.test.js",
+        "passed": 7,
+        "failed": 0,
+        "cases": 7,
+        "evidence": "unit-initial.json"
+      },
+      {
+        "file": "cephalopodlab_squid_strike_clock.test.js",
+        "passed": 3,
+        "failed": 0,
+        "cases": 3,
+        "evidence": "unit-worker-recovery.json"
+      },
+      {
+        "file": "cephalopodlab_water_particles.test.js",
+        "passed": 7,
+        "failed": 0,
+        "cases": 7,
+        "evidence": "unit-initial.json"
+      }
+    ],
+    "initial": {
+      "passedAssertions": 135,
+      "processExit": 1,
+      "workerStartupErrors": 2,
+      "evidence": "unit-initial.json",
+      "note": "JSON reported assertion success; process and console retained two worker-startup errors. Both missing files passed nine assertions separately without source/assertion/setting changes."
+    },
+    "workerRecovery": {
+      "passed": 9,
+      "failed": 0,
+      "evidence": "unit-worker-recovery.json"
+    },
+    "refinementCheck": {
+      "passed": 8,
+      "failedSuites": 1,
+      "evidence": "unit-final.json",
+      "note": "Grounding suite setup parser stopped at a nested comma before assertions. Test-only bounded expression extraction fixed; production and assertions unchanged."
+    },
+    "groundingRecovery": {
+      "passed": 3,
+      "failed": 0,
+      "evidence": "unit-grounding-recovery.json"
+    }
+  },
+  "browser": {
+    "stats": {
+      "startTime": "2026-09-29T21:11:54.718Z",
+      "duration": 43547.765,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "errors": [],
+    "workers": 1,
+    "retries": 0,
+    "video": "off",
+    "trace": "off",
+    "evidence": "browser-initial.json",
+    "checks": "Actual submitted eye/rock native programs compile/link; finite nonzero normal matrices; six-species construction; static buffers/resources/metadata; pause/reduced motion/resume; complete owned-resource disposal"
+  },
+  "captures": {
+    "files": [
+      "commonOcto-eyes.png",
+      "octopus-phone.png",
+      "blueRinged-eyes.png",
+      "giantPacific-eyes.png",
+      "mimicOcto-eyes.png",
+      "caribReef-eyes.png",
+      "coconutOcto-eyes.png",
+      "reef-rock-detail.png"
+    ],
+    "errors": [],
+    "fixture": "Normal balanced field-study model inspection: standard F pause, labels toggle, Orbit right and Higher. Phone uses390×844. Rock detail changes only the camera to a seeded nearby real boulder; no model, light, material or visibility overrides.",
+    "floorAudits": [
+      {
+        "species": "giantPacific",
+        "vertices": 1512,
+        "minimum": 0.02882760506805333,
+        "playerY": 0.7220537862668431,
+        "method": "Every rendered arm vertex against actual floor mesh triangle interpolation"
+      }
+    ],
+    "review": "All eight final images accepted by root, including all six octopuses, phone controls and matched diagnostic boulder detail. The initial woven rock material and giant clipping were rejected and corrected.",
+    "rejectedLocalEvidence": [
+      "initial-periodic-reef-rock.png",
+      "initial-giantPacific-eyes.png"
+    ],
+    "temporalLimit": "Stills do not establish shimmer-free rendering."
+  },
+  "rendering": {
+    "eyes": {
+      "affectedSpecies": [
+        "commonOcto",
+        "blueRinged",
+        "mimicOcto",
+        "giantPacific",
+        "caribReef",
+        "coconutOcto"
+      ],
+      "meshesPerPair": 8,
+      "oldVertices": 3400,
+      "newVertices": 2040,
+      "oldTriangles": 5760,
+      "newTriangles": 3408,
+      "newTextures": 0,
+      "newRngDraws": 0
+    },
+    "rocks": {
+      "count": 44,
+      "preservedSeededDraws": 354,
+      "addedDrawCalls": 0,
+      "addedTextures": 0,
+      "addedLights": 0,
+      "addedGeometry": 0,
+      "noiseSamples": 2,
+      "cornerHashes": 16,
+      "scalarModuloOperations": 112,
+      "slopeCap": 0.12,
+      "roughnessRange": [
+        0.86,
+        0.98
+      ],
+      "unsupportedDerivativeFallback": "Existing reefSurface material"
+    }
+  },
+  "grounding": {
+    "species": "giantPacific",
+    "oldRestHeight": 0.55,
+    "newRestHeight": 0.77,
+    "otherSpeciesRestHeight": 0.55,
+    "poses": 112,
+    "renderedVertexSamples": 2036608,
+    "oldMinimumAnalyticGap": -0.20273972659737316,
+    "newMinimumAnalyticGap": 0.017260273402626813,
+    "scope": "Reef-origin sampled poses. Factory, shared constant, swimming limits and collision solver unchanged."
+  },
+  "preservation": {
+    "nonEyeRigs": "All six affected non-eye rigs and six protected full rigs match pre-change fingerprints across eight representative update states.",
+    "rockGeometryAndGameplaySha256": "3610daaff20894cce6b55c2a8c7768aa3e8340fa38bb88a99d8bfafde25f3e30",
+    "reefSurfaceSha256": "b15de7c3fcb96e131a7e97eae8c215a685909cc10ce34f70456c9590c07323b5",
+    "preExistingWrappersPerTrackedFile": 12,
+    "mirrorSynchronization": "Guarded narrow enhancement hunks, after exact baseline/candidate checks",
+    "resolvedApprovalRejection": "Direct copies were rejected for possible overwrite of unrelated edits. Read-only checks and guarded hunks preserved all saved wrappers. No bypass occurred."
+  },
+  "source": {
+    "runtime": [
+      {
+        "file": "stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "ec1d209221c769785856bfe49ed11db3634904e8425124b196081a654974c791"
+      },
+      {
+        "file": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "ec1d209221c769785856bfe49ed11db3634904e8425124b196081a654974c791"
+      },
+      {
+        "file": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "ec1d209221c769785856bfe49ed11db3634904e8425124b196081a654974c791"
+      },
+      {
+        "file": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "ec1d209221c769785856bfe49ed11db3634904e8425124b196081a654974c791"
+      }
+    ],
+    "candidateLfSha256": "acedc626ebb7c98ed0a8cb456749f2d028a90dfa4a758a36ceddb4b4d9ba6d4e",
+    "syntax": "passed",
+    "sourcePatchIndexCheck": "passed; ownership helper does not stage"
+  },
+  "limits": [
+    "Static illustrative eye palette/apertures; no dilation or independent eye rotation.",
+    "Grounding samples and final rendered-floor arm audit do not promise conformance to every steep slope.",
+    "Rock shader adds arithmetic; no frame-rate gain or benchmark is claimed.",
+    "Only owned simulator source/tests/report paths are included; no deployment or push."
+  ]
+}
