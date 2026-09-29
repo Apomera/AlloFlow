@@ -27,3 +27,27 @@
 @media(max-width:760px){.travel-lab>summary{padding:17px 18px}.travel-lab-body{padding:0 18px 18px}.travel-timeline{padding:14px}.travel-timeline.actual-route{padding:13px}}
 @media(max-width:440px){.travel-time-controls{padding:14px}.travel-time-controls .button-row button{flex:1}.travel-time-controls #resetDeparture{flex-basis:100%}.timeline-heading{gap:8px}.timeline-heading h3,.timeline-arrival{font-size:13px}.timeline-key{gap:10px}.travel-lab>summary .planner-optional{display:block;margin:3px 0 0}}
 @media(forced-colors:active){.timeline-track,.timeline-wait,.timeline-journey,.timeline-key i,.travel-timeline.actual-route{border-color:CanvasText}.timeline-wait{background:Canvas;border-style:dashed}.timeline-journey{background:Highlight}.timeline-deadline,.timeline-key .deadline-key{border-color:CanvasText}.timeline-leave{background:Canvas;border-color:CanvasText}}
+.packing-entry{margin:0 0 16px;font-size:12px}
+.packing-workbench{border:1px solid #b8cbb7;border-radius:12px;background:#f6f4e9;margin-bottom:18px;overflow:hidden}
+.packing-workbench>summary{padding:16px;cursor:pointer;font-size:14px;font-weight:700;min-height:44px;line-height:1.5}
+.packing-workbench>summary:focus-visible{outline:3px solid #1d74a1;outline-offset:-4px}
+.packing-body{padding:0 16px 18px}.packing-body>p{font-size:13px}.packing-body>p:last-child{margin-bottom:0}
+.packing-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px;align-items:start}
+.packing-layout h4{font-size:14px;margin:0;line-height:1.5}.packing-tray>h4{margin-bottom:12px}
+.packing-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.packing-item{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;min-height:150px;min-width:0;border:1px solid #a9bbaa;background:#fffef9;color:var(--ink);border-radius:10px;padding:12px 8px;line-height:1.5;text-align:center}
+.packing-item svg{width:64px;height:64px;flex:none}.packing-item-name{font-size:13px;font-weight:700;overflow-wrap:anywhere}.packing-item-state{font-size:11px;color:var(--muted)}
+.packing-item[aria-pressed=true]{outline:2px solid var(--green);outline-offset:-2px;background:#e9f1e4}.packing-selected{font-size:10px;font-weight:700;color:var(--green)}
+.packing-item:disabled{opacity:1;background:#e9eee4;border-color:#c8d4c3}.packing-item:disabled svg{opacity:.65}
+.packing-bag{position:relative;min-width:0;border:2px solid #a86e54;background:#f1e3d1;border-radius:22px 22px 12px 12px;padding:18px 14px 14px;margin-top:32px}
+.bag-handle{position:absolute;top:-26px;left:calc(50% - 27px);width:54px;height:26px;border:6px solid #a86e54;border-bottom:0;border-radius:24px 24px 0 0}
+.packing-bag>.section-header{gap:8px;flex-wrap:wrap}.packing-bag .object-status{font-size:10px;color:#5a4631;border-color:#c9ae8a;background:#fff9eb}
+.packing-contents{list-style:none;margin:14px 0;padding:0;border-top:1px solid #cbb697}
+.packing-contents li{display:flex;align-items:flex-start;gap:9px;padding:12px 0;border-bottom:1px solid #cbb697;font-size:12px;line-height:1.5}
+.packing-contents strong,.packing-contents li>span>span{display:block}.packing-contents li>span>span{font-size:11px;color:#625943;margin-top:3px}.packing-mark{font-size:16px;flex:none;line-height:1.2;color:#72563c}.packing-packed .packing-mark{color:var(--green)}
+#packingPlace{width:100%;font-size:12px;min-height:48px;line-height:1.5}#packingPlace:disabled{opacity:1;background:#e7dfd2;border-color:#b8a78f;color:#655a49}
+.packing-forecast{border-left:3px solid var(--green);padding:9px 12px;background:#e9efe1;border-radius:0 7px 7px 0;margin:18px 0 10px}
+.packing-status{font-weight:600;color:#2b5040;margin:12px 0}.packing-status:empty{display:none}#packingFill{margin-top:2px}
+@media(max-width:1100px){.packing-layout{grid-template-columns:1fr}.packing-bag{max-width:100%}}
+@media(max-width:440px){.packing-body{padding:0 12px 16px}.packing-workbench>summary{padding:14px 12px}.packing-item{min-height:140px;padding:10px 6px}.packing-item svg{width:56px;height:56px}.packing-item-name{font-size:12px}.packing-bag{padding:16px 12px 12px}}
+@media(forced-colors:active){.packing-workbench,.packing-item,.packing-bag,.bag-handle,.packing-bag .object-status,.packing-contents,.packing-contents li{border-color:CanvasText}.packing-item[aria-pressed=true]{outline-color:Highlight}.packing-selected{color:Highlight}.packing-forecast{border-color:CanvasText}.packing-mark,.packing-packed .packing-mark{color:CanvasText}#packingPlace:disabled{border-color:GrayText;color:GrayText}}

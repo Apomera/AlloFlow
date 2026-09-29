@@ -22,6 +22,8 @@
   var plan = null;
   var rehearsalPreview = null;
   var exploredDeparture = null;
+  var packingSelection = null;
+  var packingActions = { bottle: 'pack_water', card: 'pack_document', raincoat: 'pack_raincoat', hat: 'pack_hat' };
   var notes = Object.create(null), comparison = null, reviewRevision = null, importSerial = 0, lastSaveOk = false;
   var icons = { kitchen: '◒', wardrobe: '♧', entry: '▣', travel: '↗' };
   var supportNames = { guided: 'Guided', try: 'Try it', independent: 'Independent' };
@@ -86,6 +88,7 @@
   function changeRun(run, extras) {
     abortStory();
     clearRehearsal(true);
+    clearPacking(true);
     exploredDeparture = null;
     byId('travelLab').open = false;
     text('travelLabStatus', '');
@@ -129,6 +132,7 @@
   function selectStation(id, moveFocus) {
     if (!latestView.stations.some(function (s) { return s.id === id; })) return;
     clearRehearsal(true);
+    clearPacking(true);
     activeStation = id;
     selectedObject = null;
     renderActions();
@@ -139,9 +143,11 @@
     var object = latestView.objects.find(function (item) { return item.id === id; });
     if (!object) return;
     clearRehearsal(true);
+    clearPacking(true);
     selectedObject = id;
     activeStation = object.station;
     renderActions();
+    if (id === 'bag' && !latestView.completed) byId('packingWorkbench').open = true;
     if (moveFocus) byId('stationActions').focus();
     announce(object.label + '. ' + object.status + '. ' + object.description);
   }
@@ -152,12 +158,14 @@
       var next = E.dispatch(current, id, current.commands.length, 'ui-' + Date.now().toString(36) + '-' + (++eventSerial));
       abortStory();
       clearRehearsal(true);
+      clearPacking(false);
       exploredDeparture = null;
       current = next;
       if (id === 'hint') shownHint = true;
       render();
       persist();
       if (id === 'hint') byId('hintButton').focus({ preventScroll: true });
+      else if (source === 'packing') (byId('packingItems').querySelector('button:not(:disabled)') || byId('packingWorkbench').querySelector('summary')).focus();
       else if (source !== 'scene' && focusedAction) {
         var exact = Array.from(byId('actionList').querySelectorAll('button')).find(function (button) { return button.dataset.action === focusedAction && !button.disabled; });
         var nextButton = byId('actionList').querySelector('button:not(:disabled)');
@@ -192,6 +200,7 @@
     });
     text('stationTitle', station.label);
     text('stationDescription', station.description);
+    byId('openPacking').hidden = v.completed || (station.id !== 'kitchen' && station.id !== 'entry');
     byId('exploreTravel').hidden = station.id !== 'travel';
     text('stepTag', v.completed ? 'Practice complete' : 'Step ' + (current.commands.length + 1));
     var list = byId('actionList');
@@ -211,6 +220,7 @@
     });
     byId('objectInspector').hidden = !object;
     if (object) { text('objectTitle', object.label); text('objectStatus', object.status); text('objectDescription', object.description); }
+    renderPackingWorkbench();
     visibleActions.forEach(function (action) {
       var button = node('button', 'action-button');
       button.type = 'button';
@@ -232,6 +242,99 @@
     updateSceneActions(visibleActions);
     highlightObjects();
     if (closeView) fitScene();
+  }
+  function clearPacking(collapse) {
+    packingSelection = null;
+    text('packingStatus', '');
+    byId('packingFill').hidden = true;
+    byId('packingPlace').disabled = true;
+    if (collapse) byId('packingWorkbench').open = false;
+  }
+  function packingAction(id) {
+    return latestView.stations.reduce(function (all, station) { return all.concat(station.actions); }, []).find(function (action) { return action.id === packingActions[id]; });
+  }
+  function packingIcon(id) {
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 80 80');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+    function shape(tag, attrs) {
+      var el = document.createElementNS(svg.namespaceURI, tag);
+      Object.keys(attrs).forEach(function (key) { el.setAttribute(key, attrs[key]); });
+      svg.appendChild(el);
+    }
+    if (id === 'bottle') {
+      shape('rect', {x:26,y:18,width:28,height:54,rx:10,fill:'#e6f3ee',stroke:'#375762','stroke-width':2});
+      if (latestView.scene.bottleFilled) shape('path', {d:'M28 39H52V61Q52 70 44 70H36Q28 70 28 61Z',fill:'#4595a0'});
+      shape('rect', {x:31,y:9,width:18,height:11,rx:3,fill:'#375762'});
+      shape('path', {d:'M32 27V34',stroke:'#fffef9','stroke-width':3,'stroke-linecap':'round'});
+    } else if (id === 'card') {
+      shape('rect', {x:12,y:18,width:56,height:44,rx:6,fill:'#fff8e6',stroke:'#88785d','stroke-width':2});
+      shape('circle', {cx:27,cy:34,r:7,fill:'#c5d8bc'});
+      shape('path', {d:'M42 31H58M42 38H54M22 50H58',stroke:'#596c5d','stroke-width':3,'stroke-linecap':'round'});
+    } else if (id === 'raincoat') {
+      shape('path', {d:'M30 22Q40 6 50 22L66 32L73 51L60 56L53 42V72H27V42L20 56L7 51L14 32Z',fill:'#d5a845',stroke:'#7b6048','stroke-width':2,'stroke-linejoin':'round'});
+      shape('path', {d:'M31 23Q40 37 49 23M40 33V70',fill:'none',stroke:'#7b6048','stroke-width':2});
+    } else {
+      shape('ellipse', {cx:40,cy:52,rx:32,ry:10,fill:'#c49a68',stroke:'#7b6048','stroke-width':2});
+      shape('path', {d:'M22 49L27 28Q40 18 53 28L58 49Q40 57 22 49Z',fill:'#e1bd8b',stroke:'#7b6048','stroke-width':2});
+      shape('path', {d:'M25 40Q40 47 55 40',fill:'none',stroke:'#80523f','stroke-width':5});
+    }
+    return svg;
+  }
+  function renderPackingWorkbench() {
+    var v = latestView, panel = byId('packingWorkbench');
+    panel.hidden = selectedObject !== 'bag' || v.completed;
+    if (panel.hidden) return;
+    var tray = byId('packingItems'); tray.replaceChildren();
+    Object.keys(packingActions).forEach(function (id) {
+      var object = v.objects.find(function (item) { return item.id === id; });
+      var packed = id === 'bottle' ? v.scene.bottlePacked : id === 'card' ? v.scene.documentPacked : v.inventory.some(function (item) { return item.id === id; });
+      var button = node('button', 'packing-item'); button.type = 'button'; button.dataset.packItem = id;
+      button.disabled = packed; button.setAttribute('aria-pressed', String(packingSelection === id));
+      button.append(packingIcon(id), node('span', 'packing-item-name', object.label), node('span', 'packing-item-state', object.status));
+      if (packingSelection === id) button.appendChild(node('span', 'packing-selected', 'Selected'));
+      button.addEventListener('click', function () {
+        if (latestView.completed || selectedObject !== 'bag') return;
+        packingSelection = id; byId('packingFill').hidden = true;
+        renderPackingWorkbench(); highlightObjects();
+        text('packingStatus', object.label + ' selected. ' + object.status + '. Choose the bag button to pack it.');
+        byId('packingPlace').focus();
+      });
+      tray.appendChild(button);
+    });
+    var contents = byId('packingContents'); contents.replaceChildren();
+    var water = v.inventory.find(function (item) { return item.id === 'water'; });
+    var card = v.inventory.find(function (item) { return item.id === 'document'; });
+    var weather = v.inventory.find(function (item) { return item.id === 'raincoat' || item.id === 'hat'; });
+    [['Filled water', water], ['Outing card', card], ['Weather item', weather]].forEach(function (slot) {
+      var li = node('li', slot[1] ? 'packing-packed' : '');
+      var mark = node('span', 'packing-mark', slot[1] ? '✓' : '○'); mark.setAttribute('aria-hidden', 'true');
+      var copy = node('span'); copy.append(node('strong', '', slot[0]), node('span', '', slot[1] ? slot[1].label + ' · packed' : 'To pack'));
+      li.append(mark, copy); contents.appendChild(li);
+    });
+    text('packingCount', [water, card, weather].filter(Boolean).length + ' of 3 packed');
+    byId('packingPlace').disabled = !packingSelection;
+    var action = packingSelection && packingAction(packingSelection);
+    byId('packingPlace').textContent = action ? action.label : 'Put selected item in your bag';
+    var forecast = v.objects.find(function (item) { return item.id === 'forecast'; });
+    text('packingForecast', 'Weather note: ' + forecast.status + '. Check it when choosing what to pack.');
+    text('packingSwapNote', weather ? 'Choose the other weather item to swap it with your ' + weather.label.toLowerCase() + '. The first item returns to its hook.' : 'Your bag holds one weather item. You can swap it if the forecast changes.');
+  }
+  function openPackingWorkbench() {
+    if (latestView.completed) return;
+    selectObject('bag', false); byId('packingWorkbench').open = true;
+    (byId('packingItems').querySelector('button:not(:disabled)') || byId('packingWorkbench').querySelector('summary')).focus();
+  }
+  function placePackingItem() {
+    if (latestView.completed || selectedObject !== 'bag' || !packingSelection) return;
+    var action = packingAction(packingSelection);
+    if (!action || action.disabled) {
+      text('packingStatus', action && action.reason || 'Choose another item to pack.');
+      byId('packingFill').hidden = packingSelection !== 'bottle' || latestView.scene.bottleFilled;
+      return;
+    }
+    act(action.id, 'packing');
   }
   function renderStory() {
     var entries = current.content || [];
@@ -563,7 +666,7 @@
             if (!material || !material.emissive) return;
             if (!originalEmissive.has(material)) originalEmissive.set(material, {color:material.emissive.clone(),intensity:material.emissiveIntensity});
             var original = originalEmissive.get(material);
-            if (id === selectedObject || id === hoveredObject) { material.emissive.set('#39725b'); material.emissiveIntensity = .4; }
+            if (id === selectedObject || id === hoveredObject || id === packingSelection) { material.emissive.set('#39725b'); material.emissiveIntensity = .4; }
             else { material.emissive.copy(original.color); material.emissiveIntensity = original.intensity; }
           });
         });
@@ -740,6 +843,13 @@
     announce(closeView?'Closer view of the selected station. Use the action buttons below the room.':'Whole room shown.');
   });
   byId('travelPreview').addEventListener('click',function(){selectObject('route',true);});
+  byId('openPacking').addEventListener('click', openPackingWorkbench);
+  byId('packingPlace').addEventListener('click', placePackingItem);
+  byId('packingFill').addEventListener('click', function () {
+    if (latestView.completed || packingSelection !== 'bottle' || latestView.scene.bottleFilled) return;
+    selectObject('bottle', false);
+    (byId('actionList').querySelector('[data-action="fill_water"]') || byId('stationActions')).focus();
+  });
   byId('exploreTravel').addEventListener('click',openTravelExplorer);
   byId('openTravelLab').addEventListener('click',openTravelExplorer);
   byId('departureTime').addEventListener('input',function(){exploreDeparture(Number(this.value),false);});

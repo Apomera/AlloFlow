@@ -53,6 +53,121 @@ async function openBackup(h, source) {
 }
 
 describe('Life Skills outing interaction', () => {
+  it('packs an object at the bag table using the real action while selection stays untimed and unsaved', () => {
+    let calls = 0;
+    const h = mount({ provider: () => { calls++; return Promise.resolve({ text: 'Hello.', status: 'generated' }); } });
+    h.act('fill_water'); const saved = h.save();
+    h.$('#openPacking').click();
+    expect(h.$('#packingWorkbench').open).toBe(true);
+    expect(h.w.document.activeElement.dataset.packItem).toBe('bottle');
+    h.$('[data-pack-item="bottle"]').click();
+    expect(h.$('[data-pack-item="bottle"]').getAttribute('aria-pressed')).toBe('true');
+    expect(h.w.document.activeElement.id).toBe('packingPlace');
+    expect(h.$('#bottleObject').getAttribute('position')).toBe('-2.1 1.32 -1.8');
+    expect(h.save()).toEqual(saved); expect(calls).toBe(0);
+    h.$('#packingPlace').click();
+    expect(h.run().commands.map(c => c.actionId)).toEqual(['fill_water', 'pack_water']);
+    expect(h.$('#clock').textContent).toBe('09:02');
+    expect(h.$('#bottleObject').getAttribute('position')).toBe('2.08 1.05 -1.61');
+    expect(h.$('#packingContents').textContent).toContain('Filled water bottle · packed');
+    expect(h.$('#packingCount').textContent).toBe('1 of 3 packed');
+    expect(h.$('[data-pack-item="bottle"]').disabled).toBe(true);
+    expect(h.$('#packingPlace').disabled).toBe(true);
+    expect(h.w.document.activeElement.dataset.packItem).toBe('card');
+    expect(h.$('#packingWorkbench').open).toBe(true);
+    expect(h.$('#packingStatus').textContent).toBe(''); expect(calls).toBe(0);
+  });
+  it('rejects an empty bottle and offers a deliberate fill step without changing the outing', () => {
+    const h = mount(); const saved = h.save();
+    h.$('#openPacking').click(); h.$('[data-pack-item="bottle"]').click(); h.$('#packingPlace').click();
+    expect(h.$('#packingStatus').textContent).toBe('Fill the bottle before packing it.');
+    expect(h.$('#packingFill').hidden).toBe(false);
+    expect(h.$('#packingCount').textContent).toBe('0 of 3 packed');
+    expect(h.save()).toEqual(saved); expect(h.$('#clock').textContent).toBe('09:00');
+    h.$('#packingFill').click();
+    expect(h.$('#stationTitle').textContent).toBe('Kitchen');
+    expect(h.$('#objectTitle').textContent).toBe('Water bottle');
+    expect(h.w.document.activeElement.dataset.action).toBe('fill_water');
+    expect(h.save()).toEqual(saved);
+    h.act('fill_water'); h.$('#openPacking').click();
+    expect(h.$('[data-pack-item="bottle"]').textContent).toContain('Filled · on the counter');
+    h.$('[data-pack-item="bottle"]').click(); h.$('#packingPlace').click();
+    expect(h.E.materialize(h.run()).bottlePacked).toBe(true);
+    expect(h.run().commands).toHaveLength(2);
+  });
+  it.each(['rain', 'warm'])('uses received %s weather and replaces the one weather item without extra packing time', variation => {
+    const h = mount(); h.$('#scenarioSelect').value = variation;
+    h.$('#settingsForm').dispatchEvent(new h.w.Event('submit', { cancelable: true }));
+    h.act('fill_water'); h.$('#openPacking').click();
+    expect(h.$('#packingForecast').textContent).toContain('Cloudy · update expected');
+    h.$('[data-pack-item="hat"]').click(); h.$('#packingPlace').click();
+    expect(h.$('#packingForecast').textContent).toContain('Cloudy · update expected');
+    h.$('[data-pack-item="card"]').click(); h.$('#packingPlace').click();
+    expect(h.$('#packingForecast').textContent).toContain('Updated: ' + (variation === 'rain' ? 'rain' : 'warm sunshine'));
+    expect(h.$('#announcer').textContent).toContain('forecast');
+    const clock = h.$('#clock').textContent;
+    h.$('[data-pack-item="raincoat"]').click(); h.$('#packingPlace').click();
+    expect(h.$('#clock').textContent).toBe(clock);
+    expect(h.$('#packingCount').textContent).toBe('2 of 3 packed');
+    expect(h.$('#packingContents').textContent).toContain('Raincoat · packed');
+    expect(h.$('#packingContents').textContent).not.toContain('Sun hat · packed');
+    expect(h.$('[data-pack-item="hat"]').disabled).toBe(false);
+    expect(h.$('[data-pack-item="hat"]').textContent).toContain('On the hook');
+    expect(h.$('#hatObject').getAttribute('position')).toBe('0 0 0');
+    expect(h.$('#weatherObject').getAttribute('position')).toBe('1 .1 0');
+    h.$('[data-pack-item="hat"]').click(); h.$('#packingPlace').click();
+    expect(h.$('#clock').textContent).toBe(clock);
+    expect(h.$('#weatherObject').getAttribute('position')).toBe('0 0 0');
+    expect(h.$('#hatObject').getAttribute('position')).toBe('.5 .05 0');
+    expect(h.E.view(h.run()).inventory.filter(item => ['hat', 'raincoat'].includes(item.id))).toHaveLength(1);
+    expect(h.run().commands.map(c => c.actionId)).toEqual(['fill_water', 'pack_hat', 'pack_document', 'pack_raincoat', 'pack_hat']);
+  });
+  it('opens from the room bag and clears scratch selections after navigation, scene actions, resume and replay', () => {
+    const h = mount();
+    h.$('#bagObject').dispatchEvent(new h.w.MouseEvent('click', { bubbles: true }));
+    expect(h.$('#packingWorkbench').hidden).toBe(false);
+    expect(h.$('#packingWorkbench').open).toBe(true); h.$('[data-pack-item="card"]').click();
+    h.station('Kitchen');
+    expect(h.$('#packingWorkbench').hidden).toBe(true); expect(h.$('#packingPlace').disabled).toBe(true);
+    h.$('#openPacking').click(); h.$('[data-pack-item="hat"]').click(); h.act('pack_document', 'scene');
+    expect(h.$('#packingPlace').disabled).toBe(true);
+    h.$('#packingPlace').dispatchEvent(new h.w.MouseEvent('click'));
+    expect(h.run().commands).toHaveLength(1);
+    h.$('[data-pack-item="hat"]').click(); h.$('#resumeButton').click();
+    expect(h.$('#packingWorkbench').open).toBe(false); expect(h.$('#packingStatus').textContent).toBe('');
+    h.$('#openPacking').click(); expect(h.$('[aria-pressed="true"][data-pack-item]')).toBe(null);
+    h.$('[data-pack-item="hat"]').click(); h.$('#sameReplayButton').click();
+    h.$('#openPacking').click(); expect(h.$('#packingPlace').disabled).toBe(true);
+    expect(h.run().commands).toHaveLength(0);
+  });
+  it('keeps packing usable without storage or 3D and guards completed outings', () => {
+    const offline = mount({ noScene: true, noStorage: true });
+    offline.$('#openPacking').click(); offline.$('[data-pack-item="card"]').click(); offline.$('#packingPlace').click();
+    expect(offline.$('#packingContents').textContent).toContain('booking card · packed');
+    expect(offline.$('#clock').textContent).toBe('09:01');
+    const h = mount(); complete(h); const saved = h.save();
+    h.$('#openPacking').click(); h.$('#packingPlace').dispatchEvent(new h.w.MouseEvent('click'));
+    h.station('Doorway'); h.$('[data-inspect="bag"]').click();
+    expect(h.$('#packingWorkbench').hidden).toBe(true); expect(h.$('#openPacking').hidden).toBe(true);
+    expect(h.save()).toEqual(saved);
+  });
+  it('completes a work outing with independent coaching using the bag table for every packed item', () => {
+    const h = mount(); h.$('#contextSelect').value = 'work'; h.$('#supportSelect').value = 'independent';
+    h.$('#settingsForm').dispatchEvent(new h.w.Event('submit', { cancelable: true }));
+    h.station('Wardrobe'); h.act('wear_ready'); h.station('Kitchen'); h.act('fill_water');
+    h.$('#openPacking').click();
+    expect(h.$('[data-pack-item="card"]').textContent).toContain('orientation card');
+    for (const item of ['bottle', 'card', 'raincoat']) {
+      h.$('[data-pack-item="' + item + '"]').click(); h.$('#packingPlace').click();
+    }
+    expect(h.$('#packingCount').textContent).toBe('3 of 3 packed');
+    h.station('Travel'); h.act('choose_walk'); h.act('depart');
+    const run = h.run(), view = h.E.view(run);
+    expect(view.completed).toBe(true); expect(view.clock).toBe('09:24');
+    expect(run.commands.map(c => c.actionId)).toEqual(['wear_ready', 'fill_water', 'pack_water', 'pack_document', 'pack_raincoat', 'choose_walk', 'depart']);
+    expect(view.observations.map(o => o.skill)).toContain('Preparation sequence');
+    expect(h.$('#debrief').hidden).toBe(false);
+  });
   it('explores departure times and returns to real choices without saving or acting',()=>{
     let calls=0;const h=mount({provider:()=>{calls++;return Promise.resolve({text:'Hello.',status:'generated'});}});
     const saved=h.save();h.$('#openTravelLab').click();
