@@ -87,7 +87,7 @@ describe('Observatory renderer interactions and lifecycle', () => {
       expect(out.info, out.item.name).toBeTruthy();
       expect(out.info.kind).toBe(out.item.kind === 'named' ? 'star' : out.item.kind);
       expect(out.info.alt).toBeCloseTo(out.item.alt, 4);
-      if (out.item.kind === 'named') expect(out.info.hip).toBeGreaterThan(0);
+      if (out.item.kind === 'named') expect(out.info.hip > 0 || out.info.id.startsWith('j2000:')).toBe(true);
     }
     const last = all.at(-1), camera = host.__observatoryDebug().camera;
     expect(camera.yaw).toBeCloseTo(last.item.az, 6);
@@ -111,6 +111,7 @@ describe('Observatory renderer interactions and lifecycle', () => {
     expect(vi.getTimerCount()).toBe(0);
     expect(host.children.length).toBe(0);
     expect(renderer.dispose).toHaveBeenCalledOnce();
+    expect(host.__observatoryReadClock).toBeUndefined();
   });
 
   it('suspends the live refresh while hidden and refreshes immediately on return', () => {
@@ -169,11 +170,13 @@ describe('Observatory renderer interactions and lifecycle', () => {
     expect(during.playMs).toBeGreaterThan(500000);
     expect(viewer.isPlaying()).toBe(true);
     expect(viewer.getInstant()).toBe(Date.parse(during.utc));
+    expect(host.__observatoryReadClock()).toBe(Date.parse(during.utc));
     viewer.sync(model({ obsPlaying: false }, { reduced: false }));
     expect(onClockCommit).toHaveBeenCalledWith(Date.parse(during.utc));
     expect(host.__observatoryDebug().utc).toBe(during.utc);
     expect(viewer.isPlaying()).toBe(false);
     expect(viewer.getInstant()).toBe(Date.parse(during.utc));
+    expect(host.__observatoryReadClock()).toBe(Date.parse(during.utc));
   });
 
   it('respects an explicit date jump while time-lapse is running', () => {
@@ -185,6 +188,33 @@ describe('Observatory renderer interactions and lifecycle', () => {
     expect(onClockCommit).not.toHaveBeenCalled();
     expect(host.__observatoryDebug().utc).toBe(new Date(next.resolved.utcMs).toISOString());
     expect(host.__observatoryDebug().playMs).toBe(0);
+  });
+
+  it.each(['UTC', 'America/New_York', 'Pacific/Auckland'])('stops once at the last supported local minute in %s and can restart after a jump', timeZone => {
+    const onClockCommit = vi.fn();
+    const state = { obsPlaying: true, obsDate: '2099-12-31', obsTime: '23:58', obsTz: timeZone, obsRate: '10m' };
+    const limit = model({ ...state, obsPlaying: false, obsTime: '23:59' }).resolved.utcMs;
+    create({ onClockCommit }).sync(model(state, { reduced: false }));
+    animate();
+    expect(host.__observatoryDebug().utc).toBe(new Date(limit).toISOString());
+    expect(viewer.getInstant()).toBe(limit);
+    expect(viewer.isPlaying()).toBe(false);
+    expect(onClockCommit).toHaveBeenCalledExactlyOnceWith(limit);
+    expect(rafCallbacks.size).toBe(0);
+    // The parent has not accepted the committed clock yet. A settings/rate
+    // update must neither resume the old clock nor send another commit.
+    viewer.sync(model({ ...state, obsRate: '1m', obsBortle: 2 }, { reduced: false }));
+    animate();
+    expect(host.__observatoryReadClock()).toBe(limit);
+    expect(onClockCommit).toHaveBeenCalledOnce();
+    expect(rafCallbacks.size).toBe(0);
+    const jump = model({ ...state, obsDate: '2099-12-30', obsTime: '12:00' }, { reduced: false });
+    viewer.sync(jump);
+    expect(viewer.isPlaying()).toBe(true);
+    animate();
+    expect(viewer.getInstant()).toBeGreaterThan(jump.resolved.utcMs);
+    expect(viewer.getInstant()).toBeLessThan(limit);
+    expect(onClockCommit).toHaveBeenCalledOnce();
   });
 });
 
@@ -261,6 +291,105 @@ describe('Observatory catalog search and current selection', () => {
     expect(onSelectionRefresh).toHaveBeenCalledOnce();
     viewer.sync(model({ obsTime: '12:00' }, { catalog: cat, picked: updated }));
     expect(onSelectionRefresh.mock.lastCall[0].visibility).toBe('below');
+  });
+
+  it('restores a saved selection on a new canvas without changing its camera', () => {
+    const onPick = vi.fn(), onSelectionRefresh = vi.fn(), cat = realCatalog();
+    const saved = { kind: 'star', hip: 32349, name: 'Sirius', alt: -70, az: 12 };
+    create({ onPick, onSelectionRefresh }).sync(model({}, { catalog: cat, picked: saved }));
+    const current = onSelectionRefresh.mock.lastCall[0];
+    expect(current).toMatchObject({ kind: 'star', hip: 32349, name: 'Sirius', visibility: 'visible' });
+    expect(current.alt).toBeGreaterThan(0);
+    expect(host.__observatoryDebug().camera).toEqual({ yaw: 180, pitch: 30, zoom: 1 });
+    expect(onPick).not.toHaveBeenCalled();
+    viewer.lookAt(current.az, current.alt);
+    expect(host.__observatoryDebug().labels).toContain('◎ Sirius');
+    viewer.sync(model({}, { catalog: cat, picked: current }));
+    expect(onSelectionRefresh).toHaveBeenCalledOnce();
+  });
+
+  it('keeps restored selections current when hidden and respects an explicit Clear', () => {
+    const onSelectionRefresh = vi.fn(), cat = realCatalog();
+    const saved = { kind: 'star', hip: 32349, name: 'Sirius' };
+    create({ onSelectionRefresh }).sync(model({ obsLayers: { stars: false } }, { catalog: cat, picked: saved }));
+    expect(onSelectionRefresh.mock.lastCall[0].visibility).toBe('layer-off');
+    expect(host.__observatoryDebug().labels).not.toContain('◎ Sirius');
+    viewer.sync(model({ obsTime: '12:00' }, { catalog: cat, picked: saved }));
+    expect(onSelectionRefresh.mock.lastCall[0].visibility).toBe('below');
+    viewer.sync(model({}, { catalog: cat, picked: null }));
+    expect(host.__observatoryDebug().picked).toBeNull();
+    onSelectionRefresh.mockClear();
+    viewer.sync(model({ obsTime: '23:00' }, { catalog: cat, picked: null }));
+    expect(onSelectionRefresh).not.toHaveBeenCalled();
+  });
+
+  it('restores a star after the full catalog replaces the fallback catalog', () => {
+    const onSelectionRefresh = vi.fn(), cat = realCatalog();
+    const fallback = pure.fallbackCatalog();
+    const hip = cat.hip.find(value => value > 0 && fallback.byHip[value] === undefined);
+    const saved = { kind: 'star', hip, name: cat.names[hip] || ('HIP ' + hip) };
+    create({ onSelectionRefresh }).sync(model({}, { picked: saved }));
+    expect(onSelectionRefresh).not.toHaveBeenCalled();
+    viewer.sync(model({}, { catalog: cat, picked: saved }));
+    expect(onSelectionRefresh.mock.lastCall[0].hip).toBe(hip);
+    expect(Number.isFinite(onSelectionRefresh.mock.lastCall[0].alt)).toBe(true);
+  });
+
+  it('gives every missing-HIP component a unique identity that survives row reordering', () => {
+    const raw = JSON.parse(readFileSync('stem_lab/assets/astronomy/hyg-v41-naked-eye.json', 'utf8'));
+    const cat = pure.normalizeCatalog(raw), reversed = pure.normalizeCatalog({ ...raw, stars: [...raw.stars].reverse() });
+    const missing = cat.ids.filter((id, i) => cat.hip[i] === 0);
+    expect(missing).toHaveLength(50);
+    expect(new Set(missing).size).toBe(50);
+    for (const id of missing) {
+      expect(id).toMatch(/^j2000:/);
+      const a = cat.byId[id], b = reversed.byId[id];
+      expect(b).toBeDefined();
+      expect(reversed.ra[b]).toBe(cat.ra[a]);
+      expect(reversed.dec[b]).toBe(cat.dec[a]);
+      expect(reversed.mag[b]).toBe(cat.mag[a]);
+    }
+    expect(cat.byId['j2000:169.547000:31.529000']).toBeUndefined();
+  });
+
+  it('searches, selects, saves, and restores distinct stars without Hipparcos numbers', () => {
+    const onPick = vi.fn(), onSelectionRefresh = vi.fn(), cat = realCatalog();
+    create({ onPick, onSelectionRefresh }).sync(model({}, { catalog: cat }));
+    const pair = cat.ids.filter((id, i) => cat.hip[i] === 0 && cat.ra[i] === 169.547 && cat.dec[i] === 31.529);
+    expect(pair).toHaveLength(2);
+    const infos = pair.map(id => {
+      const result = viewer.search(id)[0];
+      expect(result.id).toBe(id);
+      expect(result.name).not.toBe('HIP 0');
+      const info = viewer.focus('star', id).info;
+      expect(info.id).toBe(id);
+      expect(info.hip).toBe(0);
+      return info;
+    });
+    expect(infos[0].name).not.toBe(infos[1].name);
+    const saved = pure.normalizeObsTargets(JSON.parse(JSON.stringify(infos)));
+    expect(saved).toHaveLength(2);
+    expect(new Set(saved.map(pure.obsTargetKey)).size).toBe(2);
+    viewer.dispose();
+    create({ onSelectionRefresh }).sync(model({}, { catalog: cat, picked: saved[1] }));
+    expect(onSelectionRefresh.mock.lastCall[0]).toMatchObject({ id: pair[1], hip: 0, name: infos[1].name });
+    expect(pure.normalizeObsTargets([{ ...infos[0], id: pair[1].replace('169.547000', '12.000000') }])).toEqual([]);
+  });
+
+  it('keeps a clicked missing-HIP star selected through sky refresh', () => {
+    const onPick = vi.fn(), onSelectionRefresh = vi.fn();
+    const cat = pure.normalizeCatalog({ stars: [[0, 84, 25, 1, 0.4, -1], [0, 110, 35, 1.5, 0.8, -1]], names: {} });
+    create({ onPick, onSelectionRefresh }).sync(model({}, { catalog: cat }));
+    const target = viewer.focus('star', cat.ids[0]);
+    expect(target.focused).toBe(true);
+    viewer.clearPick();
+    pointer('pointerdown', 400, 250); pointer('pointerup', 400, 250);
+    const clicked = onPick.mock.lastCall[0];
+    expect(clicked.id).toBe(cat.ids[0]);
+    expect(host.__observatoryDebug().labels).toContain('◎ ' + clicked.name);
+    viewer.sync(model({ obsTime: '23:00' }, { catalog: cat, picked: clicked }));
+    expect(onSelectionRefresh.mock.lastCall[0].id).toBe(cat.ids[0]);
+    expect(host.__observatoryDebug().picked.id).toBe(cat.ids[0]);
   });
 
   it('refreshes Moon phase and clears inapplicable coordinates in deep time', () => {

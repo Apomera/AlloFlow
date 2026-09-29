@@ -1,0 +1,41 @@
+{
+  "unit": {
+    "file": "unit-final.json",
+    "files": 21,
+    "total": 498,
+    "passed": 498,
+    "failed": 0
+  },
+  "browsers": [
+    {
+      "file": "browser-tests.json",
+      "stats": {
+        "startTime": "2026-09-29T20:23:32.011Z",
+        "duration": 180735.55899999998,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "file": "browser-final.json",
+      "stats": {
+        "startTime": "2026-09-29T20:28:15.291Z",
+        "duration": 252033.311,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    }
+  ],
+  "sourceSha256": "eae3ca846c625b701843e936cd37bcb12325517d09a4d4d004718994a4dc77b2",
+  "publicMirrorMatches": true,
+  "englishKeysAdded": 19,
+  "finalSeasonChecks": {
+    "file": "unit-layout-final.json",
+    "passed": 11,
+    "failed": 0
+  }
+}

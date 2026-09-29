@@ -7,6 +7,7 @@ const require = createRequire(import.meta.url);
 const { act } = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom/test-utils'));
 vi.setConfig({ testTimeout: 30000, hookTimeout: 45000 });
 const cases = [
+  { name: 'Transit', tab: 'exoplanets', playing: 'transitPlaying', value: 'transitTime', start: 0.3, next: 0.308, changed: 0.4, delay: 80 },
   { name: 'Moon', tab: 'moon', playing: 'moonPlaying', value: 'moonAgeDays', start: 3, next: 3.035, delay: 80 },
   { name: 'Eclipse', tab: 'eclipses', playing: 'eclipsePlaying', value: 'eclipsePhase', start: 30, next: 32, delay: 100 },
   { name: 'Meteor', tab: 'meteors', playing: 'simMeteorPlaying', value: 'simMeteorFrame', start: 4, next: 5, delay: 800 },
@@ -59,6 +60,7 @@ function mount(testCase) {
 }
 
 describe.each(cases)('$name playback ownership', testCase => {
+  const changed = testCase.changed ?? 10;
   it('does not schedule animation work during server rendering', () => {
     const interval = vi.spyOn(globalThis, 'setInterval');
     const timeout = vi.spyOn(globalThis, 'setTimeout');
@@ -73,9 +75,9 @@ describe.each(cases)('$name playback ownership', testCase => {
     expect(interval).toHaveBeenCalledTimes(1);
     act(() => vi.advanceTimersByTime(testCase.delay));
     expect(view.state[testCase.value]).toBeCloseTo(testCase.next, 8);
-    act(() => view.patch({ [testCase.value]: 10, askInput: 'An unrelated control changed' }));
+    act(() => view.patch({ [testCase.value]: changed, askInput: 'An unrelated control changed' }));
     act(() => vi.advanceTimersByTime(testCase.delay));
-    expect(view.state[testCase.value]).toBeCloseTo(10 + testCase.next - testCase.start, 8);
+    expect(view.state[testCase.value]).toBeCloseTo(changed + testCase.next - testCase.start, 8);
     expect(interval).toHaveBeenCalledTimes(1);
   });
 
@@ -84,15 +86,15 @@ describe.each(cases)('$name playback ownership', testCase => {
     const view = mount(testCase);
     const queuedTick = interval.mock.calls[0][0];
     act(() => {
-      view.patch({ [testCase.playing]: false, [testCase.value]: 10 });
+      view.patch({ [testCase.playing]: false, [testCase.value]: changed });
       queuedTick();
     });
     act(() => vi.advanceTimersByTime(testCase.delay * 3));
     expect(view.state[testCase.playing]).toBe(false);
-    expect(view.state[testCase.value]).toBe(10);
+    expect(view.state[testCase.value]).toBe(changed);
     act(() => view.patch({ [testCase.playing]: true }));
     act(() => vi.advanceTimersByTime(testCase.delay));
-    expect(view.state[testCase.value]).toBeCloseTo(10 + testCase.next - testCase.start, 8);
+    expect(view.state[testCase.value]).toBeCloseTo(changed + testCase.next - testCase.start, 8);
   });
 
   it('cannot write a late frame after a tab change and releases its clock on unmount', () => {

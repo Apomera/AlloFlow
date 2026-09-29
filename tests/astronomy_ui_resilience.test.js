@@ -38,7 +38,7 @@ describe('Astronomy UI state resilience', () => {
     expect(() => renderAstronomy({ tab: 'print', observingList: { forged: true } })).not.toThrow();
     const html = renderAstronomy({ tab: 'print', observingList: { forged: true } });
     expect(html).toContain('Observing kit');
-    expect(html).toContain('Saved targets</div></div>');
+    expect(html).toContain('Prepare an observing kit with saved targets');
   });
 
   it('does not accept forged or incomplete quiz completion state', () => {
@@ -71,7 +71,7 @@ describe('Astronomy keyboard navigation contract', () => {
     expect(source).toContain("['ArrowLeft', 'ArrowRight', 'Home', 'End']");
     expect(source).toContain("event.currentTarget.querySelectorAll('[role=\"tab\"]')");
     expect(source).toContain("onClick: function() { activateAstronomyTab(t.id); }");
-    expect(source).toContain("role: 'tabpanel', 'aria-labelledby': 'astronomy-tab-' + activeTab");
+    expect(source).toContain("'aria-labelledby': 'astronomy-tab-' + props.sectionId");
   });
 });
 describe('Astronomy Sky Map resilience', () => {
@@ -305,8 +305,8 @@ describe('Astronomy eclipse simulator resilience', () => {
       tab: 'eclipses', observingList: [], eclipseType: 'solar', eclipseGeometry: 'partial', eclipsePhase: 50
     });
     expect(html).toContain('role="group" aria-label="Solar eclipse geometry"');
-    expect(html).toContain('Partial solar eclipse: 58% coverage at maximum alignment.');
-    expect(html).toContain('Solar eclipse diagram. Partial solar eclipse: 58% coverage at maximum alignment.');
+    expect(html).toContain('Partial solar eclipse: 42% coverage at maximum alignment.');
+    expect(html).toContain('Solar eclipse diagram. Partial solar eclipse: 42% coverage at maximum alignment.');
     const source = readFileSync('stem_lab/stem_tool_astronomy.js', 'utf8');
     expect(source).toContain("var moonYOffset = geometryType === 'partial' ? 70 : 0");
     expect(source).toContain('Math.sqrt(moonOffset * moonOffset + moonYOffset * moonYOffset)');
@@ -319,7 +319,7 @@ describe('Astronomy eclipse simulator resilience', () => {
     expect(html).toContain('Lunar eclipse diagram. Phase 50%.');
     expect(html).toContain('fully inside Earth&#x27;s umbra: total lunar eclipse.');
     expect(html).toContain('id="astronomy-eclipse-status" role="status" aria-live="polite" aria-atomic="true"');
-    expect(html).toContain('TOTAL ECLIPSE');
+    expect(html).toContain('data-eclipse-stage="Total lunar eclipse"');
   });
 
   it('distinguishes partial and penumbral lunar contacts', () => {
@@ -330,9 +330,9 @@ describe('Astronomy eclipse simulator resilience', () => {
       tab: 'eclipses', observingList: [], eclipseType: 'lunar', eclipsePhase: 30
     });
     expect(partial).toContain('overlaps Earth&#x27;s umbra: partial lunar eclipse.');
-    expect(partial).toContain('PARTIAL ECLIPSE');
+    expect(partial).toContain('data-eclipse-stage="Partial lunar eclipse"');
     expect(penumbral).toContain('overlaps Earth&#x27;s penumbra: penumbral lunar eclipse.');
-    expect(penumbral).toContain('PENUMBRAL');
+    expect(penumbral).toContain('data-eclipse-stage="Penumbral eclipse"');
   });
 
   it('provides lifecycle-safe animation and maximum-alignment controls', () => {

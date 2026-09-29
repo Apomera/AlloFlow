@@ -1,0 +1,580 @@
+[
+  {
+    "name": "desktop",
+    "errors": [],
+    "metrics": {
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sceneTop": 434,
+      "debug": {
+        "ready": true,
+        "catalog": 8920,
+        "catalogSource": "HYG Database v4.1 (hygdata_v41.csv) by David Nash / astronexus",
+        "fallback": false,
+        "starsUp": 4257,
+        "starsVisible": 609,
+        "linesDrawn": 70,
+        "linesVisible": true,
+        "utc": "2026-07-05T03:30:00.000Z",
+        "lst": 17.72896331032229,
+        "limit": 5.11139899587177,
+        "dark": 1,
+        "sun": {
+          "alt": -19.62293305698232,
+          "az": 342.0378467055416
+        },
+        "moon": {
+          "alt": 4.092546794363325,
+          "az": 104.56515716535137,
+          "illum": 0.7665278561224327
+        },
+        "planets": [
+          {
+            "id": "mercury",
+            "alt": -21.020577819409816,
+            "az": 328.77101217413355,
+            "visible": false
+          },
+          {
+            "id": "venus",
+            "alt": -7.917855326881846,
+            "az": 300.64407510046175,
+            "visible": false
+          },
+          {
+            "id": "mars",
+            "alt": -20.31646924151637,
+            "az": 23.277608848017568,
+            "visible": false
+          },
+          {
+            "id": "jupiter",
+            "alt": -15.816064182357673,
+            "az": 323.66218066296506,
+            "visible": false
+          },
+          {
+            "id": "saturn",
+            "alt": -10.092358615396416,
+            "az": 74.4236107024322,
+            "visible": false
+          }
+        ],
+        "radiant": null,
+        "rate": 0,
+        "meteors": 0,
+        "aurora": {
+          "level": 0,
+          "magneticLatitude": 54.864769715914754,
+          "ovalEquatorward": 66.5,
+          "ovalPoleward": 71.5,
+          "bearingDeg": 359.1635577327137,
+          "distanceDeg": 0,
+          "elevationDeg": 0,
+          "topElevationDeg": 0,
+          "overhead": false,
+          "visible": false,
+          "side": "poleward"
+        },
+        "auroraVisible": false,
+        "camera": {
+          "yaw": 180,
+          "pitch": 30,
+          "zoom": 1
+        },
+        "env": "lake:180",
+        "playing": false,
+        "playMs": 0,
+        "drift": 0,
+        "deepTime": false,
+        "withMotion": 8714,
+        "trails": false,
+        "trailStars": 0,
+        "trailHours": 4,
+        "skyMoonGlow": 0.3891755693840766,
+        "skySunAlt": -19.62293305698232,
+        "starMagWired": true,
+        "sunExt": 5.462824732718247,
+        "moonExt": 1.9958286965418208,
+        "moonTint": [
+          1,
+          0.8004171303458179,
+          0.5609176867607994
+        ],
+        "deepSky": [
+          "m31",
+          "m13",
+          "m7",
+          "m6",
+          "m22",
+          "ngc869"
+        ],
+        "guides": false,
+        "poleVisible": false,
+        "moonFace": true,
+        "picked": null,
+        "brightStar": {
+          "name": "Arcturus",
+          "alt": 40.03249740600586,
+          "az": 255.6452178955078
+        },
+        "spots": {
+          "star": null,
+          "moon": null,
+          "deepSky": {
+            "m31": null,
+            "m13": null,
+            "m7": {
+              "x": 540.2966163064818,
+              "y": 446.7745076842883
+            },
+            "m6": {
+              "x": 559.4737703023708,
+              "y": 428.1740246157372
+            },
+            "m22": {
+              "x": 474.6159531751741,
+              "y": 375.23755800518273
+            },
+            "ngc869": null
+          },
+          "byName": {
+            "Altair": {
+              "x": 305.9308447261875,
+              "y": 138.08325032046685
+            },
+            "Antares": {
+              "x": 667.2899308398665,
+              "y": 396.63590665294487
+            },
+            "Shaula": {
+              "x": 568.593547221773,
+              "y": 463.7803924075897
+            },
+            "Kaus Australis": {
+              "x": 496.8011310452493,
+              "y": 446.7388101219736
+            },
+            "Nunki": {
+              "x": 445.82694576424365,
+              "y": 395.1586190384911
+            },
+            "Rasalhague": {
+              "x": 570.3679650021269,
+              "y": 121.91926667806621
+            },
+            "Dschubba": {
+              "x": 719.1955375391873,
+              "y": 377.65857532227886
+            },
+            "Larawag": {
+              "x": 631.3287476490556,
+              "y": 448.2183778032149
+            },
+            "Sabik": {
+              "x": 606.6760319406403,
+              "y": 319.34890549494594
+            },
+            "Acrab": {
+              "x": 712.4327787111189,
+              "y": 356.3588908738441
+            },
+            "Ascella": {
+              "x": 436.18707427973396,
+              "y": 422.43636799630127
+            }
+          }
+        },
+        "labels": [
+          "S",
+          "Scorpius",
+          "Sagittarius",
+          "Aquila",
+          "Altair",
+          "Antares",
+          "Ptolemy's Cluster (M7)",
+          "Butterfly Cluster (M6)",
+          "Sagittarius Cluster (M22)"
+        ],
+        "calls": 13,
+        "geometries": 10,
+        "raf": false,
+        "liveTimer": false
+      }
+    }
+  },
+  {
+    "name": "phone",
+    "errors": [],
+    "metrics": {
+      "width": 390,
+      "scrollWidth": 390,
+      "sceneTop": 607.796875,
+      "debug": {
+        "ready": true,
+        "catalog": 8920,
+        "catalogSource": "HYG Database v4.1 (hygdata_v41.csv) by David Nash / astronexus",
+        "fallback": false,
+        "starsUp": 4257,
+        "starsVisible": 609,
+        "linesDrawn": 70,
+        "linesVisible": true,
+        "utc": "2026-07-05T03:30:00.000Z",
+        "lst": 17.72896331032229,
+        "limit": 5.11139899587177,
+        "dark": 1,
+        "sun": {
+          "alt": -19.62293305698232,
+          "az": 342.0378467055416
+        },
+        "moon": {
+          "alt": 4.092546794363325,
+          "az": 104.56515716535137,
+          "illum": 0.7665278561224327
+        },
+        "planets": [
+          {
+            "id": "mercury",
+            "alt": -21.020577819409816,
+            "az": 328.77101217413355,
+            "visible": false
+          },
+          {
+            "id": "venus",
+            "alt": -7.917855326881846,
+            "az": 300.64407510046175,
+            "visible": false
+          },
+          {
+            "id": "mars",
+            "alt": -20.31646924151637,
+            "az": 23.277608848017568,
+            "visible": false
+          },
+          {
+            "id": "jupiter",
+            "alt": -15.816064182357673,
+            "az": 323.66218066296506,
+            "visible": false
+          },
+          {
+            "id": "saturn",
+            "alt": -10.092358615396416,
+            "az": 74.4236107024322,
+            "visible": false
+          }
+        ],
+        "radiant": null,
+        "rate": 0,
+        "meteors": 0,
+        "aurora": {
+          "level": 0,
+          "magneticLatitude": 54.864769715914754,
+          "ovalEquatorward": 66.5,
+          "ovalPoleward": 71.5,
+          "bearingDeg": 359.1635577327137,
+          "distanceDeg": 0,
+          "elevationDeg": 0,
+          "topElevationDeg": 0,
+          "overhead": false,
+          "visible": false,
+          "side": "poleward"
+        },
+        "auroraVisible": false,
+        "camera": {
+          "yaw": 180,
+          "pitch": 30,
+          "zoom": 1
+        },
+        "env": "lake:180",
+        "playing": false,
+        "playMs": 0,
+        "drift": 0,
+        "deepTime": false,
+        "withMotion": 8714,
+        "trails": false,
+        "trailStars": 0,
+        "trailHours": 4,
+        "skyMoonGlow": 0.3891755693840766,
+        "skySunAlt": -19.62293305698232,
+        "starMagWired": true,
+        "sunExt": 5.462824732718247,
+        "moonExt": 1.9958286965418208,
+        "moonTint": [
+          1,
+          0.8004171303458179,
+          0.5609176867607994
+        ],
+        "deepSky": [
+          "m31",
+          "m13",
+          "m7",
+          "m6",
+          "m22",
+          "ngc869"
+        ],
+        "guides": false,
+        "poleVisible": false,
+        "moonFace": true,
+        "picked": null,
+        "brightStar": {
+          "name": "Arcturus",
+          "alt": 40.03249740600586,
+          "az": 255.6452178955078
+        },
+        "spots": {
+          "star": null,
+          "moon": null,
+          "deepSky": {
+            "m31": null,
+            "m13": null,
+            "m7": {
+              "x": 153.96512870273617,
+              "y": 255.79299057928847
+            },
+            "m6": {
+              "x": 163.18996404340848,
+              "y": 246.84555272687658
+            },
+            "m22": {
+              "x": 122.37059165191152,
+              "y": 221.38138906087855
+            },
+            "ngc869": null
+          },
+          "byName": {
+            "Altair": {
+              "x": 41.227563327742864,
+              "y": 107.30244704520524
+            },
+            "Antares": {
+              "x": 215.05304697193418,
+              "y": 231.67469133504397
+            },
+            "Shaula": {
+              "x": 167.57687361524506,
+              "y": 263.9733747191113
+            },
+            "Kaus Australis": {
+              "x": 133.04238439544602,
+              "y": 255.77581888976206
+            },
+            "Nunki": {
+              "x": 108.52214192656847,
+              "y": 230.964067902752
+            },
+            "Rasalhague": {
+              "x": 168.43042632973211,
+              "y": 99.52704473147126
+            },
+            "Alphecca": {
+              "x": 297.07588586881394,
+              "y": 12.21158343587717
+            },
+            "Dschubba": {
+              "x": 240.02133346332798,
+              "y": 222.54597720111641
+            },
+            "Larawag": {
+              "x": 197.75454722259173,
+              "y": 256.4875391084013
+            },
+            "Sabik": {
+              "x": 185.89578845373117,
+              "y": 194.497127875433
+            },
+            "Acrab": {
+              "x": 236.76822632078833,
+              "y": 212.30013561861614
+            },
+            "Ascella": {
+              "x": 103.88504993841902,
+              "y": 244.08555311656102
+            }
+          }
+        },
+        "labels": [
+          "S",
+          "Scorpius",
+          "Sagittarius",
+          "Aquila",
+          "Altair",
+          "Antares",
+          "Ptolemy's Cluster (M7)",
+          "Butterfly Cluster (M6)",
+          "Sagittarius Cluster (M22)"
+        ],
+        "calls": 13,
+        "geometries": 10,
+        "raf": false,
+        "liveTimer": false
+      }
+    }
+  },
+  {
+    "name": "tonight",
+    "errors": [],
+    "metrics": {
+      "width": 1180,
+      "scrollWidth": 1180
+    }
+  },
+  {
+    "name": "small-phone",
+    "errors": [],
+    "metrics": {
+      "width": 320,
+      "scrollWidth": 320
+    }
+  },
+  {
+    "name": "section-journey",
+    "errors": [],
+    "layouts": [
+      {
+        "section": "tonight",
+        "width": 390,
+        "scroll": 390,
+        "panelHeight": 653,
+        "panelWidth": 390,
+        "panelScrollWidth": 390
+      },
+      {
+        "section": "skymap",
+        "width": 390,
+        "scroll": 390,
+        "panelHeight": 653,
+        "panelWidth": 390,
+        "panelScrollWidth": 390
+      },
+      {
+        "section": "constellations",
+        "width": 390,
+        "scroll": 390,
+        "panelHeight": 554,
+        "panelWidth": 390,
+        "panelScrollWidth": 390
+      },
+      {
+        "section": "meteors",
+        "width": 390,
+        "scroll": 390,
+        "panelHeight": 653,
+        "panelWidth": 390,
+        "panelScrollWidth": 390
+      },
+      {
+        "section": "observatory",
+        "width": 390,
+        "scroll": 390,
+        "panelHeight": 653,
+        "panelWidth": 390,
+        "panelScrollWidth": 390
+      },
+      {
+        "section": "moon",
+        "width": 390,
+        "scroll": 390,
+        "panelHeight": 653,
+        "panelWidth": 390,
+        "panelScrollWidth": 390
+      },
+      {
+        "section": "planets",
+        "width": 390,
+        "scroll": 390,
+        "panelHeight": 554,
+        "panelWidth": 390,
+        "panelScrollWidth": 390
+      },
+      {
+        "section": "exoplanets",
+        "width": 390,
+        "scroll": 390,
+        "panelHeight": 554,
+        "panelWidth": 390,
+        "panelScrollWidth": 390
+      },
+      {
+        "section": "seasons",
+        "width": 390,
+        "scroll": 390,
+        "panelHeight": 554,
+        "panelWidth": 390,
+        "panelScrollWidth": 390
+      },
+      {
+        "section": "stars",
+        "width": 390,
+        "scroll": 390,
+        "panelHeight": 554,
+        "panelWidth": 390,
+        "panelScrollWidth": 390
+      },
+      {
+        "section": "galaxies",
+        "width": 390,
+        "scroll": 390,
+        "panelHeight": 554,
+        "panelWidth": 390,
+        "panelScrollWidth": 390
+      },
+      {
+        "section": "eclipses",
+        "width": 390,
+        "scroll": 390,
+        "panelHeight": 554,
+        "panelWidth": 390,
+        "panelScrollWidth": 390
+      },
+      {
+        "section": "indigenous",
+        "width": 390,
+        "scroll": 390,
+        "panelHeight": 554,
+        "panelWidth": 390,
+        "panelScrollWidth": 390
+      },
+      {
+        "section": "history",
+        "width": 390,
+        "scroll": 390,
+        "panelHeight": 554,
+        "panelWidth": 390,
+        "panelScrollWidth": 390
+      },
+      {
+        "section": "observe",
+        "width": 390,
+        "scroll": 390,
+        "panelHeight": 554,
+        "panelWidth": 390,
+        "panelScrollWidth": 390
+      },
+      {
+        "section": "quiz",
+        "width": 390,
+        "scroll": 390,
+        "panelHeight": 554,
+        "panelWidth": 390,
+        "panelScrollWidth": 390
+      },
+      {
+        "section": "print",
+        "width": 390,
+        "scroll": 390,
+        "panelHeight": 554,
+        "panelWidth": 390,
+        "panelScrollWidth": 390
+      },
+      {
+        "section": "hrDiagram",
+        "width": 390,
+        "scroll": 390,
+        "panelHeight": 554,
+        "panelWidth": 390,
+        "panelScrollWidth": 390
+      }
+    ]
+  }
+]

@@ -154,11 +154,8 @@ describe('Astronomy Moon Phase Observatory', () => {
     expect(Number(document.querySelector('#astronomy-moon-age').value)).toBeCloseTo(astronomy.AM_SYNODIC * 3 / 4, 1);
     expect(viewButton(viewGroup, 'Telescope view').getAttribute('aria-pressed')).toBe('true');
     expect(viewButton(viewGroup, 'Orbit view').getAttribute('aria-pressed')).toBe('false');
-    expect(buttonByText(overlayGroup, 'Orbit path').getAttribute('aria-pressed')).toBe('true');
-    expect(buttonByText(overlayGroup, 'Sunlight').getAttribute('aria-pressed')).toBe('true');
-    expect(buttonByText(overlayGroup, "Earth's shadow").getAttribute('aria-pressed')).toBe('true');
+    expect(overlayGroup.querySelectorAll('button')).toHaveLength(1);
     expect(buttonByText(overlayGroup, 'Labels').getAttribute('aria-pressed')).toBe('true');
-    expect(buttonByText(overlayGroup, 'Tidal-lock marker').getAttribute('aria-pressed')).toBe('false');
   });
 
   it('clamps persisted lunar ages at both ends of the slider', () => {
@@ -211,6 +208,19 @@ describe('Astronomy Moon Phase Observatory', () => {
       expect(button.type).toBe('button');
       expect(button.getAttribute('aria-pressed')).toBe(expected.get(button.textContent.trim()));
     });
+  });
+
+  it('shows camera controls for the active view and keeps playback updates quiet', () => {
+    var telescope = parseMarkup(renderAstronomy({ tab: 'moon', moonPlaying: true, moonZoom: 3 }));
+    var orbit = parseMarkup(renderAstronomy({ tab: 'moon', moonViewMode: 'orbit' }));
+    expect(telescope.querySelector('#astronomy-moon-phase-status').getAttribute('aria-live')).toBe('off');
+    expect(telescope.querySelector('button[aria-label="Zoom Moon view in"]').disabled).toBe(true);
+    expect(telescope.querySelector('button[aria-label="Zoom Moon view out"]').disabled).toBe(false);
+    expect(buttonByText(telescope, 'Above orbit')).toBeUndefined();
+    expect(buttonByText(orbit, 'Overview').getAttribute('aria-pressed')).toBe('true');
+    expect(buttonByText(orbit, 'Above orbit').getAttribute('aria-pressed')).toBe('false');
+    expect(buttonByText(orbit, 'Edge-on')).toBeTruthy();
+    expect(telescope.querySelectorAll('[aria-label="Jump to a principal Moon phase"] svg')).toHaveLength(4);
   });
 
   it('bundles substantive NASA LROC and LOLA texture assets and wires their provenance', () => {

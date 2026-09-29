@@ -5,7 +5,7 @@ const http = require('node:http');
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '..');
-const out = path.join(root, 'reports/sky-lab-review-2026-09-27');
+const out = path.join(root, process.env.SKY_QA_OUT || 'reports/sky-lab-review-2026-09-27');
 const harness = fs.readFileSync(path.join(root, 'tests/e2e/astronomy-observatory-3d.spec.ts'), 'utf8').split('const HARNESS = `')[1].split('`;')[0];
 const mime = { '.js': 'text/javascript', '.json': 'application/json', '.jpg': 'image/jpeg', '.png': 'image/png' };
 const server = http.createServer(async (req, res) => {

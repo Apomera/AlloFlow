@@ -1,0 +1,16 @@
+{
+  "format": "captured-vitest-cli-result",
+  "date": "2026-09-27",
+  "vitestVersion": "4.1.5",
+  "command": "npx vitest run tests/astronomy_observatory_3d.test.js -t \"shows coordinate inputs for a custom site\" --maxWorkers=1 --testTimeout=30000 --hookTimeout=45000",
+  "testFile": "tests/astronomy_observatory_3d.test.js",
+  "testName": "Observatory tab rendering > shows coordinate inputs for a custom site and survives malformed state",
+  "exitCode": 0,
+  "success": true,
+  "numPassedTests": 1,
+  "numFailedTests": 0,
+  "numSkippedTests": 73,
+  "durationSeconds": 10.83,
+  "change": "Updated the obsolete number-input selector to verify accessible latitude/longitude inputs, decimal input mode, and preserved coordinate values.",
+  "stdout": "RUN v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\nTest Files 1 passed (1)\nTests 1 passed | 73 skipped (74)\nStart at 14:12:21\nDuration 10.83s (transform 939ms, setup 575ms, import 600ms, tests 1.23s, environment 5.90s)"
+}

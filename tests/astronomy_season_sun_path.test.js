@@ -265,7 +265,7 @@ describe('Astronomy Seasons observer Sun path', () => {
     expect(status.textContent).toMatch(/solar noon/i);
     expect(status.textContent).toMatch(/local solar time/i);
     expect(status.textContent).toMatch(/geometric/i);
-    expect(status.textContent).toMatch(/refraction[^.]*not modeled|does not model[^.]*refraction/i);
+    expect(document.querySelector('#astronomy-season-calculation').textContent).toMatch(/refraction[^.]*not modeled|does not model[^.]*refraction/i);
 
     expect(conciseStatus).toBeTruthy();
     expect(conciseStatus.getAttribute('role')).toBe('status');
@@ -274,6 +274,47 @@ describe('Astronomy Seasons observer Sun path', () => {
     expect(conciseStatus.textContent).toMatch(/meteorological/i);
     expect(Array.from(document.querySelectorAll('[aria-live="polite"]')))
       .toEqual([conciseStatus]);
+  });
+
+  it('compares all twelve representative dates and keeps the selected month consistent with the daily graph', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-08-13T16:00:00.000Z'));
+    for (const observer of ['portland', 'sydney', 'quito']) {
+      const document = parseMarkup(renderAstronomy({ tab: 'seasons', seasonMonth: 12, skyLoc: observer }));
+      const year = document.querySelector('#astronomy-season-year-chart');
+      const bars = [...year.querySelectorAll('[data-season-month]')];
+      expect(bars).toHaveLength(12);
+      expect(year.getAttribute('data-year')).toBe('2026');
+      expect(year.getAttribute('data-observer')).toBe(observer);
+      expect(bars.map(bar => Number(bar.getAttribute('data-season-month')))).toEqual([1,2,3,4,5,6,7,8,9,10,11,12]);
+      const selected = year.querySelector('[data-selected="true"]');
+      expect(year.querySelectorAll('[data-selected="true"]')).toHaveLength(1);
+      expect(selected.getAttribute('data-season-month')).toBe('12');
+      expect(selected.getAttribute('data-daylight-hours')).toBe(document.querySelector('#astronomy-season-sun-path').getAttribute('data-daylight-hours'));
+      const latitude = observer === 'portland' ? 43.66 : observer === 'sydney' ? -33.87 : -0.18;
+      bars.forEach((bar, index) => {
+        expect(Number(bar.getAttribute('data-daylight-hours'))).toBeCloseTo(window.__alloAstroPure.solarDaylightProfile(2026, index + 1, 15, latitude, 15).daylightHours, 3);
+      });
+      expect(document.querySelector('[data-season-readout="date"]').textContent).toContain('December 15');
+      expect(document.querySelector('[data-season-readout="height"]').textContent).toContain('negative means below');
+      expect(document.querySelector('#astronomy-season-year-panel table tbody').rows).toHaveLength(12);
+      expect(document.querySelector('[aria-label="Compare key months"] [aria-pressed="true"]').textContent).toBe('December');
+      expect(document.querySelector('#astronomy-season-calculation').hasAttribute('open')).toBe(false);
+    }
+  });
+
+  it('shows zero and full daylight in the annual overview without losing the selected polar month', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-08-13T16:00:00.000Z'));
+    const document = renderAstronomyAtPortlandLatitude(80, { seasonMonth: 12 });
+    const year = document.querySelector('#astronomy-season-year-chart');
+    expect(year.querySelector('[data-season-month="6"]').getAttribute('data-daylight-hours')).toBe('24.0000');
+    const selected = year.querySelector('[data-season-month="12"]');
+    expect(selected.getAttribute('data-daylight-hours')).toBe('0.0000');
+    expect(selected.getAttribute('data-selected')).toBe('true');
+    expect(selected.querySelector('line')).toBeTruthy();
+    expect(document.querySelector('[data-season-readout="daylight"]').textContent).toContain('0 hourspolar night');
+    expect(document.querySelector('[data-season-readout="height"] dd').textContent).toMatch(/^-\d+°$/);
   });
 
   it('qualifies month-based seasons as meteorological and does not overgeneralize an equinox', () => {

@@ -161,7 +161,7 @@ describe('Astronomy malformed persisted-state regressions', () => {
     expect(inputByLabel(document, 'Planet size (Earth radii)').value).toBe('1');
     expect(inputByLabel(document, 'Star size (Sun radii)').value).toBe('1');
     expect(inputByLabel(document, 'Transit position').value).toBe('0.5');
-    expect(inputByLabel(document, 'Impact parameter (0=center, 1=grazing)').value).toBe('0');
+    expect(inputByLabel(document, 'Path offset (star radii)').value).toBe('0');
     expect(document.body.textContent).toContain('Full transit: the planet disc passes completely across the star.');
   });
 
@@ -235,33 +235,30 @@ describe('Astronomy transit geometry regressions', () => {
     }));
   }
 
-  it('models a central Jupiter-size transit as a full, detectable dip', () => {
+  it('models a central Jupiter-size transit as a full brightness dip', () => {
     var document = transitDocument(0);
     expect(document.body.textContent).toContain('Full transit: the planet disc passes completely across the star.');
-    expect(lightCurveSpread(document, 'Light curve showing brightness dips during transits')).toBeGreaterThan(0);
-    expect(cardText(document, 'Naked eye')).toContain('✓ visible');
-    expect(cardText(document, 'Ground telescope')).toContain('✓ detectable');
-    expect(cardText(document, 'Kepler space telescope')).toContain('✓ detectable');
+    expect(lightCurveSpread(document, 'Explore the transit light curve')).toBeGreaterThan(0);
+    expect(Number.parseFloat(document.querySelector('[data-transit-depth]').textContent)).toBeGreaterThan(1);
+    expect(document.body.textContent).toContain('A dip alone does not guarantee detection.');
   });
 
-  it('models a grazing transit as a shallower partial crossing with impact-adjusted detectability', () => {
+  it('models a grazing transit as a shallower partial crossing with matching readouts', () => {
     var document = transitDocument(1);
     expect(document.body.textContent).toContain('Grazing transit: only part of the planet crosses the star disc.');
-    expect(lightCurveSpread(document, 'Light curve showing shallow grazing-transit dips')).toBeGreaterThan(0);
-    expect(cardText(document, 'Naked eye')).toContain('✗ undetectable');
-    expect(cardText(document, 'Ground telescope')).toContain('✓ detectable');
-    expect(cardText(document, 'Kepler space telescope')).toContain('✓ detectable');
+    expect(lightCurveSpread(document, 'Explore the transit light curve')).toBeGreaterThan(0);
+    const depth = Number.parseFloat(document.querySelector('[data-transit-depth]').textContent);
+    expect(depth).toBeGreaterThan(0);
+    expect(depth).toBeLessThan(1);
   });
 
-  it('keeps a missed transit flat and marks every detector as unavailable', () => {
+  it('keeps a missed transit flat with no light blocked', () => {
     var document = transitDocument(1.2);
     expect(document.body.textContent).toContain('No transit: the planet passes outside the star disc.');
-    expect(document.body.textContent).toContain('No transit at this impact parameter');
-    expect(lightCurveSpread(document, 'Flat light curve: the orbital path misses the star')).toBe(0);
-    expect(cardText(document, 'Modeled transit depth')).toContain('0.0000 %');
-    expect(cardText(document, 'Naked eye')).toContain('✗ undetectable');
-    expect(cardText(document, 'Ground telescope')).toContain('✗ too small');
-    expect(cardText(document, 'Kepler space telescope')).toContain('✗ below precision');
+    expect(document.body.textContent).toContain('Path misses the star');
+    expect(lightCurveSpread(document, 'Explore the transit light curve')).toBe(0);
+    expect(document.querySelector('[data-transit-depth]').textContent).toBe('0.0000 %');
+    expect(document.querySelector('[data-transit-brightness]').textContent).toBe('100.0000%');
   });
 });
 
@@ -321,13 +318,15 @@ describe('Astronomy location and theme contracts', () => {
 });
 
 describe('Astronomy foreground contrast regressions', () => {
-  it('keeps all five H-R category labels AA-readable and the command metrics on an opaque gradient', () => {
+  it('keeps H-R region labels and section guidance readable', () => {
     var categories = [
-      { label: 'Red dwarf', tempK: 3500, lumin: 0.1 },
-      { label: 'Sun-like', tempK: 5800, lumin: 1 },
-      { label: 'Red giant', tempK: 4000, lumin: 100 },
-      { label: 'Supergiant', tempK: 12000, lumin: 10000 },
-      { label: 'Main sequence', tempK: 10000, lumin: 100 }
+      { label: 'Red-dwarf region', tempK: 3500, lumin: 0.03 },
+      { label: 'Sun-like region', tempK: 5800, lumin: 1 },
+      { label: 'Giant region', tempK: 4000, lumin: 100 },
+      { label: 'Luminous-star region', tempK: 12000, lumin: 10000 },
+      { label: 'Main-sequence band', tempK: 10000, lumin: 100 },
+      { label: 'White-dwarf region', tempK: 20000, lumin: 0.01 },
+      { label: 'Between common regions', tempK: 3500, lumin: 0.1 }
     ];
 
     categories.forEach(function(category) {
@@ -344,8 +343,9 @@ describe('Astronomy foreground contrast regressions', () => {
     });
 
     var document = parseMarkup(renderAstronomy({ tab: 'hrDiagram' }));
-    var command = document.querySelector('[data-astronomy-command="true"]');
-    expect(command.textContent).toContain('Saved targets');
+    var command = document.querySelector('#astronomy-section-guide');
+    expect(command.textContent).toContain('Compare a star’s temperature and total light output.');
+    expect(command.textContent).not.toContain('Saved targets');
     var route = command.querySelector('p');
     expect(contrastRatio(route.style.color, '#0f172a')).toBeGreaterThanOrEqual(4.5);
     // The compact route leaves the simulation in view; the full catalog is still reachable.
@@ -469,8 +469,6 @@ describe('Astronomy semantics and reflow source contracts', () => {
     });
     expect(source).toContain("repeat(auto-fit,minmax(min(100%,230px),1fr))");
     expect(source).toContain("gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: 10, maxHeight: 700");
-    expect(source).toContain("h('div', { id: 'astronomy-main', role: 'tabpanel'");
-    expect(source).not.toContain("h('main', { id: 'astronomy-main'");
     expect(source).toContain("role: 'group', 'aria-label': __alloT('stem.astronomy.observing_targets'");
   });
 });

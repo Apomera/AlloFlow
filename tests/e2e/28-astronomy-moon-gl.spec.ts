@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { createServer, Server } from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { readFile, mkdir } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 
 /**
@@ -326,6 +326,10 @@ test.describe('Astronomy moon geometry — real WebGL', () => {
     expect(light.leftMean).toBeLessThan(light.rightMean * 0.45);
     // The far-right sky is outside the lunar disc: no decorative stars in telescope mode.
     expect(light.outerBrightPixels / light.outerPixels).toBeLessThan(0.0002);
+    await page.getByRole('button', { name: 'North up', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'South up', exact: true })).toHaveAttribute('aria-pressed', 'false');
+    const flipped = await moonCanvasLightMetrics(page);
+    expect(flipped.leftMean).toBeGreaterThan(flipped.rightMean * 2.2);
   });
 
   test('Telescope HUD labels retain readable contrast over the bright lunar surface', async ({ page }) => {
@@ -335,12 +339,10 @@ test.describe('Astronomy moon geometry — real WebGL', () => {
         .find((el) => el.textContent?.trim() === text);
       const observer = exact('Earth observer');
       const north = exact('N' + String.fromCharCode(0x2191) + 'NASA LRO surface');
-      const hint = exact('Scroll to magnify - same physical sunlight');
-      if (!observer?.parentElement || !north || !hint) throw new Error('Moon HUD labels are missing');
+      if (!observer?.parentElement || !north) throw new Error('Moon HUD labels are missing');
       return [
         { fg: getComputedStyle(observer).color, bg: getComputedStyle(observer.parentElement).backgroundColor },
         { fg: getComputedStyle(north).color, bg: getComputedStyle(north).backgroundColor },
-        { fg: getComputedStyle(hint).color, bg: getComputedStyle(hint).backgroundColor },
       ];
     });
 
@@ -529,6 +531,50 @@ test.describe('Astronomy moon geometry — real WebGL', () => {
       .toBeLessThanOrEqual(baseline.rendererMemory.geometries + 2);
     expect(scaled.gl.rendererMemory.textures)
       .toBeLessThanOrEqual(baseline.rendererMemory.textures + 1);
+  });
+
+  test('fits the lunar disc on phones and provides working touch camera controls', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 850 });
+    await mount(page, { moonAgeDays: FIRST_Q, moonViewMode: 'telescope' });
+    await page.addStyleTag({ content: '#wrap{width:100%;max-width:100%}' });
+    await page.waitForFunction(() => (window as any).__gl()?.viewAspect < 1);
+    const framed = await page.evaluate(() => (window as any).__gl());
+    const discHalfAngle = Math.asin(framed.moonRadius / framed.cameraDistance);
+    const screenHalfAngle = Math.atan(Math.tan(14 * Math.PI / 180) * framed.viewAspect);
+    expect(discHalfAngle).toBeLessThan(screenHalfAngle);
+    await expect(page.getByRole('group', { name: 'Diagram overlays' }).getByRole('button')).toHaveCount(1);
+    await page.getByRole('button', { name: 'Zoom Moon view in', exact: true }).click();
+    await page.waitForFunction(() => (window as any).__gl()?.viewZoom > 1);
+    await expect(page.locator('#astronomy-moon-zoom')).toHaveText('110%');
+    await page.getByRole('button', { name: 'Reset view', exact: true }).click();
+    await page.waitForFunction(() => (window as any).__gl()?.viewZoom === 1);
+    await page.waitForFunction(() => (window as any).__gl()?.surfaceTextureReady);
+    await mkdir(join(ROOT, 'reports/sky-lab-simulators-2026-09-28'), { recursive: true });
+    await page.locator('#astronomy-moon-scene').screenshot({ path: join(ROOT, 'reports/sky-lab-simulators-2026-09-28/moon-telescope-phone.png') });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('orbit camera presets keep object labels legible and clean them up', async ({ page }) => {
+    await mount(page, { moonAgeDays: FIRST_Q, moonViewMode: 'orbit' });
+    const labels = page.locator('[data-moon-object-labels]');
+    await expect(labels).toBeVisible();
+    await expect(labels.locator('[data-moon-object="earth"]')).toBeVisible();
+    await expect(labels.locator('[data-moon-object="moon"]')).toBeVisible();
+    await page.getByRole('button', { name: 'Above orbit', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Above orbit', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    expect(await page.evaluate(() => (window as any).__bucket().moonRot)).toEqual({ rotX: 86, rotY: 0 });
+    await page.getByRole('button', { name: 'Edge-on', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Edge-on', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await page.getByRole('button', { name: 'Overview', exact: true }).click();
+    await page.waitForFunction(() => (window as any).__gl()?.surfaceTextureReady);
+    await mkdir(join(ROOT, 'reports/sky-lab-simulators-2026-09-28'), { recursive: true });
+    await page.locator('#astronomy-moon-scene').screenshot({ path: join(ROOT, 'reports/sky-lab-simulators-2026-09-28/moon-orbit-desktop.png') });
+    await page.getByRole('group', { name: 'Diagram overlays' }).getByRole('button', { name: 'Labels', exact: true }).click();
+    await expect(labels).toBeHidden();
+    await page.evaluate(() => (window as any).__destroy());
+    await expect(labels).toHaveCount(0);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
 
   test('tears the renderer down on unmount', async ({ page }) => {

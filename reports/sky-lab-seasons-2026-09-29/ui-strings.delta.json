@@ -1,0 +1,21 @@
+{
+  "seasons_tilt_intro": "Earth's 23.5° tilt changes the angle of sunlight and the length of the day. Choose a month, then compare locations to see how the two hemispheres experience opposite seasons.",
+  "seasons_quick_months": "Compare key months",
+  "seasons_daylight_readout": "Daylight",
+  "seasons_height_readout": "Highest Sun",
+  "seasons_height_help": "Angle above the horizon; negative means below.",
+  "seasons_date_readout": "Representative date",
+  "seasons_day_view": "Sun height during the day",
+  "seasons_solar_clock_help": "Local solar time puts the Sun highest at 12:00. These are solar hours, not the times on your clock.",
+  "seasons_year_view": "Daylight through the year",
+  "seasons_annual_chart_title": "Monthly geometric daylight",
+  "seasons_annual_chart_desc": "Each bar shows daylight on the 15th of a month. Gold marks the selected month. Values run from zero to 24 hours.",
+  "seasons_year_help": "Each bar uses the 15th of a month. Gold marks your selected month. Compare June and December, or move the month slider to follow the whole year.",
+  "seasons_month_values": "Read monthly daylight values",
+  "seasons_table_dates": "15th of each month",
+  "seasons_table_month": "Month",
+  "seasons_model_summary": "Geometric daylight and solar noon are calculated for representative dates in local solar time.",
+  "seasons_model_details": "How these values are calculated",
+  "seasons_polar_day_help": "Sun stays above the horizon",
+  "seasons_polar_night_help": "Sun stays below the horizon"
+}

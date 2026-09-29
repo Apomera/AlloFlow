@@ -1,0 +1,1138 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "36-astronomy-constellations-skymap.spec.ts",
+      "file": "36-astronomy-constellations-skymap.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Astronomy constellation and Sky Map visuals - real Chromium",
+          "file": "36-astronomy-constellations-skymap.spec.ts",
+          "line": 168,
+          "column": 6,
+          "specs": [
+            {
+              "title": "constellation gallery has 15 accessible figures and a working selected detail",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 17139,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T18:06:33.332Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1060d1959b3cbb6e2656-dd6f7c46f26c689fdc6c",
+              "file": "36-astronomy-constellations-skymap.spec.ts",
+              "line": 173,
+              "column": 7
+            },
+            {
+              "title": "constellation cards and detail reflow without horizontal overflow at 320px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9704,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T18:06:51.722Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1060d1959b3cbb6e2656-9a743ec497bda45a0990",
+              "file": "36-astronomy-constellations-skymap.spec.ts",
+              "line": 209,
+              "column": 7
+            },
+            {
+              "title": "Sky Map layer controls, target halo, status, and diagram stay synchronized",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10367,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T18:07:01.464Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1060d1959b3cbb6e2656-a4149075722d8a32b3cd",
+              "file": "36-astronomy-constellations-skymap.spec.ts",
+              "line": 236,
+              "column": 7
+            },
+            {
+              "title": "Bortle preview stays synchronized between Sky Map and Observing",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4803,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T18:07:11.848Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1060d1959b3cbb6e2656-04e8f6e0b14e55643c21",
+              "file": "36-astronomy-constellations-skymap.spec.ts",
+              "line": 340,
+              "column": 7
+            },
+            {
+              "title": "Seasons Sun path updates for the shared observer and stays contained at 320px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7526,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T18:07:16.666Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1060d1959b3cbb6e2656-8c2ba63fceeac9b4939c",
+              "file": "36-astronomy-constellations-skymap.spec.ts",
+              "line": 375,
+              "column": 7
+            },
+            {
+              "title": "Sky Map controls and SVG reflow without horizontal overflow at 320px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7198,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T18:07:24.210Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1060d1959b3cbb6e2656-48bc6b65dd3a7fa5f2f9",
+              "file": "36-astronomy-constellations-skymap.spec.ts",
+              "line": 443,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "astronomy-observatory-3d.spec.ts",
+      "file": "astronomy-observatory-3d.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "observing workflow preserves the instant across clocks, places and both sky views",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14420,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:07:49.271Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-55dd215dd97664cd2a59",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 122,
+          "column": 5
+        },
+        {
+          "title": "observing workflow keeps valid sky while local time or coordinates are incomplete",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 36297,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:08:05.675Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-e40c7b7f2b6b0c3a45ed",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 154,
+          "column": 5
+        },
+        {
+          "title": "computes a real catalog sky from local assets for a fixed place and time",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 50094,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:08:41.995Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-3207e47a4fc57c293497",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 202,
+          "column": 5
+        },
+        {
+          "title": "thins the sky near the horizon by atmospheric extinction",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 96733,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:09:32.109Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-042facc24a28003aa150",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 226,
+          "column": 5
+        },
+        {
+          "title": "steps around the sky from the keyboard and identifies what it lands on",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12311,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:11:08.864Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-f90177e8d07986303f2e",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 250,
+          "column": 5
+        },
+        {
+          "title": "paints the observatory catalogue behind the flat sky map",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5871,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:11:21.199Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-1a113c5c3ee7a54cee26",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 283,
+          "column": 5
+        },
+        {
+          "title": "place, hemisphere, daylight and time steps change the computed sky",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 37743,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m\"2026-07-05T03:30:00.000Z\"\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m\"2026-07-05T03:30:00.000Z\"\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:316:26",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                      "column": 26,
+                      "line": 316
+                    },
+                    "snippet": "  314 |   await expect.poll(async () => (await debug(sky)).camera.yaw).toBe(0);\n  315 |   const sydney = await debug(sky);\n> 316 |   expect(sydney.utc).not.toBe(maine.utc);\n      |                          ^\n  317 |   expect(Math.abs(sydney.sun.alt - maine.sun.alt)).toBeGreaterThan(5);\n  318 |   await expect(page.locator('#astronomy-observatory-summary')).toContainText('Sydney, Australia');\n  319 |   await page.getByLabel('Observing site', { exact: true }).selectOption('portland');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                        "column": 26,
+                        "line": 316
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m\"2026-07-05T03:30:00.000Z\"\u001b[39m\n\n  314 |   await expect.poll(async () => (await debug(sky)).camera.yaw).toBe(0);\n  315 |   const sydney = await debug(sky);\n> 316 |   expect(sydney.utc).not.toBe(maine.utc);\n      |                          ^\n  317 |   expect(Math.abs(sydney.sun.alt - maine.sun.alt)).toBeGreaterThan(5);\n  318 |   await expect(page.locator('#astronomy-observatory-summary')).toContainText('Sydney, Australia');\n  319 |   await page.getByLabel('Observing site', { exact: true }).selectOption('portland');\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:316:26"
+                    },
+                    {
+                      "message": "Error: ENOENT: no such file or directory, open 'C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-results\\.playwright-artifacts-1\\06c7ec14b8e50a2bc8335faa854296cc.zip'"
+                    },
+                    {
+                      "message": "\u001b[31mTest timeout of 120000ms exceeded.\u001b[39m"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:11:27.084Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-results\\astronomy-observatory-3d-p-7a60a-eps-change-the-computed-sky-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-results\\astronomy-observatory-3d-p-7a60a-eps-change-the-computed-sky-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-results\\astronomy-observatory-3d-p-7a60a-eps-change-the-computed-sky-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                    "column": 26,
+                    "line": 316
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-7ed8260fbbd70ff1be65",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 309,
+          "column": 5
+        },
+        {
+          "title": "landscapes swap without leaking GPU resources and aurora appears only where the model allows",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 112100,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:15:40.304Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-6f2628d1d6a9d052a879",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 332,
+          "column": 5
+        },
+        {
+          "title": "shower layer places the radiant from real coordinates and only shows meteors when it is up",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 40879,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:17:39.961Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-197ddf1848da4063e254",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 357,
+          "column": 5
+        },
+        {
+          "title": "time-lapse advances inside the renderer and commits the reached time on pause",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 60934,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:18:20.863Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-e72bc1f9a29af6579f7f",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 378,
+          "column": 5
+        },
+        {
+          "title": "keyboard, pointer, find and layer controls work at 320px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10531,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:19:21.817Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-be2e3550ec54132829c2",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 402,
+          "column": 5
+        },
+        {
+          "title": "observing workflow commits and pauses time-lapse when leaving the section",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 41132,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\n\u001b[1mMatcher error\u001b[22m: \u001b[32mexpected\u001b[39m value must be a number or bigint\n\nExpected has type:  string\nExpected has value: \u001b[32m\"2026-07-05T04:28:59.520Z\"\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\n\u001b[1mMatcher error\u001b[22m: \u001b[32mexpected\u001b[39m value must be a number or bigint\n\nExpected has type:  string\nExpected has value: \u001b[32m\"2026-07-05T04:28:59.520Z\"\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:444:19",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                      "column": 19,
+                      "line": 444
+                    },
+                    "snippet": "  442 |   await page.getByLabel('Explore a section', { exact: true }).selectOption('skymap');\n  443 |   await expect.poll(() => page.evaluate(() => (window as any).__toolData.astronomy.obsPlaying)).toBe(false);\n> 444 |   const reached = await page.evaluate(() => (window as any).__toolData.astronomy.obsUtcMs);\n      |                   ^\n  445 |   expect(reached).toBeGreaterThanOrEqual(Date.parse(during.utc));\n  446 |   await page.getByLabel('Explore a section', { exact: true }).selectOption('observatory');\n  447 |   await expect.poll(async () => (await debug(sky)).ready).toBe(true);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                        "column": 19,
+                        "line": 444
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\n\u001b[1mMatcher error\u001b[22m: \u001b[32mexpected\u001b[39m value must be a number or bigint\n\nExpected has type:  string\nExpected has value: \u001b[32m\"2026-07-05T04:28:59.520Z\"\u001b[39m\n\n  442 |   await page.getByLabel('Explore a section', { exact: true }).selectOption('skymap');\n  443 |   await expect.poll(() => page.evaluate(() => (window as any).__toolData.astronomy.obsPlaying)).toBe(false);\n> 444 |   const reached = await page.evaluate(() => (window as any).__toolData.astronomy.obsUtcMs);\n      |                   ^\n  445 |   expect(reached).toBeGreaterThanOrEqual(Date.parse(during.utc));\n  446 |   await page.getByLabel('Explore a section', { exact: true }).selectOption('observatory');\n  447 |   await expect.poll(async () => (await debug(sky)).ready).toBe(true);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:444:19"
+                    },
+                    {
+                      "message": "Error: ENOENT: no such file or directory, open 'C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-results\\.playwright-artifacts-2\\f78efd93fe24579a1299fc2700efacce.zip'"
+                    },
+                    {
+                      "message": "\u001b[31mTest timeout of 120000ms exceeded.\u001b[39m"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:19:32.364Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-results\\astronomy-observatory-3d-o-f3c87-se-when-leaving-the-section-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-results\\astronomy-observatory-3d-o-f3c87-se-when-leaving-the-section-chromium\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-results\\astronomy-observatory-3d-o-f3c87-se-when-leaving-the-section-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-results\\astronomy-observatory-3d-o-f3c87-se-when-leaving-the-section-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                    "column": 19,
+                    "line": 444
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-e3127b9dfb8d17e49896",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 436,
+          "column": 5
+        },
+        {
+          "title": "falls back to built-in bright stars when the catalog asset is unavailable, and disposes on navigation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8729,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:22:52.983Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-32811cfb163428cccc90",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 452,
+          "column": 5
+        },
+        {
+          "title": "click-to-identify names a real star, guides and pole appear, deep-sky glows and the Moon surface load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9321,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:23:05.000Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-7854bd15bce431e55166",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 470,
+          "column": 5
+        },
+        {
+          "title": "jump buttons land on the computed sunset, and the Sky Map hands its place and time to the observatory",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 69819,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:23:14.339Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-c82a6543fe08ff9bd13a",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 510,
+          "column": 5
+        },
+        {
+          "title": "tour steps aim the camera, describe-view names what is in front of it, and picking a pattern star highlights its figure",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 162153,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:24:24.179Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-d898cfcad7e647a5387f",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 537,
+          "column": 5
+        },
+        {
+          "title": "deep time moves the real star field and withholds the solar system",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 22073,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:27:06.351Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-1a69fa3dcae0dc8e6ec1",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 573,
+          "column": 5
+        },
+        {
+          "title": "star trails draw computed arcs, lengthen with the span, and stay off in daylight",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 54018,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:27:28.454Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-56e4ed08a97f31aa5c82",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 617,
+          "column": 5
+        },
+        {
+          "title": "a star picked from the sky reaches the printed plan with its times",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14460,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:28:22.498Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-2c803dd6a8c103ba2fdf",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 643,
+          "column": 5
+        },
+        {
+          "title": "reduced motion keeps the scene still and disables time-lapse",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2593,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:28:36.978Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-51609014a027252a69be",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 674,
+          "column": 5
+        },
+        {
+          "title": "catalog finder selects the exact HIP star with the keyboard and refreshes its details",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4005,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:28:39.584Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-fb621a9499145c1f3e0e",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 687,
+          "column": 5
+        },
+        {
+          "title": "catalog finder explains hidden targets and stays inside a narrow mobile viewport",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5262,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T18:28:43.608Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-83324d7893bf6e3165fb",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 709,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-27T18:06:26.619Z",
+    "duration": 1368768.866,
+    "expected": 26,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

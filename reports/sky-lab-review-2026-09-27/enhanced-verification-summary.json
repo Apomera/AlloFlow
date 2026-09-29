@@ -1,0 +1,55 @@
+{
+  "date": "2026-09-27",
+  "unit": {
+    "verifiedCases": 383,
+    "fullRun": {
+      "passed": 380,
+      "failed": 1
+    },
+    "focusedRecheck": {
+      "passed": 1,
+      "reason": "Updated old numeric-input markup assertion for signed coordinate drafts"
+    },
+    "additionalCases": {
+      "customSeasons": 1,
+      "zoneBoundary": 1
+    }
+  },
+  "browser": {
+    "verifiedCases": 28,
+    "fullRun": {
+      "startTime": "2026-09-27T18:06:26.619Z",
+      "duration": 1368768.866,
+      "expected": 26,
+      "skipped": 0,
+      "unexpected": 2,
+      "flaky": 0
+    },
+    "focusedRecheck": {
+      "startTime": "2026-09-27T18:26:33.873Z",
+      "duration": 123526.219,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "resolvedExpectations": [
+      "place, hemisphere, daylight and time steps change the computed sky",
+      "observing workflow commits and pauses time-lapse when leaving the section"
+    ],
+    "unresolved": []
+  },
+  "visual": {
+    "viewports": [
+      1440,
+      390,
+      1180,
+      320
+    ],
+    "sectionJourney": 18,
+    "browserErrors": 0,
+    "horizontalOverflow": false,
+    "artifact": "enhanced-browser.json"
+  },
+  "sourcePublicMirrorIdentical": true
+}

@@ -1007,7 +1007,7 @@ describe('Observatory tab rendering', () => {
   it('shows the polar-day note instead of missing events, and ignores malformed picks', () => {
     const doc = new DOMParser().parseFromString(render({ obsSite: 'tromso', obsLive: false, obsDate: '2026-06-21', obsTime: '12:00', obsPicked: 'nonsense' }), 'text/html');
     expect(doc.body.textContent).toContain('Midnight sun');
-    expect(doc.body.textContent).toContain('Click a star, planet');
+    expect(doc.body.textContent).toContain('Select an object in the sky or finder');
     expect(doc.body.textContent).not.toContain('NaN');
   });
 

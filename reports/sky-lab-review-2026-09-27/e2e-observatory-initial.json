@@ -1,0 +1,1215 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/sky-lab-review-2026-09-27/e2e-observatory",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "astronomy-observatory-3d.spec.ts",
+      "file": "astronomy-observatory-3d.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "computes a real catalog sky from local assets for a fixed place and time",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13817,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T17:12:15.896Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-3207e47a4fc57c293497",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 145,
+          "column": 5
+        },
+        {
+          "title": "thins the sky near the horizon by atmospheric extinction",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11640,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T17:12:31.353Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-042facc24a28003aa150",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 169,
+          "column": 5
+        },
+        {
+          "title": "steps around the sky from the keyboard and identifies what it lands on",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8430,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T17:12:43.007Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-f90177e8d07986303f2e",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 193,
+          "column": 5
+        },
+        {
+          "title": "paints the observatory catalogue behind the flat sky map",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 81960,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m3\u001b[39m\n\nCall Log:\n- Timeout 60000ms exceeded while waiting on the predicate",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m3\u001b[39m\n\nCall Log:\n- Timeout 60000ms exceeded while waiting on the predicate\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:232:116",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                      "column": 116,
+                      "line": 232
+                    },
+                    "snippet": "  230 |   await page.evaluate(() => (window as any).__mount({ tab: 'skymap', skyLoc: 'portland', skyHourOffset: 6, bortleClass: 3 }));\n  231 |   const field = page.locator('[data-sky-layer=\"catalog-stars\"]');\n> 232 |   await expect.poll(async () => Number((await field.getAttribute('data-catalog-stars')) || 0), { timeout: 60000 }).toBeGreaterThan(200);\n      |                                                                                                                    ^\n  233 |   const dark = Number((await field.getAttribute('data-catalog-stars'))!);\n  234 |   expect(await field.locator('circle').count()).toBe(dark);\n  235 |   // A brighter sky admits fewer stars, on the same limiting magnitude the"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                        "column": 116,
+                        "line": 232
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m3\u001b[39m\n\nCall Log:\n- Timeout 60000ms exceeded while waiting on the predicate\n\n  230 |   await page.evaluate(() => (window as any).__mount({ tab: 'skymap', skyLoc: 'portland', skyHourOffset: 6, bortleClass: 3 }));\n  231 |   const field = page.locator('[data-sky-layer=\"catalog-stars\"]');\n> 232 |   await expect.poll(async () => Number((await field.getAttribute('data-catalog-stars')) || 0), { timeout: 60000 }).toBeGreaterThan(200);\n      |                                                                                                                    ^\n  233 |   const dark = Number((await field.getAttribute('data-catalog-stars'))!);\n  234 |   expect(await field.locator('circle').count()).toBe(dark);\n  235 |   // A brighter sky admits fewer stars, on the same limiting magnitude the\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:232:116"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T17:12:51.452Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-p-06ab6-gue-behind-the-flat-sky-map-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-p-06ab6-gue-behind-the-flat-sky-map-chromium\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-p-06ab6-gue-behind-the-flat-sky-map-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-p-06ab6-gue-behind-the-flat-sky-map-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-p-06ab6-gue-behind-the-flat-sky-map-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                    "column": 116,
+                    "line": 232
+                  }
+                },
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 64787,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m3\u001b[39m\n\nCall Log:\n- Timeout 60000ms exceeded while waiting on the predicate",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m3\u001b[39m\n\nCall Log:\n- Timeout 60000ms exceeded while waiting on the predicate\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:232:116",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                      "column": 116,
+                      "line": 232
+                    },
+                    "snippet": "  230 |   // Fix only Date; animation frames and asset-loading timers remain live.\n  231 |   await page.clock.setFixedTime(new Date('2026-07-04T21:30:00.000Z'));\n> 232 |   await page.goto(`${base}/__harness`);\n      |                                        ^\n  233 |   await page.evaluate(() => (window as any).__mount({ tab: 'skymap', skyLoc: 'portland', skyHourOffset: 6, bortleClass: 3 }));\n  234 |   const field = page.locator('[data-sky-layer=\"catalog-stars\"]');\n  235 |   await expect.poll(async () => Number((await field.getAttribute('data-catalog-stars')) || 0), { timeout: 60000 }).toBeGreaterThan(200);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                        "column": 116,
+                        "line": 232
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m3\u001b[39m\n\nCall Log:\n- Timeout 60000ms exceeded while waiting on the predicate\n\n  230 |   // Fix only Date; animation frames and asset-loading timers remain live.\n  231 |   await page.clock.setFixedTime(new Date('2026-07-04T21:30:00.000Z'));\n> 232 |   await page.goto(`${base}/__harness`);\n      |                                        ^\n  233 |   await page.evaluate(() => (window as any).__mount({ tab: 'skymap', skyLoc: 'portland', skyHourOffset: 6, bortleClass: 3 }));\n  234 |   const field = page.locator('[data-sky-layer=\"catalog-stars\"]');\n  235 |   await expect.poll(async () => Number((await field.getAttribute('data-catalog-stars')) || 0), { timeout: 60000 }).toBeGreaterThan(200);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:232:116"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 1,
+                  "startTime": "2026-09-27T17:14:34.763Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-p-06ab6-gue-behind-the-flat-sky-map-chromium-retry1\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-p-06ab6-gue-behind-the-flat-sky-map-chromium-retry1\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-p-06ab6-gue-behind-the-flat-sky-map-chromium-retry1\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-p-06ab6-gue-behind-the-flat-sky-map-chromium-retry1\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-p-06ab6-gue-behind-the-flat-sky-map-chromium-retry1\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                    "column": 116,
+                    "line": 232
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-1a113c5c3ee7a54cee26",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 226,
+          "column": 5
+        },
+        {
+          "title": "place, hemisphere, daylight and time steps change the computed sky",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8727,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T17:15:41.178Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-7ed8260fbbd70ff1be65",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 249,
+          "column": 5
+        },
+        {
+          "title": "landscapes swap without leaking GPU resources and aurora appears only where the model allows",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 27790,
+                  "error": {
+                    "message": "Error: page.screenshot: Clipped area is either empty or outside the resulting image\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n",
+                    "stack": "Error: page.screenshot: Clipped area is either empty or outside the resulting image\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:287:57",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                      "column": 57,
+                      "line": 287
+                    },
+                    "snippet": "  285 |     await page.getByLabel('Landscape (representative)', { exact: true }).selectOption(env);\n  286 |     await expect.poll(async () => (await debug(sky)).env).toContain(env);\n> 287 |     await expect(sky.locator('canvas')).toHaveCount(1);\n      |                                                        ^\n  288 |     const info = await debug(sky);\n  289 |     expect(info.geometries).toBeLessThanOrEqual(first.geometries + 6);\n  290 |     if (env === 'coast' || env === 'desert') await page.screenshot({ path: `scratch/observatory-${env}.png`, clip: (await sky.boundingBox())! });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                        "column": 57,
+                        "line": 287
+                      },
+                      "message": "Error: page.screenshot: Clipped area is either empty or outside the resulting image\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\n\n  285 |     await page.getByLabel('Landscape (representative)', { exact: true }).selectOption(env);\n  286 |     await expect.poll(async () => (await debug(sky)).env).toContain(env);\n> 287 |     await expect(sky.locator('canvas')).toHaveCount(1);\n      |                                                        ^\n  288 |     const info = await debug(sky);\n  289 |     expect(info.geometries).toBeLessThanOrEqual(first.geometries + 6);\n  290 |     if (env === 'coast' || env === 'desert') await page.screenshot({ path: `scratch/observatory-${env}.png`, clip: (await sky.boundingBox())! });\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:287:57"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T17:15:50.177Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-l-966f9-only-where-the-model-allows-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-l-966f9-only-where-the-model-allows-chromium\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-l-966f9-only-where-the-model-allows-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-l-966f9-only-where-the-model-allows-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-l-966f9-only-where-the-model-allows-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                    "column": 57,
+                    "line": 287
+                  }
+                },
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 26946,
+                  "error": {
+                    "message": "Error: page.screenshot: Clipped area is either empty or outside the resulting image\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n",
+                    "stack": "Error: page.screenshot: Clipped area is either empty or outside the resulting image\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:287:57",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                      "column": 57,
+                      "line": 287
+                    },
+                    "snippet": "  285 |     await page.getByLabel('Landscape (representative)', { exact: true }).selectOption(env);\n  286 |     await expect.poll(async () => (await debug(sky)).env).toContain(env);\n> 287 |     await expect(sky.locator('canvas')).toHaveCount(1);\n      |                                                        ^\n  288 |     const info = await debug(sky);\n  289 |     expect(info.geometries).toBeLessThanOrEqual(first.geometries + 6);\n  290 |     if (env === 'coast' || env === 'desert') await page.screenshot({ path: `scratch/observatory-${env}.png`, clip: (await sky.boundingBox())! });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                        "column": 57,
+                        "line": 287
+                      },
+                      "message": "Error: page.screenshot: Clipped area is either empty or outside the resulting image\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\n\n  285 |     await page.getByLabel('Landscape (representative)', { exact: true }).selectOption(env);\n  286 |     await expect.poll(async () => (await debug(sky)).env).toContain(env);\n> 287 |     await expect(sky.locator('canvas')).toHaveCount(1);\n      |                                                        ^\n  288 |     const info = await debug(sky);\n  289 |     expect(info.geometries).toBeLessThanOrEqual(first.geometries + 6);\n  290 |     if (env === 'coast' || env === 'desert') await page.screenshot({ path: `scratch/observatory-${env}.png`, clip: (await sky.boundingBox())! });\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:287:57"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 1,
+                  "startTime": "2026-09-27T17:16:23.869Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-l-966f9-only-where-the-model-allows-chromium-retry1\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-l-966f9-only-where-the-model-allows-chromium-retry1\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-l-966f9-only-where-the-model-allows-chromium-retry1\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-l-966f9-only-where-the-model-allows-chromium-retry1\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-l-966f9-only-where-the-model-allows-chromium-retry1\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                    "column": 57,
+                    "line": 287
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-6f2628d1d6a9d052a879",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 272,
+          "column": 5
+        },
+        {
+          "title": "shower layer places the radiant from real coordinates and only shows meteors when it is up",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8497,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T17:16:57.245Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-197ddf1848da4063e254",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 297,
+          "column": 5
+        },
+        {
+          "title": "time-lapse advances inside the renderer and commits the reached time on pause",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 65746,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m600000\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 60000ms exceeded while waiting on the predicate",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m600000\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 60000ms exceeded while waiting on the predicate\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:323:60",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                      "column": 60,
+                      "line": 323
+                    },
+                    "snippet": "  321 | test('time-lapse advances inside the renderer and commits the reached time on pause', async ({ page }) => {\n  322 |   const { sky, errors } = await mountObservatory(page, { ...EVENING, obsRate: '1h' });\n> 323 |   await expect.poll(async () => (await debug(sky)).catalog).toBeGreaterThan(8000);\n      |                                                            ^\n  324 |   const before = await debug(sky);\n  325 |   await page.getByRole('button', { name: 'Play time-lapse', exact: true }).click();\n  326 |   await expect.poll(async () => (await debug(sky)).playMs).toBeGreaterThan(600000);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                        "column": 60,
+                        "line": 323
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m600000\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 60000ms exceeded while waiting on the predicate\n\n  321 | test('time-lapse advances inside the renderer and commits the reached time on pause', async ({ page }) => {\n  322 |   const { sky, errors } = await mountObservatory(page, { ...EVENING, obsRate: '1h' });\n> 323 |   await expect.poll(async () => (await debug(sky)).catalog).toBeGreaterThan(8000);\n      |                                                            ^\n  324 |   const before = await debug(sky);\n  325 |   await page.getByRole('button', { name: 'Play time-lapse', exact: true }).click();\n  326 |   await expect.poll(async () => (await debug(sky)).playMs).toBeGreaterThan(600000);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:323:60"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T17:17:06.416Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-t-584b7-s-the-reached-time-on-pause-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-t-584b7-s-the-reached-time-on-pause-chromium\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-t-584b7-s-the-reached-time-on-pause-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-t-584b7-s-the-reached-time-on-pause-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-t-584b7-s-the-reached-time-on-pause-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                    "column": 60,
+                    "line": 323
+                  }
+                },
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 68942,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m600000\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 60000ms exceeded while waiting on the predicate",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m600000\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 60000ms exceeded while waiting on the predicate\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:323:60",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                      "column": 60,
+                      "line": 323
+                    },
+                    "snippet": "  321 | test('time-lapse advances inside the renderer and commits the reached time on pause', async ({ page }) => {\n  322 |   const { sky, errors } = await mountObservatory(page, { ...EVENING, obsRate: '1h' });\n> 323 |   await expect.poll(async () => (await debug(sky)).catalog).toBeGreaterThan(8000);\n      |                                                            ^\n  324 |   const before = await debug(sky);\n  325 |   await page.getByRole('button', { name: 'Play time-lapse', exact: true }).click();\n  326 |   await expect.poll(async () => (await debug(sky)).playMs).toBeGreaterThan(600000);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                        "column": 60,
+                        "line": 323
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m600000\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 60000ms exceeded while waiting on the predicate\n\n  321 | test('time-lapse advances inside the renderer and commits the reached time on pause', async ({ page }) => {\n  322 |   const { sky, errors } = await mountObservatory(page, { ...EVENING, obsRate: '1h' });\n> 323 |   await expect.poll(async () => (await debug(sky)).catalog).toBeGreaterThan(8000);\n      |                                                            ^\n  324 |   const before = await debug(sky);\n  325 |   await page.getByRole('button', { name: 'Play time-lapse', exact: true }).click();\n  326 |   await expect.poll(async () => (await debug(sky)).playMs).toBeGreaterThan(600000);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:323:60"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 1,
+                  "startTime": "2026-09-27T17:18:13.024Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-t-584b7-s-the-reached-time-on-pause-chromium-retry1\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-t-584b7-s-the-reached-time-on-pause-chromium-retry1\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-t-584b7-s-the-reached-time-on-pause-chromium-retry1\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-t-584b7-s-the-reached-time-on-pause-chromium-retry1\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-t-584b7-s-the-reached-time-on-pause-chromium-retry1\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                    "column": 60,
+                    "line": 323
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-e72bc1f9a29af6579f7f",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 318,
+          "column": 5
+        },
+        {
+          "title": "keyboard, pointer, find and layer controls work at 320px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10066,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T17:19:28.872Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-be2e3550ec54132829c2",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 340,
+          "column": 5
+        },
+        {
+          "title": "falls back to built-in bright stars when the catalog asset is unavailable, and disposes on navigation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3578,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T17:19:39.473Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-32811cfb163428cccc90",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 374,
+          "column": 5
+        },
+        {
+          "title": "click-to-identify names a real star, guides and pole appear, deep-sky glows and the Moon surface load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7820,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T17:19:43.064Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-7854bd15bce431e55166",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 392,
+          "column": 5
+        },
+        {
+          "title": "jump buttons land on the computed sunset, and the Sky Map hands its place and time to the observatory",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 3432,
+                  "error": {
+                    "message": "Error: page.screenshot: Clipped area is either empty or outside the resulting image\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n",
+                    "stack": "Error: page.screenshot: Clipped area is either empty or outside the resulting image\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:445:14",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                      "column": 14,
+                      "line": 445
+                    },
+                    "snippet": "  443 |   const atSunset = await debug(sky);\n  444 |   expect(atSunset.sun.alt).toBeGreaterThan(-1.5);\n> 445 |   expect(atSunset.sun.alt).toBeLessThan(0.3);\n      |              ^\n  446 |   // A Sun on the horizon is seen through tens of airmasses, and is drawn accordingly.\n  447 |   expect(atSunset.sunExt).toBeGreaterThan(2);\n  448 |   await sky.screenshot({ path: 'scratch/observatory-sunset.png' });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                        "column": 14,
+                        "line": 445
+                      },
+                      "message": "Error: page.screenshot: Clipped area is either empty or outside the resulting image\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\n\n  443 |   const atSunset = await debug(sky);\n  444 |   expect(atSunset.sun.alt).toBeGreaterThan(-1.5);\n> 445 |   expect(atSunset.sun.alt).toBeLessThan(0.3);\n      |              ^\n  446 |   // A Sun on the horizon is seen through tens of airmasses, and is drawn accordingly.\n  447 |   expect(atSunset.sunExt).toBeGreaterThan(2);\n  448 |   await sky.screenshot({ path: 'scratch/observatory-sunset.png' });\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:445:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T17:19:50.899Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-j-dc0a1-and-time-to-the-observatory-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-j-dc0a1-and-time-to-the-observatory-chromium\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-j-dc0a1-and-time-to-the-observatory-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-j-dc0a1-and-time-to-the-observatory-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-j-dc0a1-and-time-to-the-observatory-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                    "column": 14,
+                    "line": 445
+                  }
+                },
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 8928,
+                  "error": {
+                    "message": "Error: page.screenshot: Clipped area is either empty or outside the resulting image\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n",
+                    "stack": "Error: page.screenshot: Clipped area is either empty or outside the resulting image\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:445:14",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                      "column": 14,
+                      "line": 445
+                    },
+                    "snippet": "  443 |   const atSunset = await debug(sky);\n  444 |   expect(atSunset.sun.alt).toBeGreaterThan(-1.5);\n> 445 |   expect(atSunset.sun.alt).toBeLessThan(0.3);\n      |              ^\n  446 |   // A Sun on the horizon is seen through tens of airmasses, and is drawn accordingly.\n  447 |   expect(atSunset.sunExt).toBeGreaterThan(2);\n  448 |   await sky.screenshot({ path: 'scratch/observatory-sunset.png' });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                        "column": 14,
+                        "line": 445
+                      },
+                      "message": "Error: page.screenshot: Clipped area is either empty or outside the resulting image\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\n\n  443 |   const atSunset = await debug(sky);\n  444 |   expect(atSunset.sun.alt).toBeGreaterThan(-1.5);\n> 445 |   expect(atSunset.sun.alt).toBeLessThan(0.3);\n      |              ^\n  446 |   // A Sun on the horizon is seen through tens of airmasses, and is drawn accordingly.\n  447 |   expect(atSunset.sunExt).toBeGreaterThan(2);\n  448 |   await sky.screenshot({ path: 'scratch/observatory-sunset.png' });\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:445:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 1,
+                  "startTime": "2026-09-27T17:20:00.764Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-j-dc0a1-and-time-to-the-observatory-chromium-retry1\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-j-dc0a1-and-time-to-the-observatory-chromium-retry1\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-j-dc0a1-and-time-to-the-observatory-chromium-retry1\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-j-dc0a1-and-time-to-the-observatory-chromium-retry1\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-j-dc0a1-and-time-to-the-observatory-chromium-retry1\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                    "column": 14,
+                    "line": 445
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-c82a6543fe08ff9bd13a",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 432,
+          "column": 5
+        },
+        {
+          "title": "tour steps aim the camera, describe-view names what is in front of it, and picking a pattern star highlights its figure",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10830,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T17:20:28.228Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-d898cfcad7e647a5387f",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 459,
+          "column": 5
+        },
+        {
+          "title": "deep time moves the real star field and withholds the solar system",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 5963,
+                  "error": {
+                    "message": "Error: page.screenshot: Clipped area is either empty or outside the resulting image\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n",
+                    "stack": "Error: page.screenshot: Clipped area is either empty or outside the resulting image\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:528:14",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                      "column": 14,
+                      "line": 528
+                    },
+                    "snippet": "  526 |   expect(after.deepSky).toEqual([]);\n  527 |   // The Moon's glow is painted by the sky shader, so hiding the sprite is not enough.\n> 528 |   expect(before.skyMoonGlow).toBeGreaterThan(0);\n      |              ^\n  529 |   expect(after.skyMoonGlow).toBe(0);\n  530 |   expect(after.skySunAlt).toBe(-90);\n  531 |   await expect(page.getByText('Deep-time view')).toBeVisible();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                        "column": 14,
+                        "line": 528
+                      },
+                      "message": "Error: page.screenshot: Clipped area is either empty or outside the resulting image\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\n\n  526 |   expect(after.deepSky).toEqual([]);\n  527 |   // The Moon's glow is painted by the sky shader, so hiding the sprite is not enough.\n> 528 |   expect(before.skyMoonGlow).toBeGreaterThan(0);\n      |              ^\n  529 |   expect(after.skyMoonGlow).toBe(0);\n  530 |   expect(after.skySunAlt).toBe(-90);\n  531 |   await expect(page.getByText('Deep-time view')).toBeVisible();\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:528:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T17:20:40.008Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-d-61a0e--withholds-the-solar-system-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-d-61a0e--withholds-the-solar-system-chromium\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-d-61a0e--withholds-the-solar-system-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-d-61a0e--withholds-the-solar-system-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-d-61a0e--withholds-the-solar-system-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                    "column": 14,
+                    "line": 528
+                  }
+                },
+                {
+                  "workerIndex": 9,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 7141,
+                  "error": {
+                    "message": "Error: page.screenshot: Clipped area is either empty or outside the resulting image\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n",
+                    "stack": "Error: page.screenshot: Clipped area is either empty or outside the resulting image\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:528:14",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                      "column": 14,
+                      "line": 528
+                    },
+                    "snippet": "  526 |   expect(after.deepSky).toEqual([]);\n  527 |   // The Moon's glow is painted by the sky shader, so hiding the sprite is not enough.\n> 528 |   expect(before.skyMoonGlow).toBeGreaterThan(0);\n      |              ^\n  529 |   expect(after.skyMoonGlow).toBe(0);\n  530 |   expect(after.skySunAlt).toBe(-90);\n  531 |   await expect(page.getByText('Deep-time view')).toBeVisible();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                        "column": 14,
+                        "line": 528
+                      },
+                      "message": "Error: page.screenshot: Clipped area is either empty or outside the resulting image\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\n\n  526 |   expect(after.deepSky).toEqual([]);\n  527 |   // The Moon's glow is painted by the sky shader, so hiding the sprite is not enough.\n> 528 |   expect(before.skyMoonGlow).toBeGreaterThan(0);\n      |              ^\n  529 |   expect(after.skyMoonGlow).toBe(0);\n  530 |   expect(after.skySunAlt).toBe(-90);\n  531 |   await expect(page.getByText('Deep-time view')).toBeVisible();\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts:528:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 1,
+                  "startTime": "2026-09-27T17:20:47.508Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-d-61a0e--withholds-the-solar-system-chromium-retry1\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-d-61a0e--withholds-the-solar-system-chromium-retry1\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-d-61a0e--withholds-the-solar-system-chromium-retry1\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-d-61a0e--withholds-the-solar-system-chromium-retry1\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-review-2026-09-27\\e2e-observatory\\astronomy-observatory-3d-d-61a0e--withholds-the-solar-system-chromium-retry1\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-observatory-3d.spec.ts",
+                    "column": 14,
+                    "line": 528
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-1a69fa3dcae0dc8e6ec1",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 495,
+          "column": 5
+        },
+        {
+          "title": "star trails draw computed arcs, lengthen with the span, and stay off in daylight",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10385,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T17:20:57.684Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-56e4ed08a97f31aa5c82",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 539,
+          "column": 5
+        },
+        {
+          "title": "a star picked from the sky reaches the printed plan with its times",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4311,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T17:21:08.508Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-2c803dd6a8c103ba2fdf",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 565,
+          "column": 5
+        },
+        {
+          "title": "reduced motion keeps the scene still and disables time-lapse",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2602,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-27T17:21:12.831Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23831de5ca9b541d2426-51609014a027252a69be",
+          "file": "astronomy-observatory-3d.spec.ts",
+          "line": 596,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-27T17:12:12.299Z",
+    "duration": 544587.013,
+    "expected": 12,
+    "skipped": 0,
+    "unexpected": 5,
+    "flaky": 0
+  }
+}

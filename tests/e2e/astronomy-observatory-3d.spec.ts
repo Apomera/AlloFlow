@@ -119,6 +119,88 @@ const expect = baseExpect.configure({ timeout: 60000 });
 // A fixed Maine summer evening: dark enough for stars, Moon and Milky Way.
 const EVENING = { obsLive: false, obsDate: '2026-07-04', obsTime: '23:30' };
 
+test('night planning opens saved targets, compares their paths and jumps to the chosen sky', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const { sky, errors } = await mountObservatory(page, { obsSite: 'portland', obsLive: false, obsDate: '2026-12-21', obsTime: '22:00', obsTargets: [
+    { kind: 'star', name: 'Sirius', hip: 32349, ra: 101.287, dec: -16.716 },
+    { kind: 'star', name: 'Polaris', hip: 11767, ra: 37.954, dec: 89.264 }
+  ] });
+  await expect.poll(async () => (await debug(sky)).catalog).toBeGreaterThan(8000);
+  await page.getByRole('button', { name: 'View saved target: Polaris', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => (window as any).__toolData.astronomy.obsPicked?.hip)).toBe(11767);
+  const selected = page.locator('#astronomy-observatory-picked');
+  const order = await page.evaluate(() => ({ selected: document.querySelector('#astronomy-observatory-picked').getBoundingClientRect().top, time: document.querySelector('.astr-time-tools').getBoundingClientRect().top }));
+  expect(order.selected).toBeLessThan(order.time);
+  await page.getByRole('button', { name: 'Plan these targets', exact: true }).click();
+  const plan = page.getByRole('region', { name: 'Plan your night', exact: true });
+  await expect(plan).toBeVisible();
+  await expect(plan.locator('article')).toHaveCount(2);
+  await expect(plan.getByRole('img')).toHaveCount(2);
+  await plan.screenshot({ path: 'reports/sky-lab-enhancement-2026-09-28/night-plan-desktop.png' });
+  const expected = await page.evaluate(() => {
+    const p = (window as any).__alloAstroPure, state = (window as any).__toolData.astronomy, r = p.observatoryResolve(state);
+    return p.observatoryNightPlan(state.obsTargets, r.utcMs, r.lat, r.lon, r.timeZone).rows.find(row => row.target.hip === 32349).best.t;
+  });
+  await plan.getByRole('button', { name: /^Jump to this time: Sirius,/ }).click();
+  await expect.poll(() => page.evaluate(() => (window as any).__toolData.astronomy.obsUtcMs)).toBe(expected);
+  await expect.poll(() => page.evaluate(() => (window as any).__toolData.astronomy.obsPicked?.hip)).toBe(32349);
+  await expect(selected).toContainText('Sirius');
+  await expect(sky).toBeInViewport({ ratio: 0.5 });
+  await expect(sky).toBeFocused();
+  await page.setViewportSize({ width: 320, height: 740 });
+  await plan.scrollIntoViewIfNeeded();
+  await plan.screenshot({ path: 'reports/sky-lab-enhancement-2026-09-28/night-plan-phone.png' });
+  const altitude = await page.evaluate(() => (window as any).__toolData.astronomy.obsPicked.alt);
+  await page.getByLabel('Explore a section', { exact: true }).selectOption('tonight');
+  await page.getByLabel('Explore a section', { exact: true }).selectOption('observatory');
+  await expect.poll(async () => (await debug(sky)).ready).toBe(true);
+  await page.getByRole('button', { name: 'Shift time +1 h', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => (window as any).__toolData.astronomy.obsPicked?.alt)).not.toBe(altitude);
+  await expect(selected).toContainText('Sirius');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('NWS observing conditions are opt-in, time-specific and recover across site changes', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  let requests = 0;
+  const start = Math.floor(Date.now() / 3600000) * 3600000;
+  const grid = 'https://api.weather.gov/gridpoints/GYX/73,149';
+  await page.route('https://api.weather.gov/**', async route => {
+    requests++;
+    const point = route.request().url().includes('/points/');
+    await route.fulfill({ status: 200, contentType: 'application/geo+json', body: JSON.stringify(point
+      ? { geometry: { type: 'Point', coordinates: [-69.72, 45.58] }, properties: { gridId: 'GYX', gridX: 73, gridY: 149, forecastGridData: grid } }
+      : { id: grid, properties: { updateTime: new Date(start).toISOString(), validTimes: new Date(start).toISOString() + '/P2D', skyCover: { uom: 'wmoUnit:percent', values: [ { validTime: new Date(start).toISOString() + '/PT2H', value: 18 }, { validTime: new Date(start + 7200000).toISOString() + '/PT46H', value: 72 } ] } } }) });
+  });
+  const { errors } = await mountObservatory(page, { obsSite: 'moosehead', obsTz: 'UTC', obsLive: false, obsDate: new Date(start).toISOString().slice(0, 10), obsTime: new Date(start).toISOString().slice(11, 16) });
+  const weather = page.locator('.astr-weather-panel');
+  await weather.locator('summary').click();
+  expect(requests).toBe(0);
+  await weather.getByRole('button', { name: 'Check NWS cloud forecast', exact: true }).click();
+  await expect(weather).toContainText('18%');
+  expect(requests).toBe(2);
+  await expect(weather).toContainText('Cloud forecast for the selected simulation time');
+  await weather.screenshot({ path: 'reports/sky-lab-enhancement-2026-09-28/weather-phone.png' });
+  await page.getByRole('button', { name: 'Shift time +1 h', exact: true }).click();
+  await page.getByRole('button', { name: 'Shift time +1 h', exact: true }).click();
+  await expect(weather.locator('strong').first()).toHaveText('72%');
+  await page.getByLabel('Observing site', { exact: true }).selectOption('sydney');
+  await expect(weather).toContainText('outside that coverage');
+  await expect(weather.getByRole('button')).toHaveCount(0);
+  await expect(weather).not.toContainText('72%');
+  expect(requests).toBe(2);
+  await page.getByLabel('Observing site', { exact: true }).selectOption('moosehead');
+  await expect(weather).toContainText('72%');
+  await page.route('https://api.weather.gov/**', route => route.abort());
+  await weather.getByRole('button', { name: 'Refresh NWS cloud forecast', exact: true }).click();
+  await expect(weather).toContainText('could not be refreshed');
+  await expect(weather).toContainText('72%');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  expect(errors.filter(error => !error.includes('net::ERR_FAILED'))).toEqual([]);
+});
+
 test('observing workflow preserves the instant across clocks, places and both sky views', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const { errors } = await mountObservatory(page, { obsSite: 'portland', obsLive: false, obsDate: '2026-12-21', obsTime: '22:00', obsBortle: 2 });
@@ -397,6 +479,23 @@ test('time-lapse advances inside the renderer and commits the reached time on pa
   expect(after.playMs).toBe(0);
   expect(after.playing).toBe(false);
   await expect(page.locator('#astronomy-observatory-summary')).toContainText(`${state.obsDate} ${state.obsTime}`);
+  expect(errors).toEqual([]);
+});
+
+test('changing clock zone, site or stepping during playback preserves the reached instant', async ({ page }) => {
+  const { sky, errors } = await mountObservatory(page, { ...EVENING, obsRate: '1h' });
+  for (const action of ['zone', 'site', 'step']) {
+    await page.getByRole('button', { name: 'Play time-lapse', exact: true }).click();
+    await expect.poll(async () => (await debug(sky)).playMs).toBeGreaterThan(600000);
+    const before = Date.parse((await debug(sky)).utc);
+    if (action === 'zone') await page.getByLabel('Clock time zone', { exact: true }).selectOption('UTC');
+    if (action === 'site') await page.getByLabel('Observing site', { exact: true }).selectOption('sydney');
+    if (action === 'step') await page.getByRole('button', { name: 'Shift time +1 h', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__toolData.astronomy.obsPlaying)).toBe(false);
+    const reached = await page.evaluate(() => (window as any).__toolData.astronomy.obsUtcMs);
+    expect(reached).toBeGreaterThanOrEqual(before + (action === 'step' ? 3600000 : 0));
+    await expect.poll(async () => (await debug(sky)).utc).toBe(new Date(reached).toISOString());
+  }
   expect(errors).toEqual([]);
 });
 
