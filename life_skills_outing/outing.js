@@ -27,6 +27,7 @@
   var wardrobePreview = null;
   var wardrobeNames = { wear_ready: 'Clean, dry outfit', prepare_clothes: 'Outfit that needs drying' };
   var updateTopic = null, updateSnapshot = null;
+  var departureGuess = null, departureReview = null, departureVisited = false;
   var notes = Object.create(null), comparison = null, reviewRevision = null, importSerial = 0, lastSaveOk = false;
   var icons = { kitchen: '◒', wardrobe: '♧', entry: '▣', travel: '↗' };
   var supportNames = { guided: 'Guided', try: 'Try it', independent: 'Independent' };
@@ -94,6 +95,7 @@
     clearPacking(true);
     clearWardrobe(true);
     clearUpdate(true); updateSnapshot = null;
+    clearDeparture(true); departureVisited = false;
     exploredDeparture = null;
     byId('travelLab').open = false;
     text('travelLabStatus', '');
@@ -140,6 +142,7 @@
     clearPacking(true);
     clearWardrobe(true);
     clearUpdate(true);
+    clearDeparture(true);
     activeStation = id;
     selectedObject = null;
     renderActions();
@@ -153,12 +156,15 @@
     clearPacking(true);
     clearWardrobe(true);
     clearUpdate(true);
+    clearDeparture(true);
     selectedObject = id;
     activeStation = object.station;
+    if (id === 'route' && !latestView.completed) departureVisited = true;
     renderActions();
     if (id === 'bag' && !latestView.completed) byId('packingWorkbench').open = true;
     if (id === 'outfit' && !latestView.completed) byId('wardrobeWorkbench').open = true;
     if (id === 'forecast' && latestView.event && !latestView.completed) byId('updateWorkbench').open = true;
+    if (id === 'route' && !latestView.completed) byId('departureWorkbench').open = true;
     if (moveFocus) byId('stationActions').focus();
     announce(object.label + '. ' + object.status + '. ' + object.description);
   }
@@ -172,6 +178,7 @@
       clearPacking(false);
       clearWardrobe(false);
       clearUpdate(false);
+      clearDeparture(false);
       exploredDeparture = null;
       current = next;
       if (id === 'hint') shownHint = true;
@@ -218,6 +225,8 @@
     byId('openPacking').hidden = v.completed || (station.id !== 'kitchen' && station.id !== 'entry');
     byId('openWardrobe').hidden = v.completed || station.id !== 'wardrobe';
     byId('openUpdates').hidden = v.completed || station.id !== 'entry' || !v.event;
+    byId('openDeparture').hidden = v.completed || station.id !== 'travel' || selectedObject === 'route';
+    byId('backToDeparture').hidden = v.completed || !departureVisited || station.id === 'travel';
     byId('exploreTravel').hidden = station.id !== 'travel';
     text('stepTag', v.completed ? 'Practice complete' : 'Step ' + (current.commands.length + 1));
     var list = byId('actionList');
@@ -240,6 +249,7 @@
     renderPackingWorkbench();
     renderWardrobeWorkbench();
     renderUpdateWorkbench();
+    renderDepartureWorkbench();
     visibleActions.forEach(function (action) {
       var button = node('button', 'action-button');
       button.type = 'button';
@@ -527,6 +537,96 @@
   function openUpdateWorkbench() {
     if (!latestView.event || latestView.completed) return;
     selectObject('forecast', false); byId('updateTopics').querySelector('button').focus();
+  }
+  function clearDeparture(collapse) {
+    departureGuess = null; departureReview = null;
+    byId('departureResult').hidden = true; byId('departFromCheck').disabled = true;
+    text('departureStatus', '');
+    if (collapse) byId('departureWorkbench').open = false;
+  }
+  function departureAction() {
+    return latestView.stations.reduce(function (all, station) { return all.concat(station.actions); }, []).find(function (action) { return action.id === 'depart'; });
+  }
+  function departureMark(ready) {
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('class', 'departure-mark');
+    svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('focusable', 'false');
+    var path = document.createElementNS(svg.namespaceURI, 'path');
+    path.setAttribute('d', ready ? 'M4 12L9 17L20 6' : 'M21 12A9 9 0 1 1 3 12A9 9 0 1 1 21 12');
+    path.setAttribute('fill', 'none'); path.setAttribute('stroke', 'currentColor');
+    path.setAttribute('stroke-width', '2'); path.setAttribute('stroke-linecap', 'round'); path.setAttribute('stroke-linejoin', 'round');
+    svg.appendChild(path); return svg;
+  }
+  function renderDepartureWorkbench() {
+    var v = latestView, panel = byId('departureWorkbench');
+    panel.hidden = selectedObject !== 'route' || v.completed;
+    if (panel.hidden) return;
+    byId('departureGuesses').querySelectorAll('button').forEach(function (button) {
+      button.setAttribute('aria-pressed', String(button.dataset.departureGuess === departureGuess));
+    });
+    var fresh = departureReview && departureReview.revision === current.commands.length;
+    byId('departureResult').hidden = !fresh;
+    var depart = departureAction();
+    byId('departFromCheck').disabled = !fresh || !depart || depart.disabled;
+    if (!fresh) return;
+    var checks = v.objectives.filter(function (objective) { return objective.id !== 'depart'; });
+    text('departureResultTitle', checks.filter(function (check) { return check.complete; }).length + ' of ' + checks.length + ' preparation checks ready');
+    var estimate = {ready: 'You expected to be ready. Compare that with the checks below.', prepare: 'You expected more preparation. Look at what is ready and what needs another check.', unsure: 'You were unsure. Use the current details to decide what to do next.'};
+    text('departureEstimate', estimate[departureGuess] || 'Use these current details to decide what to do next.');
+    var list = byId('departureChecks'); list.replaceChildren();
+    checks.forEach(function (check) {
+      var objectId = {clothing:'outfit', water:'bottle', document:'card', weather:'forecast', travel:'route'}[check.id];
+      var object = v.objects.find(function (item) { return item.id === objectId; });
+      var detail = object.status;
+      if (check.id === 'weather') {
+        var packed = v.inventory.find(function (item) { return item.id === 'raincoat' || item.id === 'hat'; });
+        detail += '. ' + (packed ? packed.label + ' packed.' : 'No weather item packed.');
+        if (!v.event) detail += ' Wait for the forecast update as you prepare.';
+      } else if (check.id === 'travel' && v.travel) {
+        detail = v.travel.label + ' · arrival ' + v.travel.arrival + (v.travel.arrival === 'Unavailable' ? '.' : v.travel.onTime ? ' · by the 09:35 start.' : ' · after the 09:35 start.');
+      }
+      var row = node('li', 'departure-check' + (check.complete ? ' departure-ready' : '')); row.dataset.departureCheck = check.id;
+      var mark = departureMark(check.complete);
+      var copy = node('div', 'departure-check-copy');
+      copy.append(node('strong', '', check.label), node('span', 'departure-check-state', check.complete ? 'Ready' : 'To check'), node('p', '', detail));
+      var button = node('button', 'quiet-button', {clothing:'Review clothes', water:'Review water', document:'Review outing card', weather:'Review forecast and bag', travel:'Compare travel choices'}[check.id]);
+      button.type = 'button'; button.dataset.departureTarget = check.id;
+      button.addEventListener('click', function () { openDepartureTarget(check.id); });
+      copy.appendChild(button); row.append(mark, copy); list.appendChild(row);
+    });
+    text('departureNext', depart && !depart.disabled ? 'Your preparation is ready. Choose to leave when you are ready.' : 'Review a check above, prepare what you need, then recheck before leaving.');
+  }
+  function openDepartureWorkbench() {
+    if (latestView.completed) return;
+    selectObject('route', false);
+    byId('departureGuesses').querySelector('button').focus();
+  }
+  function checkDepartureReadiness() {
+    if (latestView.completed || selectedObject !== 'route') return;
+    departureReview = {revision: current.commands.length}; renderDepartureWorkbench();
+    byId('departureResultTitle').focus();
+    text('departureStatus', 'Current outing checked at ' + latestView.clock + '. Checking takes no practice time.');
+  }
+  function openDepartureTarget(id) {
+    if (latestView.completed || selectedObject !== 'route' || !departureReview || departureReview.revision !== current.commands.length) return;
+    if (id === 'clothing') openWardrobeWorkbench();
+    else if ((id === 'water' && latestView.scene.bottleFilled && !latestView.scene.bottlePacked) || (id === 'document' && !latestView.scene.documentPacked)) {
+      openPackingWorkbench();
+      byId('packingItems').querySelector('[data-pack-item="' + (id === 'water' ? 'bottle' : 'card') + '"]').focus();
+    } else if (id === 'weather' && latestView.event) {
+      openUpdateWorkbench(); updateTopic = 'weather'; renderUpdateWorkbench(); byId('updateTopicTitle').focus();
+    } else if (id === 'travel') {
+      selectStation('travel', false);
+      (byId('actionList').querySelector('button:not(:disabled)') || byId('stationActions')).focus();
+    } else {
+      selectObject({water:'bottle', document:'card', weather:'forecast'}[id], false);
+      (byId('actionList').querySelector('button:not(:disabled)') || byId('objectTitle')).focus();
+    }
+  }
+  function leaveFromDepartureCheck() {
+    var depart = departureAction();
+    if (latestView.completed || selectedObject !== 'route' || !departureReview || departureReview.revision !== current.commands.length || !depart || depart.disabled) return;
+    act('depart', 'departure');
   }
   function renderStory() {
     var entries = current.content || [];
@@ -844,6 +944,15 @@
     plane.dataset.canvasId = canvas.id;
     return plane;
   }
+  function sceneLabel(value, attrs, parent, style) {
+    var previous = byId(attrs.id);
+    if (previous && previous.dataset.noteText === value) return previous;
+    if (previous) {
+      var canvas = byId(previous.dataset.canvasId); if (canvas) canvas.remove(); previous.remove();
+    }
+    var plane = textPlane(value, attrs, parent, style); plane.dataset.noteText = value;
+    return plane;
+  }
   function stationGroup(id) {
     var group = entity('a-entity', { 'data-station': id });
     group.addEventListener('click', function () { selectStation(id, false); });
@@ -951,7 +1060,7 @@
     cylinder(2.06,1.48,-2.35,.15,.16,'#e1bd8b',hat,{rotation:'90 0 0',class:'pickable'});
     var forecast = entity('a-entity', {id:'forecastObject'}, entry);
     box(1.64,2.3,-2.48,1.32,.48,.06,'#fff6d8',forecast,{id:'forecastBoard'});
-    textPlane('Cloudy · update expected',{id:'forecastNote',position:'1.64 2.3 -2.435',width:1.22,height:.31},forecast).dataset.noteText='Cloudy · update expected';
+    sceneLabel('Cloudy · update expected',{id:'forecastNote',position:'1.64 2.3 -2.435',width:1.22,height:.31,class:'pickable'},forecast);
     textPlane('PACKING',{position:'1.62 .13 -.83',rotation:'-25 0 0'},entry);
     var travel=stationGroup('travel');
     box(3.17,1.3,-2.57,1.13,2.6,.2,'#f4ecda',travel);
@@ -960,6 +1069,7 @@
     box(.45,1.23,.03,.9,2.4,.09,'#719c89',hinge,{class:'pickable'});
     box(.45,1.46,.09,.62,1.53,.025,'#82ac98',hinge);
     entity('a-sphere',{position:'.77 1.17 .13',radius:.045,color:'#efd697'},hinge);
+    sceneLabel('Check before leaving',{id:'departureSign',position:'.45 2.12 .13',width:.8,height:.24,class:'pickable'},hinge,{background:'#fff6d8'});
     box(3.15,.045,-1.26,1.15,.03,.56,'#83957e',travel,{class:'pickable'});
     textPlane('HEAD OUT',{position:'3.12 .13 -.83',rotation:'-25 0 0',width:1.4},travel);
     [['bottleObject','bottle'],['shirtObject','outfit'],['clothesFolded','outfit'],['documentObject','card'],['packedDocument','card'],['forecastObject','forecast'],['weatherObject','raincoat'],['hatObject','hat'],['bagObject','bag'],['doorHinge','route']].forEach(function (pair) { attachObject(byId(pair[0]),pair[1]); });
@@ -1008,11 +1118,9 @@
     byId('rainDrops').setAttribute('visible',s.weather==='rain');
     byId('forecastBoard').setAttribute('color',latestView.event?'#e5c788':'#fff6d8');
     var noteText = s.busDelayed ? 'Rain · bus arrives 09:45' : s.weather === 'cloudy' ? 'Cloudy · update expected' : s.weather === 'rain' ? 'Updated forecast · rain' : 'Updated forecast · warm';
-    var notePlane = byId('forecastNote');
-    if (notePlane.dataset.noteText !== noteText) {
-      var noteCanvas = byId(notePlane.dataset.canvasId); if (noteCanvas) noteCanvas.remove(); notePlane.remove();
-      textPlane(noteText,{id:'forecastNote',position:'1.64 2.3 -2.435',width:1.22,height:.31,class:'pickable'},byId('forecastObject')).dataset.noteText=noteText;
-    }
+    sceneLabel(noteText,{id:'forecastNote',position:'1.64 2.3 -2.435',width:1.22,height:.31,class:'pickable'},byId('forecastObject'));
+    var depart = departureAction(), ready = depart && !depart.disabled;
+    sceneLabel(s.departed ? 'Outing complete' : ready ? 'Ready to leave' : 'Check before leaving',{id:'departureSign',position:'.45 2.12 .13',width:.8,height:.24,class:'pickable'},byId('doorHinge'),{background:ready || s.departed ? '#e4eedc' : '#fff6d8'});
     byId('doorHinge').setAttribute('rotation',s.departed?'0 -65 0':'0 0 0');
     byId('bagObject').setAttribute('visible',!s.departed);
     if(s.departed)text('sceneCaption','Ready to head out · reflect on your choices below.');
@@ -1047,6 +1155,17 @@
   byId('openWardrobe').addEventListener('click', openWardrobeWorkbench);
   byId('reviewUpdate').addEventListener('click', openUpdateWorkbench);
   byId('openUpdates').addEventListener('click', openUpdateWorkbench);
+  byId('openDeparture').addEventListener('click', openDepartureWorkbench);
+  byId('backToDeparture').addEventListener('click', function () { openDepartureWorkbench(); checkDepartureReadiness(); });
+  byId('departureGuesses').querySelectorAll('button').forEach(function (button) {
+    button.addEventListener('click', function () {
+      if (latestView.completed || selectedObject !== 'route') return;
+      clearDeparture(false); departureGuess = button.dataset.departureGuess; renderDepartureWorkbench();
+      byId('checkDeparture').focus();
+    });
+  });
+  byId('checkDeparture').addEventListener('click', checkDepartureReadiness);
+  byId('departFromCheck').addEventListener('click', leaveFromDepartureCheck);
   byId('readUpdateNote').addEventListener('click', function () {
     if (!latestView.event || latestView.completed || selectedObject !== 'forecast' || byId('readUpdateNote').disabled) return;
     act('inspect_forecast', 'update');

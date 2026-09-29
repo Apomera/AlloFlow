@@ -53,6 +53,116 @@ async function openBackup(h, source) {
 }
 
 describe('Life Skills outing interaction', () => {
+  it('opens the departure check from the 3D door and keeps estimates separate from practice actions', () => {
+    let calls = 0; const h = mount({provider: () => { calls++; return Promise.resolve({text:'Hello.',status:'generated'}); }});
+    const saved = h.save(); h.$('#departureSign').dispatchEvent(new h.w.MouseEvent('click', {bubbles:true}));
+    expect(h.$('#departureWorkbench').hidden).toBe(false); expect(h.$('#departureWorkbench').open).toBe(true);
+    h.$('[data-departure-guess="ready"]').click(); expect(h.w.document.activeElement.id).toBe('checkDeparture');
+    h.$('#checkDeparture').click(); expect(h.w.document.activeElement.id).toBe('departureResultTitle');
+    expect(h.$('#departureResultTitle').textContent).toBe('0 of 5 preparation checks ready');
+    expect(h.$('#departureEstimate').textContent).toContain('You expected to be ready');
+    expect(h.$('#departureChecks').textContent).toContain('Wait for the forecast update');
+    expect(h.$('#departureChecks').textContent).not.toMatch(/Updated: rain|warm sunshine|09:45/);
+    expect(h.$('#departFromCheck').disabled).toBe(true); expect(h.$('#departureSign').dataset.noteText).toBe('Check before leaving');
+    h.$('#departFromCheck').dispatchEvent(new h.w.MouseEvent('click', {bubbles:true}));
+    expect(h.save()).toEqual(saved); expect(h.$('#clock').textContent).toBe('09:00'); expect(calls).toBe(0);
+    expect(h.E.view(h.run()).observations).toEqual([]);
+    h.$('[data-departure-guess="unsure"]').click(); expect(h.$('#departureResult').hidden).toBe(true);
+    h.$('#checkDeparture').click(); expect(h.$('#departureEstimate').textContent).toContain('You were unsure');
+    expect(h.save()).toEqual(saved);
+  });
+  it.each([['community','guided','rain','raincoat'],['work','independent','warm','hat'],['work','try','bus-delay','raincoat']])('prepares a %s outing with %s support through departure repair links', (context, support, variation, weatherItem) => {
+    const h = mount(); h.$('#contextSelect').value=context; h.$('#supportSelect').value=support; h.$('#scenarioSelect').value=variation;
+    h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
+    h.station('Travel'); h.$('#openDeparture').click(); h.$('#checkDeparture').click();
+    h.$('[data-departure-target="clothing"]').click(); expect(h.w.document.activeElement.dataset.outfit).toBe('wear_ready');
+    h.$('[data-outfit="wear_ready"]').click(); h.$('#prepareOutfit').click();
+    h.$('#backToDeparture').click(); expect(h.$('#departureResultTitle').textContent).toBe('1 of 5 preparation checks ready');
+    h.$('[data-departure-target="water"]').click(); expect(h.w.document.activeElement.dataset.action).toBe('fill_water'); h.act('fill_water');
+    h.$('#backToDeparture').click(); h.$('[data-departure-target="water"]').click(); expect(h.w.document.activeElement.dataset.packItem).toBe('bottle');
+    h.$('[data-pack-item="bottle"]').click(); h.$('#packingPlace').click();
+    h.$('#backToDeparture').click(); h.$('[data-departure-target="document"]').click(); expect(h.w.document.activeElement.dataset.packItem).toBe('card');
+    h.$('[data-pack-item="card"]').click(); h.$('#packingPlace').click();
+    h.$('#backToDeparture').click(); h.$('[data-departure-target="weather"]').click(); expect(h.w.document.activeElement.id).toBe('updateTopicTitle');
+    expect(h.$('#updateTopicTitle').textContent).toBe('Weather and your bag');
+    h.$('#updateTopicAction').click(); h.$('[data-pack-item="'+weatherItem+'"]').click(); h.$('#packingPlace').click();
+    h.$('#backToDeparture').click(); h.$('[data-departure-target="travel"]').click(); expect(h.w.document.activeElement.dataset.action).toBe('choose_walk');
+    h.act('choose_walk'); expect(h.$('#departureSign').dataset.noteText).toBe('Ready to leave');
+    h.$('#openDeparture').click(); h.$('[data-departure-guess="prepare"]').click(); h.$('#checkDeparture').click();
+    expect(h.$('#departureResultTitle').textContent).toBe('5 of 5 preparation checks ready');
+    expect(h.$('#departureEstimate').textContent).toContain('You expected more preparation'); expect(h.$('#departFromCheck').disabled).toBe(false);
+    const before = h.run(), observations = h.E.view(before).observations;
+    h.$('#departFromCheck').focus(); h.$('#departFromCheck').click();
+    expect(h.run().commands.length).toBe(before.commands.length+1); expect(h.run().commands.at(-1).actionId).toBe('depart');
+    expect(h.E.view(h.run()).completed).toBe(true); expect(h.w.document.activeElement.id).toBe('debriefTitle');
+    expect(h.$('#departureSign').dataset.noteText).toBe('Outing complete');
+    expect(h.$('#departureWorkbench').hidden).toBe(true); expect(h.$('#backToDeparture').hidden).toBe(true);
+    expect(h.E.materialize(h.run()).hints).toBe(0); expect(h.E.view(h.run()).observations.slice(0,observations.length)).toEqual(observations);
+    const completeSave=h.save(); h.$('#checkDeparture').click(); h.$('#backToDeparture').click();
+    h.$('#departFromCheck').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true})); expect(h.save()).toEqual(completeSave);
+  });
+  it('reviews packed objects and the starting forecast without adding evidence or taking actions', () => {
+    const h=mount(); h.station('Doorway'); h.act('pack_document'); h.station('Travel'); h.$('#openDeparture').click(); h.$('#checkDeparture').click();
+    const saved=h.save(); h.$('[data-departure-target="document"]').click(); expect(h.w.document.activeElement.id).toBe('objectTitle');
+    h.$('#backToDeparture').click(); h.$('[data-departure-target="weather"]').click(); expect(h.w.document.activeElement.dataset.action).toBe('inspect_forecast');
+    expect(h.$('#updateWorkbench').hidden).toBe(true); expect(h.save()).toEqual(saved);
+    h.station('Kitchen'); h.act('fill_water'); h.act('pack_water');
+    h.$('#backToDeparture').click(); const packedSave=h.save(); h.$('[data-departure-target="water"]').click();
+    expect(h.w.document.activeElement.id).toBe('objectTitle'); expect(h.$('#objectStatus').textContent).toBe('Filled and packed');
+    expect(h.save()).toEqual(packedSave);
+  });
+  it('uses current weather and arrival rules to block departure and supports deliberate repairs', () => {
+    const h=mount(); h.$('#scenarioSelect').value='bus-delay'; h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
+    h.station('Travel'); h.act('choose_bus'); h.station('Doorway'); h.act('pack_hat'); h.act('pack_document');
+    h.station('Kitchen'); h.act('fill_water'); h.act('pack_water'); h.station('Wardrobe'); h.act('wear_ready');
+    h.station('Travel'); h.$('#openDeparture').click(); h.$('#checkDeparture').click();
+    expect(h.$('#departureResultTitle').textContent).toBe('3 of 5 preparation checks ready');
+    expect(h.$('[data-departure-check="weather"]').textContent).toContain('Updated: rain. Sun hat packed');
+    expect(h.$('[data-departure-check="travel"]').textContent).toContain('09:45 · after the 09:35 start');
+    expect(h.$('#departFromCheck').disabled).toBe(true);
+    h.$('[data-departure-target="weather"]').click(); h.$('#updateTopicAction').click(); h.$('[data-pack-item="raincoat"]').click(); h.$('#packingPlace').click();
+    h.$('#backToDeparture').click(); expect(h.$('#departureResultTitle').textContent).toBe('4 of 5 preparation checks ready');
+    h.$('[data-departure-target="travel"]').click(); h.act('choose_late_bus'); h.$('#openDeparture').click(); h.$('#checkDeparture').click();
+    expect(h.$('#departFromCheck').disabled).toBe(true); expect(h.$('[data-departure-check="travel"]').textContent).toContain('09:50');
+    h.$('[data-departure-target="travel"]').click(); h.act('choose_ride'); h.$('#openDeparture').click(); h.$('#checkDeparture').click();
+    expect(h.$('#departFromCheck').disabled).toBe(false); expect(h.$('#departureSign').dataset.noteText).toBe('Ready to leave');
+    expect(h.E.view(h.run()).completed).toBe(false);
+  });
+  it('invalidates departure checks after actual actions, hints, navigation and starting another practice', () => {
+    const h=mount(); h.station('Wardrobe'); h.act('wear_ready'); h.station('Kitchen'); h.act('fill_water'); h.act('pack_water');
+    h.station('Doorway'); h.act('pack_document'); h.act('pack_raincoat'); h.station('Travel'); h.act('choose_bus');
+    h.$('#openDeparture').click(); h.$('#checkDeparture').click(); const leave=h.$('#departFromCheck'); expect(leave.disabled).toBe(false);
+    h.act('choose_walk','scene'); expect(h.$('#departureResult').hidden).toBe(true); expect(leave.disabled).toBe(true);
+    const changed=h.save(); leave.dispatchEvent(new h.w.MouseEvent('click',{bubbles:true})); expect(h.save()).toEqual(changed);
+    h.$('#checkDeparture').click(); h.$('#hintButton').click(); expect(h.$('#departureResult').hidden).toBe(true);
+    h.$('#checkDeparture').click(); h.station('Kitchen'); expect(h.$('#departureWorkbench').open).toBe(false);
+    const navigated=h.save(); leave.dispatchEvent(new h.w.MouseEvent('click',{bubbles:true})); expect(h.save()).toEqual(navigated);
+    h.$('#backToDeparture').click(); expect(h.$('#departureResultTitle').textContent).toBe('5 of 5 preparation checks ready');
+    h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true})); expect(h.$('#backToDeparture').hidden).toBe(true); expect(leave.disabled).toBe(true);
+    h.station('Travel'); h.$('#openDeparture').click(); expect(h.$('#departureResult').hidden).toBe(true);
+    expect(h.$('[data-departure-guess="ready"]').getAttribute('aria-pressed')).toBe('false');
+  });
+  it('restores current readiness without persisting estimates or departure review state', () => {
+    const h=mount(); h.station('Travel'); h.$('#openDeparture').click(); h.$('[data-departure-guess="ready"]').click(); h.$('#checkDeparture').click();
+    const saved=h.save(); const resumed=mount({saved,noScene:true}); resumed.station('Travel'); resumed.$('#openDeparture').click();
+    expect(resumed.$('#departureResult').hidden).toBe(true); expect(resumed.$('[data-departure-guess="ready"]').getAttribute('aria-pressed')).toBe('false');
+    resumed.$('#checkDeparture').click(); expect(resumed.$('#departureResultTitle').textContent).toBe('0 of 5 preparation checks ready');
+    const unavailable=mount({noScene:true,noStorage:true}); unavailable.station('Travel'); unavailable.$('#openDeparture').click(); unavailable.$('#checkDeparture').click();
+    expect(unavailable.$('#departureResultTitle').textContent).toBe('0 of 5 preparation checks ready'); expect(unavailable.$('#departFromCheck').disabled).toBe(true);
+    unavailable.$('[data-departure-target="water"]').click(); unavailable.act('fill_water'); unavailable.$('#backToDeparture').click();
+    expect(unavailable.$('[data-departure-check="water"]').textContent).toContain('Filled · on the counter');
+  });
+  it('checks and leaves a legacy practice with its original travel choices and recorded preparation', () => {
+    const first=mount(), legacy=first.run(); legacy.manifestVersion=1;
+    const key=first.E.saveKey(legacy), h=mount({saved:[[key,JSON.stringify(legacy)],[activeKey,key]],noScene:true});
+    h.station('Wardrobe'); h.act('wear_ready'); h.station('Kitchen'); h.act('fill_water'); h.act('pack_water');
+    h.station('Doorway'); h.act('pack_document'); h.act('pack_raincoat'); h.station('Travel'); h.act('choose_bus');
+    h.$('#openDeparture').click(); h.$('#checkDeparture').click(); expect(h.$('#departFromCheck').disabled).toBe(false);
+    h.$('[data-departure-target="travel"]').click(); expect(h.$('[data-action="choose_ride"]')).toBe(null);
+    h.$('#openDeparture').click(); h.$('#checkDeparture').click(); h.$('#departFromCheck').click();
+    expect(h.run().manifestVersion).toBe(1); expect(h.E.view(h.run()).completed).toBe(true);
+    expect(h.E.view(h.run()).observations.filter(o=>o.skill==='Checking information')).toEqual([]);
+  });
   it('keeps the update board unavailable until a change is received and reconstructs its original time', () => {
     const h = mount(); h.$('#scenarioSelect').value = 'bus-delay';
     h.$('#settingsForm').dispatchEvent(new h.w.Event('submit', { cancelable: true }));
