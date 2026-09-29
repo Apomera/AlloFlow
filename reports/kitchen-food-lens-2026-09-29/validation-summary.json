@@ -1,0 +1,357 @@
+{
+  "enhancement": "Interactive food lens and temporary observation comparisons",
+  "validatedAt": "2026-09-29T23:28:38.194Z",
+  "unitTests": {
+    "suites": 29,
+    "tests": 326,
+    "passed": 326,
+    "command": "npx vitest run tests/kitchen_recipe --pool=forks --maxWorkers=1 --testTimeout=30000",
+    "seconds": 127.65,
+    "finalLensRerun": {
+      "suites": 1,
+      "passed": 12
+    }
+  },
+  "browser": {
+    "foodLens": {
+      "checks": [
+        "A real pointer drag scans multiple food pieces and magnifies the actual 3D canvas. Release selects the view without cooking actions, time or evidence.",
+        "Escape cancels the lens overlay and leaves the cook unchanged.",
+        "Grabbing the lens pauses a running kitchen for an observation.",
+        "Keyboard selection and keeping a view pause the kitchen. Real turning and time advancement update only the current observation; the kept view remains intact.",
+        "Cut labels distinguish unequal widths; sketches show the recorded upward face. Text view offers the same observations and comparisons without changing the cook.",
+        "A fresh cook clears kept observations and disables the lens until food is in the pan.",
+        "Replay observes its historical pan frame, allows comparisons within that recording, and never reads the final dish as an earlier observation or alters stored evidence.",
+        "Real touch scans pieces at 390px, shows the magnifier, and leaves the cook unchanged with no horizontal overflow.",
+        "The lens fits 320px and forced colors. Graphics loss cancels an active lens and retains working observation controls."
+      ],
+      "errors": [],
+      "accessibility": [
+        {
+          "name": "Desktop food lens",
+          "violations": []
+        },
+        {
+          "name": "Text view food comparisons",
+          "violations": []
+        },
+        {
+          "name": "Recorded food observation",
+          "violations": []
+        },
+        {
+          "name": "320px food lens",
+          "violations": []
+        },
+        {
+          "name": "Forced-color observations",
+          "violations": []
+        }
+      ],
+      "pass": true
+    },
+    "burnerRegression": {
+      "checks": [
+        "Real circular turns independently set pot and pan heat only on release; preview changes no time, temperature, or evidence.",
+        "Escape and pointer cancellation restore the recorded dial positions without applying preview heat.",
+        "Recorded settings and scene-dial provenance survive reload. Keyboard equivalents focus the real burner controls and apply the same engine values.",
+        "Switching the pot off preserves its measured residual temperature and simulated time.",
+        "Heat quests open the physical dials. Grabbing a dial pauses a running kitchen throughout the preview.",
+        "Finished cooks and replay lock cooking tools and show recorded heat without changing evidence.",
+        "Real touch rotates a dial at 390px, records only on release, and cancels without applying a setting.",
+        "The close-up fits 320px. Graphics loss cancels the active preview and retains working text controls; accessibility scans include forced colors."
+      ],
+      "errors": [],
+      "accessibility": [
+        {
+          "name": "Physical dial preview",
+          "violations": []
+        },
+        {
+          "name": "320px burner controls",
+          "violations": []
+        },
+        {
+          "name": "Forced-color burner equivalents",
+          "violations": []
+        },
+        {
+          "name": "Graphics-loss text controls",
+          "violations": []
+        }
+      ],
+      "pass": true
+    },
+    "preparedFoodRegression": {
+      "checks": [
+        "Real masher gestures leave firm wedges intact, split softened wedges, then flatten them into pulp. Only the selected piece changes; its finite juice and saved texture survive reload.",
+        "Turning a mushroom slice reveals its recorded browned face without advancing time or changing the other pieces."
+      ],
+      "errors": [],
+      "screenshots": [
+        "tomato-prepared-wedges.png",
+        "tomato-softened-wedges.png",
+        "tomato-piece-split.png",
+        "tomato-piece-crushed.png",
+        "tomato-crushed-after-reload.png",
+        "mushrooms-before-turning.png",
+        "mushrooms-turned-cut-face.png"
+      ],
+      "pass": true
+    }
+  },
+  "runtime": [
+    {
+      "file": "recipe_lab.css",
+      "sha256": "e84032f57bd765b3172dc08cf1e744af9d19311cbde46242ad9350ddfad28f8d",
+      "bytes": 23040,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab.html",
+      "sha256": "ba325b0eb345fbbfb401e4f5168d766fa33b17b8a1f0432e7392abbcbaf1f8a6",
+      "bytes": 30634,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab.js",
+      "sha256": "819115c260e4f19c79c1ee3d58af9f706f54b5286ecb11dfab27512cc78bfbb3",
+      "bytes": 108335,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_burners.js",
+      "sha256": "fc13e8382c8c1940db07f38840f8792a9a6e8ec34b5edf346bfb4847a674a5da",
+      "bytes": 4950,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_clock.js",
+      "sha256": "f0af8135f141588689bcc6d004db730994fa9f15e5a70ecb1e7d8d593a10a743",
+      "bytes": 1233,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_compare.js",
+      "sha256": "ffd184c76d0706e94a043bd27e31547951afa692146775fcdac1f8bafe6d65f8",
+      "bytes": 3046,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_compare_ui.js",
+      "sha256": "c9bebada0dc61b890323d9d76d8a738dc6e9a29a8bba40403198be7b5f3b4e31",
+      "bytes": 10712,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_cooking.js",
+      "sha256": "ddd3474366e83027d52031921b23dd7c43db4315d4cd0444ba856723cdd9dfdb",
+      "bytes": 8365,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_crushing.js",
+      "sha256": "e9aa848a97107a6cb80193d372ec34f5149a4ee8fed5e874f3c1bfd8f82e086c",
+      "bytes": 9476,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_drying.js",
+      "sha256": "69618c1a37706e230118826bb13b0dece8e5de894cd28ff531e388a470d289f1",
+      "bytes": 11637,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_engine.js",
+      "sha256": "dd30cdcb6226ae898100b48e941ec48eb090c5fdc5874b7051ff44f8b7fe1ca9",
+      "bytes": 60310,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_food.js",
+      "sha256": "70281a410adc72e7100249308db367d9335c397a7023679fa0fc0892c7dceac9",
+      "bytes": 6604,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_garlic.js",
+      "sha256": "9a81e36b0bad51d7cd39dce7dd31f914ec703767311961ed8d173e0d59c66657",
+      "bytes": 8710,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_gesture_guide.js",
+      "sha256": "fa9d0272918a363f364729b578eba9d4dcf93b7b2e7b7d22528f028e931c6b21",
+      "bytes": 9088,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_hands.css",
+      "sha256": "6e30f8509cf331c3cc17d0712457255cae159d769056e778a5105ef3ed18530a",
+      "bytes": 16230,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_hands.js",
+      "sha256": "b115f419aca66fa35181e1819a9ede342e16f9b01ed39e61067a7aa10e62b679",
+      "bytes": 2105,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_hands_ui.js",
+      "sha256": "a890c318c4c80636df5d398a0ec815aac60c4678494ceb8f180d3c837526cdb3",
+      "bytes": 20399,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_heat.js",
+      "sha256": "d9e25766b4c2005c7dfb99f12b8cf8512ae3bfd117decbd064a9b5646cbcff88",
+      "bytes": 6432,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_ingredients.css",
+      "sha256": "58885e362ce048284bca0779a269051d252143703664e4222f2564d94f955667",
+      "bytes": 3627,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_ingredients.js",
+      "sha256": "38072431b6394b6cc921a8a4fb7f6f358239de48ff06fda7c7a6cbc4d8277f83",
+      "bytes": 15053,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_inspection.css",
+      "sha256": "2a9194923e65353c885d66a3b0802f07cf451b160306ee83cb6ac92bdfdc17c6",
+      "bytes": 1505,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_inspection.js",
+      "sha256": "ac6485ff8acd368f8956d3603821d10b119a423f378023b2e07a8207781c5a05",
+      "bytes": 13063,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_lens.css",
+      "sha256": "99116e5413f581a769e328c6a0a6e158a2fc7b01a7366cca7a373ab040a654d0",
+      "bytes": 3239,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_lens.js",
+      "sha256": "56487cb6924c5cdc696b52fd36ff05833296ae390c269c336f78523c64872a43",
+      "bytes": 11612,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_pasta.js",
+      "sha256": "12a42b94b7df3de4ca1cece5edb94e5de2de33267447fa1ae9d0f2cdec30d989",
+      "bytes": 9684,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_quests.css",
+      "sha256": "ac5ffaa0fb7cf040b3a8464852ce8673fa76308ab9292ef3d11ef1deb871e615",
+      "bytes": 3157,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_quests.js",
+      "sha256": "82328b1bdf687d9c22955a10b9090066f0da7aeb27879fa73859b39a66f61f22",
+      "bytes": 11299,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_scene.js",
+      "sha256": "e58ee67a9abb2f45ffe56b7297fb1542f73365545847b4f526558c09c254e39f",
+      "bytes": 43288,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_serving.js",
+      "sha256": "c1ed67739ac6e2bdb0d1eb4e8691d4e30f4261d7fdedf52247db042e0e518be0",
+      "bytes": 10665,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_stir.js",
+      "sha256": "4cbcd9c8a3607c2df59ee53e88563134f5bc774ba4a8dc7e045283ce44d9c1dc",
+      "bytes": 763,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_visuals.js",
+      "sha256": "a6d95bc086c3d3b1c5989bdc184e6e3459645e56f5988ad915b7199575ae3cf1",
+      "bytes": 8514,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_water.js",
+      "sha256": "d41a20e3c9a9244923e4481466d688a7e29ba4522eb134742ace9638fe4fbd52",
+      "bytes": 14174,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_weighing.js",
+      "sha256": "e91f7a0f3a05b902bbff162a4f82688dccc48df9a8104ea12ca29c7ad3da5ce4",
+      "bytes": 11343,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_workspace.css",
+      "sha256": "84303d8d5e26f8ab8557f1364ada06c6f9afa602e590e184b7bbc3b4cb42e4c6",
+      "bytes": 14313,
+      "mirrorMatches": true
+    },
+    {
+      "file": "recipe_lab_workspace.js",
+      "sha256": "2a0247dcefe3d5b0d7a899cbf5e24d1f4b34440012a086bdf18a3ee26e40770e",
+      "bytes": 17326,
+      "mirrorMatches": true
+    }
+  ],
+  "qaCompatibility": {
+    "change": "Target the direct 3D bench canvas rather than every canvas inside the scene.",
+    "selectorOnlyEditsVerified": true,
+    "files": [
+      "dev-tools/kitchen_recipe_burners_qa.cjs",
+      "dev-tools/kitchen_recipe_compare_qa.cjs",
+      "dev-tools/kitchen_recipe_cooking_qa.cjs",
+      "dev-tools/kitchen_recipe_crushing_qa.cjs",
+      "dev-tools/kitchen_recipe_cutting_qa.cjs",
+      "dev-tools/kitchen_recipe_drying_qa.cjs",
+      "dev-tools/kitchen_recipe_food_qa.cjs",
+      "dev-tools/kitchen_recipe_garlic_qa.cjs",
+      "dev-tools/kitchen_recipe_gesture_guide_qa.cjs",
+      "dev-tools/kitchen_recipe_hands_qa.cjs",
+      "dev-tools/kitchen_recipe_heat_qa.cjs",
+      "dev-tools/kitchen_recipe_ingredients_qa.cjs",
+      "dev-tools/kitchen_recipe_interactivity_qa.cjs",
+      "dev-tools/kitchen_recipe_pasta_qa.cjs",
+      "dev-tools/kitchen_recipe_pouring_qa.cjs",
+      "dev-tools/kitchen_recipe_qa.cjs",
+      "dev-tools/kitchen_recipe_quests_qa.cjs",
+      "dev-tools/kitchen_recipe_refinement_qa.cjs",
+      "dev-tools/kitchen_recipe_rescue_qa.cjs",
+      "dev-tools/kitchen_recipe_scale_qa.cjs",
+      "dev-tools/kitchen_recipe_scene_drain_qa.cjs",
+      "dev-tools/kitchen_recipe_scene_edges_qa.cjs",
+      "dev-tools/kitchen_recipe_scene_qa.cjs",
+      "dev-tools/kitchen_recipe_scene_weighing_qa.cjs",
+      "dev-tools/kitchen_recipe_serving_qa.cjs",
+      "dev-tools/kitchen_recipe_stirring_qa.cjs",
+      "dev-tools/kitchen_recipe_visual_details_qa.cjs",
+      "dev-tools/kitchen_recipe_water_qa.cjs",
+      "dev-tools/kitchen_recipe_workspace_qa.cjs"
+    ]
+  },
+  "observationRules": [
+    "Looking, selecting and keeping a view create no cooking actions or time advancement.",
+    "Live views and comparisons use the supplied current or historical pan frame.",
+    "Only the upward face is described; the other face requires turning the piece.",
+    "Kept views clear for a fresh cook, entry or exit from replay, or page reload.",
+    "The high resolution close-up uses the same scene and camera, with a disposed render target."
+  ]
+}

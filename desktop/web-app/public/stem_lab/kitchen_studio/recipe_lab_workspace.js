@@ -10,6 +10,7 @@
     ['ladle','pot','Save water','Dip & carry','Dip the ladle in the pot, then carry it to the jug.','M16 3l-6 12M5 15c-2 5 7 7 8 2M18 14h4v7h-6v-7z'],
     ['drain','pot','Drain pasta','Lift & tilt','Move the pot over the colander, then pull down to tilt.','M4 4l12 3-3 8-12-3zM14 17h8l-2 5h-4z'],
     ['stir','pan','Stir & fold','Trace a circle','Sweep a full circle through the sauce pan.','M4 13a7 5 0 1 0 14 0a7 5 0 1 0-14 0M16 4l-5 10M18 12l4-4'],
+    ['inspect','pan','Inspect food','Slide the lens','Drag across visible pieces to look closely; keep a view to compare.','M15 15l6 6M10 3a7 7 0 1 0 0 14a7 7 0 1 0 0-14'],
     ['arrange','pan','Turn & spread','Move each piece','Drag pieces to give them room; tap a piece to turn it.','M4 12a8 8 0 1 0 16 0a8 8 0 1 0-16 0M8 9h3M14 14h3M8 16h2'],
     ['crush','pan','Press tomatoes','Press & release','Press softened tomato pieces to release their juice.','M12 3v12M6 15h12v5H6zM9 15v5M15 15v5'],
     ['pour','pan','Add saved water','Carry & pour','Hold the saved-water jug over the pan to add a splash.','M4 4h10v14H6zM14 7h4v6h-4M19 19l2 2'],
@@ -23,7 +24,7 @@
   function availability(s,id,locked){
     var R=root.KitchenRecipes,ready=true,label='Ready',detail=definition(id)[4],p=s.pot,n=s.pan,v=s.prep;
     if(locked)return {ready:false,label:'View only',detail:'This is a recorded or finished kitchen. Explore it with the camera.'};
-    if(R.serving(s).started&&id!=='serve'&&id!=='pan'&&id!=='camera')return {ready:false,label:'Serving in progress',detail:'Return all spoonfuls to the pan before using other cooking tools.'};
+    if(R.serving(s).started&&id!=='serve'&&id!=='pan'&&id!=='inspect'&&id!=='camera')return {ready:false,label:'Serving in progress',detail:'Return all spoonfuls to the pan before using other cooking tools.'};
     function need(condition,message){if(condition){ready=false;label='Before you start';detail=message;}}
     if(id==='weigh')need(p.pasta,'This portion is already cooking. Weigh again in a fresh cook.');
     if(id==='cut'){need(v.cut||n.produce,'These cuts are already prepared. Start a fresh sample in the cutting controls to recut.');if(!v.hands||!v.rinsed)need(true,'Wash hands and rinse the produce in the preparation controls first.');}
@@ -32,6 +33,7 @@
     if(id==='pot-stir')need(s.pastaModel!==1||!p.pasta||p.drained||!p.water,'Add the weighed pasta to boiling water before separating its strands.');
     if(id==='ladle')need(!R.waterHandling(s).scoop,'The pot needs cooking water and pasta, with room left in the saved-water allowance.');
     if(id==='drain')need(!p.pasta||p.drained||!p.sample,p.drained?'The pasta is drained. Carry the colander into the sauce pan.':'Check a pasta sample before lifting the pot to drain.');
+    if(id==='inspect')need(!root.KitchenFoodLens.available(s),'Add prepared produce to the pan to examine its pieces.');
     if(id==='stir'||id==='arrange')need(!n.produce||id==='arrange'&&s.panModel!==2,'Add prepared produce to the pan before working with its pieces.');
     if(id==='crush')need(s.id!=='tomato'||s.tomatoModel!==1||!n.produce,'Use a fresh tomato recipe and add its prepared tomatoes to the pan.');
     if(id==='pour')need(!n.produce||p.reserve<10,'Add produce to the pan and save some pasta water in the jug first.');
@@ -50,7 +52,7 @@
     if(id==='ladle'&&hit.item==='ladle')name='Ladle';
     if(id==='pour'&&hit.item==='jug')name='Saved-water jug';
     if((id==='stir'||id==='pan'||id==='serve')&&(hit.pan||hit.piece!==undefined))name='Sauce pan';
-    if((id==='arrange'||id==='crush')&&hit.piece!==undefined)name='Piece '+(hit.piece+1);
+    if((id==='arrange'||id==='crush'||id==='inspect')&&hit.piece!==undefined)name='Piece '+(hit.piece+1);
     if(id==='serve'&&hit.servingPlate!==undefined)name='Plate '+(hit.servingPlate+1);
     if(!name)return null;var status=id==='burner'?root.KitchenBurnerDials.available(s,hit.burner,locked):availability(s,id,locked),R=root.KitchenRecipes;if(status.ready&&id==='mince'){var clove=R.garlicPreparation(s).cloves[hit.garlic];if(!clove||clove.stage===3)status={ready:false,detail:'This clove is already minced. Choose another clove.'};}if(status.ready&&id==='crush'){var tomato=R.tomatoHandling(s).pieces[hit.piece];if(!tomato||tomato.stage===2)status={ready:false,detail:'This piece has released its juice. Fold it through the sauce.'};}if(status.ready&&id==='serve'){var portion=R.serving(s);if(hit.servingPlate!==undefined&&!portion.plates[hit.servingPlate])status={ready:false,detail:'This plate is empty. Carry a spoonful from the pan onto it.'};else if(hit.servingPlate===undefined&&!portion.remaining)status={ready:false,detail:'The pan is empty. Rebalance the plates or finish serving.'};}return {name:name,ready:status.ready,detail:status.detail};
   }

@@ -8,7 +8,7 @@ const edgesOnly=process.argv.includes('--edges-only'),result={checks:[],accessib
  const browser=await chromium.launch({headless:true,args:['--enable-unsafe-swiftshader']});
  try{
   const page=await browser.newPage({viewport:{width:1360,height:1050},reducedMotion:'reduce'});page.on('pageerror',e=>result.errors.push(e.message));
-  await page.goto(url);await page.locator('#recipeScene canvas').waitFor();
+  await page.goto(url);await page.locator('#recipeScene > canvas').waitFor();
   const current=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('alloflow-kitchen-recipes-v1')).current);
   async function station(zone){await page.locator('[data-bench='+zone+']').click();}
   async function transfer(item,target,method='drag'){
