@@ -33,6 +33,38 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // The outing runtime is shared by its companion window and this authenticated
+  // provider bridge. Load it only when the learner opens Practice Mode.
+  var outingRuntimePromise = null;
+  function loadOutingRuntime(base) {
+    if (window.AlloOutingAI) return Promise.resolve(window.AlloOutingAI);
+    if (outingRuntimePromise) return outingRuntimePromise;
+    outingRuntimePromise = new Promise(function(resolve, reject) {
+      var script = document.createElement('script');
+      var timer = setTimeout(function() { finish(new Error('Story connection timed out.')); }, 10000);
+      var finished = false;
+      function finish(error) {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timer);
+        script.onload = script.onerror = null;
+        if (error) { outingRuntimePromise = null; reject(error); }
+        else resolve(window.AlloOutingAI);
+      }
+      script.src = new URL('ai.js?v=1', base).href;
+      script.onload = function() { finish(window.AlloOutingAI ? null : new Error('Story connection unavailable.')); };
+      script.onerror = function() { finish(new Error('Story connection unavailable.')); };
+      document.head.appendChild(script);
+    });
+    return outingRuntimePromise;
+  }
+  function closeOutingBridge() {
+    var session = window.__alloflowOutingSession;
+    if (!session) return;
+    if (session.host) session.host.destroy();
+    if (session.timer) clearInterval(session.timer);
+    window.__alloflowOutingSession = null;
+  }
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -2117,6 +2149,56 @@ window.StemLab = window.StemLab || {
           setTimeout(function() { upd('lifeSkills3dStatus', null); }, 5000);
         }
       };
+      function openLifeSkillsOuting() {
+        var base = 'https://alloflow-cdn.pages.dev/life_skills_outing/life_skills_outing.html';
+        try {
+          var host = String(window.location.hostname || '');
+          if (/^(localhost|127\.0\.0\.1)$/i.test(host) || /alloflow/i.test(host)) {
+            base = new URL('/life_skills_outing/life_skills_outing.html', window.location.origin).href;
+          }
+        } catch (_) {}
+        var token = '';
+        try {
+          var bytes = new Uint8Array(24);
+          window.crypto.getRandomValues(bytes);
+          token = Array.from(bytes, function(byte) { return byte.toString(16).padStart(2, '0'); }).join('');
+        } catch (_) { /* The authored mission is still available without a bridge. */ }
+        var destination = new URL(base);
+        if (token && /^https?:$/.test(window.location.protocol)) {
+          destination.searchParams.set('bridgeToken', token);
+          destination.searchParams.set('parentOrigin', window.location.origin);
+        }
+        var popup;
+        try { popup = window.open('about:blank', 'alloflow-life-outing', 'width=1280,height=860'); } catch (_) {}
+        if (!popup) {
+          announceToSR('Practice Mode was blocked. Allow pop-ups for this page, then try again.');
+          upd('outingMsg', 'Allow pop-ups to open Practice Mode in a new window.');
+          return;
+        }
+        closeOutingBridge();
+        var session = { popup: popup, host: null, timer: null };
+        window.__alloflowOutingSession = session;
+        try { popup.document.body.textContent = 'Opening Life Skills Practice Mode…'; } catch (_) {}
+        function navigate(runtime) {
+          if (window.__alloflowOutingSession !== session || popup.closed) return;
+          if (runtime && token && destination.searchParams.has('parentOrigin')) {
+            try {
+              session.host = runtime.createHost({
+                source: popup, origin: destination.origin, token: token,
+                call: typeof callGemini === 'function' ? function(prompt, request) {
+                  return callGemini(prompt, true, false, null, null, request && request.signal || null);
+                } : null
+              });
+            } catch (_) { /* A story connection failure cannot block the authored mission. */ }
+          }
+          try { popup.location.replace(destination.href); popup.focus(); }
+          catch (_) { try { popup.location = destination.href; } catch (_) {} }
+          session.timer = setInterval(function() { if (popup.closed) closeOutingBridge(); }, 1500);
+          upd('outingMsg', 'Practice Mode opened. Your mission saves in that browser.');
+          announceToSR('Opened Life Skills Practice Mode in a new window.');
+        }
+        loadOutingRuntime(base).then(navigate, function() { navigate(null); });
+      }
       function openLifeSkillsSafety3D() {
         var safetyBase = 'https://alloflow-cdn.pages.dev/life_skills_safety/life_skills_safety.html';
         try {
@@ -3942,6 +4024,14 @@ window.StemLab = window.StemLab || {
 
         // ═══ PAYCHECK TAB ═══
         tab === 'overview' && h('div', { className: 'space-y-4', 'data-lifeskills-overview': 'true' },
+          h('section', { className: glassCard + ' space-y-3', 'data-lifeskills-outing': 'true', 'aria-label': 'Life Skills Practice Mode' },
+            h('p', { className: 'text-xs font-bold uppercase tracking-wide text-teal-800' }, 'Practice Mode · First mission'),
+            h('h4', { className: 'text-lg font-black text-slate-800' }, 'Get ready for an outing'),
+            h('p', { className: 'text-sm text-slate-700' }, 'Prepare your clothes, pack your bag, and adjust your travel plan when the weather changes. Explore a 3D home or use the action buttons.'),
+            h('p', { className: 'text-xs text-slate-600' }, 'Choose your setting, reading style, and support. Includes save, replay, and optional AI storytelling.'),
+            h('button', { type: 'button', onClick: openLifeSkillsOuting, className: 'px-4 py-2 rounded-xl bg-teal-800 text-white text-sm font-bold hover:bg-teal-900 focus:outline-none focus:ring-2 focus:ring-teal-700 focus:ring-offset-2', 'aria-label': 'Open Practice Mode in a new window' }, 'Open Practice Mode ↗'),
+            d.outingMsg && h('p', { role: 'status', className: 'text-xs text-slate-700' }, asText(d.outingMsg))
+          ),
           h('div', { className: glassCard + ' space-y-3 relative overflow-hidden', 'data-lifeskills-3d-passport': 'true' },
             h('div', { className: 'h-1.5 rounded-b-full bg-gradient-to-r from-cyan-500 via-teal-500 to-violet-500 -mx-4 -mt-4 mb-1', 'aria-hidden': 'true' }),
             h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },

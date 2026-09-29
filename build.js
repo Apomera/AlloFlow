@@ -1630,6 +1630,7 @@ const COMPANION_ASSET_DIRS = [
     'life_skills_safety',
     'life_skills_repair',
     'life_skills_kitchen',
+    'life_skills_outing',
     'stem_lab/kitchen_studio',
       'stem_lab/assets/astronomy',
       'stem_lab/assets/anatomy/body-surface',

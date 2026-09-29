@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Life Skills · Practice Mode</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23346959'/%3E%3Cpath d='M10 20L20 10L30 20V31H10Z' fill='none' stroke='%23fffdf4' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="outing.css">
+<script src="../immersive_geometry/vendor/aframe.min.js"></script>
+<script src="engine.js" defer></script>
+<script src="ai.js" defer></script>
+<script src="outing.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#stationActions">Skip to practice actions</a>
+<main>
+<header class="page-header">
+<div class="brand"><span class="brand-mark" aria-hidden="true">⌂</span><div><p class="eyebrow">Life Skills Lab</p><p class="brand-name">Practice Mode</p></div></div>
+<div class="header-actions"><span class="prototype-label">Plan · Prepare · Adapt</span><button id="settingsToggle" class="quiet-button" aria-expanded="false" aria-controls="settings">Practice settings</button></div>
+</header>
+<section id="settings" class="settings card" aria-labelledby="settingsTitle" hidden>
+<div><p class="eyebrow">Make it yours</p><h2 id="settingsTitle">Set up a new practice</h2><p class="muted">Choose a setting, reading style, and amount of coaching separately. Your current practice stays saved.</p></div>
+<form id="settingsForm">
+<label>Outing context<select id="contextSelect"><option value="community">Community outing</option><option value="work">Work outing</option></select></label>
+<label>Coaching<select id="supportSelect"><option value="guided">Guided · cues shown</option><option value="try">Try it · cues on request</option><option value="independent">Independent · reflect afterward</option></select></label>
+<label>Reading style<select id="languageSelect"><option value="plain">Plain language</option><option value="standard">Standard language</option></select></label>
+<label>Situation<select id="scenarioSelect"><option value="rain">Changing weather</option><option value="warm">Warm-weather outing</option><option value="bus-delay">Rain and a bus delay</option></select></label>
+<button class="primary-button" type="submit">Start new practice</button>
+</form>
+<div class="resume-row"><label for="savedRuns">Saved practices</label><select id="savedRuns"><option value="">No saved practices yet</option></select><button id="resumeButton" type="button" class="quiet-button">Resume selected</button></div>
+</section>
+<section class="mission-heading" aria-labelledby="missionTitle">
+<div><p class="eyebrow">A little practice for everyday life</p><h1 id="missionTitle">Get ready for an outing</h1><p id="missionIntro" class="lead">Prepare your things, make a travel plan, and adapt when something changes.</p></div>
+<div class="clock-card"><span class="eyebrow">Practice clock</span><strong id="clock">9:00 am</strong><span>Moves with your choices. No real-time limit.</span></div>
+</section>
+<div class="practice-layout">
+<div class="world-column">
+<details id="planner" class="card planner-card">
+<summary><span>Make a plan before you act</span><span class="planner-optional">Optional</span></summary>
+<div class="planner-body"><p class="muted">Choose a few steps, put them in an order, then try your plan in the room. Planning takes no practice time.</p>
+<form id="planForm" class="plan-add"><label for="planAction">Add a step to your plan<select id="planAction"></select></label><button id="addPlanStep" class="quiet-button" type="submit">Add step</button></form>
+<ol id="planSteps" class="plan-steps" aria-label="Your planned order"></ol>
+<div class="button-row"><button id="checkPlanButton" class="quiet-button" type="button">Check my plan</button><button id="nextPlanButton" class="primary-button" type="button">Go to my next step</button></div>
+<p id="planNext" class="muted small"></p><div id="planCheck" class="plan-check" hidden><p id="planSummary"></p><p id="planUncertainty" class="muted small"></p></div>
+<p id="planStatus" class="muted small" role="status" aria-live="polite"></p></div>
+</details>
+<section class="world-card card" aria-labelledby="worldTitle">
+<div class="section-header"><div><p class="eyebrow">Your practice space</p><h2 id="worldTitle">Home, before you head out</h2></div><div class="scene-tools"><button id="focusView" class="quiet-button" aria-pressed="false">Closer view</button><button id="sceneToggle" class="quiet-button" aria-pressed="false">Hide 3D view</button></div></div>
+<div id="sceneContainer" class="scene-container" aria-hidden="true">
+<a-scene id="outingScene" embedded renderer="antialias: true; colorManagement: true" background="color: #dce7de" xr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" loading-screen="enabled: false">
+<a-entity light="type: ambient; color: #eff7fa; intensity: .6"></a-entity>
+<a-entity light="type: directional; color: #fff0d6; intensity: .9" position="-3 7 5"></a-entity>
+<a-entity light="type: directional; color: #daefff; intensity: .25" position="5 4 2"></a-entity>
+<a-entity id="room"></a-entity>
+<a-entity id="sceneActionButtons" position="0 .27 1.7" rotation="-35 0 0"></a-entity>
+<a-camera position="0 6.2 10" rotation="-26 0 0" fov="34" look-controls="enabled: false" wasd-controls="enabled: false"><a-entity cursor="rayOrigin: mouse" raycaster="objects: .pickable; far: 30"></a-entity></a-camera>
+</a-scene>
+<div class="scene-caption"><span class="scene-status-dot" aria-hidden="true"></span><span id="sceneCaption">Choose a station in the room or below.</span></div>
+</div>
+<p id="sceneUnavailable" class="scene-unavailable" hidden>The room view is unavailable. All practice actions work below.</p>
+<div class="station-navigation" id="stationNavigation" role="group" aria-label="Choose a station"></div>
+<section id="eventCard" class="event-card event-inline" aria-labelledby="eventTitle" hidden><p class="eyebrow">A change to consider</p><h2 id="eventTitle"></h2><p id="eventBody"></p></section>
+<div id="planGuide" class="plan-guide" hidden><p id="planGuideText"></p><div class="button-row"><button id="followPlanButton" class="quiet-button" type="button">Go to planned step</button><button id="editPlanButton" class="quiet-button" type="button">Review plan</button></div></div>
+<div class="action-panel" id="stationActions" tabindex="-1">
+<div class="section-header"><div><p class="eyebrow">Your next choice</p><h3 id="stationTitle">Kitchen</h3></div><span class="step-tag" id="stepTag">Step 1</span></div>
+<p id="stationDescription" class="muted"></p>
+<div id="objectChoices" class="object-choices" role="group" aria-label="Inspect an object"></div>
+<section id="objectInspector" class="object-inspector" aria-labelledby="objectTitle" hidden><div class="section-header"><h4 id="objectTitle"></h4><span id="objectStatus" class="object-status"></span></div><p id="objectDescription"></p></section>
+<details id="rehearsal" class="rehearsal-panel"><summary>Rehearse a choice before you take it</summary><p class="muted">Think about what might change, then preview one action. The room and clock stay as they are while you rehearse.</p>
+<label for="rehearsalAction">Which action would you like to try?<select id="rehearsalAction"></select></label>
+<label for="prediction">What do you think will happen? <span class="muted">Optional</span><textarea id="prediction" rows="2" maxlength="240" placeholder="Think it through, talk with someone, or write a prediction."></textarea></label>
+<button id="previewActionButton" class="quiet-button" type="button">Preview this choice</button>
+<div id="rehearsalResult" class="rehearsal-result" hidden><h4 id="rehearsalTitle" tabindex="-1">What would change?</h4><p id="rehearsalPrediction" class="muted"></p><table class="comparison-table"><caption class="sr-only">Immediate effects of the rehearsed action</caption><thead><tr><th scope="col">What changes</th><th scope="col">Now</th><th scope="col">After this choice</th></tr></thead><tbody id="rehearsalChanges"></tbody></table><p id="rehearsalFeedback"></p><p id="rehearsalUncertainty" class="muted small"></p><p class="small">Compare this with your prediction. What would you check before taking the action?</p><button id="takeRehearsedAction" class="primary-button" type="button">Take this action in the outing</button></div>
+<p id="rehearsalStatus" class="muted small" role="status" aria-live="polite"></p></details>
+<div id="actionList" class="action-list"></div>
+<p id="feedback" class="feedback" role="status" aria-live="polite" aria-atomic="true"></p>
+<details id="choiceHistory" class="history-panel"><summary>Review a choice · try another way</summary>
+<p class="muted">Choose a step to see what happened. You can go back to just before that choice in a new practice.</p>
+<label for="reviewChoice">Which choice would you like to revisit?</label><select id="reviewChoice"></select>
+<div id="decisionReview" class="decision-review" hidden><p id="reviewConsequence"></p><p class="muted">What do you think would happen if you chose differently?</p><button id="retryChoiceButton" class="quiet-button" type="button">Try from before this choice</button><p class="muted small">Earlier actions stay the same. Your original practice is kept.</p></div>
+<h4>Most recent choices</h4><ol id="recentChoices"></ol></details>
+</div>
+</section>
+<section id="comparisonCard" class="card comparison-card" aria-labelledby="comparisonTitle" hidden>
+<p class="eyebrow">Try, notice, compare</p><h2 id="comparisonTitle">What changes with a different choice?</h2><p id="comparisonContext" class="muted"></p>
+<div class="choice-comparison"><div><h3>Original choice</h3><p id="originalChoice"></p></div><div><h3>Your new choice</h3><p id="revisedChoice"></p></div></div>
+<p id="comparisonSummary"></p><div id="outcomeComparison" hidden><h3>Both outings are complete</h3><p class="muted small">These totals include every later choice in each practice.</p><table class="comparison-table"><caption class="sr-only">Outcomes of the original and new practice</caption><thead><tr><th scope="col">What happened</th><th scope="col">Original</th><th scope="col">New practice</th></tr></thead><tbody id="comparisonRows"></tbody></table><p class="comparison-prompt">What changed? What stayed the same? Which plan would work for you, and what support would help?</p></div>
+</section>
+<section id="debrief" class="card debrief" aria-labelledby="debriefTitle" hidden>
+<p class="eyebrow">Pause and reflect</p><h2 id="debriefTitle">Ready for the next outing</h2><p id="debriefSummary"></p>
+<h3>What happened in this practice</h3><ul id="observations" class="observations"></ul>
+<p id="planDebrief" class="muted small" hidden></p>
+<p class="evidence-note">These observations describe this simulated practice. They do not establish real-world independence. Reading style and access to the controls do not change your evidence.</p>
+<label for="reflection">What would you check before a real outing?</label><textarea id="reflection" rows="3" maxlength="600" placeholder="You can reflect here, talk with someone, or think it through."></textarea><p id="reflectionStatus" class="muted">Optional. Saved on this device when you finish typing.</p>
+<div class="button-row"><button id="reviewButton" class="primary-button">Revisit a choice</button><button id="replayButton" class="quiet-button">Practice with a different forecast</button><button id="sameReplayButton" class="quiet-button">Try this outing again</button><button id="delayReplayButton" class="quiet-button">Try a bus delay</button></div>
+</section>
+</div>
+<aside class="companion-column" aria-label="Mission plan and practice support">
+<section class="card plan-card" aria-labelledby="planTitle"><div class="section-header"><h2 id="planTitle">The plan</h2><span id="progressCount" class="progress-count">0 ready</span></div><p id="goal"></p><ul id="objectives" class="objective-list"></ul><div class="progress-track" aria-hidden="true"><span id="progressBar"></span></div><p id="summary" class="muted"></p><details class="mission-facts"><summary>Check the outing details</summary><ul id="missionFacts"></ul></details></section>
+<section class="card travel-card" aria-labelledby="travelTitle"><p class="eyebrow">Timing your plan</p><h2 id="travelTitle">Will you arrive in time?</h2><button id="travelPreview" class="travel-preview" type="button"></button><details class="route-details"><summary>Compare arrival times</summary><ul id="routeComparison"></ul></details><p class="muted small">Times update as you prepare. The outing begins at 09:35.</p></section>
+<section class="card bag-card" aria-labelledby="bagTitle"><h2 id="bagTitle">In your bag</h2><ul id="inventory" class="inventory-list"></ul></section>
+<section class="card coach-card" aria-labelledby="coachTitle"><div class="section-header"><h2 id="coachTitle">A little support</h2><span id="supportLabel" class="small-tag">Guided</span></div><button id="hintButton" class="quiet-button">Show a useful cue</button><div id="hintContent" hidden><dl><dt>Notice</dt><dd id="hintNotice"></dd><dt>Connect</dt><dd id="hintConnect"></dd><dt>Try</dt><dd id="hintTry"></dd></dl></div><p class="muted small">Cues and retries are always available. The practice records coaching separately.</p></section>
+<section class="card story-card" aria-labelledby="storyTitle"><div class="section-header"><div><p class="eyebrow">Optional story moments</p><h2 id="storyTitle">Check in with Sam</h2></div><span class="sam-avatar" aria-hidden="true">S</span></div><p class="muted">Sam is a fictional practice companion. Pick a topic for one short exchange.</p><div class="story-buttons"><button id="introButton" class="quiet-button">Tell the story</button><button class="quiet-button dialogue-button" data-intent="plan">Talk about the plan</button><button class="quiet-button dialogue-button" data-intent="change">Talk about a change</button><button class="quiet-button dialogue-button" data-intent="help">Ask for encouragement</button></div><p id="storyAvailability" class="muted small">The prepared story is ready to use.</p><div id="storyMoment" class="story-moment" hidden><span id="storyLabel" class="eyebrow"></span><p id="storyText"></p></div><p id="storyStatus" class="muted small" role="status" aria-live="polite"></p></section>
+</aside>
+</div>
+<footer><div><p id="saveStatus" role="status" aria-live="polite">Your practice saves on this device.</p><p>Explore at your pace. Every action also has a button. English prototype.</p></div><div class="backup-controls"><button id="downloadButton" class="quiet-button" type="button">Download practice</button><button id="restoreButton" class="quiet-button" type="button">Open a backup</button><input id="restoreFile" type="file" accept=".json,application/json" aria-label="Choose a practice backup" hidden><p id="backupStatus" role="status" aria-live="polite"></p><p class="muted small">Includes your plan, reflection and any choice comparison. Files open as a new copy on this device.</p></div></footer>
+<p id="announcer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
+</main>
+<noscript><p class="no-script">This practice needs JavaScript. Enable it to use the shared room and button controls.</p></noscript>
+</body>
+</html>
