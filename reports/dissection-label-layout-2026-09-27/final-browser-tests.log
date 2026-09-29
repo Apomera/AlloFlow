@@ -1,0 +1,27 @@
+
+Running 16 tests using 1 worker
+
+(node:20292) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:20292) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\e2e\dissection-label-layout.spec.ts:41:5 › the Labels toggle hides default labels on its first click and restores them (12.9s)
+  ok  2 [chromium] › tests\e2e\dissection-label-layout.spec.ts:57:7 › long selected labels fit their cards on a phone in dorsal view (9.2s)
+  ok  3 [chromium] › tests\e2e\dissection-label-layout.spec.ts:57:7 › long selected labels fit their cards on a phone in ventral view (13.0s)
+  ok  4 [chromium] › tests\e2e\dissection-label-layout.spec.ts:79:5 › lateral perch preserves its drawing proportions and the visible label selects its structure (27.6s)
+  ok  5 [chromium] › tests\e2e\dissection-label-layout.spec.ts:102:5 › phone labels leave the frog hotspot markers exposed (50.2s)
+  ok  6 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › frog skin specimen renders without errors (2.0m)
+  ok  7 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › frog organs specimen renders without errors (30.5s)
+  ok  8 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › perch skin specimen renders without errors (14.6s)
+  ok  9 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › sheepHeart skin specimen renders without errors (56.4s)
+  ok 10 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › sheepEye organs specimen renders without errors (11.9s)
+  ok 11 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › crayfish skin specimen renders without errors (39.3s)
+  ok 12 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › earthworm skin specimen renders without errors (39.8s)
+  ok 13 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › pig skin specimen renders without errors (17.0s)
+  ok 14 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:39:5 › phone and high-contrast presentation retain a usable canvas (14.6s)
+  ok 15 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:54:5 › specimen lighting leaves the surrounding tray unchanged in dorsal and ventral views (5.3s)
+  ok 16 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:76:5 › Advanced and fullscreen restore the detailed canvas guidance (27.5s)
+
+  Slow test file: [chromium] › tests\e2e\dissection-visual-presentation.spec.ts (6.3m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  16 passed (8.5m)

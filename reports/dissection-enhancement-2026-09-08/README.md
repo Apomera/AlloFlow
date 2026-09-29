@@ -117,3 +117,39 @@ See [EVIDENCE_DRAFT_REVIEW.md](EVIDENCE_DRAFT_REVIEW.md) for the ungraded draft 
 ## Enlarged diagram reading view
 
 See [DIAGRAM_READING_VIEW.md](DIAGRAM_READING_VIEW.md) for zoomable circulation and gas-exchange diagrams, fit behavior, readable explanations, keyboard navigation, and verification.
+
+## Observation reading view
+
+See [the observation reader review](../dissection-observation-reader-2026-09-27/README.md) for larger note text, navigation through filtered observations, the return to editing, and verification.
+
+## Specimen visual refinement
+
+See [the visual review](../dissection-visual-presentation-2026-09-27/README.md) for softer lighting, cleaner tray presentation, reduced canvas clutter, and before/after screenshots.
+
+## Label layout and perch proportions
+
+See [the label layout review](../dissection-label-layout-2026-09-27/README.md) for wrapped labels, visible hotspot targets, corrected perch proportions, and the Labels toggle fix.
+
+## Canvas footer and numbered-marker guide
+
+See [the footer review](../dissection-footer-2026-09-28/README.md) for the structure-list shortcut, separated scale and physiology displays, model-trace controls, and verification.
+
+## Physiology display readability
+
+See [the physiology readability review](../dissection-physiology-readability-2026-09-28/README.md) for larger captions and controls, opaque status panels, and reduced-motion status.
+
+## System color key and specimen space
+
+See [the system key review](../dissection-system-key-2026-09-29/README.md) for the expandable color key, clearer specimen view, fullscreen zoom behavior, and before/after screenshots.
+
+## Clearer anatomy labels while zooming
+
+See [the zoom label review](../dissection-zoom-labels-2026-09-29/README.md) for consistent text size, visible callouts during zoom and pan, mirrored selection, and before/after screenshots.
+
+## Hotspot and inspection-caption clarity
+
+See [the marker clarity review](../dissection-marker-clarity-2026-09-29/README.md) for compact zoomed markers, clearer target cues, upright inspection captions, and verification.
+
+## Readable contact feedback
+
+See [the contact feedback review](../dissection-contact-feedback-2026-09-29/README.md) for larger wrapped instrument text, placement around selected anatomy captions, phone layouts, and verification.

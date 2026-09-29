@@ -1,0 +1,11 @@
+
+Running 2 tests using 1 worker
+
+(node:30080) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30080) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dissection-footer.spec.ts:102:5 › heart trace follows living-model playback, pause and reduced motion (12.9s)
+  ok 2 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:76:5 › Advanced and fullscreen restore the detailed canvas guidance (12.2s)
+
+  2 passed (1.2m)

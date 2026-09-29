@@ -911,6 +911,20 @@
 .diss-instructor summary { cursor: pointer; color: #315b58; font-size: .68rem; font-weight: 850; }
 .diss-zoom-bar { min-height: 2.7rem; margin-top: .6rem !important; background: #edf4fb !important; }
 .diss-zoom-bar button { min-width: 2.5rem; min-height: 2.25rem !important; }
+.diss-marker-guide { display: none; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .55rem; margin-top: .65rem; padding: .65rem .75rem; border: 1px solid #a9c9c5; border-radius: .7rem; background: #f0faf8; color: #214f50; font-size: .8rem; line-height: 1.5; }
+.diss-stage:has([data-diss-compact-markers="true"]) .diss-marker-guide { display: flex; }
+.diss-marker-guide p { flex: 1 1 12rem; margin: 0; }
+.diss-marker-guide button { min-height: 2.75rem; padding: .5rem .7rem; border: 1px solid #145d64; border-radius: .5rem; background: #145d64; color: #fff; font-weight: 750; }
+.diss-system-key { margin-top: .6rem; border: 1px solid #b8cbd2; background: #f8fbfc; color: #24464d; }
+.diss-system-key.diss-disclosure > summary { min-height: 2.75rem; font-size: .85rem; font-weight: 750; }
+.diss-system-key__preview { display: flex; flex-wrap: wrap; gap: .18rem; margin-left: auto; }
+.diss-system-key__preview span { width: .45rem; height: .45rem; border-radius: 50%; }
+.diss-system-key.diss-disclosure > summary::after { margin-left: .3rem; }
+.diss-system-key__hint { margin: 0 0 .65rem; font-size: .8rem; line-height: 1.5; }
+.diss-system-key__list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr)); gap: .45rem; margin: 0; padding: 0; list-style: none; }
+.diss-system-key__list li { display: flex; align-items: center; gap: .55rem; min-width: 0; padding: .55rem .6rem; border: 1px solid #d6e1e5; border-radius: .5rem; background: #fff; font-size: .82rem; font-weight: 650; line-height: 1.4; }
+.diss-system-key__swatch { flex: 0 0 .8rem; width: .8rem; height: .8rem; border: 1px solid rgba(15,23,42,.25); border-radius: 50%; }
+[data-dissection-root][data-high-contrast="true"] .diss-system-key, [data-dissection-root][data-high-contrast="true"] .diss-system-key__list li { border-color: #000; background: #fff; color: #000; }
 .diss-depth-key { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .42rem .72rem; margin-top: .48rem; padding: .48rem .62rem; border: 1px solid #b8cbe1; border-radius: .72rem; background: linear-gradient(135deg, #f8fbff, #eef6ff); color: #243b59; }
 .diss-depth-key__title { color: #123b67; font-size: .67rem; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }
 .diss-depth-key__item { display: inline-flex; align-items: center; gap: .3rem; min-width: 0; font-size: .65rem; font-weight: 800; }
@@ -929,23 +943,25 @@
 .diss-system-playback { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: .4rem; margin-top: .1rem; padding: .5rem; border: 1px solid #99c7be; border-radius: .7rem; background: linear-gradient(135deg, #f0fdfa, #eff6ff); }
 .diss-system-playback__status { display: grid; min-width: 0; }
 .diss-system-playback__status strong { color: #134e4a; font-size: .7rem; }
-.diss-system-playback__status span { overflow: hidden; color: #496966; font-size: .61rem; text-overflow: ellipsis; white-space: nowrap; }
-.diss-system-playback button { min-height: 2rem !important; margin-top: 0 !important; padding: .35rem .5rem; border: 1px solid #0f766e; border-radius: .5rem; background: #fff; color: #0f766e; font-size: .64rem; font-weight: 850; cursor: pointer; }
+.diss-system-playback__status span { color: #315853; font-size: .82rem; line-height: 1.5; white-space: normal; }
+.diss-system-playback button { min-height: 2.75rem !important; margin-top: 0 !important; padding: .5rem .65rem; border: 1px solid #0f766e; border-radius: .5rem; background: #fff; color: #0f766e; font-size: .82rem; font-weight: 750; cursor: pointer; }
 .diss-system-playback button[aria-pressed="true"] { background: #0f766e; color: #fff; }
 .diss-system-playback button:disabled { cursor: not-allowed; opacity: .48; }
-.diss-living-function { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .55rem; padding: .65rem; border: 1px solid #93c5fd; border-radius: .75rem; background: linear-gradient(135deg, #eff6ff, #f0fdfa); }
+.diss-living-function { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr); gap: .75rem; padding: .85rem; border: 1px solid #93c5fd; border-radius: .75rem; background: linear-gradient(135deg, #eff6ff, #f0fdfa); }
 .diss-living-function[data-active="true"] { border-color: #14b8a6; box-shadow: inset 0 0 0 1px rgba(20,184,166,.2); }
 .diss-living-function__copy { min-width: 0; }
 .diss-living-function__copy strong, .diss-living-function__copy span { display: block; }
-.diss-living-function__copy strong { color: #164e63; font-size: .71rem; }
-.diss-living-function__copy span { margin-top: .15rem; color: #496966; font-size: .61rem; line-height: 1.4; }
-.diss-living-function__badge { display: inline-flex !important; width: max-content; margin-top: .3rem !important; padding: .18rem .34rem; border-radius: 999px; background: #dbeafe; color: #1e40af !important; font-size: .54rem !important; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
+.diss-living-function__copy strong, .diss-system-playback__status strong { color: #164e63; font-size: .9rem; line-height: 1.4; }
+.diss-living-function__copy span { margin-top: .35rem; color: #315853; font-size: .82rem; line-height: 1.5; }
+.diss-living-function__badge { display: inline-flex !important; width: fit-content; max-width: 100%; margin-top: .55rem !important; padding: .3rem .55rem; border-radius: .5rem; background: #dbeafe; color: #1e40af !important; font-size: .75rem !important; font-weight: 800; }
 .diss-living-function[data-active="true"] .diss-living-function__badge { background: #ccfbf1; color: #115e59 !important; }
-.diss-living-function__controls { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .3rem; }
-.diss-living-function__controls button { min-height: 2.1rem !important; padding: .35rem .5rem; border: 1px solid #0f766e; border-radius: .5rem; background: #fff; color: #0f766e; font-size: .61rem; font-weight: 850; cursor: pointer; }
+.diss-living-function[data-motion="static"] .diss-living-function__badge { background: #e2e8f0; color: #334155 !important; }
+.diss-living-function[data-motion="paused"] .diss-living-function__badge { background: #fef3c7; color: #854d0e !important; }
+.diss-living-function__controls { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: .45rem; }
+.diss-living-function__controls button { min-height: 2.75rem !important; padding: .5rem .65rem; border: 1px solid #0f766e; border-radius: .5rem; background: #fff; color: #0f766e; font-size: .82rem; font-weight: 750; cursor: pointer; }
 .diss-living-function__controls button[aria-pressed="true"] { background: #0f766e; color: #fff; }
 .diss-living-function__controls button:disabled { cursor: not-allowed; opacity: .48; }
-@media (max-width: 620px) { .diss-living-function { grid-template-columns: 1fr; } .diss-living-function__controls { justify-content: flex-start; } }
+@media (max-width: 620px) { .diss-system-playback { grid-template-columns: repeat(2, minmax(0, 1fr)); } .diss-system-playback__status { grid-column: 1 / -1; } }
 .diss-sidebar { display: grid; width: 100% !important; gap: .8rem; }
 .diss-selection-card { border-color: #9db4cf !important; box-shadow: 0 10px 26px rgba(15,23,42,.07); }
 .diss-selection-nav button { min-width: 2.75rem !important; min-height: 2.75rem !important; }
@@ -2524,6 +2540,13 @@ var d = labToolData.dissection || {};
             excretory: { onDark: '#a3e635', onLight: '#84cc16' },
             reproductive: { onDark: '#ec4899', onLight: '#ec4899' }
           };
+          var DISSECTION_SYSTEM_LABELS = {
+            circulatory: 'Circulatory', digestive: 'Digestive', respiratory: 'Respiratory', nervous: 'Nervous',
+            skeletal: 'Skeletal', muscular: 'Muscular', excretory: 'Excretory', reproductive: 'Reproductive'
+          };
+          function dissectionSystemLabel(systemId) {
+            return __alloT('stem.dissection.system_names.' + systemId, DISSECTION_SYSTEM_LABELS[systemId] || systemId);
+          }
           function dissectionSystemColor(systemId, surface) {
             var systemEntry = DISSECTION_SYSTEM_COLORS[systemId];
             if (!systemEntry) return '#94a3b8';
@@ -3799,6 +3822,8 @@ var d = labToolData.dissection || {};
           try { storedAccessibilityPreferences = JSON.parse(localStorage.getItem('dissection_accessibility_preferences') || '{}') || {}; } catch (e) { storedAccessibilityPreferences = {}; }
           var highContrastEnabled = !!d.highContrast || !!storedAccessibilityPreferences.highContrast;
           var reducedMotionEnabled = !!d.reducedMotion || !!storedAccessibilityPreferences.reducedMotion;
+          var physiologyMotionReduced = reducedMotionEnabled;
+          try { physiologyMotionReduced = physiologyMotionReduced || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
           var largeTextEnabled = !!d.largeText || !!storedAccessibilityPreferences.largeText;
           var simplifiedInstructions = !!d.simplifiedInstructions || !!storedAccessibilityPreferences.simplifiedInstructions;
           var storedWorkspaceMode = 'essentials';
@@ -7343,6 +7368,24 @@ var d = labToolData.dissection || {};
               var canvasHudScale = Math.max(1, Math.min(2.15, canvasDisplayRatio * canvasTextPreferenceScale));
               canvas._canvasHudScale = canvasHudScale;
               canvas._canvasUiScale = canvasUiScale;
+              canvas._guidanceBoxes = [];
+              canvas._contactFeedbackBox = null;
+              // Keep the screen bounds of semantic cards so tool feedback can avoid them.
+              function rememberCanvasGuidanceBox(x, y, width, height, priority) {
+                if (!ctx.getTransform) return;
+                var matrix = ctx.getTransform();
+                if (!matrix || !isFinite(matrix.a)) return;
+                var density = canvas._dpr || 1;
+                var corners = [[x, y], [x + width, y], [x, y + height], [x + width, y + height]].map(function (point) {
+                  return { x: (matrix.a * point[0] + matrix.c * point[1] + matrix.e) / density,
+                    y: (matrix.b * point[0] + matrix.d * point[1] + matrix.f) / density };
+                });
+                var left = Math.min.apply(null, corners.map(function (point) { return point.x; }));
+                var top = Math.min.apply(null, corners.map(function (point) { return point.y; }));
+                canvas._guidanceBoxes.push({ x: left, y: top,
+                  width: Math.max.apply(null, corners.map(function (point) { return point.x; })) - left,
+                  height: Math.max.apply(null, corners.map(function (point) { return point.y; })) - top, priority: priority || 1 });
+              }
 
               // Read ALL drawing state from canvas element (updated by canvasRef on each React render)
 
@@ -7415,7 +7458,8 @@ var d = labToolData.dissection || {};
               // The surrounding workspace already presents the full instructions and orientation.
               // Keep them on-canvas in Advanced and fullscreen, while Essentials gives anatomy more space.
               var fullscreenHost = document.fullscreenElement || document.webkitFullscreenElement;
-              var detailedCanvasHud = liveWorkspaceMode === 'advanced' || !!(fullscreenHost && fullscreenHost.contains(canvas)) || !!canvas.closest('[data-allo-fullscreen-active="true"]');
+              var fullscreenCanvas = !!(fullscreenHost && fullscreenHost.contains(canvas)) || !!canvas.closest('[data-allo-fullscreen-active="true"]');
+              var detailedCanvasHud = liveWorkspaceMode === 'advanced' || fullscreenCanvas;
               canvas.dataset.dissectionHud = detailedCanvasHud ? 'detailed' : 'compact';
 
               // The orientation compass is a screen-fixed panel painted after the specimen, so
@@ -9975,48 +10019,6 @@ var d = labToolData.dissection || {};
                 ctx.strokeStyle = 'rgba(30,58,138,0.13)'; ctx.lineWidth = 7; ctx.stroke();
                 ctx.restore();
 
-                // ECG display stays fixed while the specimen subtly contracts above it.
-                // At H - 35 the strip sat squarely in the bottom HUD band: the scale card
-                // covered its right third and the layer pill its left end. Lift it clear.
-                var ecgY = H - 95;
-                // Centred and full width the strip ran under the instrument bay on the right and
-                // the layer pill on the left. The free band is bottom-left, above the layer pill
-                // and left of the bay (whose left edge is W - 142), so anchor it there and keep a
-                // 30px margin from the bay at any canvas width.
-                var ecgW = Math.min(W * 0.46, W - 172);
-                // The strip is painted inside the specimen transform, so a fixed left anchor
-                // lands on the RIGHT in the ventral view, straight onto the instrument bay.
-                // Mirror the anchor the way every other panel here does.
-                var ecgX = specimenScale.x < 0 ? W - 20 - ecgW : 20;
-                var ecgPanel = ctx.createLinearGradient(ecgX, ecgY - 20, ecgX, ecgY + 20);
-                ecgPanel.addColorStop(0, 'rgba(2,6,23,0.86)'); ecgPanel.addColorStop(1, 'rgba(15,23,42,0.66)');
-                ctx.fillStyle = ecgPanel; ctx.fillRect(ecgX - 5, ecgY - 20, ecgW + 10, 40);
-                ctx.strokeStyle = 'rgba(34,197,94,0.14)'; ctx.lineWidth = 0.3;
-                for (var eg = 0; eg < 6; eg++) { ctx.beginPath(); ctx.moveTo(ecgX, ecgY - 15 + eg * 5); ctx.lineTo(ecgX + ecgW, ecgY - 15 + eg * 5); ctx.stroke(); }
-                ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 1.35; ctx.beginPath();
-                for (var ep = 0; ep < ecgW; ep++) {
-                  var et = ((ep + (dissMotionReduced ? 0 : dissTick * 2)) % ecgW) / ecgW;
-                  var ey = ecgY;
-                  if (et > 0.05 && et < 0.15) ey -= Math.sin((et - 0.05) * 10 * Math.PI) * 4;
-                  else if (et > 0.20 && et < 0.22) ey += (et - 0.20) * 200;
-                  else if (et > 0.22 && et < 0.26) ey -= 15 - (et - 0.22) * 375;
-                  else if (et > 0.26 && et < 0.28) ey += (et - 0.26) * 150;
-                  else if (et > 0.35 && et < 0.50) ey -= Math.sin((et - 0.35) * 6.67 * Math.PI) * 5;
-                  ep === 0 ? ctx.moveTo(ecgX + ep, ey) : ctx.lineTo(ecgX + ep, ey);
-                }
-                ctx.stroke();
-                var bpm = dissMotionReduced ? 72 : 72 + Math.floor(Math.sin(dissTick * 0.02) * 5);
-                if (!d.quizMode) {
-                  ctx.font = 'bold 10px Inter, system-ui'; ctx.fillStyle = '#22c55e';
-                  var bpmText = bpm + ' BPM';
-                  var bpmWidth = ctx.measureText(bpmText).width;
-                  // Drawn 8px outside the panel this readout landed inside the scale card,
-                  // and the ventral mirror moved it onto the layer pill instead. Right-align
-                  // it inside its own panel, where nothing else paints, in either view.
-                  fillPanelText(bpmText, ecgX - 5, ecgW + 10, ecgW + 10 - 6 - bpmWidth, ecgY + 13);
-                  ctx.font = '6px Inter, system-ui'; ctx.fillStyle = 'rgba(34,197,94,0.58)';
-                  fillReadableSpecimenText('P', ecgX + ecgW * 0.10, ecgY - 18); fillReadableSpecimenText('QRS', ecgX + ecgW * 0.23, ecgY - 18); fillReadableSpecimenText('T', ecgX + ecgW * 0.42, ecgY - 18);
-                }
                 // Conduction system animation
 
                 if (!d.quizMode && (activeLayer === 'nervous' || activeLayer === 'conduction' || (activeLayer === 'organs' && d.selectedOrgan === 'conduction'))) {
@@ -10760,10 +10762,22 @@ var d = labToolData.dissection || {};
                   ctx.beginPath(); ctx.arc(0, profile.depthOffset - profile.ry, 1.25, 0, Math.PI * 2); ctx.fill();
                 }
                 ctx.rotate(-profile.rotation);
-                ctx.font = 'bold 8px Inter, system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-                ctx.fillStyle = footprintAccessible ? '#ffffff' : (selected ? '#fde68a' : '#bfdbfe');
+                // Keep the depth caption upright and readable independently of the
+                // specimen's zoom, mirrored view, and focus-entry animation.
+                ctx.save(); ctx.translate(0, profile.ry + profile.depthOffset + 4);
+                ctx.scale(1 / (specimenScale.x * zoom * footprintScale), 1 / (specimenScale.y * zoom * footprintScale));
+                ctx.font = 'bold ' + (9 * canvasUiScale) + 'px Inter, system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                 var footprintDepthLabel = profile.depth === 'surface' ? 'SURFACE' : (profile.depth === 'deep' ? 'DEEP' : 'MID');
-                ctx.fillText(footprintDepthLabel + ' \u00B7 ' + profile.morphologyLabel, 0, profile.ry + profile.depthOffset + 4);
+                var footprintCaption = footprintDepthLabel + ' \u00B7 ' + profile.morphologyLabel;
+                var footprintCaptionW = ctx.measureText(footprintCaption).width + 12 * canvasUiScale;
+                rememberCanvasGuidanceBox(-footprintCaptionW / 2, 0, footprintCaptionW, 17 * canvasUiScale, 8);
+                ctx.fillStyle = footprintAccessible ? '#000000' : 'rgba(15,23,42,0.94)';
+                ctx.beginPath();
+                if (ctx.roundRect) ctx.roundRect(-footprintCaptionW / 2, 0, footprintCaptionW, 17 * canvasUiScale, 4 * canvasUiScale);
+                else ctx.rect(-footprintCaptionW / 2, 0, footprintCaptionW, 17 * canvasUiScale);
+                ctx.fill();
+                ctx.fillStyle = footprintAccessible ? '#ffffff' : (selected ? '#fde68a' : '#bfdbfe');
+                ctx.fillText(footprintCaption, 0, 8.5 * canvasUiScale); ctx.restore();
                 ctx.restore();
               }
               // Animated pathway markers retain distinct silhouettes so relationship meaning never depends on motion or color.
@@ -10834,13 +10848,18 @@ var d = labToolData.dissection || {};
                   });
                 }
               }
+              // Symbols follow anatomical anchors while keeping their display size. The
+              // specimen outline and interaction area still use the full anatomy scale.
+              function scaleHotspotMarker() {
+                ctx.scale(canvasUiScale / (zoom * Math.abs(specimenScale.x)), canvasUiScale / (zoom * Math.abs(specimenScale.y)));
+              }
               // Shape-coded depth landmarks pair color, geometry, and line style so depth never depends on hue alone.
               function drawDepthAtlasMarker(x, y, depth, selected, hovered, muted) {
                 if (!depthAtlasEnabled) return;
                 var atlasAccessible = highContrastEnabled || (d.visualRealism || visualRealism) === 'accessible';
                 var atlasColor = depth === 'surface' ? '#67e8f9' : (depth === 'deep' ? '#c4b5fd' : '#fcd34d');
                 var atlasRadius = selected ? 10.5 : (hovered ? 9.5 : 8.5);
-                ctx.save(); ctx.translate(x, y); ctx.globalAlpha = muted ? 0.38 : (selected || hovered ? 1 : 0.82);
+                ctx.save(); ctx.translate(x, y); scaleHotspotMarker(); ctx.globalAlpha = muted ? 0.38 : (selected || hovered ? 1 : 0.82);
                 ctx.strokeStyle = atlasAccessible ? '#ffffff' : atlasColor; ctx.lineWidth = atlasAccessible ? 2.4 : 1.55;
                 ctx.fillStyle = 'rgba(15,23,42,0.32)';
                 if (depth === 'surface') {
@@ -10858,7 +10877,7 @@ var d = labToolData.dissection || {};
                 if (visibility === 'visible') return false;
                 var markerAccessible = highContrastEnabled || (d.visualRealism || visualRealism) === 'accessible';
                 var markerRadius = selected ? 7.5 : (hovered ? 7 : 6.2);
-                ctx.save(); ctx.translate(x, y); ctx.globalAlpha = muted ? 0.44 : 0.92;
+                ctx.save(); ctx.translate(x, y); scaleHotspotMarker(); ctx.globalAlpha = muted ? 0.44 : 0.92;
                 ctx.strokeStyle = markerAccessible ? '#f8fafc' : (visibility === 'emerging' ? '#fda4af' : '#cbd5e1');
                 ctx.fillStyle = markerAccessible ? '#334155' : 'rgba(51,65,85,0.82)';
                 ctx.lineWidth = markerAccessible ? 2.1 : 1.45;
@@ -10924,7 +10943,32 @@ var d = labToolData.dissection || {};
                 wrapKept.push(fitTextToWidth(wrapLines.slice(Math.max(1, maxLines - 1)).join(' '), maxWidth));
                 return wrapKept;
               }
-              ctx.font = (10 * canvasUiScale) + 'px Inter, system-ui, sans-serif';
+              // Keep callouts at their reading size while the anatomy zooms. Bounds are
+              // mapped back into specimen coordinates so painted cards and hit targets
+              // continue to share the same geometry, including the mirrored view.
+              var labelUiScale = canvasUiScale / zoom;
+              var labelCameraMoved = Math.abs(zoom - 1) > 0.01 || Math.abs(panX) > 1 || Math.abs(panY) > 1;
+              function labelSpecimenX(screenX) {
+                return cx + ((screenX - W / 2 - panX) / zoom + W / 2 - cx - parallaxX) / specimenScale.x;
+              }
+              function labelSpecimenY(screenY) {
+                return cy + ((screenY - H / 2 - panY) / zoom + H / 2 - cy - parallaxY) / specimenScale.y;
+              }
+              var labelViewportCenterX = labelSpecimenX(W / 2);
+              var labelEdgeA = labelSpecimenX(16 * canvasUiScale), labelEdgeB = labelSpecimenX(W - 16 * canvasUiScale);
+              var labelLeftBound = Math.min(labelEdgeA, labelEdgeB), labelRightBound = Math.max(labelEdgeA, labelEdgeB);
+              var labelScreenTopLeft = labelCameraMoved && hudCompassBox ? Math.max(82, hudCompassBox.y + hudCompassBox.h + 8) : 82;
+              var labelScreenTopRight = d.crossSectionMode ? 80 + spec.layers.length * 18 : (detailedCanvasHud ? 150 : 82);
+              if (labelCameraMoved && fullscreenCanvas) labelScreenTopRight = Math.max(labelScreenTopRight,
+                Math.max(74, 16 + 58 * canvasHudScale) + (Object.keys(DISSECTION_SYSTEM_COLORS).length * 13 + 12) * canvasHudScale + 8);
+              var activeCanvasTraceKey = d.traceCirculation ? 'circulation' : (d.traceDigestion ? 'digestion' : (d.traceRespiration ? 'respiration' : (d.traceExcretory ? 'excretory' : null)));
+              var labelPhysiologyReserve = !d.quizMode && (d.livingFunctionEnabled || (activeCanvasTraceKey && activeLayer === 'organs')) ? 76 : 0;
+              var labelScreenBottom = H - (labelCameraMoved ? 22 + 62 * canvasHudScale + labelPhysiologyReserve : 45);
+              function labelColumnTop(side) {
+                var screenRight = (side === 'right') === (specimenScale.x > 0);
+                return labelSpecimenY(screenRight ? labelScreenTopRight : labelScreenTopLeft);
+              }
+              ctx.font = (10 * labelUiScale) + 'px Inter, system-ui, sans-serif';
               var canvasLabelsVisible = d.labelMode !== 'hidden' && !d.quizMode;
               var denseHotspotView = canvasLabelsVisible && organs.length >= 8 && zoom < 1.22;
               var adaptiveHotspotLayout = organs.filter(function (org) { return !d.quizMode || structureExposureState(org, currentProcedure) === 'visible'; }).map(function (org, oi) {
@@ -10939,32 +10983,34 @@ var d = labToolData.dissection || {};
                 var displayLabel = selected ? baseLabel + depthDescriptor + ' \u00B7 selected' : baseLabel + depthDescriptor;
                 // Measure with the same weight used to paint the label. Keep text within
                 // one half of the tray so opposite columns cannot cover each other.
-                ctx.font = (selected ? 'bold ' : '') + (10 * canvasUiScale) + 'px Inter, system-ui, sans-serif';
-                var labelMaxWidth = Math.min(210 * canvasUiScale, W / 2 - 26 * canvasUiScale);
-                var labelTextWidth = Math.max(30, labelMaxWidth - 14 * canvasUiScale);
+                ctx.font = (selected ? 'bold ' : '') + (10 * labelUiScale) + 'px Inter, system-ui, sans-serif';
+                var labelMaxWidth = Math.min(210 * labelUiScale, (W / 2 - 26 * canvasUiScale) / zoom);
+                var labelTextWidth = Math.max(30 / zoom, labelMaxWidth - 14 * labelUiScale);
                 var labelLines = fullLabel ? wrapTextToWidth(displayLabel, labelTextWidth, 3).map(function (line) { return fitTextToWidth(line, labelTextWidth); }) : [];
                 var measuredLabelWidth = labelLines.reduce(function (widest, line) { return Math.max(widest, ctx.measureText(line).width); }, 0);
-                var width = (fullLabel ? measuredLabelWidth + 14 * canvasUiScale : 18 * canvasUiScale) / specimenTextScaleX;
-                var height = (18 + Math.max(0, labelLines.length - 1) * 12) * canvasUiScale / specimenTextScaleY;
+                var width = (fullLabel ? measuredLabelWidth + 14 * labelUiScale : 18 * labelUiScale) / specimenTextScaleX;
+                var height = (18 + Math.max(0, labelLines.length - 1) * 12) * labelUiScale / specimenTextScaleY;
                 var pointX = point.x * W, pointY = point.y * H;
-                var side = pointX < W * 0.47 ? 'left' : (pointX > W * 0.53 ? 'right' : (oi % 2 ? 'left' : 'right'));
-                var rightReservedTop = d.crossSectionMode ? 72 + spec.layers.length * 18 : (detailedCanvasHud ? 150 : 82);
+                var side = pointX < labelViewportCenterX - W * 0.03 / zoom ? 'left' : (pointX > labelViewportCenterX + W * 0.03 / zoom ? 'right' : (oi % 2 ? 'left' : 'right'));
+                var rightReservedTop = labelColumnTop('right');
                 if (side === 'right' && pointY < rightReservedTop && pointX < W * 0.74) side = 'left';
-                var calloutOffsetX = 18 * canvasUiScale / specimenTextScaleX;
+                var calloutOffsetX = 18 * labelUiScale / specimenTextScaleX;
                 var preferredX = side === 'right' ? pointX + calloutOffsetX : pointX - width - calloutOffsetX;
-                var labelLeftBound = cx - (W / 2 - 16 * canvasUiScale) / specimenTextScaleX;
-                var labelRightBound = cx + (W / 2 - 16 * canvasUiScale) / specimenTextScaleX;
-                var labelCenterGap = 10 * canvasUiScale / specimenTextScaleX;
-                preferredX = side === 'right' ? Math.max(cx + labelCenterGap, preferredX) : Math.min(cx - labelCenterGap - width, preferredX);
+                var labelCenterGap = 10 * labelUiScale / specimenTextScaleX;
+                preferredX = side === 'right' ? Math.max(labelViewportCenterX + labelCenterGap, preferredX) : Math.min(labelViewportCenterX - labelCenterGap - width, preferredX);
+                var anchorOnScreen = pointX >= Math.min(labelSpecimenX(0), labelSpecimenX(W)) && pointX <= Math.max(labelSpecimenX(0), labelSpecimenX(W)) && pointY >= labelSpecimenY(0) && pointY <= labelSpecimenY(H);
                 return { id: org.id, index: oi, pointX: pointX, pointY: pointY,
-                  x: Math.max(labelLeftBound, Math.min(labelRightBound - width, preferredX)), preferredY: Math.max(82, Math.min(H - 64, pointY - height / 2)),
+                  x: Math.max(labelLeftBound, Math.min(labelRightBound - width, preferredX)), preferredY: Math.max(labelColumnTop(side), Math.min(labelSpecimenY(labelScreenBottom) - height, pointY - height / 2)),
                   y: pointY - height / 2, width: width, height: height, side: side, fullLabel: fullLabel,
+                  showCallout: !labelCameraMoved || anchorOnScreen || selected || hovered || guidedCallout,
                   displayLabel: displayLabel, labelLines: labelLines, visibility: visibility, depth: opticalDepth, selected: selected, hovered: hovered, related: related };
-              });
+              }).filter(function (item) { return item.showCallout; });
               var labelAnchorPoints = adaptiveHotspotLayout.slice().sort(function (a, b) { return a.pointY - b.pointY; });
               function clearLabelAnchors(item, y, direction) {
-                var markerGapX = 9 * canvasUiScale / specimenTextScaleX;
-                var markerGapY = 9 * canvasUiScale / specimenTextScaleY;
+                // Match the constant-size hotspot symbols so labels can stay close
+                // to their anchors without covering the marker.
+                var markerGapX = 12 * labelUiScale / specimenTextScaleX;
+                var markerGapY = 12 * labelUiScale / specimenTextScaleY;
                 var anchors = direction > 0 ? labelAnchorPoints : labelAnchorPoints.slice().reverse();
                 anchors.forEach(function (anchor) {
                   if (anchor.pointX + markerGapX < item.x || anchor.pointX - markerGapX > item.x + item.width) return;
@@ -10975,7 +11021,7 @@ var d = labToolData.dissection || {};
                 return y;
               }
               function resolveAdaptiveLabelColumn(items, minY, maxY) {
-                var gap = 4 * canvasUiScale / specimenTextScaleY, cursorY = minY;
+                var gap = 4 * labelUiScale / specimenTextScaleY, cursorY = minY;
                 items.sort(function (a, b) { return a.preferredY - b.preferredY || a.index - b.index; });
                 items.forEach(function (item) { item.y = clearLabelAnchors(item, Math.max(item.preferredY, cursorY), 1); cursorY = item.y + item.height + gap; });
                 if (!items.length) return;
@@ -10989,8 +11035,8 @@ var d = labToolData.dissection || {};
                 }
                 if (items[0].y < minY) { var underflow = minY - items[0].y; items.forEach(function (item) { item.y += underflow; }); }
               }
-              resolveAdaptiveLabelColumn(adaptiveHotspotLayout.filter(function (item) { return item.side === 'left'; }), 82, H - 45);
-              resolveAdaptiveLabelColumn(adaptiveHotspotLayout.filter(function (item) { return item.side === 'right'; }), d.crossSectionMode ? 80 + spec.layers.length * 18 : (detailedCanvasHud ? 150 : 82), H - 45);
+              resolveAdaptiveLabelColumn(adaptiveHotspotLayout.filter(function (item) { return item.side === 'left'; }), labelColumnTop('left'), labelSpecimenY(labelScreenBottom));
+              resolveAdaptiveLabelColumn(adaptiveHotspotLayout.filter(function (item) { return item.side === 'right'; }), labelColumnTop('right'), labelSpecimenY(labelScreenBottom));
               var adaptiveHotspotById = {};
               adaptiveHotspotLayout.forEach(function (item) { adaptiveHotspotById[item.id] = item; });
               canvas._hotspotLabelBoxes = adaptiveHotspotLayout.map(function (item) {
@@ -11011,49 +11057,52 @@ var d = labToolData.dissection || {};
                 var pulse = 1;
                 if (isSel) {
                   var focusRadius = 12 + (1 - focusEntryProgress) * 24 + (dissMotionReduced ? 0 : (Math.sin(dissTick * 0.045) + 1) * 2);
-                  ctx.save(); ctx.strokeStyle = (d.visualRealism || visualRealism) === 'accessible' ? '#facc15' : 'rgba(254,240,138,0.86)';
+                  ctx.save(); ctx.translate(px, py); scaleHotspotMarker(); ctx.strokeStyle = (d.visualRealism || visualRealism) === 'accessible' ? '#facc15' : 'rgba(254,240,138,0.86)';
                   ctx.lineWidth = (d.visualRealism || visualRealism) === 'accessible' ? 2.8 : 1.5;
-                  for (var fq = 0; fq < 4; fq++) { var fs = fq * Math.PI / 2 + 0.14; ctx.beginPath(); ctx.arc(px, py, focusRadius + 8, fs, fs + 0.58); ctx.stroke(); }
+                  for (var fq = 0; fq < 4; fq++) { var fs = fq * Math.PI / 2 + 0.14; ctx.beginPath(); ctx.arc(0, 0, focusRadius + 8, fs, fs + 0.58); ctx.stroke(); }
                   // Reticle marks make selected state readable without color alone.
-                  ctx.beginPath(); ctx.moveTo(px-focusRadius-13,py); ctx.lineTo(px-focusRadius-6,py); ctx.moveTo(px+focusRadius+6,py); ctx.lineTo(px+focusRadius+13,py);
-                  ctx.moveTo(px,py-focusRadius-13); ctx.lineTo(px,py-focusRadius-6); ctx.moveTo(px,py+focusRadius+6); ctx.lineTo(px,py+focusRadius+13); ctx.stroke(); ctx.restore();
+                  ctx.beginPath(); ctx.moveTo(-focusRadius-13,0); ctx.lineTo(-focusRadius-6,0); ctx.moveTo(focusRadius+6,0); ctx.lineTo(focusRadius+13,0);
+                  ctx.moveTo(0,-focusRadius-13); ctx.lineTo(0,-focusRadius-6); ctx.moveTo(0,focusRadius+6); ctx.lineTo(0,focusRadius+13); ctx.stroke(); ctx.restore();
                 }
                 var lx = layout.x, ly = layout.y, connectorX = layout.side === 'right' ? lx : lx + layout.width, connectorY = ly + layout.height / 2;
                 if (!d.quizMode) {
-                  var leaderStartX = px + (layout.side === 'right' ? 6 : -6), leaderControlX = leaderStartX + (connectorX - leaderStartX) * 0.54;
+                  var leaderStartX = px + (layout.side === 'right' ? 6 : -6) * labelUiScale / specimenTextScaleX, leaderControlX = leaderStartX + (connectorX - leaderStartX) * 0.54;
                   ctx.beginPath(); ctx.moveTo(leaderStartX, py); ctx.quadraticCurveTo(leaderControlX, py, connectorX, connectorY);
                   ctx.strokeStyle = isSel ? 'rgba(251,191,36,0.92)' : (isHov ? 'rgba(96,165,250,0.86)' : (isFocusRelated ? 'rgba(45,212,191,0.72)' : 'rgba(100,116,139,0.80)'));
-                  ctx.lineWidth = (isSel ? 1.8 : (isHov ? 1.45 : 1.05)) * canvasUiScale;
+                  ctx.lineWidth = (isSel ? 1.8 : (isHov ? 1.45 : 1.05)) * labelUiScale;
                   var depthLeaderDash = exposureMuted ? [1.2, 3.8] : (layout.depth === 'deep' ? [1.2, 3.2] : (layout.depth === 'structure' ? [4, 3] : []));
                   ctx.setLineDash(isSel || isHov ? [] : (depthAtlasEnabled ? depthLeaderDash : [2.5,3])); ctx.stroke(); ctx.setLineDash([]);
-                  ctx.beginPath(); ctx.arc(connectorX, connectorY, isSel ? 2.2 : 1.5, 0, Math.PI * 2); ctx.fillStyle = ctx.strokeStyle; ctx.fill();
+                  ctx.save(); ctx.translate(connectorX, connectorY); scaleHotspotMarker();
+                  ctx.beginPath(); ctx.arc(0, 0, isSel ? 2.2 : 1.5, 0, Math.PI * 2); ctx.fillStyle = ctx.strokeStyle; ctx.fill(); ctx.restore();
                 }
                 if (layout.fullLabel) {
+                  rememberCanvasGuidanceBox(lx, ly, layout.width, layout.height, isSel || isHov ? 8 : 2);
                   ctx.fillStyle = isSel ? 'rgba(251,191,36,0.94)' : (isHov ? 'rgba(30,64,175,0.94)' : (isFocusRelated ? 'rgba(15,118,110,0.90)' : 'rgba(15,23,42,0.88)'));
-                  ctx.strokeStyle = isSel ? '#f59e0b' : (isHov ? '#60a5fa' : (isFocusRelated ? '#2dd4bf' : 'rgba(148,163,184,0.48)')); ctx.lineWidth = isSel || isHov ? 1.1 : 0.65;
-                  if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(lx,ly,layout.width,layout.height,5); ctx.fill(); ctx.stroke(); } else { ctx.fillRect(lx,ly,layout.width,layout.height); ctx.strokeRect(lx,ly,layout.width,layout.height); }
-                  if (isSel || isHov) { ctx.fillStyle = isSel ? '#92400e' : '#93c5fd'; ctx.fillRect(lx+1,ly+3,3,layout.height-6); }
-                  ctx.font = (isSel ? 'bold ' : '') + (10 * canvasUiScale) + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = isSel ? '#1e293b' : '#f8fafc';
-                  var labelInsetX = 7 * canvasUiScale / specimenTextScaleX;
+                  ctx.strokeStyle = isSel ? '#f59e0b' : (isHov ? '#60a5fa' : (isFocusRelated ? '#2dd4bf' : 'rgba(148,163,184,0.48)')); ctx.lineWidth = (isSel || isHov ? 1.1 : 0.65) / zoom;
+                  if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(lx,ly,layout.width,layout.height,5 / zoom); ctx.fill(); ctx.stroke(); } else { ctx.fillRect(lx,ly,layout.width,layout.height); ctx.strokeRect(lx,ly,layout.width,layout.height); }
+                  if (isSel || isHov) { ctx.fillStyle = isSel ? '#92400e' : '#93c5fd'; ctx.fillRect(lx+1/zoom,ly+3/zoom,3/zoom,layout.height-6/zoom); }
+                  ctx.font = (isSel ? 'bold ' : '') + (10 * labelUiScale) + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = isSel ? '#1e293b' : '#f8fafc';
+                  var labelInsetX = 7 * labelUiScale / specimenTextScaleX;
                   var labelTextX = specimenScale.x < 0 ? lx + layout.width - labelInsetX : lx + labelInsetX;
                   layout.labelLines.forEach(function (line, lineIndex) {
-                    fillReadableSpecimenText(line, labelTextX, ly + (12.5 + lineIndex * 12) * canvasUiScale / specimenTextScaleY);
+                    fillReadableSpecimenText(line, labelTextX, ly + (12.5 + lineIndex * 12) * labelUiScale / specimenTextScaleY);
                   });
                 } else if (!d.quizMode) {
                   var markerNum = String(layout.index + 1), compactCX = lx + layout.width/2, compactCY = ly + layout.height/2;
-                  var compactMarkerRadius = (canvasCoarsePointer ? 11 : 8) * canvasUiScale;
+                  var compactMarkerRadius = (canvasCoarsePointer ? 11 : 8) * labelUiScale;
                   ctx.beginPath(); ctx.ellipse(compactCX, compactCY, compactMarkerRadius / specimenTextScaleX, compactMarkerRadius / specimenTextScaleY, 0, 0, Math.PI*2); ctx.fillStyle = isFocusRelated ? 'rgba(15,118,110,0.94)' : 'rgba(30,41,59,0.90)'; ctx.fill();
-                  ctx.strokeStyle = isFocusRelated ? '#5eead4' : 'rgba(203,213,225,0.58)'; ctx.lineWidth=.8; ctx.stroke(); ctx.fillStyle='#fff'; ctx.font='bold ' + ((canvasCoarsePointer ? 9.5 : 8) * canvasUiScale) + 'px Inter, system-ui';
+                  ctx.strokeStyle = isFocusRelated ? '#5eead4' : 'rgba(203,213,225,0.58)'; ctx.lineWidth=.8/zoom; ctx.stroke(); ctx.fillStyle='#fff'; ctx.font='bold ' + ((canvasCoarsePointer ? 9.5 : 8) * labelUiScale) + 'px Inter, system-ui';
                   ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                   fillReadableSpecimenText(markerNum, compactCX, compactCY); ctx.restore();
                 }
                 var exposureMarkerDrawn = drawExposureStateMarker(px, py, layout.visibility, isSel, isHov, focusMuted);
                 if (!exposureMarkerDrawn && !isSel) {
-                  var sysCol = layerStroke || '#94a3b8'; ctx.beginPath(); ctx.arc(px,py,5*pulse,0,Math.PI*2);
-                  var pinGrad = ctx.createRadialGradient(px-1,py-1,1,px,py,5*pulse); pinGrad.addColorStop(0,isSel?'#fef08a':isHov?'#bfdbfe':isFocusRelated?'#cffafe':'#fff');
-                  pinGrad.addColorStop(1,isSel?'#f59e0b':isHov?'#3b82f6':isFocusRelated?'#0891b2':sysCol); ctx.fillStyle=pinGrad; ctx.fill(); ctx.strokeStyle=isSel?'#f59e0b':'rgba(255,255,255,.7)'; ctx.lineWidth=1.5; ctx.stroke();
+                  ctx.save(); ctx.translate(px, py); scaleHotspotMarker();
+                  var sysCol = layerStroke || '#94a3b8'; ctx.beginPath(); ctx.arc(0,0,5*pulse,0,Math.PI*2);
+                  var pinGrad = ctx.createRadialGradient(-1,-1,1,0,0,5*pulse); pinGrad.addColorStop(0,isSel?'#fef08a':isHov?'#bfdbfe':isFocusRelated?'#cffafe':'#fff');
+                  pinGrad.addColorStop(1,isSel?'#f59e0b':isHov?'#3b82f6':isFocusRelated?'#0891b2':sysCol); ctx.fillStyle=pinGrad; ctx.fill(); ctx.strokeStyle=isSel?'#f59e0b':'rgba(255,255,255,.7)'; ctx.lineWidth=1.5; ctx.stroke(); ctx.restore();
                 }
-                if (isHov) { ctx.beginPath(); ctx.arc(px,py,10,0,Math.PI*2); ctx.strokeStyle='rgba(96,165,250,.68)'; ctx.lineWidth=1.7; ctx.stroke(); }
+                if (isHov) { ctx.save(); ctx.translate(px, py); scaleHotspotMarker(); ctx.beginPath(); ctx.arc(0,0,10,0,Math.PI*2); ctx.strokeStyle='rgba(96,165,250,.68)'; ctx.lineWidth=1.7; ctx.stroke(); ctx.restore(); }
                 ctx.restore();
               });
               }
@@ -11852,7 +11901,7 @@ var d = labToolData.dissection || {};
                   : 'NEXT ' + (handoffStep + 1) + '/6 \u00B7 ' + (handoffSelected ? 'READY ' : 'SELECT ') + String(nextInfo.instrument || '').toUpperCase();
                 ctx.save();
                 ctx.strokeStyle = handoffAccent; ctx.fillStyle = handoffAccessible ? '#000000' : 'rgba(15,23,42,0.92)';
-                ctx.lineWidth = handoffAccessible ? 2.4 : 1.3; ctx.setLineDash(handoffSelected ? [] : [5, 3]);
+                ctx.lineWidth = (handoffAccessible ? 2.4 : 1.3) / zoom; ctx.setLineDash(handoffSelected ? [] : [5 / zoom, 3 / zoom]);
                 ctx.beginPath(); ctx.moveTo(handoffLabelX + handoffLabelWidth * 0.5, handoffLabelY + handoffLabelHeight); ctx.lineTo(handoffX, handoffY); ctx.stroke(); ctx.setLineDash([]);
                 if (nextInfo.action === 'scalpel' || nextInfo.action === 'scissors') {
                   ctx.setLineDash(nextInfo.action === 'scissors' ? [6, 3] : [9, 4]); ctx.beginPath();
@@ -11863,7 +11912,8 @@ var d = labToolData.dissection || {};
                   var handoffEnd = handoffGuide[handoffGuide.length - 1] || handoffMiddle;
                   ctx.beginPath(); ctx.moveTo(handoffEnd.x * W - 6, handoffEnd.y * H - 4); ctx.lineTo(handoffEnd.x * W, handoffEnd.y * H); ctx.lineTo(handoffEnd.x * W - 6, handoffEnd.y * H + 4); ctx.stroke();
                 }
-                ctx.translate(handoffX, handoffY);
+                ctx.translate(handoffX, handoffY); scaleHotspotMarker();
+                ctx.lineWidth = handoffAccessible ? 2.4 : 1.3;
                 if (nextInfo.action === 'inspect') {
                   ctx.beginPath(); ctx.moveTo(-16, -8); ctx.lineTo(-16, -16); ctx.lineTo(-8, -16);
                   ctx.moveTo(8, -16); ctx.lineTo(16, -16); ctx.lineTo(16, -8);
@@ -13007,7 +13057,6 @@ var d = labToolData.dissection || {};
               }
 
               // One shared playback clock keeps all functional pathways synchronized and pausable.
-              var activeCanvasTraceKey = d.traceCirculation ? 'circulation' : (d.traceDigestion ? 'digestion' : (d.traceRespiration ? 'respiration' : (d.traceExcretory ? 'excretory' : null)));
               var systemPlaybackPaused = !!d.systemPlaybackPaused;
               var systemReplayToken = Number(d.systemTraceReplayToken) || 0;
               if (canvas._systemTraceReplayToken !== systemReplayToken) {
@@ -13708,9 +13757,10 @@ var d = labToolData.dissection || {};
                   var guidedPoint = variedOrganPoint(gOrg);
                   var gx = guidedPoint.x * W, gy = guidedPoint.y * H;
 
-                  ctx.beginPath(); ctx.arc(gx, gy, 16 + Math.sin(dissTick * 0.08) * 3, 0, Math.PI * 2);
+                  ctx.save(); ctx.translate(gx, gy); scaleHotspotMarker();
+                  ctx.beginPath(); ctx.arc(0, 0, 16 + (dissMotionReduced ? 0 : Math.sin(dissTick * 0.08) * 3), 0, Math.PI * 2);
 
-                  ctx.strokeStyle = 'rgba(147,51,234,0.7)'; ctx.lineWidth = 2.5; ctx.setLineDash([4, 3]); ctx.stroke(); ctx.setLineDash([]);
+                  ctx.strokeStyle = 'rgba(147,51,234,0.7)'; ctx.lineWidth = 2.5; ctx.setLineDash([4, 3]); ctx.stroke(); ctx.restore();
 
                 }
 
@@ -13720,17 +13770,16 @@ var d = labToolData.dissection || {};
 
 
               ctx.restore(); // End deterministic specimen-proportion transform
-              // The colour key is a screen-fixed HUD, so it belongs AFTER the specimen
-              // transform is restored. Drawn before it, the ventral view (specimenScale.x = -1)
-              // mirrored every label. That went unnoticed while the text was 40%-opaque 7px;
-              // making it legible in round 10 made the mirroring obvious.
+              // The workspace presents the key below the canvas. Fullscreen needs its own
+              // key, painted after the zoom transform so it stays readable while inspecting.
               // System color legend (top-right)
-              if (detailedCanvasHud) {
+              function drawFullscreenSystemKey() {
+              if (!fullscreenCanvas || d.quizMode) return;
 
-              var legendSys = ['circulatory', 'digestive', 'respiratory', 'nervous', 'skeletal', 'muscular', 'excretory', 'reproductive'];
+              var legendSys = Object.keys(DISSECTION_SYSTEM_COLORS);
 
 
-              var legendLabels = ['Circulatory', 'Digestive', 'Respiratory', 'Nervous', 'Skeletal', 'Muscular', 'Excretory', 'Reproductive'];
+              var legendLabels = legendSys.map(dissectionSystemLabel);
 
               ctx.save();
 
@@ -14123,6 +14172,41 @@ var d = labToolData.dissection || {};
               drawFinalSpecimenGuidanceOverlay();
 
               ctx.restore(); // End zoom transform
+              // The illustrative trace shares the living model's clock and occupies the
+              // left physiology slot in screen coordinates, outside the anatomy transform.
+              function drawHeartRhythmStrip() {
+                if (spec.bodyShape !== 'heart' || !d.livingFunctionEnabled || d.quizMode || (activeCanvasTraceKey && activeLayer === 'organs')) return;
+                ctx.save();
+                var ecgY = H - 55;
+                var ecgW = Math.min(W * 0.46, W - 172);
+                var ecgX = 20;
+                var ecgPanel = ctx.createLinearGradient(ecgX, ecgY - 20, ecgX, ecgY + 20);
+                ecgPanel.addColorStop(0, 'rgba(2,6,23,0.86)'); ecgPanel.addColorStop(1, 'rgba(15,23,42,0.66)');
+                ctx.fillStyle = ecgPanel; ctx.fillRect(ecgX - 5, ecgY - 20, ecgW + 10, 40);
+                ctx.strokeStyle = 'rgba(34,197,94,0.14)'; ctx.lineWidth = 0.3;
+                for (var eg = 0; eg < 6; eg++) { ctx.beginPath(); ctx.moveTo(ecgX, ecgY - 15 + eg * 5); ctx.lineTo(ecgX + ecgW, ecgY - 15 + eg * 5); ctx.stroke(); }
+                ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 1.35; ctx.beginPath();
+                for (var ep = 0; ep < ecgW; ep++) {
+                  var et = ((ep + livingPhase * ecgW) % ecgW) / ecgW;
+                  var ey = ecgY;
+                  if (et > 0.05 && et < 0.15) ey -= Math.sin((et - 0.05) * 10 * Math.PI) * 4;
+                  else if (et > 0.20 && et < 0.22) ey += (et - 0.20) * 200;
+                  else if (et > 0.22 && et < 0.26) ey -= 15 - (et - 0.22) * 375;
+                  else if (et > 0.26 && et < 0.28) ey += (et - 0.26) * 150;
+                  else if (et > 0.35 && et < 0.50) ey -= Math.sin((et - 0.35) * 6.67 * Math.PI) * 5;
+                  ep === 0 ? ctx.moveTo(ecgX + ep, ey) : ctx.lineTo(ecgX + ep, ey);
+                }
+                ctx.stroke();
+                if (!d.quizMode) {
+                  ctx.font = 'bold ' + (10 * canvasHudScale) + 'px Inter, system-ui'; ctx.fillStyle = '#22c55e';
+                  var ecgLabel = fitTextToWidth(__alloT('stem.dissection.model_trace', 'MODEL TRACE'), ecgW - 12);
+                  var ecgLabelWidth = ctx.measureText(ecgLabel).width;
+                  ctx.fillText(ecgLabel, ecgX + ecgW - 6 - ecgLabelWidth, ecgY + 13);
+                  ctx.font = '6px Inter, system-ui'; ctx.fillStyle = 'rgba(34,197,94,0.58)';
+                  ctx.fillText('P', ecgX + ecgW * 0.10, ecgY - 18); ctx.fillText('QRS', ecgX + ecgW * 0.23, ecgY - 18); ctx.fillText('T', ecgX + ecgW * 0.42, ecgY - 18);
+                }
+                ctx.restore();
+              }
               // Screen UI stays fixed to the canvas edge while anatomy-attached cues follow specimen zoom, pan, and orientation.
               function drawFinalScreenGuidanceOverlay() {
                 var screenGuideScale = canvasHudScale;
@@ -14139,18 +14223,27 @@ var d = labToolData.dissection || {};
                 }
                 var screenLayerDef = spec.layers[currentLayerIdx];
                 var layerPillHeight = 26 * screenGuideScale;
-                var layerPillY = Math.max(48, (guidedScreenHeight ? guidedScreenY - 9 : H - 14) - layerPillHeight);
+                var layerPillY = Math.max(48, (guidedScreenHeight ? guidedScreenY - 9 : H - 14 - screenPhysiologyHudReserve) - layerPillHeight);
                 if (screenLayerDef) {
                   var screenLayerLabel = screenLayerDef.icon + ' ' + screenLayerDef.name + ' Layer';
                   ctx.save(); ctx.font = 'bold ' + (12 * screenGuideScale) + 'px Inter, system-ui, sans-serif';
-                  var layerPillWidth = Math.min(W - 28, ctx.measureText(screenLayerLabel).width + 22 * screenGuideScale);
+                  var layerPillLimit = layerPillY + layerPillHeight > compassY ? compassX - 22 : W - 28;
+                  // Prefer the layer name over an icon-only ellipsis on narrow screens.
+                  if (ctx.measureText(screenLayerLabel).width > layerPillLimit - 22 * screenGuideScale) screenLayerLabel = screenLayerDef.name;
+                  screenLayerLabel = fitTextToWidth(screenLayerLabel, Math.max(30, layerPillLimit - 22 * screenGuideScale));
+                  var layerPillWidth = Math.min(layerPillLimit, ctx.measureText(screenLayerLabel).width + 22 * screenGuideScale);
                   ctx.fillStyle = 'rgba(15,23,42,0.9)'; ctx.strokeStyle = 'rgba(148,163,184,0.52)';
                   if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(14, layerPillY, layerPillWidth, layerPillHeight, 7); ctx.fill(); ctx.stroke(); }
                   else { ctx.fillRect(14, layerPillY, layerPillWidth, layerPillHeight); ctx.strokeRect(14, layerPillY, layerPillWidth, layerPillHeight); }
                   ctx.fillStyle = '#f8fafc'; ctx.fillText(screenLayerLabel, 25, layerPillY + 18 * screenGuideScale); ctx.restore();
                 }
                 var screenCompactCount = adaptiveHotspotLayout.filter(function (item) { return !item.fullLabel; }).length;
+                var compactMarkerState = !d.quizMode && screenCompactCount > 0 ? 'true' : 'false';
+                if (canvas.dataset.dissCompactMarkers !== compactMarkerState) canvas.dataset.dissCompactMarkers = compactMarkerState;
                 if (!d.quizMode && screenCompactCount > 0) {
+                  // Normal workspace guidance lives below the canvas, where it can wrap and
+                  // open the structure list. Fullscreen retains its self-contained canvas hint.
+                  if (fullscreenCanvas) {
                   var screenDeclutter = 'Adaptive labels \u00B7 ' + screenCompactCount + ' compact \u00B7 ' + (canvasCoarsePointer ? 'select to expand' : 'hover to expand');
                   ctx.save(); ctx.font = 'bold ' + (9.5 * screenGuideScale) + 'px Inter, system-ui';
                   var screenDeclutterHeight = 22 * screenGuideScale;
@@ -14165,6 +14258,7 @@ var d = labToolData.dissection || {};
                   if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(screenDeclutterX, screenDeclutterY, screenDeclutterWidth, screenDeclutterHeight, 7); ctx.fill(); ctx.stroke(); }
                   else { ctx.fillRect(screenDeclutterX, screenDeclutterY, screenDeclutterWidth, screenDeclutterHeight); ctx.strokeRect(screenDeclutterX, screenDeclutterY, screenDeclutterWidth, screenDeclutterHeight); }
                   ctx.fillStyle = '#99f6e4'; ctx.fillText(screenDeclutterText, screenDeclutterX + 9 * screenGuideScale, screenDeclutterY + 15 * screenGuideScale); ctx.restore();
+                  }
                 }
               }
               // The scale HUD below paints AFTER this overlay and occupies the same bottom band,
@@ -14177,9 +14271,11 @@ var d = labToolData.dissection || {};
               var compassWidth = Math.min(W - 28, Math.max(144 * canvasHudScale, scalePixels + 18 * canvasHudScale));
               var compassHeight = 62 * canvasHudScale;
               var compassX = W - compassWidth - 14;
-              var compassBottomInset = guidedMode && currentGuided ? Math.max(72, 64 * canvasHudScale) : 14;
+              var compassBottomInset = (guidedMode && currentGuided ? Math.max(72, 64 * canvasHudScale) : 14) + screenPhysiologyHudReserve;
               var compassY = H - compassHeight - compassBottomInset;
               drawFinalScreenGuidanceOverlay();
+              drawHeartRhythmStrip();
+              drawFullscreenSystemKey();
 
               // A calibrated screen-fixed orientation and scale HUD keeps anatomical direction accurate across specimen shapes and zoom.
               var hudView = String(d.anatomicalView || anatomicalView || 'dorsal').toUpperCase();
@@ -14355,14 +14451,19 @@ var d = labToolData.dissection || {};
                   ctx.beginPath(); ctx.arc(cx, cy - H * 0.045, 8 + (1 - livingWave) * 5, 0, Math.PI * 2); ctx.stroke();
                 }
                 ctx.shadowBlur = 0;
-                var livingHudW = Math.min(228, W - 28), livingHudX = W - livingHudW - 14, livingHudY = H - 79;
-                ctx.fillStyle = 'rgba(15,23,42,0.92)'; ctx.strokeStyle = livingProfile.color; ctx.lineWidth = 1;
-                if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(livingHudX, livingHudY, livingHudW, 47, 9); ctx.fill(); ctx.stroke(); }
-                else { ctx.fillRect(livingHudX, livingHudY, livingHudW, 47); ctx.strokeRect(livingHudX, livingHudY, livingHudW, 47); }
-                ctx.font = 'bold 9px Inter, system-ui'; ctx.fillStyle = '#f8fafc'; ctx.fillText('LIVING FUNCTION MODEL', livingHudX + 9, livingHudY + 14);
-                ctx.font = 'bold 8px Inter, system-ui'; ctx.fillStyle = livingProfile.color;
-                ctx.fillText((dissMotionReduced ? 'STATIC' : (d.livingFunctionPaused ? 'PAUSED' : livingPhaseLabel.toUpperCase())).slice(0, 30), livingHudX + 9, livingHudY + 27);
-                ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#cbd5e1'; ctx.fillText('In-life physiology · not preserved motion', livingHudX + 9, livingHudY + 39);
+                // Keep the status opaque and readable independently of the anatomy overlay.
+                ctx.globalAlpha = 1;
+                var physiologyTypeScale = canvasHudScale;
+                var livingHudW = Math.min(228, W - 28), livingHudX = W - livingHudW - 14, livingHudY = H - 84;
+                ctx.fillStyle = highContrastEnabled || liveVisualMode === 'accessible' ? '#000000' : '#0f172a'; ctx.strokeStyle = livingProfile.color; ctx.lineWidth = 1;
+                if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(livingHudX, livingHudY, livingHudW, 70, 9); ctx.fill(); ctx.stroke(); }
+                else { ctx.fillRect(livingHudX, livingHudY, livingHudW, 70); ctx.strokeRect(livingHudX, livingHudY, livingHudW, 70); }
+                ctx.font = 'bold ' + (11 * physiologyTypeScale) + 'px Inter, system-ui'; ctx.fillStyle = '#f8fafc'; ctx.fillText('LIVING MODEL', livingHudX + 10, livingHudY + 22);
+                ctx.font = 'bold ' + (10 * physiologyTypeScale) + 'px Inter, system-ui'; ctx.fillStyle = highContrastEnabled ? '#ffffff' : livingProfile.color;
+                var livingStatusText = dissMotionReduced ? 'STATIC · REDUCED MOTION' : (d.livingFunctionPaused ? 'PAUSED' : livingPhaseLabel.toUpperCase());
+                wrapTextToWidth(livingStatusText, livingHudW - 20, 2).forEach(function (statusLine, statusIndex) {
+                  ctx.fillText(fitTextToWidth(statusLine, livingHudW - 20), livingHudX + 10, livingHudY + 42 + statusIndex * 20);
+                });
                 ctx.restore();
               }
 
@@ -14375,14 +14476,20 @@ var d = labToolData.dissection || {};
                   excretory: { label: 'Excretory pathway', color: '#a3e635', secondary: '#c084fc', icon: '\u25C6' }
                 }[activeCanvasTraceKey];
                 var traceHUDStatus = dissMotionReduced ? 'STATIC \u00B7 reduced motion' : (systemPlaybackPaused ? 'PAUSED \u00B7 directions held' : 'PLAYING \u00B7 directional flow');
+                var traceHUDTitle = traceHUDConfig.icon + ' ' + traceHUDConfig.label;
+                if (canvasHudScale > 1.35) {
+                  traceHUDTitle = traceHUDConfig.icon + ' ' + traceHUDConfig.label.replace(' pathway', '');
+                  traceHUDStatus = dissMotionReduced ? 'STATIC' : (systemPlaybackPaused ? 'PAUSED' : 'PLAYING');
+                }
                 ctx.save();
-                var traceHUDX = 14, traceHUDY = H - 82, traceHUDW = 184, traceHUDH = 50;
-                ctx.fillStyle = 'rgba(15,23,42,0.92)'; ctx.strokeStyle = traceHUDConfig.color; ctx.lineWidth = 1;
+                var traceTypeScale = canvasHudScale;
+                var traceHUDX = 14, traceHUDY = H - 82, traceHUDW = 228, traceHUDH = 68;
+                ctx.fillStyle = highContrastEnabled || liveVisualMode === 'accessible' ? '#000000' : '#0f172a'; ctx.strokeStyle = traceHUDConfig.color; ctx.lineWidth = 1;
                 if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(traceHUDX, traceHUDY, traceHUDW, traceHUDH, 9); ctx.fill(); ctx.stroke(); }
                 else { ctx.fillRect(traceHUDX, traceHUDY, traceHUDW, traceHUDH); ctx.strokeRect(traceHUDX, traceHUDY, traceHUDW, traceHUDH); }
-                ctx.font = 'bold 10px Inter, system-ui'; ctx.fillStyle = '#f8fafc'; ctx.fillText(traceHUDConfig.icon + ' ' + traceHUDConfig.label, traceHUDX + 10, traceHUDY + 15);
-                ctx.font = 'bold 7px Inter, system-ui'; ctx.fillStyle = traceHUDConfig.color; ctx.fillText(traceHUDStatus, traceHUDX + 10, traceHUDY + 27);
-                var traceLineY = traceHUDY + 39;
+                ctx.font = 'bold ' + (10 * traceTypeScale) + 'px Inter, system-ui'; ctx.fillStyle = '#f8fafc'; ctx.fillText(fitTextToWidth(traceHUDTitle, traceHUDW - 20), traceHUDX + 10, traceHUDY + 20);
+                ctx.font = 'bold ' + (9 * traceTypeScale) + 'px Inter, system-ui'; ctx.fillStyle = highContrastEnabled ? '#ffffff' : traceHUDConfig.color; ctx.fillText(fitTextToWidth(traceHUDStatus, traceHUDW - 20), traceHUDX + 10, traceHUDY + 38);
+                var traceLineY = traceHUDY + 55;
                 var traceMiniGradient = ctx.createLinearGradient(traceHUDX + 10, traceLineY, traceHUDX + traceHUDW - 10, traceLineY);
                 traceMiniGradient.addColorStop(0, traceHUDConfig.secondary); traceMiniGradient.addColorStop(0.48, traceHUDConfig.color); traceMiniGradient.addColorStop(1, traceHUDConfig.secondary);
                 ctx.strokeStyle = traceMiniGradient; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(traceHUDX + 10, traceLineY); ctx.lineTo(traceHUDX + traceHUDW - 12, traceLineY); ctx.stroke();
@@ -14390,9 +14497,6 @@ var d = labToolData.dissection || {};
                   var traceHUDPhase = dissMotionReduced || systemPlaybackPaused ? (traceHUDMarkerIndex + 1) / 4 : (systemTraceTick * 0.012 + traceHUDMarkerIndex / 3) % 1;
                   var traceHUDMarkerX = traceHUDX + 12 + traceHUDPhase * (traceHUDW - 28);
                   ctx.fillStyle = traceHUDConfig.color; ctx.beginPath(); ctx.moveTo(traceHUDMarkerX + 5, traceLineY); ctx.lineTo(traceHUDMarkerX - 3, traceLineY - 4); ctx.lineTo(traceHUDMarkerX - 3, traceLineY + 4); ctx.closePath(); ctx.fill();
-                }
-                if (activeCanvasTraceKey === 'circulation') {
-                  ctx.beginPath(); ctx.arc(traceHUDX + traceHUDW - 21, traceHUDY + 13, 3, 0, Math.PI * 2); ctx.fillStyle = traceHUDConfig.secondary; ctx.fill();
                 }
                 ctx.restore();
               }
@@ -14871,24 +14975,87 @@ var d = labToolData.dissection || {};
                   ctx.restore();
 
                   if (canvas._toolDrawing || activeContactPulse || ['forceps', 'pin', 'probe', 'dropper'].indexOf(responseTool) >= 0) {
-                    var responseLabelX = pointerScreenX > W - 150 ? pointerScreenX - 138 : pointerScreenX + 14;
-                    var responseLabelY = pointerScreenY > H - 58 ? pointerScreenY - 43 : pointerScreenY + 14;
-                    ctx.save(); ctx.fillStyle = 'rgba(15,23,42,0.90)';
-                    if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(responseLabelX, responseLabelY, 132, 43, 6); ctx.fill(); }
-                    else ctx.fillRect(responseLabelX, responseLabelY, 132, 43);
-                    ctx.font = 'bold 8px Inter, system-ui'; ctx.fillStyle = contactAccent;
+                    var responseTypeScale = canvasUiScale;
+                    var responsePanelW = Math.min(W - 28, Math.max(210, Math.min(300, 210 * responseTypeScale)));
+                    var responseInset = 10 * responseTypeScale, responseTextWidth = responsePanelW - 2 * responseInset;
                     var materialResponseLabel = contactOnSpecimen ? toolMaterial.response.toUpperCase() : 'TRAY SURFACE';
-                    ctx.fillText(materialResponseLabel, responseLabelX + 7, responseLabelY + 12);
-                    ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
-                    var resistanceWord = contactResistance < 0.34 ? 'low' : (contactResistance < 0.68 ? 'moderate' : 'high');
                     var contactCalibration = instrumentCalibrationAssessment(responseTool, toolCalibration);
-                    ctx.fillText(contactOnSpecimen ? (responseTool + ' | ' + contactCalibration.label.toLowerCase() + ' ' + contactCalibration.score + '% | ' + Math.round(surfacePressure * 100) + '%') : (responseTool + ' | no tissue response'), responseLabelX + 7, responseLabelY + 24);
-                    ctx.fillStyle = cuttingAtProtectedStructure ? '#fecdd3' : '#cbd5e1';
+                    var responseDetails = contactOnSpecimen
+                      ? responseTool + ' | ' + contactCalibration.label.toLowerCase() + ' ' + contactCalibration.score + '% | ' + Math.round(surfacePressure * 100) + '%'
+                      : responseTool + ' | no tissue response';
                     var activeDepthLabel = (d.incisionDepth || 'shallow').toUpperCase();
                     var contactContextLabel = interactionPreviewLabel || (cuttingAtProtectedStructure
                       ? activeDepthLabel + ' / PROTECT ' + underTipOrgan.name
                       : (underTipOrgan ? 'Under tip: ' + underTipOrgan.name : (contactOnSpecimen ? activeDepthLabel + ' / ' + ((spec.layers[currentLayerIdx] || {}).name || activeLayer) : 'Move tip onto specimen')));
-                    ctx.fillText(contactContextLabel.slice(0, 31), responseLabelX + 7, responseLabelY + 36);
+                    ctx.save();
+                    ctx.font = 'bold ' + (11 * responseTypeScale) + 'px Inter, system-ui';
+                    var responseTitleLines = wrapTextToWidth(materialResponseLabel, responseTextWidth, 2);
+                    ctx.font = (10 * responseTypeScale) + 'px Inter, system-ui';
+                    var responseDetailLines = wrapTextToWidth(responseDetails, responseTextWidth, 2);
+                    var responseContextLines = wrapTextToWidth(contactContextLabel, responseTextWidth, 3);
+                    var responseLineHeight = 13 * responseTypeScale;
+                    var responsePanelH = (responseTitleLines.length + responseDetailLines.length + responseContextLines.length) * responseLineHeight + 14 * responseTypeScale;
+                    var feedbackObstacles = (canvas._guidanceBoxes || []).slice();
+                    feedbackObstacles.push({ x: pointerScreenX - 26 * responseTypeScale, y: pointerScreenY - 26 * responseTypeScale,
+                      width: 52 * responseTypeScale, height: 52 * responseTypeScale, priority: 6 });
+                    feedbackObstacles.push({ x: specimenHudX, y: 13, width: specimenHudWidth, height: 30 * specimenHudTypeScale, priority: 4 });
+                    feedbackObstacles.push({ x: compassX, y: compassY, width: compassWidth, height: compassHeight, priority: 4 });
+                    if (hudCompassBox) feedbackObstacles.push({ x: hudCompassBox.x, y: hudCompassBox.y, width: hudCompassBox.w, height: hudCompassBox.h, priority: 4 });
+                    if (d.macroInset !== false && liveWorkspaceMode === 'advanced') {
+                      var responseMacroW = liveVisualMode === 'accessible' ? 176 : 158;
+                      feedbackObstacles.push({ x: pointerScreenX > W * 0.58 ? 12 : W - responseMacroW - 12, y: 12,
+                        width: responseMacroW, height: liveVisualMode === 'accessible' ? 142 : 124, priority: 4 });
+                    }
+                    if (labelPhysiologyReserve) feedbackObstacles.push({ x: 14, y: H - 84, width: W - 28, height: 70, priority: 4 });
+                    if (fullscreenCanvas) feedbackObstacles.push({ x: W - 160, y: 74, width: 146, height: 116 * canvasHudScale, priority: 4 });
+                    var responseGap = 18 * responseTypeScale;
+                    var responseCandidates = [
+                      [pointerScreenX + responseGap, pointerScreenY - responsePanelH / 2],
+                      [pointerScreenX - responsePanelW - responseGap, pointerScreenY - responsePanelH / 2],
+                      [pointerScreenX - responsePanelW / 2, pointerScreenY - responsePanelH - responseGap],
+                      [pointerScreenX - responsePanelW / 2, pointerScreenY + responseGap],
+                      [14, 21 + 30 * specimenHudTypeScale], [W - responsePanelW - 14, 21 + 30 * specimenHudTypeScale],
+                      [14, H - responsePanelH - 14], [W - responsePanelW - 14, H - responsePanelH - 14]
+                    ];
+                    // Try the edges of anatomy text as well as the pointer and corners.
+                    // These candidates use the measured cards, including wrapped phone labels.
+                    feedbackObstacles.filter(function (box) { return box.priority === 8; }).forEach(function (box) {
+                      responseCandidates.push([box.x, box.y - responsePanelH - 8], [box.x, box.y + box.height + 8],
+                        [box.x - responsePanelW - 8, box.y], [box.x + box.width + 8, box.y]);
+                    });
+                    var responsePlacement = null;
+                    responseCandidates.forEach(function (candidate) {
+                      var candidateX = Math.max(14, Math.min(W - responsePanelW - 14, candidate[0]));
+                      var candidateY = Math.max(14, Math.min(H - responsePanelH - 14, candidate[1]));
+                      var score = 0;
+                      feedbackObstacles.forEach(function (box) {
+                        var overlapW = Math.min(candidateX + responsePanelW + 6, box.x + box.width) - Math.max(candidateX - 6, box.x);
+                        var overlapH = Math.min(candidateY + responsePanelH + 6, box.y + box.height) - Math.max(candidateY - 6, box.y);
+                        if (overlapW > 0 && overlapH > 0) {
+                          score += overlapW * overlapH * box.priority;
+                          if (box.priority === 8) score += W * H * 100;
+                        }
+                      });
+                      score += Math.hypot(candidateX + responsePanelW / 2 - pointerScreenX, candidateY + responsePanelH / 2 - pointerScreenY) * 0.1;
+                      if (!responsePlacement || score < responsePlacement.score) responsePlacement = { x: candidateX, y: candidateY, score: score };
+                    });
+                    var responseLabelX = responsePlacement.x, responseLabelY = responsePlacement.y;
+                    canvas._contactFeedbackBox = { x: responseLabelX, y: responseLabelY, width: responsePanelW, height: responsePanelH };
+                    ctx.globalAlpha = 1;
+                    ctx.strokeStyle = contactAccent; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+                    ctx.beginPath(); ctx.moveTo(pointerScreenX, pointerScreenY);
+                    ctx.lineTo(Math.max(responseLabelX, Math.min(responseLabelX + responsePanelW, pointerScreenX)), Math.max(responseLabelY, Math.min(responseLabelY + responsePanelH, pointerScreenY)));
+                    ctx.stroke(); ctx.setLineDash([]);
+                    ctx.fillStyle = highContrastEnabled || liveVisualMode === 'accessible' ? '#000000' : '#0f172a';
+                    if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(responseLabelX, responseLabelY, responsePanelW, responsePanelH, 7); ctx.fill(); }
+                    else ctx.fillRect(responseLabelX, responseLabelY, responsePanelW, responsePanelH);
+                    var responseTextY = responseLabelY + 13 * responseTypeScale;
+                    ctx.font = 'bold ' + (11 * responseTypeScale) + 'px Inter, system-ui'; ctx.fillStyle = highContrastEnabled ? '#ffffff' : contactAccent;
+                    responseTitleLines.forEach(function (line) { ctx.fillText(line, responseLabelX + responseInset, responseTextY); responseTextY += responseLineHeight; });
+                    ctx.font = (10 * responseTypeScale) + 'px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+                    responseDetailLines.forEach(function (line) { ctx.fillText(line, responseLabelX + responseInset, responseTextY); responseTextY += responseLineHeight; });
+                    ctx.fillStyle = highContrastEnabled ? '#ffffff' : (cuttingAtProtectedStructure ? '#fecdd3' : '#cbd5e1');
+                    responseContextLines.forEach(function (line) { ctx.fillText(line, responseLabelX + responseInset, responseTextY); responseTextY += responseLineHeight; });
                     ctx.restore();
                   }
                 }
@@ -18579,6 +18746,14 @@ var d = labToolData.dissection || {};
                     }, d.procedureFeedback.message)
                     : null,
 
+                  !d.quizMode && React.createElement("div", { className: "diss-marker-guide", "data-diss-marker-guide": true },
+                    React.createElement("p", null, __alloT('stem.dissection.marker_guide', 'Numbered markers match the numbers in the structure list.')),
+                    React.createElement("button", { type: "button", "aria-controls": "diss-structure-directory", onClick: function () {
+                      updMany({ selectedOrgan: null, organSearch: '', directoryFilter: 'all' });
+                      focusDissectionTarget('diss-organ-search');
+                    } }, __alloT('stem.dissection.browse_structures', 'Browse structures'))
+                  ),
+
                   // Zoom control bar
                 React.createElement("div", { className: "diss-zoom-bar flex items-center justify-center gap-2 py-1 px-2 rounded-lg bg-slate-100 border border-slate-400" },
                   React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_zoom_out_canvas', 'Zoom out canvas'),
@@ -18614,6 +18789,26 @@ var d = labToolData.dissection || {};
                   React.createElement("span", { className: "diss-depth-key__item" }, React.createElement("span", { className: "diss-depth-symbol", "data-depth": "surface", "aria-hidden": "true" }), 'Surface', React.createElement("span", { className: "diss-depth-key__count" }, String(depthAtlasCounts.surface))),
                   React.createElement("span", { className: "diss-depth-key__item" }, React.createElement("span", { className: "diss-depth-symbol", "data-depth": "structure", "aria-hidden": "true" }), 'Mid-depth', React.createElement("span", { className: "diss-depth-key__count" }, String(depthAtlasCounts.structure))),
                   React.createElement("span", { className: "diss-depth-key__item" }, React.createElement("span", { className: "diss-depth-symbol", "data-depth": "deep", "aria-hidden": "true" }), 'Deep', React.createElement("span", { className: "diss-depth-key__count" }, String(depthAtlasCounts.deep)))
+                ),
+
+                advancedWorkspace && !d.quizMode && React.createElement("details", { className: "diss-system-key diss-disclosure", "data-diss-system-key": true, "aria-labelledby": "diss-system-key-title" },
+                  React.createElement("summary", null,
+                    React.createElement("span", { id: "diss-system-key-title" }, __alloT('stem.dissection.system_color_key', 'System color key')),
+                    React.createElement("span", { className: "diss-system-key__preview", "aria-hidden": "true" },
+                      Object.keys(DISSECTION_SYSTEM_COLORS).map(function (systemId) { return React.createElement("span", { key: systemId, style: { backgroundColor: dissectionSystemColor(systemId, 'onLight') } }); })
+                    )
+                  ),
+                  React.createElement("div", { className: "diss-disclosure__body" },
+                    React.createElement("p", { className: "diss-system-key__hint" }, __alloT('stem.dissection.system_color_key_hint', 'Match these colors with the system labels in the structure list.')),
+                    React.createElement("ul", { className: "diss-system-key__list", role: "list" },
+                      Object.keys(DISSECTION_SYSTEM_COLORS).map(function (systemId) {
+                        return React.createElement("li", { key: systemId, "data-system-key": systemId },
+                          React.createElement("span", { className: "diss-system-key__swatch", "aria-hidden": "true", style: { backgroundColor: dissectionSystemColor(systemId, 'onLight') } }),
+                          React.createElement("span", null, dissectionSystemLabel(systemId))
+                        );
+                      })
+                    )
+                  )
                 ),
 
                 // This paragraph is in aria-describedby, so all 497 characters of it were spoken on
@@ -19134,13 +19329,15 @@ var d = labToolData.dissection || {};
                     React.createElement("div", {
                       className: "diss-living-function",
                       "data-active": livingFunctionEnabled ? "true" : "false",
+                      "data-motion": !livingFunctionEnabled ? "off" : (physiologyMotionReduced ? "static" : (livingFunctionPaused ? "paused" : "playing")),
                       role: "group",
                       "aria-label": __alloT('stem.dissection.a11y_specimen_specific_living_function_model', 'Specimen-specific living function model')
                     },
                       React.createElement("div", { className: "diss-living-function__copy" },
                         React.createElement("strong", null, specimenLivingFunctionProfile().title),
                         React.createElement("span", null, specimenLivingFunctionProfile().summary),
-                        React.createElement("span", { className: "diss-living-function__badge" }, livingFunctionEnabled ? (livingFunctionPaused ? 'Paused · ' + livingFunctionSpeed : 'Playing · ' + livingFunctionSpeed) : 'Off · preserved view remains static')
+                        React.createElement("span", null, 'In-life physiology · not preserved motion'),
+                        React.createElement("span", { className: "diss-living-function__badge", role: "status" }, livingFunctionEnabled ? (physiologyMotionReduced ? 'Static · reduced motion' : (livingFunctionPaused ? 'Paused · ' + livingFunctionSpeed : 'Playing · ' + livingFunctionSpeed)) : 'Off · preserved view remains static')
                       ),
                       React.createElement("div", { className: "diss-living-function__controls" },
                         React.createElement("button", { type: "button", "aria-pressed": livingFunctionEnabled, onClick: function () {
@@ -19166,7 +19363,7 @@ var d = labToolData.dissection || {};
                     activeFunctionalTraceKey && React.createElement("div", { className: "diss-system-playback", role: "group", "aria-label": activeFunctionalTraceLabel + " pathway playback" },
                       React.createElement("div", { className: "diss-system-playback__status", role: "status", "aria-live": "polite" },
                         React.createElement("strong", null, activeFunctionalTraceLabel + ' playback'),
-                        React.createElement("span", null, activeLayer !== 'organs' ? 'Waiting for Internal Organs layer' : (d.systemPlaybackPaused ? 'Paused on the current directional frame' : 'Playing directional flow'))
+                        React.createElement("span", null, activeLayer !== 'organs' ? 'Waiting for Internal Organs layer' : (physiologyMotionReduced ? 'Static directions · reduced motion' : (d.systemPlaybackPaused ? 'Paused on the current directional frame' : 'Playing directional flow')))
                       ),
                       React.createElement("button", { type: "button", disabled: activeLayer !== 'organs', "aria-pressed": !!d.systemPlaybackPaused, onClick: function () { upd('systemPlaybackPaused', !d.systemPlaybackPaused); setProcedureFeedback(activeFunctionalTraceLabel + (d.systemPlaybackPaused ? ' playback resumed.' : ' playback paused on the current directional frame.')); } }, d.systemPlaybackPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
                       React.createElement("button", { type: "button", disabled: activeLayer !== 'organs', onClick: function () { updMany({ systemPlaybackPaused: false, systemTraceReplayToken: Date.now() }); setProcedureFeedback(activeFunctionalTraceLabel + ' pathway replayed from the beginning.'); } }, '\u21BB Replay')

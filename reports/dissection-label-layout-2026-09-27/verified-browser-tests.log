@@ -1,0 +1,14 @@
+
+Running 5 tests using 1 worker
+
+(node:45956) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45956) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dissection-label-layout.spec.ts:49:5 › the Labels toggle hides default labels on its first click and restores them (12.1s)
+  ok 2 [chromium] › tests\e2e\dissection-label-layout.spec.ts:67:7 › touchscreen labels › long selected labels fit their cards on a phone in dorsal view (8.5s)
+  ok 3 [chromium] › tests\e2e\dissection-label-layout.spec.ts:67:7 › touchscreen labels › long selected labels fit their cards on a phone in ventral view (5.5s)
+  ok 4 [chromium] › tests\e2e\dissection-label-layout.spec.ts:90:5 › lateral perch preserves its drawing proportions and the visible label selects its structure (8.3s)
+  ok 5 [chromium] › tests\e2e\dissection-label-layout.spec.ts:113:5 › phone labels leave the frog hotspot markers exposed (4.1s)
+
+  5 passed (45.0s)

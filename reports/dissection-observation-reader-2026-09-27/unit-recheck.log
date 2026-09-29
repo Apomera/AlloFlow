@@ -1,0 +1,133 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/dissection_lab_improvements.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > provides constrained precision navigation and discoverable keyboard parity
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > provides constrained precision navigation and discoverable keyboard parity
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+ ❯ tests/dissection_lab_improvements.test.js (91 tests | 1 failed | 89 skipped) 3488ms
+     ↓ keeps the desktop runtime mirror byte-identical to the source tool
+     × provides one stable object identity per mounted plugin bridge 31ms
+     ↓ keeps progress specimen-specific and persists learner evidence
+     ↓ provides honest controls, accessible touch input, and reliable practical scoring
+     ↓ labels comparative science and captures evidence in reports
+     ↓ keeps comparative anatomy species-specific in source and every runtime catalog
+     ↓ models a persistent, accessible procedural instrument workflow
+     ↓ keeps every guided interaction answerable, guarded, and honest about its result
+     ↓ supports specimen-aware direct forceps lifting with equivalent accessible feedback
+     ↓ supports direct pin press-drag-release placement with live stability evidence
+     ↓ supports direct probe press-drag-release palpation with live contact evidence
+     ↓ supports direct dropper press-drag-release hydration with flow and pooling evidence
+     ↓ supports direct wick press-drag-release recovery with pool-edge evidence
+     ↓ uses an anatomy-aware fetal pig silhouette instead of mascot-like features
+     ↓ keeps earthworm surface and internal anatomy registered to one curved body axis
+     ↓ adds immersive tray depth and anatomy-aware perch and crayfish materials
+     ↓ uses species-appropriate sheep-eye layers and an anatomical sheep-heart silhouette
+     ↓ uses an integrated frog posture with registered external and internal anatomy
+     ↓ renders anatomically layered heart and fetal-pig internal cutaways
+     ↓ renders the catalog-backed species-specific specimen descriptions
+     ↓ renders a normalized, screen-reader-friendly inquiry simulator
+     ↓ migrates legacy procedure layers to stable tissue state when progress loads
+     ↓ preserves a newer protected save until the learner confirms reset
+     ↓ keeps malformed saved bytes quarantined instead of overwriting them with defaults
+     ↓ quarantines empty and unsafe nested save records byte-for-byte
+     ↓ preserves a valid save changed in another tab and safely reloads it on retry
+     ↓ keeps an inactive specimen storage conflict out of the active specimen save UI
+     ↓ detects a valid external save change even when no storage event arrives
+     ↓ keeps temporary work while protected-save retry remains unreadable
+     ↓ keeps temporary work when transient storage failure recovers with no saved record
+     ↓ flushes rapid specimen switches and cancels stale pre-reset writes
+     ↓ cancels a delayed layer reveal before switching specimens
+     ↓ preserves text when evidence storage is limited, surfaces failures, and reports recovery
+     ↓ blocks silent evidence rollover and safely frees notebook storage without losing other progress
+     ↓ flushes pending progress on pagehide before the debounce can expire
+     ↓ keeps a direct scalpel gesture active across a harmless React re-render
+     ↓ renders the evidence workflow and comparative-model notice
+     ↓ offers an ungraded evidence review without inferring explanation quality from words
+     ↓ updates labeled confidence choices and appends the optional countercheck once
+     ↓ keeps focus continuous while structure-specific references reset only when the structure changes
+     ↓ projects assessment location clues into the displayed anatomical view
+     ↓ defaults to an Essentials workspace while preserving an explicit Advanced workspace
+     ↓ deactivates hidden challenge state when switching from Advanced to Essentials
+     ↓ derives learning objectives from structure evidence instead of manual check-off
+     ↓ renders a finite assessment summary with first-attempt and supported-practice evidence
+     ↓ offers persisted missed-item review after returning to the lab
+     ↓ renders one explicit next action as investigation state advances
+     ↓ requires learner evidence before offering to peel a completed layer
+     ↓ offers an explicit chooser when Study tools has no active activity
+     ↓ freezes the practical target pool and locks directory and view changes
+     ↓ does not reveal timed-practical correctness through answer explanations
+     ↓ resumes a timed practical from its wall-clock deadline after canvas remount
+     ↓ keeps field diagnostics and technique controls progressively disclosed
+     ↓ previews a hidden directory structure without awarding exploration progress
+     ↓ reports clipboard rejection instead of claiming structure information was copied
+     ↓ separates first-attempt mastery from a correct supported retry
+     ↓ clears the durable missed-item queue after supported review is completed
+     ↓ falls back to multiple choice without changing an unanswerable hotspot question
+     ↓ keeps a restricted tray keyboard-safe even when a hydration tool was persisted as active
+     ↓ renders canvas-answer assessment with a keyboard alternative
+     ↓ renders guided instruments, progress, depth controls, and an equivalent action button
+     ↓ renders distinct organism-specific access routes and next actions
+     ↓ renders a compressed evidence notebook with live-reference comparison controls
+     ↓ renders specimen-aware realism controls and the sheep-eye dropper tray
+     ↓ keeps anatomical orientation and reference scale accurate at every zoom
+     ✓ provides constrained precision navigation and discoverable keyboard parity  3454ms
+     ↓ models persistent tissue dynamics and connected procedural consequences
+     ↓ calibrates every procedural instrument with live readiness and tissue consequences
+     ↓ derives one responsive observation field for visuals, coaching, evidence, and accessibility
+     ↓ models depth-aware optical inspection with visible focus and magnification tradeoffs
+     ↓ provides persistent WCAG preferences, robust focus, composite keyboard navigation, and drag alternatives
+     ↓ shows comparison replay statically when OS reduced motion is active without flooding live status
+     ↓ protects destructive reset and announces filtered structure results with focus recovery
+     ↓ implements the ARIA radio keyboard pattern for procedural instruments
+     ↓ adds an explicit specimen-specific living-function model with responsive playback
+     ↓ keeps living-function pause, speed, replay, and control state synchronized
+     ↓ drives flap physics from tissue state and smoothly frames selected anatomy
+     ↓ keeps instrument readiness labels readable at WCAG AA contrast
+     ↓ has no axe-detectable WCAG A or AA violations in the rendered lab
+     ↓ adds an absorbent-wick recovery loop for excess saline
+     ↓ models adjustable specimen-aware illumination and glare
+     ↓ keeps the fullscreen dock visible and escapable in CSS fallback mode
+     ↓ integrates dynamic procedure, exposure, scenario, performance, and fullscreen controls
+     ↓ undoes a repeated learning-checked action without losing the earlier state or stale completion evidence
+     ↓ keeps one persistence owner when the host recreates deferred setter wrappers
+     ↓ keeps keyboard, canvas lifecycle, and fullscreen focus scoped to the originating lab root
+     ↓ keeps layer and teaching timers isolated when a sibling lab unmounts
+     ↓ retains a transiently failed snapshot and blocks specimen switching until the save succeeds
+     ↓ keeps review items beyond the five-question batch and rejects phantom verification credit
+     ↓ ignores retired review IDs and announces reset confirmation only once
+     ↓ preserves a deliberate zero-caution scenario threshold
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/dissection_lab_improvements.test.js > dissection improvement contracts > provides one stable object identity per mounted plugin bridge
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/dissection_lab_improvements.test.js:31:62
+     29|     for (const filePath of STEM_SHARED_PATHS) {
+     30|       const source = readFileSync(filePath, 'utf8');
+     31|       expect(readFileSync(filePath).equals(canonicalBridge)).toBe(true…
+       |                                                              ^
+     32|       expect(source).toContain('var pluginInstanceTokenRef = React.use…
+     33|       expect(source).toContain('pluginInstanceTokenRef.current = {};');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 89 skipped (91)
+   Start at  13:16:56
+   Duration  7.84s (transform 512ms, setup 201ms, import 574ms, tests 3.49s, environment 2.84s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-observation-reader-2026-09-27/unit-recheck.json

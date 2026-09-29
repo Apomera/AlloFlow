@@ -17,7 +17,9 @@ async function mount(page: Page, state: Record<string, unknown>) {
     viewport.setAttribute('content', 'width=device-width, initial-scale=1');
   });
   await page.addStyleTag({ content: '#wrap { width:100% !important; max-width:1180px; }' });
-  await page.locator('[data-diss-canvas]').scrollIntoViewIfNeeded();
+  const canvas = page.locator('[data-diss-canvas]');
+  await canvas.scrollIntoViewIfNeeded();
+  await expect.poll(() => canvas.evaluate((el: any) => el._dissInViewport)).toBe(true);
 }
 
 // Observe real drawing coordinates after the renderer applies its transforms. This

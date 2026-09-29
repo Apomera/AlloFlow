@@ -325,7 +325,7 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain('var leftEdge = [], rightEdge = []');
       expect(source).toContain('var normalX = -tangentY / tangentLength');
       expect(source).toContain('var contactPressure = Math.max');
-      expect(source).toContain("ctx.fillText(materialResponseLabel");
+      expect(source).toContain('var responseTitleLines = wrapTextToWidth(materialResponseLabel, responseTextWidth, 2);');
       expect(source).toContain("ctx.fillText('MACRO '");
       expect(source).toContain('function toggleInspectionPin()');
       expect(source).toContain('function cycleLensMagnification()');
@@ -4760,7 +4760,7 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
       expect(source).toContain('var livingWave = livingTimeline.wave;');
       expect(source).toContain('return { phase: phase, wave: (1 - Math.cos(phase * Math.PI * 2)) / 2, running: timelineRunning, elapsedMs: canvas._livingFunctionElapsedMs };');
       expect(source).toContain('livingFunctionReplayToken');
-      expect(source).toContain('LIVING FUNCTION MODEL');
+      expect(source).toContain('LIVING MODEL');
       expect(source).toContain('In-life physiology');
       expect(source).toContain('not preserved motion');
       expect(source).toContain('livingFunction: livingFunctionEnabled ?');

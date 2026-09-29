@@ -1,0 +1,68 @@
+
+Running 13 tests using 1 worker
+
+(node:52680) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:52680) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\e2e\dissection-observation-reader.spec.ts:33:5 › reads only inspected observations with honest empty states, keyboard navigation, and unchanged evidence (5.5s)
+  ok  2 [chromium] › tests\e2e\dissection-observation-reader.spec.ts:71:5 › keeps search and filter scope through editing and reads the revised original note (13.2s)
+  ok  3 [chromium] › tests\e2e\dissection-observation-reader.spec.ts:97:5 › reader stays current after a parent render and releases modality for empty results or another activity (4.4s)
+  ok  4 [chromium] › tests\e2e\dissection-observation-reader.spec.ts:119:5 › phone reading view wraps long notes and supports larger text and accessible controls (8.9s)
+  ok  5 [chromium] › tests\e2e\dissection-observation-reader.spec.ts:142:5 › failed native opening keeps notes available and permits retry (8.9s)
+  ok  6 [chromium] › tests\e2e\dissection-observation-review.spec.ts:16:5 › review filters across layers preserve evidence and keep locked notes read-only (4.7s)
+  ok  7 [chromium] › tests\e2e\dissection-observation-review.spec.ts:39:5 › cross-layer note review returns to the list and reflects a deliberate confidence revision (4.9s)
+  ok  8 [chromium] › tests\e2e\dissection-observation-review.spec.ts:59:5 › phone review wraps saved notes and passes scoped accessibility checks (9.3s)
+  ok  9 [chromium] › tests\e2e\dissection-observation-review.spec.ts:73:5 › summary preview, clipboard and downloaded text match the current filter without changing evidence (8.2s)
+  x  10 [chromium] › tests\e2e\dissection-observation-review.spec.ts:109:5 › clipboard and download failures retain a selectable complete summary (30.5s)
+(node:39288) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:39288) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 11 [chromium] › tests\e2e\dissection-observation-review.spec.ts:130:5 › phone summary preview and export actions are accessible and fit the viewport (9.4s)
+  ok 12 [chromium] › tests\e2e\dissection-observation-review.spec.ts:144:5 › searching saved notes filters counts and exported contents while preserving locks and evidence (15.9s)
+  ok 13 [chromium] › tests\e2e\dissection-observation-review.spec.ts:191:5 › search survives note navigation and refreshes when the original note is revised (4.2s)
+
+
+  1) [chromium] › tests\e2e\dissection-observation-review.spec.ts:109:5 › clipboard and download failures retain a selectable complete summary
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoContain[2m([22m[32mexpected[39m[2m) // indexOf[22m
+
+    Expected substring: [32m"Clipboard unavailable"[39m
+    Received string:    [31m"Observation summary copied to the clipboard."[39m
+
+    Call Log:
+    - Timeout 15000ms exceeded while waiting on the predicate
+
+      118 |   await panel.locator('[data-observation-export] > summary').click();
+      119 |   await panel.getByRole('button', { name: 'Copy summary', exact: true }).click();
+    > 120 |   await expect.poll(() => page.evaluate(() => (window as any).__ctx.toolData.dissection.procedureFeedback.message)).toContain('Clipboard unavailable');
+          |                                                                                                                     ^
+      121 |   await panel.getByRole('button', { name: 'Download text', exact: true }).click();
+      122 |   await expect.poll(() => page.evaluate(() => (window as any).__ctx.toolData.dissection.procedureFeedback.message)).toContain('download could not start');
+      123 |   await panel.getByRole('button', { name: 'Select summary', exact: true }).click();
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-observation-review.spec.ts:120:117
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dissection-observation-reader-2026-09-27\final-browser-results\dissection-observation-rev-ed957-selectable-complete-summary-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\dissection-observation-reader-2026-09-27\final-browser-results\dissection-observation-rev-ed957-selectable-complete-summary-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dissection-observation-reader-2026-09-27\final-browser-results\dissection-observation-rev-ed957-selectable-complete-summary-chromium\error-context.md
+
+    Error Context: reports\dissection-observation-reader-2026-09-27\final-browser-results\dissection-observation-rev-ed957-selectable-complete-summary-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\dissection-observation-reader-2026-09-27\final-browser-results\dissection-observation-rev-ed957-selectable-complete-summary-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\dissection-observation-reader-2026-09-27\final-browser-results\dissection-observation-rev-ed957-selectable-complete-summary-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\dissection-observation-review.spec.ts:109:5 › clipboard and download failures retain a selectable complete summary
+  12 passed (2.9m)

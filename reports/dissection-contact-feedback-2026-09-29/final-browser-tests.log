@@ -1,0 +1,34 @@
+
+Running 25 tests using 1 worker
+
+(node:30560) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30560) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\e2e\dissection-contact-feedback.spec.ts:68:7 › feedback is readable and leaves selected captions clear in dorsal view (4.8s)
+  ok  2 [chromium] › tests\e2e\dissection-contact-feedback.spec.ts:68:7 › feedback is readable and leaves selected captions clear in ventral view (4.4s)
+  ok  3 [chromium] › tests\e2e\dissection-contact-feedback.spec.ts:86:9 › phone feedback › 390px feedback wraps readable text and preserves saved observations (7.6s)
+  ok  4 [chromium] › tests\e2e\dissection-contact-feedback.spec.ts:86:9 › phone feedback › 320px feedback wraps readable text and preserves saved observations (1.8m)
+  ok  5 [chromium] › tests\e2e\dissection-label-layout.spec.ts:51:5 › the Labels toggle hides default labels on its first click and restores them (3.0s)
+  ok  6 [chromium] › tests\e2e\dissection-label-layout.spec.ts:69:7 › touchscreen labels › long selected labels fit their cards on a phone in dorsal view (5.0s)
+  ok  7 [chromium] › tests\e2e\dissection-label-layout.spec.ts:69:7 › touchscreen labels › long selected labels fit their cards on a phone in ventral view (6.5s)
+  ok  8 [chromium] › tests\e2e\dissection-label-layout.spec.ts:92:5 › lateral perch preserves its drawing proportions and the visible label selects its structure (3.5s)
+  ok  9 [chromium] › tests\e2e\dissection-label-layout.spec.ts:115:5 › phone labels leave the frog hotspot markers exposed (2.5s)
+  ok 10 [chromium] › tests\e2e\dissection-marker-clarity.spec.ts:69:5 › covered structure symbols stay compact and shape-coded through fullscreen zoom (6.8s)
+  ok 11 [chromium] › tests\e2e\dissection-marker-clarity.spec.ts:85:7 › exposed markers and selection stay aligned in dorsal view (5.2s)
+  ok 12 [chromium] › tests\e2e\dissection-marker-clarity.spec.ts:85:7 › exposed markers and selection stay aligned in ventral view (3.9s)
+  ok 13 [chromium] › tests\e2e\dissection-marker-clarity.spec.ts:118:7 › phone markers › large-text high-contrast symbols and the guided ring remain legible (3.1s)
+  ok 14 [chromium] › tests\e2e\dissection-physiology-readability.spec.ts:49:7 › physiology captions fit opaque panels at 390px (2.8s)
+  ok 15 [chromium] › tests\e2e\dissection-physiology-readability.spec.ts:49:7 › physiology captions fit opaque panels at 320px (2.6s)
+  ok 16 [chromium] › tests\e2e\dissection-physiology-readability.spec.ts:76:5 › readable controls report static, paused, playing and off states (3.7s)
+  ok 17 [chromium] › tests\e2e\dissection-system-key.spec.ts:44:9 › phone system key › 390px key frees the specimen and keeps readable labels (14.8s)
+  ok 18 [chromium] › tests\e2e\dissection-system-key.spec.ts:44:9 › phone system key › 320px key frees the specimen and keeps readable labels (54.1s)
+  ok 19 [chromium] › tests\e2e\dissection-system-key.spec.ts:75:5 › fullscreen system key stays fixed through zoom, pan and orientation (19.9s)
+  ok 20 [chromium] › tests\e2e\dissection-zoom-labels.spec.ts:76:5 › fullscreen callouts fit at 2x and 3x zoom in both orientations (6.6s)
+  ok 21 [chromium] › tests\e2e\dissection-zoom-labels.spec.ts:100:9 › touchscreen selection › long selected name remains legible when panned in dorsal view (4.7s)
+  ok 22 [chromium] › tests\e2e\dissection-zoom-labels.spec.ts:100:9 › touchscreen selection › long selected name remains legible when panned in ventral view (3.0s)
+  ok 23 [chromium] › tests\e2e\dissection-zoom-labels.spec.ts:119:7 › panned frog cards select the correct structure in dorsal view (2.6s)
+  ok 24 [chromium] › tests\e2e\dissection-zoom-labels.spec.ts:119:7 › panned frog cards select the correct structure in ventral view (2.5s)
+  ok 25 [chromium] › tests\e2e\dissection-zoom-labels.spec.ts:131:5 › zoomed label cards still select the matching structure (2.7s)
+
+  25 passed (4.8m)

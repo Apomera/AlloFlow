@@ -1,0 +1,12 @@
+
+Running 3 tests using 1 worker
+
+(node:32588) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:32588) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dissection-system-key.spec.ts:44:9 › phone system key › 390px key frees the specimen and keeps readable labels (3.4s)
+  ok 2 [chromium] › tests\e2e\dissection-system-key.spec.ts:44:9 › phone system key › 320px key frees the specimen and keeps readable labels (3.4s)
+  ok 3 [chromium] › tests\e2e\dissection-system-key.spec.ts:75:5 › fullscreen system key stays fixed through zoom, pan and orientation (4.0s)
+
+  3 passed (11.9s)

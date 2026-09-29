@@ -1,0 +1,115 @@
+
+Running 14 tests using 1 worker
+
+(node:49592) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49592) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\e2e\69-dissection-pointer-path.spec.ts:96:5 › a mouse drag cuts along the teaching corridor and records the incision (26.5s)
+  ok  2 [chromium] › tests\e2e\69-dissection-pointer-path.spec.ts:175:5 › a touch drag cuts too, once the instrument may act (11.3s)
+  ok  3 [chromium] › tests\e2e\69-dissection-pointer-path.spec.ts:245:5 › the probe tells a dragging student something that works (8.4s)
+  ok  4 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › frog skin specimen renders without errors (6.0s)
+  ok  5 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › frog organs specimen renders without errors (7.2s)
+  ok  6 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › perch skin specimen renders without errors (3.5s)
+  ok  7 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › sheepHeart skin specimen renders without errors (15.5s)
+  ok  8 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › sheepEye organs specimen renders without errors (7.6s)
+  ok  9 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › crayfish skin specimen renders without errors (23.4s)
+  ok 10 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › earthworm skin specimen renders without errors (42.8s)
+  ok 11 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › pig skin specimen renders without errors (37.0s)
+  ok 12 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:39:5 › phone and high-contrast presentation retain a usable canvas (3.7s)
+  x  13 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:54:5 › specimen lighting leaves the surrounding tray unchanged in dorsal and ventral views (18.8s)
+(node:7620) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7620) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  14 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:75:5 › Advanced and fullscreen restore the detailed canvas guidance (25.1s)
+
+
+  1) [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:54:5 › specimen lighting leaves the surrounding tray unchanged in dorsal and ventral views
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mnot[2m.[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    Expected: not [32m[96, 112, 75, 255, 96, 112, 75, 255, 96, 112, …][39m
+
+
+    Call Log:
+    - Timeout 15000ms exceeded while waiting on the predicate
+
+      67 |     const dim = await sample();
+      68 |     await page.evaluate(() => (window as any).__ctx.update('dissection', 'lightIntensity', 100));
+    > 69 |     await expect.poll(async () => (await sample()).body).not.toEqual(dim.body);
+         |                                                              ^
+      70 |     expect((await sample()).tray).toEqual(dim.tray);
+      71 |   }
+      72 |   await harness.unmount(page);
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-visual-presentation.spec.ts:69:62
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dissection-visual-presentation-2026-09-27\browser-tests\dissection-visual-presenta-1dda4-in-dorsal-and-ventral-views-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\dissection-visual-presentation-2026-09-27\browser-tests\dissection-visual-presenta-1dda4-in-dorsal-and-ventral-views-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dissection-visual-presentation-2026-09-27\browser-tests\dissection-visual-presenta-1dda4-in-dorsal-and-ventral-views-chromium\error-context.md
+
+    Error Context: reports\dissection-visual-presentation-2026-09-27\browser-tests\dissection-visual-presenta-1dda4-in-dorsal-and-ventral-views-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\dissection-visual-presentation-2026-09-27\browser-tests\dissection-visual-presenta-1dda4-in-dorsal-and-ventral-views-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\dissection-visual-presentation-2026-09-27\browser-tests\dissection-visual-presenta-1dda4-in-dorsal-and-ventral-views-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:75:5 › Advanced and fullscreen restore the detailed canvas guidance
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator('[data-diss-canvas]')
+    Expected: [32m"detailed"[39m
+    Received: [31m"compact"[39m
+    Timeout:  15000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 15000ms[22m
+    [2m  - waiting for locator('[data-diss-canvas]')[22m
+    [2m    32 × locator resolved to <canvas width="650" tabindex="0" height="780" id="diss-canvas" role="application" data-diss-canvas="true" data-cursor-mode="blocked" data-cursor-tone="blocked" data-dissection-hud="compact" aria-labelledby="diss-canvas-label" aria-roledescription="interactive specimen canvas" aria-describedby="diss-canvas-status diss-canvas-equivalent" class="diss-canvas w-full rounded-xl border border-slate-400 cursor-crosshair" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown S…></canvas>[22m
+    [2m       - unexpected value "compact"[22m
+
+
+      85 |   expect(await drawnLabels()).not.toContain('ANATOMICAL AXIS');
+      86 |   await page.getByRole('button', { name: 'Advanced workspace', exact: true }).click();
+    > 87 |   await expect(canvas).toHaveAttribute('data-dissection-hud', 'detailed');
+         |                        ^
+      88 |   expect(await drawnLabels()).toContain('ANATOMICAL AXIS');
+      89 |   await page.locator('.diss-stage').screenshot({ path: out + '/advanced.png' });
+      90 |   await page.getByRole('button', { name: 'Essentials workspace', exact: true }).click();
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-visual-presentation.spec.ts:87:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dissection-visual-presentation-2026-09-27\browser-tests\dissection-visual-presenta-7bee3-he-detailed-canvas-guidance-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\dissection-visual-presentation-2026-09-27\browser-tests\dissection-visual-presenta-7bee3-he-detailed-canvas-guidance-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dissection-visual-presentation-2026-09-27\browser-tests\dissection-visual-presenta-7bee3-he-detailed-canvas-guidance-chromium\error-context.md
+
+    Error Context: reports\dissection-visual-presentation-2026-09-27\browser-tests\dissection-visual-presenta-7bee3-he-detailed-canvas-guidance-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\dissection-visual-presentation-2026-09-27\browser-tests\dissection-visual-presenta-7bee3-he-detailed-canvas-guidance-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\dissection-visual-presentation-2026-09-27\browser-tests\dissection-visual-presenta-7bee3-he-detailed-canvas-guidance-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:54:5 › specimen lighting leaves the surrounding tray unchanged in dorsal and ventral views
+    [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:75:5 › Advanced and fullscreen restore the detailed canvas guidance
+  12 passed (5.1m)

@@ -476,10 +476,10 @@ describe('dissection workspace bands', () => {
       expect(source, label).toContain('fillReadableSpecimenText(' + label + ',');
     }
     // The ray label and the ECG readout live in the same transform. Both were moved off a
-    // literal argument in round 22 (one is clamped to the tray frame, the other right-aligned
-    // inside its own panel), so they are pinned by their helper call instead of by literal.
+    // literal argument (one is clamped to the tray frame, the other right-aligned
+    // inside its own panel), so these assertions check their calculated anchors.
     expect(source).toContain('fillReadableSpecimenText(refractedLabel, refractedAnchorX');
-    expect(source).toContain('fillPanelText(bpmText, ecgX - 5, ecgW + 10');
+    expect(source).toContain('ctx.fillText(ecgLabel, ecgX + ecgW - 6 - ecgLabelWidth, ecgY + 13);');
     expect(source).not.toContain("ctx.fillText(bpm + ' BPM'");
     expect(source).not.toContain("ctx.fillText('Refracted light'");
   }, 60_000);
@@ -687,14 +687,14 @@ describe('dissection workspace bands', () => {
   it.each(DISSECTION_PATHS)('keeps the ECG strip and its readout clear of the bottom HUD in %s', (filePath) => {
     const source = fs.readFileSync(filePath, 'utf8');
     expect(source).not.toContain('var ecgY = H - 35; var ecgW = W * 0.6; var ecgX = (W - ecgW) / 2;');
-    expect(source).toContain('var ecgY = H - 95;');
-    // Sized so it cannot reach the instrument bay, whose left edge is W - 142, at any width.
+    expect(source).toContain('var ecgY = H - 55;');
+    // Width stays within the left footer slot, clear of the living-function panel.
     expect(source).toContain('var ecgW = Math.min(W * 0.46, W - 172);');
     expect(source).toContain('var instrumentBayX = specimenScale.x < 0 ? 20 : W - 142;');
-    // Painted inside the specimen transform, so its anchor mirrors like every other panel.
-    expect(source).toContain('var ecgX = specimenScale.x < 0 ? W - 20 - ecgW : 20;');
+    // The trace now uses the fixed left physiology slot outside the specimen transform.
+    expect(source).toContain('var ecgX = 20;');
     // The readout belongs inside the panel, right-aligned, not 8px past its edge.
-    expect(source).toContain('fillPanelText(bpmText, ecgX - 5, ecgW + 10, ecgW + 10 - 6 - bpmWidth, ecgY + 13);');
+    expect(source).toContain('ctx.fillText(ecgLabel, ecgX + ecgW - 6 - ecgLabelWidth, ecgY + 13);');
     expect(source).not.toContain("fillReadableSpecimenText(bpm + ' BPM', ecgX + ecgW + 8, ecgY)");
   }, 60_000);
 
@@ -743,13 +743,12 @@ describe('dissection workspace bands', () => {
     // Excretory must not be violet again: that is the hue that collided with nervous.
     expect(source).not.toContain("excretory: '#a78bfa'");
     expect(source).toContain("excretory: { onDark: '#a3e635', onLight: '#84cc16' },");
-    // The table must still cover every system the key lists, or a row falls back to grey.
-    const listed = source.match(/var legendSys = \[([^\]]+)\]/);
-    expect(listed, 'legend system list').toBeTruthy();
-    for (const raw of listed[1].split(',')) {
-      const systemId = raw.trim().replace(/'/g, '');
-      expect(source, systemId).toContain(systemId + ': { onDark:');
-    }
+    // Both keys derive their entries from the palette rather than a second list
+    // that could include an unmapped system and fall back to grey.
+    expect(source).toContain('var legendSys = Object.keys(DISSECTION_SYSTEM_COLORS);');
+    expect(source).toContain('var legendLabels = legendSys.map(dissectionSystemLabel);');
+    expect(source).toContain('Object.keys(DISSECTION_SYSTEM_COLORS).map(function (systemId)');
+    expect(source).toContain("backgroundColor: dissectionSystemColor(systemId, 'onLight')");
   }, 60_000);
 
   // 2026-09-05. The canvas buffer is a fixed 500x600 whatever the column width, so on a phone

@@ -1,0 +1,20 @@
+
+Running 11 tests using 1 worker
+
+(node:45724) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45724) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › frog skin specimen renders without errors (4.7s)
+  ok  2 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › frog organs specimen renders without errors (3.3s)
+  ok  3 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › perch skin specimen renders without errors (7.7s)
+  ok  4 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › sheepHeart skin specimen renders without errors (4.4s)
+  ok  5 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › sheepEye organs specimen renders without errors (3.9s)
+  ok  6 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › crayfish skin specimen renders without errors (2.9s)
+  ok  7 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › earthworm skin specimen renders without errors (3.1s)
+  ok  8 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:15:7 › pig skin specimen renders without errors (8.2s)
+  ok  9 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:39:5 › phone and high-contrast presentation retain a usable canvas (4.2s)
+  ok 10 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:54:5 › specimen lighting leaves the surrounding tray unchanged in dorsal and ventral views (3.2s)
+  ok 11 [chromium] › tests\e2e\dissection-visual-presentation.spec.ts:76:5 › Advanced and fullscreen restore the detailed canvas guidance (6.0s)
+
+  11 passed (54.3s)

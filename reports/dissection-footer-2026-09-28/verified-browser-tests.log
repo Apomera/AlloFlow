@@ -1,0 +1,56 @@
+
+Running 5 tests using 1 worker
+
+(node:49784) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49784) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dissection-footer.spec.ts:52:7 › phone footer › numbered guidance opens the matching list without changing saved evidence (18.8s)
+  ok 2 [chromium] › tests\e2e\dissection-footer.spec.ts:70:9 › phone footer › living trace and scale stay separate through zoom in dorsal (24.3s)
+  ok 3 [chromium] › tests\e2e\dissection-footer.spec.ts:70:9 › phone footer › living trace and scale stay separate through zoom in ventral (24.7s)
+  ok 4 [chromium] › tests\e2e\dissection-footer.spec.ts:85:5 › guide follows compact labels and is absent during assessment (5.1s)
+  x  5 [chromium] › tests\e2e\dissection-footer.spec.ts:97:5 › heart trace runs only with the living model and follows its pause control (32.2s)
+
+
+  1) [chromium] › tests\e2e\dissection-footer.spec.ts:97:5 › heart trace runs only with the living model and follows its pause control
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mnot[2m.[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    Expected: not [32m[41, 45, 60, 255, 41, 45, 59, 255, 41, 45, …][39m
+
+
+    Call Log:
+    - Timeout 15000ms exceeded while waiting on the predicate
+
+      106 |   }, trace);
+      107 |   const running = await pixels();
+    > 108 |   await expect.poll(pixels).not.toEqual(running);
+          |                                 ^
+      109 |   await page.evaluate(() => (window as any).__ctx.update('dissection', 'livingFunctionPaused', true));
+      110 |   await expect.poll(() => canvas.evaluate((el: any) => el._drawD.livingFunctionPaused)).toBe(true);
+      111 |   const paused = await pixels();
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-footer.spec.ts:108:33
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dissection-footer-2026-09-28\verified-browser-tests\dissection-footer-heart-tr-358f6-d-follows-its-pause-control-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\dissection-footer-2026-09-28\verified-browser-tests\dissection-footer-heart-tr-358f6-d-follows-its-pause-control-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dissection-footer-2026-09-28\verified-browser-tests\dissection-footer-heart-tr-358f6-d-follows-its-pause-control-chromium\error-context.md
+
+    Error Context: reports\dissection-footer-2026-09-28\verified-browser-tests\dissection-footer-heart-tr-358f6-d-follows-its-pause-control-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\dissection-footer-2026-09-28\verified-browser-tests\dissection-footer-heart-tr-358f6-d-follows-its-pause-control-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\dissection-footer-2026-09-28\verified-browser-tests\dissection-footer-heart-tr-358f6-d-follows-its-pause-control-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\dissection-footer.spec.ts:97:5 › heart trace runs only with the living model and follows its pause control
+  4 passed (4.6m)
