@@ -1,0 +1,9 @@
+{
+  "workingSourceSHA256": "6efff7b724e665bc3966bbf2a35b21f68f5619a864b11a3d5a09c56f75949eb1",
+  "candidateSHA256": "c9923b93ff99e6477cb190d146bcb16d4d674fd84e65fc9b14f997221a8c5f1b",
+  "publicMatchesWorking": true,
+  "preservedMoonwalkHunks": 34,
+  "syntaxPassed": true,
+  "candidateFocusedTestsPassed": 34,
+  "scopedWhitespacePassed": true
+}

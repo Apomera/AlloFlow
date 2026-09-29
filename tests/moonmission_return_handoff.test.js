@@ -8,13 +8,13 @@ function findCanvas(node) {
   return node.type === 'canvas' && node.props['data-teicoast-canvas'] ? node : findCanvas(node.props && node.props.children);
 }
 
-function mount() {
-  const store = newStore({ moonMission: { missionPhase: 8, animPaused: false, soundOff: true } });
+function mount(extra = {}) {
+  const store = newStore({ moonMission: { missionPhase: 8, animPaused: false, soundOff: true, ...extra } });
   const tree = () => window.StemLab._registry.moonMission.render(makeCtx({ toolData: store.toolData }, store));
   const initial = tree();
   document.body.innerHTML = ReactDOMServer.renderToStaticMarkup(initial);
   const canvas = document.querySelector('[data-teicoast-canvas]');
-  let width = 800, height = 280, now = 0, paints = 0;
+  let width = 800, height = 400, now = 0, paints = 0;
   const text = [];
   Object.defineProperty(canvas, 'offsetWidth', { get: () => width });
   Object.defineProperty(canvas, 'offsetHeight', { get: () => height });
@@ -29,7 +29,8 @@ function mount() {
   findCanvas(initial).ref(canvas);
   const frame = (dt = 250) => { now += dt; const cb = raf.shift(); expect(cb).toBeTypeOf('function'); cb(now); };
   frame(0);
-  return { canvas, text, paints: () => paints,
+  return { canvas, text, tree, data: () => store.toolData.moonMission, paints: () => paints,
+    action(action, value) { canvas._returnAction(action, value); tree(); frame(0); },
     advance(ms) { for (let left = ms; left > 0; left -= 250) frame(Math.min(250, left)); },
     pause(paused) { store.toolData.moonMission.animPaused = paused; tree(); },
     resize(nextWidth) { width = nextWidth; resize(); },
@@ -45,10 +46,10 @@ beforeEach(() => {
   vi.stubGlobal('requestAnimationFrame', (cb) => { raf.push(cb); return raf.length; });
   vi.stubGlobal('ResizeObserver', class { constructor(cb) { resize = cb; } observe() {} disconnect() {} });
   resetStemLab();
-  loadTool('stem_lab/stem_tool_moonmission.js', 'moonMission');
+  loadTool(process.env.MM_SOURCE || 'stem_lab/stem_tool_moonmission.js', 'moonMission');
   P = window.MoonMissionPure;
 });
-afterEach(() => { document.body.innerHTML = ''; vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+afterEach(() => { document.body.innerHTML = ''; const pending = raf.slice(); raf = []; pending.forEach(cb => cb(0)); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 describe('return coast entry handoff', () => {
   it('reaches the entry preset at 122 km and 11030 m/s', () => {
@@ -72,21 +73,23 @@ describe('return coast entry handoff', () => {
     expect(P.returnCoast(1).serviceModuleSeparated).toBe(true);
   });
 
-  it('paints the full endpoint and shows separation only during the slowed final approach', () => {
+  it('paints the full endpoint and follows separation through the slowed final approach', () => {
     const app = mount();
-    app.advance(33000);
+    app.action('final'); app.action('pause', false); app.advance(1000);
     expect(app.canvas.dataset.returnSeparated).toBe('false');
     expect(Number(app.canvas.dataset.returnRemaining)).toBeGreaterThan(833);
-    app.advance(1250);
+    app.advance(500);
     expect(app.canvas.dataset.returnSeparated).toBe('true');
     expect(app.canvas.dataset.returnComplete).toBe('false');
     expect(Number(app.canvas.dataset.returnRemaining)).toBeGreaterThan(0);
-    app.advance(6500);
+    app.advance(14000);
     expect(app.canvas.dataset.returnComplete).toBe('true');
-    expect(Number(app.canvas.dataset.returnAltitude)).toBe(122);
-    expect(Number(app.canvas.dataset.returnSpeed)).toBe(11030);
-    expect(app.text).toContain('122 km');
-    expect(app.text).toContain('CM only — SM jettisoned');
+    expect(Number(app.canvas.dataset.returnAltitude)).toBeCloseTo(122, 7);
+    expect(Number(app.canvas.dataset.returnSpeed)).toBeCloseTo(11030, 7);
+    expect(app.canvas.dataset.returnPlume).toBe('off');
+    expect(document.querySelector('[data-return-value="stage"]').textContent).toBe('CM only — SM jettisoned');
+    expect(app.data().returnRun.recorded).toBe(true);
+    expect(app.data().returnResult.angle).toBe(-6.5);
   });
 
   it('repaints after a paused resize while holding all physical readouts', () => {
@@ -98,7 +101,7 @@ describe('return coast entry handoff', () => {
     app.advance(2000);
     expect(app.canvas.width).toBe(780);
     expect(app.paints()).toBeGreaterThan(count);
-    expect(app.text).toContain('CLOSING SPEED');
+    expect(document.querySelector('[data-return-value="closing"]').textContent).toMatch(/km\/s/);
     expect({ ...app.canvas.dataset }).toEqual(before);
     app.pause(false);
     app.advance(500);
@@ -107,23 +110,63 @@ describe('return coast entry handoff', () => {
 
   it('keeps the completed interface view visible through resizing', () => {
     const app = mount();
-    app.advance(41000);
+    app.action('arrival');
     const before = { ...app.canvas.dataset }, count = app.paints();
     app.resize(390);
     app.frame();
     expect(app.canvas.width).toBe(780);
     expect(app.paints()).toBeGreaterThan(count);
     expect({ ...app.canvas.dataset }).toEqual(before);
-    expect(app.text).toContain('122 km');
+    expect(app.text).toContain('CM ONLY / COAST');
   });
 
-  it('discloses the radial model and links the historical separation timeline', () => {
+  it('discloses the conic preset and links the historical separation timeline', () => {
     mount();
     const note = document.querySelector('[data-return-model-note]');
-    expect(note.textContent).toMatch(/straight fall.*Earth gravity only/);
-    expect(note.textContent).toMatch(/curved path and lighting are illustrations/);
-    expect(note.textContent).toMatch(/separate entry model starts at 122 km and 11.03 km\/s/);
+    expect(note.textContent).toMatch(/Earth-only Kepler ellipse conserves energy and angular momentum/);
+    expect(note.textContent).toMatch(/does not fire a correction burn/);
+    expect(note.textContent).toMatch(/122 km altitude, 11.03 km\/s/);
     expect(note.textContent).toMatch(/13 minutes 53 seconds/);
-    expect(note.querySelector('a').href).toContain('A11_MissionReport.pdf');
+    expect([...note.querySelectorAll('a')].some(a => a.href.includes('A11_MissionReport.pdf'))).toBe(true);
+  });
+
+  it('automatically slows the final approach without losing the exact separation event', () => {
+    const p = P.returnProfile();
+    const app = mount({ returnRun: { version: 1, angle: -6.5, time: p.summary.duration - 950, recorded: false }, returnPlaybackRate: 3600 });
+    app.advance(250);
+    expect(Number(app.canvas.dataset.returnRemaining)).toBeCloseTo(900, 6);
+    expect(app.data().returnPlaybackRate).toBe(60); expect(app.data().returnView).toBe('approach');
+    expect(app.canvas.dataset.returnSeparated).toBe('false');
+    app.advance(1250); expect(app.canvas.dataset.returnSeparated).toBe('true');
+  });
+
+  it('freezes hidden-page clocks and resumes without accumulated wall time', () => {
+    const hidden = vi.spyOn(document, 'hidden', 'get'); hidden.mockReturnValue(false);
+    const app = mount(); app.advance(1000); const before = app.canvas.dataset.returnElapsed;
+    hidden.mockReturnValue(true); document.dispatchEvent(new Event('visibilitychange')); app.advance(20000);
+    expect(app.canvas.dataset.returnElapsed).toBe(before);
+    hidden.mockReturnValue(false); document.dispatchEvent(new Event('visibilitychange')); app.frame(10000);
+    expect(app.canvas.dataset.returnElapsed).toBe(before);
+    app.frame(50); expect(Number(app.canvas.dataset.returnElapsed) - Number(before)).toBeCloseTo(180, 6);
+  });
+
+  it('keeps a recorded arrival while scrubbing, and invalidates it only when the angle changes', () => {
+    const app = mount({ animPaused: true });
+    app.action('arrival'); expect(app.data().returnRun.recorded).toBe(true);
+    app.action('seek', 1000); expect(app.data().returnRun.recorded).toBe(true);
+    app.action('view', 'system'); expect(app.data().returnRun.recorded).toBe(true);
+    app.action('angle', -6.5); expect(app.data().returnRun.recorded).toBe(true);
+    app.action('angle', -5); expect(app.data().returnRun).toEqual({ version: 1, angle: -5, time: 0, recorded: false });
+    expect(app.data().returnResult).toBeNull(); expect(app.data().returnPaused).toBe(true);
+    expect(app.data().entryAngle).toBe(-5);
+  });
+
+  it('cannot recreate arrival immediately from a corrupt completed save at the terminal time', () => {
+    const p = P.returnProfile(), app = mount({ animPaused: true,
+      returnRun: { version: 1, angle: -6.5, time: p.summary.duration, recorded: true },
+      returnResult: { version: 1, ...p.summary, interfaceSpeed: 99999 } });
+    expect(Number(app.canvas.dataset.returnElapsed)).toBe(0); expect(app.data().returnRun.recorded).toBe(false);
+    expect(app.data().returnResult).toBeNull(); expect(app.canvas.dataset.returnComplete).toBe('false');
+    app.action('arrival'); expect(app.data().returnRun.recorded).toBe(true); expect(app.data().returnResult.interfaceSpeed).toBe(11030);
   });
 });

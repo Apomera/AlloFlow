@@ -8,7 +8,9 @@ function find(node, predicate) {
 }
 function mount(extra = {}) {
   const awardXP = vi.fn();
-  const store = newStore({ moonMission: { missionPhase: 8, missionXP: 47, missionLog: [], ...extra } });
+  const returnProfile = window.MoonMissionPure.returnProfile(extra.entryAngle);
+  const arrival = { returnRun: { version: 1, angle: returnProfile.angle, time: returnProfile.summary.duration, recorded: true }, returnResult: { version: 1, ...returnProfile.summary } };
+  const store = newStore({ moonMission: { missionPhase: 8, missionXP: 47, missionLog: [], ...arrival, ...extra } });
   const tree = () => window.StemLab._registry.moonMission.render(makeCtx({ toolData: store.toolData, awardXP }, store));
   const prop = (name, value) => find(tree(), (node) => node.props && node.props[name] === value).props;
   const html = () => { const el = document.createElement('div'); el.innerHTML = ReactDOMServer.renderToStaticMarkup(tree()); return el; };

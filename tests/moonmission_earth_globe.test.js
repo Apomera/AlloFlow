@@ -205,20 +205,18 @@ describe('Moon Mission Earth light', () => {
     expect(P.phaseLitAt(-0.9, 0, 1, 0.3, 0)).toBe(false);
   });
 
-  it('shows the crew a half Earth thinning to a crescent on the way home, as the path swings round its night side', () => {
-    const start = P.returnView(384400 - 6378);
-    expect(Math.abs(start.psiDeg - 94), 'the start of the coast is where the Moon was, ~94 deg from the Sun').toBeLessThan(3);
-    expect(start.lit).toBeGreaterThan(0.44);
-    expect(start.lit).toBeLessThan(0.5);
-    expect(start.angRadiusDeg, 'Earth from the Moon: about 1 degree across each way').toBeCloseTo(0.95, 1);
-    let prev = start.lit;
-    for (let d = 370000; d >= 6000; d -= 2000) {
-      const v = P.returnView(d);
-      expect(v.lit, d + ' km: thinning').toBeLessThanOrEqual(prev + 1e-12);
-      prev = v.lit;
+  it('uses the measured orbital position and fixed Sun for Earth phase and angular radius', () => {
+    const p = P.returnProfile(), start = P.returnView(384400 - P.entry.radius / 1000);
+    expect(start.angRadiusDeg).toBeCloseTo(0.95, 1);
+    for (const row of p.samples.filter((_, index) => index % 20 === 0)) {
+      const view = P.returnView(row.altitude / 1000);
+      expect(view.lit).toBeCloseTo((1 + row.y / row.radius) / 2, 10);
+      expect(view.psiDeg).toBeCloseTo(Math.acos(row.y / row.radius) * 180 / Math.PI, 10);
+      expect(view.angRadiusDeg).toBeCloseTo(Math.asin(P.entry.radius / row.radius) * 180 / Math.PI, 10);
     }
-    expect(P.returnView(30000).lit, 'a crescent 30,000 km out').toBeLessThan(0.2);
-    expect(Math.min(...[5000, 5600, 6000].map((d) => P.returnView(d).lit)), 'nearly dark about an hour out').toBeLessThan(0.02);
-    expect(P.returnView(122).angRadiusDeg, 'at entry interface Earth fills most of the view').toBeCloseTo(78.9, 0);
+    const darkest = Math.min(...p.samples.map(row => row.view.lit));
+    expect(darkest).toBeLessThan(0.001);
+    expect(P.returnView(122).lit).toBeGreaterThan(darkest + 0.2);
+    expect(P.returnView(122).angRadiusDeg).toBeCloseTo(78.9, 0);
   });
 });

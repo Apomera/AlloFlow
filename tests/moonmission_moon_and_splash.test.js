@@ -327,26 +327,20 @@ describe('Moon Mission loops', () => {
     for (const fps of [30, 120]) expect(Math.abs(goAt[fps].t - goAt[60].t), fps + ' fps vs 60 fps').toBeLessThanOrEqual(2 * goAt[fps].dt + 1);
   }, 60_000);
 
-  it('trans-Earth coast: the entry corridor on the canvas follows the slider', () => {
-    // The corridor was a slider and a bar below the canvas; the coast itself never
-    // showed the angle being chosen. The inset appears late in the coast and reads
-    // the same live value the slider sets.
-    const teiCanvas = (p) => p['data-teicoast-canvas'] === 'true';
-    const late = (angle) => {
-      const st = { missionPhase: 8 };
-      if (angle != null) st.entryAngle = angle;
-      const fr = run(st, teiCanvas, 1700).frames;
-      return { early: fr[200].text.map((t) => t.s), late: fr[fr.length - 1].text.map((t) => t.s) };
-    };
-    const nominal = late(null), skip = late(-4.5), steep = late(-8.5);
-    expect(nominal.early, 'not before the coast closes in').not.toContain('ENTRY PREVIEW');
-    expect(nominal.late).toContain('ENTRY PREVIEW');
-    const verdict = (t) => t.find((s) => /\u00B0 (splashdown|skip-out|high load)$/.test(s));
-    expect(verdict(nominal.late)).toBe('-6.5\u00B0 splashdown');
-    expect(verdict(skip.late)).toBe('-4.5\u00B0 skip-out');
-    expect(verdict(steep.late)).toBe('-8.5\u00B0 high load');
-    expect(nominal.late).toContain('reference sketch; angles x4');
-  }, 120_000);   // thousands of real loop frames; slow under load, not wrong
+  it('trans-Earth geometry follows the selected interface angle in the same orbital model', () => {
+    const teiCanvas = (props) => props['data-teicoast-canvas'] === 'true';
+    for (const angle of [-4.5, -6.5, -8.5]) {
+      const p = P.returnProfile(angle);
+      const { frames } = run({ missionPhase: 8, animPaused: true, entryAngle: angle,
+        returnRun: { version: 1, angle, time: p.summary.duration, recorded: false } }, teiCanvas, 2);
+      expect(Number(frames[1].dataset.returnAngle)).toBeCloseTo(angle, 8);
+      expect(Number(frames[1].dataset.returnAltitude)).toBeCloseTo(122, 5);
+      expect(Number(frames[1].dataset.returnSpeed)).toBeCloseTo(11030, 6);
+      expect(frames[1].dataset.returnSeparated).toBe('true');
+      expect(frames[1].mm.returnRun.recorded).toBe(true);
+      expect(frames[1].mm.returnResult.angle).toBe(angle);
+    }
+  });
 
   it('trans-lunar prediction waits for a recorded nominal trajectory and uses its measured speed minimum', () => {
     const page = (st) => { const d = document.createElement('div'); d.innerHTML = renderTool(ID, { moonMission: Object.assign({ missionPhase: 3 }, st) }); return d; };
@@ -580,21 +574,18 @@ describe('Moon Mission loops', () => {
     expect(Math.abs(pose(860).angle), 'Stable 1: upright again').toBeLessThan(0.01);
   });
 
-  it('trans-Earth coast: the crew window shows Earth at the phase the model gives for the distance on the HUD', () => {
-    const teiCanvas = (p) => /trans-Earth coast/i.test(String(p['aria-label']));
-    const { frames } = run({ missionPhase: 8 }, teiCanvas, 1960);
-    const read = (f) => {
-      const t = f.text.map((x) => x.s), i = t.indexOf('TO EARTH');
-      const lit = t.find((s) => /^Earth \d+% lit$/.test(s));
-      return i < 0 || !lit ? null : { km: Number(t[i + 1].replace(/[^0-9]/g, '')), pct: parseInt(lit.slice(6), 10) };
-    };
-    const seen = frames.map(read).filter(Boolean);
-    expect(seen.length).toBeGreaterThan(1500);
-    seen.forEach((s, i) => { if (i % 25 === 0) expect(s.pct, s.km + ' km').toBe(Math.round(P.returnView(s.km).lit * 100)); });
-    expect(seen[0].pct, 'about half lit as the coast begins').toBeGreaterThanOrEqual(44);
-    expect(seen[seen.length - 1].pct, 'a crescent by the end').toBeLessThan(seen[0].pct - 20);
-    expect(frames[10].fills, 'the Moon behind is lit by the same Sun as Earth').toContain('rgba(1,1,8,0.86)');
-  }, 120_000);
+  it('trans-Earth crew window follows measured distance and the fixed Sun preset', () => {
+    const p = P.returnProfile(), teiCanvas = props => props['data-teicoast-canvas'] === 'true';
+    for (const fraction of [0, 0.5, 0.9, 1]) {
+      const { frames } = run({ missionPhase: 8, animPaused: true,
+        returnRun: { version: 1, angle: -6.5, time: fraction * p.summary.duration, recorded: false } }, teiCanvas, 2);
+      const frame = frames[1], view = P.returnView(Number(frame.dataset.returnAltitude));
+      const text = frame.text.map(item => item.s).join(' ');
+      expect(text).toContain((view.lit * 100).toFixed(1) + '% illuminated');
+      expect(text).toContain((2 * view.angRadiusDeg).toFixed(2) + '°');
+      expect(text).toContain('Fixed Sun preset');
+    }
+  });
 
   it('entry: the compatibility helper samples physical heating and motion without forcing a saved outcome', () => {
     const profile = P.entryProfile(-6.5), drogue = profile.events.drogue;
@@ -681,7 +672,7 @@ describe('one scope, many models', () => {
     // The trans-lunar model once re-declared MM_R0 and MM_V0 in the same module scope;
     // the return coast then read 6,712 km and 10.84 km/s at call time. Its entry speed
     // came out within 0.1% by coincidence, so only the start gives it away.
-    const initialSpeed = Math.sqrt(11.03 ** 2 - 2 * 398600 * (1 / 6500 - 1 / 384400));
+    const initialSpeed = Math.sqrt(11030 ** 2 - 2 * P.entry.mu * (1 / (P.entry.radius + P.entry.interfaceAltitude) - 1 / 384400000)) / 1000;
     expect(P.returnCoast(0).speedKmh).toBeCloseTo(initialSpeed * 3600, 7);
   });
 
@@ -741,7 +732,7 @@ describe('canvas text alternatives', () => {
       3: [/moving Moon/, /Earth-centered/, /Moon-relative/, /engine status/],
       4: [/Near-side lunar atlas/, /Tranquility Base/, /Apollo landing sites/, /sunrise/, /measured spacecraft path/, /geometric radio contact/],
       7: [/computed altitude/, /downrange/, /engine burn/, /insertion orbit/, /Measurements are listed/],
-      8: [/entry corridor/, /night side/],
+      8: [/Measured curved Earth-return trajectory/, /velocity arrow/, /Service Module separates/],
       9: [/just before sunrise/, /uprighting bags/, /flotation collar/],
     };
     Object.entries(must).forEach(([phase, pats]) => {

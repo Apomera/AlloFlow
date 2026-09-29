@@ -114,7 +114,7 @@ describe('Moon Mission coast trajectories', () => {
     const start = P.returnCoast(0), seconds = start.totalDays * 86400;
     const oneSecond = P.returnCoast(1 / seconds);
     const twoSeconds = P.returnCoast(2 / seconds);
-    const initialSpeed = start.speedKmh / 3600;
+    const initialSpeed = start.closingSpeed / 1000;
     expect(start.distKm - oneSecond.distKm).toBeCloseTo(initialSpeed, 4);
     expect(oneSecond.distKm - twoSeconds.distKm).toBeGreaterThan(initialSpeed);
     expect(P.returnCoast(1).distKm).toBeCloseTo(122, 8);
@@ -129,8 +129,8 @@ describe('Moon Mission coast trajectories', () => {
       const derivative = (before.distKm - after.distKm) / (2 * dt);
       const speed = sample.speedKmh / 3600;
       const initialSpeed = P.returnCoast(0).speedKmh / 3600;
-      const energySpeed = Math.sqrt(initialSpeed * initialSpeed + 2 * 398600 * (1 / (sample.distKm + 6378) - 1 / 384400));
-      expect(Math.abs(derivative - speed) / speed).toBeLessThan(2e-6);
+      const energySpeed = Math.sqrt(initialSpeed * initialSpeed + 2 * (P.entry.mu / 1e9) * (1 / (sample.distKm + P.entry.radius / 1000) - 1 / 384400));
+      expect(Math.abs(derivative - sample.closingSpeed / 1000) / (sample.closingSpeed / 1000)).toBeLessThan(2e-6);
       expect(Math.abs(energySpeed - speed) / speed).toBeLessThan(2e-6);
     }
   });

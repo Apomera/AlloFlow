@@ -1,0 +1,697 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass8-2026-09-29/browser-run",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "moon-mission-entry-dynamics.spec.ts",
+      "file": "moon-mission-entry-dynamics.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "entry presets predict the same trajectories and begin without awarding a result",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 17217,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T22:01:27.822Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "entry-planner-reference",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass8-2026-09-29\\browser-run\\moon-mission-entry-dynamic-f8ed0-n-without-awarding-a-result-chromium\\attachments\\entry-planner-reference-d9c6d4885b5a8732f6325e76dc4ee27b0f6f639a.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "49835e173173673d460d-0977aebb9c1201df6aef",
+          "file": "moon-mission-entry-dynamics.spec.ts",
+          "line": 81,
+          "column": 5
+        },
+        {
+          "title": "nominal playback follows heating and chute events, preserves reviewed results, and pays once",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 34490,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T22:01:46.095Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "entry-nominal-heating",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass8-2026-09-29\\browser-run\\moon-mission-entry-dynamic-44a76-iewed-results-and-pays-once-chromium\\attachments\\entry-nominal-heating-3609b358aad66d705fef20280a5ea9ded8e6148c.png"
+                    },
+                    {
+                      "name": "entry-drogue-inflating",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass8-2026-09-29\\browser-run\\moon-mission-entry-dynamic-44a76-iewed-results-and-pays-once-chromium\\attachments\\entry-drogue-inflating-bbf66d0d9d60e0975502be5df0abe754373a88cf.png"
+                    },
+                    {
+                      "name": "entry-main-inflating",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass8-2026-09-29\\browser-run\\moon-mission-entry-dynamic-44a76-iewed-results-and-pays-once-chromium\\attachments\\entry-main-inflating-2db032a561120f4f88b56df5de530a7dd9be2e31.png"
+                    },
+                    {
+                      "name": "entry-splashdown-recovery",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass8-2026-09-29\\browser-run\\moon-mission-entry-dynamic-44a76-iewed-results-and-pays-once-chromium\\attachments\\entry-splashdown-recovery-54ead07b1c7ee65948068b0438ed4f51837236fd.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "49835e173173673d460d-f19e524395cf426fa91e",
+          "file": "moon-mission-entry-dynamics.spec.ts",
+          "line": 107,
+          "column": 5
+        },
+        {
+          "title": "steep entry reports its higher physical load and heating before splashdown",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 15100,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T22:02:20.604Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "entry-steep-load",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass8-2026-09-29\\browser-run\\moon-mission-entry-dynamic-2d79f-d-heating-before-splashdown-chromium\\attachments\\entry-steep-load-03ea165a1c220e0065d48d6abf31423c1c20df7e.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "49835e173173673d460d-4e591c00cb9ad936a337",
+          "file": "moon-mission-entry-dynamics.spec.ts",
+          "line": 158,
+          "column": 5
+        },
+        {
+          "title": "skip-out never unlocks splashdown; retry history survives and improved entry pays only the difference",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 27963,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T22:02:35.718Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "entry-shallow-skip",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass8-2026-09-29\\browser-run\\moon-mission-entry-dynamic-50e89-ry-pays-only-the-difference-chromium\\attachments\\entry-shallow-skip-28d117ee0815371760cec8717a0968fdea471952.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "49835e173173673d460d-9c3cb79aa5e0f3d04ce7",
+          "file": "moon-mission-entry-dynamics.spec.ts",
+          "line": 175,
+          "column": 5
+        },
+        {
+          "title": "paused resize and saved-run reload preserve a painted scene and unchanged physics",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10494,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T22:03:03.698Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "entry-paused-phone",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass8-2026-09-29\\browser-run\\moon-mission-entry-dynamic-60e54-scene-and-unchanged-physics-chromium\\attachments\\entry-paused-phone-df46e2d91e531eef8f51567aa33834ff897768f5.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "49835e173173673d460d-d314bf8de276560683c4",
+          "file": "moon-mission-entry-dynamics.spec.ts",
+          "line": 204,
+          "column": 5
+        },
+        {
+          "title": "phone entry controls and charts fit, support keyboard seeking, and retain the completed scene",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8679,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T22:03:14.230Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "entry-completed-resized",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass8-2026-09-29\\browser-run\\moon-mission-entry-dynamic-8f779--retain-the-completed-scene-chromium\\attachments\\entry-completed-resized-d1cc46849581cff04160b7ab95ea982e8643e753.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "49835e173173673d460d-9c72df58f720b88f83e4",
+          "file": "moon-mission-entry-dynamics.spec.ts",
+          "line": 229,
+          "column": 5
+        },
+        {
+          "title": "legacy completed entry migrates malformed history once and retains its already-paid reward",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 71609,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T22:03:22.924Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "entry-legacy-migration",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass8-2026-09-29\\browser-run\\moon-mission-entry-dynamic-e55aa-ins-its-already-paid-reward-chromium\\attachments\\entry-legacy-migration-af54ac094b5ac29500d2226f96ad92f1cbb70a13.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "49835e173173673d460d-1a96408334c7b792f39a",
+          "file": "moon-mission-entry-dynamics.spec.ts",
+          "line": 256,
+          "column": 5
+        },
+        {
+          "title": "active entry holds while document is hidden and resumes with a fresh frame clock",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6691,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T22:04:34.564Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "49835e173173673d460d-f4fe60dc4cd31bbd1aa3",
+          "file": "moon-mission-entry-dynamics.spec.ts",
+          "line": 292,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "moon-mission-return-orbit.spec.ts",
+      "file": "moon-mission-return-orbit.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "both return cameras use measured positions, distinct speed components and no engine plume",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18160,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T22:04:41.313Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "return-whole-orbit",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass8-2026-09-29\\browser-run\\moon-mission-return-orbit--e0484-ponents-and-no-engine-plume-chromium\\attachments\\return-whole-orbit-93c5c5e9cdbfec83237a5428e045d4915f4fe0a2.png"
+                    },
+                    {
+                      "name": "return-final-approach",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass8-2026-09-29\\browser-run\\moon-mission-return-orbit--e0484-ponents-and-no-engine-plume-chromium\\attachments\\return-final-approach-58f08fc623958485d769fadb9b6afd0a99511e39.png"
+                    },
+                    {
+                      "name": "return-sm-separation",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass8-2026-09-29\\browser-run\\moon-mission-return-orbit--e0484-ponents-and-no-engine-plume-chromium\\attachments\\return-sm-separation-71ab398ed1db41b1c6c21c13a30706530af55c7a.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5078ab759c0643b8c6cf-2eecfd401bf72cdaf408",
+          "file": "moon-mission-return-orbit.spec.ts",
+          "line": 50,
+          "column": 5
+        },
+        {
+          "title": "recorded arrival survives review and reload, then passes the same boundary state into entry",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10010,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T22:04:59.588Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "return-entry-interface",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass8-2026-09-29\\browser-run\\moon-mission-return-orbit--10c84-e-boundary-state-into-entry-chromium\\attachments\\return-entry-interface-c6db6468a6e6b3844b485286c5b0289affc4db4d.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5078ab759c0643b8c6cf-58f14aabc5453f363616",
+          "file": "moon-mission-return-orbit.spec.ts",
+          "line": 70,
+          "column": 5
+        },
+        {
+          "title": "planner changes clear arrival and maintain the new selected angle through the handoff",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 20084,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T22:05:09.615Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "return-shallow-interface",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass8-2026-09-29\\browser-run\\moon-mission-return-orbit--bbeb6-d-angle-through-the-handoff-chromium\\attachments\\return-shallow-interface-a97b82e341852babba1cba0bce66e3cb66999455.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5078ab759c0643b8c6cf-e777505bd0f0d72b2269",
+          "file": "moon-mission-return-orbit.spec.ts",
+          "line": 86,
+          "column": 5
+        },
+        {
+          "title": "legacy and malformed saved arrival claims stay blocked until a measured review",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 21766,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeDisabled\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('[data-entry-begin]')\nExpected: disabled\nReceived: enabled\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeDisabled\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-entry-begin]')\u001b[22m\n\u001b[2m    32 × locator resolved to <button data-entry-begin=\"true\" title=\"Begin atmospheric re-entry sequence at about 39,700 kilometers per hour\" class=\"w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed\">🌊 Begin Re-entry Sequence</button>\u001b[22m\n\u001b[2m       - unexpected value \"enabled\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeDisabled\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('[data-entry-begin]')\nExpected: disabled\nReceived: enabled\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeDisabled\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-entry-begin]')\u001b[22m\n\u001b[2m    32 × locator resolved to <button data-entry-begin=\"true\" title=\"Begin atmospheric re-entry sequence at about 39,700 kilometers per hour\" class=\"w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed\">🌊 Begin Re-entry Sequence</button>\u001b[22m\n\u001b[2m       - unexpected value \"enabled\"\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-return-orbit.spec.ts:105:89",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-return-orbit.spec.ts",
+                      "column": 89,
+                      "line": 105
+                    },
+                    "snippet": "  103 |     { returnRun: { version: 1, angle: -6.5, time: p.summary.duration, recorded: true }, returnResult: { version: 1, ...p.summary, interfaceSpeed: 99999 } },\n  104 |     { entryAngle: -5, returnRun: { version: 1, angle: -6.5, time: p.summary.duration, recorded: true }, returnResult: { version: 1, ...p.summary } },\n> 105 |   ]) { await mount(page, seed(extra)); await expect(page.locator('[data-entry-begin]')).toBeDisabled(); expect((await saved(page)).missionPhase).toBe(8); }\n      |                                                                                         ^\n  106 |   await page.locator('[data-return-arrival]').click(); await expect(page.locator('[data-entry-begin]')).toBeEnabled();\n  107 | });\n  108 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-return-orbit.spec.ts",
+                        "column": 89,
+                        "line": 105
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeDisabled\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('[data-entry-begin]')\nExpected: disabled\nReceived: enabled\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeDisabled\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-entry-begin]')\u001b[22m\n\u001b[2m    32 × locator resolved to <button data-entry-begin=\"true\" title=\"Begin atmospheric re-entry sequence at about 39,700 kilometers per hour\" class=\"w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed\">🌊 Begin Re-entry Sequence</button>\u001b[22m\n\u001b[2m       - unexpected value \"enabled\"\u001b[22m\n\n\n  103 |     { returnRun: { version: 1, angle: -6.5, time: p.summary.duration, recorded: true }, returnResult: { version: 1, ...p.summary, interfaceSpeed: 99999 } },\n  104 |     { entryAngle: -5, returnRun: { version: 1, angle: -6.5, time: p.summary.duration, recorded: true }, returnResult: { version: 1, ...p.summary } },\n> 105 |   ]) { await mount(page, seed(extra)); await expect(page.locator('[data-entry-begin]')).toBeDisabled(); expect((await saved(page)).missionPhase).toBe(8); }\n      |                                                                                         ^\n  106 |   await page.locator('[data-return-arrival]').click(); await expect(page.locator('[data-entry-begin]')).toBeEnabled();\n  107 | });\n  108 |\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-return-orbit.spec.ts:105:89"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T22:05:29.714Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass8-2026-09-29\\browser-run\\moon-mission-return-orbit--54489-ked-until-a-measured-review-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass8-2026-09-29\\browser-run\\moon-mission-return-orbit--54489-ked-until-a-measured-review-chromium\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass8-2026-09-29\\browser-run\\moon-mission-return-orbit--54489-ked-until-a-measured-review-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass8-2026-09-29\\browser-run\\moon-mission-return-orbit--54489-ked-until-a-measured-review-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass8-2026-09-29\\browser-run\\moon-mission-return-orbit--54489-ked-until-a-measured-review-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-return-orbit.spec.ts",
+                    "column": 89,
+                    "line": 105
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "5078ab759c0643b8c6cf-fd464571b10a301d5a5a",
+          "file": "moon-mission-return-orbit.spec.ts",
+          "line": 98,
+          "column": 5
+        },
+        {
+          "title": "the clock slows automatically, freezes when hidden and resumes without wall-time catch-up",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6584,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T22:06:24.624Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5078ab759c0643b8c6cf-e30b3ef1019e2ef3e5d7",
+          "file": "moon-mission-return-orbit.spec.ts",
+          "line": 109,
+          "column": 5
+        },
+        {
+          "title": "320px keyboard, pause, resize, reload and accessibility preserve the physical coast",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6905,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-29T22:06:32.281Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "return-phone-320",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass8-2026-09-29\\browser-run\\moon-mission-return-orbit--9f55f-preserve-the-physical-coast-chromium\\attachments\\return-phone-320-45a8479d5f6cdcf32adadb3c7984b79cb4e12500.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5078ab759c0643b8c6cf-25d43e3de09927642152",
+          "file": "moon-mission-return-orbit.spec.ts",
+          "line": 122,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-29T22:01:16.837Z",
+    "duration": 329601.01300000004,
+    "expected": 13,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

@@ -564,6 +564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       launch: d.launchRun && d.launchRun.recorded === true ? mmCleanLaunchResult(d.launchResult) : null,
       transit: mmCleanTransitPlayback(d).transitResult,
       loi: mmCleanLoiPlayback(d).loiResult,
+      returnFlight: mmCleanReturnPlayback(d).returnResult,
       ascent: mmCleanAscentPlayback(d).ascentResult,
       docking: mmCleanAscentPlayback(d).ascentResult ? mmCleanDockingPlayback(d).dockingResult : null,
       tli: ta ? { onTime: !!ta.onTime, offByDeg: mmNum(ta.offByDeg) ? ta.offByDeg : 0, side: ta.side === 'late' ? 'late' : 'early' } : null,
@@ -693,6 +694,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       : (L.crashed ? 'hard landing at ' : 'touchdown at ') + L.vVel.toFixed(1) + ' m/s, drift ' + L.hVel.toFixed(1) + ' m/s, '
         + (L.fuelUnit === 's' ? L.fuel + ' s of fuel left' : L.fuel + '% fuel left') + (L.crashed ? '' : ', score ' + L.score + ' (' + L.grade + ')')));
     if (L && L.flight) ln('Descent: ' + L.flight.duration.toFixed(1) + ' s, hover fuel used ' + L.flight.fuelUsed.toFixed(1) + ' s, displacement ' + L.flight.displacement.toFixed(1) + ' m.');
+    if (sum.returnFlight) ln('Earth return: ' + (sum.returnFlight.duration / 3600).toFixed(2) + ' h; interface at 122 km, ' + (sum.returnFlight.interfaceSpeed / 1000).toFixed(3) + ' km/s and ' + sum.returnFlight.angle.toFixed(1) + MM_DEG_SIGN + '; radial closing speed ' + (-sum.returnFlight.interfaceRadialSpeed / 1000).toFixed(3) + ' km/s. Earth-only preset, matched to entry.');
     var E = sum.entry;
     ln('Entry: ' + (!E ? 'not flown' : E.angle.toFixed(1) + MM_DEG_SIGN + ', ' + (E.modelVersion === 1
       ? (E.terminal === 'splash' ? 'splashdown, peak load ' + E.peakG + ' g' : E.terminal === 'skip' ? 'upward crossing of 122 km, skip-out' : 'simulation time limit reached')
@@ -977,13 +979,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   // 2.9 times the trip. This falls toward Earth under Earth's gravity instead
   // (energy: v^2 = v0^2 + 2GM(1/r - 1/r0)), starting 384,400 km out. Calibrate its
   // initial radial speed to the separate entry preset: 122 km altitude, 11.03 km/s.
-  // It is an Earth-only radial teaching approximation, not Apollo's curved orbit.
-  var MM_GM = 398600, MM_R0 = 384400, MM_R_EI = 6500, MM_R_EARTH = 6378, MM_RETURN_ENTRY_SPEED = 11.03;
-  var MM_V0 = Math.sqrt(MM_RETURN_ENTRY_SPEED * MM_RETURN_ENTRY_SPEED - 2 * MM_GM * (1 / MM_R_EI - 1 / MM_R0));
+  // Separation lead is a historical timeline cue; the orbit is a teaching preset.
   // Apollo 11 Mission Report table 3-I: 194:49:12.7 separation, 195:03:05.7 entry.
   // https://www.nasa.gov/wp-content/uploads/static/apollo50th/pdf/A11_MissionReport.pdf
   var MM_SM_SEPARATION_SECONDS = 833;
-  function mmReturnSpeed(r) { return Math.sqrt(MM_V0 * MM_V0 + 2 * MM_GM * (1 / r - 1 / MM_R0)); }
   function mmCoastInterval(r0, r1, speed) {
     // Simpson integration of dt = dr / v. Small radial steps close to either
     // body resolve the rapidly changing gravity without a frame-rate dependency.
@@ -1001,28 +1000,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       v: ((6 * k2 - 6 * k) * a.r + (-6 * k2 + 6 * k) * b.r) / dt + (3 * k2 - 4 * k + 1) * a.v + (3 * k2 - 2 * k) * b.v
     };
   }
-  var _mmReturnTable = (function () {
-    var rows = [{ t: 0, r: MM_R0, v: -MM_V0 }], r = MM_R0, t = 0;
-    while (r > MM_R_EI) {
-      var next = Math.max(MM_R_EI, r - Math.min(500, r * 0.01));
-      t += mmCoastInterval(r, next, mmReturnSpeed); r = next;
-      rows.push({ t: t, r: r, v: -mmReturnSpeed(r) });
-    }
-    return rows;
-  })();
-  var MM_RETURN_SECONDS = _mmReturnTable[_mmReturnTable.length - 1].t;
-  // What the crew saw ahead on the way home. The return is a long thin ellipse (from
-  // entry interface at 6,500 km, -6.5 degrees, about 11 km/s: p = 12,729 km, e = 0.984),
-  // so the direction to the spacecraft swings about 156 degrees in the last hours, round
-  // through Earth's midnight side to the pre-dawn entry point (about 110 degrees west of
-  // noon), which puts the start of the coast 94 degrees from the Sun, where the Moon was.
-  // The crew see (1 + cos psi) / 2 of the disc lit, psi being the Sun-Earth-spacecraft
-  // angle: half lit for most of the coast, a thinning crescent, nearly dark an hour out.
-  function mmReturnView(distKm) {
-    var r = Math.max(6500, distKm + MM_R_EARTH), P = 12729, E = 0.9842;
-    var nu = function (rr) { return Math.acos(Math.max(-1, Math.min(1, (P / rr - 1) / E))) / MM_DEG; };
-    var psi = 250 - (nu(r) - nu(6500));
-    return { psiDeg: psi, lit: (1 + Math.cos(psi * MM_DEG)) / 2, angRadiusDeg: Math.asin(Math.min(1, MM_R_EARTH / r)) / MM_DEG };
+  // Compatibility view helper follows the same conic and fixed +Y solar direction.
+  function mmReturnView(distKm, angle) {
+    var profile = mmReturnProfile(angle), orbit = profile.orbit;
+    var radius = Math.max(MM_ENTRY.radius + MM_ENTRY.interfaceAltitude, Math.min(MM_RETURN.startRadius, (Number(distKm) || 0) * 1000 + MM_ENTRY.radius));
+    var anomaly = -Math.acos(Math.max(-1, Math.min(1, (1 - radius / orbit.a) / orbit.e)));
+    return mmReturnSample(profile, (anomaly - orbit.e * Math.sin(anomaly) - orbit.startMean) / orbit.n).view;
   }
   // A sphere lit from screen direction sunAng, with the fraction lit as seen: is the disc
   // point (dx, dy) from its centre in daylight? (Sun vector (sin a, 0, cos a) in the Sun's
@@ -1043,14 +1026,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     ctx.closePath(); ctx.fill();
     ctx.restore();
   }
-  function mmReturnCoast(p) {
-    p = Math.max(0, Math.min(1, p));
-    var target = p * MM_RETURN_SECONDS, sample = mmSampleCoast(_mmReturnTable, target);
-    var remaining = Math.max(0, MM_RETURN_SECONDS - target);
-    return { distKm: Math.max(0, sample.r - MM_R_EARTH), speedKmh: -sample.v * 3600,
-      days: target / 86400, totalDays: MM_RETURN_SECONDS / 86400,
-      elapsedSeconds: target, remainingSeconds: remaining, totalSeconds: MM_RETURN_SECONDS,
-      serviceModuleSeparated: remaining <= MM_SM_SEPARATION_SECONDS, atInterface: p === 1 };
+  function mmReturnCoast(p, angle) {
+    var profile = mmReturnProfile(angle);
+    return mmReturnSample(profile, Math.max(0, Math.min(1, Number(p) || 0)) * profile.summary.duration);
   }
   // Peak sensed aerodynamic load comes from the same trajectory as the entry view.
   function mmEntryPeakG(angleDeg) {
@@ -1645,7 +1623,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     return { view: view, engineVisible: !!firing, plumeVisible: !!firing, craftX: craftX, craftY: craftY, pictureScale: pictureScale };
   }
 
-  function mmDrawDockingCSM(ctx, portX, portY, scale) {
+  function mmDrawDockingCSM(ctx, portX, portY, scale, opts) {
     ctx.save(); ctx.translate(portX, portY); ctx.scale(scale, scale);
     // Port at the origin, nose left, service module and SPS bell to the right.
     ctx.fillStyle = '#3e4856'; ctx.fillRect(0, -2, 4, 4);
@@ -1656,6 +1634,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     ctx.lineTo(27, 12); ctx.lineTo(23, 12); ctx.lineTo(6, 3.5); ctx.closePath(); ctx.fill();
     ctx.fillStyle = '#162637'; ctx.beginPath(); ctx.moveTo(13, -4); ctx.lineTo(17, -7); ctx.lineTo(18.7, -3.5); ctx.lineTo(15, -1.8); ctx.closePath(); ctx.fill();
     ctx.fillStyle = '#494641'; ctx.fillRect(26, -12.4, 2.3, 24.8);
+    if (!(opts && opts.cmOnly)) {
     var module = ctx.createLinearGradient(0, -11, 0, 11);
     module.addColorStop(0, '#dae2e8'); module.addColorStop(0.35, '#a8b9c6'); module.addColorStop(1, '#4e5c6b');
     ctx.fillStyle = module; ctx.fillRect(28.3, -11, 33, 22);
@@ -1666,6 +1645,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     ctx.fillStyle = '#29313b'; ctx.beginPath(); ctx.moveTo(61, -4); ctx.lineTo(65, -4); ctx.bezierCurveTo(68, -5, 73, -10, 77, -11);
     ctx.lineTo(77, 11); ctx.bezierCurveTo(73, 10, 68, 5, 65, 4); ctx.lineTo(61, 4); ctx.closePath(); ctx.fill();
     ctx.strokeStyle = '#9aa7b4'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(77, -11); ctx.lineTo(77, 11); ctx.stroke();
+    }
     ctx.restore();
   }
 
@@ -1940,6 +1920,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   // Both coast cameras use one meters-to-pixels scale on each axis. Body-size
   // exaggeration affects only the drawn discs, never their centers or paths.
   // Each Moon-frame history point subtracts its own simultaneous lunar state.
+
+  // Both cameras project measured coordinates with one distance scale. The
+  // spacecraft glyph is enlarged; its center and velocity remain physical.
+  function mmDrawReturnScene(ctx, W, H, sample, profile, opts) {
+    opts = opts || {};
+    var approach = opts.view === 'approach', top = 76, bottom = H - 115;
+    var plotHeight = Math.max(100, bottom - top), centerX = W / 2, centerY = (top + bottom) / 2;
+    var originX = 0, originY = 0, scale;
+    if (approach) scale = Math.min((W - 70) / 2, plotHeight / 2) / Math.max(MM_ENTRY.radius * 1.5, sample.radius * 1.12);
+    else {
+      var minX = 0, maxX = 0, minY = 0, maxY = 0;
+      profile.samples.forEach(function(row) { minX = Math.min(minX, row.x); maxX = Math.max(maxX, row.x); minY = Math.min(minY, row.y); maxY = Math.max(maxY, row.y); });
+      originX = (minX + maxX) / 2; originY = (minY + maxY) / 2;
+      scale = Math.min((W - 90) / Math.max(MM_ENTRY.radius * 4, maxX - minX), (plotHeight - 30) / Math.max(MM_ENTRY.radius * 4, maxY - minY));
+    }
+    function point(x, y) { return { x: centerX + (x - originX) * scale, y: centerY - (y - originY) * scale }; }
+    var earth = point(0, 0), craft = point(sample.x, sample.y), earthRadius = MM_ENTRY.radius * scale;
+    ctx.save(); ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#020713'; ctx.fillRect(0, 0, W, H);
+    drawStarfield(ctx, W, H, 0, 90);
+    ctx.font = 'bold 12px system-ui'; ctx.fillStyle = '#f8fafc'; ctx.textAlign = 'left'; ctx.fillText('EARTH RETURN', 16, 22);
+    ctx.font = 'bold 10px monospace'; ctx.textAlign = 'right'; ctx.fillStyle = '#a5f3fc';
+    ctx.fillText(sample.serviceModuleSeparated ? 'CM ONLY / COAST' : 'CM + SM / COAST', W - 16, 22);
+    ctx.textAlign = 'left'; ctx.font = '11px system-ui'; ctx.fillStyle = '#cbd5e1';
+    mmAscentCanvasCaption(ctx, approach ? 'Earth approach · equal axes · automatic zoom' : 'Earth-centered fixed axes · equal distance scale', 16, 40, W - 32, 13);
+    mmAscentCanvasCaption(ctx, 'Earth to scale · spacecraft enlarged · dashed path is the plan', 16, 58, W - 32, 13);
+    ctx.save(); ctx.beginPath(); ctx.rect(8, top, W - 16, plotHeight); ctx.clip();
+    ctx.setLineDash([3, 5]); ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(148,163,184,0.5)'; ctx.beginPath();
+    profile.samples.forEach(function(row, index) { var p = point(row.x, row.y); if (!index) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); }); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = '#67e8f9'; ctx.lineWidth = 2; ctx.beginPath();
+    profile.samples.forEach(function(row, index) { if (row.time > sample.time) return; var p = point(row.x, row.y); if (!index) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
+    ctx.lineTo(craft.x, craft.y); ctx.stroke();
+    drawDetailedEarth(ctx, earth.x, earth.y, Math.max(0.5, earthRadius), sample.time * (360 / 86164) / MM_EARTH_DEG_PER_TICK, -Math.PI / 2, 0.5);
+    ctx.strokeStyle = '#93c5fd'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(earth.x, earth.y, (MM_ENTRY.radius + MM_ENTRY.interfaceAltitude) * scale, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = '#e2e8f0'; ctx.font = '10px system-ui'; ctx.fillText('Earth', Math.max(12, Math.min(W - 46, earth.x - 12)), Math.max(top + 12, earth.y - earthRadius - 8));
+    var at = point(profile.events.interface.x, profile.events.interface.y);
+    ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(at.x, at.y, 3, 0, Math.PI * 2); ctx.stroke();
+    // Exact velocity direction; glyph length is an illustrative vector scale.
+    var travelAngle = Math.atan2(-sample.vy, sample.vx);
+    ctx.save(); ctx.translate(craft.x, craft.y); ctx.rotate(travelAngle + (sample.serviceModuleSeparated ? 0 : Math.PI));
+    mmDrawDockingCSM(ctx, (sample.serviceModuleSeparated ? -17 : -38) * 0.52, 0, 0.52, { cmOnly: sample.serviceModuleSeparated }); ctx.restore();
+    ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5;
+    var tipX = craft.x + sample.vx / sample.speed * 38, tipY = craft.y - sample.vy / sample.speed * 38;
+    ctx.beginPath(); ctx.moveTo(craft.x, craft.y); ctx.lineTo(tipX, tipY); ctx.lineTo(tipX - Math.cos(travelAngle - 0.5) * 7, tipY - Math.sin(travelAngle - 0.5) * 7);
+    ctx.moveTo(tipX, tipY); ctx.lineTo(tipX - Math.cos(travelAngle + 0.5) * 7, tipY - Math.sin(travelAngle + 0.5) * 7); ctx.stroke();
+    ctx.fillStyle = '#f8fafc'; ctx.beginPath(); ctx.arc(craft.x, craft.y, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    var barMeters = Math.pow(10, Math.floor(Math.log10(Math.max(1, (W * 0.22) / scale))));
+    ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(16, bottom + 9); ctx.lineTo(16 + barMeters * scale, bottom + 9); ctx.stroke();
+    ctx.font = '10px system-ui'; ctx.fillStyle = '#cbd5e1'; ctx.fillText((barMeters / 1000).toLocaleString('en-US') + ' km', 16, bottom + 24);
+    // A separate angular camera: disc size comes from asin(R/r), with a fixed
+    // 80-degree field. Light fraction uses the same fixed +Y Sun preset.
+    var windowRadius = 28, wx = W - 45, wy = H - 52;
+    var angularRadius = sample.view.angRadiusDeg, disc = windowRadius * Math.tan(angularRadius * MM_DEG) / Math.tan(40 * MM_DEG);
+    ctx.save(); ctx.beginPath(); ctx.arc(wx, wy, windowRadius, 0, Math.PI * 2); ctx.clip();
+    ctx.fillStyle = '#01030a'; ctx.fillRect(wx - windowRadius, wy - windowRadius, windowRadius * 2, windowRadius * 2);
+    drawDetailedEarth(ctx, wx, wy, Math.max(0.3, disc), sample.time * (360 / 86164) / MM_EARTH_DEG_PER_TICK, 0, sample.view.lit); ctx.restore();
+    ctx.strokeStyle = '#64748b'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(wx, wy, windowRadius, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = '#cbd5e1'; ctx.font = '11px system-ui';
+    mmAscentCanvasCaption(ctx, 'Crew view: Earth spans ' + (2 * angularRadius).toFixed(2) + '°', 16, H - 66, W - 104, 14);
+    mmAscentCanvasCaption(ctx, 'Fixed Sun preset · ' + (sample.view.lit * 100).toFixed(1) + '% illuminated', 16, H - 37, W - 104, 14);
+    ctx.restore();
+    return { scaleX: scale, scaleY: scale, originX: originX, originY: originY, earth: earth, craft: craft,
+      earthRadius: earthRadius, velocityAngle: travelAngle, cmOnly: sample.serviceModuleSeparated, plumeVisible: false, angularRadius: angularRadius };
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { drawReturnScene: mmDrawReturnScene }); } catch (e) {}
+
   function mmDrawTransitScene(ctx, W, H, sample, profile, opts) {
     opts = opts || {};
     var C = MM_TRANSIT, view = opts.view === 'moon' ? 'moon' : 'system';
@@ -2895,6 +2941,98 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     mainMaxSpeed: 100, mainMaxPressure: 5000, mainDragArea: 1000,
     drogueInflationSeconds: 2, mainInflationSeconds: 6
   });
+
+  // A planar Earth-only Kepler ellipse. Its incoming branch is constructed from
+  // the same radius, speed and flight-path angle as the atmospheric entry model.
+  // This boundary-value preset is separate from TEI and outbound navigation.
+  var MM_RETURN = Object.freeze({ startRadius: 384400000, separationLead: MM_SM_SEPARATION_SECONDS });
+  var _mmReturnProfiles = [];
+  function mmReturnAngle(angle) {
+    return -Math.max(4, Math.min(9, Math.abs(mmNum(angle) ? angle : -6.5)));
+  }
+  function mmReturnSample(profile, time) {
+    var C = MM_ENTRY, orbit = profile.orbit, duration = profile.summary.duration;
+    var t = Math.max(0, Math.min(duration, mmNum(time) ? time : 0));
+    var mean = orbit.startMean + orbit.n * t, lo = orbit.startAnomaly, hi = orbit.endAnomaly;
+    // Bracketing stays well behaved for this highly eccentric incoming branch.
+    for (var iteration = 0; iteration < 60; iteration++) {
+      var middle = (lo + hi) / 2;
+      if (middle - orbit.e * Math.sin(middle) < mean) lo = middle; else hi = middle;
+    }
+    var anomaly = t === 0 ? orbit.startAnomaly : t === duration ? orbit.endAnomaly : (lo + hi) / 2;
+    var denominator = 1 - orbit.e * Math.cos(anomaly), root = Math.sqrt(1 - orbit.e * orbit.e);
+    var x = orbit.a * (Math.cos(anomaly) - orbit.e), y = orbit.a * root * Math.sin(anomaly);
+    var vx = -orbit.a * orbit.n * Math.sin(anomaly) / denominator;
+    var vy = orbit.a * orbit.n * root * Math.cos(anomaly) / denominator;
+    var radius = Math.hypot(x, y), speed = Math.hypot(vx, vy);
+    var radial = (x * vx + y * vy) / radius, tangential = (x * vy - y * vx) / radius;
+    var remaining = duration - t, separated = t >= profile.summary.separationTime;
+    var view = { psiDeg: Math.acos(Math.max(-1, Math.min(1, y / radius))) / MM_DEG,
+      lit: (1 + y / radius) / 2, angRadiusDeg: Math.asin(Math.min(1, C.radius / radius)) / MM_DEG };
+    return { time: t, x: x, y: y, vx: vx, vy: vy, radius: radius, altitude: Math.max(0, radius - C.radius),
+      speed: speed, radialSpeed: radial, tangentialSpeed: tangential, closingSpeed: -radial,
+      gamma: Math.atan2(radial, tangential) / MM_DEG, energy: speed * speed / 2 - C.mu / radius,
+      angularMomentum: x * vy - y * vx, remainingSeconds: remaining, serviceModuleSeparated: separated,
+      atInterface: t === duration, view: view,
+      // Retained display API: total speed is distinct from radial closing speed.
+      distKm: Math.max(0, radius - C.radius) / 1000, speedKmh: speed * 3.6,
+      days: t / 86400, totalDays: duration / 86400, elapsedSeconds: t, totalSeconds: duration };
+  }
+  function mmReturnProfile(angle) {
+    var selected = mmReturnAngle(angle);
+    for (var cached = 0; cached < _mmReturnProfiles.length; cached++) if (_mmReturnProfiles[cached].angle === selected) return _mmReturnProfiles[cached];
+    var C = MM_ENTRY, interfaceRadius = C.radius + C.interfaceAltitude, gamma = selected * MM_DEG;
+    var energy = C.interfaceSpeed * C.interfaceSpeed / 2 - C.mu / interfaceRadius;
+    var momentum = interfaceRadius * C.interfaceSpeed * Math.cos(gamma);
+    var a = -C.mu / (2 * energy), e = Math.sqrt(1 + 2 * energy * momentum * momentum / (C.mu * C.mu));
+    var n = Math.sqrt(C.mu / (a * a * a));
+    var startAnomaly = -Math.acos((1 - MM_RETURN.startRadius / a) / e);
+    var endAnomaly = -Math.acos((1 - interfaceRadius / a) / e);
+    var startMean = startAnomaly - e * Math.sin(startAnomaly), endMean = endAnomaly - e * Math.sin(endAnomaly);
+    var duration = (endMean - startMean) / n;
+    var orbit = Object.freeze({ a: a, e: e, n: n, startAnomaly: startAnomaly, endAnomaly: endAnomaly, startMean: startMean });
+    var profile = { angle: selected, orbit: orbit, summary: { angle: selected, duration: duration,
+      separationTime: duration - MM_RETURN.separationLead, energy: energy, angularMomentum: momentum,
+      eccentricity: e, periapsisAltitude: a * (1 - e) - C.radius,
+      initialSpeed: Math.sqrt(2 * (energy + C.mu / MM_RETURN.startRadius)),
+      interfaceSpeed: C.interfaceSpeed, interfaceRadialSpeed: C.interfaceSpeed * Math.sin(gamma),
+      interfaceTangentialSpeed: C.interfaceSpeed * Math.cos(gamma) } };
+    var times = [0, duration, duration - 900, profile.summary.separationTime];
+    for (var point = 1; point < 256; point++) {
+      var anomaly = startAnomaly + (endAnomaly - startAnomaly) * point / 256;
+      times.push((anomaly - e * Math.sin(anomaly) - startMean) / n);
+      times.push(duration * point / 256);
+    }
+    for (var near = 1; near < 100; near++) times.push(duration - near * 6);
+    times.sort(function(left, right) { return left - right; });
+    profile.samples = times.filter(function(t, index) { return t >= 0 && (!index || t - times[index - 1] > 0.000001); }).map(function(t) {
+      var sample = mmReturnSample(profile, t); Object.freeze(sample.view); return Object.freeze(sample);
+    });
+    var separation = mmReturnSample(profile, profile.summary.separationTime), arrival = mmReturnSample(profile, duration);
+    Object.freeze(separation.view); Object.freeze(arrival.view);
+    profile.events = Object.freeze({ separation: Object.freeze(separation), interface: Object.freeze(arrival) });
+    Object.freeze(profile.samples); Object.freeze(profile.summary); Object.freeze(profile);
+    _mmReturnProfiles.push(profile); if (_mmReturnProfiles.length > 5) _mmReturnProfiles.shift();
+    return profile;
+  }
+  function mmCleanReturnPlayback(raw) {
+    raw = mmIsObj(raw) ? raw : {};
+    var angle = mmReturnAngle(raw.entryAngle), expected = mmReturnProfile(angle).summary;
+    var saved = raw.returnRun, claimed = raw.returnResult, run = null, result = null;
+    if (mmIsObj(saved) && saved.version === 1 && mmNum(saved.time) && mmNum(saved.angle) && saved.angle === angle && typeof saved.recorded === 'boolean') {
+      var valid = mmIsObj(claimed) && claimed.version === 1 && Object.keys(expected).every(function(key) {
+        return mmNum(claimed[key]) && Math.abs(claimed[key] - expected[key]) <= Math.max(0.000001, Math.abs(expected[key]) * 1e-12);
+      });
+      run = { version: 1, angle: angle, time: saved.recorded === true && !valid ? 0 : Math.max(0, Math.min(expected.duration, saved.time)), recorded: saved.recorded === true && valid };
+      if (run.recorded) result = Object.assign({ version: 1 }, expected);
+    }
+    return { returnRun: run, returnResult: result, returnPaused: raw.returnPaused === true,
+      returnPlaybackRate: [1, 60, 600, 3600].indexOf(raw.returnPlaybackRate) >= 0 ? raw.returnPlaybackRate : 3600,
+      returnView: raw.returnView === 'approach' ? 'approach' : 'system' };
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { returnPhysics: MM_RETURN,
+    returnAngle: mmReturnAngle, returnProfile: mmReturnProfile, returnSample: mmReturnSample, cleanReturnPlayback: mmCleanReturnPlayback }); } catch (e) {}
+
   var _mmEntryLayers = (function () {
     var levels = [0, 11000, 20000, 32000, 47000, 51000, 71000, 84852];
     var lapse = [-0.0065, 0, 0.001, 0.0028, 0, -0.0028, -0.002];
@@ -4842,6 +4980,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         Object.assign(s, mmCleanEntryState(s));
         Object.assign(s, mmCleanLaunchPlayback(s));
         Object.assign(s, mmCleanTransitPlayback(s));
+        Object.assign(s, mmCleanReturnPlayback(s));
         if (s.mccChoice !== 'corrected' && s.mccChoice !== 'skipped') s.mccChoice = null;
         Object.assign(s, mmCleanLoiPlayback(s));
         Object.assign(s, mmCleanAscentPlayback(s));
@@ -5571,8 +5710,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         t('stem.moonmission.task_4_burn', 'Plan the insertion burn, verify a safe lunar orbit, then prepare Eagle for descent.'),
         t('stem.moonmission.task_5', 'Fly the landing: W or \u2191 for thrust, A/D to slide. Touch down under 3 m/s down and 5 m/s sideways.'),
         t('stem.moonmission.task_6', 'Walk the surface: collect 4 rocks with F, deploy the seismometer, then End EVA.'),
-        t('stem.moonmission.task_7_flight', 'Review the ascent, dock safely, then fire the TEI burn to head home.'),
-        t('stem.moonmission.task_entry_plan', 'Compare entry angles and predicted loads, then begin re-entry.'),
+        t('stem.moonmission.task_7_return_preset', 'Review the ascent, dock safely, then prepare the Earth return.'),
+        t('stem.moonmission.task_entry_plan', 'Compare entry angles and predicted loads, review the entry interface, then begin re-entry.'),
         t('stem.moonmission.task_entry_playback', 'Watch or scrub the entry flight. Inspect its result, then complete the mission after splashdown or try another angle.'),
         t('stem.moonmission.task_10', 'Read your flight record \u2014 four graded calls \u2014 then fly again and beat it.')
       ];
@@ -11486,266 +11625,131 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               advancePhase(8); log('Docking exercise complete. Crew and samples aboard Columbia; LM jettisoned.');
               if (!d.ascentAwarded) { upd('ascentAwarded', true); addXP(15); }
               if (quizIdx < QUIZ_BANK.length) upd('showQuiz', true);
-              if (addToast) addToast('TEI burn complete. Heading home.', 'success');
-            } }, '\uD83D\uDE80 TEI Burn \u2014 Head Home'));
+              if (addToast) addToast('Docking complete. Review the Earth-return preset.', 'success');
+            } }, '\uD83D\uDE80 Head Home \u2014 Inspect Earth Return'));
         })(),
 
         // ═══ PHASE 8: TRANS-EARTH COAST ═══
-        phase === 8 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
-          h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
-            // The return coast was the ONLY mid-mission phase with no visual at all \u2014 a
-            // plain text card wedged between the animated ascent and the re-entry canvas.
-            // Mirror of the outbound transit, but carrying its own science: this leg
-            // ACCELERATES (Earth's gravity is pulling you in, where the outbound climb
-            // slowed the whole way), the CMP takes sextant star sightings to check the
-            // trajectory, and the Service Module is cast off before entry.
-            h('div', { className: 'relative', style: { height: '280px' } },
-              h('canvas', {
-                'data-teicoast-canvas': 'true',
-                role: 'img',
-                'aria-label': t('stem.moonmission.tei_canvas_alt', 'Animated trans-Earth coast. The Moon shrinks behind the spacecraft while Earth grows ahead, its night side and city lights toward the capsule, over the two-and-a-half-day return. A porthole inset shows the crew\'s view ahead: Earth growing, and thinning from half lit to a crescent and almost dark as the path swings round its night side. The Command Module Pilot takes a sextant star sighting, and the Service Module is cast off before entry. Near the end an inset draws the entry corridor and the flight path angle set with the slider below, showing whether the capsule would enter safely, skip off the atmosphere, or come in too steep. Shows distance to Earth, closing speed and coast time.'),
-                style: { width: '100%', height: '100%', display: 'block' },
-                ref: function(cvEl) {
-                  if (!cvEl || cvEl._teiInit) return;
-                  cvEl._teiInit = true;
-                  var ctx = cvEl.getContext('2d');
-                  var W = cvEl.offsetWidth || 500, HT = cvEl.offsetHeight || 280;
-                  cvEl.width = W * 2; cvEl.height = HT * 2; ctx.scale(2, 2); if (typeof ResizeObserver === 'function' && !cvEl._mmRO) { cvEl._mmRO = new ResizeObserver(function() { var nw = cvEl.offsetWidth, nh = cvEl.offsetHeight; if (nw > 0 && nh > 0 && (nw !== W || nh !== HT)) { W = nw; HT = nh; cvEl.width = nw * 2; cvEl.height = nh * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); } }); cvEl._mmRO.observe(cvEl); }   // rotate/resize used to leave the canvas stretched (backing store was locked at first mount)
-                  var tick = 0;
-                  var teiClock = { last: null, acc: 0 };
-                  function drawTEI(ts) {
-                    if (!document.contains(cvEl)) return;
-                    // Pausing freezes the model clock, but repainting still handles a
-                    // resized backing canvas and changes to the entry-angle preview.
-                    if (_mmAnimPaused) teiClock.last = null;
-                    else tick = Math.min(2360, tick + mmFrameSteps(teiClock, ts));
-                    ctx.clearRect(0, 0, W, HT);
-                    ctx.fillStyle = '#010108'; ctx.fillRect(0, 0, W, HT);
-                    drawStarfield(ctx, W, HT, tick, 150);
-                    // Slow the final 15 model minutes to six display seconds so the
-                    // physically timed separation remains visible in this fast-forward view.
-                    var approachStart = Math.max(0, 1 - 900 / MM_RETURN_SECONDS);
-                    var progress = tick <= 2000 ? tick / 2000 * approachStart
-                      : approachStart + (1 - approachStart) * Math.min(1, (tick - 2000) / 360);
-                    var _rc = mmReturnCoast(progress);
-                    cvEl.dataset.returnAltitude = _rc.distKm.toFixed(3);
-                    cvEl.dataset.returnSpeed = (_rc.speedKmh / 3.6).toFixed(3);
-                    cvEl.dataset.returnElapsed = _rc.elapsedSeconds.toFixed(3);
-                    cvEl.dataset.returnRemaining = _rc.remainingSeconds.toFixed(3);
-                    cvEl.dataset.returnSeparated = String(_rc.serviceModuleSeparated);
-                    cvEl.dataset.returnComplete = String(_rc.atInterface);
-                    // Moon receding behind (left), Earth swelling ahead (right)
-                    var moonR = Math.max(6, 34 * (1 - progress * 0.82));
-                    var moonX = 52 - progress * 18;
-                    drawDetailedMoon(ctx, moonX, HT * 0.5, moonR, 42);
-                    ctx.fillStyle = 'rgba(1,1,8,0.86)';                 // the same Sun as Earth's, from the right
-                    mmPhaseShade(ctx, moonX, HT * 0.5, moonR * 1.02, 0.5, 0);
-                    var earthR = 10 + progress * progress * 52;   // grows fastest at the end: you are falling in
-                    var earthX = W - earthR - 16 + (1 - progress) * 14;   // whole disc in frame (it ran off the edge)
-                    // Sunlight from the far side: Apollo 11 met the atmosphere on the night
-                    // side and splashed down before dawn over the Pacific.
-                    drawDetailedEarth(ctx, earthX, HT * 0.5, earthR, tick, 0);
-                    // Same arc treatment as the outbound leg — a coast is not a straight
-                    // horizontal slide, and the trail follows the path actually flown.
-                    function teiPos(p) {
-                      return {
-                        x: moonX + moonR + 18 + (earthX - earthR - moonX - moonR - 40) * p,
-                        y: HT * 0.5 - Math.sin(p * Math.PI) * (HT * 0.17)
-                      };
+
+        phase === 8 && (function() {
+          var rp = mmReturnProfile(d.entryAngle), rr = d.returnRun || { time: 0, recorded: false };
+          var returnReady = !!(rr.recorded && d.returnResult), returnCanvas = null;
+          var returnPausedUI = d.returnPaused || _mmAnimPaused;
+          var returnButtonStyle = { minHeight: '44px', padding: '8px 12px', borderRadius: '8px', border: '1px solid #64748b', background: '#1e293b', color: '#f8fafc', fontSize: '13px', fontWeight: 600 };
+          function returnControl(ev, action, value) {
+            var host = ev.currentTarget.closest('[data-return-workspace]'), cv = host && host.querySelector('[data-teicoast-canvas]');
+            if (cv && cv._returnAction) cv._returnAction(action, value);
+          }
+          function setReturnAngle(value) {
+            var next = mmReturnAngle(value);
+            if (returnCanvas && returnCanvas._returnAction) returnCanvas._returnAction('angle', next);
+            else {
+              upd('entryAngle', next);
+              if (next !== mmReturnAngle(d.entryAngle)) { upd('returnRun', null); upd('returnResult', null); upd('returnPaused', true); }
+            }
+          }
+          return h('div', { 'data-return-workspace': true, className: 'space-y-3' },
+            h('section', { style: { background: '#0f172a', color: '#e2e8f0', padding: '14px', borderRadius: '12px', border: '1px solid #334155' } },
+              h('p', { style: { color: '#7dd3fc', fontSize: '11px', letterSpacing: '0.1em', margin: 0 } }, 'COLUMBIA / EARTH APPROACH'),
+              h('h3', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 700, margin: '5px 0' } }, 'Trans-Earth coast'),
+              h('p', { style: { fontSize: '13px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Follow the curved return toward Earth. Gravity increases speed while angular momentum carries the capsule sideways. The selected entry angle defines this educational return preset.'),
+              h('label', { style: { fontSize: '12px', display: 'block', margin: '10px 0' } }, 'Trajectory view ',
+                h('select', { 'data-return-view': true, 'aria-label': 'Return trajectory view', value: d.returnView, style: returnButtonStyle, onChange: function(ev) { returnControl(ev, 'view', ev.target.value); } },
+                  h('option', { value: 'system' }, 'Whole Earth return'), h('option', { value: 'approach' }, 'Earth approach'))),
+              h('canvas', { 'data-teicoast-canvas': 'true', role: 'img', 'aria-label': 'Measured curved Earth-return trajectory, spacecraft velocity arrow and angular Earth view. The Service Module separates before entry. Physical values and playback controls follow.',
+                style: { display: 'block', width: '100%', height: '400px', borderRadius: '8px' }, ref: function(cv) {
+                  returnCanvas = cv;
+                  if (!cv || cv._teiInit) return; cv._teiInit = true;
+                  var ctx = cv.getContext('2d'); if (!ctx) return;
+                  var width = cv.offsetWidth || 500, height = cv.offsetHeight || 400;
+                  var profile = rp, angle = rp.angle, time = rr.time, recorded = rr.recorded, paused = !!d.returnPaused, rate = d.returnPlaybackRate, view = d.returnView;
+                  var lastTs = null, lastPublish = -Infinity, stamp = '', observer;
+                  if (!recorded) upd('returnResult', null);
+                  function resize() { width = cv.offsetWidth || width; height = cv.offsetHeight || height; cv.width = width * 2; cv.height = height * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); }
+                  resize(); if (typeof ResizeObserver === 'function') { observer = new ResizeObserver(resize); observer.observe(cv); }
+                  function persist() {
+                    if (time >= profile.summary.duration && !recorded) {
+                      recorded = true; upd('returnResult', Object.assign({ version: 1 }, profile.summary));
+                      if (typeof announceToSR === 'function') announceToSR('Entry interface recorded at 122 kilometers, 11.03 kilometers per second and ' + angle.toFixed(1) + ' degrees.');
                     }
-                    var teiPt = teiPos(progress);
-                    var scX = teiPt.x;
-                    var scY = teiPt.y + Math.sin(tick * 0.008) * 4;
-                    var jettisoned = _rc.serviceModuleSeparated;
-                    // Fading dashed trail back toward the Moon, sampled along the same arc
-                    ctx.save();
-                    ctx.strokeStyle = 'rgba(148,163,184,0.14)';
-                    ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
-                    ctx.beginPath();
-                    for (var tq = 0; tq <= 40; tq++) {
-                      var pq = (progress * tq) / 40;
-                      var qq = teiPos(pq);
-                      if (tq === 0) ctx.moveTo(qq.x, qq.y); else ctx.lineTo(qq.x, qq.y);
-                    }
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                    ctx.restore();
-                    // Jettisoned Service Module tumbling away behind the capsule
-                    if (jettisoned) {
-                      var jF = Math.max(0, Math.min(1, (MM_SM_SEPARATION_SECONDS - _rc.remainingSeconds) / MM_SM_SEPARATION_SECONDS));
-                      ctx.save();
-                      ctx.globalAlpha = Math.max(0, 0.85 - jF * 0.6);
-                      ctx.translate(scX - 22 - jF * 60, scY + jF * 16);
-                      ctx.rotate(tick * 0.02);
-                      ctx.fillStyle = '#9aa3ad'; ctx.fillRect(-7, -2.5, 14, 5);
-                      ctx.fillStyle = '#6b7280';
-                      ctx.beginPath(); ctx.moveTo(-7, -2); ctx.lineTo(-11, -3.5); ctx.lineTo(-11, 3.5); ctx.lineTo(-7, 2); ctx.closePath(); ctx.fill();
-                      ctx.restore();
-                      ctx.globalAlpha = 1;
-                    }
-                    // CSM, or the bare Command Module once the SM is gone
-                    ctx.save();
-                    ctx.translate(scX, scY);
-                    if (!jettisoned) {
-                      ctx.fillStyle = 'rgba(56,189,248,0.28)';
-                      ctx.beginPath(); ctx.arc(-6, 0, 6, 0, Math.PI * 2); ctx.fill();
-                      ctx.fillStyle = '#c0c8d0'; ctx.fillRect(-9, -2.5, 11, 5);
-                      ctx.fillStyle = 'rgba(100,180,255,0.5)';
-                      ctx.beginPath(); ctx.arc(-11, 0, 1.5, 0, Math.PI * 2); ctx.fill();
-                    }
-                    ctx.fillStyle = '#e8ecf0';
-                    ctx.beginPath(); ctx.moveTo(5, 0); ctx.lineTo(2, -3); ctx.lineTo(-2, -3.5); ctx.lineTo(-2, 3.5); ctx.lineTo(2, 3); ctx.closePath(); ctx.fill();
-                    ctx.fillStyle = '#38bdf8'; ctx.fillRect(0, -1, 2, 2);
-                    ctx.restore();
-                    // Sextant star sighting \u2014 a navigation reticle locks onto a star mid-coast
-                    if (progress > 0.3 && progress < 0.46) {
-                      var starX = W * 0.42, starY = HT * 0.24;
-                      ctx.save();
-                      ctx.strokeStyle = 'rgba(251,191,36,0.8)'; ctx.lineWidth = 1;
-                      ctx.beginPath(); ctx.arc(starX, starY, 11, 0, Math.PI * 2); ctx.stroke();
-                      ctx.beginPath();
-                      ctx.moveTo(starX - 16, starY); ctx.lineTo(starX - 4, starY);
-                      ctx.moveTo(starX + 4, starY); ctx.lineTo(starX + 16, starY);
-                      ctx.moveTo(starX, starY - 16); ctx.lineTo(starX, starY - 4);
-                      ctx.moveTo(starX, starY + 4); ctx.lineTo(starX, starY + 16);
-                      ctx.stroke();
-                      ctx.fillStyle = '#fff';
-                      ctx.beginPath(); ctx.arc(starX, starY, 1.6, 0, Math.PI * 2); ctx.fill();
-                      ctx.fillStyle = 'rgba(251,191,36,0.9)'; ctx.font = '8px system-ui'; ctx.textAlign = 'center';
-                      ctx.fillText('SEXTANT MARK \u2014 star sighting', starX, starY + 26);
-                      ctx.restore();
-                    }
-                    // HUD \u2014 everything in the panel. The distance and the configuration
-                    // line used to be centred ON the spacecraft and ran through the hull.
-                    var distToEarth = Math.round(_rc.distKm);
-                    ctx.fillStyle = 'rgba(0,0,0,0.55)';
-                    ctx.fillRect(8, 8, 158, 92);
-                    ctx.textAlign = 'left'; ctx.font = 'bold 9px monospace';
-                    ctx.fillStyle = '#38bdf8'; ctx.fillText('CLOSING SPEED', 14, 22);
-                    var closing = Math.round(_rc.speedKmh / 10) * 10;
-                    ctx.fillStyle = '#fff'; ctx.font = 'bold 13px monospace';
-                    ctx.fillText(closing.toLocaleString() + ' km/h', 14, 36);
-                    ctx.font = 'bold 9px monospace'; ctx.fillStyle = '#38bdf8';
-                    ctx.fillText('TO EARTH', 14, 50);
-                    ctx.fillStyle = '#fff'; ctx.font = '11px monospace';
-                    ctx.fillText(distToEarth.toLocaleString() + ' km', 14, 64);
-                    ctx.font = 'bold 9px monospace'; ctx.fillStyle = '#38bdf8';
-                    ctx.fillText('COAST ELAPSED', 14, 78);
-                    ctx.fillStyle = '#fff'; ctx.font = '11px monospace';
-                    ctx.fillText(_rc.days.toFixed(1) + ' of ~' + _rc.totalDays.toFixed(1) + ' days', 14, 92);
-                    // Configuration, kept clear of the hull.
-                    ctx.textAlign = 'center'; ctx.font = '9px monospace';
-                    ctx.fillStyle = jettisoned ? '#fbbf24' : '#94a3b8';
-                    ctx.fillText(jettisoned ? 'CM only \u2014 SM jettisoned' : 'CSM \u2014 homeward coast', scX, scY + 24);
-                    // Entry preview: exaggerated reference geometry, with the predicted
-                    // outcome supplied by the same trajectory as the planner.
-                    var corrA = Math.min(1, Math.max(0, (progress - 0.55) / 0.12));
-                    if (corrA > 0) {
-                      var ciW = Math.min(200, W * 0.42), ciH = 92, ciX = 8, ciY = HT - ciH - 24;
-                      var entryMag = Math.max(4, Math.min(9, Math.abs(_mmEntryAngle)));
-                      var entryPlan = mmEntryProfile(-entryMag);
-                      var entryState = entryPlan.summary.outcome;
-                      ctx.save();
-                      ctx.globalAlpha = corrA;
-                      ctx.fillStyle = 'rgba(2,6,23,0.8)'; ctx.fillRect(ciX, ciY, ciW, ciH);
-                      ctx.strokeStyle = 'rgba(56,189,248,0.35)'; ctx.lineWidth = 1; ctx.strokeRect(ciX + 0.5, ciY + 0.5, ciW - 1, ciH - 1);
-                      ctx.beginPath(); ctx.rect(ciX, ciY, ciW, ciH); ctx.clip();
-                      // Atmosphere and ground, a gentle curve across the bottom.
-                      var gR = ciW * 3, gCx = ciX + ciW * 0.5, gCy = ciY + ciH + gR - 16;
-                      ctx.fillStyle = 'rgba(56,189,248,0.22)';
-                      ctx.beginPath(); ctx.arc(gCx, gCy, gR + 12, 0, Math.PI * 2); ctx.fill();
-                      ctx.fillStyle = '#1e3a5f';
-                      ctx.beginPath(); ctx.arc(gCx, gCy, gR, 0, Math.PI * 2); ctx.fill();
-                      var eX = ciX + ciW * 0.72, eY = gCy - Math.sqrt((gR + 12) * (gR + 12) - (eX - gCx) * (eX - gCx));
-                      var len = ciW * 0.62, k4 = 4 * Math.PI / 180;
-                      var ray = function(deg, l) { return [eX - l * Math.cos(deg * k4), eY - l * Math.sin(deg * k4)]; };
-                      // A reference ray, not a fixed "safe" corridor.
-                      var referenceRay = ray(6.5, len);
-                      ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
-                      ctx.beginPath(); ctx.moveTo(referenceRay[0], referenceRay[1]); ctx.lineTo(eX, eY); ctx.stroke(); ctx.setLineDash([]);
-                      // The student's approach, and what happens next.
-                      var col = entryState === 'nominal' ? '#34d399' : entryState === 'skip' ? '#fbbf24' : '#f87171';
-                      var st = ray(entryMag, len);
-                      ctx.strokeStyle = col; ctx.lineWidth = 2;
-                      ctx.beginPath(); ctx.moveTo(st[0], st[1]); ctx.lineTo(eX, eY); ctx.stroke();
-                      ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(eX, eY);
-                      if (entryState === 'skip') ctx.lineTo(eX + ciW * 0.22, eY - ciH * 0.3);          // bounced back out
-                      else if (entryState === 'steep') ctx.lineTo(eX + ciW * 0.1, eY + ciH * 0.3);     // straight down, hard
-                      else ctx.quadraticCurveTo(eX + ciW * 0.12, eY + 7, eX + ciW * 0.26, eY + 9);     // settles into the air
-                      ctx.stroke(); ctx.setLineDash([]);
-                      var cf = (tick % 150) / 150, cp = ray(entryMag, len * (1 - cf));
-                      ctx.fillStyle = '#e2e8f0'; ctx.beginPath(); ctx.arc(cp[0], cp[1], 2.2, 0, Math.PI * 2); ctx.fill();
-                      ctx.textAlign = 'left'; ctx.font = 'bold 8px monospace'; ctx.fillStyle = '#38bdf8';
-                      ctx.fillText('ENTRY PREVIEW', ciX + 6, ciY + 12);
-                      ctx.font = '8px system-ui'; ctx.fillStyle = '#94a3b8';
-                      ctx.fillText('reference sketch; angles x4', ciX + 6, ciY + 23);
-                      ctx.fillText('blue: -6.5\u00B0 reference', ciX + 6, ciY + 85);
-                      ctx.textAlign = 'right'; ctx.font = 'bold 9px system-ui'; ctx.fillStyle = col;
-                      ctx.fillText(entryPlan.angle.toFixed(1) + '\u00B0 ' + (entryState === 'nominal' ? 'splashdown' : entryState === 'skip' ? 'skip-out' : entryState === 'steep' ? 'high load' : 'unfinished'), ciX + ciW - 6, ciY + 36);
-                      ctx.restore();
-                    }
-                    // Lesson captions (same cadence as the LEO panel)
-                    var teiLessons = [
-                      'Outbound you slowed the whole way up. Homebound you speed up.',
-                      'Earth pulls you in \u2014 the same gravity you fought at launch.',
-                      'The CMP sights known stars through a sextant to check the trajectory.',
-                      'One small mid-course correction is usually all the return needs.',
-                      'The Service Module is cast off before entry \u2014 only the CM has a heat shield.'
-                    ];
-                    var tIdx = Math.floor(tick / 260) % teiLessons.length;
-                    var tFade = Math.min(1, (tick % 260) < 210 ? (tick % 260) / 25 : (260 - tick % 260) / 50);
-                    if (tick > 90) {
-                      ctx.globalAlpha = tFade * 0.85;
-                      ctx.textAlign = 'center'; ctx.font = 'italic 10px system-ui';
-                      ctx.fillStyle = '#a5b4fc';
-                      ctx.fillText(teiLessons[tIdx], W * 0.5, HT - 10);
-                      ctx.globalAlpha = 1;
-                    }
-                    drawVignette(ctx, W, HT, 0.25);
-                    // The crew's view ahead through a window (mmReturnView): Earth growing,
-                    // and thinning from half lit to a crescent as the path swings round
-                    // through its night side. A 16 degree field, so it ends filling the glass.
-                    var crew = mmReturnView(_rc.distKm);
-                    var pwR = Math.min(30, W * 0.07), pwX = W - pwR - 14, pwY = pwR + 14;
-                    var pwEarth = Math.min(pwR * 3, pwR * Math.tan(crew.angRadiusDeg * MM_DEG) / Math.tan(8 * MM_DEG));
-                    ctx.save();
-                    ctx.beginPath(); ctx.arc(pwX, pwY, pwR, 0, Math.PI * 2); ctx.clip();
-                    ctx.fillStyle = '#01030a'; ctx.fillRect(pwX - pwR, pwY - pwR, pwR * 2, pwR * 2);
-                    drawDetailedEarth(ctx, pwX, pwY, Math.max(3, pwEarth), tick, 0, crew.lit);
-                    ctx.restore();
-                    ctx.strokeStyle = '#64748b'; ctx.lineWidth = 3.5;
-                    ctx.beginPath(); ctx.arc(pwX, pwY, pwR + 1.5, 0, Math.PI * 2); ctx.stroke();
-                    ctx.strokeStyle = 'rgba(15,23,42,0.9)'; ctx.lineWidth = 1;
-                    ctx.beginPath(); ctx.arc(pwX, pwY, pwR + 3.5, 0, Math.PI * 2); ctx.stroke();
-                    ctx.textAlign = 'right'; ctx.font = 'bold 8px monospace'; ctx.fillStyle = '#94a3b8';
-                    ctx.fillText('CREW\'S VIEW AHEAD', pwX - pwR - 8, pwY - 4);
-                    ctx.font = '9px system-ui'; ctx.fillStyle = '#e2e8f0';
-                    ctx.fillText('Earth ' + Math.round(crew.lit * 100) + '% lit', pwX - pwR - 8, pwY + 9);
-                    if (document.contains(cvEl)) requestAnimationFrame(drawTEI);
+                    var nextStamp = angle + ':' + time + ':' + recorded; if (nextStamp === stamp) return; stamp = nextStamp;
+                    upd('returnRun', { version: 1, angle: angle, time: time, recorded: recorded });
                   }
-                  drawTEI();
-                }
-              })
-            ),
-            h('div', { className: 'p-4 text-white border-t border-slate-700' },
-            h('div', { className: 'text-center mb-3' },
-              h('div', { className: 'text-3xl' }, '\uD83C\uDF0D'),
-              h('h4', { className: 'text-base font-bold' }, t('stem.moonmission.trans_earth_coast_2', 'Trans-Earth Coast')),
-              h('p', { className: 'text-[0.6875rem] text-slate-400' }, t('stem.moonmission.returning_home_384_400_km_3_days', 'Returning home \u2022 384,400 km \u2022 ~2.5 days'))
-            ),
-            h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 mb-3' },
-              h('p', { className: 'text-[0.6875rem] text-slate-300 leading-relaxed' },
-                t('stem.moonmission.the_service_module_engine_fires_for_th', 'The Service Module engine fires for the Trans-Earth Injection burn. You coast for about two and a half days back to Earth, jettison the Service Module, and prepare the Command Module for re-entry \u2014 the most dangerous phase of the mission.'))
-            ),
-            h('div', { 'data-return-model-note': 'true', className: 'rounded-lg p-3 border border-slate-600 mb-3 text-xs text-slate-200 leading-relaxed' },
-              h('p', null, t('stem.moonmission.return_model_note', 'The coast readouts model a straight fall toward Earth, with Earth gravity only. The curved path and lighting are illustrations. Time is compressed; the final 15 model minutes play more slowly so you can see separation. The separate entry model starts at 122 km and 11.03 km/s, using your selected angle.')),
-              h('p', { className: 'mt-2' }, t('stem.moonmission.return_separation_note', 'The Service Module separates 13 minutes 53 seconds before entry interface, following the Apollo 11 timeline.')),
-              h('a', { href: 'https://www.nasa.gov/wp-content/uploads/static/apollo50th/pdf/A11_MissionReport.pdf', target: '_blank', rel: 'noopener noreferrer', className: 'inline-flex items-center min-h-[44px] text-sky-300 underline' }, t('stem.moonmission.return_model_source', 'NASA Apollo 11 Mission Report (PDF)'))),
-            h('div', { className: 'bg-indigo-500/10 rounded-lg p-2 border border-indigo-500/20' },
-              h('p', { className: 'text-[0.6875rem] text-indigo-300' }, '\uD83D\uDCA1 ' + apolloFact())
-            )
-            )
-          ),
+                  function visibility() { lastTs = null; persist(); }
+                  document.addEventListener('visibilitychange', visibility);
+                  cv._returnAction = function(action, value) {
+                    if (action === 'angle') {
+                      var next = mmReturnAngle(value); upd('entryAngle', next);
+                      if (next !== angle) { angle = next; profile = mmReturnProfile(angle); time = 0; recorded = false; paused = true; stamp = ''; upd('returnResult', null); upd('returnPaused', true); }
+                    }
+                    if (action === 'seek') { time = Math.max(0, Math.min(profile.summary.duration, Number(value) || 0)); paused = true; upd('returnPaused', true); }
+                    if (action === 'arrival') { time = profile.summary.duration; paused = true; upd('returnPaused', true); view = 'approach'; upd('returnView', view); }
+                    if (action === 'final' || action === 'separation') {
+                      time = action === 'final' ? profile.summary.duration - 900 : profile.summary.separationTime;
+                      paused = true; rate = action === 'final' ? 60 : 1; view = 'approach';
+                      upd('returnPaused', true); upd('returnPlaybackRate', rate); upd('returnView', view);
+                    }
+                    if (action === 'pause') { paused = !!value; upd('returnPaused', paused); if (!paused) upd('animPaused', false); }
+                    if (action === 'rate' && [1, 60, 600, 3600].indexOf(Number(value)) >= 0) { rate = Number(value); upd('returnPlaybackRate', rate); }
+                    if (action === 'view') { view = value === 'approach' ? 'approach' : 'system'; upd('returnView', view); }
+                    lastTs = null; persist();
+                  };
+                  function paint(ts) {
+                    if (!document.contains(cv)) { if (observer) observer.disconnect(); document.removeEventListener('visibilitychange', visibility); cv._returnAction = null; return; }
+                    if (mmReturnAngle(_mmEntryAngle) !== angle) cv._returnAction('angle', _mmEntryAngle);
+                    var running = !paused && !_mmAnimPaused && !document.hidden;
+                    if (running && lastTs !== null) {
+                      var nextTime = Math.min(profile.summary.duration, time + Math.max(0, Math.min(0.25, (ts - lastTs) / 1000)) * rate);
+                      var approachTime = profile.summary.duration - 900;
+                      if (time < approachTime && nextTime >= approachTime && rate > 60) { nextTime = approachTime; rate = 60; view = 'approach'; upd('returnPlaybackRate', rate); upd('returnView', view); }
+                      time = nextTime;
+                    }
+                    lastTs = running && Number.isFinite(ts) ? ts : null;
+                    var sample = mmReturnSample(profile, time), picture = mmDrawReturnScene(ctx, width, height, sample, profile, { view: view });
+                    cv.dataset.returnAltitude = String(sample.altitude / 1000); cv.dataset.returnSpeed = String(sample.speed);
+                    cv.dataset.returnElapsed = String(time); cv.dataset.returnRemaining = String(sample.remainingSeconds);
+                    cv.dataset.returnSeparated = String(sample.serviceModuleSeparated); cv.dataset.returnComplete = String(sample.atInterface);
+                    cv.dataset.returnRadialSpeed = String(sample.radialSpeed); cv.dataset.returnTangentialSpeed = String(sample.tangentialSpeed);
+                    cv.dataset.returnAngle = String(sample.gamma); cv.dataset.returnX = String(sample.x); cv.dataset.returnY = String(sample.y);
+                    cv.dataset.returnVx = String(sample.vx); cv.dataset.returnVy = String(sample.vy); cv.dataset.returnPlume = picture.plumeVisible ? 'on' : 'off';
+                    var values = { time: (time / 3600).toFixed(3) + ' h', altitude: (sample.altitude / 1000).toFixed(sample.altitude < 1e7 ? 1 : 0) + ' km',
+                      speed: (sample.speed / 1000).toFixed(3) + ' km/s', closing: (sample.closingSpeed / 1000).toFixed(3) + ' km/s',
+                      tangential: (sample.tangentialSpeed / 1000).toFixed(3) + ' km/s', angle: sample.gamma.toFixed(2) + '°', remaining: (sample.remainingSeconds / 60).toFixed(2) + ' min',
+                      stage: sample.serviceModuleSeparated ? 'CM only — SM jettisoned' : 'CM + Service Module' };
+                    var host = cv.closest('[data-return-workspace]');
+                    if (host) {
+                      host.querySelectorAll('[data-return-value]').forEach(function(node) { node.textContent = values[node.getAttribute('data-return-value')] || ''; });
+                      var slider = host.querySelector('[data-return-seek]'); if (slider && document.activeElement !== slider) slider.value = String(time);
+                      var status = host.querySelector('[data-return-status]'); if (status) status.textContent = sample.atInterface ? 'Entry interface reached. Review atmospheric flight below.' : sample.serviceModuleSeparated ? 'Command Module coast; heat shield ready for entry.' : 'Unpowered coast; Service Module attached.';
+                    }
+                    if (Number.isFinite(ts) && ts - lastPublish >= 250 || time >= profile.summary.duration) { lastPublish = ts; persist(); }
+                    requestAnimationFrame(paint);
+                  }
+                  requestAnimationFrame(paint);
+                } }),
+              h('p', { 'data-return-status': true, style: { color: '#a5f3fc', fontSize: '13px', fontWeight: 700, margin: '10px 0' } }, 'Unpowered return coast'),
+              h('dl', { 'data-return-readouts': true, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: '10px', margin: '12px 0' } },
+                [['time', 'Coast time'], ['altitude', 'Earth altitude'], ['speed', 'Earth-relative speed'], ['closing', 'Radial closing speed'], ['tangential', 'Tangential speed'], ['angle', 'Flight path angle'], ['remaining', 'Time to interface'], ['stage', 'Spacecraft']].map(function(item) {
+                  return h('div', { key: item[0] }, h('dt', { style: { fontSize: '11px', color: '#cbd5e1' } }, item[1]), h('dd', { 'data-return-value': item[0], style: { margin: 0, minHeight: '22px', color: '#f8fafc', fontWeight: 700, fontSize: '14px', fontVariantNumeric: 'tabular-nums' } }, '—'));
+                })),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' } },
+                h('button', { type: 'button', 'data-return-play-pause': true, style: returnButtonStyle, onClick: function(ev) { returnControl(ev, 'pause', !returnPausedUI); } }, returnPausedUI ? 'Play return' : 'Pause return'),
+                h('label', { style: { fontSize: '12px' } }, 'Playback speed ', h('select', { 'data-return-rate': true, 'aria-label': 'Return playback speed', value: d.returnPlaybackRate, style: returnButtonStyle, onChange: function(ev) { returnControl(ev, 'rate', ev.target.value); } }, [1, 60, 600, 3600].map(function(n) { return h('option', { key: n, value: n }, n + '×'); }))),
+                h('button', { type: 'button', 'data-return-arrival': true, style: returnButtonStyle, onClick: function(ev) { returnControl(ev, 'arrival'); } }, 'Review entry interface')),
+              h('label', { htmlFor: 'mm-return-playback', style: { display: 'block', marginTop: '12px', fontSize: '12px' } }, 'Inspect return trajectory'),
+              h('input', { id: 'mm-return-playback', 'data-return-seek': true, type: 'range', min: 0, max: Math.ceil(rp.summary.duration * 10) / 10, step: 0.1, defaultValue: rr.time, style: { width: '100%', minHeight: '44px', accentColor: '#38bdf8' },
+                onChange: function(ev) { returnControl(ev, 'seek', ev.target.value); }, onKeyDown: function(ev) { if (ev.key === 'End') { ev.preventDefault(); returnControl(ev, 'arrival'); } } }),
+              h('div', { role: 'group', 'aria-label': 'Return milestones', style: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' } },
+                h('button', { type: 'button', 'data-return-milestone': 'final', style: returnButtonStyle, onClick: function(ev) { returnControl(ev, 'final'); } }, 'Final 15 minutes'),
+                h('button', { type: 'button', 'data-return-milestone': 'separation', style: returnButtonStyle, onClick: function(ev) { returnControl(ev, 'separation'); } }, 'SM separation')),
+              h('p', { 'data-return-approach-note': true, style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Playback automatically switches to the approach view at 60× for the final 15 model minutes. Milestones pause the clock; SM separation selects 1×. Review entry interface inspects the complete coast and awards no points.'),
+              h('details', { 'data-return-model-note': 'true', style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.65, marginTop: '12px' } },
+                h('summary', { style: { cursor: 'pointer' } }, 'Return orbit model and limits'),
+                h('p', null, 'A planar, Earth-only Kepler ellipse conserves energy and angular momentum. The trajectory begins at 384,400 km from Earth’s center and ends at 122 km altitude, 11.03 km/s and the selected entry angle. Speed, its radial and tangential components, elapsed time and the drawn curve come from the same orbit.'),
+                h('p', null, 'Changing the angle constructs a different educational departure preset; it does not fire a correction burn. TEI, Moon and Sun gravity, inclination, navigation errors and attitude maneuvers are omitted. The fixed Sun direction is an illumination preset. This is not a historical flight reconstruction.'),
+                h('p', null, 'The Service Module separates 13 minutes 53 seconds before entry interface, following the Apollo 11 timeline. Separation does not change the capsule’s trajectory in this model. Atmospheric flight begins from this interface, using the same spherical Earth, speed and selected angle.'),
+                h('a', { href: 'https://science.nasa.gov/learn/basics-of-space-flight/chapter3-3/', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', display: 'inline-block', minHeight: '44px' } }, 'NASA orbital mechanics'),
+                h('br'), h('a', { href: 'https://www.nasa.gov/wp-content/uploads/static/apollo50th/pdf/A11_MissionReport.pdf', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', display: 'inline-block', minHeight: '44px' } }, 'Apollo 11 Mission Report (PDF)'))),
           // \u2500\u2500 Entry corridor \u2500\u2500
           // Predictions come from the same trajectory that phase 9 will fly.
           // They are a plan, not a completed attempt or an earned reward.
@@ -11759,14 +11763,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             return h('div', { 'data-entry-planner': 'true', className: 'bg-slate-900 rounded-xl p-3 border border-slate-700 mb-2' },
               h('h4', { className: 'text-sm font-bold text-sky-300 mb-1' }, t('stem.moonmission.entry_plan_title', 'Plan atmospheric entry')),
               h('p', { className: 'text-[0.6875rem] text-slate-300 mb-2 leading-relaxed' },
-                t('stem.moonmission.entry_plan_help', 'Choose how steeply the capsule meets the atmosphere. Compare a shallow approach, the Apollo-like reference, and a steep approach. The predictions below come from the trajectory model you will watch.')),
+                t('stem.moonmission.entry_plan_help', 'Choose how steeply the capsule meets the atmosphere. This constructs a new Earth-only return preset and clears its arrival record. Review the entry interface before beginning atmospheric flight; predictions award no points.')),
               h('div', { className: 'flex flex-wrap gap-2 mb-3', role: 'group', 'aria-label': t('stem.moonmission.entry_angle_presets', 'Entry angle presets') },
                 [{ id: 'shallow', angle: -5, label: t('stem.moonmission.entry_shallow_preset', 'Shallow \u22125.0\u00B0') },
                   { id: 'reference', angle: -6.5, label: t('stem.moonmission.entry_reference_preset', 'Reference \u22126.5\u00B0') },
                   { id: 'steep', angle: -9, label: t('stem.moonmission.entry_steep_preset', 'Steep \u22129.0\u00B0') }].map(function(preset) {
                     return h('button', { key: preset.id, type: 'button', 'data-entry-preset': preset.id,
                       'aria-pressed': Math.abs(ang - preset.angle) < 0.001 ? 'true' : 'false',
-                      onClick: function() { upd('entryAngle', preset.angle); },
+                      onClick: function() { setReturnAngle(preset.angle); },
                       className: 'min-h-[44px] px-3 rounded-lg text-xs font-bold border ' + (Math.abs(ang - preset.angle) < 0.001 ? 'bg-sky-800 border-sky-400 text-white' : 'bg-slate-800 border-slate-500 text-slate-100') }, preset.label);
                   })),
               h('label', { className: 'block text-[0.6875rem] font-bold text-slate-300 mb-1', htmlFor: 'mm-entry-angle' },
@@ -11775,7 +11779,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 id: 'mm-entry-angle', type: 'range', min: -9, max: -4, step: 0.1, value: ang,
                 'aria-label': t('stem.moonmission.entry_flight_path_angle', 'Entry flight path angle in degrees'),
                 'aria-valuetext': ang.toFixed(1) + ' degrees. ' + predictionLabel + '. Peak load ' + predicted.peakG.toFixed(1) + ' g.',
-                onChange: function(e) { var next = Number(e.target.value); if (mmNum(next)) upd('entryAngle', Math.max(-9, Math.min(-4, next))); },
+                onChange: function(e) { var next = Number(e.target.value); if (mmNum(next)) setReturnAngle(Math.max(-9, Math.min(-4, next))); },
                 className: 'w-full h-11 cursor-pointer accent-sky-400'
               }),
               h('div', {
@@ -11804,9 +11808,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           h('button', {
             'data-entry-begin': 'true',
             title: t('stem.moonmission.begin_atmospheric_re_entry_sequence_at', 'Begin atmospheric re-entry sequence at about 39,700 kilometers per hour'),
-            disabled: eventPending,
+            disabled: eventPending || !returnReady,
             onClick: function() {
-              if (!canProceed()) return;
+              if (!returnReady || !canProceed()) return;
               var ang2 = -Math.max(4, Math.min(9, Math.abs(mmNum(d.entryAngle) ? d.entryAngle : -6.5)));
               upd('entryOutcome', null);
               upd('entryRun', { version: 1, angle: ang2, time: 0, recovery: 0, recorded: false });
@@ -11819,7 +11823,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             },
             className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed'
           }, t('stem.moonmission.begin_re_entry_sequence', '\uD83C\uDF0A Begin Re-entry Sequence'))
-        ),
+        );
+        })(),
 
         // ═══ PHASE 9: RE-ENTRY & SPLASHDOWN (Animated Canvas) ═══
         phase === 9 && h('div', { className: 'space-y-3', 'data-entry-workspace': true, style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
@@ -12759,6 +12764,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 upd('ascentRun', null); upd('ascentResult', null); upd('ascentPaused', false);
                 upd('ascentPlaybackRate', 30); upd('ascentAwarded', false);
                 upd('dockingRun', null); upd('dockingResult', null); upd('dockingPaused', true); upd('dockingGuided', false);
+                upd('returnRun', null); upd('returnResult', null); upd('returnPaused', false);
+                upd('returnPlaybackRate', 3600); upd('returnView', 'system');
                 upd('reentryStatus', null);
                 upd('orbitStatus', null);
                 upd('transitPlan', null); upd('transitRun', null); upd('transitResult', null);

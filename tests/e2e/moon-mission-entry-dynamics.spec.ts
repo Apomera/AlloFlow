@@ -3,7 +3,7 @@ import { mkdir } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { GlHarness } from './helpers/stem_gl_harness';
 
-const REPORT = resolve('reports/moon-mission-enhancement-pass3-2026-09-27/entry');
+const REPORT = resolve(process.env.MM_ENTRY_REPORT_DIR || 'reports/moon-mission-enhancement-pass3-2026-09-27/entry');
 const harness = new GlHarness({
   toolFile: 'stem_lab/stem_tool_moonmission.js', toolId: 'moonMission',
   width: 1100, height: 1000, layout: 'document', appStyles: true,
@@ -91,6 +91,7 @@ test('entry presets predict the same trajectories and begin without awarding a r
     expect((await saved(page)).missionXP).toBe(0);
   }
   await capture(page, info, 'entry-planner-reference');
+  await page.locator('[data-return-arrival]').click();
   await page.locator('[data-entry-begin]').click();
   await expect(page.locator('[data-entry-canvas]')).toHaveAttribute('data-entry-stage', 'entry');
   const state = await saved(page);
@@ -188,6 +189,7 @@ test('skip-out never unlocks splashdown; retry history survives and improved ent
   await expect(page.locator('[data-entry-planner]')).toBeVisible();
   expect((await saved(page)).entryAttempts).toHaveLength(1);
   await page.locator('[data-entry-preset="reference"]').click();
+  await page.locator('[data-return-arrival]').click();
   await page.locator('[data-entry-begin]').click();
   await page.locator('[data-entry-result]').click();
   await expect(page.locator('[data-entry-terminal="splash"]')).toBeVisible();

@@ -76,7 +76,7 @@ describe('the return coast is one model, not three', () => {
       expect(cur.distKm).toBeLessThanOrEqual(last.distKm);
       expect(cur.speedKmh).toBeGreaterThanOrEqual(last.speedKmh);
       const hours = (cur.days - last.days) * 24;
-      covered += ((cur.speedKmh + last.speedKmh) / 2) * hours;
+      covered += ((cur.closingSpeed + last.closingSpeed) / 2) * hours * 3.6;
       last = cur;
     }
     const start = pure.returnCoast(0), end = pure.returnCoast(1);
@@ -87,7 +87,7 @@ describe('the return coast is one model, not three', () => {
   it('the coast canvas reads the model rather than its own formulas', () => {
     const src = fs.readFileSync(FILE, 'utf8');
     expect(src).not.toMatch(/3200 \+ progress \* progress \* 36700/);
-    expect(src).toMatch(/var _rc = mmReturnCoast\(progress\)/);
+    expect(src).toMatch(/var sample = mmReturnSample\(profile, time\)/);
   });
 });
 

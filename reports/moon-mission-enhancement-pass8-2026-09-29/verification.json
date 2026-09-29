@@ -1,0 +1,60 @@
+{
+  "date": "2026-09-29",
+  "distinctUnitChecks": 434,
+  "unitFiles": 46,
+  "unitPassed": 434,
+  "unitFailed": 0,
+  "unitReport": "unit-verified.json",
+  "candidateChecks": 34,
+  "candidateReport": "candidate-tests.json",
+  "browser": {
+    "distinctCases": 14,
+    "passed": 14,
+    "failed": 0,
+    "workers": 1,
+    "retries": 0,
+    "report": "browser-verified.json",
+    "cases": [
+      "entry presets predict the same trajectories and begin without awarding a result",
+      "nominal playback follows heating and chute events, preserves reviewed results, and pays once",
+      "steep entry reports its higher physical load and heating before splashdown",
+      "skip-out never unlocks splashdown; retry history survives and improved entry pays only the difference",
+      "paused resize and saved-run reload preserve a painted scene and unchanged physics",
+      "phone entry controls and charts fit, support keyboard seeking, and retain the completed scene",
+      "legacy completed entry migrates malformed history once and retains its already-paid reward",
+      "active entry holds while document is hidden and resumes with a fresh frame clock",
+      "both return cameras use measured positions, distinct speed components and no engine plume",
+      "recorded arrival survives review and reload, then passes the same boundary state into entry",
+      "planner changes clear arrival and maintain the new selected angle through the handoff",
+      "legacy and malformed saved arrival claims stay blocked until a measured review",
+      "the clock slows automatically, freezes when hidden and resumes without wall-time catch-up",
+      "320px keyboard, pause, resize, reload and accessibility preserve the physical coast"
+    ],
+    "scoped320pxAxeViolations": 0,
+    "axeReport": "return/phone-axe.json"
+  },
+  "returnCapturesReviewed": [
+    "return/return-entry-interface-chromium.png",
+    "return/return-final-approach-chromium.png",
+    "return/return-phone-320-chromium.png",
+    "return/return-shallow-interface-chromium.png",
+    "return/return-sm-separation-chromium.png",
+    "return/return-whole-orbit-chromium.png"
+  ],
+  "source": {
+    "workingSourceSHA256": "6efff7b724e665bc3966bbf2a35b21f68f5619a864b11a3d5a09c56f75949eb1",
+    "candidateSHA256": "c9923b93ff99e6477cb190d146bcb16d4d674fd84e65fc9b14f997221a8c5f1b",
+    "publicMatchesWorking": true,
+    "preservedMoonwalkHunks": 34,
+    "syntaxPassed": true,
+    "candidateFocusedTestsPassed": 34,
+    "scopedWhitespacePassed": true
+  },
+  "earlierRuns": {
+    "orbit-tests-initial.json": "33 passed",
+    "return-regression-initial.json": "48 passed, three legacy capture assertions updated",
+    "unit-final.json": "429 passed, three legacy radial/lighting assertions updated",
+    "browser-initial.json": "13 passed; corrupt end-time save could recreate arrival. Guard corrected and terminal-save regression added."
+  },
+  "verifiedAtUtc": "2026-09-29T22:21:14.824190+00:00"
+}
