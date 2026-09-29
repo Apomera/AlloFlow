@@ -3,7 +3,7 @@ const { chromium } = require('@playwright/test');
 const fs = require('node:fs');
 const path = require('node:path');
 (async () => {
-  const out = path.resolve('reports/scale-explorer-realism');
+  const out = path.resolve(process.env.SCALE_REVIEW_OUT || 'reports/scale-explorer-realism');
   fs.mkdirSync(out, { recursive: true });
   const browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader', '--enable-webgl', '--enable-unsafe-swiftshader'] });
   try {

@@ -426,7 +426,83 @@
   ];
   function realmAt(e) { return REALMS.filter(function (r) { return e < r.max; })[0] || REALMS[5]; }
 
-  function createScaleAtlas(T, canvas, read, pick, fail) {
+  function atlasDetails(id, S) {
+    var insectSource='https://www.nhm.ac.uk/schools/teaching-resources/key-stage-1/animal-and-human-bodies/parts-of-an-insect.html';
+    var dinosaurSource='https://www.amnh.org/exhibitions/permanent/saurischian-dinosaurs/tyrannosaurus-rex';
+    var dnaSource='https://www.genome.gov/genetics-glossary/Deoxyribonucleic-Acid-DNA';
+    var cellSource='https://www.ncbi.nlm.nih.gov/mesh/68051336';
+    if(id==='honeybee')return [
+      {id:'head',at:[-.42,.06,.11],label:S('atlas_detail_head', 'Head & antennae'),body:S('atlas_detail_head_body', 'Follow the antennae back to the head. Insects have three main body regions: head, thorax, and abdomen. Turn the view to find the matching antenna on the other side.'),source:insectSource},
+      {id:'wings',at:[-.05,.15,.36],label:S('atlas_detail_wings', 'Veined wings'),body:S('atlas_detail_wings_body', 'Look through the translucent wing and trace its supporting veins. The smaller hindwing sits behind the forewing. Both pairs attach to the thorax.'),source:insectSource},
+      {id:'legs',at:[.015,-.20,.25],label:S('atlas_detail_legs', 'Jointed legs'),body:S('atlas_detail_legs_body', 'Count three legs on this side, then orbit to find the other three. Each leg bends at joints; the hind legs in this illustration carry golden pollen loads.'),source:insectSource}
+    ];
+    if(id==='ladybird')return [
+      {id:'elytra',at:[.12,.19,.11],label:S('atlas_detail_elytra', 'Protective wing cases'),body:S('atlas_detail_elytra_body', 'The red shell is a pair of hardened forewings called elytra. Follow the seam where they meet. The flight wings fold beneath these protective covers.'),source:'https://www.nhm.ac.uk/discover/uk-beetles-british-most-spectacular-and-beautiful.html'},
+      {id:'antennae',at:[-.49,.08,.11],label:S('atlas_detail_antennae', 'Antennae'),body:S('atlas_detail_antennae_body', 'These paired structures extend from the head. Compare their short, curved shape with the longer antennae on the honeybee.'),source:insectSource},
+      {id:'legs',at:[.1,-.14,.27],label:S('atlas_detail_six_legs', 'Six legs'),body:S('atlas_detail_six_legs_body', 'Look below the wing cases for three pairs of jointed legs. Six legs are one of the features that identify an insect.'),source:insectSource}
+    ];
+    if(id==='trex')return [
+      {id:'jaw',at:[-.39,.11,.04],label:S('atlas_detail_jaw', 'Jaws & teeth'),body:S('atlas_detail_jaw_body', 'Move around the opening between the jaws to inspect the teeth. The soft tissues and colors are illustrated; the skeleton provides the evidence for the overall body plan.'),source:dinosaurSource},
+      {id:'tail',at:[.32,.06,.01],label:S('atlas_detail_tail', 'Balancing tail'),body:S('atlas_detail_tail_body', 'Trace the taper from the hips to the tip. The long tail extends behind a horizontal body, rather than resting on the ground.'),source:dinosaurSource},
+      {id:'feet',at:[.015,-.27,.09],label:S('atlas_detail_feet', 'Two walking legs'),body:S('atlas_detail_feet_body', 'Follow the powerful hind leg down to its toes. T. rex supported its body on two hind legs; its small forelimbs did not serve as walking legs.'),source:dinosaurSource}
+    ];
+    if(id==='mitochondrion')return [
+      {id:'cristae',at:[-.02,.08,.05],cutaway:true,label:S('atlas_detail_cristae', 'Inner membrane folds'),body:S('atlas_detail_cristae_body', 'These folds are called cristae. They pack more inner membrane into a small space. The membrane contains machinery involved in producing ATP, a molecule cells use to transfer energy.'),source:cellSource},
+      {id:'envelope',at:[.17,.19,.10],cutaway:false,label:S('atlas_detail_envelope', 'Outer membrane'),body:S('atlas_detail_envelope_body', 'The outer membrane encloses the mitochondrion. Open the cutaway to compare this enclosing surface with the folded inner membrane beneath it.'),source:cellSource}
+    ];
+    if(id==='rbc')return [
+      {id:'center',at:[0,.061,0],label:S('atlas_detail_cell_center', 'Indented center'),body:S('atlas_detail_cell_center_body', 'Look at the shallow depression in the disc. Orbit to see the matching indentation on the opposite face. This is a surface shape, not a hole through the cell.'),source:'https://www.nhlbi.nih.gov/health/sickle-cell-disease'},
+      {id:'rim',at:[.36,.13,.12],label:S('atlas_detail_cell_rim', 'Flexible disc'),body:S('atlas_detail_cell_rim_body', 'Compare the thicker rim with the thinner center. Normal red blood cells are flexible discs. Hemoglobin inside them carries oxygen around the body.'),source:'https://www.nhlbi.nih.gov/health/sickle-cell-disease'}
+    ];
+    if(id==='dna')return [
+      {id:'backbone',at:[-.40,-.21,.12],label:S('atlas_detail_backbone', 'Sugar–phosphate backbone'),body:S('atlas_detail_backbone_body', 'Follow one continuous strand around the helix. Each backbone alternates sugar and phosphate groups. The second strand winds alongside it.'),source:dnaSource},
+      {id:'bases',at:[-.1,0,-.03],label:S('atlas_detail_bases', 'Paired bases'),body:S('atlas_detail_bases_body', 'The rungs represent pairs of bases between the two backbones. A pairs with T, and C pairs with G. The colors help distinguish parts of this conceptual model.'),source:'https://www.genome.gov/about-genomics/fact-sheets/Deoxyribonucleic-Acid-Fact-Sheet'}
+    ];
+    return [];
+  }
+
+  var NOTEBOOK_LIMIT = 24, NOTE_LIMIT = 1200;
+  function observationKey(itemId, detailId) { return itemId + ':' + (detailId || ''); }
+  function observationTarget(itemId, detailId) {
+    var item = ITEMS.filter(function (it) { return it.id === itemId; })[0];
+    if (!item) return null;
+    var detail = atlasDetails(itemId, function (key, fallback) { return fallback; }).filter(function (d) { return d.id === detailId; })[0];
+    return detailId && !detail ? null : { item: item, detail: detail };
+  }
+  // Persist plain data only. Rebuild names and source links from the catalog,
+  // and tolerate older or damaged tool state without losing the whole notebook.
+  function readObservations(raw) {
+    var seen = {}, result = [];
+    if (!Array.isArray(raw)) return result;
+    raw.slice(0, 200).forEach(function (entry) {
+      if (!entry || typeof entry !== 'object' || result.length >= NOTEBOOK_LIMIT) return;
+      var target = observationTarget(entry.itemId, entry.detailId || '');
+      if (!target) return;
+      var key = observationKey(entry.itemId, entry.detailId);
+      if (seen[key]) return;
+      seen[key] = true;
+      result.push({ itemId: target.item.id, detailId: target.detail ? target.detail.id : '',
+        size: target.item.id === 'human' && entry.you === true && typeof entry.size === 'number' && validHeightCm(entry.size * 100) ? entry.size : target.item.size,
+        you: target.item.id === 'human' && entry.you === true,
+        note: typeof entry.note === 'string' ? entry.note.slice(0, NOTE_LIMIT) : '',
+        zoom: typeof entry.zoom === 'number' && isFinite(entry.zoom) ? clamp(entry.zoom, 1, 2.5) : 1,
+        yaw: typeof entry.yaw === 'number' && isFinite(entry.yaw) ? Math.atan2(Math.sin(entry.yaw), Math.cos(entry.yaw)) : 0,
+        pitch: typeof entry.pitch === 'number' && isFinite(entry.pitch) ? clamp(entry.pitch, -1.1, 1.1) : .12,
+        cutaway: entry.cutaway !== false, view: entry.view === 'chart' ? 'chart' : 'atlas' });
+    });
+    return result;
+  }
+  function readObservationDrafts(raw) {
+    var result = {};
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return result;
+    Object.keys(raw).slice(0, 200).forEach(function (key) {
+      var parts = key.split(':');
+      if (parts.length === 2 && observationTarget(parts[0], parts[1]) && typeof raw[key] === 'string') result[key] = raw[key].slice(0, NOTE_LIMIT);
+    });
+    return result;
+  }
+
+  function createScaleAtlas(T, canvas, read, pick, fail, inspect, markers) {
     var renderer = new T.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'low-power' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.7));
     renderer.outputEncoding = T.sRGBEncoding;
@@ -450,6 +526,9 @@
     var sphere = track(new T.SphereGeometry(0.5, 48, 32));
     var unitBox = track(new T.BoxGeometry(1, 1, 1));
     var ray = new T.Raycaster(), pointer = new T.Vector2(), drag = null;
+    var fingers = new Map(), pinch = null, cameraZoom = 1, lastZoomInput = 1;
+    var cameraAim=new T.Vector3(0,.2,0),aimGoal=new T.Vector3(0,.2,0),cameraSettling=false;
+    var markerPoint=new T.Vector3(),previousDetail='',focusRing;
     function track(v) { resources.add(v); return v; }
     function material(color, options) { var mat = track(new T.MeshStandardMaterial(Object.assign({ color: color, roughness: 0.78, metalness: 0 }, options || {}))); mat.color.convertSRGBToLinear(); mat.emissive.convertSRGBToLinear(); return mat; }
     function mesh(group, geo, mat, x, y, z, sx, sy, sz) {
@@ -490,6 +569,69 @@
       }
       var geo=track(new T.BufferGeometry());geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geo.setIndex(indices);geo.computeVertexNormals();
       return mesh(g,geo,mat);
+    }
+    function fur(g, center, radii, count, length, color, seed) {
+      var rng=random(seed), points=[];
+      for(var i=0;i<count;i++) {
+        var y=rng()*2-1,angle=rng()*Math.PI*2,r=Math.sqrt(1-y*y),n=[Math.cos(angle)*r,y,Math.sin(angle)*r];
+        var p=n.map(function(v,k){return center[k]+v*radii[k];});
+        var len=length*(.4+rng()*.6);points.push(p[0],p[1],p[2],p[0]+n[0]*len,p[1]+n[1]*len,p[2]+n[2]*len);
+      }
+      var geo=track(new T.BufferGeometry());geo.setAttribute('position',new T.Float32BufferAttribute(points,3));
+      var mat=track(new T.LineBasicMaterial({color:new T.Color(color).convertSRGBToLinear(),transparent:true,opacity:.63}));
+      var hairs=new T.LineSegments(geo,mat);g.add(hairs);return hairs;
+    }
+    function giraffeTexture() {
+      var cv=document.createElement('canvas');cv.width=cv.height=256;
+      var context=cv.getContext('2d'),pixels=context.createImageData(256,256),rng=random(121),seeds=[],cells=7,unit=256/cells;
+      for(var i=0;i<cells*cells;i++)seeds.push([.2+rng()*.6,.2+rng()*.6,rng()]);
+      for(var y=0;y<256;y++)for(var x=0;x<256;x++) {
+        var gx=Math.floor(x/unit),gy=Math.floor(y/unit),first=1e9,second=1e9,tone=0;
+        for(var dy=-1;dy<=1;dy++)for(var dx=-1;dx<=1;dx++) {
+          var nx=gx+dx,ny=gy+dy,s=seeds[((ny+cells)%cells)*cells+(nx+cells)%cells];
+          var d=Math.hypot(x-(nx+s[0])*unit,y-(ny+s[1])*unit);
+          if(d<first){second=first;first=d;tone=s[2];}else if(d<second)second=d;
+        }
+        var edge=clamp((second-first-1.4)/1.3,0,1),at=(y*256+x)*4;
+        pixels.data[at]=220*(1-edge)+(112+tone*35)*edge;
+        pixels.data[at+1]=188*(1-edge)+(67+tone*28)*edge;
+        pixels.data[at+2]=135*(1-edge)+(35+tone*18)*edge;pixels.data[at+3]=255;
+      }
+      context.putImageData(pixels,0,0);var tex=track(new T.CanvasTexture(cv));tex.encoding=T.sRGBEncoding;tex.wrapS=tex.wrapT=T.RepeatWrapping;return tex;
+    }
+    function beeAbdomenTexture() {
+      var cv=document.createElement('canvas');cv.width=64;cv.height=512;
+      var context=cv.getContext('2d'),pixels=context.createImageData(cv.width,cv.height),rng=random(54);
+      for(var y=0;y<cv.height;y++)for(var x=0;x<cv.width;x++) {
+        var t=1-y/(cv.height-1),phase=(t*5.5)%1;
+        var dark=clamp((phase-.52)/.035,0,1)*(1-clamp((phase-.94)/.05,0,1));
+        var noise=(rng()-.5)*12,at=(y*cv.width+x)*4;
+        pixels.data[at]=190*(1-dark)+64*dark+noise;
+        pixels.data[at+1]=147*(1-dark)+47*dark+noise;
+        pixels.data[at+2]=84*(1-dark)+32*dark+noise;pixels.data[at+3]=255;
+      }
+      context.putImageData(pixels,0,0);var tex=track(new T.CanvasTexture(cv));tex.encoding=T.sRGBEncoding;return tex;
+    }
+    // Pigment patches follow the shell surface, including the edge of each spot.
+    function ellipsoidMark(g,mat,center,radii,x,z,rx,rz) {
+      var positions=[],indices=[],rings=7,sides=32;
+      for(var r=0;r<=rings;r++)for(var i=0;i<=sides;i++) {
+        var angle=i/sides*Math.PI*2,px=x+Math.cos(angle)*rx*r/rings,pz=z+Math.sin(angle)*rz*r/rings;
+        var dx=(px-center[0])/radii[0],dz=(pz-center[2])/radii[2];
+        var py=center[1]+radii[1]*Math.sqrt(Math.max(.001,1-dx*dx-dz*dz))+.001;
+        positions.push(px,py,pz);
+        if(r<rings&&i<sides){var q=r*(sides+1)+i;indices.push(q,q+1,q+sides+1,q+1,q+sides+2,q+sides+1);}
+      }
+      var geo=track(new T.BufferGeometry());geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setIndex(indices);geo.computeVertexNormals();
+      return mesh(g,geo,mat);
+    }
+    function beeWing(g, side, back, membrane, vein) {
+      var wing=new T.Group();wing.position.set(back?-.06:-.17,.105,side*.085);g.add(wing);
+      var shape=new T.Shape();shape.moveTo(0,0);shape.bezierCurveTo(-.08,.12,-.03,.43,.09,.49);shape.bezierCurveTo(.23,.50,.31,.30,.19,.12);shape.bezierCurveTo(.11,.04,.05,0,0,0);
+      var sheet=mesh(wing,track(new T.ShapeGeometry(shape,24)),membrane);sheet.rotation.x=side*Math.PI/2;
+      var routes=[[[0,0,0],[.015,.01,side*.17],[.07,.015,side*.46]],[[0,0,0],[.09,.01,side*.15],[.17,.015,side*.34]],[[.015,.01,side*.17],[.09,.012,side*.21],[.13,.013,side*.39]],[[.09,.012,side*.21],[.19,.014,side*.25]],[[.035,.01,side*.27],[.105,.013,side*.30]]];
+      routes.forEach(function(p){tube(wing,p,.0015,vein);});
+      wing.rotation.x=side*-.15;if(back){wing.scale.set(.7,.7,.72);wing.rotation.y=side*-.2;}return wing;
     }
     function relief(seed, pattern) {
       var cv=document.createElement('canvas');cv.width=cv.height=256;var c=cv.getContext('2d'),rng=random(seed),pixels=c.createImageData(256,256);
@@ -539,6 +681,35 @@
     }
     var grassGeo=track(new T.BufferGeometry());grassGeo.setAttribute('position',new T.Float32BufferAttribute(grassPositions,3));grassGeo.setAttribute('color',new T.Float32BufferAttribute(grassColors,3));grassGeo.computeVertexNormals();
     mesh(garden,grassGeo,material('#ffffff',{vertexColors:true,side:T.DoubleSide,roughness:1}));
+    // A centimetre-scale habitat: its dimensions share the atlas scale axis.
+    var leafWorld=new T.Group();scene.add(leafWorld);leafWorld.visible=false;
+    var leafCanvas=document.createElement('canvas');leafCanvas.width=leafCanvas.height=256;
+    var lc=leafCanvas.getContext('2d'),leafGradient=lc.createLinearGradient(0,0,256,0);
+    leafGradient.addColorStop(0,'#263e20');leafGradient.addColorStop(.48,'#698644');leafGradient.addColorStop(1,'#2f572c');lc.fillStyle=leafGradient;lc.fillRect(0,0,256,256);
+    lc.strokeStyle='rgba(185,200,115,.48)';lc.lineWidth=2;lc.beginPath();lc.moveTo(128,0);lc.lineTo(128,256);lc.stroke();
+    for(var vi=1;vi<14;vi++)[-1,1].forEach(function(sign){lc.lineWidth=1.1;lc.beginPath();lc.moveTo(128,vi*19);lc.quadraticCurveTo(128+sign*65,vi*19-15,128+sign*128,vi*19-44);lc.stroke();});
+    var leafTex=track(new T.CanvasTexture(leafCanvas));leafTex.encoding=T.sRGBEncoding;
+    var leafMat=material('#c0d29c',{map:leafTex,roughness:.72,side:T.DoubleSide,bumpMap:grainTexture,bumpScale:.006});
+    var leafPos=[],leafUv=[],leafIdx=[],leafSteps=32,leafSides=12;
+    for(var ly=0;ly<=leafSteps;ly++)for(var lx=0;lx<=leafSides;lx++){
+      var lt=ly/leafSteps,lu=lx/leafSides*2-1,lw=Math.pow(Math.sin(Math.PI*lt),.72)*.47;
+      leafPos.push((lt-.5)*2,.075*lu*lu*Math.sin(Math.PI*lt)+.06*Math.pow(lt-.5,2),lu*lw);
+      leafUv.push((lu+1)/2,lt);
+      if(ly<leafSteps&&lx<leafSides){var lq=ly*(leafSides+1)+lx;leafIdx.push(lq,lq+1,lq+leafSides+1,lq+1,lq+leafSides+2,lq+leafSides+1);}
+    }
+    var leafGeo=track(new T.BufferGeometry());leafGeo.setAttribute('position',new T.Float32BufferAttribute(leafPos,3));leafGeo.setAttribute('uv',new T.Float32BufferAttribute(leafUv,2));leafGeo.setIndex(leafIdx);leafGeo.computeVertexNormals();
+    var restingLeaf=mesh(leafWorld,leafGeo,leafMat,0,0,0,3.4,1.1,4.0);restingLeaf.rotation.y=-.12;
+    var plants=[],stemMat=material('#526b39',{roughness:.85});
+    [[-3.2,-2.4,3.4],[3.5,-3.2,4.5],[-4.6,-5,5.5],[4.5,-6,6.4]].forEach(function(p,idx){
+      var plant=new T.Group();plant.position.set(p[0],0,p[1]);leafWorld.add(plant);plants.push(plant);
+      var direction=p[0]>0?-1:1;
+      tube(plant,[[0,0,0],[direction*.18,p[2]*.45,0],[direction*.5,p[2],-.2]],.035,stemMat);
+      for(var li=0;li<3;li++){var blade=mesh(plant,leafGeo,leafMat,direction*(.2+li*.06),p[2]*(.35+li*.22),-.08,1.4-li*.2,1.7,1.5);blade.rotation.z=direction*(.48+li*.2);blade.rotation.y=idx*.7+li*1.5;}
+    });
+    var waterMat=material('#bedfd4',{roughness:.06,metalness:.25,transparent:true,opacity:.65,depthWrite:false});
+    [[-2.1,.08,.35,.24],[2.25,.08,.65,.28],[1.75,.06,-.75,.16],[-1.5,.06,-1.05,.12]].forEach(function(d){
+      ball(leafWorld,waterMat,d[0],d[1],d[2],d[3],d[3]*.7,d[3]);ball(leafWorld,material('#ffffff',{transparent:true,opacity:.65,depthWrite:false}),d[0]-.025,d[1]+d[3]*.24,d[2]+d[3]*.17,d[3]*.12);
+    });
     var microBackdrop = new T.Group(); scene.add(microBackdrop);
     var membrane = material('#548b87', { transparent: true, opacity: 0.065, depthWrite: false, roughness:1 });
     for (var mi = 0; mi < 9; mi++) {
@@ -692,6 +863,8 @@
           // Open upper membrane exposes the folded inner membrane (cutaway).
           var envelope=track(new T.SphereGeometry(.5,64,40,0,Math.PI*2,Math.PI*.42,Math.PI*.58));
           mesh(g,envelope,material('#b77658',{side:T.DoubleSide,roughness:.7,bumpMap:grainTexture,bumpScale:.008}),0,0,0,1,.48,.58);
+          var cover=mesh(g,track(new T.SphereGeometry(.5,64,32,0,Math.PI*2,0,Math.PI*.42)),material('#b77658',{side:T.DoubleSide,roughness:.7,bumpMap:grainTexture,bumpScale:.008}),0,0,0,1,.48,.58);
+          g.userData.outerMembrane=cover;cover.visible=false;
           var inner=material('#d69b7f',{side:T.DoubleSide,roughness:.72});
           for(j=0;j<10;j++){var fx=-.39+j*.087,fw=Math.sqrt(Math.max(0,1-Math.pow(fx/.48,2)))*.21,fold=[];
             var sheet=[];
@@ -777,7 +950,38 @@
           landColors.push(lc.r,lc.g,lc.b);
         }
         terrain.setAttribute('color',new T.Float32BufferAttribute(landColors,3));terrain.computeVertexNormals();m=mesh(g,terrain,material('#ffffff',{vertexColors:true,side:T.DoubleSide,roughness:.95,bumpMap:grainTexture,bumpScale:.008}));m.rotation.x=-Math.PI/2;g.rotation.x=.32;g.rotation.y=-.35;
-      } else if(['blue-whale','mouse','trex','giraffe','elephant'].indexOf(id)>=0) {
+      } else if(id==='trex') {
+        var reptile=material('#77785b',{roughness:.88,bumpMap:grainTexture,bumpScale:.004}),jawMat=material('#a19a76',{roughness:.85}),claw=material('#403c30');
+        organic(g,[[-.28,.09,0,.028],[-.18,.04,0,.061,.09],[.01,.025,0,.08,.103],[.14,.025,0,.052,.065],[.23,.036,0,.032,.039],[.39,.065,0,.017,.018],[.56,.088,.005,.0005]],reptile,'x');
+        organic(g,[[-.27,.06,0,.055],[-.30,.12,0,.054],[-.30,.17,0,.036]],reptile,'y');
+        organic(g,[[-.50,.145,0,.015,.027],[-.46,.153,0,.036,.035],[-.35,.157,0,.045,.046],[-.27,.155,0,.034,.035],[-.24,.14,0,.008]],reptile,'x');
+        organic(g,[[-.493,.099,0,.002],[-.44,.083,0,.029,.012],[-.33,.08,0,.037,.018],[-.26,.113,0,.017]],jawMat,'x');
+        var tooth=material('#d9d0ad',{roughness:.7});
+        [-1,1].forEach(function(s){
+          organic(g,[[.06,.02,s*.056,.052],[.005,-.095,s*.086,.046],[.08,-.205,s*.082,.024],[.046,-.275,s*.088,.013]],reptile,'y');
+          for(var n=0;n<3;n++){var tz=s*.085+(n-1)*.016;tube(g,[[.046,-.273,s*.088],[.017,-.286,tz],[-.047,-.287,tz]],.008,reptile);tube(g,[[-.046,-.286,tz],[-.06,-.29,tz]],.004,claw);}
+          organic(g,[[-.20,.006,s*.06,.015],[-.255,-.023,s*.085,.011],[-.24,-.058,s*.08,.005]],reptile,'y');
+          for(var digit=0;digit<2;digit++)tube(g,[[-.24,-.058,s*.08],[-.262,-.066,s*(.077+digit*.011)],[-.27,-.055,s*(.077+digit*.011)]],.0035,claw);
+          ball(g,material('#b69551',{roughness:.4}),-.32,.174,s*.041,.013,.013,.008);ball(g,dark,-.322,.175,s*.045,.005,.008,.003);
+          ball(g,dark,-.475,.161,s*.027,.008,.005,.003);
+          for(var t=0;t<7;t++){var tx=-.466+t*.025;mesh(g,track(new T.ConeGeometry(.0035,.014,7)),tooth,tx,.116,s*.028).rotation.z=Math.PI;}
+        });g.rotation.y=-.25;
+      } else if(id==='giraffe') {
+        var patterned=material('#ffffff',{map:giraffeTexture(),roughness:.92,bumpMap:grainTexture,bumpScale:.001}),muzzle=material('#b49b70'),hoof=material('#403f36');
+        organic(g,[[-.23,-.035,0,.015],[-.16,-.025,0,.077,.10],[.04,-.065,0,.069,.092],[.19,-.085,0,.052,.07],[.23,-.10,0,.002]],patterned,'x');
+        organic(g,[[-.16,-.02,0,.056],[-.20,.11,0,.039],[-.255,.30,0,.027],[-.27,.41,0,.022]],patterned,'y');
+        organic(g,[[-.39,.42,0,.011,.015],[-.35,.43,0,.024,.02],[-.29,.435,0,.031,.032],[-.24,.43,0,.017]],patterned,'x');
+        ball(g,muzzle,-.377,.417,0,.045,.04,.047);
+        [-1,1].forEach(function(s){
+          [-.16,.16].forEach(function(x){organic(g,[[x,-.08,s*.048,.027],[x+.017,-.24,s*.06,.015],[x+.01,-.385,s*.062,.012],[x+.012,-.485,s*.063,.008]],patterned,'y');ball(g,hoof,x+.008,-.495,s*.063,.038,.026,.028);});
+          var ear=ball(g,patterned,-.24,.454,s*.045,.07,.015,.031);ear.rotation.y=s*-.6;ear.rotation.z=.35;
+          rod(g,[-.28,.454,s*.014],[-.276,.502,s*.018],.0055,patterned);ball(g,hoof,-.276,.505,s*.018,.016);
+          ball(g,dark,-.308,.444,s*.028,.012,.011,.007);
+        });
+        tube(g,[[.21,-.077,0],[.25,-.16,0],[.28,-.28,.015],[.30,-.34,.015]],.006,muzzle);ball(g,hoof,.30,-.347,.015,.025,.06,.024);
+        for(j=0;j<24;j++){var ny=.02+j/24*.38,nx=-.15-(ny-.02)*.25;rod(g,[nx,ny,-.026],[nx+.016,ny+.005,-.029],.0018,hoof);}
+        g.rotation.y=-.2;
+      } else if(['blue-whale','mouse','elephant'].indexOf(id)>=0) {
         var coat=material(id==='blue-whale'?'#667f88':id==='giraffe'?'#c7a16b':'#62645c',{roughness:id==='blue-whale'?.58:.92,bumpMap:wrinkleTexture,bumpScale:id==='elephant'?.0025:.001});
         if(id==='blue-whale') {
           organic(g,[[-.5,.015,0,.001],[-.43,.015,0,.065,.047],[-.29,.01,0,.094,.08],[-.08,0,0,.091,.095],[.18,.01,0,.058,.06],[.38,.035,0,.018,.025],[.46,.052,0,.013,.013]],coat,'x');
@@ -796,7 +1000,6 @@
           });});
           organic(g,[[.29,.05,0,.018],[.36,-.01,0,.013],[.40,-.15,0,.008],[.43,-.22,.02,.002]],coat,'y');
         }
-        if(id==='giraffe'){organic(g,[[-.20,.06,0,.07],[-.28,.3,0,.05],[-.33,.62,0,.038]],coat,'y');ball(g,coat,-.36,.67,0,.2,.11,.12);}
         if(id==='elephant'){
           organic(g,[[-.40,.17,0,.061],[-.46,.06,0,.053],[-.49,-.10,0,.037],[-.48,-.26,.01,.026],[-.42,-.29,.025,.013]],coat,'y');
           var ivory=material('#d1c6a6',{roughness:.48});
@@ -809,12 +1012,41 @@
         }
         if(id==='mouse')[-1,1].forEach(function(s){ball(g,b,-0.31,0.18,s*0.09,0.13,0.14,0.04);});
         if(id!=='blue-whale'&&id!=='elephant')ball(g,dark,-0.41,0.1,0.11,0.018);g.userData.dimension=item.dim==='tall'?'y':'x';
-      } else if(['honeybee','ladybird','flea','dust-mite'].indexOf(id)>=0) {
-        var insect=material(id==='ladybird'?'#d96762':id==='honeybee'?'#d6b26b':'#b69e88');
-        ball(g,insect,0.08,0,0,0.7,0.4,0.4);ball(g,dark,-0.36,0,0,0.28);
-        for(j=0;j<3;j++)[-1,1].forEach(function(s){tube(g,[[-0.2+j*0.2,-0.08,s*0.1],[-0.27+j*0.23,-0.21,s*0.28],[-0.3+j*0.24,-0.29,s*0.39]],0.017,dark);});
-        if(id==='honeybee'){[-1,1].forEach(function(s){m=ball(g,material('#c7e2ef',{transparent:true,opacity:0.48,depthWrite:false}),-0.05,0.17,s*0.3,0.5,0.026,0.32);m.rotation.x=s*0.4;});for(j=0;j<3;j++)ball(g,dark,0.02+j*0.14,0,0,0.05,0.39-j*0.04,0.39-j*0.04);}
-        if(id==='ladybird')for(j=0;j<6;j++)ball(g,dark,-0.1+j%3*0.16,0.17,(j<3?-1:1)*0.09,0.055,0.025,0.055);
+      } else if(id==='honeybee') {
+        var chitin=material('#322b22',{roughness:.55,bumpMap:grainTexture,bumpScale:.002}),gold=material('#b58c4e',{roughness:.95}),eyes=material('#171b19',{roughness:.23});
+        ball(g,chitin,-.386,.014,0,.225,.253,.242);
+        ball(g,gold,-.17,0,0,.29,.31,.31);
+        organic(g,[[-.055,0,0,.032],[.04,-.012,0,.12,.11],[.19,-.028,0,.146,.116],[.34,-.045,0,.104,.08],[.47,-.065,0,.028,.025],[.50,-.069,0,.0005]],material('#ffffff',{map:beeAbdomenTexture(),roughness:.67,bumpMap:grainTexture,bumpScale:.002}),'x');
+        fur(g,[-.17,0,0],[.147,.157,.157],1800,.019,'#cbb77f',18);fur(g,[-.386,.014,0],[.113,.127,.122],600,.012,'#b5a576',25);
+        var membrane=material('#c7d3c5',{transparent:true,opacity:.3,depthWrite:false,side:T.DoubleSide,roughness:.35}),vein=material('#897b5a',{roughness:.8});
+        [-1,1].forEach(function(s){
+          ball(g,eyes,-.417,.048,s*.09,.11,.17,.072);
+          tube(g,[[-.454,.08,s*.043],[-.51,.145,s*.076],[-.61,.17,s*.10]],.006,chitin);
+          beeWing(g,s,true,membrane,vein);beeWing(g,s,false,membrane,vein);
+          for(var leg=0;leg<3;leg++){var lx=-.27+leg*.11,ex=lx+(leg-1)*.14;
+            tube(g,[[lx,-.055,s*.10],[lx-.025,-.12,s*.20],[ex,-.20,s*.24],[ex-.07,-.27,s*.29]],.011,chitin);
+            tube(g,[[ex-.07,-.27,s*.29],[ex-.09,-.275,s*.33]],.004,chitin);
+            if(leg===2)ball(g,gold,ex-.015,-.20,s*.25,.05,.075,.038);
+          }
+        });g.rotation.x=.22;g.rotation.y=-.22;g.userData.extent=1;g.userData.measureCenter=0;
+      } else if(id==='ladybird') {
+        var shellRed=material('#ac3029',{roughness:.31,bumpMap:grainTexture,bumpScale:.001}),black=material('#192220',{roughness:.45});
+        ball(g,black,-.36,-.015,0,.24,.21,.29);ball(g,black,-.19,.01,0,.24,.26,.46);
+        var carapace=ball(g,shellRed,.095,.015,0,.79,.40,.58);
+        tube(g,[[-.275,.064,0],[-.17,.181,0],[.12,.215,0],[.42,.127,0],[.489,.015,0]],.005,black);
+        [-1,1].forEach(function(s){
+          ellipsoidMark(g,white,[-.19,.01,0],[.12,.13,.23],-.24,s*.16,.025,.026);
+          [[-.11,.11],[.085,.17],[.28,.14]].forEach(function(p){ellipsoidMark(g,black,[.095,.015,0],[.395,.20,.29],p[0],s*p[1],.05,.038);});
+          for(var l=0;l<3;l++){var xx=-.24+l*.2;tube(g,[[xx,-.06,s*.16],[xx-.06,-.14,s*.27],[xx-.10,-.205,s*.32]],.010,black);}
+          tube(g,[[-.43,.035,s*.065],[-.49,.08,s*.095],[-.535,.083,s*.13]],.005,black);ball(g,black,-.535,.083,s*.13,.02);
+          ball(g,black,-.425,.03,s*.104,.041,.047,.028);
+        });g.rotation.x=.42;g.rotation.y=-.18;
+      } else if(id==='flea'||id==='dust-mite') {
+        var insect=material('#b69e88',{roughness:.76,bumpMap:grainTexture,bumpScale:.003});
+        ball(g,insect,.08,0,0,.7,.4,id==='flea'?.21:.4);ball(g,insect,-.36,0,0,.28);
+        var legCount=id==='dust-mite'?4:3;
+        for(j=0;j<legCount;j++)[-1,1].forEach(function(s){var xx=-.23+j*.17;tube(g,[[xx,-.05,s*.09],[xx-.07,-.17,s*.26],[xx-.12,-.29,s*.37]],.013,insect);});
+        fur(g,[.08,0,0],[.35,.2,id==='flea'?.105:.2],150,.045,'#c9b89c',32);
       } else if(id==='hair') {mesh(g,track(new T.CylinderGeometry(0.5,0.5,3,32)),material('#a98a66'));g.userData.dimension='x';}
       else if(id==='egg'||id==='rice') {ball(g,white,0,0,0,id==='egg'?0.74:0.3,1,id==='egg'?0.74:0.3);g.userData.dimension='y';}
       else {mesh(g,track(new T.IcosahedronGeometry(0.5,1)),material('#dab990',{flatShading:true,roughness:0.8}));}
@@ -825,11 +1057,11 @@
       // Glows describe illumination, not the object's measured surface.
       var extent=g.userData.extent||(['earth','moon','jupiter','sun','betelgeuse','carbon','hydrogen','proton','milkyway','universe','laniakea','virgo-sc','oort','heliosphere','local-bubble','orion-nebula'].indexOf(id)>=0?1:size[axis]);
       g.scale.multiplyScalar(1/Math.max(0.001,extent));
-      var measuredCenter=(bounds.min[axis]+bounds.max[axis])/2;
+      var measuredCenter=g.userData.measureCenter!==undefined?g.userData.measureCenter:(bounds.min[axis]+bounds.max[axis])/2;
       g.position[axis]=-measuredCenter/Math.max(.001,extent);
       var root=new T.Group();root.add(g);root.userData.itemId=id;root.userData.model=g;root.userData.initialYaw=g.rotation.y;
       root.userData.floor=bounds.min.y/extent+(axis==='y'?g.position.y:0);
-      var ruler=new T.Group(), rulerMat=material('#91b9c8',{emissive:'#446e83',emissiveIntensity:0.25});
+      var ruler=new T.Group(), rulerMat=track(new T.MeshBasicMaterial({color:new T.Color('#91b9c8').convertSRGBToLinear(),transparent:true,opacity:.8,depthTest:false,depthWrite:false}));
       if(axis==='y') {
         var rulerX=bounds.max.x/extent+.16;
         rod(ruler,[rulerX,-0.5,0],[rulerX,0.5,0],0.0015,rulerMat);
@@ -839,7 +1071,7 @@
         rod(ruler,[-0.5,rulerY,0],[0.5,rulerY,0],0.0015,rulerMat);
         [-0.5,0.5].forEach(function(x){rod(ruler,[x,rulerY-.04,0],[x,rulerY+.04,0],0.0015,rulerMat);});
       }
-      ruler.traverse(function(n){n.castShadow=n.receiveShadow=false;});
+      ruler.traverse(function(n){n.castShadow=n.receiveShadow=false;n.renderOrder=100;});
       root.add(ruler);root.userData.ruler=ruler;
       root.userData.materials=[];g.traverse(function(n){if(n.material){n.userData.baseOpacity=n.material.opacity;n.userData.baseTransparent=n.material.transparent;root.userData.materials.push(n);}});
       root.userData.resources=Array.from(resources).filter(function(r){return !previousResources.has(r);});
@@ -849,6 +1081,7 @@
       if(disposed)return;
       var state=read(), e=state.exp, realm=realmAt(e), width=canvas.clientWidth,height=canvas.clientHeight;
       if(!width||!height)return;
+      if(state.inspectionZoom!==lastZoomInput){cameraZoom=clamp(state.inspectionZoom||1,1,2.5);lastZoomInput=state.inspectionZoom;}
       var ratio=renderer.getPixelRatio();if(canvas.width!==Math.floor(width*ratio)||canvas.height!==Math.floor(height*ratio)){renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();}
       scene.background=new T.Color(state.contrast?'#000000':realm.bg);haze.material.color.set(realm.color);haze2.material.color.set(realm.color);
       motes.visible=!state.contrast&&realm.id!=='human';motes.rotation.y=e*0.027+(state.motion?time*0.001:0);
@@ -871,8 +1104,11 @@
       var distance=6.8+(focal&&focal.id==='dna'?6.7*close:focal&&focal.id==='hair'?7.5*close:0);
       // Leave a quiet band for the heading and fit narrow portrait screens.
       distance*=Math.max(1,.95/camera.aspect);
+      distance/=cameraZoom;
+      var detailKey=state.focusId+':'+state.detailId;
+      if(state.detailId&&detailKey!==previousDetail){yaw=0;pitch=.12;}
+      previousDetail=detailKey;
       var cameraPitch=ground.visible?Math.max(-.1,pitch):pitch;
-      camera.position.set(Math.sin(yaw)*Math.cos(cameraPitch)*distance,Math.sin(cameraPitch)*distance+.2,Math.cos(yaw)*Math.cos(cameraPitch)*distance);camera.lookAt(0,.2,0);
       var occupied=[], visible=[];paintCount++;
       Object.keys(models).forEach(function(id){models[id].visible=false;});
       candidates.forEach(function(it){
@@ -882,6 +1118,7 @@
         root.visible=true;root.userData.lastSeen=paintCount;root.scale.setScalar(scale);root.userData.ruler.visible=occupied.length===1&&state.measure;
         if(it.group==='cosmic' && it.dim!=='distance')root.userData.model.rotation.y=root.userData.initialYaw+time*0.018;
         if(root.userData.model.userData.starMaterial)root.userData.model.userData.starMaterial.uniforms.uTime.value=time;
+        if(root.userData.model.userData.outerMembrane)root.userData.model.userData.outerMembrane.visible=!state.cutaway;
         var shoulder = Math.sign(delta) * scale * 0.65 * Math.min(1, Math.abs(delta) * 5);
         root.position.set(delta*8.5+shoulder,Math.sin(delta*2)*0.3,-Math.abs(delta)*0.75-scale*0.25*Math.min(1,Math.abs(delta)*5));
         // Keep the measured geometry proportional; only visibility changes at
@@ -895,25 +1132,74 @@
       // whole catalog must not retain every model, shader, and texture on GPU.
       var cached=Object.keys(models), evict=cached.filter(function(id){return !models[id].visible;}).sort(function(a,b){return models[a].userData.lastSeen-models[b].userData.lastSeen;});
       while(cached.length>10&&evict.length){var oldId=evict.shift(),old=models[oldId];old.userData.model.userData.released=true;space.remove(old);old.userData.resources.forEach(function(r){r.dispose();resources.delete(r);});delete models[oldId];cached.pop();}
+      var isLeafWorld=!!focal&&['honeybee','ladybird'].indexOf(focal.id)>=0&&close>.25;
+      leafWorld.visible=isLeafWorld;
+      floor.visible=!isLeafWorld;
+      if(isLeafWorld){
+        garden.visible=false;leafWorld.scale.setScalar(3*.01/Math.pow(10,e));leafWorld.position.set(visible[0].position.x,ground.position.y,visible[0].position.z);
+        scene.background.set(state.contrast?'#000000':'#10281f');scene.fog=new T.Fog(state.contrast?'#000000':'#10281f',8,30);
+        key.intensity=1.9;hemisphere.intensity=.64;rim.intensity=.75;
+        plants.forEach(function(plant,index){plant.rotation.z=Math.sin(time*.65+index)*.025;});
+      }
+      // Landmarks live in the model's own coordinates, so labels and the orbit
+      // centre follow its normalization, rotation, and scale without drift.
+      var activeRoot=visible.filter(function(r){return r.userData.itemId===state.focusId;})[0];
+      var selected=state.details.filter(function(d){return d.id===state.detailId;})[0];
+      if(!activeRoot||close<.8)selected=null;
+      scene.updateMatrixWorld(true);aimGoal.set(0,.2,0);
+      if(selected){aimGoal.fromArray(selected.at);activeRoot.userData.model.localToWorld(aimGoal);}
+      cameraAim.lerp(aimGoal,state.reduceMotion?1:.18);cameraSettling=cameraAim.distanceToSquared(aimGoal)>.000001;
+      if(!cameraSettling)cameraAim.copy(aimGoal);
+      camera.position.set(Math.sin(yaw)*Math.cos(cameraPitch)*distance,Math.sin(cameraPitch)*distance,Math.cos(yaw)*Math.cos(cameraPitch)*distance).add(cameraAim);camera.lookAt(cameraAim);camera.updateMatrixWorld(true);
+      if(!focusRing){focusRing=ring(scene,.085,'#d7e9bd',0);focusRing.material.depthTest=false;focusRing.material.depthWrite=false;focusRing.renderOrder=101;focusRing.castShadow=focusRing.receiveShadow=false;}
+      focusRing.visible=!!selected&&state.showDetails;
+      if(selected){focusRing.position.copy(aimGoal);focusRing.quaternion.copy(camera.quaternion);focusRing.scale.setScalar(distance*.075);}
+      if(markers)Array.prototype.forEach.call(markers.querySelectorAll('[data-scale-marker]'),function(button){
+        var detail=state.details.filter(function(d){return d.id===button.dataset.scaleMarker;})[0];
+        var available=!!detail&&!!activeRoot&&close>.8&&(detail.cutaway===undefined||detail.cutaway===state.cutaway)&&state.showDetails;
+        if(available){markerPoint.fromArray(detail.at);activeRoot.userData.model.localToWorld(markerPoint);markerPoint.project(camera);var px=(markerPoint.x*.5+.5)*width,py=(-markerPoint.y*.5+.5)*height;available=markerPoint.z>-1&&markerPoint.z<1&&px>24&&px<width-24&&py>125&&py<height-65;if(available)button.style.transform='translate('+px.toFixed(1)+'px,'+py.toFixed(1)+'px) translate(-50%,-50%)';}
+        button.hidden=!available;
+      });
       renderer.render(scene,camera);
       canvas.dataset.atlasReady='true';canvas.dataset.atlasObjects=visible.map(function(o){return o.userData.itemId;}).join(',');
       canvas.dataset.atlasExponent=e.toFixed(4);canvas.dataset.atlasYaw=yaw.toFixed(4);
       canvas.dataset.atlasTarget=state.target.toFixed(4);
+      canvas.dataset.atlasZoom=cameraZoom.toFixed(2);
+      canvas.dataset.atlasCutaway=state.cutaway?'open':'closed';
+      canvas.dataset.atlasDetail=selected?selected.id:'';canvas.dataset.atlasAim=cameraAim.toArray().map(function(v){return v.toFixed(4);}).join(',');
+      canvas.dataset.atlasHabitat=isLeafWorld?'leaf':'realm';
       canvas.dataset.atlasSurface=visible[0]&&visible[0].userData.model.userData.surfaceReady?'detailed':'procedural';
       dirty=false;
     }
     function schedule(){if(!disposed&&!frame&&inView&&!document.hidden)frame=requestAnimationFrame(tick);}
-    function tick(ts){frame=0;if(disposed||document.hidden||!inView)return;var state=read();if(state.motion)time+=last?Math.min(0.05,(ts-last)/1000):0;last=ts;if(dirty||state.motion)paint();if(state.motion)schedule();}
+    function tick(ts){frame=0;if(disposed||document.hidden||!inView)return;var state=read();if(state.motion)time+=last?Math.min(0.05,(ts-last)/1000):0;last=ts;if(dirty||state.motion||cameraSettling)paint();if(state.motion||cameraSettling)schedule();}
     function invalidate(){dirty=true;schedule();}
-    function down(ev){if(ev.button!==0)return;drag={id:ev.pointerId,x:ev.clientX,y:ev.clientY,startX:ev.clientX,startY:ev.clientY,moved:false};canvas.setPointerCapture(ev.pointerId);canvas.focus({preventScroll:true});}
+    function down(ev){
+      if(ev.button!==0)return;
+      if(fingers.size>=2&&!fingers.has(ev.pointerId))return;
+      fingers.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});canvas.setPointerCapture(ev.pointerId);canvas.focus({preventScroll:true});
+      if(fingers.size===1)drag={id:ev.pointerId,x:ev.clientX,y:ev.clientY,startX:ev.clientX,startY:ev.clientY,moved:false};
+      else if(fingers.size===2){var pts=Array.from(fingers.values());pinch={distance:Math.max(1,Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y)),zoom:cameraZoom};drag=null;}
+    }
     function turnAngle(angle){return Math.atan2(Math.sin(angle),Math.cos(angle));}
-    function move(ev){if(!drag||drag.id!==ev.pointerId)return;var dx=ev.clientX-drag.x,dy=ev.clientY-drag.y;if(Math.hypot(ev.clientX-drag.startX,ev.clientY-drag.startY)>5)drag.moved=true;yaw=turnAngle(yaw-dx*.005);pitch=clamp(pitch+dy*.005,-1.1,1.1);drag.x=ev.clientX;drag.y=ev.clientY;invalidate();}
-    function up(ev){if(!drag||drag.id!==ev.pointerId)return;var didMove=drag.moved;drag=null;if(canvas.hasPointerCapture(ev.pointerId))canvas.releasePointerCapture(ev.pointerId);if(didMove)return;
+    function move(ev){
+      if(!fingers.has(ev.pointerId))return;fingers.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+      if(pinch&&fingers.size>=2){var pts=Array.from(fingers.values());cameraZoom=clamp(pinch.zoom*Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y)/pinch.distance,1,2.5);invalidate();return;}
+      if(!drag||drag.id!==ev.pointerId)return;var dx=ev.clientX-drag.x,dy=ev.clientY-drag.y;if(Math.hypot(ev.clientX-drag.startX,ev.clientY-drag.startY)>5)drag.moved=true;yaw=turnAngle(yaw-dx*.005);pitch=clamp(pitch+dy*.005,-1.1,1.1);drag.x=ev.clientX;drag.y=ev.clientY;invalidate();
+    }
+    function finishPointer(ev,allowPick){
+      if(!fingers.has(ev.pointerId))return;
+      var didMove=!!pinch||!drag||drag.moved;fingers.delete(ev.pointerId);
+      if(pinch){cameraZoom=Math.round(cameraZoom*10)/10;if(inspect)inspect(cameraZoom);pinch=null;invalidate();}
+      drag=null;
+      if(fingers.size===1){var entry=Array.from(fingers.entries())[0],p=entry[1];drag={id:entry[0],x:p.x,y:p.y,startX:p.x,startY:p.y,moved:true};}
+      if(canvas.hasPointerCapture(ev.pointerId))canvas.releasePointerCapture(ev.pointerId);if(didMove||!allowPick)return;
       var rect=canvas.getBoundingClientRect();pointer.set((ev.clientX-rect.left)/rect.width*2-1,-(ev.clientY-rect.top)/rect.height*2+1);ray.setFromCamera(pointer,camera);
       var hits=ray.intersectObjects(Object.keys(models).map(function(id){return models[id];}).filter(function(m){return m.visible;}),true);
       for(var i=0;i<hits.length;i++){if(!hits[i].object.isMesh)continue;var obj=hits[i].object;while(obj&&!obj.userData.itemId)obj=obj.parent;if(obj){pick(obj.userData.itemId);break;}}
     }
-    function cancel(){drag=null;}
+    function up(ev){finishPointer(ev,true);}
+    function cancel(ev){finishPointer(ev,false);}
     function visibility(){last=0;if(document.hidden){if(frame)cancelAnimationFrame(frame);frame=0;}else invalidate();}
     function lost(ev){ev.preventDefault();if(!disposed)fail();}
     canvas.addEventListener('pointerdown',down);canvas.addEventListener('pointermove',move);canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',cancel);canvas.addEventListener('lostpointercapture',cancel);canvas.addEventListener('webglcontextlost',lost);
@@ -926,7 +1212,10 @@
       canvas.removeEventListener('pointerdown',down);canvas.removeEventListener('pointermove',move);canvas.removeEventListener('pointerup',up);canvas.removeEventListener('pointercancel',cancel);canvas.removeEventListener('lostpointercapture',cancel);canvas.removeEventListener('webglcontextlost',lost);
       resources.forEach(function(r){r.dispose();});if(key.shadow.map)key.shadow.map.dispose();renderer.dispose();renderer.forceContextLoss();delete canvas.dataset.atlasReady;
     }
-    return { update:invalidate, orbit:function(x,y){yaw=turnAngle(yaw+x);pitch=clamp(pitch+y,-1.1,1.1);invalidate();}, reset:function(){yaw=0;pitch=0.12;invalidate();}, dispose:dispose };
+    return { update:invalidate, orbit:function(x,y){yaw=turnAngle(yaw+x);pitch=clamp(pitch+y,-1.1,1.1);invalidate();}, reset:function(){yaw=0;pitch=0.12;cameraZoom=1;invalidate();},
+      capture:function(){return {yaw:yaw,pitch:pitch};},
+      restore:function(view){yaw=turnAngle(view.yaw);pitch=clamp(view.pitch,-1.1,1.1);cameraZoom=view.zoom;lastZoomInput=view.zoom;previousDetail=read().focusId+':'+view.detailId;invalidate();},
+      dispose:dispose };
   }
 
   window.StemLab.registerTool('scaleExplorer', {
@@ -1042,6 +1331,7 @@
 
       var canvasRef = React.useRef(null);
       var atlasCanvasRef = React.useRef(null);
+      var markerLayerRef = React.useRef(null);
       var atlasRef = React.useRef(null);
       var _viewMode = React.useState('atlas'); var viewMode = _viewMode[0], setViewMode = _viewMode[1];
       var viewModeRef = React.useRef(viewMode); viewModeRef.current = viewMode;
@@ -1049,6 +1339,18 @@
       var _ambient = React.useState(slice.ambient !== false); var ambient = _ambient[0], setAmbient = _ambient[1];
       var _neighbors = React.useState(slice.atlasNeighbors === true); var neighbors = _neighbors[0], setNeighbors = _neighbors[1];
       var _measure = React.useState(true); var measure = _measure[0], setMeasure = _measure[1];
+      var _inspectionZoom = React.useState(1); var inspectionZoom = _inspectionZoom[0], setInspectionZoom = _inspectionZoom[1];
+      var _detailId=React.useState('');var detailId=_detailId[0],setDetailId=_detailId[1];
+      var _showDetails=React.useState(true);var showDetails=_showDetails[0],setShowDetails=_showDetails[1];
+      var _cutaway = React.useState(true); var cutaway = _cutaway[0], setCutaway = _cutaway[1];
+      var _observations = React.useState(function () { return readObservations(slice.observations); });
+      var observations = _observations[0], setObservations = _observations[1];
+      var _observationDrafts = React.useState(function () { return readObservationDrafts(slice.observationDrafts); });
+      var observationDrafts = _observationDrafts[0], setObservationDrafts = _observationDrafts[1];
+      var _notebookMessage = React.useState(''); var notebookMessage = _notebookMessage[0], setNotebookMessage = _notebookMessage[1];
+      var _pendingObservation = React.useState(null); var pendingObservation = _pendingObservation[0], setPendingObservation = _pendingObservation[1];
+      var savedObservationsRef = React.useRef(null);
+      React.useEffect(function(){if(!pendingObservation){setInspectionZoom(1);setDetailId('');}},[focusId]);
       var _search = React.useState(''); var search = _search[0], setSearch = _search[1];
       var readoutRef = React.useRef(null);
       var scrubRef = React.useRef(null);
@@ -1085,6 +1387,85 @@
       // paint the old person at the new camera position.
       var sortedRef = React.useRef(sorted); sortedRef.current = sorted;
       var focused = byId[focusId] || byId.human;
+      var details=atlasDetails(focusId,S),selectedDetail=details.filter(function(d){return d.id===detailId;})[0];
+      var observationDetail = viewMode === 'atlas' && selectedDetail ? selectedDetail.id : '';
+      var currentObservationKey = observationKey(focused.id, observationDetail);
+      var savedObservation = observations.filter(function (entry) { return observationKey(entry.itemId, entry.detailId) === currentObservationKey; })[0];
+      var observationDraft = Object.prototype.hasOwnProperty.call(observationDrafts, currentObservationKey) ? observationDrafts[currentObservationKey] : savedObservation ? savedObservation.note : '';
+      function observationItem(entry) { return Object.assign({}, byId[entry.itemId], { size: entry.size, you: entry.you }); }
+      function observationTitle(entry) {
+        var detail = atlasDetails(entry.itemId, S).filter(function (d) { return d.id === entry.detailId; })[0];
+        return itemText(observationItem(entry), 'name') + (detail ? ' · ' + detail.label : '');
+      }
+      function editObservation(text) {
+        var note = text.slice(0, NOTE_LIMIT), key = currentObservationKey;
+        setObservationDrafts(function (prev) { var next = Object.assign({}, prev); next[key] = note; return next; });
+        updateSlice(function (cur) { var next = readObservationDrafts(cur.observationDrafts); next[key] = note; cur.observationDrafts = next; });
+        setNotebookMessage('');
+      }
+      function saveObservation() {
+        if (!savedObservation && observations.length >= NOTEBOOK_LIMIT) return;
+        var angle = viewMode === 'atlas' && atlasRef.current ? atlasRef.current.capture() : { yaw: 0, pitch: .12 };
+        var entry = { itemId: focused.id, detailId: observationDetail, size: focused.size, you: !!focused.you,
+          note: observationDraft.trim(), zoom: inspectionZoom, yaw: angle.yaw, pitch: angle.pitch, cutaway: cutaway, view: viewMode };
+        var next = [entry].concat(observations.filter(function (old) { return observationKey(old.itemId, old.detailId) !== currentObservationKey; }));
+        setObservations(next);
+        updateSlice(function (cur) { cur.observations = next; });
+        if (savedObservationsRef.current) savedObservationsRef.current.open = true;
+        setNotebookMessage(savedObservation ? S('atlas_observation_updated', 'Observation updated.') : S('atlas_observation_saved', 'Observation saved.'));
+      }
+      function removeObservation(entry) {
+        var key = observationKey(entry.itemId, entry.detailId);
+        var next = observations.filter(function (old) { return observationKey(old.itemId, old.detailId) !== key; });
+        setObservations(next);
+        setObservationDrafts(function (prev) { var drafts = Object.assign({}, prev); delete drafts[key]; return drafts; });
+        updateSlice(function (cur) { cur.observations = next; var drafts = readObservationDrafts(cur.observationDrafts); delete drafts[key]; cur.observationDrafts = drafts; });
+        if (savedObservationsRef.current) savedObservationsRef.current.querySelector('summary').focus({ preventScroll: true });
+        setNotebookMessage(S('atlas_observation_removed', 'Observation removed.'));
+      }
+      function revisitObservation(entry) {
+        var item = byId[entry.itemId];
+        if (!item) return;
+        if (entry.itemId === 'human') {
+          var cm = entry.you ? entry.size * 100 : null;
+          setYourCm(cm);
+          updateSlice(function (cur) { if (cm) cur.yourHeightCm = cm; else delete cur.yourHeightCm; });
+          item = observationItem(entry);
+        }
+        setPendingObservation(entry);
+        setViewMode(entry.view === 'atlas' && atlasStatus !== 'failed' ? 'atlas' : 'chart');
+        flyTo(item, { instant: true });
+      }
+      function downloadObservations() {
+        var lines = [S('atlas_notebook_title', 'Scale Explorer field notebook'), S('atlas_notebook_scope', 'Object dimensions are measured references. Colors and anatomical details in the 3D models are illustrative.'), ''];
+        observations.forEach(function (entry, index) {
+          var item = observationItem(entry), detail = atlasDetails(entry.itemId, S).filter(function (d) { return d.id === entry.detailId; })[0];
+          lines.push((index + 1) + '. ' + observationTitle(entry));
+          lines.push(S('atlas_observation_size', 'Recorded size: {len} {dim}', { len: humanLength(entry.size), dim: S('dim_' + item.dim.replace(/\s+/g, '_'), item.dim) }));
+          lines.push(sciNotation(entry.size));
+          if (entry.note) lines.push(S('atlas_observation_note', 'My observation: {note}', { note: entry.note }));
+          if (detail) { lines.push(detail.body); lines.push(detail.source); }
+          if (item.note) lines.push(itemText(item, 'note'));
+          lines.push(shareLinkFor(item), '');
+        });
+        var url, anchor;
+        try {
+          url = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' }));
+          anchor = document.createElement('a'); anchor.href = url; anchor.download = 'scale-explorer-notebook.txt';
+          document.body.appendChild(anchor); anchor.click();
+          setNotebookMessage(S('atlas_notebook_downloaded', 'Saved observations downloaded.'));
+        } catch (_) { setNotebookMessage(S('atlas_notebook_download_failed', 'The download could not start here. Your saved observations are still in the notebook.')); }
+        finally { if (anchor) anchor.remove(); if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000); }
+      }
+      function chooseDetail(detail){
+        stopJourney();
+        if(detailId===detail.id){setDetailId('');setInspectionZoom(1);return;}
+        setDetailId(detail.id);setShowDetails(true);setNeighbors(false);setInspectionZoom(focusId==='dna'?2.2:1.8);
+        if(detail.cutaway!==undefined)setCutaway(detail.cutaway);
+        say(detail.label+'. '+detail.body);
+        var cv=atlasCanvasRef.current;
+        if(cv){var rect=cv.getBoundingClientRect();if(rect.top< -40||rect.bottom>window.innerHeight+40)cv.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});}
+      }
 
       function updateSlice(fn) {
         setLabToolData(function (prev) {
@@ -1105,9 +1486,22 @@
         try { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) { return false; }
       }); var reduceMotion = _reduceMotion[0], setReduceMotion = _reduceMotion[1];
       var atlasState = React.useRef(null);
-      atlasState.current = { items: sorted, exp: expRef.current, motion: ambient && !reduceMotion, contrast: theme === 'contrast', neighbors: neighbors, measure: measure };
+      atlasState.current = { items: sorted, exp: expRef.current, motion: ambient && !reduceMotion, reduceMotion:reduceMotion, contrast: theme === 'contrast', neighbors: neighbors, measure: measure, inspectionZoom: inspectionZoom, cutaway: cutaway, focusId:focusId, details:details, detailId:detailId, showDetails:showDetails };
       var atlasActions = React.useRef(null);
       atlasActions.current = { pick: function (id) { if (byId[id]) openItem(byId[id]); }, zoom: zoomBy };
+      // Apply a saved feature after navigation has reset the inspection state.
+      // Wait for a newly mounted atlas before restoring its camera angle.
+      React.useEffect(function () {
+        if (!pendingObservation || focusId !== pendingObservation.itemId) return;
+        setDetailId(pendingObservation.detailId); setInspectionZoom(pendingObservation.zoom); setCutaway(pendingObservation.cutaway); setShowDetails(true); setNeighbors(false);
+        if (detailId !== pendingObservation.detailId || inspectionZoom !== pendingObservation.zoom || cutaway !== pendingObservation.cutaway) return;
+        if (viewMode === 'atlas' && (atlasStatus !== 'ready' || !atlasRef.current)) return;
+        if (viewMode === 'atlas') atlasRef.current.restore(pendingObservation);
+        setPendingObservation(null);
+        var cv = viewMode === 'atlas' ? atlasCanvasRef.current : canvasRef.current;
+        if (cv) cv.scrollIntoView({ block: 'center', behavior: 'auto' });
+        setNotebookMessage(S('atlas_observation_returned', 'Returned to {name}.', { name: observationTitle(pendingObservation) }));
+      }, [pendingObservation, focusId, viewMode, atlasStatus, detailId, inspectionZoom, cutaway]);
       React.useEffect(function () {
         var mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
         if (!mq) return;
@@ -1135,13 +1529,14 @@
           clearTimeout(timeout);
           atlasRef.current = createScaleAtlas(window.THREE, cv, function () {
             return Object.assign({}, atlasState.current, { exp: expRef.current, target: targetRef.current });
-          }, function (id) { atlasActions.current.pick(id); }, failed);
+          }, function (id) { atlasActions.current.pick(id); }, failed, function(value){if(alive)setInspectionZoom(value);},markerLayerRef.current);
           setAtlasStatus('ready');
         }).catch(failed);
         return function () { alive = false; clearTimeout(timeout); cv.removeEventListener('wheel', wheel); if (atlasRef.current) { atlasRef.current.dispose(); atlasRef.current = null; } };
       }, [viewMode]);
-      React.useEffect(function () { if (atlasRef.current) atlasRef.current.update(); }, [ambient, reduceMotion, theme, items, neighbors, measure]);
+      React.useEffect(function () { if (atlasRef.current) atlasRef.current.update(); }, [ambient, reduceMotion, theme, items, neighbors, measure, inspectionZoom, cutaway, detailId, showDetails, focusId]);
       function goTo(nextExp, opts) {
+        setDetailId('');
         opts = opts || {};
         var target = clamp(nextExp, MIN_EXP, MAX_EXP);
         targetRef.current = target;
@@ -1298,6 +1693,9 @@
         nearestRef.current = item.id;
         setFocusId(item.id);
         goTo(log10(item.size), opts);
+        // A recorded personal height may update the item list on the next
+        // render. Keep an instant destination pinned while that list catches up.
+        if (opts && opts.instant) { nearestRef.current = item.id; setFocusId(item.id); }
       }
 
       // ── Drawing ─────────────────────────────────────────────────────────
@@ -1526,7 +1924,7 @@
         var k = ev.key;
         if (atlasRef.current && /^(a|d|w|s|r)$/i.test(k)) {
           ev.preventDefault();
-          if (k.toLowerCase() === 'r') atlasRef.current.reset();
+          if (k.toLowerCase() === 'r') { atlasRef.current.reset(); setInspectionZoom(1); setDetailId(''); }
           else atlasRef.current.orbit(k.toLowerCase() === 'a' ? -0.12 : k.toLowerCase() === 'd' ? 0.12 : 0, k.toLowerCase() === 'w' ? -0.1 : k.toLowerCase() === 's' ? 0.1 : 0);
           return;
         }
@@ -1881,7 +2279,7 @@
         h('p', { style: { margin: 0, fontSize: '0.8125rem', color: P.dim, lineHeight: 1.55 } },
           S('atlas_blurb', 'Travel from the familiar to the almost unimaginable. Orbit a world, find your next destination, and feel what a power of ten changes.')),
 
-        h('style', null, '.sx-panel{align-self:flex-start}.sx-stage:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(3,9,17,.38),transparent 29%,transparent 82%,rgba(3,9,17,.45))}.sx-hud,.sx-stage-note{z-index:1}.sx-hud h3{letter-spacing:-.025em}.sx-stage canvas:active{cursor:grabbing!important}'),
+        h('style', null, '.sx-panel{align-self:flex-start}.sx-stage:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(3,9,17,.38),transparent 29%,transparent 82%,rgba(3,9,17,.45))}.sx-hud,.sx-stage-note{z-index:1}.sx-hud h3{letter-spacing:-.025em}.sx-stage canvas:active{cursor:grabbing!important}.sx-markers{position:absolute;inset:0;pointer-events:none;z-index:2}.sx-marker{position:absolute;left:0;top:0;width:44px;height:44px;padding:6px;background:transparent;border:0;pointer-events:auto;cursor:pointer;color:#f2f8ec;font:600 12px system-ui}.sx-marker[hidden]{display:none}.sx-marker span{display:grid;place-items:center;width:30px;height:30px;border:1px solid #d0dec2;border-radius:50%;background:rgba(11,27,23,.88);box-shadow:0 0 0 4px rgba(180,215,162,.10),0 3px 12px #0005}.sx-marker:hover span,.sx-marker[aria-pressed="true"] span{background:#deebbe;color:#172819;border-color:#eff5de}.sx-detail-choices{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.sx-detail-choices button{flex:1 1 130px;text-align:left}.sx-detail-note a:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}'),
         h('nav', { className: 'sx-regions', 'aria-label': S('atlas_realms', 'Scale destinations') }, REALMS.map(function (r, i) {
           var active = realm.id === r.id;
           return h('button', { key: r.id, type: 'button', 'aria-current': active ? 'true' : undefined, onClick: function () { openItem(byId[r.at]); },
@@ -1900,27 +2298,41 @@
             h('div', { className: 'sx-flight-controls', role: 'group', 'aria-label': S('atlas_view_controls', 'View controls') },
               h('button', { type: 'button', style: viewMode === 'atlas' ? goBtn : btn, 'aria-pressed': viewMode === 'atlas', onClick: function () { setViewMode('atlas'); } }, S('atlas_view', 'Immersive 3D')),
               h('button', { type: 'button', style: viewMode === 'chart' ? goBtn : btn, 'aria-pressed': viewMode === 'chart', onClick: function () { setViewMode('chart'); } }, S('atlas_chart', 'Scale chart')),
-              viewMode === 'atlas' ? h('button', { type: 'button', style: btn, onClick: function () { if (atlasRef.current) atlasRef.current.reset(); } }, S('atlas_reset', 'Reset camera')) : null,
+              viewMode === 'atlas' ? h('button', { type: 'button', style: btn, onClick: function () { setInspectionZoom(1);setDetailId(''); if (atlasRef.current) atlasRef.current.reset(); } }, S('atlas_reset', 'Reset camera')) : null,
               viewMode === 'atlas' ? h('button', { type: 'button', style: btn, 'aria-pressed': ambient && !reduceMotion, disabled: reduceMotion, onClick: function () { setAmbient(!ambient); updateSlice(function (cur) { cur.ambient = !ambient; }); } }, reduceMotion ? S('atlas_still', 'Reduced motion') : ambient ? S('atlas_motion_pause', 'Pause ambience') : S('atlas_motion_play', 'Resume ambience')) : null),
             atlasStatus === 'failed' ? h('p', { role: 'status', style: { margin: 0, color: P.dim, fontSize: '0.8125rem' } }, S('atlas_failed', 'The 3D view is unavailable. The scale chart and all destinations are ready to explore.')) : null,
             h('div', { className: 'sx-stage' },
               viewMode === 'atlas' ? h('canvas', { ref: atlasCanvasRef, tabIndex: 0, role: 'application',
-                'aria-label': S('atlas_canvas_aria', 'Interactive scale atlas. Scroll or use arrow keys to travel through scale. Drag to orbit, or use W A S D. R resets the camera. Home returns to human scale. Space plays or pauses the journey.'),
+                'aria-label': S('atlas_canvas_aria', 'Interactive scale atlas. Scroll or use arrow keys to travel through scale. Drag to orbit, or use W A S D. Pinch to inspect more closely. R resets the camera. Home returns to human scale. Space plays or pauses the journey.'),
                 'aria-describedby': descId, onKeyDown: onCanvasKey, style: { touchAction: 'none', cursor: 'grab', outlineOffset: '-4px' } }) : null,
               h('canvas', { ref: canvasRef, tabIndex: 0, role: 'application',
                 'aria-label': S('canvas_aria', 'Scale view. Left and right arrows zoom by a quarter of a power of ten, hold shift for a whole one, Page Up and Page Down jump three, Home returns to human scale, space plays or pauses the zoom.'),
                 'aria-describedby': descId,
                 onKeyDown: onCanvasKey, onWheel: onWheel,
                 style: { display: viewMode === 'chart' ? 'block' : 'none', width: '100%', height: '100%', outlineOffset: '-3px' } }),
+              viewMode==='atlas'?h('div',{ref:markerLayerRef,className:'sx-markers'},details.map(function(detail,index){return h('button',{key:focusId+'-'+detail.id,type:'button',className:'sx-marker',hidden:true,'data-scale-marker':detail.id,'aria-label':S('atlas_inspect_part', 'Inspect {part}',{part:detail.label}),'aria-pressed':detailId===detail.id,title:detail.label,onClick:function(){chooseDetail(detail);}},h('span',null,index+1));})):null,
               viewMode === 'atlas' ? h('div', { className: 'sx-hud', 'aria-hidden': 'true' },
                 h('p', { style: { color: theme === 'contrast' ? '#ffffff' : realm.color, textTransform: 'uppercase', fontWeight: 700 } }, S('atlas_realm_' + realm.id, realm.name)),
                 h('h3', null, itemText(focused, 'name')),
                 h('p', null, lengthText(focused.size) + ' ' + S('dim_' + focused.dim.replace(/\s+/g, '_'), focused.dim)),
+                selectedDetail?h('p',{style:{marginTop:14,letterSpacing:'.02em',color:'#deebbe'}},S('atlas_inspecting', 'Inspecting: {part}',{part:selectedDetail.label})):null,
                 atlasStatus === 'loading' ? h('p', { style: { marginTop: 20 } }, S('atlas_loading', 'Preparing your observatory…')) : null) : null,
               viewMode === 'atlas' ? h('div', { className: 'sx-stage-note', 'aria-hidden': 'true' },
-                h('span', null, S('atlas_gesture', 'Drag to orbit · Scroll to change scale')),
+                h('span', null, S('atlas_gesture', 'Drag to orbit · Pinch to inspect · Scroll to travel')),
                 h('span', null, S('atlas_model_tag', 'Illustrated models / measured dimensions'))) : null
             ),
+            viewMode === 'atlas' ? h('div', { className: 'sx-inspection', style: { display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',padding:'9px 12px',border:'1px solid '+P.line,borderRadius:10,background:P.panel } },
+              h('label', { style:{display:'flex',gap:10,alignItems:'center',flex:'1 1 230px',fontSize:'0.75rem'} },
+                S('atlas_inspection_zoom', 'Inspection zoom'),
+                h('input', { type:'range',min:1,max:2.5,step:.1,value:inspectionZoom,'aria-label':S('atlas_inspection_aria', 'Inspection magnification'), 'aria-valuetext':S('atlas_inspection_value', '{n} times closer', {n:inspectionZoom.toFixed(1)}),onChange:function(ev){setInspectionZoom(Number(ev.target.value));},style:{flex:1,minWidth:60,accentColor:P.accent} }),
+                h('output', { style:{fontVariantNumeric:'tabular-nums',minWidth:34} },inspectionZoom.toFixed(1)+'×')),
+              h('button', { type:'button',style:btn,disabled:inspectionZoom===1&&!detailId,onClick:function(){setInspectionZoom(1);setDetailId('');} },S('atlas_fit', 'Fit object')),
+              focused.id==='mitochondrion'?h('button',{type:'button',style:cutaway?goBtn:btn,'aria-pressed':cutaway,onClick:function(){setCutaway(!cutaway);setDetailId('');}},S('atlas_cutaway', 'Open cutaway')):null) : null,
+            viewMode==='atlas'&&details.length?h('section',{className:'sx-details','aria-label':S('atlas_detail_section', 'Explore this specimen'),style:{padding:'14px 16px',border:'1px solid '+P.line,borderRadius:12,background:P.panel}},
+              h('div',{style:{display:'flex',gap:12,justifyContent:'space-between',alignItems:'center'}},h('h3',{style:{fontSize:'0.9rem',margin:0}},S('atlas_detail_section', 'Explore this specimen')),h('button',{type:'button',style:btn,'aria-pressed':showDetails,onClick:function(){setShowDetails(!showDetails);}},S('atlas_markers', 'Landmarks'))),
+              h('div',{className:'sx-detail-choices'},details.map(function(detail,index){return h('button',{key:detail.id,type:'button',style:detailId===detail.id?goBtn:btn,'aria-pressed':detailId===detail.id,onClick:function(){chooseDetail(detail);}},h('span',{'aria-hidden':'true',style:{opacity:.7,marginRight:6}},String(index+1).padStart(2,'0')),detail.label);})),
+              selectedDetail?h('div',{className:'sx-detail-note',style:{borderLeft:'2px solid '+P.accent,paddingLeft:12}},h('p',{style:{fontSize:'0.875rem',lineHeight:1.65,margin:'10px 0 6px'}},selectedDetail.body),h('a',{href:selectedDetail.source,target:'_blank',rel:'noopener noreferrer',style:{fontSize:'0.75rem',color:P.accent}},S('atlas_detail_source', 'Read the science source'))):h('p',{style:{fontSize:'0.8rem',lineHeight:1.6,color:P.dim,margin:'10px 0 0'}},S('atlas_detail_invite', 'Choose a numbered landmark to move closer. Orbit around the feature, then use Fit object to see the whole specimen.'))):null,
+            viewMode==='atlas'&&focused.id==='mitochondrion'?h('p',{style:{margin:0,fontSize:'0.75rem',lineHeight:1.5,color:P.dim}},cutaway?S('atlas_cutaway_open', 'Inside: the cristae are folds of the inner membrane. Close the cutaway to see the outer surface.'):S('atlas_cutaway_closed', 'Outside: the outer membrane encloses the organelle. Open the cutaway to explore the folds within.')):null,
             viewMode === 'atlas' ? h('div', { className: 'sx-flight-controls', role: 'group', 'aria-label': S('atlas_orbit_controls', 'Orbit the 3D scene') },
               h('button', { type: 'button', style: btn, onClick: function () { if (atlasRef.current) atlasRef.current.orbit(-0.2, 0); } }, S('atlas_orbit_left', 'Orbit left')),
               h('button', { type: 'button', style: btn, onClick: function () { if (atlasRef.current) atlasRef.current.orbit(0.2, 0); } }, S('atlas_orbit_right', 'Orbit right')),
@@ -2014,6 +2426,8 @@
                   focused.id === 'moon' ? S('atlas_moon_note', 'Lunar surface imagery: NASA/GSFC/Arizona State University, Lunar Reconnaissance Orbiter. Lighting here is illustrative.') :
                   focused.id === 'jupiter' ? S('atlas_jupiter_note', 'Jupiter surface: NASA/GSFC and Space Telescope Science Institute, Hubble global map from 2015. A historical observation with simulated lighting.') :
                   focused.id === 'human' ? S('atlas_human_note', 'A sculptural body study using the MakeHuman Community surface (CC0), with a procedural fallback. A generic adult figure, scaled to the stated height.') :
+                  focused.id === 'honeybee' ? S('atlas_bee_note', 'Look for the head, hairy thorax, banded abdomen, six legs, and two pairs of veined wings. The stated length measures the body; antennae extend beyond it.') :
+                  focused.id === 'trex' ? S('atlas_trex_note', 'A reconstruction with a horizontal body, balancing tail, two walking legs, and two fingers on each small hand. Surface colors and soft tissues are illustrative.') :
                   focused.id === 'mitochondrion' ? S('atlas_mito_note', 'A cutaway reveals the folds of the inner membrane, called cristae. Shape and colors illustrate its structure; this is not a microscopy reconstruction.') :
                   S('atlas_illustration_note', 'A stylized model, with illustrative colors and details. Travel changes its size by powers of ten. Positions arrange the atlas; they are not real locations.')) : null,
                 focused.note ? h('p', { style: { margin: '6px 0 0', fontSize: '0.71875rem', color: P.dim, lineHeight: 1.45 } }, '⚖️ ' + itemText(focused, 'note')) : null,
@@ -2049,6 +2463,31 @@
                 S('you_cm', 'cm')),
               h('button', { type: 'button', onClick: submitHeight, style: Object.assign({}, btn, { padding: '4px 8px', fontSize: '0.6875rem' }) }, S('you_apply', 'Use my height')),
               yourCm ? h('button', { type: 'button', onClick: function () { applyHeight(null); }, style: Object.assign({}, btn, { padding: '4px 8px', fontSize: '0.6875rem' }) }, S('you_reset', 'Back to average')) : null) : null,
+
+            h('section', { className: 'sx-notebook', 'aria-label': S('atlas_notebook_heading', 'Field notebook'), style: Object.assign({}, card, { display: 'flex', flexDirection: 'column', gap: 8 }) },
+              h('h3', { style: { fontSize: '0.875rem', margin: 0 } }, S('atlas_notebook_heading', 'Field notebook')),
+              h('p', { style: { margin: 0, color: P.dim, fontSize: '0.75rem' } }, itemText(focused, 'name') + (observationDetail ? ' · ' + selectedDetail.label : '')),
+              h('label', { style: { fontSize: '0.75rem' } }, S('atlas_notebook_prompt', 'What do you notice?'),
+                h('textarea', { value: observationDraft, onChange: function (e) { editObservation(e.target.value); }, rows: 3, maxLength: NOTE_LIMIT,
+                  style: Object.assign({}, sel, { display: 'block', width: '100%', boxSizing: 'border-box', marginTop: 5, resize: 'vertical', font: 'inherit', minHeight: 76 }) })),
+              h('p', { style: { margin: 0, fontSize: '0.6875rem', color: P.dim } }, S('atlas_notebook_hint', 'Drafts stay with their specimen or landmark. Save an observation to include it in your download.')),
+              h('button', { type: 'button', style: goBtn, disabled: !savedObservation && observations.length >= NOTEBOOK_LIMIT, onClick: saveObservation },
+                savedObservation ? S('atlas_observation_update', 'Update observation') : S('atlas_observation_save', 'Save observation')),
+              !savedObservation && observations.length >= NOTEBOOK_LIMIT ? h('p', { style: { margin: 0, color: P.warn, fontSize: '0.75rem' } }, S('atlas_notebook_full', 'Your notebook has 24 observations. Remove one to save another; existing observations can still be updated.')) : null,
+              h('details', { ref: savedObservationsRef },
+                h('summary', { style: { cursor: 'pointer', padding: '6px 0', fontWeight: 600 } }, S('atlas_notebook_count', 'Saved observations · {n}', { n: observations.length })),
+                observations.length ? h('ol', { style: { listStyle: 'none', padding: 0, margin: '6px 0', display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 330, overflowY: 'auto' } }, observations.map(function (entry) {
+                  var title = observationTitle(entry), item = observationItem(entry);
+                  return h('li', { key: observationKey(entry.itemId, entry.detailId), 'data-observation': observationKey(entry.itemId, entry.detailId), style: { borderTop: '1px solid ' + P.line, paddingTop: 10, overflowWrap: 'anywhere' } },
+                    h('strong', { style: { display: 'block', fontSize: '0.75rem' } }, title),
+                    h('p', { style: { margin: '3px 0', color: P.dim, fontSize: '0.6875rem' } }, S('atlas_observation_size', 'Recorded size: {len} {dim}', { len: humanLength(entry.size), dim: S('dim_' + item.dim.replace(/\s+/g, '_'), item.dim) })),
+                    entry.note ? h('p', { style: { margin: '6px 0', whiteSpace: 'pre-wrap', fontSize: '0.75rem' } }, entry.note) : null,
+                    h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 } },
+                      h('button', { type: 'button', style: btn, onClick: function () { revisitObservation(entry); }, 'aria-label': S('atlas_observation_return_aria', 'Return to {name}', { name: title }) }, S('atlas_observation_return', 'Return to view')),
+                      h('button', { type: 'button', style: btn, onClick: function () { removeObservation(entry); }, 'aria-label': S('atlas_observation_remove_aria', 'Remove observation of {name}', { name: title }) }, S('atlas_observation_remove', 'Remove'))));
+                })) : h('p', { style: { color: P.dim, fontSize: '0.75rem' } }, S('atlas_notebook_empty', 'Saved observations will appear here.')),
+                h('button', { type: 'button', style: btn, disabled: !observations.length, onClick: downloadObservations }, S('atlas_notebook_download', 'Download notes'))),
+              h('p', { role: 'status', style: { margin: 0, fontSize: '0.75rem', minHeight: '1.5em' } }, notebookMessage)),
 
             // Estimate first, then check: the house Predict → Explore → Explain
             // shape. The reveal is never withheld and never scored.
