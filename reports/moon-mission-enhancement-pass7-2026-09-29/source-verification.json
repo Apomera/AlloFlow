@@ -1,0 +1,14 @@
+{
+  "date": "2026-09-29",
+  "sourceMirrorMatch": true,
+  "sourceSHA256": "a571a838bd002732f111757d228c5488033ea6e8167a58b1d597c83031fc86a0",
+  "candidateSHA256": "a1a04cf6ca340c28f760cb9fed64bda719cb858594f496b732a658793d586a7c",
+  "baselineSHA256": "af475e672e254e189d6c3a58169f72bc61d766c8515c650c01de67d41bec8b9d",
+  "preexistingMoonwalkHunksExcludedFromCandidate": 34,
+  "whitespaceExit": 0,
+  "whitespaceOutput": "warning: in the working copy of 'desktop/web-app/public/stem_lab/stem_tool_moonmission.js', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'stem_lab/stem_tool_moonmission.js', CRLF will be replaced by LF the next time Git touches it\n",
+  "syntax": "passed",
+  "candidateTestsPendingIsolatedRetry": false,
+  "candidateDistinctChecksResolved": 214,
+  "candidateFailureResolvedBy": "candidate-isolated-retry.json"
+}

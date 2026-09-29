@@ -42,7 +42,10 @@ afterEach(() => vi.restoreAllMocks());
 // Undock with every event roll succeeding: the first eligible descent event fires.
 function reachEvent(difficulty) {
   vi.spyOn(Math, 'random').mockReturnValue(0);
-  const app = mount({ missionPhase: 4, difficulty, orbitStatus: 3 });
+  loadTool(FILE, ID);
+  const insertion = window.MoonMissionPure.loiProfile();
+  const app = mount({ missionPhase: 4, difficulty, loiPlan: insertion.controls,
+    loiRun: { version: 1, time: insertion.summary.duration, recorded: true }, loiResult: { version: 1, ...insertion.summary } });
   const [undock] = buttonTitled(app, /Undock Lunar Module Eagle/);
   undock.onClick();
   return app;
@@ -117,8 +120,9 @@ describe('Moon Mission descent events have costs', () => {
   it('the landing starts from those costs (the hinges in the flight loop)', () => {
     const src = fs.readFileSync(FILE, 'utf8');
     expect(src).toContain('var _evCost = mmEventCosts(d.decisionLog);');
-    expect(src).toMatch(/var hVel = MM_DESCENT\.handoverHv \+ \(_mcc === 'skipped' \? MM_DESCENT\.skipDrift : 0\) \+ _evCost\.drift;/);
+    expect(src).toMatch(/var hVel = MM_DESCENT\.handoverHv \+ _evCost\.drift;/);
     expect(src).toMatch(/var fuel = Math\.max\(10, .*- _evCost\.fuel\);/);
+    expect(src).not.toMatch(/_mcc === 'skipped' \? MM_DESCENT\.skip/);
     expect(src).toContain('mmLandingScore(Math.abs(vVel), Math.abs(hVel), fuel, _evCost.boulders)');
   });
 
@@ -134,6 +138,7 @@ describe('Moon Mission descent events have costs', () => {
     const chain = P.causeChain(P.flightSummary(d, { quiz: 10, samples: 8 }, ''));
     const texts = chain.map((c) => c.call + ' -> ' + c.result);
     expect(texts[2]).toBe('At Boulder Field at Landing Site you chose "Abort and try again next orbit" -> going round again burns 20 s of hover fuel before the second attempt');
-    expect(texts[3]).toMatch(/you started 45 s short \(25 s from the skipped correction, 20 s from Boulder Field at Landing Site\)$/);
+    expect(texts[1]).toContain('earlier save records the decision without a measured trajectory');
+    expect(texts[3]).toMatch(/you started 20 s short \(20 s from Boulder Field at Landing Site\)$/);
   });
 });

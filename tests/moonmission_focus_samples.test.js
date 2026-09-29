@@ -109,7 +109,10 @@ describe('Moon Mission focus management', () => {
 
   it('a mission event takes focus, then its outcome, then the next phase', async () => {
     vi.spyOn(Math, 'random').mockReturnValue(0);          // the descent events always fire
-    await mountLive({ missionPhase: 4, difficulty: 'pilot', orbitStatus: 3 });
+    loadTool(FILE, ID);
+    const insertion = window.MoonMissionPure.loiProfile();
+    await mountLive({ missionPhase: 4, difficulty: 'pilot', loiPlan: insertion.controls,
+      loiRun: { version: 1, time: insertion.summary.duration, recorded: true }, loiResult: { version: 1, ...insertion.summary } });
     const undock = Array.from(host.querySelectorAll('button')).find((b) => /Undock Lunar Module Eagle/.test(b.title || ''));
     expect(undock, 'undock button not found').toBeTruthy();
     expect(undock.disabled).toBe(false);

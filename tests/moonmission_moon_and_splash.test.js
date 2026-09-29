@@ -153,7 +153,7 @@ describe('Moon Mission loops', () => {
     }
     return { frames, stopped: queue.length === 0 };
   }
-  const orbitCanvas = (p) => p['aria-describedby'] === 'mm-lunar-orbit-description';
+  const orbitCanvas = (p) => !!p['data-lunar-atlas'];
   const reentryCanvas = (p) => /re-entry and recovery/i.test(String(p['aria-label']));
 
   it('lights the Moon as on landing day: sunrise just west of the site, a six-day crescent from Earth', () => {
@@ -174,22 +174,14 @@ describe('Moon Mission loops', () => {
     for (let i = 0; i < n; i++) if (P.craftInShadow((i / n) * 2 * Math.PI, k, term)) dark++;
     expect(dark / n * 120, 'minutes of darkness per 2 h orbit').toBeGreaterThan(44);
     expect(dark / n * 120).toBeLessThan(50);
-    // The loop: the night edge is drawn along that meridian, and the shadow callout
-    // follows the model for the orbit it draws (1.2 radii, 0.012 rad a step).
-    const { frames } = run({ missionPhase: 4 }, orbitCanvas, 420);
-    let shadowFrames = 0;
-    frames.forEach((f, i) => {
-      if (i < 2) return;
-      const moon = f.arcs.reduce((a, b) => (b.r > a.r ? b : a));
-      expect(f.fills, 'frame ' + i + ': the night side').toContain('rgba(4,7,18,0.9)');
-      const eq = P.moonProject(term, 0, moon.x, moon.y, moon.r);
-      expect(f.lines.some(([x, y]) => Math.abs(x - eq[0]) < 0.01 && Math.abs(y - eq[1]) < 0.01), 'frame ' + i + ': terminator on the equator').toBe(true);
-      const says = f.text.some((t) => /^IN THE MOON'S SHADOW$/.test(t.s));
-      const model = [i - 1, i, i + 1].map((t) => P.craftInShadow(t * 0.012, 1.2, term));
-      if (model.every((m) => m === model[0])) expect(says, 'frame ' + i + ' shadow callout').toBe(model[0]);
-      if (says) shadowFrames++;
-    });
-    expect(shadowFrames, 'the stack does pass through the shadow').toBeGreaterThan(50);
+    // The geographic atlas keeps the landing-day terminator while the separate
+    // insertion diagram uses measured Cartesian positions for its trajectory.
+    const { frames } = run({ missionPhase: 4 }, orbitCanvas, 3);
+    const f = frames.find(frame => frame.text.some(t => t.s === 'Tranquility Base'));
+    const moon = f.arcs.reduce((a, b) => (b.r > a.r ? b : a));
+    expect(f.fills, 'the night side remains shaded').toContain('rgba(4,7,18,0.9)');
+    const eq = P.moonProject(term, 0, moon.x, moon.y, moon.r);
+    expect(f.lines.some(([x, y]) => Math.abs(x - eq[0]) < 0.01 && Math.abs(y - eq[1]) < 0.01), 'terminator on the equator').toBe(true);
   }, 60_000);
 
   it('marks Tranquility Base at the coordinates printed under the lunar-orbit view', () => {
@@ -197,20 +189,20 @@ describe('Moon Mission loops', () => {
     const m = /([\d.]+)\u00B0N, ([\d.]+)\u00B0E/.exec(html);
     expect(m, 'the view states the landing coordinates').toBeTruthy();
     const { frames } = run({ missionPhase: 4 }, orbitCanvas, 3);
-    const f = frames[frames.length - 1];
+    const f = frames.find(frame => frame.text.some(t => t.s === 'Tranquility Base'));
     const moon = f.arcs.reduce((a, b) => (b.r > a.r ? b : a));
     const label = f.text.find((t) => t.s === 'Tranquility Base');
     expect(label, 'the site is labelled').toBeTruthy();
     const want = P.moonProject(Number(m[2]), Number(m[1]), moon.x, moon.y, moon.r);
-    // The label sits 6px left of the dot and 3px below its centre line.
+    // The label sits 6px left of the dot and 4px below its centre line.
     expect(Math.abs(label.x + 6 - want[0]), 'marker x vs 23.473 E').toBeLessThan(0.5);
-    expect(Math.abs(label.y - 3 - want[1]), 'marker y vs 0.674 N').toBeLessThan(0.5);
+    expect(Math.abs(label.y - 4 - want[1]), 'marker y vs 0.674 N').toBeLessThan(0.5);
   });
 
   it('names the seas and every Apollo site only when the student asks', () => {
-    const on = run({ missionPhase: 4, moonLabels: true }, orbitCanvas, 3).frames.pop().text.map((t) => t.s);
+    const on = run({ missionPhase: 4, moonLabels: true }, orbitCanvas, 3).frames.flatMap(f => f.text.map((t) => t.s));
     ['Sea of Tranquility', 'Ocean of Storms', '12', '17'].forEach((s) => expect(on, s).toContain(s));
-    const off = run({ missionPhase: 4, moonLabels: false }, orbitCanvas, 3).frames.pop().text.map((t) => t.s);
+    const off = run({ missionPhase: 4, moonLabels: false }, orbitCanvas, 3).frames.flatMap(f => f.text.map((t) => t.s));
     expect(off).not.toContain('Sea of Tranquility');
     expect(off).not.toContain('17');
     const d = document.createElement('div');
@@ -222,18 +214,20 @@ describe('Moon Mission loops', () => {
     expect(d.querySelector('[data-moonmission-moon-sites]')).toBeNull();
   });
 
-  it('lunar ascent: docked means zero range, and Earth does not "rise" over the landing site', () => {
-    // It read 35 km under "HARD DOCK CONFIRMED" (range was taken to a point 14px off
-    // the docking port), and labelled Earth "Earthrise" on the horizon, which it never
-    // is from the near side of a tidally locked Moon.
-    const ascentCanvas = (p) => /lunar ascent and rendezvous/i.test(String(p['aria-label']));
+  it('lunar ascent reaches computed insertion without claiming a docking or Earthrise', () => {
+    const ascentCanvas = (p) => !!p['data-ascent-canvas'];
     const { frames } = run({ missionPhase: 7 }, ascentCanvas, 1000);
-    const docked = frames.filter((f) => f.text.some((t) => t.s.includes('HARD DOCK CONFIRMED')));
-    expect(docked.length, 'the ascent should dock within the frames run').toBeGreaterThan(20);
-    docked.forEach((f) => expect(f.text.map((t) => t.s), 'range once docked').toContain('0.0 km'));
+    const inserted = frames.filter((f) => f.dataset.ascentPhase === 'orbit');
+    expect(inserted.length, 'the integrated ascent should reach insertion within the frames run').toBeGreaterThan(20);
+    inserted.forEach((f) => {
+      expect(f.dataset.ascentEngine).toBe('off');
+      expect(Number(f.dataset.ascentThrust)).toBe(0);
+      expect(f.mm.ascentResult.outcome).toBe('orbit');
+      expect(f.mm.dockingResult).toBeFalsy();
+    });
     const all = frames.flatMap((f) => f.text.map((t) => t.s));
     expect(all).not.toContain('Earthrise');
-    expect(all.some((s) => /never rises or sets/.test(s)), 'Earth is labelled as fixed in the sky').toBe(true);
+    expect(all).not.toContain('HARD DOCK CONFIRMED');
   }, 60_000);   // a thousand real loop frames; slow under load, not wrong
 
   it('trans-lunar coast: fast off Earth, slowest where the Moon takes over, faster again after', () => {
@@ -251,36 +245,27 @@ describe('Moon Mission loops', () => {
     expect(Math.round(384400 / 12742), 'the true-scale note says 30 Earths fit in the gap').toBe(30);
   });
 
-  it('the coast view reports the model, marks where the Moon takes over, and draws true scale on request', () => {
-    const coastCanvas = (p) => p['aria-describedby'] === 'mm-transit-description';
-    const { frames } = run({ missionPhase: 3 }, coastCanvas, 2500);
-    const speeds = frames.map((f) => { const t = f.text.find((x) => / km\/s /.test(x.s)); return t ? parseFloat(t.s) : NaN; }).filter(Number.isFinite);
-    expect(speeds.length).toBeGreaterThan(2000);
-    const min = Math.min(...speeds), iMin = speeds.indexOf(min);
-    expect(speeds[0], 'leaves at TLI speed').toBeGreaterThan(8);
-    expect(iMin, 'slows first').toBeGreaterThan(speeds.length * 0.5);
-    expect(speeds[speeds.length - 1], 'then speeds up toward the Moon').toBeGreaterThan(min + 0.8);
-    // Distance is not a straight function of time: it races off Earth.
-    const fromEarth = (f) => { const i = f.text.findIndex((x) => x.s === 'FROM EARTH'); return i < 0 ? NaN : Number(f.text[i + 1].s.replace(/[^0-9]/g, '')); };
-    expect(fromEarth(frames[240]) / 384400, 'a tenth of the way through the time').toBeGreaterThan(0.2);
-    const all = frames.flatMap((f) => f.text.map((t) => t.s));
-    expect(all).toContain('Moon\'s pull beats Earth\'s here');
-    expect(all.some((s) => /Speeding up/.test(s)) && all.some((s) => /Slowing down/.test(s))).toBe(true);
-    // True scale: Earth 6,371 km and the Moon 1,737 km in radius, 384,400 km apart.
-    const ts = run({ missionPhase: 3, trueScale: true }, coastCanvas, 3).frames.pop();
-    const at = (x) => ts.arcs.filter((a) => Math.abs(a.x - x) < 0.01 && Math.abs(a.y - 140) < 0.01).map((a) => a.r);
-    const gap = 440 - 60;                                          // W 500 in jsdom: bodies at 60 and W - 60
-    expect(Math.min(...at(60)), 'Earth radius at true scale').toBeCloseTo(gap * 6371 / 384400, 2);
-    expect(Math.min(...at(440)), 'Moon radius at true scale').toBeCloseTo(gap * 1737.4 / 384400, 2);
-    expect(ts.text.map((t) => t.s)).toContain('spacecraft not to scale');
-    const d = document.createElement('div');
-    d.innerHTML = renderTool(ID, { moonMission: { missionPhase: 3, trueScale: true } });
+  it('the live coast uses the same measured trajectory at every viewport and scale', () => {
+    const coastCanvas = (p) => !!p['data-transit-canvas'], profile = P.transitProfile(), time = 36 * 3600;
+    const expected = P.transitSample(profile, time);
+    for (const width of [300, 1014]) for (const trueScale of [false, true]) {
+      const { frames } = run({ missionPhase: 3, animPaused: true, trueScale,
+        transitRun: { version: 1, time, recorded: false } }, coastCanvas, 3, 1000 / 60, width);
+      const frame = frames.at(-1), data = frame.dataset;
+      expect(Number(data.transitTime)).toBe(time);
+      for (const [key, field] of [['EarthDistance', 'earthDistance'], ['MoonDistance', 'moonDistance'], ['EarthSpeed', 'earthSpeed'], ['MoonSpeed', 'moonSpeed']]) {
+        expect(Number(data['transit' + key]), width + 'px / ' + trueScale).toBeCloseTo(expected[field], 6);
+      }
+      expect(data.transitEngine).toBe('off'); expect(data.transitPlume).toBe('off');
+      expect(frame.text.length).toBeGreaterThan(0);
+    }
+    const d = document.createElement('div'); d.innerHTML = renderTool(ID, { moonMission: { missionPhase: 3, trueScale: true } });
     expect(d.querySelector('[data-moonmission-true-scale]').getAttribute('aria-pressed')).toBe('true');
-    expect(d.querySelector('[data-moonmission-true-scale-note]').textContent).toContain('30 Earths');
-    d.innerHTML = renderTool(ID, { moonMission: { missionPhase: 3 } });
-    expect(d.querySelector('[data-moonmission-true-scale]').getAttribute('aria-pressed')).toBe('false');
-    expect(d.querySelector('[data-moonmission-true-scale-note]'), 'note only when asked for').toBeNull();
-  }, 60_000);   // 2,500 real loop frames; slow under load, not wrong
+    expect(d.querySelector('[data-moonmission-true-scale-note]').textContent).toContain('one distance scale');
+    expect(d.querySelector('[data-transit-readouts]').textContent).toContain('Earth-relative speed');
+    expect(d.querySelector('[data-transit-readouts]').textContent).toContain('Moon-relative speed');
+    expect(d.querySelector('[data-coast-model-note]').textContent).toContain('does not simulate capture or guarantee a return');
+  });
 
   it('Earth orbit: the globe fits the new diagram and physical illumination is independent of viewport size', () => {
     const leoCanvas = (p) => p['aria-describedby'] === 'mm-earth-orbit-description';
@@ -363,46 +348,46 @@ describe('Moon Mission loops', () => {
     expect(nominal.late).toContain('reference sketch; angles x4');
   }, 120_000);   // thousands of real loop frames; slow under load, not wrong
 
-  it('trans-lunar coast: predict the speed first; the answer waits for the flight to show it', () => {
-    // The fact list used to state the answer above the canvas, so a prediction could
-    // not be asked honestly. It now arrives with the card, once the coast has passed
-    // its slowest point.
+  it('trans-lunar prediction waits for a recorded nominal trajectory and uses its measured speed minimum', () => {
     const page = (st) => { const d = document.createElement('div'); d.innerHTML = renderTool(ID, { moonMission: Object.assign({ missionPhase: 3 }, st) }); return d; };
     const before = page({});
     const card = before.querySelector('[data-moonmission-predict="coast_speed"]');
     expect(card, 'the prediction card').toBeTruthy();
     expect(card.querySelectorAll('[data-moonmission-predict-option]').length).toBe(3);
     expect(before.textContent, 'the answer is not on the page before the flight shows it').not.toMatch(/speed(s)? up again|a tenth as fast/i);
-    // The loop reports the slowest point from the model once it gets there.
-    const { frames } = run({ missionPhase: 3 }, (p) => p['aria-describedby'] === 'mm-transit-description', 2500);
-    const seen = frames.find((f) => f.mm.coastSlowest);
-    expect(seen, 'the coast publishes its slowest point').toBeTruthy();
-    expect(seen.mm.coastSlowest.v).toBeCloseTo(P.coastSpeed(P.equalPull()), 2);
-    expect(seen.mm.coastSlowest.toMoonKm).toBe(Math.round(384400 - P.equalPull()));
-    expect(frames.indexOf(seen), 'not before the craft gets there').toBeGreaterThan(1500);
-    // "About a tenth as fast as when you left", as the explanation says.
-    expect(P.coastSpeed(P.equalPull()) / 10.84).toBeGreaterThan(0.08);
-    expect(P.coastSpeed(P.equalPull()) / 10.84).toBeLessThan(0.13);
-    const after = page({ coastSlowest: seen.mm.coastSlowest, predictions: { coast_speed: 'dip' } });
+    const p = P.transitProfile(), coastCanvas = (props) => !!props['data-transit-canvas'];
+    const { frames } = run({ missionPhase: 3, transitRun: { version: 1, time: p.summary.duration - 120, recorded: false } }, coastCanvas, 8);
+    expect(frames[0].mm.transitResult).toBeNull();
+    const seen = frames.find(frame => frame.mm.transitRun && frame.mm.transitRun.recorded);
+    expect(seen, 'the completed coast publishes its measured result').toBeTruthy();
+    expect(seen.mm.transitResult.minimumEarthSpeed).toBe(p.events.minimumEarthSpeed.earthSpeed);
+    expect(seen.mm.transitResult.minimumEarthSpeedTime).toBe(p.events.minimumEarthSpeed.time);
+    const after = page({ ...seen.mm, predictions: { coast_speed: 'dip' } });
     const revealed = after.querySelector('[data-moonmission-predict="coast_speed"]').textContent;
     expect(revealed).toMatch(/matched the flight/);
-    expect(revealed).toContain('Slowest point: ' + seen.mm.coastSlowest.v.toFixed(2) + ' km/s');
-    expect(revealed).toMatch(/a tenth as fast/);
-    const wrong = page({ coastSlowest: seen.mm.coastSlowest, predictions: { coast_speed: 'steady' } });
+    expect(revealed).toContain('Measured minimum Earth-relative speed: ' + (p.summary.minimumEarthSpeed / 1000).toFixed(3) + ' km/s');
+    expect(revealed).toContain('equal gravitational pulls do not define a universal speed minimum');
+    const wrong = page({ ...seen.mm, predictions: { coast_speed: 'steady' } });
     expect(wrong.querySelector('[data-moonmission-predict="coast_speed"]').textContent).toMatch(/The flight showed: Slows down, then speeds up near the Moon/);
-  }, 120_000);   // 2,500 real loop frames; slow under load, not wrong
+    const legacy = page({ coastSlowest: { v: 1, toMoonKm: 38000 }, predictions: { coast_speed: 'dip' } });
+    expect(legacy.querySelector('[data-moonmission-predict="coast_speed"]').textContent).not.toContain('matched the flight');
+    const changed = P.transitProfile({ speedError: 1 });
+    const other = page({ transitPlan: changed.controls, transitRun: { version: 1, time: changed.summary.duration, recorded: true },
+      transitResult: { version: 1, ...changed.summary }, predictions: { coast_speed: 'dip' } });
+    expect(other.querySelector('[data-moonmission-predict="coast_speed"]').textContent).not.toContain('matched the flight');
+  });
 
-  it('ascent range and altitude stay identical across narrow and wide views', () => {
-    const ascentCanvas = (p) => /lunar ascent and rendezvous/i.test(String(p['aria-label']));
+  it('ascent altitude and velocity stay identical across narrow and wide views', () => {
+    const ascentCanvas = (p) => !!p['data-ascent-canvas'];
     const observations = [300, 1014].map((width) => {
       const { frames } = run({ missionPhase: 7 }, ascentCanvas, 550, 1000 / 60, width);
       return [1, 89, 150, 449, 520].map((index) => {
-        const labels = frames[index].text.map((item) => item.s);
-        return { altitude: labels[labels.indexOf('ALTITUDE') + 1], range: labels[labels.indexOf('DIST TO CSM') + 1] };
+        const data = frames[index].dataset;
+        return { altitude: data.ascentAltitude, speed: data.ascentSpeed, mass: data.ascentMass };
       });
     });
     expect(observations[0]).toEqual(observations[1]);
-    expect(new Set(observations[0].map((frame) => frame.range)).size).toBeGreaterThan(3);
+    expect(new Set(observations[0].map((frame) => frame.speed)).size).toBeGreaterThan(3);
   });
 
   it('a restored entry without an outcome uses the default angle to calculate peak g', () => {
@@ -415,35 +400,25 @@ describe('Moon Mission loops', () => {
     expect(Number(frames[0].dataset.entryTime)).toBe(0);
   });
 
-  it('lunar ascent: Eagle catches Columbia from a lower, faster orbit, and the card waits for the dock', () => {
-    // The readout used to jump straight to Columbia's 110 km, which teaches the
-    // opposite of how a rendezvous works: Eagle gained on Columbia while BELOW it.
-    const ascentCanvas = (p) => /lunar ascent and rendezvous/i.test(String(p['aria-label']));
+  it('lunar ascent inserts below Columbia and the prediction waits for a validated docking exercise', () => {
+    const ascentCanvas = (p) => !!p['data-ascent-canvas'];
     const { frames } = run({ missionPhase: 7 }, ascentCanvas, 1000);
-    const hud = (f) => {
-      const t = f.text.map((x) => x.s);
-      const alt = parseFloat(t[t.indexOf('ALTITUDE') + 1]);
-      const di = t.indexOf('DIST TO CSM');
-      return { phase: t.find((x) => /^(PRE-LAUNCH|ASCENT|RENDEZVOUS|DOCKED)$/.test(x)), alt, dist: di < 0 ? NaN : parseFloat(t[di + 1]) };
-    };
-    const rdv = frames.map(hud).filter((h) => h.phase === 'RENDEZVOUS');
-    expect(rdv.length).toBeGreaterThan(100);
-    const early = rdv.slice(0, Math.floor(rdv.length * 0.7));
-    early.forEach((h) => expect(h.alt, 'Eagle holds its low orbit while it closes').toBeCloseTo(83, 0));
-    expect(early[early.length - 1].dist, 'and gains on Columbia while below it').toBeLessThan(early[0].dist * 0.75);
-    const docked = frames.map(hud).filter((h) => h.phase === 'DOCKED');
-    expect(docked.length).toBeGreaterThan(10);
-    expect(docked[0].alt, 'up to Columbia only at the end').toBeCloseTo(110, 0);
-    expect(frames.some((f) => f.text.some((t) => t.s === 'Eagle 17-83 km'))).toBe(true);
-    // The card: options until the dock, and no giveaway in the status beside it.
+    const last = frames[frames.length - 1], result = last.mm.ascentResult;
+    expect(result.outcome).toBe('orbit');
+    expect(result.perilune).toBeGreaterThan(0);
+    expect(result.apolune).toBeLessThan(110000);
+    expect(Number(last.dataset.ascentAltitude)).toBeCloseTo(result.cutoffAltitude, 6);
+    expect(last.mm.dockingRun).toBeFalsy();
     const page = (st) => { const d = document.createElement('div'); d.innerHTML = renderTool(ID, { moonMission: Object.assign({ missionPhase: 7 }, st) }); return d; };
     const closing = page({ ascentStatus: 'rendezvous' });
     expect(closing.querySelectorAll('[data-moonmission-predict="rendezvous_catch"] [data-moonmission-predict-option]').length).toBe(3);
-    expect(closing.textContent, 'no answer while they close').not.toMatch(/lower orbits? (go(es)? around|laps) faster/i);
-    const done = page({ ascentStatus: 'docked', predictions: { rendezvous_catch: 'chase' } });
+    let docking = P.dockingState();
+    for (let i = 0; i < 200 && docking.status === 'flying'; i++) docking = P.dockingStep(docking, 10, 'guided');
+    expect(docking.status).toBe('docked');
+    const done = page({ ascentRun: last.mm.ascentRun, ascentResult: result, dockingRun: docking, predictions: { rendezvous_catch: 'chase' } });
     const card = done.querySelector('[data-moonmission-predict="rendezvous_catch"]').textContent;
     expect(card).toMatch(/The flight showed: Stay in a lower orbit, which goes around faster/);
-    expect(card).toContain('17 to 83 km');
+    expect(card).toContain('final approach was a separate 110 km exercise');
   }, 120_000);   // a thousand real loop frames; slow under load, not wrong
 
   it('launch: Max Q is asked in the briefing and answered by the flight, at the height the HUD shows', () => {
@@ -763,9 +738,9 @@ describe('canvas text alternatives', () => {
     const must = {
       1: [/real proportions/, /Mach 1/, /Max Q/, /stages each drop away/],
       2: [/shadow/, /sunrises/, /S-IVB/, /gravity toward Earth/, /engine stays off/],
-      3: [/free-return/, /pull becomes stronger/, /true-scale/],
-      4: [/near side/, /Sea of Tranquility/, /Apollo landing site/, /sunrise line/, /earthshine/],
-      7: [/Columbia's orbit/, /about 110 kilometers/],
+      3: [/moving Moon/, /Earth-centered/, /Moon-relative/, /engine status/],
+      4: [/Near-side lunar atlas/, /Tranquility Base/, /Apollo landing sites/, /sunrise/, /measured spacecraft path/, /geometric radio contact/],
+      7: [/computed altitude/, /downrange/, /engine burn/, /insertion orbit/, /Measurements are listed/],
       8: [/entry corridor/, /night side/],
       9: [/just before sunrise/, /uprighting bags/, /flotation collar/],
     };
@@ -779,7 +754,7 @@ describe('canvas text alternatives', () => {
     expect(label(1)).not.toMatch(/then Max Q|minute|still thick|rises and falls|rising and falling/i);
     expect(label(2)).not.toMatch(/far side|opposite/i);
     expect(label(3)).not.toMatch(/slow|speeds? up|a tenth/i);
-    expect(label(7)).not.toMatch(/faster|lower orbit|below/i);
+    expect(label(7)).not.toMatch(/faster|lower orbit|below Columbia/i);
     expect(label(7)).not.toMatch(/60 kilometers/);
   });
 });

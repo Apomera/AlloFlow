@@ -712,19 +712,16 @@ test.describe('Moon Mission — real WebGL EVA', () => {
     expect(await nodes(), 'unmuting did not resume the phase ambience').toBeGreaterThan(0);
   });
 
-  test('lunar orbit narrates LOI, loss of signal, then GO for undocking', async ({ page }) => {
-    // Phase 4 was the one watch-then-click phase with no banner: the loss of signal
-    // behind the Moon — the phase's own teaching moment — happened with nothing
-    // outside the canvas acknowledging it. The banner must step through every state.
-    await harness.mount(page, { moonMission: { missionPhase: 4 } }, undefined, { expectCanvas: false });
-    const status = () => page.evaluate(() =>
-      Array.from(document.querySelectorAll('[role="status"]')).map((n) => String(n.textContent)).join(' | '));
-    expect(await status()).toContain('Lunar orbit insertion');
-    await page.waitForFunction(() =>
-      Array.from(document.querySelectorAll('[role="status"]')).some((n) => /Loss of signal/.test(String(n.textContent))),
-      null, { timeout: 30000 });
-    await page.waitForFunction(() =>
-      Array.from(document.querySelectorAll('[role="status"]')).some((n) => /GO for undocking/.test(String(n.textContent))),
-      null, { timeout: 40000 });
+  test('lunar insertion reports radio loss and requires measured capture before undocking', async ({ page }) => {
+    await harness.mount(page, { moonMission: { missionPhase: 4, animPaused: true } }, undefined, { expectCanvas: false });
+    await expect(page.getByRole('heading', { name: 'Lunar orbit insertion', exact: true })).toBeVisible();
+    await expect(page.locator('[data-loi-proceed]')).toBeDisabled();
+    await page.locator('[data-loi-milestone="ignition"]').click();
+    await expect(page.locator('[data-loi-value="radio"]')).toHaveText('Loss of signal');
+    await expect(page.locator('[data-loi-canvas]')).toHaveAttribute('data-loi-engine', 'on');
+    await expect(page.locator('[data-loi-proceed]')).toBeDisabled();
+    await page.locator('[data-loi-result]').click();
+    await expect(page.locator('[data-loi-outcome="captured"]')).toContainText('GO for undocking');
+    await expect(page.locator('[data-loi-proceed]')).toBeEnabled();
   });
 });

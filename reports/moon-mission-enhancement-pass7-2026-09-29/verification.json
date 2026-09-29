@@ -1,0 +1,2550 @@
+{
+  "date": "2026-09-29",
+  "distinctUnitChecks": 406,
+  "unitFiles": 43,
+  "unitPassed": 406,
+  "unitFailed": 0,
+  "runs": [
+    {
+      "file": "regression-unit.json",
+      "passed": 299,
+      "failed": 0
+    },
+    {
+      "file": "transit-regression-tests.json",
+      "passed": 90,
+      "failed": 0
+    },
+    {
+      "file": "candidate-unit.json",
+      "passed": 213,
+      "failed": 1
+    },
+    {
+      "file": "candidate-isolated-retry.json",
+      "passed": 1,
+      "failed": 0
+    }
+  ],
+  "browser": {
+    "distinctCases": 9,
+    "distinctPassed": 9,
+    "unresolvedFailures": 0,
+    "workers": 1,
+    "cases": [
+      {
+        "name": "moving-Moon coast position and separately named speed frames",
+        "passedIn": "initial"
+      },
+      {
+        "name": "speed-error miss and finite SPS correction",
+        "passedIn": "initial"
+      },
+      {
+        "name": "review, reload and once-only arrival reward",
+        "passedIn": "initial"
+      },
+      {
+        "name": "legacy and malformed save arrival guards",
+        "passedIn": "initial"
+      },
+      {
+        "name": "320px pause, resize, reload, keyboard End and plan invalidation",
+        "passedIn": "finalPhone"
+      },
+      {
+        "name": "hidden-page clock and no catch-up",
+        "passedIn": "initial"
+      },
+      {
+        "name": "view, true size and playback settings preserve physical state",
+        "passedIn": "initial"
+      },
+      {
+        "name": "integrated lunar impact and replanning",
+        "passedIn": "focused"
+      },
+      {
+        "name": "independent descent fuel and drift with genuine event costs",
+        "passedIn": "focused"
+      }
+    ],
+    "runs": {
+      "initial": {
+        "passed": 6,
+        "failed": 1,
+        "output": "transit-browser",
+        "failure": "320px axe detected a low-contrast arrival-gate note; source color was corrected."
+      },
+      "focused": {
+        "passed": 2,
+        "failed": 1,
+        "output": "transit-browser-focused",
+        "failure": "Phone assertions completed, but browser context teardown exceeded 180 seconds on the busy host. No assertion timeout was increased."
+      },
+      "finalPhone": {
+        "passed": 1,
+        "failed": 0,
+        "caseDurationSeconds": 42.9,
+        "output": "transit-browser-final",
+        "report": "transit-phone-final.json"
+      }
+    },
+    "accessibility": {
+      "scope": "data-transit-workspace at 320px, all four plan sliders expanded",
+      "axeViolations": 0
+    },
+    "screenshots": [
+      "transit/transit-departure-chromium.png",
+      "transit/transit-system-coast-chromium.png",
+      "transit/transit-nominal-encounter-chromium.png",
+      "transit/transit-speed-error-chromium.png",
+      "transit/transit-correction-burn-chromium.png",
+      "transit/transit-corrected-encounter-chromium.png",
+      "transit/transit-paused-320-chromium.png",
+      "transit/transit-true-size-chromium.png",
+      "transit/transit-lunar-impact-chromium.png"
+    ]
+  },
+  "sourceSHA256": "a571a838bd002732f111757d228c5488033ea6e8167a58b1d597c83031fc86a0",
+  "candidateSHA256": "a1a04cf6ca340c28f760cb9fed64bda719cb858594f496b732a658793d586a7c",
+  "screenshotsReviewed": 9,
+  "assertions": [
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse adds bounded ballistic dust and keeps geology an on-foot activity",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse adds deterministic world-space microdetail and a curving, unshadowed far field",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse adds vacuum-authentic console and reduced-motion-safe path composition with guarded hooks",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse builds normalized, positive-determinant track bases with the rover forward/right signs",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse cleans sixth-pass instance resources and stable datasets",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse collects the exact mission specimen through existing F semantics without masking ordinary rocks",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse couples existing audio nodes to drive state and mutes only its master across gates",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse derives dt-stable rover impacts from armed exact contact targets without idle false positives",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse disposes the generated surface profile and clears impact hooks",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse grounds all four wheels with one exact-terrain right-handed contact mesh",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse integrates static/rolling resistance without slope creep across 20-120 Hz",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse keeps astronaut EVA as the default and exposes explicit accessible board and exit controls",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse keeps ballistic dust seeded, signed, bounded, pooled, and terrain-retired",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse keeps drive sonification opt-in, gesture-created, stateful, and honest about lunar vacuum",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse keeps free roam default while exposing an accessible optional traverse panel",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse keeps local -Z forward, local +X right, exit side, and roll aligned with Three rotation",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse keeps the traverse specimen hidden and ineligible until the authored sample step",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse orbits the chase camera independently and does not let an occupied rover mask landmarks",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse preserves slope/yaw signs, brake-before-reverse, and one smoothed slip state",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse provides throttled stable telemetry and a concise replayable debrief",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse records the audited technical-design provenance without claiming copied source",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse removes added DOM, input listeners, and GPU resources at EVA teardown",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse reports mode, speed, odometer, signed terrain, and non-color-only grip in the HUD",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse selects a deterministic bounded exact-terrain geology site from captured parking",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse terrain-follows with independent wheel suspension and a damped chase camera",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse uses a bounded one-draw exact-terrain bootprint ring with distance-based density",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse uses a bounded one-draw-call paired track ring with exact terrain and no emit allocation",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse uses a monotonic single-transition state machine with parked dt dwell and VR pause",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse uses a shared analytic vertex generator and exact allocation-free mesh interpolation for hot probes",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse uses active-time fixed steps, exact signed slope probes, lunar grade force, and traction-limited drive",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse uses bounded visual four-wheel Ackermann articulation without changing drive physics",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse uses right-handed exact-terrain beacon/contact bases and reduced-motion-safe low-cost rendering",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moon_mission_lrv_traverse.test.js",
+      "name": "Moon Mission optional LRV traverse uses the actual airborne landing transition and event-only impact telemetry",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_model.test.js",
+      "name": "scripted ascent and rendezvous state closes continuously through ascent and rendezvous, with zero range only at docking",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_model.test.js",
+      "name": "scripted ascent and rendezvous state gains on the command module while lower, then climbs at the end",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_model.test.js",
+      "name": "scripted ascent and rendezvous state keeps range consistent with altitude and along-track separation",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_model.test.js",
+      "name": "scripted ascent and rendezvous state states the numerical ascent and separate docking assumptions beside the live simulation",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_physics.test.js",
+      "name": "Moon Mission physical lunar ascent accounts for thrust work and ideal delta-v without gravity creating energy",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_physics.test.js",
+      "name": "Moon Mission physical lunar ascent conserves mass with finite propellant and rocket-equation exhaust flow",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_physics.test.js",
+      "name": "Moon Mission physical lunar ascent converges when the integration step is halved and is independent of paint rate",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_physics.test.js",
+      "name": "Moon Mission physical lunar ascent cuts off into a computed low lunar ellipse with an Apollo-like burn time",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_physics.test.js",
+      "name": "Moon Mission physical lunar ascent distinguishes a surface-clearing orbit below target from a suborbital failure",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_physics.test.js",
+      "name": "Moon Mission physical lunar ascent integrates altitude, downrange and speed from the same force history",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_physics.test.js",
+      "name": "Moon Mission physical lunar ascent keeps cached trajectories immutable, validates times and returns detached samples",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_physics.test.js",
+      "name": "Moon Mission physical lunar ascent keeps the initial climb vertical before pitching the entire ascent stage",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_physics.test.js",
+      "name": "Moon Mission physical lunar ascent rejects a tall vertical trajectory as orbit despite its total speed",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_physics.test.js",
+      "name": "Moon Mission physical lunar ascent reports a fuel-starved failure without manufacturing an orbital endpoint",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_physics.test.js",
+      "name": "Moon Mission physical lunar ascent starts with Apollo-like fixed APS thrust and the ascent stage mass only",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_playback.test.js",
+      "name": "ascent completion, archive and report an unresolved mission event blocks TEI even after valid docking",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_playback.test.js",
+      "name": "ascent completion, archive and report archives the completed measurements and clears all replay, docking and reward state for another mission",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_playback.test.js",
+      "name": "ascent completion, archive and report records measured insertion and separate docking results in a readable report",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_playback.test.js",
+      "name": "ascent completion, archive and report requires insertion and valid docking, then pays the TEI reward only once",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_playback.test.js",
+      "name": "saved final approach playback derives the compact docking result from validated contact and ignores a claimed result by itself",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_playback.test.js",
+      "name": "saved final approach playback rejects malformed, future and physically unsafe completed docking saves",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_playback.test.js",
+      "name": "saved lunar ascent playback bounds replay time and requires genuine boolean pause and reward flags",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_playback.test.js",
+      "name": "saved lunar ascent playback cannot turn malformed or unversioned saves into a measured insertion",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_playback.test.js",
+      "name": "saved lunar ascent playback does not unlock TEI from a legacy docked flag, invalid record or insertion alone",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_playback.test.js",
+      "name": "saved lunar ascent playback malformed ascent and docking state still renders every mission phase",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_playback.test.js",
+      "name": "saved lunar ascent playback preserves a measured insertion while reviewing an earlier time without sharing mutable data",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_visuals.test.js",
+      "name": "lunar ascent physical visual contract draws a finite insertion ellipse in narrow and wide orbit views without changing the flight state",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_visuals.test.js",
+      "name": "lunar ascent physical visual contract draws deterministic snapshots with thrust only during the measured powered flight",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_ascent_visuals.test.js",
+      "name": "lunar ascent physical visual contract keeps docking coordinates equally scaled and meets at the ports instead of craft centers",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_audio_glossary.test.js",
+      "name": "Moon Mission audio and glossary the glossary carries its own dark ground on every phase that shows it",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_audio_glossary.test.js",
+      "name": "Moon Mission audio and glossary the launch rumble stops once the tool leaves the page, and not before",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_dashboard_state.test.js",
+      "name": "Moon Mission dashboard state briefing carries the organizer, the burn legend and the glossary; debrief repeats the glossary",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_dashboard_state.test.js",
+      "name": "Moon Mission dashboard state every phase says what the student should do now",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_dashboard_state.test.js",
+      "name": "Moon Mission dashboard state exactly one progress bar, and it carries the phase count",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_dashboard_state.test.js",
+      "name": "Moon Mission dashboard state flight record lists the graded calls in the order they were flown, correction included",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_dashboard_state.test.js",
+      "name": "Moon Mission dashboard state header controls are named by what they show, keep that name when toggled, and are 44px tall",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_dashboard_state.test.js",
+      "name": "Moon Mission dashboard state header: no stray 0, no literal \\uXXXX label, animation toggle present",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_dashboard_state.test.js",
+      "name": "Moon Mission dashboard state lunar insertion requires a measured safe capture before announcing readiness",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_dashboard_state.test.js",
+      "name": "Moon Mission dashboard state phase 10 reads as Mission Complete, not as phase 11 of a 10-phase mission",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_dashboard_state.test.js",
+      "name": "Moon Mission dashboard state the glossary follows the student: exactly one on every phase",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_dashboard_state.test.js",
+      "name": "Moon Mission dashboard state the rocket-equation lab has touch-sized controls",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_debrief_flights.test.js",
+      "name": "debrief notes and the report Copy flight report puts that text on the clipboard",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_debrief_flights.test.js",
+      "name": "debrief notes and the report both prompts are labelled textareas that write to the flight",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_debrief_flights.test.js",
+      "name": "debrief notes and the report the physical entry card names the computed terminal event and measurements",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_debrief_flights.test.js",
+      "name": "debrief notes and the report the report carries every graded call, the events and the chain",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_debrief_flights.test.js",
+      "name": "what caused what a flight with nothing graded shows no chain",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_debrief_flights.test.js",
+      "name": "what caused what explains a lateral-only crash without blaming a safe vertical speed",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_debrief_flights.test.js",
+      "name": "what caused what names both limits for a combined crash, including equality at the limits",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_debrief_flights.test.js",
+      "name": "what caused what reports legacy timing and correction decisions without inventing a landing penalty",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_debrief_flights.test.js",
+      "name": "what caused what the timing exercise identifies outbound navigation as a separate preset",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_debrief_flights.test.js",
+      "name": "your flights Fly Another Mission keeps the flight it replaces (the last five)",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_debrief_flights.test.js",
+      "name": "your flights Fly Another Mission retains compact physical entry measurements in flight history",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_debrief_flights.test.js",
+      "name": "your flights no history, no table; a malformed history renders dashes, never a crash",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_debrief_flights.test.js",
+      "name": "your flights the table compares this flight with the last one",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_descent_geometry.test.js",
+      "name": "descent lander contact geometry preserves altitude clearance above tilted pads on local relief at bank -0.4",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_descent_geometry.test.js",
+      "name": "descent lander contact geometry preserves altitude clearance above tilted pads on local relief at bank 0",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_descent_geometry.test.js",
+      "name": "descent lander contact geometry preserves altitude clearance above tilted pads on local relief at bank 0.4",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_descent_geometry.test.js",
+      "name": "descent lander contact geometry samples all four actual pad rims and keeps a level touchdown at its existing height",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_descent_geometry.test.js",
+      "name": "descent lander contact geometry supports the lowest foot at a -0.35 radian bank without changing bank",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_descent_geometry.test.js",
+      "name": "descent lander contact geometry supports the lowest foot at a 0.35 radian bank without changing bank",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_descent_model.test.js",
+      "name": "Moon Mission descent model a careful pilot lands; doing nothing crashes quickly",
+      "status": "passed",
+      "run": "transit-regression-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_descent_model.test.js",
+      "name": "Moon Mission descent model altitude changes at the speed the HUD shows",
+      "status": "passed",
+      "run": "transit-regression-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_descent_model.test.js",
+      "name": "Moon Mission descent model cancelling additional descent drift consumes fuel through the tilted burns",
+      "status": "passed",
+      "run": "transit-regression-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_descent_model.test.js",
+      "name": "Moon Mission descent model every mode flies the same Moon",
+      "status": "passed",
+      "run": "transit-regression-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_descent_model.test.js",
+      "name": "Moon Mission descent model the landing score breakdown is the score",
+      "status": "passed",
+      "run": "transit-regression-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_descent_model.test.js",
+      "name": "Moon Mission descent model there is no free sideways control and no drag on the Moon",
+      "status": "passed",
+      "run": "transit-regression-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_docking_physics.test.js",
+      "name": "Moon Mission final-approach docking dynamics converges across different rendering rates without changing the contact grade",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_docking_physics.test.js",
+      "name": "Moon Mission final-approach docking dynamics grades contact speed, lateral speed and physical radial clearance",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_docking_physics.test.js",
+      "name": "Moon Mission final-approach docking dynamics guides the nominal 120 m approach to a real slow, aligned port crossing",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_docking_physics.test.js",
+      "name": "Moon Mission final-approach docking dynamics keeps terminal contacts fixed and returns a new state without mutating input",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_docking_physics.test.js",
+      "name": "Moon Mission final-approach docking dynamics matches the analytic Hill solution during free coast and preserves both invariants",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_docking_physics.test.js",
+      "name": "Moon Mission final-approach docking dynamics reproduces the rocket-equation impulse after removing Hill coupling",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_docking_physics.test.js",
+      "name": "Moon Mission final-approach docking dynamics retains relative momentum when input is released and keeps moving without fuel",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_docking_physics.test.js",
+      "name": "Moon Mission final-approach docking dynamics spends fuel per thruster axis and clamps controls to the precision pulse duty",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_docking_physics.test.js",
+      "name": "Moon Mission final-approach docking dynamics splits the final pulse at fuel exhaustion then coasts for the rest of the step",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_docking_physics.test.js",
+      "name": "Moon Mission final-approach docking dynamics uses a lunar orbital frame and carries its fuel within the ascent mass",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_earth_globe.test.js",
+      "name": "Moon Mission Earth clouds sit on the visible face, foreshortened toward the limb, never stretched",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_earth_globe.test.js",
+      "name": "Moon Mission Earth clouds turn with the Earth: the same sky after one full turn, a different one half a turn on",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_earth_globe.test.js",
+      "name": "Moon Mission Earth globe exposes the projection as a pure helper",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_earth_globe.test.js",
+      "name": "Moon Mission Earth globe keeps every coastline point on or inside the disc",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_earth_globe.test.js",
+      "name": "Moon Mission Earth globe keeps the atmosphere halo inside the 1.45r the moonwalk texture was sized for",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_earth_globe.test.js",
+      "name": "Moon Mission Earth globe never draws a chord across the disc",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_earth_globe.test.js",
+      "name": "Moon Mission Earth globe sets land behind the limb half a turn later",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_earth_globe.test.js",
+      "name": "Moon Mission Earth globe turns eastward, so land crosses the view from left to right",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_earth_globe.test.js",
+      "name": "Moon Mission Earth light keeps the atmosphere glow off the disc, so the night side can be dark",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_earth_globe.test.js",
+      "name": "Moon Mission Earth light lights a sphere at a phase: the lit share of the disc is the lit fraction, whatever the Sun angle",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_earth_globe.test.js",
+      "name": "Moon Mission Earth light shows the crew a half Earth thinning to a crescent on the way home, as the path swings round its night side",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_physics.test.js",
+      "name": "Moon Mission numerical atmospheric entry converges when the numerical step is halved",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_physics.test.js",
+      "name": "Moon Mission numerical atmospheric entry ends an actual skip at the upward interface crossing without deploying chutes",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_physics.test.js",
+      "name": "Moon Mission numerical atmospheric entry finishes every selectable angle with finite bounded data and a physical terminal event",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_physics.test.js",
+      "name": "Moon Mission numerical atmospheric entry gets stronger peak loads and heating from steeper trajectories",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_physics.test.js",
+      "name": "Moon Mission numerical atmospheric entry inflates each parachute gradually and uses that same fraction for drag",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_physics.test.js",
+      "name": "Moon Mission numerical atmospheric entry keeps cached profiles immutable and samples detached, with bounded cache retention",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_physics.test.js",
+      "name": "Moon Mission numerical atmospheric entry starts from the selected angle and predicts a complete nominal entry",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_physics.test.js",
+      "name": "Moon Mission numerical atmospheric entry ties altitude, speed, deceleration and heat to the same physical trajectory",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_physics.test.js",
+      "name": "Moon Mission numerical atmospheric entry uses a continuous standard lower atmosphere with explicit SI outputs",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_planner.test.js",
+      "name": "entry planner uses the trajectory model begins a fresh unrecorded run once, clears the former result and preserves attempts without XP",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_planner.test.js",
+      "name": "entry planner uses the trajectory model lets the slider choose only finite angles in its displayed range",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_planner.test.js",
+      "name": "entry planner uses the trajectory model reference preset predicts the profile metrics at -6.5 degrees",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_planner.test.js",
+      "name": "entry planner uses the trajectory model refuses to launch while a mission event is pending: {\"activeEvent\":{\"id\":\"waiting\",\"title\":\"Waiting\",\"options\":[]}}",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_planner.test.js",
+      "name": "entry planner uses the trajectory model refuses to launch while a mission event is pending: {\"eventOutcome\":{\"label\":\"Pending outcome\",\"outcome\":\"Waiting\"}}",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_planner.test.js",
+      "name": "entry planner uses the trajectory model shallow preset predicts the profile metrics at -5 degrees",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_planner.test.js",
+      "name": "entry planner uses the trajectory model steep preset predicts the profile metrics at -9 degrees",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_planner.test.js",
+      "name": "entry planner uses the trajectory model uses the same bounded default for preview and launched saved-angle values",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_saved_state.test.js",
+      "name": "compact physical entry saves bounds resumable clocks, history and XP while treating booleans and rate choices strictly",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_saved_state.test.js",
+      "name": "compact physical entry saves keeps finite physical measurements without retaining unknown or bulky saved data",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_saved_state.test.js",
+      "name": "compact physical entry saves keeps valid backward review while refusing mismatched or orphaned completion flags",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_saved_state.test.js",
+      "name": "compact physical entry saves rejects nonfinite or contradictory measurements instead of advertising a completed physical result",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_saved_state.test.js",
+      "name": "compact physical entry saves reports physical units and keeps skip-outs and incomplete runs distinct from splashdown",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_saved_state.test.js",
+      "name": "compact physical entry saves retains legacy attempts and the exact legacy summary shape without inventing physical metrics",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_entry_saved_state.test.js",
+      "name": "compact physical entry saves saves actual profiles throughout the supported angle range without truncating their measurements",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_eva_resources.test.js",
+      "name": "EVA consumables use active elapsed time allows the next sample after one second at 12 fps",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_eva_resources.test.js",
+      "name": "EVA consumables use active elapsed time allows the next sample after one second at 144 fps",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_eva_resources.test.js",
+      "name": "EVA consumables use active elapsed time allows the next sample after one second at 60 fps",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_eva_resources.test.js",
+      "name": "EVA consumables use active elapsed time gives the same 90-second oxygen budget at 12 fps",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_eva_resources.test.js",
+      "name": "EVA consumables use active elapsed time gives the same 90-second oxygen budget at 144 fps",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_eva_resources.test.js",
+      "name": "EVA consumables use active elapsed time gives the same 90-second oxygen budget at 30 fps",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_eva_resources.test.js",
+      "name": "EVA consumables use active elapsed time gives the same 90-second oxygen budget at 60 fps",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_eva_resources.test.js",
+      "name": "EVA consumables use active elapsed time keeps a suspended browser from charging an entire absence when visibility events are missed",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_eva_resources.test.js",
+      "name": "EVA consumables use active elapsed time pauses reserve and interaction timers while hidden and resumes without a catch-up charge",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_eva_resources.test.js",
+      "name": "EVA consumables use active elapsed time records hop airtime from the same active clock, including a takeoff at time zero",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_eva_resources.test.js",
+      "name": "EVA consumables use active elapsed time stops exactly at an empty reserve and never produces a negative cooldown",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_eva_resources.test.js",
+      "name": "EVA consumables use active elapsed time uses the clock in the live loop for oxygen and both sample and instrument interactions",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_event_costs.test.js",
+      "name": "Moon Mission descent events have costs a rough site costs up to 20 points, never below zero, and the parts still add up",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_event_costs.test.js",
+      "name": "Moon Mission descent events have costs adds up the costs, ignores entries without effects, and survives hostile ones",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_event_costs.test.js",
+      "name": "Moon Mission descent events have costs flying past the boulders is recorded with its fuel cost and said on the outcome card",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_event_costs.test.js",
+      "name": "Moon Mission descent events have costs the debrief chain names the costly call and totals what the landing started short",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_event_costs.test.js",
+      "name": "Moon Mission descent events have costs the descent briefing lists what the events cost before you take the controls",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_event_costs.test.js",
+      "name": "Moon Mission descent events have costs the landing starts from those costs (the hinges in the flight loop)",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_event_costs.test.js",
+      "name": "Moon Mission descent events have costs trusting the 1202 alarm is free, and the card says that too",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_flight_recorder.test.js",
+      "name": "bounded descent recording copies measurements so later live-state changes cannot rewrite the recorded flight",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_flight_recorder.test.js",
+      "name": "bounded descent recording preserves transient peaks between samples and excludes pauses from burn duration",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_flight_recorder.test.js",
+      "name": "bounded descent recording records a final endpoint between regular samples and replaces repeated final writes",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_flight_recorder.test.js",
+      "name": "bounded descent recording retains the start and exact touchdown through repeated thinning of a long approach",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_flight_recorder.test.js",
+      "name": "flight summaries and numeric CSV derives duration, fuel use, and signed displacement from recorded endpoints",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_flight_recorder.test.js",
+      "name": "flight summaries and numeric CSV exports signed velocities, throttle percent, and tilt degrees with explicit units",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_flight_recorder.test.js",
+      "name": "flight summaries and numeric CSV keeps compact approach evidence in the mission summary and readable report",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_flight_recorder.test.js",
+      "name": "saved recorder validation bounds restored burn duration while retaining finite measured speed peaks",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_flight_recorder.test.js",
+      "name": "saved recorder validation caps restored traces and clones accepted points without arbitrary saved properties",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_flight_recorder.test.js",
+      "name": "saved recorder validation drops malformed, non-finite, duplicate, and out-of-order points before chart math",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_flight_recorder.test.js",
+      "name": "saved recorder validation rejects unsupported schemas and traces without two valid measurements",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_focus_samples.test.js",
+      "name": "Moon Mission focus management Fly Another Mission puts focus on the briefing heading",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_focus_samples.test.js",
+      "name": "Moon Mission focus management a mission event takes focus, then its outcome, then the next phase",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_focus_samples.test.js",
+      "name": "Moon Mission focus management after splashdown, focus lands on the debrief heading, not on <body>",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_focus_samples.test.js",
+      "name": "Moon Mission focus management never takes focus from a canvas the student has already moved to",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_focus_samples.test.js",
+      "name": "Moon Mission sample bag a save that banked the same four rocks twice shows 4 / 8 and no complete collection",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_focus_samples.test.js",
+      "name": "Moon Mission sample bag counts distinct rock types: a re-collected rock and the traverse specimen do not count",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_focus_samples.test.js",
+      "name": "Moon Mission sample bag seven rock types plus the traverse specimen is 7 / 8 everywhere, not a complete set",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_focus_samples.test.js",
+      "name": "Moon Mission sample bag the moonwalk scene leaves banked rocks collected and never banks one twice",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_form_controls_a11y.test.js",
+      "name": "Moon Mission inquiry form accessibility keeps source and public mirrors identical",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_form_controls_a11y.test.js",
+      "name": "Moon Mission inquiry form accessibility provides accessible names for delta-v reflection fields",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_label_in_name.test.js",
+      "name": "Moon Mission label in name no control is named something other than what it shows",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_landing_restore.test.js",
+      "name": "completed landing restoration carries the previously earned legacy landing reward into a retry without awarding XP again",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_landing_restore.test.js",
+      "name": "completed landing restoration keeps legacy grade and percent fuel without inventing recorded flight measurements or new rewards",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_landing_restore.test.js",
+      "name": "completed landing restoration leaves the A-grade reward available after retrying a lower-scoring landing",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_landing_restore.test.js",
+      "name": "completed landing restoration preserves a seconds-based grade when rounded saved fuel crosses a scoring boundary",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_landing_restore.test.js",
+      "name": "completed landing restoration preserves the only legacy result when retry starts with history undefined",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_landing_restore.test.js",
+      "name": "completed landing restoration preserves the only legacy result when retry starts with history undefined",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_landing_restore.test.js",
+      "name": "completed landing restoration restores recorded endpoint telemetry without recalculating the saved score",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_launch_physics.test.js",
+      "name": "Moon Mission coupled Saturn V ascent bounds computation and protects the cached trajectory from caller edits",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_launch_physics.test.js",
+      "name": "Moon Mission coupled Saturn V ascent conserves vehicle mass through propellant flow and instantaneous jettisons",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_launch_physics.test.js",
+      "name": "Moon Mission coupled Saturn V ascent converges when the integration step is halved instead of depending on frame rate",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_launch_physics.test.js",
+      "name": "Moon Mission coupled Saturn V ascent cuts off only into a bound parking orbit and retains an honest orbital summary",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_launch_physics.test.js",
+      "name": "Moon Mission coupled Saturn V ascent derives Mach and Max Q from atmosphere-relative speed, including sampled instants",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_launch_physics.test.js",
+      "name": "Moon Mission coupled Saturn V ascent derives motion and felt load from the same forces, with a numerical energy balance",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_launch_physics.test.js",
+      "name": "Moon Mission coupled Saturn V ascent keeps stage events causal with ballistic ignition gaps and continuous velocity",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_launch_physics.test.js",
+      "name": "Moon Mission coupled Saturn V ascent starts at liftoff with co-rotating air and a fueled, thrusting vehicle",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_launch_physics.test.js",
+      "name": "Moon Mission coupled Saturn V ascent uses pressure-dependent thrust and rocket-equation mass flow, with center-engine shutdowns",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_launch_playback.test.js",
+      "name": "launch and orbit saved playback bounds replay clocks and accepts only supported playback speeds and boolean pause flags",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_launch_playback.test.js",
+      "name": "launch and orbit saved playback cannot turn a malformed or unversioned save into a completed launch",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_launch_playback.test.js",
+      "name": "launch and orbit saved playback keeps legacy and unfinished flights from claiming a measured launch",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_launch_playback.test.js",
+      "name": "launch and orbit saved playback preserves a completed flight while reviewing an earlier time without sharing mutable data",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_launch_playback.test.js",
+      "name": "launch and orbit saved playback records the measured launch outcome in the flight archive and readable report",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_physics.test.js",
+      "name": "Moon Mission finite-burn lunar capture accounts for propellant, thrust work and rocket-equation delta-v together",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_physics.test.js",
+      "name": "Moon Mission finite-burn lunar capture cannot capture an unpowered flyby and conserves orbital energy and momentum",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_physics.test.js",
+      "name": "Moon Mission finite-burn lunar capture changes the orbit when the same delta-v is applied at the wrong encounter time",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_physics.test.js",
+      "name": "Moon Mission finite-burn lunar capture constructs a hyperbolic arrival from excess energy and unpowered perilune",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_physics.test.js",
+      "name": "Moon Mission finite-burn lunar capture converges with finer integration and samples curved coast without frame-rate drift",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_physics.test.js",
+      "name": "Moon Mission finite-burn lunar capture derives Earth radio occultation from Moon-centered geometry independently of view size",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_physics.test.js",
+      "name": "Moon Mission finite-burn lunar capture distinguishes weak capture outside the corridor from a useful lunar orbit",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_physics.test.js",
+      "name": "Moon Mission finite-burn lunar capture follows an overburn into a real surface crossing instead of snapping to orbit",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_physics.test.js",
+      "name": "Moon Mission finite-burn lunar capture normalizes plans, isolates profiles and returns detached replay samples",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_physics.test.js",
+      "name": "Moon Mission finite-burn lunar capture reaches a computed capture ellipse and coasts around it with the engine off",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_physics.test.js",
+      "name": "Moon Mission finite-burn lunar capture starts and ends the finite fixed-thrust burn at the selected times",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_physics.test.js",
+      "name": "Moon Mission finite-burn lunar capture stops an exhausted engine at the fuel boundary and preserves ballistic coast",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_playback.test.js",
+      "name": "saved lunar orbit insertion playback a recorded flyby or impact remains reviewable but cannot unlock descent",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_playback.test.js",
+      "name": "saved lunar orbit insertion playback archives LOI measurements and resets the next flight planner, recorder and reward",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_playback.test.js",
+      "name": "saved lunar orbit insertion playback bounds clocks and plan inputs and requires boolean playback and reward flags",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_playback.test.js",
+      "name": "saved lunar orbit insertion playback does not reuse the result from a different burn plan",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_playback.test.js",
+      "name": "saved lunar orbit insertion playback hostile LOI records render safely in every phase",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_playback.test.js",
+      "name": "saved lunar orbit insertion playback legacy ready flags and unrecorded capture cannot unlock descent",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_playback.test.js",
+      "name": "saved lunar orbit insertion playback recorded safe capture permits descent and rewards it once",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_playback.test.js",
+      "name": "saved lunar orbit insertion playback rejects malformed or future outcomes and requires a versioned recorded run",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_playback.test.js",
+      "name": "saved lunar orbit insertion playback reports measured capture and flyby outcomes without inventing a closed orbit",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_playback.test.js",
+      "name": "saved lunar orbit insertion playback retains the measured outcome while reviewing an earlier time without sharing mutable state",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_playback.test.js",
+      "name": "saved lunar orbit insertion playback unresolved mission events still block descent after a valid capture",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_visuals.test.js",
+      "name": "lunar orbit insertion visual contract keeps equal distance axes and truncates a blocked Earth ray at the physical lunar limb",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_visuals.test.js",
+      "name": "lunar orbit insertion visual contract keeps the near-side atlas separate and positions Tranquility Base using geographic coordinates",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_visuals.test.js",
+      "name": "lunar orbit insertion visual contract renders the measured capture, flyby and impact profiles without altering their state",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_loi_visuals.test.js",
+      "name": "lunar orbit insertion visual contract repaints identical powered snapshots and removes the SPS plume when thrust stops",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_lunar_surface.test.js",
+      "name": "suit locomotion in one-sixth gravity gets going and stops at the grip friction allows, not instantly",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_lunar_surface.test.js",
+      "name": "suit locomotion in one-sixth gravity holds its arc in the air: no pushing off nothing",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_lunar_surface.test.js",
+      "name": "suit locomotion in one-sixth gravity is frame-rate independent",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_lunar_surface.test.js",
+      "name": "suit locomotion in one-sixth gravity is gentler in comfort mode",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_lunar_surface.test.js",
+      "name": "suit locomotion in one-sixth gravity slides on a slope too steep for a boot to hold, and not on a gentle one",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_lunar_surface.test.js",
+      "name": "suit locomotion in one-sixth gravity slows you uphill and speeds you a little downhill",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_lunar_surface.test.js",
+      "name": "the lunar surface field drops the far field below the horizon with the Moon's curvature",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_lunar_surface.test.js",
+      "name": "the lunar surface field is seeded: two builds agree everywhere, whatever Math.random does",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_lunar_surface.test.js",
+      "name": "the lunar surface field keeps the landing site and the spawn smooth enough to stand and hop on",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_lunar_surface.test.js",
+      "name": "the lunar surface field shapes craters with continuous rims and real depth-to-diameter ratios",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_lunar_surface.test.js",
+      "name": "the lunar surface field throws boulders out of the fresh crater, not across the landing site",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_lunar_surface.test.js",
+      "name": "the moonwalk loop wiring keeps you out of the LM, the big boulders and the parked rover",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_lunar_surface.test.js",
+      "name": "the moonwalk loop wiring moves the suit through mmEvaFootVelocity on real elapsed time",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_lunar_surface.test.js",
+      "name": "the moonwalk loop wiring sails you off a crest the ground curves away from faster than 1/6 g",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_lunar_surface.test.js",
+      "name": "the moonwalk loop wiring shades the ground with lunar photometry and the baked terrain shadow",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_lunar_surface.test.js",
+      "name": "the sun-clearance bake lets a solid above the ground cast into the bake",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_lunar_surface.test.js",
+      "name": "the sun-clearance bake lights open ground and shadows the down-sun side of a fresh crater's floor",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_lunar_surface.test.js",
+      "name": "the sun-clearance bake sees less sky from a crater floor than from the open plain",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops Earth orbit: a sunrise every orbit, and the TLI window opens on the same clock at any frame rate",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops Earth orbit: the globe fits the new diagram and physical illumination is independent of viewport size",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops Fly Another Mission clears what revealed the coast and launch cards",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops a restored entry without an outcome uses the default angle to calculate peak g",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops ascent altitude and velocity stay identical across narrow and wide views",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops entry: 30x playback advances in real time at different frame rates and preserves a paused playhead",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops entry: splashdown follows the model duration, then recovery finishes while repaint stays available",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops entry: the canvas heat flux, shield-first attitude and chute timing follow its physical playhead",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops entry: the compatibility helper samples physical heating and motion without forcing a saved outcome",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops launch: Max Q is asked in the briefing and answered by the flight, at the height the HUD shows",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops launch: on a narrow canvas the Mach / Max Q banner sits clear of both HUD boxes",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops launch: the air-push gauge uses air-relative speed, and \"now\" gives way to \"passed\" after the peak",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops launch: the loop paints the sky for the height on the HUD, sinks the horizon by the dip angle, and swells the plume",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops lights the Moon as on landing day: sunrise just west of the site, a six-day crescent from Earth",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops lunar ascent inserts below Columbia and the prediction waits for a validated docking exercise",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops lunar ascent reaches computed insertion without claiming a docking or Earthrise",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops marks Tranquility Base at the coordinates printed under the lunar-orbit view",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops names the seas and every Apollo site only when the student asks",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops splashes down in the water, not above it, and is righted after capsizing",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops the live coast uses the same measured trajectory at every viewport and scale",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops trans-Earth coast: the crew window shows Earth at the phase the model gives for the distance on the HUD",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops trans-Earth coast: the entry corridor on the canvas follows the slider",
+      "status": "passed",
+      "run": "candidate-isolated-retry.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops trans-lunar coast: fast off Earth, slowest where the Moon takes over, faster again after",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon Mission loops trans-lunar prediction waits for a recorded nominal trajectory and uses its measured speed minimum",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon map draws every sea on the near side, inside the disc",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "Moon map puts each Apollo landing on the terrain it really landed on",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "canvas text alternatives describe what is drawn now, and never state an answer a prediction is still waiting for",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "launch sky darkens with the air overhead: blue at the pad, black by 50 km, the horizon never darker than the zenith",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "one scope, many models declares no variable twice in one function scope",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moon_and_splash.test.js",
+      "name": "one scope, many models the trans-Earth coast keeps its calibrated start speed separate from the outbound model",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moonwalk_realism.test.js",
+      "name": "bootprints are Apollo prints: a 33 x 14 cm depression, a ribbed floor, a rim of pushed-up soil",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moonwalk_realism.test.js",
+      "name": "bootprints share the ground's lunar shading and regolith, so there is no seam, and take shadows",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moonwalk_realism.test.js",
+      "name": "dust in a vacuum a rolling wheel throws a rooster tail: steep grains, still moving forward, about a metre high at 11 km/h",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moonwalk_realism.test.js",
+      "name": "dust in a vacuum a toe-off kicks a fan ahead; a landing splashes low and all round",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moonwalk_realism.test.js",
+      "name": "dust in a vacuum every grain flies until it lands, and the pool outlasts the spray at top speed",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moonwalk_realism.test.js",
+      "name": "moonwalk gait pushes off and brakes no harder than boot-on-regolith friction allows",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moonwalk_realism.test.js",
+      "name": "moonwalk gait tells weight from mass on the cuff, and names the gait from the switch speed",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moonwalk_realism.test.js",
+      "name": "moonwalk gait walks under the Froude walk-run switch and lopes well above it",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moonwalk_realism.test.js",
+      "name": "samples on the ground are rocks (and a core tube), one look per sample, none of them glowing",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moonwalk_realism.test.js",
+      "name": "the Apollo 11 horizon has no mountains: the distant relief barely lifts the skyline",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moonwalk_realism.test.js",
+      "name": "the ground at your feet filters the relief with a cubic B-spline from four bilinear taps",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moonwalk_realism.test.js",
+      "name": "the ground at your feet so its slope does not jump at texel edges, where bilinear facets did",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moonwalk_realism.test.js",
+      "name": "the sky of a sunlit moonwalk blooms only what glares, and hides the stars until the eye is off the ground",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moonwalk_realism.test.js",
+      "name": "the sky of a sunlit moonwalk draws the Sun as a hard disc under a degree across, not a glow",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moonwalk_realism.test.js",
+      "name": "your own shadow gathers a tight glow round the helmet: the opposition effect's narrow core",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_moonwalk_realism.test.js",
+      "name": "your own shadow is the whole suited figure, helmet and backpack included, not a pair of legs",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_orbit_playback.test.js",
+      "name": "orbit playback and manual TLI advance reaches GO while paused, without burning or awarding points; the burn reads live state",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_orbit_playback.test.js",
+      "name": "orbit playback and manual TLI does not accept a stale GO snapshot after the live craft leaves the window",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_orbit_playback.test.js",
+      "name": "orbit playback and manual TLI does not catch up hidden-tab time or lose the exact pause checkpoint",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_orbit_playback.test.js",
+      "name": "orbit playback and manual TLI exposes readable instruments and labels the enlarged diagram and teaching window",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_orbit_playback.test.js",
+      "name": "orbit playback and manual TLI makes model time independent of display frame rate",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_orbit_playback.test.js",
+      "name": "orbit playback and manual TLI restores time and freezes both model and window while repainting a paused resize",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_orbit_playback.test.js",
+      "name": "parking-orbit reference model advances to an eligible teaching window and computes light and sunrise state from time",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_orbit_playback.test.js",
+      "name": "parking-orbit reference model links circular speed, period and gravitational acceleration at 185 km",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_physics_realism.test.js",
+      "name": "Moon Mission coast trajectories moves continuously between return samples instead of waiting for the next minute",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_physics_realism.test.js",
+      "name": "Moon Mission coast trajectories outbound position, speed and model clock agree near both bodies and between them",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_physics_realism.test.js",
+      "name": "Moon Mission coast trajectories return closing speed equals the derivative of distance and follows energy conservation",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_physics_realism.test.js",
+      "name": "Moon Mission physical descent model applies the same controls consistently across frame rates and long updates",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_physics_realism.test.js",
+      "name": "Moon Mission physical descent model burns mass at thrust / exhaust velocity and gets lighter as fuel is used",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_physics_realism.test.js",
+      "name": "Moon Mission physical descent model cannot create more impulse than the remaining propellant supplies",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_physics_realism.test.js",
+      "name": "Moon Mission physical descent model ignores invalid elapsed time and opposite steering commands cancel",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_physics_realism.test.js",
+      "name": "Moon Mission physical descent model locates ground contact and retains impact speed without using time after impact",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_physics_realism.test.js",
+      "name": "Moon Mission physical descent model shows tilt costs, engine response and insufficient braking fuel in guidance",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_physics_realism.test.js",
+      "name": "Moon Mission physical descent model uses inverse-square lunar gravity and conserves vacuum coast energy",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_predictions.test.js",
+      "name": "predict first a choice is saved, and the card says what to watch for until the window opens",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_predictions.test.js",
+      "name": "predict first a new flight starts with fresh predictions; hostile saved values never crash",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_predictions.test.js",
+      "name": "predict first asks before the flight shows anything, and keeps the explanation shut",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_predictions.test.js",
+      "name": "predict first once the window opens it says whether the flight agreed, and why",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_predictions.test.js",
+      "name": "predict first the debrief and the report count predictions against the flight",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_predictions.test.js",
+      "name": "predict first the landing question opens after touchdown; the hop question after a timed hop",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_predictions.test.js",
+      "name": "predict first the moonwalk loop times each hop from take-off to touchdown",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_proceed_gates.test.js",
+      "name": "Moon Mission proceed gates Continue after an event only ever moves forward, and clears its target",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_proceed_gates.test.js",
+      "name": "Moon Mission proceed gates a double click pays once and advances once",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_proceed_gates.test.js",
+      "name": "Moon Mission proceed gates a paused student can show the launch result before proceeding, without claiming orbit on the pad",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_proceed_gates.test.js",
+      "name": "Moon Mission proceed gates a pending event disables the phase button, and its handler refuses too",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_proceed_gates.test.js",
+      "name": "Moon Mission proceed gates a pending event or its outcome blocks entry completion even after physical splashdown",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_proceed_gates.test.js",
+      "name": "Moon Mission proceed gates a terminal skip cannot complete the mission or collect splashdown XP",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_proceed_gates.test.js",
+      "name": "Moon Mission proceed gates an outcome card on screen blocks the phase button as well",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_proceed_gates.test.js",
+      "name": "Moon Mission proceed gates arrival requires a measured encounter regardless of earlier timing or correction choices",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_proceed_gates.test.js",
+      "name": "Moon Mission proceed gates entry completion advances and pays its 50 XP only once",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_proceed_gates.test.js",
+      "name": "Moon Mission proceed gates entry completion requires the recorded physical splashdown, including when animation is paused",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_proceed_gates.test.js",
+      "name": "Moon Mission proceed gates reviewing an earlier entry moment preserves an already recorded splashdown",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_proceed_gates.test.js",
+      "name": "Moon Mission proceed gates the launch cannot be skipped: Proceed to Orbit waits for orbit",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_proceed_gates.test.js",
+      "name": "Moon Mission proceed gates the moonwalk waits for a landing attempt",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_return_handoff.test.js",
+      "name": "return coast entry handoff discloses the radial model and links the historical separation timeline",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_return_handoff.test.js",
+      "name": "return coast entry handoff keeps the completed interface view visible through resizing",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_return_handoff.test.js",
+      "name": "return coast entry handoff paints the full endpoint and shows separation only during the slowed final approach",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_return_handoff.test.js",
+      "name": "return coast entry handoff reaches the entry preset at 122 km and 11030 m/s",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_return_handoff.test.js",
+      "name": "return coast entry handoff repaints after a paused resize while holding all physical readouts",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_return_handoff.test.js",
+      "name": "return coast entry handoff separates the Service Module 833 model seconds before interface, independent of view progress",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_rover_physics.test.js",
+      "name": "Moon Mission rover production physics carries fractional steps and admits a bounded one-second visible stall",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_rover_physics.test.js",
+      "name": "Moon Mission rover production physics detects real wheel contacts at the same terrain locations at low and high frame rates",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_rover_physics.test.js",
+      "name": "Moon Mission rover production physics dissipates suspension spring energy at the same rate after an impulse",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_rover_physics.test.js",
+      "name": "Moon Mission rover production physics drives the same path at 8\u2013144 fps, including terrain contact, springs and wheel spin",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_rover_physics.test.js",
+      "name": "Moon Mission rover production physics holds shallow grades at rest and rolls downhill with the correct sign on steeper terrain",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_rover_physics.test.js",
+      "name": "Moon Mission rover production physics limits tractive acceleration on loaded slopes and braking stops before reversing",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_rover_physics.test.js",
+      "name": "Moon Mission rover production physics places multiple track samples along a slow frame path without stacking them at the final pose",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_rover_physics.test.js",
+      "name": "Moon Mission rover production physics respects forward/reverse steering and prevents distance from accumulating against the boundary",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_saturn_v.test.js",
+      "name": "Moon Mission launch loop calls Mach 1 and Max Q where the displayed ascent puts them, not on a timer",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_saturn_v.test.js",
+      "name": "Moon Mission launch loop counts down five seconds and reaches orbit on the same clock at 30, 60 or 120 frames a second",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_saturn_v.test.js",
+      "name": "Moon Mission launch loop flies the stack in pieces, burns kerosene only on the first stage, and names each separation long enough to read",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_saturn_v.test.js",
+      "name": "Saturn V model draws a spent stage on its own, engines and all",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_saturn_v.test.js",
+      "name": "Saturn V model drops the escape tower without moving the command module",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_saturn_v.test.js",
+      "name": "Saturn V model is drawn about 11 times taller than it is wide",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_saturn_v.test.js",
+      "name": "Saturn V model sheds stages from the bottom and keeps the spacecraft where it was",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_saturn_v.test.js",
+      "name": "Saturn V model stands as tall as the fact card says it did",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_saved_state.test.js",
+      "name": "Moon Mission saved state Tourist is selectable: the stored choice is the one checked",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_saved_state.test.js",
+      "name": "Moon Mission saved state a malformed record is dropped, a valid one still shows in the debrief",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_saved_state.test.js",
+      "name": "Moon Mission saved state answering with the FIRST option is recorded, not read as unanswered",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_saved_state.test.js",
+      "name": "Moon Mission saved state renders every phase under every malformed value without throwing",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_science_numbers.test.js",
+      "name": "factual corrections stay corrected does not claim 0.043 MHz (the Apollo Guidance Computer clock was 1.024 MHz)",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_science_numbers.test.js",
+      "name": "factual corrections stay corrected does not claim Apollo 10 famously logged one (the Apollo 10 incident was not a vent failure)",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_science_numbers.test.js",
+      "name": "factual corrections stay corrected does not claim Boyle\\'s Law (heating a sealed tank is Gay-Lussac, not Boyle)",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_science_numbers.test.js",
+      "name": "factual corrections stay corrected does not claim By rotating Orion (this mission flies Apollo, not Orion)",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_science_numbers.test.js",
+      "name": "factual corrections stay corrected does not claim Ionized plasma at 2,760 (2,760 C is the heat shield, not the plasma)",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_science_numbers.test.js",
+      "name": "factual corrections stay corrected does not claim fuel cells also generate your oxygen (fuel cells consume oxygen)",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_science_numbers.test.js",
+      "name": "factual corrections stay corrected does not claim with the keys in it (the rover had no keys)",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_science_numbers.test.js",
+      "name": "launch readouts follow an Apollo-like ascent maps elapsed launch progress to the same trajectory, including real staging load drops",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_science_numbers.test.js",
+      "name": "launch readouts follow an Apollo-like ascent shows the numerical parking orbit at about 7.8 km/s and then near-zero felt g",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_science_numbers.test.js",
+      "name": "re-entry and the rocket-equation lab entry loads come from the numerical trajectory and have the Apollo scale",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_science_numbers.test.js",
+      "name": "re-entry and the rocket-equation lab the best single-stage setting reaches orbit but not the Moon, and the lab says why",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_science_numbers.test.js",
+      "name": "the return coast is one model, not three distance, speed and clock agree: the speed shown covers the distance shown",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_science_numbers.test.js",
+      "name": "the return coast is one model, not three takes about two and a half days and arrives at about 39,700 km/h",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_science_numbers.test.js",
+      "name": "the return coast is one model, not three the coast canvas reads the model rather than its own formulas",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_tli_window.test.js",
+      "name": "TLI burn window burns on the far side of Earth from the Moon",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_tli_window.test.js",
+      "name": "TLI burn window the debrief says LATE for a late burn and EARLY for an early one",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_tli_window.test.js",
+      "name": "TLI burn window the live region names the state; the changing numbers sit outside it",
+      "status": "passed",
+      "run": "regression-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_physics.test.js",
+      "name": "Moon Mission moving-Moon outbound coast closes the mass, rocket-equation and thrust-work balances through the correction",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_physics.test.js",
+      "name": "Moon Mission moving-Moon outbound coast conserves the rotating-frame Jacobi integral throughout the unpowered coast",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_physics.test.js",
+      "name": "Moon Mission moving-Moon outbound coast constructs the stated departure and a dynamically consistent circular Moon",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_physics.test.js",
+      "name": "Moon Mission moving-Moon outbound coast converges with tighter integration and replays independently of frame rate",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_physics.test.js",
+      "name": "Moon Mission moving-Moon outbound coast detects a grazing surface crossing before closest approach",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_physics.test.js",
+      "name": "Moon Mission moving-Moon outbound coast distinguishes a low pass from an integrated lunar collision",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_physics.test.js",
+      "name": "Moon Mission moving-Moon outbound coast ends fuel-limited burns at the available SPS propellant boundary",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_physics.test.js",
+      "name": "Moon Mission moving-Moon outbound coast freezes the commanded radial/transverse basis at ignition",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_physics.test.js",
+      "name": "Moon Mission moving-Moon outbound coast measures the speed minimum from the trajectory in the stated Earth frame",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_physics.test.js",
+      "name": "Moon Mission moving-Moon outbound coast normalizes controls, bounds its cache and protects recorded state from mutation",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_physics.test.js",
+      "name": "Moon Mission moving-Moon outbound coast resolves ignition and cutoff without state jumps or flames during coast",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_physics.test.js",
+      "name": "Moon Mission moving-Moon outbound coast turns departure error into a real miss and a finite correction into a safe encounter",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_physics.test.js",
+      "name": "Moon Mission moving-Moon outbound coast uses direct and indirect lunar acceleration in its Earth-centered frame",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_playback.test.js",
+      "name": "saved outbound navigation playback archives navigation measurements and resets the next flight clock, planner and reward",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_playback.test.js",
+      "name": "saved outbound navigation playback bounds clocks and controls, accepts supported rates and requires boolean flags",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_playback.test.js",
+      "name": "saved outbound navigation playback failed navigation is reviewable but cannot claim arrival",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_playback.test.js",
+      "name": "saved outbound navigation playback hostile saved navigation renders safely in every phase",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_playback.test.js",
+      "name": "saved outbound navigation playback invalidates measured arrival when the departure or correction plan changes",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_playback.test.js",
+      "name": "saved outbound navigation playback legacy correction choices, old minima and unrecorded results cannot unlock arrival",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_playback.test.js",
+      "name": "saved outbound navigation playback recorded encounter permits arrival and rewards the mission once",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_playback.test.js",
+      "name": "saved outbound navigation playback reports measured navigation with its separate insertion and descent presets",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_playback.test.js",
+      "name": "saved outbound navigation playback retains a measured arrival during earlier review without sharing mutable state",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_playback.test.js",
+      "name": "saved outbound navigation playback unresolved mission events block arrival even after a measured encounter",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_playback.test.js",
+      "name": "saved outbound navigation playback validates every recomputed summary field and rejects future or unrecorded runs",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_visuals.test.js",
+      "name": "trans-lunar coast physical visual contract keeps body centers and craft position fixed when the body-size exaggeration changes",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_visuals.test.js",
+      "name": "trans-lunar coast physical visual contract only reveals closest approach once observed or explicitly previewed",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_visuals.test.js",
+      "name": "trans-lunar coast physical visual contract points the nozzle opposite actual MCC thrust and draws no plume during coasting",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/moonmission_transit_visuals.test.js",
+      "name": "trans-lunar coast physical visual contract uses the simultaneous lunar position for every point in the Moon-relative history",
+      "status": "passed",
+      "run": "candidate-unit.json"
+    }
+  ]
+}

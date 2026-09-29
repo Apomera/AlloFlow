@@ -1,0 +1,11 @@
+{
+  "sha256": "a5d3ed0b81b1be17858fa5ce6c7c42fa875f867cf24bdc2663b0dfe769d953f0",
+  "files": [
+    "stem_lab\\stem_tool_moonmission.js",
+    "desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js"
+  ],
+  "byteIdentical": true,
+  "javascriptSyntax": "passed",
+  "scopedWhitespace": "passed",
+  "moonMissionFilesStaged": false
+}

@@ -181,20 +181,24 @@ describe('Moon Mission proceed gates', () => {
     expect(fwd.mm().missionPhase).toBe(4);
   });
 
-  it('an off-window TLI must answer the mid-course correction before arrival', () => {
+  it('arrival requires a measured encounter regardless of earlier timing or correction choices', () => {
     const open = mount({ missionPhase: 3, tliAccuracy: { onTime: false, offByDeg: 24 } });
     const arrive = find(open, /Arrive at the Moon/i);
     expect(arrive.disabled).toBe(true);
-    expect(textOf(open.tree())).toMatch(/Arrival waits for that decision/);
+    expect(textOf(open.tree())).toMatch(/Review a trajectory that reaches/);
     arrive.onClick();
     expect(open.mm().missionPhase).toBe(3);
 
     for (const choice of ['corrected', 'skipped']) {
       const done = mount({ missionPhase: 3, tliAccuracy: { onTime: false, offByDeg: 24 }, mccChoice: choice });
-      expect(find(done, /Arrive at the Moon/i).disabled, choice).toBe(false);
+      expect(find(done, /Arrive at the Moon/i).disabled, choice).toBe(true);
     }
     const onTime = mount({ missionPhase: 3, tliAccuracy: { onTime: true, offByDeg: 0 } });
-    expect(find(onTime, /Arrive at the Moon/i).disabled).toBe(false);
+    expect(find(onTime, /Arrive at the Moon/i).disabled).toBe(true);
+    const p = window.MoonMissionPure.transitProfile();
+    const measured = mount({ missionPhase: 3, transitPlan: p.controls,
+      transitRun: { version: 1, time: p.summary.duration, recorded: true }, transitResult: { version: 1, ...p.summary } });
+    expect(find(measured, /Arrive at the Moon/i).disabled).toBe(false);
   });
 
   it('the moonwalk waits for a landing attempt', () => {

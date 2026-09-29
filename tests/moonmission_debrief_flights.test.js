@@ -53,19 +53,20 @@ beforeEach(() => resetStemLab());
 afterEach(() => vi.restoreAllMocks());
 
 describe('what caused what', () => {
-  it('links TLI timing, the correction and the landing, with this flight\'s own numbers', () => {
+  it('reports legacy timing and correction decisions without inventing a landing penalty', () => {
     const items = chainItems(html(FLOWN));
     expect(items).toHaveLength(5);
     expect(items[0]).toMatch(/TLI fired 22° early/);
-    expect(items[1]).toMatch(/declined the correction.*25 s less hover fuel and 7 m\/s more drift/);
-    expect(items[2]).toMatch(/touched down at 2\.1 m\/s.*grade C, with 6 s of fuel left.*started 25 s short/);
+    expect(items[1]).toMatch(/declined the correction.*earlier save records the decision without a measured trajectory or SPS propellant use/);
+    expect(items[2]).toMatch(/touched down at 2\.1 m\/s.*grade C, with 6 s of fuel left/);
+    expect(items[2]).not.toContain('short');
     expect(items[3]).toMatch(/1 mission event, 1 the way Apollo would have.*morale ended at 80%/);
     expect(items[4]).toMatch(/entry angle to -6\.4°.*inside the corridor, about 6\.3 g/);
   });
 
-  it('an on-time flight has no correction step and says why', () => {
+  it('the timing exercise identifies outbound navigation as a separate preset', () => {
     const items = chainItems(html(Object.assign({}, FLOWN, { tliAccuracy: { onTime: true, offByDeg: 3 }, mccChoice: null })));
-    expect(items[0]).toMatch(/inside the burn window.*needed no correction/);
+    expect(items[0]).toMatch(/inside the burn window.*outbound navigation starts from its own departure preset/);
     expect(items.join(' ')).not.toMatch(/correction you skipped|declined/);
   });
 
@@ -127,7 +128,7 @@ describe('debrief notes and the report', () => {
     const [report] = walk(app.tree(), (n) => n.type === 'textarea' && n.props['data-moonmission-report-text']);
     const r = report.value;
     expect(r).toMatch(/TLI burn: 22° early, outside the window/);
-    expect(r).toContain('Mid-course correction: declined');
+    expect(r).toContain('Mid-course correction: earlier decision to decline; no measured trajectory stored');
     expect(r).toMatch(/Landing: touchdown at 2\.1 m\/s, drift 1\.4 m\/s, 6 s of fuel left, score 62 \(C\)/);
     expect(r).toMatch(/Entry: -6\.4°, in the corridor, about 6\.3 g/);
     expect(r).toMatch(/Quiz: 7 \/ 10/);
@@ -145,7 +146,7 @@ describe('debrief notes and the report', () => {
     await Promise.resolve();
     expect(writeText).toHaveBeenCalledTimes(1);
     expect(writeText.mock.calls[0][0]).toMatch(/^Apollo Moon Mission .* flight report/);
-    expect(writeText.mock.calls[0][0]).toContain('Mid-course correction: declined');
+    expect(writeText.mock.calls[0][0]).toContain('Mid-course correction: earlier decision to decline; no measured trajectory stored');
     delete navigator.clipboard;
   });
 

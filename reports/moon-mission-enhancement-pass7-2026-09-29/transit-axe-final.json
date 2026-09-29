@@ -1,0 +1,8 @@
+{
+  "scope": "[data-transit-workspace]",
+  "viewport": { "width": 320, "height": 844 },
+  "planControlsExpanded": true,
+  "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"],
+  "violations": [],
+  "verifiedBy": "transit-phone-final.json"
+}

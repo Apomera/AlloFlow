@@ -42,10 +42,11 @@ describe('scripted ascent and rendezvous state', () => {
     expect(model(NaN)).toEqual(model(0));
   });
 
-  it('states the illustrative range and timing assumptions beside the demonstration', () => {
+  it('states the numerical ascent and separate docking assumptions beside the live simulation', () => {
     const html = renderTool('moonMission', { moonMission: { missionPhase: 7 } });
     expect(html).toContain('data-ascent-model-note="true"');
-    expect(html).toContain('Scripted rendezvous demonstration');
-    expect(html).toContain('initial 200 km along-track gap');
+    expect(html).toContain('Numerical lunar ascent integrates fixed engine thrust');
+    expect(html).toContain('This separate exercise begins 120 m');
+    expect(html).toContain('intervening orbital rendezvous burns are not simulated');
   });
 });

@@ -153,22 +153,25 @@ describe('Moon Mission dashboard state', () => {
       seismoDeployed: true,
       entryOutcome: { outcome: 'nominal', angle: -6.5, peakG: 6.9 },
     });
-    const order = ['FLIGHT RECORD', 'TLI 23', 'CORRECTION DECLINED', 'TOUCHDOWN', 'SEISMOMETER DEPLOYED', 'ENTRY IN THE CORRIDOR', 'BADGES EARNED']
+    const order = ['FLIGHT RECORD', 'TLI 23', 'MID-COURSE CORRECTION: earlier decision to decline', 'TOUCHDOWN', 'SEISMOMETER DEPLOYED', 'ENTRY IN THE CORRIDOR', 'BADGES EARNED']
       .map((s) => ({ s, i: html.indexOf(s) }));
     for (const o of order) expect(o.i, o.s + ' missing').toBeGreaterThan(-1);
     for (let k = 1; k < order.length; k++) {
       expect(order[k].i, order[k - 1].s + ' should precede ' + order[k].s).toBeGreaterThan(order[k - 1].i);
     }
     const corrected = render({ missionPhase: 10, mccChoice: 'corrected' });
-    expect(corrected).toContain('MID-COURSE CORRECTION BURNED');
+    expect(corrected).toContain('MID-COURSE CORRECTION: earlier burn decision');
   });
 
-  it('lunar orbit narrates its milestones and turns green after one full orbit', () => {
+  it('lunar insertion requires a measured safe capture before announcing readiness', () => {
     const start = render({ missionPhase: 4 });
     expect(start).toContain('Lunar orbit insertion');
-    const los = render({ missionPhase: 4, orbitStatus: 'los' });
-    expect(los).toContain('Loss of signal');
-    const ready = render({ missionPhase: 4, orbitStatus: 'ready' });
+    const legacy = render({ missionPhase: 4, orbitStatus: 'ready' });
+    expect(legacy).toContain('earlier orbit animation');
+    expect(legacy).not.toContain('GO for undocking');
+    const insertion = window.MoonMissionPure.loiProfile();
+    const ready = render({ missionPhase: 4, loiPlan: insertion.controls,
+      loiRun: { version: 1, time: insertion.summary.duration, recorded: true }, loiResult: { version: 1, ...insertion.summary } });
     expect(ready).toContain('GO for undocking');
   });
 });

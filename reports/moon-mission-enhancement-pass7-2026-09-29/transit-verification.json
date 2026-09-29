@@ -1,0 +1,44 @@
+{
+  "suite": "Moon Mission outbound navigation",
+  "unitTests": {
+    "passed": 90,
+    "failed": 0,
+    "files": 7,
+    "newPlaybackCases": 11,
+    "report": "transit-regression-tests.json"
+  },
+  "browser": {
+    "distinctCases": 9,
+    "distinctPassed": 9,
+    "unresolvedFailures": 0,
+    "workers": 1,
+    "cases": [
+      { "name": "moving-Moon coast position and separately named speed frames", "passedIn": "initial" },
+      { "name": "speed-error miss and finite SPS correction", "passedIn": "initial" },
+      { "name": "review, reload and once-only arrival reward", "passedIn": "initial" },
+      { "name": "legacy and malformed save arrival guards", "passedIn": "initial" },
+      { "name": "320px pause, resize, reload, keyboard End and plan invalidation", "passedIn": "finalPhone" },
+      { "name": "hidden-page clock and no catch-up", "passedIn": "initial" },
+      { "name": "view, true size and playback settings preserve physical state", "passedIn": "initial" },
+      { "name": "integrated lunar impact and replanning", "passedIn": "focused" },
+      { "name": "independent descent fuel and drift with genuine event costs", "passedIn": "focused" }
+    ],
+    "runs": {
+      "initial": { "passed": 6, "failed": 1, "output": "transit-browser", "failure": "320px axe detected a low-contrast arrival-gate note; source color was corrected." },
+      "focused": { "passed": 2, "failed": 1, "output": "transit-browser-focused", "failure": "Phone assertions completed, but browser context teardown exceeded 180 seconds on the busy host. No assertion timeout was increased." },
+      "finalPhone": { "passed": 1, "failed": 0, "caseDurationSeconds": 42.9, "output": "transit-browser-final", "report": "transit-phone-final.json" }
+    },
+    "accessibility": { "scope": "data-transit-workspace at 320px, all four plan sliders expanded", "axeViolations": 0 },
+    "screenshots": [
+      "transit/transit-departure-chromium.png",
+      "transit/transit-system-coast-chromium.png",
+      "transit/transit-nominal-encounter-chromium.png",
+      "transit/transit-speed-error-chromium.png",
+      "transit/transit-correction-burn-chromium.png",
+      "transit/transit-corrected-encounter-chromium.png",
+      "transit/transit-paused-320-chromium.png",
+      "transit/transit-true-size-chromium.png",
+      "transit/transit-lunar-impact-chromium.png"
+    ]
+  }
+}

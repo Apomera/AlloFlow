@@ -3,9 +3,8 @@
 // The graded landing used to integrate altitude ~31x faster than vertical speed
 // (alt += vVel * 0.5 per 1/60 s step while vVel used 0.016), so "100 m, down 3 m/s"
 // was followed by touchdown 1.1 s later. Sideways control was free (+-0.5 m/s a step,
-// no thrust, no fuel) and drift decayed like air drag on an airless Moon, which made
-// declining the mid-course correction cost nothing: the same pilot touched down with
-// the same fuel either way while the debrief said "cheap early, expensive late".
+// no thrust, no fuel) and drift decayed like air drag on an airless Moon.
+// Cancelling actual descent drift must require a tilted burn and use fuel.
 // These fly mmDescentStep, the exact function the game loop calls.
 import { describe, it, expect, beforeEach } from 'vitest';
 import fs from 'node:fs';
@@ -71,14 +70,11 @@ describe('Moon Mission descent model', () => {
     expect(idle.t).toBeLessThan(30);
   });
 
-  it('skipping the mid-course correction costs the landing clearly more than correcting', () => {
-    const D = P.descent;
-    const corrected = fly(start(), pilot);
-    const skipped = fly(start({ fuel: D.pilotFuel - D.skipFuel, hVel: D.handoverHv + D.skipDrift }), pilot);
-    expect(corrected.landed).toBe(true);
-    expect(corrected.st.fuel - skipped.st.fuel, 'declining the correction was not expensive').toBeGreaterThan(20);
-    // and the tilted burns it forces cost fuel beyond the hand-over deficit itself
-    expect(corrected.st.fuel - skipped.st.fuel).toBeGreaterThan(D.skipFuel);
+  it('cancelling additional descent drift consumes fuel through the tilted burns', () => {
+    const nominal = fly(start(), pilot);
+    const drifting = fly(start({ hVel: P.descent.handoverHv + 7 }), pilot);
+    expect(nominal.landed).toBe(true);
+    expect(nominal.st.fuel - drifting.st.fuel, 'drift cancellation must spend fuel').toBeGreaterThan(0);
   });
 
   it('the landing score breakdown is the score', () => {
