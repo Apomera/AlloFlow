@@ -26,6 +26,7 @@
   var packingActions = { bottle: 'pack_water', card: 'pack_document', raincoat: 'pack_raincoat', hat: 'pack_hat' };
   var wardrobePreview = null;
   var wardrobeNames = { wear_ready: 'Clean, dry outfit', prepare_clothes: 'Outfit that needs drying' };
+  var updateTopic = null, updateSnapshot = null;
   var notes = Object.create(null), comparison = null, reviewRevision = null, importSerial = 0, lastSaveOk = false;
   var icons = { kitchen: '◒', wardrobe: '♧', entry: '▣', travel: '↗' };
   var supportNames = { guided: 'Guided', try: 'Try it', independent: 'Independent' };
@@ -92,6 +93,7 @@
     clearRehearsal(true);
     clearPacking(true);
     clearWardrobe(true);
+    clearUpdate(true); updateSnapshot = null;
     exploredDeparture = null;
     byId('travelLab').open = false;
     text('travelLabStatus', '');
@@ -137,6 +139,7 @@
     clearRehearsal(true);
     clearPacking(true);
     clearWardrobe(true);
+    clearUpdate(true);
     activeStation = id;
     selectedObject = null;
     renderActions();
@@ -149,11 +152,13 @@
     clearRehearsal(true);
     clearPacking(true);
     clearWardrobe(true);
+    clearUpdate(true);
     selectedObject = id;
     activeStation = object.station;
     renderActions();
     if (id === 'bag' && !latestView.completed) byId('packingWorkbench').open = true;
     if (id === 'outfit' && !latestView.completed) byId('wardrobeWorkbench').open = true;
+    if (id === 'forecast' && latestView.event && !latestView.completed) byId('updateWorkbench').open = true;
     if (moveFocus) byId('stationActions').focus();
     announce(object.label + '. ' + object.status + '. ' + object.description);
   }
@@ -166,6 +171,7 @@
       clearRehearsal(true);
       clearPacking(false);
       clearWardrobe(false);
+      clearUpdate(false);
       exploredDeparture = null;
       current = next;
       if (id === 'hint') shownHint = true;
@@ -174,6 +180,7 @@
       if (id === 'hint') byId('hintButton').focus({ preventScroll: true });
       else if (source === 'packing') (byId('packingItems').querySelector('button:not(:disabled)') || byId('packingWorkbench').querySelector('summary')).focus();
       else if (source === 'wardrobe') byId('wardrobeReadyTitle').focus();
+      else if (source === 'update') byId('updateReadStatus').focus();
       else if (source !== 'scene' && focusedAction) {
         var exact = Array.from(byId('actionList').querySelectorAll('button')).find(function (button) { return button.dataset.action === focusedAction && !button.disabled; });
         var nextButton = byId('actionList').querySelector('button:not(:disabled)');
@@ -210,6 +217,7 @@
     text('stationDescription', station.description);
     byId('openPacking').hidden = v.completed || (station.id !== 'kitchen' && station.id !== 'entry');
     byId('openWardrobe').hidden = v.completed || station.id !== 'wardrobe';
+    byId('openUpdates').hidden = v.completed || station.id !== 'entry' || !v.event;
     byId('exploreTravel').hidden = station.id !== 'travel';
     text('stepTag', v.completed ? 'Practice complete' : 'Step ' + (current.commands.length + 1));
     var list = byId('actionList');
@@ -231,6 +239,7 @@
     if (object) { text('objectTitle', object.label); text('objectStatus', object.status); text('objectDescription', object.description); }
     renderPackingWorkbench();
     renderWardrobeWorkbench();
+    renderUpdateWorkbench();
     visibleActions.forEach(function (action) {
       var button = node('button', 'action-button');
       button.type = 'button';
@@ -433,6 +442,91 @@
     if (latestView.completed || latestView.scene.clothingReady || selectedObject !== 'outfit' || !wardrobePreview) return;
     if (wardrobePreview.revision !== current.commands.length) { clearWardrobe(false); renderWardrobeWorkbench(); text('wardrobeStatus', 'The outing changed. Explore an outfit again.'); return; }
     act(wardrobePreview.actionId, 'wardrobe');
+  }
+  function clearUpdate(collapse) {
+    updateTopic = null; byId('updateTopicResult').hidden = true;
+    text('updateStatus', '');
+    if (collapse) byId('updateWorkbench').open = false;
+  }
+  function receivedUpdate() {
+    if (updateSnapshot) return updateSnapshot;
+    if (!latestView.event) return null;
+    // Reconstruct the received change from the journal; never infer future updates from settings.
+    for (var revision = 1; revision <= current.commands.length; revision++) {
+      var prefix = Object.assign({}, current, {commands: current.commands.slice(0, revision), content: []});
+      var after = E.view(prefix);
+      if (!after.event) continue;
+      var before = E.view(Object.assign({}, prefix, {commands: current.commands.slice(0, revision - 1)}));
+      updateSnapshot = {revision: revision, clock: after.clock,
+        beforeForecast: before.objects.find(function (item) { return item.id === 'forecast'; }).status,
+        afterForecast: after.objects.find(function (item) { return item.id === 'forecast'; }).status,
+        beforeWeather: before.scene.weather, afterWeather: after.scene.weather,
+        beforeBus: before.routes.find(function (route) { return route.id === 'bus'; }).arrival,
+        afterBus: after.routes.find(function (route) { return route.id === 'bus'; }).arrival};
+      return updateSnapshot;
+    }
+    return null;
+  }
+  function updateWeatherIcon(weather) {
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 100 80'); svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('focusable', 'false');
+    function shape(tag, attrs) {
+      var el = document.createElementNS(svg.namespaceURI, tag);
+      Object.keys(attrs).forEach(function (key) { el.setAttribute(key, attrs[key]); }); svg.appendChild(el);
+    }
+    if (weather === 'warm') {
+      shape('circle', {cx:50,cy:40,r:19,fill:'#e5b653',stroke:'#8f702e','stroke-width':2});
+      shape('path', {d:'M50 5V13M50 67V75M15 40H23M77 40H85M25 15L31 21M69 59L75 65M25 65L31 59M69 21L75 15',stroke:'#8f702e','stroke-width':3,'stroke-linecap':'round'});
+    } else {
+      shape('path', {d:'M24 52C6 52 7 30 24 30C24 8 56 6 61 27C86 18 99 53 75 53Z',fill:weather==='rain'?'#afc6d4':'#d1ddd6',stroke:'#587275','stroke-width':2,'stroke-linejoin':'round'});
+      if (weather === 'rain') shape('path', {d:'M29 62L25 71M49 62L45 71M69 62L65 71',stroke:'#37758f','stroke-width':4,'stroke-linecap':'round'});
+    }
+    return svg;
+  }
+  function renderUpdateWorkbench() {
+    var v = latestView, panel = byId('updateWorkbench');
+    panel.hidden = selectedObject !== 'forecast' || !v.event || v.completed;
+    if (panel.hidden) return;
+    var received = receivedUpdate(); if (!received) { panel.hidden = true; return; }
+    text('updateAfterTitle', 'Update at ' + received.clock);
+    text('updateBeforeForecast', received.beforeForecast); text('updateAfterForecast', received.afterForecast);
+    byId('updateBeforeIcon').replaceChildren(updateWeatherIcon(received.beforeWeather));
+    byId('updateAfterIcon').replaceChildren(updateWeatherIcon(received.afterWeather));
+    text('updateBeforeBus', '09:20 bus · arrival ' + received.beforeBus);
+    text('updateAfterBus', '09:20 bus · arrival ' + received.afterBus);
+    text('updateBusChange', received.beforeBus === received.afterBus ? 'The bus arrival time did not change in this update. Recheck your arrival as you prepare.' : 'The bus arrival moved from ' + received.beforeBus + ' to ' + received.afterBus + '. Compare it with the 09:35 start.');
+    var read = v.stations.reduce(function (all, station) { return all.concat(station.actions); }, []).find(function (action) { return action.id === 'inspect_forecast'; });
+    byId('readUpdateNote').disabled = !read || read.disabled;
+    text('updateReadStatus', read && read.disabled ? 'You have read the latest note in this outing. You can keep reviewing your plan.' : 'Practice clock: ' + v.clock + '. Choose the reading action when you are ready.');
+    var topics = byId('updateTopics'); topics.replaceChildren();
+    [['weather', 'Weather item in my bag'], ['travel', 'My travel plan']].forEach(function (topic) {
+      var button = node('button', 'update-topic', topic[1]); button.type = 'button'; button.dataset.updateTopic = topic[0];
+      button.setAttribute('aria-pressed', String(updateTopic === topic[0]));
+      button.addEventListener('click', function () {
+        if (!latestView.event || latestView.completed || selectedObject !== 'forecast') return;
+        updateTopic = topic[0]; renderUpdateWorkbench(); byId('updateTopicTitle').focus();
+        text('updateStatus', topic[1] + ' review opened. The practice clock stays ' + latestView.clock + '.');
+      }); topics.appendChild(button);
+    });
+    byId('updateTopicResult').hidden = !updateTopic;
+    if (!updateTopic) return;
+    var facts = byId('updateTopicFacts'); facts.replaceChildren();
+    function fact(label, value) { facts.append(node('dt', '', label), node('dd', '', value)); }
+    if (updateTopic === 'weather') {
+      var packed = v.inventory.find(function (item) { return item.id === 'raincoat' || item.id === 'hat'; });
+      text('updateTopicTitle', 'Weather and your bag'); fact('Received forecast', received.afterForecast); fact('Weather item packed now', packed ? packed.label : 'No weather item packed');
+      text('updateTopicQuestion', 'A raincoat helps keep clothes dry. A sun hat gives shade. Does your packed item fit this forecast?');
+      text('updateTopicAction', 'Open bag table');
+    } else {
+      text('updateTopicTitle', 'Travel and your plan'); fact('Outing start', '09:35'); fact('Chosen route now', v.travel ? v.travel.label : 'No route chosen');
+      fact('Current arrival', v.travel ? v.travel.arrival + (v.travel.arrival === 'Unavailable' ? '' : v.travel.onTime ? ' · ' + v.travel.minutesBeforeStart + ' min before the start' : ' · ' + Math.abs(v.travel.minutesBeforeStart) + ' min after the start') : 'Choose a route to compare its arrival');
+      text('updateTopicQuestion', 'Would your current plan still get you there in time? Compare another route if you need to change it.');
+      text('updateTopicAction', 'Compare routes in the outing');
+    }
+  }
+  function openUpdateWorkbench() {
+    if (!latestView.event || latestView.completed) return;
+    selectObject('forecast', false); byId('updateTopics').querySelector('button').focus();
   }
   function renderStory() {
     var entries = current.content || [];
@@ -640,6 +734,7 @@
       goals.appendChild(item);
     });
     byId('eventCard').hidden = !v.event;
+    byId('reviewUpdate').hidden = v.completed;
     if (v.event) { text('eventTitle', v.event.title); text('eventBody', v.event.body); }
     var inventory = byId('inventory');
     inventory.replaceChildren();
@@ -855,8 +950,8 @@
     cylinder(2.06,1.48,-2.43,.25,.035,'#c49a68',hat,{rotation:'90 0 0',class:'pickable'});
     cylinder(2.06,1.48,-2.35,.15,.16,'#e1bd8b',hat,{rotation:'90 0 0',class:'pickable'});
     var forecast = entity('a-entity', {id:'forecastObject'}, entry);
-    box(1.64,2.3,-2.48,1.32,.48,.06,'#fff6d8',forecast);
-    textPlane('OUTING UPDATES',{position:'1.64 2.3 -2.435',width:1.22,height:.31},forecast);
+    box(1.64,2.3,-2.48,1.32,.48,.06,'#fff6d8',forecast,{id:'forecastBoard'});
+    textPlane('Cloudy · update expected',{id:'forecastNote',position:'1.64 2.3 -2.435',width:1.22,height:.31},forecast).dataset.noteText='Cloudy · update expected';
     textPlane('PACKING',{position:'1.62 .13 -.83',rotation:'-25 0 0'},entry);
     var travel=stationGroup('travel');
     box(3.17,1.3,-2.57,1.13,2.6,.2,'#f4ecda',travel);
@@ -911,6 +1006,13 @@
     byId('hatObject').setAttribute('visible',!(s.departed&&hatPacked));
     byId('windowSky').setAttribute('color',s.weather==='rain'?'#a6bdcb':'#b9dcd7');
     byId('rainDrops').setAttribute('visible',s.weather==='rain');
+    byId('forecastBoard').setAttribute('color',latestView.event?'#e5c788':'#fff6d8');
+    var noteText = s.busDelayed ? 'Rain · bus arrives 09:45' : s.weather === 'cloudy' ? 'Cloudy · update expected' : s.weather === 'rain' ? 'Updated forecast · rain' : 'Updated forecast · warm';
+    var notePlane = byId('forecastNote');
+    if (notePlane.dataset.noteText !== noteText) {
+      var noteCanvas = byId(notePlane.dataset.canvasId); if (noteCanvas) noteCanvas.remove(); notePlane.remove();
+      textPlane(noteText,{id:'forecastNote',position:'1.64 2.3 -2.435',width:1.22,height:.31,class:'pickable'},byId('forecastObject')).dataset.noteText=noteText;
+    }
     byId('doorHinge').setAttribute('rotation',s.departed?'0 -65 0':'0 0 0');
     byId('bagObject').setAttribute('visible',!s.departed);
     if(s.departed)text('sceneCaption','Ready to head out · reflect on your choices below.');
@@ -943,6 +1045,17 @@
   byId('travelPreview').addEventListener('click',function(){selectObject('route',true);});
   byId('openPacking').addEventListener('click', openPackingWorkbench);
   byId('openWardrobe').addEventListener('click', openWardrobeWorkbench);
+  byId('reviewUpdate').addEventListener('click', openUpdateWorkbench);
+  byId('openUpdates').addEventListener('click', openUpdateWorkbench);
+  byId('readUpdateNote').addEventListener('click', function () {
+    if (!latestView.event || latestView.completed || selectedObject !== 'forecast' || byId('readUpdateNote').disabled) return;
+    act('inspect_forecast', 'update');
+  });
+  byId('updateTopicAction').addEventListener('click', function () {
+    if (!latestView.event || latestView.completed || selectedObject !== 'forecast') return;
+    if (updateTopic === 'weather') openPackingWorkbench();
+    else if (updateTopic === 'travel') selectObject('route', true);
+  });
   byId('prepareOutfit').addEventListener('click', prepareSelectedOutfit);
   byId('wardrobeToBag').addEventListener('click', openPackingWorkbench);
   byId('packingPlace').addEventListener('click', placePackingItem);

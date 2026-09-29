@@ -60,16 +60,27 @@
 </div>
 <p id="sceneUnavailable" class="scene-unavailable" hidden>The room view is unavailable. All practice actions work below.</p>
 <div class="station-navigation" id="stationNavigation" role="group" aria-label="Choose a station"></div>
-<section id="eventCard" class="event-card event-inline" aria-labelledby="eventTitle" hidden><p class="eyebrow">A change to consider</p><h2 id="eventTitle"></h2><p id="eventBody"></p></section>
+<section id="eventCard" class="event-card event-inline" aria-labelledby="eventTitle" hidden><p class="eyebrow">A change to consider</p><h2 id="eventTitle"></h2><p id="eventBody"></p><button id="reviewUpdate" class="quiet-button" type="button" aria-controls="updateWorkbench">Review what changed</button></section>
 <div id="planGuide" class="plan-guide" hidden><p id="planGuideText"></p><div class="button-row"><button id="followPlanButton" class="quiet-button" type="button">Go to planned step</button><button id="editPlanButton" class="quiet-button" type="button">Review plan</button></div></div>
 <div class="action-panel" id="stationActions" tabindex="-1">
 <div class="section-header"><div><p class="eyebrow">Your next choice</p><h3 id="stationTitle">Kitchen</h3></div><span class="step-tag" id="stepTag">Step 1</span></div>
 <p id="stationDescription" class="muted"></p>
 <button id="openPacking" class="quiet-button packing-entry" type="button" aria-controls="packingWorkbench" hidden>Open bag table</button>
 <button id="openWardrobe" class="quiet-button wardrobe-entry" type="button" aria-controls="wardrobeWorkbench" hidden>Compare the outfits</button>
+<button id="openUpdates" class="quiet-button update-entry" type="button" aria-controls="updateWorkbench" hidden>Review the received update</button>
 <button id="exploreTravel" class="quiet-button travel-entry" type="button" aria-controls="travelLab" hidden>Explore departure and arrival times</button>
 <div id="objectChoices" class="object-choices" role="group" aria-label="Inspect an object"></div>
 <section id="objectInspector" class="object-inspector" aria-labelledby="objectTitle" hidden><div class="section-header"><h4 id="objectTitle"></h4><span id="objectStatus" class="object-status"></span></div><p id="objectDescription"></p></section>
+<details id="updateWorkbench" class="update-workbench" hidden>
+<summary>Notice the change · recheck your plan</summary>
+<div class="update-body"><p class="muted">Compare what changed, then recheck your bag and travel plan. Exploring this board takes no practice time.</p>
+<div class="update-comparison"><section aria-labelledby="updateBeforeTitle"><h4 id="updateBeforeTitle">Earlier note</h4><div id="updateBeforeIcon" class="update-weather-icon" aria-hidden="true"></div><p id="updateBeforeForecast"></p><p id="updateBeforeBus" class="small"></p></section><section aria-labelledby="updateAfterTitle"><h4 id="updateAfterTitle"></h4><div id="updateAfterIcon" class="update-weather-icon" aria-hidden="true"></div><p id="updateAfterForecast"></p><p id="updateAfterBus" class="small"></p></section></div>
+<p id="updateBusChange" class="muted small"></p>
+<div class="update-read"><button id="readUpdateNote" class="quiet-button" type="button">Read the forecast note · 1 min</button><p id="updateReadStatus" class="muted small" tabindex="-1"></p></div>
+<h4 class="update-topic-prompt">What would you like to recheck?</h4><div id="updateTopics" class="update-topics" role="group" aria-label="Choose what to recheck"></div>
+<section id="updateTopicResult" class="update-topic-result" aria-labelledby="updateTopicTitle" hidden><h4 id="updateTopicTitle" tabindex="-1"></h4><dl id="updateTopicFacts"></dl><p id="updateTopicQuestion"></p><button id="updateTopicAction" class="primary-button" type="button"></button></section>
+<p id="updateStatus" class="update-status" role="status" aria-live="polite" aria-atomic="true"></p>
+</div></details>
 <details id="wardrobeWorkbench" class="wardrobe-workbench" hidden>
 <summary>Choose clothes and compare preparation time</summary>
 <div class="wardrobe-body"><p id="wardrobeInstructions" class="muted">Explore an outfit to see when it would be ready. Compare the time for getting dressed with your travel plan.</p>
