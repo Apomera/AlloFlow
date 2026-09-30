@@ -1,0 +1,60 @@
+{
+  "passed": true,
+  "validatedAt": "2026-09-30T21:28:45.934Z",
+  "sourceSha256": "14cf70052ba746a72fa6cbba8d390b077111e63e590920a0d5429164808f260f",
+  "mirrored": true,
+  "sourceCompiles": true,
+  "regression": {
+    "passedTests": 389,
+    "files": 24,
+    "startedAt": "2026-09-30T21:04:12.414Z",
+    "finishedAt": "2026-09-30T21:07:36.657Z"
+  },
+  "browser": {
+    "workflows": 2,
+    "axeScans": 19,
+    "fullContrastScans": 17,
+    "forcedColorsScans": 2,
+    "forcedColorsTextNodes": 14,
+    "numericReadings": 57,
+    "focusChecks": 19,
+    "focusTransitions": 6,
+    "textResizeCases": 2,
+    "rtlCases": 4,
+    "screenshots": 20,
+    "visualIssues": 0
+  },
+  "reportHashes": {
+    "README.md": "dd46d874b3842b104228ab2513a11156357cd0127288e2c5d6871885ea6b81ce",
+    "run-regression.cjs": "93906af91067a8889d1d88648d08b1e8bf92412827cd20d0c3c9258bbb9533ab",
+    "browser-check.cjs": "2c1a2a78e977e0860270880469791aeca7d02f5c554d399a78419db92a2d5344",
+    "validate.cjs": "47e1e4392d51fb00446b864b059a27b1a934a91c99fb76992d9fa34ddfa206d6",
+    "regression.json": "cea79f24b6a0553e60200d758a163070b692bfecad954446f55b38148eb1395f",
+    "regression-receipt.json": "9772773de002104e73d91ae0d8fbaa2f844442944fc13c4c0f34ddf3ec8c4802",
+    "browser-results.json": "76b642268c145a58bc18e275db73d22d50e210bab345822a7bad8a38f1badcd2",
+    "forced-colors-diagnostic.json": "211de59d56f77fdc793293b7bf74730196b3c21d386fd35a6d95387022fbe8d5"
+  },
+  "screenshotHashes": {
+    "journey-start-1280.png": "87728214a57fe1b1f2f4786c778446fa8df13b1a268ab5954969b9bc0c321ead",
+    "journey-start-390.png": "1b9e7ebe0ac834475b48beee24dcd478463c327c2174ddce37e18722bd2a407a",
+    "journey-start-320.png": "ad2b75eb711c8b69da1a68575f8c3b6fdb9cd472a14f6ce7ff15db44a914f3d1",
+    "journey-predict-1280.png": "dd1983a11421cb77a23f02d66472a63e271aac5f79d052b1dbfed66f16d54b36",
+    "journey-predict-390.png": "75007238e9adae68d43b70f5eceeb0804b6606c318c07f7c070c726c611ba68b",
+    "journey-predict-320.png": "a7769d709b6c69f25dcd0694d8161051ad7c9b99dee42856439bf09464f22e14",
+    "journey-test-1280.png": "e2e1ec67bdd8b7eb8648d6404bb5be0cbfe31efc8e8d56b1d3886bb18e24d3c9",
+    "journey-test-390.png": "b4ae8b2c6f5e46e5763302f0299504d44ab448ed50ac9df393660697dee92fac",
+    "journey-test-320.png": "65fe2c8bc2b8525eaa20ee9f5605b347e70d581819db0bcf159e3f231233ec4d",
+    "journey-explain-1280.png": "89e3634f4181134ed3a4be027e1df9d60a70a23d86141f5ef5433484ec2555e2",
+    "journey-explain-390.png": "a1b5b6e04621f9d210ebad84b905cdae0d680e7a5507c41ac9f2f2feac4947a4",
+    "journey-explain-320.png": "783a940b3735a8309619b4744e5987cf70387feedb1c10d1050a751104afe8bf",
+    "journey-review-1280.png": "ee862af14c21c6ed3b5f43b1bf60e4c434620b290a4b52b346b86c64a0ec648a",
+    "journey-review-390.png": "41470cdb1e1c05b994144ca3ccafd0c017da0c6af072d6776faf567e717838e7",
+    "journey-review-320.png": "64d8d4eed827aa32684a751bbd19682e980d05a076bebc82622caab98f2014ca",
+    "review-explanation-action-320.png": "676d906dd27430a7dc5c977b917bdf061742ceea6d407240e278e5c6d60e77c5",
+    "journey-predict-200pct-text-320.png": "160f1139550f7c6d6a669ccc5a8c10c2b01a3b439411279e8d39739b1ce56c9a",
+    "journey-review-200pct-text-320.png": "c7eb2fc38c65551364b538d71755089bb0a6502a213592f93f1d511707319f81",
+    "forced-colors-journey-predict-320.png": "b546b684411563c6db7c8f6c9f12ee49a1c21e21dc24943aae6bfacdd2b334a8",
+    "forced-colors-journey-review-320.png": "7f77d25d2a67f65bc61ce693eda0146aff30b72c036d346869295c42d5c55db6"
+  },
+  "whitespaceCheck": true
+}
