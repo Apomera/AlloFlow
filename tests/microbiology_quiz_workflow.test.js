@@ -14,6 +14,7 @@ beforeEach(() => { globalThis.IS_REACT_ACT_ENVIRONMENT = true; resetStemLab(); t
 afterEach(() => {
   if (mounted) { act(() => mounted.root.unmount()); mounted.container.remove(); mounted = null; }
   globalThis.IS_REACT_ACT_ENVIRONMENT = priorAct; vi.restoreAllMocks();
+  vi.unstubAllGlobals(); vi.useRealTimers();
 });
 function mount(seed = {}) {
   const container = document.createElement('div'); document.body.appendChild(container);
@@ -36,6 +37,19 @@ function core() { return window.__MicrobiologyCore.quiz; }
 function roundTrip() {
   const saved = JSON.parse(JSON.stringify(mounted.state));
   act(() => mounted.root.unmount()); mounted.container.remove(); mounted = null; return mount(saved);
+}
+function captureQuizDownload() {
+  const contents = [], links = [];
+  const NativeBlob = globalThis.Blob, NativeURL = globalThis.URL;
+  class CapturedBlob extends NativeBlob { constructor(parts, options) { super(parts, options); contents.push(parts.join('')); } }
+  class CapturedURL extends NativeURL {}
+  Object.defineProperties(CapturedURL, {
+    createObjectURL: { configurable: true, writable: true, value: vi.fn(() => 'blob:micro-quiz-evidence') },
+    revokeObjectURL: { configurable: true, writable: true, value: vi.fn() }
+  });
+  vi.stubGlobal('Blob', CapturedBlob); vi.stubGlobal('URL', CapturedURL); vi.useFakeTimers();
+  const linkClick = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function() { links.push({ name: this.download, href: this.href }); });
+  return { contents, links, linkClick, revokeUrl: CapturedURL.revokeObjectURL };
 }
 
 describe('Microbiology quiz and targeted review', { timeout: 20000 }, () => {
@@ -164,5 +178,208 @@ describe('Microbiology quiz and targeted review', { timeout: 20000 }, () => {
     expect(mounted.container.querySelectorAll('fieldset')).toHaveLength(0);
     expect(mounted.container.textContent).not.toContain('Practice missed questions');
     expect(mounted.awardXP).not.toHaveBeenCalled();
+  });
+});
+
+describe('Quiz evidence reports', { timeout: 20000 }, () => {
+  it('exports incomplete and unsubmitted answers without scores, solutions, explanations or practice evidence', () => {
+    for (const seed of [
+      { quizAnswers: [bank[0].answer] },
+      { quizAnswers: correct(), quizSubmitted: false },
+      { quizAnswers: correct(), quizSubmitted: 'true' },
+      { quizAnswers: [bank[0].answer, '1', true, 7], quizSubmitted: true }
+    ]) {
+      const raw = { ...seed, quizCorrect: 500, quizPractice: { answers: correct(), checked: Array(15).fill(true) } };
+      const before = JSON.stringify(raw), report = core().report(raw), exported = core().exportText(raw);
+      expect(report.submitted).toBe(false); expect(report.originalScore).toBeNull();
+      expect(report.canDownload).toBe(true); expect(report.questions).toHaveLength(15);
+      expect(report.questions[0]).toMatchObject({ originalAnswer: bank[0].choices[bank[0].answer], originalStatus: 'draft' });
+      for (const question of report.questions) {
+        expect(question.correctAnswer).toBeNull(); expect(question.explanation).toBeNull(); expect(question.practice).toBeNull();
+      }
+      expect(exported).toContain('Attempt status: Unsubmitted or incomplete attempt');
+      expect(exported).not.toContain('Original score:'); expect(exported).not.toContain('Correct answer:'); expect(exported).not.toContain('Practice answer:');
+      for (const question of bank) expect(exported).not.toContain(question.explain);
+      expect(JSON.stringify(raw)).toBe(before);
+    }
+    const missing = core().report({ quizAnswers: [bank[0].answer, '1'] });
+    expect(missing.questions[1]).toMatchObject({ originalAnswer: null, originalChoice: null, originalStatus: 'unanswered' });
+    expect(core().exportText({ quizAnswers: [bank[0].answer] }).match(/Original answer: No answer recorded/g)).toHaveLength(14);
+  });
+
+  it('requires a strict recorded answer to enable export and rejects malformed root data', () => {
+    for (const raw of [null, [], 'bad', 4, {}, { quizAnswers: Array(15).fill('1'), quizSubmitted: true, quizCorrect: 15 }]) {
+      expect(core().report(raw)).toMatchObject({ canDownload: false, submitted: false, answered: 0, originalScore: null });
+    }
+    expect(core().report({ quizAnswers: [0] }).canDownload).toBe(true);
+  });
+
+  it('preserves every original answer and keeps checked, incorrect, unchecked and unanswered practice distinct', () => {
+    const original = wrongAt(0, 1, 2, 3);
+    const practiceAnswers = [bank[0].answer, (bank[1].answer + 1) % 4, bank[2].answer, null, (bank[4].answer + 1) % 4];
+    const raw = { quizSubmitted: true, quizCorrect: 999, quizAnswers: original, quizPractice: { answers: practiceAnswers, checked: [true, true, false, true, true] } };
+    const before = JSON.stringify(raw), report = core().report(raw), exported = core().exportText(raw);
+    expect(report).toMatchObject({ submitted: true, originalScore: 11, practiceCorrect: 1, practiceTotal: 4 });
+    expect(report.questions.slice(0, 4).map(question => question.practice.status)).toEqual(['checked-correct', 'checked-incorrect', 'unchecked', 'unanswered']);
+    expect(report.questions[4].practice).toBeNull();
+    for (let i = 0; i < bank.length; i++) {
+      expect(report.questions[i]).toMatchObject({ index: i, question: bank[i].q, originalChoice: original[i], originalAnswer: bank[i].choices[original[i]], correctAnswer: bank[i].choices[bank[i].answer], explanation: bank[i].explain });
+      expect(exported).toContain('Q' + (i + 1) + '. ' + bank[i].q + '\nOriginal answer: ' + bank[i].choices[original[i]]);
+    }
+    expect(exported).toContain('Original score: 11/15');
+    expect(exported).toContain('Correct after checking in practice: 1/4');
+    for (const status of ['Checked correct', 'Checked incorrect', 'Unchecked practice answer', 'Unanswered in practice']) expect(exported).toContain('Practice status: ' + status);
+    expect(exported).not.toContain('999'); expect(JSON.stringify(raw)).toBe(before);
+    expect(core().report(JSON.parse(before))).toEqual(report);
+  });
+
+  it('does not turn malformed practice flags or changed unchecked choices into checked success', () => {
+    const raw = { quizSubmitted: true, quizAnswers: wrongAt(0, 1), quizPractice: { answers: [bank[0].answer, '1'], checked: ['true', true] } };
+    const report = core().report(raw);
+    expect(report.practiceCorrect).toBe(0);
+    expect(report.questions[0].practice.status).toBe('unchecked');
+    expect(report.questions[1].practice.status).toBe('unanswered');
+    const perfect = core().report({ quizSubmitted: true, quizAnswers: correct(), quizPractice: raw.quizPractice });
+    expect(perfect.originalScore).toBe(15); expect(perfect.practiceTotal).toBe(0);
+    expect(perfect.questions.every(question => question.practice === null)).toBe(true);
+  });
+
+  it('downloads a working attempt without submission, grading, XP or focus changes', () => {
+    mount({ quizAnswers: Array(15).fill('1'), quizCorrect: 500 });
+    expect(button('Download quiz evidence').disabled).toBe(true);
+    choose(0, bank[0].answer);
+    const before = JSON.parse(JSON.stringify(mounted.state)), download = captureQuizDownload();
+    const trigger = button('Download quiz evidence'); trigger.focus(); click(trigger);
+    expect(download.links).toEqual([{ name: 'micro-lab-quiz-evidence.txt', href: 'blob:micro-quiz-evidence' }]);
+    expect(download.contents[0]).toContain('Recorded answers: 1/15');
+    expect(download.contents[0]).not.toContain('Original score:');
+    expect(mounted.state).toEqual(before); expect(mounted.awardXP).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(trigger);
+    expect(mounted.container.querySelector('#micro-quiz-download-status').textContent).toContain('Your answers and practice were kept');
+    expect(document.querySelector('a[download="micro-lab-quiz-evidence.txt"]')).toBeNull();
+    act(() => vi.advanceTimersByTime(1000));
+    expect(download.revokeUrl).toHaveBeenCalledWith('blob:micro-quiz-evidence');
+  });
+
+  it('supports repeated report downloads without changing original evidence or unchecked practice', () => {
+    mount({ quizSubmitted: true, quizAnswers: wrongAt(0, 1), quizMode: 'practice', quizPractice: { answers: [bank[0].answer, bank[1].answer], checked: [true, false] } });
+    const before = JSON.parse(JSON.stringify(mounted.state)), download = captureQuizDownload();
+    const trigger = button('Download quiz evidence'); trigger.focus(); click(trigger);
+    const status = mounted.container.querySelector('#micro-quiz-download-status'), firstNotice = status.firstChild;
+    expect(status.getAttribute('role')).toBe('status'); expect(status.getAttribute('aria-live')).toBe('polite');
+    click(trigger);
+    expect(status.firstChild).not.toBe(firstNotice);
+    expect(download.contents).toHaveLength(2); expect(download.contents[1]).toBe(download.contents[0]);
+    expect(download.contents[0]).toContain('Original score: 13/15');
+    expect(download.contents[0]).toContain('Practice status: Unchecked practice answer');
+    expect(mounted.state).toEqual(before); expect(mounted.awardXP).not.toHaveBeenCalled(); expect(document.activeElement).toBe(trigger);
+    click('Start a new quiz');
+    expect(button('Download quiz evidence').disabled).toBe(true);
+    expect(status.textContent).toBe('');
+    expect(download.contents).toHaveLength(2);
+    act(() => vi.advanceTimersByTime(1000)); expect(download.revokeUrl).toHaveBeenCalledTimes(2);
+  });
+
+  it('cleans up failed downloads, permits retry, and clears stale feedback when practice changes', () => {
+    mount({ quizSubmitted: true, quizAnswers: wrongAt(0), quizMode: 'practice' });
+    const before = JSON.parse(JSON.stringify(mounted.state)), download = captureQuizDownload();
+    download.linkClick.mockImplementationOnce(() => { throw new Error('download blocked'); });
+    const trigger = button('Download quiz evidence'); trigger.focus(); click(trigger);
+    expect(mounted.container.querySelector('#micro-quiz-download-status').textContent).toContain('could not start');
+    expect(document.querySelector('a[download="micro-lab-quiz-evidence.txt"]')).toBeNull();
+    expect(mounted.state).toEqual(before); expect(document.activeElement).toBe(trigger);
+    click(trigger);
+    expect(mounted.container.querySelector('#micro-quiz-download-status').textContent).toContain('download has started');
+    choose(0, bank[0].answer, true);
+    expect(mounted.container.querySelector('#micro-quiz-download-status').textContent).toBe('');
+    expect(mounted.state.quizPractice.checked[0]).toBe(false);
+    expect(mounted.state.quizAnswers).toEqual(before.quizAnswers); expect(mounted.awardXP).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(1000)); expect(download.revokeUrl).toHaveBeenCalledTimes(2);
+  });
+
+  it('retains export evidence through section changes and JSON reload while download notices stay local', () => {
+    mount({ quizSubmitted: true, quizAnswers: wrongAt(0, 1), quizMode: 'practice', quizPractice: { answers: [bank[0].answer, bank[1].answer], checked: [true, false] } });
+    const download = captureQuizDownload(); click('Download quiz evidence');
+    const report = download.contents[0];
+    click(mounted.container.querySelector('#micro-tab-home')); click(mounted.container.querySelector('#micro-tab-quiz'));
+    expect(mounted.container.querySelector('#micro-quiz-download-status').textContent).toBe('');
+    click('Download quiz evidence'); expect(download.contents[1]).toBe(report);
+    roundTrip();
+    expect(mounted.container.querySelector('#micro-quiz-download-status').textContent).toBe('');
+    click('Download quiz evidence'); expect(download.contents[2]).toBe(report);
+    expect(mounted.awardXP).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(1000)); expect(download.revokeUrl).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe('Quiz transition focus guards', { timeout: 20000 }, () => {
+  it('focuses the current heading after submission and mode changes when no later action supersedes them', () => {
+    vi.useFakeTimers(); mount({ quizAnswers: wrongAt(0) });
+    click('Submit quiz'); act(() => vi.runOnlyPendingTimers());
+    expect(document.activeElement.id).toBe('micro-quiz-heading'); expect(document.activeElement.dataset.phase).toBe('review');
+    click('Practice missed questions'); act(() => vi.runOnlyPendingTimers());
+    expect(document.activeElement.dataset.phase).toBe('practice');
+    click('Return to quiz results'); act(() => vi.runOnlyPendingTimers());
+    expect(document.activeElement.dataset.phase).toBe('review');
+  });
+
+  it('does not apply a stale mode transition to a newly reopened quiz panel', () => {
+    vi.useFakeTimers(); mount({ quizSubmitted: true, quizAnswers: wrongAt(0) });
+    click('Practice missed questions');
+    click(mounted.container.querySelector('#micro-tab-home')); click(mounted.container.querySelector('#micro-tab-quiz'));
+    const tab = mounted.container.querySelector('#micro-tab-quiz'); tab.focus();
+    act(() => vi.runOnlyPendingTimers());
+    expect(document.activeElement).toBe(tab);
+    expect(mounted.container.querySelector('#micro-quiz-heading').dataset.phase).toBe('practice');
+  });
+
+  it('keeps focus on the active Quiz tab when it is clicked after a pending mode transition', () => {
+    vi.useFakeTimers(); mount({ quizSubmitted: true, quizAnswers: wrongAt(0) });
+    click('Practice missed questions');
+    const owner = mounted.container.querySelector('[data-micro-quiz]');
+    const heading = mounted.container.querySelector('#micro-quiz-heading');
+    const tab = mounted.container.querySelector('#micro-tab-quiz'); tab.focus(); click(tab);
+    expect(mounted.container.querySelector('[data-micro-quiz]')).toBe(owner);
+    expect(mounted.container.querySelector('#micro-quiz-heading')).toBe(heading);
+    expect(heading.dataset.phase).toBe('practice');
+    act(() => vi.runOnlyPendingTimers());
+    expect(document.activeElement).toBe(tab);
+    expect(mounted.state.quizMode).toBe('practice');
+  });
+
+  it('keeps focus on topic-library controls after pending quiz transitions in either direction', () => {
+    vi.useFakeTimers(); mount({ quizSubmitted: true, quizAnswers: wrongAt(0), showMicroLibrary: false });
+    for (const [transition, libraryAction, phase] of [
+      ['Practice missed questions', 'Show topic library', 'practice'],
+      ['Return to quiz results', 'Hide topic library', 'review']
+    ]) {
+      click(transition);
+      const owner = mounted.container.querySelector('[data-micro-quiz]');
+      const heading = mounted.container.querySelector('#micro-quiz-heading');
+      const toggle = button(libraryAction); toggle.focus(); click(toggle);
+      expect(mounted.container.querySelector('[data-micro-quiz]')).toBe(owner);
+      expect(mounted.container.querySelector('#micro-quiz-heading')).toBe(heading);
+      expect(heading.dataset.phase).toBe(phase);
+      act(() => vi.runOnlyPendingTimers());
+      expect(document.activeElement).toBe(toggle);
+      expect(mounted.state.tab).toBe('quiz');
+      expect(mounted.state.quizMode).toBe(phase);
+      expect(mounted.state.quizAnswers).toEqual(wrongAt(0));
+    }
+  });
+
+  it('cancels delayed focus after later choices, review filters and download actions', () => {
+    vi.useFakeTimers(); mount({ quizSubmitted: true, quizAnswers: wrongAt(0) });
+    click('Practice missed questions');
+    const choiceInput = mounted.container.querySelector(`input[name="micro-quiz-practice-0"][value="${bank[0].answer}"]`);
+    choiceInput.focus(); choose(0, bank[0].answer, true);
+    act(() => vi.runOnlyPendingTimers()); expect(document.activeElement).toBe(choiceInput);
+    click('Return to quiz results');
+    const all = button('All questions (15)'); all.focus(); click(all);
+    act(() => vi.runOnlyPendingTimers()); expect(document.activeElement).toBe(all);
+    click('Practice missed questions');
+    const download = captureQuizDownload(), trigger = button('Download quiz evidence'); trigger.focus(); click(trigger);
+    act(() => vi.runOnlyPendingTimers()); expect(document.activeElement).toBe(trigger);
+    expect(download.revokeUrl).toHaveBeenCalledOnce();
   });
 });

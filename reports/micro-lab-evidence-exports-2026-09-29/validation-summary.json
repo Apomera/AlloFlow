@@ -1,0 +1,38 @@
+{
+  "date": "2026-09-29",
+  "sourceFile": "stem_lab/stem_tool_microbiology.js",
+  "sourceSha256": "f9280e6bc97a316f6c7b167fd504a0413d8f22dd2a53bacb77460eb06fb27683",
+  "unit": {
+    "passed": 320,
+    "failed": 0,
+    "files": 13,
+    "report": "unit-results.json",
+    "priorRuns": [],
+    "note": "The final consolidated focused regression run passes. Earlier attempt reports, if any, are retained."
+  },
+  "browser": {
+    "passed": 20,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "project": "chromium",
+    "report": "browser-results.json",
+    "priorRuns": [],
+    "scope": "Resistance comparison downloads, quiz evidence reports, Growth identity and Home recovery, and microscope decimal validation plus saved-work regressions, served from the local working tree."
+  },
+  "interface": {
+    "keys": 1605,
+    "missing": 0,
+    "changedFallbacks": 0,
+    "runtimeMirrored": true,
+    "microbiologyNamespacesMatch": true,
+    "syntaxChecksPassed": true
+  },
+  "visualReview": [
+    "resistance-comparison-export-phone.png",
+    "quiz-evidence-export-phone.png",
+    "growth-recovery-home-phone.png",
+    "microscope-decimal-validation-phone.png"
+  ],
+  "scope": "Micro Lab source, desktop mirror, Micro Lab translation entries, focused tests, and validation artifacts."
+}

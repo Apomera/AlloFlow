@@ -515,12 +515,16 @@
       });
     }
     function validId(value) { return typeof value === 'number' && Number.isInteger(value) && value > 0 && value <= 1000000000; }
+    function retainedRecords(value) {
+      var raw = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+      return (Array.isArray(raw.records) ? raw.records : []).filter(function(item) {
+        return item && typeof item === 'object' && item.evidence && typeof item.evidence === 'object' && !Array.isArray(item.evidence);
+      }).map(function(item) { return { id: item.id, evidence: evidence(item.evidence) }; }).filter(function(item) { return item.evidence.day > 0; }).slice(-MAX_RECORDS);
+    }
     function normalizeNotebook(value) {
       var raw = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
       var used = Object.create(null), reserved = Object.create(null), available = 1;
-      var retained = (Array.isArray(raw.records) ? raw.records : []).filter(function(item) {
-        return item && typeof item === 'object' && item.evidence && typeof item.evidence === 'object' && !Array.isArray(item.evidence);
-      }).map(function(item) { return { id: item.id, evidence: evidence(item.evidence) }; }).filter(function(item) { return item.evidence.day > 0; }).slice(-MAX_RECORDS);
+      var retained = retainedRecords(raw);
       retained.forEach(function(item) { if (validId(item.id)) reserved[item.id] = true; });
       while (reserved[available]) available++;
       var records = retained.map(function(item) {
@@ -531,7 +535,7 @@
       });
       var maximum = records.reduce(function(maximum, item) { return Math.max(maximum, item.id); }, 0);
       return Object.freeze({
-        records: Object.freeze(records), selectedId: validId(raw.selectedId) && used[raw.selectedId] ? raw.selectedId : null,
+        records: Object.freeze(records), selectedId: validId(raw.selectedId) && reserved[raw.selectedId] ? raw.selectedId : null,
         nextId: validId(raw.nextId) && raw.nextId > maximum ? raw.nextId : maximum < 1000000000 ? maximum + 1 : available
       });
     }
@@ -547,12 +551,14 @@
     }
     function normalizeComparison(value, notebookValue) {
       var raw = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-      var records = normalizeNotebook(notebookValue).records;
+      // Restored preferences must refer to an original valid ID, not a number
+      // freshly allocated to repair a different record.
+      var records = retainedRecords(notebookValue);
       function existingId(id) { return validId(id) && records.some(function(item) { return item.id === id; }) ? id : null; }
       return Object.freeze({ aId: existingId(raw.aId), bId: existingId(raw.bId) });
     }
     function compare(value, pairValue) {
-      var notebook = normalizeNotebook(value), pair = normalizeComparison(pairValue, notebook);
+      var notebook = normalizeNotebook(value), pair = normalizeComparison(pairValue, value);
       if (pair.aId === null || pair.bId === null || pair.aId === pair.bId) return null;
       var a = notebook.records.find(function(item) { return item.id === pair.aId; });
       var b = notebook.records.find(function(item) { return item.id === pair.bId; });
@@ -606,8 +612,61 @@
       }
       return rows.map(function(row) { return row.map(cell).join(','); }).join('\r\n');
     }
+    var comparisonModelNote = 'Random teaching model; snapshots may share a run. Differences do not establish which setting caused them. Shared-round counts use the latest round observed in both histories, without extrapolation. Shares are rounded to whole percentages before subtraction; share differences are percentage points. Undefined means no living cells for a share, or an undefined share on either side of its difference. Snapshot endpoint counts are separate. Partial snapshots have no final prediction review; final reviews use each completed or extinct snapshot\'s own endpoint.';
+    function exportComparisonText(value, pairValue) {
+      var result = compare(value, pairValue);
+      if (!result) return null;
+      function share(value) { return value === null ? 'Undefined' : value + '%'; }
+      function delta(value) { return value === null ? 'Undefined' : (value > 0 ? '+' : '') + value; }
+      var settingLabels = { dose: 'Exposure strength', duration: 'Planned rounds', initRes: 'Requested initial resistance' };
+      var a = result.records[0], b = result.records[1], ac = result.counts.a, bc = result.counts.b, diff = result.difference;
+      return ['Micro Lab resistance snapshot comparison',
+        'Snapshot A: Evidence ' + a.id + '; saved history ends at round ' + a.evidence.day,
+        'Snapshot B: Evidence ' + b.id + '; saved history ends at round ' + b.evidence.day,
+        'Shared comparison round: ' + result.sharedRound,
+        'Different saved settings: ' + (result.changedSettings.map(function(key) { return settingLabels[key]; }).join(', ') || 'None'),
+        comparisonModelNote, '',
+        'Measure\tA (Evidence ' + a.id + ')\tB (Evidence ' + b.id + ')\tB - A',
+        ['Sensitive cells', ac.sensitive, bc.sensitive, delta(diff.sensitive)].join('\t'),
+        ['Resistant cells', ac.resistant, bc.resistant, delta(diff.resistant)].join('\t'),
+        ['Total living cells', ac.totalAlive, bc.totalAlive, delta(diff.totalAlive)].join('\t'),
+        ['Resistant share', share(ac.sharePct), share(bc.sharePct), delta(diff.sharePercentagePoints) + (diff.sharePercentagePoints === null ? '' : ' percentage points')].join('\t'),
+        '', 'Original saved snapshots in A, B order', exportText({ records: result.records })].join('\n');
+    }
+    function exportComparisonCSV(value, pairValue) {
+      var result = compare(value, pairValue);
+      if (!result) return null;
+      var headers = ['row_kind', 'comparison_a_id', 'comparison_b_id', 'shared_round', 'evidence_id', 'saved_end_round', 'snapshot_status',
+        'exposure_strength_0_100', 'planned_rounds', 'requested_initial_resistance_pct', 'actual_initial_resistant_cells',
+        'original_prediction', 'selected_explanation', 'explanation_submitted', 'written_evidence',
+        'shared_sensitive_cells', 'shared_resistant_cells', 'shared_total_alive', 'shared_resistant_share_pct_rounded', 'shared_share_difference_percentage_points',
+        'saved_end_sensitive_cells', 'saved_end_resistant_cells', 'saved_end_total_alive', 'saved_end_resistant_share_pct_rounded', 'changed_settings', 'model_note'];
+      function share(value) { return value === null ? 'Undefined' : value; }
+      var rows = result.records.map(function(item, index) {
+        var run = item.evidence, counts = index ? result.counts.b : result.counts.a, last = run.history[run.history.length - 1];
+        return { row_kind: index ? 'snapshot_b' : 'snapshot_a', evidence_id: item.id, saved_end_round: run.day, snapshot_status: run.status,
+          exposure_strength_0_100: run.dose, planned_rounds: run.duration, requested_initial_resistance_pct: run.initRes,
+          actual_initial_resistant_cells: run.history[0].resistant, original_prediction: run.prediction || '', selected_explanation: run.explanation || '',
+          explanation_submitted: run.explanationSubmitted, written_evidence: run.notes,
+          shared_sensitive_cells: counts.sensitive, shared_resistant_cells: counts.resistant, shared_total_alive: counts.totalAlive, shared_resistant_share_pct_rounded: share(counts.sharePct),
+          saved_end_sensitive_cells: last.sensitive, saved_end_resistant_cells: last.resistant, saved_end_total_alive: run.finalAlive, saved_end_resistant_share_pct_rounded: share(run.finalPct) };
+      });
+      rows.push({ row_kind: 'difference_b_minus_a', shared_sensitive_cells: result.difference.sensitive, shared_resistant_cells: result.difference.resistant,
+        shared_total_alive: result.difference.totalAlive, shared_share_difference_percentage_points: share(result.difference.sharePercentagePoints) });
+      function cell(value) {
+        var text = value === undefined ? '' : String(value);
+        if (typeof value === 'string' && /^\s*[=+@-]/.test(text)) text = "'" + text;
+        return '"' + text.replace(/"/g, '""') + '"';
+      }
+      return [headers.map(cell).join(',')].concat(rows.map(function(row) {
+        row.comparison_a_id = result.records[0].id; row.comparison_b_id = result.records[1].id; row.shared_round = result.sharedRound;
+        row.changed_settings = result.changedSettings.join('; '); row.model_note = comparisonModelNote;
+        return headers.map(function(key) { return cell(row[key]); }).join(',');
+      })).join('\r\n');
+    }
     return Object.freeze({ evidence: evidence, status: function(value) { return evidence(value).status; }, normalizeNotebook: normalizeNotebook,
-      save: save, normalizeComparison: normalizeComparison, compare: compare, exportText: exportText, exportCSV: exportCSV, maxRecords: MAX_RECORDS });
+      save: save, normalizeComparison: normalizeComparison, compare: compare, exportText: exportText, exportCSV: exportCSV,
+      exportComparisonText: exportComparisonText, exportComparisonCSV: exportComparisonCSV, maxRecords: MAX_RECORDS });
   })();
   window.__MicrobiologyCore = { getResistanceKillProbabilities: getResistanceKillProbabilities, classifyResistanceTrend: classifyResistanceTrend, evaluateResistancePrediction: evaluateResistancePrediction, evaluateResistanceExplanation: evaluateResistanceExplanation, createResistancePopulation: createResistancePopulation, normalizeResistanceInvestigation: normalizeResistanceInvestigation };
   window.__MicrobiologyCore.resistance = MicroResistanceNotebook;
@@ -651,7 +710,11 @@
     var es = R.useState(restored.explanation); var explanation = es[0]; var setExplanation = es[1];
     var notesState = R.useState(restored.notes); var notes = notesState[0]; var setNotes = notesState[1];
     var notebookNoticeState = R.useState(''); var notebookNotice = notebookNoticeState[0]; var setNotebookNotice = notebookNoticeState[1];
-    var notebook = MicroResistanceNotebook.normalizeNotebook(props.d && props.d.resistanceNotebook);
+    var comparisonNoticeState = R.useState(''); var comparisonNotice = comparisonNoticeState[0]; var setComparisonNotice = comparisonNoticeState[1];
+    var rawNotebook = props.d && props.d.resistanceNotebook;
+    var notebook = MicroResistanceNotebook.normalizeNotebook(rawNotebook);
+    var comparisonPair = MicroResistanceNotebook.normalizeComparison(props.d && props.d.resistanceComparison, rawNotebook);
+    R.useEffect(function() { setComparisonNotice(''); }, [comparisonPair.aId, comparisonPair.bId]);
     var notebookFocusRef = R.useRef(null);
     R.useEffect(function() {
       if (!notebookFocusRef.current) return;
@@ -761,7 +824,14 @@
     var currentSignature = JSON.stringify(currentEvidence);
     var matchingEvidence = notebook.records.find(function(item) { return JSON.stringify(item.evidence) === currentSignature; });
     var selectedEvidence = notebook.records.find(function(item) { return item.id === notebook.selectedId; });
-    function updateNotebook(value) { if (typeof props.upd === 'function') props.upd({ resistanceNotebook: MicroResistanceNotebook.normalizeNotebook(value) }); }
+    function updateNotebook(value, explicitPair) {
+      var nextNotebook = MicroResistanceNotebook.normalizeNotebook(value), patch = { resistanceNotebook: nextNotebook };
+      if (explicitPair !== undefined || (props.d && props.d.resistanceComparison !== undefined)) {
+        patch.resistanceComparison = MicroResistanceNotebook.normalizeComparison(explicitPair === undefined ? comparisonPair : explicitPair, nextNotebook);
+      }
+      if (typeof props.upd === 'function') props.upd(patch);
+      setComparisonNotice('');
+    }
     function saveEvidence() {
       var result = MicroResistanceNotebook.save(notebook, currentEvidence);
       if (result.status === 'empty' || result.status === 'full') return;
@@ -779,6 +849,26 @@
         document.body.appendChild(link); link.click();
       } catch (error) {
         setNotebookNotice(__alloMBT('stem.microbiology.resistance_notebook_download_failed', 'The download could not start. Your saved evidence is still in this notebook.'));
+      } finally {
+        if (link) link.remove();
+        if (url) setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+      }
+    }
+    function downloadComparison(format) {
+      var result = MicroResistanceNotebook.compare(rawNotebook, comparisonPair);
+      if (!result) return;
+      var link, url;
+      try {
+        var csv = format === 'csv';
+        var contents = csv ? MicroResistanceNotebook.exportComparisonCSV(rawNotebook, comparisonPair) : MicroResistanceNotebook.exportComparisonText(rawNotebook, comparisonPair);
+        if (contents === null) return;
+        url = URL.createObjectURL(new Blob([contents], { type: csv ? 'text/csv;charset=utf-8' : 'text/plain;charset=utf-8' }));
+        link = document.createElement('a'); link.href = url;
+        link.download = 'micro-lab-resistance-comparison-A' + result.records[0].id + '-B' + result.records[1].id + '-round' + result.sharedRound + (csv ? '.csv' : '.txt');
+        document.body.appendChild(link); link.click();
+        setComparisonNotice(__alloMBT('stem.microbiology.resistance_comparison_download_started', 'The comparison download has started.'));
+      } catch (error) {
+        setComparisonNotice(__alloMBT('stem.microbiology.resistance_comparison_download_failed', 'The comparison could not download. Your selected snapshots and current run are unchanged.'));
       } finally {
         if (link) link.remove();
         if (url) setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
@@ -808,15 +898,18 @@
     var notebookButtonStyle = { padding: '9px 12px', minHeight: 42, border: '1px solid #64748b', borderRadius: 7, background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, cursor: 'pointer' };
     function evidenceComparison() {
       function ct(key, fallback) { return __alloMBT('stem.microbiology.resistance_comparison_' + key, fallback); }
-      var pair = MicroResistanceNotebook.normalizeComparison(props.d && props.d.resistanceComparison, notebook);
-      var result = MicroResistanceNotebook.compare(notebook, pair);
+      var pair = comparisonPair;
+      var result = MicroResistanceNotebook.compare(rawNotebook, pair);
       var settingLabels = { dose: ct('strength', 'Exposure strength'), duration: ct('duration', 'Planned rounds'), initRes: ct('requested', 'Requested initial resistance') };
       function selectSnapshot(key, label, id) {
         return hh('div', { key: key, style: { minWidth: 0 } }, hh('label', { htmlFor: id, style: { display: 'block', fontWeight: 700, marginBottom: 5 } }, label),
           hh('select', { id: id, value: pair[key] === null ? '' : pair[key], 'aria-describedby': 'micro-resistance-comparison-status',
             onChange: function(event) {
               var nextPair = Object.assign({}, pair); nextPair[key] = event.target.value === '' ? null : Number(event.target.value);
-              if (typeof props.upd === 'function') props.upd({ resistanceComparison: MicroResistanceNotebook.normalizeComparison(nextPair, notebook) });
+              if (nextPair[key] !== null && MicroResistanceNotebook.normalizeComparison({ aId: nextPair[key] }, rawNotebook).aId === null) {
+                updateNotebook(notebook, nextPair);
+              } else if (typeof props.upd === 'function') props.upd({ resistanceComparison: MicroResistanceNotebook.normalizeComparison(nextPair, notebook) });
+              setComparisonNotice('');
             }, style: Object.assign({}, notebookButtonStyle, { width: '100%', maxWidth: '100%', font: 'inherit' }) },
             hh('option', { value: '' }, ct('choose', 'Choose saved evidence')),
             notebook.records.map(function(item) { return hh('option', { key: item.id, value: item.id }, ct('evidence', 'Evidence') + ' ' + item.id + ' · ' + ct('ends', 'ends at round') + ' ' + item.evidence.day); })));
@@ -838,6 +931,11 @@
         hh('p', { id: 'micro-resistance-comparison-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': true }, result
           ? hh('span', { id: 'micro-resistance-comparison-round' }, ct('comparing_round', 'Comparing round') + ' ' + result.sharedRound + '. ' + ct('shared_round', 'This is the latest round observed in both snapshots.'))
           : hh('span', { id: 'micro-resistance-comparison-unavailable' }, ct('unavailable', 'Choose two different saved evidence records to compare. Missing or removed records are not replaced automatically.'))),
+        hh('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+          hh('button', { id: 'micro-resistance-comparison-download-text', type: 'button', disabled: !result, 'aria-describedby': 'micro-resistance-comparison-export-note', onClick: function() { downloadComparison('text'); }, style: notebookButtonStyle }, ct('download_text', 'Download comparison report')),
+          hh('button', { id: 'micro-resistance-comparison-download-csv', type: 'button', disabled: !result, 'aria-describedby': 'micro-resistance-comparison-export-note', onClick: function() { downloadComparison('csv'); }, style: notebookButtonStyle }, ct('download_csv', 'Download comparison CSV'))),
+        hh('p', { id: 'micro-resistance-comparison-export-note' }, ct('export_note', 'Both downloads identify A, B, and their shared comparison round. The report also includes both complete saved histories. The CSV separates shared-round counts, endpoint counts, and B − A differences.')),
+        hh('p', { id: 'micro-resistance-comparison-export-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': true }, comparisonNotice),
         result ? hh('div', { 'data-resistance-comparison-round': result.sharedRound },
           hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,210px),1fr))', gap: 12 } }, result.records.map(function(item, index) {
             var saved = item.evidence;
@@ -1341,6 +1439,15 @@
       phage: { minMag: 10000, extent: 1.25, radiusFactor: 0.75, padding: 0 }
     };
     function finiteEstimate(value) { return typeof value === 'number' && isFinite(value) && value > 0 && value <= 1000000000; }
+    function parseEstimate(value, unit) {
+      if (typeof value === 'string') {
+        if (!/^-?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(value)) return null;
+        value = Number(value);
+      }
+      if (!finiteEstimate(value) || (unit !== 'um' && unit !== 'nm')) return null;
+      var converted = unit === 'nm' ? value / 1000 : value;
+      return isFinite(converted) && converted > 0 ? value : null;
+    }
     function validContext(context, id) {
       if (!context || typeof context !== 'object' || context.version !== 1 || context.specimen !== id || context.referenceUm !== sizes[id]) return false;
       var levels = context.method === 'em' ? [10000, 50000, 100000] : context.method === 'lightbright' ? [40, 100, 400, 1000] : [];
@@ -1365,7 +1472,7 @@
       return specimenRadius <= 100 && sizes[id] / field * 200 >= 8;
     }
     function normalizeResult(value, id) {
-      return value && finiteEstimate(value.value) && (value.unit === 'um' || value.unit === 'nm') && validResultContext(value.context, id)
+      return value && typeof value.value === 'number' && parseEstimate(value.value, value.unit) !== null && validResultContext(value.context, id)
         ? { value: value.value, unit: value.unit, context: copyContext(value.context) } : null;
     }
     function sameResult(a, b) {
@@ -1388,9 +1495,10 @@
     function pending(entry) {
       if (!entry || !entry.draft || !entry.draft.value.trim()) return false;
       var draft = entry.draft, saved = entry.result;
-      return !saved || Number(draft.value) !== saved.value || draft.unit !== saved.unit || ['method', 'mag', 'zoom'].some(function(key) { return draft.context[key] !== saved.context[key]; });
+      var value = parseEstimate(draft.value, draft.unit);
+      return value === null || !saved || value !== saved.value || draft.unit !== saved.unit || ['method', 'mag', 'zoom'].some(function(key) { return draft.context[key] !== saved.context[key]; });
     }
-    return { sizes: sizes, normalize: normalize, finiteEstimate: finiteEstimate, pending: pending, sameResult: sameResult };
+    return { sizes: sizes, normalize: normalize, finiteEstimate: finiteEstimate, parseEstimate: parseEstimate, pending: pending, sameResult: sameResult };
   })();
   window.__MicrobiologyCore = window.__MicrobiologyCore || {};
   window.__MicrobiologyCore.measurements = MicroMeasurements;
@@ -1460,8 +1568,9 @@
     var measurements = MicroMeasurements.normalize(d.microscopeMeasurements);
     var measurement = measurements[organism] || {};
     var measurementDraft = measurement.draft || { value: '', unit: 'um', context: measurementContext };
-    var estimateValue = Number(measurementDraft.value);
-    var estimateValid = measurementDraft.value.trim() !== '' && finiteEstimate(estimateValue);
+    var estimateValue = MicroMeasurements.parseEstimate(measurementDraft.value, measurementDraft.unit);
+    var estimateValid = estimateValue !== null;
+    var estimateUnderflow = measurementDraft.unit === 'nm' && finiteEstimate(Number(measurementDraft.value)) && Number(measurementDraft.value) / 1000 === 0;
     var draftStale = measurementDraft.value.trim() !== '' && (measurementDraft.context.method !== measurementContext.method || measurementDraft.context.mag !== mag || measurementDraft.context.zoom !== displayZoom);
     var featurePixels = sel.sizeUm / fieldUm * 200;
     var measurementReady = canSee && isFocused && !cropped && featurePixels >= 8;
@@ -1803,7 +1912,7 @@
           ),
           hh('button', { type: 'button', disabled: !measurementReady || !estimateValid || draftStale, onClick: checkMeasurement, style: Object.assign({}, buttonStyle, { minHeight: 38, opacity: !measurementReady || !estimateValid || draftStale ? 0.6 : 1 }) }, __alloMBT('stem.microbiology.measure_check', 'Check and save estimate'))
         ),
-        hh('p', { id: measurementId + '-validation', role: 'status', 'aria-live': 'polite', style: { margin: '7px 0 0', fontSize: 11, lineHeight: 1.6, color: microInk('#fbbf24') } }, measurementDraft.value.trim() !== '' && !estimateValid ? __alloMBT('stem.microbiology.measure_invalid', 'Enter a number greater than 0 and no more than 1,000,000,000.') : draftStale ? __alloMBT('stem.microbiology.measure_stale_draft_resume', 'The view changed after this estimate was started. Resume its working view from the notebook, or start a fresh estimate using the current scale bar.') : ''),
+        hh('p', { id: measurementId + '-validation', role: 'status', 'aria-live': 'polite', style: { margin: '7px 0 0', fontSize: 11, lineHeight: 1.6, color: microInk('#fbbf24') } }, measurementDraft.value.trim() !== '' && !estimateValid ? estimateUnderflow ? __alloMBT('stem.microbiology.measure_underflow', 'This value is too small to remain above zero in micrometers. Enter a larger estimate.') : __alloMBT('stem.microbiology.measure_invalid_decimal', 'Enter a decimal number greater than 0 and no more than 1,000,000,000. Scientific notation is also accepted.') : draftStale ? __alloMBT('stem.microbiology.measure_stale_draft_resume', 'The view changed after this estimate was started. Resume its working view from the notebook, or start a fresh estimate using the current scale bar.') : ''),
         draftStale ? hh('button', { type: 'button', onClick: function() { updateMeasurementDraft('', measurementDraft.unit, true); }, style: Object.assign({}, buttonStyle, { marginTop: 7 }) }, __alloMBT('stem.microbiology.measure_fresh', 'Start estimate for this view')) : null,
         measurementResult ? hh('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 12, padding: 12, borderRadius: 8, background: 'rgba(148,163,184,0.08)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, lineHeight: 1.7 } },
           hh('strong', { style: { color: microInk(resultWithinBand(measurementResult) ? '#6ee7b7' : '#fbbf24') } }, __alloMBT('stem.microbiology.measure_last_result', 'Last saved result') + ' · ' + sel.name + ': ' + (resultWithinBand(measurementResult) ? __alloMBT('stem.microbiology.measure_within', 'within the practice band') : __alloMBT('stem.microbiology.measure_revisit', 'recheck the scale-bar comparison'))),
@@ -2004,24 +2113,26 @@
     }
     function normalizeNotebook(value) {
       var raw = record(value);
-      var used = Object.create(null);
+      var used = Object.create(null), reserved = Object.create(null), originalIds = Object.create(null);
       var inputs = (Array.isArray(raw.trials) ? raw.trials : []).filter(validTrial).slice(-MAX_RECORDS);
       var removed = record(raw.removed), removedId = validTrial(removed.trial) && validId(removed.trial.id) &&
         Number.isInteger(removed.index) && removed.index >= 0 && removed.index < MAX_RECORDS && removed.index <= inputs.length &&
         !inputs.some(function(item) { return item.id === removed.trial.id; }) ? removed.trial.id : null;
-      var nextAvailable = removedId === 1 ? 2 : 1;
+      inputs.forEach(function(item) { if (validId(item.id)) { reserved[item.id] = true; originalIds[item.id] = true; } });
+      if (removedId !== null) reserved[removedId] = true;
+      var nextAvailable = 1;
+      while (reserved[nextAvailable]) nextAvailable++;
       var trials = inputs.map(function (item) {
         var id = validId(item.id) && !used[item.id] ? item.id : nextAvailable;
-        while (used[id] || id === removedId) id++;
         used[id] = true;
-        while (used[nextAvailable] || nextAvailable === removedId) nextAvailable++;
+        while (used[nextAvailable] || reserved[nextAvailable]) nextAvailable++;
         return normalizeTrial(item, id);
       });
       var maxId = trials.reduce(function (maximum, trial) { return Math.max(maximum, trial.id); }, removedId || 0);
       var nextId = validId(raw.nextId) && raw.nextId > maxId ? raw.nextId : maxId < MAX_ID ? maxId + 1 : nextAvailable;
       var control = raw.control && typeof raw.control === 'object' && !Array.isArray(raw.control) ? normalizeConditions(raw.control) : null;
       var notebook = {
-        control: control, trials: Object.freeze(trials), selectedId: validId(raw.selectedId) && used[raw.selectedId] ? raw.selectedId : null,
+        control: control, trials: Object.freeze(trials), selectedId: validId(raw.selectedId) && originalIds[raw.selectedId] ? raw.selectedId : null,
         prediction: prediction(raw.prediction), hypothesis: plainText(raw.hypothesis, 600), explanation: plainText(raw.explanation, 1200), nextId: nextId,
         sweepVariable: sweepVariable(raw.sweepVariable), sweep: normalizeSweep(raw.sweep)
       };
@@ -2177,7 +2288,7 @@
     return h('div', { ref: ownerRef },
       book.selectedId !== null ? h('button', { type: 'button', className: 'micro-growth-remove', 'aria-describedby': removed ? 'gl-removal-policy' : undefined, onClick: function() { change('remove'); } }, gt('remove_trial', 'Remove selected trial')) : null,
       h('p', { id: 'gl-removal-notice', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, className: 'micro-growth-muted' }, notice),
-      removed ? h('section', { id: 'gl-removed-trial', 'aria-labelledby': 'gl-removed-trial-title', className: 'micro-growth-control' },
+      removed ? h('section', { id: 'gl-removed-trial', tabIndex: -1, 'aria-labelledby': 'gl-removed-trial-title', className: 'micro-growth-control' },
         h('h5', { id: 'gl-removed-trial-title', style: { fontSize: 15, margin: '0 0 8px' } }, gt('removal_recover_title', 'Recover removed trial') + ' ' + removed.id),
         h('p', null, props.summary(removed.conditions)),
         h('p', { id: 'gl-removal-policy' }, gt('removal_policy', 'Restore this trial before saving another trial or removing another.')),
@@ -2192,7 +2303,7 @@
         h('button', { id: 'gl-keep-removal', type: 'button', onClick: function() { change('keep'); } }, gt('keep_removal', 'Keep removal'))
       ) : null);
   }
-  var MICRO_GROWTH_CSS = ".micro-growth-workspace{max-width:1180px;margin:0 auto;padding:24px;line-height:1.55;font-size:14px;color:var(--allo-stem-text,#e2e8f0)}\n.micro-growth-workspace *{box-sizing:border-box}.micro-growth-workspace h3{font-size:28px;line-height:1.18;margin:6px 0 12px;letter-spacing:-.5px}.micro-growth-workspace h4{font-size:17px;margin:0 0 16px}.micro-growth-workspace p{margin:8px 0 14px}.micro-growth-intro{max-width:760px}.micro-growth-kicker{font-size:11px;font-weight:800;letter-spacing:1.5px;color:#6ee7b7}.micro-growth-muted{font-size:12px;color:var(--allo-stem-text-soft,#94a3b8)}\n.micro-growth-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:stretch}.micro-growth-card{min-width:0;border:1px solid var(--allo-stem-border,#334155);border-radius:14px;padding:22px;margin:0 0 18px;background:var(--allo-stem-panel,#1e293b)}\n.micro-growth-workspace button{min-height:42px;border:1px solid #475569;border-radius:8px;padding:9px 14px;background:var(--allo-stem-button-bg,#0f172a);color:var(--allo-stem-button-text,#e2e8f0);font:inherit;font-size:13px;line-height:1.4;cursor:pointer}.micro-growth-workspace button:hover{border-color:#6ee7b7}.micro-growth-workspace button:disabled{opacity:.5;cursor:default}.micro-growth-workspace :is(button,input,select,textarea,summary,a):focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}\n.micro-growth-workspace label{display:block;font-weight:650;font-size:13px;margin:12px 0 5px}.micro-growth-workspace textarea,.micro-growth-workspace select{width:100%;border:1px solid #64748b;border-radius:8px;padding:10px;background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text,#e2e8f0);font:inherit;font-size:14px}.micro-growth-workspace textarea{resize:vertical;min-height:88px}.micro-growth-workspace input[type=range]{width:100%;min-height:30px;accent-color:#34d399}.micro-growth-slider label{display:flex;justify-content:space-between;gap:12px}.micro-growth-slider output{color:#6ee7b7;font-variant-numeric:tabular-nums}.micro-growth-workspace .micro-growth-primary{background:#6ee7b7;color:#052e22;border-color:#6ee7b7;font-weight:800;width:100%;margin-top:14px}\n.micro-growth-scenarios{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 24px}.micro-growth-scenarios button{background:#083344;color:#cffafe;border-color:#155e75}.micro-growth-control{border-left:3px solid #7dd3fc;background:var(--allo-stem-canvas,#0f172a);padding:14px;margin:18px 0}.micro-growth-control button{margin:4px 6px 0 0;font-size:12px}.micro-growth-predictions{display:grid;grid-template-columns:1fr 1fr;gap:8px;border:0;padding:0;margin:14px 0}.micro-growth-predictions label{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #475569;border-radius:8px;margin:0;cursor:pointer}.micro-growth-predictions label.selected{border-color:#6ee7b7;background:#064e3b;color:#ecfdf5}.micro-growth-predictions input{accent-color:#34d399;flex-shrink:0}.micro-growth-sr{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}.micro-growth-workspace summary{cursor:pointer;font-weight:650;padding:10px 0}.micro-growth-workspace details ul{padding-left:20px}.micro-growth-empty{min-height:185px;display:grid;place-content:center;text-align:center;max-width:540px;margin:auto;color:#94a3b8}.micro-growth-empty>span{font-size:45px;color:#6ee7b7}\n.micro-growth-result-head{display:flex;flex-wrap:wrap;gap:6px 20px;margin-bottom:16px}.micro-growth-result-head strong{font-size:17px;color:#6ee7b7}.micro-growth-result-head span{font-size:13px}.micro-growth-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}.micro-growth-metrics>div{padding:14px;background:var(--allo-stem-canvas,#0f172a);border-radius:10px}.micro-growth-metrics span{display:block;font-size:12px;color:#cbd5e1}.micro-growth-metrics strong{font-size:30px;font-variant-numeric:tabular-nums;display:block}.micro-growth-design{border-left:3px solid #7dd3fc;padding:10px 14px;background:#0f172a}.micro-growth-design[data-design=confounded]{border-color:#fbbf24}.micro-growth-snapshots{display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:12px;color:#cbd5e1}.micro-growth-figure{margin:16px 0;background:#0b1427;border:1px solid #334155;border-radius:12px;padding:16px}.micro-growth-figure figcaption{font-size:14px;margin-bottom:14px}.micro-growth-figure svg{display:block;width:100%;height:auto}.micro-growth-legend{display:flex;justify-content:center;flex-wrap:wrap;gap:24px;font-size:13px}.micro-growth-legend span:first-child{color:#7dd3fc}.micro-growth-legend span:last-child{color:#6ee7b7}\n.micro-growth-table-wrap{overflow:auto}.micro-growth-workspace table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}.micro-growth-workspace caption{text-align:left;padding:8px}.micro-growth-workspace th,.micro-growth-workspace td{text-align:left;padding:8px 12px;border-bottom:1px solid #475569}.micro-growth-workspace blockquote{margin:16px 0;padding:12px 16px;border-left:3px solid #64748b;background:#0f172a;white-space:pre-wrap;overflow-wrap:anywhere}.micro-growth-notebook-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}.micro-growth-trials{list-style:none;margin:16px 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:10px}.micro-growth-trials button{width:100%;text-align:left;display:grid;gap:4px;overflow-wrap:anywhere}.micro-growth-trials button[aria-pressed=true]{border-color:#6ee7b7;background:#064e3b}.micro-growth-trials span{font-size:12px}.micro-growth-remove{margin-top:8px}.micro-growth-model{padding:18px 6px;font-size:12px;color:#cbd5e1}.micro-growth-model h4{font-size:14px;margin-bottom:8px}.micro-growth-workspace a{color:#7dd3fc;text-underline-offset:3px}\n@media(max-width:700px){.micro-growth-workspace{padding:16px 12px}.micro-growth-grid{grid-template-columns:1fr;gap:0}.micro-growth-card{padding:16px}.micro-growth-workspace h3{font-size:24px}.micro-growth-snapshots,.micro-growth-trials{grid-template-columns:1fr}.micro-growth-figure{padding:10px}.micro-growth-metrics{gap:7px}.micro-growth-metrics>div{padding:10px}.micro-growth-metrics strong{font-size:24px}.micro-growth-metrics span{font-size:11px}.micro-growth-scenarios button{flex:1 1 200px}.micro-growth-predictions{grid-template-columns:1fr}}\n.theme-contrast .micro-growth-workspace{--allo-stem-text-soft:#ffff00}.theme-contrast .micro-growth-workspace :is(p,span,strong,h3,h4,label,output,figcaption,a){color:#ffff00}.theme-contrast .micro-growth-workspace :is(button,.micro-growth-card,.micro-growth-control,.micro-growth-design,.micro-growth-metrics>div,.micro-growth-figure,.micro-growth-predictions label){background:#000;color:#ffff00;border-color:#ffff00}.theme-contrast .micro-growth-workspace button:focus-visible{outline-color:#00ff00}\n";
+  var MICRO_GROWTH_CSS = ".micro-growth-workspace{max-width:1180px;margin:0 auto;padding:24px;line-height:1.55;font-size:14px;color:var(--allo-stem-text,#e2e8f0)}\n.micro-growth-workspace *{box-sizing:border-box}.micro-growth-workspace h3{font-size:28px;line-height:1.18;margin:6px 0 12px;letter-spacing:-.5px}.micro-growth-workspace h4{font-size:17px;margin:0 0 16px}.micro-growth-workspace p{margin:8px 0 14px}.micro-growth-intro{max-width:760px}.micro-growth-kicker{font-size:11px;font-weight:800;letter-spacing:1.5px;color:#6ee7b7}.micro-growth-muted{font-size:12px;color:var(--allo-stem-text-soft,#94a3b8)}\n.micro-growth-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:stretch}.micro-growth-card{min-width:0;border:1px solid var(--allo-stem-border,#334155);border-radius:14px;padding:22px;margin:0 0 18px;background:var(--allo-stem-panel,#1e293b)}\n.micro-growth-workspace button{min-height:42px;border:1px solid #475569;border-radius:8px;padding:9px 14px;background:var(--allo-stem-button-bg,#0f172a);color:var(--allo-stem-button-text,#e2e8f0);font:inherit;font-size:13px;line-height:1.4;cursor:pointer}.micro-growth-workspace button:hover{border-color:#6ee7b7}.micro-growth-workspace button:disabled{opacity:.5;cursor:default}.micro-growth-workspace :is(button,input,select,textarea,summary,a,[tabindex]):focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}\n.micro-growth-workspace label{display:block;font-weight:650;font-size:13px;margin:12px 0 5px}.micro-growth-workspace textarea,.micro-growth-workspace select{width:100%;border:1px solid #64748b;border-radius:8px;padding:10px;background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text,#e2e8f0);font:inherit;font-size:14px}.micro-growth-workspace textarea{resize:vertical;min-height:88px}.micro-growth-workspace input[type=range]{width:100%;min-height:30px;accent-color:#34d399}.micro-growth-slider label{display:flex;justify-content:space-between;gap:12px}.micro-growth-slider output{color:#6ee7b7;font-variant-numeric:tabular-nums}.micro-growth-workspace .micro-growth-primary{background:#6ee7b7;color:#052e22;border-color:#6ee7b7;font-weight:800;width:100%;margin-top:14px}\n.micro-growth-scenarios{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 24px}.micro-growth-scenarios button{background:#083344;color:#cffafe;border-color:#155e75}.micro-growth-control{border-left:3px solid #7dd3fc;background:var(--allo-stem-canvas,#0f172a);padding:14px;margin:18px 0}.micro-growth-control button{margin:4px 6px 0 0;font-size:12px}.micro-growth-predictions{display:grid;grid-template-columns:1fr 1fr;gap:8px;border:0;padding:0;margin:14px 0}.micro-growth-predictions label{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #475569;border-radius:8px;margin:0;cursor:pointer}.micro-growth-predictions label.selected{border-color:#6ee7b7;background:#064e3b;color:#ecfdf5}.micro-growth-predictions input{accent-color:#34d399;flex-shrink:0}.micro-growth-sr{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}.micro-growth-workspace summary{cursor:pointer;font-weight:650;padding:10px 0}.micro-growth-workspace details ul{padding-left:20px}.micro-growth-empty{min-height:185px;display:grid;place-content:center;text-align:center;max-width:540px;margin:auto;color:#94a3b8}.micro-growth-empty>span{font-size:45px;color:#6ee7b7}\n.micro-growth-result-head{display:flex;flex-wrap:wrap;gap:6px 20px;margin-bottom:16px}.micro-growth-result-head strong{font-size:17px;color:#6ee7b7}.micro-growth-result-head span{font-size:13px}.micro-growth-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}.micro-growth-metrics>div{padding:14px;background:var(--allo-stem-canvas,#0f172a);border-radius:10px}.micro-growth-metrics span{display:block;font-size:12px;color:#cbd5e1}.micro-growth-metrics strong{font-size:30px;font-variant-numeric:tabular-nums;display:block}.micro-growth-design{border-left:3px solid #7dd3fc;padding:10px 14px;background:#0f172a}.micro-growth-design[data-design=confounded]{border-color:#fbbf24}.micro-growth-snapshots{display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:12px;color:#cbd5e1}.micro-growth-figure{margin:16px 0;background:#0b1427;border:1px solid #334155;border-radius:12px;padding:16px}.micro-growth-figure figcaption{font-size:14px;margin-bottom:14px}.micro-growth-figure svg{display:block;width:100%;height:auto}.micro-growth-legend{display:flex;justify-content:center;flex-wrap:wrap;gap:24px;font-size:13px}.micro-growth-legend span:first-child{color:#7dd3fc}.micro-growth-legend span:last-child{color:#6ee7b7}\n.micro-growth-table-wrap{overflow:auto}.micro-growth-workspace table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}.micro-growth-workspace caption{text-align:left;padding:8px}.micro-growth-workspace th,.micro-growth-workspace td{text-align:left;padding:8px 12px;border-bottom:1px solid #475569}.micro-growth-workspace blockquote{margin:16px 0;padding:12px 16px;border-left:3px solid #64748b;background:#0f172a;white-space:pre-wrap;overflow-wrap:anywhere}.micro-growth-notebook-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}.micro-growth-trials{list-style:none;margin:16px 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:10px}.micro-growth-trials button{width:100%;text-align:left;display:grid;gap:4px;overflow-wrap:anywhere}.micro-growth-trials button[aria-pressed=true]{border-color:#6ee7b7;background:#064e3b}.micro-growth-trials span{font-size:12px}.micro-growth-remove{margin-top:8px}.micro-growth-model{padding:18px 6px;font-size:12px;color:#cbd5e1}.micro-growth-model h4{font-size:14px;margin-bottom:8px}.micro-growth-workspace a{color:#7dd3fc;text-underline-offset:3px}\n@media(max-width:700px){.micro-growth-workspace{padding:16px 12px}.micro-growth-grid{grid-template-columns:1fr;gap:0}.micro-growth-card{padding:16px}.micro-growth-workspace h3{font-size:24px}.micro-growth-snapshots,.micro-growth-trials{grid-template-columns:1fr}.micro-growth-figure{padding:10px}.micro-growth-metrics{gap:7px}.micro-growth-metrics>div{padding:10px}.micro-growth-metrics strong{font-size:24px}.micro-growth-metrics span{font-size:11px}.micro-growth-scenarios button{flex:1 1 200px}.micro-growth-predictions{grid-template-columns:1fr}}\n.theme-contrast .micro-growth-workspace{--allo-stem-text-soft:#ffff00}.theme-contrast .micro-growth-workspace :is(p,span,strong,h3,h4,label,output,figcaption,a){color:#ffff00}.theme-contrast .micro-growth-workspace :is(button,.micro-growth-card,.micro-growth-control,.micro-growth-design,.micro-growth-metrics>div,.micro-growth-figure,.micro-growth-predictions label){background:#000;color:#ffff00;border-color:#ffff00}.theme-contrast .micro-growth-workspace button:focus-visible{outline-color:#00ff00}\n";
 
   // Fictional evidence cases teach group-level inference, including uncertainty.
   var MicroMystery = (function() {
@@ -2378,9 +2489,82 @@
       normalized = normalized.map(function(answer, i) { return missed.indexOf(i) >= 0 ? answer : null; });
       return { answers: normalized, checked: checked };
     }
-    return { answers: answers, summarize: summarize, practice: practice };
+    function report(value) {
+      var raw = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+      var summary = summarize(raw.quizAnswers), submitted = raw.quizSubmitted === true && summary.missing.length === 0;
+      var practiced = practice(raw.quizPractice, submitted ? summary.missed : []);
+      var practiceCorrect = 0;
+      var questions = QUIZ_QUESTIONS.map(function(q, i) {
+        var original = summary.answers[i], selected = practiced.answers[i], checked = practiced.checked[i];
+        var followUp = null;
+        if (submitted && original !== q.answer) {
+          var status = selected === null ? 'unanswered' : !checked ? 'unchecked' : selected === q.answer ? 'checked-correct' : 'checked-incorrect';
+          if (status === 'checked-correct') practiceCorrect++;
+          followUp = { choice: selected, answer: selected === null ? null : q.choices[selected], status: status };
+        }
+        return { index: i, question: q.q, originalChoice: original, originalAnswer: original === null ? null : q.choices[original],
+          originalStatus: original === null ? 'unanswered' : !submitted ? 'draft' : original === q.answer ? 'correct' : 'incorrect',
+          correctAnswer: submitted ? q.choices[q.answer] : null, explanation: submitted ? q.explain : null, practice: followUp };
+      });
+      return { canDownload: summary.answered > 0, submitted: submitted, answered: summary.answered, total: summary.total,
+        originalScore: submitted ? summary.correct : null, practiceCorrect: practiceCorrect, practiceTotal: submitted ? summary.missed.length : 0, questions: questions };
+    }
+    function exportText(value, translate) {
+      var evidence = report(value), qt = typeof translate === 'function' ? translate : function(key, fallback) { return fallback; };
+      var lines = [qt('export_title', 'Micro Lab · quiz evidence'),
+        qt('export_scope', 'A record of this quiz attempt and its saved practice answers. It is not a measure of overall mastery.'),
+        qt('export_attempt', 'Attempt status') + ': ' + (evidence.submitted ? qt('export_submitted', 'Submitted quiz') : qt('export_draft', 'Unsubmitted or incomplete attempt')),
+        qt('export_answered', 'Recorded answers') + ': ' + evidence.answered + '/' + evidence.total];
+      if (evidence.submitted) lines.push(qt('original_score', 'Original score') + ': ' + evidence.originalScore + '/' + evidence.total,
+        qt('practice_progress', 'Correct after checking in practice') + ': ' + evidence.practiceCorrect + '/' + evidence.practiceTotal,
+        qt('practice_separate', 'Practice keeps your original answers and score unchanged.'));
+      else lines.push(qt('export_draft_note', 'These choices are working answers. Scores, solutions, explanations, and practice outcomes are included only after all questions have valid answers and the quiz is submitted.'));
+      var practiceLabels = {
+        'checked-correct': qt('export_checked_correct', 'Checked correct'), 'checked-incorrect': qt('export_checked_incorrect', 'Checked incorrect'),
+        unchecked: qt('export_unchecked', 'Unchecked practice answer'), unanswered: qt('export_unanswered_practice', 'Unanswered in practice')
+      };
+      evidence.questions.forEach(function(question) {
+        lines.push('', 'Q' + (question.index + 1) + '. ' + question.question,
+          qt('original_answer', 'Original answer') + ': ' + (question.originalAnswer === null ? qt('no_answer', 'No answer recorded') : question.originalAnswer));
+        if (!evidence.submitted) return;
+        lines.push(qt('export_original_result', 'Original result') + ': ' + (question.originalStatus === 'correct' ? qt('correct_original', 'Correct on the original quiz') : qt('needs_review', 'Needs review')),
+          qt('correct_answer', 'Correct answer') + ': ' + question.correctAnswer,
+          qt('export_explanation', 'Explanation') + ': ' + question.explanation);
+        if (question.practice) lines.push(qt('export_practice_answer', 'Practice answer') + ': ' + (question.practice.answer === null ? qt('no_answer', 'No answer recorded') : question.practice.answer),
+          qt('export_practice_status', 'Practice status') + ': ' + practiceLabels[question.practice.status]);
+      });
+      return lines.join('\n');
+    }
+    return { answers: answers, summarize: summarize, practice: practice, report: report, exportText: exportText };
   })();
   window.__MicrobiologyCore.quiz = MicroQuiz;
+
+  function MicroQuizDownload(props) {
+    var React = props.React, h = React.createElement;
+    var noticeState = React.useState(null), notice = noticeState[0], setNotice = noticeState[1];
+    var sequenceRef = React.useRef(0);
+    function download() {
+      if (props.disabled) return;
+      var url, link;
+      try {
+        url = URL.createObjectURL(new Blob([props.text], { type: 'text/plain;charset=utf-8' }));
+        link = document.createElement('a'); link.href = url; link.download = 'micro-lab-quiz-evidence.txt';
+        document.body.appendChild(link); link.click();
+        setNotice({ text: props.text, message: props.started, sequence: ++sequenceRef.current });
+      } catch (error) {
+        setNotice({ text: props.text, message: props.failed, sequence: ++sequenceRef.current });
+      } finally {
+        if (link) link.remove();
+        if (url) setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+      }
+    }
+    return h('div', { className: 'micro-quiz-export' },
+      h('p', { id: 'micro-quiz-export-help', className: 'micro-quiz-note' }, props.help),
+      h('button', { id: 'micro-quiz-download', type: 'button', disabled: props.disabled, onClick: download, 'aria-describedby': 'micro-quiz-export-help' }, props.label),
+      h('p', { id: 'micro-quiz-download-status', className: 'micro-quiz-note', role: 'status', 'aria-live': 'polite', 'aria-atomic': true },
+        notice && notice.text === props.text ? h('span', { key: notice.sequence }, notice.message) : '')
+    );
+  }
 
   var MicroWork = (function() {
     function prefer(ids, active) { return ids.indexOf(active) >= 0 ? active : ids[0]; }
@@ -2415,7 +2599,7 @@
       return {
         mystery: mysteryId === undefined ? null : { kind: mysteryKind, id: mysteryId },
         microscope: slideId === undefined ? null : { kind: 'estimate', id: slideId },
-        growth: trialId === undefined ? null : { kind: 'explanation', id: trialId },
+        growth: growth.removed ? { kind: 'recovery', id: growth.removed.trial.id } : trialId === undefined ? null : { kind: 'explanation', id: trialId },
         gram: { kind: MicroGram.evaluate(raw.gramInvestigation, raw.gramStep).nextStep },
         quiz: quizAction
       };
@@ -2444,7 +2628,7 @@
       var result = {
         mystery: { records: mysteryRecorded, drafts: mysteryDrafts, revisions: mysteryRevisions, active: mysteries.active, started: mysteryRecorded + mysteryDrafts > 0 },
         microscope: { records: measured, drafts: measurementDrafts, started: measured + measurementDrafts > 0 },
-        growth: { records: growth.trials.length, unexplained: growth.trials.filter(function(trial) { return !trial.explanation.trim(); }).length, sweep: !!growth.sweep, control: !!growth.control, legacyNotes: legacyNotes, started: !!(growth.trials.length || growth.sweep || growth.control || growth.prediction || growth.hypothesis.trim() || legacyNotes) },
+        growth: { records: growth.trials.length, unexplained: growth.trials.filter(function(trial) { return !trial.explanation.trim(); }).length, removedId: growth.removed ? growth.removed.trial.id : null, sweep: !!growth.sweep, control: !!growth.control, legacyNotes: legacyNotes, started: !!(growth.removed || growth.trials.length || growth.sweep || growth.control || growth.prediction || growth.hypothesis.trim() || legacyNotes) },
         resistance: { records: resistanceBook.records.length, round: resistance.day, duration: resistance.duration, status: window.__MicrobiologyCore.resistance.status(resistance), started: !!(resistanceBook.records.length || resistance.day || resistance.prediction || resistance.notes) },
         quiz: { answered: quiz.answered, total: quiz.total, submitted: raw.quizSubmitted === true && quiz.missing.length === 0, correct: quiz.correct, missed: quiz.missed.length, practiced: practiced, started: quiz.answered > 0 },
         gram: { step: gram.step, observed: gram.maxStep, recorded: !!gram.record, revision: gramReview.pendingRevision, nextStep: gramReview.nextStep, started: !!(gram.record || gram.maxStep || gram.prediction || gram.interpretation || gram.explanation.trim()) }
@@ -2640,8 +2824,15 @@
             var names = { ecoli: ht('slide_ecoli', 'E. coli'), strep: ht('slide_strep', 'Streptococcus'), parame: ht('slide_parame', 'Paramecium'), plasmo: ht('slide_plasmo', 'Plasmodium'), phage: ht('slide_phage', 'T4 bacteriophage') };
             return { label: ht('review_estimate', 'Review unchecked estimate') + ' · ' + names[next.id], anchor: 'micro-measurement-notebook-' + next.id };
           }
-          if (id === 'growth') return { label: ht('explain_trial', 'Explain saved trial') + ' ' + next.id, anchor: 'gl-explanation',
-            patch: { growthInvestigation: Object.assign({}, objectValue(d.growthInvestigation), { selectedId: next.id }) } };
+          if (id === 'growth' && next.kind === 'recovery') return { label: ht('review_removed_trial', 'Review removed trial') + ' ' + next.id,
+            anchor: work.growth.records >= MicroGrowth.maxRecords ? 'gl-removed-trial' : 'gl-restore-removed' };
+          if (id === 'growth') {
+            var growthPatch = Object.assign({}, objectValue(d.growthInvestigation), { selectedId: next.id });
+            var normalizedGrowth = MicroGrowth.normalizeNotebook(growthPatch);
+            if (normalizedGrowth.selectedId !== next.id) growthPatch.trials = normalizedGrowth.trials;
+            return { label: ht('explain_trial', 'Explain saved trial') + ' ' + next.id, anchor: 'gl-explanation',
+              patch: { growthInvestigation: growthPatch } };
+          }
           if (id === 'gram') {
             var gram = MicroGram.normalize(d.gramInvestigation, d.gramStep);
             var destinations = {
@@ -2684,7 +2875,10 @@
           { id: 'growth', tab: 'growthLab', icon: '📈', title: ht('growth', 'Growth Lab'),
             count: String(work.growth.records), metric: ht('growth_records', 'saved comparison trials'),
             description: ht('growth_prompt', 'Change a condition and compare the result with a saved control.'),
-            detail: work.growth.unexplained ? ht('growth_unexplained', 'Saved trials without a written explanation') + ': ' + work.growth.unexplained : work.growth.sweep ? ht('growth_sweep', 'A variable sweep is saved and ready to review.') : work.growth.control ? ht('growth_control', 'Your control is saved for the next comparison.') : work.growth.legacyNotes ? ht('growth_legacy', 'Notes from the earlier Growth Lab are available to review.') : ht('growth_detail', 'Choose a control and a prediction to begin.'),
+            detail: h('span', null,
+              h('span', null, work.growth.unexplained ? ht('growth_unexplained', 'Saved trials without a written explanation') + ': ' + work.growth.unexplained : work.growth.sweep ? ht('growth_sweep', 'A variable sweep is saved and ready to review.') : work.growth.control ? ht('growth_control', 'Your control is saved for the next comparison.') : work.growth.legacyNotes ? ht('growth_legacy', 'Notes from the earlier Growth Lab are available to review.') : ht('growth_detail', 'Choose a control and a prediction to begin.')),
+              work.growth.removedId !== null ? h('span', { 'data-work-recovery': 'growth', style: { display: 'block', marginTop: 8 } },
+                ht('removed_trial', 'Removed trial') + ' ' + work.growth.removedId + '. ' + ht('growth_recovery', 'Review its recovery before saving another trial or removing another. It is not included in the saved-trial count.')) : null),
             action: ht('open_growth', 'Open growth notebook') },
           { id: 'resistance', tab: 'resistance', icon: '🧫', title: ht('resistance', 'Resistance investigation'),
             count: String(work.resistance.records), metric: ht('resistance_records', 'saved evidence snapshots'),
@@ -6047,11 +6241,20 @@
         var onlyMissed = d.quizReviewOnlyMissed !== false && result.missed.length > 0;
         var practiced = result.missed.filter(function(i) { return practice.checked[i] && practice.answers[i] === QUIZ_QUESTIONS[i].answer; }).length;
         function bestScore() { return Number.isInteger(d.quizBestCorrect) && d.quizBestCorrect >= 0 && d.quizBestCorrect <= result.total ? d.quizBestCorrect : 0; }
+        function cancelDeferredFocus(event) { event.currentTarget.__microQuizFocusRequest = null; }
         function transition(patch, phase) {
+          var priorHeading = document.getElementById('micro-quiz-heading');
+          var owner = priorHeading && priorHeading.closest('[data-micro-quiz]');
+          var request = {};
+          if (owner) owner.__microQuizFocusRequest = request;
           upd(patch);
+          var updateVersion = __alloMBUpdateVersion;
           setTimeout(function() {
             var heading = document.getElementById('micro-quiz-heading');
-            if (heading && heading.getAttribute('data-phase') === phase) {
+            var tab = document.getElementById('micro-tab-quiz');
+            if (updateVersion === __alloMBUpdateVersion && owner && owner.isConnected && owner.__microQuizFocusRequest === request && heading === priorHeading && owner.contains(heading) &&
+              heading.getAttribute('data-phase') === phase && tab && tab.getAttribute('aria-selected') === 'true') {
+              owner.__microQuizFocusRequest = null;
               heading.focus(); if (heading.scrollIntoView) heading.scrollIntoView({ block: 'start', behavior: 'auto' });
             }
           }, 0);
@@ -6094,7 +6297,9 @@
           });
         }
         var shown = done && (practicing || onlyMissed) ? result.missed : QUIZ_QUESTIONS.map(function(_, i) { return i; });
-        return h('section', { className: 'micro-quiz', 'aria-label': qt('region', 'Microbiology quiz and review') },
+        return h('section', { className: 'micro-quiz', 'data-micro-quiz': true, 'aria-label': qt('region', 'Microbiology quiz and review'),
+          onClickCapture: cancelDeferredFocus, onPointerDownCapture: cancelDeferredFocus, onKeyDownCapture: cancelDeferredFocus,
+          onFocusCapture: cancelDeferredFocus, onInputCapture: cancelDeferredFocus, onChangeCapture: cancelDeferredFocus },
           h('style', null, '.micro-quiz{max-width:980px;margin:auto;padding:24px;color:var(--allo-stem-text,#e2e8f0);font-size:14px;line-height:1.65}.micro-quiz *{box-sizing:border-box}.micro-quiz h3{font-size:27px;line-height:1.25;margin:0 0 10px}.micro-quiz h4{font-size:17px;margin:0 0 12px}.micro-quiz p{margin:8px 0 14px}.micro-quiz-header{padding:22px;border-radius:14px;background:var(--allo-stem-panel,#1e293b);border:1px solid #475569;margin-bottom:20px}.micro-quiz-score{font-size:30px;color:#6ee7b7;font-weight:800}.micro-quiz-actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.micro-quiz button{min-height:44px;border:1px solid #64748b;border-radius:8px;background:#0f172a;color:#e2e8f0;padding:9px 14px;font:inherit;font-size:13px;cursor:pointer}.micro-quiz button:disabled{opacity:.5;cursor:default}.micro-quiz button[aria-pressed=true]{background:#083344;border-color:#7dd3fc}.micro-quiz .micro-quiz-primary{background:#6ee7b7;color:#052e22;border-color:#6ee7b7;font-weight:800}.micro-quiz :is(button,input,fieldset):focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}.micro-quiz-card{min-width:0;margin:0 0 18px;padding:20px;border:1px solid #475569;border-radius:12px;background:var(--allo-stem-panel,#1e293b)}.micro-quiz-card legend{padding:0 5px;font-weight:750;font-size:15px}.micro-quiz-choice{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid #475569;border-radius:8px;margin:8px 0;cursor:pointer}.micro-quiz-choice[data-picked=true]{border-color:#6ee7b7;background:#064e3b;color:#ecfdf5}.micro-quiz-choice input{margin:5px 0 0;accent-color:#34d399;flex-shrink:0}.micro-quiz-note{color:var(--allo-stem-text-soft,#94a3b8);font-size:12px}.micro-quiz-feedback{border-left:3px solid #7dd3fc;padding:12px;background:#0f172a}.micro-quiz-feedback[data-correct=true]{border-color:#6ee7b7}.micro-quiz-footer{padding:14px 0}.theme-contrast .micro-quiz :is(p,span,strong,h3,h4,legend){color:#ffff00}.theme-contrast .micro-quiz :is(button,.micro-quiz-card,.micro-quiz-header,.micro-quiz-choice,.micro-quiz-feedback){background:#000;color:#ffff00;border-color:#ffff00}@media(max-width:600px){.micro-quiz{padding:16px 12px}.micro-quiz-card,.micro-quiz-header{padding:16px}.micro-quiz h3{font-size:24px}.micro-quiz-actions button{flex:1 1 160px}}'),
           h('header', { className: 'micro-quiz-header' },
             h('h3', { id: 'micro-quiz-heading', tabIndex: -1, 'data-phase': practicing ? 'practice' : done ? 'review' : 'quiz' }, practicing ? qt('practice_title', 'Practice the questions you missed') : done ? qt('review_title', 'Review your quiz') : qt('title', 'Check your understanding')),
@@ -6114,6 +6319,11 @@
                 result.missing.length > 0 ? h('button', { type: 'button', onClick: function() { focusQuestion(result.missing[0]); } }, qt('next_unanswered', 'Go to next unanswered question')) : null,
                 h('button', { id: 'micro-quiz-submit', type: 'button', className: 'micro-quiz-primary', disabled: result.missing.length > 0, onClick: submit }, qt('submit', 'Submit quiz'))))
           ),
+          h(MicroQuizDownload, { React: React, disabled: !result.answered, text: Q.exportText(d, qt),
+            label: qt('download_evidence', 'Download quiz evidence'),
+            help: qt('export_help', 'Keep a text copy before starting a new quiz. Submitted answers and checked practice stay separate; incomplete attempts contain only your working choices.'),
+            started: qt('export_started', 'The quiz evidence download has started. Your answers and practice were kept.'),
+            failed: qt('export_failed', 'The quiz evidence download could not start. Your answers and practice are still here; try again.') }),
           QUIZ_QUESTIONS.map(function(q, i) {
             if (shown.indexOf(i) < 0) return null;
             var got = answers[i] === q.answer;

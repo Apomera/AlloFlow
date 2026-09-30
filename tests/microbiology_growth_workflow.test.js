@@ -813,4 +813,33 @@ describe('Growth removal recovery workflow', { timeout: 20000 }, () => {
     expect(blobs[2]).toContain('Literal saved evidence</b> 7');
     act(() => vi.runOnlyPendingTimers());
   });
+
+  it('keeps the selected original trial identity through malformed-ID repair, editing, removal, and restoration', () => {
+    const trials = [{ ...trial(2), id: 'bad', explanation: 'Earlier malformed record' }, { ...trial(1), explanation: 'The original Trial 1' }, trial(9)];
+    mount({ growthInvestigation: { trials, selectedId: 1, nextId: 20 }, growthReviewHour: 6 });
+    expect(book().trials.map(item => item.id)).toEqual([2, 1, 9]);
+    expect(mounted.container.querySelector('#gl-explanation').value).toBe('The original Trial 1');
+    write('#gl-explanation', 'Edited original Trial 1');
+    expect(book().trials[0].explanation).toBe('Earlier malformed record');
+    expect(book().trials[1].explanation).toBe('Edited original Trial 1');
+    click('Remove selected trial');
+    expect(book().removed).toMatchObject({ index: 1, trial: { id: 1, explanation: 'Edited original Trial 1' } });
+    click('Restore removed trial');
+    expect(book().trials.map(item => item.id)).toEqual([2, 1, 9]);
+    expect(document.activeElement).toBe(mounted.container.querySelector('#gl-trial-1'));
+    expect(mounted.state.growthReviewHour).toBe(6);
+  });
+
+  it('requires an explicit selection when a stale restored ID matches a newly repaired record', () => {
+    mount({ growthInvestigation: { trials: [{ ...trial(2), id: 'bad', explanation: 'Recovered text' }, trial(1)], selectedId: 2 } });
+    expect(book().selectedId).toBeNull();
+    expect(mounted.container.querySelector('#gl-explanation')).toBeNull();
+    expect(mounted.container.querySelector('#gl-trial-2').getAttribute('aria-pressed')).toBe('false');
+    click(mounted.container.querySelector('#gl-trial-2'));
+    expect(book().selectedId).toBe(2);
+    expect(mounted.container.querySelector('#gl-explanation').value).toBe('Recovered text');
+    write('#gl-explanation', 'Explicitly reviewed recovered text');
+    expect(book().trials[0]).toMatchObject({ id: 2, explanation: 'Explicitly reviewed recovered text' });
+    expect(book().trials[1].explanation).toBe('<b>Literal saved evidence</b> 1');
+  });
 });

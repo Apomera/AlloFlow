@@ -1,0 +1,103 @@
+Micro Lab · quiz evidence
+A record of this quiz attempt and its saved practice answers. It is not a measure of overall mastery.
+Attempt status: Submitted quiz
+Recorded answers: 15/15
+Original score: 12/15
+Correct after checking in practice: 1/3
+Practice keeps your original answers and score unchanged.
+
+Q1. Why are viruses NOT classified as alive by most biologists?
+Original answer: They are made only of minerals, with no carbon-based chemistry at all
+Original result: Needs review
+Correct answer: They can't reproduce without hijacking a host cell's machinery
+Explanation: Viruses can't metabolize, can't reproduce on their own, and have no cellular structure. They're genetic material wrapped in protein, that turns into "alive" behavior only when inside a host cell. Some biologists argue they're a kind of life; others see them as biological chemistry. Either way, they're very different from cells.
+Practice answer: They can't reproduce without hijacking a host cell's machinery
+Practice status: Checked correct
+
+Q2. How does antibiotic resistance evolve?
+Original answer: Random mutations + antibiotic selection: the few resistant survivors multiply
+Original result: Correct on the original quiz
+Correct answer: Random mutations + antibiotic selection: the few resistant survivors multiply
+Explanation: Mutations are random. When antibiotic is present, susceptible bacteria die and resistant survivors live to reproduce. Selection - not learning, not intention - drives resistance. Antibiotic overuse (and use in animal feed) accelerates the process.
+
+Q3. What did a 2016 reference-adult estimate suggest about bacterial and human cell counts?
+Original answer: About 38 trillion bacteria and 30 trillion human cells: the same order of magnitude
+Original result: Correct on the original quiz
+Correct answer: About 38 trillion bacteria and 30 trillion human cells: the same order of magnitude
+Explanation: Sender and colleagues estimated about 38 trillion bacterial cells and 30 trillion human cells for a 70 kg reference adult. The resulting ratio is roughly 1.3 to 1, rather than the widely repeated 10 to 1. These are estimates for a defined reference body, not exact counts for every person; body size and other factors change the totals.
+
+Q4. What is the difference between a bacterium and a virus?
+Original answer: They are two names for the same organisms at different stages of an infection
+Original result: Needs review
+Correct answer: Bacteria are cells with their own machinery; viruses are genetic material that needs a host cell to reproduce
+Explanation: Bacteria are living cells. They have a cell membrane, DNA, ribosomes, and can grow and reproduce on their own (given food). Viruses are not cellular - they are DNA or RNA in a protein shell. To reproduce, they must enter a host cell and hijack the cell's machinery.
+Practice answer: They are two names for the same organisms at different stages of an infection
+Practice status: Checked incorrect
+
+Q5. How does a vaccine work?
+Original answer: Teaches the immune system to recognize a pathogen before you're infected
+Original result: Correct on the original quiz
+Correct answer: Teaches the immune system to recognize a pathogen before you're infected
+Explanation: A vaccine exposes the immune system to a harmless version of part of the pathogen (an inactivated virus, a protein subunit, or - for mRNA vaccines - instructions to make a viral protein). The immune system makes memory cells that recognize the real pathogen if encountered. Vaccines prevent disease; they don't treat existing infection.
+
+Q6. In sourdough bread, what causes the sour flavor AND the rise?
+Original answer: Lactic acid bacteria make the sour; yeast makes the CO₂ that rises the bread
+Original result: Correct on the original quiz
+Correct answer: Lactic acid bacteria make the sour; yeast makes the CO₂ that rises the bread
+Explanation: Sourdough relies on two organisms working together: lactic acid bacteria (Lactobacillus) make the sour by fermenting sugars into lactic acid, and wild yeast makes CO₂ that lifts the dough. Commercial yeast bread skips the bacteria - it rises fast but doesn't develop the sour flavor or the same digestibility.
+
+Q7. What evidence supported John Snow's explanation of the 1854 London cholera outbreak?
+Original answer: He mapped where deaths occurred and investigated which water people drank
+Original result: Correct on the original quiz
+Correct answer: He mapped where deaths occurred and investigated which water people drank
+Explanation: Locations of deaths, drinking-water inquiries, and households using other sources together supported the Broad Street pump-water explanation. Officials removed the handle on September 8, 1854. Snow noted that attacks were already declining before removal, so the subsequent decline alone does not measure the intervention's effect. The investigation is a landmark in epidemiology.
+
+Q8. Why did Fleming's 1928 penicillin discovery take 14+ years to become a usable drug?
+Original answer: Fleming kept the discovery secret and did not publish his results for years
+Original result: Needs review
+Correct answer: Mass production of pure penicillin required years of work by Florey, Chain, Heatley, and a whole team
+Explanation: Fleming's observation in 1928 was important but he could not produce or purify penicillin in any quantity. Howard Florey, Ernst Chain, Norman Heatley, and colleagues at Oxford figured out purification and mass production starting in 1939. US wartime industrial scale-up made it widely available by 1944. Most "discoveries" become real through the work of many.
+Practice answer: Mass production of pure penicillin required years of work by Florey, Chain, Heatley, and a whole team
+Practice status: Unchecked practice answer
+
+Q9. A bacterium is 2 µm long and an animal cell is 20 µm across. How do these linear dimensions compare?
+Original answer: The bacterium is one-tenth as long as the animal cell is wide
+Original result: Correct on the original quiz
+Correct answer: The bacterium is one-tenth as long as the animal cell is wide
+Explanation: Divide 2 µm by 20 µm: the ratio is 1/10. These are illustrative sizes; cell dimensions vary, and a length ratio does not by itself give a volume ratio. Many bacteria can be resolved with a light microscope. Magnification makes the image larger; resolution determines which nearby details can be distinguished.
+
+Q10. What feeds your gut microbiome?
+Original answer: Dietary fiber from plants
+Original result: Correct on the original quiz
+Correct answer: Dietary fiber from plants
+Explanation: Most of your gut microbes ferment fiber that you cannot digest, producing short-chain fatty acids that nourish the colon lining. A diverse plant-rich diet feeds a diverse microbiome. Refined carbohydrates and sugar are absorbed in the small intestine - they don't reach the gut microbes. Probiotic pills are a tiny dose; food is the main intervention.
+
+Q11. How can lactic acid fermentation help preserve foods such as yogurt, sauerkraut, and kimchi?
+Original answer: Lactic acid bacteria lower the pH, inhibiting many unwanted microbes
+Original result: Correct on the original quiz
+Correct answer: Lactic acid bacteria lower the pH, inhibiting many unwanted microbes
+Explanation: Lactic acid bacteria convert sugars into acids. The lower pH can inhibit many unwanted microbes, but fermentation does not sterilize food or guarantee safe storage. Follow a tested food-specific process and storage guidance, including refrigeration when required; fermented sauerkraut is refrigerated or processed using a tested canning method.
+
+Q12. Which organelles have bacterial ancestors, according to endosymbiotic theory?
+Original answer: Mitochondria and chloroplasts
+Original result: Correct on the original quiz
+Correct answer: Mitochondria and chloroplasts
+Explanation: Mitochondria and chloroplasts evolved from bacterial ancestors that became integrated into host cells in separate ancient events. Their DNA and bacterial-like ribosomes are among the evidence. Mitochondria occur in most eukaryotic cells; chloroplasts occur in photosynthetic cells of plants and many algae. These are organelles, not independent microbes living in every cell.
+
+Q13. Genetically, which group are fungi closest to?
+Original answer: Animals
+Original result: Correct on the original quiz
+Correct answer: Animals
+Explanation: Despite looking more plant-like (rooted, can't move), fungi are evolutionary cousins of animals. We share a common ancestor about 1.1 billion years ago - more recent than the split with plants. Fungi have chitin cell walls (like insect exoskeletons), not cellulose. They cannot photosynthesize. They digest externally.
+
+Q14. How many DOMAINS of cellular life do biologists recognize today?
+Original answer: Three (Bacteria, Archaea, Eukarya)
+Original result: Correct on the original quiz
+Correct answer: Three (Bacteria, Archaea, Eukarya)
+Explanation: Carl Woese's 1977 ribosomal RNA work showed Archaea are as different from bacteria as bacteria are from us. The three-domain framework (Bacteria, Archaea, Eukarya) is the foundation of modern biology. Archaea were originally classified with bacteria because they look similar under the microscope, but they are biochemically distinct.
+
+Q15. Why do antibiotics that target the bacterial cell wall (like penicillin) NOT work against viruses?
+Original answer: Viruses do not have cell walls - they have no equivalent target
+Original result: Correct on the original quiz
+Correct answer: Viruses do not have cell walls - they have no equivalent target
+Explanation: Viruses have no cell wall, no ribosomes, no DNA replication machinery of their own - they hijack the host's. They have NO equivalent target for any antibiotic. This is why prescribing antibiotics "just in case" for a viral cold or flu is useless (and accelerates resistance for the bacteria that ARE in your body).

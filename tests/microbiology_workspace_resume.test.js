@@ -131,8 +131,34 @@ describe('Micro Lab next-action projection', () => {
 
   it('uses normalized Growth ids and does not invent an explanation target for unsaved work', () => {
     const growthInvestigation = { selectedId: 1, trials: [null, { conditions: [] }, { id: 8, conditions: {} }, { id: 8, conditions: {} }] };
-    expect(actions({ growthInvestigation }).growth).toEqual({ kind: 'explanation', id: 1 });
+    expect(core().growth.normalizeNotebook(growthInvestigation).selectedId).toBeNull();
+    expect(actions({ growthInvestigation }).growth).toEqual({ kind: 'explanation', id: 8 });
     expect(actions({ growthInvestigation: { control: {}, explanation: 'Unsaved note', sweep: { conditions: {}, variable: 'pH' } }, growthLab: { log: ['old trial'] } }).growth).toBeNull();
+  });
+
+  it('prioritizes Growth recovery over explanations without restoring or changing selected work', () => {
+    const growthInvestigation = freezeDeep({ selectedId: 3, control: {}, prediction: 'lower', nextId: 20, hypothesis: 'Next run draft',
+      trials: [{ id: 3, conditions: {}, explanation: '' }], removed: { trial: { id: 7, conditions: {}, explanation: '' }, index: 0 } });
+    const before = JSON.stringify(growthInvestigation);
+    expect(actions({ growthInvestigation }).growth).toEqual({ kind: 'recovery', id: 7 });
+    expect(actions({ growthInvestigation: JSON.parse(before) }).growth).toEqual({ kind: 'recovery', id: 7 });
+    expect(JSON.stringify(growthInvestigation)).toBe(before);
+    const restored = core().growth.restoreTrial(growthInvestigation).notebook;
+    expect(actions({ growthInvestigation: restored }).growth).toEqual({ kind: 'explanation', id: 7 });
+    const kept = core().growth.keepRemoval(growthInvestigation).notebook;
+    expect(actions({ growthInvestigation: kept }).growth).toEqual({ kind: 'explanation', id: 3 });
+    const saved = core().growth.saveTrial(growthInvestigation, {}).notebook;
+    expect(actions({ growthInvestigation: saved }).growth).toEqual({ kind: 'explanation', id: 20 });
+  });
+
+  it('retains the intended original Growth ID and ignores colliding or orphaned recovery slots', () => {
+    const trials = [{ id: 'bad', conditions: {}, explanation: '' }, { id: 1, conditions: {}, explanation: '' }];
+    expect(actions({ growthInvestigation: { trials, selectedId: 1 } }).growth).toEqual({ kind: 'explanation', id: 1 });
+    expect(actions({ growthInvestigation: { trials, selectedId: 2 } }).growth).toEqual({ kind: 'explanation', id: 2 }); // Canonical first trial, not an accepted stale selection.
+    for (const removed of [{ trial: { id: 1, conditions: {} }, index: 0 }, { trial: { id: 7, conditions: {} }, index: 3 }]) {
+      expect(actions({ growthInvestigation: { trials, selectedId: 1, removed } }).growth).toEqual({ kind: 'explanation', id: 1 });
+    }
+    expect(actions({ growthInvestigation: { removed: { trial: { id: 7, conditions: {} }, index: 0 } } }).growth).toEqual({ kind: 'recovery', id: 7 });
   });
 
   it('projects each Gram inquiry step and keeps independent reports separate from malformed or restarted drafts', () => {

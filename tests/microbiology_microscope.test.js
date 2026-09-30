@@ -585,6 +585,96 @@ describe('Microscope notebook review and export', () => {
   });
 });
 
+describe('Decimal microscope estimates', () => {
+  const context = () => savedMeasurementContext('ecoli', 'lightbright', 1000, 20);
+  const checked = value => ({ value, unit: 'um', context: context() });
+
+  it('accepts decimal and scientific notation while rejecting coerced or out-of-range inputs', () => {
+    for (const [input, expected] of [['2.50', 2.5], ['.2', 0.2], ['2e+3', 2000], ['2E3', 2000], [2, 2], ['1e9', 1e9]]) {
+      expect(measurementsCore.parseEstimate(input, 'um')).toBe(expected);
+    }
+    for (const input of ['', ' ', ' 2 ', '+2', '2.', ' 2e+3 ', '0x2', '0b10', '0o2', '1,000', '2px', '2e', 'Infinity', 'NaN', '0', '-2', '1e10', '1e-999', null, [], {}, true, Infinity, NaN]) {
+      expect(measurementsCore.parseEstimate(input, 'um')).toBe(null);
+    }
+    expect(measurementsCore.parseEstimate('2', 'mm')).toBe(null);
+  });
+
+  it('requires conversion to remain positive without rejecting finite representable scientific estimates', () => {
+    expect(measurementsCore.parseEstimate('5e-324', 'nm')).toBe(null);
+    expect(measurementsCore.parseEstimate(Number.MIN_VALUE, 'nm')).toBe(null);
+    expect(measurementsCore.parseEstimate('5e-324', 'um')).toBe(Number.MIN_VALUE);
+    expect(measurementsCore.parseEstimate('5e-321', 'nm')).toBe(5e-321);
+    expect(measurementsCore.parseEstimate('2e3', 'nm')).toBe(2000);
+  });
+
+  it('rejects underflowed current or previous evidence while preserving an independent working draft', () => {
+    const draft = { value: '5e-324', unit: 'nm', context: context() };
+    const result = checked(2), bad = { value: Number.MIN_VALUE, unit: 'nm', context: context() };
+    const raw = { ecoli: { draft, result: bad, previousResult: result } }, before = JSON.stringify(raw);
+    expect(measurementsCore.normalize(raw)).toEqual({ ecoli: { draft } });
+    expect(measurementsCore.normalize({ ecoli: { draft, result, previousResult: bad } })).toEqual({ ecoli: { draft, result } });
+    expect(measurementsCore.normalize({ ecoli: { draft, result: { ...result, value: '2' } } })).toEqual({ ecoli: { draft } });
+    expect(JSON.stringify(raw)).toBe(before);
+  });
+
+  it('keeps invalid restored decimal drafts pending even if Number coercion matches the checked result', () => {
+    const entry = { draft: { value: '0x2', unit: 'um', context: context() }, result: checked(2) };
+    expect(measurementsCore.pending(entry)).toBe(true);
+    expect(measurementsCore.pending({ ...entry, draft: { ...entry.draft, value: '2e0' } })).toBe(false);
+    expect(measurementsCore.pending({ ...entry, draft: { ...entry.draft, value: '5e-324', unit: 'nm' } })).toBe(true);
+  });
+
+  it('preserves a hexadecimal restored draft and saved history until the learner enters a valid decimal', () => {
+    const entry = { draft: { value: '0x2', unit: 'um', context: context() }, result: checked(2), previousResult: checked(4) };
+    const awards = mount({ microscopeZoom: 20, microscopeFocus: 50, microscopeSeenSlides: ['ecoli'], microscopeMeasurements: { ecoli: entry } });
+    expect(button('Check and save estimate').disabled).toBe(true);
+    expect(container.querySelector('input[type="number"]').getAttribute('aria-invalid')).toBe('true');
+    expect(text()).toContain('Enter a decimal number');
+    expect(latestState.microscopeMeasurements.ecoli).toEqual(entry);
+    click('Check and save estimate');
+    expect(latestState.microscopeMeasurements.ecoli).toEqual(entry);
+    enterEstimate('2e0'); expect(button('Check and save estimate').disabled).toBe(false);
+    click('Check and save estimate');
+    expect(latestState.microscopeMeasurements.ecoli.result).toEqual(entry.result);
+    expect(latestState.microscopeMeasurements.ecoli.previousResult).toEqual(entry.previousResult);
+    expect(awards).not.toHaveBeenCalled();
+  });
+
+  it('blocks nanometer underflow through JSON reload and exports valid evidence after correction', () => {
+    const entry = { draft: { value: '5e-324', unit: 'nm', context: context() }, result: checked(2), previousResult: checked(4) };
+    mount({ microscopeZoom: 20, microscopeFocus: 50, microscopeSeenSlides: ['ecoli'], microscopeMeasurements: { ecoli: entry } });
+    expect(button('Check and save estimate').disabled).toBe(true);
+    expect(text()).toContain('too small to remain above zero in micrometers');
+    const saved = JSON.parse(JSON.stringify(latestState));
+    act(() => root.unmount()); root = null; container.remove(); mount(saved);
+    expect(button('Check and save estimate').disabled).toBe(true);
+    expect(latestState.microscopeMeasurements.ecoli).toEqual(entry);
+    enterEstimate('2e3'); click('Check and save estimate');
+    expect(latestState.microscopeMeasurements.ecoli.result).toEqual({ value: 2000, unit: 'nm', context: context() });
+    expect(latestState.microscopeMeasurements.ecoli.previousResult).toEqual(entry.result);
+    const download = captureNotebookDownload(); vi.useFakeTimers();
+    click('Download measurement notebook');
+    expect(download.contents[0]).toContain('Your estimate: 2000 nm');
+    expect(download.contents[0]).toContain('Estimate converted to micrometers: 2 µm');
+    expect(download.contents[0]).not.toContain('Estimate converted to micrometers: 0 µm');
+    act(() => vi.advanceTimersByTime(1000));
+  });
+
+  it('does not enable checking a restored spelling that the native number field displays as blank', () => {
+    const entry = { draft: { value: '+2', unit: 'um', context: context() }, result: checked(2) };
+    mount({ microscopeZoom: 20, microscopeFocus: 50, microscopeSeenSlides: ['ecoli'], microscopeMeasurements: { ecoli: entry } });
+    for (const value of ['+2', '2.', ' 2 ']) {
+      act(() => updateState({ microscopeMeasurements: { ecoli: { ...entry, draft: { ...entry.draft, value } } } }));
+      expect(container.querySelector('input[type="number"]').value).toBe('');
+      expect(button('Check and save estimate').disabled).toBe(true);
+      expect(latestState.microscopeMeasurements.ecoli.draft.value).toBe(value);
+      expect(latestState.microscopeMeasurements.ecoli.result).toEqual(entry.result);
+    }
+    enterEstimate('2e+0'); expect(container.querySelector('input[type="number"]').value).toBe('2e+0');
+    expect(button('Check and save estimate').disabled).toBe(false);
+  });
+});
+
 describe('Previous checked microscope estimates', () => {
   function entryWithHistory(id = 'ecoli') {
     const context = savedMeasurementContext(id, 'lightbright', 1000, 20);

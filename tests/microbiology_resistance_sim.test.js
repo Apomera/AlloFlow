@@ -22,6 +22,21 @@ function comparisonNotebook() {
   ] };
 }
 
+function readComparisonCSV(csv) {
+  const records = []; let row = [];
+  const cells = [...csv.matchAll(/"((?:[^"]|"")*)"(,|\r\n|$)/g)];
+  expect(cells.map(cell => cell[0]).join('')).toBe(csv);
+  for (const cell of cells) {
+    row.push(cell[1].replace(/""/g, '"'));
+    if (cell[2] !== ',') { records.push(row); row = []; }
+  }
+  const [headers, ...data] = records;
+  return data.map(values => {
+    expect(values).toHaveLength(headers.length);
+    return Object.fromEntries(headers.map((header, index) => [header, values[index]]));
+  });
+}
+
 describe('Microbiology resistance investigation', () => {
   it('models a resistance advantage consistently', () => {
     const probabilities = window.__MicrobiologyCore.getResistanceKillProbabilities;
@@ -273,6 +288,90 @@ describe('Microbiology resistance investigation', () => {
       expect(result.records[0].evidence.notes).toBe('Original A');
     } finally { random.mockRestore(); }
   });
+
+  it('does not resolve missing restored selections or comparison IDs to freshly repaired records', () => {
+    const api = window.__MicrobiologyCore.resistance, book = comparisonNotebook();
+    book.records[0].id = 'bad'; book.selectedId = 1;
+    const pair = { aId: 1, bId: 9 }, before = JSON.stringify(book);
+    const canonical = api.normalizeNotebook(book), safePair = api.normalizeComparison(pair, book);
+    expect(canonical.records.map(record => record.id)).toEqual([1, 9]);
+    expect(canonical.selectedId).toBe(null);
+    expect(safePair).toEqual({ aId: null, bId: 9 });
+    expect(api.compare(book, pair)).toBe(null);
+    expect(api.exportComparisonText(book, pair)).toBe(null);
+    expect(api.exportComparisonCSV(book, pair)).toBe(null);
+    expect(api.compare(JSON.parse(JSON.stringify(canonical)), JSON.parse(JSON.stringify(safePair)))).toBe(null);
+    expect(JSON.stringify(book)).toBe(before);
+  });
+
+  it('exports the chosen A/B snapshots and their shared round separately from endpoint evidence', () => {
+    const api = window.__MicrobiologyCore.resistance, book = comparisonNotebook(), pair = { aId: 4, bId: 9 };
+    book.records.push({ id: 20, evidence: { ...book.records[1].evidence, notes: 'Not in this pair' } });
+    const before = JSON.stringify(book), oldText = api.exportText(book), oldCSV = api.exportCSV(book);
+    const random = vi.spyOn(Math, 'random');
+    try {
+      const text = api.exportComparisonText(book, pair), rows = readComparisonCSV(api.exportComparisonCSV(book, pair));
+      expect(text).toContain('Snapshot A: Evidence 4; saved history ends at round 3');
+      expect(text).toContain('Snapshot B: Evidence 9; saved history ends at round 1');
+      expect(text).toContain('Shared comparison round: 1');
+      expect(text).toContain('Different saved settings: Exposure strength, Planned rounds');
+      expect(text).toContain('Resistant cells\t12\t2\t-10');
+      expect(text).toContain('Resistant share\t50%\t100%\t+50 percentage points');
+      expect(text).toContain('Original prediction: increase');
+      expect(text).toContain('Original prediction: similar');
+      expect(text).toContain('My written evidence: Original A');
+      expect(text).toContain('3\t0\t30\t30\t100%');
+      expect(text).not.toContain('Not in this pair');
+      expect(rows.map(row => row.row_kind)).toEqual(['snapshot_a', 'snapshot_b', 'difference_b_minus_a']);
+      expect(rows[0]).toMatchObject({ evidence_id: '4', shared_round: '1', saved_end_round: '3', snapshot_status: 'completed', exposure_strength_0_100: '60', planned_rounds: '3', requested_initial_resistance_pct: '15', actual_initial_resistant_cells: '12', original_prediction: 'increase', shared_resistant_cells: '12', shared_resistant_share_pct_rounded: '50', saved_end_resistant_cells: '30', saved_end_resistant_share_pct_rounded: '100' });
+      expect(rows[1]).toMatchObject({ evidence_id: '9', saved_end_round: '1', snapshot_status: 'in-progress', planned_rounds: '8', original_prediction: 'similar' });
+      expect(rows[2]).toMatchObject({ evidence_id: '', shared_resistant_cells: '-10', shared_total_alive: '-22', shared_share_difference_percentage_points: '50', shared_resistant_share_pct_rounded: '', saved_end_round: '', saved_end_resistant_cells: '', original_prediction: '' });
+      expect(rows.every(row => row.comparison_a_id === '4' && row.comparison_b_id === '9')).toBe(true);
+      expect(rows[0].model_note).toContain('snapshots may share a run');
+      expect(random).not.toHaveBeenCalled();
+      expect(api.exportText(book)).toBe(oldText); expect(api.exportCSV(book)).toBe(oldCSV);
+      expect(JSON.stringify(book)).toBe(before);
+    } finally { random.mockRestore(); }
+  });
+
+  it('quotes paired CSV notes, protects formulas and retains signed numeric differences', () => {
+    const api = window.__MicrobiologyCore.resistance, book = comparisonNotebook();
+    book.records[0].evidence.notes = '=SUM(A1:A2), "saved"\nSecond line';
+    book.records[1].evidence.notes = '  @formula\nOriginal words';
+    const rows = readComparisonCSV(api.exportComparisonCSV(book, { aId: 4, bId: 9 }));
+    expect(rows[0].written_evidence).toBe("'" + book.records[0].evidence.notes);
+    expect(rows[1].written_evidence).toBe("'" + book.records[1].evidence.notes);
+    expect(rows[2].shared_resistant_cells).toBe('-10');
+    expect(rows[2].shared_share_difference_percentage_points).toBe('50');
+    const reversed = readComparisonCSV(api.exportComparisonCSV(book, { aId: 9, bId: 4 }));
+    expect(reversed[0].evidence_id).toBe('9');
+    expect(reversed[2].shared_resistant_cells).toBe('10');
+    expect(reversed[2].shared_share_difference_percentage_points).toBe('-50');
+  });
+
+  it('exports extinction as undefined without replacing an earlier shared-round share with the endpoint share', () => {
+    const api = window.__MicrobiologyCore.resistance, book = comparisonNotebook(), pair = { aId: 4, bId: 9 };
+    book.records[0].evidence.history = book.records[0].evidence.history.slice(0, 2).concat([{ day: 2, sensitive: 0, resistant: 0 }]);
+    const earlier = readComparisonCSV(api.exportComparisonCSV(book, pair));
+    expect(earlier[0]).toMatchObject({ shared_round: '1', shared_resistant_share_pct_rounded: '50', saved_end_round: '2', snapshot_status: 'extinct', saved_end_resistant_share_pct_rounded: 'Undefined' });
+    expect(earlier[2].shared_share_difference_percentage_points).toBe('50');
+    book.records[1].evidence.history[1] = { day: 1, sensitive: 0, resistant: 0 };
+    const extinct = readComparisonCSV(api.exportComparisonCSV(book, pair));
+    expect(extinct[1]).toMatchObject({ shared_total_alive: '0', shared_resistant_share_pct_rounded: 'Undefined', saved_end_resistant_share_pct_rounded: 'Undefined' });
+    expect(extinct[2].shared_share_difference_percentage_points).toBe('Undefined');
+    expect(api.exportComparisonText(book, pair)).toContain('Resistant share\t50%\tUndefined\tUndefined');
+  });
+
+  it('refuses paired exports for malformed, identical and deleted IDs without selecting replacement evidence', () => {
+    const api = window.__MicrobiologyCore.resistance, book = comparisonNotebook();
+    for (const pair of [null, [], { aId: '4', bId: 9 }, { aId: 4, bId: 4 }, { aId: 4, bId: 500 }]) {
+      expect(api.exportComparisonText(book, pair)).toBe(null);
+      expect(api.exportComparisonCSV(book, pair)).toBe(null);
+    }
+    book.records.shift();
+    expect(api.exportComparisonText(book, { aId: 4, bId: 9 })).toBe(null);
+    expect(api.exportComparisonCSV(book, { aId: 4, bId: 9 })).toBe(null);
+  });
 });
 
 describe('Mounted resistance controls', { timeout: 20000 }, () => {
@@ -366,6 +465,14 @@ describe('Mounted resistance controls', { timeout: 20000 }, () => {
 
   function comparisonCells(metric) {
     return [...container.querySelector(`[data-resistance-compare-row="${metric}"]`).cells].map(cell => cell.textContent);
+  }
+
+  function captureComparisonDownloads() {
+    const blobs = [], files = [];
+    vi.stubGlobal('Blob', class { constructor(parts, options) { this.parts = parts; this.type = options.type; } });
+    vi.stubGlobal('URL', { createObjectURL: vi.fn(blob => { blobs.push(blob); return 'blob:resistance-comparison-' + blobs.length; }), revokeObjectURL: vi.fn() });
+    const anchorClick = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function() { files.push(this.download); });
+    return { blobs, files, anchorClick };
   }
 
   function tab(id) { act(() => container.querySelector('#micro-tab-' + id).click()); }
@@ -761,5 +868,115 @@ describe('Mounted resistance controls', { timeout: 20000 }, () => {
     expect(region.textContent).toContain('Snapshots may come from different rounds of the same run');
     expect(latestData.microbiology.resistanceNotebook).toEqual(notebook);
     expect(region.querySelector('[data-resistance-prediction-review]')).toBe(null);
+  });
+
+  it('downloads the restored pair without changing valid notebook bytes, focus, playback, live evidence, RNG or XP', () => {
+    const notebook = { ...comparisonNotebook(), extraSavedField: 'Preserve this raw field' }, pair = { aId: 4, bId: 9 }, awardXP = vi.fn();
+    const active = { ...notebook.records[1].evidence, dose: 0, notes: 'Current notes are separate' };
+    mount({ resistanceNotebook: notebook, resistanceComparison: pair, resistanceInvestigation: active }, awardXP);
+    const restored = JSON.parse(JSON.stringify(latestData.microbiology));
+    act(() => root.unmount()); root = null; mount(restored, awardXP);
+    openComparison(); click('▶ Play');
+    const before = JSON.stringify(latestData), randomCalls = Math.random.mock.calls.length;
+    const download = captureComparisonDownloads(), api = window.__MicrobiologyCore.resistance;
+    const reportButton = container.querySelector('#micro-resistance-comparison-download-text');
+    expect(reportButton.getAttribute('aria-describedby')).toBe('micro-resistance-comparison-export-note');
+    reportButton.focus(); click('Download comparison report');
+    expect(document.activeElement).toBe(reportButton);
+    const csvButton = container.querySelector('#micro-resistance-comparison-download-csv');
+    csvButton.focus(); click('Download comparison CSV');
+    expect(document.activeElement).toBe(csvButton);
+    expect(download.files).toEqual(['micro-lab-resistance-comparison-A4-B9-round1.txt', 'micro-lab-resistance-comparison-A4-B9-round1.csv']);
+    expect(download.blobs[0].type).toBe('text/plain;charset=utf-8');
+    expect(download.blobs[0].parts.join('')).toBe(api.exportComparisonText(notebook, pair));
+    expect(download.blobs[1].type).toBe('text/csv;charset=utf-8');
+    expect(download.blobs[1].parts.join('')).toBe(api.exportComparisonCSV(notebook, pair));
+    expect(container.querySelector('#micro-resistance-comparison-export-status').textContent).toBe('The comparison download has started.');
+    click('Download resistance CSV');
+    expect(download.files[2]).toBe('micro-lab-resistance-evidence.csv');
+    expect(download.blobs[2].parts.join('')).toBe(api.exportCSV(notebook));
+    expect(JSON.stringify(latestData)).toBe(before);
+    expect(Math.random.mock.calls).toHaveLength(randomCalls);
+    expect(awardXP).not.toHaveBeenCalled();
+    expect(document.querySelector('a[download^="micro-lab-resistance-"]')).toBe(null);
+    act(() => vi.advanceTimersByTime(1000));
+    expect(URL.revokeObjectURL).toHaveBeenCalledTimes(3);
+    expect(latestData.microbiology.resistanceInvestigation.day).toBe(2);
+    expect(latestData.microbiology.resistanceNotebook).toEqual(notebook);
+  });
+
+  it.each(['review', 'save', 'remove'])('clears missing repaired-ID preferences before a %s notebook mutation and JSON reload', action => {
+    const notebook = comparisonNotebook(); notebook.records[0].id = 'bad'; notebook.selectedId = action === 'remove' ? 9 : 1;
+    const active = { ...notebook.records[1].evidence, notes: 'A distinct current run' };
+    mount({ resistanceNotebook: notebook, resistanceComparison: { aId: 1, bId: 9 }, resistanceInvestigation: active });
+    const region = openComparison();
+    expect(container.querySelector('#micro-resistance-compare-a').value).toBe('');
+    expect(container.querySelector('#micro-resistance-comparison-download-text').disabled).toBe(true);
+    expect(container.querySelector('#micro-resistance-comparison-download-csv').disabled).toBe(true);
+    if (action === 'save') click('Save evidence');
+    else { openNotebook(); if (action === 'remove') click('Remove selected evidence'); else act(() => container.querySelector('#micro-resistance-evidence-9').click()); }
+    expect(latestData.microbiology.resistanceNotebook.records[0].id).toBe(1);
+    expect(latestData.microbiology.resistanceComparison).toEqual({ aId: null, bId: action === 'remove' ? null : 9 });
+    expect(latestData.microbiology.resistanceNotebook.selectedId).toBe(action === 'save' ? 10 : action === 'remove' ? 1 : 9);
+    expect(region.querySelector('#micro-resistance-comparison-table')).toBe(null);
+    const saved = JSON.parse(JSON.stringify(latestData.microbiology));
+    act(() => root.unmount()); root = null; mount(saved);
+    expect(openComparison().querySelector('#micro-resistance-comparison-table')).toBe(null);
+    expect(container.querySelector('#micro-resistance-compare-a').value).toBe('');
+    expect(container.querySelector('#micro-resistance-comparison-download-text').disabled).toBe(true);
+    if (action !== 'remove') {
+      const canonical = JSON.stringify(latestData.microbiology.resistanceNotebook);
+      compareSelect('a', 1);
+      expect(container.querySelector('#micro-resistance-comparison-download-text').disabled).toBe(false);
+      expect(JSON.stringify(latestData.microbiology.resistanceNotebook)).toBe(canonical);
+      expect(latestData.microbiology.resistanceComparison).toEqual({ aId: 1, bId: 9 });
+    }
+  });
+
+  it('establishes repaired record identity only through an explicit choice and clears the stale review selection', () => {
+    const notebook = comparisonNotebook(); notebook.records[0].id = 'bad'; notebook.selectedId = 1;
+    mount({ resistanceNotebook: notebook, resistanceComparison: { aId: 1, bId: 9 } });
+    openComparison();
+    expect(container.querySelector('[data-resistance-evidence]')).toBe(null);
+    expect(container.querySelector('#micro-resistance-compare-a').value).toBe('');
+    expect(latestData.microbiology.resistanceNotebook).toEqual(notebook);
+    compareSelect('a', 1);
+    expect(latestData.microbiology.resistanceNotebook.selectedId).toBe(null);
+    expect(latestData.microbiology.resistanceNotebook.records.map(record => record.id)).toEqual([1, 9]);
+    expect(latestData.microbiology.resistanceComparison).toEqual({ aId: 1, bId: 9 });
+    expect(comparisonCells('resistant')).toEqual(['Resistant cells', '12', '2', '-10']);
+    const saved = JSON.parse(JSON.stringify(latestData.microbiology));
+    act(() => root.unmount()); root = null; mount(saved);
+    expect(container.querySelector('#micro-resistance-compare-a').value).toBe('1');
+    expect(latestData.microbiology.resistanceNotebook.selectedId).toBe(null);
+    expect(comparisonCells('resistant')).toEqual(['Resistant cells', '12', '2', '-10']);
+  });
+
+  it('reports paired download failures, cleans up links and URLs, and clears feedback when the pair changes', () => {
+    mount({ resistanceNotebook: comparisonNotebook(), resistanceComparison: { aId: 4, bId: 9 } });
+    openComparison();
+    const before = JSON.stringify(latestData), randomCalls = Math.random.mock.calls.length;
+    const download = captureComparisonDownloads();
+    URL.createObjectURL.mockImplementationOnce(() => { throw new Error('Object URLs unavailable'); });
+    const button = container.querySelector('#micro-resistance-comparison-download-csv'); button.focus();
+    click('Download comparison CSV');
+    expect(document.activeElement).toBe(button);
+    expect(container.querySelector('#micro-resistance-comparison-export-status').textContent).toBe('The comparison could not download. Your selected snapshots and current run are unchanged.');
+    expect(URL.revokeObjectURL).not.toHaveBeenCalled();
+    download.anchorClick.mockImplementationOnce(() => { throw new Error('Download blocked'); });
+    click('Download comparison report');
+    expect(document.querySelector('a[download^="micro-lab-resistance-comparison-"]')).toBe(null);
+    act(() => vi.advanceTimersByTime(1000));
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:resistance-comparison-1');
+    click('Download comparison CSV');
+    expect(container.querySelector('#micro-resistance-comparison-export-status').textContent).toBe('The comparison download has started.');
+    expect(JSON.stringify(latestData)).toBe(before);
+    expect(Math.random.mock.calls).toHaveLength(randomCalls);
+    compareSelect('a', 9);
+    expect(container.querySelector('#micro-resistance-comparison-export-status').textContent).toBe('');
+    expect(container.querySelector('#micro-resistance-comparison-download-csv').disabled).toBe(true);
+    const calls = URL.createObjectURL.mock.calls.length;
+    click('Download comparison CSV');
+    expect(URL.createObjectURL.mock.calls).toHaveLength(calls);
   });
 });

@@ -178,4 +178,33 @@ describe('Micro Lab saved-work overview', { timeout: 20000 }, () => {
     expect(button('Hide topic library').getAttribute('aria-expanded')).toBe('true');
     expect(mounted.container.querySelectorAll('[role="tab"]')).toHaveLength(19);
   });
+
+  it('surfaces a removed-only Growth notebook as work to revisit without counting the removed trial as saved', () => {
+    const seed = { growthInvestigation: { trials: [], selectedId: null, removed: { trial: { id: 7, conditions: {}, explanation: 'Recover this evidence.' }, index: 0 }, nextId: 20 } };
+    const before = JSON.stringify(seed), summary = core().work.summarize(seed);
+    expect(summary.growth).toMatchObject({ records: 0, unexplained: 0, removedId: 7, started: true });
+    expect(summary.started).toBe(1);
+    mount(seed);
+    const card = mounted.container.querySelector('[data-work-card="growth"]');
+    expect(mounted.container.querySelector('#micro-workspace-title').textContent).toBe('Continue your investigations');
+    expect(card.querySelector('.micro-workspace-status').textContent).toBe('Work to revisit');
+    expect(card.querySelector('strong').textContent).toBe('0');
+    expect(card.querySelector('[data-work-recovery="growth"]').textContent).toContain('Removed trial 7.');
+    expect(card.querySelector('[data-work-recovery="growth"]').textContent).toContain('not included in the saved-trial count');
+    expect(card.querySelector('[data-work-next="growth"]').textContent).toBe('Review removed trial 7');
+    expect(JSON.stringify(seed)).toBe(before);
+  });
+
+  it('keeps pending explanations visible alongside recovery and ignores malformed removal data', () => {
+    const growthInvestigation = { trials: [{ id: 3, conditions: {}, explanation: '' }], selectedId: 3,
+      removed: { trial: { id: 7, conditions: {}, explanation: 'Prior evidence' }, index: 1 } };
+    mount({ growthInvestigation });
+    const card = mounted.container.querySelector('[data-work-card="growth"]');
+    expect(card.querySelector('strong').textContent).toBe('1');
+    expect(card.textContent).toContain('Saved trials without a written explanation: 1');
+    expect(card.querySelector('[data-work-next="growth"]').textContent).toBe('Review removed trial 7');
+    for (const removed of [null, { trial: { id: 7, conditions: [] }, index: 0 }, { trial: { id: 7, conditions: {} }, index: 2 }]) {
+      expect(core().work.summarize({ growthInvestigation: { removed } }).growth).toMatchObject({ records: 0, removedId: null, started: false });
+    }
+  });
 });

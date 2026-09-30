@@ -92,6 +92,66 @@ describe('Micro Lab contextual Home navigation', { timeout: 20000 }, () => {
     expect(mounted.state.growthReviewHour).toBe(6); expect(mounted.state.growthLab).toEqual(seed.growthLab);
   });
 
+  it('opens removed-only Growth recovery after JSON reload without restoring until explicitly requested', () => {
+    const growthInvestigation = { trials: [], selectedId: null, nextId: 20, removed: { trial: { id: 7, conditions: {}, control: null, prediction: 'lower', hypothesis: 'Original reasoning', explanation: '' }, index: 0 } };
+    mount({ growthInvestigation });
+    const restored = JSON.parse(JSON.stringify(mounted.state));
+    act(() => mounted.root.unmount()); mounted.container.remove(); mounted = null; mount(restored);
+    expect(node('[data-work-next="growth"]').textContent).toBe('Review removed trial 7');
+    open('growth');
+    expect(document.activeElement.id).toBe('gl-restore-removed');
+    expect(mounted.state.growthInvestigation).toEqual(growthInvestigation);
+    expect(node('.micro-growth-trials')).toBeNull();
+    click('#gl-restore-removed');
+    expect(document.activeElement.id).toBe('gl-trial-7');
+    expect(mounted.state.growthInvestigation.trials[0]).toMatchObject(growthInvestigation.removed.trial);
+    expect(mounted.state.growthInvestigation).not.toHaveProperty('removed');
+    click('#micro-tab-home');
+    expect(node('[data-work-next="growth"]').textContent).toBe('Explain saved trial 7');
+    expect(node('[data-work-recovery="growth"]')).toBeNull();
+  });
+
+  it('prioritizes the recovery decision while preserving the selected unfinished trial, settings, drafts, sweep, and hour', () => {
+    const growthInvestigation = { selectedId: 3, nextId: 20, control: { profile: 'ecoli', tempC: 30, pH: 7, oxygen: 100 }, prediction: 'lower', hypothesis: 'Next question', explanation: 'Next note',
+      sweepVariable: 'pH', sweep: { variable: 'oxygen', conditions: {} }, trials: [{ id: 3, conditions: {}, control: {}, explanation: '' }],
+      removed: { trial: { id: 7, conditions: {}, explanation: 'Keep available' }, index: 1 } };
+    const seed = { growthInvestigation, growthReviewHour: 6, growthLab: { profile: 'thermus', tempC: 70, pH: 7.5, oxygen: 100, hypothesis: 'Earlier notes' } };
+    mount(seed); open('growth');
+    expect(document.activeElement.id).toBe('gl-restore-removed');
+    for (const [key, value] of Object.entries(seed)) expect(mounted.state[key], key).toEqual(value);
+    expect(node('#gl-saved-result').getAttribute('data-micro-growth-result')).toBe('3');
+    click('#gl-keep-removal'); click('#micro-tab-home');
+    expect(node('[data-work-next="growth"]').textContent).toBe('Explain saved trial 3');
+    expect(node('[data-work-card="growth"]').textContent).toContain('Saved trials without a written explanation: 1');
+    expect(mounted.state.growthReviewHour).toBe(6);
+    expect(mounted.state.growthLab).toEqual(seed.growthLab);
+  });
+
+  it('focuses the recovery panel when an imported full notebook cannot restore without replacing a record', () => {
+    const growthInvestigation = { trials: Array.from({ length: 12 }, (_, index) => ({ id: index + 1, conditions: {}, explanation: '' })), selectedId: 3,
+      removed: { trial: { id: 20, conditions: {} }, index: 4 }, nextId: 21 };
+    mount({ growthInvestigation }); open('growth');
+    expect(document.activeElement).toBe(node('#gl-removed-trial'));
+    expect(node('#gl-removed-trial').tabIndex).toBe(-1);
+    expect(node('#gl-restore-removed').disabled).toBe(true);
+    expect(mounted.state.growthInvestigation).toEqual(growthInvestigation);
+  });
+
+  it('makes an explicitly chosen repaired trial selectable without attaching a stale restored selection automatically', () => {
+    const growthInvestigation = { trials: [{ id: 'bad', conditions: {}, explanation: '' }, { id: 1, conditions: {}, explanation: 'Already explained.' }],
+      selectedId: 2, nextId: 20, control: { tempC: 30 }, prediction: 'lower', hypothesis: 'Preserved draft' };
+    mount({ growthInvestigation, growthReviewHour: 6 });
+    expect(window.__MicrobiologyCore.growth.normalizeNotebook(growthInvestigation).selectedId).toBeNull();
+    expect(node('[data-work-next="growth"]').textContent).toBe('Explain saved trial 2');
+    open('growth');
+    expect(document.activeElement.id).toBe('gl-explanation');
+    expect(node('#gl-saved-result').getAttribute('data-micro-growth-recovered')).toBe('2');
+    expect(mounted.state.growthInvestigation.trials.map(trial => trial.id)).toEqual([2, 1]);
+    expect(mounted.state.growthInvestigation.trials[1].explanation).toBe('Already explained.');
+    for (const field of ['control', 'prediction', 'hypothesis', 'nextId']) expect(mounted.state.growthInvestigation[field]).toEqual(growthInvestigation[field]);
+    expect(mounted.state.growthReviewHour).toBe(6);
+  });
+
   const savedGram = { prediction: 'both', interpretation: 'wall', explanation: 'The models separate at decolorization.' };
   it.each([
     ['prediction', {}, 'micro-gram-prediction-thick'],

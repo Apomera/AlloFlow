@@ -585,13 +585,41 @@ describe('Growth notebook removal recovery', () => {
     expect(removed.removed.trial).toEqual(original.trials[0]);
   });
 
-  it('excludes removed evidence from review, export, and Home progress until it is restored', () => {
+  it('excludes removed evidence from active review, export, and Home counts until it is restored', () => {
     const removed = growth.removeTrial({ trials: [trial(7)], selectedId: 7 }, 7).notebook;
     expect(growth.reviewNotebook(removed).rows).toEqual([]);
     expect(growth.csv(removed)).not.toContain('Saved evidence 7');
     expect(growth.reviewCSV(removed, 6)).not.toContain('Saved evidence 7');
     expect(window.__MicrobiologyCore.work.summarize({ growthInvestigation: removed }).growth.records).toBe(0);
-    expect(window.__MicrobiologyCore.work.nextActions({ growthInvestigation: removed }).growth).toBeNull();
+    expect(window.__MicrobiologyCore.work.nextActions({ growthInvestigation: removed }).growth).toEqual({ kind: 'recovery', id: 7 });
     expect(growth.csv(growth.restoreTrial(removed).notebook)).toContain('Saved evidence 7');
+  });
+
+  it('reserves every retained original ID and the recovery ID before repairing earlier malformed or duplicate IDs', () => {
+    const raw = { trials: [{ ...trial(3), id: 'bad', explanation: 'Malformed first' }, { ...trial(1), explanation: 'Original one' },
+      { ...trial(1), explanation: 'Duplicate one' }, trial(4)], selectedId: 1, removed: { trial: trial(2), index: 0 }, nextId: 20 };
+    const before = JSON.stringify(raw), notebook = growth.normalizeNotebook(raw);
+    expect(notebook.trials.map(item => [item.id, item.explanation])).toEqual([[3, 'Malformed first'], [1, 'Original one'], [5, 'Duplicate one'], [4, 'Saved evidence 4']]);
+    expect(notebook).toMatchObject({ selectedId: 1, nextId: 20, removed: { trial: { id: 2 } } });
+    expect(growth.normalizeNotebook(JSON.parse(JSON.stringify(notebook)))).toEqual(notebook);
+    expect(JSON.stringify(raw)).toBe(before);
+    const removed = growth.removeTrial(notebook, 1).notebook;
+    expect(removed.removed).toMatchObject({ index: 1, trial: { id: 1, explanation: 'Original one' } });
+    const restored = growth.restoreTrial(removed).notebook;
+    expect(restored.trials).toEqual(notebook.trials);
+    expect(restored.selectedId).toBe(1);
+  });
+
+  it('does not bind stale restored selections to repaired IDs or IDs belonging only to discarded records', () => {
+    const raw = { trials: [{ ...trial(2), id: 'bad' }, trial(1)], selectedId: 2 };
+    const normalized = growth.normalizeNotebook(raw);
+    expect(normalized.trials.map(item => item.id)).toEqual([2, 1]);
+    expect(normalized.selectedId).toBeNull();
+    expect(growth.normalizeNotebook({ ...normalized, selectedId: 2 }).selectedId).toBe(2); // Explicit selection after normalization is valid.
+    const restored = growth.normalizeNotebook({ trials: [{ ...trial(1), explanation: 'Discarded oldest' }, { ...trial(1), id: 'bad', explanation: 'Retained repaired record' }, ...Array.from({ length: 11 }, (_, i) => trial(i + 2)), { id: 50, conditions: [] }], selectedId: 1 });
+    expect(restored.trials.map(item => item.id)).toEqual(Array.from({ length: 12 }, (_, i) => i + 1));
+    expect(restored.trials[0].explanation).toBe('Retained repaired record');
+    expect(restored.selectedId).toBeNull();
+    expect(restored.nextId).toBe(13);
   });
 });
