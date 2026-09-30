@@ -1,0 +1,395 @@
+{
+  "pass": 18,
+  "status": "validated",
+  "result": "Segmented crab models and hinged clam valves with integrated growth relief",
+  "units": {
+    "passed": 46,
+    "failed": 0,
+    "aggregation": "41 unchanged cases retained from the integrated batch; all five clam cases refreshed after the exterior vertex-tone polish. No duplicate cases counted.",
+    "integrated": {
+      "passed": 46,
+      "evidence": "unit-results.json",
+      "runtimeSha256": "2dcee36d493e93731d662c15b76bd1ae1b17aaccfd4a56e72a221497fab33fee"
+    },
+    "finalClamRefresh": {
+      "passed": 5,
+      "evidence": "unit-tone-results.json",
+      "runtimeSha256": "cb495bf9259bef7d1bf2bb832aa02af83a3058dd8b874a3f345ab49672df0f54"
+    },
+    "initialClam": {
+      "passed": 4,
+      "failed": 1,
+      "evidence": "unit-clam-results.json",
+      "resolution": "21 rim-only shading-normal failures per valve. Duplicate only valid rim shading vertices, preserving all physical positions/colors/faces/hinges. The strict winding/closure tests now pass."
+    },
+    "testTimeoutMs": 30000,
+    "files": [
+      {
+        "file": "cephalopodlab_canvas_focus_a11y.test.js",
+        "passed": 4
+      },
+      {
+        "file": "cephalopodlab_clam_geometry.test.js",
+        "passed": 5
+      },
+      {
+        "file": "cephalopodlab_crab_geometry.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_den_geometry.test.js",
+        "passed": 4
+      },
+      {
+        "file": "cephalopodlab_kelp_fronds.test.js",
+        "passed": 3
+      },
+      {
+        "file": "cephalopodlab_nautilus_eyes.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_prey_fish.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_prey_memory.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_reef_placement.test.js",
+        "passed": 6
+      }
+    ]
+  },
+  "browser": {
+    "passed": 4,
+    "failed": 0,
+    "flaky": 0,
+    "workers": 1,
+    "retries": 0,
+    "video": "off",
+    "trace": "off",
+    "aggregation": "Two unchanged target/mission cases retained; low/balanced native crab/clam pair rerun after the exterior-tone polish.",
+    "retained": {
+      "runtimeSha256": "2dcee36d493e93731d662c15b76bd1ae1b17aaccfd4a56e72a221497fab33fee",
+      "evidence": "browser-before-tone.json",
+      "cases": [
+        {
+          "title": "target selection never catches a different nearby animal, and repeated catches persist",
+          "durationMs": 14244
+        },
+        {
+          "title": "reef mission requires both foods and a return home, then writes one debrief",
+          "durationMs": 18062
+        }
+      ]
+    },
+    "refreshed": {
+      "runtimeSha256": "cb495bf9259bef7d1bf2bb832aa02af83a3058dd8b874a3f345ab49672df0f54",
+      "evidence": "browser-tone-results.json",
+      "cases": [
+        {
+          "title": "low crab and clam surfaces render natively and preserve drilling, capture and independent resources",
+          "durationMs": 41043
+        },
+        {
+          "title": "balanced crab and clam surfaces render natively and preserve drilling, capture and independent resources",
+          "durationMs": 60810
+        }
+      ]
+    },
+    "checks": [
+      "Real native body, eyestalk, leg, pincer, borrowed shell and both valve draws with actual color bindings",
+      "Static buffers, independent resources, movement, ordinary pause, inspection, reduced motion and resume",
+      "Actual clam partial drilling, cancellation, restart/capture, exactly-once valve disposal and surviving neighbor draw",
+      "Actual red capture without shell drop and hermit capture with conch drop",
+      "Existing target selection, repeated catches, reef mission and one saved return-home debrief",
+      "Phone inspection and teardown cleanup"
+    ]
+  },
+  "visuals": {
+    "captures": [
+      "rock-crab.png",
+      "red-crab.png",
+      "hermit-crab.png",
+      "hermit-shell.png",
+      "clam-closed.png",
+      "clam-side.png",
+      "clam-open.png",
+      "reef.png",
+      "clam-phone.png"
+    ],
+    "errors": [],
+    "warnings": [
+      "[.WebGL-0x444001b4e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x444001b4e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x444001b4e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x444001b4e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    ],
+    "fixture": "visual-fixtures.json",
+    "seed": 2743,
+    "inventory": [
+      "hermit",
+      "hermit",
+      "rock",
+      "red",
+      "rock",
+      "rock",
+      "red",
+      "rock",
+      "rock",
+      "red"
+    ],
+    "review": "Root and independent review accepted crab front/oblique/shell, closed/side/open clam, phone and reef views. Only exterior vertex tones and the opened side camera were polished after the first integrated view set.",
+    "preservation": "All seeded prey positions, phases, subtypes and cameras match the saved baseline; only the opened camera was refreshed in both baseline and final fixtures, with an exact assertion that every other fixture field stayed unchanged.",
+    "discovery": "Seed2741 has rock/red but no hermit;2742 has rock/hermit but no red. The final capture seed2743 has all three. First rock was visually blocked by existing scenery; fixed views select the last actual rock crab instead. No actors/scenery are moved or hidden."
+  },
+  "source": {
+    "runtime": [
+      {
+        "file": "stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "cb495bf9259bef7d1bf2bb832aa02af83a3058dd8b874a3f345ab49672df0f54"
+      },
+      {
+        "file": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "cb495bf9259bef7d1bf2bb832aa02af83a3058dd8b874a3f345ab49672df0f54"
+      },
+      {
+        "file": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "cb495bf9259bef7d1bf2bb832aa02af83a3058dd8b874a3f345ab49672df0f54"
+      },
+      {
+        "file": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "cb495bf9259bef7d1bf2bb832aa02af83a3058dd8b874a3f345ab49672df0f54"
+      }
+    ],
+    "candidateLfSha256": "1409daf3ec5ed1b0480fbf5ff775d5e380d5e7c72941fa0461206da3a5afbc79",
+    "preservedUnstagedWrappersPerTrackedFile": 12,
+    "protectedRegions": [
+      {
+        "name": "complete cephalopod rigs",
+        "byteIdentical": true,
+        "lfSha256": "1d24b50c729633a69f6891e4b2e550928612013798e15400cbb63763fdf8cdc7"
+      },
+      {
+        "name": "fish models and school memory",
+        "byteIdentical": true,
+        "lfSha256": "e42049ee886c1f287a77c8954187b93516b95e90d24eecfdaca8da0582203c7d"
+      },
+      {
+        "name": "reef, plant and particle shader helpers",
+        "byteIdentical": true,
+        "lfSha256": "beb2b4abb7c34e21050c7e7a410e74972e1fe60a2cfb3735272abf43ae00e57d"
+      },
+      {
+        "name": "coral colony geometry",
+        "byteIdentical": true,
+        "lfSha256": "78a82f937791f6ec21df952b711ade2e4a90b544c7dfcf5cb392188ff3455f40"
+      },
+      {
+        "name": "den geometry and placement",
+        "byteIdentical": true,
+        "lfSha256": "2a8c461a53a027c5c788390ff88d9bcec5f1f6758ef779eb165a32044f3fdba5"
+      },
+      {
+        "name": "crab ecology",
+        "byteIdentical": true,
+        "lfSha256": "46af8a740a67bdf15aad527b8bd1b4b9e9c7f88c12ba89ca6a9660161fdf8327"
+      },
+      {
+        "name": "crab spawn sequence and metadata",
+        "byteIdentical": true,
+        "lfSha256": "94ed6b26d15d2947968a562057d69bff87d9525e51122b293b64818fc5489977"
+      },
+      {
+        "name": "crab behavior and animation",
+        "byteIdentical": true,
+        "lfSha256": "89d96314673e4b722c2c30d06e6892835b2f36b57c5f4f8b4d8b40dd6c322ee8"
+      },
+      {
+        "name": "clam drill/cancellation/reward/disposal",
+        "byteIdentical": true,
+        "lfSha256": "d726ff45f387a3c61743754948bdc1e93c9297493d89f392b9cfe28741eaf7bd"
+      }
+    ]
+  },
+  "guardedStages": {
+    "clam": {
+      "guard": "clam visual construction only; exact reverse-byte proof",
+      "source": "a5d94315ea39051461392728ceb2e7edef0d904934d415569d6d7a2968d40b90",
+      "candidate": "89082f581a273797fd98bcc2b52312dc7801d315c5566d252ca2292936ceb51f",
+      "blockBefore": "875d5a631a903f32618ff55a8088453f376991f2553977f587a2ebb299925e13",
+      "blockAfter": "e37aa82d4c1a660413191c47a526f2e18cd7ae8fcf567d5da44102844caf48e1",
+      "protectedOutside": true,
+      "noDiveRandom": true,
+      "contract": {
+        "meshes": 2,
+        "independentMaterials": 2,
+        "helper": "createCLHuntClamValveGeometry(THREE,upper)",
+        "sides": 24,
+        "verticesPerPair": 964,
+        "maximumTrianglesPerPair": 1920,
+        "hingeZ": -0.29
+      },
+      "mode": "candidate",
+      "target": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-eighteen\\clam-candidate.generated.cjs"
+    },
+    "crab": {
+      "mode": "candidate",
+      "guard": "exact crab visual replacement and inserted helper; reverse restores every original byte",
+      "sourceSHA": "89082f581a273797fd98bcc2b52312dc7801d315c5566d252ca2292936ceb51f",
+      "candidateSHA": "c909d909e7fbebfae20415809645ef8d7fe8b597bcd460fa0f3d84cd7276eef7",
+      "outsideRegionsUnchanged": true,
+      "staticGeometry": true,
+      "resources": [
+        {
+          "type": "rock",
+          "meshes": 11,
+          "materials": 11,
+          "vertices": 813,
+          "triangles": 1360,
+          "bytes": 37428,
+          "minArea": 0.00000173204888301136,
+          "maxNormalError": 4.687789467716641e-8
+        },
+        {
+          "type": "red",
+          "meshes": 11,
+          "materials": 11,
+          "vertices": 813,
+          "triangles": 1360,
+          "bytes": 37428,
+          "minArea": 0.0000022906319338769546,
+          "maxNormalError": 4.025318989242521e-8
+        },
+        {
+          "type": "hermit",
+          "meshes": 15,
+          "materials": 15,
+          "vertices": 1308,
+          "triangles": 2232,
+          "bytes": 60480,
+          "minArea": 0.0000014029570336133332,
+          "maxNormalError": 4.026665023637577e-8
+        }
+      ],
+      "originalStockBudgets": {
+        "rock": {
+          "vertices": 399,
+          "triangles": 368
+        },
+        "red": {
+          "vertices": 399,
+          "triangles": 368
+        },
+        "hermit": {
+          "vertices": 657,
+          "triangles": 736
+        }
+      },
+      "geometryKinds": [
+        "body",
+        "eye",
+        "leg",
+        "claw",
+        "shell"
+      ],
+      "candidatePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-eighteen\\crab-candidate.generated.cjs"
+    },
+    "rim": {
+      "guard": "exact authored helper, normal construction and reverse bytes; duplicate only referenced clam rim shading vertices",
+      "source": "c909d909e7fbebfae20415809645ef8d7fe8b597bcd460fa0f3d84cd7276eef7",
+      "candidate": "2dcee36d493e93731d662c15b76bd1ae1b17aaccfd4a56e72a221497fab33fee",
+      "helperBefore": "91a56d536781cd56b79f9f0e3071df02bedec23c2d82d5f5ba9d7e1827545b41",
+      "blockBefore": "8d3bdb260bf448620d80e892b4044b97d2153047fcb5f69769744fbd9567caba",
+      "blockAfter": "61dbd07cdd7b83bdcaab72c3c94d5387044628f7866ea5b603a81dbfc922485f",
+      "protectedOutside": true,
+      "positionsAndColorsCopiedExactly": true,
+      "facesAndPhysicalClosurePreserved": true,
+      "maximumAddedVerticesPerValve": 48,
+      "mode": "candidate",
+      "target": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-eighteen\\clam-rim-candidate.generated.cjs"
+    },
+    "tone": {
+      "source": "2dcee36d493e93731d662c15b76bd1ae1b17aaccfd4a56e72a221497fab33fee",
+      "candidate": "cb495bf9259bef7d1bf2bb832aa02af83a3058dd8b874a3f345ab49672df0f54",
+      "target": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-eighteen\\clam-tone-candidate.generated.cjs",
+      "scope": "Two exterior clam vertex-tone strings only",
+      "allOtherSourceBytesExact": true,
+      "noGeometryHingeMaterialOrBehaviorChange": true
+    }
+  },
+  "resources": {
+    "before": {
+      "crabs": {
+        "rock": {
+          "meshes": 11,
+          "materials": 11,
+          "vertices": 399,
+          "triangles": 368,
+          "bufferBytes": 14976
+        },
+        "red": {
+          "meshes": 11,
+          "materials": 11,
+          "vertices": 399,
+          "triangles": 368,
+          "bufferBytes": 14976
+        },
+        "hermit": {
+          "meshes": 15,
+          "materials": 15,
+          "vertices": 657,
+          "triangles": 736,
+          "bufferBytes": 25440
+        }
+      },
+      "clam": {
+        "meshes": 5,
+        "materials": 4,
+        "vertices": 321,
+        "triangles": 464,
+        "bufferBytes": 13056
+      }
+    },
+    "after": {
+      "crabs": {
+        "rock": {
+          "meshes": 11,
+          "materials": 11,
+          "vertices": 813,
+          "triangles": 1360,
+          "bufferBytes": 37428
+        },
+        "red": {
+          "meshes": 11,
+          "materials": 11,
+          "vertices": 813,
+          "triangles": 1360,
+          "bufferBytes": 37428
+        },
+        "hermit": {
+          "meshes": 15,
+          "materials": 15,
+          "vertices": 1308,
+          "triangles": 2232,
+          "bufferBytes": 60480
+        }
+      },
+      "clam": {
+        "meshes": 2,
+        "materials": 2,
+        "vertices": 1052,
+        "triangles": 1908,
+        "bufferBytes": 49320
+      }
+    }
+  },
+  "limits": [
+    "Crab variants and borrowed shells are illustrative, without specimen-specific shape or articulated joints. Extra true-crab legs share the inherited final-slot gait.",
+    "The lower clam remains half buried; sand obscures part of its cavity. The opened side view makes the thin hinge readable.",
+    "Additional static geometry and vertex colors increase buffer/triangle costs; fewer clam draws are not an FPS benchmark.",
+    "Native draw checks and stills do not establish temporal shimmer or displaced-vertex GPU readback."
+  ]
+}

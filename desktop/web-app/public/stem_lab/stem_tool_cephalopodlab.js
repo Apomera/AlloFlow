@@ -12568,62 +12568,200 @@ function createCLHuntFish(T,index){
           hermit: { score: 2, hunger: 32, fleeMul: 0.55, sizeMul: 0.9, color: 0xa07840, clawColor: 0xc4955a, legColor: 0x806030, dropShelter: 'conch' },
         };
         var crabs = [];
+        function createCLHuntCrabGeometry(T, kind, options) {
+          // All surfaces are built once in the crab's frame, then returned to the unchanged child frame.
+          var opt=options||{},sm=opt.sm||1,side=opt.side||1,row=opt.row||0,type=opt.type||'rock',piece=opt.piece||0;
+          var positions=[],colors=[],indices=[],parts=[],contacts=[],anchor=[0,0,0],rotationX=0,rotationZ=0,legacyScale=[1,1,1];
+          var tint=new T.Color(opt.color===undefined?0xa54a30:opt.color).convertSRGBToLinear();
+          var shellTint=new T.Color(0xe8c4a8).convertSRGBToLinear(),shellDark=new T.Color(0x392b21).convertSRGBToLinear();
+          var eyeDark=new T.Color(0x101715).convertSRGBToLinear();
+          function colorAt(point,tone,palette){
+            var base=palette||tint,mottle=0.965+0.025*Math.sin(point[0]*41+point[2]*27)+0.018*Math.cos(point[2]*57-point[1]*33);
+            return [base.r*tone*mottle,base.g*tone*mottle,base.b*tone*mottle];
+          }
+          function vertex(point,tone,palette){var at=positions.length/3;positions.push(point[0],point[1],point[2]);var c=colorAt(point,tone===undefined?1:tone,palette);colors.push(c[0],c[1],c[2]);return at;}
+          function begin(name){return {name:name,vertexStart:positions.length/3,indexStart:indices.length};}
+          function finish(part){part.vertexCount=positions.length/3-part.vertexStart;part.indexCount=indices.length-part.indexStart;part.triangleStart=part.indexStart/3;part.triangleCount=part.indexCount/3;parts.push(part);}
+          function face(a,b,c){indices.push(a,b,c);}
+          function scaled(point){return [point[0]*sm,point[1]*sm,point[2]*sm];}
+          function tube(name,pathPoints,radii,segments,tone,palette){
+            var part=begin(name),centers=pathPoints.map(scaled),stride=segments+1,start=positions.length/3;
+            for(var k=0;k<centers.length;k++){
+              var first=centers[Math.max(0,k-1)],last=centers[Math.min(centers.length-1,k+1)];
+              var tangent=new T.Vector3(last[0]-first[0],last[1]-first[1],last[2]-first[2]).normalize();
+              var reference=Math.abs(tangent.y)<0.90?new T.Vector3(0,1,0):new T.Vector3(1,0,0);
+              var across=new T.Vector3().crossVectors(reference,tangent).normalize(),around=new T.Vector3().crossVectors(tangent,across).normalize();
+              var radius=radii[k],width=(Array.isArray(radius)?radius[0]:radius)*sm,depth=(Array.isArray(radius)?radius[1]:radius)*sm;
+              for(var j=0;j<=segments;j++){
+                var angle=j===segments?0:j/segments*Math.PI*2,co=Math.cos(angle),si=Math.sin(angle),center=centers[k];
+                vertex([center[0]+across.x*co*width+around.x*si*depth,center[1]+across.y*co*width+around.y*si*depth,center[2]+across.z*co*width+around.z*si*depth],tone*(0.95+0.05*co),palette);
+              }
+            }
+            for(var k=0;k<centers.length-1;k++)for(var j=0;j<segments;j++){var q=start+k*stride+j,b=q+stride;face(q,q+1,b);face(q+1,b+1,b);}
+            var firstPole=vertex(centers[0],tone,palette),lastPole=vertex(centers[centers.length-1],tone,palette);
+            for(var j=0;j<segments;j++){face(firstPole,start+j+1,start+j);var q=start+(centers.length-1)*stride+j;face(lastPole,q,q+1);}
+            finish(part);
+          }
+          function ellipsoid(name,center,radii,rows,segments,tone,palette){
+            var part=begin(name),start=positions.length/3,stride=segments+1;
+            for(var k=1;k<rows;k++)for(var j=0;j<=segments;j++){
+              var phi=k/rows*Math.PI,angle=j===segments?0:j/segments*Math.PI*2;
+              vertex(scaled([center[0]+radii[0]*Math.sin(phi)*Math.cos(angle),center[1]+radii[1]*Math.cos(phi),center[2]+radii[2]*Math.sin(phi)*Math.sin(angle)]),tone,palette);
+            }
+            for(var k=0;k<rows-2;k++)for(var j=0;j<segments;j++){var q=start+k*stride+j,b=q+stride;face(q,q+1,b);face(q+1,b+1,b);}
+            var top=vertex(scaled([center[0],center[1]+radii[1],center[2]]),tone,palette),bottom=vertex(scaled([center[0],center[1]-radii[1],center[2]]),tone,palette);
+            for(var j=0;j<segments;j++){face(top,start+j+1,start+j);var q=start+(rows-2)*stride+j;face(bottom,q,q+1);}
+            finish(part);
+          }
+          if(kind==='body'){
+            var part=begin('carapace'),segments=16,stride=segments+1;
+            var profile=[[0.103,0.30],[0.063,0.76],[0.015,1.00],[-0.050,0.88],[-0.089,0.43]];
+            for(var k=0;k<profile.length;k++)for(var j=0;j<=segments;j++){
+              var angle=j===segments?0:j/segments*Math.PI*2,co=Math.cos(angle),si=Math.sin(angle),r=profile[k][1];
+              var shoulder=1+0.035*Math.cos(angle*4)*Math.pow(Math.abs(co),2),tooth=k===2?1+0.020*Math.cos(angle*8)*Math.pow(Math.abs(co),4):1;
+              var hermit=type==='hermit',x=co*r*(hermit?0.226:0.297)*shoulder*tooth,z=si*r*(hermit?0.191:0.230)+(hermit?0.045:0);
+              var y=profile[k][0]*(hermit?0.75:1),tone=1-0.10*k/4+0.042*Math.cos(angle*2);
+              vertex(scaled([x,y,z]),tone);
+            }
+            for(var k=0;k<profile.length-1;k++)for(var j=0;j<segments;j++){var q=k*stride+j,b=q+stride;face(q,q+1,b);face(q+1,b+1,b);}
+            var top=vertex(scaled([0,type==='hermit'?0.086:0.117,type==='hermit'?0.045:0]),1.04),bottom=vertex(scaled([0,type==='hermit'?-0.078:-0.108,type==='hermit'?0.045:0]),0.78);
+            for(var j=0;j<segments;j++){face(top,j+1,j);var q=(profile.length-1)*stride+j;face(bottom,q,q+1);}
+            finish(part);
+          }else if(kind==='eye'){
+            anchor=[side*0.12*sm,0.13*sm,0.18*sm];
+            var base=type==='hermit'?[side*0.086,0.029,0.165]:[side*0.105,0.035,0.150];
+            var middle=type==='hermit'?[side*0.112,0.110,0.207]:[side*0.130,0.110,0.183];
+            var cap=type==='hermit'?[side*0.137,0.184,0.249]:[side*0.162,0.174,0.216];
+            tube('eyestalk',[base,middle,cap],[0.017,0.015,0.011],8,0.88);
+            ellipsoid('pupil',cap,[0.027,0.028,0.032],4,8,1,eyeDark);
+            contacts.push({name:'stalk-body',point:scaled(base)},{name:'stalk-eye',point:scaled(cap)});
+          }else if(kind==='leg'){
+            anchor=[side*0.28*sm,-0.05,row*0.16*sm];rotationZ=side*0.9;
+            function walk(number,z,kneeZ,footZ,spread){
+              var points=[[side*(type==='hermit'?(number===0?0.120:0.100):0.175),type==='hermit'?-0.005:-0.013,z],[side*0.280,0.011,z+(kneeZ-z)*0.28],[side*(spread-0.105),0.025,kneeZ],[side*(spread-0.041),-0.047,footZ-(footZ-kneeZ)*0.20],[side*spread,-0.108,footZ]];
+              tube('walking-leg-'+number,points,[[0.024,0.020],[0.031,0.024],[0.025,0.019],[0.014,0.012],[0.003,0.002]],6,0.93);
+              contacts.push({name:'leg-body-'+number,point:scaled(points[0])},{name:'foot-'+number,point:scaled(points[points.length-1])});
+            }
+            if(type==='hermit'&&row===1){
+              var folded=[[side*0.100,-0.006,-0.013],[side*0.183,-0.012,-0.098],[side*0.153,0.012,-0.173]];
+              tube('rear-support-appendage',folded,[0.017,0.014,0.006],6,0.84);contacts.push({name:'support-body',point:scaled(folded[0])});
+            }else if(type==='hermit'){
+              var number=row+1,z=number===0?0.065:0.100,kneeZ=number===0?0.082:0.177,footZ=number===0?0.053:0.238;
+              walk(number,z,kneeZ,footZ,number===0?0.435:0.404);
+            }else{
+              var number=row+1,z=[-0.115,-0.012,0.085][number],kneeZ=[-0.205,-0.055,0.113][number],footZ=[-0.238,-0.085,0.155][number];
+              walk(number,z,kneeZ,footZ,[0.453,0.465,0.454][number]);
+              if(row===1)walk(3,0.130,0.225,0.282,0.395);
+            }
+          }else if(kind==='claw'){
+            anchor=[side*0.32*sm,0,0.22*sm];
+            var shoulder=[side*0.170,-0.008,0.133],elbow=[side*0.245,-0.008,0.209],palm=[side*0.336,0.012,0.244];
+            tube('claw-forearm',[shoulder,elbow,palm],[[0.030,0.026],[0.039,0.032],[0.033,0.030]],8,0.89);
+            ellipsoid('claw-palm',palm,[0.073,0.048,0.060],5,12,1.04);
+            var fixed=[[side*0.378,0.013,0.251],[side*0.411,0.018,0.272],[side*0.430,0.019,0.290],[side*0.430,0.017,0.306],[side*0.418,0.014,0.317]];
+            var moving=[[side*0.303,0.013,0.260],[side*0.320,0.019,0.283],[side*0.343,0.022,0.302],[side*0.370,0.018,0.313],[side*0.383,0.014,0.316]];
+            tube('fixed-finger',fixed,[[0.024,0.022],[0.022,0.019],[0.014,0.013],[0.008,0.007],[0.002,0.002]],6,0.98);
+            tube('movable-finger',moving,[[0.023,0.021],[0.021,0.017],[0.014,0.012],[0.008,0.006],[0.002,0.002]],6,1.07);
+            contacts.push({name:'claw-body',point:scaled(shoulder)},{name:'forearm-palm',point:scaled(palm)},{name:'fixed-palm',point:scaled(fixed[0])},{name:'moving-palm',point:scaled(moving[0])},{name:'fixed-tip',point:scaled(fixed[4])},{name:'moving-tip',point:scaled(moving[4])});
+          }else if(kind==='shell'){
+            if(piece===0){anchor=[0,0.18,-0.05];legacyScale=[1,0.85,1.2];}
+            else{anchor=[0,0.12+(piece-1)*0.06,-0.05];rotationX=Math.PI/2;}
+            var axisY=-0.62,axisZ=Math.sqrt(1-axisY*axisY),cut=0.53,startPhi=Math.acos(cut),segments=24,stride=segments+1;
+            function shellPoint(phi,angle,inside){
+              var circle=Math.sin(phi),nx=circle*Math.cos(angle),ny=axisY*Math.cos(phi)+axisZ*circle*Math.sin(angle),nz=axisZ*Math.cos(phi)-axisY*circle*Math.sin(angle);
+              var turn=Math.atan2(nz,nx),upper=Math.max(0,ny),taper=1-upper*0.34;
+              var ridge=0.006*Math.sin(turn-ny*10.5)*(1-ny*ny),x=nx*(0.192*taper+ridge),y=0.172+ny*0.162,z=-0.049+nz*(0.183*taper+ridge);
+              if(inside){x*=0.955;y=0.172+(y-0.172)*0.955-axisY*0.004;z=-0.049+(z+0.049)*0.955-axisZ*0.004;}
+              return [x,y,z];
+            }
+            if(piece===0||piece===1){
+              var part=begin(piece===0?'shell-body-whorl':'shell-recess'),rows=piece===0?12:5,inside=piece===1;
+              for(var k=0;k<rows;k++)for(var j=0;j<=segments;j++){
+                var angle=j===segments?0:j/segments*Math.PI*2,phi=startPhi+(Math.PI-startPhi)*k/rows,p=shellPoint(phi,angle,inside);
+                var tone=inside?0.95-k/rows*0.42:0.95+0.045*Math.sin(angle-((p[1]-0.172)/0.162)*10.5)+0.040*(p[1]-0.10);
+                vertex(p,tone,inside?shellDark:shellTint);
+              }
+              for(var k=0;k<rows-1;k++)for(var j=0;j<segments;j++){var q=k*stride+j,b=q+stride;if(inside){face(q,q+1,b);face(q+1,b+1,b);}else{face(q,b,q+1);face(q+1,b,b+1);}}
+              var pole=vertex(shellPoint(Math.PI,0,inside),inside?0.53:0.92,inside?shellDark:shellTint);
+              for(var j=0;j<segments;j++){var q=(rows-1)*stride+j;if(inside)face(q,q+1,pole);else face(q,pole,q+1);}
+              finish(part);
+              contacts.push({name:'shell-opening-center',point:[0,0.172+axisY*0.162*cut,-0.049+axisZ*0.183*cut]});
+            }else if(piece===2){
+              var part=begin('shell-aperture-lip'),rows=4;
+              for(var k=0;k<rows;k++)for(var j=0;j<=segments;j++){
+                var angle=j===segments?0:j/segments*Math.PI*2,outer=shellPoint(startPhi,angle,false),inner=shellPoint(startPhi,angle,true),t=k/(rows-1),roll=Math.sin(t*Math.PI)*0.002;
+                vertex([outer[0]+(inner[0]-outer[0])*t,outer[1]+(inner[1]-outer[1])*t+axisY*roll,outer[2]+(inner[2]-outer[2])*t+axisZ*roll],1.06-0.18*t,shellTint);
+              }
+              for(var k=0;k<rows-1;k++)for(var j=0;j<segments;j++){var q=k*stride+j,b=q+stride;face(q,q+1,b);face(q+1,b+1,b);}
+              finish(part);
+            }else{
+              var part=begin('shell-spire'),segments=16,stride=segments+1,profile=[[0.267,0.055],[0.290,0.042],[0.314,0.030],[0.337,0.016]];
+              for(var k=0;k<profile.length;k++)for(var j=0;j<=segments;j++){
+                var angle=j===segments?0:j/segments*Math.PI*2,relief=1+0.055*Math.sin(angle-k*1.65),r=profile[k][1]*relief;
+                vertex([Math.cos(angle)*r,profile[k][0],-0.094+Math.sin(angle)*r],0.94+Math.sin(angle-k*1.65)*0.06,shellTint);
+              }
+              for(var k=0;k<profile.length-1;k++)for(var j=0;j<segments;j++){var q=k*stride+j,b=q+stride;face(q,b,q+1);face(q+1,b,b+1);}
+              var lower=vertex([0,profile[0][0],-0.094],0.86,shellTint),tip=vertex([0,0.354,-0.094],1.0,shellTint);
+              for(var j=0;j<segments;j++){face(lower,j,j+1);var q=(profile.length-1)*stride+j;face(tip,q+1,q);}
+              finish(part);contacts.push({name:'spire-body',point:[0,0.267,-0.094]});
+            }
+          }else{throw new Error('Unknown crab geometry part: '+kind);}
+          // Inverse of the retained local translation, rotation and shell scale. No runtime pose changes.
+          var cosineX=Math.cos(rotationX),sineX=Math.sin(rotationX),cosineZ=Math.cos(rotationZ),sineZ=Math.sin(rotationZ);
+          for(var p=0;p<positions.length;p+=3){
+            var x=positions[p]-anchor[0],y=positions[p+1]-anchor[1],z=positions[p+2]-anchor[2];
+            if(rotationZ){var tx=cosineZ*x+sineZ*y;y=-sineZ*x+cosineZ*y;x=tx;}
+            if(rotationX){var ty=cosineX*y+sineX*z;z=-sineX*y+cosineX*z;y=ty;}
+            positions[p]=x/legacyScale[0];positions[p+1]=y/legacyScale[1];positions[p+2]=z/legacyScale[2];
+          }
+          var geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeVertexNormals();
+          // Average each duplicated angular seam within a primitive; normals stay smooth across its meridian.
+          var attribute=geometry.attributes.position,normal=geometry.attributes.normal;
+          parts.forEach(function(part){
+            var seams=Object.create(null);
+            for(var i=part.vertexStart;i<part.vertexStart+part.vertexCount;i++){
+              var key=attribute.getX(i)+','+attribute.getY(i)+','+attribute.getZ(i);if(!seams[key])seams[key]=[];seams[key].push(i);
+            }
+            Object.keys(seams).forEach(function(key){var members=seams[key];if(members.length<2)return;var nx=0,ny=0,nz=0;members.forEach(function(i){nx+=normal.getX(i);ny+=normal.getY(i);nz+=normal.getZ(i);});var length=Math.hypot(nx,ny,nz);if(length>0)members.forEach(function(i){normal.setXYZ(i,nx/length,ny/length,nz/length);});});
+          });
+          geometry.computeBoundingBox();geometry.computeBoundingSphere();geometry.userData.clCrabParts=parts;
+          geometry.userData.clCrabGeometry={kind:kind,type:type,sm:sm,side:side,row:row,piece:piece,authoredFrame:'crab-root',rootAnchor:anchor,rotationX:rotationX,rotationZ:rotationZ,scale:legacyScale,contacts:contacts};
+          return geometry;
+        }
         function spawnCrab(type) {
           var ctype = CRAB_TYPES[type] ? type : 'rock';
           var cfg = CRAB_TYPES[ctype];
           var crab = new THREE.Group();
           var sm = cfg.sizeMul;
-          var crabBodyGeo = new THREE.SphereGeometry(0.28 * sm, 8, 6);
-          crabBodyGeo.scale(1.1, 0.45, 0.85);
-          var crabBody = new THREE.Mesh(crabBodyGeo,
-            new THREE.MeshStandardMaterial({ color: cfg.color, roughness: 0.7 }));
-          crab.add(crabBody);
-          // Eyes
-          for (var cei = 0; cei < 2; cei++) {
-            var ceye = new THREE.Mesh(new THREE.SphereGeometry(0.05 * sm, 6, 5),
-              new THREE.MeshBasicMaterial({ color: 0x141414 }));
-            ceye.position.set(cei === 0 ? -0.12 * sm : 0.12 * sm, 0.13 * sm, 0.18 * sm);
-            crab.add(ceye);
+          var crabBodyGeo=createCLHuntCrabGeometry(THREE,'body',{sm:sm,type:ctype,color:cfg.color});
+          var crabBody=new THREE.Mesh(crabBodyGeo,new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.7,vertexColors:true}));
+          crabBody.name='cl-crab-body';crab.add(crabBody);
+          // The existing eye slots now contain stalks and a compact embedded dark eye.
+          for(var cei=0;cei<2;cei++){
+            var eyeSide=cei===0?-1:1;
+            var ceye=new THREE.Mesh(createCLHuntCrabGeometry(THREE,'eye',{sm:sm,type:ctype,side:eyeSide,color:cfg.color}),new THREE.MeshBasicMaterial({color:0xffffff,vertexColors:true}));
+            ceye.name='cl-crab-eye-'+cei;ceye.position.set(eyeSide*0.12*sm,0.13*sm,0.18*sm);crab.add(ceye);
           }
-          // 6 legs
-          for (var li = 0; li < 6; li++) {
-            var legSide = li % 2 === 0 ? -1 : 1;
-            var legRow = ((li / 2) | 0) - 1;
-            var legGeo = new THREE.CylinderGeometry(0.02 * sm, 0.02 * sm, 0.32 * sm, 4);
-            var leg = new THREE.Mesh(legGeo,
-              new THREE.MeshStandardMaterial({ color: cfg.legColor, roughness: 0.7 }));
-            leg.position.set(legSide * 0.28 * sm, -0.05, legRow * 0.16 * sm);
-            leg.rotation.z = legSide * 0.9;
-            crab.add(leg);
+          // Keep the same six animated child slots; a true crab's last slot contains two walking legs.
+          for(var li=0;li<6;li++){
+            var legSide=li%2===0?-1:1,legRow=((li/2)|0)-1;
+            var leg=new THREE.Mesh(createCLHuntCrabGeometry(THREE,'leg',{sm:sm,type:ctype,side:legSide,row:legRow,color:cfg.legColor}),new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.7,vertexColors:true}));
+            leg.name='cl-crab-leg-'+li;leg.position.set(legSide*0.28*sm,-0.05,legRow*0.16*sm);leg.rotation.z=legSide*0.9;crab.add(leg);
           }
-          // 2 claws (front)
-          for (var clw = 0; clw < 2; clw++) {
-            var clawSide = clw === 0 ? -1 : 1;
-            var clawGeo = new THREE.SphereGeometry(0.11 * sm, 6, 5);
-            clawGeo.scale(1.4, 0.7, 0.7);
-            var claw = new THREE.Mesh(clawGeo,
-              new THREE.MeshStandardMaterial({ color: cfg.clawColor, roughness: 0.7 }));
-            claw.position.set(clawSide * 0.32 * sm, 0, 0.22 * sm);
-            crab.add(claw);
+          // Smooth palms and two separately tapered fingers leave a visible opening in each pincer.
+          for(var clw=0;clw<2;clw++){
+            var clawSide=clw===0?-1:1;
+            var claw=new THREE.Mesh(createCLHuntCrabGeometry(THREE,'claw',{sm:sm,type:ctype,side:clawSide,color:cfg.clawColor}),new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.7,vertexColors:true}));
+            claw.name='cl-crab-claw-'+clw;claw.position.set(clawSide*0.32*sm,0,0.22*sm);crab.add(claw);
           }
-          // Hermit crabs carry a small shell on their back (visual hint)
-          if (ctype === 'hermit') {
-            var hshellGeo = new THREE.SphereGeometry(0.22, 8, 6);
-            var hshell = new THREE.Mesh(hshellGeo,
-              new THREE.MeshStandardMaterial({ color: 0xe8c4a8, roughness: 0.55 }));
-            hshell.scale.set(1.0, 0.85, 1.2);
-            hshell.position.set(0, 0.18, -0.05);
-            crab.add(hshell);
-            // Spiral ridge
-            for (var hi = 0; hi < 3; hi++) {
-              var hr = new THREE.Mesh(
-                new THREE.TorusGeometry(0.22 - hi * 0.04, 0.014, 4, 12),
-                new THREE.MeshStandardMaterial({ color: 0xc89578 })
-              );
-              hr.position.y = 0.12 + hi * 0.06;
-              hr.position.z = -0.05;
-              hr.rotation.x = Math.PI / 2;
-              crab.add(hr);
+          if(ctype==='hermit'){
+            var shellNames=['cl-hermit-shell-outer','cl-hermit-shell-interior','cl-hermit-shell-lip','cl-hermit-shell-spire'];
+            for(var hp=0;hp<4;hp++){
+              var shellPart=new THREE.Mesh(createCLHuntCrabGeometry(THREE,'shell',{sm:sm,type:ctype,piece:hp}),new THREE.MeshStandardMaterial({color:0xffffff,roughness:hp===0?0.55:1,vertexColors:true}));
+              shellPart.name=shellNames[hp];
+              if(hp===0){shellPart.scale.set(1,0.85,1.2);shellPart.position.set(0,0.18,-0.05);}
+              else{shellPart.position.y=0.12+(hp-1)*0.06;shellPart.position.z=-0.05;shellPart.rotation.x=Math.PI/2;}
+              crab.add(shellPart);
             }
           }
           // Spawn near the player (40-80u away) so respawns stream content
@@ -13754,26 +13892,64 @@ function createCLHuntFish(T,index){
         ];
         CLAM_POSITIONS.forEach(function(pos) {
           var clam = new THREE.Group();
-          // Lower shell (half-buried)
-          var lowerGeo = new THREE.SphereGeometry(0.4, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2);
-          var clamMat = new THREE.MeshStandardMaterial({ color: 0xe6dcc6, roughness: 0.5 });
-          var lower = new THREE.Mesh(lowerGeo, clamMat);
-          lower.rotation.x = Math.PI;
-          lower.position.y = 0;
-          clam.add(lower);
-          // Upper shell (slightly open at top)
-          var upperGeo = new THREE.SphereGeometry(0.4, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2);
-          var upper = new THREE.Mesh(upperGeo, clamMat);
-          upper.position.y = 0.05;
-          clam.add(upper);
-          // Ridges (small lines)
-          for (var crg = 0; crg < 3; crg++) {
-            var ridgeGeo = new THREE.TorusGeometry(0.3 - crg * 0.08, 0.02, 4, 12, Math.PI);
-            var ridge = new THREE.Mesh(ridgeGeo, new THREE.MeshStandardMaterial({ color: 0xc4b89c }));
-            ridge.position.y = 0.02 + crg * 0.06;
-            ridge.rotation.x = Math.PI / 2;
-            clam.add(ridge);
+          // Two closed, hollow valves: growth rings are part of their static shell surface.
+          // The posterior hinge is the unchanged upper child's rotation origin.
+          function createCLHuntClamValveGeometry(THREE,upper){
+            var positions=[],colors=[],indices=[],parts=[],sides=24,hingeZ=-0.29,centerZ=-0.15;
+            var rings=[0.08,0.19,0.28,0.34,0.40,0.45,0.51,0.56,0.62,0.67,0.73,0.78,0.84,0.89,0.95,1],innerRings=[0.18,0.45,0.75,1];
+            var bone=new THREE.Color(0x9e967e).convertSRGBToLinear(),light=new THREE.Color(0xc3b598).convertSRGBToLinear(),edge=new THREE.Color(0x656151).convertSRGBToLinear();
+            var pearl=new THREE.Color(0xc2bfb1).convertSRGBToLinear(),violet=new THREE.Color(0x958794).convertSRGBToLinear(),shade=new THREE.Color();
+            function sample(r,angle,inside,row){
+              var sine=Math.sin(angle),cosine=Math.cos(angle),hingeWeight=Math.max(0,(cosine+0.90)/1.90);
+              var rimX=sine*0.36*(1+0.055*cosine)*(1+0.025*sine),rimZ=cosine<-0.90?hingeZ:0.05+0.34*cosine;
+              var x=rimX*r,z=centerZ+(rimZ-centerZ)*r,bulge=upper?0.19:0.16;
+              var y=(bulge-(inside?0.024:0))*Math.pow(Math.max(0,1-r*r),0.72)*(1-0.08*r*cosine);
+              if(!inside){
+                y+=0.008*hingeWeight*r*r;
+                if(row>=2&&row<rings.length-1)y+=(row%2?-0.002:0.0045)*Math.sin(r*Math.PI)*1.6;
+                shade.copy(bone).lerp(light,(1-r)*0.35).lerp(edge,Math.pow(r,4)*0.18);
+                shade.multiplyScalar((row>=2&&row<rings.length-1?(row%2?0.92:1.075):1)*(1+0.024*Math.sin(angle*3+0.7)*r));
+              }else shade.copy(pearl).lerp(violet,Math.max(0,-cosine-0.25)*r*0.34);
+              if(!upper)y=-y;else z-=hingeZ;
+              if(Math.abs(x)<0.000000000001)x=0;if(Math.abs(y)<0.000000000001)y=0;if(Math.abs(z)<0.000000000001)z=0;
+              positions.push(x,y,z);colors.push(shade.r,shade.g,shade.b);
+            }
+            function face(a,b,c,inside){
+              var ai=a*3,bi=b*3,ci=c*3,ux=positions[bi]-positions[ai],uy=positions[bi+1]-positions[ai+1],uz=positions[bi+2]-positions[ai+2],vx=positions[ci]-positions[ai],vy=positions[ci+1]-positions[ai+1],vz=positions[ci+2]-positions[ai+2];
+              // The rear rim closes to the hinge line, so omit only its zero-area faces.
+              if(Math.hypot(uy*vz-uz*vy,uz*vx-ux*vz,ux*vy-uy*vx)<0.000000000001)return;
+              if(upper!==inside)indices.push(a,b,c);else indices.push(a,c,b);
+            }
+            function surface(radialRows,inside,name){
+              var start=positions.length/3,indexStart=indices.length;sample(0,0,inside,-1);
+              for(var row=0;row<radialRows.length;row++)for(var column=0;column<sides;column++)sample(radialRows[row],column/sides*Math.PI*2,inside,row);
+              for(var column=0;column<sides;column++)face(start,start+1+column,start+1+(column+1)%sides,inside);
+              for(var row=0;row<radialRows.length-1;row++)for(var column=0;column<sides;column++){
+                var a=start+1+row*sides+column,b=start+1+row*sides+(column+1)%sides,c=a+sides,d=b+sides;
+                face(a,c,b,inside);face(b,c,d,inside);
+              }
+              parts.push({name:name,vertexStart:start,vertexCount:positions.length/3-start,indexStart:indexStart,indexCount:indices.length-indexStart});return start;
+            }
+            var exterior=surface(rings,false,'exterior'),interior=surface(innerRings,true,'interior'),rimStart=indices.length;
+            var outerRim=exterior+1+(rings.length-1)*sides,innerRim=interior+1+(innerRings.length-1)*sides;
+            for(var column=0;column<sides;column++){var a=outerRim+column,b=outerRim+(column+1)%sides,c=innerRim+column,d=innerRim+(column+1)%sides;face(a,c,b,false);face(b,c,d,false);}
+            // The thin wall needs its own shading normals. Copy only vertices referenced by
+            // valid rim faces, leaving the closing hinge without unused zero-normal vertices.
+            var rimVertexStart=positions.length/3,rimVertices=Object.create(null);
+            for(var rimIndex=rimStart;rimIndex<indices.length;rimIndex++){
+              var originalVertex=indices[rimIndex];
+              if(rimVertices[originalVertex]===undefined){var at=originalVertex*3;rimVertices[originalVertex]=positions.length/3;positions.push(positions[at],positions[at+1],positions[at+2]);colors.push(colors[at],colors[at+1],colors[at+2]);}
+              indices[rimIndex]=rimVertices[originalVertex];
+            }
+            parts.push({name:'rim',vertexStart:rimVertexStart,vertexCount:positions.length/3-rimVertexStart,indexStart:rimStart,indexCount:indices.length-rimStart});
+            var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();
+            geometry.userData.clClamParts=parts;geometry.userData.clClamValve={upper:upper,hingeZ:hingeZ,hingeColumns:[11,12,13],sides:sides,radialRings:rings.slice(),interiorRings:innerRings.slice(),outerRimStart:outerRim,innerRimStart:innerRim};return geometry;
           }
+          var clamMat = new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:0.78,metalness:0});
+          var lowerGeo=createCLHuntClamValveGeometry(THREE,false),lower=new THREE.Mesh(lowerGeo,clamMat);
+          lower.name='cl-clam-lower';clam.add(lower);
+          var upperGeo=createCLHuntClamValveGeometry(THREE,true),upper=new THREE.Mesh(upperGeo,clamMat.clone());
+          upper.name='cl-clam-upper';upper.position.z=-0.29;clam.add(upper);clam.name='cl-prey-clam';
           clam.position.set(pos.x, 0.1, pos.z);
           clam.userData = {
             alive: true,
