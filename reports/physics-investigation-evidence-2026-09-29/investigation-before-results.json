@@ -1,0 +1,30 @@
+{
+  "createdAt": "2026-09-30T01:53:51.740Z",
+  "sourceSha256": "1ab1c2db383b7b69fe35c9a1375e1ac705c2e7954f4c224800d7aa91230bea70",
+  "passed": true,
+  "configurations": [
+    {
+      "theme": "default",
+      "viewportWidth": 1100,
+      "panelWidth": 986,
+      "overflow": 0,
+      "screenshots": [
+        "investigation-before-default-1100.png"
+      ],
+      "evidenceSha256": "c8ac9e10372c778027dde7b481b96e9e8fc5f3ca3dc4ae163d4285d8e65781f1",
+      "pageErrors": []
+    },
+    {
+      "theme": "default",
+      "viewportWidth": 320,
+      "panelWidth": 252,
+      "overflow": 0,
+      "screenshots": [
+        "investigation-before-default-320.png"
+      ],
+      "evidenceSha256": "c8ac9e10372c778027dde7b481b96e9e8fc5f3ca3dc4ae163d4285d8e65781f1",
+      "pageErrors": []
+    }
+  ],
+  "failures": []
+}

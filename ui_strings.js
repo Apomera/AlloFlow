@@ -67007,6 +67007,16 @@
       "nhu2083": "NH₃"
     },
     "physics": {
+      "investigation_vs_reference": "relative to the reference",
+      "investigation_zero_reference": "The reference is zero, so a ratio and percent change are unavailable.",
+      "investigation_saved_evidence": "Saved evidence comparison",
+      "investigation_reference": "Reference:",
+      "investigation_archive_source": "Values come from the saved measurements.",
+      "investigation_reference_help": "The first selected run is the reference for every comparison.",
+      "investigation_compare_run": "Compare with reference run",
+      "investigation_held_settings": "Settings held constant",
+      "investigation_bar_scale": "Bars start at zero. Each measure uses its own scale; compare bars within the same card.",
+      "investigation_selection_help_all": "Select a reference run first, then the runs you want to compare with it. Every selected run is copied into the saved report.",
       "energy_unavailable": "The energy timeline needs original launch settings and supported recorded samples.",
       "energy_transferred": "Transferred by drag",
       "energy_latest_sample": "Latest recorded sample",

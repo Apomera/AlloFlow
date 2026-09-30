@@ -1,5 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { drawPhysicsElementTree } from './helpers/physics_element_tree.js';
 
 const flight = (n, overrides = {}) => ({ n, angle: 45, vel: 25, grav: 9.8, mass: 1, drag: false, range: 10, maxH: 5, time: 2, modelVersion: 'projectile-v2', ...overrides });
 const draft = (overrides = {}) => ({ title: 'My experiment', question: 'How does speed change range?', prediction: 'I expect the second flight to go farther.', observation: 'Range increased.', claim: 'Changing speed changed the range.', selectedRunIds: [10, 12], activityId: '', ...overrides });
@@ -8,7 +9,7 @@ function render(physics = {}) {
   let state = { physics };
   const updates = vi.fn(update => { state = update(state); });
   const ctx = {
-    React: { createElement(type, props, ...children) {
+    React: { useState: value => [value, () => {}], createElement(type, props, ...children) {
       children.flat(Infinity).forEach(child => {
         if (child && typeof child === 'object' && !child.element) throw new Error('Invalid object child');
       });
@@ -17,7 +18,7 @@ function render(physics = {}) {
     icons: {}, props: {}, toolSnapshots: [], gradeLevel: '5th Grade', setToolData: updates,
     t: (_key, fallback) => fallback, addToast: vi.fn(), announceToSR: vi.fn(), awardXP: vi.fn(),
   };
-  const draw = () => window.StemLab._registry.physics.render({ ...ctx, toolData: state });
+  const draw = () => drawPhysicsElementTree(ctx, state);
   return { tree: draw(), draw, state: () => state.physics, updates,
     patch: patch => { state = { physics: { ...state.physics, ...patch } }; } };
 }
@@ -88,8 +89,11 @@ describe('guided physics investigation notebook', () => {
     expect(app.state().investigationDraft.selectedRunIds).toEqual([10, 12]);
     const comparison = control(app.draw(), 'comparison');
     expect(text(comparison)).toContain('Run 10 → Run 12');
-    expect(text(comparison)).toContain('One launch setting changed: velocity');
-    expect(text(comparison)).toContain('+30.00 m (+300.0%)');
+    expect(text(comparison)).toContain('One launch setting changed: Launch speed');
+    const range = find(comparison, node => node.props['data-physics-investigation-measure'] === 'range');
+    expect(text(range)).toContain('+30.000 m');
+    expect(text(range)).toContain('+300.0%');
+    expect(text(range)).toContain('4.000×');
     expect(text(comparison)).toContain('Both runs assume no air drag');
     check(app.draw(), 10, false);
     expect(app.state().investigationDraft.selectedRunIds).toEqual([12]);
@@ -125,7 +129,7 @@ describe('guided physics investigation notebook', () => {
     expect(text(control(app.tree, 'model-warning'))).toContain('Recorded model versions are missing or different');
     expect(text(comparison)).not.toContain('Repeated trial');
     expect(text(comparison)).not.toContain('Multiple launch settings changed');
-    expect(text(comparison)).toContain(speed === 25 ? 'The recorded launch settings match.' : 'One launch setting changed: velocity');
+    expect(text(comparison)).toContain(speed === 25 ? 'The recorded launch settings match.' : 'One launch setting changed: Launch speed');
   });
 
   it('copies complete immutable reports that remain available after clear, edits and restored state', async () => {

@@ -1,15 +1,16 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { drawPhysicsElementTree } from './helpers/physics_element_tree.js';
 
 function render(physics = {}) {
   let state = { physics };
   const ctx = {
-    React: { createElement: (type, props, ...children) => ({ type, props: props || {}, children }) },
+    React: { useState: value => [value, () => {}], createElement: (type, props, ...children) => ({ type, props: props || {}, children }) },
     icons: {}, props: {}, toolSnapshots: [], gradeLevel: '5th Grade',
     setToolData: update => { state = update(state); },
     t: (_key, fallback) => fallback, addToast: vi.fn(), announceToSR: vi.fn(), awardXP: vi.fn(),
   };
-  const draw = () => window.StemLab._registry.physics.render({ ...ctx, toolData: state });
+  const draw = () => drawPhysicsElementTree(ctx, state);
   return { tree: draw(), draw, state: () => state.physics };
 }
 function find(tree, predicate) {
@@ -122,7 +123,7 @@ describe('launch-height learning controls', () => {
   it('labels height as a changed variable and explains elevated notebook evidence', () => {
     const app = render({ launchHeight: 0, runLog: [flight(1, 10), flight(2, 20)], investigationDraft: { title: 'Height study', selectedRunIds: [1, 2] } });
     const comparison = text(marked(app.tree, 'investigation-comparison'));
-    expect(comparison).toContain('One launch setting changed: launch height');
+    expect(comparison).toContain('One launch setting changed: Launch height above ground');
     expect(comparison).toContain('These no-drag runs include an elevated launch');
     expect(comparison).not.toContain('range scales with speed squared');
     expect(text(app.tree)).toContain('h₀=10 m');

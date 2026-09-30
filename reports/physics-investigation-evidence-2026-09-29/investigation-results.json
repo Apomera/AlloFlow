@@ -1,0 +1,2440 @@
+{
+  "createdAt": "2026-09-30T01:56:21.123Z",
+  "sourceSha256": "9d2e324ad013d92510c4ce723bd6a2513120fe002929a1b2f0f20658841d6da6",
+  "passed": true,
+  "configurations": [
+    {
+      "theme": "default",
+      "viewportWidth": 1100,
+      "panelWidth": 986,
+      "overflow": 0,
+      "screenshots": [
+        "investigation-default-1100.png",
+        "investigation-archive-1100.png"
+      ],
+      "evidenceSha256": "c8ac9e10372c778027dde7b481b96e9e8fc5f3ca3dc4ae163d4285d8e65781f1",
+      "pageErrors": [],
+      "text": [
+        {
+          "text": "Run 1 → Run 2",
+          "font": 15,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Reference: Run 1. The first selected run is the reference for every comparison.",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Compare with reference run",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "One launch setting changed: Launch speed",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Launch speed",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "15 m/s → 30 m/s",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Settings held constant (5)",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Angle",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "45°",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Gravity",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "9.8 m/s²",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "off",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Mass",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "1 kg",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Launch height above ground",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "0 m",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Measured changes between selected runs",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Bars start at zero. Each measure uses its own scale; compare bars within the same card.",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Range",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "22.959 m",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "91.837 m",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "+68.878 m",
+          "font": 16,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "+300.0% relative to the reference",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "4.000×",
+          "font": 16,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Max height above ground",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "5.740 m",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "22.959 m",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "+17.219 m",
+          "font": 16,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "+300.0% relative to the reference",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "4.000×",
+          "font": 16,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Flight Time",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "2.165 s",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "4.329 s",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "+2.165 s",
+          "font": 16,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "+100.0% relative to the reference",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "2.000×",
+          "font": 16,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Both runs assume no air drag and equal launch and landing heights. In this model, range scales with speed squared and inversely with gravity; mass does not change the trajectory.",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Model version: projectile-v3",
+          "font": 12,
+          "contrast": 13.255708171922327
+        }
+      ],
+      "evidenceUnchanged": true,
+      "archivedAfterLogClear": true
+    },
+    {
+      "theme": "default",
+      "viewportWidth": 375,
+      "panelWidth": 307,
+      "overflow": 0,
+      "screenshots": [
+        "investigation-default-375.png"
+      ],
+      "evidenceSha256": "c8ac9e10372c778027dde7b481b96e9e8fc5f3ca3dc4ae163d4285d8e65781f1",
+      "pageErrors": [],
+      "text": [
+        {
+          "text": "Run 1 → Run 2",
+          "font": 15,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Reference: Run 1. The first selected run is the reference for every comparison.",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Compare with reference run",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "One launch setting changed: Launch speed",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Launch speed",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "15 m/s → 30 m/s",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Settings held constant (5)",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Angle",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "45°",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Gravity",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "9.8 m/s²",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "off",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Mass",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "1 kg",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Launch height above ground",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "0 m",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Measured changes between selected runs",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Bars start at zero. Each measure uses its own scale; compare bars within the same card.",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Range",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "22.959 m",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "91.837 m",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "+68.878 m",
+          "font": 16,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "+300.0% relative to the reference",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "4.000×",
+          "font": 16,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Max height above ground",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "5.740 m",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "22.959 m",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "+17.219 m",
+          "font": 16,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "+300.0% relative to the reference",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "4.000×",
+          "font": 16,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Flight Time",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "2.165 s",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "4.329 s",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "+2.165 s",
+          "font": 16,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "+100.0% relative to the reference",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "2.000×",
+          "font": 16,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Both runs assume no air drag and equal launch and landing heights. In this model, range scales with speed squared and inversely with gravity; mass does not change the trajectory.",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Model version: projectile-v3",
+          "font": 12,
+          "contrast": 13.255708171922327
+        }
+      ],
+      "evidenceUnchanged": true,
+      "archivedAfterLogClear": true
+    },
+    {
+      "theme": "default",
+      "viewportWidth": 320,
+      "panelWidth": 252,
+      "overflow": 0,
+      "screenshots": [
+        "investigation-default-320.png",
+        "investigation-archive-320.png"
+      ],
+      "evidenceSha256": "c8ac9e10372c778027dde7b481b96e9e8fc5f3ca3dc4ae163d4285d8e65781f1",
+      "pageErrors": [],
+      "text": [
+        {
+          "text": "Run 1 → Run 2",
+          "font": 15,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Reference: Run 1. The first selected run is the reference for every comparison.",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Compare with reference run",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "One launch setting changed: Launch speed",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Launch speed",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "15 m/s → 30 m/s",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Settings held constant (5)",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Angle",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "45°",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Gravity",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "9.8 m/s²",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "off",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Mass",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "1 kg",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Launch height above ground",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "0 m",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Measured changes between selected runs",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Bars start at zero. Each measure uses its own scale; compare bars within the same card.",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Range",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "22.959 m",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "91.837 m",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "+68.878 m",
+          "font": 16,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "+300.0% relative to the reference",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "4.000×",
+          "font": 16,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Max height above ground",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "5.740 m",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "22.959 m",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "+17.219 m",
+          "font": 16,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "+300.0% relative to the reference",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "4.000×",
+          "font": 16,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Flight Time",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "2.165 s",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "4.329 s",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "+2.165 s",
+          "font": 16,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "+100.0% relative to the reference",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "2.000×",
+          "font": 16,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Both runs assume no air drag and equal launch and landing heights. In this model, range scales with speed squared and inversely with gravity; mass does not change the trajectory.",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Model version: projectile-v3",
+          "font": 12,
+          "contrast": 13.255708171922327
+        }
+      ],
+      "evidenceUnchanged": true,
+      "archivedAfterLogClear": true
+    },
+    {
+      "theme": "dark",
+      "viewportWidth": 1100,
+      "panelWidth": 986,
+      "overflow": 0,
+      "screenshots": [
+        "investigation-dark-1100.png"
+      ],
+      "evidenceSha256": "c8ac9e10372c778027dde7b481b96e9e8fc5f3ca3dc4ae163d4285d8e65781f1",
+      "pageErrors": [],
+      "text": [
+        {
+          "text": "Run 1 → Run 2",
+          "font": 15,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Reference: Run 1. The first selected run is the reference for every comparison.",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Compare with reference run",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "One launch setting changed: Launch speed",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Launch speed",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "15 m/s → 30 m/s",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Settings held constant (5)",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Angle",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "45°",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Gravity",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "9.8 m/s²",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "off",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Mass",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "1 kg",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Launch height above ground",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "0 m",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Measured changes between selected runs",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Bars start at zero. Each measure uses its own scale; compare bars within the same card.",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Range",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "22.959 m",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "91.837 m",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "+68.878 m",
+          "font": 16,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "+300.0% relative to the reference",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "4.000×",
+          "font": 16,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Max height above ground",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "5.740 m",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "22.959 m",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "+17.219 m",
+          "font": 16,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "+300.0% relative to the reference",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "4.000×",
+          "font": 16,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Flight Time",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "2.165 s",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "4.329 s",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "+2.165 s",
+          "font": 16,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "+100.0% relative to the reference",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "2.000×",
+          "font": 16,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Both runs assume no air drag and equal launch and landing heights. In this model, range scales with speed squared and inversely with gravity; mass does not change the trajectory.",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Model version: projectile-v3",
+          "font": 12,
+          "contrast": 12.27501437632618
+        }
+      ],
+      "evidenceUnchanged": true,
+      "archivedAfterLogClear": true
+    },
+    {
+      "theme": "dark",
+      "viewportWidth": 375,
+      "panelWidth": 283,
+      "overflow": 0,
+      "screenshots": [
+        "investigation-dark-375.png"
+      ],
+      "evidenceSha256": "c8ac9e10372c778027dde7b481b96e9e8fc5f3ca3dc4ae163d4285d8e65781f1",
+      "pageErrors": [],
+      "text": [
+        {
+          "text": "Run 1 → Run 2",
+          "font": 15,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Reference: Run 1. The first selected run is the reference for every comparison.",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Compare with reference run",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "One launch setting changed: Launch speed",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Launch speed",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "15 m/s → 30 m/s",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Settings held constant (5)",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Angle",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "45°",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Gravity",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "9.8 m/s²",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "off",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Mass",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "1 kg",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Launch height above ground",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "0 m",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Measured changes between selected runs",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Bars start at zero. Each measure uses its own scale; compare bars within the same card.",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Range",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "22.959 m",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "91.837 m",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "+68.878 m",
+          "font": 16,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "+300.0% relative to the reference",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "4.000×",
+          "font": 16,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Max height above ground",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "5.740 m",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "22.959 m",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "+17.219 m",
+          "font": 16,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "+300.0% relative to the reference",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "4.000×",
+          "font": 16,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Flight Time",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "2.165 s",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "4.329 s",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "+2.165 s",
+          "font": 16,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "+100.0% relative to the reference",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "2.000×",
+          "font": 16,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Both runs assume no air drag and equal launch and landing heights. In this model, range scales with speed squared and inversely with gravity; mass does not change the trajectory.",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Model version: projectile-v3",
+          "font": 12,
+          "contrast": 12.27501437632618
+        }
+      ],
+      "evidenceUnchanged": true,
+      "archivedAfterLogClear": true
+    },
+    {
+      "theme": "dark",
+      "viewportWidth": 320,
+      "panelWidth": 228,
+      "overflow": 0,
+      "screenshots": [
+        "investigation-dark-320.png"
+      ],
+      "evidenceSha256": "c8ac9e10372c778027dde7b481b96e9e8fc5f3ca3dc4ae163d4285d8e65781f1",
+      "pageErrors": [],
+      "text": [
+        {
+          "text": "Run 1 → Run 2",
+          "font": 15,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Reference: Run 1. The first selected run is the reference for every comparison.",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Compare with reference run",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "One launch setting changed: Launch speed",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Launch speed",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "15 m/s → 30 m/s",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Settings held constant (5)",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Angle",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "45°",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Gravity",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "9.8 m/s²",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "off",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Mass",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "1 kg",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Launch height above ground",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "0 m",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Measured changes between selected runs",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Bars start at zero. Each measure uses its own scale; compare bars within the same card.",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Range",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "22.959 m",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "91.837 m",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "+68.878 m",
+          "font": 16,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "+300.0% relative to the reference",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "4.000×",
+          "font": 16,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Max height above ground",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "5.740 m",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "22.959 m",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "+17.219 m",
+          "font": 16,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "+300.0% relative to the reference",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "4.000×",
+          "font": 16,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Flight Time",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "2.165 s",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "4.329 s",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "+2.165 s",
+          "font": 16,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "+100.0% relative to the reference",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "2.000×",
+          "font": 16,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Both runs assume no air drag and equal launch and landing heights. In this model, range scales with speed squared and inversely with gravity; mass does not change the trajectory.",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Model version: projectile-v3",
+          "font": 12,
+          "contrast": 12.27501437632618
+        }
+      ],
+      "evidenceUnchanged": true,
+      "archivedAfterLogClear": true
+    },
+    {
+      "theme": "contrast",
+      "viewportWidth": 1100,
+      "panelWidth": 986,
+      "overflow": 0,
+      "screenshots": [
+        "investigation-contrast-1100.png"
+      ],
+      "evidenceSha256": "c8ac9e10372c778027dde7b481b96e9e8fc5f3ca3dc4ae163d4285d8e65781f1",
+      "pageErrors": [],
+      "text": [
+        {
+          "text": "Run 1 → Run 2",
+          "font": 15,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Reference: Run 1. The first selected run is the reference for every comparison.",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Compare with reference run",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "One launch setting changed: Launch speed",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Launch speed",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "15 m/s → 30 m/s",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Settings held constant (5)",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Angle",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "45°",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Gravity",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "9.8 m/s²",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "off",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Mass",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "1 kg",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Launch height above ground",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "0 m",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Measured changes between selected runs",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Bars start at zero. Each measure uses its own scale; compare bars within the same card.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Range",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "22.959 m",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "91.837 m",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "+68.878 m",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "+300.0% relative to the reference",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "4.000×",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Max height above ground",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "5.740 m",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "22.959 m",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "+17.219 m",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "+300.0% relative to the reference",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "4.000×",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Flight Time",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "2.165 s",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "4.329 s",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "+2.165 s",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "+100.0% relative to the reference",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "2.000×",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Both runs assume no air drag and equal launch and landing heights. In this model, range scales with speed squared and inversely with gravity; mass does not change the trajectory.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Model version: projectile-v3",
+          "font": 12,
+          "contrast": 19.555999999999997
+        }
+      ],
+      "evidenceUnchanged": true,
+      "archivedAfterLogClear": true
+    },
+    {
+      "theme": "contrast",
+      "viewportWidth": 375,
+      "panelWidth": 303,
+      "overflow": 0,
+      "screenshots": [
+        "investigation-contrast-375.png"
+      ],
+      "evidenceSha256": "c8ac9e10372c778027dde7b481b96e9e8fc5f3ca3dc4ae163d4285d8e65781f1",
+      "pageErrors": [],
+      "text": [
+        {
+          "text": "Run 1 → Run 2",
+          "font": 15,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Reference: Run 1. The first selected run is the reference for every comparison.",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Compare with reference run",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "One launch setting changed: Launch speed",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Launch speed",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "15 m/s → 30 m/s",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Settings held constant (5)",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Angle",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "45°",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Gravity",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "9.8 m/s²",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "off",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Mass",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "1 kg",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Launch height above ground",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "0 m",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Measured changes between selected runs",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Bars start at zero. Each measure uses its own scale; compare bars within the same card.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Range",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "22.959 m",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "91.837 m",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "+68.878 m",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "+300.0% relative to the reference",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "4.000×",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Max height above ground",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "5.740 m",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "22.959 m",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "+17.219 m",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "+300.0% relative to the reference",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "4.000×",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Flight Time",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "2.165 s",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "4.329 s",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "+2.165 s",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "+100.0% relative to the reference",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "2.000×",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Both runs assume no air drag and equal launch and landing heights. In this model, range scales with speed squared and inversely with gravity; mass does not change the trajectory.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Model version: projectile-v3",
+          "font": 12,
+          "contrast": 19.555999999999997
+        }
+      ],
+      "evidenceUnchanged": true,
+      "archivedAfterLogClear": true
+    },
+    {
+      "theme": "contrast",
+      "viewportWidth": 320,
+      "panelWidth": 248,
+      "overflow": 0,
+      "screenshots": [
+        "investigation-contrast-320.png"
+      ],
+      "evidenceSha256": "c8ac9e10372c778027dde7b481b96e9e8fc5f3ca3dc4ae163d4285d8e65781f1",
+      "pageErrors": [],
+      "text": [
+        {
+          "text": "Run 1 → Run 2",
+          "font": 15,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Reference: Run 1. The first selected run is the reference for every comparison.",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Compare with reference run",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "One launch setting changed: Launch speed",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Launch speed",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "15 m/s → 30 m/s",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Settings held constant (5)",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Angle",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "45°",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Gravity",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "9.8 m/s²",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Air drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "off",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Mass",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "1 kg",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Launch height above ground",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "0 m",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Measured changes between selected runs",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Bars start at zero. Each measure uses its own scale; compare bars within the same card.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Range",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "22.959 m",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "91.837 m",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "+68.878 m",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "+300.0% relative to the reference",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "4.000×",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Max height above ground",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "5.740 m",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "22.959 m",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "+17.219 m",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "+300.0% relative to the reference",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "4.000×",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Flight Time",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 1",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "2.165 s",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 2",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "4.329 s",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Difference",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "+2.165 s",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "+100.0% relative to the reference",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Run 2 ÷ Run 1",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "2.000×",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Both runs assume no air drag and equal launch and landing heights. In this model, range scales with speed squared and inversely with gravity; mass does not change the trajectory.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Model version: projectile-v3",
+          "font": 12,
+          "contrast": 19.555999999999997
+        }
+      ],
+      "evidenceUnchanged": true,
+      "archivedAfterLogClear": true
+    }
+  ],
+  "failures": []
+}

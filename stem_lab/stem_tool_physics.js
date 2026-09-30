@@ -412,6 +412,100 @@ window.StemLab = window.StemLab || {
       normalizeInvestigationDraft: physNormalizeInvestigationDraft, normalizeInvestigations: physNormalizeInvestigations, compareRuns: physCompareRuns, createInvestigation: physCreateInvestigation, formatInvestigationReport: physFormatInvestigationReport };
   } catch (e) {}
 
+  // One reference run anchors every notebook comparison, including archived
+  // evidence. View choices live in React state and never rewrite recorded runs.
+  function PhysicsInvestigationEvidence(props) {
+    var h = React.createElement, palette = props.palette, runs = props.runs;
+    var choice = React.useState(null), candidates = runs.slice(1);
+    var first = runs[0], second = candidates.find(function(r) { return r.n === choice[0]; }) || candidates[0];
+    if (!first || !second) return null;
+    var comparison = physCompareRuns(first, second);
+    if (!comparison) return null;
+    var __alloT = props.translate;
+    var runLabel = __alloT('stem.physics.investigation_run', 'Run');
+    var labels = {
+      angle: __alloT('stem.physics.report_angle', 'Angle'), vel: __alloT('stem.physics.report_speed', 'Launch speed'),
+      grav: __alloT('stem.physics.report_gravity', 'Gravity'), drag: __alloT('stem.physics.report_drag', 'Air drag'),
+      mass: __alloT('stem.physics.report_mass', 'Mass'), launchHeight: __alloT('stem.physics.report_launch_height', 'Launch height above ground')
+    };
+    var units = { angle: '°', vel: ' m/s', grav: ' m/s²', drag: '', mass: ' kg', launchHeight: ' m' };
+    var changedKeys = comparison.changes.map(function(c) { return c.key; });
+    var heldKeys = Object.keys(labels).filter(function(k) { return changedKeys.indexOf(k) < 0; });
+    var compactGrid = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: 8, minWidth: 0 };
+    var referenceColor = props.contrast ? '#ffffff' : props.dark ? '#74c6ed' : '#15759e';
+    var comparisonColor = props.contrast ? '#ffff00' : props.dark ? '#efbc72' : '#a3610c';
+    var referenceName = runLabel + ' ' + first.n, comparisonName = runLabel + ' ' + second.n;
+    function settingValue(run, key) {
+      return key === 'drag' ? (run.drag ? __alloT('stem.physics.report_on', 'on') : __alloT('stem.physics.report_off', 'off')) : run[key] + units[key];
+    }
+    function settingCard(key, changed) {
+      return h('div', { key: key, 'data-physics-investigation-setting': key, 'data-changed': String(changed), style: { minWidth: 0, padding: 10, border: '1px solid ' + palette.border, borderRadius: 8, background: palette.surface, overflowWrap: 'anywhere' } },
+        h('dt', { style: { fontSize: 12, fontWeight: 700, marginBottom: 4 } }, labels[key]),
+        h('dd', { style: { margin: 0, fontSize: 14, fontWeight: 700 } }, changed ? settingValue(first, key) + ' → ' + settingValue(second, key) : settingValue(first, key))
+      );
+    }
+    function magnitude(value, digits) { return value > 0 && value < Math.pow(10, -digits) ? '<' + Math.pow(10, -digits).toFixed(digits) : value.toFixed(digits); }
+    function signed(value, digits) { return (value > 0 ? '+' : value < 0 ? '−' : '') + magnitude(Math.abs(value), digits); }
+    function measureCard(row) {
+      var m = comparison.measurements[row.key], scale = physCompareMeasurements(m.before, m.after);
+      function bar(name, value, width, color, patterned) {
+        return h('div', { key: name, style: { display: 'grid', gap: 5 } },
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '2px 8px', fontSize: 13 } },
+            h('span', null, name), h('strong', null, magnitude(value, 3) + ' ' + m.unit)),
+          h('div', { 'aria-hidden': true, style: { height: 12, width: '100%', border: '1px solid ' + palette.border, borderRadius: 3, overflow: 'hidden', background: palette.panel } },
+            h('div', { 'data-physics-investigation-bar': patterned ? 'comparison' : 'reference', 'data-value': value, style: { height: '100%', width: width + '%', backgroundColor: color, backgroundImage: patterned ? 'repeating-linear-gradient(135deg, transparent 0px, transparent 5px, ' + palette.surface + ' 5px, ' + palette.surface + ' 7px)' : 'none' } }))
+        );
+      }
+      return h('article', { key: row.key, 'data-physics-investigation-measure': row.key, style: { minWidth: 0, background: palette.surface, border: '1px solid ' + palette.border, borderRadius: 10, padding: 12, display: 'grid', gap: 12, alignContent: 'start', overflowWrap: 'anywhere' } },
+        h('h5', { style: { fontSize: 14, fontWeight: 800, margin: 0 } }, row.label),
+        bar(referenceName, m.before, scale.vacuumWidth, referenceColor, false),
+        bar(comparisonName, m.after, scale.dragWidth, comparisonColor, true),
+        h('dl', { style: { display: 'grid', gap: 8, margin: 0, paddingTop: 10, borderTop: '1px solid ' + palette.border } },
+          h('div', null,
+            h('dt', { style: { fontSize: 12 } }, __alloT('stem.physics.investigation_difference', 'Difference')),
+            h('dd', { 'data-physics-investigation-delta': true, 'data-value': m.delta, style: { margin: 0, fontSize: 16, fontWeight: 800 } }, m.delta == null ? '—' : signed(m.delta, 3) + ' ' + m.unit),
+            m.percentChange != null && h('div', { style: { fontSize: 12, marginTop: 3 } }, signed(m.percentChange, 1) + '% ' + __alloT('stem.physics.investigation_vs_reference', 'relative to the reference'))),
+          h('div', null,
+            h('dt', { style: { fontSize: 12 } }, comparisonName + ' ÷ ' + referenceName),
+            h('dd', { 'data-physics-investigation-ratio': true, 'data-value': m.ratio, style: { margin: 0, fontSize: 16, fontWeight: 800 } }, m.ratio == null ? '—' : magnitude(m.ratio, 3) + '×'))
+        ),
+        m.ratio == null && h('p', { style: { fontSize: 12, lineHeight: 1.5, margin: 0 } }, __alloT('stem.physics.investigation_zero_reference', 'The reference is zero, so a ratio and percent change are unavailable.'))
+      );
+    }
+    return h('section', { 'data-physics-investigation-comparison': props.archived ? undefined : true, 'data-physics-investigation-archived-evidence': props.archived ? true : undefined, 'data-reference-run': first.n, 'data-compared-run': second.n, 'aria-label': props.archived ? __alloT('stem.physics.investigation_saved_evidence', 'Saved evidence comparison') : __alloT('stem.physics.investigation_comparison', 'Selected run comparison'), style: { background: palette.panel, color: palette.ink, border: '1px solid ' + palette.border, borderRadius: 12, padding: 15, minWidth: 0, display: 'grid', gap: 14 } },
+      h('div', null,
+        h('h4', { style: { fontSize: 15, fontWeight: 800, margin: '0 0 6px' } }, referenceName + ' → ' + comparisonName),
+        h('p', { style: { fontSize: 13, lineHeight: 1.5, margin: 0 } }, __alloT('stem.physics.investigation_reference', 'Reference:') + ' ' + referenceName + '. ' + (props.archived ? __alloT('stem.physics.investigation_archive_source', 'Values come from the saved measurements.') : __alloT('stem.physics.investigation_reference_help', 'The first selected run is the reference for every comparison.')))),
+      candidates.length > 1 && h('label', { style: { display: 'grid', gap: 5, minWidth: 0, fontSize: 13, fontWeight: 700 } },
+        __alloT('stem.physics.investigation_compare_run', 'Compare with reference run'),
+        h('select', { 'data-physics-investigation-compare-run': true, value: String(second.n), onChange: function(e) { choice[1](Number(e.target.value)); }, style: { minWidth: 0, width: '100%', minHeight: 44, padding: '9px 10px', fontSize: 14, fontWeight: 400, background: palette.surface, color: palette.ink, border: '1px solid ' + palette.accent, borderRadius: 8 } }, candidates.map(function(run) { return h('option', { key: run.n, value: String(run.n) }, runLabel + ' ' + run.n); }))),
+      comparison.modelWarning && h('p', { 'data-physics-investigation-model-warning': true, style: { fontSize: 13, lineHeight: 1.5, fontWeight: 700, margin: 0, paddingLeft: 10, borderLeft: '3px solid ' + palette.accent } }, __alloT('stem.physics.investigation_model_warning', 'Recorded model versions are missing or different. Measured differences may reflect the simulation model as well as changed launch settings.')),
+      h('div', null,
+        h('p', { style: { fontSize: 13, fontWeight: 700, lineHeight: 1.5, margin: '0 0 8px' } }, comparison.changes.length === 0
+          ? comparison.modelWarning ? __alloT('stem.physics.investigation_matching_settings', 'The recorded launch settings match.') : __alloT('stem.physics.investigation_repeat', 'Repeated trial: the launch settings match.')
+          : comparison.changes.length === 1 ? __alloT('stem.physics.investigation_one_change', 'One launch setting changed:') + ' ' + labels[changedKeys[0]]
+            : __alloT('stem.physics.investigation_many_changes', 'Multiple launch settings changed; this comparison cannot isolate one cause:') + ' ' + changedKeys.map(function(k) { return labels[k]; }).join(', ')),
+        changedKeys.length > 0 && h('dl', { style: Object.assign({ margin: 0 }, compactGrid) }, changedKeys.map(function(k) { return settingCard(k, true); })),
+        heldKeys.length > 0 && h('details', { style: { marginTop: 8 } },
+          h('summary', { 'data-physics-investigation-held': true, style: { minHeight: 44, padding: '10px 0', fontSize: 13, cursor: 'pointer' } }, __alloT('stem.physics.investigation_held_settings', 'Settings held constant') + ' (' + heldKeys.length + ')'),
+          h('dl', { style: Object.assign({ margin: '4px 0 0' }, compactGrid) }, heldKeys.map(function(k) { return settingCard(k, false); })))),
+      h('div', null,
+        h('h5', { style: { fontSize: 13, fontWeight: 700, margin: '0 0 6px' } }, __alloT('stem.physics.investigation_measured_changes', 'Measured changes between selected runs')),
+        h('p', { style: { fontSize: 12, lineHeight: 1.5, margin: '0 0 10px' } }, __alloT('stem.physics.investigation_bar_scale', 'Bars start at zero. Each measure uses its own scale; compare bars within the same card.')),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: 10, minWidth: 0 } }, [
+          { key: 'range', label: __alloT('stem.physics.label_range', 'Range') },
+          { key: 'maxH', label: __alloT('stem.physics.label_max_height_ground', 'Max height above ground') },
+          { key: 'time', label: __alloT('stem.physics.label_flight_time', 'Flight Time') }
+        ].map(measureCard))),
+      h('p', { style: { fontSize: 12, lineHeight: 1.5, margin: 0 } }, first.drag !== second.drag
+        ? __alloT('stem.physics.investigation_mixed_models', 'These runs use different air-drag models. Include that model change when explaining the difference.')
+        : first.drag ? __alloT('stem.physics.investigation_drag_assumption', 'Both runs include quadratic air drag. Drag depends on total speed and the same drag coefficient; changing mass changes acceleration from drag.')
+          : first.launchHeight > 0 || second.launchHeight > 0 ? __alloT('stem.physics.investigation_elevated_assumption', 'These no-drag runs include an elevated launch. Falling time depends on launch height and initial vertical velocity. With a horizontal launch from a fixed height, changing horizontal speed changes range but not flight time. The ground-level speed-squared range rule does not apply.')
+            : __alloT('stem.physics.investigation_vacuum_assumption', 'Both runs assume no air drag and equal launch and landing heights. In this model, range scales with speed squared and inversely with gravity; mass does not change the trajectory.')),
+      comparison.modelCompatible && h('p', { style: { fontSize: 12, lineHeight: 1.5, margin: 0, overflowWrap: 'anywhere' } }, __alloT('stem.physics.report_model', 'Model version') + ': ' + first.modelVersion)
+    );
+  }
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-physics')) return;
@@ -3438,7 +3532,6 @@ window.StemLab = window.StemLab || {
               ];
               var activity = activities.find(function(a) { return a.id === draft.activityId; }) || null;
               var selectedRuns = draft.selectedRunIds.map(function(id) { return log.find(function(r) { return r.n === id; }); }).filter(Boolean);
-              var comparison = selectedRuns.length >= 2 ? P.compareRuns(selectedRuns[0], selectedRuns[1]) : null;
               var selectedSaved = saved.find(function(item) { return String(item.id) === String(d.selectedInvestigationId); }) || null;
               var selectedReport = selectedSaved ? P.formatInvestigationReport(selectedSaved, __alloT) : '';
               function updateDraft(patch) {
@@ -3494,7 +3587,6 @@ window.StemLab = window.StemLab || {
                 );
               }
               var runLabel = __alloT('stem.physics.investigation_run', 'Run');
-              var changesLabel = { angle: __alloT('stem.physics.var_angle', 'angle'), vel: __alloT('stem.physics.var_velocity', 'velocity'), grav: __alloT('stem.physics.var_gravity', 'gravity'), drag: __alloT('stem.physics.var_drag', 'air drag'), mass: __alloT('stem.physics.var_mass', 'mass'), launchHeight: __alloT('stem.physics.var_launch_height', 'launch height') };
               return h('details', { 'data-physics-investigations': true, open: !!d.investigationOpen, onToggle: function(e) { if (e.currentTarget.open !== !!d.investigationOpen) upd('investigationOpen', e.currentTarget.open); }, style: { background: palette.surface, color: palette.ink, border: '1px solid ' + palette.border, borderRadius: 12, marginBottom: 12, padding: 12 } },
                 h('summary', { style: { cursor: 'pointer', minHeight: 32, fontSize: 15, fontWeight: 800, color: palette.accent } }, __alloT('stem.physics.investigation_heading', 'Guided investigations')),
                 h('div', { style: { display: 'grid', gap: 14, paddingTop: 8, minWidth: 0 } },
@@ -3522,7 +3614,7 @@ window.StemLab = window.StemLab || {
                   draftField('prediction', __alloT('stem.physics.investigation_prediction', 'Prediction — what do you expect and why?'), 2000, 2),
                   h('fieldset', { style: cardStyle },
                     h('legend', { style: { fontSize: 13, fontWeight: 700 } }, __alloT('stem.physics.investigation_select_runs', 'Select at least two completed runs')),
-                    h('p', { style: { fontSize: 12, marginBottom: 8 } }, __alloT('stem.physics.investigation_selection_help', 'The first two selected runs form the comparison below. Every selected run is copied into the saved report.')),
+                    h('p', { style: { fontSize: 12, marginBottom: 8 } }, __alloT('stem.physics.investigation_selection_help_all', 'Select a reference run first, then the runs you want to compare with it. Every selected run is copied into the saved report.')),
                     log.length === 0 && h('p', { style: { fontSize: 13 } }, __alloT('stem.physics.investigation_no_runs', 'Launch a projectile to collect your first observation.')),
                     h('div', { style: { display: 'grid', gap: 8 } }, log.map(function(run) {
                       var detailId = 'physics-investigation-run-' + run.n;
@@ -3535,37 +3627,7 @@ window.StemLab = window.StemLab || {
                       );
                     }))
                   ),
-                  comparison && h('section', { 'data-physics-investigation-comparison': true, 'aria-label': __alloT('stem.physics.investigation_comparison', 'Selected run comparison'), style: cardStyle },
-                    h('h4', { style: { fontSize: 14, fontWeight: 800, marginBottom: 8 } }, runLabel + ' ' + comparison.fromRunId + ' → ' + runLabel + ' ' + comparison.toRunId),
-                    comparison.modelWarning && h('p', { 'data-physics-investigation-model-warning': true, style: { fontSize: 13, fontWeight: 700, marginBottom: 8 } }, __alloT('stem.physics.investigation_model_warning', 'Recorded model versions are missing or different. Measured differences may reflect the simulation model as well as changed launch settings.')),
-                    h('p', { style: { fontSize: 13, marginBottom: 8 } }, comparison.changes.length === 0
-                      ? comparison.modelWarning
-                        ? __alloT('stem.physics.investigation_matching_settings', 'The recorded launch settings match.')
-                        : __alloT('stem.physics.investigation_repeat', 'Repeated trial: the launch settings match.')
-                      : comparison.changes.length === 1
-                        ? __alloT('stem.physics.investigation_one_change', 'One launch setting changed:') + ' ' + changesLabel[comparison.changes[0].key]
-                        : __alloT('stem.physics.investigation_many_changes', 'Multiple launch settings changed; this comparison cannot isolate one cause:') + ' ' + comparison.changes.map(function(change) { return changesLabel[change.key]; }).join(', ')),
-                    h('div', { style: { overflowX: 'auto' } }, h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 13 } },
-                      h('caption', { style: { textAlign: 'left', marginBottom: 4 } }, __alloT('stem.physics.investigation_measured_changes', 'Measured changes between selected runs')),
-                      h('thead', null, h('tr', null, [__alloT('stem.physics.investigation_measure', 'Measure'), runLabel + ' ' + comparison.fromRunId, runLabel + ' ' + comparison.toRunId, __alloT('stem.physics.investigation_difference', 'Difference')].map(function(label, i) { return h('th', { key: i, scope: 'col', style: { textAlign: 'left', padding: 6, borderBottom: '1px solid ' + palette.border } }, label); }))),
-                      h('tbody', null, [{ key: 'range', label: __alloT('stem.physics.label_range', 'Range') }, { key: 'maxH', label: __alloT('stem.physics.label_max_height_ground', 'Max height above ground') }, { key: 'time', label: __alloT('stem.physics.label_flight_time', 'Flight Time') }].map(function(row) {
-                        var measure = comparison.measurements[row.key];
-                        return h('tr', { key: row.key },
-                          h('th', { scope: 'row', style: { textAlign: 'left', padding: 6 } }, row.label),
-                          h('td', { style: { padding: 6 } }, measure.before.toFixed(2) + ' ' + measure.unit),
-                          h('td', { style: { padding: 6 } }, measure.after.toFixed(2) + ' ' + measure.unit),
-                          h('td', { style: { padding: 6 } }, measure.delta == null ? '—' : (measure.delta > 0 ? '+' : '') + measure.delta.toFixed(2) + ' ' + measure.unit + (measure.percentChange == null ? '' : ' (' + (measure.percentChange > 0 ? '+' : '') + measure.percentChange.toFixed(1) + '%)'))
-                        );
-                      }))
-                    )),
-                    h('p', { style: { fontSize: 12, lineHeight: 1.5, marginTop: 8 } }, selectedRuns[0].drag !== selectedRuns[1].drag
-                      ? __alloT('stem.physics.investigation_mixed_models', 'These runs use different air-drag models. Include that model change when explaining the difference.')
-                      : selectedRuns[0].drag
-                        ? __alloT('stem.physics.investigation_drag_assumption', 'Both runs include quadratic air drag. Drag depends on total speed and the same drag coefficient; changing mass changes acceleration from drag.')
-                        : selectedRuns[0].launchHeight > 0 || selectedRuns[1].launchHeight > 0
-                          ? __alloT('stem.physics.investigation_elevated_assumption', 'These no-drag runs include an elevated launch. Falling time depends on launch height and initial vertical velocity. With a horizontal launch from a fixed height, changing horizontal speed changes range but not flight time. The ground-level speed-squared range rule does not apply.')
-                          : __alloT('stem.physics.investigation_vacuum_assumption', 'Both runs assume no air drag and equal launch and landing heights. In this model, range scales with speed squared and inversely with gravity; mass does not change the trajectory.'))
-                  ),
+                  selectedRuns.length >= 2 && h(PhysicsInvestigationEvidence, { runs: selectedRuns, palette: palette, contrast: isContrast, dark: isDark, translate: __alloT }),
                   draftField('observation', __alloT('stem.physics.investigation_observation', 'Observation — what did you measure?'), 2000, 2),
                   draftField('claim', __alloT('stem.physics.investigation_claim', 'Claim — how does the evidence support your explanation?'), 2000, 3),
                   h('button', { type: 'button', 'data-physics-investigation-save': true, disabled: selectedRuns.length < 2 || !draft.title.trim() || saved.length >= 12, style: actionStyle, onClick: saveInvestigation }, __alloT('stem.physics.investigation_save', 'Save investigation')),
@@ -3580,6 +3642,7 @@ window.StemLab = window.StemLab || {
                       saved.map(function(item) { return h('option', { key: item.id, value: String(item.id) }, item.title + ' — ' + item.runs.map(function(run) { return runLabel + ' ' + run.n; }).join(', ')); })
                     ),
                     selectedSaved && h('div', { style: { display: 'grid', gap: 10, marginTop: 10 } },
+                      h(PhysicsInvestigationEvidence, { key: String(selectedSaved.id), runs: selectedSaved.runs, palette: palette, contrast: isContrast, dark: isDark, translate: __alloT, archived: true }),
                       h('pre', { 'data-physics-investigation-report': true, tabIndex: 0, 'aria-label': __alloT('stem.physics.investigation_report', 'Saved investigation report'), style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontFamily: 'inherit', fontSize: 13, lineHeight: 1.6, margin: 0 } }, selectedReport),
                       h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
                         h('button', { type: 'button', 'data-physics-investigation-copy': true, style: actionStyle, onClick: function() {
