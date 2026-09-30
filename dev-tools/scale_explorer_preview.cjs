@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const assets = {
+  '/stem_lab/assets/terrain/everest-elevation.json': 'stem_lab/assets/terrain/everest-elevation.json',
   '/react.js': 'desktop/web-app/node_modules/react/umd/react.production.min.js',
   '/react-dom.js': 'desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js',
   '/three.js': 'vendor/three-r128/three.min.js',
@@ -22,7 +23,7 @@ function Explorer(props){var data=React.useState({});return window.StemLab._regi
 function Preview(){var theme=React.useState('dark');return React.createElement(React.Fragment,null,React.createElement('label',{className:'preview-theme'},'Preview theme',React.createElement('select',{value:theme[0],onChange:function(e){theme[1](e.target.value);}},['dark','light','contrast'].map(function(t){return React.createElement('option',{key:t,value:t},t);}))),React.createElement(Explorer,{theme:theme[0]}));}
 ReactDOM.createRoot(document.getElementById('preview')).render(React.createElement(Preview));
 </script></body></html>`;
-const mime = { '.js': 'text/javascript; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.glb': 'model/gltf-binary' };
+const mime = { '.json': 'application/json; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.glb': 'model/gltf-binary' };
 const server = http.createServer((request, response) => {
   const url = new URL(request.url, 'http://127.0.0.1').pathname;
   response.setHeader('Cache-Control', 'no-store');

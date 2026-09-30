@@ -487,8 +487,41 @@
     return Math.max(0,h)*CANYON_PATH.depth;
   }
   function canyonPoint(x,z,relief) { return [x,canyonHeight(x,z)*(relief||8),z]; }
-  function inspectionLimit(id) { return id==='solar-system'?32:id==='grand-canyon'?12:2.5; }
-  function atlasDetails(id, S, terrainRelief, riverKm) {
+  // Local metres map directly to the 8,849 m catalogue height; no summit fitting.
+  function validEverestTerrain(data) {
+    return !!data&&data.version===1&&data.width===241&&data.spanMeters===18000&&data.spacingMeters===75&&
+      data.center&&data.center.latitude===27.98&&data.center.longitude===86.925&&
+      Array.isArray(data.elevations)&&data.elevations.length===58081&&
+      data.elevations.every(function(h){return typeof h==='number'&&isFinite(h)&&h>=3500&&h<=9100;});
+  }
+  function everestHeight(data,x,z) {
+    var n=data.width,u=clamp((x*8849/data.spanMeters+.5)*(n-1),0,n-1),
+      v=clamp((z*8849/data.spanMeters+.5)*(n-1),0,n-1),col=Math.min(n-2,Math.floor(u)),row=Math.min(n-2,Math.floor(v)),fx=u-col,fy=v-row,a=row*n+col;
+    return ((data.elevations[a]*(1-fx)+data.elevations[a+1]*fx)*(1-fy)+(data.elevations[a+n]*(1-fx)+data.elevations[a+n+1]*fx)*fy)/8849;
+  }
+  // Positions are local metres: east / north from the elevation grid centre.
+  function everestPosition(point) {
+    function coordinate(value,fallback){return typeof value==='number'&&isFinite(value)?Math.round(clamp(value,-9000,9000)):fallback;}
+    return {east:coordinate(point&&point.east,0),north:coordinate(point&&point.north,900)};
+  }
+  function everestMapImage(data) {
+    if(!data)return '';
+    var n=data.width,cv=document.createElement('canvas');cv.width=cv.height=n;
+    var ctx=cv.getContext('2d');if(!ctx)return '';
+    var pixels=ctx.createImageData(n,n),values=data.elevations;
+    for(var row=0;row<n;row++)for(var col=0;col<n;col++){
+      var k=row*n+col,h=values[k],
+        east=(values[row*n+Math.min(n-1,col+1)]-values[row*n+Math.max(0,col-1)])/150,
+        south=(values[Math.min(n-1,row+1)*n+col]-values[Math.max(0,row-1)*n+col])/150,
+        light=clamp((.72-east*.4-south*.5)/Math.sqrt(1+east*east+south*south),0,1),
+        snow=clamp((h-5600)/2600,0,1),contour=Math.floor(h/250)!==Math.floor(values[row*n+Math.max(0,col-1)]/250)? .82:1;
+      [[44,220],[68,231],[77,226]].forEach(function(range,c){pixels.data[k*4+c]=(range[0]+(range[1]-range[0])*snow)*(.58+light*.55)*contour;});
+      pixels.data[k*4+3]=255;
+    }
+    ctx.putImageData(pixels,0,0);return cv.toDataURL();
+  }
+  function inspectionLimit(id) { return id==='solar-system'?32:id==='grand-canyon'?12:id==='everest'?5:2.5; }
+  function atlasDetails(id, S, terrainRelief, riverKm, terrainPoint) {
     if(id==='solar-system'){
       var names=[S('atlas_orbit_mercury', 'Mercury'),S('atlas_orbit_venus', 'Venus'),S('atlas_orbit_earth', 'Earth'),S('atlas_orbit_mars', 'Mars'),
         S('atlas_orbit_jupiter', 'Jupiter'),S('atlas_orbit_saturn', 'Saturn'),S('atlas_orbit_uranus', 'Uranus'),S('atlas_orbit_neptune', 'Neptune')];
@@ -535,6 +568,17 @@
       {id:'nuclei',at:[-.07,.035,.025],cutaway:true,label:S('atlas_detail_nuclei', 'Two kinds of nucleus'),body:S('atlas_detail_nuclei_body', 'The large macronucleus supports everyday cell functions. A smaller micronucleus nearby has a role in sexual reproduction. Their colors distinguish them in this anatomical illustration.'),source:'https://www.ncbi.nlm.nih.gov/mesh/68048631'},
       {id:'contractile-vacuole',at:[.29,.015,.025],cutaway:true,label:S('atlas_detail_vacuole', 'Contractile vacuoles'),body:S('atlas_detail_vacuole_body', 'The star-shaped complexes collect and expel excess water. Watch a central reservoir fill and contract, then pause to inspect its radiating canals. The cycle is illustrative; its rate depends on the cell and its surroundings.'),source:'https://pubmed.ncbi.nlm.nih.gov/9427677/'}
     ];
+    if(id==='everest'){var point=everestPosition(terrainPoint);return [
+      {id:'everest-summit',terrain:true,at:[0,0,-.1019],view:[-.55,.55,1],zoom:3.2,label:S('atlas_detail_everest_summit', 'The summit ridge'),body:S('atlas_detail_everest_summit_body', 'Approach the crest of Everest. The 75 m elevation grid preserves the surrounding ridges, but smooths features smaller than a grid cell. Its highest sample is about 8,744 m; the catalogue height of 8,849 m comes from the summit measurement, not this sampled mesh.'),source:'https://registry.opendata.aws/terrain-tiles/'},
+      {id:'everest-east',terrain:true,at:[1600/8849,0,-750/8849],view:[1,.6,.15],zoom:3.2,label:S('atlas_detail_everest_east', 'The eastern face'),body:S('atlas_detail_everest_east_body', 'Orbit beside the eastern slopes to see how ridges divide the steep mountain faces. Horizontal and vertical distances use the same scale. Snow and rock colors illustrate the landforms; they do not map today’s snow cover.'),source:'https://science.nasa.gov/earth/earth-observatory/exploring-mount-everests-ice-81823/'},
+      {id:'everest-valley',terrain:true,at:[-2400/8849,0,3600/8849],view:[-.35,.6,1],zoom:2.7,label:S('atlas_detail_everest_valley', 'Valleys below the summit'),body:S('atlas_detail_everest_valley_body', 'Look across the valleys south of Everest, then turn toward the high ridges. Glaciers shape and occupy this landscape. The elevation data describes the terrain surface; the pale coloring is an illustration, not a glacier boundary map.'),source:'https://science.nasa.gov/earth/earth-observatory/exploring-mount-everests-ice-81823/'},
+      {id:'everest-overview',terrain:true,marker:false,at:[0,0,0],view:[0,1,.15],zoom:1,label:S('atlas_detail_everest_overview', 'An atlas from above'),body:S('atlas_detail_everest_overview_body', 'An 18 km square of the Himalaya, with north toward the far edge in this view. The local grid uses one sample every 75 m. Follow the ridges and branching valleys; the straight edges are the boundary of the displayed dataset.'),source:'https://registry.opendata.aws/terrain-tiles/'},
+      {id:'everest-datum',terrain:true,datum:true,marker:false,at:[0,1,-.1019],viewAim:[0,.48,0],view:[.3,.32,1],zoom:1,label:S('atlas_detail_everest_datum', 'Height above sea level'),body:S('atlas_detail_everest_datum_body', 'The lower grid marks the zero-height reference, extended beneath the mountain. The ruler reaches 8,849 m above that reference. The valleys are already thousands of metres above sea level, so the visible summit-to-valley relief is much smaller than Everest’s stated height. The lower grid is a reference plane, not an ocean beneath the terrain.'),source:'https://www.usgs.gov/centers/eros/science/usgs-eros-archive-digital-elevation-shuttle-radar-topography-mission-srtm-1'}
+      ,{id:'everest-explore',terrain:true,marker:false,at:[point.east/8849,0,-point.north/8849],view:[-.3,.65,1],zoom:3.2,
+        label:S('atlas_terrain_explore', 'Explore freely'),
+        body:S('atlas_terrain_explore_body', 'Choose any point on the terrain map, or click the mountain itself. The camera follows that position while keeping your viewing direction. Elevations are interpolated from the 75 m grid; snow and light are illustrative.'),
+        source:'https://registry.opendata.aws/terrain-tiles/'}
+    ];}
     if(id==='grand-canyon')return [
       {id:'canyon-rim',at:canyonPoint(-.06,canyonCenter(-.06)+.042,terrainRelief),view:[.2,1,.65],zoom:3.5,label:S('atlas_detail_canyon_rim', 'Layered canyon walls'),body:S('atlas_detail_canyon_rim_body', 'Approach the rim and follow the bands across the cliffs. Different rock layers resist erosion differently, producing cliffs and slopes. The colors and terrace shapes are illustrative. Adjust vertical relief to compare this readable view with the much flatter proportions at the scale of the whole canyon.'),source:'https://www.nps.gov/grca/learn/nature/grca-geology.htm'},
       {id:'river-bend',at:canyonPoint(.08,canyonCenter(.08),terrainRelief),view:[0,1,0],zoom:6,label:S('atlas_detail_canyon_river', 'Colorado River corridor'),body:S('atlas_detail_canyon_river_body', 'Follow the river through the inner gorge. The canyon’s 446 km length is measured along the river, so the dashed measurement follows this model’s winding course. The route is an illustration rather than a geographic map.'),source:'https://www.nps.gov/grca/faqs.htm'},
@@ -543,6 +587,7 @@
       {id:'canyon-overview',marker:false,at:[0,0,0],viewAim:[0,.02,0],view:[0,1,0],zoom:1.05,label:S('atlas_detail_canyon_overview', 'The winding landscape'),body:S('atlas_detail_canyon_overview_body', 'Look down on the whole terrain. Its river path represents the full canyon length. The reference relief uses about 1.6 km of depth; the relief control changes only vertical dimensions. Terrain shape, vegetation colors and rock bands are an interpretation.'),source:'https://www.nps.gov/grca/learn/management/statistics.htm'}
     ];
     if(id==='earth')return [
+      {id:'himalaya',surface:true,at:surfacePoint(.741458,.34451),visit:'everest',label:S('atlas_detail_earth_himalaya', 'Everest & the Himalaya'),body:S('atlas_detail_earth_himalaya_body', 'Find the high mountain region north of the Indian subcontinent. Continue inward to explore an elevation model around Everest, from its valleys to the summit ridge.'),source:'https://science.nasa.gov/earth/earth-observatory/exploring-mount-everests-ice-81823/'},
       {id:'arizona-canyon',surface:true,at:surfacePoint(.1886,.2994),visit:'grand-canyon',label:S('atlas_detail_earth_canyon', 'Grand Canyon, Arizona'),body:S('atlas_detail_earth_canyon_body', 'This marker locates the canyon region in northern Arizona. At the scale of the globe, the gorge is too small to show its cliffs. Continue inward to explore the canyon landscape and its changing proportions.'),source:'https://www.nps.gov/grca/index.htm'},
       {id:'pacific',surface:true,at:surfacePoint(.13,.52),label:S('atlas_detail_pacific', 'Pacific Ocean'),body:S('atlas_detail_pacific_body', 'Explore the broad blue expanse between the continents. Ocean covers about 71% of Earth. Change the sunlight angle to trace the boundary between day and night across the water.'),source:'https://science.nasa.gov/earth/facts/'},
       {id:'sahara',surface:true,at:surfacePoint(.545,.36),label:S('atlas_detail_sahara', 'Sahara & continents'),body:S('atlas_detail_sahara_body', 'The pale Sahara contrasts with greener land to its south and the surrounding ocean. This satellite mosaic lets you inspect surface patterns at a planetary scale.'),source:'https://svs.gsfc.nasa.gov/2915/'},
@@ -621,6 +666,7 @@
         sunAngle: typeof entry.sunAngle === 'number' && isFinite(entry.sunAngle) ? clamp(entry.sunAngle, 0, 180) : 45,
         nebulaReveal: entry.nebulaReveal === true,
         riverKm: canyonRouteKm(entry.riverKm),
+        terrainPoint: everestPosition(entry.terrainPoint),
         terrainRelief: typeof entry.terrainRelief === 'number' && isFinite(entry.terrainRelief) ? clamp(entry.terrainRelief,1,20) : 8,
         cutaway: entry.cutaway !== false, view: entry.view === 'chart' ? 'chart' : 'atlas' });
     });
@@ -1536,6 +1582,82 @@
       c.locator.visible=!state.comparison&&!state.flight&&state.detailId==='river-journey';
       if(c.locator.visible)c.locator.position.fromArray(canyonRoutePoint(riverTravelKm));
     }
+    function everestModel(g) {
+      var n=241,span=18000/8849,geo=track(new T.PlaneGeometry(span,span,n-1,n-1));
+      geo.rotateX(-Math.PI/2);
+      var p=geo.attributes.position,colors=new Float32Array(p.count*3);
+      for(var i=0;i<p.count;i++)p.setY(i,.64);
+      geo.setAttribute('color',new T.BufferAttribute(colors,3));
+      var land=mesh(g,geo,material('#ffffff',{vertexColors:true,roughness:.94,bumpMap:grainTexture,bumpScale:.0018}));
+      land.name='everestElevationSurface';land.visible=false;
+      // Close the cropped edges at a fixed elevation. This is a display cut,
+      // never the zero-height datum used to measure Everest.
+      var sideGeo=track(new T.BufferGeometry()),sidePos=new Float32Array((n-1)*4*18);
+      sideGeo.setAttribute('position',new T.BufferAttribute(sidePos,3));
+      var sides=mesh(g,sideGeo,material('#343b40',{roughness:1,side:T.DoubleSide}));sides.visible=false;
+      var datum=new T.Group();g.add(datum);
+      var lines=[],half=span/2;
+      for(i=-2;i<=2;i++){var q=i*half/2;lines.push(-half,0,q,half,0,q,q,0,-half,q,0,half);}
+      var datumGeo=track(new T.BufferGeometry());datumGeo.setAttribute('position',new T.Float32BufferAttribute(lines,3));
+      var datumLines=new T.LineSegments(datumGeo,track(new T.LineDashedMaterial({color:'#a5bec7',transparent:true,opacity:.48,dashSize:.035,gapSize:.02})));
+      datumLines.computeLineDistances();datum.add(datumLines);
+      var datumGuide=new T.Line(track(new T.BufferGeometry().setFromPoints([new T.Vector3(0,0,-.1019),new T.Vector3(0,1,-.1019)])),track(new T.LineDashedMaterial({color:'#e8d6a4',dashSize:.022,gapSize:.014,transparent:true,opacity:.8})));
+      datumGuide.computeLineDistances();datum.add(datumGuide);datum.visible=false;
+      g.userData.dimension='y';g.userData.extent=1;g.userData.measureCenter=.5;
+      var locator=mesh(g,track(new T.RingGeometry(.012,.016,48)),track(new T.MeshBasicMaterial({color:'#ffe1a0',side:T.DoubleSide,depthTest:false,transparent:true,opacity:.9})));
+      locator.rotation.x=-Math.PI/2;locator.renderOrder=8;locator.visible=false;locator.castShadow=false;locator.receiveShadow=false;
+      g.userData.everest={land:land,datum:datum,locator:locator,data:null,status:'loading'};
+      var controller=null,timer=0;
+      track({dispose:function(){clearTimeout(timer);if(controller)controller.abort();}});
+      function loadTerrain(){
+      if(disposed||g.userData.released)return;
+      controller=typeof AbortController!=='undefined'?new AbortController():null;
+      g.userData.everest.status='loading';invalidate();
+      timer=setTimeout(function(){if(controller)controller.abort();},20000);
+      fetch(new URL('../terrain/everest-elevation.json',atlasAssetBase).href,controller?{signal:controller.signal}:{}).then(function(response){
+        if(!response.ok)throw new Error('Terrain unavailable');return response.json();
+      }).then(function(data){
+        clearTimeout(timer);if(disposed||g.userData.released)return;
+        if(!validEverestTerrain(data))throw new Error('Invalid terrain grid');
+        var rock=new T.Color('#5e5d58').convertSRGBToLinear(),snow=new T.Color('#edf4f5').convertSRGBToLinear(),ice=new T.Color('#afc4cb').convertSRGBToLinear(),color=new T.Color(),step=data.spacingMeters||75;
+        for(var j=0;j<p.count;j++)p.setY(j,data.elevations[j]/8849);
+        geo.computeVertexNormals();
+        for(var row=0;row<n;row++)for(var col=0;col<n;col++){
+          var k=row*n+col,h=data.elevations[k],
+            dx=(data.elevations[row*n+Math.min(n-1,col+1)]-data.elevations[row*n+Math.max(0,col-1)])/(step*(col===0||col===n-1?1:2)),
+            dz=(data.elevations[Math.min(n-1,row+1)*n+col]-data.elevations[Math.max(0,row-1)*n+col])/(step*(row===0||row===n-1?1:2)),
+            slope=Math.sqrt(dx*dx+dz*dz),noise=Math.sin(col*1.73+row*.73)*Math.sin(row*1.13-col*.93),
+            cover=clamp((h-5500)/1400,0,1)*clamp((1.15-slope)*1.6+noise*.1,0,1);
+          color.copy(rock).lerp(ice,clamp((h-5400)/4000,0,.3)).lerp(snow,cover).multiplyScalar(.91+noise*.055);
+          colors[k*3]=color.r;colors[k*3+1]=color.g;colors[k*3+2]=color.b;
+        }
+        p.needsUpdate=true;geo.attributes.color.needsUpdate=true;geo.computeBoundingBox();geo.computeBoundingSphere();
+        var cursor=0;
+        function side(a,b){[a,b,-b-1,a,-b-1,-a-1].forEach(function(k){var low=k<0,index=low?-k-1:k;sidePos[cursor++]=p.getX(index);sidePos[cursor++]=low?.46:p.getY(index);sidePos[cursor++]=p.getZ(index);});}
+        for(var edge=0;edge<n-1;edge++){side(edge,edge+1);side((n-1)*n+edge+1,(n-1)*n+edge);side((edge+1)*n,edge*n);side(edge*n+n-1,(edge+1)*n+n-1);}
+        sideGeo.attributes.position.needsUpdate=true;sideGeo.computeVertexNormals();sideGeo.computeBoundingBox();sideGeo.computeBoundingSphere();
+        land.visible=sides.visible=true;g.userData.everest.data=data;g.userData.everest.status='ready';g.userData.surfaceReady=true;
+        comparisonLayoutKey='';invalidate();
+      }).catch(function(){clearTimeout(timer);if(!disposed&&!g.userData.released){g.userData.everest.status='failed';invalidate();}});
+      }
+      g.userData.everest.retry=function(){if(g.userData.everest.status==='failed')loadTerrain();};loadTerrain();
+    }
+    function terrainDetail(root,detail) {
+      var terrain=root&&root.userData.model.userData.everest;
+      if(!detail||!detail.terrain||detail.datum||!terrain||!terrain.data)return detail;
+      var at=detail.at.slice();at[1]=everestHeight(terrain.data,at[0],at[2])+.003;
+      return Object.assign({},detail,{at:at});
+    }
+    function lightEverest(root,state) {
+      var terrain=root.userData.model.userData.everest;
+      if(!terrain)return;
+      terrain.datum.visible=!!state.comparison||state.detailId==='everest-datum';
+      terrain.locator.visible=!!terrain.data&&!state.comparison&&!state.flight&&state.detailId==='everest-explore';
+      if(terrain.locator.visible){
+        var point=everestPosition(state.terrainPoint),x=point.east/8849,z=-point.north/8849;
+        terrain.locator.position.set(x,everestHeight(terrain.data,x,z)+.004,z);
+      }
+    }
     function model(item) {
       var previousResources = new Set(resources);
       var g=new T.Group(), id=item.id, a=material('#8cd9ce'), b=material('#d49b69'), dark=material('#293f4b'), white=material('#eceadf');
@@ -1704,17 +1826,16 @@
         box(g,material('#368568'),0,0,0,1,0.014,0.65);var chalk=material('#e3e8dc');
         [-0.47,0,0.47].forEach(function(x){rod(g,[x,0.013,-0.29],[x,0.013,0.29],0.002,chalk);});[-0.29,0.29].forEach(function(z){rod(g,[-0.47,0.013,z],[0.47,0.013,z],0.002,chalk);});ring(g,0.085,'#e3e8dc');g.rotation.x=0.25;
       } else if(id==='grand-canyon') {canyonModel(g);
-      } else if(['everest','reef','chicxulub'].indexOf(id)>=0) {
+      } else if(id==='everest') {everestModel(g);
+      } else if(['reef','chicxulub'].indexOf(id)>=0) {
         var terrain=track(new T.PlaneGeometry(1,1,100,100)), pos=terrain.attributes.position,landColors=[];
         for(j=0;j<pos.count;j++){var tx=pos.getX(j),ty=pos.getY(j),d=Math.sqrt(tx*tx+ty*ty),hgt;
-          if(id==='everest')hgt=Math.max(0,0.7-d*1.5)*(0.85+0.15*Math.sin(tx*23)*Math.cos(ty*18));
-          else if(id==='chicxulub')hgt=0.12*Math.exp(-Math.pow((d-0.3)*24,2));
+          if(id==='chicxulub')hgt=0.12*Math.exp(-Math.pow((d-0.3)*24,2));
           else hgt=0.035+0.04*Math.sin(tx*50)*Math.cos(ty*38);
           var detail=(Math.sin(tx*74+ty*31)+Math.sin(ty*137-tx*59))*.003;
           hgt+=detail;pos.setZ(j,hgt);
-          var lc=new T.Color(id==='reef'?'#477c73':id==='everest'?'#655e55':'#945c3c').convertSRGBToLinear();
-          if(id==='everest')lc.lerp(new T.Color('#ecf1ed').convertSRGBToLinear(),clamp((hgt-.22+Math.sin(tx*60)*.028)*8,0,1));
-          else if(id==='reef')lc.lerp(new T.Color('#a7a177').convertSRGBToLinear(),clamp(hgt*9,0,1));
+          var lc=new T.Color(id==='reef'?'#477c73':'#945c3c').convertSRGBToLinear();
+          if(id==='reef')lc.lerp(new T.Color('#a7a177').convertSRGBToLinear(),clamp(hgt*9,0,1));
           landColors.push(lc.r,lc.g,lc.b);
         }
         terrain.setAttribute('color',new T.Float32BufferAttribute(landColors,3));terrain.computeVertexNormals();m=mesh(g,terrain,material('#ffffff',{vertexColors:true,side:T.DoubleSide,roughness:.95,bumpMap:grainTexture,bumpScale:.008}));m.rotation.x=-Math.PI/2;g.rotation.x=.32;g.rotation.y=-.35;
@@ -1870,7 +1991,7 @@
         root.scale.setScalar(3 * item.size / pair.big.size);
         root.userData.ruler.visible = state.measure;
         root.userData.ruler.quaternion.identity();
-        root.userData.model.rotation.y = root.userData.initialYaw;lightCanyon(root,state);
+        root.userData.model.rotation.y = root.userData.initialYaw;lightCanyon(root,state);lightEverest(root,state);
         if (root.userData.model.userData.outerMembrane) root.userData.model.userData.outerMembrane.visible = !state.cutaway;
         if (root.userData.model.userData.microbe) animateMicrobe(root.userData.model,state.cutaway,0);
         if (root.userData.model.userData.solarInterior) animateSun(root.userData.model,state.cutaway,0);
@@ -1928,7 +2049,7 @@
       canvas.dataset.atlasSmallPixels = (3 / pair.ratio * height / (2 * halfH)).toPrecision(5);
       canvas.dataset.atlasExponent = canvas.dataset.atlasTarget = log10(pair.big.size).toFixed(4);
       canvas.dataset.atlasYaw = yaw.toFixed(4); canvas.dataset.atlasZoom = cameraZoom.toFixed(2);
-      canvas.dataset.atlasDetail = ''; canvas.dataset.atlasHabitat = 'studio';delete canvas.dataset.atlasRelief;
+      canvas.dataset.atlasDetail = ''; canvas.dataset.atlasHabitat = 'studio';delete canvas.dataset.atlasRelief;delete canvas.dataset.atlasTerrain;
       canvas.dataset.atlasCutaway = state.cutaway ? 'open' : 'closed';
       if(list.some(function(item){return item.id==='orion-nebula';}))canvas.dataset.atlasCloud=state.nebulaReveal?'revealed':'natural';else delete canvas.dataset.atlasCloud;
       delete canvas.dataset.atlasSunAngle;delete canvas.dataset.atlasIlluminated;delete canvas.dataset.atlasImagery;
@@ -2037,12 +2158,19 @@
         hemisphere.intensity=.5;rim.intensity=.2;fill.intensity=.15;key.intensity=1.45;key.color.set('#ffe0b6');key.castShadow=true;key.shadow.normalBias=.001;
         distance-=2.4*close;
       }
+      if(focal&&focal.id==='everest'){
+        scene.background.set(state.contrast?'#000000':'#1c3446');scene.fog=new T.Fog(state.contrast?'#000000':'#1c3446',15,35);
+        motes.visible=ground.visible=garden.visible=false;haze.material.opacity=.018;haze2.material.opacity=.01;
+        hemisphere.intensity=.46;rim.intensity=.28;fill.intensity=.12;key.intensity=1.8;key.color.set('#fff0d5');key.castShadow=true;key.shadow.normalBias=.002;
+        var alpineAngle=(clamp(state.sunAngle===undefined?45:state.sunAngle,0,180)-90)*Math.PI/180;
+        key.position.set(Math.sin(alpineAngle)*7,4,Math.cos(alpineAngle)*7);key.target.position.set(0,1,0);distance+=3*close;
+      }
       // Leave a quiet band for the heading and fit narrow portrait screens.
       distance*=Math.max(1,.95/camera.aspect);
       distance/=cameraZoom;
       camera.near=focal&&focal.id==='solar-system'?.002:.05;camera.updateProjectionMatrix();
       var detailKey=state.focusId+':'+state.detailId+(state.detailId==='river-journey'?':'+canyonRouteKm(state.riverKm):''),detailChanged=detailKey!==previousDetail;
-      if(detailChanged)orbitGoal=state.detailId?{yaw:0,pitch:.12}:null;
+      if(detailChanged)orbitGoal=state.detailId?{yaw:0,pitch:.12}:state.focusId==='everest'?{yaw:.2,pitch:.5}:null;
       var occupied=[], visible=[];paintCount++;
       Object.keys(models).forEach(function(id){models[id].visible=false;});
       candidates.forEach(function(it){
@@ -2053,7 +2181,7 @@
         if(it.group==='cosmic' && it.dim!=='distance'&&!isPlanetaryWorld(it.id)&&it.id!=='sun'&&it.id!=='orion-nebula'&&it.id!=='milkyway'&&it.id!=='solar-system')root.userData.model.rotation.y=root.userData.initialYaw+time*0.018;
         if(root.userData.model.userData.starMaterial)root.userData.model.userData.starMaterial.uniforms.uTime.value=time;
         if(root.userData.model.userData.outerMembrane)root.userData.model.userData.outerMembrane.visible=!state.cutaway;
-        lightCanyon(root,state);
+        lightCanyon(root,state);lightEverest(root,state);
         if(root.userData.model.userData.microbe)animateMicrobe(root.userData.model,state.cutaway,time);
         if(root.userData.model.userData.solarInterior)animateSun(root.userData.model,state.cutaway,time);
         var shoulder = Math.sign(delta) * scale * 0.65 * Math.min(1, Math.abs(delta) * 5);
@@ -2082,14 +2210,16 @@
       // centre follow its normalization, rotation, and scale without drift.
       var activeRoot=visible.filter(function(r){return r.userData.itemId===state.focusId;})[0];
       var planetary=!!activeRoot&&isPlanetaryWorld(state.focusId)&&close>.8;
-      var imagery=planetary?(activeRoot.userData.model.userData.imageryReady?'ready':activeRoot.userData.model.userData.imageryError?'failed':'loading'):'';
+      var alpine=!!activeRoot&&state.focusId==='everest'&&close>.8;
+      var imagery=alpine?activeRoot.userData.model.userData.everest.status:planetary?(activeRoot.userData.model.userData.imageryReady?'ready':activeRoot.userData.model.userData.imageryError?'failed':'loading'):'';
       var imageryKey=state.focusId+':'+imagery;
-      if(imageryKey!==lastImagery){lastImagery=imageryKey;if(onImagery)onImagery({id:state.focusId,status:imagery});}
+      if(imageryKey!==lastImagery){lastImagery=imageryKey;if(onImagery)onImagery({id:state.focusId,status:imagery,data:alpine?activeRoot.userData.model.userData.everest.data:null});}
       var selected=state.details.filter(function(d){return d.id===state.detailId;})[0];
       if(!activeRoot||close<.8)selected=null;
-      if(selected&&selected.surface&&imagery!=='ready')selected=null;
+      if(selected&&(selected.surface||selected.terrain)&&imagery!=='ready')selected=null;
+      selected=terrainDetail(activeRoot,selected);
       if(selected&&selected.id==='river-journey')selected=Object.assign({},selected,{at:canyonRoutePoint(riverTravelKm),view:canyonRouteView(riverTravelKm)});
-      scene.updateMatrixWorld(true);aimGoal.set(0,.2,0);
+      scene.updateMatrixWorld(true);aimGoal.set(0,alpine?.9:.2,0);
       if(planetary){globeCenter.set(0,0,0);activeRoot.userData.model.localToWorld(globeCenter);}
       if(selected){aimGoal.fromArray(selected.viewAim||selected.at);activeRoot.userData.model.localToWorld(aimGoal);}
       if(selected&&selected.view&&(detailChanged||riverMoving)){lightView.fromArray(selected.view).transformDirection(activeRoot.userData.model.matrixWorld);orbitGoal={yaw:Math.atan2(lightView.x,lightView.z),pitch:clamp(Math.asin(lightView.y),-1.1,1.1)};}
@@ -2101,8 +2231,15 @@
       var aimMoving=cameraAim.distanceToSquared(aimGoal)>.000001;
       if(!aimMoving)cameraAim.copy(aimGoal);
       cameraSettling=aimMoving||!!orbitGoal||cameraZoom!==zoomGoal||riverMoving;
-      var cameraPitch=ground.visible?Math.max(-.1,pitch):pitch;
+      var cameraPitch=alpine&&state.detailId==='everest-explore'?Math.max(.12,pitch):ground.visible?Math.max(-.1,pitch):pitch;
       camera.position.set(Math.sin(yaw)*Math.cos(cameraPitch)*distance,Math.sin(cameraPitch)*distance,Math.cos(yaw)*Math.cos(cameraPitch)*distance).add(cameraAim);
+      if(alpine&&state.detailId==='everest-explore'&&imagery==='ready'){
+        lightView.copy(camera.position);activeRoot.userData.model.worldToLocal(lightView);
+        if(Math.abs(lightView.x)<=9000/8849&&Math.abs(lightView.z)<=9000/8849){
+          var terrainClearance=everestHeight(activeRoot.userData.model.userData.everest.data,lightView.x,lightView.z)+.025;
+          if(lightView.y<terrainClearance){lightView.y=terrainClearance;activeRoot.userData.model.localToWorld(lightView);camera.position.copy(lightView);}
+        }
+      }
       if(planetary){
         lightView.copy(camera.position).sub(globeCenter);var minimumDistance=activeRoot.scale.x*.5+.12;
         if(lightView.length()<minimumDistance)camera.position.copy(globeCenter).add(lightView.normalize().multiplyScalar(minimumDistance));
@@ -2125,8 +2262,9 @@
       if(selected){focusRing.position.fromArray(selected.at);activeRoot.userData.model.localToWorld(focusRing.position);focusRing.quaternion.copy(camera.quaternion);focusRing.scale.setScalar(distance*.075);}
       var solarLabels=[];
       if(markers)Array.prototype.slice.call(markers.querySelectorAll('[data-scale-marker]')).sort(function(a,b){return state.focusId==='solar-system'||state.focusId==='grand-canyon'?Number(b.dataset.scaleMarker===state.detailId)-Number(a.dataset.scaleMarker===state.detailId):0;}).forEach(function(button){
-        var detail=state.details.filter(function(d){return d.id===button.dataset.scaleMarker;})[0];
+        var detail=terrainDetail(activeRoot,state.details.filter(function(d){return d.id===button.dataset.scaleMarker;})[0]);
         var available=!!detail&&detail.marker!==false&&!!activeRoot&&close>.8&&(detail.cutaway===undefined||detail.cutaway===state.cutaway)&&state.showDetails;
+        if(available&&detail.terrain)available=imagery==='ready';
         if(available&&state.focusId==='sun')available=solarFeatureVisible(activeRoot,detail,state.cutaway);
         if(available&&state.focusId==='solar-system')available=(detail.id===state.detailId||cameraZoom>=(detail.minZoom||0))&&cameraZoom<=(detail.maxZoom||32);
         if(available){markerPoint.fromArray(detail.at);activeRoot.userData.model.localToWorld(markerPoint);if(detail.surface)available=imagery==='ready'&&lightView.copy(markerPoint).sub(globeCenter).dot(lightSide.copy(camera.position).sub(markerPoint))>0;markerPoint.project(camera);var px=(markerPoint.x*.5+.5)*width,py=(-markerPoint.y*.5+.5)*height;available=available&&markerPoint.z>-1&&markerPoint.z<1&&px>24&&px<width-24&&py>125&&py<height-65;
@@ -2152,7 +2290,8 @@
       canvas.dataset.atlasCutaway=state.cutaway?'open':'closed';
       canvas.dataset.atlasDetail=selected?selected.id:'';canvas.dataset.atlasAim=cameraAim.toArray().map(function(v){return v.toFixed(4);}).join(',');
       if(selected&&selected.id==='river-journey'){canvas.dataset.atlasRiverKm=String(canyonRouteKm(state.riverKm));canvas.dataset.atlasRiverTravelKm=riverTravelKm.toFixed(2);}else {delete canvas.dataset.atlasRiverKm;delete canvas.dataset.atlasRiverTravelKm;}
-      canvas.dataset.atlasHabitat=focal&&focal.id==='grand-canyon'?'canyon':isLeafWorld?'leaf':'realm';
+      canvas.dataset.atlasHabitat=focal&&focal.id==='grand-canyon'?'canyon':alpine?'alpine':isLeafWorld?'leaf':'realm';
+      if(alpine)canvas.dataset.atlasTerrain=imagery;else delete canvas.dataset.atlasTerrain;
       if(focal&&focal.id==='grand-canyon')canvas.dataset.atlasRelief=String(state.terrainRelief||8);else delete canvas.dataset.atlasRelief;
       canvas.dataset.atlasSurface=visible[0]&&visible[0].userData.model.userData.surfaceReady?'detailed':'procedural';
       if(state.focusId==='orion-nebula')canvas.dataset.atlasCloud=state.nebulaReveal?'revealed':'natural';else delete canvas.dataset.atlasCloud;
@@ -2225,6 +2364,14 @@
       if(canvas.hasPointerCapture(ev.pointerId))canvas.releasePointerCapture(ev.pointerId);if(didMove||!allowPick)return;
       var state=read();if(state.focusId==='solar-system'&&!state.comparison){var target=orbitalTarget(ev);if(target)pick('solar-system',target.id);return;}
       var rect=canvas.getBoundingClientRect();pointer.set((ev.clientX-rect.left)/rect.width*2-1,-(ev.clientY-rect.top)/rect.height*2+1);ray.setFromCamera(pointer,activeCamera);
+      if(state.focusId==='everest'&&state.detailId==='everest-explore'&&!state.comparison){
+        var alpineModel=models.everest&&models.everest.userData.model,terrain=alpineModel&&alpineModel.userData.everest;
+        if(terrain&&terrain.status==='ready'){
+          var terrainHits=ray.intersectObject(terrain.land);
+          if(terrainHits.length){var local=alpineModel.worldToLocal(terrainHits[0].point.clone());pick('everest','everest-explore',{east:local.x*8849,north:-local.z*8849});}
+        }
+        return;
+      }
       var hits=ray.intersectObjects(Object.keys(models).map(function(id){return models[id];}).filter(function(m){return m.visible;}),true);
       for(var i=0;i<hits.length;i++){if(!hits[i].object.isMesh)continue;var obj=hits[i].object;while(obj&&!obj.userData.itemId)obj=obj.parent;if(obj){pick(obj.userData.itemId);break;}}
     }
@@ -2236,7 +2383,9 @@
     canvas.addEventListener('pointerdown',down);canvas.addEventListener('pointermove',move);canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',cancel);canvas.addEventListener('lostpointercapture',cancel);canvas.addEventListener('webglcontextlost',lost);
     document.addEventListener('visibilitychange',visibility);
     var resize=window.ResizeObserver?new ResizeObserver(invalidate):null;if(resize)resize.observe(canvas.parentElement);
-    var intersection=window.IntersectionObserver?new IntersectionObserver(function(entries){inView=entries[0].isIntersecting;if(inView)invalidate();else {if(frame)cancelAnimationFrame(frame);frame=0;last=0;}}):null;if(intersection)intersection.observe(canvas);
+    // A quick scroll can queue both exit and entry. Use the newest entry so
+    // an earlier exit cannot leave a visible canvas suspended indefinitely.
+    var intersection=window.IntersectionObserver?new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.target===canvas)inView=entry.isIntersecting;});if(inView)invalidate();else {if(frame)cancelAnimationFrame(frame);frame=0;last=0;}}):null;if(intersection)intersection.observe(canvas);
     try { paint(); } catch(err) { dispose(); throw err; }
     schedule();
     function dispose(){if(disposed)return;disposed=true;cancelAnimationFrame(frame);if(resize)resize.disconnect();if(intersection)intersection.disconnect();document.removeEventListener('visibilitychange',visibility);
@@ -2248,6 +2397,7 @@
       approach:function(){previousDetail='';invalidate();},
       capture:function(){return {yaw:orbitGoal?orbitGoal.yaw:yaw,pitch:orbitGoal?orbitGoal.pitch:pitch};},
       restore:function(view){riverTravelKm=canyonRouteKm(view.riverKm);orbitGoal=null;yaw=turnAngle(view.yaw);pitch=clamp(view.pitch,-1.1,1.1);cameraZoom=zoomGoal=view.zoom;lastZoomInput=view.zoom;previousDetail=read().focusId+':'+view.detailId+(view.detailId==='river-journey'?':'+canyonRouteKm(view.riverKm):'');invalidate();},
+      retryTerrain:function(){var root=models.everest;if(root&&root.userData.model.userData.everest)root.userData.model.userData.everest.retry();},
       dispose:dispose };
   }
 
@@ -2419,7 +2569,11 @@
       var _terrainRelief=React.useState(8);var terrainRelief=_terrainRelief[0],setTerrainRelief=_terrainRelief[1];
       var _riverKm=React.useState(0);var riverKm=_riverKm[0],setRiverKm=_riverKm[1];
       var riverSliderRef=React.useRef(null);
+      var _terrainPoint=React.useState(function(){return everestPosition();});var terrainPoint=_terrainPoint[0],setTerrainPoint=_terrainPoint[1];
+      var terrainMapRef=React.useRef(null),terrainPointerRef=React.useRef(null);
       var _planetImagery=React.useState({id:'',status:''});var planetImagery=_planetImagery[0],setPlanetImagery=_planetImagery[1];
+      var terrainData=planetImagery.id==='everest'&&planetImagery.status==='ready'?planetImagery.data:null;
+      var terrainMap=React.useMemo(function(){return everestMapImage(terrainData);},[terrainData]);
       var _detailId=React.useState('');var detailId=_detailId[0],setDetailId=_detailId[1];
       var _showDetails=React.useState(true);var showDetails=_showDetails[0],setShowDetails=_showDetails[1];
       var _featureNoteOpen=React.useState(false);var featureNoteOpen=_featureNoteOpen[0],setFeatureNoteOpen=_featureNoteOpen[1];
@@ -2471,8 +2625,8 @@
       // paint the old person at the new camera position.
       var sortedRef = React.useRef(sorted); sortedRef.current = sorted;
       var focused = byId[focusId] || byId.human;
-      var details=atlasDetails(focusId,S,terrainRelief,riverKm),selectedDetail=details.filter(function(d){return d.id===detailId;})[0];
-      var availableDetails=details.filter(function(d){return !d.surface||(planetImagery.id===focusId&&planetImagery.status==='ready');});
+      var details=atlasDetails(focusId,S,terrainRelief,riverKm,terrainPoint),selectedDetail=details.filter(function(d){return d.id===detailId;})[0];
+      var availableDetails=details.filter(function(d){return !(d.surface||d.terrain)||(planetImagery.id===focusId&&planetImagery.status==='ready');});
       React.useEffect(function(){setFeatureNoteOpen(false);},[focusId,viewMode,comparisonActive]);
       var observationDetail = viewMode === 'atlas' && selectedDetail ? selectedDetail.id : '';
       var currentObservationKey = observationKey(focused.id, observationDetail);
@@ -2495,7 +2649,7 @@
         if (!savedObservation && observations.length >= NOTEBOOK_LIMIT) return;
         var angle = viewMode === 'atlas' && atlasRef.current ? atlasRef.current.capture() : { yaw: 0, pitch: .12 };
         var entry = { itemId: focused.id, detailId: observationDetail, size: focused.size, you: !!focused.you,
-          note: observationDraft.trim(), zoom: inspectionZoom, yaw: angle.yaw, pitch: angle.pitch, sunAngle:sunAngle, nebulaReveal:nebulaReveal, terrainRelief:terrainRelief, riverKm:riverKm, cutaway: cutaway, view: viewMode };
+          note: observationDraft.trim(), zoom: inspectionZoom, yaw: angle.yaw, pitch: angle.pitch, sunAngle:sunAngle, nebulaReveal:nebulaReveal, terrainRelief:terrainRelief, riverKm:riverKm, terrainPoint:terrainPoint, cutaway: cutaway, view: viewMode };
         var next = [entry].concat(observations.filter(function (old) { return observationKey(old.itemId, old.detailId) !== currentObservationKey; }));
         setObservations(next);
         updateSlice(function (cur) { cur.observations = next; });
@@ -2533,6 +2687,10 @@
           lines.push(sciNotation(entry.size));
           if(isPlanetaryWorld(entry.itemId)&&entry.view==='atlas')lines.push(S('atlas_observation_sun', 'Lighting model: {angle}° Sun–observer angle; approximately {percent}% of the disc illuminated.', {angle:entry.sunAngle,percent:illuminatedDisc(entry.sunAngle)}));
           if(entry.itemId==='grand-canyon'&&entry.view==='atlas')lines.push(S('atlas_canyon_export', 'Vertical relief: {n}×. River length remains 446 km. Terrain is illustrative.',{n:entry.terrainRelief||8}));
+          if(entry.detailId==='everest-explore'){
+            var point=everestPosition(entry.terrainPoint);
+            lines.push(S('atlas_terrain_export', 'Exploration position: {east} m east, {north} m north of the elevation grid centre (27.98° N, 86.925° E). Terrain samples are 75 m apart.',{east:point.east,north:point.north}));
+          }
           if(entry.detailId==='river-journey')lines.push(S('atlas_river_export', 'River journey: {n} km along the illustrated 446 km course. Position is within the model, not a geographic coordinate.',{n:canyonRouteKm(entry.riverKm)}));
           if(entry.itemId==='orion-nebula'&&entry.view==='atlas')lines.push(entry.nebulaReveal?S('atlas_nebula_export_revealed', 'Cloud visibility: reduced to reveal embedded stars.'):S('atlas_nebula_export_natural', 'Cloud visibility: full gas and dust.'));
           if (entry.note) lines.push(S('atlas_observation_note', 'My observation: {note}', { note: entry.note }));
@@ -2602,7 +2760,9 @@
         finally { if (anchor) anchor.remove(); if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000); }
       }
       function chooseDetail(detail,force){
+        if((detail.surface||detail.terrain)&&(planetImagery.id!==focusId||planetImagery.status!=='ready'))return;
         stopJourney();
+        if(detail.datum)setMeasure(true);
         if(detailId===detail.id&&!force){setDetailId('');setInspectionZoom(1);return;}
         setDetailId(detail.id);setShowDetails(true);setNeighbors(false);setInspectionZoom(detail.zoom||(focusId==='dna'?2.2:1.8));
         if(detail.cutaway!==undefined)setCutaway(detail.cutaway);
@@ -2637,7 +2797,7 @@
         arriveNow();
         var angle=atlasRef.current?atlasRef.current.capture():{yaw:0,pitch:.12};
         var origin={itemId:focusId,detailId:detailId,zoom:inspectionZoom,yaw:angle.yaw,pitch:angle.pitch,
-          sunAngle:sunAngle,nebulaReveal:nebulaReveal,terrainRelief:terrainRelief,riverKm:riverKm,cutaway:cutaway,view:viewMode,route:true,neighbors:neighbors,measure:measure};
+          sunAngle:sunAngle,nebulaReveal:nebulaReveal,terrainRelief:terrainRelief,riverKm:riverKm,terrainPoint:terrainPoint,cutaway:cutaway,view:viewMode,route:true,neighbors:neighbors,measure:measure};
         setAtlasRoute(function(previous){return previous.concat([origin]).slice(-6);});
         openItem(item,true,{travel:Object.assign({},origin,{details:details})});
       }
@@ -2693,8 +2853,69 @@
             h('button',{type:'button',disabled:riverKm===446,'aria-label':S('atlas_river_forward', 'Move forward 25 km'),onClick:function(){moveAlongRiver(riverKm+25);}},'→')));
       }
 
+      function moveAcrossTerrain(point){
+        if(!terrainData)return;
+        arriveNow();stopJourney();setTerrainPoint(everestPosition(point));setNeighbors(false);setFeatureNoteOpen(false);
+        if(detailId!=='everest-explore'){setDetailId('everest-explore');setInspectionZoom(3.2);}
+      }
+      function leaveTerrain(){
+        chooseDetail(details.filter(function(d){return d.id==='everest-overview';})[0],true);
+        if(atlasCanvasRef.current)atlasCanvasRef.current.focus({preventScroll:true});
+      }
+      React.useEffect(function(){
+        terrainPointerRef.current=null;
+        if(viewMode==='atlas'&&!comparisonActive&&detailId==='everest-explore'&&terrainMapRef.current)terrainMapRef.current.focus({preventScroll:true});
+      },[viewMode,comparisonActive,detailId]);
+      function terrainNavigator(){
+        if(viewMode!=='atlas'||comparisonActive||scaleFlight||focusId!=='everest'||detailId!=='everest-explore'||!terrainData)return null;
+        var altitude=Math.round(everestHeight(terrainData,terrainPoint.east/8849,-terrainPoint.north/8849)*8849/10)*10,
+          cx=(terrainPoint.east/18000+.5)*241,cy=(.5-terrainPoint.north/18000)*241;
+        function locate(ev){
+          var rect=ev.currentTarget.getBoundingClientRect();
+          moveAcrossTerrain({east:((ev.clientX-rect.left)/rect.width-.5)*18000,north:(.5-(ev.clientY-rect.top)/rect.height)*18000});
+        }
+        function key(ev){
+          var delta=ev.shiftKey?1000:250,point={east:terrainPoint.east,north:terrainPoint.north};
+          if(ev.key==='ArrowLeft')point.east-=delta;else if(ev.key==='ArrowRight')point.east+=delta;
+          else if(ev.key==='ArrowUp')point.north+=delta;else if(ev.key==='ArrowDown')point.north-=delta;
+          else if(ev.key==='Home')point=everestPosition();else return;
+          ev.preventDefault();moveAcrossTerrain(point);
+        }
+        return h('section',{className:'sx-terrain-nav','aria-label':S('atlas_terrain_navigate', 'Navigate the mountain'),onKeyDown:function(ev){if(ev.key==='Escape'){ev.preventDefault();leaveTerrain();}}},
+          h('div',{className:'sx-terrain-map-wrap'},
+            h('svg',{ref:terrainMapRef,className:'sx-terrain-map',viewBox:'0 0 241 241',tabIndex:0,role:'group',
+              'aria-label':S('atlas_terrain_map', 'Interactive terrain map'),'aria-describedby':descId+'-terrain-help',onKeyDown:key,
+              onPointerDown:function(ev){if(ev.button!==0||terrainPointerRef.current!==null)return;ev.preventDefault();ev.currentTarget.focus({preventScroll:true});terrainPointerRef.current=ev.pointerId;ev.currentTarget.setPointerCapture(ev.pointerId);locate(ev);},
+              onPointerMove:function(ev){if(terrainPointerRef.current===ev.pointerId)locate(ev);},
+              onPointerUp:function(ev){if(terrainPointerRef.current===ev.pointerId){locate(ev);terrainPointerRef.current=null;if(ev.currentTarget.hasPointerCapture(ev.pointerId))ev.currentTarget.releasePointerCapture(ev.pointerId);}},
+              onPointerCancel:function(){terrainPointerRef.current=null;},onLostPointerCapture:function(){terrainPointerRef.current=null;}},
+              h('image',{href:terrainMap,width:241,height:241,'aria-hidden':'true'}),
+              h('path',{d:'M120.5 0V241M0 120.5H241',stroke:'#d9ebe3',opacity:.15,'aria-hidden':'true'}),
+              h('path',{d:'M17 37V14M12 21L17 14 22 21',fill:'none',stroke:'#eef5ed',strokeWidth:2,'aria-hidden':'true'}),
+              h('text',{x:17,y:51,textAnchor:'middle',fill:'#eff7ee',fontSize:13,'aria-hidden':'true'},'N'),
+              h('g',{transform:'translate('+cx+','+cy+')','aria-hidden':'true'},
+                h('circle',{r:13,fill:'#18252c',fillOpacity:.5,stroke:'#ffe3a8',strokeWidth:1.5}),
+                h('path',{d:'M-20 0H-6M6 0H20M0-20V-6M0 6V20',stroke:'#ffe3a8',strokeWidth:1.5}),
+                h('circle',{r:3,fill:'#ffe3a8'}))),
+            h('span',null,S('atlas_terrain_map_scale', '18 km across · north up'))),
+          h('div',{className:'sx-terrain-readout'},
+            h('span',{className:'sx-terrain-eyebrow'},S('atlas_terrain_at_point', 'At your position')),
+            h('output',{'aria-live':'off','data-terrain-elevation':altitude},S('atlas_terrain_altitude', '≈ {n} m',{n:altitude.toLocaleString()})),
+            h('span',null,S('atlas_terrain_datum', 'Above sea level · sampled terrain')),
+            h('p',{id:descId+'-terrain-help'},S('atlas_terrain_help', 'Drag the map or click the mountain. Arrow keys move 250 m; Shift moves 1 km. Home returns to the summit ridge.')),
+            h('div',{className:'sx-terrain-actions'},
+              h('button',{type:'button',onClick:function(){moveAcrossTerrain(everestPosition());}},S('atlas_terrain_summit', 'Summit ridge')),
+              h('button',{type:'button',onClick:leaveTerrain},S('atlas_river_leave', 'Whole landscape')))),
+          h('div',{className:'sx-terrain-steps','aria-label':S('atlas_terrain_steps', 'Move in 250 metre steps')},
+            [[0,250,'↑',S('atlas_terrain_north', 'Move north 250 metres')],[-250,0,'←',S('atlas_terrain_west', 'Move west 250 metres')],[250,0,'→',S('atlas_terrain_east', 'Move east 250 metres')],[0,-250,'↓',S('atlas_terrain_south', 'Move south 250 metres')]].map(function(step,i){
+              return h('button',{key:i,type:'button','aria-label':step[3],disabled:step[0]<0&&terrainPoint.east<=-9000||step[0]>0&&terrainPoint.east>=9000||step[1]<0&&terrainPoint.north<=-9000||step[1]>0&&terrainPoint.north>=9000,onClick:function(){moveAcrossTerrain({east:terrainPoint.east+step[0],north:terrainPoint.north+step[1]});}},step[2]);
+            })),
+          h('span',{className:'sx-terrain-position','data-terrain-east':terrainPoint.east,'data-terrain-north':terrainPoint.north,'aria-live':'polite','aria-atomic':'true'},
+            S('atlas_terrain_position', '{east} m east · {north} m north of grid centre',{east:terrainPoint.east,north:terrainPoint.north})+' · '+S('atlas_terrain_altitude', '≈ {n} m',{n:altitude.toLocaleString()})));
+      }
+
       function featureNavigator(){
-        if(viewMode!=='atlas'||comparisonActive||atlasStatus!=='ready'||!details.length||detailId==='river-journey')return null;
+        if(viewMode!=='atlas'||comparisonActive||atlasStatus!=='ready'||!details.length||detailId==='river-journey'||detailId==='everest-explore')return null;
         var position=details.findIndex(function(d){return d.id===detailId;})+1;
         var readLabel=selectedDetail?S('atlas_feature_about', 'About {part}',{part:selectedDetail.label}):S('atlas_feature_start', 'Explore landmarks');
         return h('nav',{className:'sx-feature-nav','aria-label':S('atlas_feature_navigation', 'Landmark navigator'),onKeyDown:onFeatureKey},
@@ -2735,9 +2956,9 @@
         try { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) { return false; }
       }); var reduceMotion = _reduceMotion[0], setReduceMotion = _reduceMotion[1];
       var atlasState = React.useRef(null);
-      atlasState.current = { items: sorted, exp: expRef.current, motion: !comparisonActive && ambient && !reduceMotion, reduceMotion:reduceMotion, contrast: theme === 'contrast', neighbors: neighbors, measure: measure, inspectionZoom: inspectionZoom, sunAngle:sunAngle, nebulaReveal:nebulaReveal, terrainRelief:terrainRelief, riverKm:riverKm, cutaway: cutaway, focusId:focusId, details:details, detailId:detailId, showDetails:showDetails, comparison: comparisonActive ? compare : null };
+      atlasState.current = { items: sorted, exp: expRef.current, motion: !comparisonActive && ambient && !reduceMotion, reduceMotion:reduceMotion, contrast: theme === 'contrast', neighbors: neighbors, measure: measure, inspectionZoom: inspectionZoom, sunAngle:sunAngle, nebulaReveal:nebulaReveal, terrainRelief:terrainRelief, riverKm:riverKm, terrainPoint:terrainPoint, cutaway: cutaway, focusId:focusId, details:details, detailId:detailId, showDetails:showDetails, comparison: comparisonActive ? compare : null };
       var atlasActions = React.useRef(null);
-      atlasActions.current = { pick: function (id,part) { var detail=part&&focusId===id&&details.filter(function(d){return d.id===part;})[0];if(detail)chooseDetail(detail,true);else if(byId[id])openItem(byId[id]); }, zoom: function (delta) {
+      atlasActions.current = { pick: function (id,part,point) { if(id==='everest'&&part==='everest-explore'&&point){moveAcrossTerrain(point);return;}var detail=part&&focusId===id&&details.filter(function(d){return d.id===part;})[0];if(detail)chooseDetail(detail,true);else if(byId[id])openItem(byId[id]); }, zoom: function (delta) {
         if (comparisonActive) setInspectionZoom(function (prev) { return Math.round(clamp(prev + delta, 1, 2.5) * 10) / 10; });
         else zoomBy(delta);
       } };
@@ -2745,8 +2966,8 @@
       // Wait for a newly mounted atlas before restoring its camera angle.
       React.useEffect(function () {
         if (!pendingObservation || focusId !== pendingObservation.itemId) return;
-        setDetailId(pendingObservation.detailId); setInspectionZoom(pendingObservation.zoom); setSunAngle(pendingObservation.sunAngle); setNebulaReveal(pendingObservation.nebulaReveal); setTerrainRelief(pendingObservation.terrainRelief||8); setRiverKm(canyonRouteKm(pendingObservation.riverKm)); setCutaway(pendingObservation.cutaway); setShowDetails(true); setNeighbors(false);
-        if (detailId !== pendingObservation.detailId || inspectionZoom !== pendingObservation.zoom || sunAngle !== pendingObservation.sunAngle || nebulaReveal !== pendingObservation.nebulaReveal || terrainRelief !== (pendingObservation.terrainRelief||8) || riverKm !== canyonRouteKm(pendingObservation.riverKm) || cutaway !== pendingObservation.cutaway) return;
+        setDetailId(pendingObservation.detailId); setInspectionZoom(pendingObservation.zoom); setSunAngle(pendingObservation.sunAngle); setNebulaReveal(pendingObservation.nebulaReveal); setTerrainRelief(pendingObservation.terrainRelief||8); setRiverKm(canyonRouteKm(pendingObservation.riverKm)); setTerrainPoint(everestPosition(pendingObservation.terrainPoint)); setCutaway(pendingObservation.cutaway); setShowDetails(true); setNeighbors(false);
+        if (detailId !== pendingObservation.detailId || inspectionZoom !== pendingObservation.zoom || sunAngle !== pendingObservation.sunAngle || nebulaReveal !== pendingObservation.nebulaReveal || terrainRelief !== (pendingObservation.terrainRelief||8) || riverKm !== canyonRouteKm(pendingObservation.riverKm) || terrainPoint.east !== everestPosition(pendingObservation.terrainPoint).east || terrainPoint.north !== everestPosition(pendingObservation.terrainPoint).north || cutaway !== pendingObservation.cutaway) return;
         if (viewMode === 'atlas' && (atlasStatus !== 'ready' || !atlasRef.current)) return;
         if (viewMode === 'atlas') atlasRef.current.restore(pendingObservation);
         setPendingObservation(null);
@@ -2754,7 +2975,7 @@
         if (cv) cv.scrollIntoView({ block: 'center', behavior: 'auto' });
         if(pendingObservation.route){setNeighbors(pendingObservation.neighbors);setMeasure(pendingObservation.measure);say(S('atlas_route_restored', 'Returned to your saved viewpoint of {name}.',{name:itemText(byId[pendingObservation.itemId],'name')}));if(cv)cv.focus({preventScroll:true});}
         else setNotebookMessage(S('atlas_observation_returned', 'Returned to {name}.', { name: observationTitle(pendingObservation) }));
-      }, [pendingObservation, focusId, viewMode, atlasStatus, detailId, inspectionZoom, sunAngle, nebulaReveal, terrainRelief, riverKm, cutaway]);
+      }, [pendingObservation, focusId, viewMode, atlasStatus, detailId, inspectionZoom, sunAngle, nebulaReveal, terrainRelief, riverKm, terrainPoint.east, terrainPoint.north, cutaway]);
       React.useEffect(function () {
         var mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
         if (!mq) return;
@@ -2782,12 +3003,12 @@
           clearTimeout(timeout);
           atlasRef.current = createScaleAtlas(window.THREE, cv, function () {
             return Object.assign({}, atlasState.current, { exp: expRef.current, target: targetRef.current, flight:scaleFlightRef.current });
-          }, function (id,part) { atlasActions.current.pick(id,part); }, failed, function(value){if(alive)setInspectionZoom(value);},markerLayerRef.current,comparisonLayerRef.current,function(value){if(alive)setPlanetImagery(value);},orbitHoverRef.current,flightLabelsRef.current);
+          }, function (id,part,point) { atlasActions.current.pick(id,part,point); }, failed, function(value){if(alive)setInspectionZoom(value);},markerLayerRef.current,comparisonLayerRef.current,function(value){if(alive)setPlanetImagery(value);},orbitHoverRef.current,flightLabelsRef.current);
           setAtlasStatus('ready');
         }).catch(failed);
         return function () { alive = false; clearTimeout(timeout); cv.removeEventListener('wheel', wheel); if (atlasRef.current) { atlasRef.current.dispose(); atlasRef.current = null; } };
       }, [viewMode]);
-      React.useEffect(function () { if (atlasRef.current) atlasRef.current.update(); }, [ambient, reduceMotion, theme, items, neighbors, measure, inspectionZoom, sunAngle, nebulaReveal, terrainRelief, riverKm, planetImagery, cutaway, detailId, showDetails, focusId, comparisonActive, compare]);
+      React.useEffect(function () { if (atlasRef.current) atlasRef.current.update(); }, [ambient, reduceMotion, theme, items, neighbors, measure, inspectionZoom, sunAngle, nebulaReveal, terrainRelief, riverKm, terrainPoint, planetImagery, cutaway, detailId, showDetails, focusId, comparisonActive, compare]);
       function goTo(nextExp, opts) {
         setComparisonActive(false);
         setDetailId('');
@@ -3908,6 +4129,7 @@
         h('style',null,'.sx-route{display:flex;align-items:center;flex-wrap:wrap;gap:5px 8px;padding:8px 12px;border:1px solid #344756;border-radius:10px;background:#101c29;color:#b3c5cf;font-size:12px}.sx-route-label{font-size:10px;text-transform:uppercase;letter-spacing:.09em;margin-right:6px}.sx-route button{font:inherit;min-height:40px;color:#b7e1df;background:transparent;border:1px solid transparent;border-radius:6px;padding:6px}.sx-route button:hover{border-color:#628489;background:#1b303c}.sx-route strong{color:#edf2ec;font-weight:550}.sx-orbit-hover{position:absolute;z-index:3;pointer-events:none;bottom:56px;left:50%;transform:translateX(-50%);max-width:calc(100% - 28px);padding:9px 14px;border:1px solid #76969d;border-radius:8px;background:rgba(7,21,32,.96);box-shadow:0 6px 24px #0008;color:#e8f6f4;font-size:12px;text-align:center}.sx-portal{display:flex;flex:none;align-items:center;justify-content:space-between;gap:12px;padding:11px 18px;border-top:1px solid #435456;background:linear-gradient(110deg,#172a32,#1c2429);color:#ece3ce}.sx-portal span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#a5c3c3;margin-bottom:4px}.sx-portal strong{font-size:12px;font-weight:500}.sx-portal button{border:1px solid #e4d5b0;border-radius:7px;padding:9px 15px;background:#e8d5ae;color:#252b2b;font:600 13px system-ui;cursor:pointer;min-height:44px}.sx-portal button:hover{background:#f7e6bf}@media(max-width:700px){.sx-stage-portal{height:510px}.sx-portal{padding:9px 12px;gap:8px}.sx-portal button{padding:8px 10px;font-size:12px}.sx-portal strong{font-size:11px}.sx-route{gap:3px 5px;font-size:11px}}'),
         h('style',null,'.sx-orbit-marker{width:max-content;max-width:180px;min-width:44px}.sx-orbit-marker span{width:auto;min-width:32px;height:28px;padding:0 9px;border-radius:5px;font-size:11px;white-space:nowrap;background:rgba(8,20,31,.9);border-color:#8d9f9e;box-shadow:0 3px 12px #0005}.sx-orbit-marker[data-offset="true"]:before{left:50%;background:#c5bfaa}.sx-orbit-marker[data-offset="true"]:after{left:calc(50% - 2px);background:#d2c8b0}.sx-orbit-marker[aria-pressed="true"] span{background:#ead5ac;border-color:#f2e2bd;color:#302918}'),
         h('style',null,".sx-stage.sx-stage-river{height:clamp(520px,74vh,780px)}.sx-river-nav{flex:none;position:relative;z-index:3;border-top:1px solid #38535d;background:linear-gradient(120deg,#162b34,#0e1d29);color:#edf1dd;padding:10px 18px 7px;display:grid;grid-template-columns:minmax(180px,1fr) minmax(220px,1.5fr);column-gap:28px;align-items:center}.sx-river-title{display:flex;align-items:center;justify-content:space-between;gap:10px;grid-row:1/3}.sx-river-title strong{display:block;font:500 18px Georgia,serif}.sx-river-title span{display:block;color:#bdd0cd;font-size:11px;margin-top:5px;line-height:1.5;font-variant-numeric:tabular-nums}.sx-river-nav button{min-width:44px;min-height:44px;border:1px solid #4b6266;border-radius:7px;background:#1b353e;color:#e1eccc;cursor:pointer;font:inherit}.sx-river-nav button:hover:not(:disabled){background:#2e4a50;border-color:#aed3c6}.sx-river-nav .sx-river-leave{padding:6px 10px;font-size:11px}.sx-river-map{width:100%;height:45px;display:block;overflow:visible}.sx-river-slider{display:flex;align-items:center;gap:10px}.sx-river-slider label{flex:1;min-width:0}.sx-river-slider input{width:100%;height:28px;margin:0;accent-color:#d9e5b7;cursor:ew-resize}.sx-river-limits{display:flex;justify-content:space-between;color:#9cb6bb;font:10px ui-monospace,monospace}.sx-river-slider button{font-size:22px}.sx-stage-river .sx-stage-note{display:none}@media(max-width:700px){.sx-river-nav{display:block;padding:8px 12px}.sx-river-title strong{font-size:16px}.sx-river-title span{font-size:10px;margin-top:2px}.sx-river-map{height:32px}.sx-river-slider{gap:8px}.sx-stage-river .sx-hud p:last-child{display:none}}"),
+        h('style',null,".sx-stage.sx-stage-terrain{height:clamp(670px,84vh,880px)}.sx-terrain-nav{position:relative;z-index:3;flex:none;display:grid;grid-template-columns:156px minmax(0,1fr) 140px;gap:10px 22px;align-items:center;padding:16px 20px 10px;border-top:1px solid #52717d;background:linear-gradient(115deg,#172e39,#101f2b);color:#e1eee9}.sx-terrain-map-wrap{min-width:0}.sx-terrain-map{display:block;width:100%;aspect-ratio:1;border:1px solid #78969b;border-radius:8px;overflow:hidden;cursor:crosshair;touch-action:none}.sx-terrain-map-wrap>span{display:block;font-size:10px;color:#adc2c8;text-align:center;margin-top:5px}.sx-terrain-readout{min-width:0}.sx-terrain-readout>span{display:block;font-size:11px;color:#b5ced2}.sx-terrain-readout .sx-terrain-eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:#d9c698}.sx-terrain-readout output{display:block;font:400 34px Georgia,serif;color:#f1e9ce;margin:5px 0;font-variant-numeric:tabular-nums}.sx-terrain-readout p{font-size:11px;line-height:1.6;margin:10px 0;color:#bdd0d6;max-width:340px}.sx-terrain-nav button{min-height:44px;border:1px solid #52717d;border-radius:7px;background:#203b46;color:#edf1dc;cursor:pointer;font:12px system-ui;padding:7px 10px}.sx-terrain-nav button:hover:not(:disabled){border-color:#e5d3a5;background:#2c4b55}.sx-terrain-nav button:disabled{opacity:.4;cursor:default}.sx-terrain-nav :focus-visible{outline:3px solid #ffe3a8;outline-offset:3px}.sx-terrain-actions{display:flex;flex-wrap:wrap;gap:6px}.sx-terrain-steps{display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(2,44px);gap:4px}.sx-terrain-steps button{font-size:20px;padding:0}.sx-terrain-steps button:first-child{grid-column:2}.sx-terrain-steps button:nth-child(2){grid-row:2;grid-column:1}.sx-terrain-steps button:nth-child(3){grid-row:2;grid-column:3}.sx-terrain-steps button:last-child{grid-row:2;grid-column:2}.sx-terrain-position{grid-column:1/-1;text-align:center;font:10px ui-monospace,monospace;color:#9bb7c1}.sx-stage-terrain .sx-stage-note{display:none}@media(max-width:700px){.sx-stage.sx-stage-terrain{height:730px}.sx-terrain-nav{grid-template-columns:110px minmax(0,1fr);padding:12px 10px 9px;gap:10px}.sx-terrain-readout output{font-size:26px}.sx-terrain-readout>span{font-size:10px}.sx-terrain-readout p{font-size:10px;line-height:1.5;margin:7px 0}.sx-terrain-actions{grid-column:1/-1}.sx-terrain-actions button{padding:6px;font-size:10px;flex:1}.sx-terrain-steps{grid-column:1/-1;display:flex;justify-content:center}.sx-terrain-steps button{width:44px}.sx-terrain-position{font-size:9px;line-height:1.5}.sx-stage-terrain .sx-hud p:last-child{display:none}.sx-terrain-map-wrap>span{font-size:9px}}"),
         h('style',null,".sx-flight-labels{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}.sx-flight-labels[hidden]{display:none}.sx-flight-target{position:absolute;left:0;top:0;text-align:center;color:#c4dce0;font-size:12px;white-space:nowrap}.sx-flight-target[hidden]{display:none}.sx-flight-target i{display:block;width:18px;height:18px;border:1px solid #9fc3ce;border-radius:50%;margin:0 auto 10px;box-shadow:0 0 0 5px #8ebac012}.sx-flight-target strong{display:block;font-weight:500}.sx-flight-target small{display:block;color:#92aeb8;font-size:10px;margin-top:5px}.sx-flight-labels span{position:absolute;left:0;top:0;color:#b6d5d9;background:#08121bcc;border-left:1px solid #73949c;padding:4px 8px;font:11px ui-monospace,monospace;white-space:nowrap}.sx-flight-labels span[hidden]{display:none}.sx-descent{position:absolute;left:20px;right:20px;bottom:18px;z-index:4;padding:12px 16px;background:linear-gradient(110deg,#152a36ee,#0d1926f5);border:1px solid #476674;border-radius:10px;box-shadow:0 12px 30px #0004;color:#d9e9ed;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px 18px}.sx-descent-meta{display:flex;align-items:baseline;gap:12px;min-width:0}.sx-descent-meta span{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#a0bec7}.sx-descent-meta strong{font:500 15px ui-monospace,monospace;font-variant-numeric:tabular-nums}.sx-descent-track{height:3px;grid-column:1;border-radius:3px;overflow:hidden;background:#35515c}.sx-descent-track i{display:block;width:100%;height:100%;background:linear-gradient(90deg,#72bfc9,#f1deb8);transform-origin:left;transform:scaleX(0)}.sx-descent p{margin:0;font-size:11px;color:#a9c2cc;grid-column:1}.sx-descent button{grid-column:2;grid-row:1/4;align-self:center;min-height:44px;border:1px solid #b0c4cb;border-radius:7px;padding:9px 14px;background:#d8e8e7;color:#1b3039;cursor:pointer;font:600 12px system-ui}.sx-descent button:hover{background:#f1f4e8}@media(max-width:700px){.sx-descent{left:10px;right:10px;bottom:10px;padding:10px;gap:7px 10px}.sx-descent-meta{display:block}.sx-descent-meta span{display:block;font-size:9px;margin-bottom:3px}.sx-descent-meta strong{font-size:13px}.sx-descent p{font-size:9px}.sx-descent button{padding:8px;font-size:11px}.sx-flight-labels span{font-size:10px}}"),
         h('style',null,'.sx-stage{display:flex;flex-direction:column}.sx-viewport{position:relative;flex:1;min-height:0;isolation:isolate}.sx-feature-nav{position:relative;z-index:3;flex:none;display:flex;align-items:center;gap:5px;padding:8px 12px;border-top:1px solid #354352;background:linear-gradient(110deg,#101e2b,#101723);color:#edf4f7}.sx-feature-nav button{color:inherit;border:1px solid transparent;background:transparent;border-radius:8px;cursor:pointer;min-height:44px;font:inherit}.sx-feature-nav button:hover:not(:disabled){background:#213344;border-color:#527080}.sx-feature-nav button:focus-visible,.sx-feature-story a:focus-visible{outline:3px solid #67d8f5;outline-offset:-3px}.sx-feature-title{flex:1;min-width:0;padding:5px 8px;text-align:left;line-height:1.3}.sx-feature-title strong{display:block;font-size:14px;font-weight:550;overflow-wrap:anywhere}.sx-feature-count{display:block;color:#aac1cf;font-size:10px;letter-spacing:.04em;line-height:1.5;margin-bottom:3px}.sx-feature-arrow,.sx-feature-overview{flex:0 0 44px;width:44px;padding:0}.sx-feature-arrow span{font-size:30px;line-height:1}.sx-feature-overview span{font-size:22px}.sx-feature-story{position:absolute;bottom:100%;left:0;right:0;max-height:160px;overflow:auto;overscroll-behavior:contain;padding:14px 20px 16px;background:rgba(9,20,31,.97);border-top:1px solid #527080;box-shadow:0 -12px 30px #0003;color:#edf4f7;font-size:13px;line-height:1.65}.sx-feature-story p{margin:0 0 9px}.sx-feature-story a{color:#9ddfee;text-underline-offset:3px}.sx-feature-nav:has(.sx-feature-story) .sx-feature-title{background:#203442;border-color:#527080}@media(max-width:700px){.sx-feature-nav{padding:7px 6px;gap:0}.sx-feature-title{padding:3px 6px}.sx-feature-title strong{font-size:12px}.sx-feature-count{font-size:9px;letter-spacing:0}.sx-feature-story{max-height:150px;padding:12px 14px;font-size:12px}.sx-viewport .sx-stage-note{bottom:8px}.sx-viewport .sx-stage-note span{font-size:9px;padding:4px 5px}}'),
         h('nav', { className: 'sx-regions', 'aria-label': S('atlas_realms', 'Scale destinations') }, REALMS.map(function (r, i) {
@@ -3932,7 +4154,7 @@
               viewMode === 'atlas' ? h('button', { type: 'button', style: btn, 'aria-pressed': ambient && !reduceMotion, disabled: reduceMotion, onClick: function () { setAmbient(!ambient); updateSlice(function (cur) { cur.ambient = !ambient; }); } }, reduceMotion ? S('atlas_still', 'Reduced motion') : ambient ? S('atlas_motion_pause', 'Pause ambience') : S('atlas_motion_play', 'Resume ambience')) : null),
             atlasStatus === 'failed' ? h('p', { role: 'status', style: { margin: 0, color: P.dim, fontSize: '0.8125rem' } }, S('atlas_failed', 'The 3D view is unavailable. The scale chart and all destinations are ready to explore.')) : null,
             routeNavigation(),
-            h('div', { className: 'sx-stage'+(viewMode==='atlas'&&!comparisonActive&&detailId==='river-journey'?' sx-stage-river':'')+(viewMode==='atlas'&&!comparisonActive&&selectedDetail&&selectedDetail.visit?' sx-stage-portal':'') },
+            h('div', { className: 'sx-stage'+(viewMode==='atlas'&&!comparisonActive&&detailId==='river-journey'?' sx-stage-river':'')+(viewMode==='atlas'&&!comparisonActive&&detailId==='everest-explore'?' sx-stage-terrain':'')+(viewMode==='atlas'&&!comparisonActive&&selectedDetail&&selectedDetail.visit?' sx-stage-portal':'') },
               h('div',{className:'sx-viewport'},
               viewMode === 'atlas' ? h('canvas', { ref: atlasCanvasRef, tabIndex: 0, role: 'application',
                 'aria-label': comparisonActive ? S('atlas_comparison_canvas_aria', 'Shared scale comparison. Drag or use W A S D to orbit. Scroll or pinch to inspect. R resets the camera. Escape returns to exploration.') : S('atlas_canvas_aria', 'Interactive scale atlas. Scroll or use arrow keys to travel through scale. Drag to orbit, or use W A S D. Pinch to inspect more closely. R resets the camera. Home returns to human scale. Space plays or pauses the journey.'),
@@ -3955,16 +4177,19 @@
               viewMode === 'atlas' || comparisonActive ? h('div', { className: 'sx-hud', 'aria-hidden': 'true' },
                 h('p', { style: { color: comparisonActive ? '#a5dcd8' : theme === 'contrast' ? '#ffffff' : realm.color, textTransform: 'uppercase', fontWeight: 700 } }, scaleFlight ? S('atlas_flight_heading', 'Journey through scale') : comparisonActive ? S('atlas_comparison_studio', 'Comparison studio') : S('atlas_realm_' + realm.id, realm.name)),
                 h('h3', null, comparisonActive ? S('atlas_comparison_shared', 'One shared scale') : itemText(focused, 'name')),
-                h('p', null, scaleFlight ? S('atlas_flight_origin', 'From {name}',{name:lowerArticle(itemText(byId[scaleFlight.origin.itemId],'name'))}) : comparisonActive ? (viewMode === 'atlas' ? S('atlas_comparison_projection', 'Measured proportions · parallel projection') : S('atlas_comparison_diagram_tag', 'Measured lengths · one shared unit')) : lengthText(focused.size) + ' ' + S('dim_' + focused.dim.replace(/\s+/g, '_'), focused.dim)),
+                h('p', null, scaleFlight ? S('atlas_flight_origin', 'From {name}',{name:lowerArticle(itemText(byId[scaleFlight.origin.itemId],'name'))}) : comparisonActive ? (viewMode === 'atlas' ? S('atlas_comparison_projection', 'Measured proportions · parallel projection') : S('atlas_comparison_diagram_tag', 'Measured lengths · one shared unit')) : focused.id==='everest'?S('atlas_alpine_height', '8,849 m above sea level'):lengthText(focused.size) + ' ' + S('dim_' + focused.dim.replace(/\s+/g, '_'), focused.dim)),
                 !scaleFlight&&!comparisonActive&&focused.id==='solar-system'?h('p',{style:{color:'#e3cba5',marginTop:10}},selectedDetail&&selectedDetail.au?S('atlas_orbit_au_label', '{au} AU · orbital radius',{au:selectedDetail.au.toFixed(2)}):S('atlas_orbit_stage_label', 'Proportional orbits · enlarged worlds')):null,
+                !comparisonActive&&focused.id==='everest'?h('p',{style:{color:'#c4e3ef',marginTop:10}},planetImagery.id===focused.id&&planetImagery.status==='ready'?S('atlas_alpine_badge', 'Himalayan terrain · actual proportions'):planetImagery.id===focused.id&&planetImagery.status==='failed'?S('atlas_alpine_badge_failed', 'Elevation data unavailable'):S('atlas_alpine_loading', 'Loading the local elevation grid…')):null,
                 !comparisonActive&&focused.id==='grand-canyon'?h('p',{style:{color:'#edc49b',marginTop:10}},S('atlas_canyon_badge', 'Vertical relief {n}× · length follows the river',{n:terrainRelief})):null,
+                !comparisonActive&&focused.id==='everest'&&detailId==='everest-datum'?h('p',{style:{color:'#dfd2ab',marginTop:10}},S('atlas_alpine_datum_label', 'Lower grid: 0 m · ruler top: 8,849 m')):null,
                 !comparisonActive&&selectedDetail?h('p',{style:{marginTop:14,letterSpacing:'.02em',color:'#deebbe'}},S('atlas_inspecting', 'Inspecting: {part}',{part:selectedDetail.label})):null,
                 atlasStatus === 'loading' ? h('p', { style: { marginTop: 20 } }, S('atlas_loading', 'Preparing your observatory…')) : null) : null,
               viewMode === 'atlas' && !scaleFlight ? h('div', { className: 'sx-stage-note', 'aria-hidden': 'true' },
                 h('span', null, comparisonActive ? S('atlas_comparison_gesture', 'Drag to orbit · Scroll to inspect · Esc to explore') : S('atlas_gesture', 'Drag to orbit · Pinch to inspect · Scroll to travel')),
-                h('span', null, S('atlas_model_tag', 'Illustrated models / measured dimensions'))) : null),
+                h('span', null, focused.id==='everest'&&!comparisonActive?S('atlas_alpine_stage_note', 'Elevation data / illustrated snow & light'):S('atlas_model_tag', 'Illustrated models / measured dimensions'))) : null),
               scenePortal(),
               riverNavigator(),
+              terrainNavigator(),
               featureNavigator()
             ),
             comparisonActive ? h('section', { className: 'sx-comparison-summary', 'aria-label': S('atlas_comparison_dimensions', 'Compared measurements') },
@@ -3992,10 +4217,21 @@
               h('label',{style:{display:'flex',gap:12,alignItems:'center',marginTop:12,fontSize:'.75rem'}},S('atlas_sun_angle', 'Sun–observer angle'),h('input',{type:'range',min:0,max:180,step:1,value:sunAngle,'aria-label':S('atlas_sun_angle', 'Sun–observer angle'),'aria-valuetext':sunAngle+'°',onChange:function(ev){changeSunlight(Number(ev.target.value));},style:{flex:1,minWidth:40,accentColor:P.accent}}),h('span',{style:{minWidth:32,fontVariantNumeric:'tabular-nums'}},sunAngle+'°')),
               h('div',{style:{display:'flex',gap:6,flexWrap:'wrap',marginTop:10}},[[0,S('atlas_light_full', 'Full light')],[90,S('atlas_light_half', 'Half light')],[135,S('atlas_light_crescent', 'Crescent')]].map(function(preset){return h('button',{key:preset[0],type:'button',style:sunAngle===preset[0]?goBtn:btn,'aria-pressed':sunAngle===preset[0],onClick:function(){changeSunlight(preset[0]);}},preset[1]);})),
               h('p',{style:{fontSize:'.75rem',lineHeight:1.5,color:P.dim,margin:'10px 0 0'}},S('atlas_lighting_scope', 'Explore how sunlight changes the visible disc. This model follows your viewpoint; it does not show today’s sky.'))):null,
+            viewMode==='atlas'&&!comparisonActive&&focused.id==='everest'?h('section',{className:'sx-alpine-controls','aria-label':S('atlas_alpine_controls', 'Light across the ridges'),style:{padding:'14px 16px',border:'1px solid '+P.line,borderRadius:12,background:P.panel}},
+              h('h3',{style:{fontSize:'.9rem',margin:'0 0 10px'}},S('atlas_alpine_controls', 'Light across the ridges')),
+              h('p',{style:{fontSize:'.8rem',lineHeight:1.6,margin:'0 0 12px',color:P.dim}},S('atlas_alpine_light_hint', 'Move the light across the mountain to reveal its faces and shadows. The terrain keeps its actual proportions.')),
+              h('label',{style:{display:'flex',gap:12,alignItems:'center',fontSize:'.8rem'}},S('atlas_alpine_direction', 'Light direction'),
+                h('input',{type:'range',min:0,max:180,step:1,value:sunAngle,'aria-label':S('atlas_alpine_direction', 'Light direction'),'aria-valuetext':S('atlas_alpine_direction_value', '{n} degrees from the west',{n:sunAngle}),style:{flex:1,minWidth:40,accentColor:P.accent},onChange:function(ev){changeSunlight(Number(ev.target.value));}})),
+              h('div',{style:{display:'flex',gap:8,flexWrap:'wrap',marginTop:12}},[[25,S('atlas_alpine_west', 'Western light')],[155,S('atlas_alpine_east', 'Eastern light')]].map(function(preset){return h('button',{key:preset[0],type:'button',style:sunAngle===preset[0]?goBtn:btn,'aria-pressed':sunAngle===preset[0],onClick:function(){changeSunlight(preset[0]);}},preset[1]);})),
+              h('p',{style:{fontSize:'.75rem',lineHeight:1.6,color:P.dim,margin:'12px 0 6px'}},S('atlas_alpine_data', '18 km of terrain · 75 m grid · no vertical exaggeration. Snow and surface colors are illustrative. Elevation data: Mapzen; SRTM and GMTED2010 courtesy of the U.S. Geological Survey.')),
+              h('a',{href:'https://registry.opendata.aws/terrain-tiles/',target:'_blank',rel:'noopener noreferrer',style:{fontSize:'.75rem',color:P.accent}},S('atlas_alpine_source', 'About the elevation data'))):null,
             viewMode==='atlas'&&!comparisonActive&&details.length?h('section',{className:'sx-details','aria-label':S('atlas_detail_section', 'Explore this specimen'),style:{padding:'14px 16px',border:'1px solid '+P.line,borderRadius:12,background:P.panel}},
               h('div',{style:{display:'flex',gap:12,justifyContent:'space-between',alignItems:'center'}},h('h3',{style:{fontSize:'0.9rem',margin:0}},S('atlas_detail_section', 'Explore this specimen')),h('button',{type:'button',style:btn,'aria-pressed':showDetails,onClick:function(){setShowDetails(!showDetails);}},S('atlas_markers', 'Landmarks'))),
               isPlanetaryWorld(focused.id)&&(planetImagery.id!==focused.id||planetImagery.status!=='ready')?h('p',{role:'status',style:{fontSize:'.8rem',color:P.dim}},planetImagery.id===focused.id&&planetImagery.status==='failed'?S('atlas_imagery_unavailable', 'Surface imagery is unavailable. You can still orbit this world and explore its lighting.'):S('atlas_imagery_loading', 'Loading surface imagery for these landmarks…')):null,
-              h('div',{className:'sx-detail-choices'},details.map(function(detail,index){return h('button',{key:detail.id,type:'button',style:detailId===detail.id?goBtn:btn,disabled:detail.surface&&(planetImagery.id!==focused.id||planetImagery.status!=='ready'),'aria-pressed':detailId===detail.id,onClick:function(){chooseDetail(detail);}},h('span',{'aria-hidden':'true',style:{opacity:.7,marginRight:6}},String(index+1).padStart(2,'0')),detail.label);})),
+              focused.id==='everest'&&(planetImagery.id!==focused.id||planetImagery.status!=='ready')?h('div',{role:'status',style:{fontSize:'.8rem',lineHeight:1.6,color:P.dim}},
+                h('p',null,planetImagery.id===focused.id&&planetImagery.status==='failed'?S('atlas_alpine_failed', 'The elevation data could not load. Retry to explore the terrain, or use the scale chart.'):S('atlas_alpine_loading', 'Loading the local elevation grid…')),
+                planetImagery.id===focused.id&&planetImagery.status==='failed'?h('button',{type:'button',style:btn,onClick:function(){if(atlasRef.current)atlasRef.current.retryTerrain();}},S('atlas_alpine_retry', 'Retry terrain')):null):null,
+              h('div',{className:'sx-detail-choices'},details.map(function(detail,index){return h('button',{key:detail.id,type:'button',style:detailId===detail.id?goBtn:btn,disabled:(detail.surface||detail.terrain)&&(planetImagery.id!==focused.id||planetImagery.status!=='ready'),'aria-pressed':detailId===detail.id,onClick:function(){chooseDetail(detail);}},h('span',{'aria-hidden':'true',style:{opacity:.7,marginRight:6}},String(index+1).padStart(2,'0')),detail.label);})),
               selectedDetail?h('div',{className:'sx-detail-note',style:{borderLeft:'2px solid '+P.accent,paddingLeft:12}},h('p',{style:{fontSize:'0.875rem',lineHeight:1.65,margin:'10px 0 6px'}},selectedDetail.body),h('a',{href:selectedDetail.source,target:'_blank',rel:'noopener noreferrer',style:{fontSize:'0.75rem',color:P.accent}},S('atlas_detail_source', 'Read the science source'))):h('p',{style:{fontSize:'0.8rem',lineHeight:1.6,color:P.dim,margin:'10px 0 0'}},S('atlas_detail_invite', 'Choose a numbered landmark to move closer. Orbit around the feature, then use Fit object to see the whole specimen.'))):null,
             viewMode==='atlas'&&focused.id==='mitochondrion'?h('p',{style:{margin:0,fontSize:'0.75rem',lineHeight:1.5,color:P.dim}},cutaway?S('atlas_cutaway_open', 'Inside: the cristae are folds of the inner membrane. Close the cutaway to see the outer surface.'):S('atlas_cutaway_closed', 'Outside: the outer membrane encloses the organelle. Open the cutaway to explore the folds within.')):null,
             viewMode==='atlas'&&!comparisonActive&&isMicrobe(focused.id)?h('p',{className:'sx-cell-note',style:{margin:0,fontSize:'.75rem',lineHeight:1.6,color:P.dim}},S('atlas_cell_scope', 'The ruler measures cell body length. Colors, organelle sizes and motion are illustrated to make the anatomy readable. Open the cutaway to explore inside; Pause ambience holds the motion still.')):null,
@@ -4127,7 +4363,7 @@
                   focused.dim === 'distance' ? S('atlas_distance_note', 'This is a gap, shown as a ruler. Endpoint markers are illustrative, not scaled objects.') :
                   focused.id === 'solar-system' ? S('atlas_solar_note', 'The width spans Neptune’s reference orbit. All eight orbital radii share one scale. Circular paths, a shared plane and fixed planet positions simplify the system. The Sun, planets and asteroid particles are enlarged markers.') :
                   focused.id === 'carbon' || focused.id === 'hydrogen' || focused.id === 'proton' ? S('atlas_quantum_note', 'A conceptual probability or charge cloud, not a solid surface. Colors are illustrative; an atomic nucleus would be too small to see here.') :
-                  focused.id === 'everest' ? S('atlas_everest_note', 'The stated height is measured above sea level. The mountain terrain is an illustration, not a surveyed height map.') :
+                  focused.id === 'everest' ? S('atlas_everest_note', 'The stated 8,849 m height is above sea level. Terrain uses a locally bundled Mapzen elevation grid at 75 m spacing, with no vertical exaggeration. SRTM and GMTED2010 data courtesy of the U.S. Geological Survey. Snow, rock colors and lighting are illustrative.') :
                   focused.id === 'earth' ? S('atlas_earth_note', 'Earth imagery: NASA/Goddard Space Flight Center Scientific Visualization Studio, Blue Marble. A satellite mosaic, not a live view. Neighboring objects are arranged by size, not orbital distance.') :
                   focused.id === 'moon' ? S('atlas_moon_note', 'Lunar surface imagery: NASA/GSFC/Arizona State University, Lunar Reconnaissance Orbiter. Lighting here is illustrative.') :
                   focused.id === 'jupiter' ? S('atlas_jupiter_note', 'Jupiter surface: NASA/GSFC and Space Telescope Science Institute, Hubble global map from 2015. A historical observation with simulated lighting.') :
