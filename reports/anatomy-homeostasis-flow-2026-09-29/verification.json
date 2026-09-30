@@ -1,0 +1,261 @@
+{
+  "uniqueUnitChecks": 388,
+  "uniqueUnitSuites": 10,
+  "initialUnitChecks": 388,
+  "finalTargetedChecks": 6,
+  "lastUnitReport": "localization-final-unit-results.json",
+  "lastUnitRunChecks": 6,
+  "unitResultsMergedBy": "fullName",
+  "allEffectiveUnitChecksPassed": true,
+  "unitRuns": [
+    {
+      "file": "initial-unit-results.json",
+      "assertions": 388,
+      "passed": 382,
+      "failed": 6
+    },
+    {
+      "file": "final-unit-results.json",
+      "assertions": 388,
+      "passed": 387,
+      "failed": 1
+    },
+    {
+      "file": "micro-final-unit-results.json",
+      "assertions": 70,
+      "passed": 70,
+      "failed": 0
+    },
+    {
+      "file": "localization-final-unit-results.json",
+      "assertions": 6,
+      "passed": 6,
+      "failed": 0
+    }
+  ],
+  "requiredUnitCounts": {
+    "anatomy_homeostasis_flow.test.js": 42,
+    "anatomy_imaging_guidance.test.js": 24
+  },
+  "browserScenarios": 2,
+  "browserValidation": [
+    {
+      "file": "homeostasis-browser-validation.json",
+      "label": "Homeostasis",
+      "scans": 15,
+      "violations": 0,
+      "measurements": [
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "homeostasis-browser-validation.json.scans[0].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "homeostasis-browser-validation.json.scans[1].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "homeostasis-browser-validation.json.scans[2].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "homeostasis-browser-validation.json.scans[3].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "homeostasis-browser-validation.json.scans[4].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "homeostasis-browser-validation.json.scans[5].dimensions"
+        },
+        {
+          "width": 768,
+          "scroll": 768,
+          "location": "homeostasis-browser-validation.json.scans[6].dimensions"
+        },
+        {
+          "width": 768,
+          "scroll": 768,
+          "location": "homeostasis-browser-validation.json.scans[7].dimensions"
+        },
+        {
+          "width": 768,
+          "scroll": 768,
+          "location": "homeostasis-browser-validation.json.scans[8].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "homeostasis-browser-validation.json.scans[9].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "homeostasis-browser-validation.json.scans[10].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "homeostasis-browser-validation.json.scans[11].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "homeostasis-browser-validation.json.scans[12].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "homeostasis-browser-validation.json.scans[13].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "homeostasis-browser-validation.json.scans[14].dimensions"
+        }
+      ],
+      "errorArraysChecked": 1
+    },
+    {
+      "file": "imaging-browser-validation.json",
+      "label": "Imaging",
+      "scans": 0,
+      "violations": 0,
+      "measurements": [
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "imaging-browser-validation.json.guidance.visuals[0].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "imaging-browser-validation.json.guidance.visuals[1].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "imaging-browser-validation.json.guidance.visuals[2].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "imaging-browser-validation.json.guidance.visuals[3].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "imaging-browser-validation.json.guidance.visuals[4].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "imaging-browser-validation.json.guidance.visuals[5].dimensions"
+        }
+      ],
+      "errorArraysChecked": 1,
+      "orientationCorrespondences": 6,
+      "visualCaptures": 6,
+      "rulerMeasurements": 24,
+      "rulerWidths": [
+        320,
+        390,
+        768,
+        1440
+      ],
+      "maximumDistanceErrorMm": 0.8999999999999986
+    }
+  ],
+  "accessibilityScans": 15,
+  "accessibilityViolations": 0,
+  "browserErrors": [],
+  "sourceSha256": "63df61b9f599ed75339e246fe2276e1b19564c493e60582f191d010fee6990c4",
+  "sourceHashLineEndings": "LF",
+  "sourceMirrorsMatch": true,
+  "canonicalSyntaxCheckPassed": true,
+  "localeCandidateMirrorsMatch": true,
+  "localeLabelsPerPack": 66,
+  "localeKeys": [
+    "a11y_logged_homeostasis_observations",
+    "arterial_blood_ph_reference_prompt",
+    "compare_outside_reference_counts",
+    "explain_homeostasis_model_limit",
+    "explanation_input",
+    "fasting_glucose_mg_dl",
+    "homeo_flow_above",
+    "homeo_flow_below",
+    "homeo_flow_checks_restarted",
+    "homeo_flow_clear_observations",
+    "homeo_flow_correct_answer",
+    "homeo_flow_experiment",
+    "homeo_flow_explanation",
+    "homeo_flow_feedback_reason",
+    "homeo_flow_hypothesis",
+    "homeo_flow_intro",
+    "homeo_flow_latest_score",
+    "homeo_flow_log",
+    "homeo_flow_log_count",
+    "homeo_flow_measurements_reset",
+    "homeo_flow_models_compared",
+    "homeo_flow_navigation",
+    "homeo_flow_observation_saved",
+    "homeo_flow_observations",
+    "homeo_flow_observations_cleared",
+    "homeo_flow_outside_column",
+    "homeo_flow_outside_count",
+    "homeo_flow_ph_reason",
+    "homeo_flow_prediction_again",
+    "homeo_flow_pulse_key",
+    "homeo_flow_question",
+    "homeo_flow_range_intro",
+    "homeo_flow_ranges",
+    "homeo_flow_reset_help",
+    "homeo_flow_reset_measurements",
+    "homeo_flow_restart_checks",
+    "homeo_flow_restart_help",
+    "homeo_flow_teaching_range",
+    "homeo_flow_temp_reason",
+    "homeo_flow_within",
+    "homeo_flow_your_answer",
+    "homeo_recap_all",
+    "homeo_recap_q1",
+    "homeo_recap_q1_a",
+    "homeo_recap_q1_b",
+    "homeo_recap_q1_c",
+    "homeo_recap_q2",
+    "homeo_recap_q2_a",
+    "homeo_recap_q2_b",
+    "homeo_recap_q2_c",
+    "homeo_recap_q3",
+    "homeo_recap_q3_a",
+    "homeo_recap_q3_b",
+    "homeo_recap_q3_c",
+    "homeo_recap_score",
+    "homeo_recap_some",
+    "homeo_recap_title",
+    "homeostasis_model_limit",
+    "homeostasis_reference_hypothesis",
+    "hypothesis_input",
+    "one_variable_outside_reference",
+    "recap_correct_short",
+    "recap_incorrect_short",
+    "three_variables_outside_reference",
+    "two_variables_outside_reference",
+    "within_teaching_references"
+  ],
+  "localeCandidateHashes": {
+    "french": "43b3bca2c77728a775e7241f123fa4f80a27a609c680d1dccb97afd23e5123e8",
+    "spanish_latin_america": "80f1c4d7ff64192ee189b713a1b9e31d2dabde6e53ed524bf9f76fcada82268b",
+    "arabic": "d83bdef9f9a7d6b4b71c244d2a9c442e520c0fa88d7c860e6f79df9eb6320e36"
+  },
+  "requiredCommitExtraTests": [
+    "tests/microdissection_anatomy3d.test.js"
+  ]
+}

@@ -505,6 +505,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '.anatomy-tool-shell .anatomy-pathway-panel[data-anatomy-pathway-panel]{--pathway-surface:#fff;--pathway-ink:#1e293b;--pathway-muted:#475569;--pathway-border:#cbd5e1;--pathway-soft:#fff1f2;--pathway-accent:#9f1239;background:var(--pathway-surface);color:var(--pathway-ink);border:1px solid var(--pathway-border);border-radius:18px;padding:18px;margin:0;font-size:14px;line-height:1.6}.anatomy-tool-shell .anatomy-pathway-panel h4{font-size:20px;line-height:1.3;color:var(--pathway-accent)}.anatomy-tool-shell .anatomy-pathway-panel h5{font-size:17px;line-height:1.45}.anatomy-tool-shell .anatomy-pathway-panel p,.anatomy-tool-shell .anatomy-pathway-panel label,.anatomy-tool-shell .anatomy-pathway-panel select{font-size:14px;line-height:1.6;color:var(--pathway-ink)}.anatomy-tool-shell .anatomy-pathway-panel button{min-height:44px;font-size:14px;line-height:1.5}.anatomy-tool-shell .anatomy-pathway-panel [data-anatomy-pathway-choices]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.anatomy-tool-shell .anatomy-pathway-panel [data-anatomy-pathway-choice]{padding:16px;min-width:0;border-color:var(--pathway-border);background:var(--pathway-surface);color:var(--pathway-ink)}.anatomy-tool-shell .anatomy-pathway-panel [data-anatomy-pathway-choice] .font-black{font-size:16px}.anatomy-tool-shell .anatomy-pathway-panel [data-anatomy-pathway-session]{font-size:13px;font-weight:700;color:var(--pathway-accent);margin-top:8px}.anatomy-tool-shell .anatomy-pathway-panel [data-anatomy-pathway-step]>p{font-size:15px}.anatomy-tool-shell .anatomy-pathway-panel .anatomy-route-checks legend{font-size:16px;font-weight:700;line-height:1.5}.anatomy-tool-shell .anatomy-pathway-panel .anatomy-route-checks button[data-anatomy-pathway-option]{min-height:48px;padding:10px 12px;font-size:14px}.anatomy-tool-shell .anatomy-pathway-panel [data-anatomy-pathway-feedback]{font-size:15px;line-height:1.6}.anatomy-pathway-answer-label{display:block;font-size:12px;font-weight:700;margin-bottom:3px}.anatomy-tool-shell .anatomy-pathway-check-return{background:var(--pathway-soft);color:var(--pathway-ink);padding:12px;border:1px solid var(--pathway-border);border-radius:12px}.anatomy-tool-shell .anatomy-pathway-check-return button{background:var(--pathway-accent);color:#fff;border:1px solid var(--pathway-accent);padding:8px 12px;margin-top:8px;border-radius:8px;font-weight:700}.anatomy-tool-shell .anatomy-pathway-panel :is([data-anatomy-pathway-step],[data-anatomy-pathway-feedback],[data-anatomy-pathway-question],#anatomy-pathway-check-title,#anatomy-pathway-title):focus-visible{outline:3px solid var(--pathway-accent);outline-offset:4px}.theme-dark .anatomy-tool-shell .anatomy-pathway-panel[data-anatomy-pathway-panel]{--pathway-surface:#19263a;--pathway-ink:#f1f5f9;--pathway-muted:#cbd5e1;--pathway-border:#64748b;--pathway-soft:#28344a;--pathway-accent:#fda4af}.theme-dark .anatomy-tool-shell .anatomy-pathway-check-return button{color:#19263a}.theme-dark .anatomy-tool-shell .anatomy-pathway-panel [data-anatomy-pathway-choice] .font-black{color:var(--pathway-ink)!important}.theme-contrast .anatomy-tool-shell .anatomy-pathway-panel[data-anatomy-pathway-panel]{--pathway-surface:#fff;--pathway-ink:#000;--pathway-muted:#000;--pathway-border:#000;--pathway-soft:#fff;--pathway-accent:#000}.anatomy-tool-shell[data-reading-mode="true"] .anatomy-pathway-panel :is(p,button,select,label,legend){font-size:17px!important;line-height:1.7!important}@media(max-width:680px){.anatomy-tool-shell .anatomy-pathway-panel[data-anatomy-pathway-panel]{padding:14px}.anatomy-tool-shell .anatomy-pathway-panel [data-anatomy-pathway-choices]{grid-template-columns:minmax(0,1fr)}}',
       '.anatomy-spotter-view-note{padding:8px 10px;margin-top:8px;border:1px solid #b45309;border-radius:8px;background:#fffbeb;color:#78350f;font-size:13px;line-height:1.6}.theme-dark .anatomy-spotter-view-note{background:#28344a;color:#fef3c7;border-color:#fcd34d}.theme-contrast .anatomy-spotter-view-note{background:#fff;color:#000;border-color:#000}.anatomy-tool-shell[data-reading-mode="true"] .anatomy-spotter-view-note{font-size:17px}',
       '.anatomy-tool-shell .anatomy-pathway-panel #anatomy-pathway-menu-title:focus-visible{outline:3px solid var(--pathway-accent);outline-offset:4px}',
+      '.anatomy-tool-shell [data-anatomy-homeo-panel]{--homeo-ink:#0f172a;--homeo-muted:#475569;--homeo-surface:#fff;--homeo-soft:#eef2ff;--homeo-accent:#3730a3;--homeo-border:#94a3b8;color:var(--homeo-ink);background:var(--homeo-surface);border:1px solid var(--homeo-border);border-radius:18px;padding:18px;display:grid;gap:18px;min-width:0}.theme-dark .anatomy-tool-shell [data-anatomy-homeo-panel]{--homeo-ink:#e2e8f0;--homeo-muted:#cbd5e1;--homeo-surface:#0f172a;--homeo-soft:#1e293b;--homeo-accent:#c7d2fe;--homeo-border:#64748b}.theme-contrast .anatomy-tool-shell [data-anatomy-homeo-panel]{--homeo-ink:#000;--homeo-muted:#000;--homeo-surface:#fff;--homeo-soft:#fff;--homeo-accent:#000;--homeo-border:#000}',
+      '.anatomy-tool-shell [data-anatomy-homeo-panel] h4{font-size:20px;line-height:1.3;color:var(--homeo-accent)!important}.anatomy-tool-shell [data-anatomy-homeo-panel] h5{font-size:18px;line-height:1.4;font-weight:800;color:var(--homeo-ink)!important}.anatomy-tool-shell [data-anatomy-homeo-panel] :is(p,label,legend,li,td,th){font-size:14px;line-height:1.65;color:var(--homeo-ink)}.anatomy-tool-shell [data-anatomy-homeo-panel] :is(button,select){min-height:44px;font-size:14px;line-height:1.5}.anatomy-tool-shell [data-anatomy-homeo-panel] :is(input[type=range],input[type=checkbox]){accent-color:var(--homeo-accent)}.anatomy-tool-shell [data-anatomy-homeo-panel] input[type=range]{height:44px}.anatomy-tool-shell [data-anatomy-homeo-panel] textarea{font-family:inherit!important;font-size:16px!important;line-height:1.6;min-height:96px;border:1px solid var(--homeo-border);background:var(--homeo-surface)!important;color:var(--homeo-ink)!important;padding:10px}',
+      '.anatomy-homeo-navigation{display:flex;flex-wrap:wrap;gap:8px}.anatomy-tool-shell .anatomy-homeo-navigation button{background:var(--homeo-soft);color:var(--homeo-accent);border:1px solid var(--homeo-border);border-radius:10px;padding:10px 14px;font-weight:800;text-align:start}.anatomy-tool-shell [data-anatomy-homeo-ranges]{padding:16px;border:1px solid var(--homeo-border);border-radius:14px;background:var(--homeo-surface);display:grid;gap:14px;min-width:0}.anatomy-tool-shell .anatomy-homeo-range-card{padding:14px;border:1px solid var(--homeo-border);border-radius:12px;background:var(--homeo-soft);min-width:0}.anatomy-tool-shell .anatomy-homeo-range-card label{font-weight:800}.anatomy-tool-shell .anatomy-homeo-range-card label span{display:block;font-size:26px;font-weight:800;line-height:1.3;margin-top:4px;color:var(--homeo-accent)!important}.anatomy-tool-shell [data-anatomy-homeo-range-status]{display:inline-block;border:1px solid var(--homeo-border);border-radius:999px;padding:3px 8px;font-size:12px;font-weight:800;margin-top:6px}',
+      '.anatomy-tool-shell [data-anatomy-homeo-panel] [data-anatomy-homeo-recap]{border:1px solid var(--homeo-border);border-radius:14px;padding:16px;background:var(--homeo-soft)!important;display:grid;gap:16px}.anatomy-tool-shell [data-anatomy-homeo-recap-question]{min-width:0;border:1px solid var(--homeo-border)!important;border-radius:12px;padding:12px!important;background:var(--homeo-surface)!important}.anatomy-tool-shell [data-anatomy-homeo-recap-question] legend{font-size:16px;font-weight:800;padding-inline:4px}.anatomy-tool-shell [data-anatomy-homeo-recap-option]{min-height:48px;padding:10px 12px!important;text-align:start;color:var(--homeo-ink)!important;background:var(--homeo-surface)!important;border-color:var(--homeo-border)!important}.anatomy-tool-shell [data-anatomy-homeo-recap-option][data-anatomy-homeo-answer-state=correct]{color:#14532d!important;background:#ecfdf5!important;border-color:#15803d!important}.anatomy-tool-shell [data-anatomy-homeo-recap-option][data-anatomy-homeo-answer-state=chosen]{color:#881337!important;background:#fff1f2!important;border-color:#be123c!important}.anatomy-tool-shell .anatomy-homeo-answer-label{display:block;font-size:12px;font-weight:800}.anatomy-tool-shell [data-anatomy-homeo-feedback]{font-size:15px;line-height:1.65;margin-top:10px}.theme-dark .anatomy-tool-shell [data-anatomy-homeo-recap-option][data-anatomy-homeo-answer-state=correct]{color:#dcfce7!important;background:#064e3b!important;border-color:#6ee7b7!important}.theme-dark .anatomy-tool-shell [data-anatomy-homeo-recap-option][data-anatomy-homeo-answer-state=chosen]{color:#ffe4e6!important;background:#881337!important;border-color:#fda4af!important}.theme-contrast .anatomy-tool-shell [data-anatomy-homeo-recap-option]{color:#000!important;background:#fff!important;border-color:#000!important}',
+      '.anatomy-tool-shell [data-anatomy-homeo-panel] .anatomy-feedback-experiment{font-size:14px;gap:12px;border-color:var(--homeo-border);background:var(--homeo-surface);color:var(--homeo-ink)}.anatomy-tool-shell [data-anatomy-homeo-panel] .anatomy-feedback-experiment :is(select,textarea){background:var(--homeo-surface)!important;color:var(--homeo-ink)!important}.anatomy-tool-shell [data-anatomy-homeo-panel] .anatomy-feedback-results svg{max-height:300px;border:1px solid var(--homeo-border)}.anatomy-tool-shell [data-anatomy-homeo-panel] .anatomy-feedback-experiment table{table-layout:fixed}.anatomy-tool-shell [data-anatomy-homeo-panel] :is(td,th){overflow-wrap:anywhere;padding:7px;text-align:start}.anatomy-tool-shell [data-anatomy-homeo-panel] :is(a){color:#075985;text-decoration:underline}.theme-dark .anatomy-tool-shell [data-anatomy-homeo-panel] a{color:#7dd3fc}.theme-contrast .anatomy-tool-shell [data-anatomy-homeo-panel] a{color:#000!important}.anatomy-tool-shell .anatomy-homeo-observations{overflow-x:auto;max-width:100%}',
+      '.anatomy-tool-shell[data-reading-mode=true] [data-anatomy-homeo-panel] :is(p,label,legend,li,button,select,td,th){font-size:17px!important;line-height:1.7}.anatomy-tool-shell [data-anatomy-homeo-panel] :focus-visible,.anatomy-tool-shell [data-anatomy-homeo-panel] :is(h5,[data-anatomy-homeo-feedback],.anatomy-homeo-range-card):focus{outline:3px solid #0284c7;outline-offset:3px}.anatomy-tool-shell [data-anatomy-homeo-panel] :is(h5,.anatomy-homeo-range-card){scroll-margin-top:16px}.anatomy-tool-shell [data-anatomy-homeo-panel] [hidden]{display:none!important}@media(max-width:680px){.anatomy-tool-shell [data-anatomy-homeo-panel]{padding:14px;gap:14px}.anatomy-tool-shell [data-anatomy-homeo-ranges],.anatomy-tool-shell [data-anatomy-homeo-recap]{padding:12px}.anatomy-tool-shell .anatomy-homeo-navigation{display:grid;grid-template-columns:1fr}.anatomy-tool-shell .anatomy-homeo-navigation button{width:100%}.anatomy-tool-shell .anatomy-homeo-range-card{padding:12px}}',
+
+      '.anatomy-tool-shell [data-anatomy-homeo-panel] button{padding:10px 12px;border:1px solid var(--homeo-border);border-radius:8px;background:var(--homeo-surface);color:var(--homeo-accent);font-weight:800;text-align:start}.anatomy-tool-shell [data-anatomy-homeo-panel] [data-anatomy-run-feedback]{background:#0f766e!important;color:#fff!important;border-color:#0f766e!important}.anatomy-tool-shell [data-anatomy-homeo-panel]>*,.anatomy-tool-shell [data-anatomy-homeo-ranges]>*{margin:0!important}.anatomy-tool-shell .anatomy-homeo-range-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.anatomy-tool-shell [data-anatomy-homeo-panel] input[type=range]{width:100%}.anatomy-tool-shell [data-anatomy-homeo-panel] textarea{width:100%;box-sizing:border-box}.anatomy-tool-shell .anatomy-homeo-observation-actions{display:flex;flex-wrap:wrap;gap:8px}.anatomy-tool-shell .anatomy-homeo-options{display:grid;gap:8px}.anatomy-tool-shell .anatomy-homeo-options button{width:100%}.anatomy-tool-shell .anatomy-homeo-check-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.anatomy-tool-shell .anatomy-homeo-understanding{display:flex;gap:10px;align-items:center;min-height:44px}.anatomy-tool-shell .anatomy-homeo-understanding input{width:20px;height:20px;flex-shrink:0}.anatomy-tool-shell .anatomy-homeo-writing-label{display:block;font-weight:800}.anatomy-tool-shell .anatomy-homeo-range-summary{padding:12px;border-radius:12px}.anatomy-tool-shell .anatomy-homeo-range-summary strong{font-size:16px}.anatomy-tool-shell .anatomy-homeo-range-summary p{color:#334155}.theme-dark .anatomy-tool-shell .anatomy-homeo-range-summary,.theme-contrast .anatomy-tool-shell .anatomy-homeo-range-summary{background:var(--homeo-soft)!important;border-color:var(--homeo-border)!important}.theme-dark .anatomy-tool-shell .anatomy-homeo-range-summary :is(strong,p),.theme-contrast .anatomy-tool-shell .anatomy-homeo-range-summary :is(strong,p){color:var(--homeo-ink)!important}.anatomy-tool-shell .anatomy-homeo-observations{border-collapse:collapse;width:100%;table-layout:fixed}.anatomy-tool-shell .anatomy-homeo-observations :is(th,td){border:1px solid var(--homeo-border)}.anatomy-tool-shell .anatomy-homeo-observations caption{font-size:14px;font-weight:800;text-align:start;margin-bottom:8px}@media(max-width:680px){.anatomy-tool-shell .anatomy-homeo-range-cards{grid-template-columns:1fr}}',
+
       // Keep exploration settings in one place and let the atlas lead the viewer.
       '.anatomy-tool-shell[data-anatomy-tab=explore]>.anatomy-system-rail{display:none!important}.anatomy-tool-shell[data-anatomy-tab=explore][data-anatomy-explorer-controls=false]>:is(.anatomy-mission,.anatomy-mode-card,.anatomy-display-panel,.anatomy-controls-bar){display:none!important}.anatomy-start-here{display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px}.anatomy-start-here-guide{flex:1;min-width:220px}.anatomy-start-here-guide summary{min-height:44px;cursor:pointer;list-style:none}.anatomy-start-here-guide summary::-webkit-details-marker{display:none}.anatomy-start-here-indicator{font-size:20px;margin-inline-start:10px}.anatomy-start-here-guide[open] .anatomy-start-here-indicator{transform:rotate(45deg)}.anatomy-start-here-actions{margin:0}.anatomy-start-here-actions button{min-height:44px}.anatomy-start-here-guide summary:focus-visible{outline:3px solid #0369a1;outline-offset:2px;border-radius:6px}',
       '.anatomy-tool-shell details.anatomy-canvas-toolbar[data-anatomy-canvas-mode="2d"]{padding:0;overflow:hidden}.anatomy-tool-shell details.anatomy-canvas-toolbar>summary{display:flex;align-items:center;gap:12px;min-height:44px;padding:10px 12px;box-sizing:border-box;cursor:pointer;list-style:none;font-size:12px;font-weight:800;color:var(--atlas-ink)}.anatomy-tool-shell details.anatomy-canvas-toolbar>summary::-webkit-details-marker{display:none}.anatomy-tool-shell details.anatomy-canvas-toolbar>summary strong{margin-inline-start:auto;font-size:12px;font-variant-numeric:tabular-nums}.anatomy-tool-shell details.anatomy-canvas-toolbar>summary:after{content:"+";font-size:18px}.anatomy-tool-shell details.anatomy-canvas-toolbar[open]>summary:after{content:"−"}.anatomy-tool-shell details.anatomy-canvas-toolbar[open]>summary{border-bottom:1px solid var(--atlas-border)}.anatomy-tool-shell details.anatomy-canvas-toolbar [data-anatomy-canvas-controls="2d"]{padding:10px;box-sizing:border-box}.anatomy-tool-shell details.anatomy-canvas-toolbar>summary:focus-visible{outline:3px solid #0284c7;outline-offset:-3px}',
@@ -1276,6 +1285,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
     return allowedIds.filter(function(id) { return value[id] === true; }).length;
   }
 
+  var ANATOMY_IMAGING_PIXEL_SPACING_MM = 0.8;
   function drawAnatomyImagingSlice(cx, W, H, state) {
     // Synthetic teaching phantom. Schematic on purpose (never a scan), but laid out with real
     // radiological conventions: axial slices are viewed from the feet (anterior at the top,
@@ -1883,7 +1893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
     // sagittal = S/I and A/P. (Axial slices were previously labelled S/I, which is wrong.)
     var markers = plane === 'axial' ? { top: 'A', bottom: 'P', left: 'R', right: 'L' } : plane === 'coronal' ? { top: 'S', bottom: 'I', left: 'R', right: 'L' } : { top: 'S', bottom: 'I', left: 'A', right: 'P' };
     cx.textAlign = 'center'; cx.fillStyle = '#f8fafc'; cx.fillText(markers.left, scanX + 12, midY); cx.fillText(markers.right, scanX + scanW - 12, midY); cx.fillText(markers.top, midX, scanY + 12); cx.fillText(markers.bottom, midX, scanY + scanH - 12);
-    line(scanX + 16, scanY + scanH - 18, scanX + 86, scanY + scanH - 18, '#fff', 3); cx.textAlign = 'left'; cx.fillText('50 mm', scanX + 92, scanY + scanH - 18); cx.restore();
+    line(scanX + 16, scanY + scanH - 18, scanX + 16 + 50 / ANATOMY_IMAGING_PIXEL_SPACING_MM, scanY + scanH - 18, '#fff', 3); cx.textAlign = 'left'; cx.fillText('50 mm', scanX + 92, scanY + scanH - 18); cx.restore();
     return { modality: modality, region: region, plane: plane, slice: slice, windowWidth: windowWidth, windowLevel: windowLevel, labelCount: labels.length, focusLabelCount: focusLabelCount, annotationCount: annotations.length, regions: regions };
   }
   // Geometry-only run of the phantom painter: returns the labelled hit regions for a slice
@@ -1909,7 +1919,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       axial: {
         definition: 'Axial sections divide the body into superior and inferior portions.',
         orientation: 'Imagine looking upward from the patient’s feet: patient right appears on the image’s left.',
-        positions: ['Inferior slice band', 'Central slice band', 'Superior slice band']
+        positions: ['Superior slice band', 'Central slice band', 'Inferior slice band']
       },
       coronal: {
         definition: 'Coronal sections divide the body into anterior and posterior portions.',
@@ -3417,46 +3427,148 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           }
           return samples;
         }
+        // Homeostasis keeps written work separate from the current check attempt.
+        var HOMEOSTASIS_RECAP_CONTEXT = 'homeostasis-v2|temp:above:above,within,below|ph:acid:within,alk,acid|feedback:restore:amplify,ignore,restore';
+        function newHomeostasisToken() { return Date.now().toString(36)+'-'+Math.random().toString(36).slice(2); }
+        function validHomeostasisToken(value) { return typeof value==='string' && value.length>0 && value.length<=128 ? value : null; }
+        function homeostasisQuestions() {
+          return [
+            {id:'temp',stem:t('stem.anatomy.homeo_recap_q1','Body temperature reads 39.0 °C. Against the teaching range of 36.5–37.5 °C, which is true?'),answer:'above',
+              options:[{id:'above',label:t('stem.anatomy.homeo_recap_q1_a','It is above the range: the body is too warm')},{id:'within',label:t('stem.anatomy.homeo_recap_q1_b','It is within the range')},{id:'below',label:t('stem.anatomy.homeo_recap_q1_c','It is below the range: the body is too cool')}],
+              reason:t('stem.anatomy.homeo_flow_temp_reason','39.0 °C is higher than the upper teaching limit of 37.5 °C. This comparison describes the range; it does not diagnose a person.')},
+            {id:'ph',stem:t('stem.anatomy.homeo_recap_q2','Arterial blood pH reads 7.25. Against the range of 7.35–7.45, which statement fits?'),answer:'acid',
+              options:[{id:'within',label:t('stem.anatomy.homeo_recap_q2_a','It is within the range')},{id:'alk',label:t('stem.anatomy.homeo_recap_q2_b','It is above the range: more alkaline than normal')},{id:'acid',label:t('stem.anatomy.homeo_recap_q2_c','It is below the range: more acidic than normal')}],
+              reason:t('stem.anatomy.homeo_flow_ph_reason','7.25 is below 7.35. A lower pH is more acidic; a higher pH is more alkaline.')},
+            {id:'feedback',stem:t('stem.anatomy.homeo_recap_q3','Which sentence describes negative feedback, the loop that keeps these values steady?'),answer:'restore',
+              options:[{id:'amplify',label:t('stem.anatomy.homeo_recap_q3_a','The body notices a change and pushes it further in the same direction')},{id:'ignore',label:t('stem.anatomy.homeo_recap_q3_b','The body ignores small changes until they become large')},{id:'restore',label:t('stem.anatomy.homeo_recap_q3_c','The body notices a change and responds to push the value back toward its set point')}],
+              reason:t('stem.anatomy.homeo_flow_feedback_reason','Negative feedback opposes a disturbance. In the temperature comparison, the active response becomes smaller as the difference from the starting value gets smaller.')}
+          ];
+        }
+        function validHomeostasisAnswers(raw) {
+          var answers={};if(!raw||typeof raw!=='object'||Array.isArray(raw))return answers;
+          homeostasisQuestions().forEach(function(question){if(question.options.some(function(option){return option.id===raw[question.id];}))answers[question.id]=raw[question.id];});return answers;
+        }
+        function homeostasisNumber(value,min,max,fallback) {
+          if(value===null||value===''||typeof value==='boolean'||typeof value==='object')return fallback;
+          var number=Number(value);return Number.isFinite(number)?Math.min(max,Math.max(min,number)):fallback;
+        }
+        function homeostasisOutsideCount(t,p,g){return Number(t<36.5||t>37.5)+Number(p<7.35||p>7.45)+Number(g<70||g>99);}
+        function homeostasisLog(raw) {
+          if(!Array.isArray(raw))return [];
+          return raw.filter(function(row){return row&&typeof row==='object'&&!Array.isArray(row)&&['t','p','g'].every(function(key){return typeof row[key]==='number'&&Number.isFinite(row[key]);})&&row.t>=30&&row.t<=43&&row.p>=6.8&&row.p<=7.8&&row.g>=30&&row.g<=400;}).slice(-8).map(function(row){return {t:row.t,p:row.p,g:row.g,st:homeostasisOutsideCount(row.t,row.p,row.g)};});
+        }
+        function normalizedHomeostasis(raw) {
+          var saved=raw&&typeof raw==='object'&&!Array.isArray(raw)?raw:{};
+          var contextValid=saved.recapContext===undefined||saved.recapContext===HOMEOSTASIS_RECAP_CONTEXT;
+          var latest=saved.lastRecap&&saved.lastRecap.version===2?validHomeostasisAnswers(saved.lastRecap.answers):{};
+          var questions=homeostasisQuestions();
+          return Object.assign({},saved,{tempC:homeostasisNumber(saved.tempC,30,43,37),pH:homeostasisNumber(saved.pH,6.8,7.8,7.4),glucose:homeostasisNumber(saved.glucose,30,400,90),
+            hypothesis:typeof saved.hypothesis==='string'?saved.hypothesis:'',explanation:typeof saved.explanation==='string'?saved.explanation:'',stuckRevealed:saved.stuckRevealed===true,understood:saved.understood===true,
+            log:homeostasisLog(saved.log),recap:contextValid?validHomeostasisAnswers(saved.recap):{},recapToken:validHomeostasisToken(saved.recapToken),recapContext:contextValid?HOMEOSTASIS_RECAP_CONTEXT:null,
+            recapFocusId:questions.some(function(question){return question.id===saved.recapFocusId;})?saved.recapFocusId:null,lastRecap:questions.every(function(question){return !!latest[question.id];})?{version:2,answers:latest}:null});
+        }
+        var homeostasisSnapshot=normalizedHomeostasis(d.homeoHunt);
+        function homeostasisChecksVisible(iq){return iq.understood||iq.log.length>=3||!!iq.recapToken||Object.keys(iq.recap).length>0;}
+        function sameHomeostasisAttempt(state){var current=normalizedHomeostasis(state.homeoHunt);return state._activeTab==='homeoHunt'&&current.recapToken===homeostasisSnapshot.recapToken&&current.recapContext===homeostasisSnapshot.recapContext;}
+        function finishHomeostasisUpdate(accepted,effect){var notified=false;function notify(){if(notified||!accepted())return;notified=true;effect();}notify();setTimeout(notify,0);}
+        function focusHomeostasisSection(kind){setTimeout(function(){var panel=document.querySelector('[data-anatomy-homeo-panel]');if(!panel)return;var target=panel.querySelector(kind==='ranges'?'#anatomy-homeo-range-title':'#anatomy-feedback-title');if(target){target.focus({preventScroll:true});target.scrollIntoView({block:'start',behavior:'auto'});}},0);}
+        function focusHomeostasisCheck(id,feedback,token){setTimeout(function(){var panel=document.querySelector('[data-anatomy-homeo-recap]');if(!panel||panel.getAttribute('data-anatomy-homeo-context')!==HOMEOSTASIS_RECAP_CONTEXT||panel.getAttribute('data-anatomy-homeo-token')!==(token||''))return;var question=homeostasisQuestions().some(function(item){return item.id===id;})?panel.querySelector('[data-anatomy-homeo-recap-question="'+id+'"]'):null;var target=question&&feedback?question.querySelector('[data-anatomy-homeo-feedback]'):question;target=target||question||panel.querySelector('#anatomy-homeo-check-title');if(target){target.focus({preventScroll:true});target.scrollIntoView({block:'start',behavior:'auto'});}},0);}
+        function changeHomeostasisFields(patch){
+          var keys=Object.keys(patch),allowed=['tempC','pH','glucose','hypothesis','explanation','stuckRevealed','understood'];if(!keys.length||keys.some(function(key){return allowed.indexOf(key)===-1;}))return;
+          if(keys.some(function(key){return ['tempC','pH','glucose'].indexOf(key)!==-1?typeof patch[key]!=='number'||!Number.isFinite(patch[key]):['hypothesis','explanation'].indexOf(key)!==-1?typeof patch[key]!=='string':typeof patch[key]!=='boolean';}))return;
+          var token=newHomeostasisToken();
+          setLabToolData(function(previous){var state=previous.anatomy||{},current=normalizedHomeostasis(state.homeoHunt);if(!sameHomeostasisAttempt(state)||keys.some(function(key){return current[key]!==homeostasisSnapshot[key];}))return previous;
+            var next=normalizedHomeostasis(Object.assign({},current,patch));
+            if(!homeostasisChecksVisible(current)&&homeostasisChecksVisible(next)){next.recapToken=token;next.recapContext=HOMEOSTASIS_RECAP_CONTEXT;}
+            return Object.assign({},previous,{anatomy:Object.assign({},state,{homeoHunt:next})});});
+        }
+        function updateHomeostasis(action){
+          var accepted=false,token=newHomeostasisToken();
+          setLabToolData(function(previous){var state=previous.anatomy||{},current=normalizedHomeostasis(state.homeoHunt);if(!sameHomeostasisAttempt(state))return previous;
+            var next=Object.assign({},current);
+            if(action==='reset'){next.tempC=37;next.pH=7.4;next.glucose=90;}
+            else if(action==='clear'){next.log=[];}
+            else if(action==='log'){
+              if(['tempC','pH','glucose'].some(function(key){return current[key]!==homeostasisSnapshot[key];}))return previous;
+              next.log=current.log.concat([{t:current.tempC,p:current.pH,g:current.glucose,st:homeostasisOutsideCount(current.tempC,current.pH,current.glucose)}]).slice(-8);
+              if(!homeostasisChecksVisible(current)&&homeostasisChecksVisible(next)){next.recapToken=token;next.recapContext=HOMEOSTASIS_RECAP_CONTEXT;}
+            }else if(action==='restart'){if(!homeostasisChecksVisible(current))return previous;if(!current.lastRecap&&homeostasisQuestions().every(function(question){return !!current.recap[question.id];}))next.lastRecap={version:2,answers:Object.assign({},current.recap)};next.recap={};next.recapToken=token;next.recapContext=HOMEOSTASIS_RECAP_CONTEXT;next.recapFocusId=null;}
+            else return previous;
+            accepted=true;return Object.assign({},previous,{anatomy:Object.assign({},state,{homeoHunt:next})});});
+          finishHomeostasisUpdate(function(){return accepted;},function(){if(action==='restart')focusHomeostasisCheck(null,false,token);if(typeof announceToSR==='function')announceToSR(action==='reset'?t('stem.anatomy.homeo_flow_measurements_reset','Measurements reset. Your writing, observations and check answers are saved.'):action==='clear'?t('stem.anatomy.homeo_flow_observations_cleared','Observations cleared. Your writing and check answers are saved.'):action==='restart'?t('stem.anatomy.homeo_flow_checks_restarted','New check attempt. Your last completed score and written work are saved.'):t('stem.anatomy.homeo_flow_observation_saved','Observation saved.'));});
+        }
+        function answerHomeostasis(questionId,optionId){
+          var question=homeostasisQuestions().find(function(item){return item.id===questionId;});if(!question||!question.options.some(function(option){return option.id===optionId;}))return;
+          var accepted=false;
+          setLabToolData(function(previous){var state=previous.anatomy||{},current=normalizedHomeostasis(state.homeoHunt);if(!sameHomeostasisAttempt(state)||!homeostasisChecksVisible(current)||current.recap[questionId])return previous;
+            var answers=Object.assign({},current.recap);answers[questionId]=optionId;var next=Object.assign({},current,{recap:answers,recapContext:HOMEOSTASIS_RECAP_CONTEXT,recapFocusId:questionId});
+            if(homeostasisQuestions().every(function(item){return !!answers[item.id];}))next.lastRecap={version:2,answers:Object.assign({},answers)};
+            accepted=true;return Object.assign({},previous,{anatomy:Object.assign({},state,{homeoHunt:next})});});
+          finishHomeostasisUpdate(function(){return accepted;},function(){playSound(optionId===question.answer?'quizCorrect':'quizWrong');if(typeof announceToSR==='function')announceToSR((optionId===question.answer?t('stem.anatomy.recap_correct_short','Correct.'):t('stem.anatomy.recap_incorrect_short','Not quite.'))+' '+question.reason);focusHomeostasisCheck(questionId,true,homeostasisSnapshot.recapToken);});
+        }
+        function feedbackContext(direction){return 'temperature-feedback-v1|'+direction;}
+        function validFeedbackSaved(raw){var saved=raw&&typeof raw==='object'&&!Array.isArray(raw)?raw:{};return {prediction:['active','disabled','same'].indexOf(saved.prediction)!==-1?saved.prediction:'',revealed:saved.revealed===true&&['active','disabled','same'].indexOf(saved.prediction)!==-1,explanation:typeof saved.explanation==='string'?saved.explanation.slice(0,2000):''};}
+        function normalizedFeedback(raw){var saved=raw&&typeof raw==='object'&&!Array.isArray(raw)?raw:{},direction=saved.direction==='cool'?'cool':'warm',current=validFeedbackSaved(saved),sessions={};['warm','cool'].forEach(function(id){if(saved.sessions&&saved.sessions[id]&&typeof saved.sessions[id]==='object'&&!Array.isArray(saved.sessions[id]))sessions[id]=validFeedbackSaved(saved.sessions[id]);});if(saved.context!==undefined&&saved.context!==feedbackContext(direction)){current.prediction='';current.revealed=false;}return Object.assign({},saved,current,{direction:direction,token:validHomeostasisToken(saved.token),context:feedbackContext(direction),sessions:sessions});}
+        var feedbackSnapshot=normalizedFeedback(d._feedbackExperiment);
+        function sameFeedbackAttempt(state){var current=normalizedFeedback(state._feedbackExperiment);return state._activeTab==='homeoHunt'&&current.direction===feedbackSnapshot.direction&&current.token===feedbackSnapshot.token;}
+        function focusFeedback(target,direction,token){setTimeout(function(){var panel=document.querySelector('[data-anatomy-feedback-experiment]');if(!panel||panel.getAttribute('data-anatomy-feedback-direction')!==direction||panel.getAttribute('data-anatomy-feedback-token')!==(token||''))return;var element=target==='results'?panel.querySelector('[data-anatomy-feedback-results]'):panel.querySelector('[data-anatomy-feedback-prediction]');if(element){element.focus({preventScroll:true});element.scrollIntoView({block:'start',behavior:'auto'});}},0);}
+        function updateFeedbackExperiment(action,value){
+          if(action==='direction'&&['warm','cool'].indexOf(value)===-1||action==='prediction'&&['active','disabled','same'].indexOf(value)===-1)return;
+          var accepted=false,token=newHomeostasisToken(),nextDirection=feedbackSnapshot.direction,focusToken=feedbackSnapshot.token,nextRevealed=feedbackSnapshot.revealed;
+          setLabToolData(function(previous){var state=previous.anatomy||{},current=normalizedFeedback(state._feedbackExperiment);if(!sameFeedbackAttempt(state))return previous;var next=Object.assign({},current);
+            if(action==='direction'){
+              if(value===current.direction)return previous;var sessions=Object.assign({},current.sessions);sessions[current.direction]=validFeedbackSaved(current);next=Object.assign({},current,sessions[value]||validFeedbackSaved(null),{direction:value,context:feedbackContext(value),token:token,sessions:sessions});nextDirection=value;focusToken=token;nextRevealed=next.revealed;
+            }else if(action==='prediction'){if(current.revealed||current.prediction!==feedbackSnapshot.prediction)return previous;next.prediction=value;next.revealed=false;}
+            else if(action==='run'){
+              if(!current.prediction||current.prediction!==feedbackSnapshot.prediction||current.revealed!==feedbackSnapshot.revealed)return previous;
+              if(current.revealed){next.revealed=false;next.prediction='';next.token=token;focusToken=token;}else next.revealed=true;
+            }else if(action==='explanation'){if(!current.revealed||current.explanation!==feedbackSnapshot.explanation||typeof value!=='string')return previous;next.explanation=value.slice(0,2000);}
+            else return previous;
+            accepted=true;return Object.assign({},previous,{anatomy:Object.assign({},state,{_feedbackExperiment:next})});});
+          finishHomeostasisUpdate(function(){return accepted;},function(){if(action==='direction')focusFeedback(nextRevealed?'results':'prediction',nextDirection,focusToken);else if(action==='run'){focusFeedback(feedbackSnapshot.revealed?'prediction':'results',nextDirection,focusToken);if(typeof announceToSR==='function')announceToSR(feedbackSnapshot.revealed?t('stem.anatomy.homeo_flow_prediction_again','Make a new prediction. Your explanation is saved.'):t('stem.anatomy.homeo_flow_models_compared','Model comparison shown. Read the explanation and compare the two lines.'));}});
+        }
         function renderFeedbackExperiment() {
-          var saved = d._feedbackExperiment && typeof d._feedbackExperiment === 'object' && !Array.isArray(d._feedbackExperiment) ? d._feedbackExperiment : {};
+          var saved = feedbackSnapshot;
           var direction = saved.direction === 'cool' ? 'cool' : 'warm';
           var prediction = ['active', 'disabled', 'same'].indexOf(saved.prediction) !== -1 ? saved.prediction : '';
           var revealed = saved.revealed === true && !!prediction;
-          function change(patch) { upd('_feedbackExperiment', Object.assign({ direction: direction, prediction: prediction, revealed: revealed, explanation: typeof saved.explanation === 'string' ? saved.explanation.slice(0,2000) : '' }, patch)); }
           var active = simulateAnatomyFeedback(direction, true), disabled = simulateAnatomyFeedback(direction, false);
           var activeLabel = t('stem.anatomy.feedback_active', 'Feedback active');
           var disabledLabel = t('stem.anatomy.feedback_disabled', 'Response disabled');
           function points(samples) { return samples.map(function(sample) { return (40 + sample.step * 7.5).toFixed(1) + ',' + (85 - (sample.temperature - 37) * 150).toFixed(1); }).join(' '); }
-          return h('section', { className: 'anatomy-feedback-experiment', 'aria-labelledby': 'anatomy-feedback-title', 'data-anatomy-feedback-experiment': 'true' },
-            h('h5', { id: 'anatomy-feedback-title' }, t('stem.anatomy.feedback_title', 'Predict → compare → explain')),
+          return h('section', { className: 'anatomy-feedback-experiment', 'aria-labelledby': 'anatomy-feedback-title', 'data-anatomy-feedback-experiment': 'true', 'data-anatomy-feedback-direction':direction, 'data-anatomy-feedback-token':saved.token||'' },
+            h('h5', { id: 'anatomy-feedback-title', tabIndex:-1 }, t('stem.anatomy.feedback_title', 'Predict → compare → explain')),
             h('p', null, t('stem.anatomy.feedback_intro', 'After a brief warming or cooling ends, which model returns closer to its starting temperature?')),
             h('label', { htmlFor: 'anatomy-feedback-disturbance' }, t('stem.anatomy.feedback_disturbance', 'Disturbance'),
-              h('select', { id: 'anatomy-feedback-disturbance', value: direction, onChange: function(event) { change({ direction: event.target.value === 'cool' ? 'cool' : 'warm', prediction: '', revealed: false, explanation: '' }); } },
+              h('select', { id: 'anatomy-feedback-disturbance', value: direction, onChange: function(event) { updateFeedbackExperiment('direction',event.target.value); } },
                 h('option', { value: 'warm' }, t('stem.anatomy.feedback_warming', 'Brief warming')), h('option', { value: 'cool' }, t('stem.anatomy.feedback_cooling', 'Brief cooling')))),
-            h('fieldset', null, h('legend', null, t('stem.anatomy.feedback_prediction', 'Make a prediction')),
+            h('fieldset', {tabIndex:-1,'data-anatomy-feedback-prediction':true}, h('legend', null, t('stem.anatomy.feedback_prediction', 'Make a prediction')),
               [{ id: 'active', label: activeLabel }, { id: 'disabled', label: disabledLabel }, { id: 'same', label: t('stem.anatomy.feedback_same', 'Both return equally close') }].map(function(option) {
                 return h('label', { key: option.id }, h('input', { type: 'radio', name: 'anatomy-feedback-prediction', value: option.id, checked: prediction === option.id, disabled: revealed,
-                  onChange: function() { change({ prediction: option.id, revealed: false }); } }), option.label);
+                  onChange: function() { updateFeedbackExperiment('prediction',option.id); } }), option.label);
               })),
-            h('button', { type: 'button', disabled: !prediction, 'data-anatomy-run-feedback': 'true', onClick: function() { if (!prediction) return; change({ revealed: !revealed }); } }, revealed ? t('stem.anatomy.feedback_retry', 'Predict again') : t('stem.anatomy.feedback_run', 'Compare models')),
-            revealed ? h('div', { className: 'anatomy-feedback-results', 'data-anatomy-feedback-results': direction },
+            h('button', { type: 'button', disabled: !prediction, 'data-anatomy-run-feedback': 'true', onClick: function() { updateFeedbackExperiment('run'); } }, revealed ? t('stem.anatomy.feedback_retry', 'Predict again') : t('stem.anatomy.feedback_run', 'Compare models')),
+            revealed ? h('div', { className: 'anatomy-feedback-results', 'data-anatomy-feedback-results': direction, tabIndex:-1 },
               h('p', { role: 'status', 'aria-live': 'polite' }, (prediction === 'active' ? t('stem.anatomy.feedback_match', 'Your prediction matches the model. ') : t('stem.anatomy.feedback_rethink', 'Compare your prediction with the model. ')) + t('stem.anatomy.feedback_result', 'Active feedback brings temperature closer to the starting value after the disturbance ends. With the response disabled, the offset remains in this simplified model.')),
-              h('svg', { viewBox: '0 0 360 180', direction: 'ltr', style: { direction: 'ltr' }, role: 'img', 'aria-labelledby': 'anatomy-feedback-chart-title', 'aria-describedby': 'anatomy-feedback-chart-description' },
+              h('svg', { viewBox: '0 0 360 180', direction: 'ltr', style: { direction: 'ltr' }, role: 'img', 'aria-labelledby': 'anatomy-feedback-chart-title', 'aria-describedby': 'anatomy-feedback-chart-description anatomy-feedback-pulse-key' },
                 h('title', { id: 'anatomy-feedback-chart-title' }, t('stem.anatomy.feedback_chart', 'Temperature over 40 model steps')),
                 h('desc', { id: 'anatomy-feedback-chart-description' }, t('stem.anatomy.feedback_chart_desc', 'The solid line returns toward 37°C. The dashed line stays displaced. Exact comparison values are in the table below.')),
+                h('rect', { x:40, y:15, width:60, height:135, fill:'#fff7ed', 'data-anatomy-feedback-pulse':true }),
+                h('path', { d:'M100 15V150', fill:'none', stroke:'#b45309', strokeWidth:1.5, strokeDasharray:'3 4' }),
                 h('path', { d: 'M40 15V150H340 M40 85H340', fill: 'none', stroke: '#64748b', strokeWidth: 1 }),
-                h('text', { x: 4, y: 12, fontSize: 11, fill: 'currentColor' }, '°C'),
-                [36.6,37,37.4].map(function(value) { return h('text', { key: value, x: 4, y: 89-(value-37)*150, fontSize: 10, fill: 'currentColor' }, String(value)); }),
-                [0,8,20,40].map(function(value) { return h('text', { key: value, x: 40+value*7.5, y: 167, textAnchor: 'middle', fontSize: 11, fill: 'currentColor' }, String(value)); }),
+                h('text', { x: 4, y: 12, fontSize: 14, fill: 'currentColor' }, '°C'),
+                [36.6,37,37.4].map(function(value) { return h('text', { key: value, x: 4, y: 90-(value-37)*150, fontSize: 14, fill: 'currentColor' }, String(value)); }),
+                [0,8,20,40].map(function(value) { return h('text', { key: value, x: 40+value*7.5, y: 169, textAnchor: 'middle', fontSize: 14, fill: 'currentColor' }, String(value)); }),
                 h('polyline', { points: points(disabled), fill: 'none', stroke: '#be123c', strokeWidth: 3, strokeDasharray: '6 4' }),
                 h('polyline', { points: points(active), fill: 'none', stroke: '#0f766e', strokeWidth: 3 })),
+              h('p', { id:'anatomy-feedback-pulse-key', className:'anatomy-feedback-legend' }, t('stem.anatomy.homeo_flow_pulse_key','Shaded area: the disturbance is applied through step 8.')),
               h('p', { className: 'anatomy-feedback-legend' }, t('stem.anatomy.feedback_legend', 'Solid: feedback active · Dashed: response disabled. Horizontal axis: model steps. The disturbance ends at step 8.')),
               h('table', null, h('caption', null, t('stem.anatomy.feedback_values', 'Model temperatures (°C)')),
                 h('thead', null, h('tr', null, h('th', { scope: 'col' }, t('stem.anatomy.feedback_step', 'Step')), h('th', { scope: 'col' }, activeLabel), h('th', { scope: 'col' }, disabledLabel))),
                 h('tbody', null, [0,8,20,40].map(function(step) { return h('tr', { key: step }, h('th', { scope: 'row' }, step), h('td', { 'data-anatomy-feedback-active': step }, active[step].temperature.toFixed(3)), h('td', { 'data-anatomy-feedback-disabled': step }, disabled[step].temperature.toFixed(3))); }))),
               h('p', null, direction === 'warm' ? t('stem.anatomy.feedback_warm_mechanism', 'In the body, the hypothalamus coordinates responses such as sweating and increased skin blood flow to lose heat.') : t('stem.anatomy.feedback_cool_mechanism', 'In the body, the hypothalamus coordinates responses such as shivering and reduced skin blood flow to conserve or generate heat.')),
               h('label', { htmlFor: 'anatomy-feedback-explanation' }, t('stem.anatomy.feedback_explain', 'Why does the response get smaller as temperature approaches its starting value?'),
-                h('textarea', { id: 'anatomy-feedback-explanation', rows: 3, maxLength: 2000, value: typeof saved.explanation === 'string' ? saved.explanation.slice(0,2000) : '', onChange: function(event) { change({ explanation: event.target.value.slice(0,2000) }); } }))
+                h('textarea', { id: 'anatomy-feedback-explanation', rows: 3, maxLength: 2000, value: typeof saved.explanation === 'string' ? saved.explanation.slice(0,2000) : '', onChange: function(event) { updateFeedbackExperiment('explanation',event.target.value); } }))
             ) : null,
             h('p', { className: 'anatomy-feedback-limit' }, t('stem.anatomy.feedback_limit', 'Illustrative model: 37°C is a chosen starting value, steps are not minutes, and response rates are not calibrated to a person. Real bodies exchange heat continuously and have variable delays and limits.')),
             h('a', { href: 'https://openstax.org/books/anatomy-and-physiology-2e/pages/1-5-homeostasis', target: '_blank', rel: 'noopener noreferrer' }, t('stem.anatomy.feedback_reference', 'Read about negative feedback — OpenStax'))
@@ -16058,7 +16170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 function renderBodyScopeNavigator() {
                   var regionBands = { head: [18, 60], chest: [58, 116], abdomen: [112, 169] };
                   var band = regionBands[region];
-                  var axialY = band[1] - (sliceValue / 100) * (band[1] - band[0]);
+                  var axialY = band[0] + (sliceValue / 100) * (band[1] - band[0]);
                   var sagittalX = 52 + (sliceValue / 100) * 76;
                   var coronalX = 240 + (sliceValue / 100) * 58;
                   var planeName = plane.charAt(0).toUpperCase() + plane.slice(1);
@@ -16223,7 +16335,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   if (imagingTool === 'ruler' && savedImaging.rulerStart && typeof savedImaging.rulerStart === 'object') {
                     var start = savedImaging.rulerStart;
                     var dx = (x - start.x) * 552, dy = (y - start.y) * 408;
-                    var distance = Math.sqrt(dx * dx + dy * dy) * 0.8;
+                    var distance = Math.sqrt(dx * dx + dy * dy) * ANATOMY_IMAGING_PIXEL_SPACING_MM;
                     var ruler = { id: 'img-' + Date.now(), type: 'ruler', x: start.x, y: start.y, x2: x, y2: y, distanceMm: Math.round(distance * 10) / 10, note: imagingNote || 'Measured span', modality: modality, region: region, plane: plane, slice: sliceValue };
                     setImaging({ annotations: allImagingAnnotations.concat([ruler]).slice(-12), rulerStart: null, note: '' });
                     if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.anatomy.sr_ruler_recorded_millimeters_in_this_teaching_phant', 'Ruler recorded: {value1} millimeters in this teaching phantom.'), { value1: ruler.distanceMm }));
@@ -16389,138 +16501,74 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   )
                 );
               })() : activeTab === 'homeoHunt' ? (function() {
-                var homeoDefaults = { tempC: 37, pH: 7.4, glucose: 90, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [], recap: {} };
-                var savedHomeo = d.homeoHunt && typeof d.homeoHunt === 'object' && !Array.isArray(d.homeoHunt) ? d.homeoHunt : {};
-                function boundedHomeoNumber(value, min, max, fallback) {
-                  if (value === null || value === '' || typeof value === 'boolean') return fallback;
-                  var number = Number(value);
-                  return Number.isFinite(number) ? Math.min(max, Math.max(min, number)) : fallback;
-                }
-                var iq = Object.assign({}, homeoDefaults, savedHomeo);
-                iq.tempC = boundedHomeoNumber(savedHomeo.tempC, 30, 43, homeoDefaults.tempC);
-                iq.pH = boundedHomeoNumber(savedHomeo.pH, 6.8, 7.8, homeoDefaults.pH);
-                iq.glucose = boundedHomeoNumber(savedHomeo.glucose, 30, 400, homeoDefaults.glucose);
-                iq.hypothesis = typeof savedHomeo.hypothesis === 'string' ? savedHomeo.hypothesis : '';
-                iq.explanation = typeof savedHomeo.explanation === 'string' ? savedHomeo.explanation : '';
-                iq.stuckRevealed = !!savedHomeo.stuckRevealed;
-                iq.understood = !!savedHomeo.understood;
-                iq.recap = savedHomeo.recap && typeof savedHomeo.recap === 'object' && !Array.isArray(savedHomeo.recap) ? savedHomeo.recap : {};
-                iq.log = Array.isArray(savedHomeo.log) ? savedHomeo.log.filter(function(entry) {
-                  return entry && typeof entry === 'object' && !Array.isArray(entry);
-                }).slice(-8) : [];
-                function setIQ(patch) { upd('homeoHunt', Object.assign({}, iq, patch)); }
-                var referenceChecks = [
-                  { key: 'temperature', inRange: iq.tempC >= 36.5 && iq.tempC <= 37.5 },
-                  { key: 'blood pH', inRange: iq.pH >= 7.35 && iq.pH <= 7.45 },
-                  { key: 'fasting glucose', inRange: iq.glucose >= 70 && iq.glucose <= 99 }
-                ];
-                var outOfRange = referenceChecks.filter(function(check) { return !check.inRange; });
-                var state = outOfRange.length === 0 ? 'normal' : outOfRange.length === 1 ? 'mildStress' : outOfRange.length === 2 ? 'severeStress' : 'critical';
-                var stateMeta = {
-                  normal:       { label: t('stem.anatomy.within_teaching_references', 'All within teaching references'), color: '#047857', bg: '#ecfdf5', border: '#86efac', short: '0 outside', desc: 'Temperature, arterial blood pH, and fasting glucose are inside this model\'s adult reference ranges.' },
-                  mildStress:   { label: t('stem.anatomy.one_variable_outside_reference', '1 variable outside reference'),  color: '#b45309', bg: '#fffbeb', border: '#fcd34d', short: '1 outside', desc: (outOfRange[0] ? outOfRange[0].key : 'One variable') + ' is outside this model\'s reference range.' },
-                  severeStress: { label: t('stem.anatomy.two_variables_outside_reference', '2 variables outside reference'),       color: '#c2410c', bg: '#fff7ed', border: '#fdba74', short: '2 outside', desc: outOfRange.map(function(check) { return check.key; }).join(' and ') + ' are outside this model\'s reference ranges.' },
-                  critical:     { label: t('stem.anatomy.three_variables_outside_reference', '3 variables outside reference'),   color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5', short: '3 outside', desc: 'All three variables are outside this model\'s reference ranges.' }
-                }[state];
-                function logObs() {
-                  setIQ({ log: iq.log.concat([{ t: iq.tempC, p: iq.pH, g: iq.glucose, st: stateMeta.short }]).slice(-8) });
-                }
-                return h('div', { className: 'bg-white rounded-xl border-2 border-indigo-200 p-4 space-y-3' },
-                  h('h4', { className: 'font-bold text-indigo-800 text-sm' }, t('stem.anatomy.homeostasis_discovery_2', '🏠 Homeostasis discovery')),
+                var iq=homeostasisSnapshot,questions=homeostasisQuestions(),outside=homeostasisOutsideCount(iq.tempC,iq.pH,iq.glucose);
+                var stateMeta=[
+                  {label:t('stem.anatomy.within_teaching_references','All within teaching references'),color:'#047857',bg:'#ecfdf5',border:'#86efac'},
+                  {label:t('stem.anatomy.one_variable_outside_reference','1 variable outside reference'),color:'#b45309',bg:'#fffbeb',border:'#fcd34d'},
+                  {label:t('stem.anatomy.two_variables_outside_reference','2 variables outside reference'),color:'#c2410c',bg:'#fff7ed',border:'#fdba74'},
+                  {label:t('stem.anatomy.three_variables_outside_reference','3 variables outside reference'),color:'#b91c1c',bg:'#fef2f2',border:'#fca5a5'}
+                ][outside];
+                return h('section',{className:'anatomy-homeo-panel bg-white rounded-xl border-2 border-indigo-200 p-4 space-y-3','data-anatomy-homeo-panel':true,'aria-labelledby':'anatomy-homeo-title'},
+                  h('h4',{id:'anatomy-homeo-title',tabIndex:-1},t('stem.anatomy.homeostasis_discovery_2','🏠 Homeostasis discovery')),
+                  h('p',{className:'anatomy-homeo-intro'},t('stem.anatomy.homeo_flow_intro','Predict how temperature feedback responds, then explore three teaching reference ranges. Your writing and observations stay saved while you move between these activities.')),
+                  h('nav',{className:'anatomy-homeo-navigation','aria-label':t('stem.anatomy.homeo_flow_navigation','Homeostasis activities')},
+                    h('button',{type:'button','data-anatomy-homeo-jump':'experiment',onClick:function(){focusHomeostasisSection('experiment');}},t('stem.anatomy.homeo_flow_experiment','Temperature feedback')),
+                    h('button',{type:'button','data-anatomy-homeo-jump':'ranges',onClick:function(){focusHomeostasisSection('ranges');}},t('stem.anatomy.homeo_flow_ranges','Reference ranges'))),
                   renderFeedbackExperiment(),
-                  h('p', { className: 'text-xs text-slate-700 leading-relaxed' },
-                    'Explore a conceptual adult reference-range dashboard. Adjust body temperature, arterial blood pH, and fasting plasma glucose, then notice which measurements move outside their teaching ranges.'),
-                  h('div', { className: 'p-3 rounded-lg text-center', role: 'status', 'aria-live': 'polite', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
-                    h('div', { className: 'text-sm font-black', style: { color: stateMeta.color } }, stateMeta.label),
-                    h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, stateMeta.desc)
-                  ),
-                  h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
-                    [
-                      { key: 'tempC',   label: t('stem.anatomy.body_temp_c', 'Body temp (°C)'), val: iq.tempC,   min: 30, max: 43, step: 0.1 },
-                      { key: 'pH',      label: t('stem.anatomy.blood_ph', 'Blood pH'),       val: iq.pH,      min: 6.8, max: 7.8, step: 0.05 },
-                      { key: 'glucose', label: t('stem.anatomy.fasting_glucose_mg_dl', 'Fasting glucose (mg/dL)'), val: iq.glucose, min: 30, max: 400, step: 5 }
-                    ].map(function(s) {
-                      return h('div', { key: s.key },
-                        h('label', { htmlFor: 'hh-' + s.key, className: 'block text-[0.6875rem] font-bold text-slate-700' },
-                          s.label + ': ', h('span', { className: 'font-mono text-indigo-700' }, s.val)),
-                        h('input', { id: 'hh-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
-                          onChange: function(e) { var p = {}; p[s.key] = parseFloat(e.target.value); setIQ(p); },
-                          className: 'w-full', 'aria-label': s.label, 'aria-valuetext': s.label + ': ' + s.val }));
-                    })
-                  ),
-                  h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                    h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, t('stem.anatomy.log', '📋 Log')),
-                    h('button', { onClick: function() { setIQ({ tempC: 37, pH: 7.4, glucose: 90, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, t('stem.anatomy.reset_3', '↺ Reset')),
-                    iq.log.length > 0 && h('span', { className: 'text-[0.6875rem] text-slate-500 italic' }, iq.log.length + ' logged')
-                  ),
-                  iq.log.length > 0 && h('table', { className: 'text-[0.6875rem] w-full border-collapse text-slate-700', 'aria-label': __alloT('stem.anatomy.a11y_logged_homeostasis_observations', 'Logged homeostasis observations') },
-                    h('thead', null, h('tr', { className: 'bg-slate-100' }, ['temp °C', 'pH', 'gluc', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, scope: 'col', className: 'px-1 border border-slate-200 text-left' }, c); }))),
-                    h('tbody', null, iq.log.map(function(o, idx) {
-                      return h('tr', { key: 'lr' + idx },
-                        h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.t),
-                        h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.p),
-                        h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.g),
-                        h('td', { className: 'px-1 border border-slate-200' }, o.st));
-                    }))
-                  ),
-                  h('textarea', { 'aria-label': t('stem.anatomy.hypothesis_input', 'Homeostasis hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.anatomy.homeostasis_reference_hypothesis', 'Hypothesis: What does each variable help regulate? Why can we not compare range widths measured in different units?'),
-                    className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                  !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, t('stem.anatomy.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-                  iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
-                    h('ul', { className: 'list-disc pl-5 space-y-1' },
-                      h('li', null, t('stem.anatomy.hold_two_vital_signs_steady_move_the_t', 'Hold two vital signs steady. Move the third. Watch.')),
-                      h('li', null, t('stem.anatomy.arterial_blood_ph_reference_prompt', 'A common arterial blood pH reference range is 7.35-7.45. Investigate why it is so narrow.')),
-                      h('li', null, t('stem.anatomy.compare_outside_reference_counts', 'Find settings with one, two, and three variables outside the reference ranges. What changes?')))),
-                  h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
-                    h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
-                      h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                      t('stem.anatomy.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-                    iq.understood && h('textarea', { 'aria-label': t('stem.anatomy.explanation_input', 'Homeostasis explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.anatomy.explain_homeostasis_model_limit', 'Explain why a reference-range flag alone cannot diagnose a person.'),
-                      className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
-                  // Retrieval step: three checks on the ideas the sliders were meant to surface.
-                  // Shown once the learner has logged a few observations or ticked "I understand".
-                  (iq.understood || iq.log.length >= 3) ? (function() {
-                    var homeoRecapQuestions = [
-                      { id: 'temp', stem: t('stem.anatomy.homeo_recap_q1', 'Body temperature reads 39.0 °C. Against the teaching range of 36.5–37.5 °C, which is true?'),
-                        options: [{ id: 'above', label: t('stem.anatomy.homeo_recap_q1_a', 'It is above the range: the body is too warm') }, { id: 'within', label: t('stem.anatomy.homeo_recap_q1_b', 'It is within the range') }, { id: 'below', label: t('stem.anatomy.homeo_recap_q1_c', 'It is below the range: the body is too cool') }], answer: 'above' },
-                      { id: 'ph', stem: t('stem.anatomy.homeo_recap_q2', 'Arterial blood pH reads 7.25. Against the range of 7.35–7.45, which statement fits?'),
-                        options: [{ id: 'within', label: t('stem.anatomy.homeo_recap_q2_a', 'It is within the range') }, { id: 'alk', label: t('stem.anatomy.homeo_recap_q2_b', 'It is above the range: more alkaline than normal') }, { id: 'acid', label: t('stem.anatomy.homeo_recap_q2_c', 'It is below the range: more acidic than normal') }], answer: 'acid' },
-                      { id: 'feedback', stem: t('stem.anatomy.homeo_recap_q3', 'Which sentence describes negative feedback, the loop that keeps these values steady?'),
-                        options: [{ id: 'amplify', label: t('stem.anatomy.homeo_recap_q3_a', 'The body notices a change and pushes it further in the same direction') }, { id: 'ignore', label: t('stem.anatomy.homeo_recap_q3_b', 'The body ignores small changes until they become large') }, { id: 'restore', label: t('stem.anatomy.homeo_recap_q3_c', 'The body notices a change and responds to push the value back toward its set point') }], answer: 'restore' }
-                    ];
-                    var answered = homeoRecapQuestions.filter(function(q) { return typeof iq.recap[q.id] === 'string'; }).length;
-                    var correctCount = homeoRecapQuestions.filter(function(q) { return iq.recap[q.id] === q.answer; }).length;
-                    var done = answered >= homeoRecapQuestions.length;
-                    return h('div', { className: 'p-3 rounded-lg bg-indigo-50 border border-indigo-200 space-y-2', 'data-anatomy-homeo-recap': 'true', 'data-anatomy-homeo-recap-state': done ? 'done' : 'open' },
-                      h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
-                        h('h5', { className: 'font-bold text-indigo-900 text-sm' }, t('stem.anatomy.homeo_recap_title', '✓ Check what you found')),
-                        h('span', { className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800', role: 'status' }, answered + ' / ' + homeoRecapQuestions.length)
-                      ),
-                      homeoRecapQuestions.map(function(q) {
-                        var chosen = typeof iq.recap[q.id] === 'string' ? iq.recap[q.id] : null;
-                        return h('div', { key: q.id, className: 'rounded-lg border border-indigo-200 bg-white p-3', 'data-anatomy-homeo-recap-question': q.id },
-                          h('p', { className: 'text-xs text-slate-800 font-bold leading-relaxed mb-2' }, q.stem),
-                          h('div', { className: 'grid grid-cols-1 gap-1.5' }, q.options.map(function(option) {
-                            var isCorrect = option.id === q.answer, wasChosen = chosen === option.id;
-                            return h('button', { key: option.id, type: 'button', disabled: chosen !== null, 'aria-pressed': wasChosen, 'data-anatomy-homeo-recap-option': option.id,
-                              onClick: function() {
-                                var nextRecap = Object.assign({}, iq.recap); nextRecap[q.id] = option.id;
-                                setIQ({ recap: nextRecap });
-                                playSound(isCorrect ? 'quizCorrect' : 'quizWrong');
-                                if (typeof announceToSR === 'function') announceToSR(isCorrect ? t('stem.anatomy.recap_correct_short', 'Correct.') : t('stem.anatomy.recap_incorrect_short', 'Not quite.'));
-                              },
-                              className: 'w-full text-left px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-all ' +
-                                (chosen !== null && isCorrect ? 'border-green-400 bg-green-50 text-green-800' : chosen !== null && wasChosen ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-700 hover:bg-indigo-50 active:scale-[0.97]')
-                            }, (chosen !== null && isCorrect ? '✅ ' : chosen !== null && wasChosen ? '❌ ' : '') + option.label);
-                          }))
-                        );
-                      }),
-                      done ? h('p', { className: 'text-xs text-indigo-900 font-bold', role: 'status', 'aria-live': 'polite' },
-                        correctCount + ' / ' + homeoRecapQuestions.length + t('stem.anatomy.homeo_recap_score', ' right. ') +
-                        (correctCount === homeoRecapQuestions.length ? t('stem.anatomy.homeo_recap_all', 'You can read a value against its range and explain the loop that holds it there.') : t('stem.anatomy.homeo_recap_some', 'Slide a value out of range again and watch which way the body would need to push it back.'))) : null
-                    );
-                  })() : null,
-                  h('div', { className: 'text-[0.6875rem] italic text-slate-500' }, t('stem.anatomy.homeostasis_model_limit', 'Teaching model only, not a clinical score or diagnosis. Real interpretation depends on age, context, symptoms, measurement method, trends, and rate of change.'))
+                  h('section',{'data-anatomy-homeo-ranges':true,'aria-labelledby':'anatomy-homeo-range-title'},
+                    h('h5',{id:'anatomy-homeo-range-title',tabIndex:-1},t('stem.anatomy.homeo_flow_ranges','Reference ranges')),
+                    h('p',{className:'anatomy-homeo-range-intro'},t('stem.anatomy.homeo_flow_range_intro','Adjust body temperature, arterial blood pH and fasting plasma glucose. Compare each value with its own adult teaching range; the measurements use different units.')),
+                    h('div',{className:'anatomy-homeo-range-summary',role:'status','aria-live':'polite',style:{background:stateMeta.bg,border:'2px solid '+stateMeta.border}},
+                      h('strong',{style:{color:stateMeta.color}},stateMeta.label),
+                      h('p',null,t('stem.anatomy.homeo_flow_outside_count','{outside} of {total} measurements are outside the teaching reference ranges.').replace('{outside}',String(outside)).replace('{total}','3'))),
+                    h('div',{className:'anatomy-homeo-range-cards'},[
+                      {key:'tempC',label:t('stem.anatomy.body_temp_c','Body temp (°C)'),val:iq.tempC,min:30,max:43,step:.1,referenceLow:36.5,referenceHigh:37.5,referenceText:'36.5–37.5 °C'},
+                      {key:'pH',label:t('stem.anatomy.blood_ph','Blood pH'),val:iq.pH,min:6.8,max:7.8,step:.05,referenceLow:7.35,referenceHigh:7.45,referenceText:'7.35–7.45'},
+                      {key:'glucose',label:t('stem.anatomy.fasting_glucose_mg_dl','Fasting glucose (mg/dL)'),val:iq.glucose,min:30,max:400,step:5,referenceLow:70,referenceHigh:99,referenceText:'70–99 mg/dL'}
+                    ].map(function(s){var rangeState=s.val<s.referenceLow?'below':s.val>s.referenceHigh?'above':'within';return h('div',{key:s.key,className:'anatomy-homeo-range-card'},
+                      h('label',{htmlFor:'hh-'+s.key},s.label+': ',h('span',{className:'anatomy-homeo-range-value'},s.val)),
+                      h('p',{className:'anatomy-homeo-teaching-range'},t('stem.anatomy.homeo_flow_teaching_range','Teaching range: {range}').replace('{range}',s.referenceText)),
+                      h('span',{'data-anatomy-homeo-range-status':s.key,'data-state':rangeState},rangeState==='below'?t('stem.anatomy.homeo_flow_below','Below the range'):rangeState==='above'?t('stem.anatomy.homeo_flow_above','Above the range'):t('stem.anatomy.homeo_flow_within','Within the range')),
+                      h('input',{id:'hh-'+s.key,type:'range',min:s.min,max:s.max,step:s.step,value:s.val,onChange:function(event){var patch={};patch[s.key]=parseFloat(event.target.value);changeHomeostasisFields(patch);},'aria-label':s.label,'aria-valuetext':s.label+': '+s.val}));})),
+                    h('div',{className:'anatomy-homeo-observation-actions'},
+                      h('button',{type:'button','data-anatomy-homeo-log':true,onClick:function(){updateHomeostasis('log');}},t('stem.anatomy.homeo_flow_log','Log observation')),
+                      h('button',{type:'button','data-anatomy-homeo-reset-measurements':true,onClick:function(){updateHomeostasis('reset');}},t('stem.anatomy.homeo_flow_reset_measurements','Reset measurements')),
+                      h('button',{type:'button','data-anatomy-homeo-clear-observations':true,disabled:!iq.log.length,onClick:function(){updateHomeostasis('clear');}},t('stem.anatomy.homeo_flow_clear_observations','Clear observations'))),
+                    h('p',{className:'anatomy-homeo-action-help'},t('stem.anatomy.homeo_flow_reset_help','Reset measurements restores the three starting values. Clear observations removes the table. Both keep your writing and check answers.')),
+                    iq.log.length>0&&h('table',{className:'anatomy-homeo-observations','aria-label':__alloT('stem.anatomy.a11y_logged_homeostasis_observations','Logged homeostasis observations')},
+                      h('caption',null,t('stem.anatomy.homeo_flow_observations','Observations: {count} of {maximum} saved').replace('{count}',String(iq.log.length)).replace('{maximum}','8')),
+                      h('thead',null,h('tr',null,[t('stem.anatomy.body_temp_c','Body temp (°C)'),t('stem.anatomy.blood_ph','Blood pH'),t('stem.anatomy.fasting_glucose_mg_dl','Fasting glucose (mg/dL)'),t('stem.anatomy.homeo_flow_outside_column','Outside ranges')].map(function(label,index){return h('th',{key:index,scope:'col'},label);}))),
+                      h('tbody',null,iq.log.map(function(row,index){return h('tr',{key:index},h('td',null,row.t),h('td',null,row.p),h('td',null,row.g),h('td',null,t('stem.anatomy.homeo_flow_log_count','{count} of {total}').replace('{count}',String(row.st)).replace('{total}','3')));}))),
+                    h('label',{className:'anatomy-homeo-writing-label',htmlFor:'anatomy-homeo-hypothesis'},t('stem.anatomy.homeo_flow_hypothesis','Your hypothesis')),
+                    h('textarea',{id:'anatomy-homeo-hypothesis','aria-label':t('stem.anatomy.hypothesis_input','Homeostasis hypothesis'),value:iq.hypothesis,onChange:function(event){changeHomeostasisFields({hypothesis:event.target.value});},placeholder:t('stem.anatomy.homeostasis_reference_hypothesis','Hypothesis: What does each variable help regulate? Why can we not compare range widths measured in different units?'),rows:3}),
+                    !iq.stuckRevealed&&h('button',{type:'button','data-anatomy-homeo-prompts':true,onClick:function(){changeHomeostasisFields({stuckRevealed:true});}},t('stem.anatomy.stuck_show_open_prompts','🤔 Stuck — show open prompts')),
+                    iq.stuckRevealed&&h('div',{className:'anatomy-homeo-prompts'},h('ul',null,
+                      h('li',null,t('stem.anatomy.hold_two_vital_signs_steady_move_the_t','Hold two vital signs steady. Move the third. Watch.')),
+                      h('li',null,t('stem.anatomy.arterial_blood_ph_reference_prompt','A common arterial blood pH reference range is 7.35-7.45. Investigate why it is so narrow.')),
+                      h('li',null,t('stem.anatomy.compare_outside_reference_counts','Find settings with one, two, and three variables outside the reference ranges. What changes?')))),
+                    h('div',{className:'anatomy-homeo-own-words'},
+                      h('label',{className:'anatomy-homeo-understanding'},h('input',{type:'checkbox',checked:iq.understood,'data-anatomy-homeo-understood':true,onChange:function(event){changeHomeostasisFields({understood:event.target.checked});}}),t('stem.anatomy.i_understand_explain_in_own_words','I understand — explain in own words')),
+                      iq.understood&&h('label',{className:'anatomy-homeo-writing-label',htmlFor:'anatomy-homeo-explanation'},t('stem.anatomy.homeo_flow_explanation','Explain the limits of the reference ranges')),
+                      iq.understood&&h('textarea',{id:'anatomy-homeo-explanation','aria-label':t('stem.anatomy.explanation_input','Homeostasis explanation'),value:iq.explanation,onChange:function(event){changeHomeostasisFields({explanation:event.target.value});},placeholder:t('stem.anatomy.explain_homeostasis_model_limit','Explain why a reference-range flag alone cannot diagnose a person.'),rows:4})),
+                    homeostasisChecksVisible(iq)?(function(){
+                      var answered=Object.keys(iq.recap).length,done=answered===questions.length,correctCount=questions.filter(function(question){return iq.recap[question.id]===question.answer;}).length;
+                      var latestCorrect=iq.lastRecap?questions.filter(function(question){return iq.lastRecap.answers[question.id]===question.answer;}).length:0;
+                      return h('section',{className:'anatomy-homeo-checks','data-anatomy-homeo-recap':'true','data-anatomy-homeo-recap-state':done?'done':'open','data-anatomy-homeo-context':HOMEOSTASIS_RECAP_CONTEXT,'data-anatomy-homeo-token':iq.recapToken||'','aria-labelledby':'anatomy-homeo-check-title'},
+                        h('div',{className:'anatomy-homeo-check-heading'},h('h5',{id:'anatomy-homeo-check-title',tabIndex:-1},t('stem.anatomy.homeo_recap_title','✓ Check what you found')),h('span',{role:'status'},answered+' / '+questions.length)),
+                        questions.map(function(question,index){var chosen=iq.recap[question.id],selected=question.options.find(function(option){return option.id===chosen;});return h('fieldset',{key:question.id,tabIndex:-1,'data-anatomy-homeo-recap-question':question.id},
+                          h('legend',null,question.stem),h('p',{className:'anatomy-homeo-question-number'},t('stem.anatomy.homeo_flow_question','Question {question} of {total}').replace('{question}',String(index+1)).replace('{total}',String(questions.length))),
+                          h('div',{className:'anatomy-homeo-options'},question.options.map(function(option){var isCorrect=option.id===question.answer,wasChosen=chosen===option.id;return h('button',{key:option.id,type:'button',disabled:!!chosen,'aria-pressed':wasChosen,'data-anatomy-homeo-recap-option':option.id,'data-anatomy-homeo-answer-state':chosen?(isCorrect?'correct':wasChosen?'chosen':'neutral'):'neutral',onClick:function(){answerHomeostasis(question.id,option.id);}},
+                            h('span',null,option.label),chosen&&wasChosen&&h('span',{className:'anatomy-homeo-answer-label'},t('stem.anatomy.homeo_flow_your_answer','Your answer')),chosen&&isCorrect&&h('span',{className:'anatomy-homeo-answer-label'},t('stem.anatomy.homeo_flow_correct_answer','Correct answer')));})),
+                          selected&&h('div',{role:'status',tabIndex:-1,'data-anatomy-homeo-feedback':chosen===question.answer?'correct':'incorrect'},h('strong',null,chosen===question.answer?t('stem.anatomy.recap_correct_short','Correct.'):t('stem.anatomy.recap_incorrect_short','Not quite.')),h('p',null,question.reason),chosen!==question.answer&&h('p',null,t('stem.anatomy.homeo_flow_correct_answer','Correct answer')+': '+question.options.find(function(option){return option.id===question.answer;}).label))
+                        );}),
+                        done&&h('p',{className:'anatomy-homeo-check-score',role:'status','aria-live':'polite'},correctCount+' / '+questions.length+t('stem.anatomy.homeo_recap_score',' right. ')+(correctCount===questions.length?t('stem.anatomy.homeo_recap_all','You can read a value against its range and explain the loop that holds it there.'):t('stem.anatomy.homeo_recap_some','Slide a value out of range again and watch which way the body would need to push it back.'))),
+                        iq.lastRecap&&h('p',{'data-anatomy-homeo-latest-score':true},t('stem.anatomy.homeo_flow_latest_score','Latest completed checks: {correct}/{total} correct.').replace('{correct}',String(latestCorrect)).replace('{total}',String(questions.length))),
+                        h('button',{type:'button','data-anatomy-homeo-restart-checks':true,'aria-describedby':'anatomy-homeo-restart-help',onClick:function(){updateHomeostasis('restart');}},t('stem.anatomy.homeo_flow_restart_checks','Restart checks')),
+                        h('p',{id:'anatomy-homeo-restart-help'},t('stem.anatomy.homeo_flow_restart_help','Restart clears the answers in this attempt. Your last completed score, writing and observations stay saved.'))
+                      );
+                    })():null,
+                    h('p',{className:'anatomy-homeo-model-limit'},t('stem.anatomy.homeostasis_model_limit','Teaching model only, not a clinical score or diagnosis. Real interpretation depends on age, context, symptoms, measurement method, trends, and rate of change.'))
+                  )
                 );
               })() : null
             ),

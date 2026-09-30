@@ -1,0 +1,64 @@
+import {test,expect} from '@playwright/test';
+import {mkdir,readFile,writeFile} from 'node:fs/promises';
+import {GlHarness} from './helpers/stem_gl_harness';
+const out=process.env.ANATOMY_HOMEOSTASIS_QA_OUT||'reports/anatomy-homeostasis-flow-2026-09-29';
+const harness=new GlHarness({toolFile:'stem_lab/stem_tool_anatomy.js',toolId:'anatomy',width:1280,height:1000,layout:'document',appStyles:true});
+test.use({video:'off',trace:'off'});
+test.describe.configure({retries:0});
+test.beforeAll(async()=>{await harness.start();await mkdir(out,{recursive:true});});
+test.afterAll(async()=>harness.stop());
+test.afterEach(async({page})=>harness.destroy(page));
+
+test('Homeostasis keeps writing across both experiments and separates measurements, observations and checks',async({page})=>{
+  test.setTimeout(300000);const errors:string[]=[],scans:any[]=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width:1440,height:1000});
+  await harness.mount(page,{anatomy:{_activeTab:'homeoHunt',system:'organs',complexity:3,_startHereDismissed:true,_structureNotes:{heart:'My saved anatomy note'},_structureConfidence:{heart:'learning'},_retrievalEvidence:{heart:{attempts:4,correct:1}},_feedbackExperiment:{direction:'warm',prediction:'',revealed:false,explanation:''},homeoHunt:{tempC:39,pH:7.25,glucose:90,hypothesis:'Each reading has its own units.',explanation:'A range flag alone does not explain a person.',log:[],understood:false}}},undefined,{expectCanvas:false});
+  await page.addStyleTag({content:'html,body{background:#f1f5f9}#wrap{width:min(1280px,100%);height:auto;min-height:100%;margin:auto}'});
+  await page.evaluate(()=>{const ctx=(window as any).__ctx;ctx.gradeLevel='9';ctx.gradeBand='g912';ctx.updateMulti('anatomy',{});});
+  const panel=page.locator('[data-anatomy-homeo-panel]'),experiment=panel.locator('[data-anatomy-feedback-experiment]'),results=experiment.locator('[data-anatomy-feedback-results]'),ranges=panel.locator('[data-anatomy-homeo-ranges]'),recap=panel.locator('[data-anatomy-homeo-recap]');
+  const state=()=>page.evaluate(()=>(window as any).__toolData.anatomy);
+  const choosePrediction=async()=>{await experiment.locator('input[name=anatomy-feedback-prediction][value=active]').check();await experiment.locator('[data-anatomy-run-feedback]').click();await expect(results).toBeFocused();};
+  await panel.locator('[data-anatomy-homeo-jump=experiment]').focus();await panel.locator('[data-anatomy-homeo-jump=experiment]').press('Enter');await expect(experiment.locator('#anatomy-feedback-title')).toBeFocused();
+  await choosePrediction();await expect(results.locator('[data-anatomy-feedback-pulse]')).toHaveAttribute('width','60');
+  expect(Math.abs(Number(await results.locator('[data-anatomy-feedback-active="40"]').textContent())-37)).toBeLessThan(.01);
+  await experiment.locator('#anatomy-feedback-explanation').fill('Warm: the response falls as the difference gets smaller.');
+  await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:out+'/after-desktop.png'});
+  await experiment.locator('#anatomy-feedback-disturbance').selectOption('cool');await expect(results).toHaveCount(0);await expect(experiment.locator('[data-anatomy-feedback-prediction]')).toBeFocused();
+  await choosePrediction();await expect(experiment.locator('#anatomy-feedback-explanation')).toHaveValue('');await experiment.locator('#anatomy-feedback-explanation').fill('Cool: the response opposes the temperature drop.');
+  await experiment.locator('#anatomy-feedback-disturbance').selectOption('warm');await expect(results).toBeFocused();await expect(experiment.locator('#anatomy-feedback-explanation')).toHaveValue('Warm: the response falls as the difference gets smaller.');
+  await experiment.locator('[data-anatomy-run-feedback]').click();await expect(results).toHaveCount(0);await expect(experiment.locator('[data-anatomy-feedback-prediction]')).toBeFocused();await choosePrediction();await expect(experiment.locator('#anatomy-feedback-explanation')).toHaveValue('Warm: the response falls as the difference gets smaller.');
+  await experiment.locator('#anatomy-feedback-disturbance').selectOption('cool');await expect(experiment.locator('#anatomy-feedback-explanation')).toHaveValue('Cool: the response opposes the temperature drop.');
+  await experiment.locator('#anatomy-feedback-disturbance').selectOption('warm');
+  await panel.locator('[data-anatomy-homeo-jump=ranges]').focus();await panel.locator('[data-anatomy-homeo-jump=ranges]').press('Enter');await expect(ranges.locator('#anatomy-homeo-range-title')).toBeFocused();
+  await expect(ranges.locator('[data-anatomy-homeo-range-status=tempC]')).toHaveAttribute('data-state','above');await expect(ranges.locator('[data-anatomy-homeo-range-status=pH]')).toHaveAttribute('data-state','below');await expect(ranges.locator('[data-anatomy-homeo-range-status=glucose]')).toHaveAttribute('data-state','within');
+  await ranges.locator('#hh-tempC').focus();for(let i=0;i<5;i++)await ranges.locator('#hh-tempC').press('ArrowLeft');await expect(ranges.locator('#hh-tempC')).toHaveValue('38.5');
+  await ranges.locator('[data-anatomy-homeo-log]').click();await ranges.locator('#hh-pH').focus();for(let i=0;i<3;i++)await ranges.locator('#hh-pH').press('ArrowRight');await expect(ranges.locator('#hh-pH')).toHaveValue('7.4');await ranges.locator('[data-anatomy-homeo-log]').click();
+  expect((await state()).homeoHunt.log).toHaveLength(2);await expect(ranges.locator('.anatomy-homeo-observations tbody tr')).toHaveCount(2);
+  await ranges.locator('#anatomy-homeo-hypothesis').fill('Compare each reading against its own reference range.');await ranges.locator('[data-anatomy-homeo-understood]').check();await expect(recap).toBeVisible();
+  await expect(ranges.locator('#anatomy-homeo-explanation')).toHaveValue('A range flag alone does not explain a person.');await ranges.locator('#anatomy-homeo-explanation').fill('Units and context matter; a flag is only a comparison.');
+  const answer=async(id:string,option:string)=>{const question=recap.locator('[data-anatomy-homeo-recap-question='+id+']');await question.locator('[data-anatomy-homeo-recap-option='+option+']').focus();await question.locator('[data-anatomy-homeo-recap-option='+option+']').press('Enter');await expect(question.locator('[data-anatomy-homeo-feedback]')).toBeFocused();};
+  await answer('temp','within');await expect(recap.locator('[data-anatomy-homeo-recap-question=temp]')).toContainText('Your answer');await expect(recap.locator('[data-anatomy-homeo-recap-question=temp]')).toContainText('Correct answer');
+  await answer('ph','acid');await answer('feedback','restore');await expect(recap).toHaveAttribute('data-anatomy-homeo-recap-state','done');
+  const completed=await state();expect(completed.homeoHunt.lastRecap).toEqual({version:2,answers:{temp:'within',ph:'acid',feedback:'restore'}});
+  await ranges.locator('[data-anatomy-homeo-reset-measurements]').click();let current=await state();expect(current.homeoHunt).toMatchObject({tempC:37,pH:7.4,glucose:90,hypothesis:completed.homeoHunt.hypothesis,explanation:completed.homeoHunt.explanation,recap:completed.homeoHunt.recap,lastRecap:completed.homeoHunt.lastRecap,log:completed.homeoHunt.log});
+  await ranges.locator('[data-anatomy-homeo-clear-observations]').click();current=await state();expect(current.homeoHunt.log).toEqual([]);expect(current.homeoHunt.recap).toEqual(completed.homeoHunt.recap);await expect(ranges.locator('[data-anatomy-homeo-clear-observations]')).toBeDisabled();
+  await page.addScriptTag({path:'axe-core/4.12.1/axe.min.js'});
+  const scan=async(width:number,theme:string,locale:string)=>{await page.setViewportSize({width,height:1000});await page.evaluate(theme=>{document.body.className=theme==='light'?'':'theme-'+theme;},theme);const dimensions=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));const violations=await page.evaluate(async()=>{const r=await (window as any).axe.run({include:[['[data-anatomy-homeo-panel]'],['[data-anatomy-study-controls]']]},{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22a','wcag22aa']}});return r.violations.map((v:any)=>({id:v.id,nodes:v.nodes.map((n:any)=>({target:n.target,summary:n.failureSummary}))}));});scans.push({width,theme,locale,dimensions,violations});expect(dimensions.scroll).toBeLessThanOrEqual(width);};
+  for(const width of [320,390,768,1440])for(const theme of ['light','dark','contrast']){await scan(width,theme,'en');if(width===390&&theme==='light'){await ranges.screenshot({path:out+'/after-phone.png'});await recap.screenshot({path:out+'/retrieval-feedback-phone.png'});await experiment.screenshot({path:out+'/experiment-phone.png'});}if(width===390&&theme==='dark')await recap.screenshot({path:out+'/after-dark.png'});}
+  await page.evaluate(()=>{document.body.className='';});await recap.locator('[data-anatomy-homeo-restart-checks]').click();await expect(recap.locator('#anatomy-homeo-check-title')).toBeFocused();current=await state();expect(current.homeoHunt.recap).toEqual({});expect(current.homeoHunt.lastRecap).toEqual(completed.homeoHunt.lastRecap);expect(current.homeoHunt.recapToken).not.toBe(completed.homeoHunt.recapToken);
+  await answer('temp','within');const arabic=JSON.parse(await readFile('lang/arabic.js','utf8'));await page.evaluate(dict=>{const ctx=(window as any).__ctx;document.documentElement.dir='rtl';ctx.t=(key:string,fallback:string)=>key.split('.').reduce((o:any,p:string)=>o?.[p],dict)||fallback;ctx.updateMulti('anatomy',{_readingMode:true});},arabic);
+  await expect(recap.locator('#anatomy-homeo-check-title')).toHaveText(arabic.stem.anatomy.homeo_recap_title);
+  const translatedChecks=[{id:'temp',key:'homeo_recap_q1',options:['above','within','below']},{id:'ph',key:'homeo_recap_q2',options:['within','alk','acid']},{id:'feedback',key:'homeo_recap_q3',options:['amplify','ignore','restore']}];
+  for(const check of translatedChecks){const question=recap.locator('[data-anatomy-homeo-recap-question='+check.id+']');await expect(question.locator('legend')).toHaveText(arabic.stem.anatomy[check.key]);for(const [index,option] of check.options.entries())await expect(question.locator('[data-anatomy-homeo-recap-option='+option+'] > span').first()).toHaveText(arabic.stem.anatomy[check.key+'_'+['a','b','c'][index]]);}
+  await expect(recap.locator('[data-anatomy-homeo-feedback] strong')).toHaveText(arabic.stem.anatomy.recap_incorrect_short);
+  await expect(ranges.locator('#anatomy-homeo-range-title')).toHaveText(arabic.stem.anatomy.homeo_flow_ranges);
+  await expect(ranges.locator('[data-anatomy-homeo-range-status=tempC]')).toHaveText(arabic.stem.anatomy.homeo_flow_within);
+  await expect(ranges.locator('[data-anatomy-homeo-range-status=pH]')).toHaveText(arabic.stem.anatomy.homeo_flow_within);
+  await expect(ranges.locator('[data-anatomy-homeo-range-status=glucose]')).toHaveText(arabic.stem.anatomy.homeo_flow_within);
+  expect(arabic.stem.anatomy.homeo_flow_teaching_range).toContain('\u2066{range}\u2069');
+  await expect(ranges.locator('.anatomy-homeo-teaching-range')).toHaveText(['36.5–37.5 °C','7.35–7.45','70–99 mg/dL'].map(range=>arabic.stem.anatomy.homeo_flow_teaching_range.replace('{range}',range)));
+  for(const theme of ['light','dark','contrast']){await scan(320,theme,'ar-larger');if(theme==='light')await ranges.screenshot({path:out+'/arabic-320.png'});}
+  await expect(recap.locator('[data-anatomy-homeo-recap-question=temp] legend')).toHaveCSS('font-size','17px');
+  const finalState=await state();expect(finalState._structureNotes).toEqual(completed._structureNotes);expect(finalState._structureConfidence).toEqual(completed._structureConfidence);expect(finalState._retrievalEvidence).toEqual(completed._retrievalEvidence);expect(finalState.homeoHunt.lastRecap).toEqual(completed.homeoHunt.lastRecap);
+  await writeFile(out+'/homeostasis-browser-validation.json',JSON.stringify({errors,scans,completedCheck:completed.homeoHunt.lastRecap,completedState:completed,finalState},null,2));expect(scans.flatMap(s=>s.violations)).toEqual([]);expect(errors).toEqual([]);
+});

@@ -86,7 +86,8 @@ describe('Cell microdissection experience', () => {
     expect(source).toContain('reduced ? 4 : 14');
     expect(source).toContain('EVIDENCE SAMPLE');
     expect(source).toContain('aria-keyshortcuts');
-    expect(source).toContain('ArrowRight ArrowLeft Enter Space');
+    const interiorShortcuts = source.match(/'aria-describedby': 'cell-interior-keyboard-help', 'aria-keyshortcuts': '([^']+)'/)?.[1].split(/\s+/);
+    expect(interiorShortcuts).toEqual(expect.arrayContaining(['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'Enter', 'Space']));
     expect(source).toContain('interiorHighContrast');
     expect(source).toContain('HIGH CONTRAST');
     expect(source).toContain('data-cell-zoom-control');
@@ -125,7 +126,9 @@ describe('Cell microdissection experience', () => {
     expect(source).toContain('Open review queue');
     expect(source).toContain('aria-valuenow');
     expect(source).toContain('interiorAdaptiveQuiz');
-    expect(source).toContain('Review-first retrieval');
+    expect(source).toContain('Review structures first');
+    expect(source).toContain('data-cell-round-progress');
+    expect(source).toContain('data-cell-round-summary');
     expect(source).toContain('answerAdaptiveQuiz');
     expect(source).toContain('OPTICAL SECTION');
     expect(source).toContain('Search structure directory');
@@ -156,7 +159,9 @@ describe('Anatomy 3D overview and cross-scale handoffs', () => {
     expect(html).toContain('data-anatomy-view="3d"');
     expect(html).toContain('data-anatomy-3d-canvas="true"');
     expect(html).toContain('3D controls:');
-    expect(html).toContain('Camera controls · drag/wheel where supported');
+    expect(html).toContain('Region &amp; rotation');
+    expect(html).toContain('data-anatomy-camera-presets="true"');
+    expect(html).toContain('aria-label="Camera close-ups"');
     expect(html).toContain('structure directory for precise labels and full keyboard access');
     expect(html).toContain('id="anatomy-3d-status"');
     expect(html).toContain('2D Atlas');
@@ -295,7 +300,7 @@ describe('Anatomy CT/MRI Imaging Lab', () => {
       region: 'chest',
       plane: 'axial',
       slice: 0,
-      positionLabel: 'Inferior slice band',
+      positionLabel: 'Superior slice band',
       regionLabel: 'Thorax and mediastinum',
     });
     expect(fallback.orientation).toContain('patient right appears on the image’s left');
@@ -1037,9 +1042,12 @@ describe('Deterministic pathology scenarios and instructor case builder', () => 
     expect(planning).toContain('Hypervascular synthetic lesion');
     expect(planning).toContain('Vascularity');
 
-    const youngOverview3d = renderTool('anatomy', { anatomy: { _activeTab: 'explore', system: 'circulatory', complexity: 3, _bodyView3d: true } });
-    // Harness profile is '5th Grade': the Procedure Studio handoff is hidden for a known K-5 profile.
+    const youngOverview3d = renderTool('anatomy', { anatomy: { _activeTab: 'explore', system: 'circulatory', complexity: 1, _bodyView3d: true } }, { gradeLevel: '5' });
+    // The selected elementary learning level keeps the advanced procedure handoff hidden.
     expect(youngOverview3d).not.toContain('data-anatomy-3d-procedure-launch="true"');
+    const advancedOverview3d = renderTool('anatomy', { anatomy: { _activeTab: 'explore', system: 'circulatory', complexity: 3, _bodyView3d: true } }, { gradeLevel: '5' });
+    // An explicit advanced level overrides the same profile's elementary default.
+    expect(advancedOverview3d).toContain('data-anatomy-3d-procedure-launch="true"');
     const overview3d = renderTool('anatomy', { anatomy: { _activeTab: 'explore', system: 'circulatory', complexity: 3, _bodyView3d: true } }, { gradeLevel: '9' });
     expect(overview3d).toContain('data-anatomy-3d-procedure-launch="true"');
     expect(overview3d).toContain('Open matching procedure');
