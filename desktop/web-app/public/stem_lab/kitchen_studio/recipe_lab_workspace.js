@@ -6,6 +6,7 @@
     ['cut','prep','Cut produce','Draw a cut','Start at a width on the board and draw a straight cut.','M5 3v12h6V3M5 15v6M16 17h5'],
     ['mince','prep','Mince garlic','Press & lift','Start on a clove; press down, lift back up, and release.','M5 4v11h6V4M5 15v6M17 15c-5 0-5 6 0 6s5-6 0-6'],
     ['dry','prep','Dry produce','Blot & wring','Carry the cloth onto wet produce; wring it over the bowl.','M4 5h15v12H4zM8 5v12M4 9h15M17 20h4'],
+    ['oil','prep','Measure olive oil','Tilt, level & carry','Fill the marked cup, level the bottle, then carry the recipe measure to the pan.','M4 3h6v5l3 4v9H2v-9l2-4zM16 10h6l-1 11h-4z'],
     ['pot-stir','pot','Separate pasta','Sweep the spoon','Sweep through the visible clumps inside the pot.','M4 11h14v8H4zM2 12h2M18 12h3M12 3l-3 12'],
     ['sample','pot','Check pasta','Carry, press & lift','Carry a fork sample to the small saucer; press down, lift back, then release.','M6 3v7M10 3v7M14 3v7M6 8h8M10 10v11M17 18h5'],
     ['ladle','pot','Save water','Dip & carry','Dip the ladle in the pot, then carry it to the jug.','M16 3l-6 12M5 15c-2 5 7 7 8 2M18 14h4v7h-6v-7z'],
@@ -32,6 +33,7 @@
     if(id==='mince'){need(v.garlic||n.garlic,'The garlic is already minced. Carry its bowl into the pan when ready.');if(!v.hands)need(true,'Wash hands before preparing the garlic.');}
     if(id==='dry')need(!R.drying(s).enabled||!v.hands||!v.rinsed||n.produce,'Wash hands and rinse produce before blotting it on the board.');
     if(id==='pot-stir')need(s.pastaModel!==1||!p.pasta||p.drained||!p.water,'Add the weighed pasta to boiling water before separating its strands.');
+    if(id==='oil')need(!root.KitchenOil.info(s,0,false).ready,'The measured recipe oil is already added, or this cook is read-only.');
     if(id==='sample')need(!root.KitchenSampling.available(s,false).ready,root.KitchenSampling.available(s,false).detail);
     if(id==='ladle')need(!R.waterHandling(s).scoop,'The pot needs cooking water and pasta, with room left in the saved-water allowance.');
     if(id==='drain')need(!p.pasta||p.drained||!p.sample,p.drained?'The pasta is drained. Carry the colander into the sauce pan.':'Check a pasta sample before lifting the pot to drain.');
@@ -45,6 +47,7 @@
   function target(s,id,hit,locked){
     if(!hit||id==='camera')return null;var name=null;
     if(id==='move')name={oil:'Olive oil',pasta:'Pasta packet',produce:'Prepared produce',garlic:'Garlic bowl',cooked:'Pasta colander'}[hit.item];
+    if(id==='oil')name=hit.oilCup?'Oil measuring cup':hit.item==='oil'?'Olive-oil bottle':null;
     if(id==='burner'&&hit.burner)name=(hit.burner==='pot'?'Pot':'Pan')+' burner dial';
     if(id==='weigh')name=hit.scale?'Pasta scale':hit.item==='pasta'?'Pasta packet':null;
     if(id==='cut'&&(hit.board||hit.item==='produce'))name='Cutting board';
