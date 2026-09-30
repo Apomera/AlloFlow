@@ -425,6 +425,35 @@ window.StemLab = window.StemLab || {
       phase: impact ? 'impact' : apex ? 'apex' : point.mVy > 0 ? 'rising' : point.mVy < 0 ? 'falling' : 'level'
     });
   }
+  function physRecordedMoments(trail) {
+    var first = physInspectSample(trail, 0);
+    var latest = first && physInspectSample(trail, trail.length - 1);
+    if (!first || !latest) return null;
+    var highest = 0, apex = -1;
+    trail.forEach(function(point, index) {
+      if (!point) return;
+      if (physFinite(point.mY) && point.mY > trail[highest].mY && physInspectSample(trail, index)) highest = index;
+      if (apex < 0 && trail.apex && point.mVy === 0 && point.t === trail.apex.tSec &&
+          point.mX === trail.apex.mX && point.mY === trail.apex.mY && point.mVx === trail.apex.vx &&
+          physInspectSample(trail, index)) apex = index;
+    });
+    return Object.freeze({ launchIndex: 0, highestIndex: highest, apexIndex: apex, latestIndex: trail.length - 1, impact: latest.impact });
+  }
+  function physMomentIndices(trail, count, selectedIndex, rounded) {
+    var indices = [], size = Math.min(count, trail.length);
+    function include(index) { if (index >= 0 && indices.indexOf(index) < 0) indices.push(index); }
+    for (var i = 0; i < size; i++) {
+      var index = size === 1 ? 0 : i * (trail.length - 1) / (size - 1);
+      include(rounded ? Math.round(index) : Math.floor(index));
+    }
+    var moments = physRecordedMoments(trail);
+    if (moments) {
+      include(moments.launchIndex); include(moments.highestIndex);
+      include(moments.apexIndex); include(moments.latestIndex);
+    }
+    if (Number.isInteger(selectedIndex) && physInspectSample(trail, selectedIndex)) include(selectedIndex);
+    return indices.sort(function(a, b) { return a - b; });
+  }
   function physSelectedInspection(cv) {
     var selection = cv && cv._inspection;
     var trails = cv && cv._trails;
@@ -447,7 +476,7 @@ window.StemLab = window.StemLab || {
       dragWidth: scaleMax > 0 ? (drag / scaleMax) * 100 : 0 });
   }
   try {
-    window.StemLab._physics = { DT: PHYS_DT, DRAG_K: PHYS_DRAG_K, MODEL_VERSION: PHYS_MODEL_VERSION, step: physStep, recordSample: physRecordSample, simulate: physSimulate, vacuum: physVacuum, solveVelocity: physSolveVelocity, solveAngle: physSolveAngle, inspectSample: physInspectSample, formatSampleValue: physFormatSampleValue, compareMeasurements: physCompareMeasurements,
+    window.StemLab._physics = { DT: PHYS_DT, DRAG_K: PHYS_DRAG_K, MODEL_VERSION: PHYS_MODEL_VERSION, step: physStep, recordSample: physRecordSample, simulate: physSimulate, vacuum: physVacuum, solveVelocity: physSolveVelocity, solveAngle: physSolveAngle, inspectSample: physInspectSample, recordedMoments: physRecordedMoments, formatSampleValue: physFormatSampleValue, compareMeasurements: physCompareMeasurements,
       findTrialRun: physFindTrialRun, normalizeInvestigationDraft: physNormalizeInvestigationDraft, normalizeInvestigations: physNormalizeInvestigations, compareRuns: physCompareRuns, createInvestigation: physCreateInvestigation, formatInvestigationReport: physFormatInvestigationReport };
   } catch (e) {}
 
@@ -2854,6 +2883,18 @@ window.StemLab = window.StemLab || {
               #physics-fs-outer [data-physics-controls] legend{font-size:14px;color:var(--phys-ink)}
               @container(max-width:900px){#physics-fs-outer [data-physics-workbench]{grid-template-columns:minmax(0,1fr)}#physics-fs-outer [data-physics-sliders]{grid-template-columns:repeat(5,minmax(0,1fr))}#physics-fs-outer [data-physics-parameter-card="launchHeight"]{grid-column:auto}#physics-fs-outer [data-physics-controls]>:is([data-physics-display-controls],[data-physics-playback]){grid-column:1/-1}#physics-fs-outer [data-physics-display-controls] .phys-view-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
               @container(max-width:620px){#physics-fs-outer [data-physics-sliders]{grid-template-columns:repeat(2,minmax(0,1fr));padding:13px}#physics-fs-outer [data-physics-parameter-card="launchHeight"]{grid-column:1/-1}#physics-fs-outer [data-physics-display-controls] .phys-view-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#physics-fs-outer [data-physics-controls] [data-physics-playback]{grid-template-columns:repeat(2,minmax(0,1fr))}#physics-fs-outer [data-physics-playback]>:is([data-physics-step],[data-physics-inspect]){grid-column:span 1}#physics-fs-outer .phys-gravity-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#physics-fs-outer [data-physics-display-controls] button[data-physics-view]{padding:10px;min-height:88px}#physics-fs-outer .phys-view-title{display:flex;font-size:12px;gap:6px}#physics-fs-outer .phys-view-title svg{width:16px;height:16px;margin:1px 0 0}#physics-fs-outer [data-physics-display-controls] button[data-physics-view]:last-child{grid-column:1/-1;min-height:68px;flex-direction:row;align-items:center}#physics-fs-outer [data-physics-view]:last-child .phys-view-title{display:flex;align-items:center;gap:8px}#physics-fs-outer [data-physics-view]:last-child svg{margin:0}}
+              #physics-fs-outer .phys-graph-moments{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+              #physics-fs-outer .phys-graph-moments button{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:5px;min-width:0;min-height:72px;padding:10px;border-radius:10px;font:inherit;text-align:left}
+              #physics-fs-outer .phys-graph-moments button span{font-size:12px;line-height:1.5}
+              #physics-fs-outer .phys-graph-moments button strong{font-size:13px;line-height:1.5;font-variant-numeric:tabular-nums}
+              #physics-fs-outer .phys-graph-endpoints{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 12px}
+              #physics-fs-outer .phys-graph-endpoints dt{font-size:12px;line-height:1.5}
+              #physics-fs-outer .phys-graph-endpoints dd{margin:3px 0 0;font-size:14px;line-height:1.5;font-weight:650;font-variant-numeric:tabular-nums}
+              #physics-fs-outer .phys-graph-guide-key{display:flex;align-items:center;gap:7px;margin:8px 0 0;font-size:12px;line-height:1.5}
+              #physics-fs-outer .phys-graph-guide-key>span{width:22px;flex:none;border-top:2px dashed}
+              #physics-fs-outer [data-physics-table-moment]{display:block;margin-top:3px;font-size:12px;line-height:1.5;white-space:normal}
+              #physics-fs-outer [data-physics-flight-data]:focus-visible{outline:3px solid var(--phys-accent);outline-offset:3px}
+              @container(max-width:460px){#physics-fs-outer .phys-graph-moments{grid-template-columns:repeat(2,minmax(0,1fr))}#physics-fs-outer .phys-graph-moments button:last-child{grid-column:1/-1}}
               @media(prefers-reduced-motion:reduce){#physics-fs-outer :is(button,input,summary){transition:none!important;animation:none!important}}
             `),
             (ctx.renderTutorial || function () { return null; })('physics', ctx._tutPhysics || []),
@@ -3149,11 +3190,9 @@ window.StemLab = window.StemLab || {
               var h = React.createElement;
               var trail = cv._inspection.trail;
               var parameters = sample.parameters;
-              var highest = 0;
-              trail.forEach(function(point, index) { if (point.mY > trail[highest].mY) highest = index; });
-              var apexIndex = trail.apex ? trail.findIndex(function(point) {
-                return point.mVy === 0 && point.t === trail.apex.tSec && point.mX === trail.apex.mX && point.mY === trail.apex.mY && point.mVx === trail.apex.vx;
-              }) : -1;
+              var moments = physRecordedMoments(trail);
+              var highest = moments ? moments.highestIndex : sample.index;
+              var apexIndex = moments ? moments.apexIndex : -1;
               var latest = physInspectSample(trail, trail.length - 1);
               var phaseLabels = {
                 rising: __alloT('stem.physics.sample_phase_rising', 'Rising'),
@@ -4026,16 +4065,18 @@ window.StemLab = window.StemLab || {
               var vyDescription = graphHasDrag
                 ? __alloT('stem.physics.graph_vy_drag', 'Vertical velocity curves over time. Drag and gravity determine its slope; Vy is zero at the apex.')
                 : __alloT('stem.physics.graph_vy_vacuum', 'Without air drag, vertical velocity decreases in a straight line with slope −g and reaches zero at the apex.');
-              var samples = [];
-              var nSamples = Math.min(80, pts.length);
-              for (var si = 0; si < nSamples; si++) {
-                var pi = Math.floor((si / Math.max(1, nSamples - 1)) * (pts.length - 1));
-                // Each point carries its own flight time, so slow-motion and
-                // stepped flights plot on the same axis as real-time ones.
-                samples.push({ t: pts[pi].t != null ? pts[pi].t : pi * PHYS_DT, vx: pts[pi].mVx || 0, vy: pts[pi].mVy || 0 });
-              }
+              var graphMoments = physRecordedMoments(pts);
+              var plotIndices = physMomentIndices(pts, 80, selectedPoint ? selectedPoint.index : null, false);
+              // Keep meaningful full-resolution observations on the plotted curve.
+              // The remaining vertices are representative recorded samples.
+              var samples = plotIndices.map(function(index) {
+                return { t: pts[index].t != null ? pts[index].t : index * PHYS_DT, vx: pts[index].mVx || 0, vy: pts[index].mVy || 0 };
+              });
               var tMax = samples[samples.length - 1].t || 1;
-              var graphCanInspect = !!physInspectSample(pts, 0);
+              var graphCanInspect = !!graphMoments;
+              var graphLatest = graphMoments ? physInspectSample(pts, graphMoments.latestIndex) : null;
+              var graphApex = graphMoments && graphMoments.apexIndex >= 0 ? physInspectSample(pts, graphMoments.apexIndex) : null;
+              var graphRecorded = lastTrail.parameters || lastTrail;
               var graphIndex = selectedPoint ? selectedPoint.index : pts.length - 1;
               var graphTime = pts[graphIndex].t != null ? pts[graphIndex].t : graphIndex * PHYS_DT;
               function selectGraphTime(event, geometry) {
@@ -4116,24 +4157,36 @@ window.StemLab = window.StemLab || {
                 var selectedValue = selectedPoint ? selectedPoint[field] : null;
                 var selectedX = selectedPoint ? padL + selectedPoint.t / tMax * innerW : null;
                 var selectedY = selectedPoint ? zero - selectedValue * scale : null;
-                var selectionText = selectedPoint ? __alloT('stem.physics.graph_selected_sample', 'Selected sample') + ': t = ' + selectedPoint.t.toFixed(3) + ' s; ' + (field === 'vx' ? 'Vx' : 'Vy') + ' = ' + selectedValue.toFixed(2) + ' m/s.' : '';
+                var phaseLabel = selectedPoint ? {
+                  rising: __alloT('stem.physics.sample_phase_rising', 'Rising'),
+                  apex: selectedPoint.t === 0 ? __alloT('stem.physics.sample_phase_release', 'Highest point at release') : __alloT('stem.physics.sample_phase_apex', 'At apex'),
+                  falling: __alloT('stem.physics.sample_phase_falling', 'Falling'),
+                  level: __alloT('stem.physics.sample_phase_level', 'Vertical velocity is zero'),
+                  impact: __alloT('stem.physics.sample_ground_impact', 'Ground impact')
+                }[selectedPoint.phase] : '';
+                var selectionText = selectedPoint ? __alloT('stem.physics.graph_selected_sample', 'Selected sample') + ': t = ' + selectedPoint.t.toFixed(3) + ' s; ' + (field === 'vx' ? 'Vx' : 'Vy') + ' = ' + physFormatSampleValue(selectedValue) + ' m/s.' : '';
                 return React.createElement('div', { style: graphCardStyle },
                   React.createElement('h4', { style: { margin: '0 0 5px', fontSize: 14, lineHeight: 1.45, fontWeight: 750, color: color } }, title),
-                  React.createElement('p', { style: { margin: '0 0 8px', fontSize: 21, lineHeight: 1.2, fontWeight: 750, fontVariantNumeric: 'tabular-nums', color: graphColors.ink } },
-                    first[field].toFixed(1) + ' → ' + latest[field].toFixed(1),
-                    React.createElement('span', { style: { fontSize: 13, fontWeight: 500, color: graphColors.muted } }, ' m/s')
-                  ),
-                  selectedPoint && React.createElement('p', {
-                    'data-physics-graph-selected': field, 'data-sample-index': selectedPoint.index, 'data-time': selectedPoint.t, 'data-value': selectedValue,
-                    style: { margin: '0 0 10px', padding: '8px 10px', borderLeft: '3px solid ' + graphColors.marker, borderRadius: 6, background: graphColors.panel, color: graphColors.ink, fontSize: 14, lineHeight: 1.5, fontVariantNumeric: 'tabular-nums' }
-                  }, selectionText),
-                  React.createElement('svg', { 'data-physics-graph': field, onClick: graphCanInspect ? selectGraphTime : undefined, 'aria-describedby': graphCanInspect ? 'physics-graph-time-help' : undefined, style: { cursor: graphCanInspect ? 'crosshair' : 'default', display: 'block', background: graphColors.surface, borderRadius: 8, width: '100%', maxWidth: 320, height: 'auto', margin: '0 auto' }, viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': description + (selectionText ? ' ' + selectionText : '') },
+                  React.createElement('div', { 'data-physics-graph-selected': selectedPoint ? field : undefined,
+                    'data-sample-index': selectedPoint ? selectedPoint.index : undefined, 'data-time': selectedPoint ? selectedPoint.t : undefined, 'data-value': selectedPoint ? selectedValue : undefined },
+                    React.createElement('p', { 'data-physics-graph-reading-label': field, style: { margin: '0 0 4px', fontSize: 12, lineHeight: 1.5, color: graphColors.muted } },
+                      (selectedPoint ? __alloT('stem.physics.graph_selected_sample', 'Selected sample') + ' · ' + phaseLabel : graphLatest && graphLatest.impact ? __alloT('stem.physics.sample_ground_impact', 'Ground impact') : __alloT('stem.physics.sample_latest_point', 'Latest point')) + ' · t = ' + graphTime.toFixed(3) + ' s'),
+                    React.createElement('p', { 'data-physics-graph-reading': field, 'data-value': selectedPoint ? selectedValue : latest[field],
+                      style: { margin: '0 0 8px', fontSize: 26, lineHeight: 1.35, fontWeight: 750, fontVariantNumeric: 'tabular-nums', color: graphColors.ink } },
+                      physFormatSampleValue(selectedPoint ? selectedValue : latest[field]),
+                      React.createElement('span', { style: { fontSize: 13, fontWeight: 500, color: graphColors.muted } }, ' m/s'))),
+                  React.createElement('dl', { className: 'phys-graph-endpoints' },
+                    React.createElement('div', null, React.createElement('dt', { style: { color: graphColors.muted } }, __alloT('stem.physics.sample_launch_point', 'Launch point')), React.createElement('dd', null, physFormatSampleValue(first[field]) + ' m/s')),
+                    React.createElement('div', null, React.createElement('dt', { style: { color: graphColors.muted } }, graphLatest && graphLatest.impact ? __alloT('stem.physics.sample_ground_impact', 'Ground impact') : __alloT('stem.physics.sample_latest_point', 'Latest point')), React.createElement('dd', null, physFormatSampleValue(latest[field]) + ' m/s'))),
+                  React.createElement('svg', { 'data-physics-graph': field, 'data-plotted-indices': plotIndices.join(','), 'data-plotted-count': plotIndices.length, onClick: graphCanInspect ? selectGraphTime : undefined, 'aria-describedby': graphCanInspect ? 'physics-graph-time-help' : undefined, style: { cursor: graphCanInspect ? 'crosshair' : 'default', display: 'block', background: graphColors.surface, borderRadius: 8, width: '100%', maxWidth: 320, height: 'auto', margin: '0 auto' }, viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': description + (selectionText ? ' ' + selectionText : '') },
                     timeAxis(),
                     ticks.map(function(value) { return React.createElement('g', { key: value },
                       axisLine(padL, zero - value * scale, W - padR, zero - value * scale, value !== 0),
                       lbl(padL - 8, zero - value * scale + 5, tickNumber(value), 'end')
                     ); }),
                     axisLine(padL, padT, padL, padT + innerH),
+                    graphApex && React.createElement('line', { 'data-physics-graph-apex-guide': field, 'data-sample-index': graphApex.index, 'data-time': graphApex.t,
+                      x1: padL + graphApex.t / tMax * innerW, x2: padL + graphApex.t / tMax * innerW, y1: padT, y2: padT + innerH, stroke: graphColors.marker, strokeWidth: 2, strokeDasharray: '8 4' }),
                     selectedPoint && React.createElement('line', {
                       'data-physics-graph-cursor': field, 'data-sample-index': selectedPoint.index, 'data-time': selectedPoint.t,
                       x1: selectedX, x2: selectedX, y1: padT, y2: padT + innerH,
@@ -4148,6 +4201,8 @@ window.StemLab = window.StemLab || {
                     }),
                     lbl(padL + innerW / 2, H - 5, __alloT('stem.physics.axis_time_s', 'time (s)'))
                   ),
+                  graphApex && React.createElement('p', { className: 'phys-graph-guide-key', style: { color: graphColors.muted } }, React.createElement('span', { 'aria-hidden': true, style: { borderColor: graphColors.marker } }),
+                    __alloT('stem.physics.graph_apex_guide', 'Dashed guide: recorded apex') + ' · t = ' + graphApex.t.toFixed(3) + ' s'),
                   React.createElement('p', { style: { margin: '8px 0 0', fontSize: 14, lineHeight: 1.55, color: graphColors.muted } }, description)
                 );
               };
@@ -4155,8 +4210,12 @@ window.StemLab = window.StemLab || {
                 React.createElement("h3", { style: { margin: '0 0 12px', fontSize: 16, lineHeight: 1.4, fontWeight: 800 } },
                   selectedPoint ? __alloT('stem.physics.motion_components_recorded', 'Motion Components (selected recorded flight)') : __alloT('stem.physics.motion_components_recent', 'Motion Components (most recent launch)')
                 ),
-                React.createElement('p', { 'data-physics-graph-flight': lastTrail.run == null ? 'unfinished' : lastTrail.run, style: { margin: '0 0 12px', fontSize: 12, lineHeight: 1.6, color: graphColors.muted } },
-                  (lastTrail.run != null ? __alloT('stem.physics.investigation_run', 'Run') + ' ' + lastTrail.run : __alloT('stem.physics.history_unfinished', 'Unfinished flight')) + ' · θ ' + lastTrail.angle + '° · v₀ ' + lastTrail.velocity + ' m/s · ' + (graphHasDrag ? __alloT('stem.physics.sample_drag_on', 'Air drag on') : __alloT('stem.physics.sample_drag_off', 'Air drag off'))),
+                React.createElement('p', { 'data-physics-graph-flight': lastTrail.run == null ? 'unfinished' : lastTrail.run, style: { margin: '0 0 8px', fontSize: 12, lineHeight: 1.6, color: graphColors.muted } },
+                  (lastTrail.run != null ? __alloT('stem.physics.investigation_run', 'Run') + ' ' + lastTrail.run : __alloT('stem.physics.history_unfinished', 'Unfinished flight')) + ' · ' + (graphHasDrag ? __alloT('stem.physics.sample_drag_on', 'Air drag on') : __alloT('stem.physics.sample_drag_off', 'Air drag off'))),
+                React.createElement('div', { 'data-physics-graph-settings': true, className: 'phys-capture-settings', role: 'group', 'aria-label': __alloT('stem.physics.sample_recorded_settings', 'Recorded launch settings') },
+                  [['angle', 'θ', '°'], ['velocity', 'v₀', 'm/s'], ['gravity', 'g', 'm/s²'], ['mass', 'm', 'kg'], ['launchHeight', 'h₀', 'm']].filter(function(setting) { return physFinite(graphRecorded[setting[0]]); }).map(function(setting) {
+                    return React.createElement('span', { key: setting[0], 'data-physics-graph-setting': setting[0] }, setting[1] + ' = ' + graphRecorded[setting[0]] + ' ' + setting[2]);
+                  })),
                 graphCanInspect && React.createElement('div', { 'data-physics-graph-time-control': true, style: { marginBottom: 12, padding: '12px 14px', background: graphColors.surface, border: '1px solid ' + graphColors.border, borderRadius: 12 } },
                   React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
                     React.createElement('label', { htmlFor: 'physics-graph-time', style: { fontSize: 14, fontWeight: 700, color: graphColors.ink } }, __alloT('stem.physics.graph_recorded_time', 'Recorded time')),
@@ -4169,17 +4228,43 @@ window.StemLab = window.StemLab || {
                     React.createElement('button', { type: 'button', 'data-physics-graph-inspect': true, onClick: function() { physSelectSample(graphIndex); },
                       style: { minHeight: 44, padding: '9px 12px', border: '1px solid ' + graphColors.axis, background: graphColors.panel, color: graphColors.ink, borderRadius: 9, fontSize: 12, fontWeight: 700 } }, __alloT('stem.physics.graph_inspect_time', 'Inspect this time')),
                     React.createElement('p', { id: 'physics-graph-time-help', style: { flex: '1 1 240px', margin: 0, color: graphColors.muted, fontSize: 12, lineHeight: 1.6 } },
-                      __alloT('stem.physics.graph_time_help', 'Tap a graph or move the time control to inspect the nearest recorded point. Selecting a point pauses playback.')))),
+                      __alloT('stem.physics.graph_time_help', 'Tap a graph or move the time control to inspect the nearest recorded point. Selecting a point pauses playback.'))),
+                  React.createElement('div', { className: 'phys-graph-moments', role: 'group', 'aria-label': __alloT('stem.physics.sample_moments', 'Recorded flight moments') },
+                    [
+                      { id: 'launch', index: graphMoments.launchIndex, label: __alloT('stem.physics.sample_launch_point', 'Launch point') },
+                      { id: graphApex ? 'apex' : 'highest', index: graphApex ? graphMoments.apexIndex : graphMoments.highestIndex, label: graphApex ? __alloT('stem.physics.sample_apex_point', 'Apex') : __alloT('stem.physics.sample_highest_point', 'Highest recorded point') },
+                      { id: graphMoments.impact ? 'impact' : 'latest', index: graphMoments.latestIndex, label: graphMoments.impact ? __alloT('stem.physics.sample_ground_impact', 'Ground impact') : __alloT('stem.physics.sample_latest_point', 'Latest point') }
+                    ].map(function(moment) {
+                      var pressed = !!selectedPoint && selectedPoint.index === moment.index;
+                      return React.createElement('button', { key: moment.id, type: 'button', 'data-physics-graph-jump': moment.id,
+                        'data-sample-index': moment.index, 'data-time': pts[moment.index].t, 'aria-pressed': pressed,
+                        onClick: function() { physSelectSample(moment.index, lastTrail); },
+                        style: { background: pressed ? graphColors.panel : graphColors.surface, color: graphColors.ink,
+                          border: '1px solid ' + (pressed ? graphColors.marker : graphColors.border),
+                          boxShadow: pressed ? 'inset 0 -3px ' + graphColors.marker : 'none' } },
+                        React.createElement('span', null, moment.label), React.createElement('strong', null, 't = ' + pts[moment.index].t.toFixed(3) + ' s'));
+                    }))),
                 React.createElement("div", { "data-physics-component-graphs": true, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 310px), 1fr))', gap: 12 } },
                   velocityCard('vx', __alloT('stem.physics.graph_vx_title', 'Vx (m/s) — horizontal velocity'), vxDescription, graphColors.vx, vxPath, vxLimit, vxY0, vxYScale),
                   velocityCard('vy', __alloT('stem.physics.graph_vy_title', 'Vy (m/s) — vertical velocity'), vyDescription, graphColors.vy, vyPath, vyRange, vyY0, vyYScale)
                 ),
+                React.createElement('p', { 'data-physics-graph-sampling-help': true, style: { margin: '12px 0 0', fontSize: 12, lineHeight: 1.6, color: graphColors.muted } }, __alloT('stem.physics.graph_sampling_help', 'Curves connect representative recorded points. Recorded moments and the selected point are included; the time control uses every point.')),
                 React.createElement("p", { style: { margin: '12px 0', fontSize: 14, lineHeight: 1.55, color: graphColors.muted } },
                   graphHasDrag
                     ? __alloT('stem.physics.graph_drag_model_note', 'This flight includes air drag. The drag force depends on total speed, coupling horizontal and vertical motion. Gravity stays constant; total acceleration changes.')
                     : __alloT('stem.physics.graph_vacuum_model_note', 'This flight has no air drag. Horizontal and vertical motion are independent; gravity changes only vertical velocity.')
                 ),
-                React.createElement('button', { type: 'button', onClick: function() { upd('showFlightData', true); }, style: { minHeight: 44, padding: '9px 14px', borderRadius: 10, border: '1px solid ' + graphColors.axis, color: graphColors.ink, background: graphColors.surface, fontSize: 14, fontWeight: 700 } }, __alloT('stem.physics.graph_open_data', 'Open the flight data table')),
+                React.createElement('button', { type: 'button', 'data-physics-graph-open-data': true, onClick: function() {
+                  var outer = typeof document !== 'undefined' ? document.getElementById('physics-fs-outer') : null;
+                  upd('showFlightData', true);
+                  setTimeout(function() {
+                    if (!outer || !outer.isConnected) return;
+                    var table = outer.querySelector('[data-physics-flight-data]');
+                    if (!table) return;
+                    table.scrollIntoView({ behavior: window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+                    table.focus({ preventScroll: true });
+                  }, 0);
+                }, style: { minHeight: 44, padding: '9px 14px', borderRadius: 10, border: '1px solid ' + graphColors.axis, color: graphColors.ink, background: graphColors.surface, fontSize: 14, fontWeight: 700 } }, __alloT('stem.physics.graph_open_data', 'Open the flight data table')),
 
 
                 // Energy comes from this trail's captured launch and recorded points.
@@ -4189,8 +4274,8 @@ window.StemLab = window.StemLab || {
                     React.createElement('p', { style: { margin: 0, color: graphColors.muted, fontSize: 13, lineHeight: 1.6 } }, __alloT('stem.physics.energy_unavailable', 'The energy timeline needs original launch settings and supported recorded samples.'))); }
                   if (!current) return unavailableEnergy();
                   var energies = [];
-                  for (var i = 0; i < nSamples; i++) {
-                    var index = Math.floor(i / Math.max(1, nSamples - 1) * (pts.length - 1));
+                  for (var i = 0; i < plotIndices.length; i++) {
+                    var index = plotIndices[i];
                     var value = physInspectSample(pts, index);
                     if (!value) return unavailableEnergy();
                     energies.push(value);
@@ -4414,7 +4499,7 @@ window.StemLab = window.StemLab || {
             })(),
 
             // ── Real-Time Flight Data Table ──
-            d.showFlightData && React.createElement("section", { 'data-physics-flight-data': true, 'aria-labelledby': 'physics-flight-data-heading' },
+            d.showFlightData && React.createElement("section", { 'data-physics-flight-data': true, 'aria-labelledby': 'physics-flight-data-heading', tabIndex: -1 },
               React.createElement("div", { className: "phys-measured-heading" },
                 React.createElement("div", null,
                   React.createElement("h3", { id: 'physics-flight-data-heading' }, __alloT('stem.physics.flight_data_title', 'Flight Data')),
@@ -4444,14 +4529,8 @@ window.StemLab = window.StemLab || {
                 }
                 // Include both endpoints, then add the selected sample if it
                 // falls between the evenly spaced rows. Export keeps all points.
-                var sampleCount = Math.min(11, lastTrail.length);
-                var indices = [];
-                for (var i = 0; i < sampleCount; i++) {
-                  var index = sampleCount === 1 ? 0 : Math.round(i * (lastTrail.length - 1) / (sampleCount - 1));
-                  if (indices.indexOf(index) < 0) indices.push(index);
-                }
-                if (selected && indices.indexOf(selected.index) < 0) indices.push(selected.index);
-                indices.sort(function(a, b) { return a - b; });
+                var tableMoments = physRecordedMoments(lastTrail);
+                var indices = physMomentIndices(lastTrail, 11, selected ? selected.index : null, true);
                 var recorded = lastTrail.parameters || lastTrail;
                 var settings = [];
                 if (lastTrail.run != null) settings.push(__alloT('stem.physics.investigation_run', 'Run') + ' ' + lastTrail.run);
@@ -4489,10 +4568,11 @@ window.StemLab = window.StemLab || {
                   var pt = lastTrail[ri];
                   var t_sec = pt.t != null ? pt.t : ri * PHYS_DT;
                   var isSelected = !!selected && selected.index === ri;
+                  var momentLabel = tableMoments ? ri === 0 ? __alloT('stem.physics.sample_launch_point', 'Launch point') : ri === tableMoments.apexIndex ? __alloT('stem.physics.sample_apex_point', 'Apex') : ri === tableMoments.latestIndex ? (tableMoments.impact ? __alloT('stem.physics.sample_ground_impact', 'Ground impact') : __alloT('stem.physics.sample_latest_point', 'Latest point')) : tableMoments.apexIndex < 0 && ri === tableMoments.highestIndex ? __alloT('stem.physics.sample_highest_point', 'Highest recorded point') : null : null;
                   return React.createElement('tr', { key: ri, 'data-selected': isSelected ? 'true' : 'false' },
                     React.createElement('th', { scope: 'row' },
                       React.createElement('button', { type: 'button', 'data-physics-sample-index': ri, 'aria-pressed': isSelected,
-                        'aria-label': __alloT('stem.physics.sample_inspect_point', 'Inspect sample') + ' ' + (ri + 1) + ', t = ' + t_sec.toFixed(3) + ' s',
+                        'aria-label': __alloT('stem.physics.sample_inspect_point', 'Inspect sample') + ' ' + (ri + 1) + ', t = ' + t_sec.toFixed(3) + ' s' + (momentLabel ? ', ' + momentLabel : ''),
                         onClick: function() {
                           if (physSelectSample(ri)) setTimeout(function() {
                             var panel = document.querySelector('[data-physics-sample-inspector]');
@@ -4501,7 +4581,7 @@ window.StemLab = window.StemLab || {
                             var slider = panel.querySelector('[data-physics-sample-slider]');
                             (slider && !slider.disabled ? slider : panel).focus({ preventScroll: true });
                           }, 0);
-                        } }, t_sec.toFixed(3))),
+                        } }, t_sec.toFixed(3), momentLabel && React.createElement('span', { 'data-physics-table-moment': true }, momentLabel))),
                     React.createElement('td', null, physFormatSampleValue(pt.mX)),
                     React.createElement('td', null, physFormatSampleValue(pt.mY)),
                     React.createElement('td', null, physFormatSampleValue(pt.mVx || 0)),

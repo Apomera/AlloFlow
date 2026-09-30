@@ -67360,6 +67360,8 @@
       "nhu2083": "NH₃"
     },
     "physics": {
+      "graph_apex_guide": "Dashed guide: recorded apex",
+      "graph_sampling_help": "Curves connect representative recorded points. Recorded moments and the selected point are included; the time control uses every point.",
       "view_compare_paths": "Compare paths",
       "flight_view_heading": "Flight view",
       "launch_settings_heading": "Launch settings",

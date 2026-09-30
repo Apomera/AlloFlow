@@ -89,13 +89,22 @@ async function assertBands(page: Page) {
         if (part === 'ke') plottedTimes.push(point.t);
       }
     }
-    return { maxError: Math.max(...errors), counts, plottedTimes, first: trail[0].t, last: lastTime, selected: cv._inspection?.snapshot.t };
+    const highest = trail.reduce((best: any, point: any) => point.mY > best.mY ? point : best, trail[0]);
+    const apex = trail.find((point: any) => trail.apex && point.t === trail.apex.tSec && point.mX === trail.apex.mX &&
+      point.mY === trail.apex.mY && point.mVx === trail.apex.vx && point.mVy === 0);
+    const requiredTimes = [...new Set<number>([highest.t, ...(apex ? [apex.t] : []),
+      ...(cv._inspection ? [cv._inspection.snapshot.t] : [])])];
+    const extraCount = requiredTimes.filter(time => time !== trail[0].t && time !== lastTime).length;
+    return { maxError: Math.max(...errors), counts, plottedTimes, first: trail[0].t, last: lastTime,
+      requiredTimes, maxCount: Math.min(trail.length, 80 + extraCount), plottedCount: Number(svg.getAttribute('data-plotted-count')) };
   });
   expect(result.counts).toHaveLength(3);
-  expect(result.counts.every(n => n >= 2 && n <= 81)).toBe(true);
+  expect(result.counts.every(n => n >= 2 && n <= result.maxCount)).toBe(true);
+  expect(new Set(result.counts).size).toBe(1);
+  expect(result.counts[0]).toBe(result.plottedCount);
   expect(result.maxError).toBeLessThan(.002);
   expect(result.plottedTimes[0]).toBe(result.first); expect(result.plottedTimes.at(-1)).toBe(result.last);
-  if (result.selected != null) expect(result.plottedTimes).toContain(result.selected);
+  for (const time of result.requiredTimes) expect(result.plottedTimes).toContain(time);
 }
 
 test('vacuum energy bands use recorded motion and height and preserve full-resolution keyboard selection', async ({ page }) => {
