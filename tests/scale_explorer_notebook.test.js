@@ -8,6 +8,64 @@ vm.runInNewContext(source.replace("  window.StemLab.registerTool('scaleExplorer'
 const { readObservations, readObservationDrafts, items } = sandbox.window.notebook;
 
 describe('Scale Explorer notebook recovers persisted student work', () => {
+  it('restores bounded canyon relief and preserves its new Earth entry point', () => {
+    const notes=readObservations([{itemId:'grand-canyon',detailId:'canyon-rim',terrainRelief:7,zoom:10},
+      {itemId:'grand-canyon',detailId:'river-bend',terrainRelief:-9,zoom:100},
+      {itemId:'grand-canyon',detailId:'side-canyons',terrainRelief:Infinity},
+      {itemId:'earth',detailId:'arizona-canyon',terrainRelief:999}]);
+    expect(notes.map(n=>n.terrainRelief)).toEqual([7,1,8,20]);
+    expect(notes.map(n=>n.zoom)).toEqual([10,12,1,1]);
+    expect(readObservationDrafts({'earth:arizona-canyon':'Enter the landscape','grand-canyon:river-bend':'Along the river'})).toEqual({'earth:arizona-canyon':'Enter the landscape','grand-canyon:river-bend':'Along the river'});
+  });
+
+  it('restores deep orbital views without extending other specimens’ zoom limits', () => {
+    const notes=readObservations([{itemId:'solar-system',detailId:'earth-orbit',zoom:32},
+      {itemId:'solar-system',detailId:'inner-orbits',zoom:24},{itemId:'solar-system',detailId:'saturn-orbit',zoom:100},
+      {itemId:'earth',zoom:32},{itemId:'solar-system',detailId:'pluto-orbit',zoom:12}]);
+    expect(notes.map(n=>n.zoom)).toEqual([32,24,32,2.5]);
+    expect(readObservationDrafts({'solar-system:earth-orbit':'One AU','solar-system:pluto-orbit':'Unknown'})).toEqual({'solar-system:earth-orbit':'One AU'});
+  });
+
+  it('recovers nebula visibility and uses the corrected 24-light-year reference', () => {
+    const notes=readObservations([{itemId:'orion-nebula',detailId:'trapezium',nebulaReveal:true,size:7.6e17},
+      {itemId:'orion-nebula',detailId:'dust-ridge',nebulaReveal:'true'},
+      {itemId:'orion-nebula',detailId:'stellar-cavity'},{itemId:'orion-nebula',detailId:'imaginary-star'}]);
+    expect(notes.map(n=>[n.detailId,n.nebulaReveal])).toEqual([['trapezium',true],['dust-ridge',false],['stellar-cavity',false]]);
+    expect(notes[0].size/9.461e15).toBeCloseTo(24,1);
+    expect(readObservationDrafts({'orion-nebula:trapezium':'Four bright stars','orion-nebula:missing':'Ignore'})).toEqual({'orion-nebula:trapezium':'Four bright stars'});
+  });
+  it('preserves galaxy landmarks and the recorded viewing direction', () => {
+    const notes=readObservations([{itemId:'milkyway',detailId:'galactic-disc',yaw:-.18,pitch:-.66,zoom:1.25},
+      {itemId:'milkyway',detailId:'solar-neighbourhood',note:'Our location'},{itemId:'milkyway',detailId:'invented-arm'}]);
+    expect(notes).toHaveLength(2);
+    expect(notes[0]).toMatchObject({detailId:'galactic-disc',yaw:-.18,pitch:-.66,zoom:1.25,size:9.5e20});
+    expect(readObservationDrafts({'milkyway:solar-neighbourhood':'Here we are','milkyway:invented-arm':'Invalid'})).toEqual({'milkyway:solar-neighbourhood':'Here we are'});
+  });
+  it('preserves solar layer observations and rejects an unknown solar target', () => {
+    const notes=readObservations([{itemId:'sun',detailId:'core',cutaway:true,note:'Fusion releases energy.'},
+      {itemId:'sun',detailId:'photosphere',cutaway:false},{itemId:'sun',detailId:'prominence',cutaway:false},
+      {itemId:'sun',detailId:'missing-layer'}]);
+    expect(notes.map(n=>[n.detailId,n.cutaway])).toEqual([['core',true],['photosphere',false],['prominence',false]]);
+    expect(notes[0].note).toBe('Fusion releases energy.');
+    expect(readObservationDrafts({'sun:core':'Start here','sun:missing-layer':'Invalid'})).toEqual({'sun:core':'Start here'});
+  });
+  it('keeps distinct microscopic structures and their saved cutaway state', () => {
+    const notes=readObservations([{itemId:'ecoli',detailId:'nucleoid',cutaway:true,note:'DNA is folded.'},
+      {itemId:'ecoli',detailId:'cell-envelope',cutaway:false},
+      {itemId:'paramecium',detailId:'contractile-vacuole',cutaway:true},
+      {itemId:'paramecium',detailId:'oral-groove',cutaway:false}]);
+    expect(notes.map(n=>[n.itemId,n.detailId,n.cutaway])).toEqual([
+      ['ecoli','nucleoid',true],['ecoli','cell-envelope',false],
+      ['paramecium','contractile-vacuole',true],['paramecium','oral-groove',false]]);
+    expect(notes[0].note).toBe('DNA is folded.');
+  });
+  it('restores planetary lighting and landmarks while accepting older notebook entries', () => {
+    const notes = readObservations([{itemId:'earth',detailId:'sahara',sunAngle:135},
+      {itemId:'moon',detailId:'tycho',sunAngle:999},{itemId:'jupiter',detailId:'red-spot',sunAngle:NaN},
+      {itemId:'earth',detailId:'pacific'}]);
+    expect(notes.map(n=>n.sunAngle)).toEqual([135,180,45,45]);
+    expect(notes.map(n=>n.detailId)).toEqual(['sahara','tycho','red-spot','pacific']);
+  });
   it('ignores invalid targets and duplicate records without discarding valid notes', () => {
     const notes = readObservations([null, { itemId: '__proto__' }, { itemId: 'honeybee', detailId: 'missing' },
       { itemId: 'honeybee', detailId: 'wings', note: 'Veins branch from the thorax.', source: 'javascript:bad()' },

@@ -90,7 +90,7 @@
     { id: 'local-bubble', emoji: '🫧', name: 'The Local Bubble', size: 9.5e18, dim: 'across', group: 'cosmic',
       describe: 'A cavity in the gas between the stars, blown clear by supernovae over the last ten to twenty million years, with our Solar System drifting through the middle of it.',
       note: 'Roughly a thousand light years across, though it is lopsided rather than round and older estimates were much smaller.' },
-    { id: 'orion-nebula', emoji: '☁️', name: 'The Orion Nebula', size: 7.6e17, dim: 'across', group: 'cosmic',
+    { id: 'orion-nebula', emoji: '☁️', name: 'The Orion Nebula', size: 2.27e17, dim: 'across', group: 'cosmic',
       describe: 'A glowing cloud of gas and dust where new stars are forming, visible as the middle "star" of Orion\'s sword.' },
     { id: 'alpha-cen-dist', emoji: '📍', name: 'Distance to the nearest star system', size: 4.1e16, dim: 'distance', group: 'cosmic',
       describe: 'How far it is to Alpha Centauri, the closest star system to the Sun. Again a gap, not a size.' },
@@ -425,8 +425,138 @@
     { id: 'cosmic', name: 'The cosmic ocean', subtitle: 'Galaxies become the building blocks', at: 'milkyway', max: Infinity, color: '#cbb7ff', bg: '#100c22' }
   ];
   function realmAt(e) { return REALMS.filter(function (r) { return e < r.max; })[0] || REALMS[5]; }
+  function isPlanetaryWorld(id) { return id === 'earth' || id === 'moon' || id === 'jupiter'; }
+  function isMicrobe(id) { return id === 'ecoli' || id === 'paramecium'; }
+  function hasCutaway(id) { return id === 'sun' || id === 'mitochondrion' || isMicrobe(id); }
+  function surfacePoint(u, v) {
+    var latitude = v * Math.PI, longitude = u * Math.PI * 2;
+    return [-.503 * Math.cos(longitude) * Math.sin(latitude), .503 * Math.cos(latitude), .503 * Math.sin(longitude) * Math.sin(latitude)];
+  }
+  function illuminatedDisc(angle) { return Math.round((1 + Math.cos(angle * Math.PI / 180)) * 50); }
 
-  function atlasDetails(id, S) {
+  // JPL J2000 semimajor axes set circular reference radii. The composed
+  // longitudes are illustrative; this atlas is not a dated ephemeris.
+  var SOLAR_ORBITS = [
+    {id:'mercury',au:.38709927,angle:2.6,color:'#aea89c',diameter:.012},
+    {id:'venus',au:.72333566,angle:4.45,color:'#edcf94',diameter:.016},
+    {id:'earth',au:1.00000261,angle:.38,color:'#7aacd5',diameter:.016},
+    {id:'mars',au:1.52371034,angle:2.9,color:'#d29170',diameter:.014},
+    {id:'jupiter',au:5.202887,angle:5.65,color:'#d8b28f',diameter:.027},
+    {id:'saturn',au:9.53667594,angle:2.65,color:'#dac493',diameter:.025},
+    {id:'uranus',au:19.18916464,angle:4.55,color:'#b1dcdf',diameter:.020},
+    {id:'neptune',au:30.06992276,angle:.28,color:'#679bce',diameter:.020}
+  ];
+  var SOLAR_RADIUS_AU = SOLAR_ORBITS[7].au;
+  function solarPosition(orbit) { var r=orbit.au/(2*SOLAR_RADIUS_AU);return [Math.cos(orbit.angle)*r,0,Math.sin(orbit.angle)*r]; }
+  // The path is an illustration. Normalize its arc length to the catalog's
+  // 446 km; a straight chord must not be mistaken for the river distance.
+  function canyonCenter(x) { return .035*Math.sin(x*9+.4)+.023*Math.sin(x*20-1)+.010*Math.sin(x*37); }
+  function canyonSmooth(a,b,v) { var t=clamp((v-a)/(b-a),0,1);return t*t*(3-2*t); }
+  function canyonNoise(x,z) {
+    var ix=Math.floor(x),iz=Math.floor(z),fx=x-ix,fz=z-iz;
+    fx=fx*fx*(3-2*fx);fz=fz*fz*(3-2*fz);
+    function hash(a,b){var n=Math.imul(a,374761393)+Math.imul(b,668265263);n=Math.imul(n^(n>>>13),1274126177);return ((n^(n>>>16))>>>0)/4294967295;}
+    return (hash(ix,iz)*(1-fx)+hash(ix+1,iz)*fx)*(1-fz)+(hash(ix,iz+1)*(1-fx)+hash(ix+1,iz+1)*fx)*fz;
+  }
+  var CANYON_PATH=(function(){var points=[],distances=[],length=0;for(var i=0;i<=512;i++){var x=i/512-.5,z=canyonCenter(x);if(i)length+=Math.hypot(x-points[i-1][0],z-points[i-1][1]);points.push([x,z]);distances.push(length);}return {points:points,distances:distances,length:length,depth:1600/446000*length};})();
+  function cameraBlend(milliseconds,retention) { return 1-Math.pow(retention,clamp(milliseconds,0,150)*.06); }
+  function canyonRouteKm(value) { return typeof value==='number'&&isFinite(value)?clamp(value,0,446):0; }
+  function canyonRoutePoint(km) {
+    var distance=canyonRouteKm(km)/446*CANYON_PATH.length,low=0,high=CANYON_PATH.points.length-1;
+    while(high-low>1){var mid=(low+high)>>1;if(CANYON_PATH.distances[mid]<distance)low=mid;else high=mid;}
+    var a=CANYON_PATH.points[low],b=CANYON_PATH.points[high],t=(distance-CANYON_PATH.distances[low])/(CANYON_PATH.distances[high]-CANYON_PATH.distances[low]);
+    return [a[0]+(b[0]-a[0])*t,.00015,a[1]+(b[1]-a[1])*t];
+  }
+  function canyonRouteView(km) {
+    var a=canyonRoutePoint(canyonRouteKm(km)-8),b=canyonRoutePoint(canyonRouteKm(km)+8),dx=b[0]-a[0],dz=b[2]-a[2],length=Math.hypot(dx,dz)||1;
+    return [-dx/length,1.15,-dz/length];
+  }
+  function canyonHeight(x,z) {
+    var side=z-canyonCenter(x),d=Math.abs(side),grain=canyonNoise(x*75,z*75),rough=canyonNoise(x*138,z*138);
+    var distance=d*(.70+.60*grain);
+    var h=.19*canyonSmooth(.00015,.0032,distance)+.19*canyonSmooth(.004,.008,distance)+.23*canyonSmooth(.010,.016,distance)+.25*canyonSmooth(.020,.026,distance)+.14*canyonSmooth(.030,.038,distance);
+    var erosion=0,reach=Math.abs(side);
+    for(var i=0;i<6;i++){
+      var anchor=-.43+i*.17,course=anchor+reach*.34+Math.sin(reach*65+i*2)*.012;
+      var width=.003+reach*.05,channel=Math.exp(-Math.pow((x-course)/width,2));
+      var fork=Math.exp(-Math.pow((x-course-(reach-.055)*.45)/(.002+reach*.024),2))*canyonSmooth(.035,.09,reach);
+      erosion=Math.max(erosion,(channel+fork*.6)*clamp(1-reach/.20,0,1)*.78);
+    }
+    h*=1-clamp(erosion,0,.85);
+    h+=(grain-.5)*.07*canyonSmooth(.004,.014,d)+(rough-.5)*.05*canyonSmooth(.002,.025,d);
+    return Math.max(0,h)*CANYON_PATH.depth;
+  }
+  function canyonPoint(x,z,relief) { return [x,canyonHeight(x,z)*(relief||8),z]; }
+  function inspectionLimit(id) { return id==='solar-system'?32:id==='grand-canyon'?12:2.5; }
+  function atlasDetails(id, S, terrainRelief, riverKm) {
+    if(id==='solar-system'){
+      var names=[S('atlas_orbit_mercury', 'Mercury'),S('atlas_orbit_venus', 'Venus'),S('atlas_orbit_earth', 'Earth'),S('atlas_orbit_mars', 'Mars'),
+        S('atlas_orbit_jupiter', 'Jupiter'),S('atlas_orbit_saturn', 'Saturn'),S('atlas_orbit_uranus', 'Uranus'),S('atlas_orbit_neptune', 'Neptune')];
+      return [{id:'inner-orbits',at:[0,0,0],view:[0,1,0],zoom:24,maxZoom:5,label:S('atlas_orbit_inner', 'The inner planets'),
+        body:S('atlas_orbit_inner_body', 'Move in toward Mercury, Venus, Earth and Mars. These four rocky worlds occupy a small part of the planetary system. The circular paths keep their distance proportions as the camera moves closer. One astronomical unit (AU) is about the Earth–Sun distance.'),
+        source:'https://science.nasa.gov/solar-system/solar-system-facts/'}].concat(SOLAR_ORBITS.map(function(orbit,index){
+          return {id:orbit.id+'-orbit',at:solarPosition(orbit),view:[0,1,0],zoom:index<4?32:index<6?9:4,minZoom:index<4?6:0,
+            hint:S('atlas_orbit_hint', '{planet} · {au} AU · Select to approach',{planet:names[index],au:orbit.au.toFixed(2)}),au:orbit.au,visit:['earth','jupiter'].indexOf(orbit.id)>=0?orbit.id:null,label:names[index],
+            body:S('atlas_orbit_planet_body', '{planet} has a reference orbital radius of about {au} AU. Compare its path with its neighbours, then orbit the scene to see the shared plane. Planet markers are enlarged; circular paths use approximate orbital sizes, with illustrative positions.',{planet:names[index],au:orbit.au.toFixed(2)}),
+            source:'https://ssd.jpl.nasa.gov/planets/approx_pos.html'};
+        })).concat([{id:'asteroid-belt',at:[-.04,0,-.02],view:[0,1,0],viewAim:[0,0,0],zoom:12,minZoom:3,
+          label:S('atlas_orbit_belt', 'The asteroid belt'),body:S('atlas_orbit_belt_body', 'Between Mars and Jupiter, a sparse population of small bodies circles the Sun. The particles here are enlarged representatives. The belt contains far more empty space than this illustrated cloud suggests.'),
+          source:'https://science.nasa.gov/solar-system/asteroids/'}]);
+    }
+    if(id==='milkyway')return [
+      {id:'solar-neighbourhood',at:[.216,0,.145],view:[0,1,0],zoom:2.3,label:S('atlas_detail_galaxy_sun', 'Our Sun’s neighbourhood'),body:S('atlas_detail_galaxy_sun_body', 'Our Sun lies about 26,000 light-years from the galactic centre, near the Orion Spur between larger spiral arms. This marker locates our neighbourhood; the Sun and its planets are far too small to resolve at this scale. Visit the Solar System to continue the journey inward.'),source:'https://science.nasa.gov/solar-system/solar-system-facts/'},
+      {id:'central-bar',at:[-.06,.025,-.03],view:[0,.7,1],zoom:2,label:S('atlas_detail_galaxy_bar', 'Central bar & bulge'),body:S('atlas_detail_galaxy_bar_body', 'The Milky Way is a barred spiral galaxy. A crowded, elongated central population rises above and below the disc. Warm light distinguishes the illustrated older stars here. The central black hole is much too small to resolve in this view.'),source:'https://www.esa.int/Science_Exploration/Space_Science/Gaia/Guide_to_our_galaxy'},
+      {id:'spiral-arms',at:[-.20,.005,-.21],viewAim:[0,0,0],view:[0,1,0],zoom:1.1,label:S('atlas_detail_galaxy_arms', 'Spiral arms from above'),body:S('atlas_detail_galaxy_arms_body', 'Look down on the disc to follow its curved arms. Young stars, gas and dust help trace this structure. The broad stellar arms and finer branches are an interpretation of an evolving map: we observe our own galaxy from inside it, so this is not an exterior photograph.'),source:'https://science.nasa.gov/resource/the-milky-way-galaxy/'},
+      {id:'galactic-disc',at:[.33,0,-.05],viewAim:[0,0,0],view:[0,0,1],zoom:1.25,label:S('atlas_detail_galaxy_disc', 'The disc seen edge-on'),body:S('atlas_detail_galaxy_disc_body', 'Seen along its plane, the broad galaxy becomes a thin band with a thicker central bulge. Dust in the disc absorbs light from stars behind it. Orbit gently above or below the plane to see the dark lane open into the spiral pattern.'),source:'https://www.esa.int/ESA_Multimedia/Images/2015/07/Stellar_density_map'}
+    ];
+    if(id==='orion-nebula')return [
+      {id:'trapezium',at:[-.006,.014,.135],reveal:true,zoom:2.4,label:S('atlas_detail_orion_trapezium', 'Trapezium stars'),body:S('atlas_detail_orion_trapezium_body', 'Four bright stars mark the heart of this illustrated cluster. Their ultraviolet light energizes the surrounding gas. Reveal embedded stars reduces the cloud’s opacity so you can explore the stars behind it. The light points are enlarged to remain visible.'),source:'https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-42/'},
+      {id:'stellar-cavity',at:[.11,.11,-.03],reveal:false,label:S('atlas_detail_orion_cavity', 'Sculpted stellar cavity'),body:S('atlas_detail_orion_cavity_body', 'Orbit around the hollow in the cloud. Radiation and winds from the central stars have carved a bowl-like cavity into the molecular cloud. This volume is an interpretation of that structure; its depth and orientation are illustrative.'),source:'https://www.jpl.nasa.gov/news/nasa-space-telescopes-provide-a-3-d-journey-through-the-orion-nebula/'},
+      {id:'ionization-front',at:[.19,-.115,.035],reveal:false,label:S('atlas_detail_orion_front', 'Glowing cloud front'),body:S('atlas_detail_orion_front_body', 'Follow the luminous boundary where the stars’ radiation meets denser material. Ultraviolet light strips electrons from atoms, and the gas emits light. The warm and cool colors help distinguish regions of this illustrated nebula.'),source:'https://science.nasa.gov/mission/hubble/science/universe-uncovered/hubble-nebulae/'},
+      {id:'dust-ridge',at:[-.13,.145,.115],reveal:false,label:S('atlas_detail_orion_dust', 'Dark dust ridge'),body:S('atlas_detail_orion_dust_body', 'Dark material blocks some of the light behind it. Turn the cloud, then reveal embedded stars to see how the view changes when the dust becomes transparent. This is a visibility aid, rather than a telescope wavelength or a live observation.'),source:'https://science.nasa.gov/asset/hubble/close-up-images-of-the-orion-nebula/'}
+    ];
+    if(id==='sun')return [
+      {id:'core',at:[.06,.02,.008],cutaway:true,label:S('atlas_detail_solar_core', 'Fusion core'),body:S('atlas_detail_solar_core_body', 'Begin where the Sun produces its energy. Nuclear fusion turns hydrogen into helium in the core. The cutaway places its outer boundary at about a quarter of the solar radius. Orbit to see both exposed faces of the interior.'),source:'https://solarscience.msfc.nasa.gov/interior.shtml'},
+      {id:'radiative-zone',at:[.235,.055,.008],cutaway:true,label:S('atlas_detail_solar_radiative', 'Radiative zone'),body:S('atlas_detail_solar_radiative_body', 'Energy moves through this dense region by radiation, with repeated absorption and emission. The zone extends from roughly 25% to 70% of the solar radius. The luminous texture distinguishes it from the circulating plasma farther out.'),source:'https://solarscience.msfc.nasa.gov/interior.shtml'},
+      {id:'convection-zone',at:[.36,-.19,.008],cutaway:true,label:S('atlas_detail_solar_convection', 'Convection zone'),body:S('atlas_detail_solar_convection_body', 'Hot plasma rises, cools near the surface, and sinks again. Trace the circulating paths in the outer interior. These enlarged loops explain the movement; they do not show individual flows measured inside the Sun.'),source:'https://science.nasa.gov/blogs/the-sun-spot/2023/09/26/layers-of-the-sun/'},
+      {id:'photosphere',at:[-.14,-.20,.43635],cutaway:false,label:S('atlas_detail_solar_surface', 'Granulated photosphere'),body:S('atlas_detail_solar_surface_body', 'This visible layer has no solid ground. Hot, rising plasma forms bright granules bordered by cooler, darker lanes. The model enlarges that fine texture so it can be explored at the scale of the whole star.'),source:'https://apod.nasa.gov/apod/ap100416.html'},
+      {id:'sunspots',at:[-.24,.12,.42190],cutaway:false,label:S('atlas_detail_solar_spots', 'Sunspots'),body:S('atlas_detail_solar_spots_body', 'Explore the dark center and lighter surround of this illustrated sunspot group. Strong magnetic fields restrict convection, making these regions cooler and darker than nearby plasma. These are example features, not a map of today’s Sun.'),source:'https://science.nasa.gov/sun/sunspots/'},
+      {id:'prominence',at:[-.547,.236,.174],cutaway:false,label:S('atlas_detail_solar_prominence', 'Prominence & corona'),body:S('atlas_detail_solar_prominence_body', 'Follow the arch of plasma suspended above the photosphere by magnetic fields. The faint glow beyond the limb represents the corona, the Sun’s extended outer atmosphere. Filaments, colors and their slow motion are an illustration.'),source:'https://science.nasa.gov/sun/facts/'}
+    ];
+    if(id==='ecoli')return [
+      {id:'cell-envelope',at:[-.24,.13,.08],cutaway:false,label:S('atlas_detail_bacterial_envelope', 'Cell envelope & pili'),body:S('atlas_detail_bacterial_envelope_body', 'The rounded rod is the bacterial cell body. Its envelope surrounds the cytoplasm. Compare the short surface pili with the much longer flagella. The size reference measures the body, excluding its appendages.'),source:'https://www.ncbi.nlm.nih.gov/books/NBK8477/'},
+      {id:'flagella',at:[.57,.03,.09],label:S('atlas_detail_flagella', 'Rotating flagella'),body:S('atlas_detail_flagella_body', 'Long helical filaments extend from motors in the cell envelope. Their rotation can propel the bacterium through liquid. This illustration slows the motion and shows only a few filaments; their number varies between cells.'),source:'https://www.ncbi.nlm.nih.gov/books/NBK8477/'},
+      {id:'nucleoid',at:[-.05,.025,.035],cutaway:true,label:S('atlas_detail_nucleoid', 'Folded chromosome'),body:S('atlas_detail_nucleoid_body', 'The gold strand represents folded DNA in the nucleoid. E. coli has no membrane-bound nucleus. The strand is a schematic view of the chromosome, enlarged so you can follow its path through the cell.'),source:'https://pmc.ncbi.nlm.nih.gov/articles/PMC6907758/'},
+      {id:'ribosomes',at:[.21,-.065,.075],cutaway:true,label:S('atlas_detail_ribosomes', 'Ribosomes in the cytoplasm'),body:S('atlas_detail_ribosomes_body', 'The small pale particles represent ribosomes, which assemble proteins. Only a sample is shown. Compare these dispersed structures with the larger, folded chromosome in the same cell.'),source:'https://www.ncbi.nlm.nih.gov/books/NBK9849/'}
+    ];
+    if(id==='paramecium')return [
+      {id:'cilia',at:[-.23,.18,.055],cutaway:false,label:S('atlas_detail_cilia', 'Waves of cilia'),body:S('atlas_detail_cilia_body', 'Rows of short cilia cover the cell. Their coordinated beating helps move it through water. Pause ambience to inspect a still view; the illustrated beat is slowed and the number of cilia is reduced for clarity.'),source:'https://pmc.ncbi.nlm.nih.gov/articles/PMC8535419/'},
+      {id:'oral-groove',at:[-.035,-.105,.11],cutaway:false,label:S('atlas_detail_oral', 'Oral groove'),body:S('atlas_detail_oral_body', 'Follow the long depression along the surface. Cilia guide food particles toward the oral apparatus, where food vacuoles form. Turn the cell to see how the groove is set into its curved surface.'),source:'https://pmc.ncbi.nlm.nih.gov/articles/PMC8208649/'},
+      {id:'nuclei',at:[-.07,.035,.025],cutaway:true,label:S('atlas_detail_nuclei', 'Two kinds of nucleus'),body:S('atlas_detail_nuclei_body', 'The large macronucleus supports everyday cell functions. A smaller micronucleus nearby has a role in sexual reproduction. Their colors distinguish them in this anatomical illustration.'),source:'https://www.ncbi.nlm.nih.gov/mesh/68048631'},
+      {id:'contractile-vacuole',at:[.29,.015,.025],cutaway:true,label:S('atlas_detail_vacuole', 'Contractile vacuoles'),body:S('atlas_detail_vacuole_body', 'The star-shaped complexes collect and expel excess water. Watch a central reservoir fill and contract, then pause to inspect its radiating canals. The cycle is illustrative; its rate depends on the cell and its surroundings.'),source:'https://pubmed.ncbi.nlm.nih.gov/9427677/'}
+    ];
+    if(id==='grand-canyon')return [
+      {id:'canyon-rim',at:canyonPoint(-.06,canyonCenter(-.06)+.042,terrainRelief),view:[.2,1,.65],zoom:3.5,label:S('atlas_detail_canyon_rim', 'Layered canyon walls'),body:S('atlas_detail_canyon_rim_body', 'Approach the rim and follow the bands across the cliffs. Different rock layers resist erosion differently, producing cliffs and slopes. The colors and terrace shapes are illustrative. Adjust vertical relief to compare this readable view with the much flatter proportions at the scale of the whole canyon.'),source:'https://www.nps.gov/grca/learn/nature/grca-geology.htm'},
+      {id:'river-bend',at:canyonPoint(.08,canyonCenter(.08),terrainRelief),view:[0,1,0],zoom:6,label:S('atlas_detail_canyon_river', 'Colorado River corridor'),body:S('atlas_detail_canyon_river_body', 'Follow the river through the inner gorge. The canyon’s 446 km length is measured along the river, so the dashed measurement follows this model’s winding course. The route is an illustration rather than a geographic map.'),source:'https://www.nps.gov/grca/faqs.htm'},
+      {id:'side-canyons',at:canyonPoint(.115,canyonCenter(.115)+.065,terrainRelief),view:[.15,1,.6],zoom:4,label:S('atlas_detail_canyon_tributaries', 'Branching side canyons'),body:S('atlas_detail_canyon_tributaries_body', 'Explore the smaller gullies joining the main gorge. Water flowing through tributaries erodes the surrounding slopes and helps widen the canyon. Look from above to see how the drainage network branches.'),source:'https://www.nps.gov/grca/learn/nature/grca-geology.htm'},
+      {id:'river-journey',marker:false,at:canyonRoutePoint(riverKm),view:canyonRouteView(riverKm),zoom:8,label:S('atlas_river_journey', 'River journey'),body:S('atlas_river_journey_body', 'Move along the illustrated river, bend by bend. Distance follows the winding course from 0 to 446 km. The route map shows your position; the pale ring in the scene is a location marker. These positions describe the illustrated model, not real navigation coordinates.'),source:'https://www.nps.gov/grca/learn/nature/grca-geology.htm'},
+      {id:'canyon-overview',marker:false,at:[0,0,0],viewAim:[0,.02,0],view:[0,1,0],zoom:1.05,label:S('atlas_detail_canyon_overview', 'The winding landscape'),body:S('atlas_detail_canyon_overview_body', 'Look down on the whole terrain. Its river path represents the full canyon length. The reference relief uses about 1.6 km of depth; the relief control changes only vertical dimensions. Terrain shape, vegetation colors and rock bands are an interpretation.'),source:'https://www.nps.gov/grca/learn/management/statistics.htm'}
+    ];
+    if(id==='earth')return [
+      {id:'arizona-canyon',surface:true,at:surfacePoint(.1886,.2994),visit:'grand-canyon',label:S('atlas_detail_earth_canyon', 'Grand Canyon, Arizona'),body:S('atlas_detail_earth_canyon_body', 'This marker locates the canyon region in northern Arizona. At the scale of the globe, the gorge is too small to show its cliffs. Continue inward to explore the canyon landscape and its changing proportions.'),source:'https://www.nps.gov/grca/index.htm'},
+      {id:'pacific',surface:true,at:surfacePoint(.13,.52),label:S('atlas_detail_pacific', 'Pacific Ocean'),body:S('atlas_detail_pacific_body', 'Explore the broad blue expanse between the continents. Ocean covers about 71% of Earth. Change the sunlight angle to trace the boundary between day and night across the water.'),source:'https://science.nasa.gov/earth/facts/'},
+      {id:'sahara',surface:true,at:surfacePoint(.545,.36),label:S('atlas_detail_sahara', 'Sahara & continents'),body:S('atlas_detail_sahara_body', 'The pale Sahara contrasts with greener land to its south and the surrounding ocean. This satellite mosaic lets you inspect surface patterns at a planetary scale.'),source:'https://svs.gsfc.nasa.gov/2915/'},
+      {id:'greenland',surface:true,at:surfacePoint(.39,.105),label:S('atlas_detail_greenland', 'Greenland ice sheet'),body:S('atlas_detail_greenland_body', 'The bright ice sheet covers much of Greenland. Follow its edge toward the darker coastal terrain. The mosaic is a reference image; it does not show current weather or sea-ice conditions.'),source:'https://science.nasa.gov/resource/land-ice-greenland/'}
+    ];
+    if(id==='moon')return [
+      {id:'tycho',surface:true,at:surfacePoint(.4684,.7406),label:S('atlas_detail_tycho', 'Tycho crater'),body:S('atlas_detail_tycho_body', 'Look for the bright rays extending from this impact crater in the southern highlands. Compare full and side lighting to see how surface color and relief contribute to its appearance.'),source:'https://science.nasa.gov/photojournal/the-floor-of-tycho/'},
+      {id:'maria',surface:true,at:surfacePoint(.40,.40),label:S('atlas_detail_maria', 'Dark lunar plains'),body:S('atlas_detail_maria_body', 'These dark plains are called maria. Ancient lava filled large basins and hardened into basalt. Their smooth, darker appearance contrasts with the brighter cratered highlands.'),source:'https://science.nasa.gov/moon/facts/'},
+      {id:'highlands',surface:true,at:surfacePoint(.61,.53),label:S('atlas_detail_highlands', 'Cratered highlands'),body:S('atlas_detail_highlands_body', 'Explore the densely cratered terrain. Move the light toward a half-lit view to bring out changes in the surface. The relief is enhanced so it remains visible on a screen.'),source:'https://svs.gsfc.nasa.gov/4720/'}
+    ];
+    if(id==='jupiter')return [
+      {id:'red-spot',surface:true,at:surfacePoint(.648,.625),label:S('atlas_detail_red_spot', 'Great Red Spot'),body:S('atlas_detail_red_spot_body', 'This oval is a vast storm in Jupiter’s atmosphere. Inspect the surrounding swirls in the Hubble mosaic. The image records a particular observation; the storm and clouds continue to change.'),source:'https://science.nasa.gov/jupiter/jupiter-facts/'},
+      {id:'belts',surface:true,at:surfacePoint(.40,.422),label:S('atlas_detail_belts', 'Belts & zones'),body:S('atlas_detail_belts_body', 'The stripes are atmospheric cloud bands. Darker belts alternate with brighter zones as winds flow around the planet. Jupiter is a gas giant, so this image shows cloud tops rather than solid ground.'),source:'https://science.nasa.gov/jupiter/jupiter-facts/'}
+    ];
     var insectSource='https://www.nhm.ac.uk/schools/teaching-resources/key-stage-1/animal-and-human-bodies/parts-of-an-insect.html';
     var dinosaurSource='https://www.amnh.org/exhibitions/permanent/saurischian-dinosaurs/tyrannosaurus-rex';
     var dnaSource='https://www.genome.gov/genetics-glossary/Deoxyribonucleic-Acid-DNA';
@@ -485,9 +615,13 @@
         size: target.item.id === 'human' && entry.you === true && typeof entry.size === 'number' && validHeightCm(entry.size * 100) ? entry.size : target.item.size,
         you: target.item.id === 'human' && entry.you === true,
         note: typeof entry.note === 'string' ? entry.note.slice(0, NOTE_LIMIT) : '',
-        zoom: typeof entry.zoom === 'number' && isFinite(entry.zoom) ? clamp(entry.zoom, 1, 2.5) : 1,
+        zoom: typeof entry.zoom === 'number' && isFinite(entry.zoom) ? clamp(entry.zoom, 1, inspectionLimit(target.item.id)) : 1,
         yaw: typeof entry.yaw === 'number' && isFinite(entry.yaw) ? Math.atan2(Math.sin(entry.yaw), Math.cos(entry.yaw)) : 0,
         pitch: typeof entry.pitch === 'number' && isFinite(entry.pitch) ? clamp(entry.pitch, -1.1, 1.1) : .12,
+        sunAngle: typeof entry.sunAngle === 'number' && isFinite(entry.sunAngle) ? clamp(entry.sunAngle, 0, 180) : 45,
+        nebulaReveal: entry.nebulaReveal === true,
+        riverKm: canyonRouteKm(entry.riverKm),
+        terrainRelief: typeof entry.terrainRelief === 'number' && isFinite(entry.terrainRelief) ? clamp(entry.terrainRelief,1,20) : 8,
         cutaway: entry.cutaway !== false, view: entry.view === 'chart' ? 'chart' : 'atlas' });
     });
     return result;
@@ -690,7 +824,7 @@
       small: inquirySnapshot(pair.small), big: inquirySnapshot(pair.big), guess: '', revealed: false, reflection: '' };
   }
 
-  function createScaleAtlas(T, canvas, read, pick, fail, inspect, markers, comparisonLabels) {
+  function createScaleAtlas(T, canvas, read, pick, fail, inspect, markers, comparisonLabels, onImagery, hoverCard, flightLabels) {
     var renderer = new T.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'low-power' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.7));
     renderer.outputEncoding = T.sRGBEncoding;
@@ -706,6 +840,8 @@
     var space = new T.Group(); scene.add(space);
     var hemisphere = new T.HemisphereLight(0xd8e8f5, 0x505348, 0.75); scene.add(hemisphere);
     var key = new T.DirectionalLight(0xfff2dc, 2.25); key.position.set(-3.8, 5.5, 5); scene.add(key);
+    scene.add(key.target);
+    key.name = 'atlasSunlight';
     key.castShadow = true; key.shadow.mapSize.set(1024, 1024);
     key.shadow.camera.left = key.shadow.camera.bottom = -6;
     key.shadow.camera.right = key.shadow.camera.top = 6;
@@ -718,9 +854,10 @@
     var sphere = track(new T.SphereGeometry(0.5, 48, 32));
     var unitBox = track(new T.BoxGeometry(1, 1, 1));
     var ray = new T.Raycaster(), pointer = new T.Vector2(), drag = null;
-    var fingers = new Map(), pinch = null, cameraZoom = 1, lastZoomInput = 1;
-    var cameraAim=new T.Vector3(0,.2,0),aimGoal=new T.Vector3(0,.2,0),cameraSettling=false;
-    var markerPoint=new T.Vector3(),previousDetail='',focusRing;
+    var fingers = new Map(), pinch = null, cameraZoom = 1, zoomGoal = 1, lastZoomInput = 1, orbitGoal = null;
+    var cameraAim=new T.Vector3(0,.2,0),aimGoal=new T.Vector3(0,.2,0),cameraSettling=false,lastCameraFrame=0;
+    var markerPoint=new T.Vector3(),previousDetail='',focusRing,riverTravelKm=0;
+    var sunDirection=new T.Vector3(),lightView=new T.Vector3(),lightSide=new T.Vector3(),globeCenter=new T.Vector3(),lastImagery='';
     function track(v) { resources.add(v); return v; }
     function material(color, options) { var mat = track(new T.MeshStandardMaterial(Object.assign({ color: color, roughness: 0.78, metalness: 0 }, options || {}))); mat.color.convertSRGBToLinear(); mat.emissive.convertSRGBToLinear(); return mat; }
     function mesh(group, geo, mat, x, y, z, sx, sy, sz) {
@@ -838,6 +975,14 @@
         fragmentShader:'uniform vec3 tint;uniform float strength;varying vec3 n;varying vec3 v;void main(){float edge=pow(1.-abs(dot(normalize(n),normalize(v))),3.);gl_FragColor=vec4(tint,edge*strength);\n#include <tonemapping_fragment>\n#include <encodings_fragment>\n}'}));
       var m=ball(g,mat,0,0,0,scale);m.userData.unmeasured=true;return m;
     }
+    function earthAtmosphere(g) {
+      var mat=track(new T.ShaderMaterial({uniforms:{sunDirection:{value:new T.Vector3(-.4,.6,.5).normalize()}},transparent:true,depthWrite:false,blending:T.AdditiveBlending,
+        vertexShader:'varying vec3 worldNormal;varying vec3 viewNormal;varying vec3 viewDir;void main(){vec4 p=modelViewMatrix*vec4(position,1.);worldNormal=normalize(mat3(modelMatrix)*normal);viewNormal=normalize(normalMatrix*normal);viewDir=-p.xyz;gl_Position=projectionMatrix*p;}',
+        fragmentShader:'uniform vec3 sunDirection;varying vec3 worldNormal;varying vec3 viewNormal;varying vec3 viewDir;void main(){float edge=pow(1.-abs(dot(normalize(viewNormal),normalize(viewDir))),3.);float daylight=smoothstep(-.16,.35,dot(normalize(worldNormal),sunDirection));gl_FragColor=vec4(vec3(.08,.34,1.),edge*daylight*.75);\n#include <tonemapping_fragment>\n#include <encodings_fragment>\n}'}));
+      var atmosphere=ball(g,mat,0,0,0,1.025);atmosphere.userData.unmeasured=true;g.userData.atmosphereMaterial=mat;
+    }
+    function studioLight() { key.color.set(0xfff2dc);key.shadow.normalBias=.012;key.position.set(-3.8,5.5,5);key.target.position.set(0,0,0);sunDirection.copy(key.position).normalize(); }
+    function lightAtmospheres(visible) { visible.forEach(function(root){var mat=root.userData.model.userData.atmosphereMaterial;if(mat)mat.uniforms.sunDirection.value.copy(sunDirection);}); }
     function dots(g, count, place, color, size, seed) {
       var r = random(seed || 7), pos = [], colors = [], c = new T.Color(color);
       for (var i = 0; i < count; i++) { var p = place(r, i); pos.push(p[0], p[1], p[2]); var v = 0.5 + r() * 0.5; colors.push(c.r * v, c.g * v, c.b * v); }
@@ -948,6 +1093,420 @@
         },undefined,function(){ /* Retain the procedural figure when the local asset is unavailable. */ });
       }).catch(function(){ /* A loader failure leaves the atlas interactive. */ });
     }
+    // Body length is exactly one local unit. Appendages and illustrative
+    // organelles must never change the measured dimensions of these cells.
+    function microbePoint(id,x,angle) {
+      var r=id==='ecoli'?Math.sqrt(Math.max(0,.16*.16-Math.pow(Math.max(0,Math.abs(x)-.34),2))):.19*Math.sqrt(Math.max(0,1-4*x*x))*(1-.28*x);
+      if(id==='paramecium')r-=.048*Math.exp(-Math.pow((x+.025)/.19,2)-Math.pow((angle-2.13)/.3,2));
+      r=Math.max(0,r);
+      return [x,r*Math.cos(angle),r*Math.sin(angle)*(id==='paramecium'?.78:1)];
+    }
+    function microbeSkin(id,front) {
+      var positions=[],uv=[],indices=[],steps=64,sides=32;
+      for(var i=0;i<=steps;i++)for(var j=0;j<=sides;j++){
+        var x=i/steps-.5,angle=j/sides*Math.PI+(front?0:Math.PI),p=microbePoint(id,x,angle);
+        positions.push(p[0],p[1],p[2]);uv.push(i/steps,angle/(Math.PI*2));
+        if(i<steps&&j<sides){var q=i*(sides+1)+j;indices.push(q,q+1,q+sides+1,q+1,q+sides+2,q+sides+1);}
+      }
+      var geo=track(new T.BufferGeometry());geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geo.setIndex(indices);geo.computeVertexNormals();return geo;
+    }
+    function ciliaryCoat(g,id) {
+      var positions=[],bends=[],phases=[],surfaceZ=[],rows=id==='paramecium'?24:12,columns=id==='paramecium'?36:14,segments=id==='paramecium'?5:2;
+      for(var row=0;row<rows;row++)for(var col=0;col<columns;col++){
+        var angle=row/rows*Math.PI*2,x=-.475+(col+.35*(row%2))/(columns-1)*.95,p=microbePoint(id,clamp(x,-.49,.49),angle),len=id==='paramecium'?.048:.036;
+        for(var s=0;s<segments;s++)for(var end=0;end<2;end++){
+          var t=(s+end)/segments,bend=t*t;
+          positions.push(p[0]+.014*bend,p[1]+Math.cos(angle)*len*t,p[2]+Math.sin(angle)*len*t);
+          bends.push(id==='paramecium'?.018*bend:0,Math.sin(angle)*.004*bend,-Math.cos(angle)*.004*bend);phases.push(x*26+row*.7);surfaceZ.push(p[2]);
+        }
+      }
+      var geo=track(new T.BufferGeometry());geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('aBend',new T.Float32BufferAttribute(bends,3));geo.setAttribute('aPhase',new T.Float32BufferAttribute(phases,1));geo.setAttribute('aSurfaceZ',new T.Float32BufferAttribute(surfaceZ,1));
+      var mat=track(new T.ShaderMaterial({uniforms:{uTime:{value:0},uOpen:{value:1},uOpacity:{value:.62},tint:{value:new T.Color(id==='paramecium'?'#afd6b9':'#b7d6cf').convertSRGBToLinear()}},transparent:true,depthWrite:false,
+        vertexShader:'attribute vec3 aBend;attribute float aPhase;attribute float aSurfaceZ;uniform float uTime;varying float surfaceZ;void main(){surfaceZ=aSurfaceZ;vec3 p=position+aBend*sin(uTime*3.+aPhase);gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.);}',
+        fragmentShader:'uniform vec3 tint;uniform float uOpen;uniform float uOpacity;varying float surfaceZ;void main(){if(uOpen>.5&&surfaceZ>.012)discard;gl_FragColor=vec4(tint,uOpacity);\n#include <tonemapping_fragment>\n#include <encodings_fragment>\n}'}));
+      var coat=new T.LineSegments(geo,mat);coat.frustumCulled=false;g.add(coat);g.userData.coatMaterial=mat;if(id==='paramecium')g.userData.ciliaMaterial=mat;
+    }
+    function microbeModel(g,id) {
+      var body=material(id==='ecoli'?'#67998b':'#819e86',{roughness:.52,bumpMap:grainTexture,bumpScale:.002,side:T.DoubleSide});
+      mesh(g,microbeSkin(id,false),body);
+      var cover=new T.Group();g.add(cover);mesh(cover,microbeSkin(id,true),body);g.userData.outerMembrane=cover;
+      var inside=new T.Group();g.add(inside);g.userData.innerStructures=inside;
+      var lip=material('#bed4a7',{roughness:.48});
+      [0,Math.PI].forEach(function(angle){var points=[];for(var i=0;i<=48;i++)points.push(microbePoint(id,i/48-.5,angle));tube(inside,points,.004,lip);});
+      ciliaryCoat(g,id);
+      var rng=random(id==='ecoli'?205:307),beadMat=material('#b3b598',{roughness:.6});
+      // Batch particles into one mesh with real bounds. Three r128's generic
+      // Box3 path does not include per-instance transforms when fitting a model.
+      var beadGeo=track(new T.IcosahedronGeometry(.5,0)),beadPositions=[],beadNormals=[],bp=beadGeo.attributes.position,bn=beadGeo.attributes.normal;
+      for(var n=0;n<(id==='ecoli'?150:95);n++){
+        var bx=(rng()-.5)*.82,th=rng()*Math.PI*2,edge=microbePoint(id,bx,th),rad=.48+rng()*.35;
+        var bs=id==='ecoli'?.015:.009+rng()*.007;
+        for(var v=0;v<bp.count;v++){beadPositions.push(bx+bp.getX(v)*bs,edge[1]*rad+bp.getY(v)*bs,edge[2]*rad+bp.getZ(v)*bs);beadNormals.push(bn.getX(v),bn.getY(v),bn.getZ(v));}
+      }
+      var batch=track(new T.BufferGeometry());batch.setAttribute('position',new T.Float32BufferAttribute(beadPositions,3));batch.setAttribute('normal',new T.Float32BufferAttribute(beadNormals,3));mesh(inside,batch,beadMat).name='cytoplasm-particles';
+      if(id==='ecoli'){
+        var chromosome=[],dnaMat=material('#d7ae76',{roughness:.48});
+        for(var j=0;j<=240;j++){var t=j/240*Math.PI*2;chromosome.push([.30*Math.cos(t),.066*Math.sin(t*11),.055*Math.sin(t*9)+.015]);}
+        tube(inside,chromosome,.0045,dnaMat);
+        var ribosome=ball(inside,beadMat,.21,-.065,.075,.022);ribosome.name='ribosome-landmark';
+        g.userData.flagella=[];var filament=material('#a6c1a0',{roughness:.7});
+        [[.31,.10,.07],[-.05,-.15,.03],[.08,.03,-.155],[-.31,.06,.09]].forEach(function(base,index){
+          var tail=new T.Group();tail.position.fromArray(base);g.add(tail);var path=[];
+          for(var k=0;k<=70;k++){var t=k/70,r=.046*Math.min(1,t*5),phase=t*Math.PI*8;path.push([t*(.70+index*.09),Math.sin(phase)*r,Math.cos(phase)*r-r*Math.exp(-t*12)]);}
+          tube(tail,path,.0028,filament);tail.userData.phase=index*1.5;g.userData.flagella.push(tail);
+          ball(g,lip,base[0],base[1],base[2],.023);
+        });
+      }else{
+        var nucleusMat=material('#b58c9f',{roughness:.52,bumpMap:grainTexture,bumpScale:.002});
+        var macronucleus=ball(inside,nucleusMat,-.07,.035,.02,.29,.13,.10);macronucleus.rotation.z=-.15;
+        ball(inside,material('#e1bcb0',{roughness:.5}),-.025,-.048,.046,.048);
+        var foodMat=material('#c4a376',{roughness:.38,transparent:true,opacity:.66,depthWrite:false});
+        [[-.31,-.03,.01,.072],[-.17,-.095,.025,.068],[.10,-.08,.025,.063],[.20,.085,0,.054],[.33,-.05,0,.043]].forEach(function(p){
+          ball(inside,foodMat,p[0],p[1],p[2],p[3]);ball(inside,beadMat,p[0]+.009,p[1],p[2],p[3]*.28);
+        });
+        g.userData.vacuoles=[];var water=material('#a8d5d0',{roughness:.25,metalness:.04,transparent:true,opacity:.73,depthWrite:false}),canal=material('#7fc2b8',{roughness:.5});
+        [-.33,.29].forEach(function(x,index){
+          var reservoir=ball(inside,water,x,.015,.025,.080,.070,.043);reservoir.userData.baseScale=reservoir.scale.clone();reservoir.userData.phase=index*Math.PI;g.userData.vacuoles.push(reservoir);
+          for(var c=0;c<7;c++){var angle=c/7*Math.PI*2;rod(inside,[x+Math.cos(angle)*.035,.015+Math.sin(angle)*.028,.016],[x+Math.cos(angle)*.092,.015+Math.sin(angle)*.072,.006],.003,canal);}
+        });
+        var groove=[];for(var v=0;v<=30;v++){var gx=-.25+v/30*.45;groove.push(microbePoint(id,gx,2.13));}
+        tube(cover,groove,.009,material('#345b51',{roughness:.8}));
+      }
+      g.userData.extent=1;g.userData.measureCenter=0;g.userData.microbe=true;g.rotation.z=-.14;
+    }
+    function animateMicrobe(g,cutaway,clock) {
+      if(g.userData.innerStructures)g.userData.innerStructures.visible=cutaway;
+      if(g.userData.coatMaterial){g.userData.coatMaterial.uniforms.uOpen.value=cutaway?1:0;g.userData.coatMaterial.uniforms.uOpacity.value=.62;}
+      if(g.userData.ciliaMaterial)g.userData.ciliaMaterial.uniforms.uTime.value=clock;
+      if(g.userData.flagella)g.userData.flagella.forEach(function(tail){tail.rotation.x=clock*1.5+tail.userData.phase;});
+      if(g.userData.vacuoles)g.userData.vacuoles.forEach(function(v){var cycle=(clock/4.2+v.userData.phase/(Math.PI*2))%1,pulse=cycle<.82?.45+.55*cycle/.82:1-.55*(cycle-.82)/.18;v.scale.copy(v.userData.baseScale).multiplyScalar(pulse);});
+    }
+    function solarModel(g) {
+      // One model unit is the photospheric diameter. The atmosphere and loops
+      // extend beyond the ruler; opening a quadrant never rescales the star.
+      var clock={value:0},open={value:0};
+      var noiseGLSL=[
+        'float hash(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}',
+        'float noise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);}'
+      ].join('\n');
+      var vertex='varying vec3 vP;varying vec3 vN;varying vec3 vV;void main(){vP=position;vec4 p=modelViewMatrix*vec4(position,1.);vN=normalize(normalMatrix*normal);vV=-p.xyz;gl_Position=projectionMatrix*p;}';
+      var finish=['#include <tonemapping_fragment>','#include <encodings_fragment>','}'];
+      var surface=track(new T.ShaderMaterial({uniforms:{uTime:clock,uOpen:open,uOpacity:{value:1}},vertexShader:vertex,
+        fragmentShader:[
+          'uniform float uTime;uniform float uOpen;uniform float uOpacity;varying vec3 vP;varying vec3 vN;varying vec3 vV;',noiseGLSL,
+          'float grains(vec3 p){vec3 cell=floor(p),f=fract(p);float a=8.,b=8.;for(int x=-1;x<=1;x++){for(int y=-1;y<=1;y++){for(int z=-1;z<=1;z++){vec3 q=vec3(float(x),float(y),float(z));vec3 seed=cell+q;vec3 h=vec3(hash(seed),hash(seed+31.7),hash(seed+81.3));vec3 d=q+h-f;float dist=dot(d,d);if(dist<a){b=a;a=dist;}else b=min(b,dist);}}}return smoothstep(.005,.34,sqrt(b)-sqrt(a));}',
+          'float spot(vec3 center,float radius){vec3 p=vP-center;float d=length(p);float angle=atan(p.y,p.x);float edge=1.+.09*sin(angle*7.)+.04*sin(angle*19.);float penumbra=1.-smoothstep(radius*.62,radius*1.3,d/edge);float umbra=1.-smoothstep(radius*.32,radius*.60,d/edge);return clamp(penumbra*(.42+.07*sin(angle*63.))+umbra*.49,0.,.94);}',
+          'void main(){if(uOpen>.5&&vP.x>0.&&vP.z>0.)discard;vec3 p=vP*86.;p+=.8*vec3(noise(p*.7),noise(p*.7+17.),noise(p*.7+43.));float grain=grains(p+vec3(0.,uTime*.035,0.));float broad=noise(vP*34.+uTime*.015);float fine=noise(vP*650.);float limb=.10+.90*pow(max(0.,dot(normalize(vN),normalize(vV))),.65);vec3 col=mix(vec3(.43,.14,.03),vec3(1.25,.74,.31),grain*.78+fine*.22)*(.73+.35*broad+.13*fine);float spots=max(spot(vec3(-.24,.12,.42190),.031),max(spot(vec3(-.184,.108,.4522),.017),spot(vec3(.19,-.21,.4121),.020)));col*=1.-spots;gl_FragColor=vec4(col*limb,uOpacity);'
+        ].concat(finish).join('\n')}));
+      var photosphere=mesh(g,track(new T.SphereGeometry(.5,96,64)),surface);
+      photosphere.name='solarPhotosphere';photosphere.castShadow=photosphere.receiveShadow=false;
+      var inside=new T.Group();inside.name='solarInterior';g.add(inside);
+      var section=track(new T.ShaderMaterial({side:T.DoubleSide,uniforms:{uTime:clock,uOpacity:{value:1}},vertexShader:vertex,
+        fragmentShader:[
+          'uniform float uTime;uniform float uOpacity;varying vec3 vP;varying vec3 vN;varying vec3 vV;',noiseGLSL,
+          'void main(){float r=length(vP.xy),a=atan(vP.y,vP.x);float n=noise(vec3(vP.xy*95.,uTime*.07));float fine=noise(vec3(vP.xy*280.,1.));vec3 col;',
+          'if(r<.125){float hot=1.-r/.125;col=mix(vec3(2.3,.94,.25),vec3(3.4,2.7,1.35),pow(hot,.55))*(.94+.1*n);}',
+          'else if(r<.35){float ripple=.5+.5*sin(r*550.+n*3.);col=mix(vec3(.82,.22,.04),vec3(1.22,.39,.075),fine)*(.88+.08*ripple);}',
+          'else{float cells=.5+.5*sin(a*42.+sin(r*50.+uTime*.12)*1.2);col=mix(vec3(.10,.012,.004),vec3(.48,.082,.015),.28+n*.5+cells*.18);}',
+          'float edge=max(exp(-abs(r-.125)*1000.),exp(-abs(r-.35)*1000.));col+=vec3(.65,.28,.06)*edge;float face=.72+.28*abs(dot(normalize(vN),normalize(vV)));gl_FragColor=vec4(col*face,uOpacity);'
+        ].concat(finish).join('\n')}));
+      var sectionGeo=track(new T.RingGeometry(0,.5,96,1,-Math.PI/2,Math.PI));
+      mesh(inside,sectionGeo,section).name='solarSectionFront';
+      var side=mesh(inside,sectionGeo,section);side.rotation.y=-Math.PI/2;side.name='solarSectionSide';
+      // The circulating paths sit on the exposed planes, not in the corona.
+      var flowPositions=[],flowProgress=[];
+      for(var face=0;face<2;face++)for(var cell=0;cell<13;cell++)for(var k=0;k<48;k++)for(var end=0;end<2;end++){
+        var t=(k+end)/48*Math.PI*2,angle=-1.39+cell/12*2.78+.087*Math.sin(t),radius=.423+.055*Math.cos(t);
+        var x=radius*Math.cos(angle),y=radius*Math.sin(angle);
+        flowPositions.push(face?.002:x,y,face?x:.002);flowProgress.push((k+end)/48+cell*.173);
+      }
+      var flowGeo=track(new T.BufferGeometry());flowGeo.setAttribute('position',new T.Float32BufferAttribute(flowPositions,3));flowGeo.setAttribute('aProgress',new T.Float32BufferAttribute(flowProgress,1));
+      var flowMat=track(new T.ShaderMaterial({transparent:true,depthWrite:false,uniforms:{uTime:clock,uOpacity:{value:1}},
+        vertexShader:'attribute float aProgress;varying float vProgress;void main(){vProgress=aProgress;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+        fragmentShader:['uniform float uTime;uniform float uOpacity;varying float vProgress;void main(){float pulse=pow(.5+.5*cos((vProgress-uTime*.10)*6.28318),12.);gl_FragColor=vec4(mix(vec3(.85,.23,.04),vec3(2.4,1.45,.50),pulse),(.25+.7*pulse)*uOpacity);'].concat(finish).join('\n')}));
+      var flows=new T.LineSegments(flowGeo,flowMat);flows.name='solarConvectionFlows';inside.add(flows);
+      var loops=new T.Group();loops.name='solarProminences';g.add(loops);
+      var loopMat=track(new T.ShaderMaterial({transparent:true,depthWrite:false,blending:T.AdditiveBlending,uniforms:{uTime:clock,uOpen:open,uOpacity:{value:1}},
+        vertexShader:'varying vec3 vP;varying vec2 vUv;void main(){vP=position;vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+        fragmentShader:['uniform float uTime;uniform float uOpen;uniform float uOpacity;varying vec3 vP;varying vec2 vUv;void main(){if(uOpen>.5&&vP.x>0.&&vP.z>0.)discard;float pulse=pow(.5+.5*sin(vUv.x*24.-uTime*.7),4.);gl_FragColor=vec4(vec3(1.75,.24,.045)+pulse*vec3(.65,.42,.12),(.32+.45*pulse)*uOpacity);'].concat(finish).join('\n')}));
+      [[-.88,.38,.28],[.84,-.50,.15]].forEach(function(direction,index){
+        var normal=new T.Vector3().fromArray(direction).normalize(),tangent=new T.Vector3(normal.y,-normal.x,0).normalize(),across=new T.Vector3().crossVectors(normal,tangent);
+        for(var strand=0;strand<7;strand++){
+          var points=[];for(var step=0;step<=36;step++){
+            var u=step/36,angle=(u-.5)*(.34+strand*.008),height=(.09+strand*.008)*(index?.62:1)*Math.sin(Math.PI*u);
+            var p=normal.clone().multiplyScalar(Math.cos(angle)).addScaledVector(tangent,Math.sin(angle)).multiplyScalar(.499+height);
+            p.addScaledVector(across,(strand-3)*.003*Math.sin(Math.PI*u));points.push(p.toArray());
+          }
+          tube(loops,points,.0012,loopMat);
+        }
+      });
+      // A billboard draws the faint extended corona beyond the measured limb.
+      // The opaque body occludes it; the fragment mask also clears the cutaway.
+      var coronaMat=track(new T.ShaderMaterial({transparent:true,depthWrite:false,blending:T.AdditiveBlending,uniforms:{uTime:clock,uOpacity:{value:1}},
+        vertexShader:'varying vec2 vUv;void main(){vUv=uv;vec4 c=modelViewMatrix*vec4(0.,0.,0.,1.);float scale=length(modelViewMatrix[0].xyz);c.xy+=position.xy*scale;gl_Position=projectionMatrix*c;}',
+        fragmentShader:['uniform float uTime;uniform float uOpacity;varying vec2 vUv;void main(){vec2 p=(vUv-.5)*2.3;float r=length(p);if(r<.498)discard;float a=atan(p.y,p.x);float strands=pow(.5+.5*sin(a*47.+sin(a*13.)*3.+sin(r*22.-uTime*.07)),3.);float fans=.55+.45*pow(abs(cos(a-.2)),3.);float halo=exp(-(r-.5)*18.)*.16+exp(-(r-.5)*9.)*strands*fans*.085;halo*=1.-smoothstep(.65,1.1,r);gl_FragColor=vec4(vec3(1.15,.57,.25),halo*uOpacity);'].concat(finish).join('\n')}));
+      var corona=mesh(g,track(new T.PlaneGeometry(2.3,2.3)),coronaMat);corona.name='solarCorona';corona.frustumCulled=false;
+      g.userData.starMaterial=surface;g.userData.solarInterior=inside;g.userData.solarPhotosphere=photosphere;
+      g.userData.extent=1;g.userData.measureCenter=0;g.rotation.y=-.30;
+    }
+    function animateSun(g,cutaway,clock) {
+      g.userData.starMaterial.uniforms.uTime.value=clock;
+      g.userData.starMaterial.uniforms.uOpen.value=cutaway?1:0;
+      g.userData.solarInterior.visible=cutaway;
+    }
+    function solarFeatureVisible(root,detail,cutaway) {
+      var p=new T.Vector3().fromArray(detail.at),eye=root.userData.model.worldToLocal(camera.position.clone());
+      var direction=eye.sub(p).normalize(),b=p.dot(direction),discriminant=b*b+.25-p.lengthSq();
+      if(discriminant<0)return true;
+      var exitDistance=-b+Math.sqrt(discriminant);
+      if(exitDistance<.004)return true;
+      p.addScaledVector(direction,exitDistance);
+      return cutaway&&p.x>0&&p.z>0;
+    }
+    function nebulaModel(g) {
+      // A compact 96^3 density field, packed into an ordinary 2D texture, keeps
+      // this volume available on both WebGL 1 and 2 without a remote asset.
+      var side=96,atlasWidth=1152,atlasHeight=768,data=new Uint8Array(atlasWidth*atlasHeight*4);
+      function hash(x,y,z){var n=Math.imul(x,73856093)^Math.imul(y,19349663)^Math.imul(z,83492791);n=Math.imul(n^(n>>>16),0x45d9f3b);n=Math.imul(n^(n>>>16),0x45d9f3b);return ((n^(n>>>16))>>>0)/4294967295;}
+      function noise(x,y,z){
+        var ix=Math.floor(x),iy=Math.floor(y),iz=Math.floor(z),fx=x-ix,fy=y-iy,fz=z-iz;fx=fx*fx*(3-2*fx);fy=fy*fy*(3-2*fy);fz=fz*fz*(3-2*fz);
+        var a=hash(ix,iy,iz)*(1-fx)+hash(ix+1,iy,iz)*fx,b=hash(ix,iy+1,iz)*(1-fx)+hash(ix+1,iy+1,iz)*fx;
+        var c=hash(ix,iy,iz+1)*(1-fx)+hash(ix+1,iy,iz+1)*fx,d=hash(ix,iy+1,iz+1)*(1-fx)+hash(ix+1,iy+1,iz+1)*fx;
+        return (a*(1-fy)+b*fy)*(1-fz)+(c*(1-fy)+d*fy)*fz;
+      }
+      function smooth(a,b,v){var t=clamp((v-a)/(b-a),0,1);return t*t*(3-2*t);}
+      for(var z=0;z<side;z++)for(var y=0;y<side;y++)for(var x=0;x<side;x++){
+        var px=x/95-.5,py=y/95-.5,pz=z/95-.5;
+        var n=noise(px*9+4,py*9+3,pz*9+5)*.40+noise(px*25+8,py*25+1,pz*25+9)*.31+noise(px*60+6,py*60+9,pz*60+7)*.21+noise(px*110,py*110+5,pz*110)*.08;
+        var radius=Math.sqrt(Math.pow(px/.49,2)+Math.pow((py+.015)/.34,2)+Math.pow(pz/.29,2));
+        var envelope=(1-smooth(.68,1.05,radius))*(.4+Math.exp(-radius*radius*2));
+        var cavityDistance=Math.sqrt(Math.pow((px+.01)/1.12,2)+Math.pow(py-.025,2)+Math.pow((pz-.16)*.92,2));
+        var cavity=smooth(.17,.25,cavityDistance);
+        var bar=Math.exp(-Math.pow((py+.16-.22*px)/.048,2)-Math.pow((px-.15)/.25,2)-Math.pow((pz-.025)/.13,2));
+        var gas=envelope*Math.pow(Math.max(0,n-.28)*2.3,2.1)*(.035+.965*cavity)+bar*(.15+n)*1.2;
+        var ridge=Math.exp(-Math.pow((py-.135+.36*px)/.07,2)-Math.pow((px+.15)/.25,2)-Math.pow((pz-.11)/.08,2));
+        var dust=ridge*(.25+Math.pow(n,2)*1.7)+envelope*Math.pow(Math.max(0,n-.52),2)*3;
+        var cool=clamp(Math.exp(-Math.pow(cavityDistance/.31,2))*1.5,0,1);
+        // Leave a transparent guard around the box to avoid a hard volume edge.
+        var edge=1-smooth(.455,.495,Math.max(Math.abs(px),Math.abs(py),Math.abs(pz)));
+        var i=((Math.floor(z/12)*96+y)*atlasWidth+(z%12)*96+x)*4;
+        data[i]=Math.round(clamp(gas*edge,0,1)*255);data[i+1]=Math.round(cool*255);data[i+2]=Math.round(clamp(dust*edge,0,1)*255);data[i+3]=255;
+      }
+      var texture=track(new T.DataTexture(data,atlasWidth,atlasHeight,T.RGBAFormat));texture.minFilter=texture.magFilter=T.LinearFilter;texture.generateMipmaps=false;texture.needsUpdate=true;
+      var volume={value:texture},eye={value:new T.Vector3()},direction={value:new T.Vector3(0,0,-1)},orthographic={value:0},reveal={value:1},viewport={value:600};
+      var sampleGLSL=[
+        'uniform sampler2D uVolume;uniform vec3 uEye;uniform vec3 uDirection;uniform float uOrthographic;uniform float uCloud;',
+        'vec3 field(vec3 p){if(any(lessThan(p,vec3(-.5)))||any(greaterThan(p,vec3(.5))))return vec3(0.);vec3 q=(p+.5)*95.;float z=floor(q.z),next=min(z+1.,95.);vec2 a=(vec2(mod(z,12.),floor(z/12.))*96.+q.xy+.5)/vec2(1152.,768.);vec2 b=(vec2(mod(next,12.),floor(next/12.))*96.+q.xy+.5)/vec2(1152.,768.);return mix(texture2D(uVolume,a).rgb,texture2D(uVolume,b).rgb,fract(q.z));}',
+        'float extinction(vec3 f){return f.r*4.5+f.b*11.;}'
+      ].join('\n');
+      var finish=['#include <tonemapping_fragment>','#include <encodings_fragment>','}'];
+      var cloudMat=track(new T.ShaderMaterial({transparent:true,depthWrite:false,side:T.BackSide,uniforms:{uVolume:volume,uEye:eye,uDirection:direction,uOrthographic:orthographic,uCloud:reveal,uOpacity:{value:1}},
+        vertexShader:'varying vec3 vP;void main(){vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+        fragmentShader:[sampleGLSL,'uniform float uOpacity;varying vec3 vP;',
+          'void main(){vec3 rd=normalize(mix(normalize(vP-uEye),uDirection,uOrthographic)),origin=mix(uEye,vP-rd*3.,uOrthographic),inv=1./(rd+vec3(.000001));vec3 a=(-.5-origin)*inv,b=(.5-origin)*inv,lo=min(a,b),hi=max(a,b);float near=max(0.,max(lo.x,max(lo.y,lo.z))),far=min(hi.x,min(hi.y,hi.z));if(far<=near)discard;float stepSize=(far-near)/48.;vec3 p=origin+rd*(near+stepSize*.5);vec4 sum=vec4(0.);',
+          'for(int i=0;i<48;i++){vec3 f=field(p);float alpha=1.-exp(-extinction(f)*stepSize*uCloud);vec3 color=mix(vec3(1.10,.22,.16),vec3(.12,.54,.78),smoothstep(.38,.9,f.g));float glow=f.r/(f.r+f.b*2.8+.001);color=color*(1.4+f.r*2.8)*glow+vec3(.018,.012,.023)*(1.-glow);sum.rgb+=(1.-sum.a)*alpha*color;sum.a+=(1.-sum.a)*alpha;p+=rd*stepSize;}if(sum.a<.001)discard;gl_FragColor=vec4(sum.rgb/max(sum.a,.001),sum.a*uOpacity);'
+        ].concat(finish).join('\n')}));
+      var cloud=mesh(g,unitBox,cloudMat);cloud.name='orionCloudVolume';cloud.renderOrder=10;cloud.castShadow=cloud.receiveShadow=false;
+      var rng=random(742),positions=[],sizes=[],colors=[];
+      [[-.028,.016,.14],[-.008,.035,.13],[.011,.014,.138],[.002,-.009,.125]].forEach(function(p,index){positions.push.apply(positions,p);sizes.push(.040-index*.004);colors.push(1.4,1.9,2.5);});
+      for(var star=0;star<440;star++){
+        var theta=rng()*Math.PI*2,rad=Math.sqrt(rng())*.43;
+        positions.push(Math.cos(theta)*rad,Math.sin(theta)*rad*.7,(rng()-.5)*.44);
+        sizes.push(.0025+Math.pow(rng(),4)*.008);var warm=rng();colors.push(.8+warm*.6,.85+warm*.3,1.3-warm*.6);
+      }
+      var starsGeo=track(new T.BufferGeometry());starsGeo.setAttribute('position',new T.Float32BufferAttribute(positions,3));starsGeo.setAttribute('aSize',new T.Float32BufferAttribute(sizes,1));starsGeo.setAttribute('color',new T.Float32BufferAttribute(colors,3));
+      var starsMat=track(new T.ShaderMaterial({transparent:true,depthWrite:false,blending:T.AdditiveBlending,vertexColors:true,uniforms:{uVolume:volume,uEye:eye,uDirection:direction,uOrthographic:orthographic,uCloud:reveal,uViewport:viewport,uOpacity:{value:1}},
+        vertexShader:[sampleGLSL,'uniform float uViewport;attribute float aSize;varying vec3 vColor;varying float vVisibility;',
+          'void main(){vec3 direction=normalize(mix(normalize(uEye-position),-uDirection,uOrthographic)),inv=1./(direction+vec3(.000001)),a=(-.5-position)*inv,b=(.5-position)*inv,far=max(a,b);float distance=min(length(uEye-position),max(0.,min(far.x,min(far.y,far.z))));float stepSize=distance/16.,depth=0.;for(int i=0;i<16;i++){depth+=extinction(field(position+direction*(float(i)+.5)*stepSize))*stepSize;}vVisibility=exp(-depth*uCloud);vColor=color;vec4 mv=modelViewMatrix*vec4(position,1.);float scale=length(modelViewMatrix[0].xyz),projection=mix(1./max(.1,-mv.z),projectionMatrix[1][1]*.5,uOrthographic);gl_PointSize=clamp(aSize*scale*uViewport*projection,1.,42.);gl_Position=projectionMatrix*mv;}'
+        ].join('\n'),
+        fragmentShader:['uniform float uOpacity;varying vec3 vColor;varying float vVisibility;void main(){vec2 p=gl_PointCoord-.5;float r=length(p);if(r>.5)discard;float core=exp(-r*r*120.),halo=exp(-r*r*16.)*.14;float rays=(exp(-abs(p.x)*110.-abs(p.y)*10.)+exp(-abs(p.y)*110.-abs(p.x)*10.))*.12;gl_FragColor=vec4(vColor,(core+halo+rays)*vVisibility*uOpacity);'].concat(finish).join('\n')}));
+      var stars=new T.Points(starsGeo,starsMat);stars.name='orionEmbeddedStars';stars.renderOrder=11;stars.frustumCulled=false;g.add(stars);
+      g.userData.nebula={cloud:cloud,stars:stars,eye:eye,direction:direction,orthographic:orthographic,reveal:reveal,viewport:viewport};g.userData.extent=1;g.userData.measureCenter=0;
+    }
+    function solarSystemModel(g) {
+      var bodies=[],paths=[];
+      var star=ball(g,material('#fff0ce',{emissive:'#ffbc63',emissiveIntensity:2}),0,0,0,.004);
+      var halo=glow(g,'#ffd1a0',.045,.75);
+      SOLAR_ORBITS.forEach(function(orbit,index){
+        var radius=orbit.au/(2*SOLAR_RADIUS_AU),points=[];
+        for(var j=0;j<256;j++){var a=j/256*Math.PI*2;points.push(Math.cos(a)*radius,0,Math.sin(a)*radius);}
+        var geometry=track(new T.BufferGeometry());geometry.setAttribute('position',new T.Float32BufferAttribute(points,3));
+        var line=new T.LineLoop(geometry,track(new T.LineBasicMaterial({color:orbit.color,transparent:true,opacity:index<4?.42:.28,depthWrite:false})));
+        line.userData.orbitAU=orbit.au;line.userData.planetId=orbit.id;g.add(line);paths.push(line);
+        var uniforms={uColor:{value:new T.Color(orbit.color).convertSRGBToLinear()},uKind:{value:index},uSun:{value:new T.Vector3(-Math.cos(orbit.angle),0,-Math.sin(orbit.angle))},uOpacity:{value:1}};
+        var surface=track(new T.ShaderMaterial({uniforms:uniforms,vertexShader:'varying vec3 vN;varying vec3 vP;void main(){vN=normal;vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+          fragmentShader:[
+            'uniform vec3 uColor;uniform vec3 uSun;uniform float uKind;uniform float uOpacity;varying vec3 vN;varying vec3 vP;',
+            'float hash(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}',
+            'float noise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);}',
+            'void main(){vec3 n=normalize(vN);float grain=noise(vP*32.);vec3 col=uColor*(.68+grain*.5);',
+            'if(uKind>3.5){float bands=sin(vP.y*95.+noise(vP*18.)*3.);col=uColor*(.78+.18*bands+.12*grain);}',
+            'if(uKind>1.5&&uKind<2.5){float land=noise(vP*7.)*.7+noise(vP*17.)*.3;col=mix(vec3(.025,.13,.28),vec3(.16,.23,.12),smoothstep(.49,.55,land));float clouds=smoothstep(.63,.78,noise(vP*24.));col=mix(col,vec3(.8,.83,.78),clouds);}',
+            'if(uKind>2.5&&uKind<3.5)col=mix(col,vec3(.7,.72,.7),smoothstep(.44,.49,abs(vP.y)));',
+            'float daylight=max(0.,dot(n,uSun));col*=.26+1.9*daylight;gl_FragColor=vec4(col,uOpacity);',
+            '#include <tonemapping_fragment>','#include <encodings_fragment>','}'
+          ].join('\n')}));
+        var body=new T.Group();body.position.fromArray(solarPosition(orbit));body.userData.planetId=orbit.id;body.userData.orbitAU=orbit.au;g.add(body);
+        ball(body,surface,0,0,0,1);
+        if(orbit.id==='saturn'){
+          var ringGeo=track(new T.RingGeometry(.64,1.12,128));
+          var ringMat=track(new T.ShaderMaterial({side:T.DoubleSide,transparent:true,depthWrite:false,
+            uniforms:{uOpacity:{value:.72}},vertexShader:'varying vec3 vP;void main(){vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+            fragmentShader:'uniform float uOpacity;varying vec3 vP;void main(){float r=length(vP.xy);float gap=1.-smoothstep(.895,.909,r)*(1.-smoothstep(.936,.950,r));float lines=.82+.18*sin(r*65.);gl_FragColor=vec4(vec3(.68,.59,.43),uOpacity*gap*lines);\n#include <tonemapping_fragment>\n#include <encodings_fragment>\n}'}));
+          var rings=mesh(body,ringGeo,ringMat);rings.rotation.x=-Math.PI/2+.47;
+        }
+        bodies.push(body);
+      });
+      var belt=dots(g,1600,function(r){var angle=r()*Math.PI*2,radius=(2.1+r()*1.2)/(2*SOLAR_RADIUS_AU);return [Math.cos(angle)*radius,(r()-.5)*.0016,Math.sin(angle)*radius];},'#c9b58f',.0012,431);
+      belt.material.opacity=.60;
+      var measureGeo=track(new T.BufferGeometry());measureGeo.setAttribute('position',new T.Float32BufferAttribute([0,0,0,0,0,0],3));
+      var measureLine=new T.Line(measureGeo,track(new T.LineDashedMaterial({color:'#e9ce9e',dashSize:.004,gapSize:.003,transparent:true,opacity:.7,depthWrite:false})));
+      measureLine.visible=false;g.add(measureLine);
+      g.rotation.x=.78;g.rotation.z=-.10;g.userData.extent=1;g.userData.measureCenter=0;
+      g.userData.solarSystem={bodies:bodies,paths:paths,star:star,halo:halo,belt:belt,measureLine:measureLine};
+      sizeSolarMarkers(g,1);
+    }
+    function sizeSolarMarkers(g,zoom){
+      var system=g.userData.solarSystem;
+      // Marker diameters aid visibility; the orbital geometry never changes.
+      system.bodies.forEach(function(body,index){body.scale.setScalar(Math.min(index<4?.002:1,SOLAR_ORBITS[index].diameter/Math.sqrt(zoom)));});
+      system.star.scale.setScalar(Math.min(.004,.007/Math.sqrt(zoom)));
+      system.halo.scale.setScalar(.045/Math.sqrt(zoom));
+    }
+    function lightSolarSystem(root,state){
+      var g=root.userData.model,system=g.userData.solarSystem;if(!system)return;
+      sizeSolarMarkers(g,!state.comparison&&state.focusId==='solar-system'?cameraZoom:1);
+      system.measureLine.visible=!state.comparison&&state.showDetails&&state.focusId==='solar-system'&&/-orbit$/.test(state.detailId);
+      if(system.measureLine.visible){
+        var orbit=SOLAR_ORBITS.filter(function(o){return o.id+'-orbit'===state.detailId;})[0],p=solarPosition(orbit),attr=system.measureLine.geometry.attributes.position;
+        attr.setXYZ(1,p[0],p[1],p[2]);attr.needsUpdate=true;system.measureLine.geometry.computeBoundingSphere();system.measureLine.computeLineDistances();
+      }
+      system.paths.forEach(function(line){if(!state.comparison&&line.userData.planetId+'-orbit'===state.detailId)line.material.opacity*=2;});
+    }
+    function galaxyModel(g) {
+      // 128 x 32 x 128 cells; height slices fit a WebGL 1-compatible 2D texture.
+      var data=new Uint8Array(1024*512*4),c=Math.cos(.45),s=Math.sin(.45);
+      function hash(x,y,z){var n=Math.imul(x,73856093)^Math.imul(y,19349663)^Math.imul(z,83492791);n=Math.imul(n^(n>>>16),0x45d9f3b);return ((n^(n>>>16))>>>0)/4294967295;}
+      function noise(x,y,z){var ix=Math.floor(x),iy=Math.floor(y),iz=Math.floor(z),fx=x-ix,fy=y-iy,fz=z-iz;fx=fx*fx*(3-2*fx);fy=fy*fy*(3-2*fy);fz=fz*fz*(3-2*fz);var a=hash(ix,iy,iz)*(1-fx)+hash(ix+1,iy,iz)*fx,b=hash(ix,iy+1,iz)*(1-fx)+hash(ix+1,iy+1,iz)*fx,d=hash(ix,iy,iz+1)*(1-fx)+hash(ix+1,iy,iz+1)*fx,e=hash(ix,iy+1,iz+1)*(1-fx)+hash(ix+1,iy+1,iz+1)*fx;return(a*(1-fy)+b*fy)*(1-fz)+(d*(1-fy)+e*fy)*fz;}
+      function smooth(a,b,v){var t=clamp((v-a)/(b-a),0,1);return t*t*(3-2*t);}
+      for(var y=0;y<32;y++)for(var z=0;z<128;z++)for(var x=0;x<128;x++){
+        var px=x/127-.5,py=(y/31-.5)*.24,pz=z/127-.5,r=Math.hypot(px,pz),angle=Math.atan2(pz,px);
+        var grain=noise(px*24+5,py*40+6,pz*24+3)*.6+noise(px*83+9,py*110+5,pz*83+1)*.4;
+        var phase=angle-2.6*Math.log(Math.max(.055,r)/.1)-.45+(grain-.5)*.35+.10*Math.sin(17*r+3*angle);
+        var arms=(Math.pow(.5+.5*Math.cos(phase*2),10)+.34*Math.pow(.5+.5*Math.cos(phase*2+Math.PI),16))*smooth(.075,.15,r);
+        var envelope=Math.exp(-r*4)*(1-smooth(.42,.495,r)),thin=Math.exp(-Math.abs(py)/.008);
+        var bx=px*c+pz*s,bz=-px*s+pz*c;
+        var bar=Math.exp(-Math.pow(bx/.135,4)-Math.pow(bz/.031,2)-Math.pow(py/.025,2));
+        var bulge=Math.exp(-Math.pow(r/.073,1.5)-Math.pow(Math.abs(py)/.035,1.5));
+        var disc=envelope*(.30+arms*2.2)*thin*Math.pow(Math.max(0,grain-.25)*2.5,1.8);
+        var starlight=disc+bar*.9+bulge*1.3,young=clamp(disc/(starlight+.001)*(.35+arms*.8),0,1);
+        var lane=Math.pow(.5+.5*Math.cos(phase*2+.38+(grain-.5)*.6),22)*smooth(.07,.14,r);
+        var dust=envelope*(.65+lane*2.1)*Math.exp(-Math.pow(py/.0055,2))*(.35+grain);
+        var i=((Math.floor(y/8)*128+z)*1024+(y%8)*128+x)*4;
+        data[i]=Math.round(clamp(starlight,0,1)*255);data[i+1]=Math.round(young*255);data[i+2]=Math.round(clamp(dust,0,1)*255);data[i+3]=255;
+      }
+      var texture=track(new T.DataTexture(data,1024,512,T.RGBAFormat));texture.minFilter=texture.magFilter=T.LinearFilter;texture.generateMipmaps=false;texture.needsUpdate=true;
+      var volume={value:texture},eye={value:new T.Vector3()},direction={value:new T.Vector3(0,0,-1)},orthographic={value:0},reveal={value:1},viewport={value:600};
+      var sample=[
+        'uniform sampler2D uVolume;uniform vec3 uEye;uniform vec3 uDirection;uniform float uOrthographic;',
+        'vec3 field(vec3 p){vec3 q=(p/vec3(1.,.24,1.)+.5);if(any(lessThan(q,vec3(0.)))||any(greaterThan(q,vec3(1.))))return vec3(0.);q*=vec3(127.,31.,127.);float y=floor(q.y),next=min(y+1.,31.);vec2 a=(vec2(mod(y,8.),floor(y/8.))*128.+q.xz+.5)/vec2(1024.,512.);vec2 b=(vec2(mod(next,8.),floor(next/8.))*128.+q.xz+.5)/vec2(1024.,512.);return mix(texture2D(uVolume,a).rgb,texture2D(uVolume,b).rgb,fract(q.y));}'
+      ].join('\n'),finish=['#include <tonemapping_fragment>','#include <encodings_fragment>','}'];
+      var cloudMat=track(new T.ShaderMaterial({transparent:true,depthWrite:false,side:T.BackSide,uniforms:{uVolume:volume,uEye:eye,uDirection:direction,uOrthographic:orthographic,uOpacity:{value:1}},
+        vertexShader:'varying vec3 vP;void main(){vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+        fragmentShader:[sample,'uniform float uOpacity;varying vec3 vP;',
+          'void main(){vec3 rd=normalize(mix(normalize(vP-uEye),uDirection,uOrthographic)),origin=mix(uEye,vP-rd*3.,uOrthographic),inv=1./(rd+vec3(.000001));vec3 a=(-vec3(.5,.12,.5)-origin)*inv,b=(vec3(.5,.12,.5)-origin)*inv,lo=min(a,b),hi=max(a,b);float near=max(0.,max(lo.x,max(lo.y,lo.z))),far=min(hi.x,min(hi.y,hi.z));if(far<=near)discard;float stepSize=(far-near)/64.;vec3 p=origin+rd*(near+stepSize*.5);vec4 sum=vec4(0.);',
+          'for(int i=0;i<64;i++){vec3 f=field(p);float extinction=f.r*7.+f.b*120.,alpha=1.-exp(-extinction*stepSize);vec3 color=mix(vec3(1.35,.72,.34),vec3(.48,.64,.94),smoothstep(.15,.92,f.g));float emission=f.r*7./(extinction+.001);color*=emission*(2.4+f.r*2.);sum.rgb+=(1.-sum.a)*alpha*color;sum.a+=(1.-sum.a)*alpha;p+=rd*stepSize;}if(sum.a<.001)discard;gl_FragColor=vec4(sum.rgb/max(sum.a,.001),sum.a*uOpacity);'
+        ].concat(finish).join('\n')}));
+      var cloud=mesh(g,track(new T.BoxGeometry(1,.24,1)),cloudMat);cloud.name='galacticLightAndDust';cloud.renderOrder=10;cloud.castShadow=cloud.receiveShadow=false;
+      var rng=random(26000),positions=[],sizes=[],colors=[];
+      function gaussian(){return Math.sqrt(-2*Math.log(Math.max(.00001,rng())))*Math.cos(2*Math.PI*rng());}
+      for(var j=0;j<22000;j++){
+        var px,pz,py,r,young;
+        if(j<17500){r=Math.pow(rng(),.65)*.49;var arm=j%4,theta=2.6*Math.log(Math.max(.055,r)/.1)+.45+arm*Math.PI*.5;if(j%5<2)theta=rng()*Math.PI*2;else theta+=gaussian()*(arm%2?.075:.13);px=Math.cos(theta)*r;pz=Math.sin(theta)*r;py=gaussian()*(.003+.003*Math.exp(-r*12));young=j%5>=2&&r>.1;}
+        else if(j<20200){px=gaussian()*.051;pz=gaussian()*.038;py=gaussian()*.021;young=false;}
+        else {var bx=(rng()-.5)*.31,bz=gaussian()*.012;px=bx*c-bz*s;pz=bx*s+bz*c;py=gaussian()*.01;young=false;}
+        positions.push(px,clamp(py,-.1,.1),pz);sizes.push(.00065+Math.pow(rng(),5)*.0026);
+        var light=.45+rng()*.7;colors.push(light*(young?.55:1.25),light*(young?.8:1.03),light*(young?1.5:.72));
+      }
+      positions.push(.216,0,.145);sizes.push(.009);colors.push(2.2,1.8,.7);
+      var geo=track(new T.BufferGeometry());geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('aSize',new T.Float32BufferAttribute(sizes,1));geo.setAttribute('color',new T.Float32BufferAttribute(colors,3));
+      var starsMat=track(new T.ShaderMaterial({transparent:true,depthWrite:false,blending:T.AdditiveBlending,vertexColors:true,uniforms:{uVolume:volume,uEye:eye,uDirection:direction,uOrthographic:orthographic,uViewport:viewport,uOpacity:{value:1}},
+        vertexShader:[sample,'uniform float uViewport;attribute float aSize;varying vec3 vColor;varying float vVisibility;varying float vEnergy;',
+          'void main(){vec3 rd=normalize(mix(normalize(uEye-position),-uDirection,uOrthographic)),inv=1./(rd+vec3(.000001)),a=(-vec3(.5,.12,.5)-position)*inv,b=(vec3(.5,.12,.5)-position)*inv,far=max(a,b);float distance=min(length(uEye-position),max(0.,min(far.x,min(far.y,far.z)))),stepSize=distance/16.,depth=0.;for(int i=0;i<16;i++){depth+=field(position+rd*(float(i)+.5)*stepSize).b*120.*stepSize;}vVisibility=exp(-depth);vColor=color;vec4 mv=modelViewMatrix*vec4(position,1.);float scale=length(modelViewMatrix[0].xyz),projection=mix(projectionMatrix[1][1]*.5/max(.1,-mv.z),projectionMatrix[1][1]*.5,uOrthographic);float diameter=aSize*scale*uViewport*projection;vEnergy=min(1.,diameter*diameter);gl_PointSize=clamp(diameter,1.,18.);gl_Position=projectionMatrix*mv;}'
+        ].join('\n'),fragmentShader:['uniform float uOpacity;varying vec3 vColor;varying float vVisibility;varying float vEnergy;void main(){vec2 p=gl_PointCoord-.5;float r=length(p);if(r>.5)discard;float light=exp(-r*r*32.);gl_FragColor=vec4(vColor,light*vVisibility*vEnergy*uOpacity*.5);'].concat(finish).join('\n')}));
+      var stars=new T.Points(geo,starsMat);stars.name='galacticStellarPopulations';stars.renderOrder=11;stars.frustumCulled=false;g.add(stars);
+      g.userData.galaxy={cloud:cloud,stars:stars,eye:eye,direction:direction,orthographic:orthographic,reveal:reveal,viewport:viewport};
+      g.rotation.x=.68;g.rotation.z=-.22;g.userData.extent=1;g.userData.measureCenter=0;
+    }
+    function lightVolumes(visible,state,height) {
+      var settling=false;
+      visible.forEach(function(root){
+        var g=root.userData.model,n=g.userData.nebula||g.userData.galaxy;if(!n)return;var goal=g.userData.nebula&&state.nebulaReveal?.16:1;
+        n.eye.value.copy(activeCamera.position);g.worldToLocal(n.eye.value);
+        activeCamera.getWorldDirection(n.direction.value).add(activeCamera.position);g.worldToLocal(n.direction.value).sub(n.eye.value).normalize();
+        n.orthographic.value=activeCamera.isOrthographicCamera?1:0;
+        n.reveal.value+=(goal-n.reveal.value)*(state.reduceMotion||state.comparison?1:.16);
+        if(Math.abs(goal-n.reveal.value)<.0001)n.reveal.value=goal;else settling=true;
+        n.viewport.value=height*renderer.getPixelRatio();
+      });
+      return settling;
+    }
+    function canyonModel(g) {
+      var land=new T.Group();g.add(land);
+      var positions=[],uvs=[],colors=[],indices=[],nx=384,nz=144;
+      function point(x,z) {
+        var height=canyonHeight(x,z),level=height/CANYON_PATH.depth;
+        positions.push(x,height,z);uvs.push((x+.5)*3,level*.84+.12);
+        var d=Math.abs(z-canyonCenter(x)),grain=canyonNoise(x*100,z*100);
+        var shadow=.68+.32*canyonSmooth(.001,.025,d),green=canyonSmooth(.86,1,level)*(.3+.5*grain);
+        colors.push(shadow*(1-green*.28),shadow*(1-green*.12),shadow*(1-green*.34));
+      }
+      for(var z=0;z<=nz;z++)for(var x=0;x<=nx;x++){
+        var px=x/nx-.5,q=z/nz*2-1,pz=canyonCenter(px)+Math.sign(q)*.19*Math.pow(Math.abs(q),1.65);point(px,pz);
+        if(z<nz&&x<nx){var a=z*(nx+1)+x,b=a+nx+1;indices.push(a,b,a+1,a+1,b,b+1);}
+      }
+      // Close the terrain at its edges so low viewpoints reveal a solid slab.
+      var edge=[];for(var x=0;x<=nx;x++)edge.push(x);for(var z=1;z<=nz;z++)edge.push(z*(nx+1)+nx);
+      for(var x=nx-1;x>=0;x--)edge.push(nz*(nx+1)+x);for(var z=nz-1;z>0;z--)edge.push(z*(nx+1));
+      for(var i=0;i<edge.length;i++){
+        var a=edge[i],b=edge[(i+1)%edge.length],at=positions.length/3;
+        [a,b].forEach(function(index){positions.push(positions[index*3],-.00065,positions[index*3+2]);uvs.push(uvs[index*2],0);colors.push(.63,.60,.58);});
+        indices.push(a,at,b,b,at,at+1);
+      }
+      var geo=track(new T.BufferGeometry());geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geo.setAttribute('color',new T.Float32BufferAttribute(colors,3));geo.setIndex(indices);geo.computeVertexNormals();
+      var cv=document.createElement('canvas');cv.width=128;cv.height=1024;var ctx=cv.getContext('2d'),pixels=ctx.createImageData(128,1024);
+      var bands=[[0,'#5f4e50'],[.12,'#725855'],[.27,'#a76550'],[.41,'#b68b6e'],[.53,'#b75f42'],[.66,'#d2916b'],[.80,'#b27a58'],[.93,'#d5bc92'],[1,'#c7b391']];
+      var ramp=bands.map(function(b){return [b[0],new T.Color(b[1])];});
+      for(var y=0;y<1024;y++)for(var x=0;x<128;x++){
+        var h=1-y/1023,band=0;while(band<ramp.length-2&&h>ramp[band+1][0])band++;
+        var a=ramp[band],b=ramp[band+1],t=canyonSmooth(b[0]-.012,b[0]+.008,h),c=a[1].clone().lerp(b[1],t);
+        var fleck=.91+.06*Math.sin(h*480)+.035*Math.sin(h*1300)+.055*canyonNoise(x*.4,y*.5),p=(y*128+x)*4;
+        pixels.data[p]=c.r*255*fleck;pixels.data[p+1]=c.g*255*fleck;pixels.data[p+2]=c.b*255*fleck;pixels.data[p+3]=255;
+      }
+      ctx.putImageData(pixels,0,0);var strata=track(new T.CanvasTexture(cv));strata.encoding=T.sRGBEncoding;strata.wrapS=T.RepeatWrapping;strata.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
+      var rockMat=material('#ffffff',{map:strata,vertexColors:true,roughness:.96,bumpMap:grainTexture,bumpScale:.000035,side:T.DoubleSide});
+      rockMat.onBeforeCompile=function(shader){
+        shader.vertexShader='varying vec3 vCanyonPosition;\n'+shader.vertexShader;
+        shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvCanyonPosition=position;');
+        shader.fragmentShader='varying vec3 vCanyonPosition;\nfloat canyonGrain(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}\nfloat canyonSoil(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(canyonGrain(i),canyonGrain(i+vec2(1.,0.)),f.x),mix(canyonGrain(i+vec2(0.,1.)),canyonGrain(i+vec2(1.)),f.x),f.y);}\n'+shader.fragmentShader;
+        shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\nfloat top=smoothstep('+String(CANYON_PATH.depth*.84)+','+String(CANYON_PATH.depth*.97)+',vCanyonPosition.y);float grain=canyonSoil(vCanyonPosition.xz*370.);vec3 soil=mix(vec3(.27,.235,.16),vec3(.12,.17,.085),canyonSoil(vCanyonPosition.xz*120.));diffuseColor.rgb=mix(diffuseColor.rgb,soil*(.8+.4*grain),top);');
+      };
+      var terrain=mesh(land,geo,rockMat);terrain.name='canyonStrata';
+      var riverPositions=[],riverUV=[],riverIndices=[],halfWidth=91/446000*CANYON_PATH.length/2;
+      CANYON_PATH.points.forEach(function(p,i){riverPositions.push(p[0],.000008,p[1]-halfWidth,p[0],.000008,p[1]+halfWidth);riverUV.push(i/512,0,i/512,1);if(i<512){var a=i*2;riverIndices.push(a,a+1,a+2,a+1,a+3,a+2);}});
+      var riverGeo=track(new T.BufferGeometry());riverGeo.setAttribute('position',new T.Float32BufferAttribute(riverPositions,3));riverGeo.setAttribute('uv',new T.Float32BufferAttribute(riverUV,2));riverGeo.setIndex(riverIndices);riverGeo.computeVertexNormals();
+      var river=mesh(land,riverGeo,material('#649c99',{roughness:.32,metalness:.15,emissive:'#244345',emissiveIntensity:.16,side:T.DoubleSide}));river.name='canyonRiver';river.castShadow=false;
+      g.rotation.x=.50;g.rotation.y=-.24;g.userData.extent=CANYON_PATH.length;g.userData.measureCenter=0;
+      var locator=new T.Mesh(track(new T.RingGeometry(.003,.004,48)),track(new T.MeshBasicMaterial({color:'#e8f6cf',side:T.DoubleSide,depthTest:false,depthWrite:false})));
+      locator.rotation.x=-Math.PI/2;locator.visible=false;locator.renderOrder=8;locator.name='canyonRouteLocator';g.add(locator);
+      land.scale.y=8;g.userData.canyon={land:land,terrain:terrain,river:river,locator:locator};
+    }
+    function lightCanyon(root,state) {
+      var c=root.userData.model.userData.canyon;if(!c)return;
+      c.land.scale.y=state.comparison?1:clamp(state.terrainRelief||8,1,20);
+      c.locator.visible=!state.comparison&&!state.flight&&state.detailId==='river-journey';
+      if(c.locator.visible)c.locator.position.fromArray(canyonRoutePoint(riverTravelKm));
+    }
     function model(item) {
       var previousResources = new Set(resources);
       var g=new T.Group(), id=item.id, a=material('#8cd9ce'), b=material('#d49b69'), dark=material('#293f4b'), white=material('#eceadf');
@@ -959,20 +1518,22 @@
         ball(g,white,-0.5,0,0,0.024);ball(g,white,0.5,0,0,0.024);
         glow(g,'#98b4ff',0.5,0.3);g.userData.dimension='x';
       } else if (['earth','moon','jupiter'].indexOf(id)>=0) {
-        var planetMat=material('#ffffff',{map:planetTexture(id),roughness:id==='earth'?0.68:0.96});
+        var planetMat=track(new T.MeshPhysicalMaterial({color:0xffffff,map:planetTexture(id),roughness:.96,reflectivity:id==='earth'?.18:.08}));
         ball(g,planetMat,0,0,0,1);
         if(id==='earth'||id==='moon'||id==='jupiter') {
           var texture=track(new T.TextureLoader().load(atlasAssetBase+(id==='earth'?'scale-earth-bluemarble-1k.png':id==='moon'?'moon-lroc-color-2k.jpg':'scale-jupiter-hubble-1k.jpg'),function(tex){
             if(disposed||g.userData.released){tex.dispose();return;}tex.encoding=T.sRGBEncoding;tex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());planetMat.map=tex;planetMat.needsUpdate=true;g.userData.imageryReady=true;invalidate();
-          },undefined,function(){ /* The locally generated globe remains usable if an asset is unavailable. */ }));
+          },undefined,function(){if(!disposed&&!g.userData.released){g.userData.imageryError=true;invalidate();}}));
           texture.encoding=T.sRGBEncoding;
         }
         if(id==='moon') {
           var heightMap=track(new T.TextureLoader().load(atlasAssetBase+'moon-lola-height-1k.jpg',function(tex){if(disposed||g.userData.released){tex.dispose();return;}planetMat.bumpMap=tex;planetMat.bumpScale=.008;planetMat.needsUpdate=true;invalidate();},undefined,function(){}));
         }
-        if(id==='earth'){shell(g,'#549aff',1.025,.75);g.rotation.y=2.8;g.rotation.z=.12;}
+        if(id==='earth'){earthAtmosphere(g);g.rotation.y=2.8;g.rotation.z=.12;}
         if(id==='jupiter'){g.scale.y=.935;g.rotation.y=1.7;}
-      } else if(id==='sun'||id==='betelgeuse') {
+      } else if(id==='sun') {
+        solarModel(g);
+      } else if(id==='betelgeuse') {
         var star=track(new T.ShaderMaterial({
           uniforms:{uTime:{value:0},uRed:{value:id==='betelgeuse'?1:0}},
           vertexShader:'varying vec3 vP;varying vec3 vN;varying vec3 vV;void main(){vP=position;vec4 p=modelViewMatrix*vec4(position,1.);vN=normalize(normalMatrix*normal);vV=-p.xyz;gl_Position=projectionMatrix*p;}',
@@ -989,21 +1550,7 @@
         mesh(g,geo,star);glow(g,id==='sun'?'#ffac35':'#ff6941',2.2,0.65);
         g.userData.starMaterial=star;
       } else if(id==='milkyway') {
-        // Separate populations give the arms depth: warm central stars,
-        // young blue associations and faint dusty gaps between spiral arms.
-        var dust=track(new T.ShaderMaterial({transparent:true,depthWrite:false,side:T.DoubleSide,blending:T.AdditiveBlending,
-          vertexShader:'varying vec2 p;void main(){p=uv-.5;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-          fragmentShader:[
-            'varying vec2 p;float hash(vec2 q){return fract(sin(dot(q,vec2(127.1,311.7)))*43758.5453);}',
-            'float noise(vec2 q){vec2 i=floor(q),f=fract(q);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}',
-            'void main(){float r=length(p),a=atan(p.y,p.x);float n=noise(p*85.)*.55+noise(p*190.)*.3+noise(p*430.)*.15;float phase=(a-4.8*log(r+.075))*4.;float arms=pow(.5+.5*cos(phase+n*1.3),5.);float disk=(arms*.75+.07)*smoothstep(.5,.24,r)*smoothstep(.015,.1,r);float core=exp(-r*32.);float dust=pow(n,1.5);vec3 col=mix(vec3(.20,.29,.51),vec3(1.1,.73,.39),exp(-r*12.));gl_FragColor=vec4(col*(.65+dust),clamp((disk*(.2+dust)*1.5+core)*.85,0.,.92));',
-            '#include <tonemapping_fragment>','#include <encodings_fragment>','}'
-          ].join('\n')}));
-        var disk=mesh(g,track(new T.PlaneGeometry(1,1)),dust);disk.rotation.x=-Math.PI/2;disk.castShadow=disk.receiveShadow=false;
-        dots(g,12000,function(r,i){var rad=Math.pow(r(),.75)*.5,angle=4.8*Math.log(rad+.075)+(i%4)*Math.PI/2+(r()-.5)*(.24+rad*.8);return [Math.cos(angle)*rad,(r()-.5)*(.012+.065*Math.exp(-rad*15)),Math.sin(angle)*rad];},'#bbcdeb',.0035,31);
-        dots(g,2300,function(r){var th=r()*Math.PI*2,rad=Math.pow(r(),1.8)*.13;return [Math.cos(th)*rad,(r()-.5)*.055,Math.sin(th)*rad];},'#ffe0aa',.004,21);
-        dots(g,850,function(r,i){var rad=.10+r()*.39,th=4.8*Math.log(rad+.075)+(i%4)*Math.PI/2+(r()-.5)*.12;return [Math.cos(th)*rad,(r()-.5)*.013,Math.sin(th)*rad];},'#ecc6da',.012,13);
-        glow(g,'#ffce91',.23,.8);glow(g,'#7b8cbf',.8,.12);g.rotation.x=.68;g.rotation.z=-.22;
+        galaxyModel(g);
       } else if(['universe','laniakea','virgo-sc'].indexOf(id)>=0) {
         var rng=random(8), nodes=[];
         for(j=0;j<44;j++)nodes.push([(rng()-0.5)*0.85,(rng()-0.5)*0.85,(rng()-0.5)*0.85]);
@@ -1012,13 +1559,14 @@
         var netGeo=track(new T.BufferGeometry());netGeo.setAttribute('position',new T.Float32BufferAttribute(lines,3));g.add(new T.LineSegments(netGeo,netMat));
         dots(g,2700,function(r,i){var p=nodes[i%nodes.length];return [p[0]+(r()-0.5)*0.09,p[1]+(r()-0.5)*0.09,p[2]+(r()-0.5)*0.09];},'#d8c2ff',0.005,4);
         glow(g,'#7960bb',1.3,0.16);
-      } else if(['solar-system','heliosphere','oort','local-bubble','orion-nebula'].indexOf(id)>=0) {
+      } else if(id==='orion-nebula') {
+        nebulaModel(g);
+      } else if(['solar-system','heliosphere','oort','local-bubble'].indexOf(id)>=0) {
         if(id==='solar-system') {
-          ball(g,material('#ffd69b',{emissive:'#ee9c35',emissiveIntensity:1}),0,0,0,0.025);glow(g,'#ffd998',0.1,0.7);
-          [0.05,0.09,0.15,0.24,0.34,0.5].forEach(function(r,i){ring(g,r,'#596985');theta=i*2.4;ball(g,a,Math.cos(theta)*r,0,Math.sin(theta)*r,0.012);});g.rotation.x=0.35;
+          solarSystemModel(g);
         } else {
-          dots(g,2000,function(r){var th=r()*Math.PI*2,u=r()*2-1,rad=id==='orion-nebula'?r()*0.5:0.4+r()*0.1;return [Math.cos(th)*Math.sqrt(1-u*u)*rad,u*rad*0.72,Math.sin(th)*Math.sqrt(1-u*u)*rad];},id==='orion-nebula'?'#ef9cd8':'#9bcbea',0.009,15);
-          glow(g,id==='orion-nebula'?'#d571c4':'#688acf',1.2,0.3);
+          dots(g,2000,function(r){var th=r()*Math.PI*2,u=r()*2-1,rad=0.4+r()*0.1;return [Math.cos(th)*Math.sqrt(1-u*u)*rad,u*rad*0.72,Math.sin(th)*Math.sqrt(1-u*u)*rad];},'#9bcbea',0.009,15);
+          glow(g,'#688acf',1.2,0.3);
         }
       } else if(id==='water') {
         var oxygen=material('#f07674'), hydrogen=material('#eff6ff');ball(g,oxygen,0,0,0,0.56);
@@ -1048,7 +1596,8 @@
           var cellColor=new T.Color().setRGB(.24+rad*.14,.009+rad*.012,.018+rad*.025);vertexColors.push(cellColor.r,cellColor.g,cellColor.b);
         }disc.setAttribute('color',new T.Float32BufferAttribute(vertexColors,3));disc.computeVertexNormals();
         mesh(g,disc,material('#ffffff',{vertexColors:true,roughness:.52,bumpMap:grainTexture,bumpScale:.004}));g.rotation.x=1.0;g.rotation.z=-.18;
-      } else if(['ecoli','mitochondrion','paramecium','ribosome','virus','pollen'].indexOf(id)>=0) {
+      } else if(isMicrobe(id)) { microbeModel(g,id);
+      } else if(['mitochondrion','ribosome','virus','pollen'].indexOf(id)>=0) {
         var microColor=id==='virus'?'#b1a0b8':id==='pollen'?'#dfb36a':id==='mitochondrion'?'#bc7f65':'#72aba0';
         var skin=material(microColor,{roughness:.6,bumpMap:grainTexture,bumpScale:.016});
         if(id==='mitochondrion') {
@@ -1075,10 +1624,9 @@
         } else {
           organic(g,[[-.5,0,0,.002],[-.39,0,0,.15],[-.17,.02,0,.18],[.15,0,0,.16],[.39,-.02,0,.12],[.5,0,0,.002]],skin,'x');
           var hairs=material('#a4c4a0',{roughness:1});
-          for(j=0;j<(id==='paramecium'?90:16);j++){theta=j*2.39996;var hx=-.42+(j%15)/14*.84,hy=Math.cos(theta)*.155,hz=Math.sin(theta)*.155;
+          for(j=0;j<16;j++){theta=j*2.39996;var hx=-.42+(j%15)/14*.84,hy=Math.cos(theta)*.155,hz=Math.sin(theta)*.155;
             tube(g,[[hx,hy,hz],[hx+.03,hy*1.4,hz*1.4],[hx+.07,hy*1.6,hz*1.6]],.0025,hairs);
           }
-          if(id==='ecoli'){for(j=0;j<4;j++){var flag=[];for(k=0;k<32;k++)flag.push([.42+k*.016,Math.sin(k*.35+j)*.07,Math.cos(k*.35+j)*.07]);tube(g,flag,.003,hairs);}g.userData.extent=1;}
           if(id==='ribosome'){for(j=0;j<28;j++){theta=j*2.4;ball(g,j%3?skin:b,Math.cos(theta)*.22,(j/28-.5)*.36,Math.sin(theta)*.17,.16,.19,.14);}}
           g.rotation.z=-.25;
         }
@@ -1126,18 +1674,17 @@
       } else if(id==='football-pitch') {
         box(g,material('#368568'),0,0,0,1,0.014,0.65);var chalk=material('#e3e8dc');
         [-0.47,0,0.47].forEach(function(x){rod(g,[x,0.013,-0.29],[x,0.013,0.29],0.002,chalk);});[-0.29,0.29].forEach(function(z){rod(g,[-0.47,0.013,z],[0.47,0.013,z],0.002,chalk);});ring(g,0.085,'#e3e8dc');g.rotation.x=0.25;
-      } else if(['everest','grand-canyon','reef','chicxulub'].indexOf(id)>=0) {
+      } else if(id==='grand-canyon') {canyonModel(g);
+      } else if(['everest','reef','chicxulub'].indexOf(id)>=0) {
         var terrain=track(new T.PlaneGeometry(1,1,100,100)), pos=terrain.attributes.position,landColors=[];
         for(j=0;j<pos.count;j++){var tx=pos.getX(j),ty=pos.getY(j),d=Math.sqrt(tx*tx+ty*ty),hgt;
           if(id==='everest')hgt=Math.max(0,0.7-d*1.5)*(0.85+0.15*Math.sin(tx*23)*Math.cos(ty*18));
           else if(id==='chicxulub')hgt=0.12*Math.exp(-Math.pow((d-0.3)*24,2));
-          else if(id==='grand-canyon')hgt=0.2-0.16*Math.exp(-Math.pow((tx+Math.sin(ty*9)*0.08)*13,2));
           else hgt=0.035+0.04*Math.sin(tx*50)*Math.cos(ty*38);
           var detail=(Math.sin(tx*74+ty*31)+Math.sin(ty*137-tx*59))*.003;
           hgt+=detail;pos.setZ(j,hgt);
           var lc=new T.Color(id==='reef'?'#477c73':id==='everest'?'#655e55':'#945c3c').convertSRGBToLinear();
           if(id==='everest')lc.lerp(new T.Color('#ecf1ed').convertSRGBToLinear(),clamp((hgt-.22+Math.sin(tx*60)*.028)*8,0,1));
-          else if(id==='grand-canyon')lc.multiplyScalar(.7+.3*Math.sin(hgt*220));
           else if(id==='reef')lc.lerp(new T.Color('#a7a177').convertSRGBToLinear(),clamp(hgt*9,0,1));
           landColors.push(lc.r,lc.g,lc.b);
         }
@@ -1254,18 +1801,22 @@
       var root=new T.Group();root.add(g);root.userData.itemId=id;root.userData.model=g;root.userData.initialYaw=g.rotation.y;
       root.userData.floor=bounds.min.y/extent+(axis==='y'?g.position.y:0);
       var ruler=new T.Group(), rulerMat=track(new T.MeshBasicMaterial({color:new T.Color('#91b9c8').convertSRGBToLinear(),transparent:true,opacity:.8,depthTest:false,depthWrite:false}));
-      if(axis==='y') {
+      if(id==='grand-canyon'){
+        g.updateMatrix();var path=CANYON_PATH.points.map(function(p){return new T.Vector3(p[0],.0002,p[1]).applyMatrix4(g.matrix);});
+        var routeGeo=track(new T.BufferGeometry().setFromPoints(path)),route=new T.Line(routeGeo,track(new T.LineDashedMaterial({color:'#b2ddcf',dashSize:.018,gapSize:.008,transparent:true,opacity:.85,depthTest:false,depthWrite:false})));
+        route.computeLineDistances();ruler.add(route);
+      } else if(axis==='y') {
         var rulerX=bounds.max.x/extent+.16;
         rod(ruler,[rulerX,-0.5,0],[rulerX,0.5,0],0.0015,rulerMat);
         [-0.5,0.5].forEach(function(y){rod(ruler,[rulerX-.04,y,0],[rulerX+.04,y,0],0.0015,rulerMat);});
       } else {
-        var rulerY=bounds.min.y/extent-.16;
+        var rulerY=id==='sun'?-.66:bounds.min.y/extent-.16;
         rod(ruler,[-0.5,rulerY,0],[0.5,rulerY,0],0.0015,rulerMat);
         [-0.5,0.5].forEach(function(x){rod(ruler,[x,rulerY-.04,0],[x,rulerY+.04,0],0.0015,rulerMat);});
       }
       ruler.traverse(function(n){n.castShadow=n.receiveShadow=false;n.renderOrder=100;});
       root.add(ruler);root.userData.ruler=ruler;
-      root.userData.materials=[];g.traverse(function(n){if(n.material){n.userData.baseOpacity=n.material.opacity;n.userData.baseTransparent=n.material.transparent;root.userData.materials.push(n);}});
+      root.userData.materials=[];g.traverse(function(n){if(n.material){n.userData.baseOpacity=n.material.opacity;n.userData.baseTransparent=n.material.transparent;if(n.material.uniforms&&n.material.uniforms.uOpacity)n.userData.baseUniformOpacity=n.material.uniforms.uOpacity.value;root.userData.materials.push(n);}});
       root.userData.resources=Array.from(resources).filter(function(r){return !previousResources.has(r);});
       space.add(root);models[id]=root;if(id==='human')loadHumanSurface(root);return root;
     }
@@ -1275,11 +1826,12 @@
     }
     function paintComparison(state, width, height) {
       var pair = state.comparison, visible = [], list = pair.a.id === pair.b.id ? [pair.a] : [pair.a, pair.b];
-      activeCamera = comparisonCamera; cameraSettling = false; paintCount++;
+      activeCamera = comparisonCamera; cameraSettling = false; orbitGoal = null; paintCount++;
       scene.background = new T.Color(state.contrast ? '#000000' : '#101f2a'); scene.fog = null;
       ground.visible = garden.visible = microBackdrop.visible = leafWorld.visible = floor.visible = motes.visible = false;
       if (focusRing) focusRing.visible = false;
       key.castShadow = false; key.intensity = 1.7; hemisphere.intensity = .55; rim.intensity = .7; fill.intensity = .28;
+      studioLight();
       haze.material.opacity = haze2.material.opacity = .025;
       if (markers) Array.prototype.forEach.call(markers.querySelectorAll('[data-scale-marker]'), function (button) { button.hidden = true; });
       Object.keys(models).forEach(function (id) { models[id].visible = false; });
@@ -1288,11 +1840,15 @@
         root.visible = true; root.userData.lastSeen = paintCount;
         root.scale.setScalar(3 * item.size / pair.big.size);
         root.userData.ruler.visible = state.measure;
-        root.userData.model.rotation.y = root.userData.initialYaw;
+        root.userData.ruler.quaternion.identity();
+        root.userData.model.rotation.y = root.userData.initialYaw;lightCanyon(root,state);
         if (root.userData.model.userData.outerMembrane) root.userData.model.userData.outerMembrane.visible = !state.cutaway;
+        if (root.userData.model.userData.microbe) animateMicrobe(root.userData.model,state.cutaway,0);
+        if (root.userData.model.userData.solarInterior) animateSun(root.userData.model,state.cutaway,0);
         root.userData.materials.forEach(function (n) {
           if (n.material.transparent !== n.userData.baseTransparent) { n.material.transparent = n.userData.baseTransparent; n.material.needsUpdate = true; }
           n.material.opacity = n.userData.baseOpacity;
+          if(n.material.uniforms&&n.material.uniforms.uOpacity)n.material.uniforms.uOpacity.value=n.userData.baseUniformOpacity;
         });
         visible.push(root);
       });
@@ -1336,23 +1892,90 @@
           button.style.transform = 'translate(' + px.toFixed(1) + 'px,' + py.toFixed(1) + 'px) translate(-50%,-50%)';
         }
       });
-      trimModelCache(); renderer.render(scene, comparisonCamera);
+      visible.forEach(function(root){lightSolarSystem(root,state);});
+      lightAtmospheres(visible);lightVolumes(visible,state,height);trimModelCache(); renderer.render(scene, comparisonCamera);
       canvas.dataset.atlasReady = 'true'; canvas.dataset.atlasObjects = visible.map(function (r) { return r.userData.itemId; }).join(',');
       canvas.dataset.atlasComparison = pair.a.id + ':' + pair.b.id; canvas.dataset.atlasProjection = 'orthographic';
       canvas.dataset.atlasSmallPixels = (3 / pair.ratio * height / (2 * halfH)).toPrecision(5);
       canvas.dataset.atlasExponent = canvas.dataset.atlasTarget = log10(pair.big.size).toFixed(4);
       canvas.dataset.atlasYaw = yaw.toFixed(4); canvas.dataset.atlasZoom = cameraZoom.toFixed(2);
-      canvas.dataset.atlasDetail = ''; canvas.dataset.atlasHabitat = 'studio';
+      canvas.dataset.atlasDetail = ''; canvas.dataset.atlasHabitat = 'studio';delete canvas.dataset.atlasRelief;
       canvas.dataset.atlasCutaway = state.cutaway ? 'open' : 'closed';
+      if(list.some(function(item){return item.id==='orion-nebula';}))canvas.dataset.atlasCloud=state.nebulaReveal?'revealed':'natural';else delete canvas.dataset.atlasCloud;
+      delete canvas.dataset.atlasSunAngle;delete canvas.dataset.atlasIlluminated;delete canvas.dataset.atlasImagery;
       dirty = false;
+    }
+    var flightRings=null,flightPhase='';
+    function paintFlightRings(flight,e,width,height) {
+      if(!flightRings){
+        flightRings=new T.Group();flightRings.name='scaleMeasurementRings';scene.add(flightRings);
+        var points=[];for(var j=0;j<192;j++){var a=j/192*Math.PI*2;points.push(Math.cos(a),Math.sin(a),0);}
+        var geometry=track(new T.BufferGeometry());geometry.setAttribute('position',new T.Float32BufferAttribute(points,3));
+        for(var i=0;i<5;i++){var line=new T.LineLoop(geometry,track(new T.LineBasicMaterial({color:'#9dc8cf',transparent:true,opacity:0,depthWrite:false})));flightRings.add(line);}
+      }
+      var progress=flight?flight.progress:0,visible=!!flight&&progress>=.2;
+      flightRings.visible=visible;
+      if(flightLabels)flightLabels.hidden=!visible;
+      if(!visible)return;
+      flightRings.quaternion.copy(camera.quaternion);
+      var fade=clamp((progress-.2)/.08,0,1)*clamp((1-progress)/.12,0,1),base=Math.ceil(e)-2;
+      flightRings.children.forEach(function(line,index){
+        var exponent=base+index,radius=1.5*Math.pow(10,exponent-e);
+        line.visible=exponent>=log10(flight.destination.size);
+        line.scale.setScalar(radius);line.material.opacity=fade*.32*clamp(radius/.2,0,1)*clamp((24-radius)/12,0,1);
+        var label=flightLabels&&flightLabels.children[index];if(!label)return;
+        markerPoint.set(radius,0,0).applyQuaternion(camera.quaternion).project(camera);
+        var x=(markerPoint.x*.5+.5)*width,y=(-markerPoint.y*.5+.5)*height;
+        label.hidden=!line.visible||radius<.22||x<20||x>width-65||y<145||y>height-112||fade<.1;
+        if(!label.hidden){label.textContent='10'+sup(exponent)+' m';label.style.transform='translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px)';label.style.opacity=String(fade);}
+      });
+      var locator=flightLabels&&flightLabels.querySelector('[data-flight-locator]');
+      if(locator){
+        var diameter=3*Math.pow(10,log10(flight.destination.size)-e)*height/(2*Math.tan(camera.fov*Math.PI/360)*camera.position.length());
+        locator.hidden=diameter>=1;
+        if(!locator.hidden){markerPoint.set(0,0,0).project(camera);locator.style.transform='translate('+((markerPoint.x*.5+.5)*width).toFixed(1)+'px,'+((-markerPoint.y*.5+.5)*height).toFixed(1)+'px) translate(-50%,-9px)';}
+      }
     }
     function paint() {
       if(disposed)return;
-      var state=read(), e=state.exp, realm=realmAt(e), width=canvas.clientWidth,height=canvas.clientHeight;
+      var state=read(),flight=state.flight,departing=!!flight&&flight.progress<.2;
+      var cameraNow=performance.now(),cameraDelta=cameraSettling?cameraNow-lastCameraFrame:1000/60,cameraEase=cameraBlend(cameraDelta,.82);lastCameraFrame=cameraNow;
+      var phase=flight?(departing?'departure':'descent'):'';
+      if(flight){
+        clearOrbitHover();
+        // Prepare the detailed destination while its parent is still in view.
+        if(!models[flight.destination.id])model(flight.destination);
+        if(departing){
+          var origin=flight.origin;
+          state=Object.assign({},state,{exp:flight.from,focusId:origin.itemId,inspectionZoom:origin.zoom*(1+flight.progress*2),detailId:origin.detailId,details:origin.details,showDetails:false,measure:false,neighbors:false,sunAngle:origin.sunAngle,nebulaReveal:origin.nebulaReveal,terrainRelief:origin.terrainRelief,riverKm:origin.riverKm,cutaway:origin.cutaway});
+          if(flightPhase!==phase){yaw=origin.yaw;pitch=origin.pitch;cameraZoom=origin.zoom;orbitGoal=null;previousDetail=origin.itemId+':'+origin.detailId+(origin.detailId==='river-journey'?':'+canyonRouteKm(origin.riverKm):'');}
+        }else{
+          state=Object.assign({},state,{inspectionZoom:1,detailId:'',showDetails:false,measure:false,neighbors:false});
+          if(flightPhase!==phase){yaw=0;pitch=.12;cameraZoom=zoomGoal=lastZoomInput=1;orbitGoal=null;cameraAim.set(0,.2,0);}
+        }
+      }
+      flightPhase=phase;
+      var riverMoving=false;
+      if(state.focusId==='grand-canyon'&&state.detailId==='river-journey'&&!state.comparison){
+        var riverGoal=canyonRouteKm(state.riverKm);
+        if(state.reduceMotion||previousDetail.indexOf('grand-canyon:river-journey:')!==0)riverTravelKm=riverGoal;
+        else riverTravelKm+=(riverGoal-riverTravelKm)*cameraBlend(cameraDelta,.84);
+        riverMoving=Math.abs(riverGoal-riverTravelKm)>.01;
+        if(!riverMoving)riverTravelKm=riverGoal;
+      }
+      var e=state.exp,realm=realmAt(e),width=canvas.clientWidth,height=canvas.clientHeight;
       if(!width||!height)return;
-      if(state.inspectionZoom!==lastZoomInput){cameraZoom=clamp(state.inspectionZoom||1,1,2.5);lastZoomInput=state.inspectionZoom;}
+      if(flightRings)flightRings.visible=false;
+      if(flightLabels)flightLabels.hidden=true;
+      canvas.dataset.atlasFlight=phase;
+      canvas.dataset.atlasFlightProgress=flight?flight.progress.toFixed(4):'';
+
+      if(state.inspectionZoom!==lastZoomInput){zoomGoal=clamp(state.inspectionZoom||1,1,state.comparison?2.5:inspectionLimit(state.focusId));lastZoomInput=state.inspectionZoom;}
+      if(state.focusId==='solar-system'&&!state.reduceMotion&&!state.comparison)cameraZoom*=Math.pow(zoomGoal/cameraZoom,cameraEase);
+      else cameraZoom+= (zoomGoal-cameraZoom)*(state.reduceMotion||state.comparison?1:cameraEase);
+      if(Math.abs(zoomGoal-cameraZoom)<.0001)cameraZoom=zoomGoal;
       var ratio=renderer.getPixelRatio();if(canvas.width!==Math.floor(width*ratio)||canvas.height!==Math.floor(height*ratio)){renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();}
-      if (state.comparison) { paintComparison(state, width, height); return; }
+      if (state.comparison) { clearOrbitHover();paintComparison(state, width, height); return; }
       activeCamera = camera; comparisonLayoutKey = '';
       canvas.dataset.atlasComparison = ''; canvas.dataset.atlasProjection = 'perspective'; delete canvas.dataset.atlasSmallPixels;
       if (comparisonLabels) Array.prototype.forEach.call(comparisonLabels.querySelectorAll('[data-scale-comparison-point]'), function (button) { button.hidden = true; });
@@ -1366,22 +1989,31 @@
       var cosmic=realm.id==='planet'||realm.id==='stellar'||realm.id==='cosmic';
       hemisphere.intensity=cosmic?.065:.36;rim.intensity=cosmic?.08:.55;fill.intensity=cosmic?.025:.12;
       key.intensity=cosmic?2.6:1.25;key.castShadow=ground.visible;
+      studioLight();
       haze.material.opacity=cosmic?.065:.08;haze2.material.opacity=cosmic?.045:.04;
-      var candidates=state.items.filter(function(it){return Math.abs(log10(it.size)-e)<1.9;}).sort(function(a,b){return Math.abs(log10(a.size)-e)-Math.abs(log10(b.size)-e);});
+      var candidates=flight&&!departing?[flight.destination]:state.items.filter(function(it){return Math.abs(log10(it.size)-e)<1.9;}).sort(function(a,b){return Math.abs(log10(a.size)-e)-Math.abs(log10(b.size)-e);});
       if(!state.neighbors)candidates=candidates.slice(0,1);
-      var focal=candidates[0],close=focal?1-clamp(Math.abs(log10(focal.size)-e)*3,0,1):0;
+      var focal=candidates[0],close=flight&&!departing?1:focal?1-clamp(Math.abs(log10(focal.size)-e)*3,0,1):0;
       if(focal&&focal.id==='blue-whale'){
         ground.visible=garden.visible=false;key.castShadow=false;scene.background.set(state.contrast?'#000000':'#071d28');scene.fog=null;
         motes.visible=!state.contrast;motes.material.color.set('#78aab8');motes.material.size=.06;hemisphere.intensity=.4;
       }
-      var distance=6.8+(focal&&focal.id==='dna'?6.7*close:focal&&focal.id==='hair'?7.5*close:0);
+      var distance=6.8+(focal&&focal.id==='dna'?6.7*close:focal&&focal.id==='hair'?7.5*close:focal&&focal.id==='ecoli'?1.8*close:0);
+      if(focal&&focal.id==='orion-nebula'){distance-=1.35*close;scene.background.set(state.contrast?'#000000':'#080d19');haze.material.opacity=.025;haze2.material.opacity=.02;}
+      if(focal&&focal.id==='milkyway'){distance-=.7*close;scene.background.set(state.contrast?'#000000':'#070b14');haze.material.opacity=.015;haze2.material.opacity=.01;}
+      if(focal&&focal.id==='solar-system'){distance-=1.1*close*(1-clamp((cameraZoom-1)/3,0,1));scene.background.set(state.contrast?'#000000':'#070f19');haze.material.opacity=.008;haze2.material.opacity=.008;}
+      if(focal&&focal.id==='grand-canyon'){
+        scene.background.set(state.contrast?'#000000':'#172935');scene.fog=new T.Fog(state.contrast?'#000000':'#172935',11,28);
+        motes.visible=false;ground.visible=garden.visible=false;haze.material.opacity=.025;haze2.material.opacity=.015;
+        hemisphere.intensity=.5;rim.intensity=.2;fill.intensity=.15;key.intensity=1.45;key.color.set('#ffe0b6');key.castShadow=true;key.shadow.normalBias=.001;
+        distance-=2.4*close;
+      }
       // Leave a quiet band for the heading and fit narrow portrait screens.
       distance*=Math.max(1,.95/camera.aspect);
       distance/=cameraZoom;
-      var detailKey=state.focusId+':'+state.detailId;
-      if(state.detailId&&detailKey!==previousDetail){yaw=0;pitch=.12;}
-      previousDetail=detailKey;
-      var cameraPitch=ground.visible?Math.max(-.1,pitch):pitch;
+      camera.near=focal&&focal.id==='solar-system'?.002:.05;camera.updateProjectionMatrix();
+      var detailKey=state.focusId+':'+state.detailId+(state.detailId==='river-journey'?':'+canyonRouteKm(state.riverKm):''),detailChanged=detailKey!==previousDetail;
+      if(detailChanged)orbitGoal=state.detailId?{yaw:0,pitch:.12}:null;
       var occupied=[], visible=[];paintCount++;
       Object.keys(models).forEach(function(id){models[id].visible=false;});
       candidates.forEach(function(it){
@@ -1389,15 +2021,19 @@
         if(occupied.some(function(d){return Math.abs(d-delta)<0.27;}))return;
         occupied.push(delta);var root=models[it.id]||model(it), scale=3*Math.pow(10,delta);
         root.visible=true;root.userData.lastSeen=paintCount;root.scale.setScalar(scale);root.userData.ruler.visible=occupied.length===1&&state.measure;
-        if(it.group==='cosmic' && it.dim!=='distance')root.userData.model.rotation.y=root.userData.initialYaw+time*0.018;
+        if(it.group==='cosmic' && it.dim!=='distance'&&!isPlanetaryWorld(it.id)&&it.id!=='sun'&&it.id!=='orion-nebula'&&it.id!=='milkyway'&&it.id!=='solar-system')root.userData.model.rotation.y=root.userData.initialYaw+time*0.018;
         if(root.userData.model.userData.starMaterial)root.userData.model.userData.starMaterial.uniforms.uTime.value=time;
         if(root.userData.model.userData.outerMembrane)root.userData.model.userData.outerMembrane.visible=!state.cutaway;
+        lightCanyon(root,state);
+        if(root.userData.model.userData.microbe)animateMicrobe(root.userData.model,state.cutaway,time);
+        if(root.userData.model.userData.solarInterior)animateSun(root.userData.model,state.cutaway,time);
         var shoulder = Math.sign(delta) * scale * 0.65 * Math.min(1, Math.abs(delta) * 5);
         root.position.set(delta*8.5+shoulder,Math.sin(delta*2)*0.3,-Math.abs(delta)*0.75-scale*0.25*Math.min(1,Math.abs(delta)*5));
         // Keep the measured geometry proportional; only visibility changes at
         // the edge of the current scale neighborhood.
-        var opacity=clamp((1.9-Math.abs(delta))*2,0,1);
-        root.userData.materials.forEach(function(n){var transparent=n.userData.baseTransparent||opacity<1;if(n.material.transparent!==transparent){n.material.transparent=transparent;n.material.needsUpdate=true;}n.material.opacity=n.userData.baseOpacity*opacity;});
+        if(flight&&!departing)root.position.set(0,0,0);
+        var opacity=flight?(departing?1-Math.pow(clamp(flight.progress/.2,0,1),2):1):clamp((1.9-Math.abs(delta))*2,0,1);
+        root.userData.materials.forEach(function(n){var transparent=n.userData.baseTransparent||opacity<1;if(n.material.transparent!==transparent){n.material.transparent=transparent;n.material.needsUpdate=true;}n.material.opacity=n.userData.baseOpacity*opacity;if(n.material.uniforms&&n.material.uniforms.uOpacity)n.material.uniforms.uOpacity.value=n.userData.baseUniformOpacity*opacity;});
         if(occupied.length===1&&ground.visible){ground.position.y=root.position.y+root.userData.floor*scale-.008;garden.position.y=ground.position.y+1.64;}
         visible.push(root);
       });
@@ -1416,22 +2052,69 @@
       // Landmarks live in the model's own coordinates, so labels and the orbit
       // centre follow its normalization, rotation, and scale without drift.
       var activeRoot=visible.filter(function(r){return r.userData.itemId===state.focusId;})[0];
+      var planetary=!!activeRoot&&isPlanetaryWorld(state.focusId)&&close>.8;
+      var imagery=planetary?(activeRoot.userData.model.userData.imageryReady?'ready':activeRoot.userData.model.userData.imageryError?'failed':'loading'):'';
+      var imageryKey=state.focusId+':'+imagery;
+      if(imageryKey!==lastImagery){lastImagery=imageryKey;if(onImagery)onImagery({id:state.focusId,status:imagery});}
       var selected=state.details.filter(function(d){return d.id===state.detailId;})[0];
       if(!activeRoot||close<.8)selected=null;
+      if(selected&&selected.surface&&imagery!=='ready')selected=null;
+      if(selected&&selected.id==='river-journey')selected=Object.assign({},selected,{at:canyonRoutePoint(riverTravelKm),view:canyonRouteView(riverTravelKm)});
       scene.updateMatrixWorld(true);aimGoal.set(0,.2,0);
-      if(selected){aimGoal.fromArray(selected.at);activeRoot.userData.model.localToWorld(aimGoal);}
-      cameraAim.lerp(aimGoal,state.reduceMotion?1:.18);cameraSettling=cameraAim.distanceToSquared(aimGoal)>.000001;
-      if(!cameraSettling)cameraAim.copy(aimGoal);
-      camera.position.set(Math.sin(yaw)*Math.cos(cameraPitch)*distance,Math.sin(cameraPitch)*distance,Math.cos(yaw)*Math.cos(cameraPitch)*distance).add(cameraAim);camera.lookAt(cameraAim);camera.updateMatrixWorld(true);
+      if(planetary){globeCenter.set(0,0,0);activeRoot.userData.model.localToWorld(globeCenter);}
+      if(selected){aimGoal.fromArray(selected.viewAim||selected.at);activeRoot.userData.model.localToWorld(aimGoal);}
+      if(selected&&selected.view&&(detailChanged||riverMoving)){lightView.fromArray(selected.view).transformDirection(activeRoot.userData.model.matrixWorld);orbitGoal={yaw:Math.atan2(lightView.x,lightView.z),pitch:clamp(Math.asin(lightView.y),-1.1,1.1)};}
+      if(selected&&selected.surface&&detailChanged){lightView.copy(aimGoal).sub(globeCenter).normalize();orbitGoal={yaw:Math.atan2(lightView.x,lightView.z),pitch:clamp(Math.asin(lightView.y),-1.1,1.1)};}
+      // A texture can arrive after a saved view. Do not replace its camera angle.
+      if(!state.detailId||selected)previousDetail=detailKey;
+      if(orbitGoal){var ease=state.reduceMotion?1:cameraEase;yaw=turnAngle(yaw+turnAngle(orbitGoal.yaw-yaw)*ease);pitch+=(orbitGoal.pitch-pitch)*ease;if(Math.abs(turnAngle(orbitGoal.yaw-yaw))+Math.abs(orbitGoal.pitch-pitch)<.0001){yaw=orbitGoal.yaw;pitch=orbitGoal.pitch;orbitGoal=null;}}
+      cameraAim.lerp(aimGoal,state.reduceMotion?1:cameraEase);
+      var aimMoving=cameraAim.distanceToSquared(aimGoal)>.000001;
+      if(!aimMoving)cameraAim.copy(aimGoal);
+      cameraSettling=aimMoving||!!orbitGoal||cameraZoom!==zoomGoal||riverMoving;
+      var cameraPitch=ground.visible?Math.max(-.1,pitch):pitch;
+      camera.position.set(Math.sin(yaw)*Math.cos(cameraPitch)*distance,Math.sin(cameraPitch)*distance,Math.cos(yaw)*Math.cos(cameraPitch)*distance).add(cameraAim);
+      if(planetary){
+        lightView.copy(camera.position).sub(globeCenter);var minimumDistance=activeRoot.scale.x*.5+.12;
+        if(lightView.length()<minimumDistance)camera.position.copy(globeCenter).add(lightView.normalize().multiplyScalar(minimumDistance));
+        lightView.copy(camera.position).sub(globeCenter).normalize();lightSide.set(0,1,0).cross(lightView).normalize();
+        var sunRadians=clamp(state.sunAngle===undefined?45:state.sunAngle,0,180)*Math.PI/180;
+        sunDirection.copy(lightView).multiplyScalar(Math.cos(sunRadians)).addScaledVector(lightSide,Math.sin(sunRadians));
+        key.position.copy(globeCenter).addScaledVector(sunDirection,10);key.target.position.copy(globeCenter);
+        hemisphere.intensity=.008;rim.intensity=0;fill.intensity=0;key.intensity=1.55;
+      }
+      visible.forEach(function(root){lightSolarSystem(root,state);});
+      lightAtmospheres(visible);camera.lookAt(cameraAim);camera.updateMatrixWorld(true);
+      cameraSettling=lightVolumes(visible,state,height)||cameraSettling;
+      // A globe's diameter is independent of orientation. Keep its ruler in
+      // the viewing plane so a polar inspection cannot project it across land.
+      visible.forEach(function(root){if(isPlanetaryWorld(root.userData.itemId)||root.userData.itemId==='sun'||root.userData.itemId==='orion-nebula'||root.userData.itemId==='milkyway'||root.userData.itemId==='solar-system')root.userData.ruler.quaternion.copy(camera.quaternion);});
       if(!focusRing){focusRing=ring(scene,.085,'#d7e9bd',0);focusRing.material.depthTest=false;focusRing.material.depthWrite=false;focusRing.renderOrder=101;focusRing.castShadow=focusRing.receiveShadow=false;}
-      focusRing.visible=!!selected&&state.showDetails;
-      if(selected){focusRing.position.copy(aimGoal);focusRing.quaternion.copy(camera.quaternion);focusRing.scale.setScalar(distance*.075);}
-      if(markers)Array.prototype.forEach.call(markers.querySelectorAll('[data-scale-marker]'),function(button){
+      focusRing.visible=!!selected&&selected.id!=='river-journey'&&state.showDetails&&!(state.focusId==='solar-system'&&selected.id==='inner-orbits');
+      if(selected&&selected.surface)focusRing.visible=focusRing.visible&&lightView.copy(aimGoal).sub(globeCenter).dot(lightSide.copy(camera.position).sub(aimGoal))>0;
+      if(selected&&state.focusId==='sun')focusRing.visible=focusRing.visible&&solarFeatureVisible(activeRoot,selected,state.cutaway);
+      if(selected){focusRing.position.fromArray(selected.at);activeRoot.userData.model.localToWorld(focusRing.position);focusRing.quaternion.copy(camera.quaternion);focusRing.scale.setScalar(distance*.075);}
+      var solarLabels=[];
+      if(markers)Array.prototype.slice.call(markers.querySelectorAll('[data-scale-marker]')).sort(function(a,b){return state.focusId==='solar-system'||state.focusId==='grand-canyon'?Number(b.dataset.scaleMarker===state.detailId)-Number(a.dataset.scaleMarker===state.detailId):0;}).forEach(function(button){
         var detail=state.details.filter(function(d){return d.id===button.dataset.scaleMarker;})[0];
-        var available=!!detail&&!!activeRoot&&close>.8&&(detail.cutaway===undefined||detail.cutaway===state.cutaway)&&state.showDetails;
-        if(available){markerPoint.fromArray(detail.at);activeRoot.userData.model.localToWorld(markerPoint);markerPoint.project(camera);var px=(markerPoint.x*.5+.5)*width,py=(-markerPoint.y*.5+.5)*height;available=markerPoint.z>-1&&markerPoint.z<1&&px>24&&px<width-24&&py>125&&py<height-65;if(available)button.style.transform='translate('+px.toFixed(1)+'px,'+py.toFixed(1)+'px) translate(-50%,-50%)';}
+        var available=!!detail&&detail.marker!==false&&!!activeRoot&&close>.8&&(detail.cutaway===undefined||detail.cutaway===state.cutaway)&&state.showDetails;
+        if(available&&state.focusId==='sun')available=solarFeatureVisible(activeRoot,detail,state.cutaway);
+        if(available&&state.focusId==='solar-system')available=(detail.id===state.detailId||cameraZoom>=(detail.minZoom||0))&&cameraZoom<=(detail.maxZoom||32);
+        if(available){markerPoint.fromArray(detail.at);activeRoot.userData.model.localToWorld(markerPoint);if(detail.surface)available=imagery==='ready'&&lightView.copy(markerPoint).sub(globeCenter).dot(lightSide.copy(camera.position).sub(markerPoint))>0;markerPoint.project(camera);var px=(markerPoint.x*.5+.5)*width,py=(-markerPoint.y*.5+.5)*height;available=available&&markerPoint.z>-1&&markerPoint.z<1&&px>24&&px<width-24&&py>125&&py<height-65;
+          if(available){var offset=((isMicrobe(state.focusId)||state.focusId==='sun'||state.focusId==='orion-nebula'||state.focusId==='milkyway'||state.focusId==='grand-canyon')&&detail.id===state.detailId||state.focusId==='solar-system')&&py<height-110?44:0;
+            if(state.focusId==='solar-system'){var labelWidth=Math.max(44,detail.label.length*7+24),rect={x:px-labelWidth/2,y:py+offset-22,w:labelWidth,h:44};available=rect.x>4&&rect.x+rect.w<width-4&&rect.y>160&&(detail.id===state.detailId||!solarLabels.some(function(r){return rect.x<r.x+r.w+6&&rect.x+rect.w+6>r.x&&rect.y<r.y+r.h+6&&rect.y+rect.h+6>r.y;}));if(available)solarLabels.push(rect);}if(state.focusId==='grand-canyon'){var terrainRect={x:px-22,y:py+offset-22,w:44,h:44};available=!solarLabels.some(function(r){return terrainRect.x<r.x+r.w+6&&terrainRect.x+50>r.x&&terrainRect.y<r.y+r.h+6&&terrainRect.y+50>r.y;});if(available)solarLabels.push(terrainRect);}button.dataset.offset=offset?'true':'false';button.style.transform='translate('+px.toFixed(1)+'px,'+(py+offset).toFixed(1)+'px) translate(-50%,-50%)';}}
         button.hidden=!available;
       });
+      if(hoveredOrbit){
+        if(state.focusId!=='solar-system'||state.comparison||cameraSettling||hoverExp!==state.exp||hoverDetail!==state.detailId)clearOrbitHover();
+        else {
+          if(!hoverRing){hoverRing=mesh(scene,track(new T.TorusGeometry(1,.025,6,96)),track(new T.MeshBasicMaterial({color:'#8edbe6',transparent:true,opacity:.9})));hoverRing.material.depthTest=false;hoverRing.material.depthWrite=false;hoverRing.renderOrder=102;hoverRing.castShadow=hoverRing.receiveShadow=false;}
+          hoveredOrbit.body.getWorldPosition(hoverRing.position);hoverRing.quaternion.copy(camera.quaternion);
+          hoveredOrbit.body.getWorldScale(hoverPoint);var radius=hoverPoint.x*(hoveredOrbit.id==='saturn-orbit'?1.25:.65);
+          hoverRing.scale.setScalar(Math.max(radius,hoverRing.position.distanceTo(camera.position)*.016));hoverRing.visible=true;
+        }
+      }
+      if(flight)paintFlightRings(flight,e,width,height);
       renderer.render(scene,camera);
       canvas.dataset.atlasReady='true';canvas.dataset.atlasObjects=visible.map(function(o){return o.userData.itemId;}).join(',');
       canvas.dataset.atlasExponent=e.toFixed(4);canvas.dataset.atlasYaw=yaw.toFixed(4);
@@ -1439,33 +2122,79 @@
       canvas.dataset.atlasZoom=cameraZoom.toFixed(2);
       canvas.dataset.atlasCutaway=state.cutaway?'open':'closed';
       canvas.dataset.atlasDetail=selected?selected.id:'';canvas.dataset.atlasAim=cameraAim.toArray().map(function(v){return v.toFixed(4);}).join(',');
-      canvas.dataset.atlasHabitat=isLeafWorld?'leaf':'realm';
+      if(selected&&selected.id==='river-journey'){canvas.dataset.atlasRiverKm=String(canyonRouteKm(state.riverKm));canvas.dataset.atlasRiverTravelKm=riverTravelKm.toFixed(2);}else {delete canvas.dataset.atlasRiverKm;delete canvas.dataset.atlasRiverTravelKm;}
+      canvas.dataset.atlasHabitat=focal&&focal.id==='grand-canyon'?'canyon':isLeafWorld?'leaf':'realm';
+      if(focal&&focal.id==='grand-canyon')canvas.dataset.atlasRelief=String(state.terrainRelief||8);else delete canvas.dataset.atlasRelief;
       canvas.dataset.atlasSurface=visible[0]&&visible[0].userData.model.userData.surfaceReady?'detailed':'procedural';
+      if(state.focusId==='orion-nebula')canvas.dataset.atlasCloud=state.nebulaReveal?'revealed':'natural';else delete canvas.dataset.atlasCloud;
+      if(planetary){canvas.dataset.atlasSunAngle=String(state.sunAngle);canvas.dataset.atlasIlluminated=String(illuminatedDisc(state.sunAngle));canvas.dataset.atlasImagery=imagery;}
+      else {delete canvas.dataset.atlasSunAngle;delete canvas.dataset.atlasIlluminated;delete canvas.dataset.atlasImagery;}
       dirty=false;
     }
     function schedule(){if(!disposed&&!frame&&inView&&!document.hidden)frame=requestAnimationFrame(tick);}
     function tick(ts){frame=0;if(disposed||document.hidden||!inView)return;var state=read();if(state.motion)time+=last?Math.min(0.05,(ts-last)/1000):0;last=ts;if(dirty||state.motion||cameraSettling)paint();if(state.motion||cameraSettling)schedule();}
     function invalidate(){dirty=true;schedule();}
+    function interruptApproach(){clearOrbitHover();orbitGoal=null;var state=read();riverTravelKm=canyonRouteKm(state.riverKm);previousDetail=state.focusId+':'+state.detailId+(state.detailId==='river-journey'?':'+canyonRouteKm(state.riverKm):'');}
     function down(ev){
-      if(ev.button!==0)return;
+      if(ev.button!==0||read().flight)return;
+      interruptApproach();
       if(fingers.size>=2&&!fingers.has(ev.pointerId))return;
-      fingers.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});canvas.setPointerCapture(ev.pointerId);canvas.focus({preventScroll:true});
+      clearOrbitHover();fingers.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});canvas.setPointerCapture(ev.pointerId);canvas.focus({preventScroll:true});
       if(fingers.size===1)drag={id:ev.pointerId,x:ev.clientX,y:ev.clientY,startX:ev.clientX,startY:ev.clientY,moved:false};
       else if(fingers.size===2){var pts=Array.from(fingers.values());pinch={distance:Math.max(1,Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y)),zoom:cameraZoom};drag=null;}
     }
+    var hoveredOrbit=null,hoverRing=null,hoverPoint=new T.Vector3(),hoverExp=0,hoverDetail='';
+    function clearOrbitHover(){
+      hoveredOrbit=null;if(hoverCard)hoverCard.hidden=true;if(hoverRing)hoverRing.visible=false;
+      canvas.style.cursor='grab';
+    }
+    function orbitalTarget(ev){
+      var state=read(),root=models['solar-system'];
+      if(state.comparison||state.focusId!=='solar-system'||!root||!root.visible||Math.abs(log10(9e12)-state.exp)>.06)return null;
+      var system=root.userData.model.userData.solarSystem,rect=canvas.getBoundingClientRect(),x=ev.clientX-rect.left,y=ev.clientY-rect.top;
+      var targets=system.bodies.filter(function(body,index){return index>=4||cameraZoom>=6;});
+      pointer.set(x/rect.width*2-1,-y/rect.height*2+1);ray.setFromCamera(pointer,activeCamera);
+      var hits=ray.intersectObjects(targets,true);
+      if(hits.length){var body=hits[0].object;while(body&&!body.userData.planetId)body=body.parent;if(body)return {id:body.userData.planetId+'-orbit',body:body};}
+      // Give small worlds a useful touch target without changing their geometry.
+      var nearest=null,best=Infinity,tolerance=ev.pointerType==='touch'?22:12;
+      targets.forEach(function(body){
+        body.getWorldPosition(hoverPoint).project(activeCamera);
+        if(hoverPoint.z<=-1||hoverPoint.z>=1)return;
+        var dx=(hoverPoint.x*.5+.5)*rect.width-x,dy=(-hoverPoint.y*.5+.5)*rect.height-y,score=dx*dx+dy*dy;
+        if(score<tolerance*tolerance&&score<best){best=score;nearest={id:body.userData.planetId+'-orbit',body:body};}
+      });
+      if(!nearest&&cameraZoom<6){
+        system.star.getWorldPosition(hoverPoint).project(activeCamera);
+        var dx=(hoverPoint.x*.5+.5)*rect.width-x,dy=(-hoverPoint.y*.5+.5)*rect.height-y;
+        if(hoverPoint.z>-1&&hoverPoint.z<1&&dx*dx+dy*dy<tolerance*tolerance)nearest={id:'inner-orbits',body:system.star};
+      }
+      return nearest;
+    }
+    function hoverOrbit(ev){
+      if(ev.pointerType==='touch'||fingers.size||read().flight)return;
+      var hit=orbitalTarget(ev),state=read(),detail=hit&&state.details.filter(function(d){return d.id===hit.id;})[0];
+      if(!detail){if(hoveredOrbit){clearOrbitHover();invalidate();}return;}
+      if(hoveredOrbit&&hoveredOrbit.id===hit.id)return;
+      hoveredOrbit=hit;hoverExp=state.exp;hoverDetail=state.detailId;
+      if(hoverCard){hoverCard.textContent=detail.hint||detail.label;hoverCard.hidden=false;}
+      canvas.style.cursor='pointer';invalidate();
+    }
+    function leaveOrbit(){if(!fingers.size&&hoveredOrbit){clearOrbitHover();invalidate();}}
     function turnAngle(angle){return Math.atan2(Math.sin(angle),Math.cos(angle));}
     function move(ev){
-      if(!fingers.has(ev.pointerId))return;fingers.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
-      if(pinch&&fingers.size>=2){var pts=Array.from(fingers.values());cameraZoom=clamp(pinch.zoom*Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y)/pinch.distance,1,2.5);invalidate();return;}
+      if(!fingers.has(ev.pointerId)){hoverOrbit(ev);return;}fingers.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+      if(pinch&&fingers.size>=2){var pts=Array.from(fingers.values());cameraZoom=zoomGoal=clamp(pinch.zoom*Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y)/pinch.distance,1,read().comparison?2.5:inspectionLimit(read().focusId));invalidate();return;}
       if(!drag||drag.id!==ev.pointerId)return;var dx=ev.clientX-drag.x,dy=ev.clientY-drag.y;if(Math.hypot(ev.clientX-drag.startX,ev.clientY-drag.startY)>5)drag.moved=true;yaw=turnAngle(yaw-dx*.005);pitch=clamp(pitch+dy*.005,-1.1,1.1);drag.x=ev.clientX;drag.y=ev.clientY;invalidate();
     }
     function finishPointer(ev,allowPick){
       if(!fingers.has(ev.pointerId))return;
       var didMove=!!pinch||!drag||drag.moved;fingers.delete(ev.pointerId);
-      if(pinch){cameraZoom=Math.round(cameraZoom*10)/10;if(inspect)inspect(cameraZoom);pinch=null;invalidate();}
+      if(pinch){cameraZoom=zoomGoal=Math.round(cameraZoom*10)/10;if(inspect)inspect(cameraZoom);pinch=null;invalidate();}
       drag=null;
       if(fingers.size===1){var entry=Array.from(fingers.entries())[0],p=entry[1];drag={id:entry[0],x:p.x,y:p.y,startX:p.x,startY:p.y,moved:true};}
       if(canvas.hasPointerCapture(ev.pointerId))canvas.releasePointerCapture(ev.pointerId);if(didMove||!allowPick)return;
+      var state=read();if(state.focusId==='solar-system'&&!state.comparison){var target=orbitalTarget(ev);if(target)pick('solar-system',target.id);return;}
       var rect=canvas.getBoundingClientRect();pointer.set((ev.clientX-rect.left)/rect.width*2-1,-(ev.clientY-rect.top)/rect.height*2+1);ray.setFromCamera(pointer,activeCamera);
       var hits=ray.intersectObjects(Object.keys(models).map(function(id){return models[id];}).filter(function(m){return m.visible;}),true);
       for(var i=0;i<hits.length;i++){if(!hits[i].object.isMesh)continue;var obj=hits[i].object;while(obj&&!obj.userData.itemId)obj=obj.parent;if(obj){pick(obj.userData.itemId);break;}}
@@ -1474,6 +2203,7 @@
     function cancel(ev){finishPointer(ev,false);}
     function visibility(){last=0;if(document.hidden){if(frame)cancelAnimationFrame(frame);frame=0;}else invalidate();}
     function lost(ev){ev.preventDefault();if(!disposed)fail();}
+    canvas.addEventListener('pointerleave',leaveOrbit);
     canvas.addEventListener('pointerdown',down);canvas.addEventListener('pointermove',move);canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',cancel);canvas.addEventListener('lostpointercapture',cancel);canvas.addEventListener('webglcontextlost',lost);
     document.addEventListener('visibilitychange',visibility);
     var resize=window.ResizeObserver?new ResizeObserver(invalidate):null;if(resize)resize.observe(canvas.parentElement);
@@ -1481,12 +2211,14 @@
     try { paint(); } catch(err) { dispose(); throw err; }
     schedule();
     function dispose(){if(disposed)return;disposed=true;cancelAnimationFrame(frame);if(resize)resize.disconnect();if(intersection)intersection.disconnect();document.removeEventListener('visibilitychange',visibility);
+      canvas.removeEventListener('pointerleave',leaveOrbit);clearOrbitHover();
       canvas.removeEventListener('pointerdown',down);canvas.removeEventListener('pointermove',move);canvas.removeEventListener('pointerup',up);canvas.removeEventListener('pointercancel',cancel);canvas.removeEventListener('lostpointercapture',cancel);canvas.removeEventListener('webglcontextlost',lost);
       resources.forEach(function(r){r.dispose();});if(key.shadow.map)key.shadow.map.dispose();renderer.dispose();renderer.forceContextLoss();delete canvas.dataset.atlasReady;
     }
-    return { update:invalidate, orbit:function(x,y){yaw=turnAngle(yaw+x);pitch=clamp(pitch+y,-1.1,1.1);invalidate();}, reset:function(){yaw=0;pitch=0.12;cameraZoom=1;invalidate();},
-      capture:function(){return {yaw:yaw,pitch:pitch};},
-      restore:function(view){yaw=turnAngle(view.yaw);pitch=clamp(view.pitch,-1.1,1.1);cameraZoom=view.zoom;lastZoomInput=view.zoom;previousDetail=read().focusId+':'+view.detailId;invalidate();},
+    return { update:invalidate, orbit:function(x,y){interruptApproach();yaw=turnAngle(yaw+x);pitch=clamp(pitch+y,-1.1,1.1);invalidate();}, reset:function(){interruptApproach();yaw=0;pitch=0.12;cameraZoom=zoomGoal=1;invalidate();},
+      approach:function(){previousDetail='';invalidate();},
+      capture:function(){return {yaw:orbitGoal?orbitGoal.yaw:yaw,pitch:orbitGoal?orbitGoal.pitch:pitch};},
+      restore:function(view){riverTravelKm=canyonRouteKm(view.riverKm);orbitGoal=null;yaw=turnAngle(view.yaw);pitch=clamp(view.pitch,-1.1,1.1);cameraZoom=zoomGoal=view.zoom;lastZoomInput=view.zoom;previousDetail=read().focusId+':'+view.detailId+(view.detailId==='river-journey'?':'+canyonRouteKm(view.riverKm):'');invalidate();},
       dispose:dispose };
   }
 
@@ -1637,7 +2369,11 @@
 
       var canvasRef = React.useRef(null);
       var atlasCanvasRef = React.useRef(null);
-      var markerLayerRef = React.useRef(null);
+      var markerLayerRef = React.useRef(null),orbitHoverRef=React.useRef(null);
+      var _atlasRoute=React.useState([]);var atlasRoute=_atlasRoute[0],setAtlasRoute=_atlasRoute[1];
+      var _scaleFlight=React.useState(null);var scaleFlight=_scaleFlight[0],setScaleFlight=_scaleFlight[1];
+      var scaleFlightRef=React.useRef(null),flightPanelRef=React.useRef(null),flightLabelsRef=React.useRef(null);
+      React.useEffect(function(){if(scaleFlight&&atlasCanvasRef.current)atlasCanvasRef.current.focus({preventScroll:true});},[scaleFlight]);
       var comparisonLayerRef = React.useRef(null);
       var atlasRef = React.useRef(null);
       var _viewMode = React.useState('atlas'); var viewMode = _viewMode[0], setViewMode = _viewMode[1];
@@ -1647,8 +2383,16 @@
       var _neighbors = React.useState(slice.atlasNeighbors === true); var neighbors = _neighbors[0], setNeighbors = _neighbors[1];
       var _measure = React.useState(true); var measure = _measure[0], setMeasure = _measure[1];
       var _inspectionZoom = React.useState(1); var inspectionZoom = _inspectionZoom[0], setInspectionZoom = _inspectionZoom[1];
+      var _sunAngle=React.useState(45);var sunAngle=_sunAngle[0],setSunAngle=_sunAngle[1];
+      var _nebulaReveal=React.useState(false);var nebulaReveal=_nebulaReveal[0],setNebulaReveal=_nebulaReveal[1];
+      var _terrainRelief=React.useState(8);var terrainRelief=_terrainRelief[0],setTerrainRelief=_terrainRelief[1];
+      var _riverKm=React.useState(0);var riverKm=_riverKm[0],setRiverKm=_riverKm[1];
+      var riverSliderRef=React.useRef(null);
+      var _planetImagery=React.useState({id:'',status:''});var planetImagery=_planetImagery[0],setPlanetImagery=_planetImagery[1];
       var _detailId=React.useState('');var detailId=_detailId[0],setDetailId=_detailId[1];
       var _showDetails=React.useState(true);var showDetails=_showDetails[0],setShowDetails=_showDetails[1];
+      var _featureNoteOpen=React.useState(false);var featureNoteOpen=_featureNoteOpen[0],setFeatureNoteOpen=_featureNoteOpen[1];
+      var featureButtonRef=React.useRef(null);
       var _cutaway = React.useState(true); var cutaway = _cutaway[0], setCutaway = _cutaway[1];
       var _observations = React.useState(function () { return readObservations(slice.observations); });
       var observations = _observations[0], setObservations = _observations[1];
@@ -1696,7 +2440,9 @@
       // paint the old person at the new camera position.
       var sortedRef = React.useRef(sorted); sortedRef.current = sorted;
       var focused = byId[focusId] || byId.human;
-      var details=atlasDetails(focusId,S),selectedDetail=details.filter(function(d){return d.id===detailId;})[0];
+      var details=atlasDetails(focusId,S,terrainRelief,riverKm),selectedDetail=details.filter(function(d){return d.id===detailId;})[0];
+      var availableDetails=details.filter(function(d){return !d.surface||(planetImagery.id===focusId&&planetImagery.status==='ready');});
+      React.useEffect(function(){setFeatureNoteOpen(false);},[focusId,viewMode,comparisonActive]);
       var observationDetail = viewMode === 'atlas' && selectedDetail ? selectedDetail.id : '';
       var currentObservationKey = observationKey(focused.id, observationDetail);
       var savedObservation = observations.filter(function (entry) { return observationKey(entry.itemId, entry.detailId) === currentObservationKey; })[0];
@@ -1704,7 +2450,7 @@
       function observationItem(entry) { return Object.assign({}, byId[entry.itemId], { size: entry.size, you: entry.you }); }
       function observationTitle(entry) {
         var detail = atlasDetails(entry.itemId, S).filter(function (d) { return d.id === entry.detailId; })[0];
-        return itemText(observationItem(entry), 'name') + (detail ? ' · ' + detail.label : '');
+        return itemText(observationItem(entry), 'name') + (detail ? ' · ' + detail.label : '')+(entry.detailId==='river-journey'?' · '+canyonRouteKm(entry.riverKm)+' km':'');
       }
       function editObservation(text) {
         var note = text.slice(0, NOTE_LIMIT), key = currentObservationKey;
@@ -1714,10 +2460,11 @@
       }
       function saveObservation() {
         if (comparisonActive) return;
+        arriveNow();
         if (!savedObservation && observations.length >= NOTEBOOK_LIMIT) return;
         var angle = viewMode === 'atlas' && atlasRef.current ? atlasRef.current.capture() : { yaw: 0, pitch: .12 };
         var entry = { itemId: focused.id, detailId: observationDetail, size: focused.size, you: !!focused.you,
-          note: observationDraft.trim(), zoom: inspectionZoom, yaw: angle.yaw, pitch: angle.pitch, cutaway: cutaway, view: viewMode };
+          note: observationDraft.trim(), zoom: inspectionZoom, yaw: angle.yaw, pitch: angle.pitch, sunAngle:sunAngle, nebulaReveal:nebulaReveal, terrainRelief:terrainRelief, riverKm:riverKm, cutaway: cutaway, view: viewMode };
         var next = [entry].concat(observations.filter(function (old) { return observationKey(old.itemId, old.detailId) !== currentObservationKey; }));
         setObservations(next);
         updateSlice(function (cur) { cur.observations = next; });
@@ -1753,6 +2500,10 @@
           lines.push((index + 1) + '. ' + observationTitle(entry));
           lines.push(S('atlas_observation_size', 'Recorded size: {len} {dim}', { len: humanLength(entry.size), dim: S('dim_' + item.dim.replace(/\s+/g, '_'), item.dim) }));
           lines.push(sciNotation(entry.size));
+          if(isPlanetaryWorld(entry.itemId)&&entry.view==='atlas')lines.push(S('atlas_observation_sun', 'Lighting model: {angle}° Sun–observer angle; approximately {percent}% of the disc illuminated.', {angle:entry.sunAngle,percent:illuminatedDisc(entry.sunAngle)}));
+          if(entry.itemId==='grand-canyon'&&entry.view==='atlas')lines.push(S('atlas_canyon_export', 'Vertical relief: {n}×. River length remains 446 km. Terrain is illustrative.',{n:entry.terrainRelief||8}));
+          if(entry.detailId==='river-journey')lines.push(S('atlas_river_export', 'River journey: {n} km along the illustrated 446 km course. Position is within the model, not a geographic coordinate.',{n:canyonRouteKm(entry.riverKm)}));
+          if(entry.itemId==='orion-nebula'&&entry.view==='atlas')lines.push(entry.nebulaReveal?S('atlas_nebula_export_revealed', 'Cloud visibility: reduced to reveal embedded stars.'):S('atlas_nebula_export_natural', 'Cloud visibility: full gas and dust.'));
           if (entry.note) lines.push(S('atlas_observation_note', 'My observation: {note}', { note: entry.note }));
           if (detail) { lines.push(detail.body); lines.push(detail.source); }
           if (item.note) lines.push(itemText(item, 'note'));
@@ -1819,12 +2570,117 @@
         }
         finally { if (anchor) anchor.remove(); if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000); }
       }
-      function chooseDetail(detail){
+      function chooseDetail(detail,force){
         stopJourney();
-        if(detailId===detail.id){setDetailId('');setInspectionZoom(1);return;}
-        setDetailId(detail.id);setShowDetails(true);setNeighbors(false);setInspectionZoom(focusId==='dna'?2.2:1.8);
+        if(detailId===detail.id&&!force){setDetailId('');setInspectionZoom(1);return;}
+        setDetailId(detail.id);setShowDetails(true);setNeighbors(false);setInspectionZoom(detail.zoom||(focusId==='dna'?2.2:1.8));
         if(detail.cutaway!==undefined)setCutaway(detail.cutaway);
+        if(detail.reveal!==undefined)setNebulaReveal(detail.reveal);
+        if(force&&atlasRef.current)atlasRef.current.approach();
         say(detail.label+'. '+detail.body);
+        var cv=atlasCanvasRef.current;
+        if(cv){var rect=cv.getBoundingClientRect();if(rect.top< -40||rect.bottom>window.innerHeight+40)cv.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});}
+      }
+      function changeSunlight(value){stopJourney();setSunAngle(clamp(value,0,180));}
+      function stepFeature(direction){
+        if(!availableDetails.length)return;
+        var index=availableDetails.findIndex(function(d){return d.id===detailId;});
+        var next=availableDetails[index<0?0:(index+direction+availableDetails.length)%availableDetails.length];
+        if(next.id!==detailId)chooseDetail(next);
+      }
+      function wholeSpecimen(){
+        stopJourney();setDetailId('');setInspectionZoom(1);setFeatureNoteOpen(false);
+        say(S('atlas_whole_view_sr', 'Showing the whole specimen.'));
+        if(featureButtonRef.current)featureButtonRef.current.focus({preventScroll:true});
+      }
+      function onFeatureKey(ev){
+        if(ev.key==='ArrowRight'||ev.key==='ArrowLeft'){ev.preventDefault();stepFeature(ev.key==='ArrowRight'?1:-1);}
+        else if(ev.key==='Escape'){
+          ev.preventDefault();
+          if(featureNoteOpen){setFeatureNoteOpen(false);if(featureButtonRef.current)featureButtonRef.current.focus({preventScroll:true});}
+          else wholeSpecimen();
+        }
+      }
+      function travelTo(item){
+        if(!item||item.id===focusId)return;
+        arriveNow();
+        var angle=atlasRef.current?atlasRef.current.capture():{yaw:0,pitch:.12};
+        var origin={itemId:focusId,detailId:detailId,zoom:inspectionZoom,yaw:angle.yaw,pitch:angle.pitch,
+          sunAngle:sunAngle,nebulaReveal:nebulaReveal,terrainRelief:terrainRelief,riverKm:riverKm,cutaway:cutaway,view:viewMode,route:true,neighbors:neighbors,measure:measure};
+        setAtlasRoute(function(previous){return previous.concat([origin]).slice(-6);});
+        openItem(item,true,{travel:Object.assign({},origin,{details:details})});
+      }
+      function returnAlongRoute(index){
+        var saved=atlasRoute[index];if(!saved||!byId[saved.itemId])return;
+        setAtlasRoute(atlasRoute.slice(0,index));setPendingObservation(saved);
+        setViewMode(saved.view==='atlas'&&atlasStatus!=='failed'?'atlas':'chart');
+        flyTo(byId[saved.itemId],{instant:true});
+      }
+      function routeNavigation(){
+        if(!atlasRoute.length)return null;
+        return h('nav',{className:'sx-route','aria-label':S('atlas_route', 'Your exploration route')},
+          h('span',{className:'sx-route-label'},S('atlas_route_label', 'Your route')),
+          atlasRoute.map(function(entry,index){return h(React.Fragment,{key:index},
+            h('button',{type:'button','aria-label':S('atlas_route_return', 'Return to {name}',{name:itemText(byId[entry.itemId],'name')}),onClick:function(){returnAlongRoute(index);}},itemText(byId[entry.itemId],'name')),
+            h('span',{'aria-hidden':'true'},'›'));}),
+          h('strong',{'aria-current':'location'},itemText(focused,'name')));
+      }
+      function scenePortal(){
+        if(viewMode!=='atlas'||comparisonActive||scaleFlight||atlasStatus!=='ready')return null;
+        var destination=focused.id==='milkyway'&&detailId==='solar-neighbourhood'?byId['solar-system']:
+          selectedDetail&&selectedDetail.visit?byId[selectedDetail.visit]:null;
+        if(!destination)return null;
+        return h('section',{className:'sx-portal','aria-label':S('atlas_portal', 'Continue the journey')},
+          h('div',null,h('span',null,S('atlas_portal_label', 'Continue inward')),
+            h('strong',null,S('atlas_portal_scale', '{n} powers of ten smaller',{n:round2(log10(focused.size/destination.size))}))),
+          h('button',{type:'button',onClick:function(){travelTo(destination);}},S('atlas_portal_enter', 'Explore {name}',{name:lowerArticle(itemText(destination,'name'))})));
+      }
+      function moveAlongRiver(km) {
+        arriveNow();stopJourney();setRiverKm(Math.round(canyonRouteKm(km)));setDetailId('river-journey');
+        setInspectionZoom(8);setNeighbors(false);setFeatureNoteOpen(false);
+      }
+      function leaveRiver(){chooseDetail(details.filter(function(d){return d.id==='canyon-overview';})[0],true);if(atlasCanvasRef.current)atlasCanvasRef.current.focus({preventScroll:true});}
+      React.useEffect(function(){if(viewMode==='atlas'&&!comparisonActive&&detailId==='river-journey'&&riverSliderRef.current)riverSliderRef.current.focus({preventScroll:true});},[viewMode,comparisonActive,detailId]);
+      function riverNavigator() {
+        if(viewMode!=='atlas'||comparisonActive||scaleFlight||focusId!=='grand-canyon'||detailId!=='river-journey')return null;
+        var point=canyonRoutePoint(riverKm),route=CANYON_PATH.points.map(function(p,i){return(i?'L':'M')+(18+(p[0]+.5)*464).toFixed(2)+','+(38-p[1]*340).toFixed(2);}).join(' ');
+        return h('section',{className:'sx-river-nav','aria-label':S('atlas_river_controls', 'Navigate the river'),onKeyDown:function(ev){if(ev.key==='Escape'){ev.preventDefault();leaveRiver();}}},
+          h('div',{className:'sx-river-title'},
+            h('div',null,h('strong',null,S('atlas_river_journey', 'River journey')),h('span',null,S('atlas_river_position', '{n} of 446 km · illustrated course',{n:riverKm}))),
+            h('button',{type:'button',className:'sx-river-leave',onClick:leaveRiver},S('atlas_river_leave', 'Whole landscape'))),
+          h('svg',{className:'sx-river-map',viewBox:'0 0 500 74',preserveAspectRatio:'none','aria-hidden':'true'},
+            h('path',{d:route,fill:'none',stroke:'#33515b',strokeWidth:8,strokeLinecap:'round'}),
+            h('path',{d:route,fill:'none',stroke:'#87b5b9',strokeWidth:2,strokeLinecap:'round'}),
+            h('path',{d:route,fill:'none',stroke:'#e4c68e',strokeWidth:3,pathLength:446,strokeDasharray:riverKm+' 446',strokeLinecap:'round'}),
+            h('circle',{cx:18+(point[0]+.5)*464,cy:38-point[2]*340,r:9,fill:'#c8e7c4',fillOpacity:.12,stroke:'#deedcd',strokeWidth:1.5}),
+            h('circle',{cx:18+(point[0]+.5)*464,cy:38-point[2]*340,r:3,fill:'#f4e3ba'})),
+          h('div',{className:'sx-river-slider'},
+            h('button',{type:'button',disabled:riverKm===0,'aria-label':S('atlas_river_back', 'Move back 25 km'),onClick:function(){moveAlongRiver(riverKm-25);}},'←'),
+            h('label',null,
+              h('input',{ref:riverSliderRef,type:'range',min:0,max:446,step:1,value:riverKm,'aria-label':S('atlas_river_slider', 'Position along the illustrated river'),'aria-valuetext':S('atlas_river_distance', '{n} kilometres along the illustrated river',{n:riverKm}),onChange:function(ev){moveAlongRiver(Number(ev.target.value));}}),
+              h('span',{className:'sx-river-limits','aria-hidden':'true'},h('span',null,'0 km'),h('span',null,'446 km'))),
+            h('button',{type:'button',disabled:riverKm===446,'aria-label':S('atlas_river_forward', 'Move forward 25 km'),onClick:function(){moveAlongRiver(riverKm+25);}},'→')));
+      }
+
+      function featureNavigator(){
+        if(viewMode!=='atlas'||comparisonActive||atlasStatus!=='ready'||!details.length||detailId==='river-journey')return null;
+        var position=details.findIndex(function(d){return d.id===detailId;})+1;
+        var readLabel=selectedDetail?S('atlas_feature_about', 'About {part}',{part:selectedDetail.label}):S('atlas_feature_start', 'Explore landmarks');
+        return h('nav',{className:'sx-feature-nav','aria-label':S('atlas_feature_navigation', 'Landmark navigator'),onKeyDown:onFeatureKey},
+          h('button',{ref:featureButtonRef,type:'button',className:'sx-feature-title',disabled:!availableDetails.length,'aria-label':readLabel,'aria-expanded':selectedDetail?featureNoteOpen:undefined,'aria-controls':selectedDetail&&featureNoteOpen?descId+'-feature-note':undefined,onClick:function(){if(selectedDetail)setFeatureNoteOpen(!featureNoteOpen);else stepFeature(1);}},
+            h('span',{className:'sx-feature-count'},selectedDetail?(featureNoteOpen?S('atlas_feature_count_open', 'Landmark {n} of {total} · Close notes',{n:position,total:details.length}):S('atlas_feature_count', 'Landmark {n} of {total} · Read more',{n:position,total:details.length})):S('atlas_feature_available', '{n} places to explore',{n:details.length})),
+            h('strong',null,selectedDetail?selectedDetail.label:S('atlas_feature_start', 'Explore landmarks'))),
+          h('button',{type:'button',className:'sx-feature-arrow','aria-label':S('atlas_feature_previous', 'Previous landmark'),'aria-keyshortcuts':'ArrowLeft',title:S('atlas_feature_previous', 'Previous landmark'),disabled:!selectedDetail||availableDetails.length<2,onClick:function(){stepFeature(-1);}},h('span',{'aria-hidden':'true'},'‹')),
+          h('button',{type:'button',className:'sx-feature-arrow','aria-label':S('atlas_feature_next', 'Next landmark'),'aria-keyshortcuts':'ArrowRight',title:S('atlas_feature_next', 'Next landmark'),disabled:!availableDetails.length||!!selectedDetail&&availableDetails.length<2,onClick:function(){stepFeature(1);}},h('span',{'aria-hidden':'true'},'›')),
+          h('button',{type:'button',className:'sx-feature-overview','aria-label':S('atlas_feature_overview', 'Return to whole view'),title:S('atlas_feature_overview', 'Return to whole view'),disabled:!selectedDetail,onClick:wholeSpecimen},h('span',{'aria-hidden':'true'},'↺')),
+          selectedDetail&&featureNoteOpen?h('section',{id:descId+'-feature-note',className:'sx-feature-story',tabIndex:0,'aria-label':S('atlas_feature_story', 'About this landmark')},
+            h('p',null,selectedDetail.body),
+            selectedDetail.visit?h('button',{type:'button',style:{display:'block',padding:'6px 10px',margin:'0 0 8px',background:'#243b47',borderColor:'#527080'},onClick:function(){travelTo(byId[selectedDetail.visit]);}},S('atlas_orbit_visit_world', 'Explore {planet} at its own scale',{planet:selectedDetail.label})):null,
+            h('a',{href:selectedDetail.source,target:'_blank',rel:'noopener noreferrer'},S('atlas_feature_reference', 'Science reference'))):null);
+      }
+      function orbitScene(x,y){
+        arriveNow();
+        if(atlasRef.current)atlasRef.current.orbit(x,y);
         var cv=atlasCanvasRef.current;
         if(cv){var rect=cv.getBoundingClientRect();if(rect.top< -40||rect.bottom>window.innerHeight+40)cv.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});}
       }
@@ -1848,9 +2704,9 @@
         try { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) { return false; }
       }); var reduceMotion = _reduceMotion[0], setReduceMotion = _reduceMotion[1];
       var atlasState = React.useRef(null);
-      atlasState.current = { items: sorted, exp: expRef.current, motion: !comparisonActive && ambient && !reduceMotion, reduceMotion:reduceMotion, contrast: theme === 'contrast', neighbors: neighbors, measure: measure, inspectionZoom: inspectionZoom, cutaway: cutaway, focusId:focusId, details:details, detailId:detailId, showDetails:showDetails, comparison: comparisonActive ? compare : null };
+      atlasState.current = { items: sorted, exp: expRef.current, motion: !comparisonActive && ambient && !reduceMotion, reduceMotion:reduceMotion, contrast: theme === 'contrast', neighbors: neighbors, measure: measure, inspectionZoom: inspectionZoom, sunAngle:sunAngle, nebulaReveal:nebulaReveal, terrainRelief:terrainRelief, riverKm:riverKm, cutaway: cutaway, focusId:focusId, details:details, detailId:detailId, showDetails:showDetails, comparison: comparisonActive ? compare : null };
       var atlasActions = React.useRef(null);
-      atlasActions.current = { pick: function (id) { if (byId[id]) openItem(byId[id]); }, zoom: function (delta) {
+      atlasActions.current = { pick: function (id,part) { var detail=part&&focusId===id&&details.filter(function(d){return d.id===part;})[0];if(detail)chooseDetail(detail,true);else if(byId[id])openItem(byId[id]); }, zoom: function (delta) {
         if (comparisonActive) setInspectionZoom(function (prev) { return Math.round(clamp(prev + delta, 1, 2.5) * 10) / 10; });
         else zoomBy(delta);
       } };
@@ -1858,24 +2714,25 @@
       // Wait for a newly mounted atlas before restoring its camera angle.
       React.useEffect(function () {
         if (!pendingObservation || focusId !== pendingObservation.itemId) return;
-        setDetailId(pendingObservation.detailId); setInspectionZoom(pendingObservation.zoom); setCutaway(pendingObservation.cutaway); setShowDetails(true); setNeighbors(false);
-        if (detailId !== pendingObservation.detailId || inspectionZoom !== pendingObservation.zoom || cutaway !== pendingObservation.cutaway) return;
+        setDetailId(pendingObservation.detailId); setInspectionZoom(pendingObservation.zoom); setSunAngle(pendingObservation.sunAngle); setNebulaReveal(pendingObservation.nebulaReveal); setTerrainRelief(pendingObservation.terrainRelief||8); setRiverKm(canyonRouteKm(pendingObservation.riverKm)); setCutaway(pendingObservation.cutaway); setShowDetails(true); setNeighbors(false);
+        if (detailId !== pendingObservation.detailId || inspectionZoom !== pendingObservation.zoom || sunAngle !== pendingObservation.sunAngle || nebulaReveal !== pendingObservation.nebulaReveal || terrainRelief !== (pendingObservation.terrainRelief||8) || riverKm !== canyonRouteKm(pendingObservation.riverKm) || cutaway !== pendingObservation.cutaway) return;
         if (viewMode === 'atlas' && (atlasStatus !== 'ready' || !atlasRef.current)) return;
         if (viewMode === 'atlas') atlasRef.current.restore(pendingObservation);
         setPendingObservation(null);
         var cv = viewMode === 'atlas' ? atlasCanvasRef.current : canvasRef.current;
         if (cv) cv.scrollIntoView({ block: 'center', behavior: 'auto' });
-        setNotebookMessage(S('atlas_observation_returned', 'Returned to {name}.', { name: observationTitle(pendingObservation) }));
-      }, [pendingObservation, focusId, viewMode, atlasStatus, detailId, inspectionZoom, cutaway]);
+        if(pendingObservation.route){setNeighbors(pendingObservation.neighbors);setMeasure(pendingObservation.measure);say(S('atlas_route_restored', 'Returned to your saved viewpoint of {name}.',{name:itemText(byId[pendingObservation.itemId],'name')}));if(cv)cv.focus({preventScroll:true});}
+        else setNotebookMessage(S('atlas_observation_returned', 'Returned to {name}.', { name: observationTitle(pendingObservation) }));
+      }, [pendingObservation, focusId, viewMode, atlasStatus, detailId, inspectionZoom, sunAngle, nebulaReveal, terrainRelief, riverKm, cutaway]);
       React.useEffect(function () {
         var mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
         if (!mq) return;
-        function change() { setReduceMotion(mq.matches); if (mq.matches) stopJourney(); }
+        function change() { setReduceMotion(mq.matches); if (mq.matches) { arriveNow();stopJourney(); } }
         if (mq.addEventListener) mq.addEventListener('change', change);
         return function () { if (mq.removeEventListener) mq.removeEventListener('change', change); };
       }, []);
       React.useEffect(function () {
-        if (viewMode !== 'atlas') { draw(); return; }
+        if (viewMode !== 'atlas') { arriveNow();draw(); return; }
         var alive = true, cv = atlasCanvasRef.current, timeout;
         if (!cv) return;
         setAtlasStatus('loading');
@@ -1893,22 +2750,57 @@
           if (!alive) return;
           clearTimeout(timeout);
           atlasRef.current = createScaleAtlas(window.THREE, cv, function () {
-            return Object.assign({}, atlasState.current, { exp: expRef.current, target: targetRef.current });
-          }, function (id) { atlasActions.current.pick(id); }, failed, function(value){if(alive)setInspectionZoom(value);},markerLayerRef.current,comparisonLayerRef.current);
+            return Object.assign({}, atlasState.current, { exp: expRef.current, target: targetRef.current, flight:scaleFlightRef.current });
+          }, function (id,part) { atlasActions.current.pick(id,part); }, failed, function(value){if(alive)setInspectionZoom(value);},markerLayerRef.current,comparisonLayerRef.current,function(value){if(alive)setPlanetImagery(value);},orbitHoverRef.current,flightLabelsRef.current);
           setAtlasStatus('ready');
         }).catch(failed);
         return function () { alive = false; clearTimeout(timeout); cv.removeEventListener('wheel', wheel); if (atlasRef.current) { atlasRef.current.dispose(); atlasRef.current = null; } };
       }, [viewMode]);
-      React.useEffect(function () { if (atlasRef.current) atlasRef.current.update(); }, [ambient, reduceMotion, theme, items, neighbors, measure, inspectionZoom, cutaway, detailId, showDetails, focusId, comparisonActive, compare]);
+      React.useEffect(function () { if (atlasRef.current) atlasRef.current.update(); }, [ambient, reduceMotion, theme, items, neighbors, measure, inspectionZoom, sunAngle, nebulaReveal, terrainRelief, riverKm, planetImagery, cutaway, detailId, showDetails, focusId, comparisonActive, compare]);
       function goTo(nextExp, opts) {
         setComparisonActive(false);
         setDetailId('');
         opts = opts || {};
         var target = clamp(nextExp, MIN_EXP, MAX_EXP);
         targetRef.current = target;
-        cameraMoveRef.current = { from: expRef.current, at: performance.now() };
-        if (reduceMotion || opts.instant) { expRef.current = target; settleExp(target); draw(); afterMove(); return; }
+        clearScaleFlight();
+        cameraMoveRef.current = { from: expRef.current, at: performance.now(), duration:650 };
+        if(opts.travel&&!reduceMotion&&!opts.instant&&viewModeRef.current==='atlas'&&atlasRef.current){
+          var destination=byId[intentRef.current],span=Math.abs(target-expRef.current);
+          if(destination&&span>.1){
+            var flight={origin:opts.travel,destination:destination,from:expRef.current,to:target,progress:0};
+            scaleFlightRef.current=flight;setScaleFlight(flight);cameraMoveRef.current.duration=clamp(1800+span*240,2600,4400);
+            say(S('atlas_flight_start', 'Approaching {name}. Press Escape to arrive now.',{name:itemText(destination,'name')}));
+          }
+        }
+        if (reduceMotion || opts.instant) { if(rafRef.current){cancelAnimationFrame(rafRef.current);rafRef.current=0;}expRef.current = target; settleExp(target); draw(); afterMove(); return; }
         if (!rafRef.current) rafRef.current = requestAnimationFrame(step);
+      }
+      function clearScaleFlight(){
+        if(!scaleFlightRef.current)return;
+        scaleFlightRef.current=null;setScaleFlight(null);
+      }
+      function finishScaleFlight(){
+        var flight=scaleFlightRef.current;if(!flight)return;
+        var panel=flightPanelRef.current,restoreFocus=panel&&panel.contains(document.activeElement);
+        clearScaleFlight();
+        if(atlasRef.current)atlasRef.current.restore({yaw:0,pitch:.12,zoom:1,detailId:''});
+        say(S('atlas_flight_arrived', 'Arrived at {name}, at its own scale.',{name:itemText(flight.destination,'name')}));
+        if(restoreFocus&&atlasCanvasRef.current)atlasCanvasRef.current.focus({preventScroll:true});
+      }
+      function arriveNow(){
+        if(!scaleFlightRef.current)return;
+        if(rafRef.current){cancelAnimationFrame(rafRef.current);rafRef.current=0;}
+        expRef.current=targetRef.current;settleExp(targetRef.current);afterMove();finishScaleFlight();draw();
+      }
+      function flightPanel(){
+        if(!scaleFlight||viewMode!=='atlas')return null;
+        return h('section',{ref:flightPanelRef,className:'sx-descent','aria-label':S('atlas_flight_region', 'Scale approach'),onKeyDown:function(ev){if(ev.key==='Escape'){ev.preventDefault();arriveNow();}}},
+          h('div',{className:'sx-descent-meta'},h('span',null,S('atlas_flight_readout', 'Current scale')),
+            h('strong',{'data-flight-length':true},lengthText(Math.pow(10,scaleFlight.from)))),
+          h('div',{className:'sx-descent-track','aria-hidden':'true'},h('i',{'data-flight-fill':true})),
+          h('p',null,S('atlas_flight_rings', 'Each ring spans a power of ten in metres.')),
+          h('button',{type:'button',onClick:arriveNow},S('atlas_flight_skip', 'Arrive now')));
       }
       // Only the readout text changes while the camera is moving, so it is written
       // straight to its node. Going through React state instead re-rendered the
@@ -1919,6 +2811,12 @@
         if (el) el.textContent = viewLineFor(expRef.current);
         // Painted rather than bound, for the same reason as the readout: this
         // moves every frame and must not re-render the panel to do it.
+        var flight=scaleFlightRef.current,panel=flightPanelRef.current;
+        if(flight&&panel){
+          var label=panel.querySelector('[data-flight-length]'),bar=panel.querySelector('[data-flight-fill]');
+          if(label)label.textContent=lengthText(Math.pow(10,expRef.current));
+          if(bar)bar.style.transform='scaleX('+flight.progress.toFixed(4)+')';
+        }
         var sc = scrubRef.current;
         if (sc && !scrubDragRef.current) {
           sc.value = String(expRef.current);
@@ -1933,9 +2831,11 @@
         rafRef.current = 0;
         var cur = expRef.current, target = targetRef.current;
         var d = target - cur;
-        var progress = clamp((ts - cameraMoveRef.current.at) / 650, 0, 1);
-        if (Math.abs(d) < 0.0015 || progress >= 1) { expRef.current = target; settleExp(target); draw(); afterMove(); return; }
-        expRef.current = cameraMoveRef.current.from + (target - cameraMoveRef.current.from) * (1 - Math.pow(1 - progress, 3));
+        var progress = clamp((ts - cameraMoveRef.current.at) / (cameraMoveRef.current.duration||650), 0, 1),flight=scaleFlightRef.current;
+        if (Math.abs(d) < 0.0015 || progress >= 1) { expRef.current = target; settleExp(target); afterMove();finishScaleFlight();draw();return; }
+        var eased=1-Math.pow(1-progress,3);
+        if(flight){flight.progress=progress;var descent=clamp((progress-.2)/.8,0,1);eased=descent*descent*(3-2*descent);}
+        expRef.current = cameraMoveRef.current.from + (target - cameraMoveRef.current.from) * eased;
         paintReadout();
         draw();
         afterMove();
@@ -1958,6 +2858,7 @@
         if (d === lastDecadeRef.current) return;
         lastDecadeRef.current = d;
         noteDecade(d);
+        if(scaleFlightRef.current)return;
         var len = humanLength(Math.pow(10, d));
         say(Math.abs(d) <= 2
           ? S('decade_sr_near', 'Now at about {len}.', { len: len })
@@ -1977,6 +2878,7 @@
         return best;
       }
       function stopJourney() {
+        arriveNow();
         if (journeyRef.current) { clearInterval(journeyRef.current); journeyRef.current = null; }
         if (journeyDirRef.current !== 0) { journeyDirRef.current = 0; setJourney(0); }
         stopFilm();
@@ -2289,9 +3191,10 @@
       // ── Keyboard on the canvas ──────────────────────────────────────────
       function onCanvasKey(ev) {
         var k = ev.key;
+        if(scaleFlightRef.current&&(k==='Escape'||k===' '||k==='Spacebar')){ev.preventDefault();arriveNow();return;}
         if (k === 'Escape' && comparisonActive) { ev.preventDefault(); inspectCompared(focused); return; }
         if (atlasRef.current && /^(a|d|w|s|r)$/i.test(k)) {
-          ev.preventDefault();
+          ev.preventDefault();arriveNow();
           if (k.toLowerCase() === 'r') { atlasRef.current.reset(); setInspectionZoom(1); setDetailId(''); }
           else atlasRef.current.orbit(k.toLowerCase() === 'a' ? -0.12 : k.toLowerCase() === 'd' ? 0.12 : 0, k.toLowerCase() === 'w' ? -0.1 : k.toLowerCase() === 's' ? 0.1 : 0);
           return;
@@ -2827,9 +3730,12 @@
           { big: bigName, times: timesPhrase(compare.ratio), small: smallName, dec: round2(compare.decades) });
       }
 
-      function openItem(item) {
-        flyTo(item);
+      function openItem(item, keepRoute, opts) {
+        if(!keepRoute&&item.id!==focusId)setAtlasRoute([]);
+        flyTo(item,opts);
         updateSlice(function (cur) { cur.readCount = (cur.readCount || 0) + 1; });
+        var cv=viewMode==='atlas'?atlasCanvasRef.current:canvasRef.current;
+        if(cv){var rect=cv.getBoundingClientRect();if(rect.top< -40||rect.top>window.innerHeight-120)cv.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});}
       }
 
       // ── Styles ──────────────────────────────────────────────────────────
@@ -2907,6 +3813,7 @@
 
         h('style', null, '.sx-explorer{font-family:ui-sans-serif,system-ui,sans-serif;display:flex;flex-direction:column;gap:14px}.sx-explorer *{box-sizing:border-box}.sx-explorer button,.sx-explorer select{min-height:40px}.sx-explorer button:disabled{opacity:.45;cursor:default}.sx-explorer button:focus-visible,.sx-explorer input:focus-visible,.sx-explorer select:focus-visible,.sx-explorer canvas:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}.sx-regions{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}.sx-regions button{text-align:left;padding:12px;border:1px solid;border-radius:10px;font:inherit;cursor:pointer}.sx-stage{height:clamp(410px,62vh,690px);position:relative;isolation:isolate;border-radius:16px;overflow:hidden;border:1px solid #334155;background:#0b1421}.sx-stage canvas{position:absolute;inset:0;width:100%;height:100%}.sx-hud{position:absolute;pointer-events:none;left:24px;right:24px;top:22px;color:#eef5fc;text-shadow:0 2px 10px #020713}.sx-hud h3{font-family:Georgia,serif;font-size:clamp(26px,3vw,44px);line-height:1.08;margin:7px 0;font-weight:400;max-width:75%}.sx-hud p{font-size:12px;letter-spacing:.07em;margin:0;color:#c5d7e4}.sx-stage-note{position:absolute;left:20px;right:20px;bottom:18px;pointer-events:none;display:flex;gap:12px;justify-content:space-between;align-items:flex-end;color:#deebf6;font-size:11px;line-height:1.5}.sx-stage-note span{padding:6px 9px;background:rgba(4,12,24,.86);border-radius:6px;max-width:60%}.sx-destination{flex:1 1 140px;text-align:left;border:1px solid;border-radius:10px;padding:12px;cursor:pointer;font-size:13px}.sx-flight-controls{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.sx-panel{flex:0 1 310px;min-width:0;width:100%}.sx-search{width:100%;padding:10px 12px;border:1px solid;border-radius:8px;font:inherit;font-size:13px}.sx-explorer:fullscreen{overflow:auto;padding:20px!important}.sx-explorer:fullscreen .sx-stage{height:72vh}@media(max-width:700px){.sx-regions{grid-template-columns:repeat(3,minmax(0,1fr))}.sx-regions button{padding:9px;font-size:12px}.sx-stage{height:440px}.sx-hud{left:16px;right:16px;top:18px}.sx-hud h3{max-width:100%;font-size:30px}.sx-panel{flex:1 1 100%}.sx-stage-note{left:12px;right:12px}.sx-stage-note span{max-width:70%}}@media(prefers-reduced-motion:reduce){.sx-explorer{animation:none!important;scroll-behavior:auto}}'),
 
+        h('style',null,'.sx-hud{isolation:isolate}.sx-hud:before{content:"";position:absolute;inset:-26px -28px -24px;z-index:-1;background:linear-gradient(180deg,rgba(5,11,21,.92),rgba(5,11,21,.70) 50%,rgba(5,11,21,0))}'),
         h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' } },
           typeof setStemLabTool === 'function' && h('button', { onClick: function () { setStemLabTool(null); say(S('returned_sr', 'Returned to the STEAM Lab tools.')); }, type: 'button', style: btn },
             ArrowLeft ? h(ArrowLeft, { size: 14, style: { display: 'inline', verticalAlign: '-2px', marginRight: 4 } }) : null,
@@ -2938,6 +3845,12 @@
         h('style', null, '.sx-panel{align-self:flex-start}.sx-stage:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(3,9,17,.38),transparent 29%,transparent 82%,rgba(3,9,17,.45))}.sx-hud,.sx-stage-note{z-index:1}.sx-hud h3{letter-spacing:-.025em}.sx-stage canvas:active{cursor:grabbing!important}.sx-markers{position:absolute;inset:0;pointer-events:none;z-index:2}.sx-marker{position:absolute;left:0;top:0;width:44px;height:44px;padding:6px;background:transparent;border:0;pointer-events:auto;cursor:pointer;color:#f2f8ec;font:600 12px system-ui}.sx-marker[hidden]{display:none}.sx-marker span{display:grid;place-items:center;width:30px;height:30px;border:1px solid #d0dec2;border-radius:50%;background:rgba(11,27,23,.88);box-shadow:0 0 0 4px rgba(180,215,162,.10),0 3px 12px #0005}.sx-marker:hover span,.sx-marker[aria-pressed="true"] span{background:#deebbe;color:#172819;border-color:#eff5de}.sx-detail-choices{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.sx-detail-choices button{flex:1 1 130px;text-align:left}.sx-detail-note a:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}'),
         h('style', null, '.sx-comparison-points{position:absolute;inset:0;pointer-events:none;z-index:2}.sx-comparison-point{position:absolute;left:0;top:0;pointer-events:auto;width:172px;border:1px dashed #bed3de;border-radius:8px;padding:7px 9px;color:#eef6fc;background:rgba(9,22,32,.93);font:12px system-ui;cursor:pointer}.sx-comparison-point:before{content:"+";display:block;font-size:20px;line-height:22px}.sx-comparison-point[hidden]{display:none}.sx-comparison-pair{display:flex;gap:8px;flex-wrap:wrap}.sx-comparison-pair article{flex:1 1 200px;min-width:0;overflow-wrap:anywhere}.sx-scale-bridge button{text-align:left;max-width:100%}.sx-explorer textarea:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}'),
         h('style', null, '@media(max-width:700px){.sx-comparison-diagram text{font-size:30px}.sx-comparison-diagram .sx-diagram-size{font-size:26px}}'),
+        h('style',null,'.sx-marker[data-offset="true"]:before{content:"";position:absolute;left:21px;top:-22px;width:1px;height:28px;background:#d7e9bd;pointer-events:none}.sx-marker[data-offset="true"]:after{content:"";position:absolute;left:19px;top:-24px;width:5px;height:5px;border-radius:50%;background:#d7e9bd;pointer-events:none}'),
+        h('style',null,'.sx-route{display:flex;align-items:center;flex-wrap:wrap;gap:5px 8px;padding:8px 12px;border:1px solid #344756;border-radius:10px;background:#101c29;color:#b3c5cf;font-size:12px}.sx-route-label{font-size:10px;text-transform:uppercase;letter-spacing:.09em;margin-right:6px}.sx-route button{font:inherit;min-height:40px;color:#b7e1df;background:transparent;border:1px solid transparent;border-radius:6px;padding:6px}.sx-route button:hover{border-color:#628489;background:#1b303c}.sx-route strong{color:#edf2ec;font-weight:550}.sx-orbit-hover{position:absolute;z-index:3;pointer-events:none;bottom:56px;left:50%;transform:translateX(-50%);max-width:calc(100% - 28px);padding:9px 14px;border:1px solid #76969d;border-radius:8px;background:rgba(7,21,32,.96);box-shadow:0 6px 24px #0008;color:#e8f6f4;font-size:12px;text-align:center}.sx-portal{display:flex;flex:none;align-items:center;justify-content:space-between;gap:12px;padding:11px 18px;border-top:1px solid #435456;background:linear-gradient(110deg,#172a32,#1c2429);color:#ece3ce}.sx-portal span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#a5c3c3;margin-bottom:4px}.sx-portal strong{font-size:12px;font-weight:500}.sx-portal button{border:1px solid #e4d5b0;border-radius:7px;padding:9px 15px;background:#e8d5ae;color:#252b2b;font:600 13px system-ui;cursor:pointer;min-height:44px}.sx-portal button:hover{background:#f7e6bf}@media(max-width:700px){.sx-stage-portal{height:510px}.sx-portal{padding:9px 12px;gap:8px}.sx-portal button{padding:8px 10px;font-size:12px}.sx-portal strong{font-size:11px}.sx-route{gap:3px 5px;font-size:11px}}'),
+        h('style',null,'.sx-orbit-marker{width:max-content;max-width:180px;min-width:44px}.sx-orbit-marker span{width:auto;min-width:32px;height:28px;padding:0 9px;border-radius:5px;font-size:11px;white-space:nowrap;background:rgba(8,20,31,.9);border-color:#8d9f9e;box-shadow:0 3px 12px #0005}.sx-orbit-marker[data-offset="true"]:before{left:50%;background:#c5bfaa}.sx-orbit-marker[data-offset="true"]:after{left:calc(50% - 2px);background:#d2c8b0}.sx-orbit-marker[aria-pressed="true"] span{background:#ead5ac;border-color:#f2e2bd;color:#302918}'),
+        h('style',null,".sx-stage.sx-stage-river{height:clamp(520px,74vh,780px)}.sx-river-nav{flex:none;position:relative;z-index:3;border-top:1px solid #38535d;background:linear-gradient(120deg,#162b34,#0e1d29);color:#edf1dd;padding:10px 18px 7px;display:grid;grid-template-columns:minmax(180px,1fr) minmax(220px,1.5fr);column-gap:28px;align-items:center}.sx-river-title{display:flex;align-items:center;justify-content:space-between;gap:10px;grid-row:1/3}.sx-river-title strong{display:block;font:500 18px Georgia,serif}.sx-river-title span{display:block;color:#bdd0cd;font-size:11px;margin-top:5px;line-height:1.5;font-variant-numeric:tabular-nums}.sx-river-nav button{min-width:44px;min-height:44px;border:1px solid #4b6266;border-radius:7px;background:#1b353e;color:#e1eccc;cursor:pointer;font:inherit}.sx-river-nav button:hover:not(:disabled){background:#2e4a50;border-color:#aed3c6}.sx-river-nav .sx-river-leave{padding:6px 10px;font-size:11px}.sx-river-map{width:100%;height:45px;display:block;overflow:visible}.sx-river-slider{display:flex;align-items:center;gap:10px}.sx-river-slider label{flex:1;min-width:0}.sx-river-slider input{width:100%;height:28px;margin:0;accent-color:#d9e5b7;cursor:ew-resize}.sx-river-limits{display:flex;justify-content:space-between;color:#9cb6bb;font:10px ui-monospace,monospace}.sx-river-slider button{font-size:22px}.sx-stage-river .sx-stage-note{display:none}@media(max-width:700px){.sx-river-nav{display:block;padding:8px 12px}.sx-river-title strong{font-size:16px}.sx-river-title span{font-size:10px;margin-top:2px}.sx-river-map{height:32px}.sx-river-slider{gap:8px}.sx-stage-river .sx-hud p:last-child{display:none}}"),
+        h('style',null,".sx-flight-labels{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}.sx-flight-labels[hidden]{display:none}.sx-flight-target{position:absolute;left:0;top:0;text-align:center;color:#c4dce0;font-size:12px;white-space:nowrap}.sx-flight-target[hidden]{display:none}.sx-flight-target i{display:block;width:18px;height:18px;border:1px solid #9fc3ce;border-radius:50%;margin:0 auto 10px;box-shadow:0 0 0 5px #8ebac012}.sx-flight-target strong{display:block;font-weight:500}.sx-flight-target small{display:block;color:#92aeb8;font-size:10px;margin-top:5px}.sx-flight-labels span{position:absolute;left:0;top:0;color:#b6d5d9;background:#08121bcc;border-left:1px solid #73949c;padding:4px 8px;font:11px ui-monospace,monospace;white-space:nowrap}.sx-flight-labels span[hidden]{display:none}.sx-descent{position:absolute;left:20px;right:20px;bottom:18px;z-index:4;padding:12px 16px;background:linear-gradient(110deg,#152a36ee,#0d1926f5);border:1px solid #476674;border-radius:10px;box-shadow:0 12px 30px #0004;color:#d9e9ed;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px 18px}.sx-descent-meta{display:flex;align-items:baseline;gap:12px;min-width:0}.sx-descent-meta span{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#a0bec7}.sx-descent-meta strong{font:500 15px ui-monospace,monospace;font-variant-numeric:tabular-nums}.sx-descent-track{height:3px;grid-column:1;border-radius:3px;overflow:hidden;background:#35515c}.sx-descent-track i{display:block;width:100%;height:100%;background:linear-gradient(90deg,#72bfc9,#f1deb8);transform-origin:left;transform:scaleX(0)}.sx-descent p{margin:0;font-size:11px;color:#a9c2cc;grid-column:1}.sx-descent button{grid-column:2;grid-row:1/4;align-self:center;min-height:44px;border:1px solid #b0c4cb;border-radius:7px;padding:9px 14px;background:#d8e8e7;color:#1b3039;cursor:pointer;font:600 12px system-ui}.sx-descent button:hover{background:#f1f4e8}@media(max-width:700px){.sx-descent{left:10px;right:10px;bottom:10px;padding:10px;gap:7px 10px}.sx-descent-meta{display:block}.sx-descent-meta span{display:block;font-size:9px;margin-bottom:3px}.sx-descent-meta strong{font-size:13px}.sx-descent p{font-size:9px}.sx-descent button{padding:8px;font-size:11px}.sx-flight-labels span{font-size:10px}}"),
+        h('style',null,'.sx-stage{display:flex;flex-direction:column}.sx-viewport{position:relative;flex:1;min-height:0;isolation:isolate}.sx-feature-nav{position:relative;z-index:3;flex:none;display:flex;align-items:center;gap:5px;padding:8px 12px;border-top:1px solid #354352;background:linear-gradient(110deg,#101e2b,#101723);color:#edf4f7}.sx-feature-nav button{color:inherit;border:1px solid transparent;background:transparent;border-radius:8px;cursor:pointer;min-height:44px;font:inherit}.sx-feature-nav button:hover:not(:disabled){background:#213344;border-color:#527080}.sx-feature-nav button:focus-visible,.sx-feature-story a:focus-visible{outline:3px solid #67d8f5;outline-offset:-3px}.sx-feature-title{flex:1;min-width:0;padding:5px 8px;text-align:left;line-height:1.3}.sx-feature-title strong{display:block;font-size:14px;font-weight:550;overflow-wrap:anywhere}.sx-feature-count{display:block;color:#aac1cf;font-size:10px;letter-spacing:.04em;line-height:1.5;margin-bottom:3px}.sx-feature-arrow,.sx-feature-overview{flex:0 0 44px;width:44px;padding:0}.sx-feature-arrow span{font-size:30px;line-height:1}.sx-feature-overview span{font-size:22px}.sx-feature-story{position:absolute;bottom:100%;left:0;right:0;max-height:160px;overflow:auto;overscroll-behavior:contain;padding:14px 20px 16px;background:rgba(9,20,31,.97);border-top:1px solid #527080;box-shadow:0 -12px 30px #0003;color:#edf4f7;font-size:13px;line-height:1.65}.sx-feature-story p{margin:0 0 9px}.sx-feature-story a{color:#9ddfee;text-underline-offset:3px}.sx-feature-nav:has(.sx-feature-story) .sx-feature-title{background:#203442;border-color:#527080}@media(max-width:700px){.sx-feature-nav{padding:7px 6px;gap:0}.sx-feature-title{padding:3px 6px}.sx-feature-title strong{font-size:12px}.sx-feature-count{font-size:9px;letter-spacing:0}.sx-feature-story{max-height:150px;padding:12px 14px;font-size:12px}.sx-viewport .sx-stage-note{bottom:8px}.sx-viewport .sx-stage-note span{font-size:9px;padding:4px 5px}}'),
         h('nav', { className: 'sx-regions', 'aria-label': S('atlas_realms', 'Scale destinations') }, REALMS.map(function (r, i) {
           var active = realm.id === r.id;
           return h('button', { key: r.id, type: 'button', 'aria-current': active ? 'true' : undefined, onClick: function () { openItem(byId[r.at]); },
@@ -2956,34 +3869,44 @@
             h('div', { className: 'sx-flight-controls', role: 'group', 'aria-label': S('atlas_view_controls', 'View controls') },
               h('button', { type: 'button', style: viewMode === 'atlas' ? goBtn : btn, 'aria-pressed': viewMode === 'atlas', onClick: function () { setViewMode('atlas'); } }, S('atlas_view', 'Immersive 3D')),
               h('button', { type: 'button', style: viewMode === 'chart' ? goBtn : btn, 'aria-pressed': viewMode === 'chart', onClick: function () { setViewMode('chart'); } }, S('atlas_chart', 'Scale chart')),
-              viewMode === 'atlas' ? h('button', { type: 'button', style: btn, onClick: function () { setInspectionZoom(1);setDetailId(''); if (atlasRef.current) atlasRef.current.reset(); } }, S('atlas_reset', 'Reset camera')) : null,
+              viewMode === 'atlas' ? h('button', { type: 'button', style: btn, onClick: function () { arriveNow();setInspectionZoom(1);setDetailId(''); if (atlasRef.current) atlasRef.current.reset(); } }, S('atlas_reset', 'Reset camera')) : null,
               viewMode === 'atlas' ? h('button', { type: 'button', style: btn, 'aria-pressed': ambient && !reduceMotion, disabled: reduceMotion, onClick: function () { setAmbient(!ambient); updateSlice(function (cur) { cur.ambient = !ambient; }); } }, reduceMotion ? S('atlas_still', 'Reduced motion') : ambient ? S('atlas_motion_pause', 'Pause ambience') : S('atlas_motion_play', 'Resume ambience')) : null),
             atlasStatus === 'failed' ? h('p', { role: 'status', style: { margin: 0, color: P.dim, fontSize: '0.8125rem' } }, S('atlas_failed', 'The 3D view is unavailable. The scale chart and all destinations are ready to explore.')) : null,
-            h('div', { className: 'sx-stage' },
+            routeNavigation(),
+            h('div', { className: 'sx-stage'+(viewMode==='atlas'&&!comparisonActive&&detailId==='river-journey'?' sx-stage-river':'')+(viewMode==='atlas'&&!comparisonActive&&selectedDetail&&selectedDetail.visit?' sx-stage-portal':'') },
+              h('div',{className:'sx-viewport'},
               viewMode === 'atlas' ? h('canvas', { ref: atlasCanvasRef, tabIndex: 0, role: 'application',
                 'aria-label': comparisonActive ? S('atlas_comparison_canvas_aria', 'Shared scale comparison. Drag or use W A S D to orbit. Scroll or pinch to inspect. R resets the camera. Escape returns to exploration.') : S('atlas_canvas_aria', 'Interactive scale atlas. Scroll or use arrow keys to travel through scale. Drag to orbit, or use W A S D. Pinch to inspect more closely. R resets the camera. Home returns to human scale. Space plays or pauses the journey.'),
-                'aria-describedby': descId, onKeyDown: onCanvasKey, style: { touchAction: 'none', cursor: 'grab', outlineOffset: '-4px' } }) : null,
+                'aria-describedby': descId, 'aria-busy':!!scaleFlight, onKeyDown: onCanvasKey, style: { touchAction: 'none', cursor: 'grab', outlineOffset: '-4px' } }) : null,
               h('canvas', { ref: canvasRef, tabIndex: 0, role: 'application',
                 'aria-label': S('canvas_aria', 'Scale view. Left and right arrows zoom by a quarter of a power of ten, hold shift for a whole one, Page Up and Page Down jump three, Home returns to human scale, space plays or pauses the zoom.'),
                 'aria-describedby': descId,
                 onKeyDown: onCanvasKey, onWheel: onWheel,
                 style: { display: viewMode === 'chart' && !comparisonActive ? 'block' : 'none', width: '100%', height: '100%', outlineOffset: '-3px' } }),
               viewMode === 'chart' && comparisonActive ? comparisonDiagram() : null,
-              viewMode==='atlas'?h('div',{ref:markerLayerRef,className:'sx-markers'},details.map(function(detail,index){return h('button',{key:focusId+'-'+detail.id,type:'button',className:'sx-marker',hidden:true,'data-scale-marker':detail.id,'aria-label':S('atlas_inspect_part', 'Inspect {part}',{part:detail.label}),'aria-pressed':detailId===detail.id,title:detail.label,onClick:function(){chooseDetail(detail);}},h('span',null,index+1));})):null,
+              viewMode==='atlas'?h('div',{ref:orbitHoverRef,className:'sx-orbit-hover',hidden:true,'aria-hidden':'true'}):null,
+              viewMode==='atlas'?h('div',{ref:flightLabelsRef,className:'sx-flight-labels',hidden:true,'aria-hidden':'true'},[0,1,2,3,4].map(function(i){return h('span',{key:i,hidden:true});}),scaleFlight?h('div',{className:'sx-flight-target','data-flight-locator':true,hidden:true},h('i',null),h('strong',null,itemText(scaleFlight.destination,'name')),h('small',null,S('atlas_flight_below_pixel', 'Position only · smaller than one pixel'))):null):null,
+              flightPanel(),
+              viewMode==='atlas'?h('div',{ref:markerLayerRef,className:'sx-markers'},details.map(function(detail,index){return h('button',{key:focusId+'-'+detail.id,type:'button',className:'sx-marker'+(focusId==='solar-system'?' sx-orbit-marker':''),hidden:true,'data-scale-marker':detail.id,'aria-label':S('atlas_inspect_part', 'Inspect {part}',{part:detail.label}),'aria-pressed':detailId===detail.id,title:detail.label,onClick:function(){chooseDetail(detail);}},h('span',null,focusId==='solar-system'?detail.label:index+1));})):null,
               viewMode === 'atlas' ? h('div', { ref: comparisonLayerRef, className: 'sx-comparison-points' }, compare ? [compare.a, compare.b].map(function (item, index) {
                 return h('button', { key: index, type: 'button', className: 'sx-comparison-point', hidden: true, 'data-scale-comparison-point': item.id,
                   'aria-label': S('atlas_comparison_inspect', 'Inspect {name}', { name: itemText(item, 'name') }), onClick: function () { inspectCompared(item); } },
                   S('atlas_comparison_locator', 'Position only · too small to resolve'), h('span', { style: { display: 'block', marginTop: 4, fontWeight: 700 } }, itemText(item, 'name')));
               }) : null) : null,
               viewMode === 'atlas' || comparisonActive ? h('div', { className: 'sx-hud', 'aria-hidden': 'true' },
-                h('p', { style: { color: comparisonActive ? '#a5dcd8' : theme === 'contrast' ? '#ffffff' : realm.color, textTransform: 'uppercase', fontWeight: 700 } }, comparisonActive ? S('atlas_comparison_studio', 'Comparison studio') : S('atlas_realm_' + realm.id, realm.name)),
+                h('p', { style: { color: comparisonActive ? '#a5dcd8' : theme === 'contrast' ? '#ffffff' : realm.color, textTransform: 'uppercase', fontWeight: 700 } }, scaleFlight ? S('atlas_flight_heading', 'Journey through scale') : comparisonActive ? S('atlas_comparison_studio', 'Comparison studio') : S('atlas_realm_' + realm.id, realm.name)),
                 h('h3', null, comparisonActive ? S('atlas_comparison_shared', 'One shared scale') : itemText(focused, 'name')),
-                h('p', null, comparisonActive ? (viewMode === 'atlas' ? S('atlas_comparison_projection', 'Measured proportions · parallel projection') : S('atlas_comparison_diagram_tag', 'Measured lengths · one shared unit')) : lengthText(focused.size) + ' ' + S('dim_' + focused.dim.replace(/\s+/g, '_'), focused.dim)),
+                h('p', null, scaleFlight ? S('atlas_flight_origin', 'From {name}',{name:lowerArticle(itemText(byId[scaleFlight.origin.itemId],'name'))}) : comparisonActive ? (viewMode === 'atlas' ? S('atlas_comparison_projection', 'Measured proportions · parallel projection') : S('atlas_comparison_diagram_tag', 'Measured lengths · one shared unit')) : lengthText(focused.size) + ' ' + S('dim_' + focused.dim.replace(/\s+/g, '_'), focused.dim)),
+                !scaleFlight&&!comparisonActive&&focused.id==='solar-system'?h('p',{style:{color:'#e3cba5',marginTop:10}},selectedDetail&&selectedDetail.au?S('atlas_orbit_au_label', '{au} AU · orbital radius',{au:selectedDetail.au.toFixed(2)}):S('atlas_orbit_stage_label', 'Proportional orbits · enlarged worlds')):null,
+                !comparisonActive&&focused.id==='grand-canyon'?h('p',{style:{color:'#edc49b',marginTop:10}},S('atlas_canyon_badge', 'Vertical relief {n}× · length follows the river',{n:terrainRelief})):null,
                 !comparisonActive&&selectedDetail?h('p',{style:{marginTop:14,letterSpacing:'.02em',color:'#deebbe'}},S('atlas_inspecting', 'Inspecting: {part}',{part:selectedDetail.label})):null,
                 atlasStatus === 'loading' ? h('p', { style: { marginTop: 20 } }, S('atlas_loading', 'Preparing your observatory…')) : null) : null,
-              viewMode === 'atlas' ? h('div', { className: 'sx-stage-note', 'aria-hidden': 'true' },
+              viewMode === 'atlas' && !scaleFlight ? h('div', { className: 'sx-stage-note', 'aria-hidden': 'true' },
                 h('span', null, comparisonActive ? S('atlas_comparison_gesture', 'Drag to orbit · Scroll to inspect · Esc to explore') : S('atlas_gesture', 'Drag to orbit · Pinch to inspect · Scroll to travel')),
-                h('span', null, S('atlas_model_tag', 'Illustrated models / measured dimensions'))) : null
+                h('span', null, S('atlas_model_tag', 'Illustrated models / measured dimensions'))) : null),
+              scenePortal(),
+              riverNavigator(),
+              featureNavigator()
             ),
             comparisonActive ? h('section', { className: 'sx-comparison-summary', 'aria-label': S('atlas_comparison_dimensions', 'Compared measurements') },
               h('div', { className: 'sx-comparison-pair' }, [compare.a, compare.b].map(function (item, index) {
@@ -3001,18 +3924,65 @@
             viewMode === 'atlas' ? h('div', { className: 'sx-inspection', style: { display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',padding:'9px 12px',border:'1px solid '+P.line,borderRadius:10,background:P.panel } },
               h('label', { style:{display:'flex',gap:10,alignItems:'center',flex:'1 1 230px',fontSize:'0.75rem'} },
                 S('atlas_inspection_zoom', 'Inspection zoom'),
-                h('input', { type:'range',min:1,max:2.5,step:.1,value:inspectionZoom,'aria-label':S('atlas_inspection_aria', 'Inspection magnification'), 'aria-valuetext':S('atlas_inspection_value', '{n} times closer', {n:inspectionZoom.toFixed(1)}),onChange:function(ev){setInspectionZoom(Number(ev.target.value));},style:{flex:1,minWidth:60,accentColor:P.accent} }),
+                h('input', { type:'range',min:1,max:comparisonActive?2.5:inspectionLimit(focusId),step:.1,value:inspectionZoom,'aria-label':S('atlas_inspection_aria', 'Inspection magnification'), 'aria-valuetext':S('atlas_inspection_value', '{n} times closer', {n:inspectionZoom.toFixed(1)}),onChange:function(ev){arriveNow();setInspectionZoom(Number(ev.target.value));},style:{flex:1,minWidth:60,accentColor:P.accent} }),
                 h('output', { style:{fontVariantNumeric:'tabular-nums',minWidth:34} },inspectionZoom.toFixed(1)+'×')),
               h('button', { type:'button',style:btn,disabled:inspectionZoom===1&&!detailId,onClick:function(){setInspectionZoom(1);setDetailId('');} },S('atlas_fit', 'Fit object')),
-              focused.id==='mitochondrion'?h('button',{type:'button',style:cutaway?goBtn:btn,'aria-pressed':cutaway,onClick:function(){setCutaway(!cutaway);setDetailId('');}},S('atlas_cutaway', 'Open cutaway')):null) : null,
+              hasCutaway(focused.id)?h('button',{type:'button',style:cutaway?goBtn:btn,'aria-pressed':cutaway,onClick:function(){setCutaway(!cutaway);setDetailId('');}},S('atlas_cutaway', 'Open cutaway')):null) : null,
+            viewMode==='atlas'&&!comparisonActive&&isPlanetaryWorld(focused.id)?h('section',{className:'sx-lighting','aria-label':S('atlas_lighting', 'Light this world'),style:{padding:'14px 16px',border:'1px solid '+P.line,borderRadius:12,background:P.panel}},
+              h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,flexWrap:'wrap'}},h('h3',{style:{fontSize:'.9rem',margin:0}},S('atlas_lighting', 'Light this world')),h('output',{style:{fontSize:'.75rem',color:P.dim,fontVariantNumeric:'tabular-nums'}},S('atlas_illuminated', 'Approx. {n}% illuminated', {n:illuminatedDisc(sunAngle)}))),
+              h('label',{style:{display:'flex',gap:12,alignItems:'center',marginTop:12,fontSize:'.75rem'}},S('atlas_sun_angle', 'Sun–observer angle'),h('input',{type:'range',min:0,max:180,step:1,value:sunAngle,'aria-label':S('atlas_sun_angle', 'Sun–observer angle'),'aria-valuetext':sunAngle+'°',onChange:function(ev){changeSunlight(Number(ev.target.value));},style:{flex:1,minWidth:40,accentColor:P.accent}}),h('span',{style:{minWidth:32,fontVariantNumeric:'tabular-nums'}},sunAngle+'°')),
+              h('div',{style:{display:'flex',gap:6,flexWrap:'wrap',marginTop:10}},[[0,S('atlas_light_full', 'Full light')],[90,S('atlas_light_half', 'Half light')],[135,S('atlas_light_crescent', 'Crescent')]].map(function(preset){return h('button',{key:preset[0],type:'button',style:sunAngle===preset[0]?goBtn:btn,'aria-pressed':sunAngle===preset[0],onClick:function(){changeSunlight(preset[0]);}},preset[1]);})),
+              h('p',{style:{fontSize:'.75rem',lineHeight:1.5,color:P.dim,margin:'10px 0 0'}},S('atlas_lighting_scope', 'Explore how sunlight changes the visible disc. This model follows your viewpoint; it does not show today’s sky.'))):null,
             viewMode==='atlas'&&!comparisonActive&&details.length?h('section',{className:'sx-details','aria-label':S('atlas_detail_section', 'Explore this specimen'),style:{padding:'14px 16px',border:'1px solid '+P.line,borderRadius:12,background:P.panel}},
               h('div',{style:{display:'flex',gap:12,justifyContent:'space-between',alignItems:'center'}},h('h3',{style:{fontSize:'0.9rem',margin:0}},S('atlas_detail_section', 'Explore this specimen')),h('button',{type:'button',style:btn,'aria-pressed':showDetails,onClick:function(){setShowDetails(!showDetails);}},S('atlas_markers', 'Landmarks'))),
-              h('div',{className:'sx-detail-choices'},details.map(function(detail,index){return h('button',{key:detail.id,type:'button',style:detailId===detail.id?goBtn:btn,'aria-pressed':detailId===detail.id,onClick:function(){chooseDetail(detail);}},h('span',{'aria-hidden':'true',style:{opacity:.7,marginRight:6}},String(index+1).padStart(2,'0')),detail.label);})),
+              isPlanetaryWorld(focused.id)&&(planetImagery.id!==focused.id||planetImagery.status!=='ready')?h('p',{role:'status',style:{fontSize:'.8rem',color:P.dim}},planetImagery.id===focused.id&&planetImagery.status==='failed'?S('atlas_imagery_unavailable', 'Surface imagery is unavailable. You can still orbit this world and explore its lighting.'):S('atlas_imagery_loading', 'Loading surface imagery for these landmarks…')):null,
+              h('div',{className:'sx-detail-choices'},details.map(function(detail,index){return h('button',{key:detail.id,type:'button',style:detailId===detail.id?goBtn:btn,disabled:detail.surface&&(planetImagery.id!==focused.id||planetImagery.status!=='ready'),'aria-pressed':detailId===detail.id,onClick:function(){chooseDetail(detail);}},h('span',{'aria-hidden':'true',style:{opacity:.7,marginRight:6}},String(index+1).padStart(2,'0')),detail.label);})),
               selectedDetail?h('div',{className:'sx-detail-note',style:{borderLeft:'2px solid '+P.accent,paddingLeft:12}},h('p',{style:{fontSize:'0.875rem',lineHeight:1.65,margin:'10px 0 6px'}},selectedDetail.body),h('a',{href:selectedDetail.source,target:'_blank',rel:'noopener noreferrer',style:{fontSize:'0.75rem',color:P.accent}},S('atlas_detail_source', 'Read the science source'))):h('p',{style:{fontSize:'0.8rem',lineHeight:1.6,color:P.dim,margin:'10px 0 0'}},S('atlas_detail_invite', 'Choose a numbered landmark to move closer. Orbit around the feature, then use Fit object to see the whole specimen.'))):null,
             viewMode==='atlas'&&focused.id==='mitochondrion'?h('p',{style:{margin:0,fontSize:'0.75rem',lineHeight:1.5,color:P.dim}},cutaway?S('atlas_cutaway_open', 'Inside: the cristae are folds of the inner membrane. Close the cutaway to see the outer surface.'):S('atlas_cutaway_closed', 'Outside: the outer membrane encloses the organelle. Open the cutaway to explore the folds within.')):null,
+            viewMode==='atlas'&&!comparisonActive&&isMicrobe(focused.id)?h('p',{className:'sx-cell-note',style:{margin:0,fontSize:'.75rem',lineHeight:1.6,color:P.dim}},S('atlas_cell_scope', 'The ruler measures cell body length. Colors, organelle sizes and motion are illustrated to make the anatomy readable. Open the cutaway to explore inside; Pause ambience holds the motion still.')):null,
+            viewMode==='atlas'&&!comparisonActive&&focused.id==='sun'?h('p',{className:'sx-solar-note',style:{margin:0,fontSize:'.75rem',lineHeight:1.6,color:P.dim}},S('atlas_solar_scope', 'The ruler spans the photosphere. The corona extends beyond it. Interior boundaries are approximate; warm colors, enlarged surface detail and slow flows help reveal the structure. This is an illustrated star, not a live solar observation.')):null,
+            viewMode==='atlas'&&!comparisonActive&&focused.id==='grand-canyon'?h('section',{className:'sx-terrain-controls','aria-label':S('atlas_canyon_controls', 'Explore the canyon landscape'),style:{padding:'14px 16px',border:'1px solid '+P.line,borderRadius:12,background:P.panel}},
+              h('h3',{style:{fontSize:'.9rem',margin:'0 0 10px'}},S('atlas_canyon_controls', 'Explore the canyon landscape')),
+              h('div',{style:{display:'flex',gap:8,flexWrap:'wrap'}},
+                h('button',{type:'button',style:btn,onClick:function(){chooseDetail(details.filter(function(d){return d.id==='canyon-overview';})[0],true);}},S('atlas_canyon_overview', 'Look from above')),
+                h('button',{type:'button',style:goBtn,onClick:function(){chooseDetail(details.filter(function(d){return d.id==='canyon-rim';})[0],true);}},S('atlas_canyon_rim', 'Approach the rim')),
+                h('button',{type:'button',style:btn,onClick:function(){chooseDetail(details.filter(function(d){return d.id==='river-bend';})[0],true);}},S('atlas_canyon_river', 'Follow the river')),
+                h('button',{type:'button',style:btn,onClick:function(){chooseDetail(details.filter(function(d){return d.id==='river-journey';})[0],true);}},S('atlas_river_enter', 'Travel along the river'))),
+              h('label',{style:{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap',fontSize:'.8rem',marginTop:14}},
+                S('atlas_canyon_relief', 'Vertical relief'),
+                h('input',{type:'range',min:1,max:20,step:1,value:terrainRelief,'aria-label':S('atlas_canyon_relief', 'Vertical relief'),'aria-valuetext':S('atlas_canyon_relief_value', '{n} times vertical relief',{n:terrainRelief}),style:{flex:1,minWidth:100,accentColor:P.accent},onChange:function(ev){arriveNow();setTerrainRelief(Number(ev.target.value));}}),
+                h('output',{style:{minWidth:32,fontVariantNumeric:'tabular-nums'}},terrainRelief+'×')),
+              h('div',{style:{display:'flex',gap:8,flexWrap:'wrap',marginTop:9}},
+                h('button',{type:'button',style:terrainRelief===1?goBtn:btn,'aria-pressed':terrainRelief===1,onClick:function(){arriveNow();setTerrainRelief(1);}},S('atlas_canyon_true_relief', 'Actual proportions')),
+                h('button',{type:'button',style:terrainRelief===8?goBtn:btn,'aria-pressed':terrainRelief===8,onClick:function(){arriveNow();setTerrainRelief(8);}},S('atlas_canyon_enhance_relief', 'Reveal the relief'))),
+              h('p',{style:{fontSize:'.75rem',lineHeight:1.6,color:P.dim,margin:'12px 0 0'}},S('atlas_canyon_scope', 'An illustrated terrain, using 446 km of river length and about 1.6 km of reference depth. Vertical exaggeration reveals the cliffs at this large scale. The winding route, tributaries and rock bands are composed for exploration; this is not a surveyed elevation map. Comparisons use unexaggerated relief.')),
+              h('a',{href:'https://www.nps.gov/grca/learn/nature/grca-geology.htm',target:'_blank',rel:'noopener noreferrer',style:{fontSize:'.75rem',color:P.accent}},S('atlas_canyon_source', 'Geology · National Park Service'))):null,
+            viewMode==='atlas'&&!comparisonActive&&focused.id==='solar-system'?h('section',{className:'sx-system-controls','aria-label':S('atlas_system_controls', 'Explore the planetary system'),style:{padding:'14px 16px',border:'1px solid '+P.line,borderRadius:12,background:P.panel}},
+              h('h3',{style:{fontSize:'.9rem',margin:'0 0 10px'}},S('atlas_system_controls', 'Explore the planetary system')),
+              h('div',{style:{display:'flex',gap:8,flexWrap:'wrap'}},
+                h('button',{type:'button',style:btn,onClick:function(){wholeSpecimen();if(atlasRef.current)atlasRef.current.reset();}},S('atlas_orbit_whole', 'Whole system')),
+                h('button',{type:'button',style:btn,onClick:function(){chooseDetail(details[0],true);}},S('atlas_orbit_inner_action', 'Explore inner planets')),
+                h('button',{type:'button',style:goBtn,onClick:function(){travelTo(byId.sun);}},S('atlas_orbit_visit_sun', 'Visit the Sun')),
+                h('button',{type:'button',style:btn,onClick:function(){openItem(byId.milkyway);}},S('atlas_orbit_visit_galaxy', 'Return to the Milky Way'))),
+              selectedDetail&&selectedDetail.au?h('p',{className:'sx-orbit-distance',style:{fontSize:'.85rem',lineHeight:1.5,color:P.text,margin:'12px 0 0'}},
+                S('atlas_orbit_distance', '{planet} · {au} AU from the Sun in this model',{planet:selectedDetail.label,au:selectedDetail.au.toFixed(2)})):null,
+              selectedDetail&&selectedDetail.visit?h('button',{type:'button',style:Object.assign({},goBtn,{marginTop:10}),onClick:function(){travelTo(byId[selectedDetail.visit]);}},S('atlas_orbit_visit_world', 'Explore {planet} at its own scale',{planet:selectedDetail.label})):null,
+              h('p',{style:{fontSize:'.75rem',lineHeight:1.6,color:P.dim,margin:'10px 0 0'}},S('atlas_orbit_scope', 'Distances keep their proportions through every view. Inspection zoom moves your camera; it leaves the atlas scale unchanged. Worlds are enlarged markers with illustrated surfaces. Choose Earth or Jupiter to continue into its detailed globe.')),
+              h('a',{href:'https://ssd.jpl.nasa.gov/planets/approx_pos.html',target:'_blank',rel:'noopener noreferrer',style:{fontSize:'.75rem',color:P.accent}},S('atlas_orbit_source', 'Orbital sizes · NASA/JPL'))):null,
+            viewMode==='atlas'&&!comparisonActive&&focused.id==='milkyway'?h('section',{className:'sx-galaxy-controls','aria-label':S('atlas_galaxy_controls', 'Galaxy viewpoint'),style:{padding:'14px 16px',border:'1px solid '+P.line,borderRadius:12,background:P.panel}},
+              h('h3',{style:{fontSize:'.9rem',margin:'0 0 10px'}},S('atlas_galaxy_controls', 'Galaxy viewpoint')),
+              h('div',{style:{display:'flex',gap:8,flexWrap:'wrap'}},
+                h('button',{type:'button',style:btn,onClick:function(){chooseDetail(details.filter(function(d){return d.id==='spiral-arms';})[0],true);}},S('atlas_galaxy_above', 'View from above')),
+                h('button',{type:'button',style:btn,onClick:function(){chooseDetail(details.filter(function(d){return d.id==='galactic-disc';})[0],true);}},S('atlas_galaxy_edge', 'View edge-on')),
+                h('button',{type:'button',style:goBtn,onClick:function(){travelTo(byId['solar-system']);}},S('atlas_galaxy_visit', 'Visit the Solar System'))),
+              h('p',{style:{fontSize:'.75rem',lineHeight:1.6,color:P.dim,margin:'10px 0 0'}},S('atlas_galaxy_scope', 'An illustrated stellar disc, approximately 100,000 light-years across. Arm paths, dust, colors and vertical structure are interpretive. Light points represent stellar populations; the Sun marker is enlarged. The extended halo is outside this model.'))):null,
+            viewMode==='atlas'&&!comparisonActive&&focused.id==='orion-nebula'?h('div',{className:'sx-nebula-controls',role:'group','aria-label':S('atlas_nebula_controls', 'Nebula view'),style:{display:'flex',flexDirection:'column',gap:9}},
+              h('button',{type:'button',style:nebulaReveal?goBtn:btn,'aria-pressed':nebulaReveal,onClick:function(){setNebulaReveal(!nebulaReveal);var cv=atlasCanvasRef.current;if(cv){var rect=cv.getBoundingClientRect();if(rect.top< -40||rect.bottom>window.innerHeight+40)cv.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});}}},S('atlas_nebula_reveal', 'Reveal embedded stars')),
+              h('p',{style:{margin:0,fontSize:'.75rem',lineHeight:1.6,color:P.dim}},S('atlas_nebula_scope', 'Explore an illustrated volume of gas and dust. Its shape, depth and colors are interpretive; stellar light points are enlarged. Revealing stars reduces opacity while keeping every position and measured distance unchanged.')),
+              h('a',{href:'https://science.nasa.gov/solar-system/skywatching/night-sky-network/a-flame-in-the-sky-the-orion-nebula/',target:'_blank',rel:'noopener noreferrer',style:{fontSize:'.75rem',color:P.accent}},S('atlas_nebula_scale_source', 'Scale reference: approximately 24 light-years across · NASA'))):null,
             viewMode === 'atlas' ? h('div', { className: 'sx-flight-controls', role: 'group', 'aria-label': S('atlas_orbit_controls', 'Orbit the 3D scene') },
-              h('button', { type: 'button', style: btn, onClick: function () { if (atlasRef.current) atlasRef.current.orbit(-0.2, 0); } }, S('atlas_orbit_left', 'Orbit left')),
-              h('button', { type: 'button', style: btn, onClick: function () { if (atlasRef.current) atlasRef.current.orbit(0.2, 0); } }, S('atlas_orbit_right', 'Orbit right')),
+              h('button', { type: 'button', style: btn, onClick: function () { orbitScene(-0.2, 0); } }, S('atlas_orbit_left', 'Orbit left')),
+              h('button', { type: 'button', style: btn, onClick: function () { orbitScene(0.2, 0); } }, S('atlas_orbit_right', 'Orbit right')),
               h('button', { type: 'button', style: neighbors ? goBtn : btn, disabled: comparisonActive, 'aria-pressed': neighbors, onClick: function () { setNeighbors(!neighbors); updateSlice(function(cur){cur.atlasNeighbors=!neighbors;}); } }, S('atlas_show_neighbors', 'Size neighbors')),
               h('button', { type: 'button', style: measure ? goBtn : btn, 'aria-pressed': measure, onClick: function () { setMeasure(!measure); } }, S('atlas_measure', 'Measurement')),
               h('button', { type: 'button', style: btn, onClick: function () { zoomBy(-1); } }, S('atlas_shrink', 'Explore 10× smaller')),
@@ -3096,7 +4066,7 @@
                 h('p', { style: { margin: 0 } }, itemText(focused, 'describe')),
                 viewMode === 'atlas' ? h('p', { style: { margin: '10px 0 0', color: P.dim, fontSize: '0.71875rem', lineHeight: 1.5 } },
                   focused.dim === 'distance' ? S('atlas_distance_note', 'This is a gap, shown as a ruler. Endpoint markers are illustrative, not scaled objects.') :
-                  focused.id === 'solar-system' ? S('atlas_solar_note', 'The outer orbit sets the measured width. Inner orbits and planet markers are enlarged and spaced for visibility.') :
+                  focused.id === 'solar-system' ? S('atlas_solar_note', 'The width spans Neptune’s reference orbit. All eight orbital radii share one scale. Circular paths, a shared plane and fixed planet positions simplify the system. The Sun, planets and asteroid particles are enlarged markers.') :
                   focused.id === 'carbon' || focused.id === 'hydrogen' || focused.id === 'proton' ? S('atlas_quantum_note', 'A conceptual probability or charge cloud, not a solid surface. Colors are illustrative; an atomic nucleus would be too small to see here.') :
                   focused.id === 'everest' ? S('atlas_everest_note', 'The stated height is measured above sea level. The mountain terrain is an illustration, not a surveyed height map.') :
                   focused.id === 'earth' ? S('atlas_earth_note', 'Earth imagery: NASA/Goddard Space Flight Center Scientific Visualization Studio, Blue Marble. A satellite mosaic, not a live view. Neighboring objects are arranged by size, not orbital distance.') :

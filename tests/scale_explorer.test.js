@@ -716,10 +716,10 @@ describe('Scale Explorer tiling and population strip', () => {
     let empties = 0; for (let d = -16; d <= 27; d++) if (!counts[d]) empties++;
     // 2026-09-13: four rungs were added where something well defined exists (a
     // light minute, a light month, the Coma Cluster, ten billion light years).
-    // The two that remain are honestly empty: nothing has a defined width below
-    // the proton, and nothing familiar sits at a hundred femtometres.
-    expect(empties).toBe(2);
-    expect(counts[-16]).toBeUndefined(); expect(counts[-13]).toBeUndefined();
+    // The catalog has no reference below the proton or at a hundred femtometres.
+    // Orion's corrected 24-light-year span rounds to decade 17, leaving 18 empty.
+    expect(empties).toBe(3);
+    expect(counts[-16]).toBeUndefined(); expect(counts[-13]).toBeUndefined(); expect(counts[18]).toBeUndefined();
     for (const rel of UI_COPIES) {
       const sec = JSON.parse(read(rel)).stem.scaleExplorer;
       for (const k of ['fit_line', 'fit_line_close']) expect(sec[k], rel + ' ' + k).toBeTruthy();

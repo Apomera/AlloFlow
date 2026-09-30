@@ -75,7 +75,7 @@ test('landmark cameras follow anatomy and retain physical dimensions',async({pag
     }
     await page.locator('.sx-stage').screenshot({path:path.join(out,id+'-focus.png')});
   }
-  await fly(page,'earth');await expect(page.locator('.sx-details')).toHaveCount(0);
+  await fly(page,'betelgeuse');await expect(page.locator('.sx-details')).toHaveCount(0);
   await expect(cv).toHaveAttribute('data-atlas-detail','');await expect(cv).toHaveAttribute('data-atlas-habitat','realm');
   expect(errors).toEqual([]);
 });
