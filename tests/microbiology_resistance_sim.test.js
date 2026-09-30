@@ -169,6 +169,93 @@ describe('Microbiology resistance investigation', () => {
     expect(first.notebook.records).toHaveLength(1);
   });
 
+  it('normalizes later reflections as bounded text attached to their retained record through ID repair and JSON', () => {
+    const api = window.__MicrobiologyCore.resistance, evidence = comparisonNotebook().records[1].evidence;
+    const raw = { records: [
+      { id: 'bad', evidence, reviewNote: '\u0000Malformed\nannotation' },
+      { id: 1, evidence: { ...evidence, notes: 'First valid owner' }, reviewNote: 'x'.repeat(1400) },
+      { id: 1, evidence: { ...evidence, notes: 'Duplicate owner' }, reviewNote: '<b>Plain text</b>\tkept' },
+      { id: 9, evidence, reviewNote: { text: 'Do not stringify' } }
+    ], selectedId: 1, nextId: 12 };
+    const before = JSON.stringify(raw), normalized = api.normalizeNotebook(raw);
+    expect(normalized.records.map(item => [item.id, item.reviewNote])).toEqual([
+      [2, 'Malformed\nannotation'], [1, 'x'.repeat(1200)], [3, '<b>Plain text</b>\tkept'], [9, '']
+    ]);
+    expect(normalized).toMatchObject({ selectedId: 1, nextId: 12 });
+    expect(normalized.records.every(Object.isFrozen)).toBe(true);
+    expect(api.normalizeNotebook(JSON.parse(JSON.stringify(normalized)))).toEqual(normalized);
+    expect(JSON.stringify(raw)).toBe(before);
+    for (const reviewNote of [null, false, 123, [], undefined]) {
+      expect(api.normalizeNotebook({ records: [{ id: 4, evidence, reviewNote }] }).records[0].reviewNote).toBe('');
+    }
+    const overflow = { records: Array.from({ length: 10 }, (_, index) => ({ id: index + 1, evidence, reviewNote: 'Reflection ' + index }))
+      .concat([{ id: 20, evidence: {}, reviewNote: 'Discard invalid evidence' }]) };
+    expect(api.normalizeNotebook(overflow).records.map(item => item.reviewNote)).toEqual(Array.from({ length: 8 }, (_, index) => 'Reflection ' + (index + 2)));
+  });
+
+  it('updates a later reflection without changing original evidence or resolving a missing ID to a repaired record', () => {
+    const api = window.__MicrobiologyCore.resistance, raw = comparisonNotebook();
+    raw.records[0].id = 'bad'; raw.selectedId = 1;
+    raw.records[0].reviewNote = 'Keep repaired record reflection';
+    const before = JSON.stringify(raw), original = api.normalizeNotebook(raw);
+    const random = vi.spyOn(Math, 'random');
+    try {
+      for (const id of [1, '9', null, 100]) {
+        const missing = api.setReviewNote(raw, id, 'Wrong record');
+        expect(missing).toMatchObject({ status: 'missing', id: null, notebook: original });
+      }
+      const updated = api.setReviewNote(raw, 9, '\u0000Later\nreasoning');
+      expect(updated).toMatchObject({ status: 'updated', id: 9, notebook: { selectedId: null, nextId: 10 } });
+      expect(updated.notebook.records.map(item => item.reviewNote)).toEqual(['Keep repaired record reflection', 'Later\nreasoning']);
+      expect(updated.notebook.records.map(item => item.evidence)).toEqual(original.records.map(item => item.evidence));
+      expect(Object.isFrozen(updated.notebook.records[1].evidence.history)).toBe(true);
+      expect(api.normalizeComparison({ aId: 1, bId: 9 }, raw)).toEqual({ aId: null, bId: 9 });
+      expect(api.setReviewNote(updated.notebook, 1, 'Explicit canonical choice').notebook.records[0].reviewNote).toBe('Explicit canonical choice');
+      expect(api.setReviewNote(updated.notebook, 9, '').notebook.records[1].reviewNote).toBe('');
+      expect(JSON.stringify(raw)).toBe(before);
+      expect(random).not.toHaveBeenCalled();
+    } finally { random.mockRestore(); }
+  });
+
+  it('retains reflections when deduplicating or filling the notebook and starts a distinct snapshot with an empty reflection', () => {
+    const api = window.__MicrobiologyCore.resistance, run = comparisonNotebook().records[1].evidence;
+    const first = api.save(null, run);
+    const annotated = api.setReviewNote(first.notebook, first.id, 'My later interpretation').notebook;
+    const duplicate = api.save(annotated, run);
+    expect(duplicate).toMatchObject({ status: 'duplicate', id: first.id, notebook: annotated });
+    const distinct = api.save(annotated, { ...run, notes: 'New original notes' });
+    expect(distinct.notebook.records.map(item => item.reviewNote)).toEqual(['My later interpretation', '']);
+    expect(distinct.notebook.records[0].evidence).toEqual(first.notebook.records[0].evidence);
+    const full = api.normalizeNotebook({ records: Array.from({ length: 8 }, (_, index) => ({
+      id: index + 1, evidence: { ...run, notes: 'Snapshot ' + index }, reviewNote: 'Reflection ' + index
+    })) });
+    expect(api.save(full, run)).toMatchObject({ status: 'full', notebook: full });
+    expect(api.save(full, full.records[3].evidence)).toMatchObject({ status: 'duplicate', id: 4 });
+    expect(api.save(full, full.records[3].evidence).notebook.records).toEqual(full.records);
+  });
+
+  it('exports later reflections separately from original notes with safe CSV cells in notebooks and paired comparisons', () => {
+    const api = window.__MicrobiologyCore.resistance, book = comparisonNotebook(), pair = { aId: 4, bId: 9 };
+    book.records[0].reviewNote = '=SUM(A1:A2), "reflection"\nCounts need context.';
+    book.records[1].reviewNote = '  @later\nA second interpretation.';
+    const before = JSON.stringify(book);
+    for (const text of [api.exportText(book), api.exportComparisonText(book, pair)]) {
+      expect(text).toContain('My written evidence: Original A');
+      expect(text).toContain('My written evidence: Original B');
+      expect(text).toContain('Later reflection: ' + book.records[0].reviewNote);
+      expect(text).toContain('Later reflection: ' + book.records[1].reviewNote);
+      expect(text).toContain('Later reflections are editable annotations; original snapshot notes stay unchanged.');
+    }
+    const notebookRows = readComparisonCSV(api.exportCSV(book));
+    expect(notebookRows.filter(row => row.evidence_id === '4')).toHaveLength(4);
+    expect(notebookRows.filter(row => row.evidence_id === '4').every(row => row.written_evidence === 'Original A' && row.later_reflection === "'" + book.records[0].reviewNote)).toBe(true);
+    const pairRows = readComparisonCSV(api.exportComparisonCSV(book, pair));
+    expect(pairRows[0]).toMatchObject({ written_evidence: 'Original A', later_reflection: "'" + book.records[0].reviewNote, original_prediction: 'increase', shared_resistant_cells: '12' });
+    expect(pairRows[1]).toMatchObject({ written_evidence: 'Original B', later_reflection: "'" + book.records[1].reviewNote });
+    expect(pairRows[2]).toMatchObject({ written_evidence: '', later_reflection: '', shared_resistant_cells: '-10' });
+    expect(JSON.stringify(book)).toBe(before);
+  });
+
   it('bounds notebooks, repairs identifiers and refuses additions at capacity', () => {
     const api = window.__MicrobiologyCore.resistance;
     const run = { history: [{ day: 0, sensitive: 78, resistant: 2 }, { day: 1, sensitive: 10, resistant: 2 }] };
@@ -438,6 +525,17 @@ describe('Mounted resistance controls', { timeout: 20000 }, () => {
     return input;
   }
 
+  function writeReflection(value, caret = value.length) {
+    const input = container.querySelector('[data-resistance-reflection]');
+    expect(input).not.toBe(null);
+    act(() => {
+      Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set.call(input, value);
+      input.setSelectionRange(caret, caret);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    return input;
+  }
+
   function openNotebook() {
     const details = container.querySelector('.micro-resistance-saved');
     expect(details).not.toBe(null);
@@ -658,6 +756,115 @@ describe('Mounted resistance controls', { timeout: 20000 }, () => {
     expect(container.querySelector('#micro-resistance-notes').value).toBe('Second snapshot');
     expect(container.querySelector('input[name="micro-resistance-prediction"]:checked').value).toBe('increase');
     expect(latestData.microbiology.resistanceNotebook.records.map(item => item.evidence.notes)).toEqual(['First snapshot', 'Second snapshot']);
+  });
+
+  it('edits a saved reflection with stable focus while preserving original evidence, current playback, comparison and awards', () => {
+    const api = window.__MicrobiologyCore.resistance, book = api.normalizeNotebook(comparisonNotebook()), pair = { aId: 4, bId: 9 }, awardXP = vi.fn();
+    const active = { ...book.records[1].evidence, dose: 0, notes: 'Current run notes' };
+    mount({ resistanceNotebook: book, resistanceComparison: pair, resistanceInvestigation: active }, awardXP);
+    openNotebook(); openComparison(); click('▶ Play');
+    const input = container.querySelector('#micro-resistance-reflection-4');
+    const originalEvidence = JSON.stringify(book.records.map(item => item.evidence));
+    const current = JSON.stringify(latestData.microbiology.resistanceInvestigation), randomCalls = Math.random.mock.calls.length;
+    const predictionReview = container.querySelector('[data-resistance-prediction-review]').outerHTML;
+    expect(container.querySelector('label[for="micro-resistance-reflection-4"]').textContent).toBe('My reflection on saved evidence 4');
+    expect(input.maxLength).toBe(1200);
+    expect(input.getAttribute('aria-describedby')).toBe('micro-resistance-review-note-hint');
+    expect(container.querySelector('#micro-resistance-review-note-hint').textContent).toContain('this reflection is not graded');
+    input.focus();
+    writeReflection('Counts alone');
+    writeReflection('Counts and share', 7);
+    expect(container.querySelector('#micro-resistance-reflection-4')).toBe(input);
+    expect(document.activeElement).toBe(input);
+    expect(input.selectionStart).toBe(7);
+    expect(latestData.microbiology.resistanceNotebook.records[0].reviewNote).toBe('Counts and share');
+    expect(JSON.stringify(latestData.microbiology.resistanceNotebook.records.map(item => item.evidence))).toBe(originalEvidence);
+    expect(JSON.stringify(latestData.microbiology.resistanceInvestigation)).toBe(current);
+    expect(latestData.microbiology.resistanceComparison).toEqual(pair);
+    expect(latestData.microbiology.resistanceNotebook.selectedId).toBe(4);
+    expect(container.querySelector('#micro-resistance-notes').value).toBe('Current run notes');
+    expect(container.querySelector('[data-resistance-prediction-review]').outerHTML).toBe(predictionReview);
+    expect(comparisonCells('resistant')).toEqual(['Resistant cells', '12', '2', '-10']);
+    expect(Math.random.mock.calls).toHaveLength(randomCalls);
+    expect(awardXP).not.toHaveBeenCalled();
+    expect([...container.querySelectorAll('button')].some(button => button.textContent === '⏸ Pause')).toBe(true);
+    act(() => vi.advanceTimersByTime(600));
+    expect(latestData.microbiology.resistanceInvestigation.day).toBe(2);
+    expect(JSON.stringify(latestData.microbiology.resistanceNotebook.records.map(item => item.evidence))).toBe(originalEvidence);
+    expect(latestData.microbiology.resistanceNotebook.records[0].reviewNote).toBe('Counts and share');
+  });
+
+  it('retains independent reflections through duplicate saving, new snapshots, reset, tab navigation and JSON reload', () => {
+    const api = window.__MicrobiologyCore.resistance, book = api.normalizeNotebook(comparisonNotebook());
+    mount({ resistanceNotebook: book, resistanceInvestigation: book.records[0].evidence, resistanceComparison: { aId: 4, bId: 9 } });
+    openNotebook(); writeReflection('Reflection on completed evidence.');
+    click('Save evidence');
+    expect(latestData.microbiology.resistanceNotebook.records).toHaveLength(2);
+    expect(latestData.microbiology.resistanceNotebook.records[0].reviewNote).toBe('Reflection on completed evidence.');
+    writeNotes('Distinct original notes'); click('Save evidence');
+    expect(latestData.microbiology.resistanceNotebook.selectedId).toBe(10);
+    expect(container.querySelector('#micro-resistance-reflection-10').value).toBe('');
+    act(() => container.querySelector('#micro-resistance-evidence-9').click());
+    writeReflection('Reflection on partial evidence.');
+    const original = JSON.stringify(latestData.microbiology.resistanceNotebook.records.map(item => item.evidence));
+    click('↺ Reset current run');
+    expect(latestData.microbiology.resistanceInvestigation).toMatchObject({ day: 0, notes: '', prediction: null });
+    expect(container.querySelector('#micro-resistance-reflection-9').value).toBe('Reflection on partial evidence.');
+    tab('home'); tab('resistance'); openNotebook();
+    expect(container.querySelector('#micro-resistance-reflection-9').value).toBe('Reflection on partial evidence.');
+    const saved = JSON.parse(JSON.stringify(latestData.microbiology));
+    act(() => root.unmount()); root = null; mount(saved); openNotebook();
+    act(() => container.querySelector('#micro-resistance-evidence-4').click());
+    expect(container.querySelector('#micro-resistance-reflection-4').value).toBe('Reflection on completed evidence.');
+    expect(container.querySelector('[data-resistance-evidence="4"] blockquote').textContent).toBe('Original A');
+    expect(latestData.microbiology.resistanceNotebook.records.map(item => item.reviewNote)).toEqual(['Reflection on completed evidence.', 'Reflection on partial evidence.', '']);
+    expect(JSON.stringify(latestData.microbiology.resistanceNotebook.records.map(item => item.evidence))).toBe(original);
+    expect(latestData.microbiology.resistanceComparison).toEqual({ aId: 4, bId: 9 });
+    writeReflection('');
+    expect(latestData.microbiology.resistanceNotebook.records[0].reviewNote).toBe('');
+    expect(latestData.microbiology.resistanceNotebook.records[1].reviewNote).toBe('Reflection on partial evidence.');
+  });
+
+  it('requires an explicit repaired-record selection and clears stale pair preferences before saving a reflection', () => {
+    const book = comparisonNotebook(); book.records[0].id = 'bad'; book.selectedId = 1;
+    book.records[0].reviewNote = 'Attached to repaired A'; book.records[1].reviewNote = 'Attached to valid B';
+    mount({ resistanceNotebook: book, resistanceComparison: { aId: 1, bId: 9 } });
+    openNotebook(); openComparison();
+    expect(container.querySelector('[data-resistance-reflection]')).toBe(null);
+    expect(container.querySelector('#micro-resistance-compare-a').value).toBe('');
+    act(() => container.querySelector('#micro-resistance-evidence-9').click());
+    writeReflection('Edited valid B');
+    expect(latestData.microbiology.resistanceNotebook.records.map(item => [item.id, item.reviewNote])).toEqual([[1, 'Attached to repaired A'], [9, 'Edited valid B']]);
+    expect(latestData.microbiology.resistanceComparison).toEqual({ aId: null, bId: 9 });
+    const saved = JSON.parse(JSON.stringify(latestData.microbiology));
+    act(() => root.unmount()); root = null; mount(saved); openNotebook(); openComparison();
+    expect(container.querySelector('#micro-resistance-compare-a').value).toBe('');
+    expect(container.querySelector('#micro-resistance-comparison-table')).toBe(null);
+    act(() => container.querySelector('#micro-resistance-evidence-1').click());
+    expect(container.querySelector('#micro-resistance-reflection-1').value).toBe('Attached to repaired A');
+    writeReflection('Explicitly edited A');
+    expect(latestData.microbiology.resistanceNotebook.records.map(item => item.reviewNote)).toEqual(['Explicitly edited A', 'Edited valid B']);
+    expect(latestData.microbiology.resistanceNotebook.records.map(item => item.evidence.notes)).toEqual(['Original A', 'Original B']);
+    expect(latestData.microbiology.resistanceComparison).toEqual({ aId: null, bId: 9 });
+  });
+
+  it('downloads original notes and later reflections separately from the reviewed record without changing saved or live work', () => {
+    const api = window.__MicrobiologyCore.resistance, pair = { aId: 4, bId: 9 };
+    mount({ resistanceNotebook: comparisonNotebook(), resistanceComparison: pair });
+    openNotebook(); writeReflection('=Evidence("A"),\nLater reasoning');
+    openComparison();
+    const downloads = captureComparisonDownloads(), before = JSON.stringify(latestData), randomCalls = Math.random.mock.calls.length;
+    const book = latestData.microbiology.resistanceNotebook;
+    for (const label of ['Download resistance notebook', 'Download resistance CSV', 'Download comparison report', 'Download comparison CSV']) click(label);
+    expect(downloads.blobs.map(blob => blob.parts.join(''))).toEqual([
+      api.exportText(book), api.exportCSV(book), api.exportComparisonText(book, pair), api.exportComparisonCSV(book, pair)
+    ]);
+    expect(downloads.blobs[0].parts.join('')).toContain('My written evidence: Original A\nLater reflection: =Evidence("A"),\nLater reasoning');
+    const csv = readComparisonCSV(downloads.blobs[3].parts.join(''));
+    expect(csv[0]).toMatchObject({ written_evidence: 'Original A', later_reflection: "'=Evidence(\"A\"),\nLater reasoning" });
+    expect(JSON.stringify(latestData)).toBe(before);
+    expect(Math.random.mock.calls).toHaveLength(randomCalls);
+    expect(container.querySelector('#micro-resistance-reflection-4').value).toBe('=Evidence("A"),\nLater reasoning');
   });
 
   it('blocks only saving at capacity and frees a slot without renumbering remaining records', () => {

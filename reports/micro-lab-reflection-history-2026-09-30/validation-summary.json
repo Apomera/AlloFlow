@@ -1,0 +1,43 @@
+{
+  "date": "2026-09-30",
+  "sourceFile": "stem_lab/stem_tool_microbiology.js",
+  "sourceSha256": "19f304b84bbc76381a8199f1fddc1eb2e37487b18ba6abb09319377f3fd3d748",
+  "unit": {
+    "passed": 356,
+    "failed": 0,
+    "files": 13,
+    "report": "unit-results.json",
+    "priorRuns": [
+      "unit-initial-results.json",
+      "unit-recovery-before-layout-results.json"
+    ],
+    "note": "The final consolidated focused regression run passes. Earlier attempt reports, if any, are retained."
+  },
+  "browser": {
+    "passed": 22,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "project": "chromium",
+    "report": "browser-results.json",
+    "priorRuns": [
+      "browser-initial-results.json"
+    ],
+    "scope": "Resistance saved reflections and Home resume, quiz correction reflections, and Gram report history plus evidence-export and navigation regressions, served from the local working tree."
+  },
+  "interface": {
+    "keys": 1622,
+    "missing": 0,
+    "changedFallbacks": 0,
+    "runtimeMirrored": true,
+    "microbiologyNamespacesMatch": true,
+    "syntaxChecksPassed": true
+  },
+  "visualReview": [
+    "resistance-reflection-phone.png",
+    "resistance-reflection-home-phone.png",
+    "quiz-correction-reflection-phone.png",
+    "gram-report-history-phone.png"
+  ],
+  "scope": "Micro Lab source, desktop mirror, Micro Lab translation entries, focused tests, and validation artifacts."
+}

@@ -14,11 +14,11 @@ afterEach(() => { unmount(); globalThis.IS_REACT_ACT_ENVIRONMENT = priorAct; vi.
 const core = () => window.__MicrobiologyCore.gram;
 function mount(seed = {}) {
   const container = document.createElement('div'); document.body.appendChild(container);
-  const view = { container, root: ReactDOMClient.createRoot(container), state: null };
+  const view = { container, root: ReactDOMClient.createRoot(container), state: null, awardXP: vi.fn() };
   function Host() {
     const [data, setData] = React.useState({ microbiology: { tab: 'bacteria', ...seed } });
     view.state = data.microbiology;
-    return tool.render(makeCtx({ toolData: data, setToolData: setData }));
+    return tool.render(makeCtx({ toolData: data, setToolData: setData, awardXP: view.awardXP }));
   }
   mounted = view; act(() => view.root.render(React.createElement(Host))); return view;
 }
@@ -135,6 +135,56 @@ describe('Gram-stain inquiry model', () => {
     expect(core().report({ ...same, step: 0, maxStep: 0 })).toMatchObject({ changes: [], pendingRevision: true });
     for (const raw of [null, {}, { explanation: '  ' }, { step: 99, maxStep: 99 }]) expect(core().report(raw).canDownload).toBe(false);
     for (const raw of [{ prediction: 'thin' }, { interpretation: 'shape' }, { explanation: 'A question.' }, { record }]) expect(core().report(raw).canDownload).toBe(true);
+  });
+
+  it('keeps independent previous written evidence without accepting invalid, identical or orphaned history', () => {
+    const record = Object.freeze({ prediction: 'both', interpretation: 'wall', explanation: 'Current explanation.' });
+    const previousRecord = Object.freeze({ prediction: '', interpretation: 'wall', explanation: '<img> Earlier explanation.\nLiteral text.' });
+    const input = Object.freeze({ record, previousRecord, step: 99, maxStep: 99 });
+    const normalized = core().normalize(input), report = core().report(input);
+    expect(normalized).toMatchObject({ step: 0, maxStep: 0, record, previousRecord });
+    expect(normalized.previousRecord).not.toBe(previousRecord);
+    expect(report).toMatchObject({ saved: record, previousSaved: previousRecord });
+    expect(report.previousSaved).not.toHaveProperty('observedStages');
+    expect(report.working.observedStages).toEqual([]);
+    expect(core().normalize(JSON.parse(JSON.stringify(normalized)))).toEqual(normalized);
+    normalized.previousRecord.explanation = 'Changed copy';
+    expect(previousRecord.explanation).toContain('Earlier explanation.');
+    for (const invalid of [null, [], 'bad', record, { ...previousRecord, prediction: 'invalid' }, { ...previousRecord, interpretation: 'shape' }, { ...previousRecord, explanation: ' ' }]) {
+      expect(core().normalize({ record, previousRecord: invalid })).not.toHaveProperty('previousRecord');
+    }
+    expect(core().normalize({ previousRecord })).not.toHaveProperty('previousRecord');
+    expect(core().normalize({ record, previousRecord: { ...previousRecord, explanation: 'x'.repeat(1300) } }).previousRecord.explanation).toHaveLength(1200);
+  });
+
+  it('retains exactly one previous report only when a changed complete report is saved', () => {
+    const previousRecord = { prediction: '', interpretation: 'wall', explanation: 'First legacy report.' };
+    const record = { prediction: 'thin', interpretation: 'wall', explanation: 'Second report with a wrong original prediction.' };
+    const input = { ...record, record, previousRecord, step: 1, maxStep: 4 };
+    const before = JSON.stringify(input);
+    expect(core().saveReport(input)).toEqual(input);
+    expect(core().saveReport({ ...input, maxStep: 2, explanation: 'Incomplete revision.' }).previousRecord).toEqual(previousRecord);
+    const next = core().saveReport({ ...input, explanation: 'Third saved explanation.' });
+    expect(next.record).toEqual({ ...record, explanation: 'Third saved explanation.' });
+    expect(next.previousRecord).toEqual(record);
+    expect(core().saveReport(next)).toEqual(next);
+    expect(JSON.stringify(input)).toBe(before);
+    expect(core().saveReport({ ...record, maxStep: 4 }).record).toEqual(record);
+    expect(core().saveReport({ ...record, maxStep: 4 })).not.toHaveProperty('previousRecord');
+  });
+
+  it('swaps saved versions without changing the active draft or manufacturing observed stages', () => {
+    const record = { prediction: 'both', interpretation: 'wall', explanation: 'Current report.' };
+    const previousRecord = { prediction: 'neither', interpretation: 'wall', explanation: 'Earlier report.' };
+    const input = { record, previousRecord, step: 1, maxStep: 2, prediction: 'thin', interpretation: 'shape', explanation: 'Unfinished notes.' };
+    const before = JSON.stringify(input), restored = core().restoreReport(input);
+    expect(restored).toEqual({ ...input, record: previousRecord, previousRecord: record });
+    expect(core().restoreReport(restored)).toEqual(input);
+    expect(core().report(restored).working.observedStages).toEqual([1, 2]);
+    expect(core().evaluate(restored)).toMatchObject({ canRecord: false, pendingRevision: true });
+    expect(JSON.stringify(input)).toBe(before);
+    expect(restored.record).not.toBe(previousRecord);
+    expect(core().restoreReport({ record })).toEqual(core().normalize({ record }));
   });
 });
 
@@ -381,5 +431,106 @@ describe('Gram-stain inquiry workflow', { timeout: 20000 }, () => {
     expect(document.querySelector('a[download="micro-lab-gram-evidence.txt"]')).toBeNull();
     act(() => vi.runOnlyPendingTimers());
     expect(download.revokeUrl).toHaveBeenCalledTimes(failure === 'click' ? 1 : 0);
+  });
+});
+
+describe('Gram saved report history', { timeout: 20000 }, () => {
+  const original = { prediction: 'thin', interpretation: 'wall', explanation: 'My first explanation, after the observation contradicted my prediction.' };
+  const revised = { prediction: 'both', interpretation: 'wall', explanation: 'My revised explanation of dye retention.' };
+
+  it('keeps the previous report through editing, restart, section changes and JSON reload', () => {
+    mount({ gramInvestigation: { ...original, record: original, step: 4, maxStep: 4 }, growthLab: { hypothesis: 'Keep independent work.' } });
+    write(revised.explanation); click('Save Gram-stain report');
+    const current = { ...original, explanation: revised.explanation };
+    expect(mounted.state.gramInvestigation).toMatchObject({ record: current, previousRecord: original });
+    const history = lab().querySelector('#micro-gram-history');
+    expect(history.tagName).toBe('DETAILS'); expect(history.open).toBe(false);
+    click(history.querySelector('summary')); expect(history.open).toBe(true);
+    write('Working notes after saving.');
+    expect(lab().querySelector('#micro-gram-history')).toBe(history); expect(history.open).toBe(true);
+    expect(history.querySelector('[data-gram-previous-field="explanation"]').textContent).toContain(original.explanation);
+    click('Start a new investigation');
+    expect(mounted.state.gramInvestigation).toMatchObject({ record: current, previousRecord: original, step: 0, maxStep: 0, explanation: '' });
+    const persisted = JSON.parse(JSON.stringify(mounted.state));
+    tab('home'); tab('bacteria');
+    expect(mounted.state.gramInvestigation).toEqual(persisted.gramInvestigation);
+    unmount(); mount(persisted);
+    expect(lab().querySelector('[data-gram-previous-field="explanation"]').textContent).toContain(original.explanation);
+    expect(lab().querySelector('#micro-gram-history-status').textContent).toBe('');
+    expect(mounted.state.growthLab).toEqual(persisted.growthLab);
+    expect(mounted.awardXP).not.toHaveBeenCalled();
+  });
+
+  it('previews and restores the previous report while retaining unfinished notes and stages', () => {
+    vi.useFakeTimers();
+    const draft = { prediction: 'neither', interpretation: 'shape', explanation: 'My unfinished <script>literal</script> draft.', step: 2, maxStep: 3 };
+    mount({ gramInvestigation: { ...draft, record: revised, previousRecord: original }, growthReviewHour: 6 });
+    const history = lab().querySelector('#micro-gram-history'); click(history.querySelector('summary'));
+    expect(history.textContent).toContain(original.explanation); expect(history.textContent).toContain('Only model B');
+    click('Restore previous Gram report'); act(() => vi.runOnlyPendingTimers());
+    expect(mounted.state.gramInvestigation).toEqual({ ...draft, record: original, previousRecord: revised });
+    expect(document.activeElement.id).toBe('micro-gram-record-heading');
+    const status = lab().querySelector('#micro-gram-history-status'), notice = status.firstChild;
+    expect(status.getAttribute('role')).toBe('status'); expect(status.getAttribute('aria-live')).toBe('polite'); expect(status.getAttribute('aria-atomic')).toBe('true');
+    expect(status.textContent).toContain('Your working notes and observed stages were kept.');
+    expect(history.open).toBe(true); expect(lab().querySelector('#micro-gram-history')).toBe(history);
+    expect(button('Save Gram-stain report').disabled).toBe(true);
+    click('Restore previous Gram report'); act(() => vi.runOnlyPendingTimers());
+    expect(mounted.state.gramInvestigation).toEqual({ ...draft, record: revised, previousRecord: original });
+    expect(status.firstChild).not.toBe(notice);
+    expect(mounted.state.growthReviewHour).toBe(6); expect(mounted.awardXP).not.toHaveBeenCalled();
+    const saved = JSON.parse(JSON.stringify(mounted.state)); unmount(); mount(saved);
+    expect(lab().querySelector('#micro-gram-history-status').textContent).toBe('');
+  });
+
+  it('exports current, previous and unfinished evidence separately without a historical stage log', () => {
+    const legacy = { prediction: '', interpretation: 'wall', explanation: '<img src=x> Legacy explanation.\nSecond line.' };
+    const draft = 'Working notes that have not replaced either saved report.';
+    mount({ gramInvestigation: { record: revised, previousRecord: legacy, explanation: draft, step: 99, maxStep: 99 } });
+    const before = JSON.stringify(mounted.state), download = captureDownload();
+    click('Download Gram evidence report');
+    const [current, rest] = download.contents[0].split('Previous saved Gram-stain report (available to restore)');
+    const [previous, working] = rest.split('Current working notes');
+    expect(current).toContain(revised.explanation); expect(current).not.toContain(legacy.explanation); expect(current).not.toContain(draft);
+    expect(previous).toContain(legacy.explanation); expect(previous).toContain('No prediction was saved for this earlier observation.');
+    expect(previous).toContain('It does not store a historical log of observed stages.'); expect(previous).not.toContain(draft);
+    expect(working).toContain(draft); expect(working).toContain('Stages observed in the current investigation: 0/4');
+    expect(working).not.toContain('1. Crystal violet:');
+    expect(lab().querySelector('[data-gram-previous-report] img')).toBeNull();
+    expect(JSON.stringify(mounted.state)).toBe(before); expect(mounted.awardXP).not.toHaveBeenCalled();
+    const persisted = JSON.parse(before); unmount(); mount(persisted); click('Download Gram evidence report');
+    expect(download.contents[1]).toBe(download.contents[0]);
+    act(() => vi.runOnlyPendingTimers()); expect(download.revokeUrl).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(['focus', 'draft', 'stage', 'download', 'active tab', 'topic library', 'away and back'])('cancels queued restore focus after a later %s action', action => {
+    vi.useFakeTimers();
+    mount({ gramInvestigation: { ...revised, record: revised, previousRecord: original, step: 2, maxStep: 4 } });
+    click(lab().querySelector('#micro-gram-history summary')); click('Restore previous Gram report');
+    let target;
+    if (action === 'focus' || action === 'draft') {
+      target = lab().querySelector('#micro-gram-explanation'); act(() => target.focus());
+      if (action === 'draft') write('A later learner action.');
+    } else if (action === 'stage') { target = stages()[1]; act(() => target.focus()); click(target); }
+    else if (action === 'download') { captureDownload(); target = button('Download Gram evidence report'); act(() => target.focus()); click(target); }
+    else if (action === 'active tab') { target = mounted.container.querySelector('#micro-tab-bacteria'); act(() => target.focus()); click(target); }
+    else if (action === 'topic library') { target = mounted.container.querySelector('.micro-library-toggle'); act(() => target.focus()); click(target); }
+    else { tab('home'); tab('bacteria'); target = mounted.container.querySelector('#micro-tab-bacteria'); act(() => target.focus()); }
+    act(() => vi.runOnlyPendingTimers());
+    expect(document.activeElement).toBe(target);
+    expect(mounted.state.gramInvestigation.record).toEqual(original);
+    expect(mounted.state.gramInvestigation.previousRecord).toEqual(revised);
+    expect(mounted.awardXP).not.toHaveBeenCalled();
+  });
+
+  it('cancels queued save and restart focus when the learner moves to another control', () => {
+    vi.useFakeTimers(); mount({ gramInvestigation: { ...revised, step: 4, maxStep: 4 } });
+    click('Save Gram-stain report');
+    const textarea = lab().querySelector('#micro-gram-explanation'); act(() => textarea.focus());
+    act(() => vi.runOnlyPendingTimers()); expect(document.activeElement).toBe(textarea);
+    click('Start a new investigation');
+    const topic = mounted.container.querySelector('.micro-library-toggle'); act(() => topic.focus()); click(topic);
+    act(() => vi.runOnlyPendingTimers()); expect(document.activeElement).toBe(topic);
+    expect(mounted.state.gramInvestigation.record).toEqual(revised);
   });
 });

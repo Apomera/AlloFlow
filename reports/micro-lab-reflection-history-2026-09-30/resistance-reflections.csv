@@ -1,0 +1,7 @@
+"evidence_id","status","exposure_strength_0_100","planned_rounds","observed_rounds","requested_initial_resistance_pct","actual_initial_resistant_cells","original_prediction","selected_explanation","explanation_submitted","written_evidence","round","sensitive_cells","resistant_cells","total_alive","resistant_share_pct_rounded","model_note","later_reflection"
+"3","in-progress","30","3","1","10","8","increase","","false","My original saved counts.","0","72","8","80","10","Random teaching model; snapshots may share a run; not measured culture data.","Already reflected."
+"3","in-progress","30","3","1","10","8","increase","","false","My original saved counts.","1","60","8","68","12","Random teaching model; snapshots may share a run; not measured culture data.","Already reflected."
+"7","in-progress","30","3","1","10","8","increase","","false","My original saved counts.","0","72","8","80","10","Random teaching model; snapshots may share a run; not measured culture data.","'=SUM(1,2)
+I compared the living count with its resistant share."
+"7","in-progress","30","3","1","10","8","increase","","false","My original saved counts.","1","60","8","68","12","Random teaching model; snapshots may share a run; not measured culture data.","'=SUM(1,2)
+I compared the living count with its resistant share."

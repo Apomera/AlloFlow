@@ -152,6 +152,49 @@ describe('Micro Lab contextual Home navigation', { timeout: 20000 }, () => {
     expect(mounted.state.growthReviewHour).toBe(6);
   });
 
+  const resistanceEvidence = { dose: 30, duration: 3, initRes: 10, prediction: 'increase', notes: 'Original counts matter.',
+    history: [{ day: 0, sensitive: 72, resistant: 8 }, { day: 1, sensitive: 60, resistant: 8 }] };
+
+  it('opens the saved Resistance reflection while keeping original evidence, a live run, and comparison choices', () => {
+    const resistanceNotebook = { records: [{ id: 3, evidence: resistanceEvidence, reviewNote: 'Already explained.' }, { id: 7, evidence: resistanceEvidence }], selectedId: 3, nextId: 8 };
+    const resistanceComparison = { aId: 3, bId: 7 };
+    const current = { ...resistanceEvidence, dose: 60, notes: 'Independent working notes.' };
+    mount({ resistanceNotebook, resistanceComparison, resistanceInvestigation: current, growthLab: { hypothesis: 'Keep this note.' } });
+    const random = vi.spyOn(Math, 'random');
+    expect(node('[data-work-next="resistance"]').textContent).toBe('Reflect on saved evidence 7');
+    open('resistance');
+    expect(document.activeElement.id).toBe('micro-resistance-reflection-7');
+    expect(document.activeElement.closest('details').open).toBe(true);
+    expect(mounted.state.resistanceNotebook).toEqual({ ...resistanceNotebook, selectedId: 7 });
+    expect(mounted.state.resistanceComparison).toEqual(resistanceComparison);
+    expect(mounted.state.resistanceInvestigation.notes).toBe(current.notes);
+    expect(mounted.state.resistanceInvestigation.dose).toBe(60);
+    expect(mounted.state.resistanceInvestigation.history).toEqual(current.history);
+    expect(mounted.state.growthLab.hypothesis).toBe('Keep this note.');
+    expect(mounted.awardXP).not.toHaveBeenCalled(); expect(random).not.toHaveBeenCalled();
+  });
+
+  it('establishes an explicitly reviewed repaired Resistance ID while clearing stale pair aliases', () => {
+    const resistanceNotebook = { records: [{ id: 'broken', evidence: resistanceEvidence }, { id: 1, evidence: resistanceEvidence, reviewNote: 'Already reflected.' }], selectedId: 2, nextId: 20 };
+    mount({ resistanceNotebook, resistanceComparison: { aId: 2, bId: 1 } });
+    expect(window.__MicrobiologyCore.resistance.normalizeNotebook(resistanceNotebook).selectedId).toBeNull();
+    open('resistance');
+    expect(document.activeElement.id).toBe('micro-resistance-reflection-2');
+    expect(mounted.state.resistanceNotebook.records.map(record => record.id)).toEqual([2, 1]);
+    expect(mounted.state.resistanceNotebook.selectedId).toBe(2);
+    expect(mounted.state.resistanceComparison).toEqual({ aId: null, bId: 1 });
+    const restored = JSON.parse(JSON.stringify(mounted.state));
+    expect(window.__MicrobiologyCore.resistance.normalizeNotebook(restored.resistanceNotebook).selectedId).toBe(2);
+    expect(window.__MicrobiologyCore.resistance.normalizeComparison(restored.resistanceComparison, restored.resistanceNotebook)).toEqual({ aId: null, bId: 1 });
+  });
+
+  it('cancels the queued Resistance reflection focus after another explicit tab action', () => {
+    mount({ resistanceNotebook: { records: [{ id: 7, evidence: resistanceEvidence }] } });
+    click('[data-work-next="resistance"]'); click('#micro-tab-resistance');
+    node('#micro-tab-resistance').focus(); flush();
+    expect(document.activeElement.id).toBe('micro-tab-resistance');
+  });
+
   const savedGram = { prediction: 'both', interpretation: 'wall', explanation: 'The models separate at decolorization.' };
   it.each([
     ['prediction', {}, 'micro-gram-prediction-thick'],

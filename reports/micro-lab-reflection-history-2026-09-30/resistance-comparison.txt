@@ -1,0 +1,44 @@
+Micro Lab resistance snapshot comparison
+Snapshot A: Evidence 7; saved history ends at round 2
+Snapshot B: Evidence 4; saved history ends at round 1
+Shared comparison round: 1
+Different saved settings: Exposure strength, Planned rounds
+Random teaching model; snapshots may share a run. Differences do not establish which setting caused them. Shared-round counts use the latest round observed in both histories, without extrapolation. Shares are rounded to whole percentages before subtraction; share differences are percentage points. Undefined means no living cells for a share, or an undefined share on either side of its difference. Snapshot endpoint counts are separate. Partial snapshots have no final prediction review; final reviews use each completed or extinct snapshot's own endpoint.
+
+Measure	A (Evidence 7)	B (Evidence 4)	B - A
+Sensitive cells	64	2	-62
+Resistant cells	8	6	-2
+Total living cells	72	8	-64
+Resistant share	11%	75%	+64 percentage points
+
+Original saved snapshots in A, B order
+Micro Lab resistance evidence notebook
+Random teaching model, not measured culture or treatment data. Each record is a saved snapshot; records may come from different rounds of the same run.
+Capacity: 80 cells. Shares are rounded to whole percentages. Extinction has an undefined resistant share.
+Later reflections are editable annotations; original snapshot notes stay unchanged.
+
+Evidence 7
+Status: in-progress
+Exposure strength: 30/100; planned rounds: 3; observed rounds: 2
+Requested initial resistance: 10%; actual resistant cells: 8/80 (10% rounded)
+Original prediction: increase
+Selected explanation: Not recorded
+My written evidence: =COUNT("x"), evidence
+A keeps both rounds.
+Later reflection: Not recorded
+Round	Sensitive	Resistant	Total alive	Resistant share
+0	72	8	80	10%
+1	64	8	72	11%
+2	60	8	68	12%
+
+Evidence 4
+Status: in-progress
+Exposure strength: 60/100; planned rounds: 8; observed rounds: 1
+Requested initial resistance: 10%; actual resistant cells: 8/80 (10% rounded)
+Original prediction: increase
+Selected explanation: Not recorded
+My written evidence: B has fewer resistant cells with a higher share.
+Later reflection: Not recorded
+Round	Sensitive	Resistant	Total alive	Resistant share
+0	72	8	80	10%
+1	2	6	8	75%

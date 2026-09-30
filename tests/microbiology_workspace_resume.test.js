@@ -40,7 +40,7 @@ function freezeDeep(value) {
 
 describe('Micro Lab next-action projection', () => {
   it('starts missing or malformed state without inventing saved work', () => {
-    const expected = { mystery: { kind: 'unrecorded', id: 'pond' }, microscope: null, growth: null, gram: { kind: 'prediction' }, quiz: { kind: 'answer', id: 0 } };
+    const expected = { mystery: { kind: 'unrecorded', id: 'pond' }, microscope: null, growth: null, resistance: null, gram: { kind: 'prediction' }, quiz: { kind: 'answer', id: 0 } };
     for (const state of [undefined, null, [], 42, 'damaged', {}]) expect(actions(state)).toEqual(expected);
     expect(actions({ mysteryLab: [], microscopeMeasurements: 'bad', growthInvestigation: { trials: [null, { conditions: [] }] }, gramStep: 4.1, quizSubmitted: true, quizAnswers: ['0'] })).toEqual(expected);
   });
@@ -175,6 +175,27 @@ describe('Micro Lab next-action projection', () => {
       [{ gramInvestigation: { step: 0, maxStep: 0, record } }, 'prediction']
     ];
     for (const [state, kind] of states) expect(actions(state).gram).toEqual({ kind });
+  });
+
+  it('prioritizes Resistance snapshots without a reflection and prefers selection only within that group', () => {
+    const evidence = { dose: 30, duration: 3, initRes: 10, prediction: 'increase', history: [{ day: 0, sensitive: 72, resistant: 8 }, { day: 1, sensitive: 60, resistant: 8 }] };
+    const records = [{ id: 3, evidence, reviewNote: 'I compared living counts and shares.' }, { id: 7, evidence, reviewNote: '  ' }, { id: 9, evidence }];
+    const state = freezeDeep({ resistanceNotebook: { records, selectedId: 3 }, resistanceInvestigation: evidence });
+    const before = JSON.stringify(state);
+    expect(actions(state).resistance).toEqual({ kind: 'reflection', id: 7 });
+    expect(actions({ resistanceNotebook: { records, selectedId: 9 } }).resistance).toEqual({ kind: 'reflection', id: 9 });
+    const reflected = records.map(record => ({ ...record, reviewNote: 'A later interpretation.' }));
+    expect(actions({ resistanceNotebook: { records: reflected, selectedId: 9 } }).resistance).toEqual({ kind: 'review', id: 9 });
+    expect(actions(JSON.parse(before)).resistance).toEqual({ kind: 'reflection', id: 7 });
+    expect(JSON.stringify(state)).toBe(before);
+  });
+
+  it('projects Resistance review from retained snapshots without accepting stale repaired-ID preferences', () => {
+    const evidence = { dose: 30, duration: 3, initRes: 10, prediction: 'increase', history: [{ day: 0, sensitive: 72, resistant: 8 }, { day: 1, sensitive: 60, resistant: 8 }] };
+    const resistanceNotebook = { records: [{ id: 'broken', evidence, reviewNote: 'Already reflected.' }, { id: 1, evidence, reviewNote: 'Also reflected.' }], selectedId: 2 };
+    expect(core().resistance.normalizeNotebook(resistanceNotebook).selectedId).toBeNull();
+    expect(actions({ resistanceNotebook }).resistance).toEqual({ kind: 'review', id: 2 });
+    expect(actions({ resistanceNotebook: { records: [null, { id: 4, evidence: { history: [{ day: 0, sensitive: 80, resistant: 0 }] } }] } }).resistance).toBeNull();
   });
 
   it('returns the first unanswered quiz question after strict answer normalization, even with a forged submitted flag', () => {

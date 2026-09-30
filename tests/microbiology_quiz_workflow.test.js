@@ -33,6 +33,15 @@ function click(node) { act(() => (typeof node === 'string' ? button(node) : node
 function choose(index, value, practice = false) {
   click(mounted.container.querySelector(`input[name="micro-quiz-${practice ? 'practice' : 'answer'}-${index}"][value="${value}"]`));
 }
+function reflect(index, value) {
+  const field = mounted.container.querySelector('#micro-quiz-reflection-' + index);
+  expect(field).toBeTruthy();
+  act(() => {
+    Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(field, value);
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  return field;
+}
 function core() { return window.__MicrobiologyCore.quiz; }
 function roundTrip() {
   const saved = JSON.parse(JSON.stringify(mounted.state));
@@ -309,6 +318,139 @@ describe('Quiz evidence reports', { timeout: 20000 }, () => {
     click('Download quiz evidence'); expect(download.contents[2]).toBe(report);
     expect(mounted.awardXP).not.toHaveBeenCalled();
     act(() => vi.advanceTimersByTime(1000)); expect(download.revokeUrl).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe('Quiz correction reflections', { timeout: 20000 }, () => {
+  it('keeps bounded plain strings only for strict missed-question indices without mutating restored data', () => {
+    const raw = { answers: correct(), checked: Array(15).fill(true), reflections: ['  First thought\nSecond thought  ', 'x'.repeat(650), 4, true, { note: 'bad' }, ['bad'], null] };
+    const before = JSON.stringify(raw), result = core().practice(raw, [0, 1, 2, 3, 4, 5, 6]);
+    expect(result.reflections).toHaveLength(15);
+    expect(result.reflections[0]).toBe(raw.reflections[0]); expect(result.reflections[1]).toBe('x'.repeat(600));
+    expect(result.reflections.slice(2)).toEqual(Array(13).fill(''));
+    expect(core().practice(raw, ['0', true, -1, 15, 1.2, {}]).reflections).toEqual(Array(15).fill(''));
+    for (const invalid of [null, [], 'bad', 7, { reflections: { 0: 'bad' } }]) expect(core().practice(invalid, [0]).reflections).toEqual(Array(15).fill(''));
+    expect(core().practice(raw, null).reflections).toEqual(Array(15).fill(''));
+    expect(JSON.stringify(raw)).toBe(before);
+  });
+
+  it('reports reflections separately from scores and exports them only for valid submitted missed questions', () => {
+    const seed = { quizSubmitted: true, quizAnswers: wrongAt(0, 1), quizCorrect: 500,
+      quizPractice: { answers: [bank[0].answer], checked: [false], reflections: ['My own correction.\nA second clue.', '', 'A note on an originally correct question.'] } };
+    const before = JSON.stringify(seed), report = core().report(seed), text = core().exportText(seed);
+    expect(report).toMatchObject({ originalScore: 13, practiceCorrect: 0 });
+    expect(report.questions[0].practice).toMatchObject({ status: 'unchecked', reflection: seed.quizPractice.reflections[0] });
+    expect(report.questions[1].practice.reflection).toBe(''); expect(report.questions[2].practice).toBeNull();
+    expect(text).toContain('Correction reflection (learner written, ungraded): My own correction.\nA second clue.');
+    expect(text).toContain('Correction reflection (learner written, ungraded): No reflection recorded');
+    expect(text).not.toContain(seed.quizPractice.reflections[2]);
+    for (const invalid of [{ ...seed, quizSubmitted: false }, { ...seed, quizSubmitted: 'true' }, { ...seed, quizAnswers: [bank[0].answer] }]) {
+      expect(core().report(invalid).questions.every(q => q.practice === null && q.correctAnswer === null && q.explanation === null)).toBe(true);
+      const incomplete = core().exportText(invalid);
+      expect(incomplete).not.toContain('My own correction.'); expect(incomplete).not.toContain('Correction reflection');
+      expect(incomplete).not.toContain('Practice status:'); expect(incomplete).not.toContain('Original score:');
+    }
+    expect(JSON.stringify(seed)).toBe(before);
+  });
+
+  it('shows each original answer and distinct practice status beside accessible reflection fields in both views', () => {
+    const original = wrongAt(0, 1, 2, 3);
+    mount({ quizSubmitted: true, quizAnswers: original, quizPractice: { answers: [bank[0].answer, (bank[1].answer + 1) % 4, bank[2].answer], checked: [true, true, false], reflections: ['First', 'Second', 'Third', 'Fourth'] } });
+    for (const mode of ['review', 'practice']) {
+      if (mode === 'practice') click('Practice missed questions');
+      expect(mounted.container.querySelectorAll('textarea')).toHaveLength(4);
+      ['Checked correct', 'Checked incorrect', 'Unchecked practice answer', 'Unanswered in practice'].forEach((status, index) => {
+        const field = mounted.container.querySelector('#micro-quiz-reflection-' + index);
+        expect(mounted.container.querySelector('label[for="' + field.id + '"]').textContent).toContain('Correction reflection · Q' + (index + 1));
+        expect(field.maxLength).toBe(600);
+        for (const describedBy of field.getAttribute('aria-describedby').split(' ')) expect(document.getElementById(describedBy)).toBeTruthy();
+        expect(mounted.container.querySelector('[data-quiz-practice-status="' + index + '"]').textContent).toBe('Practice status: ' + status);
+        expect(field.closest(mode === 'practice' ? 'fieldset' : 'article').textContent).toContain('Original answer: ' + bank[index].choices[original[index]]);
+      });
+    }
+    expect(mounted.awardXP).not.toHaveBeenCalled();
+  });
+
+  it('keeps reflections and the original attempt when practice choices and checked feedback change', () => {
+    const original = wrongAt(0); mount({ quizSubmitted: true, quizAnswers: original, quizCorrect: 14, quizBestCorrect: 14, quizMode: 'practice' });
+    reflect(0, 'The clue supports a different concept.'); choose(0, (bank[0].answer + 1) % 4, true); click('Check practice answer');
+    const field = mounted.container.querySelector('#micro-quiz-reflection-0'); field.focus();
+    reflect(0, 'The clue supports a different concept. I can explain why.');
+    expect(document.activeElement).toBe(field); expect(mounted.state.quizPractice.checked[0]).toBe(true);
+    choose(0, bank[0].answer, true);
+    expect(mounted.state.quizPractice.checked[0]).toBe(false);
+    expect(mounted.state.quizPractice.reflections[0]).toBe(field.value);
+    click('Check practice answer');
+    expect(mounted.state.quizPractice.checked[0]).toBe(true);
+    expect(mounted.state.quizPractice.reflections[0]).toBe('The clue supports a different concept. I can explain why.');
+    expect(mounted.state.quizAnswers).toEqual(original); expect(mounted.state.quizCorrect).toBe(14); expect(mounted.state.quizBestCorrect).toBe(14);
+    expect(mounted.awardXP).not.toHaveBeenCalled();
+  });
+
+  it('preserves edits made in results through review filters, practice, tab changes and JSON restoration', () => {
+    mount({ quizSubmitted: true, quizAnswers: wrongAt(0, 1) });
+    reflect(0, 'Keep my first correction.'); reflect(1, 'Keep my second correction.');
+    click('All questions (15)'); expect(mounted.container.querySelectorAll('textarea')).toHaveLength(2);
+    expect(mounted.container.querySelector('#micro-quiz-reflection-2')).toBeNull();
+    click('Needs review (2)'); click('Practice missed questions'); reflect(1, 'My revised second explanation.');
+    const saved = JSON.parse(JSON.stringify(mounted.state.quizPractice));
+    click(mounted.container.querySelector('#micro-tab-home')); click(mounted.container.querySelector('#micro-tab-quiz'));
+    roundTrip();
+    expect(mounted.state.quizPractice).toEqual(saved);
+    expect(mounted.container.querySelector('#micro-quiz-reflection-0').value).toBe('Keep my first correction.');
+    click('Return to quiz results');
+    expect(mounted.container.querySelector('#micro-quiz-reflection-1').value).toBe('My revised second explanation.');
+    expect(mounted.container.querySelector('[data-quiz-original-score]').textContent).toBe('Original score: 13/15');
+    expect(mounted.awardXP).not.toHaveBeenCalled();
+  });
+
+  it('bounds typed and restored reflections, renders them as plain text, and lets learners clear an optional note', () => {
+    const raw = '<b>My own text</b>\n' + 'x'.repeat(700);
+    mount({ quizSubmitted: true, quizAnswers: wrongAt(0), quizPractice: { reflections: [raw] } });
+    expect(mounted.container.querySelector('#micro-quiz-reflection-0').value).toBe(raw.slice(0, 600));
+    reflect(0, raw + 'more');
+    expect(mounted.state.quizPractice.reflections[0]).toBe(raw.slice(0, 600));
+    expect(mounted.container.querySelector('#micro-quiz-reflection-0-count').textContent).toBe('600/600 characters');
+    expect(mounted.container.querySelector('[data-quiz-reflection="0"] b')).toBeNull();
+    reflect(0, ''); expect(mounted.state.quizPractice.reflections[0]).toBe('');
+    expect(core().report(mounted.state)).toMatchObject({ originalScore: 14, practiceCorrect: 0 });
+    expect(mounted.awardXP).not.toHaveBeenCalled();
+  });
+
+  it('downloads the current reflection without changing evidence or focus and clears stale feedback after edits', () => {
+    mount({ quizSubmitted: true, quizAnswers: wrongAt(0), quizPractice: { answers: [bank[0].answer], checked: [true] } });
+    reflect(0, 'I now connect the clue to the explanation.');
+    const download = captureQuizDownload(), before = JSON.parse(JSON.stringify(mounted.state));
+    const trigger = button('Download quiz evidence'); trigger.focus(); click(trigger);
+    expect(download.contents[0]).toContain('Correction reflection (learner written, ungraded): I now connect the clue to the explanation.');
+    expect(mounted.state).toEqual(before); expect(document.activeElement).toBe(trigger);
+    reflect(0, 'I can explain the connection more clearly.');
+    expect(mounted.container.querySelector('#micro-quiz-download-status').textContent).toBe('');
+    expect(mounted.state.quizPractice.checked[0]).toBe(true);
+    click(trigger); expect(download.contents[1]).toContain('I can explain the connection more clearly.');
+    act(() => vi.advanceTimersByTime(1000)); expect(download.revokeUrl).toHaveBeenCalledTimes(2);
+    expect(mounted.awardXP).not.toHaveBeenCalled();
+  });
+
+  it('clears reflections only with the explicit new-quiz action and keeps the best-score award boundary', () => {
+    mount({ quizSubmitted: true, quizAnswers: wrongAt(0), quizBestCorrect: 14, quizPractice: { reflections: ['Old correction'] } });
+    expect(mounted.container.textContent).toContain('A new quiz clears this attempt, its practice answers, and its reflections.');
+    click('Start a new quiz');
+    expect(mounted.state.quizPractice).toEqual({}); expect(mounted.state.quizAnswers).toEqual([]); expect(mounted.state.quizBestCorrect).toBe(14);
+    expect(mounted.container.querySelectorAll('textarea')).toHaveLength(0);
+    expect(core().exportText(mounted.state)).not.toContain('Old correction');
+    for (let i = 0; i < 15; i++) choose(i, i === 0 ? (bank[i].answer + 1) % 4 : bank[i].answer);
+    click('Submit quiz');
+    expect(mounted.container.querySelector('#micro-quiz-reflection-0').value).toBe('');
+    expect(mounted.awardXP).not.toHaveBeenCalled();
+  });
+
+  it('keeps textarea focus when a learner writes before a queued practice transition finishes', () => {
+    vi.useFakeTimers(); mount({ quizSubmitted: true, quizAnswers: wrongAt(0) });
+    click('Practice missed questions');
+    const field = mounted.container.querySelector('#micro-quiz-reflection-0'); field.focus(); reflect(0, 'A new connection.');
+    act(() => vi.runOnlyPendingTimers());
+    expect(document.activeElement).toBe(field); expect(mounted.state.quizPractice.reflections[0]).toBe('A new connection.');
   });
 });
 

@@ -515,11 +515,12 @@
       });
     }
     function validId(value) { return typeof value === 'number' && Number.isInteger(value) && value > 0 && value <= 1000000000; }
+    function normalizeReviewNote(value) { return typeof value === 'string' ? value.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').slice(0, 1200) : ''; }
     function retainedRecords(value) {
       var raw = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
       return (Array.isArray(raw.records) ? raw.records : []).filter(function(item) {
         return item && typeof item === 'object' && item.evidence && typeof item.evidence === 'object' && !Array.isArray(item.evidence);
-      }).map(function(item) { return { id: item.id, evidence: evidence(item.evidence) }; }).filter(function(item) { return item.evidence.day > 0; }).slice(-MAX_RECORDS);
+      }).map(function(item) { return { id: item.id, evidence: evidence(item.evidence), reviewNote: normalizeReviewNote(item.reviewNote) }; }).filter(function(item) { return item.evidence.day > 0; }).slice(-MAX_RECORDS);
     }
     function normalizeNotebook(value) {
       var raw = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -531,7 +532,7 @@
         var id = validId(item.id) && !used[item.id] ? item.id : available;
         used[id] = true;
         while (used[available] || reserved[available]) available++;
-        return Object.freeze({ id: id, evidence: item.evidence });
+        return Object.freeze({ id: id, evidence: item.evidence, reviewNote: item.reviewNote });
       });
       var maximum = records.reduce(function(maximum, item) { return Math.max(maximum, item.id); }, 0);
       return Object.freeze({
@@ -557,6 +558,14 @@
       function existingId(id) { return validId(id) && records.some(function(item) { return item.id === id; }) ? id : null; }
       return Object.freeze({ aId: existingId(raw.aId), bId: existingId(raw.bId) });
     }
+    function setReviewNote(value, id, note) {
+      var notebook = normalizeNotebook(value);
+      if (normalizeComparison({ aId: id }, value).aId === null) return { notebook: notebook, status: 'missing', id: null };
+      var records = notebook.records.map(function(item) {
+        return item.id === id ? Object.assign({}, item, { reviewNote: normalizeReviewNote(note) }) : item;
+      });
+      return { notebook: normalizeNotebook(Object.assign({}, notebook, { records: records })), status: 'updated', id: id };
+    }
     function compare(value, pairValue) {
       var notebook = normalizeNotebook(value), pair = normalizeComparison(pairValue, value);
       if (pair.aId === null || pair.bId === null || pair.aId === pair.bId) return null;
@@ -580,7 +589,8 @@
       var notebook = normalizeNotebook(value);
       var lines = ['Micro Lab resistance evidence notebook',
         'Random teaching model, not measured culture or treatment data. Each record is a saved snapshot; records may come from different rounds of the same run.',
-        'Capacity: 80 cells. Shares are rounded to whole percentages. Extinction has an undefined resistant share.', ''];
+        'Capacity: 80 cells. Shares are rounded to whole percentages. Extinction has an undefined resistant share.',
+        'Later reflections are editable annotations; original snapshot notes stay unchanged.', ''];
       notebook.records.forEach(function(item) {
         var run = item.evidence, first = run.history[0];
         lines.push('Evidence ' + item.id, 'Status: ' + run.status,
@@ -588,21 +598,21 @@
           'Requested initial resistance: ' + run.initRes + '%; actual resistant cells: ' + first.resistant + '/80 (' + run.initialPct + '% rounded)',
           'Original prediction: ' + (run.prediction || 'Not recorded'),
           'Selected explanation: ' + (run.explanation || 'Not recorded') + (run.explanation ? run.explanationSubmitted ? ' (submitted)' : ' (not submitted)' : ''),
-          'My written evidence: ' + run.notes, 'Round\tSensitive\tResistant\tTotal alive\tResistant share');
+          'My written evidence: ' + run.notes, 'Later reflection: ' + (item.reviewNote.trim() ? item.reviewNote : 'Not recorded'), 'Round\tSensitive\tResistant\tTotal alive\tResistant share');
         run.history.forEach(function(row) { var total = row.sensitive + row.resistant; lines.push([row.day, row.sensitive, row.resistant, total, total ? Math.round(row.resistant / total * 100) + '%' : 'Undefined'].join('\t')); });
         lines.push('');
       });
       return lines.join('\n');
     }
     function exportCSV(value) {
-      var rows = [['evidence_id', 'status', 'exposure_strength_0_100', 'planned_rounds', 'observed_rounds', 'requested_initial_resistance_pct', 'actual_initial_resistant_cells', 'original_prediction', 'selected_explanation', 'explanation_submitted', 'written_evidence', 'round', 'sensitive_cells', 'resistant_cells', 'total_alive', 'resistant_share_pct_rounded', 'model_note']];
+      var rows = [['evidence_id', 'status', 'exposure_strength_0_100', 'planned_rounds', 'observed_rounds', 'requested_initial_resistance_pct', 'actual_initial_resistant_cells', 'original_prediction', 'selected_explanation', 'explanation_submitted', 'written_evidence', 'round', 'sensitive_cells', 'resistant_cells', 'total_alive', 'resistant_share_pct_rounded', 'model_note', 'later_reflection']];
       normalizeNotebook(value).records.forEach(function(item) {
         var run = item.evidence;
         run.history.forEach(function(point) {
           var total = point.sensitive + point.resistant;
           rows.push([item.id, run.status, run.dose, run.duration, run.day, run.initRes, run.history[0].resistant,
             run.prediction || '', run.explanation || '', run.explanationSubmitted, run.notes, point.day, point.sensitive, point.resistant, total,
-            total ? Math.round(point.resistant / total * 100) : 'Undefined', 'Random teaching model; snapshots may share a run; not measured culture data.']);
+            total ? Math.round(point.resistant / total * 100) : 'Undefined', 'Random teaching model; snapshots may share a run; not measured culture data.', item.reviewNote]);
         });
       });
       function cell(value) {
@@ -640,14 +650,14 @@
         'exposure_strength_0_100', 'planned_rounds', 'requested_initial_resistance_pct', 'actual_initial_resistant_cells',
         'original_prediction', 'selected_explanation', 'explanation_submitted', 'written_evidence',
         'shared_sensitive_cells', 'shared_resistant_cells', 'shared_total_alive', 'shared_resistant_share_pct_rounded', 'shared_share_difference_percentage_points',
-        'saved_end_sensitive_cells', 'saved_end_resistant_cells', 'saved_end_total_alive', 'saved_end_resistant_share_pct_rounded', 'changed_settings', 'model_note'];
+        'saved_end_sensitive_cells', 'saved_end_resistant_cells', 'saved_end_total_alive', 'saved_end_resistant_share_pct_rounded', 'changed_settings', 'model_note', 'later_reflection'];
       function share(value) { return value === null ? 'Undefined' : value; }
       var rows = result.records.map(function(item, index) {
         var run = item.evidence, counts = index ? result.counts.b : result.counts.a, last = run.history[run.history.length - 1];
         return { row_kind: index ? 'snapshot_b' : 'snapshot_a', evidence_id: item.id, saved_end_round: run.day, snapshot_status: run.status,
           exposure_strength_0_100: run.dose, planned_rounds: run.duration, requested_initial_resistance_pct: run.initRes,
           actual_initial_resistant_cells: run.history[0].resistant, original_prediction: run.prediction || '', selected_explanation: run.explanation || '',
-          explanation_submitted: run.explanationSubmitted, written_evidence: run.notes,
+          explanation_submitted: run.explanationSubmitted, written_evidence: run.notes, later_reflection: item.reviewNote,
           shared_sensitive_cells: counts.sensitive, shared_resistant_cells: counts.resistant, shared_total_alive: counts.totalAlive, shared_resistant_share_pct_rounded: share(counts.sharePct),
           saved_end_sensitive_cells: last.sensitive, saved_end_resistant_cells: last.resistant, saved_end_total_alive: run.finalAlive, saved_end_resistant_share_pct_rounded: share(run.finalPct) };
       });
@@ -665,7 +675,7 @@
       })).join('\r\n');
     }
     return Object.freeze({ evidence: evidence, status: function(value) { return evidence(value).status; }, normalizeNotebook: normalizeNotebook,
-      save: save, normalizeComparison: normalizeComparison, compare: compare, exportText: exportText, exportCSV: exportCSV,
+      save: save, setReviewNote: setReviewNote, normalizeComparison: normalizeComparison, compare: compare, exportText: exportText, exportCSV: exportCSV,
       exportComparisonText: exportComparisonText, exportComparisonCSV: exportComparisonCSV, maxRecords: MAX_RECORDS });
   })();
   window.__MicrobiologyCore = { getResistanceKillProbabilities: getResistanceKillProbabilities, classifyResistanceTrend: classifyResistanceTrend, evaluateResistancePrediction: evaluateResistancePrediction, evaluateResistanceExplanation: evaluateResistanceExplanation, createResistancePopulation: createResistancePopulation, normalizeResistanceInvestigation: normalizeResistanceInvestigation };
@@ -1006,9 +1016,19 @@
             hh('p', null, hh('strong', null, __alloMBT('stem.microbiology.resistance_notebook_explanation', 'Selected explanation') + ': '), evidenceExplanation(saved.explanation), saved.explanation ? ' · ' + (saved.explanationSubmitted ? __alloMBT('stem.microbiology.resistance_notebook_submitted', 'Submitted') : __alloMBT('stem.microbiology.resistance_notebook_unsubmitted', 'Not submitted')) : ''),
             savedExplanationReview ? hh('p', { 'data-resistance-explanation-review': savedExplanationReview.correct ? 'confirmed' : 'review' },
               hh('strong', null, savedExplanationReview.correct ? __alloMBT('stem.microbiology.resistance_notebook_explanation_confirmed', 'Explanation confirmed.') : __alloMBT('stem.microbiology.resistance_notebook_explanation_review', 'Explanation review.')), ' ' + savedExplanationReview.feedback) : null,
+            hh('p', null, hh('strong', null, __alloMBT('stem.microbiology.resistance_notebook_original_notes', 'Original written evidence'))),
             saved.notes ? hh('blockquote', null, saved.notes) : hh('p', null, __alloMBT('stem.microbiology.resistance_notebook_no_notes', 'No written evidence was saved in this snapshot.')),
+            hh('label', { htmlFor: 'micro-resistance-reflection-' + selectedEvidence.id, style: { display: 'block', fontWeight: 700, marginBottom: 5 } }, __alloMBT('stem.microbiology.resistance_notebook_reflection', 'My reflection on saved evidence') + ' ' + selectedEvidence.id),
+            hh('textarea', { id: 'micro-resistance-reflection-' + selectedEvidence.id, 'data-resistance-reflection': selectedEvidence.id, rows: 3, maxLength: 1200, value: selectedEvidence.reviewNote,
+              'aria-describedby': 'micro-resistance-review-note-hint', onChange: function(event) {
+                var result = MicroResistanceNotebook.setReviewNote(rawNotebook, selectedEvidence.id, event.target.value);
+                if (result.status === 'updated') updateNotebook(result.notebook);
+              }, style: { display: 'block', boxSizing: 'border-box', width: '100%', minHeight: 88, resize: 'vertical', padding: 10, font: 'inherit', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid #64748b', borderRadius: 7 } }),
+            hh('p', { id: 'micro-resistance-review-note-hint', style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloMBT('stem.microbiology.resistance_notebook_reflection_hint', 'Saved as you type with this record and included separately in downloads. Use the saved counts to explain what you think now. Original notes, predictions, and outcomes stay unchanged; this reflection is not graded.')),
             hh('div', { role: 'region', tabIndex: 0, 'aria-label': __alloMBT('stem.microbiology.resistance_notebook_table_region', 'Saved resistance counts; scroll horizontally if needed'), style: { overflowX: 'auto' } },
-              hh('table', { style: { borderCollapse: 'collapse', width: '100%', textAlign: 'right' } },
+              hh('style', null, '#micro-resistance-saved-counts th,#micro-resistance-saved-counts td{padding:7px 3px}'),
+              hh('table', { id: 'micro-resistance-saved-counts', style: { borderCollapse: 'collapse', width: '100%', tableLayout: 'fixed', overflowWrap: 'anywhere', textAlign: 'right' } },
+                hh('colgroup', null, [16, 22, 22, 18, 22].map(function(width, index) { return hh('col', { key: index, style: { width: width + '%' } }); })),
                 hh('caption', { style: { textAlign: 'left', marginBottom: 6 } }, __alloMBT('stem.microbiology.resistance_notebook_caption', 'Saved living-cell counts. Shares are rounded to whole percentages; no surviving cells means an undefined share.')),
                 hh('thead', null, hh('tr', null, [__alloMBT('stem.microbiology.resistance_notebook_round', 'Round'), __alloMBT('stem.microbiology.resistance_notebook_sensitive_label', 'Sensitive'), __alloMBT('stem.microbiology.resistance_notebook_resistant_label', 'Resistant'), __alloMBT('stem.microbiology.resistance_notebook_total_label', 'Total alive'), __alloMBT('stem.microbiology.resistance_notebook_share_label', 'Resistant share')].map(function(label) { return hh('th', { key: label, scope: 'col' }, label); }))),
                 hh('tbody', null, saved.history.map(function(row) { var total = row.sensitive + row.resistant; return hh('tr', { key: row.day }, hh('th', { scope: 'row' }, row.day), hh('td', null, row.sensitive), hh('td', null, row.resistant), hh('td', null, total), hh('td', null, total ? Math.round(row.resistant / total * 100) + '%' : __alloMBT('stem.microbiology.resistance_notebook_undefined_short', 'Undefined'))); })))),
@@ -2411,14 +2431,19 @@
     function stage(value) { return typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 4 ? value : 0; }
     function choice(value, options) { return options.indexOf(value) >= 0 ? value : ''; }
     function note(value) { return typeof value === 'string' ? value.slice(0, 1200) : ''; }
+    function normalizeReport(value) {
+      var saved = obj(value);
+      return saved.interpretation === 'wall' && note(saved.explanation).trim() && (saved.prediction === '' || predictions.indexOf(saved.prediction) >= 0)
+        ? { prediction: saved.prediction, interpretation: 'wall', explanation: note(saved.explanation) } : null;
+    }
+    function sameReport(a, b) { return !!(a && b && a.prediction === b.prediction && a.interpretation === b.interpretation && a.explanation === b.explanation); }
     function normalize(value, legacyStep) {
       var raw = obj(value), step = stage(Object.prototype.hasOwnProperty.call(raw, 'step') ? raw.step : legacyStep);
-      var saved = obj(raw.record), record = null;
-      if (saved.interpretation === 'wall' && note(saved.explanation).trim() && (saved.prediction === '' || predictions.indexOf(saved.prediction) >= 0)) {
-        record = { prediction: saved.prediction, interpretation: 'wall', explanation: note(saved.explanation) };
-      }
-      return { step: step, maxStep: Math.max(step, stage(raw.maxStep)), prediction: choice(raw.prediction, predictions),
+      var record = normalizeReport(raw.record), previous = record && normalizeReport(raw.previousRecord);
+      var state = { step: step, maxStep: Math.max(step, stage(raw.maxStep)), prediction: choice(raw.prediction, predictions),
         interpretation: choice(raw.interpretation, interpretations), explanation: note(raw.explanation), record: record };
+      if (previous && !sameReport(record, previous)) state.previousRecord = previous;
+      return state;
     }
     function evaluate(value, legacyStep) {
       var state = normalize(value, legacyStep);
@@ -2435,12 +2460,38 @@
       var changes = state.record ? ['prediction', 'interpretation', 'explanation'].filter(function(field) {
         return state.record[field] !== working[field];
       }) : [];
-      return { saved: state.record, working: working, changes: changes, pendingRevision: review.pendingRevision,
+      return { saved: state.record, previousSaved: state.previousRecord || null, working: working, changes: changes, pendingRevision: review.pendingRevision,
         canDownload: !!(state.record || state.prediction || state.maxStep || state.interpretation || state.explanation.trim()) };
     }
-    return { normalize: normalize, evaluate: evaluate, report: report };
+    function saveReport(value, legacyStep) {
+      var review = evaluate(value, legacyStep), state = review.state;
+      if (!review.canRecord || review.sameRecord) return state;
+      return normalize(Object.assign({}, state, { previousRecord: state.record,
+        record: { prediction: state.prediction, interpretation: state.interpretation, explanation: state.explanation } }));
+    }
+    function restoreReport(value, legacyStep) {
+      var state = normalize(value, legacyStep);
+      return state.previousRecord ? Object.assign({}, state, { record: state.previousRecord, previousRecord: state.record }) : state;
+    }
+    return { normalize: normalize, evaluate: evaluate, report: report, sameReport: sameReport, saveReport: saveReport, restoreReport: restoreReport };
   })();
   window.__MicrobiologyCore.gram = MicroGram;
+
+  function MicroGramHistory(props) {
+    var React = props.React, h = React.createElement;
+    var noticeState = React.useState(null), notice = noticeState[0], setNotice = noticeState[1];
+    function restore() {
+      if (props.onRestore()) setNotice(function(previous) { return { current: props.previousRecord, previous: props.record, sequence: previous ? previous.sequence + 1 : 1 }; });
+    }
+    var showNotice = notice && MicroGram.sameReport(notice.current, props.record) && MicroGram.sameReport(notice.previous, props.previousRecord);
+    return h('details', { id: 'micro-gram-history' },
+      h('summary', null, props.title),
+      h('p', { id: 'micro-gram-history-help', className: 'micro-gram-notes' }, props.help),
+      h('div', { 'data-gram-previous-report': true }, props.preview),
+      h('button', { id: 'micro-gram-restore', type: 'button', onClick: restore, 'aria-describedby': 'micro-gram-history-help' }, props.restoreLabel),
+      h('p', { id: 'micro-gram-history-status', className: 'micro-gram-notes', role: 'status', 'aria-live': 'polite', 'aria-atomic': true },
+        showNotice ? h('span', { key: notice.sequence }, props.restored) : ''));
+  }
 
   // Local feedback belongs to this stable child, not to persisted investigation data.
   function MicroGramDownload(props) {
@@ -2483,11 +2534,15 @@
       return { answers: normalized, correct: correct, answered: normalized.length - missing.length, missed: missed, missing: missing, total: normalized.length };
     }
     function practice(value, missed) {
-      var raw = value && typeof value === 'object' ? value : {};
+      var raw = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+      missed = Array.isArray(missed) ? missed : [];
       var normalized = answers(raw.answers);
       var checked = normalized.map(function(answer, i) { return missed.indexOf(i) >= 0 && answer !== null && Array.isArray(raw.checked) && raw.checked[i] === true; });
       normalized = normalized.map(function(answer, i) { return missed.indexOf(i) >= 0 ? answer : null; });
-      return { answers: normalized, checked: checked };
+      var reflections = normalized.map(function(_, i) {
+        return missed.indexOf(i) >= 0 && Array.isArray(raw.reflections) && typeof raw.reflections[i] === 'string' ? raw.reflections[i].slice(0, 600) : '';
+      });
+      return { answers: normalized, checked: checked, reflections: reflections };
     }
     function report(value) {
       var raw = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -2500,7 +2555,7 @@
         if (submitted && original !== q.answer) {
           var status = selected === null ? 'unanswered' : !checked ? 'unchecked' : selected === q.answer ? 'checked-correct' : 'checked-incorrect';
           if (status === 'checked-correct') practiceCorrect++;
-          followUp = { choice: selected, answer: selected === null ? null : q.choices[selected], status: status };
+          followUp = { choice: selected, answer: selected === null ? null : q.choices[selected], status: status, reflection: practiced.reflections[i] };
         }
         return { index: i, question: q.q, originalChoice: original, originalAnswer: original === null ? null : q.choices[original],
           originalStatus: original === null ? 'unanswered' : !submitted ? 'draft' : original === q.answer ? 'correct' : 'incorrect',
@@ -2531,7 +2586,8 @@
           qt('correct_answer', 'Correct answer') + ': ' + question.correctAnswer,
           qt('export_explanation', 'Explanation') + ': ' + question.explanation);
         if (question.practice) lines.push(qt('export_practice_answer', 'Practice answer') + ': ' + (question.practice.answer === null ? qt('no_answer', 'No answer recorded') : question.practice.answer),
-          qt('export_practice_status', 'Practice status') + ': ' + practiceLabels[question.practice.status]);
+          qt('export_practice_status', 'Practice status') + ': ' + practiceLabels[question.practice.status],
+          qt('export_reflection', 'Correction reflection (learner written, ungraded)') + ': ' + (question.practice.reflection || qt('reflection_empty', 'No reflection recorded')));
       });
       return lines.join('\n');
     }
@@ -2588,6 +2644,10 @@
       var growth = MicroGrowth.normalizeNotebook(raw.growthInvestigation);
       var unexplained = growth.trials.filter(function(trial) { return !trial.explanation.trim(); }).map(function(trial) { return trial.id; });
       var trialId = prefer(unexplained, growth.selectedId);
+      var resistanceBook = MicroResistanceNotebook.normalizeNotebook(raw.resistanceNotebook);
+      var unreflected = resistanceBook.records.filter(function(record) { return !record.reviewNote.trim(); }).map(function(record) { return record.id; });
+      var resistanceCandidates = unreflected.length ? unreflected : resistanceBook.records.map(function(record) { return record.id; });
+      var resistanceId = prefer(resistanceCandidates, resistanceBook.selectedId);
       var quiz = MicroQuiz.summarize(raw.quizAnswers), quizAction = null;
       if (quiz.missing.length) quizAction = { kind: 'answer', id: quiz.missing[0] };
       else if (raw.quizSubmitted !== true) quizAction = { kind: 'submit' };
@@ -2600,6 +2660,7 @@
         mystery: mysteryId === undefined ? null : { kind: mysteryKind, id: mysteryId },
         microscope: slideId === undefined ? null : { kind: 'estimate', id: slideId },
         growth: growth.removed ? { kind: 'recovery', id: growth.removed.trial.id } : trialId === undefined ? null : { kind: 'explanation', id: trialId },
+        resistance: resistanceId === undefined ? null : { kind: unreflected.length ? 'reflection' : 'review', id: resistanceId },
         gram: { kind: MicroGram.evaluate(raw.gramInvestigation, raw.gramStep).nextStep },
         quiz: quizAction
       };
@@ -2629,7 +2690,7 @@
         mystery: { records: mysteryRecorded, drafts: mysteryDrafts, revisions: mysteryRevisions, active: mysteries.active, started: mysteryRecorded + mysteryDrafts > 0 },
         microscope: { records: measured, drafts: measurementDrafts, started: measured + measurementDrafts > 0 },
         growth: { records: growth.trials.length, unexplained: growth.trials.filter(function(trial) { return !trial.explanation.trim(); }).length, removedId: growth.removed ? growth.removed.trial.id : null, sweep: !!growth.sweep, control: !!growth.control, legacyNotes: legacyNotes, started: !!(growth.removed || growth.trials.length || growth.sweep || growth.control || growth.prediction || growth.hypothesis.trim() || legacyNotes) },
-        resistance: { records: resistanceBook.records.length, round: resistance.day, duration: resistance.duration, status: window.__MicrobiologyCore.resistance.status(resistance), started: !!(resistanceBook.records.length || resistance.day || resistance.prediction || resistance.notes) },
+        resistance: { records: resistanceBook.records.length, unreflected: resistanceBook.records.filter(function(record) { return !record.reviewNote.trim(); }).length, round: resistance.day, duration: resistance.duration, status: window.__MicrobiologyCore.resistance.status(resistance), started: !!(resistanceBook.records.length || resistance.day || resistance.prediction || resistance.notes) },
         quiz: { answered: quiz.answered, total: quiz.total, submitted: raw.quizSubmitted === true && quiz.missing.length === 0, correct: quiz.correct, missed: quiz.missed.length, practiced: practiced, started: quiz.answered > 0 },
         gram: { step: gram.step, observed: gram.maxStep, recorded: !!gram.record, revision: gramReview.pendingRevision, nextStep: gramReview.nextStep, started: !!(gram.record || gram.maxStep || gram.prediction || gram.interpretation || gram.explanation.trim()) }
       };
@@ -2845,6 +2906,17 @@
             };
             return destinations[next.kind];
           }
+          if (id === 'resistance') {
+            var originalNotebook = objectValue(d.resistanceNotebook);
+            var resistancePatch = Object.assign({}, originalNotebook, { selectedId: next.id });
+            var resistanceUpdates = { resistanceNotebook: resistancePatch };
+            if (MicroResistanceNotebook.normalizeNotebook(resistancePatch).selectedId !== next.id) {
+              resistanceUpdates.resistanceNotebook = Object.assign({}, MicroResistanceNotebook.normalizeNotebook(originalNotebook), { selectedId: next.id });
+              resistanceUpdates.resistanceComparison = MicroResistanceNotebook.normalizeComparison(d.resistanceComparison, originalNotebook);
+            }
+            return { label: (next.kind === 'reflection' ? ht('reflect_resistance', 'Reflect on saved evidence') : ht('review_resistance', 'Review saved evidence')) + ' ' + next.id,
+              anchor: 'micro-resistance-reflection-' + next.id, patch: resistanceUpdates };
+          }
           if (id === 'quiz') return next.kind === 'submit' ? { label: ht('quiz_submission', 'Go to quiz submission'), anchor: 'micro-quiz-submit' }
             : { label: (next.kind === 'practice' ? ht('continue_practice', 'Continue practice') : ht('answer_question', 'Answer next unanswered question')) + ' · Q' + (next.id + 1),
               anchor: 'micro-quiz-question-' + next.id, patch: next.kind === 'practice' ? { quizMode: 'practice' } : undefined };
@@ -2883,7 +2955,7 @@
           { id: 'resistance', tab: 'resistance', icon: '🧫', title: ht('resistance', 'Resistance investigation'),
             count: String(work.resistance.records), metric: ht('resistance_records', 'saved evidence snapshots'),
             description: ht('resistance_prompt', 'Observe how survival changes a population across rounds.'),
-            detail: work.resistance.status === 'extinct' ? ht('resistance_extinct', 'The current culture is extinct; its observations remain available.') : work.resistance.round ? ht('resistance_round', 'Current run at round') + ' ' + work.resistance.round + '/' + work.resistance.duration + '. ' + ht('resistance_paused', 'Playback is paused when you return.') : ht('resistance_detail', 'Save evidence before starting another run.'),
+            detail: (work.resistance.status === 'extinct' ? ht('resistance_extinct', 'The current culture is extinct; its observations remain available.') : work.resistance.round ? ht('resistance_round', 'Current run at round') + ' ' + work.resistance.round + '/' + work.resistance.duration + '. ' + ht('resistance_paused', 'Playback is paused when you return.') : ht('resistance_detail', 'Save evidence before starting another run.')) + (work.resistance.unreflected ? ' ' + ht('resistance_unreflected', 'Saved snapshots without a later reflection') + ': ' + work.resistance.unreflected : ''),
             action: ht('open_resistance', 'Open resistance notebook') },
           { id: 'quiz', tab: 'quiz', icon: '📝', title: ht('quiz', 'Quiz and practice'),
             count: (work.quiz.submitted ? work.quiz.correct : work.quiz.answered) + '/' + work.quiz.total,
@@ -3167,16 +3239,28 @@
             upd({ gramInvestigation: next, gramStep: next.step });
           }
           function focusAfterUpdate(id) {
-            var labNode = document.getElementById('micro-gram-lab');
+            var labNode = document.getElementById('micro-gram-lab'), request = {}, updateVersion = __alloMBUpdateVersion;
+            if (labNode) labNode.__microGramFocusRequest = request;
             setTimeout(function() {
-              if (!labNode || !labNode.isConnected) return;
+              var tab = document.getElementById('micro-tab-bacteria');
+              if (!labNode || !labNode.isConnected || document.getElementById('micro-gram-lab') !== labNode ||
+                labNode.__microGramFocusRequest !== request || updateVersion !== __alloMBUpdateVersion || !tab || tab.getAttribute('aria-selected') !== 'true') return;
               var target = labNode.querySelector('#' + id);
               if (target) {
+                labNode.__microGramFocusRequest = null;
                 target.focus();
                 var scrollTarget = target.closest('fieldset') || target;
                 if (scrollTarget.scrollIntoView) scrollTarget.scrollIntoView({ block: 'start', behavior: 'auto' });
               }
             }, 0);
+          }
+          function cancelDeferredFocus(event) { event.currentTarget.__microGramFocusRequest = null; }
+          function restorePreviousReport() {
+            if (!state.previousRecord) return false;
+            var next = MicroGram.restoreReport(state);
+            save({ record: next.record, previousRecord: next.previousRecord });
+            focusAfterUpdate('micro-gram-record-heading');
+            return true;
           }
           function predictionText(value) {
             var found = predictions.find(function(item) { return item[0] === value; });
@@ -3205,6 +3289,13 @@
               });
               lines.push(glt('saved_no_stage_log', 'The saved report stores these written fields. It does not store a historical log of observed stages.'));
             } else lines.push(glt('no_saved_report', 'No report has been saved.'));
+            if (evidenceReport.previousSaved) {
+              lines.push('', glt('previous_export_title', 'Previous saved Gram-stain report (available to restore)'));
+              ['prediction', 'interpretation', 'explanation'].forEach(function(field) {
+                lines.push(reportFields[field] + ': ' + reportFieldText(field, evidenceReport.previousSaved[field], true));
+              });
+              lines.push(glt('saved_no_stage_log', 'The saved report stores these written fields. It does not store a historical log of observed stages.'));
+            }
             lines.push('', glt('working_notes', 'Current working notes'),
               evidenceReport.saved ? (evidenceReport.pendingRevision ? glt('working_pending', 'The current investigation has not replaced the saved report.') : glt('working_matches', 'Working notes match the saved report.'))
                 : glt('working_unrecorded', 'These notes have not been recorded as a completed report.'));
@@ -3241,7 +3332,9 @@
             : state.interpretation === 'wall' ? glt('feedback_wall', 'This mechanism fits the model: the groups first differ at decolorization, then the counterstain makes the decolorized group visible.')
             : glt('feedback_choose', 'Choose the explanation supported by the observations.');
           var sameRecord = review.sameRecord;
-          return h('section', { id: 'micro-gram-lab', className: 'micro-gram-lab', 'aria-labelledby': 'micro-gram-heading' },
+          return h('section', { id: 'micro-gram-lab', className: 'micro-gram-lab', 'aria-labelledby': 'micro-gram-heading',
+            onClickCapture: cancelDeferredFocus, onPointerDownCapture: cancelDeferredFocus, onKeyDownCapture: cancelDeferredFocus,
+            onFocusCapture: cancelDeferredFocus, onInputCapture: cancelDeferredFocus, onChangeCapture: cancelDeferredFocus },
             h('style', null, '.micro-gram-lab{padding:20px;border:1px solid #64748b;border-radius:12px;margin-bottom:16px;color:var(--allo-stem-text,#e2e8f0);font-size:14px;line-height:1.65;scroll-margin-top:20px}.micro-gram-lab *{box-sizing:border-box}.micro-gram-lab h3{margin:0 0 10px;font-size:22px}.micro-gram-lab h4{font-size:16px;margin:12px 0 8px}.micro-gram-lab p{margin:8px 0 12px}.micro-gram-lab fieldset{min-width:0;padding:14px;border:1px solid #64748b;border-radius:10px;margin:14px 0}.micro-gram-lab legend{padding:0 6px;font-weight:750}.micro-gram-lab label{display:flex;gap:10px;align-items:flex-start;padding:10px 0;min-height:44px;cursor:pointer}.micro-gram-lab input{margin-top:6px;accent-color:#a78bfa;flex-shrink:0}.micro-gram-lab button{min-height:44px;padding:10px 14px;border:1px solid #64748b;border-radius:8px;background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text,#e2e8f0);font:inherit;font-size:13px;cursor:pointer}.micro-gram-lab button:disabled{opacity:.5;cursor:default}.micro-gram-lab button[aria-current=step]{border-color:#c4b5fd;background:#3b2462;color:#fff}.micro-gram-lab :is(button,input,textarea,h3,h4,summary,a):focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}.micro-gram-stages{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:12px 0;padding:0}.micro-gram-models{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}.micro-gram-model{margin:0;padding:14px;background:var(--allo-stem-canvas,#0f172a);border:1px solid #475569;border-radius:10px;min-width:0}.micro-gram-model svg{width:100%;height:auto;display:block}.micro-gram-observation,.micro-gram-feedback{border-left:3px solid #c4b5fd;padding:12px;background:var(--allo-stem-canvas,#0f172a)}.micro-gram-lab textarea{width:100%;min-height:95px;resize:vertical;padding:10px;border:1px solid #64748b;border-radius:8px;background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text,#e2e8f0);font:inherit}.micro-gram-actions{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}.micro-gram-lab .micro-gram-primary{background:#c4b5fd;color:#21133d;border-color:#c4b5fd;font-weight:750}.micro-gram-record{padding:14px;margin-top:18px;border:1px solid #6ee7b7;border-radius:10px;overflow-wrap:anywhere}.micro-gram-record blockquote{margin:10px 0;white-space:pre-wrap}.micro-gram-lab summary{cursor:pointer;min-height:44px;padding:10px 0}.micro-gram-lab a{color:#7dd3fc}.micro-gram-notes{font-size:12px;color:var(--allo-stem-text-soft,#94a3b8)}@media(max-width:600px){.micro-gram-lab{padding:12px}.micro-gram-stages li{flex:1 1 130px}.micro-gram-stages button{width:100%}.micro-gram-actions button{flex:1 1 180px}}.theme-contrast .micro-gram-lab :is(p,span,strong,h3,h4,legend,label,figcaption,a){color:#ffff00}.theme-contrast .micro-gram-lab :is(button,fieldset,.micro-gram-model,.micro-gram-observation,.micro-gram-feedback,.micro-gram-record){background:#000;color:#ffff00;border-color:#ffff00}'),
             h('h3', { id: 'micro-gram-heading', tabIndex: -1 }, glt('title', 'Why do some cells keep the purple stain?')),
             h('style', null, '#micro-gram-interpretation-heading:focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}'),
@@ -3278,7 +3371,8 @@
             h('div', { className: 'micro-gram-actions' },
               h('button', { id: 'micro-gram-save', type: 'button', className: 'micro-gram-primary', disabled: !review.canRecord || sameRecord, onClick: function() {
                 if (review.canRecord && !sameRecord) {
-                  save({ record: { prediction: state.prediction, interpretation: state.interpretation, explanation: state.explanation } });
+                  var next = MicroGram.saveReport(state);
+                  save({ record: next.record, previousRecord: next.previousRecord });
                   focusAfterUpdate('micro-gram-record-heading');
                 }
               } }, sameRecord ? glt('report_saved', 'Report saved') : glt('record', 'Save Gram-stain report')),
@@ -3288,13 +3382,13 @@
               } }, glt('restart', 'Start a new investigation'))),
             h('p', { id: 'micro-gram-save-status', className: 'micro-gram-notes', role: 'status', 'aria-live': 'polite', 'aria-atomic': true },
               sameRecord ? glt('save_confirmation', 'Your Gram-stain report is saved. It keeps your original prediction and explanation.') : ''),
-            h('p', { className: 'micro-gram-notes' }, glt('save_scope', 'Saving requires the complete observation, the supported mechanism, and your explanation. A new investigation clears the current draft and keeps the last saved report.')),
+            h('p', { className: 'micro-gram-notes' }, glt('save_scope_history', 'Saving requires the complete observation, the supported mechanism, and your explanation. A new investigation clears the current draft and keeps the current and previous saved reports.')),
             state.record ? h('section', { className: 'micro-gram-record', 'aria-labelledby': 'micro-gram-record-heading' },
               h('h4', { id: 'micro-gram-record-heading', tabIndex: -1 }, glt('last_report', 'Last saved Gram-stain report')),
               h('p', null, glt('original_prediction', 'Original prediction') + ': ' + predictionText(state.record.prediction)),
               h('p', null, glt('record_model_reference', 'Model reference: after decolorization A remained purple and B became colorless; after counterstaining A was purple and B was pink.')),
               h('p', null, interpretations[0][1]), h('blockquote', null, state.record.explanation),
-              h('p', { className: 'micro-gram-notes' }, glt('record_separate', 'This saved explanation stays unchanged while you edit the current draft. Saving again replaces it.')),
+              h('p', { className: 'micro-gram-notes' }, glt('record_separate_history', 'This saved explanation stays unchanged while you edit the current draft. Saving a changed report keeps this version as the one previous report.')),
               h('details', { id: 'micro-gram-comparison' },
                 h('summary', null, glt('compare_notes', 'Compare saved and working notes')),
                 h('style', null, '.micro-gram-changes{list-style:none;padding:0;margin:8px 0}.micro-gram-changes>li{border-top:1px solid #64748b;padding:12px 0}.micro-gram-compare-values{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:8px 0}.micro-gram-compare-values>div{min-width:0}.micro-gram-compare-values dt{font-weight:700}.micro-gram-compare-values dd{margin:4px 0;white-space:pre-wrap;overflow-wrap:anywhere}'),
@@ -3306,7 +3400,16 @@
                 })) : h('p', null, glt('no_written_changes', 'No written fields have changed.')),
                 h('p', { className: 'micro-gram-notes' }, glt('current_observed_stages', 'Stages observed in the current investigation') + ': ' + evidenceReport.working.observedStages.length + '/4. ',
                   glt('saved_no_stage_log', 'The saved report stores these written fields. It does not store a historical log of observed stages.')))) : null,
-            h('p', { id: 'micro-gram-export-help', className: 'micro-gram-notes' }, glt('export_help', 'The text file separates your saved written report from current working notes and the stages observed in this investigation.')),
+            state.previousRecord ? h(MicroGramHistory, { React: React, record: state.record, previousRecord: state.previousRecord, onRestore: restorePreviousReport,
+              title: glt('previous_review', 'Review previous Gram report'),
+              help: glt('previous_help', 'One previous report is kept. Restoring swaps the two saved reports and keeps your working notes and observed stages. Saving a changed report replaces the previous report. Neither saved report includes a historical stage log.'),
+              preview: ['prediction', 'interpretation', 'explanation'].map(function(field) {
+                return h('div', { key: field, 'data-gram-previous-field': field }, h('h4', null, reportFields[field]),
+                  h('p', { style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, reportFieldText(field, state.previousRecord[field], true)));
+              }),
+              restoreLabel: glt('restore_previous', 'Restore previous Gram report'),
+              restored: glt('previous_restored', 'Previous Gram report restored. Your working notes and observed stages were kept. The replaced report remains available here.') }) : null,
+            h('p', { id: 'micro-gram-export-help', className: 'micro-gram-notes' }, glt('export_help_history', 'The text file separates the current and previous saved reports from working notes and the stages observed in this investigation.')),
             h(MicroGramDownload, { React: React, disabled: !evidenceReport.canDownload, text: evidenceReportText(),
               label: glt('download_evidence', 'Download Gram evidence report'),
               started: glt('export_started', 'The Gram evidence report download has started.'),
@@ -6236,7 +6339,7 @@
         function qt(key, fallback) { return __alloT('stem.microbiology.quiz_' + key, fallback); }
         var Q = MicroQuiz, result = Q.summarize(d.quizAnswers), answers = result.answers;
         var done = d.quizSubmitted === true && result.missing.length === 0;
-        var practice = Q.practice(d.quizPractice, result.missed);
+        var practice = Q.practice(d.quizPractice, done ? result.missed : []);
         var practicing = done && d.quizMode === 'practice' && result.missed.length > 0;
         var onlyMissed = d.quizReviewOnlyMissed !== false && result.missed.length > 0;
         var practiced = result.missed.filter(function(i) { return practice.checked[i] && practice.answers[i] === QUIZ_QUESTIONS[i].answer; }).length;
@@ -6278,14 +6381,32 @@
           transition({ quizIdx: 0, quizAnswers: [], quizSubmitted: false, quizCorrect: 0, quizBestCorrect: Math.max(bestScore(), result.correct), quizMode: 'review', quizPractice: {} }, 'quiz');
         }
         function practiceSelect(index, choice) {
-          var next = { answers: practice.answers.slice(), checked: practice.checked.slice() };
+          var next = { answers: practice.answers.slice(), checked: practice.checked.slice(), reflections: practice.reflections.slice() };
           next.answers[index] = choice; next.checked[index] = false;
           upd({ quizPractice: next });
         }
         function checkPractice(index) {
           if (practice.answers[index] === null) return;
-          var next = { answers: practice.answers.slice(), checked: practice.checked.slice() };
+          var next = { answers: practice.answers.slice(), checked: practice.checked.slice(), reflections: practice.reflections.slice() };
           next.checked[index] = true; upd({ quizPractice: next });
+        }
+        function changeReflection(index, value) {
+          if (!done || result.missed.indexOf(index) < 0) return;
+          var next = { answers: practice.answers.slice(), checked: practice.checked.slice(), reflections: practice.reflections.slice() };
+          next.reflections[index] = value.slice(0, 600); upd({ quizPractice: next });
+        }
+        function reflectionField(index) {
+          if (!done || result.missed.indexOf(index) < 0) return null;
+          var id = 'micro-quiz-reflection-' + index;
+          var choice = practice.answers[index];
+          var status = choice === null ? qt('export_unanswered_practice', 'Unanswered in practice') : !practice.checked[index] ? qt('export_unchecked', 'Unchecked practice answer') : choice === QUIZ_QUESTIONS[index].answer ? qt('export_checked_correct', 'Checked correct') : qt('export_checked_incorrect', 'Checked incorrect');
+          return h('div', { className: 'micro-quiz-reflection', 'data-quiz-reflection': index },
+            h('p', { 'data-quiz-practice-answer': index }, qt('export_practice_answer', 'Practice answer') + ': ' + (choice === null ? qt('no_answer', 'No answer recorded') : QUIZ_QUESTIONS[index].choices[choice])),
+            h('p', { 'data-quiz-practice-status': index }, qt('export_practice_status', 'Practice status') + ': ' + status),
+            h('label', { htmlFor: id }, qt('reflection_label', 'Correction reflection') + ' · Q' + (index + 1) + ' ' + qt('reflection_optional', '(optional)')),
+            h('p', { id: id + '-help', className: 'micro-quiz-note' }, qt('reflection_help', 'What changed in your thinking? Name the clue or concept that supports your revised answer. This note is saved with this attempt and is never graded.')),
+            h('textarea', { id: id, rows: 3, maxLength: 600, value: practice.reflections[index], 'aria-describedby': id + '-help ' + id + '-count', onChange: function(event) { changeReflection(index, event.target.value); } }),
+            h('p', { id: id + '-count', className: 'micro-quiz-note' }, practice.reflections[index].length + '/600 ' + qt('reflection_characters', 'characters')));
         }
         function options(q, i, isPractice) {
           var selected = isPractice ? practice.answers[i] : answers[i];
@@ -6301,6 +6422,7 @@
           onClickCapture: cancelDeferredFocus, onPointerDownCapture: cancelDeferredFocus, onKeyDownCapture: cancelDeferredFocus,
           onFocusCapture: cancelDeferredFocus, onInputCapture: cancelDeferredFocus, onChangeCapture: cancelDeferredFocus },
           h('style', null, '.micro-quiz{max-width:980px;margin:auto;padding:24px;color:var(--allo-stem-text,#e2e8f0);font-size:14px;line-height:1.65}.micro-quiz *{box-sizing:border-box}.micro-quiz h3{font-size:27px;line-height:1.25;margin:0 0 10px}.micro-quiz h4{font-size:17px;margin:0 0 12px}.micro-quiz p{margin:8px 0 14px}.micro-quiz-header{padding:22px;border-radius:14px;background:var(--allo-stem-panel,#1e293b);border:1px solid #475569;margin-bottom:20px}.micro-quiz-score{font-size:30px;color:#6ee7b7;font-weight:800}.micro-quiz-actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.micro-quiz button{min-height:44px;border:1px solid #64748b;border-radius:8px;background:#0f172a;color:#e2e8f0;padding:9px 14px;font:inherit;font-size:13px;cursor:pointer}.micro-quiz button:disabled{opacity:.5;cursor:default}.micro-quiz button[aria-pressed=true]{background:#083344;border-color:#7dd3fc}.micro-quiz .micro-quiz-primary{background:#6ee7b7;color:#052e22;border-color:#6ee7b7;font-weight:800}.micro-quiz :is(button,input,fieldset):focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}.micro-quiz-card{min-width:0;margin:0 0 18px;padding:20px;border:1px solid #475569;border-radius:12px;background:var(--allo-stem-panel,#1e293b)}.micro-quiz-card legend{padding:0 5px;font-weight:750;font-size:15px}.micro-quiz-choice{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid #475569;border-radius:8px;margin:8px 0;cursor:pointer}.micro-quiz-choice[data-picked=true]{border-color:#6ee7b7;background:#064e3b;color:#ecfdf5}.micro-quiz-choice input{margin:5px 0 0;accent-color:#34d399;flex-shrink:0}.micro-quiz-note{color:var(--allo-stem-text-soft,#94a3b8);font-size:12px}.micro-quiz-feedback{border-left:3px solid #7dd3fc;padding:12px;background:#0f172a}.micro-quiz-feedback[data-correct=true]{border-color:#6ee7b7}.micro-quiz-footer{padding:14px 0}.theme-contrast .micro-quiz :is(p,span,strong,h3,h4,legend){color:#ffff00}.theme-contrast .micro-quiz :is(button,.micro-quiz-card,.micro-quiz-header,.micro-quiz-choice,.micro-quiz-feedback){background:#000;color:#ffff00;border-color:#ffff00}@media(max-width:600px){.micro-quiz{padding:16px 12px}.micro-quiz-card,.micro-quiz-header{padding:16px}.micro-quiz h3{font-size:24px}.micro-quiz-actions button{flex:1 1 160px}}'),
+          h('style', null, '.micro-quiz-reflection{margin-top:16px;padding-top:12px;border-top:1px solid #475569}.micro-quiz-reflection label{display:block;font-weight:750}.micro-quiz-reflection textarea{display:block;box-sizing:border-box;width:100%;max-width:100%;min-height:96px;resize:vertical;padding:10px;border:1px solid #64748b;border-radius:8px;background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text,#e2e8f0);font:inherit}.micro-quiz-reflection textarea:focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}.theme-contrast .micro-quiz-reflection textarea{background:#000;color:#ffff00;border-color:#ffff00}'),
           h('header', { className: 'micro-quiz-header' },
             h('h3', { id: 'micro-quiz-heading', tabIndex: -1, 'data-phase': practicing ? 'practice' : done ? 'review' : 'quiz' }, practicing ? qt('practice_title', 'Practice the questions you missed') : done ? qt('review_title', 'Review your quiz') : qt('title', 'Check your understanding')),
             done ? h('div', null,
@@ -6321,7 +6443,7 @@
           ),
           h(MicroQuizDownload, { React: React, disabled: !result.answered, text: Q.exportText(d, qt),
             label: qt('download_evidence', 'Download quiz evidence'),
-            help: qt('export_help', 'Keep a text copy before starting a new quiz. Submitted answers and checked practice stay separate; incomplete attempts contain only your working choices.'),
+            help: qt('export_reflections_help', 'Keep a text copy before starting a new quiz. Submitted answers, practice outcomes, and ungraded reflections stay separate; incomplete attempts contain only your working choices.'),
             started: qt('export_started', 'The quiz evidence download has started. Your answers and practice were kept.'),
             failed: qt('export_failed', 'The quiz evidence download could not start. Your answers and practice are still here; try again.') }),
           QUIZ_QUESTIONS.map(function(q, i) {
@@ -6336,16 +6458,17 @@
               practicing ? h('button', { type: 'button', disabled: practice.answers[i] === null, onClick: function() { checkPractice(i); } }, qt('check_practice', 'Check practice answer')) : null,
               practicing && practice.checked[i] ? h('div', { className: 'micro-quiz-feedback', 'data-correct': practice.answers[i] === q.answer, role: 'status', 'aria-live': 'polite' },
                 h('strong', null, practice.answers[i] === q.answer ? qt('practice_correct', 'Correct in practice') : qt('practice_revisit', 'Revisit the explanation, then try again')),
-                h('p', null, qt('correct_answer', 'Correct answer') + ': ' + q.choices[q.answer]), h('p', null, q.explain)) : null);
+                h('p', null, qt('correct_answer', 'Correct answer') + ': ' + q.choices[q.answer]), h('p', null, q.explain)) : null,
+              practicing ? reflectionField(i) : null);
             return h('article', { key: i, className: 'micro-quiz-card', 'aria-labelledby': 'micro-quiz-review-' + i },
               h('h4', { id: 'micro-quiz-review-' + i }, heading),
               h('p', null, h('strong', null, got ? qt('correct_original', 'Correct on the original quiz') : qt('needs_review', 'Needs review'))),
               h('p', null, qt('original_answer', 'Original answer') + ': ' + original),
               !got ? h('p', null, qt('correct_answer', 'Correct answer') + ': ' + q.choices[q.answer]) : null,
-              h('p', { className: 'micro-quiz-feedback' }, q.explain));
+              h('p', { className: 'micro-quiz-feedback' }, q.explain), reflectionField(i));
           }),
           h('footer', { className: 'micro-quiz-footer' }, done ? h('div', null,
-            h('p', { className: 'micro-quiz-note' }, qt('restart_note', 'A new quiz clears this attempt and its practice answers. XP is awarded only for improving your best quiz score.')),
+            h('p', { className: 'micro-quiz-note' }, qt('restart_reflections_note', 'A new quiz clears this attempt, its practice answers, and its reflections. XP is awarded only for improving your best quiz score.')),
             h('button', { type: 'button', onClick: reset }, qt('restart', 'Start a new quiz')))
             : h('button', { type: 'button', className: 'micro-quiz-primary', disabled: result.missing.length > 0, onClick: submit }, qt('submit', 'Submit quiz')))
         );

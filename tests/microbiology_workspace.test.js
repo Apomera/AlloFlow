@@ -57,13 +57,14 @@ describe('Micro Lab saved-work overview', { timeout: 20000 }, () => {
     expect(summary.mystery).toMatchObject({ records: 1, drafts: 1, revisions: 1 });
     expect(summary.microscope).toMatchObject({ records: 1, drafts: 1 });
     expect(summary.growth).toMatchObject({ records: 1, unexplained: 1, control: true, sweep: true });
-    expect(summary.resistance).toMatchObject({ records: 1, round: 1, status: 'in-progress' });
+    expect(summary.resistance).toMatchObject({ records: 1, unreflected: 1, round: 1, status: 'in-progress' });
     expect(summary.gram).toMatchObject({ step: 2, observed: 4, recorded: true, revision: false, nextStep: 'saved' });
     expect(summary.quiz).toMatchObject({ answered: 2, submitted: false });
     expect(JSON.stringify(state)).toBe(snapshot);
     mount(state);
     expect(mounted.container.querySelector('[data-work-card="mystery"]').textContent).toContain('Reports with working revisions: 1');
     expect(mounted.container.querySelector('[data-work-card="growth"]').textContent).toContain('Saved trials without a written explanation: 1');
+    expect(mounted.container.querySelector('[data-work-card="resistance"]').textContent).toContain('Saved snapshots without a later reflection: 1');
   });
 
   it('ignores malformed records and never treats a forged submitted flag or score as progress', () => {
