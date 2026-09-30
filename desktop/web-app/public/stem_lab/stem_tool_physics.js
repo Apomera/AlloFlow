@@ -264,6 +264,18 @@ window.StemLab = window.StemLab || {
       return true;
     }).slice(0, 8);
   }
+  // Match captured settings from completed recent observations. Display speed
+  // and current controls do not establish evidence for a guided trial.
+  function physFindTrialRun(trial, runLog) {
+    if (!physRecord(trial) || typeof trial.airResist !== 'boolean' || !physFinite(trial.launchHeight) || trial.launchHeight < 0 || trial.launchHeight > 50) return null;
+    var bounds = { angle: [trial.launchHeight > 0 ? 0 : 5, 85], velocity: [5, 50], gravity: [1, 25], mass: [1, 10] };
+    if (!Object.keys(bounds).every(function(k) { return physFinite(trial[k]) && trial[k] >= bounds[k][0] && trial[k] <= bounds[k][1]; })) return null;
+    return physEvidenceRuns(runLog).reduce(function(latest, run) {
+      var matches = run.modelVersion === PHYS_MODEL_VERSION && run.angle === trial.angle && run.vel === trial.velocity && run.grav === trial.gravity && run.mass === trial.mass && run.launchHeight === trial.launchHeight && run.drag === trial.airResist;
+      return matches && (!latest || run.n > latest.n) ? run : latest;
+    }, null);
+  }
+
   function physNormalizeInvestigationDraft(raw, runLog) {
     raw = physRecord(raw) ? raw : {};
     var draft = {};
@@ -409,7 +421,7 @@ window.StemLab = window.StemLab || {
   }
   try {
     window.StemLab._physics = { DT: PHYS_DT, DRAG_K: PHYS_DRAG_K, MODEL_VERSION: PHYS_MODEL_VERSION, step: physStep, simulate: physSimulate, vacuum: physVacuum, solveVelocity: physSolveVelocity, solveAngle: physSolveAngle, inspectSample: physInspectSample, compareMeasurements: physCompareMeasurements,
-      normalizeInvestigationDraft: physNormalizeInvestigationDraft, normalizeInvestigations: physNormalizeInvestigations, compareRuns: physCompareRuns, createInvestigation: physCreateInvestigation, formatInvestigationReport: physFormatInvestigationReport };
+      findTrialRun: physFindTrialRun, normalizeInvestigationDraft: physNormalizeInvestigationDraft, normalizeInvestigations: physNormalizeInvestigations, compareRuns: physCompareRuns, createInvestigation: physCreateInvestigation, formatInvestigationReport: physFormatInvestigationReport };
   } catch (e) {}
 
   // One reference run anchors every notebook comparison, including archived
@@ -475,7 +487,7 @@ window.StemLab = window.StemLab || {
     return h('section', { 'data-physics-investigation-comparison': props.archived ? undefined : true, 'data-physics-investigation-archived-evidence': props.archived ? true : undefined, 'data-reference-run': first.n, 'data-compared-run': second.n, 'aria-label': props.archived ? __alloT('stem.physics.investigation_saved_evidence', 'Saved evidence comparison') : __alloT('stem.physics.investigation_comparison', 'Selected run comparison'), style: { background: palette.panel, color: palette.ink, border: '1px solid ' + palette.border, borderRadius: 12, padding: 15, minWidth: 0, display: 'grid', gap: 14 } },
       h('div', null,
         h('h4', { style: { fontSize: 15, fontWeight: 800, margin: '0 0 6px' } }, referenceName + ' → ' + comparisonName),
-        h('p', { style: { fontSize: 13, lineHeight: 1.5, margin: 0 } }, __alloT('stem.physics.investigation_reference', 'Reference:') + ' ' + referenceName + '. ' + (props.archived ? __alloT('stem.physics.investigation_archive_source', 'Values come from the saved measurements.') : __alloT('stem.physics.investigation_reference_help', 'The first selected run is the reference for every comparison.')))),
+        h('p', { style: { fontSize: 13, lineHeight: 1.5, margin: 0 } }, __alloT('stem.physics.investigation_reference', 'Reference:') + ' ' + referenceName + '. ' + (props.archived ? __alloT('stem.physics.investigation_archive_source', 'Values come from the saved measurements.') : __alloT('stem.physics.investigation_reference_choice_help', 'Use the reference selector above to change the baseline for these comparisons.')))),
       candidates.length > 1 && h('label', { style: { display: 'grid', gap: 5, minWidth: 0, fontSize: 13, fontWeight: 700 } },
         __alloT('stem.physics.investigation_compare_run', 'Compare with reference run'),
         h('select', { 'data-physics-investigation-compare-run': true, value: String(second.n), onChange: function(e) { choice[1](Number(e.target.value)); }, style: { minWidth: 0, width: '100%', minHeight: 44, padding: '9px 10px', fontSize: 14, fontWeight: 400, background: palette.surface, color: palette.ink, border: '1px solid ' + palette.accent, borderRadius: 8 } }, candidates.map(function(run) { return h('option', { key: run.n, value: String(run.n) }, runLabel + ' ' + run.n); }))),
@@ -620,10 +632,10 @@ window.StemLab = window.StemLab || {
             var validId = function(v) { return Number.isSafeInteger(v) && v > 0 && v < Number.MAX_SAFE_INTEGER; };
             raw = isRecord(raw) ? raw : {};
             function flight(v) {
-              if (!isRecord(v) || !['angle', 'vel', 'grav', 'mass', 'range', 'maxH', 'time'].every(function(k) { return finite(v[k]); })) return null;
+              if (!isRecord(v) || typeof v.drag !== 'boolean' || !['angle', 'vel', 'grav', 'mass', 'range', 'maxH', 'time'].every(function(k) { return finite(v[k]); })) return null;
               var height = physRecordedHeight(v);
               if (height === null || v.angle < (height > 0 ? 0 : 5) || v.angle >= 90 || v.vel <= 0 || v.grav <= 0 || v.mass <= 0 || v.range < 0 || v.maxH < height || v.time <= 0) return null;
-              return Object.assign({}, v, { launchHeight: height, drag: v.drag === true });
+              return Object.assign({}, v, { launchHeight: height });
             }
             var savedLog = Array.isArray(raw.runLog) ? raw.runLog : [];
             var log = [];
@@ -3531,6 +3543,7 @@ window.StemLab = window.StemLab || {
                   labels: ['15 m/s', '30 m/s'] }
               ];
               var activity = activities.find(function(a) { return a.id === draft.activityId; }) || null;
+              var trialRuns = activity ? activity.trials.map(function(trial) { return P.findTrialRun(trial, log); }) : [];
               var selectedRuns = draft.selectedRunIds.map(function(id) { return log.find(function(r) { return r.n === id; }); }).filter(Boolean);
               var selectedSaved = saved.find(function(item) { return String(item.id) === String(d.selectedInvestigationId); }) || null;
               var selectedReport = selectedSaved ? P.formatInvestigationReport(selectedSaved, __alloT) : '';
@@ -3558,6 +3571,22 @@ window.StemLab = window.StemLab || {
                 });
                 if (cv && cv.focus) cv.focus();
               }
+              function selectTrialPair() {
+                if (!activity) return;
+                setLabToolData(function(prev) {
+                  var current = prev.physics || {}, currentState = physNormalizeState(current);
+                  if (currentState.investigationDraft.activityId !== activity.id) return prev;
+                  var pair = activity.trials.map(function(trial) { return P.findTrialRun(trial, currentState.runLog); });
+                  if (pair.some(function(run) { return !run; }) || pair[0].n === pair[1].n) return Object.assign({}, prev, { physics: Object.assign({}, current, {
+                    investigationNotice: __alloT('stem.physics.investigation_trials_missing', 'Both trials need matching completed measurements in the recent log.')
+                  }) });
+                  return Object.assign({}, prev, { physics: Object.assign({}, current, {
+                    investigationDraft: Object.assign({}, currentState.investigationDraft, { selectedRunIds: pair.map(function(run) { return run.n; }) }),
+                    investigationNotice: __alloT('stem.physics.investigation_trials_selected', 'Recorded trials selected. Compare the measured results below.')
+                  }) });
+                });
+              }
+
               function saveInvestigation() {
                 var id = 'investigation-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
                 var createdAt = new Date().toISOString();
@@ -3601,11 +3630,32 @@ window.StemLab = window.StemLab || {
                       activities.map(function(a) { return h('option', { key: a.id, value: a.id }, a.title); })
                     ),
                     activity && h('div', { style: { marginTop: 10, display: 'grid', gap: 8, fontSize: 13 } },
+                      h('h4', { 'data-physics-investigation-activity-title': true, style: { margin: 0, fontSize: 15, lineHeight: 1.5, fontWeight: 800, overflowWrap: 'anywhere' } }, activity.title),
                       h('p', null, activity.changed), h('p', null, activity.held),
-                      h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } }, activity.trials.map(function(trial, index) {
-                        return h('button', { key: index, type: 'button', 'data-physics-investigation-trial': String(index + 1), disabled: activeMode, style: Object.assign({}, actionStyle, { opacity: activeMode ? 0.6 : 1 }), onClick: function() { applyTrial(index); } },
-                          __alloT('stem.physics.investigation_apply_trial', 'Apply trial') + ' ' + (index + 1) + ': ' + activity.labels[index]);
+                      h('p', { 'data-physics-investigation-trial-progress': true, style: { margin: 0, fontWeight: 700 } }, trialRuns.filter(Boolean).length + '/2 ' + __alloT('stem.physics.investigation_recent_trials', 'trials matched in the recent log')),
+                      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: 10, minWidth: 0 } }, activity.trials.map(function(trial, index) {
+                        var measured = trialRuns[index];
+                        var controlsMatch = trial.angle === d.angle && trial.velocity === d.velocity && trial.gravity === d.gravity && trial.mass === d.mass && trial.launchHeight === d.launchHeight && trial.airResist === d.airResist;
+                        return h('section', { key: index, 'data-physics-investigation-trial-evidence': String(index + 1), 'data-matched-run': measured ? measured.n : undefined, 'data-controls-match': String(controlsMatch), style: { display: 'grid', gap: 10, alignContent: 'start', minWidth: 0, padding: 12, border: '1px solid ' + palette.border, borderRadius: 10, background: palette.surface, overflowWrap: 'anywhere' } },
+                          h('h5', { style: { fontSize: 14, fontWeight: 800, margin: 0 } }, __alloT('stem.physics.investigation_trial', 'Trial') + ' ' + (index + 1) + ' · ' + activity.labels[index]),
+                          h('p', { style: { fontSize: 13, lineHeight: 1.5, margin: 0, fontWeight: measured ? 700 : 400 } }, measured
+                            ? __alloT('stem.physics.investigation_matching_run', 'Latest matching recorded run:') + ' ' + runLabel + ' ' + measured.n
+                            : __alloT('stem.physics.investigation_no_matching_run', 'No matching completed run in the recent log.')),
+                          h('p', { style: { fontSize: 12, lineHeight: 1.5, margin: 0 } }, controlsMatch
+                            ? __alloT('stem.physics.investigation_controls_match', 'Current launch controls match this trial.')
+                            : __alloT('stem.physics.investigation_controls_apply', 'Apply this trial’s settings before launching.')),
+                          h('button', { type: 'button', 'data-physics-investigation-trial': String(index + 1), disabled: activeMode, style: Object.assign({}, actionStyle, { width: '100%' }), onClick: function() { applyTrial(index); } },
+                            __alloT('stem.physics.investigation_apply_trial', 'Apply trial') + ' ' + (index + 1) + ': ' + activity.labels[index])
+                        );
                       })),
+                      h('p', { style: { fontSize: 12, lineHeight: 1.5, margin: 0 } }, __alloT('stem.physics.investigation_match_requirements', 'Completed runs must match every trial setting and the current simulation model.')),
+                      h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                        h('button', { type: 'button', 'data-physics-investigation-select-trials': true, disabled: trialRuns.some(function(run) { return !run; }), style: actionStyle, onClick: selectTrialPair }, __alloT('stem.physics.investigation_select_trials', 'Select recorded trial pair')),
+                        h('button', { type: 'button', 'data-physics-investigation-launch-link': true, style: actionStyle, onClick: function() {
+                          var root = document.getElementById('physics-fs-outer'), launch = root && root.querySelector('[data-physics-launch]');
+                          if (launch) { launch.focus({ preventScroll: true }); launch.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+                        } }, __alloT('stem.physics.investigation_launch_controls', 'Go to launch controls'))
+                      ),
                       activeMode && h('p', null, __alloT('stem.physics.investigation_mode_locked', 'Finish or leave the active mission, challenge, or battle before applying investigation settings.'))
                     )
                   ),
@@ -3614,7 +3664,14 @@ window.StemLab = window.StemLab || {
                   draftField('prediction', __alloT('stem.physics.investigation_prediction', 'Prediction — what do you expect and why?'), 2000, 2),
                   h('fieldset', { style: cardStyle },
                     h('legend', { style: { fontSize: 13, fontWeight: 700 } }, __alloT('stem.physics.investigation_select_runs', 'Select at least two completed runs')),
-                    h('p', { style: { fontSize: 12, marginBottom: 8 } }, __alloT('stem.physics.investigation_selection_help_all', 'Select a reference run first, then the runs you want to compare with it. Every selected run is copied into the saved report.')),
+                    h('p', { style: { fontSize: 12, marginBottom: 8 } }, __alloT('stem.physics.investigation_selection_reference_help', 'Select the runs to keep, then choose a reference for the comparisons. Every selected run is copied into the saved report.')),
+                    selectedRuns.length >= 2 && h('div', { style: { margin: '8px 0 12px', minWidth: 0 } },
+                      h('label', { htmlFor: 'physics-investigation-reference', style: { display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 5 } }, __alloT('stem.physics.investigation_reference_run', 'Reference run')),
+                      h('select', { id: 'physics-investigation-reference', 'data-physics-investigation-reference': true, value: String(selectedRuns[0].n), style: Object.assign({}, fieldStyle, { minHeight: 44 }), onChange: function(e) {
+                        var id = Number(e.target.value);
+                        updateDraft(function(current) { return current.selectedRunIds.indexOf(id) < 0 ? {} : { selectedRunIds: [id].concat(current.selectedRunIds.filter(function(n) { return n !== id; })) }; });
+                      } }, selectedRuns.map(function(run) { return h('option', { key: run.n, value: String(run.n) }, runLabel + ' ' + run.n); }))
+                    ),
                     log.length === 0 && h('p', { style: { fontSize: 13 } }, __alloT('stem.physics.investigation_no_runs', 'Launch a projectile to collect your first observation.')),
                     h('div', { style: { display: 'grid', gap: 8 } }, log.map(function(run) {
                       var detailId = 'physics-investigation-run-' + run.n;

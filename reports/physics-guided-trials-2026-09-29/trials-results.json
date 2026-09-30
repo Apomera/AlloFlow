@@ -1,0 +1,919 @@
+{
+  "createdAt": "2026-09-30T03:29:37.363Z",
+  "sourceSha256": "9ea3c1434cd3d8b6a1b69083af17da1e2d4f0374e5589fac6b3dd8076e25fb86",
+  "passed": true,
+  "configurations": [
+    {
+      "theme": "default",
+      "width": 1100,
+      "panelWidth": 986,
+      "overflow": 0,
+      "controls": [
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "screenshots": [
+        "trials-default-1100.png",
+        "trial-selection-1100.png"
+      ],
+      "pageErrors": [],
+      "evidenceSha256": "49c92c480034e7a0fcdd31fe1262a43f9402c98a1db43eae3db4de4b2d893454",
+      "text": [
+        {
+          "text": "Teacher activity",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Does doubling speed quadruple range?",
+          "font": 15,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Change speed: 15 → 30 m/s.",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Hold angle at 45°, gravity at 9.8 m/s², mass at 1 kg, launch height at ground level (0 m), and air drag off.",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "2/2 trials matched in the recent log",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Trial 1 · 15 m/s",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Latest matching recorded run: Run 1",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Apply this trial’s settings before launching.",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Apply trial 1: 15 m/s",
+          "font": 13,
+          "contrast": 5.900518911432192
+        },
+        {
+          "text": "Trial 2 · 30 m/s",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Latest matching recorded run: Run 2",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Current launch controls match this trial.",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Apply trial 2: 30 m/s",
+          "font": 13,
+          "contrast": 5.900518911432192
+        },
+        {
+          "text": "Completed runs must match every trial setting and the current simulation model.",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Select recorded trial pair",
+          "font": 13,
+          "contrast": 5.900518911432192
+        },
+        {
+          "text": "Go to launch controls",
+          "font": 13,
+          "contrast": 5.900518911432192
+        }
+      ],
+      "evidenceUnchanged": true
+    },
+    {
+      "theme": "default",
+      "width": 375,
+      "panelWidth": 307,
+      "overflow": 0,
+      "controls": [
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "screenshots": [
+        "trials-default-375.png"
+      ],
+      "pageErrors": [],
+      "evidenceSha256": "49c92c480034e7a0fcdd31fe1262a43f9402c98a1db43eae3db4de4b2d893454",
+      "text": [
+        {
+          "text": "Teacher activity",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Does doubling speed quadruple range?",
+          "font": 15,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Change speed: 15 → 30 m/s.",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Hold angle at 45°, gravity at 9.8 m/s², mass at 1 kg, launch height at ground level (0 m), and air drag off.",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "2/2 trials matched in the recent log",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Trial 1 · 15 m/s",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Latest matching recorded run: Run 1",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Apply this trial’s settings before launching.",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Apply trial 1: 15 m/s",
+          "font": 13,
+          "contrast": 5.900518911432192
+        },
+        {
+          "text": "Trial 2 · 30 m/s",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Latest matching recorded run: Run 2",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Current launch controls match this trial.",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Apply trial 2: 30 m/s",
+          "font": 13,
+          "contrast": 5.900518911432192
+        },
+        {
+          "text": "Completed runs must match every trial setting and the current simulation model.",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Select recorded trial pair",
+          "font": 13,
+          "contrast": 5.900518911432192
+        },
+        {
+          "text": "Go to launch controls",
+          "font": 13,
+          "contrast": 5.900518911432192
+        }
+      ],
+      "evidenceUnchanged": true
+    },
+    {
+      "theme": "default",
+      "width": 320,
+      "panelWidth": 252,
+      "overflow": 0,
+      "controls": [
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "screenshots": [
+        "trials-default-320.png",
+        "trial-selection-320.png"
+      ],
+      "pageErrors": [],
+      "evidenceSha256": "49c92c480034e7a0fcdd31fe1262a43f9402c98a1db43eae3db4de4b2d893454",
+      "text": [
+        {
+          "text": "Teacher activity",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Does doubling speed quadruple range?",
+          "font": 15,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Change speed: 15 → 30 m/s.",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Hold angle at 45°, gravity at 9.8 m/s², mass at 1 kg, launch height at ground level (0 m), and air drag off.",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "2/2 trials matched in the recent log",
+          "font": 13,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Trial 1 · 15 m/s",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Latest matching recorded run: Run 1",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Apply this trial’s settings before launching.",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Apply trial 1: 15 m/s",
+          "font": 13,
+          "contrast": 5.900518911432192
+        },
+        {
+          "text": "Trial 2 · 30 m/s",
+          "font": 14,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Latest matching recorded run: Run 2",
+          "font": 13,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Current launch controls match this trial.",
+          "font": 12,
+          "contrast": 14.278549677329519
+        },
+        {
+          "text": "Apply trial 2: 30 m/s",
+          "font": 13,
+          "contrast": 5.900518911432192
+        },
+        {
+          "text": "Completed runs must match every trial setting and the current simulation model.",
+          "font": 12,
+          "contrast": 13.255708171922327
+        },
+        {
+          "text": "Select recorded trial pair",
+          "font": 13,
+          "contrast": 5.900518911432192
+        },
+        {
+          "text": "Go to launch controls",
+          "font": 13,
+          "contrast": 5.900518911432192
+        }
+      ],
+      "evidenceUnchanged": true
+    },
+    {
+      "theme": "dark",
+      "width": 1100,
+      "panelWidth": 986,
+      "overflow": 0,
+      "controls": [
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "screenshots": [
+        "trials-dark-1100.png"
+      ],
+      "pageErrors": [],
+      "evidenceSha256": "49c92c480034e7a0fcdd31fe1262a43f9402c98a1db43eae3db4de4b2d893454",
+      "text": [
+        {
+          "text": "Teacher activity",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Does doubling speed quadruple range?",
+          "font": 15,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Change speed: 15 → 30 m/s.",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Hold angle at 45°, gravity at 9.8 m/s², mass at 1 kg, launch height at ground level (0 m), and air drag off.",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "2/2 trials matched in the recent log",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Trial 1 · 15 m/s",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Latest matching recorded run: Run 1",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Apply this trial’s settings before launching.",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Apply trial 1: 15 m/s",
+          "font": 13,
+          "contrast": 10.150335893640763
+        },
+        {
+          "text": "Trial 2 · 30 m/s",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Latest matching recorded run: Run 2",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Current launch controls match this trial.",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Apply trial 2: 30 m/s",
+          "font": 13,
+          "contrast": 10.150335893640763
+        },
+        {
+          "text": "Completed runs must match every trial setting and the current simulation model.",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Select recorded trial pair",
+          "font": 13,
+          "contrast": 10.150335893640763
+        },
+        {
+          "text": "Go to launch controls",
+          "font": 13,
+          "contrast": 10.150335893640763
+        }
+      ],
+      "evidenceUnchanged": true
+    },
+    {
+      "theme": "dark",
+      "width": 375,
+      "panelWidth": 283,
+      "overflow": 0,
+      "controls": [
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "screenshots": [
+        "trials-dark-375.png"
+      ],
+      "pageErrors": [],
+      "evidenceSha256": "49c92c480034e7a0fcdd31fe1262a43f9402c98a1db43eae3db4de4b2d893454",
+      "text": [
+        {
+          "text": "Teacher activity",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Does doubling speed quadruple range?",
+          "font": 15,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Change speed: 15 → 30 m/s.",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Hold angle at 45°, gravity at 9.8 m/s², mass at 1 kg, launch height at ground level (0 m), and air drag off.",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "2/2 trials matched in the recent log",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Trial 1 · 15 m/s",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Latest matching recorded run: Run 1",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Apply this trial’s settings before launching.",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Apply trial 1: 15 m/s",
+          "font": 13,
+          "contrast": 10.150335893640763
+        },
+        {
+          "text": "Trial 2 · 30 m/s",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Latest matching recorded run: Run 2",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Current launch controls match this trial.",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Apply trial 2: 30 m/s",
+          "font": 13,
+          "contrast": 10.150335893640763
+        },
+        {
+          "text": "Completed runs must match every trial setting and the current simulation model.",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Select recorded trial pair",
+          "font": 13,
+          "contrast": 10.150335893640763
+        },
+        {
+          "text": "Go to launch controls",
+          "font": 13,
+          "contrast": 10.150335893640763
+        }
+      ],
+      "evidenceUnchanged": true
+    },
+    {
+      "theme": "dark",
+      "width": 320,
+      "panelWidth": 228,
+      "overflow": 0,
+      "controls": [
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "screenshots": [
+        "trials-dark-320.png"
+      ],
+      "pageErrors": [],
+      "evidenceSha256": "49c92c480034e7a0fcdd31fe1262a43f9402c98a1db43eae3db4de4b2d893454",
+      "text": [
+        {
+          "text": "Teacher activity",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Does doubling speed quadruple range?",
+          "font": 15,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Change speed: 15 → 30 m/s.",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Hold angle at 45°, gravity at 9.8 m/s², mass at 1 kg, launch height at ground level (0 m), and air drag off.",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "2/2 trials matched in the recent log",
+          "font": 13,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Trial 1 · 15 m/s",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Latest matching recorded run: Run 1",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Apply this trial’s settings before launching.",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Apply trial 1: 15 m/s",
+          "font": 13,
+          "contrast": 10.150335893640763
+        },
+        {
+          "text": "Trial 2 · 30 m/s",
+          "font": 14,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Latest matching recorded run: Run 2",
+          "font": 13,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Current launch controls match this trial.",
+          "font": 12,
+          "contrast": 14.254332421410858
+        },
+        {
+          "text": "Apply trial 2: 30 m/s",
+          "font": 13,
+          "contrast": 10.150335893640763
+        },
+        {
+          "text": "Completed runs must match every trial setting and the current simulation model.",
+          "font": 12,
+          "contrast": 12.27501437632618
+        },
+        {
+          "text": "Select recorded trial pair",
+          "font": 13,
+          "contrast": 10.150335893640763
+        },
+        {
+          "text": "Go to launch controls",
+          "font": 13,
+          "contrast": 10.150335893640763
+        }
+      ],
+      "evidenceUnchanged": true
+    },
+    {
+      "theme": "contrast",
+      "width": 1100,
+      "panelWidth": 986,
+      "overflow": 0,
+      "controls": [
+        45,
+        44,
+        44,
+        44,
+        44
+      ],
+      "screenshots": [
+        "trials-contrast-1100.png"
+      ],
+      "pageErrors": [],
+      "evidenceSha256": "49c92c480034e7a0fcdd31fe1262a43f9402c98a1db43eae3db4de4b2d893454",
+      "text": [
+        {
+          "text": "Teacher activity",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Does doubling speed quadruple range?",
+          "font": 15,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Change speed: 15 → 30 m/s.",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Hold angle at 45°, gravity at 9.8 m/s², mass at 1 kg, launch height at ground level (0 m), and air drag off.",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "2/2 trials matched in the recent log",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Trial 1 · 15 m/s",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Latest matching recorded run: Run 1",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Apply this trial’s settings before launching.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Apply trial 1: 15 m/s",
+          "font": 13,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Trial 2 · 30 m/s",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Latest matching recorded run: Run 2",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Current launch controls match this trial.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Apply trial 2: 30 m/s",
+          "font": 13,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Completed runs must match every trial setting and the current simulation model.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Select recorded trial pair",
+          "font": 13,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Go to launch controls",
+          "font": 13,
+          "contrast": 15.303999999999998
+        }
+      ],
+      "evidenceUnchanged": true
+    },
+    {
+      "theme": "contrast",
+      "width": 375,
+      "panelWidth": 303,
+      "overflow": 0,
+      "controls": [
+        45,
+        44,
+        44,
+        44,
+        44
+      ],
+      "screenshots": [
+        "trials-contrast-375.png"
+      ],
+      "pageErrors": [],
+      "evidenceSha256": "49c92c480034e7a0fcdd31fe1262a43f9402c98a1db43eae3db4de4b2d893454",
+      "text": [
+        {
+          "text": "Teacher activity",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Does doubling speed quadruple range?",
+          "font": 15,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Change speed: 15 → 30 m/s.",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Hold angle at 45°, gravity at 9.8 m/s², mass at 1 kg, launch height at ground level (0 m), and air drag off.",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "2/2 trials matched in the recent log",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Trial 1 · 15 m/s",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Latest matching recorded run: Run 1",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Apply this trial’s settings before launching.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Apply trial 1: 15 m/s",
+          "font": 13,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Trial 2 · 30 m/s",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Latest matching recorded run: Run 2",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Current launch controls match this trial.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Apply trial 2: 30 m/s",
+          "font": 13,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Completed runs must match every trial setting and the current simulation model.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Select recorded trial pair",
+          "font": 13,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Go to launch controls",
+          "font": 13,
+          "contrast": 15.303999999999998
+        }
+      ],
+      "evidenceUnchanged": true
+    },
+    {
+      "theme": "contrast",
+      "width": 320,
+      "panelWidth": 248,
+      "overflow": 0,
+      "controls": [
+        45,
+        44,
+        44,
+        44,
+        44
+      ],
+      "screenshots": [
+        "trials-contrast-320.png"
+      ],
+      "pageErrors": [],
+      "evidenceSha256": "49c92c480034e7a0fcdd31fe1262a43f9402c98a1db43eae3db4de4b2d893454",
+      "text": [
+        {
+          "text": "Teacher activity",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Does doubling speed quadruple range?",
+          "font": 15,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Change speed: 15 → 30 m/s.",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Hold angle at 45°, gravity at 9.8 m/s², mass at 1 kg, launch height at ground level (0 m), and air drag off.",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "2/2 trials matched in the recent log",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Trial 1 · 15 m/s",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Latest matching recorded run: Run 1",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Apply this trial’s settings before launching.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Apply trial 1: 15 m/s",
+          "font": 13,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Trial 2 · 30 m/s",
+          "font": 14,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Latest matching recorded run: Run 2",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Current launch controls match this trial.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Apply trial 2: 30 m/s",
+          "font": 13,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Completed runs must match every trial setting and the current simulation model.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Select recorded trial pair",
+          "font": 13,
+          "contrast": 15.303999999999998
+        },
+        {
+          "text": "Go to launch controls",
+          "font": 13,
+          "contrast": 15.303999999999998
+        }
+      ],
+      "evidenceUnchanged": true
+    }
+  ],
+  "failures": []
+}
