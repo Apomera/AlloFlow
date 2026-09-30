@@ -54,6 +54,92 @@ async function openBackup(h, source) {
 }
 
 describe('Life Skills outing interaction', () => {
+  it('restores native focus after a 3D pointer event without stealing a later choice or text input', async () => {
+    function sceneCanvas(h) { const canvas=h.w.document.createElement('canvas'); canvas.tabIndex=-1; h.$('#outingScene').appendChild(canvas); h.$('#outingScene').canvas=canvas; return canvas; }
+    const h=mount(), canvas=sceneCanvas(h); h.$('#bagSign').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true})); canvas.focus();
+    await vi.waitFor(()=>expect(h.w.document.activeElement.dataset.packItem).toBe('bottle'));
+    const changed=mount(), changedCanvas=sceneCanvas(changed); changed.$('#bagSign').click(); changed.$('[data-pack-item="card"]').click(); changed.$('#packingPlace').click(); changedCanvas.focus();
+    await new Promise(resolve=>changed.w.requestAnimationFrame(resolve)); expect(changed.w.document.activeElement).toBe(changedCanvas);
+    const editing=mount(), input=editing.w.document.createElement('input'); editing.w.document.body.appendChild(input); editing.$('#bagSign').click(); input.focus();
+    await new Promise(resolve=>editing.w.requestAnimationFrame(resolve)); expect(editing.w.document.activeElement).toBe(input);
+  });
+  it('explores the bag from its 3D sign and compares items without changing saved contents or coaching evidence', () => {
+    let calls=0; const h=mount({provider:()=>{calls++;return Promise.resolve({text:'Hello.',status:'generated'});}}), saved=h.save();
+    h.$('#bagSign').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));
+    expect(h.$('#packingWorkbench').open).toBe(true); expect(h.w.document.activeElement.dataset.packItem).toBe('bottle');
+    expect(h.$('#packingBagCaption').textContent).toBe('Your bag is empty.'); expect(h.$('#packingBagDrawing [data-bag-item]')).toBe(null);
+    h.$('[data-pack-item="card"]').click(); expect(h.w.document.activeElement.id).toBe('packingPlace');
+    expect(h.$('#packingPreviewResult').hidden).toBe(false); expect(h.$('#packingExampleDrawing [data-bag-item="card"]')).not.toBe(null);
+    expect(h.$('#packingPreviewClock').textContent).toContain('09:00 → after packing 09:01 · 1 practice minute');
+    h.$('#comparePackingAgain').click(); expect(h.w.document.activeElement.dataset.packItem).toBe('card');
+    h.$('[data-pack-item="hat"]').click(); expect(h.$('#packingExampleDrawing [data-bag-item="hat"]')).not.toBe(null);
+    expect(h.$('#packingExampleDrawing [data-bag-item="card"]')).toBe(null); expect(h.$('#packingPreviewWeather').textContent).toContain('Cloudy · update expected');
+    expect(h.$('#packingPreviewKnowledge').textContent).toContain('Recheck'); expect(h.$('#bagSign').dataset.noteText).toBe('Bag · 0 of 3 packed');
+    expect(h.save()).toEqual(saved); expect(h.$('#clock').textContent).toBe('09:00'); expect(h.E.view(h.run()).observations).toEqual([]); expect(calls).toBe(0);
+  });
+  it.each([['bottle','pack_water'],['card','pack_document'],['raincoat','pack_raincoat'],['hat','pack_hat']])('confirms the %s example using the original %s action', (item, action) => {
+    const h=mount(); if(item==='bottle') h.act('fill_water'); const before=h.run();
+    h.$('#openPacking').click(); const oldCanvas=h.$('#bagSign').dataset.canvasId;
+    h.$('[data-pack-item="'+item+'"]').click(); const saved=h.save();
+    expect(h.$('#packingBagDrawing [data-bag-item]')).toBe(null); expect(h.$('#packingExampleDrawing [data-bag-item="'+item+'"]')).not.toBe(null);
+    expect(h.$('#bagSign').dataset.noteText).toBe('Bag · 0 of 3 packed'); expect(h.save()).toEqual(saved);
+    h.$('#packingPlace').click();
+    expect(h.E.view(h.run())).toEqual(h.E.view(h.E.dispatch(before,action,before.commands.length,'expected-pack')));
+    expect(h.$('#packingBagDrawing [data-bag-item="'+item+'"]')).not.toBe(null); expect(h.$('#packingPreviewResult').hidden).toBe(true);
+    expect(h.$('#bagSign').dataset.noteText).toBe('Bag · 1 of 3 packed'); expect(h.w.document.getElementById(oldCanvas)).toBe(null);
+    expect(h.$('#packingPlace').disabled).toBe(true); expect(h.run().commands.at(-1).actionId).toBe(action);
+  });
+  it('guides an empty bottle directly to filling without suggesting it can be packed', () => {
+    const h=mount(), saved=h.save(); h.$('#openPacking').click(); h.$('[data-pack-item="bottle"]').click();
+    expect(h.w.document.activeElement.id).toBe('packingFill'); expect(h.$('#packingPlace').disabled).toBe(true);
+    expect(h.$('#packingExampleBag').hidden).toBe(true); expect(h.$('#packingPreviewClock').textContent).toBe('Fill the bottle before packing it.');
+    h.$('#packingPlace').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true})); expect(h.save()).toEqual(saved);
+    h.$('#comparePackingAgain').click(); expect(h.w.document.activeElement.dataset.packItem).toBe('bottle');
+    h.$('#packingFill').click(); expect(h.$('#waterWorkbench').open).toBe(true); expect(h.save()).toEqual(saved);
+    h.$('#fillAtTap').click(); h.station('Doorway'); h.$('#openPacking').click(); h.$('[data-pack-item="bottle"]').click();
+    expect(h.$('#packingPlace').disabled).toBe(false); expect(h.$('#packingExampleBag').hidden).toBe(false); expect(h.$('#clock').textContent).toBe('09:01');
+  });
+  it.each([['rain','hat','raincoat'],['warm','raincoat','hat']])('compares a zero-time weather swap for %s and checks actual preparation before leaving', (variation, previous, replacement) => {
+    const h=mount(); h.$('#scenarioSelect').value=variation; h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
+    h.act('fill_water'); h.act('pack_water'); h.$('#openPacking').click(); h.$('[data-pack-item="card"]').click(); h.$('#packingPlace').click();
+    h.$('[data-pack-item="'+previous+'"]').click(); h.$('#packingPlace').click();
+    expect(h.$('#packingReady').hidden).toBe(false); expect(h.w.document.activeElement.id).toBe('packingReadyTitle');
+    expect(h.$('#packingReadyCopy').textContent).toContain('Compare your packed weather item');
+    const saved=h.save(), clock=h.$('#clock').textContent; h.$('[data-pack-item="'+replacement+'"]').click();
+    expect(h.$('#packingPreviewClock').textContent).toContain('no extra practice time'); expect(h.$('#packingPreviewSwap').textContent).toContain('would return to its hook');
+    expect(h.$('#packingBagDrawing [data-bag-item="'+previous+'"]')).not.toBe(null); expect(h.$('#packingExampleDrawing [data-bag-item="'+previous+'"]')).toBe(null);
+    expect(h.$('#packingExampleDrawing [data-bag-item="'+replacement+'"]')).not.toBe(null); expect(h.save()).toEqual(saved);
+    h.$('#packingPlace').click(); expect(h.$('#clock').textContent).toBe(clock); expect(h.$('#packingReadyCopy').textContent).toContain('fits the received forecast');
+    expect(h.w.document.querySelectorAll('#packingBagDrawing [data-bag-item]')).toHaveLength(3);
+    h.$('#packingToDeparture').click(); expect(h.w.document.activeElement.id).toBe('departureResultTitle'); expect(h.$('#departFromCheck').disabled).toBe(true);
+    expect(h.$('[data-departure-check="weather"]').classList.contains('departure-ready')).toBe(true);
+    h.station('Wardrobe'); h.act('wear_ready'); h.station('Travel'); h.act('choose_walk'); h.$('#openPacking').click(); h.$('#packingToDeparture').click();
+    expect(h.$('#departureResultTitle').textContent).toBe('5 of 5 preparation checks ready'); expect(h.E.view(h.run()).completed).toBe(false);
+    h.$('#departFromCheck').click(); expect(h.E.view(h.run()).completed).toBe(true); expect(h.$('#bagSign').dataset.noteText).toBe('Bag · outing complete');
+    const completeSave=h.save(); h.$('#bagSign').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true})); h.$('#comparePackingAgain').click(); h.$('#packingToDeparture').click();
+    expect(h.$('#packingWorkbench').hidden).toBe(true); expect(h.save()).toEqual(completeSave);
+  });
+  it('clears bag examples after actual changes and restores only confirmed contents', () => {
+    const h=mount(); h.$('#openPacking').click(); const staleCard=h.$('[data-pack-item="card"]'); staleCard.click();
+    h.$('#hintButton').click(); expect(h.$('#packingPreviewResult').hidden).toBe(true); const saved=h.save();
+    h.$('#packingPlace').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true})); expect(h.save()).toEqual(saved);
+    h.$('[data-pack-item="card"]').click(); h.act('pack_document','scene'); const confirmed=h.save();
+    staleCard.dispatchEvent(new h.w.MouseEvent('click',{bubbles:true})); expect(h.$('#packingPreviewResult').hidden).toBe(true); expect(h.save()).toEqual(confirmed);
+    h.$('[data-pack-item="hat"]').click(); const resumed=mount({saved:h.save()}); resumed.$('#openPacking').click();
+    expect(resumed.$('#packingPreviewResult').hidden).toBe(true); expect(resumed.$('#packingBagDrawing [data-bag-item="card"]')).not.toBe(null);
+    expect(resumed.$('#packingBagDrawing [data-bag-item="hat"]')).toBe(null); expect(resumed.$('#bagSign').dataset.noteText).toBe('Bag · 1 of 3 packed');
+    h.station('Kitchen'); expect(h.$('#packingPreviewResult').hidden).toBe(true); h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
+    h.$('#openPacking').click(); expect(h.$('#packingReady').hidden).toBe(true); expect(h.$('#packingBagDrawing [data-bag-item]')).toBe(null);
+  });
+  it('supports packing examples in legacy practices and with storage or 3D unavailable', () => {
+    const h=mount(), run=h.run(); run.manifestVersion=1; const key=h.E.saveKey(run);
+    const legacy=mount({saved:[[key,JSON.stringify(run)],[activeKey,key]]}); legacy.$('#openPacking').click(); legacy.$('[data-pack-item="card"]').click(); legacy.$('#packingPlace').click();
+    expect(legacy.run().manifestVersion).toBe(1); expect(legacy.$('#packingBagDrawing [data-bag-item="card"]')).not.toBe(null);
+    const offline=mount({noScene:true,noStorage:true,reducedMotion:true}); offline.$('#openPacking').click(); offline.$('[data-pack-item="card"]').click();
+    expect(offline.$('#packingPreviewClock').textContent).toContain('1 practice minute'); offline.$('#comparePackingAgain').click();
+    expect(offline.w.document.activeElement.dataset.packItem).toBe('card'); offline.$('#packingPlace').click(); expect(offline.$('#clock').textContent).toBe('09:01');
+    expect(offline.$('#packingBagDrawing [data-bag-item="card"]')).not.toBe(null);
+  });
   it('opens the shared clothing timeline from the wardrobe sign without choosing an outfit or changing the practice', () => {
     let calls=0; const h=mount({provider:()=>{calls++;return Promise.resolve({text:'Hello.',status:'generated'});}}), saved=h.save();
     h.$('#outfitSign').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));

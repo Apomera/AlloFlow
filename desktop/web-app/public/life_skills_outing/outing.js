@@ -23,6 +23,7 @@
   var rehearsalPreview = null;
   var exploredDeparture = null;
   var packingSelection = null;
+  var packingPreview = null;
   var packingActions = { bottle: 'pack_water', card: 'pack_document', raincoat: 'pack_raincoat', hat: 'pack_hat' };
   var wardrobePreview = null;
   var wardrobeNames = { wear_ready: 'Clean, dry outfit', prepare_clothes: 'Outfit that needs drying' };
@@ -209,7 +210,7 @@
         text('waterStatus', latestView.feedback + ' Practice clock: ' + latestView.clock + '.');
         (latestView.scene.bottlePacked ? byId('waterReadyTitle') : byId('packAtTap')).focus();
       }
-      else if (source === 'packing') (byId('packingItems').querySelector('button:not(:disabled)') || byId('packingWorkbench').querySelector('summary')).focus();
+      else if (source === 'packing') (byId('packingReady').hidden ? byId('packingItems').querySelector('button:not(:disabled)') || byId('packingWorkbench').querySelector('summary') : byId('packingReadyTitle')).focus();
       else if (source === 'wardrobe') byId('wardrobeReadyTitle').focus();
       else if (source === 'update') byId('updateReadStatus').focus();
       else if (source !== 'scene' && focusedAction) {
@@ -381,7 +382,9 @@
   if (motionPreference && motionPreference.addEventListener) motionPreference.addEventListener('change', motionPreferenceChanged);
   document.addEventListener('visibilitychange', function () { if (document.hidden) clearWaterMotion(); });
   function clearPacking(collapse) {
-    packingSelection = null;
+    packingSelection = null; packingPreview = null;
+    byId('packingPreviewResult').hidden = true;
+    byId('packingReady').hidden = true;
     text('packingStatus', '');
     byId('packingFill').hidden = true;
     byId('packingPlace').disabled = true;
@@ -432,11 +435,13 @@
       button.append(packingIcon(id), node('span', 'packing-item-name', object.label), node('span', 'packing-item-state', object.status));
       if (packingSelection === id) button.appendChild(node('span', 'packing-selected', 'Selected'));
       button.addEventListener('click', function () {
-        if (latestView.completed || selectedObject !== 'bag') return;
-        packingSelection = id; byId('packingFill').hidden = true;
+        if (latestView.completed || selectedObject !== 'bag' || packed) return;
+        var action = packingAction(id);
+        if (!action || action.disabled && !(id === 'bottle' && !latestView.scene.bottleFilled)) return;
+        packingSelection = id; packingPreview = action && !action.disabled ? E.previewAction(current, action.id) : null;
         renderPackingWorkbench(); highlightObjects();
-        text('packingStatus', object.label + ' selected. ' + object.status + '. Choose the bag button to pack it.');
-        byId('packingPlace').focus();
+        text('packingStatus', action && action.disabled ? action.reason : object.label + ' selected. ' + object.status + '. Compare the example, then choose the bag button to pack it.');
+        (byId('packingFill').hidden ? byId('packingPlace') : byId('packingFill')).focus();
       });
       tray.appendChild(button);
     });
@@ -446,14 +451,24 @@
     var weather = v.inventory.find(function (item) { return item.id === 'raincoat' || item.id === 'hat'; });
     [['Filled water', water], ['Outing card', card], ['Weather item', weather]].forEach(function (slot) {
       var li = node('li', slot[1] ? 'packing-packed' : '');
-      var mark = node('span', 'packing-mark', slot[1] ? '✓' : '○'); mark.setAttribute('aria-hidden', 'true');
+      var mark = departureMark(Boolean(slot[1])); mark.classList.add('packing-mark');
       var copy = node('span'); copy.append(node('strong', '', slot[0]), node('span', '', slot[1] ? slot[1].label + ' · packed' : 'To pack'));
       li.append(mark, copy); contents.appendChild(li);
     });
-    text('packingCount', [water, card, weather].filter(Boolean).length + ' of 3 packed');
-    byId('packingPlace').disabled = !packingSelection;
+    var filled = [water, card, weather].filter(Boolean).length;
+    text('packingCount', filled + ' of 3 packed');
+    var actual = packingPictureItems();
+    byId('packingBagDrawing').replaceChildren(packingBagPicture(actual));
+    text('packingBagCaption', actual.length ? 'Packed now: ' + actual.map(function (item) { return item.label; }).join(', ') + '.' : 'Your bag is empty.');
     var action = packingSelection && packingAction(packingSelection);
+    byId('packingPlace').disabled = !action || action.disabled;
     byId('packingPlace').textContent = action ? action.label : 'Put selected item in your bag';
+    byId('packingFill').hidden = packingSelection !== 'bottle' || v.scene.bottleFilled;
+    renderPackingPreview(actual, action);
+    byId('packingReady').hidden = filled !== 3;
+    var weatherReady = v.objectives.find(function (objective) { return objective.id === 'weather'; }).complete;
+    byId('packingReady').classList.toggle('packing-weather-review', !weatherReady);
+    text('packingReadyCopy', weatherReady ? 'Your packed weather item fits the received forecast. Check your clothes and travel plan before leaving.' : v.event ? 'Compare your packed weather item with the received forecast before leaving.' : 'Recheck your weather item when the forecast update arrives.');
     var forecast = v.objects.find(function (item) { return item.id === 'forecast'; });
     text('packingForecast', 'Weather note: ' + forecast.status + '. Check it when choosing what to pack.');
     text('packingSwapNote', weather ? 'Choose the other weather item to swap it with your ' + weather.label.toLowerCase() + '. The first item returns to its hook.' : 'Your bag holds one weather item. You can swap it if the forecast changes.');
@@ -471,7 +486,61 @@
       byId('packingFill').hidden = packingSelection !== 'bottle' || latestView.scene.bottleFilled;
       return;
     }
+    if (!packingPreview || packingPreview.revision !== current.commands.length || packingPreview.actionId !== action.id) {
+      clearPacking(false); renderPackingWorkbench(); text('packingStatus', 'The outing changed. Explore an item again.'); return;
+    }
     act(action.id, 'packing');
+  }
+  function packingPictureItems() {
+    return latestView.inventory.map(function (item) { return {id: item.id === 'water' ? 'bottle' : item.id === 'document' ? 'card' : item.id, label: item.label}; });
+  }
+  function packingBagPicture(items) {
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 280 190'); svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('focusable', 'false');
+    function shape(tag, attrs) {
+      var el = document.createElementNS(svg.namespaceURI, tag);
+      Object.keys(attrs).forEach(function (key) { el.setAttribute(key, attrs[key]); }); svg.appendChild(el);
+    }
+    shape('ellipse', {cx:140,cy:178,rx:103,ry:8,fill:'#d7dfca'});
+    shape('path', {d:'M111 51V29Q111 10 140 10Q169 10 169 29V51',fill:'none',stroke:'#80523f','stroke-width':9,'stroke-linecap':'round'});
+    shape('rect', {x:43,y:42,width:194,height:132,rx:24,fill:'#bd785e',stroke:'#80523f','stroke-width':3});
+    shape('rect', {x:54,y:54,width:172,height:60,rx:12,fill:'#f5ead7',stroke:'#80523f','stroke-width':2});
+    shape('rect', {x:66,y:122,width:148,height:39,rx:10,fill:'#9f624f',stroke:'#80523f','stroke-width':2});
+    shape('path', {d:'M81 134H199',stroke:'#edcda8','stroke-width':2,'stroke-linecap':'round'});
+    ['bottle','card','weather'].forEach(function (slot, index) {
+      var item = items.find(function (item) { return slot === 'weather' ? item.id === 'hat' || item.id === 'raincoat' : item.id === slot; });
+      if (item) {
+        var icon = packingIcon(item.id); icon.setAttribute('x',56 + index * 56); icon.setAttribute('y',53); icon.setAttribute('width',56); icon.setAttribute('height',60); icon.dataset.bagItem = item.id; svg.appendChild(icon);
+      } else shape('circle', {cx:84 + index * 56,cy:84,r:18,fill:'none',stroke:'#b19a7f','stroke-width':1.5,'stroke-dasharray':'3 4'});
+    });
+    return svg;
+  }
+  function renderPackingPreview(actual, action) {
+    byId('packingPreviewResult').hidden = !packingSelection;
+    if (!packingSelection) return;
+    var object = latestView.objects.find(function (item) { return item.id === packingSelection; });
+    byId('packingSelectedDrawing').replaceChildren(packingIcon(packingSelection));
+    text('packingSelectedCaption', object.label + ' · ' + object.status);
+    text('packingPreviewTitle', object.label + (packingPreview ? ' · explore packing' : ' · fill before packing'));
+    byId('packingPreviewResult').classList.toggle('packing-blocked', !packingPreview);
+    byId('packingExampleBag').hidden = !packingPreview;
+    text('packingPreviewSwap', ''); text('packingPreviewWeather', ''); text('packingPreviewKnowledge', '');
+    if (!packingPreview) { text('packingPreviewClock', action && action.reason || 'Choose an available item.'); return; }
+    var example = actual.filter(function (item) { return packingSelection !== 'hat' && packingSelection !== 'raincoat' || item.id !== 'hat' && item.id !== 'raincoat'; });
+    example.push({id: packingSelection, label: object.label});
+    byId('packingExampleDrawing').replaceChildren(packingBagPicture(example));
+    text('packingExampleCaption', 'Example bag: ' + example.map(function (item) { return item.label; }).join(', ') + '.');
+    var clockChange = packingPreview.changes.find(function (change) { return change.label === 'Practice clock'; });
+    function minutes(clock) { var parts = clock.split(':'); return Number(parts[0]) * 60 + Number(parts[1]); }
+    var after = clockChange ? clockChange.after : latestView.clock, cost = clockChange ? minutes(after) - minutes(clockChange.before) : 0;
+    text('packingPreviewClock', 'Now ' + latestView.clock + ' → after packing ' + after + ' · ' + (cost ? cost + ' practice minute' + (cost === 1 ? '' : 's') : 'no extra practice time'));
+    if (packingSelection === 'raincoat' || packingSelection === 'hat') {
+      var previous = actual.find(function (item) { return item.id === 'hat' || item.id === 'raincoat'; });
+      if (previous) text('packingPreviewSwap', previous.label + ' would return to its hook. Your bag would hold ' + object.label.toLowerCase() + '.');
+      var forecast = latestView.objects.find(function (item) { return item.id === 'forecast'; });
+      text('packingPreviewWeather', (packingSelection === 'raincoat' ? 'A raincoat helps keep clothes dry. ' : 'A sun hat provides shade. ') + 'Weather note: ' + forecast.status + '. Does this item fit the forecast you have?');
+    }
+    text('packingPreviewKnowledge', packingPreview.forecastMayChange ? 'This example uses current information. Recheck your weather item and route after an update. Exploring keeps the actual bag and practice clock unchanged.' : 'This example uses the received updates. Exploring keeps the actual bag and practice clock unchanged.');
   }
   function clearWardrobe(collapse) {
     wardrobePreview = null;
@@ -1296,6 +1365,7 @@
     box(0,0,0,.61,.59,.35,'#bd785e',bag,{class:'pickable'});
     box(0,-.09,.21,.42,.27,.08,'#9f624f',bag);
     entity('a-torus',{position:'0 .33 0',radius:.13,'radius-tubular':.025,arc:180,color:'#80523f'},bag);
+    sceneLabel('Bag · 0 of 3 packed',{id:'bagSign',position:'1.63 .26 -1.30',width:1.22,height:.23,class:'pickable'},entry);
     box(1.16,.61,-1.6,.3,.018,.4,'#fffbed',entry,{id:'documentObject',class:'pickable'});
     box(1.68,1.19,-1.65,.25,.26,.025,'#fffbed',entry,{id:'packedDocument',visible:false,rotation:'0 0 -10'});
     cylinder(1.1,1.6,-2.6,.025,1.5,'#7b6048',entry,{rotation:'0 0 90'});
@@ -1356,7 +1426,7 @@
     var outfitSign = sceneLabel(clothesChoice ? 'Clothes ready · ' + clothesChoice.clock : 'Clothes · compare 2 or 8 min',{id:'outfitSign',position:'-.3 2.08 -1.61',width:1.4,height:.26,class:'pickable'},byId('shirtObject').parentElement,{background:clothesChoice ? '#e4eedc' : '#fff6d8'});
     if (!outfitSign.dataset.outfitControl) {
       outfitSign.dataset.outfitControl = 'true';
-      outfitSign.addEventListener('click', function (event) { event.stopPropagation(); if (latestView.completed) selectObject('outfit', true); else openWardrobeWorkbench(); });
+      outfitSign.addEventListener('click', function (event) { openSceneWorkbench(event, function () { if (latestView.completed) selectObject('outfit', true); else openWardrobeWorkbench(); }); });
     }
     byId('documentObject').setAttribute('visible',!s.documentPacked);
     byId('packedDocument').setAttribute('visible',Boolean(s.documentPacked) && !s.departed);
@@ -1378,11 +1448,25 @@
     var routeSign = sceneLabel(latestView.travel ? latestView.travel.label + ' · ' + latestView.travel.arrival : 'Choose a route',{id:'routeSign',position:'.45 .72 .13',width:.8,height:.26,class:'pickable'},byId('doorHinge'),{background:latestView.travel && !latestView.travel.onTime ? '#f5dfb1' : '#fff6d8'});
     if (!routeSign.dataset.routeControl) {
       routeSign.dataset.routeControl = 'true';
-      routeSign.addEventListener('click', function (event) { event.stopPropagation(); openRouteWorkbench(); });
+      routeSign.addEventListener('click', function (event) { openSceneWorkbench(event, openRouteWorkbench); });
     }
     byId('doorHinge').setAttribute('rotation',s.departed?'0 -65 0':'0 0 0');
     byId('bagObject').setAttribute('visible',!s.departed);
+    var bagSign = sceneLabel(s.departed ? 'Bag · outing complete' : 'Bag · ' + packingPictureItems().length + ' of 3 packed',{id:'bagSign',position:'1.63 .26 -1.30',width:1.22,height:.23,class:'pickable'},byId('bagObject').parentElement);
+    if (!bagSign.dataset.bagControl) {
+      bagSign.dataset.bagControl = 'true';
+      bagSign.addEventListener('click', function (event) { openSceneWorkbench(event, function () { if (latestView.completed) selectObject('bag', true); else openPackingWorkbench(); }); });
+    }
     if(s.departed)text('sceneCaption','Ready to head out · reflect on your choices below.');
+  }
+  function openSceneWorkbench(event, open) {
+    event.stopPropagation(); open();
+    var focused = document.activeElement, owner = current, selection = selectedObject;
+    // The canvas can regain focus when the original pointer event finishes.
+    if (window.requestAnimationFrame) window.requestAnimationFrame(function () {
+      var active = document.activeElement, scene = byId('outingScene');
+      if (owner === current && selection === selectedObject && focused.isConnected && (active === document.body || active === scene.canvas)) focused.focus();
+    });
   }
 
   byId('settingsToggle').addEventListener('click',function(){
@@ -1457,6 +1541,15 @@
   byId('wardrobeToBag').addEventListener('click', openPackingWorkbench);
   byId('wardrobeToTravel').addEventListener('click', function () { if (!latestView.completed && latestView.scene.clothingReady && selectedObject === 'outfit') openRouteWorkbench(); });
   byId('packingPlace').addEventListener('click', placePackingItem);
+  byId('comparePackingAgain').addEventListener('click', function () {
+    if (latestView.completed || selectedObject !== 'bag' || !packingSelection) return;
+    var item = byId('packingItems').querySelector('[data-pack-item="' + packingSelection + '"]');
+    if (item && !item.disabled) item.focus();
+  });
+  byId('packingToDeparture').addEventListener('click', function () {
+    if (latestView.completed || selectedObject !== 'bag' || byId('packingReady').hidden) return;
+    openDepartureWorkbench(); checkDepartureReadiness();
+  });
   byId('packingFill').addEventListener('click', function () {
     if (latestView.completed || packingSelection !== 'bottle' || latestView.scene.bottleFilled) return;
     openWaterWorkbench();
