@@ -11845,35 +11845,49 @@ function createCLHuntAnimal(T, species) {
 // Compact, individually owned prey rig. Forward is +Z, matching school movement.
 // Eyes and static fins are merged into the body; only the forked tail adds a draw call.
 function createCLHuntFish(T,index){
-  var fish=new T.Group();fish.name='cl-prey-fish';var positions=[],normals=[],colors=[];
-  var back=new T.Color(0x3d626b).convertSRGBToLinear(),silver=new T.Color(0xa6c5c9).convertSRGBToLinear(),belly=new T.Color(0xc3cebf).convertSRGBToLinear();
-  var shade=new T.Color(),finTint=new T.Color(0x7b9fa4).convertSRGBToLinear(),eyeTint=new T.Color(0x10262c).convertSRGBToLinear();
-  function append(geometry,tint){
-    var flat=geometry.index?geometry.toNonIndexed():geometry,p=flat.attributes.position,n=flat.attributes.normal;
-    for(var i=0;i<p.count;i++){
-      positions.push(p.getX(i),p.getY(i),p.getZ(i));normals.push(n.getX(i),n.getY(i),n.getZ(i));
-      if(tint)shade.copy(tint);else if(p.getY(i)>0)shade.copy(silver).lerp(back,Math.min(1,p.getY(i)/0.085));else shade.copy(silver).lerp(belly,Math.min(1,-p.getY(i)/0.085));
-      colors.push(shade.r,shade.g,shade.b);
-    }
-    if(flat!==geometry)flat.dispose();geometry.dispose();
+  var fish=new T.Group();fish.name='cl-prey-fish';var positions=[],normals=[],colors=[],parts=[];
+  var back=new T.Color(0x4c6864).convertSRGBToLinear(),flank=new T.Color(0x8eaba9).convertSRGBToLinear(),silver=new T.Color(0xc9d8d4).convertSRGBToLinear(),belly=new T.Color(0xc3ccc0).convertSRGBToLinear();
+  var lineTint=new T.Color(0x334c48).convertSRGBToLinear(),finTint=new T.Color(0x8caaa7).convertSRGBToLinear(),irisTint=new T.Color(0xa3b6ac).convertSRGBToLinear(),eyeTint=new T.Color(0x14221e).convertSRGBToLinear(),shade=new T.Color();
+  function append(g,tint,name){
+    var flat=g.index?g.toNonIndexed():g,p=flat.attributes.position,n=flat.attributes.normal,c=flat.attributes.color,start=positions.length/3;
+    for(var i=0;i<p.count;i++){positions.push(p.getX(i),p.getY(i),p.getZ(i));normals.push(n.getX(i),n.getY(i),n.getZ(i));if(c)colors.push(c.getX(i),c.getY(i),c.getZ(i));else colors.push(tint.r,tint.g,tint.b);}
+    parts.push({name:name,start:start,count:p.count});if(flat!==g)flat.dispose();g.dispose();
   }
-  var bodyGeometry=new T.SphereGeometry(1,20,12);bodyGeometry.scale(0.072,0.094,0.21);
-  var bp=bodyGeometry.attributes.position;
-  for(var v=0;v<bp.count;v++){var taper=1-0.48*Math.max(0,-bp.getZ(v)/0.21);bp.setXYZ(v,bp.getX(v)*taper,bp.getY(v)*taper,bp.getZ(v));}
-  bodyGeometry.computeVertexNormals();append(bodyGeometry);
-  function fin(vertices){var g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(vertices,3));g.computeVertexNormals();append(g,finTint);}
-  fin([0,0.082,0.02, 0,0.16,-0.08, 0,0.065,-0.145]);
-  for(var side=-1;side<=1;side+=2){
-    fin([side*0.054,-0.012,0.05, side*0.13,-0.04,-0.075, side*0.04,-0.05,-0.025]);
-    var eye=new T.SphereGeometry(0.015,8,6);eye.translate(side*0.061,0.025,0.118);append(eye,eyeTint);
+  function finish(){var g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(positions,3));g.setAttribute('normal',new T.Float32BufferAttribute(normals,3));g.setAttribute('color',new T.Float32BufferAttribute(colors,3));g.userData.clFishParts=parts;g.computeBoundingBox();g.computeBoundingSphere();return g;}
+  // Longitudinal sections and narrow color rails make the stripe part of the skin.
+  // The short, slightly raised snout and taper keep +Z as the unchanged forward axis.
+  var sections=[[0.21,0.003,0.004,0.010],[0.198,0.013,0.018,0.008],[0.178,0.024,0.032,0.004],[0.150,0.032,0.043,0.001],[0.115,0.039,0.052,0],[0.070,0.044,0.060,0],[0.020,0.044,0.062,0],[-0.035,0.040,0.056,0],[-0.085,0.032,0.044,0],[-0.130,0.024,0.031,0],[-0.165,0.017,0.023,0],[-0.185,0.014,0.019,0],[-0.210,0.012,0.018,0]];
+  var angles=[0,7,10,15,35,60,90,120,145,165,170,173,180,187,205,240,270,300,335,353],columns=angles.length,skinPositions=[],skinColors=[],skinIndices=[];
+  function bodyPoint(z,column){var row=0;while(row<sections.length-2&&z<sections[row+1][0])row++;var a=sections[row],b=sections[row+1],t=Math.max(0,Math.min(1,(a[0]-z)/(a[0]-b[0]))),angle=angles[column]*Math.PI/180;return [Math.cos(angle)*(a[1]+(b[1]-a[1])*t),Math.sin(angle)*(a[2]+(b[2]-a[2])*t)+a[3]+(b[3]-a[3])*t,z];}
+  for(var row=0;row<sections.length;row++)for(var column=0;column<columns;column++){
+    var section=sections[row],angle=angles[column]*Math.PI/180,sy=Math.sin(angle),point=bodyPoint(section[0],column),band=Math.max(0,Math.min(1,(0.155-section[0])/0.055));skinPositions.push(point[0],point[1],point[2]);
+    if(sy>=0.2588)shade.copy(flank).lerp(back,(sy-0.2588)/0.7412);else if(sy>0.15)shade.copy(flank).lerp(lineTint,band);else if(sy>=-0.122)shade.copy(flank).lerp(silver,0.55+band*0.45);else shade.copy(silver).lerp(belly,(-sy-0.122)/0.878);
+    skinColors.push(shade.r,shade.g,shade.b);
   }
-  var geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('normal',new T.Float32BufferAttribute(normals,3));geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));geometry.computeBoundingSphere();
-  var material=new T.MeshStandardMaterial({vertexColors:true,roughness:0.34,metalness:0.18,side:T.DoubleSide});
+  for(var row=0;row<sections.length-1;row++)for(var column=0;column<columns;column++){var a=row*columns+column,b=row*columns+(column+1)%columns,c=a+columns,d=b+columns;skinIndices.push(a,c,b,b,c,d);}
+  for(var end=0;end<2;end++){var row=end?sections.length-1:0,pole=skinPositions.length/3;skinPositions.push(0,sections[row][3],sections[row][0]);skinColors.push(flank.r,flank.g,flank.b);for(var column=0;column<columns;column++){var a=row*columns+column,b=row*columns+(column+1)%columns;if(end)skinIndices.push(a,pole,b);else skinIndices.push(a,b,pole);}}
+  var skinGeometry=new T.BufferGeometry();skinGeometry.setAttribute('position',new T.Float32BufferAttribute(skinPositions,3));skinGeometry.setAttribute('color',new T.Float32BufferAttribute(skinColors,3));skinGeometry.setIndex(skinIndices);skinGeometry.computeVertexNormals();
+  var surfacePositions=skinGeometry.attributes.position.array,surfaceIndices=skinGeometry.index.array;append(skinGeometry,null,'skin');
+  // Sample the actual triangulated body, so tiny eye relief remains attached even
+  // at this low polygon count. This construction-only projection adds no runtime work.
+  function surfaceX(y,z){var outer=-Infinity;for(var i=0;i<surfaceIndices.length;i+=3){var a=surfaceIndices[i]*3,b=surfaceIndices[i+1]*3,c=surfaceIndices[i+2]*3,ay=surfacePositions[a+1],az=surfacePositions[a+2],by=surfacePositions[b+1],bz=surfacePositions[b+2],cy=surfacePositions[c+1],cz=surfacePositions[c+2],det=(by-ay)*(cz-az)-(bz-az)*(cy-ay);if(Math.abs(det)<0.00000001)continue;var u=((y-ay)*(cz-az)-(z-az)*(cy-ay))/det,v=((by-ay)*(z-az)-(bz-az)*(y-ay))/det;if(u>=-0.000001&&v>=-0.000001&&u+v<=1.000001)outer=Math.max(outer,surfacePositions[a]+u*(surfacePositions[b]-surfacePositions[a])+v*(surfacePositions[c]-surfacePositions[a]));}return outer;}
+  function eyePatch(side,radii,relief,tint,name){var p=[],ix=[],segments=12,rows=radii[radii.length-1]===0?radii.length-1:radii.length;for(var row=0;row<rows;row++)for(var column=0;column<segments;column++){var angle=column/segments*Math.PI*2,y=0.015+Math.sin(angle)*radii[row],z=0.154+Math.cos(angle)*radii[row];p.push(side*(surfaceX(y,z)+relief[row]),y,z);}function face(a,b,c){if(side>0)ix.push(a,b,c);else ix.push(a,c,b);}for(var row=0;row<rows-1;row++)for(var column=0;column<segments;column++){var a=row*segments+column,b=row*segments+(column+1)%segments;face(a,a+segments,b);face(b,a+segments,b+segments);}if(rows<radii.length){var pole=p.length/3;p.push(side*(surfaceX(0.015,0.154)+relief[rows]),0.015,0.154);for(var column=0;column<segments;column++)face((rows-1)*segments+column,pole,(rows-1)*segments+(column+1)%segments);}var g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(p,3));g.setIndex(ix);g.computeVertexNormals();append(g,tint,name);}
+  for(var side=-1;side<=1;side+=2){var suffix=side<0?'-left':'-right';eyePatch(side,[0.018,0.013,0.0095],[0.00025,0.0025,0.0038],irisTint,'iris'+suffix);eyePatch(side,[0.0095,0.005,0],[0.0038,0.0052,0.0058],eyeTint,'pupil'+suffix);}
+  function fin(roots,edge,name){var p=[],c=[];function triangle(a,b,d,ta,tb,td){var ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=d[0]-a[0],vy=d[1]-a[1],vz=d[2]-a[2];if(Math.hypot(uy*vz-uz*vy,uz*vx-ux*vz,ux*vy-uy*vx)<0.00000001)return;var vertices=[a,b,d],tones=[ta,tb,td];for(var v=0;v<3;v++){p.push(vertices[v][0],vertices[v][1],vertices[v][2]);c.push(finTint.r*tones[v],finTint.g*tones[v],finTint.b*tones[v]);}}for(var i=0;i<roots.length-1;i++){var toneA=i%2?0.96:1.04,toneB=i%2?1.04:0.96;triangle(roots[i],edge[i],roots[i+1],0.90,toneA,0.90);triangle(roots[i+1],edge[i],edge[i+1],0.90,toneA,toneB);}var g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(p,3));g.setAttribute('color',new T.Float32BufferAttribute(c,3));g.computeVertexNormals();append(g,null,name);}
+  function medianFin(zs,heights,column,name){var roots=[],edge=[];for(var i=0;i<zs.length;i++){var root=bodyPoint(zs[i],column);roots.push(root);edge.push(i===0||i===zs.length-1?root.slice():[0,heights[i],zs[i]]);}fin(roots,edge,name);}
+  medianFin([0.024,0.009,-0.007,-0.026,-0.046],[0,0.109,0.115,0.087,0],6,'dorsal-front');
+  medianFin([-0.083,-0.097,-0.124,-0.146,-0.162],[0,0.088,0.081,0.057,0],6,'dorsal-rear');
+  medianFin([0.015,-0.021,-0.063,-0.110,-0.145,-0.166],[0,-0.077,-0.094,-0.083,-0.053,0],16,'anal');
+  for(var side=-1;side<=1;side+=2){var suffix=side<0?'-left':'-right',column=side>0?19:13,roots=[bodyPoint(0.108,column),bodyPoint(0.088,column),bodyPoint(0.062,column),bodyPoint(0.045,column)];fin(roots,[roots[0].slice(),[side*0.112,-0.018,-0.018],[side*0.130,-0.036,-0.063],roots[3].slice()],'pectoral'+suffix);var column=side>0?17:15,roots=[bodyPoint(0.028,column),bodyPoint(0.005,column),bodyPoint(-0.022,column)];fin(roots,[roots[0].slice(),[side*0.064,-0.082,-0.045],roots[2].slice()],'pelvic'+suffix);}
+  var geometry=finish(),material=new T.MeshStandardMaterial({vertexColors:true,roughness:0.34,metalness:0.18,side:T.DoubleSide});
   var body=new T.Mesh(geometry,material);body.name='cl-fish-body';fish.add(body);
-  var tailGeometry=new T.BufferGeometry(),tailVertices=[0,0.025,0, 0,0.13,-0.18, 0,0,-0.10, 0,0.025,0, 0,0,-0.10, 0,-0.025,0, 0,0,-0.10, 0,-0.13,-0.18, 0,-0.025,0],tailColors=[];
-  for(var tc=0;tc<tailVertices.length/3;tc++)tailColors.push(finTint.r,finTint.g,finTint.b);
-  tailGeometry.setAttribute('position',new T.Float32BufferAttribute(tailVertices,3));tailGeometry.setAttribute('color',new T.Float32BufferAttribute(tailColors,3));tailGeometry.computeVertexNormals();
-  var tail=new T.Mesh(tailGeometry,material);tail.name='cl-fish-tail';tail.position.z=-0.185;fish.add(tail);
+  positions=[];normals=[];colors=[];parts=[];
+  // A rounded overlapping peduncle keeps the existing tail hinge visually joined.
+  var peduncle=new T.CylinderGeometry(1,1,0.038,12,1),pp=peduncle.attributes.position;
+  for(var i=0;i<pp.count;i++){var t=(pp.getY(i)+0.019)/0.038;pp.setXYZ(i,pp.getX(i)*(0.006+t*0.004),-pp.getZ(i)*(0.014+t*0.004),pp.getY(i)-0.013);}peduncle.computeVertexNormals();append(peduncle,silver,'peduncle');
+  var root=[0,0,-0.018],upper=[[0,0.018,0.004],[0,0.044,-0.048],[0,0.079,-0.128],[0,0.100,-0.180],[0,0.046,-0.148],[0,0,-0.104]],tailRoots=[],tailEdge=[];
+  for(var side=-1;side<=1;side+=2){tailRoots=[];tailEdge=[];for(var i=0;i<upper.length;i++){tailRoots.push(root.slice());tailEdge.push([0,side*upper[i][1],upper[i][2]]);}fin(tailRoots,tailEdge,'caudal'+(side<0?'-lower':'-upper'));}
+  var tailGeometry=finish(),tail=new T.Mesh(tailGeometry,material);tail.name='cl-fish-tail';tail.position.z=-0.185;fish.add(tail);
   fish.userData.tail=tail;fish.userData.swimPhase=index*1.7;fish.rotation.order='YXZ';return fish;
 }
 
@@ -13626,6 +13640,56 @@ function createCLHuntFish(T,index){
           clAnnounce(__alloT('stem.cephalopodlab.sr_reef_shark_approaching', 'Reef shark approaching'));
         }
 
+        // Static angular stones retain the old local boxes, doorway clearance and
+        // grounded support heights. Unequal profiles replace the oval/table outline.
+        function createCLHuntDenRockGeometry(T,radius,widthSegments,heightSegments,variant){
+          var roof=radius===1,outline=[[-0.70,-1],[0.55,-1],[1,-0.50],[1,0.40],[0.55,1],[-0.65,1],[-1,0.35],[-1,-0.45]],rings=[],positions=[],uvs=[],indices=[];
+          var profiles=roof?[[-0.68,0.87,0.82],[ -0.28,1,0.98],[0.48,0.91,0.87],[0.86,0.62,0.57]]:[[-1,0.69,0.68],[-0.66,0.99,0.96],[0.02,0.86,0.91],[0.66,0.68,0.70],[0.94,0.38,0.40]];
+          function clamp(value){return Math.max(-1,Math.min(1,value));}
+          for(var layer=0;layer<profiles.length;layer++){
+            var profile=profiles[layer],ring=[],shiftX=Math.sin(variant*1.7+layer*0.9)*0.055,shiftZ=Math.cos(variant*1.3+layer*0.7)*0.045;
+            for(var corner=0;corner<8;corner++){
+              var broad=0.94+0.06*Math.sin(variant*1.11+corner*1.91+layer*0.62),tilt=Math.sin(variant*0.73+corner*1.37)*0.08;
+              var y=(!roof&&layer===0)?-1:clamp(profile[0]+tilt*(roof?1:0.65));
+              ring.push([clamp(outline[corner][0]*profile[1]*broad+shiftX)*radius,y*radius,clamp(outline[corner][1]*profile[2]*broad+shiftZ)*radius]);
+            }
+            rings.push(ring);
+          }
+          function vertex(point,u,v){var id=positions.length/3;positions.push(point[0],point[1],point[2]);uvs.push(u,v);return id;}
+          for(var band=0;band<rings.length-1;band++)for(var side=0;side<8;side++){
+            var next=(side+1)%8,base=positions.length/3;
+            vertex(rings[band][side],0,0);vertex(rings[band+1][side],0,1);vertex(rings[band+1][next],1,1);vertex(rings[band][next],1,0);
+            indices.push(base,base+1,base+2,base,base+2,base+3);
+          }
+          // Separate cap/side vertices retain broad stone faces instead of tiny facets.
+          for(var cap=0;cap<2;cap++){
+            var capRing=rings[cap?rings.length-1:0],center=[Math.sin(variant*1.2)*radius*0.06,(cap?1:-1)*radius,Math.cos(variant*0.8)*radius*0.04];
+            for(var face=0;face<8;face++){
+              var first=cap?capRing[(face+1)%8]:capRing[face],second=cap?capRing[face]:capRing[(face+1)%8],start=positions.length/3;
+              vertex(center,0.5,0.5);vertex(first,first[0]/(2*radius)+0.5,first[2]/(2*radius)+0.5);vertex(second,second[0]/(2*radius)+0.5,second[2]/(2*radius)+0.5);indices.push(start,start+1,start+2);
+            }
+          }
+          var geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);
+          geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();return geometry;
+        }
+        function createCLHuntDenShadowGeometry(T){
+          // Two shallow reveals meet a dark inner wall: either approach sees depth.
+          var rim=[[-0.84,-0.75],[0.82,-0.75],[0.82,0.23],[0.45,0.59],[-0.47,0.59],[-0.84,0.23]],positions=[],colors=[],uvs=[],indices=[];
+          for(var layer=0;layer<3;layer++)for(var side=0;side<6;side++){
+            var inner=layer===1,x=rim[side][0]*(inner?0.62:1),y=(rim[side][1]+0.75)*(inner?0.84:1)-0.75,z=layer===0?0.16:layer===1?0:-0.41;
+            var value=inner?0.0035:0.038-(y+0.75)/1.34*0.016;
+            positions.push(x,y,z);colors.push(value*0.94,value,value*0.81);uvs.push((x+1)/2,(y+0.75)/1.5);
+          }
+          for(var band=0;band<2;band++)for(var edge=0;edge<6;edge++){
+            var next=(edge+1)%6,a=band*6+edge,b=band*6+next,c=(band+1)*6+next,d=(band+1)*6+edge;
+            indices.push(a,b,c,a,c,d);
+          }
+          positions.push(0,-0.15,0);colors.push(0.002,0.003,0.003);uvs.push(0.5,0.4);
+          for(var face=0;face<6;face++)indices.push(18,6+face,6+(face+1)%6);
+          var geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));geometry.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);
+          geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();return geometry;
+        }
+
         // ─── Dens (4 rock arches scattered as safe-hide points) ───
         // Inside a den (within DEN_RADIUS): health regens, both predators
         // lose interest and break attack. Dens are visible reef landmarks
@@ -13638,23 +13702,25 @@ function createCLHuntFish(T,index){
           { x: -20, z: -28 },
         ];
         var dens = [];
-        DEN_POSITIONS.forEach(function(pos) {
-          var den = new THREE.Group();
+        DEN_POSITIONS.forEach(function(pos,denIndex) {
+          var den = new THREE.Group();den.name='cl-den';
           // Arch: two pillars + a lintel
-          var pmat = new THREE.MeshStandardMaterial({ color: 0x3d342a, roughness: 0.9 });
-          var p1 = new THREE.Mesh(new THREE.SphereGeometry(0.70,20,14), pmat);
+          var pmat = new THREE.MeshStandardMaterial({ color: new THREE.Color([0x55483a,0x3f4d3d,0x5c4f3f,0x46524a][denIndex]).convertSRGBToLinear(), roughness: 0.9 });
+          pmat.name='cl-den-rock-material';
+          if(renderer.capabilities.isWebGL2||renderer.extensions.has('OES_standard_derivatives')){pmat.extensions={derivatives:true};pmat.onBeforeCompile=shadeCLHuntRockSurface;pmat.customProgramCacheKey=function(){return 'cl-rock-surface-v1';};}else{pmat.onBeforeCompile=reefSurface;}
+          var p1 = new THREE.Mesh(createCLHuntDenRockGeometry(THREE,0.70,20,14,denIndex*3), pmat);p1.name='cl-den-rock';
           p1.scale.set(0.7,1.05,0.8);p1.position.set(-0.9, 0.7, 0);
           den.add(p1);
-          var p2 = new THREE.Mesh(new THREE.SphereGeometry(0.70,20,14), pmat);
+          var p2 = new THREE.Mesh(createCLHuntDenRockGeometry(THREE,0.70,20,14,denIndex*3+1), pmat);p2.name='cl-den-rock';
           p2.scale.set(0.8,1.02,0.8);p2.position.set(0.9, 0.7, 0);
           den.add(p2);
-          var lintel = new THREE.Mesh(new THREE.SphereGeometry(1,24,16), pmat);
+          var lintel = new THREE.Mesh(createCLHuntDenRockGeometry(THREE,1,24,16,denIndex*3+2), pmat);lintel.name='cl-den-rock';
           lintel.scale.set(1.5,0.36,0.66);lintel.position.set(0, 1.6, 0);
           den.add(lintel);
           // Interior shadow patch (so the den looks like a hideable cavity)
           var shadow = new THREE.Mesh(
-            new THREE.PlaneGeometry(2.0, 1.5),
-            new THREE.MeshBasicMaterial({ color: 0x080608, transparent: true, opacity: 0.85 })
+            createCLHuntDenShadowGeometry(THREE),
+            new THREE.MeshBasicMaterial({ color: 0xffffff, vertexColors: true, side: THREE.DoubleSide })
           );
           shadow.position.set(0, 0.75, 0.01);
           den.add(shadow);

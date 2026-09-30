@@ -10,7 +10,7 @@ function region(start, end) {
   if (a < 0 || b <= a) throw new Error('Missing live rock shader region: ' + start);
   return source.slice(a, b);
 }
-const helper = region('function shadeCLHuntRockSurface(', 'function createCLHuntPlantGeometry(');
+const helper = region('function shadeCLHuntRockSurface(', 'function shadeCLHuntCoralSurface(');
 const shade = new Function(helper + ';return shadeCLHuntRockSurface;')();
 function compiled() {
   const shader = { vertexShader: THREE.ShaderLib.standard.vertexShader, fragmentShader: THREE.ShaderLib.standard.fragmentShader, uniforms: { sentinel: { value: 3 } } };

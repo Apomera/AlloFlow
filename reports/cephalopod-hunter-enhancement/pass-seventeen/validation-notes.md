@@ -1,0 +1,38 @@
+# Focused fish and den validation
+
+This pass changes the isolated `createCLHuntFish(T,index)` factory and the initial four-den visual construction block. The model/environment guards are responsible for exact reverse-source proof around those approved regions; the integrated source intentionally includes both changes. No new whole-file baseline or broad animal hash migration is needed. Existing animal, nautilus, reef and plant suites continue to protect the accepted rigs and environment.
+
+The new `cephalopodlab_prey_fish.test.js` defines six focused CPU scenarios using the actual extracted factory and bundled Three r128:
+
+- Two render meshes, one shared but independently owned material, preserved +Z/tail reference/phase/order contract, bounded geometry, finite unit normals, nondegenerate outward triangles and complete merged-part ranges.
+- Forward eyes and trailing caudal geometry, brighter lateral silver coloration than the back, and a plain opaque texture-free material without custom shader work.
+- Fin bases attached along separated contacts to actual skin triangles, separated dorsal fins, and shallow eye relief measured against those same triangles.
+- The actual peduncle/hinge cross-section remains inside the closed body through the full ±0.36 tail yaw range; upper/lower caudal lobes leave a fork and retain the previous rear/vertical envelope.
+- Deterministic construction without world RNG, independent owned arrays/materials, and stable geometry through body/tail transforms.
+- Disposal of one fish's two geometries and single material leaves a neighboring fish's resources untouched.
+
+The new `cephalopod-prey-den-visuals.spec.ts` defines only two browser scenarios, low and balanced, with video/trace disabled. It mounts the actual seed-2741 scene, preserves sixteen fish and four dens, and observes real render callbacks for a live fish's body/tail and the existing home den's stone/shadow/ring. It checks native compile/link status, enabled bound attributes, finite normal matrices, the accepted rock shader, static geometry/material/buffer ownership, tail animation, ordinary pause, inspection camera movement, reduced-motion semantics, resumption and teardown disposal. The balanced case includes responsive phone inspection framing.
+
+The fixture moves the player and one existing school's center/offsets into the approach to the existing home den; it does not replace meshes, materials, schools or update logic. Other fish remain alive. Predators remain on cooldown and the clock advances only through counted simulation steps. Reduced motion intentionally leaves real fish locomotion active while tail phase/rotation stop. Den glow opacity is allowed to follow the existing proximity rule. Native draw submissions do not by themselves prove pixel-level visibility or visual quality; root-owned side/oblique/school and den captures supply that assessment.
+
+Existing `cephalopod-swimming-polish.spec.ts` already covers live tail orientation/reduced motion and real capture disposal while a neighbor survives. Root reran those first two scenarios with the new native pair; all four passed without retries. Existing den gameplay coverage includes actual-height protection and mission return-home behavior in `cephalopod-hunter-enhancement.spec.ts`, plus the shelter/den state and regeneration contracts in `cephalopodlab_fact_consistency.test.js`.
+
+At authoring time no new CPU/browser scenario has been executed by the test author. Candidate/integrated validation outcomes and any initial failures must be recorded separately by root; test definitions are not passing executions.
+
+## Initial integrated unit run
+
+Root's first 43-case batch reported **41 passed / 2 failed**, retained as `unit-initial.json`. All six new fish and four new den cases passed. The two failures were in older regression fixtures.
+
+The first plant-flex case ran for **6,286.7432 ms** under Vitest's default five-second test limit. It reported `STACK_TRACE_ERROR` at test registration, rather than a numerical assertion. The installed runner's `withTimeout` explicitly rejects synchronous work that finishes after its limit; `makeTimeoutError` substitutes the saved registration stack, which explains the misleading text in the JSON failure. The other three plant-flex cases passed. The prior pass-sixteen recovery used `--testTimeout=30000` and this same dense case took approximately 5.37 seconds there. Root restored that existing CLI ceiling for the full batch. **The plant-flex file, samples, numerical thresholds and all assertions remain unchanged.** No matcher rewrite or production change was made for this diagnosis.
+
+The older rock test extracted through `createCLHuntPlantGeometry`, inadvertently including later unrelated plant/coral helpers in its no-new-uniform source assertion. Root narrowed its end anchor to `shadeCLHuntCoralSurface` so that assertion covers only the actual rock helper; all rock behavior assertions remain. The subsequent batch passed **43/43**, preserved as `unit-finish.json`. That result validates the accepted fish and the first den finish; it is not evidence for the later den refinement.
+
+## Den visual refinement
+
+Root and visual review accepted the fish but found that the first den finish still resembled a stone table with a flat purple recess. The initial 43/43 unit result, `guard-den-finish.json`, `capture-finish.json` and intermediate den images are retained. The revised den uses asymmetric bounded stones and joined shallow interior surfaces while preserving five meshes and three materials per den. Its final authored budget is **565 vertices / 302 triangles per den**, down from the first finish's 1,150 / 1,872. The cavity accounts for 19 vertices / 30 triangles and uses an opaque white, two-sided MeshBasicMaterial with varying three-component vertex colors.
+
+Only the den expectations in the native pair were migrated for that revision: exact authored counts, cavity material/color contract, and an actual enabled/bound three-component color attribute in the compiled MeshBasic program. Fish CPU tests, fish native assertions, all lifecycle behavior and the unchanged plant-flex tests remain intact. No CPU/GPU validation was executed by the test author for this migration. Root subsequently ran the revised 43-case unit batch, then refreshed its four den cases after the isolated front-mouth correction. All four native browser cases passed, and six final captures matched the saved pose/camera fixtures exactly. The final validation below reports these stages separately from the earlier finish.
+
+## Final integrated validation
+
+43 focused unit cases have passing evidence: 39 unchanged cases from the integrated angular-den batch, plus the same four den cases rerun after the final cavity-mouth correction. The unit runs use the prior pass16 30-second CLI ceiling. The initial 41/2 batch is retained in unit-initial.json; the rock test extraction was narrowed to its own function, and the plant assertions/source were unchanged. Four serial Chromium cases passed without retries; six exact-fixture final views were reviewed. All four runtimes match. Fish cost is 2,334 vertices / 778 triangles and 84,024 raw buffer bytes each; dens total 2,260 vertices / 1,208 triangles and 80,480 bytes. Draw and material counts stay fixed. Compared with the original den, the new shelter geometry offsets more triangles than the fish detail adds: 3,280 fewer triangles across the sixteen fish and four dens, with 192,304 additional raw buffer bytes. Applying the existing mineral shader to den stones adds fragment work; FPS and temporal shimmer were not measured.

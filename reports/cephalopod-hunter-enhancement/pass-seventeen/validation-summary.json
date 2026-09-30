@@ -1,0 +1,262 @@
+{
+  "pass": 17,
+  "status": "validated",
+  "result": "Refined silverside prey models and angular rock dens",
+  "units": {
+    "passed": 43,
+    "failed": 0,
+    "evidence": [
+      "unit-results.json",
+      "den-mouth-results.json"
+    ],
+    "aggregation": "39 unchanged cases retained from the integrated angular-den batch; the same four den cases rerun after the final cavity-mouth correction. No duplicate cases counted.",
+    "integratedBatch": {
+      "passed": 43,
+      "failed": 0,
+      "evidence": "unit-results.json",
+      "runtimeSha256": "bc6bf0968e0c045dc0c56d3bf5510300a5fe649dc209c7ead1d42a5c68111e28"
+    },
+    "finalDenRefresh": {
+      "passed": 4,
+      "failed": 0,
+      "evidence": "den-mouth-results.json",
+      "runtimeSha256": "a5d94315ea39051461392728ceb2e7edef0d904934d415569d6d7a2968d40b90"
+    },
+    "initialBatch": {
+      "passed": 41,
+      "failed": 2,
+      "evidence": "unit-initial.json",
+      "resolution": "Rock test extraction included unrelated plant uniforms; narrowed to the rock function. Dense existing plant case exceeded the default five-second limit; the integrated batch uses the prior pass16 30-second CLI ceiling without changing its assertions or source."
+    },
+    "testTimeoutMs": 30000,
+    "supersededFinishBatch": {
+      "passed": 43,
+      "failed": 0,
+      "evidence": "unit-finish.json"
+    },
+    "files": [
+      {
+        "file": "cephalopodlab_canvas_focus_a11y.test.js",
+        "passed": 4
+      },
+      {
+        "file": "cephalopodlab_den_geometry.test.js",
+        "passed": 4
+      },
+      {
+        "file": "cephalopodlab_kelp_fronds.test.js",
+        "passed": 3
+      },
+      {
+        "file": "cephalopodlab_nautilus_eyes.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_plant_flex.test.js",
+        "passed": 4
+      },
+      {
+        "file": "cephalopodlab_prey_fish.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_prey_memory.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_reef_placement.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_rock_surface.test.js",
+        "passed": 4
+      }
+    ]
+  },
+  "browser": {
+    "passed": 4,
+    "failed": 0,
+    "flaky": 0,
+    "workers": 1,
+    "retries": 0,
+    "video": "off",
+    "trace": "off",
+    "qualities": [
+      "low",
+      "balanced"
+    ],
+    "durationMs": 123677.152,
+    "evidence": "browser-results.json",
+    "checks": [
+      "Actual fish and den mesh submissions, linked native programs and bound attributes",
+      "Static geometry/resources and independent ownership",
+      "Fish swimming, inspection pause, reduced motion and resume",
+      "Owned fish capture disposal while a surviving neighbor keeps swimming",
+      "Den shader path, seeded landmarks and phone layout",
+      "Traversal cleanup"
+    ]
+  },
+  "visuals": {
+    "captures": [
+      "fish-side.png",
+      "fish-three-quarter.png",
+      "school.png",
+      "den-three-quarter.png",
+      "den-entrance.png",
+      "den-phone.png"
+    ],
+    "errors": [],
+    "warnings": [
+      "[.WebGL-0x5454001ace00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x5454001ace00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x5454001ace00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x5454001ace00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    ],
+    "fixture": "visual-fixtures.json",
+    "review": "Accepted matched fish side, three-quarter and school views; den three-quarter, entrance and phone views. The fish have a slender silhouette, visible lateral stripe and separated fins. Den stones have broad asymmetric faces, reef mineral shading and connected shallow interior sides, ceiling and a dark back wall.",
+    "fixturePreservation": "Exact seed2741, first-second fish poses, school membership, den transform and cameras match before/after; actual surrounding scenery, light and fog are retained."
+  },
+  "source": {
+    "runtime": [
+      {
+        "file": "stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "a5d94315ea39051461392728ceb2e7edef0d904934d415569d6d7a2968d40b90"
+      },
+      {
+        "file": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "a5d94315ea39051461392728ceb2e7edef0d904934d415569d6d7a2968d40b90"
+      },
+      {
+        "file": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "a5d94315ea39051461392728ceb2e7edef0d904934d415569d6d7a2968d40b90"
+      },
+      {
+        "file": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "a5d94315ea39051461392728ceb2e7edef0d904934d415569d6d7a2968d40b90"
+      }
+    ],
+    "candidateLfSha256": "6c40cff5a11b6b30376f4988a36e459d7c581792d4617aa821b076496d104172",
+    "preservedUnstagedWrappersPerTrackedFile": 12,
+    "scope": "createCLHuntFish visual factory and den visual construction only. Simulation and input loops are unchanged.",
+    "protectedRegions": [
+      {
+        "name": "complete animal factory",
+        "byteIdentical": true,
+        "lfSha256": "1d24b50c729633a69f6891e4b2e550928612013798e15400cbb63763fdf8cdc7"
+      },
+      {
+        "name": "plant geometry, fronds and flex",
+        "byteIdentical": true,
+        "lfSha256": "e8e152c3472fc22dca1322ab7d0ad1a7879df7b9b25ad9cba9dce10c82848d44"
+      },
+      {
+        "name": "school threat memory",
+        "byteIdentical": true,
+        "lfSha256": "3bc26e4cb036c80eaa28a1af72bf6b1c28aa2b4fb77e5cca88def8ca87a76a5c"
+      }
+    ]
+  },
+  "guardedPreservation": {
+    "fish": {
+      "guard": "fish factory only; exact reverse-byte proof",
+      "before": "c2c1b0bf0a9f341c86dc1adda06545d886e0d3df3fc4faf3911d4f3f290ef997",
+      "after": "848f9f54a31f43540c0525c7df16616cd35319f10557c76c3f558b460737879f",
+      "source": "e545c278e3ad6ae619973306a0c51ac41fae1f58c4ccaff9b773e2318d1ded1e",
+      "cost": {
+        "before": {
+          "meshes": 2,
+          "materials": 1,
+          "vertices": 1818,
+          "triangles": 606,
+          "bufferBytes": 65448
+        },
+        "after": {
+          "meshes": 2,
+          "materials": 1,
+          "vertices": 2334,
+          "triangles": 778,
+          "bufferBytes": 84024
+        },
+        "schoolFishCount": 16,
+        "additionalBufferBytes": 297216
+      },
+      "newTextures": 0,
+      "newShaders": 0,
+      "newUniforms": 0,
+      "newDraws": 0
+    },
+    "den": {
+      "mode": "candidate written; source untouched",
+      "candidatePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-seventeen\\den-forms-candidate.generated.cjs",
+      "outsideDenShapeAndCavityMaterial": "byte-identical",
+      "draws": 4,
+      "before": {
+        "meshes": 20,
+        "materials": 12,
+        "vertices": 4600,
+        "triangles": 7488,
+        "bufferBytes": 192128
+      },
+      "after": {
+        "meshes": 20,
+        "materials": 12,
+        "vertices": 2260,
+        "triangles": 1208,
+        "bufferBytes": 80480
+      },
+      "minActualPillarRoofOverlap": 0.07606167435481948,
+      "sourceSha256": "80f8114dca0a0917542a363c4cdf2d8380241b0c1ef2de47afa71c0afabd74c0",
+      "candidateSha256": "a5d94315ea39051461392728ceb2e7edef0d904934d415569d6d7a2968d40b90",
+      "originalBaselineCost": {
+        "meshes": 20,
+        "materials": 12,
+        "vertices": 4436,
+        "triangles": 7240,
+        "bufferBytes": 185392
+      },
+      "finishStage": {
+        "mode": "candidate written; source untouched",
+        "candidatePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-seventeen\\den-candidate.generated.cjs",
+        "sourceOutsideDenVisuals": "byte-identical",
+        "seededYawDraws": 4,
+        "positionsTransformsDoorwayGroundPolesGlowAndGameplay": "preserved",
+        "before": {
+          "meshes": 20,
+          "materials": 12,
+          "vertices": 4436,
+          "triangles": 7240,
+          "bufferBytes": 185392
+        },
+        "after": {
+          "meshes": 20,
+          "materials": 12,
+          "vertices": 4600,
+          "triangles": 7488,
+          "bufferBytes": 192128
+        },
+        "minContraction": 0.8437864413225045,
+        "maxContraction": 1,
+        "minLintelContact": 0.06329783773662112,
+        "additionalBufferBytes": 6736,
+        "baselineSha256": "89c10b4249ce14d0587fb7b48b1e2c5df3c6188421524966c84a43c2358beb75",
+        "candidateSha256": "80f8114dca0a0917542a363c4cdf2d8380241b0c1ef2de47afa71c0afabd74c0"
+      },
+      "finalStage": "Angular bounded stones and opaque shallow interior with front mouth recessed to local +0.16",
+      "formsStageSha256": "bc6bf0968e0c045dc0c56d3bf5510300a5fe649dc209c7ead1d42a5c68111e28",
+      "mouthStage": {
+        "mode": "candidate written; source untouched",
+        "candidatePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-seventeen\\den-mouth-candidate.generated.cjs",
+        "change": "Only front cavity depth: local +0.39 to +0.16; inner0/rear-0.41 unchanged",
+        "allOtherSource": "byte-identical",
+        "sourceSha256": "bc6bf0968e0c045dc0c56d3bf5510300a5fe649dc209c7ead1d42a5c68111e28",
+        "candidateSha256": "a5d94315ea39051461392728ceb2e7edef0d904934d415569d6d7a2968d40b90"
+      }
+    }
+  },
+  "limits": [
+    "Fish proportions and fin-ray coloring are illustrative; no individual specimen is reconstructed.",
+    "Den construction uses three rock forms and a shallow illustrative interior, not a complete cave or new collision system.",
+    "No new hunting, shelter or fish-school rules are introduced.",
+    "Native program/buffer checks and stills do not establish FPS, temporal shimmer or displaced-vertex GPU readback."
+  ]
+}
