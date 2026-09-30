@@ -2533,6 +2533,20 @@ window.StemLab = window.StemLab || {
               #physics-fs-outer .phys-comparison-scroll-help{display:none;margin:0;padding:0 12px 10px;font-size:12px;line-height:1.6;color:var(--phys-muted)}
               @container(max-width:560px){#physics-fs-outer .phys-comparison-scroll-help{display:block}}
               @container(max-width:460px){#physics-fs-outer .phys-comparison-heading h3{font-size:16px}#physics-fs-outer [data-physics-comparison-card]{padding:12px}#physics-fs-outer [data-physics-comparison-card] h4{margin-bottom:9px}#physics-fs-outer .phys-comparison-readings{gap:8px}#physics-fs-outer .phys-comparison-value>strong{font-size:14px}#physics-fs-outer .phys-comparison-track{height:10px}#physics-fs-outer .phys-comparison-axis{margin-bottom:9px}#physics-fs-outer .phys-comparison-difference{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;padding-top:8px}#physics-fs-outer .phys-comparison-difference strong{font-size:18px;margin:0}#physics-fs-outer .phys-comparison-difference p:last-child{flex-basis:100%}}
+
+              #physics-fs-outer .phys-energy-heading{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;margin-bottom:7px}
+              #physics-fs-outer .phys-energy-heading h4{margin:0;font-size:16px;font-weight:800;line-height:1.5}
+              #physics-fs-outer .phys-energy-heading p{margin:0;font-size:13px;font-weight:650;line-height:1.6}
+              #physics-fs-outer .phys-energy-help{margin:8px 0;font-size:12px;line-height:1.65}
+              #physics-fs-outer .phys-energy-layout{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));align-items:center;gap:16px;margin:12px 0}
+              #physics-fs-outer .phys-energy-readings{display:grid;gap:10px;min-width:0}
+              #physics-fs-outer .phys-energy-reading{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:4px 10px;min-width:0}
+              #physics-fs-outer .phys-energy-reading>span{display:flex;align-items:center;gap:7px;font-size:12px;line-height:1.6}
+              #physics-fs-outer .phys-energy-reading>strong{font-size:18px;line-height:1.5;font-weight:750;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+              #physics-fs-outer .phys-energy-swatch{display:inline-block;flex-shrink:0;width:14px;height:12px;border-radius:2px}
+              #physics-fs-outer .phys-energy-current-budget{display:flex;height:14px;overflow:hidden;border-radius:3px;box-shadow:0 0 0 1px var(--phys-line)}
+              #physics-fs-outer .phys-energy-current-budget>span{display:block;height:100%;flex-shrink:0}
+
               #physics-fs-outer .phys-command-eyebrow,#physics-fs-outer .phys-command-metric>div:last-child,#physics-fs-outer .phys-next-label,#physics-fs-outer .phys-parameter-limits{font-size:11px}
               #physics-fs-outer .phys-parameter label,#physics-fs-outer .phys-outcome>div:nth-child(3){font-size:12px}
               #physics-fs-outer [data-physics-last-flight]>.phys-flight-heading{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px;margin-bottom:14px}
@@ -3808,11 +3822,11 @@ window.StemLab = window.StemLab || {
               var graphCanInspect = !!physInspectSample(pts, 0);
               var graphIndex = selectedPoint ? selectedPoint.index : pts.length - 1;
               var graphTime = pts[graphIndex].t != null ? pts[graphIndex].t : graphIndex * PHYS_DT;
-              function selectGraphTime(event) {
+              function selectGraphTime(event, geometry) {
                 if (!graphCanInspect) return;
                 var bounds = event.currentTarget.getBoundingClientRect();
                 if (!(bounds.width > 0) || !isFinite(event.clientX)) return;
-                var ratio = Math.max(0, Math.min(1, ((event.clientX - bounds.left) * W / bounds.width - padL) / innerW));
+                var ratio = Math.max(0, Math.min(1, ((event.clientX - bounds.left) * (geometry ? geometry.width : W) / bounds.width - (geometry ? geometry.left : padL)) / (geometry ? geometry.plotWidth : innerW)));
                 var wanted = ratio * tMax;
                 // Find the nearest full-resolution observation, including the
                 // shortened impact interval. The plotted curve is downsampled.
@@ -3950,6 +3964,97 @@ window.StemLab = window.StemLab || {
                     : __alloT('stem.physics.graph_vacuum_model_note', 'This flight has no air drag. Horizontal and vertical motion are independent; gravity changes only vertical velocity.')
                 ),
                 React.createElement('button', { type: 'button', onClick: function() { upd('showFlightData', true); }, style: { minHeight: 44, padding: '9px 14px', borderRadius: 10, border: '1px solid ' + graphColors.axis, color: graphColors.ink, background: graphColors.surface, fontSize: 14, fontWeight: 700 } }, __alloT('stem.physics.graph_open_data', 'Open the flight data table')),
+
+
+                // Energy comes from this trail's captured launch and recorded points.
+                (function() {
+                  var current = physInspectSample(pts, graphIndex);
+                  function unavailableEnergy() { return React.createElement('div', { 'data-physics-energy-unavailable': true, style: Object.assign({}, graphCardStyle, { marginTop: 14 }) },
+                    React.createElement('p', { style: { margin: 0, color: graphColors.muted, fontSize: 13, lineHeight: 1.6 } }, __alloT('stem.physics.energy_unavailable', 'The energy timeline needs original launch settings and supported recorded samples.'))); }
+                  if (!current) return unavailableEnergy();
+                  var energies = [];
+                  for (var i = 0; i < nSamples; i++) {
+                    var index = Math.floor(i / Math.max(1, nSamples - 1) * (pts.length - 1));
+                    var value = physInspectSample(pts, index);
+                    if (!value) return unavailableEnergy();
+                    energies.push(value);
+                  }
+                  // Include the selected full-resolution point in the filled bands.
+                  if (!energies.some(function(point) { return point.index === current.index; })) {
+                    energies.push(current); energies.sort(function(a, b) { return a.t - b.t; });
+                  }
+                  var p = current.parameters;
+                  var eW = 300, eH = 226, eL = 58, eR = 16, eT = 34, eB = 52;
+                  var eIW = eW - eL - eR, eIH = eH - eT - eB, eZero = eT + eIH;
+                  var eMax = current.initialEnergy, eScale = eIH / eMax, kilo = eMax >= 1000;
+                  var colors = { ke: graphColors.vx, pe: graphColors.vy, dragLoss: graphColors.range };
+                  var labels = { ke: __alloT('stem.physics.sample_kinetic_energy', 'Kinetic · KE'), pe: __alloT('stem.physics.sample_potential_energy', 'Potential · PE'), dragLoss: __alloT('stem.physics.energy_transferred', 'Transferred by drag') };
+                  var patterns = { pe: 'physics-energy-potential-pattern', dragLoss: 'physics-energy-transfer-pattern' };
+                  function energyX(point) { return eL + point.t / tMax * eIW; }
+                  function energyY(value) { return eZero - value * eScale; }
+                  function cumulative(point, part) { return part === 'ke' ? point.ke : part === 'pe' ? point.totalEnergy : point.totalEnergy + point.dragLoss; }
+                  function lower(point, part) { return part === 'ke' ? 0 : part === 'pe' ? point.ke : point.totalEnergy; }
+                  function area(part) {
+                    return energies.map(function(point, index) { return (index ? 'L' : 'M') + energyX(point).toFixed(3) + ',' + energyY(cumulative(point, part)).toFixed(3); }).join(' ') + ' ' +
+                      energies.slice().reverse().map(function(point) { return 'L' + energyX(point).toFixed(3) + ',' + energyY(lower(point, part)).toFixed(3); }).join(' ') + ' Z';
+                  }
+                  function swatch(part) {
+                    return React.createElement('span', { className: 'phys-energy-swatch', 'aria-hidden': true, style: { background: part === 'ke' ? colors.ke : 'repeating-linear-gradient(' + (part === 'pe' ? '0deg' : '135deg') + ',' + colors[part] + ',' + colors[part] + ' 4px,' + graphColors.surface + ' 4px,' + graphColors.surface + ' 6px)' } });
+                  }
+                  function energyReading(key, label) {
+                    return React.createElement('div', { key: key, className: 'phys-energy-reading' },
+                      React.createElement('span', null, colors[key] && swatch(key), label),
+                      React.createElement('strong', { 'data-physics-energy-value': key, 'data-value': current[key] }, current[key].toFixed(2) + ' J'));
+                  }
+                  var timeLabel = selectedPoint ? __alloT('stem.physics.graph_selected_sample', 'Selected sample') : __alloT('stem.physics.energy_latest_sample', 'Latest recorded sample');
+                  var description = __alloT('stem.physics.energy_chart_description', 'Recorded energy over time. Stacked bands show kinetic energy, gravitational potential energy, and energy transferred by air drag.');
+                  return React.createElement('section', { 'data-physics-energy-panel': true, 'data-run': current.run == null ? 'unfinished' : current.run,
+                    'data-sample-index': current.index, 'data-time': current.t, 'aria-labelledby': 'physics-energy-heading', style: Object.assign({}, graphCardStyle, { marginTop: 14, color: graphColors.ink }) },
+                    React.createElement('div', { className: 'phys-energy-heading' },
+                      React.createElement('h4', { id: 'physics-energy-heading' }, __alloT('stem.physics.energy_timeline_title', 'Energy through the recorded flight')),
+                      React.createElement('p', { 'data-physics-energy-time': true }, timeLabel + ' · t = ' + current.t.toFixed(3) + ' s')),
+                    React.createElement('p', { 'data-physics-energy-settings': true, className: 'phys-energy-help', style: { color: graphColors.muted } },
+                      'm = ' + p.mass + ' kg · v₀ = ' + p.velocity + ' m/s · g = ' + p.gravity + ' m/s² · h₀ = ' + p.launchHeight + ' m · ' + (p.airResist ? __alloT('stem.physics.sample_drag_on', 'Air drag on') : __alloT('stem.physics.sample_drag_off', 'Air drag off'))),
+                    React.createElement('div', { className: 'phys-energy-layout' },
+                      React.createElement('div', null,
+                        energies.length > 1 ? React.createElement('svg', { 'data-physics-energy-graph': true, 'data-plotted-count': energies.length, 'data-initial-energy': eMax,
+                          onClick: function(event) { selectGraphTime(event, { width: eW, left: eL, plotWidth: eIW }); }, 'aria-describedby': 'physics-graph-time-help physics-energy-sampling-help',
+                          viewBox: '0 0 ' + eW + ' ' + eH, role: 'img', 'aria-label': description + ' ' + timeLabel + ': t = ' + current.t.toFixed(3) + ' s.',
+                          style: { display: 'block', width: '100%', maxWidth: 400, height: 'auto', margin: '0 auto', background: graphColors.surface, cursor: 'crosshair' } },
+                          React.createElement('defs', null, ['pe', 'dragLoss'].map(function(part) {
+                            return React.createElement('pattern', { key: part, id: patterns[part], patternUnits: 'userSpaceOnUse', width: 8, height: 8 },
+                              React.createElement('rect', { width: 8, height: 8, fill: colors[part] }),
+                              React.createElement('line', { x1: part === 'pe' ? 0 : -2, y1: part === 'pe' ? 3 : 8, x2: part === 'pe' ? 8 : 8, y2: part === 'pe' ? 3 : -2, stroke: graphColors.surface, strokeWidth: 2 }));
+                          })),
+                          [0, .5, 1].map(function(fraction) { var y = energyY(eMax * fraction); return React.createElement('g', { key: fraction },
+                            axisLine(eL, y, eW - eR, y, fraction > 0 && fraction < 1), lbl(eL - 8, y + 5, String(Number((eMax * fraction / (kilo ? 1000 : 1)).toFixed(!kilo && eMax >= 100 ? 0 : 2))), 'end')); }),
+                          ['dragLoss', 'pe', 'ke'].map(function(part) { return React.createElement('path', { key: part, 'data-physics-energy-area': part,
+                            d: area(part), fill: part === 'ke' ? colors.ke : 'url(#' + patterns[part] + ')', stroke: graphColors.surface, strokeWidth: 1 }); }),
+                          React.createElement('line', { 'data-physics-energy-origin': true, x1: eL, x2: eW - eR, y1: eZero, y2: eZero, stroke: graphColors.axis, strokeWidth: 1.25 }),
+                          React.createElement('line', { 'data-physics-energy-initial': true, x1: eL, x2: eW - eR, y1: eT, y2: eT, stroke: graphColors.ink, strokeWidth: 1.5, strokeDasharray: '5 4' }),
+                          axisLine(eL, eT, eL, eZero),
+                          [0, .5, 1].map(function(fraction) { return React.createElement('g', { key: fraction }, lbl(eL + fraction * eIW, eH - 29, tickNumber(tMax * fraction), fraction === 0 ? 'start' : fraction === 1 ? 'end' : 'middle')); }),
+                          lbl(eL, 22, kilo ? __alloT('stem.physics.energy_axis_kj', 'energy (kJ)') : __alloT('stem.physics.energy_axis_j', 'energy (J)'), 'start'),
+                          lbl(eL + eIW / 2, eH - 5, __alloT('stem.physics.axis_time_s', 'time (s)')),
+                          selectedPoint && React.createElement('line', { 'data-physics-energy-cursor': true, 'data-sample-index': current.index, 'data-time': current.t,
+                            x1: energyX(current), x2: energyX(current), y1: eT, y2: eZero, stroke: graphColors.surface, strokeWidth: 2.5, strokeDasharray: '6 3' }),
+                          selectedPoint && React.createElement('circle', { 'data-physics-energy-boundary': 'mechanical', 'data-value': current.totalEnergy,
+                            cx: energyX(current), cy: energyY(current.totalEnergy), r: 6, fill: colors.pe, stroke: graphColors.surface, strokeWidth: 2.5 }),
+                          selectedPoint && React.createElement('circle', { 'data-physics-energy-boundary': 'ke', 'data-value': current.ke,
+                            cx: energyX(current), cy: energyY(current.ke), r: 3.5, fill: colors.ke, stroke: graphColors.surface, strokeWidth: 2.5 }))
+                          : React.createElement('p', { 'data-physics-energy-single-sample': true, className: 'phys-energy-help', style: { color: graphColors.muted } }, __alloT('stem.physics.energy_single_sample', 'The launch sample is recorded. Step or resume to draw the energy timeline.'))),
+                      React.createElement('div', { className: 'phys-energy-readings' },
+                        ['ke', 'pe', 'dragLoss'].map(function(key) { return energyReading(key, labels[key]); }),
+                        React.createElement('div', { className: 'phys-energy-current-budget', 'aria-hidden': true }, ['ke', 'pe', 'dragLoss'].map(function(key) {
+                          return React.createElement('span', { key: key, 'data-physics-energy-budget': key, style: { width: Math.max(0, Math.min(100, current[key] / eMax * 100)) + '%',
+                            background: key === 'ke' ? colors.ke : 'repeating-linear-gradient(' + (key === 'pe' ? '0deg' : '135deg') + ',' + colors[key] + ',' + colors[key] + ' 4px,' + graphColors.surface + ' 4px,' + graphColors.surface + ' 6px)' } });
+                        })),
+                        energyReading('totalEnergy', __alloT('stem.physics.sample_mechanical_energy', 'Mechanical · KE + PE')),
+                        energyReading('initialEnergy', __alloT('stem.physics.sample_initial_energy', 'Initial energy')))),
+                    React.createElement('p', { className: 'phys-energy-help', style: { color: graphColors.muted } }, __alloT('stem.physics.energy_budget_help', 'Kinetic energy depends on mass and speed. Potential energy depends on mass, gravity, and height above ground. The diagonal band shows energy transferred by drag.')),
+                    React.createElement('p', { id: 'physics-energy-sampling-help', className: 'phys-energy-help', style: { color: graphColors.muted } }, __alloT('stem.physics.energy_sampling_help', 'The timeline connects a representative set of recorded samples. The time control uses every recorded point.')),
+                    current.impact && React.createElement('p', { 'data-physics-energy-impact': true, className: 'phys-energy-help', style: { color: graphColors.muted } }, __alloT('stem.physics.energy_impact_note', 'The final flight sample is at ground contact, before collision energy is redistributed.')));
+                })(),
 
                 // ── Ideal range vs angle at the current launch height ──
                 (function() {

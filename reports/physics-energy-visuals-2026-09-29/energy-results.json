@@ -1,0 +1,2177 @@
+{
+  "createdAt": "2026-09-30T00:08:40.344Z",
+  "sourceSha256": "1ab1c2db383b7b69fe35c9a1375e1ac705c2e7954f4c224800d7aa91230bea70",
+  "passed": true,
+  "configurations": [
+    {
+      "theme": "default",
+      "viewportWidth": 1100,
+      "panelWidth": 1002,
+      "overflow": 0,
+      "screenshots": [
+        "energy-default-1100.png"
+      ],
+      "evidenceSha256": "409b05af676824be07b3d752448aae8bc2723a40493b0d18e774e00ba70fab0b",
+      "evidenceUnchanged": true,
+      "pageErrors": [],
+      "selected": {
+        "index": 78,
+        "count": 179,
+        "t": 2.7300000000000013,
+        "x": 72.71748281881837,
+        "y": 57.50832651990694,
+        "vx": 25.287657371024395,
+        "vy": -0.137627931376952,
+        "speed": 25.288031887867817,
+        "ax": -0.852633447957254,
+        "ay": -9.79535954731024,
+        "fx": -2.5579003438717622,
+        "fy": -29.386078641930716,
+        "gravityForce": 29.400000000000002,
+        "dragForce": 2.557938227047278,
+        "ke": 959.2268351427293,
+        "pe": 1690.744799685264,
+        "totalEnergy": 2649.9716348279935,
+        "initialEnergy": 2988,
+        "dragLoss": 338.0283651720067,
+        "parameters": {
+          "angle": 45,
+          "velocity": 40,
+          "gravity": 9.8,
+          "mass": 3,
+          "launchHeight": 20,
+          "airResist": true,
+          "modelVersion": "projectile-v3"
+        },
+        "run": 2,
+        "impact": false
+      },
+      "text": [
+        {
+          "text": "Energy through the recorded flight",
+          "font": 16,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "Selected sample · t = 2.730 s",
+          "font": 13,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "m = 3 kg · v₀ = 40 m/s · g = 9.8 m/s² · h₀ = 20 m · Air drag on",
+          "font": 12,
+          "contrast": 5.833109018916669
+        },
+        {
+          "text": "0",
+          "font": 23.99958517699115,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "1.49",
+          "font": 23.99958517699115,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "2.99",
+          "font": 23.99958517699115,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "0",
+          "font": 23.99958517699115,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "3.11",
+          "font": 23.99958517699115,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "6.221",
+          "font": 23.99958517699115,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "energy (kJ)",
+          "font": 23.99958517699115,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "time (s)",
+          "font": 23.99958517699115,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "Kinetic · KE",
+          "font": 12,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "959.23 J",
+          "font": 18,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "Potential · PE",
+          "font": 12,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "1690.74 J",
+          "font": 18,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "Transferred by drag",
+          "font": 12,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "338.03 J",
+          "font": 18,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "Mechanical · KE + PE",
+          "font": 12,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "2649.97 J",
+          "font": 18,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "Initial energy",
+          "font": 12,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "2988.00 J",
+          "font": 18,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "Kinetic energy depends on mass and speed. Potential energy depends on mass, gravity, and height above ground. The diagonal band shows energy transferred by drag.",
+          "font": 12,
+          "contrast": 5.833109018916669
+        },
+        {
+          "text": "The timeline connects a representative set of recorded samples. The time control uses every recorded point.",
+          "font": 12,
+          "contrast": 5.833109018916669
+        }
+      ],
+      "values": {
+        "ke": 959.2268351427293,
+        "pe": 1690.744799685264,
+        "dragLoss": 338.0283651720067,
+        "totalEnergy": 2649.9716348279935,
+        "initialEnergy": 2988
+      },
+      "chart": {
+        "markerContrast": [
+          5.802064488954795,
+          6.5664846355371775,
+          5.017167200027945,
+          5.802064488954795,
+          6.5664846355371775,
+          5.017167200027945,
+          5.802064488954795,
+          6.5664846355371775,
+          5.017167200027945
+        ],
+        "labels": [
+          {
+            "text": "0",
+            "left": 40.29670715332031,
+            "top": 159.49966430664062,
+            "right": 50.046875953674316,
+            "bottom": 183.50008010864258
+          },
+          {
+            "text": "1.49",
+            "left": 16.999427795410156,
+            "top": 89.4996566772461,
+            "right": 50.04885482788086,
+            "bottom": 113.50007247924805
+          },
+          {
+            "text": "2.99",
+            "left": 16.999427795410156,
+            "top": 19.499662399291992,
+            "right": 50.04885482788086,
+            "bottom": 43.500078201293945
+          },
+          {
+            "text": "0",
+            "left": 58,
+            "top": 177.49966430664062,
+            "right": 67.750168800354,
+            "bottom": 201.50008010864258
+          },
+          {
+            "text": "3.11",
+            "left": 154.49972534179688,
+            "top": 177.49966430664062,
+            "right": 187.50029754638672,
+            "bottom": 201.50008010864258
+          },
+          {
+            "text": "6.221",
+            "left": 241.29612731933594,
+            "top": 177.49966430664062,
+            "right": 283.99999237060547,
+            "bottom": 201.50008010864258
+          },
+          {
+            "text": "energy (kJ)",
+            "left": 58,
+            "top": 2.499661922454834,
+            "right": 143.7124252319336,
+            "bottom": 26.500077724456787
+          },
+          {
+            "text": "time (s)",
+            "left": 141.60301208496094,
+            "top": 201.49966430664062,
+            "right": 200.39699935913086,
+            "bottom": 225.50008010864258
+          }
+        ],
+        "width": 300,
+        "height": 226
+      }
+    },
+    {
+      "theme": "default",
+      "viewportWidth": 375,
+      "panelWidth": 313,
+      "overflow": 0,
+      "screenshots": [
+        "energy-default-375.png"
+      ],
+      "evidenceSha256": "409b05af676824be07b3d752448aae8bc2723a40493b0d18e774e00ba70fab0b",
+      "evidenceUnchanged": true,
+      "pageErrors": [],
+      "selected": {
+        "index": 78,
+        "count": 179,
+        "t": 2.7300000000000013,
+        "x": 72.71748281881837,
+        "y": 57.50832651990694,
+        "vx": 25.287657371024395,
+        "vy": -0.137627931376952,
+        "speed": 25.288031887867817,
+        "ax": -0.852633447957254,
+        "ay": -9.79535954731024,
+        "fx": -2.5579003438717622,
+        "fy": -29.386078641930716,
+        "gravityForce": 29.400000000000002,
+        "dragForce": 2.557938227047278,
+        "ke": 959.2268351427293,
+        "pe": 1690.744799685264,
+        "totalEnergy": 2649.9716348279935,
+        "initialEnergy": 2988,
+        "dragLoss": 338.0283651720067,
+        "parameters": {
+          "angle": 45,
+          "velocity": 40,
+          "gravity": 9.8,
+          "mass": 3,
+          "launchHeight": 20,
+          "airResist": true,
+          "modelVersion": "projectile-v3"
+        },
+        "run": 2,
+        "impact": false
+      },
+      "text": [
+        {
+          "text": "Energy through the recorded flight",
+          "font": 16,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "Selected sample · t = 2.730 s",
+          "font": 13,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "m = 3 kg · v₀ = 40 m/s · g = 9.8 m/s² · h₀ = 20 m · Air drag on",
+          "font": 12,
+          "contrast": 5.833109018916669
+        },
+        {
+          "text": "0",
+          "font": 17.69883849557522,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "1.49",
+          "font": 17.69883849557522,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "2.99",
+          "font": 17.69883849557522,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "0",
+          "font": 17.69883849557522,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "3.11",
+          "font": 17.69883849557522,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "6.221",
+          "font": 17.69883849557522,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "energy (kJ)",
+          "font": 17.69883849557522,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "time (s)",
+          "font": 17.69883849557522,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "Kinetic · KE",
+          "font": 12,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "959.23 J",
+          "font": 18,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "Potential · PE",
+          "font": 12,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "1690.74 J",
+          "font": 18,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "Transferred by drag",
+          "font": 12,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "338.03 J",
+          "font": 18,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "Mechanical · KE + PE",
+          "font": 12,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "2649.97 J",
+          "font": 18,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "Initial energy",
+          "font": 12,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "2988.00 J",
+          "font": 18,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "Kinetic energy depends on mass and speed. Potential energy depends on mass, gravity, and height above ground. The diagonal band shows energy transferred by drag.",
+          "font": 12,
+          "contrast": 5.833109018916669
+        },
+        {
+          "text": "The timeline connects a representative set of recorded samples. The time control uses every recorded point.",
+          "font": 12,
+          "contrast": 5.833109018916669
+        }
+      ],
+      "values": {
+        "ke": 959.2268351427293,
+        "pe": 1690.744799685264,
+        "dragLoss": 338.0283651720067,
+        "totalEnergy": 2649.9716348279935,
+        "initialEnergy": 2988
+      },
+      "chart": {
+        "markerContrast": [
+          5.802064488954795,
+          6.5664846355371775,
+          5.017167200027945,
+          5.802064488954795,
+          6.5664846355371775,
+          5.017167200027945,
+          5.802064488954795,
+          6.5664846355371775,
+          5.017167200027945
+        ],
+        "labels": [
+          {
+            "text": "0",
+            "left": 40.290679931640625,
+            "top": 159.67669677734375,
+            "right": 50.46083927154541,
+            "bottom": 183.0680637359619
+          },
+          {
+            "text": "1.49",
+            "left": 16.994661331176758,
+            "top": 89.67670440673828,
+            "right": 50.46175575256348,
+            "bottom": 113.06807136535645
+          },
+          {
+            "text": "2.99",
+            "left": 16.994661331176758,
+            "top": 19.676700592041016,
+            "right": 50.46175575256348,
+            "bottom": 43.06806755065918
+          },
+          {
+            "text": "0",
+            "left": 58.000003814697266,
+            "top": 177.67669677734375,
+            "right": 68.17015933990479,
+            "bottom": 201.0680637359619
+          },
+          {
+            "text": "3.11",
+            "left": 154.49732971191406,
+            "top": 177.67669677734375,
+            "right": 187.5026741027832,
+            "bottom": 201.0680637359619
+          },
+          {
+            "text": "6.221",
+            "left": 241.30123901367188,
+            "top": 177.67669677734375,
+            "right": 284.0000190734863,
+            "bottom": 201.0680637359619
+          },
+          {
+            "text": "energy (kJ)",
+            "left": 58.000003814697266,
+            "top": 2.676698684692383,
+            "right": 143.71538162231445,
+            "bottom": 26.068065643310547
+          },
+          {
+            "text": "time (s)",
+            "left": 141.60983276367188,
+            "top": 201.67669677734375,
+            "right": 200.39017486572266,
+            "bottom": 225.0680637359619
+          }
+        ],
+        "width": 300,
+        "height": 226
+      }
+    },
+    {
+      "theme": "default",
+      "viewportWidth": 320,
+      "panelWidth": 258,
+      "overflow": 0,
+      "screenshots": [
+        "energy-default-320.png"
+      ],
+      "evidenceSha256": "409b05af676824be07b3d752448aae8bc2723a40493b0d18e774e00ba70fab0b",
+      "evidenceUnchanged": true,
+      "pageErrors": [],
+      "selected": {
+        "index": 78,
+        "count": 179,
+        "t": 2.7300000000000013,
+        "x": 72.71748281881837,
+        "y": 57.50832651990694,
+        "vx": 25.287657371024395,
+        "vy": -0.137627931376952,
+        "speed": 25.288031887867817,
+        "ax": -0.852633447957254,
+        "ay": -9.79535954731024,
+        "fx": -2.5579003438717622,
+        "fy": -29.386078641930716,
+        "gravityForce": 29.400000000000002,
+        "dragForce": 2.557938227047278,
+        "ke": 959.2268351427293,
+        "pe": 1690.744799685264,
+        "totalEnergy": 2649.9716348279935,
+        "initialEnergy": 2988,
+        "dragLoss": 338.0283651720067,
+        "parameters": {
+          "angle": 45,
+          "velocity": 40,
+          "gravity": 9.8,
+          "mass": 3,
+          "launchHeight": 20,
+          "airResist": true,
+          "modelVersion": "projectile-v3"
+        },
+        "run": 2,
+        "impact": false
+      },
+      "text": [
+        {
+          "text": "Energy through the recorded flight",
+          "font": 16,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "Selected sample · t = 2.730 s",
+          "font": 13,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "m = 3 kg · v₀ = 40 m/s · g = 9.8 m/s² · h₀ = 20 m · Air drag on",
+          "font": 12,
+          "contrast": 5.833109018916669
+        },
+        {
+          "text": "0",
+          "font": 14.39975110619469,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "1.49",
+          "font": 14.39975110619469,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "2.99",
+          "font": 14.39975110619469,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "0",
+          "font": 14.39975110619469,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "3.11",
+          "font": 14.39975110619469,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "6.221",
+          "font": 14.39975110619469,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "energy (kJ)",
+          "font": 14.39975110619469,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "time (s)",
+          "font": 14.39975110619469,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "Kinetic · KE",
+          "font": 12,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "959.23 J",
+          "font": 18,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "Potential · PE",
+          "font": 12,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "1690.74 J",
+          "font": 18,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "Transferred by drag",
+          "font": 12,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "338.03 J",
+          "font": 18,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "Mechanical · KE + PE",
+          "font": 12,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "2649.97 J",
+          "font": 18,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "Initial energy",
+          "font": 12,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "2988.00 J",
+          "font": 18,
+          "contrast": 12.722622124455576
+        },
+        {
+          "text": "Kinetic energy depends on mass and speed. Potential energy depends on mass, gravity, and height above ground. The diagonal band shows energy transferred by drag.",
+          "font": 12,
+          "contrast": 5.833109018916669
+        },
+        {
+          "text": "The timeline connects a representative set of recorded samples. The time control uses every recorded point.",
+          "font": 12,
+          "contrast": 5.833109018916669
+        }
+      ],
+      "values": {
+        "ke": 959.2268351427293,
+        "pe": 1690.744799685264,
+        "dragLoss": 338.0283651720067,
+        "totalEnergy": 2649.9716348279935,
+        "initialEnergy": 2988
+      },
+      "chart": {
+        "markerContrast": [
+          5.802064488954795,
+          6.5664846355371775,
+          5.017167200027945,
+          5.802064488954795,
+          6.5664846355371775,
+          5.017167200027945,
+          5.802064488954795,
+          6.5664846355371775,
+          5.017167200027945
+        ],
+        "labels": [
+          {
+            "text": "0",
+            "left": 40.29280090332031,
+            "top": 158.99964904785156,
+            "right": 50.29297351837158,
+            "bottom": 184.00008010864258
+          },
+          {
+            "text": "1.49",
+            "left": 16.991613388061523,
+            "top": 88.9996566772461,
+            "right": 50.28455924987793,
+            "bottom": 114.00008773803711
+          },
+          {
+            "text": "2.99",
+            "left": 16.991613388061523,
+            "top": 18.99965476989746,
+            "right": 50.28455924987793,
+            "bottom": 44.00008964538574
+          },
+          {
+            "text": "0",
+            "left": 58,
+            "top": 176.99964904785156,
+            "right": 68.00017261505127,
+            "bottom": 202.00008010864258
+          },
+          {
+            "text": "3.11",
+            "left": 154.4958038330078,
+            "top": 176.99964904785156,
+            "right": 187.5041847229004,
+            "bottom": 202.00008010864258
+          },
+          {
+            "text": "6.221",
+            "left": 241.30393981933594,
+            "top": 176.99964904785156,
+            "right": 283.9999885559082,
+            "bottom": 202.00008010864258
+          },
+          {
+            "text": "energy (kJ)",
+            "left": 58,
+            "top": 1.9996535778045654,
+            "right": 143.70460510253906,
+            "bottom": 27.00008463859558
+          },
+          {
+            "text": "time (s)",
+            "left": 141.61473083496094,
+            "top": 200.99966430664062,
+            "right": 200.3852767944336,
+            "bottom": 226.00009536743164
+          }
+        ],
+        "width": 300,
+        "height": 226
+      }
+    },
+    {
+      "theme": "dark",
+      "viewportWidth": 1100,
+      "panelWidth": 1002,
+      "overflow": 0,
+      "screenshots": [
+        "energy-dark-1100.png"
+      ],
+      "evidenceSha256": "409b05af676824be07b3d752448aae8bc2723a40493b0d18e774e00ba70fab0b",
+      "evidenceUnchanged": true,
+      "pageErrors": [],
+      "selected": {
+        "index": 78,
+        "count": 179,
+        "t": 2.7300000000000013,
+        "x": 72.71748281881837,
+        "y": 57.50832651990694,
+        "vx": 25.287657371024395,
+        "vy": -0.137627931376952,
+        "speed": 25.288031887867817,
+        "ax": -0.852633447957254,
+        "ay": -9.79535954731024,
+        "fx": -2.5579003438717622,
+        "fy": -29.386078641930716,
+        "gravityForce": 29.400000000000002,
+        "dragForce": 2.557938227047278,
+        "ke": 959.2268351427293,
+        "pe": 1690.744799685264,
+        "totalEnergy": 2649.9716348279935,
+        "initialEnergy": 2988,
+        "dragLoss": 338.0283651720067,
+        "parameters": {
+          "angle": 45,
+          "velocity": 40,
+          "gravity": 9.8,
+          "mass": 3,
+          "launchHeight": 20,
+          "airResist": true,
+          "modelVersion": "projectile-v3"
+        },
+        "run": 2,
+        "impact": false
+      },
+      "text": [
+        {
+          "text": "Energy through the recorded flight",
+          "font": 16,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "Selected sample · t = 2.730 s",
+          "font": 13,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "m = 3 kg · v₀ = 40 m/s · g = 9.8 m/s² · h₀ = 20 m · Air drag on",
+          "font": 12,
+          "contrast": 10.605452620509935
+        },
+        {
+          "text": "0",
+          "font": 23.99958517699115,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "1.49",
+          "font": 23.99958517699115,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "2.99",
+          "font": 23.99958517699115,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "0",
+          "font": 23.99958517699115,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "3.11",
+          "font": 23.99958517699115,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "6.221",
+          "font": 23.99958517699115,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "energy (kJ)",
+          "font": 23.99958517699115,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "time (s)",
+          "font": 23.99958517699115,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "Kinetic · KE",
+          "font": 12,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "959.23 J",
+          "font": 18,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "Potential · PE",
+          "font": 12,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "1690.74 J",
+          "font": 18,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "Transferred by drag",
+          "font": 12,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "338.03 J",
+          "font": 18,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "Mechanical · KE + PE",
+          "font": 12,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "2649.97 J",
+          "font": 18,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "Initial energy",
+          "font": 12,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "2988.00 J",
+          "font": 18,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "Kinetic energy depends on mass and speed. Potential energy depends on mass, gravity, and height above ground. The diagonal band shows energy transferred by drag.",
+          "font": 12,
+          "contrast": 10.605452620509935
+        },
+        {
+          "text": "The timeline connects a representative set of recorded samples. The time control uses every recorded point.",
+          "font": 12,
+          "contrast": 10.605452620509935
+        }
+      ],
+      "values": {
+        "ke": 959.2268351427293,
+        "pe": 1690.744799685264,
+        "dragLoss": 338.0283651720067,
+        "totalEnergy": 2649.9716348279935,
+        "initialEnergy": 2988
+      },
+      "chart": {
+        "markerContrast": [
+          8.527147437002608,
+          10.036850692427606,
+          10.86052939343429,
+          8.527147437002608,
+          10.036850692427606,
+          10.86052939343429,
+          8.527147437002608,
+          10.036850692427606,
+          10.86052939343429
+        ],
+        "labels": [
+          {
+            "text": "0",
+            "left": 40.29670715332031,
+            "top": 159.49966430664062,
+            "right": 50.046875953674316,
+            "bottom": 183.50008010864258
+          },
+          {
+            "text": "1.49",
+            "left": 16.999427795410156,
+            "top": 89.4996566772461,
+            "right": 50.04885482788086,
+            "bottom": 113.50007247924805
+          },
+          {
+            "text": "2.99",
+            "left": 16.999427795410156,
+            "top": 19.499662399291992,
+            "right": 50.04885482788086,
+            "bottom": 43.500078201293945
+          },
+          {
+            "text": "0",
+            "left": 58,
+            "top": 177.49966430664062,
+            "right": 67.750168800354,
+            "bottom": 201.50008010864258
+          },
+          {
+            "text": "3.11",
+            "left": 154.49972534179688,
+            "top": 177.49966430664062,
+            "right": 187.50029754638672,
+            "bottom": 201.50008010864258
+          },
+          {
+            "text": "6.221",
+            "left": 241.29612731933594,
+            "top": 177.49966430664062,
+            "right": 283.99999237060547,
+            "bottom": 201.50008010864258
+          },
+          {
+            "text": "energy (kJ)",
+            "left": 58,
+            "top": 2.499661922454834,
+            "right": 143.7124252319336,
+            "bottom": 26.500077724456787
+          },
+          {
+            "text": "time (s)",
+            "left": 141.60301208496094,
+            "top": 201.49966430664062,
+            "right": 200.39699935913086,
+            "bottom": 225.50008010864258
+          }
+        ],
+        "width": 300,
+        "height": 226
+      }
+    },
+    {
+      "theme": "dark",
+      "viewportWidth": 375,
+      "panelWidth": 289,
+      "overflow": 0,
+      "screenshots": [
+        "energy-dark-375.png"
+      ],
+      "evidenceSha256": "409b05af676824be07b3d752448aae8bc2723a40493b0d18e774e00ba70fab0b",
+      "evidenceUnchanged": true,
+      "pageErrors": [],
+      "selected": {
+        "index": 78,
+        "count": 179,
+        "t": 2.7300000000000013,
+        "x": 72.71748281881837,
+        "y": 57.50832651990694,
+        "vx": 25.287657371024395,
+        "vy": -0.137627931376952,
+        "speed": 25.288031887867817,
+        "ax": -0.852633447957254,
+        "ay": -9.79535954731024,
+        "fx": -2.5579003438717622,
+        "fy": -29.386078641930716,
+        "gravityForce": 29.400000000000002,
+        "dragForce": 2.557938227047278,
+        "ke": 959.2268351427293,
+        "pe": 1690.744799685264,
+        "totalEnergy": 2649.9716348279935,
+        "initialEnergy": 2988,
+        "dragLoss": 338.0283651720067,
+        "parameters": {
+          "angle": 45,
+          "velocity": 40,
+          "gravity": 9.8,
+          "mass": 3,
+          "launchHeight": 20,
+          "airResist": true,
+          "modelVersion": "projectile-v3"
+        },
+        "run": 2,
+        "impact": false
+      },
+      "text": [
+        {
+          "text": "Energy through the recorded flight",
+          "font": 16,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "Selected sample · t = 2.730 s",
+          "font": 13,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "m = 3 kg · v₀ = 40 m/s · g = 9.8 m/s² · h₀ = 20 m · Air drag on",
+          "font": 12,
+          "contrast": 10.605452620509935
+        },
+        {
+          "text": "0",
+          "font": 16.258987831858406,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "1.49",
+          "font": 16.258987831858406,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "2.99",
+          "font": 16.258987831858406,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "0",
+          "font": 16.258987831858406,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "3.11",
+          "font": 16.258987831858406,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "6.221",
+          "font": 16.258987831858406,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "energy (kJ)",
+          "font": 16.258987831858406,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "time (s)",
+          "font": 16.258987831858406,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "Kinetic · KE",
+          "font": 12,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "959.23 J",
+          "font": 18,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "Potential · PE",
+          "font": 12,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "1690.74 J",
+          "font": 18,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "Transferred by drag",
+          "font": 12,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "338.03 J",
+          "font": 18,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "Mechanical · KE + PE",
+          "font": 12,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "2649.97 J",
+          "font": 18,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "Initial energy",
+          "font": 12,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "2988.00 J",
+          "font": 18,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "Kinetic energy depends on mass and speed. Potential energy depends on mass, gravity, and height above ground. The diagonal band shows energy transferred by drag.",
+          "font": 12,
+          "contrast": 10.605452620509935
+        },
+        {
+          "text": "The timeline connects a representative set of recorded samples. The time control uses every recorded point.",
+          "font": 12,
+          "contrast": 10.605452620509935
+        }
+      ],
+      "values": {
+        "ke": 959.2268351427293,
+        "pe": 1690.744799685264,
+        "dragLoss": 338.0283651720067,
+        "totalEnergy": 2649.9716348279935,
+        "initialEnergy": 2988
+      },
+      "chart": {
+        "markerContrast": [
+          8.527147437002608,
+          10.036850692427606,
+          10.86052939343429,
+          8.527147437002608,
+          10.036850692427606,
+          10.86052939343429,
+          8.527147437002608,
+          10.036850692427606,
+          10.86052939343429
+        ],
+        "labels": [
+          {
+            "text": "0",
+            "left": 40.295753479003906,
+            "top": 159.0725555419922,
+            "right": 50.25947380065918,
+            "bottom": 183.42831420898438
+          },
+          {
+            "text": "1.49",
+            "left": 16.995180130004883,
+            "top": 89.07256317138672,
+            "right": 50.25461006164551,
+            "bottom": 113.4283218383789
+          },
+          {
+            "text": "2.99",
+            "left": 16.995180130004883,
+            "top": 19.072559356689453,
+            "right": 50.25461006164551,
+            "bottom": 43.42831802368164
+          },
+          {
+            "text": "0",
+            "left": 58,
+            "top": 177.0725555419922,
+            "right": 67.96372032165527,
+            "bottom": 201.42831420898438
+          },
+          {
+            "text": "3.11",
+            "left": 154.49758911132812,
+            "top": 177.0725555419922,
+            "right": 187.50241088867188,
+            "bottom": 201.42831420898438
+          },
+          {
+            "text": "6.221",
+            "left": 241.3082275390625,
+            "top": 177.0725555419922,
+            "right": 284,
+            "bottom": 201.42831420898438
+          },
+          {
+            "text": "energy (kJ)",
+            "left": 58,
+            "top": 2.072561025619507,
+            "right": 143.80545806884766,
+            "bottom": 26.428319692611694
+          },
+          {
+            "text": "time (s)",
+            "left": 141.61048889160156,
+            "top": 201.0725555419922,
+            "right": 200.49235916137695,
+            "bottom": 225.42831420898438
+          }
+        ],
+        "width": 300,
+        "height": 226
+      }
+    },
+    {
+      "theme": "dark",
+      "viewportWidth": 320,
+      "panelWidth": 234,
+      "overflow": 0,
+      "screenshots": [
+        "energy-dark-320.png"
+      ],
+      "evidenceSha256": "409b05af676824be07b3d752448aae8bc2723a40493b0d18e774e00ba70fab0b",
+      "evidenceUnchanged": true,
+      "pageErrors": [],
+      "selected": {
+        "index": 78,
+        "count": 179,
+        "t": 2.7300000000000013,
+        "x": 72.71748281881837,
+        "y": 57.50832651990694,
+        "vx": 25.287657371024395,
+        "vy": -0.137627931376952,
+        "speed": 25.288031887867817,
+        "ax": -0.852633447957254,
+        "ay": -9.79535954731024,
+        "fx": -2.5579003438717622,
+        "fy": -29.386078641930716,
+        "gravityForce": 29.400000000000002,
+        "dragForce": 2.557938227047278,
+        "ke": 959.2268351427293,
+        "pe": 1690.744799685264,
+        "totalEnergy": 2649.9716348279935,
+        "initialEnergy": 2988,
+        "dragLoss": 338.0283651720067,
+        "parameters": {
+          "angle": 45,
+          "velocity": 40,
+          "gravity": 9.8,
+          "mass": 3,
+          "launchHeight": 20,
+          "airResist": true,
+          "modelVersion": "projectile-v3"
+        },
+        "run": 2,
+        "impact": false
+      },
+      "text": [
+        {
+          "text": "Energy through the recorded flight",
+          "font": 16,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "Selected sample · t = 2.730 s",
+          "font": 13,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "m = 3 kg · v₀ = 40 m/s · g = 9.8 m/s² · h₀ = 20 m · Air drag on",
+          "font": 12,
+          "contrast": 10.605452620509935
+        },
+        {
+          "text": "0",
+          "font": 12.959900442477876,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "1.49",
+          "font": 12.959900442477876,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "2.99",
+          "font": 12.959900442477876,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "0",
+          "font": 12.959900442477876,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "3.11",
+          "font": 12.959900442477876,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "6.221",
+          "font": 12.959900442477876,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "energy (kJ)",
+          "font": 12.959900442477876,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "time (s)",
+          "font": 12.959900442477876,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "Kinetic · KE",
+          "font": 12,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "959.23 J",
+          "font": 18,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "Potential · PE",
+          "font": 12,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "1690.74 J",
+          "font": 18,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "Transferred by drag",
+          "font": 12,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "338.03 J",
+          "font": 18,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "Mechanical · KE + PE",
+          "font": 12,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "2649.97 J",
+          "font": 18,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "Initial energy",
+          "font": 12,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "2988.00 J",
+          "font": 18,
+          "contrast": 15.901834802682336
+        },
+        {
+          "text": "Kinetic energy depends on mass and speed. Potential energy depends on mass, gravity, and height above ground. The diagonal band shows energy transferred by drag.",
+          "font": 12,
+          "contrast": 10.605452620509935
+        },
+        {
+          "text": "The timeline connects a representative set of recorded samples. The time control uses every recorded point.",
+          "font": 12,
+          "contrast": 10.605452620509935
+        }
+      ],
+      "values": {
+        "ke": 959.2268351427293,
+        "pe": 1690.744799685264,
+        "dragLoss": 338.0283651720067,
+        "totalEnergy": 2649.9716348279935,
+        "initialEnergy": 2988
+      },
+      "chart": {
+        "markerContrast": [
+          8.527147437002608,
+          10.036850692427606,
+          10.86052939343429,
+          8.527147437002608,
+          10.036850692427606,
+          10.86052939343429,
+          8.527147437002608,
+          10.036850692427606,
+          10.86052939343429
+        ],
+        "labels": [
+          {
+            "text": "0",
+            "left": 40.299407958984375,
+            "top": 159.55540466308594,
+            "right": 50.02170467376709,
+            "bottom": 183.1666965484619
+          },
+          {
+            "text": "1.49",
+            "left": 16.99193572998047,
+            "top": 89.55541229248047,
+            "right": 50.004981994628906,
+            "bottom": 113.16670417785645
+          },
+          {
+            "text": "2.99",
+            "left": 16.99193572998047,
+            "top": 19.55540657043457,
+            "right": 50.004981994628906,
+            "bottom": 43.16669845581055
+          },
+          {
+            "text": "0",
+            "left": 58.000003814697266,
+            "top": 177.55540466308594,
+            "right": 67.72230052947998,
+            "bottom": 201.1666965484619
+          },
+          {
+            "text": "3.11",
+            "left": 154.49598693847656,
+            "top": 177.55540466308594,
+            "right": 187.50405502319336,
+            "bottom": 201.1666965484619
+          },
+          {
+            "text": "6.221",
+            "left": 241.31304931640625,
+            "top": 177.55540466308594,
+            "right": 284.00000762939453,
+            "bottom": 201.1666965484619
+          },
+          {
+            "text": "energy (kJ)",
+            "left": 58.000003814697266,
+            "top": 2.5554072856903076,
+            "right": 143.80861282348633,
+            "bottom": 26.166699171066284
+          },
+          {
+            "text": "time (s)",
+            "left": 140.22720336914062,
+            "top": 201.55540466308594,
+            "right": 200.5068359375,
+            "bottom": 225.1666965484619
+          }
+        ],
+        "width": 300,
+        "height": 226
+      }
+    },
+    {
+      "theme": "contrast",
+      "viewportWidth": 1100,
+      "panelWidth": 1002,
+      "overflow": 0,
+      "screenshots": [
+        "energy-contrast-1100.png"
+      ],
+      "evidenceSha256": "409b05af676824be07b3d752448aae8bc2723a40493b0d18e774e00ba70fab0b",
+      "evidenceUnchanged": true,
+      "pageErrors": [],
+      "selected": {
+        "index": 78,
+        "count": 179,
+        "t": 2.7300000000000013,
+        "x": 72.71748281881837,
+        "y": 57.50832651990694,
+        "vx": 25.287657371024395,
+        "vy": -0.137627931376952,
+        "speed": 25.288031887867817,
+        "ax": -0.852633447957254,
+        "ay": -9.79535954731024,
+        "fx": -2.5579003438717622,
+        "fy": -29.386078641930716,
+        "gravityForce": 29.400000000000002,
+        "dragForce": 2.557938227047278,
+        "ke": 959.2268351427293,
+        "pe": 1690.744799685264,
+        "totalEnergy": 2649.9716348279935,
+        "initialEnergy": 2988,
+        "dragLoss": 338.0283651720067,
+        "parameters": {
+          "angle": 45,
+          "velocity": 40,
+          "gravity": 9.8,
+          "mass": 3,
+          "launchHeight": 20,
+          "airResist": true,
+          "modelVersion": "projectile-v3"
+        },
+        "run": 2,
+        "impact": false
+      },
+      "text": [
+        {
+          "text": "Energy through the recorded flight",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Selected sample · t = 2.730 s",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "m = 3 kg · v₀ = 40 m/s · g = 9.8 m/s² · h₀ = 20 m · Air drag on",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "0",
+          "font": 23.99958517699115,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "1.49",
+          "font": 23.99958517699115,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "2.99",
+          "font": 23.99958517699115,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "0",
+          "font": 23.99958517699115,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "3.11",
+          "font": 23.99958517699115,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "6.221",
+          "font": 23.99958517699115,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "energy (kJ)",
+          "font": 23.99958517699115,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "time (s)",
+          "font": 23.99958517699115,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Kinetic · KE",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "959.23 J",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Potential · PE",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "1690.74 J",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Transferred by drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "338.03 J",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Mechanical · KE + PE",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "2649.97 J",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Initial energy",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "2988.00 J",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Kinetic energy depends on mass and speed. Potential energy depends on mass, gravity, and height above ground. The diagonal band shows energy transferred by drag.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "The timeline connects a representative set of recorded samples. The time control uses every recorded point.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        }
+      ],
+      "values": {
+        "ke": 959.2268351427293,
+        "pe": 1690.744799685264,
+        "dragLoss": 338.0283651720067,
+        "totalEnergy": 2649.9716348279935,
+        "initialEnergy": 2988
+      },
+      "chart": {
+        "markerContrast": [
+          19.555999999999997,
+          21,
+          19.555999999999997,
+          19.555999999999997,
+          21,
+          19.555999999999997,
+          19.555999999999997,
+          21,
+          19.555999999999997
+        ],
+        "labels": [
+          {
+            "text": "0",
+            "left": 40.29670715332031,
+            "top": 159.49966430664062,
+            "right": 50.046875953674316,
+            "bottom": 183.50008010864258
+          },
+          {
+            "text": "1.49",
+            "left": 16.999427795410156,
+            "top": 89.4996566772461,
+            "right": 50.04885482788086,
+            "bottom": 113.50007247924805
+          },
+          {
+            "text": "2.99",
+            "left": 16.999427795410156,
+            "top": 19.499662399291992,
+            "right": 50.04885482788086,
+            "bottom": 43.500078201293945
+          },
+          {
+            "text": "0",
+            "left": 58,
+            "top": 177.49966430664062,
+            "right": 67.750168800354,
+            "bottom": 201.50008010864258
+          },
+          {
+            "text": "3.11",
+            "left": 154.49972534179688,
+            "top": 177.49966430664062,
+            "right": 187.50029754638672,
+            "bottom": 201.50008010864258
+          },
+          {
+            "text": "6.221",
+            "left": 241.29612731933594,
+            "top": 177.49966430664062,
+            "right": 283.99999237060547,
+            "bottom": 201.50008010864258
+          },
+          {
+            "text": "energy (kJ)",
+            "left": 58,
+            "top": 2.499661922454834,
+            "right": 143.7124252319336,
+            "bottom": 26.500077724456787
+          },
+          {
+            "text": "time (s)",
+            "left": 141.60301208496094,
+            "top": 201.49966430664062,
+            "right": 200.39699935913086,
+            "bottom": 225.50008010864258
+          }
+        ],
+        "width": 300,
+        "height": 226
+      }
+    },
+    {
+      "theme": "contrast",
+      "viewportWidth": 375,
+      "panelWidth": 309,
+      "overflow": 0,
+      "screenshots": [
+        "energy-contrast-375.png"
+      ],
+      "evidenceSha256": "409b05af676824be07b3d752448aae8bc2723a40493b0d18e774e00ba70fab0b",
+      "evidenceUnchanged": true,
+      "pageErrors": [],
+      "selected": {
+        "index": 78,
+        "count": 179,
+        "t": 2.7300000000000013,
+        "x": 72.71748281881837,
+        "y": 57.50832651990694,
+        "vx": 25.287657371024395,
+        "vy": -0.137627931376952,
+        "speed": 25.288031887867817,
+        "ax": -0.852633447957254,
+        "ay": -9.79535954731024,
+        "fx": -2.5579003438717622,
+        "fy": -29.386078641930716,
+        "gravityForce": 29.400000000000002,
+        "dragForce": 2.557938227047278,
+        "ke": 959.2268351427293,
+        "pe": 1690.744799685264,
+        "totalEnergy": 2649.9716348279935,
+        "initialEnergy": 2988,
+        "dragLoss": 338.0283651720067,
+        "parameters": {
+          "angle": 45,
+          "velocity": 40,
+          "gravity": 9.8,
+          "mass": 3,
+          "launchHeight": 20,
+          "airResist": true,
+          "modelVersion": "projectile-v3"
+        },
+        "run": 2,
+        "impact": false
+      },
+      "text": [
+        {
+          "text": "Energy through the recorded flight",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Selected sample · t = 2.730 s",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "m = 3 kg · v₀ = 40 m/s · g = 9.8 m/s² · h₀ = 20 m · Air drag on",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "0",
+          "font": 17.459900442477874,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "1.49",
+          "font": 17.459900442477874,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "2.99",
+          "font": 17.459900442477874,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "0",
+          "font": 17.459900442477874,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "3.11",
+          "font": 17.459900442477874,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "6.221",
+          "font": 17.459900442477874,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "energy (kJ)",
+          "font": 17.459900442477874,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "time (s)",
+          "font": 17.459900442477874,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Kinetic · KE",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "959.23 J",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Potential · PE",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "1690.74 J",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Transferred by drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "338.03 J",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Mechanical · KE + PE",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "2649.97 J",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Initial energy",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "2988.00 J",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Kinetic energy depends on mass and speed. Potential energy depends on mass, gravity, and height above ground. The diagonal band shows energy transferred by drag.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "The timeline connects a representative set of recorded samples. The time control uses every recorded point.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        }
+      ],
+      "values": {
+        "ke": 959.2268351427293,
+        "pe": 1690.744799685264,
+        "dragLoss": 338.0283651720067,
+        "totalEnergy": 2649.9716348279935,
+        "initialEnergy": 2988
+      },
+      "chart": {
+        "markerContrast": [
+          19.555999999999997,
+          21,
+          19.555999999999997,
+          19.555999999999997,
+          21,
+          19.555999999999997,
+          19.555999999999997,
+          21,
+          19.555999999999997
+        ],
+        "labels": [
+          {
+            "text": "0",
+            "left": 40.28667449951172,
+            "top": 159.41226196289062,
+            "right": 50.00000286102295,
+            "bottom": 183.12373733520508
+          },
+          {
+            "text": "1.49",
+            "left": 16.994014739990234,
+            "top": 89.41226196289062,
+            "right": 50.000003814697266,
+            "bottom": 113.12373733520508
+          },
+          {
+            "text": "2.99",
+            "left": 16.994014739990234,
+            "top": 19.412260055541992,
+            "right": 50.000003814697266,
+            "bottom": 43.123735427856445
+          },
+          {
+            "text": "0",
+            "left": 58.000003814697266,
+            "top": 177.41226196289062,
+            "right": 67.7133321762085,
+            "bottom": 201.12373733520508
+          },
+          {
+            "text": "3.11",
+            "left": 154.4970245361328,
+            "top": 177.41226196289062,
+            "right": 187.50301361083984,
+            "bottom": 201.12373733520508
+          },
+          {
+            "text": "6.221",
+            "left": 241.2967987060547,
+            "top": 177.41226196289062,
+            "right": 284.00000762939453,
+            "bottom": 201.12373733520508
+          },
+          {
+            "text": "energy (kJ)",
+            "left": 58.000003814697266,
+            "top": 2.412259340286255,
+            "right": 143.71247482299805,
+            "bottom": 26.123734712600708
+          },
+          {
+            "text": "time (s)",
+            "left": 141.6103515625,
+            "top": 201.41226196289062,
+            "right": 200.3896827697754,
+            "bottom": 225.12373733520508
+          }
+        ],
+        "width": 300,
+        "height": 226
+      }
+    },
+    {
+      "theme": "contrast",
+      "viewportWidth": 320,
+      "panelWidth": 254,
+      "overflow": 0,
+      "screenshots": [
+        "energy-contrast-320.png"
+      ],
+      "evidenceSha256": "409b05af676824be07b3d752448aae8bc2723a40493b0d18e774e00ba70fab0b",
+      "evidenceUnchanged": true,
+      "pageErrors": [],
+      "selected": {
+        "index": 78,
+        "count": 179,
+        "t": 2.7300000000000013,
+        "x": 72.71748281881837,
+        "y": 57.50832651990694,
+        "vx": 25.287657371024395,
+        "vy": -0.137627931376952,
+        "speed": 25.288031887867817,
+        "ax": -0.852633447957254,
+        "ay": -9.79535954731024,
+        "fx": -2.5579003438717622,
+        "fy": -29.386078641930716,
+        "gravityForce": 29.400000000000002,
+        "dragForce": 2.557938227047278,
+        "ke": 959.2268351427293,
+        "pe": 1690.744799685264,
+        "totalEnergy": 2649.9716348279935,
+        "initialEnergy": 2988,
+        "dragLoss": 338.0283651720067,
+        "parameters": {
+          "angle": 45,
+          "velocity": 40,
+          "gravity": 9.8,
+          "mass": 3,
+          "launchHeight": 20,
+          "airResist": true,
+          "modelVersion": "projectile-v3"
+        },
+        "run": 2,
+        "impact": false
+      },
+      "text": [
+        {
+          "text": "Energy through the recorded flight",
+          "font": 16,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Selected sample · t = 2.730 s",
+          "font": 13,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "m = 3 kg · v₀ = 40 m/s · g = 9.8 m/s² · h₀ = 20 m · Air drag on",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "0",
+          "font": 14.159568584070797,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "1.49",
+          "font": 14.159568584070797,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "2.99",
+          "font": 14.159568584070797,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "0",
+          "font": 14.159568584070797,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "3.11",
+          "font": 14.159568584070797,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "6.221",
+          "font": 14.159568584070797,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "energy (kJ)",
+          "font": 14.159568584070797,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "time (s)",
+          "font": 14.159568584070797,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Kinetic · KE",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "959.23 J",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Potential · PE",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "1690.74 J",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Transferred by drag",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "338.03 J",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Mechanical · KE + PE",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "2649.97 J",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Initial energy",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "2988.00 J",
+          "font": 18,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "Kinetic energy depends on mass and speed. Potential energy depends on mass, gravity, and height above ground. The diagonal band shows energy transferred by drag.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        },
+        {
+          "text": "The timeline connects a representative set of recorded samples. The time control uses every recorded point.",
+          "font": 12,
+          "contrast": 19.555999999999997
+        }
+      ],
+      "values": {
+        "ke": 959.2268351427293,
+        "pe": 1690.744799685264,
+        "dragLoss": 338.0283651720067,
+        "totalEnergy": 2649.9716348279935,
+        "initialEnergy": 2988
+      },
+      "chart": {
+        "markerContrast": [
+          19.555999999999997,
+          21,
+          19.555999999999997,
+          19.555999999999997,
+          21,
+          19.555999999999997,
+          19.555999999999997,
+          21,
+          19.555999999999997
+        ],
+        "labels": [
+          {
+            "text": "0",
+            "left": 40.287044525146484,
+            "top": 159.93162536621094,
+            "right": 50.45684623718262,
+            "bottom": 184.08490371704102
+          },
+          {
+            "text": "1.49",
+            "left": 17.007728576660156,
+            "top": 89.9316177368164,
+            "right": 50.47036361694336,
+            "bottom": 114.08489608764648
+          },
+          {
+            "text": "2.99",
+            "left": 17.007728576660156,
+            "top": 19.931621551513672,
+            "right": 50.47036361694336,
+            "bottom": 44.08489799499512
+          },
+          {
+            "text": "0",
+            "left": 58,
+            "top": 177.93162536621094,
+            "right": 68.16980171203613,
+            "bottom": 202.08490371704102
+          },
+          {
+            "text": "3.11",
+            "left": 154.50387573242188,
+            "top": 177.93162536621094,
+            "right": 187.49614334106445,
+            "bottom": 202.08490371704102
+          },
+          {
+            "text": "6.221",
+            "left": 241.29478454589844,
+            "top": 177.93162536621094,
+            "right": 284.00000762939453,
+            "bottom": 202.08490371704102
+          },
+          {
+            "text": "energy (kJ)",
+            "left": 58,
+            "top": 2.93162202835083,
+            "right": 143.6885223388672,
+            "bottom": 27.084900379180908
+          },
+          {
+            "text": "time (s)",
+            "left": 141.61285400390625,
+            "top": 201.93162536621094,
+            "right": 200.38715744018555,
+            "bottom": 226.08490371704102
+          }
+        ],
+        "width": 300,
+        "height": 226
+      }
+    }
+  ],
+  "failures": []
+}

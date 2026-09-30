@@ -1,0 +1,32 @@
+{
+  "createdAt": "2026-09-29T23:25:21.757Z",
+  "sourceSha256": "63cab3f44b6ec290ada365ebbe40e85833f4a0ac134908836da72f5da016417a",
+  "passed": true,
+  "configurations": [
+    {
+      "theme": "default",
+      "viewportWidth": 1100,
+      "panelWidth": 1024,
+      "overflow": 0,
+      "screenshots": [
+        "energy-before-default-1100.png"
+      ],
+      "evidenceSha256": "409b05af676824be07b3d752448aae8bc2723a40493b0d18e774e00ba70fab0b",
+      "evidenceUnchanged": true,
+      "pageErrors": []
+    },
+    {
+      "theme": "default",
+      "viewportWidth": 320,
+      "panelWidth": 280,
+      "overflow": 0,
+      "screenshots": [
+        "energy-before-default-320.png"
+      ],
+      "evidenceSha256": "409b05af676824be07b3d752448aae8bc2723a40493b0d18e774e00ba70fab0b",
+      "evidenceUnchanged": true,
+      "pageErrors": []
+    }
+  ],
+  "failures": []
+}

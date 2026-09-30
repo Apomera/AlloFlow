@@ -66954,6 +66954,17 @@
       "nhu2083": "NH₃"
     },
     "physics": {
+      "energy_unavailable": "The energy timeline needs original launch settings and supported recorded samples.",
+      "energy_transferred": "Transferred by drag",
+      "energy_latest_sample": "Latest recorded sample",
+      "energy_chart_description": "Recorded energy over time. Stacked bands show kinetic energy, gravitational potential energy, and energy transferred by air drag.",
+      "energy_timeline_title": "Energy through the recorded flight",
+      "energy_axis_kj": "energy (kJ)",
+      "energy_axis_j": "energy (J)",
+      "energy_single_sample": "The launch sample is recorded. Step or resume to draw the energy timeline.",
+      "energy_budget_help": "Kinetic energy depends on mass and speed. Potential energy depends on mass, gravity, and height above ground. The diagonal band shows energy transferred by drag.",
+      "energy_sampling_help": "The timeline connects a representative set of recorded samples. The time control uses every recorded point.",
+      "energy_impact_note": "The final flight sample is at ground contact, before collision energy is redistributed.",
       "comparison_precision": "Values are rounded to three decimal places.",
       "comparison_assumptions": "Air drag opposes motion in still air with a fixed drag coefficient.",
       "comparison_shorter": "shorter",
