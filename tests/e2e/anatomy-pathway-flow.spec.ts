@@ -1,0 +1,83 @@
+import {test,expect} from '@playwright/test';
+import {mkdir,readFile,writeFile} from 'node:fs/promises';
+import {GlHarness} from './helpers/stem_gl_harness';
+const out=process.env.ANATOMY_PATHWAY_QA_OUT||'reports/anatomy-pathway-flow-2026-09-29';
+const harness=new GlHarness({toolFile:'stem_lab/stem_tool_anatomy.js',toolId:'anatomy',width:1280,height:1000,layout:'document',appStyles:true});
+test.use({video:'off',trace:'off'});
+test.describe.configure({retries:0});
+test.beforeAll(async()=>{await harness.start();await mkdir(out,{recursive:true});});
+test.afterAll(async()=>harness.stop());
+test.afterEach(async({page})=>harness.destroy(page));
+
+test('Pathway checks retain answers across review and route changes with clear keyboard return',async({page})=>{
+  test.setTimeout(300000);const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width:1440,height:1000});
+  await harness.mount(page,{anatomy:{_activeTab:'pathways',_activePathway:'path_blood',_pathwayStep:9,system:'circulatory',view:'anterior',selectedStructure:'inf_vena',complexity:3,_startHereDismissed:true,_structureNotes:{heart:'My explanation of the blood route'},_structureConfidence:{heart:'learning'},_retrievalEvidence:{heart:{attempts:3,correct:1}}}},undefined,{expectCanvas:false});
+  await page.addStyleTag({content:'html,body{background:#f1f5f9}#wrap{width:min(1280px,100%);height:auto;min-height:100%;margin:auto}'});
+  await page.evaluate(()=>{const ctx=(window as any).__ctx;ctx.gradeLevel='9';ctx.gradeBand='g912';ctx.updateMulti('anatomy',{});});
+  const panel=page.locator('[data-anatomy-pathway-panel]'),recap=panel.locator('[data-anatomy-recap=pathway]');
+  const first=panel.locator('[data-anatomy-pathway-question=direction]'),second=panel.locator('[data-anatomy-pathway-question=return]');
+  const resume=panel.locator('[data-anatomy-pathway-check-resume]'),step=panel.locator('[data-anatomy-pathway-step]');
+  const state=()=>page.evaluate(()=>(window as any).__toolData.anatomy);
+  const top=await panel.evaluate(el=>el.getBoundingClientRect().top+scrollY);expect(top).toBeLessThan(350);
+  await expect(page.locator('#anatomy-study-pathway')).toHaveValue('path_blood');
+  await expect(page.locator('#anatomy-study-system')).toHaveCount(0);
+  await expect(page.locator('#anatomy-study-mission')).toBeHidden();
+  await page.locator('[data-anatomy-study-controls-toggle]').click();await expect(page.locator('#anatomy-study-mission')).toBeVisible();
+  await page.locator('[data-anatomy-study-controls-toggle]').click();await expect(page.locator('#anatomy-study-mission')).toBeHidden();
+  await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:out+'/after-desktop.png'});
+  await page.setViewportSize({width:390,height:844});await panel.screenshot({path:out+'/after-phone.png'});
+  await panel.locator('[data-anatomy-pathway-recap-open]').focus();await panel.locator('[data-anatomy-pathway-recap-open]').press('Enter');
+  await expect(recap.locator('#anatomy-pathway-check-title')).toBeFocused();
+  await first.locator('[data-anatomy-pathway-option=rich]').focus();await first.locator('[data-anatomy-pathway-option=rich]').press('Enter');
+  await expect(first.locator('[data-anatomy-pathway-feedback]')).toBeFocused();
+  await expect(first.locator('[data-anatomy-pathway-option=rich]')).toContainText('Your answer');
+  await expect(first.locator('[data-anatomy-pathway-option=away]')).toContainText('Correct answer');
+  const answered=await state();
+  await first.locator('[data-anatomy-pathway-review]').click();await expect(step).toBeFocused();
+  await expect(step).toHaveAttribute('data-anatomy-pathway-step','2');await expect(resume).toBeVisible();
+  expect((await state())._pathwayRecap.answers).toEqual(answered._pathwayRecap.answers);
+  await panel.screenshot({path:out+'/paused-return-phone.png'});
+  await panel.locator('[data-anatomy-pathway-diagram]').click();await expect(page.locator('[data-anatomy-model-shell]')).toBeFocused();
+  await page.locator('[data-anatomy-pathway-return]').click();await expect(step).toBeFocused();
+  await resume.focus();await resume.press('Enter');await expect(first.locator('[data-anatomy-pathway-feedback]')).toBeFocused();
+  await expect(first.locator('[data-anatomy-pathway-option]:disabled')).toHaveCount(3);
+  expect((await state())._pathwayRecap.token).toBe(answered._pathwayRecap.token);
+  await second.locator('[data-anatomy-pathway-option=left]').click();await expect(second.locator('[data-anatomy-pathway-feedback]')).toBeFocused();
+  const completedCheck=await state();expect(completedCheck._pathwayChecks.path_blood.answers).toEqual({direction:'rich',return:'left'});
+
+  await page.locator('#anatomy-study-pathway').selectOption('path_air');await expect(step).toBeFocused();
+  await panel.locator('#anatomy-pathway-jump').selectOption('3');await expect(step).toBeFocused();
+  await panel.locator('[data-anatomy-pathway-list-back]').click();await expect(panel.locator('#anatomy-pathway-menu-title')).toBeFocused();
+  await expect(panel.locator('[data-anatomy-pathway-choice=path_air]')).toHaveAttribute('data-session','resumed');
+  await expect(panel.locator('[data-anatomy-pathway-choice=path_blood]')).toHaveAttribute('data-session','resumed');
+  await panel.locator('[data-anatomy-pathway-choice=path_blood]').click();
+  await expect(second.locator('[data-anatomy-pathway-feedback]')).toBeFocused();
+  expect((await state())._pathwayRecap.answers).toEqual(completedCheck._pathwayRecap.answers);
+  await page.locator('#anatomy-study-pathway').selectOption('path_air');await expect(step).toHaveAttribute('data-anatomy-pathway-step','3');
+  await page.locator('#anatomy-study-pathway').selectOption('path_blood');await expect(second.locator('[data-anatomy-pathway-feedback]')).toBeFocused();
+
+  await page.addScriptTag({path:'axe-core/4.12.1/axe.min.js'});const scans:any[]=[];
+  const scan=async(width:number,theme:string,locale='en')=>{
+    await page.setViewportSize({width,height:1000});await page.evaluate(theme=>document.body.className=theme==='light'?'':'theme-'+theme,theme);
+    const dimensions=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));
+    const violations=await page.evaluate(async()=>{const result=await (window as any).axe.run({include:[['[data-anatomy-pathway-panel]'],['[data-anatomy-study-controls]']]},{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22a','wcag22aa']}});return result.violations.map((v:any)=>({id:v.id,nodes:v.nodes.map((n:any)=>({target:n.target,summary:n.failureSummary}))}));});
+    scans.push({width,theme,locale,dimensions,violations});expect(dimensions.scroll).toBeLessThanOrEqual(width+2);
+  };
+  for(const width of [320,390,768,1440])for(const theme of ['light','dark','contrast']){await scan(width,theme);if(width===390&&theme==='dark')await panel.screenshot({path:out+'/after-dark.png'});}
+  await page.evaluate(()=>document.body.className='');
+  await panel.locator('[data-anatomy-pathway-check-restart]').click();await expect(recap.locator('#anatomy-pathway-check-title')).toBeFocused();
+  const restarted=await state();expect(restarted._pathwayRecap.answers).toEqual({});expect(restarted._pathwayRecap.token).not.toBe(completedCheck._pathwayRecap.token);
+  expect(restarted._pathwayChecks).toEqual(completedCheck._pathwayChecks);expect(restarted._structureNotes).toEqual(completedCheck._structureNotes);
+  expect(restarted._structureConfidence).toEqual(completedCheck._structureConfidence);expect(restarted._retrievalEvidence).toEqual(completedCheck._retrievalEvidence);
+  await first.locator('[data-anatomy-pathway-option=rich]').click();await first.locator('[data-anatomy-pathway-review]').click();await expect(step).toBeFocused();
+  await page.getByRole('button',{name:'Larger text',exact:true}).click();
+  const arabic=JSON.parse(await readFile(process.env.ANATOMY_QA_ARABIC||'lang/arabic.js','utf8'));
+  await page.evaluate(dict=>{document.documentElement.dir='rtl';(window as any).__ctx.t=(key:string,fallback:string)=>key.split('.').reduce((n:any,k:string)=>n?.[k],dict)||fallback;(window as any).__ctx.updateMulti('anatomy',{_readingMode:true});},arabic);
+  for(const theme of ['light','dark','contrast']){await scan(320,theme,'ar-large');if(theme==='light')await panel.screenshot({path:out+'/arabic-320.png'});}
+  await resume.click();await expect(first.locator('[data-anatomy-pathway-feedback]')).toBeFocused();
+  const saved=await state();expect(saved._pathwayChecks.path_blood).toEqual(completedCheck._pathwayChecks.path_blood);
+  expect(Object.keys(saved._pathwaySessions.routes).length).toBeLessThanOrEqual(4);
+  await writeFile(out+'/pathway-browser-validation.json',JSON.stringify({top,scans,errors,completedCheck:completedCheck._pathwayChecks.path_blood,finalState:{route:saved._activePathway,answers:saved._pathwayRecap.answers}},null,2));
+  expect(scans.flatMap(s=>s.violations)).toEqual([]);expect(errors).toEqual([]);
+});

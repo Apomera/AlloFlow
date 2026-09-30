@@ -42,9 +42,9 @@ describe('Anatomy compact study controls', () => {
     }
   });
   it.each(paths)('keeps Explore settings separate from compact study controls in %s', file => {
-    for (const _activeTab of ['quiz', 'flashcards', 'explore', 'homeoHunt', 'tour', 'aiTutor', 'spotter']) {
+    for (const _activeTab of ['quiz', 'flashcards', 'explore', 'homeoHunt', 'tour', 'aiTutor', 'pathways', 'spotter']) {
       const s = session(file, { _activeTab }); const root = s.html();
-      expect(!!root.querySelector('[data-anatomy-study-controls]')).toBe(['quiz', 'flashcards', 'homeoHunt', 'tour', 'aiTutor'].includes(_activeTab));
+      expect(!!root.querySelector('[data-anatomy-study-controls]')).toBe(['quiz', 'flashcards', 'homeoHunt', 'tour', 'aiTutor', 'pathways', 'spotter'].includes(_activeTab));
       expect(!!root.querySelector('#anatomy-explorer-system')).toBe(_activeTab === 'explore');
       expect(!!root.querySelector('#anatomy-explorer-level')).toBe(_activeTab === 'explore');
     }
@@ -61,5 +61,23 @@ describe('Anatomy compact study controls', () => {
     s.change('anatomy-explorer-level', 'bogus');
     s.change('anatomy-explorer-system', 'bogus');
     expect(s.data()).toEqual(saved);
+  });
+  it.each(paths)('chooses a pathway directly and preserves saved work in %s', file => {
+    const s = session(file, { _activeTab: 'pathways', _structureNotes: { skull: 'Saved note' }, _structureConfidence: { skull: 'learning' } });
+    const root = s.html();
+    expect(root.querySelector('#anatomy-study-system')).toBeNull();
+    expect(root.querySelector('label[for="anatomy-study-pathway"]')).not.toBeNull();
+    expect(root.querySelector('#anatomy-study-pathway').options).toHaveLength(5);
+    s.change('anatomy-study-pathway', 'path_air');
+    expect(s.data()._activePathway).toBe('path_air');
+    expect(s.data()._pathwayStep).toBe(0);
+    expect(s.data()._structureNotes.skull).toBe('Saved note');
+    expect(s.data()._structureConfidence.skull).toBe('learning');
+    const saved = { ...s.data() }; s.change('anatomy-study-pathway', 'bogus'); expect(s.data()).toEqual(saved);
+  });
+  it.each(paths)('keeps Spotter system and level fixed until the round ends in %s', file => {
+    const s = session(file, { _activeTab: 'spotter', _spotterActive: true });
+    expect(s.html().querySelector('#anatomy-study-system').disabled).toBe(true);
+    expect(s.html().querySelector('#anatomy-study-level').disabled).toBe(true);
   });
 });

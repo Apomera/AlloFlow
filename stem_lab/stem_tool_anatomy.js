@@ -501,6 +501,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       ".anatomy-tool-shell:is([data-anatomy-tab=aiTutor],[data-anatomy-tab=tour])[data-anatomy-study-controls-expanded=false]>:is(.anatomy-mission,.anatomy-mode-card,.anatomy-system-rail,.anatomy-display-panel,.anatomy-controls-bar){display:none!important}@media(min-width:721px){.anatomy-tool-shell:is([data-anatomy-tab=aiTutor],[data-anatomy-tab=tour])>.anatomy-study-controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;align-items:end}.anatomy-tool-shell:is([data-anatomy-tab=aiTutor],[data-anatomy-tab=tour])>.anatomy-study-controls button{grid-column:auto}}",
       ".anatomy-tool-shell .anatomy-tutor-panel.anatomy-refinement{--tutor-panel:#fff;--tutor-soft:#f5f3ff;--tutor-ink:#17253b;--tutor-muted:#475569;--tutor-border:#b6bfd4;--tutor-accent:#6d28d9;--refinement-bg:var(--tutor-panel);--refinement-ink:var(--tutor-ink);padding:18px;margin:0;border:1px solid var(--tutor-border);border-radius:18px;background:var(--tutor-panel);color:var(--tutor-ink)}.anatomy-tool-shell .anatomy-tutor-panel h4{font-size:20px;line-height:1.4}.anatomy-tool-shell .anatomy-tutor-context{padding:10px 12px;border-radius:9px;border-inline-start:4px solid var(--tutor-accent);background:var(--tutor-soft);font-size:14px;line-height:1.6}.anatomy-tool-shell .anatomy-tutor-log{max-height:360px;margin-block:12px;padding:8px;background:var(--tutor-panel);border-color:var(--tutor-border);border-radius:10px}.anatomy-tool-shell .anatomy-tutor-message{background:var(--tutor-panel);border-color:var(--tutor-border);border-radius:10px;font-size:15px;line-height:1.65}.anatomy-tool-shell .anatomy-tutor-message p{font-size:15px;line-height:1.65}.anatomy-tool-shell .anatomy-tutor-message[data-role=user]{background:var(--tutor-soft)}.anatomy-tool-shell .anatomy-tutor-message .anatomy-tutor-message-context{font-size:12px;line-height:1.5;color:var(--tutor-muted);white-space:normal}.anatomy-tool-shell .anatomy-tutor-panel .anatomy-tutor-compose{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px}.anatomy-tool-shell .anatomy-tutor-compose-label{display:block;font-size:14px;font-weight:800;margin-block:14px 6px}.anatomy-tool-shell .anatomy-tutor-compose textarea{display:block;width:100%;min-width:0;min-height:86px;max-height:320px;resize:vertical;box-sizing:border-box;padding:10px;border:1px solid var(--tutor-border);border-radius:10px;background:var(--tutor-panel);color:var(--tutor-ink);font-size:16px;line-height:1.6}.anatomy-tool-shell .anatomy-tutor-compose [data-anatomy-tutor-send]{margin:0;padding:10px 16px;background:var(--tutor-accent);color:#fff;border-color:var(--tutor-accent);font-size:14px;font-weight:800}.anatomy-tool-shell .anatomy-tutor-hint{font-size:12px;line-height:1.6;color:var(--tutor-muted)}.anatomy-tool-shell .anatomy-tutor-panel :is(.anatomy-tutor-reference,.anatomy-tutor-starters){border:1px solid var(--tutor-border);border-radius:10px;padding:0 12px;margin-block:12px;background:var(--tutor-panel)}.anatomy-tool-shell .anatomy-tutor-panel summary{font-size:14px;line-height:1.5;padding-block:12px}.anatomy-tool-shell .anatomy-tutor-panel .anatomy-tutor-lesson{border:0;padding:0;background:transparent}.anatomy-tool-shell .anatomy-tutor-suggestions{grid-template-columns:minmax(0,1fr);margin:8px 0 12px}.anatomy-tool-shell .anatomy-tutor-suggestions button{margin:0;padding:10px 12px;font-size:14px;line-height:1.6;border-color:var(--tutor-border);background:var(--tutor-soft)}.anatomy-tool-shell .anatomy-tutor-latest{font-size:13px;line-height:1.5;border-color:var(--tutor-border);color:var(--tutor-accent);margin-block:4px}.anatomy-tool-shell .anatomy-tutor-recovery{padding:12px;border:1px solid var(--tutor-border);border-radius:10px;background:var(--tutor-soft)}.anatomy-tool-shell .anatomy-tutor-message:focus{outline:3px solid #0284c7;outline-offset:2px}.theme-dark .anatomy-tool-shell .anatomy-tutor-panel.anatomy-refinement{--tutor-panel:#17253b;--tutor-soft:#24334d;--tutor-ink:#f1f5f9;--tutor-muted:#cbd5e1;--tutor-border:#94a3b8}.theme-dark .anatomy-tool-shell .anatomy-tutor-latest{color:#ddd6fe}.theme-contrast .anatomy-tool-shell .anatomy-tutor-panel.anatomy-refinement{--tutor-panel:#fff;--tutor-soft:#fff;--tutor-ink:#000;--tutor-muted:#000;--tutor-border:#000;--tutor-accent:#000}.anatomy-tool-shell[data-reading-mode=true] .anatomy-tutor-panel :is(p,button,summary,label){font-size:16px;line-height:1.7}@media(max-width:600px){.anatomy-tool-shell .anatomy-tutor-panel.anatomy-refinement{padding:14px}.anatomy-tool-shell .anatomy-tutor-message{padding:10px}.anatomy-tool-shell .anatomy-tutor-message[data-role=user]{margin-inline-start:8px}}",
       ".anatomy-tool-shell .anatomy-tour-panel{border-width:1px;border-radius:18px;padding:18px;font-size:14px;line-height:1.65}.anatomy-tool-shell .anatomy-tour-panel h4{font-size:20px;line-height:1.4}.anatomy-tool-shell .anatomy-tour-panel :is(p,button,label,select){font-size:14px;line-height:1.65}.anatomy-tool-shell .anatomy-tour-panel .anatomy-tour-step>p{font-size:15px;line-height:1.75}.anatomy-tool-shell .anatomy-tour-panel [data-anatomy-tour-option]{padding:10px 12px;border-radius:9px;min-height:48px}.anatomy-tool-shell .anatomy-tour-recap-return{padding:12px;border:1px solid #0f766e;border-radius:10px;background:#effaf6;color:#134e4a;margin-block:12px}.anatomy-tool-shell .anatomy-tour-recap-return p{margin:0 0 8px}.anatomy-tool-shell .anatomy-tour-recap-return button{min-height:44px;padding:9px 12px;border:1px solid #0f766e;border-radius:8px;background:#0f766e;color:#fff}.anatomy-tool-shell .anatomy-tour-recap-session-help{font-size:13px;line-height:1.6}.theme-dark .anatomy-tool-shell .anatomy-tour-recap-return{background:#132b2b;color:#e2e8f0}.theme-contrast .anatomy-tool-shell .anatomy-tour-recap-return{background:#fff;color:#000;border-color:#000}.anatomy-tool-shell[data-reading-mode=true] .anatomy-tour-panel :is(p,button,label,select){font-size:16px;line-height:1.7}@media(max-width:600px){.anatomy-tool-shell .anatomy-tour-panel{padding:14px}}",
+      '.anatomy-tool-shell:is([data-anatomy-tab=pathways],[data-anatomy-tab=spotter])[data-anatomy-study-controls-expanded=false]>:is(.anatomy-mission,.anatomy-mode-card,.anatomy-system-rail,.anatomy-display-panel,.anatomy-controls-bar){display:none!important}@media(min-width:721px){.anatomy-tool-shell:is([data-anatomy-tab=pathways],[data-anatomy-tab=spotter])>.anatomy-study-controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px;align-items:end}.anatomy-tool-shell:is([data-anatomy-tab=pathways],[data-anatomy-tab=spotter])>.anatomy-study-controls button{grid-column:auto}}',
+      '.anatomy-tool-shell .anatomy-pathway-panel[data-anatomy-pathway-panel]{--pathway-surface:#fff;--pathway-ink:#1e293b;--pathway-muted:#475569;--pathway-border:#cbd5e1;--pathway-soft:#fff1f2;--pathway-accent:#9f1239;background:var(--pathway-surface);color:var(--pathway-ink);border:1px solid var(--pathway-border);border-radius:18px;padding:18px;margin:0;font-size:14px;line-height:1.6}.anatomy-tool-shell .anatomy-pathway-panel h4{font-size:20px;line-height:1.3;color:var(--pathway-accent)}.anatomy-tool-shell .anatomy-pathway-panel h5{font-size:17px;line-height:1.45}.anatomy-tool-shell .anatomy-pathway-panel p,.anatomy-tool-shell .anatomy-pathway-panel label,.anatomy-tool-shell .anatomy-pathway-panel select{font-size:14px;line-height:1.6;color:var(--pathway-ink)}.anatomy-tool-shell .anatomy-pathway-panel button{min-height:44px;font-size:14px;line-height:1.5}.anatomy-tool-shell .anatomy-pathway-panel [data-anatomy-pathway-choices]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.anatomy-tool-shell .anatomy-pathway-panel [data-anatomy-pathway-choice]{padding:16px;min-width:0;border-color:var(--pathway-border);background:var(--pathway-surface);color:var(--pathway-ink)}.anatomy-tool-shell .anatomy-pathway-panel [data-anatomy-pathway-choice] .font-black{font-size:16px}.anatomy-tool-shell .anatomy-pathway-panel [data-anatomy-pathway-session]{font-size:13px;font-weight:700;color:var(--pathway-accent);margin-top:8px}.anatomy-tool-shell .anatomy-pathway-panel [data-anatomy-pathway-step]>p{font-size:15px}.anatomy-tool-shell .anatomy-pathway-panel .anatomy-route-checks legend{font-size:16px;font-weight:700;line-height:1.5}.anatomy-tool-shell .anatomy-pathway-panel .anatomy-route-checks button[data-anatomy-pathway-option]{min-height:48px;padding:10px 12px;font-size:14px}.anatomy-tool-shell .anatomy-pathway-panel [data-anatomy-pathway-feedback]{font-size:15px;line-height:1.6}.anatomy-pathway-answer-label{display:block;font-size:12px;font-weight:700;margin-bottom:3px}.anatomy-tool-shell .anatomy-pathway-check-return{background:var(--pathway-soft);color:var(--pathway-ink);padding:12px;border:1px solid var(--pathway-border);border-radius:12px}.anatomy-tool-shell .anatomy-pathway-check-return button{background:var(--pathway-accent);color:#fff;border:1px solid var(--pathway-accent);padding:8px 12px;margin-top:8px;border-radius:8px;font-weight:700}.anatomy-tool-shell .anatomy-pathway-panel :is([data-anatomy-pathway-step],[data-anatomy-pathway-feedback],[data-anatomy-pathway-question],#anatomy-pathway-check-title,#anatomy-pathway-title):focus-visible{outline:3px solid var(--pathway-accent);outline-offset:4px}.theme-dark .anatomy-tool-shell .anatomy-pathway-panel[data-anatomy-pathway-panel]{--pathway-surface:#19263a;--pathway-ink:#f1f5f9;--pathway-muted:#cbd5e1;--pathway-border:#64748b;--pathway-soft:#28344a;--pathway-accent:#fda4af}.theme-dark .anatomy-tool-shell .anatomy-pathway-check-return button{color:#19263a}.theme-dark .anatomy-tool-shell .anatomy-pathway-panel [data-anatomy-pathway-choice] .font-black{color:var(--pathway-ink)!important}.theme-contrast .anatomy-tool-shell .anatomy-pathway-panel[data-anatomy-pathway-panel]{--pathway-surface:#fff;--pathway-ink:#000;--pathway-muted:#000;--pathway-border:#000;--pathway-soft:#fff;--pathway-accent:#000}.anatomy-tool-shell[data-reading-mode="true"] .anatomy-pathway-panel :is(p,button,select,label,legend){font-size:17px!important;line-height:1.7!important}@media(max-width:680px){.anatomy-tool-shell .anatomy-pathway-panel[data-anatomy-pathway-panel]{padding:14px}.anatomy-tool-shell .anatomy-pathway-panel [data-anatomy-pathway-choices]{grid-template-columns:minmax(0,1fr)}}',
+      '.anatomy-spotter-view-note{padding:8px 10px;margin-top:8px;border:1px solid #b45309;border-radius:8px;background:#fffbeb;color:#78350f;font-size:13px;line-height:1.6}.theme-dark .anatomy-spotter-view-note{background:#28344a;color:#fef3c7;border-color:#fcd34d}.theme-contrast .anatomy-spotter-view-note{background:#fff;color:#000;border-color:#000}.anatomy-tool-shell[data-reading-mode="true"] .anatomy-spotter-view-note{font-size:17px}',
+      '.anatomy-tool-shell .anatomy-pathway-panel #anatomy-pathway-menu-title:focus-visible{outline:3px solid var(--pathway-accent);outline-offset:4px}',
       // Keep exploration settings in one place and let the atlas lead the viewer.
       '.anatomy-tool-shell[data-anatomy-tab=explore]>.anatomy-system-rail{display:none!important}.anatomy-tool-shell[data-anatomy-tab=explore][data-anatomy-explorer-controls=false]>:is(.anatomy-mission,.anatomy-mode-card,.anatomy-display-panel,.anatomy-controls-bar){display:none!important}.anatomy-start-here{display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px}.anatomy-start-here-guide{flex:1;min-width:220px}.anatomy-start-here-guide summary{min-height:44px;cursor:pointer;list-style:none}.anatomy-start-here-guide summary::-webkit-details-marker{display:none}.anatomy-start-here-indicator{font-size:20px;margin-inline-start:10px}.anatomy-start-here-guide[open] .anatomy-start-here-indicator{transform:rotate(45deg)}.anatomy-start-here-actions{margin:0}.anatomy-start-here-actions button{min-height:44px}.anatomy-start-here-guide summary:focus-visible{outline:3px solid #0369a1;outline-offset:2px;border-radius:6px}',
       '.anatomy-tool-shell details.anatomy-canvas-toolbar[data-anatomy-canvas-mode="2d"]{padding:0;overflow:hidden}.anatomy-tool-shell details.anatomy-canvas-toolbar>summary{display:flex;align-items:center;gap:12px;min-height:44px;padding:10px 12px;box-sizing:border-box;cursor:pointer;list-style:none;font-size:12px;font-weight:800;color:var(--atlas-ink)}.anatomy-tool-shell details.anatomy-canvas-toolbar>summary::-webkit-details-marker{display:none}.anatomy-tool-shell details.anatomy-canvas-toolbar>summary strong{margin-inline-start:auto;font-size:12px;font-variant-numeric:tabular-nums}.anatomy-tool-shell details.anatomy-canvas-toolbar>summary:after{content:"+";font-size:18px}.anatomy-tool-shell details.anatomy-canvas-toolbar[open]>summary:after{content:"−"}.anatomy-tool-shell details.anatomy-canvas-toolbar[open]>summary{border-bottom:1px solid var(--atlas-border)}.anatomy-tool-shell details.anatomy-canvas-toolbar [data-anatomy-canvas-controls="2d"]{padding:10px;box-sizing:border-box}.anatomy-tool-shell details.anatomy-canvas-toolbar>summary:focus-visible{outline:3px solid #0284c7;outline-offset:-3px}',
@@ -3018,7 +3022,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var anatomyStudyMode = activeTab === 'quiz' || activeTab === 'flashcards';
         // Explore owns its compact controls. Sharing the study disclosure hid search
         // and left two independently controlled system selectors on phones.
-        var anatomyCompactMode = anatomyStudyMode || activeTab === 'homeoHunt' || activeTab === 'aiTutor' || activeTab === 'tour';
+        var anatomyCompactMode = anatomyStudyMode || activeTab === 'homeoHunt' || activeTab === 'aiTutor' || activeTab === 'tour' || activeTab === 'pathways' || activeTab === 'spotter';
         var studyControlsExpanded = d._studyControlsExpanded === true;
         function activateAnatomyTab(tab) {
           function changeTab(patch) {
@@ -3046,8 +3050,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             var tabPathwayStep = activePathway.steps[pathwayStepIdx];
             changeTab(structureFocusPatch(tabPathwayStep.structure, { _activeTab: tab, _pathwayStep: pathwayStepIdx }));
             announceStructure(tabPathwayStep.structure);
+            if (pathwayRecapActive) { var tabPathwayQuestion = focusedPathwayQuestion(currentPathwayRecap,activePathway); focusPathwayCheck(activePathway,tabPathwayQuestion && tabPathwayQuestion.id,true,currentPathwayRecap.token); }
+            else focusPathwayStep(activePathway,pathwayStepIdx);
             return;
           }
+          if (tab === 'pathways') { changeTab({ _activeTab: tab, quizMode: false }); focusPathwayMenu(); return; }
           if (tab === 'flashcards') {
             var cardPatch = flashcardRoundPatch(flashcardScope, sysKey, complexity);
             changeTab(cardPatch);
@@ -4163,7 +4170,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var sysKey = SYSTEMS[d.system] ? d.system : 'skeletal';
         var sys = SYSTEMS[sysKey];
         var view = d.view === 'posterior' ? 'posterior' : 'anterior';
-        var bodyView3d = d._bodyView3d === true;
+        // Spotter draws its crosshair in the 2D atlas. Keep the requested view
+        // so ending a restored or newly started round returns to that view.
+        var spotterUsesAtlas = activeTab === 'spotter' && d._spotterActive === true;
+        var bodyView3d = d._bodyView3d === true && !spotterUsesAtlas;
+        function setAnatomyViewDimension(use3d) {
+          setLabToolData(function(previous) {
+            var state = previous.anatomy || {};
+            if (state._activeTab === 'spotter' && state._spotterActive === true) return previous;
+            var patch = { _bodyView3d: use3d === true };
+            if (use3d !== true && bodyView3d && body3dStyle === 'clinical') patch = Object.assign(clinicalAtlasIdentityPatch(selectedClinicalConceptId), patch);
+            return Object.assign({}, previous, { anatomy: Object.assign({}, state, patch) });
+          });
+        }
         var registeredClinicalAtlasPacks = (typeof window.StemLab.getAnatomyAtlasPacks === 'function' ? window.StemLab.getAnatomyAtlasPacks() : [])
           .map(normalizeAnatomyAtlasPack).filter(Boolean);
         var systemClinicalAtlasPacks = registeredClinicalAtlasPacks.filter(function(pack) {
@@ -6126,42 +6145,216 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           ]
         };
         // ── Pathway state ──
-        var activePathwayId = typeof d._activePathway === 'string' ? d._activePathway : null;
-        var activePathway = activePathwayId ? PATHWAYS.find(function(pathway) { return pathway.id === activePathwayId; }) : null;
-        if (!activePathway) activePathwayId = null;
-        var rawPathwayStepIdx = Number(d._pathwayStep);
-        var pathwayStepIdx = activePathway && Number.isFinite(rawPathwayStepIdx)
-          ? Math.max(0, Math.min(Math.floor(rawPathwayStepIdx), Math.max(0, activePathway.steps.length - 1)))
-          : 0;
-        // These questions assess pathway concepts, independently of diagram landmarks.
-        var rawPathwayRecap = d._pathwayRecap && typeof d._pathwayRecap === 'object' && !Array.isArray(d._pathwayRecap) ? d._pathwayRecap : {};
-        var pathwayRecapActive = !!activePathway && rawPathwayRecap.active === true && rawPathwayRecap.pathwayId === activePathwayId;
-        function getPathwayRecapQuestions() { return activePathway ? PATHWAY_CONCEPT_CHECKS[activePathway.id] || [] : []; }
+        var pathwayIds = PATHWAYS.map(function(pathway) { return pathway.id; });
+        var pathwaysCompleted = safeFlagMap(d._pathwaysCompleted, pathwayIds);
+        function pathwayById(id) { return PATHWAYS.find(function(pathway) { return pathway.id === id; }) || null; }
+        function normalizedPathwayStep(state, pw) {
+          var position = Number(state._pathwayStep);
+          return pw && Number.isFinite(position) ? Math.max(0,Math.min(Math.floor(position),pw.steps.length-1)) : 0;
+        }
+        function pathwayQuestions(pw) { return pw ? PATHWAY_CONCEPT_CHECKS[pw.id] || [] : []; }
+        function pathwayCheckContext(pw) {
+          if (!pw) return '';
+          return 'pathway-check-v2|' + pw.id + '|' + pw.steps.map(function(step) { return step.structure; }).join(',') + '|' + pathwayQuestions(pw).map(function(question) { return question.id + ':' + question.correct + ':' + question.options.map(function(option) { return option.id; }).join(','); }).join('|');
+        }
+        function newPathwayToken() { return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2); }
         function validPathwayAnswers(raw, questions) {
           var answers = {}; if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return answers;
           questions.forEach(function(question) { if (question.options.some(function(option) { return option.id === raw[question.id]; })) answers[question.id] = raw[question.id]; });
           return answers;
         }
-        var pathwayRecapAnswers = pathwayRecapActive && rawPathwayRecap.version === 2 ? validPathwayAnswers(rawPathwayRecap.answers,getPathwayRecapQuestions()) : {};
-        function answerPathwayRecap(question, optionId) {
-          if (!activePathway || !question.options.some(function(option) { return option.id === optionId; })) return;
-          var pathId = activePathway.id, questions = getPathwayRecapQuestions();
-          setLabToolData(function(previous) {
-            var state = previous.anatomy || {}, recap = state._pathwayRecap || {};
-            if (state._activePathway !== pathId || recap.active !== true || recap.pathwayId !== pathId) return previous;
-            var answers = recap.version === 2 ? validPathwayAnswers(recap.answers,questions) : {};
-            if (answers[question.id]) return previous;
-            answers[question.id] = optionId;
-            var patch = {_pathwayRecap:{active:true,version:2,pathwayId:pathId,answers:answers}};
-            if (questions.every(function(item) { return !!answers[item.id]; })) {
-              patch._pathwayChecks = Object.assign({},state._pathwayChecks);
-              patch._pathwayChecks[pathId] = {version:2,answers:Object.assign({},answers)};
-            }
-            return Object.assign({},previous,{anatomy:Object.assign({},state,patch)});
+        function validPathwayRecap(raw, pw, allowLegacy) {
+          if (!pw || !raw || typeof raw !== 'object' || Array.isArray(raw) || raw.pathwayId !== pw.id || (raw.active !== true && raw.active !== false)) return null;
+          var legacy = allowLegacy && raw.version === undefined && raw.active === true;
+          if (raw.version !== 2 && !legacy) return null;
+          var context = pathwayCheckContext(pw);
+          if (raw.context !== undefined && raw.context !== context) return null;
+          if (raw.token !== undefined && (typeof raw.token !== 'string' || !raw.token || raw.token.length > 128)) return null;
+          var recap = {active:raw.active,version:2,pathwayId:pw.id,answers:legacy ? {} : validPathwayAnswers(raw.answers,pathwayQuestions(pw))};
+          if (raw.context !== undefined) recap.context = context;
+          if (raw.token !== undefined) recap.token = raw.token;
+          if (pathwayQuestions(pw).some(function(question) { return question.id === raw.focusQuestionId; })) recap.focusQuestionId = raw.focusQuestionId;
+          return recap;
+        }
+        function validPathwayReturn(raw, recap, pw) {
+          if (!pw || !recap || recap.active !== false || recap.context !== pathwayCheckContext(pw) || !recap.token || !raw || typeof raw !== 'object' || Array.isArray(raw) || raw.pathwayId !== pw.id || raw.context !== recap.context || raw.token !== recap.token || !pathwayQuestions(pw).some(function(question) { return question.id === raw.questionId; })) return null;
+          return {pathwayId:pw.id,context:recap.context,token:recap.token,questionId:raw.questionId};
+        }
+        function validPathwaySessions(raw) {
+          var routes = {};
+          if (!raw || raw.version !== 1 || !raw.routes || typeof raw.routes !== 'object' || Array.isArray(raw.routes)) return routes;
+          PATHWAYS.forEach(function(pw) {
+            var entry = raw.routes[pw.id];
+            if (!entry || typeof entry !== 'object' || Array.isArray(entry) || entry.pathwayId !== pw.id || !Number.isInteger(entry.step) || entry.step < 0 || entry.step >= pw.steps.length) return;
+            var recap = entry.recap == null ? null : validPathwayRecap(entry.recap,pw,false);
+            if (entry.recap != null && (!recap || recap.context !== pathwayCheckContext(pw) || !recap.token)) return;
+            routes[pw.id] = {pathwayId:pw.id,step:entry.step,recap:recap,returnToCheck:validPathwayReturn(entry.returnToCheck,recap,pw)};
           });
-          var option = question.options.find(function(item) { return item.id === optionId; });
-          playSound(optionId === question.correct ? 'quizCorrect' : 'quizWrong');
-          if (typeof announceToSR === 'function') announceToSR(option.feedback);
+          return routes;
+        }
+        function focusedPathwayQuestion(recap, pw) {
+          var questions = pathwayQuestions(pw), answers = recap && recap.answers || {};
+          return questions.find(function(question) { return question.id === (recap && recap.focusQuestionId); }) || questions.filter(function(question) { return !!answers[question.id]; }).slice(-1)[0] || questions.find(function(question) { return !answers[question.id]; }) || questions[0];
+        }
+        // The active route stays in the existing live fields. Only leaving a route
+        // checkpoints it; at most the four authored routes can enter this map.
+        function checkpointPathway(state, routes, pw, fallbackToken) {
+          var next = Object.assign({},routes);
+          if (!pw || state._activePathway !== pw.id) return next;
+          var step = normalizedPathwayStep(state,pw);
+          var recap = validPathwayRecap(state._pathwayRecap,pw,true);
+          if (recap) {
+            recap.context = pathwayCheckContext(pw); recap.token = recap.token || fallbackToken;
+            var question = focusedPathwayQuestion(recap,pw); if (question) recap.focusQuestionId = question.id;
+          }
+          next[pw.id] = {pathwayId:pw.id,step:step,recap:recap,returnToCheck:validPathwayReturn(state._pathwayRecapReturn,recap,pw)};
+          return next;
+        }
+        var activePathwayId = typeof d._activePathway === 'string' ? d._activePathway : null;
+        var activePathway = pathwayById(activePathwayId);
+        if (!activePathway) activePathwayId = null;
+        var pathwayStepIdx = normalizedPathwayStep(d,activePathway);
+        var rawPathwayRecap = d._pathwayRecap && typeof d._pathwayRecap === 'object' && !Array.isArray(d._pathwayRecap) ? d._pathwayRecap : {};
+        var currentPathwayRecap = validPathwayRecap(rawPathwayRecap,activePathway,true);
+        var pathwayRecapActive = !!currentPathwayRecap && currentPathwayRecap.active === true;
+        var pathwayRecapAnswers = currentPathwayRecap ? currentPathwayRecap.answers : {};
+        var pathwaySessions = validPathwaySessions(d._pathwaySessions);
+        var pathwayCheckReturn = activeTab === 'pathways' ? validPathwayReturn(d._pathwayRecapReturn,currentPathwayRecap,activePathway) : null;
+        function getPathwayRecapQuestions() { return pathwayQuestions(activePathway); }
+        function samePathwayAttempt(state, pw) {
+          return !!pw && state._activeTab === 'pathways' && state._activePathway === pw.id && ((state._pathwayRecap || {}).token || null) === (rawPathwayRecap.token || null);
+        }
+        function finishPathwayUpdate(accepted, effect) {
+          var notified = false;
+          function notify() { if (notified || !accepted()) return; notified = true; effect(); }
+          notify(); setTimeout(notify,0);
+        }
+        function focusPathwayMenu() {
+          setTimeout(function() { var title = document.getElementById('anatomy-pathway-menu-title'); if (title) { title.focus({preventScroll:true}); title.scrollIntoView({block:'start',behavior:'auto'}); } },0);
+        }
+        function focusPathwayStep(pw, index) {
+          setTimeout(function() {
+            var root = document.querySelector('[data-anatomy-pathway-panel]');
+            if (!root || !pw || root.getAttribute('data-anatomy-pathway-id') !== pw.id) return;
+            var step = root.querySelector('[data-anatomy-pathway-step]');
+            if (!step || (Number.isInteger(index) && Number(step.getAttribute('data-anatomy-pathway-step')) !== index)) return;
+            step.focus({preventScroll:true}); step.scrollIntoView({block:'start',behavior:'auto'});
+          },0);
+        }
+        function focusPathwayCheck(pw, questionId, feedback, token) {
+          setTimeout(function() {
+            var panel = document.querySelector('[data-anatomy-recap="pathway"]');
+            if (!panel || !pw || panel.getAttribute('data-anatomy-pathway-id') !== pw.id || panel.getAttribute('data-anatomy-pathway-context') !== pathwayCheckContext(pw) || panel.getAttribute('data-anatomy-pathway-token') !== (token || '')) return;
+            var question = pathwayQuestions(pw).some(function(item) { return item.id === questionId; }) ? panel.querySelector('[data-anatomy-pathway-question="' + questionId + '"]') : null;
+            var target = question && feedback ? question.querySelector('[data-anatomy-pathway-feedback]') : question;
+            target = target || question || panel.querySelector('#anatomy-pathway-check-title');
+            if (target) { target.focus({preventScroll:true}); target.scrollIntoView({block:'start',behavior:'auto'}); }
+          },0);
+        }
+        function focusCurrentPathway() {
+          if (activeTab !== 'pathways' || !activePathway) return;
+          if (pathwayRecapActive) { var question = focusedPathwayQuestion(currentPathwayRecap,activePathway); focusPathwayCheck(activePathway,question && question.id,true,currentPathwayRecap.token); }
+          else focusPathwayStep(activePathway,pathwayStepIdx);
+        }
+        function openPathway(id) {
+          var pw = pathwayById(id); if (!pw) return;
+          var accepted = false, opened = null, fallbackToken = newPathwayToken();
+          setLabToolData(function(previous) {
+            var state = previous.anatomy || {}, current = pathwayById(state._activePathway);
+            if (state._activeTab !== 'pathways' || (current ? current.id : null) !== activePathwayId || (current && !samePathwayAttempt(state,current)) || (current && current.id === id)) return previous;
+            var routes = checkpointPathway(state,validPathwaySessions(state._pathwaySessions),current,fallbackToken), saved = routes[id] || null;
+            opened = saved || {pathwayId:id,step:0,recap:null,returnToCheck:null}; delete routes[id];
+            var patch = structureFocusPatch(pw.steps[opened.step].structure,{system:state.system,_activePathway:id,_pathwayStep:opened.step,_pathwayRecap:opened.recap,_pathwayRecapReturn:opened.returnToCheck,_pathwaySessions:{version:1,routes:routes},quizMode:false});
+            accepted = true; return Object.assign({},previous,{anatomy:Object.assign({},state,patch)});
+          });
+          finishPathwayUpdate(function(){return accepted;},function(){
+            playSound('pathwayStep');
+            if (opened.recap && opened.recap.active) focusPathwayCheck(pw,opened.recap.focusQuestionId,true,opened.recap.token); else focusPathwayStep(pw,opened.step);
+            if (typeof announceToSR === 'function') announceToSR((opened.recap || opened.step > 0 ? t('stem.anatomy.pathway_flow_resumed_announce', 'Resumed {pathway}.') : t('stem.anatomy.pathway_flow_started_announce', 'Opened {pathway}, step {step} of {total}.')).replace('{pathway}',pw.title).replace('{step}',String(opened.step+1)).replace('{total}',String(pw.steps.length)));
+          });
+        }
+        function closePathway() {
+          var pw = activePathway, accepted = false, fallbackToken = newPathwayToken(); if (!pw) return;
+          setLabToolData(function(previous) {
+            var state = previous.anatomy || {}; if (!samePathwayAttempt(state,pw)) return previous;
+            var routes = checkpointPathway(state,validPathwaySessions(state._pathwaySessions),pw,fallbackToken);
+            accepted = true;
+            return Object.assign({},previous,{anatomy:Object.assign({},state,{_activePathway:null,_pathwayStep:0,_pathwayRecap:null,_pathwayRecapReturn:null,_pathwaySessions:{version:1,routes:routes}})});
+          });
+          finishPathwayUpdate(function(){return accepted;},function(){focusPathwayMenu();if(typeof announceToSR==='function')announceToSR(t('stem.anatomy.pathway_flow_saved_menu', 'Progress saved. Choose a pathway to resume or start.'));});
+        }
+        function pausePathwayCheck(questionId, stepIndex) {
+          var pw = activePathway, questions = getPathwayRecapQuestions();
+          if (!pw || !pathwayRecapActive || (questionId !== undefined && !questions.some(function(question) { return question.id === questionId; }))) return;
+          var destination = Number.isInteger(stepIndex) && pw.steps[stepIndex] ? stepIndex : pathwayStepIdx, accepted = false, fallbackToken = newPathwayToken();
+          setLabToolData(function(previous) {
+            var state = previous.anatomy || {}, recap = validPathwayRecap(state._pathwayRecap,pw,true);
+            if (!samePathwayAttempt(state,pw) || !recap || recap.active !== true) return previous;
+            var question = questions.find(function(item) { return item.id === questionId; }) || focusedPathwayQuestion(recap,pw);
+            recap.active = false; recap.context = pathwayCheckContext(pw); recap.token = recap.token || fallbackToken; recap.focusQuestionId = question.id;
+            var link = {pathwayId:pw.id,context:recap.context,token:recap.token,questionId:question.id};
+            var patch = structureFocusPatch(pw.steps[destination].structure,{system:state.system,_pathwayStep:destination,_pathwayRecap:recap,_pathwayRecapReturn:link});
+            accepted = true; return Object.assign({},previous,{anatomy:Object.assign({},state,patch)});
+          });
+          finishPathwayUpdate(function(){return accepted;},function(){announceStructure(pw.steps[destination].structure);focusPathwayStep(pw,destination);});
+        }
+        function resumePathwayCheck() {
+          var pw = activePathway, link = pathwayCheckReturn, accepted = false; if (!pw || !link) return;
+          setLabToolData(function(previous) {
+            var state = previous.anatomy || {}, recap = validPathwayRecap(state._pathwayRecap,pw,false), currentLink = validPathwayReturn(state._pathwayRecapReturn,recap,pw);
+            if (!samePathwayAttempt(state,pw) || !currentLink || currentLink.token !== link.token || currentLink.questionId !== link.questionId) return previous;
+            recap.active = true; recap.focusQuestionId = link.questionId;
+            accepted = true; return Object.assign({},previous,{anatomy:Object.assign({},state,{_pathwayRecap:recap,_pathwayRecapReturn:null})});
+          });
+          finishPathwayUpdate(function(){return accepted;},function(){
+            focusPathwayCheck(pw,link.questionId,true,link.token);
+            if(typeof announceToSR==='function')announceToSR(t('stem.anatomy.pathway_flow_return_announce', 'Returning to pathway question {question}.').replace('{question}',String(pathwayQuestions(pw).findIndex(function(question){return question.id===link.questionId;})+1)));
+          });
+        }
+        function openPathwayChecks(restart) {
+          if (!restart && pathwayCheckReturn) { resumePathwayCheck(); return; }
+          var pw = activePathway, accepted = false, token = newPathwayToken(); if (!pw || getPathwayRecapQuestions().length < 2) return;
+          setLabToolData(function(previous) {
+            var state = previous.anatomy || {}, recap = validPathwayRecap(state._pathwayRecap,pw,true);
+            if (!samePathwayAttempt(state,pw) || (restart && (!recap || recap.active !== true)) || (!restart && ((recap && recap.active === true) || normalizedPathwayStep(state,pw) !== pathwayStepIdx))) return previous;
+            accepted = true;
+            return Object.assign({},previous,{anatomy:Object.assign({},state,{_pathwayStep:normalizedPathwayStep(state,pw),_pathwayRecap:{active:true,version:2,pathwayId:pw.id,context:pathwayCheckContext(pw),token:token,answers:{}},_pathwayRecapReturn:null})});
+          });
+          finishPathwayUpdate(function(){return accepted;},function(){playSound('pathwayStep');focusPathwayCheck(pw,null,false,token);if(typeof announceToSR==='function')announceToSR(t('stem.anatomy.route_check_announce', 'Pathway check: choose explanations for two situations.'));});
+        }
+        function changePathwayStep(index, sound) {
+          var pw = activePathway; if (!pw || !Number.isInteger(index) || !pw.steps[index]) return;
+          if (pathwayRecapActive) { pausePathwayCheck(undefined,index); return; }
+          var accepted = false;
+          setLabToolData(function(previous) {
+            var state = previous.anatomy || {};
+            if (!samePathwayAttempt(state,pw) || normalizedPathwayStep(state,pw) !== pathwayStepIdx || (state._pathwayRecap || {}).active === true) return previous;
+            accepted = true; return Object.assign({},previous,{anatomy:Object.assign({},state,structureFocusPatch(pw.steps[index].structure,{system:state.system,_pathwayStep:index}))});
+          });
+          finishPathwayUpdate(function(){return accepted;},function(){announceStructure(pw.steps[index].structure);if(sound)playSound('pathwayStep');focusPathwayStep(pw,index);});
+        }
+        function answerPathwayRecap(question, optionId) {
+          var pw = activePathway, questions = getPathwayRecapQuestions();
+          if (!pw || !pathwayRecapActive || !questions.some(function(item) { return item.id === question.id; }) || !question.options.some(function(option) { return option.id === optionId; })) return;
+          var accepted = false;
+          setLabToolData(function(previous) {
+            var state = previous.anatomy || {}, recap = validPathwayRecap(state._pathwayRecap,pw,true);
+            if (!samePathwayAttempt(state,pw) || !recap || recap.active !== true || recap.answers[question.id]) return previous;
+            recap.answers[question.id] = optionId;
+            if (recap.token) recap.focusQuestionId = question.id;
+            var patch = {_pathwayRecap:recap};
+            if (questions.every(function(item) { return !!recap.answers[item.id]; })) {
+              patch._pathwayChecks = Object.assign({},state._pathwayChecks);
+              patch._pathwayChecks[pw.id] = {version:2,answers:Object.assign({},recap.answers)};
+            }
+            accepted = true; return Object.assign({},previous,{anatomy:Object.assign({},state,patch)});
+          });
+          finishPathwayUpdate(function(){return accepted;},function(){
+            var option = question.options.find(function(item) { return item.id === optionId; });
+            playSound(optionId === question.correct ? 'quizCorrect' : 'quizWrong');
+            if (typeof announceToSR === 'function') announceToSR(option.feedback);
+            focusPathwayCheck(pw,question.id,true,rawPathwayRecap.token);
+          });
         }
         function pathwayCheckSummary(pathId) {
           var record = d._pathwayChecks && d._pathwayChecks[pathId], questions = PATHWAY_CONCEPT_CHECKS[pathId] || [];
@@ -6171,53 +6364,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           return {correct:questions.filter(function(question) { return answers[question.id] === question.correct; }).length,total:questions.length};
         }
         function showPathwayDiagram(step) {
-          updMulti(structureFocusPatch(step.structure, {_pathwayStep:pathwayStepIdx})); announceStructure(step.structure);
-          setTimeout(function() { var panel = document.querySelector('[data-anatomy-model-shell]'); if (panel) { panel.focus({preventScroll:true}); panel.scrollIntoView({block:'start',behavior:'auto'}); } },0);
+          var pw = activePathway, accepted = false; if (!pw || !pw.steps[pathwayStepIdx] || pw.steps[pathwayStepIdx].structure !== step.structure) return;
+          setLabToolData(function(previous) {
+            var state = previous.anatomy || {};
+            if (!samePathwayAttempt(state,pw) || normalizedPathwayStep(state,pw) !== pathwayStepIdx || (state._pathwayRecap || {}).active === true) return previous;
+            accepted = true; return Object.assign({},previous,{anatomy:Object.assign({},state,structureFocusPatch(step.structure,{system:state.system,_pathwayStep:pathwayStepIdx}))});
+          });
+          finishPathwayUpdate(function(){return accepted;},function(){announceStructure(step.structure);setTimeout(function(){var root=document.querySelector('[data-anatomy-pathway-panel]');if(!root||root.getAttribute('data-anatomy-pathway-id')!==pw.id)return;var panel=document.querySelector('[data-anatomy-model-shell]');if(panel){panel.focus({preventScroll:true});panel.scrollIntoView({block:'start',behavior:'auto'});}},0);});
         }
         function reviewPathwayConcept(pw, question) {
-          var step = pw.steps[question.step];
-          updMulti(structureFocusPatch(step.structure,{_pathwayStep:question.step,_pathwayRecap:null})); announceStructure(step.structure);
-          setTimeout(function() { var panel = document.querySelector('[data-anatomy-pathway-step]'); if (panel) { panel.focus({preventScroll:true}); panel.scrollIntoView({block:'nearest'}); } },0);
+          if (!pw || pw.id !== activePathwayId || !pathwayRecapAnswers[question.id] || !pw.steps[question.step]) return;
+          pausePathwayCheck(question.id,question.step);
         }
-        function completeActivePathway(pw) {
-          var newPC = Object.assign({}, pathwaysCompleted);
-          newPC[pw.id] = true;
-          updMulti({ _pathwaysCompleted: newPC, _activePathway: null, _pathwayStep: 0, _pathwayRecap: null });
-          playSound('badge');
-          if (addToast) addToast('🛤 Pathway complete: ' + pw.title + '!');
-          if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.anatomy.sr_pathway_complete', 'Pathway complete: {value1}.'), { value1: pw.title }));
-          setTimeout(checkAnatomyChallenges, 50);
+        function completeActivePathway(pw, skip) {
+          if (!pw || pw.id !== activePathwayId) return;
+          var accepted = false;
+          setLabToolData(function(previous) {
+            var state = previous.anatomy || {}, recap = validPathwayRecap(state._pathwayRecap,pw,true), questions = pathwayQuestions(pw);
+            if (!samePathwayAttempt(state,pw) || (pathwayRecapActive && (!recap || recap.active !== true)) || (!skip && questions.length && (!recap || !questions.every(function(question){return !!recap.answers[question.id];})))) return previous;
+            var completed = safeFlagMap(state._pathwaysCompleted,pathwayIds), routes = validPathwaySessions(state._pathwaySessions);
+            completed[pw.id] = true; delete routes[pw.id]; accepted = true;
+            return Object.assign({},previous,{anatomy:Object.assign({},state,{_pathwaysCompleted:completed,_activePathway:null,_pathwayStep:0,_pathwayRecap:null,_pathwayRecapReturn:null,_pathwaySessions:{version:1,routes:routes}})});
+          });
+          finishPathwayUpdate(function(){return accepted;},function(){playSound('badge');if(addToast)addToast(t('stem.anatomy.pathway_flow_completed', 'Pathway complete: {pathway}.').replace('{pathway}',pw.title));if(typeof announceToSR==='function')announceToSR(__alloFill(__alloT('stem.anatomy.sr_pathway_complete', 'Pathway complete: {value1}.'), {value1:pw.title}));focusPathwayMenu();setTimeout(checkAnatomyChallenges,50);});
         }
         function renderPathwayRecap(pw) {
           var questions = getPathwayRecapQuestions(), answered = Object.keys(pathwayRecapAnswers).length;
           var done = answered === questions.length, correct = questions.filter(function(question) { return pathwayRecapAnswers[question.id] === question.correct; }).length;
-          return h('section',{className:'anatomy-route-checks','data-anatomy-recap':'pathway','data-anatomy-recap-state':done?'done':'open','aria-labelledby':'anatomy-pathway-check-title'},
-            h('h5',{id:'anatomy-pathway-check-title'},t('stem.anatomy.route_check_title', "Explain the pathway")),
-            h('p',null,t('stem.anatomy.route_check_intro', "Choose an explanation for each situation. These checks assess the process, not the nearby diagram marker.")),
-            h('p',{role:'status'},answered+'/'+questions.length+' '+t('stem.anatomy.route_answered', "answered")),
-            questions.map(function(question) {
+          return h('section',{className:'anatomy-route-checks','data-anatomy-recap':'pathway','data-anatomy-recap-state':done?'done':'open','data-anatomy-pathway-id':pw.id,'data-anatomy-pathway-context':pathwayCheckContext(pw),'data-anatomy-pathway-token':rawPathwayRecap.token||'','aria-labelledby':'anatomy-pathway-check-title'},
+            h('h5',{id:'anatomy-pathway-check-title',tabIndex:-1},t('stem.anatomy.route_check_title', 'Explain the pathway')),
+            h('p',null,t('stem.anatomy.route_check_intro', 'Choose an explanation for each situation. These checks assess the process, not the nearby diagram marker.')),
+            h('p',{role:'status'},answered+'/'+questions.length+' '+t('stem.anatomy.route_answered', 'answered')),
+            questions.map(function(question,index) {
               var chosen = pathwayRecapAnswers[question.id], selected = question.options.find(function(option) { return option.id === chosen; });
-              return h('fieldset',{key:question.id,'data-anatomy-pathway-question':question.id},
+              return h('fieldset',{key:question.id,'data-anatomy-pathway-question':question.id,tabIndex:-1},
                 h('legend',null,question.prompt),
+                h('p',{className:'anatomy-pathway-question-number'},t('stem.anatomy.pathway_flow_question', 'Question {question} of {total}').replace('{question}',String(index+1)).replace('{total}',String(questions.length))),
                 question.options.map(function(option) { return h('button',{key:option.id,type:'button',disabled:!!chosen,'aria-pressed':chosen===option.id,'data-anatomy-pathway-option':option.id,'data-result':chosen ? option.id===question.correct?'correct':chosen===option.id?'incorrect':undefined : undefined,
-                  onClick:function(){answerPathwayRecap(question,option.id);}},option.text); }),
-                selected && h('div',{role:'status','data-anatomy-pathway-feedback':chosen===question.correct?'correct':'incorrect'},
-                  h('strong',null,chosen===question.correct ? t('stem.anatomy.route_correct', "Correct. ") : t('stem.anatomy.route_rethink', "Reconsider. ")),selected.feedback,
-                  chosen!==question.correct && h('p',null,t('stem.anatomy.route_answer', "Answer: ")+question.options.find(function(option){return option.id===question.correct;}).text)),
-                selected && chosen!==question.correct && h('button',{type:'button','data-anatomy-pathway-review':String(question.step),onClick:function(){reviewPathwayConcept(pw,question);}},t('stem.anatomy.route_review_step', "Revisit the related step"))
+                  onClick:function(){answerPathwayRecap(question,option.id);}},h('span',null,option.text),chosen&&option.id===chosen&&h('span',{className:'anatomy-pathway-answer-label'},t('stem.anatomy.pathway_flow_your_answer', 'Your answer')),chosen&&option.id===question.correct&&h('span',{className:'anatomy-pathway-answer-label'},t('stem.anatomy.pathway_flow_correct_answer', 'Correct answer'))); }),
+                selected && h('div',{role:'status','data-anatomy-pathway-feedback':chosen===question.correct?'correct':'incorrect',tabIndex:-1},
+                  h('strong',null,chosen===question.correct ? t('stem.anatomy.route_correct', 'Correct. ') : t('stem.anatomy.route_rethink', 'Reconsider. ')),selected.feedback,
+                  chosen!==question.correct && h('p',null,t('stem.anatomy.route_answer', 'Answer: ')+question.options.find(function(option){return option.id===question.correct;}).text)),
+                selected && chosen!==question.correct && h('button',{type:'button','data-anatomy-pathway-review':String(question.step),onClick:function(){reviewPathwayConcept(pw,question);}},t('stem.anatomy.route_review_step', 'Revisit the related step'))
               );
             }),
-            done && h('p',{role:'status'},correct+'/'+questions.length+' '+t('stem.anatomy.route_score', "concept checks correct. Reviewing a route and rating confidence are separate from these answers.")),
+            done && h('p',{role:'status'},correct+'/'+questions.length+' '+t('stem.anatomy.route_score', 'concept checks correct. Reviewing a route and rating confidence are separate from these answers.')),
             h('div',{className:'anatomy-route-actions'},
-              h('button',{type:'button',onClick:function(){upd('_pathwayRecap',null);}},t('stem.anatomy.route_back_steps', "Back to the steps")),
-              h('button',{type:'button',disabled:!done,onClick:function(){completeActivePathway(pw);}},t('stem.anatomy.route_finish', "Finish pathway")),
-              !done && h('button',{type:'button',onClick:function(){completeActivePathway(pw);}},t('stem.anatomy.route_finish_without_check', "Finish without completing checks"))
-            )
+              h('button',{type:'button','data-anatomy-pathway-check-back':true,onClick:function(){pausePathwayCheck();}},t('stem.anatomy.route_back_steps', 'Back to the steps')),
+              h('button',{type:'button','data-anatomy-pathway-check-restart':true,'aria-describedby':'anatomy-pathway-restart-help',onClick:function(){openPathwayChecks(true);}},t('stem.anatomy.pathway_flow_restart', 'Restart checks')),
+              h('button',{type:'button',disabled:!done,onClick:function(){completeActivePathway(pw,false);}},t('stem.anatomy.route_finish', 'Finish pathway')),
+              !done && h('button',{type:'button',onClick:function(){completeActivePathway(pw,true);}},t('stem.anatomy.route_finish_without_check', 'Finish without completing checks'))
+            ),
+            h('p',{id:'anatomy-pathway-restart-help',className:'anatomy-pathway-session-help'},t('stem.anatomy.pathway_flow_restart_help', 'Restart clears the answers in this attempt. Your last completed score stays saved.'))
           );
         }
-        var pathwayIds = PATHWAYS.map(function(pathway) { return pathway.id; });
-        var pathwaysCompleted = safeFlagMap(d._pathwaysCompleted, pathwayIds);
-
         // ── Mnemonics viewed state ──
         var mnemonicIds = [];
         Object.keys(MNEMONICS).forEach(function(systemId) {
@@ -13701,15 +13901,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             )
           ),
           anatomyCompactMode && h('div', { className: 'anatomy-study-controls', 'data-anatomy-study-controls': 'true', role: 'group', 'aria-label': t('stem.anatomy.study_settings', 'Study settings') },
-            h('label', { htmlFor: 'anatomy-study-system' },
+            activeTab === 'pathways' ? h('label',{htmlFor:'anatomy-study-pathway'},h('span',null,t('stem.anatomy.pathway_flow_choose','Choose a pathway')),h('select',{id:'anatomy-study-pathway',value:activePathwayId||'',onChange:function(event){openPathway(event.target.value);}},h('option',{value:'',disabled:true},t('stem.anatomy.pathway_flow_choose','Choose a pathway')),PATHWAYS.map(function(pathway){return h('option',{key:pathway.id,value:pathway.id},pathway.title);}))) : h('label', { htmlFor: 'anatomy-study-system' },
               h('span', null, t('stem.anatomy.body_system', 'Body system')),
-              h('select', { id: 'anatomy-study-system', value: sysKey, onChange: function(event) { showAnatomySystem(event.target.value); } },
+              h('select', { id: 'anatomy-study-system', value: sysKey, disabled:activeTab==='spotter'&&spotterActive, onChange: function(event) { showAnatomySystem(event.target.value); } },
                 ANATOMY_SYSTEM_IDS.map(function(systemId) { return h('option', { key: systemId, value: systemId }, SYSTEMS[systemId].name); })
               )
             ),
             h('label', { htmlFor: 'anatomy-study-level' },
               h('span', null, t('stem.anatomy.learning_level', 'Learning level')),
-              h('select', { id: 'anatomy-study-level', value: String(complexity), onChange: function(event) { selectAnatomyLevel(event.target.value); } },
+              h('select', { id: 'anatomy-study-level', value: String(complexity), disabled:activeTab==='spotter'&&spotterActive, onChange: function(event) { selectAnatomyLevel(event.target.value); } },
                 h('option', { value: '1' }, 'K–5'), h('option', { value: '2' }, '6–8'), h('option', { value: '3' }, '9–12+')
               )
             ),
@@ -14146,7 +14346,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               h('div', { className: 'anatomy-body-header' },
                 showClinical && clinicalCaseIds.indexOf(d._caseDiagramReturn)!==-1 && CLINICAL_CASES.some(function(cs){return cs.id===d._caseDiagramReturn&&cs.system===sysKey;}) && h('button',{type:'button',className:'anatomy-route-return','data-anatomy-case-return':d._caseDiagramReturn,onClick:function(){focusClinicalCase(d._caseDiagramReturn);}},t("stem.anatomy.case_ref_return","Return to case")),
                 activeTab === 'connections' && expandedConnectionId ? h('button',{type:'button',className:'anatomy-route-return','data-anatomy-connection-return':true,onClick:focusConnection},t("stem.anatomy.link_ref_return","Return to connection")) : activeTab==='tour'&&currentTourStep&&h('button',{type:'button',className:'anatomy-route-return','data-anatomy-tour-return':true,onClick:focusTourStep},t('stem.anatomy.tour_ref_return', "Return to tour step")),
-                activeTab === 'pathways' && activePathway && h('button', {type:'button',className:'anatomy-route-return','data-anatomy-pathway-return':true,onClick:function(){var panel=document.querySelector('[data-anatomy-pathway-step]') || document.querySelector('#anatomy-pathway-jump');if(panel){panel.focus({preventScroll:true});panel.scrollIntoView({block:'start',behavior:'auto'});}}},t('stem.anatomy.route_return_step','Return to pathway step')),
+                activeTab === 'pathways' && activePathway && h('button', {type:'button',className:'anatomy-route-return','data-anatomy-pathway-return':true,onClick:focusCurrentPathway},t('stem.anatomy.route_return_step','Return to pathway step')),
                 h('div', { className: 'anatomy-body-title-row' },
                   h('div', { className: 'anatomy-body-title' },
                     h('h4', { className: 'anatomy-body-title-heading' }, sys.icon + ' ' + sys.name),
@@ -14169,10 +14369,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     h('div', { className: 'anatomy-view-control-row' },
                       h('span', { id: 'anatomy-view-dimension-label', className: 'anatomy-view-control-label' }, 'View'),
                       h('div', { className: 'anatomy-view-toggle anatomy-view-switcher', role: 'group', 'aria-labelledby': 'anatomy-view-dimension-label', 'data-anatomy-view-switcher': 'true' },
-                        h('button', { type: 'button', 'data-anatomy-view-dimension': '2d', 'data-anatomy-view-option': '2d', 'aria-pressed': bodyView3d ? 'false' : 'true', title: 'Detailed labeled atlas', onClick: function() { bodyView3d && body3dStyle === 'clinical' ? updMulti(Object.assign(clinicalAtlasIdentityPatch(selectedClinicalConceptId), { _bodyView3d: false })) : upd('_bodyView3d', false); } }, '2D'),
-                        h('button', { type: 'button', 'data-anatomy-view-dimension': '3d', 'aria-pressed': bodyView3d ? 'true' : 'false', title: 'Interactive three-dimensional anatomy', onClick: function() { upd('_bodyView3d', true); } }, '3D')
+                        h('button', { type: 'button', 'data-anatomy-view-dimension': '2d', 'data-anatomy-view-option': '2d', 'aria-pressed': bodyView3d ? 'false' : 'true', title: 'Detailed labeled atlas', onClick: function() { setAnatomyViewDimension(false); } }, '2D'),
+                        h('button', { type: 'button', 'data-anatomy-view-dimension': '3d', 'aria-pressed': bodyView3d ? 'true' : 'false', disabled: spotterUsesAtlas, 'aria-describedby': spotterUsesAtlas ? 'anatomy-spotter-view-help' : undefined, title: 'Interactive three-dimensional anatomy', onClick: function() { setAnatomyViewDimension(true); } }, '3D')
                       )
                     ),
+                    spotterUsesAtlas && h('p', { id: 'anatomy-spotter-view-help', className:'anatomy-spotter-view-note', 'data-anatomy-spotter-view-help': true, dir: 'auto' }, t('stem.anatomy.spotter_flow_2d', 'Spotter uses the 2D atlas for its crosshair. End the test to return to your chosen view.')),
                     bodyView3d && h('div', { className: 'anatomy-view-control-row' },
                       h('span', { id: 'anatomy-model-style-label', className: 'anatomy-view-control-label' }, 'Model'),
                       h('div', { className: 'anatomy-view-toggle anatomy-model-switcher', role: 'group', 'aria-labelledby': 'anatomy-model-style-label', 'data-anatomy-model-switcher': 'true', 'data-has-clinical-atlas': clinicalAtlasAvailable ? 'true' : 'false' },
@@ -15187,31 +15388,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 )
               ) : activeTab === 'pathways' ? (
                 // Pathways Panel
-                h('div', { className: 'anatomy-pathway-panel bg-white rounded-xl border-2 border-rose-200 p-4 space-y-3', 'data-anatomy-pathway-panel':true },
+                h('div', { className: 'anatomy-pathway-panel bg-white rounded-xl border-2 border-rose-200 p-4 space-y-3', 'data-anatomy-pathway-panel':true, 'data-anatomy-pathway-id':activePathwayId||'' },
                   h('div', { className: 'flex items-center justify-between mb-2' },
                     h('h4', { className: 'font-bold text-rose-800 text-sm' }, t('stem.anatomy.physiological_pathways', '\uD83D\uDEE4 Physiological Pathways')),
                     h('span', { className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700' }, Object.keys(pathwaysCompleted).length + '/' + PATHWAYS.length + ' ' + t('stem.anatomy.route_completed','completed'))
                   ),
-                  h('p', { className: 'text-xs text-slate-600 mb-3' }, t('stem.anatomy.trace_step_by_step_how_blood_flows_air', 'Trace step-by-step how blood flows, air moves, food digests, or nerve signals travel through the body.')),
-                  !activePathwayId ? h('div', { className: 'grid grid-cols-2 gap-2' },
-                    PATHWAYS.map(function(pw) {
-                      var isDone = pathwaysCompleted[pw.id];
-                      return h('button', { key: pw.id,
-                        onClick: function() { updMulti(structureFocusPatch(pw.steps[0].structure, { _activePathway: pw.id, _pathwayStep: 0, _pathwayRecap: null })); announceStructure(pw.steps[0].structure); playSound('pathwayStep'); },
-                        className: 'text-left rounded-xl p-3 border-2 transition-all ' + (isDone ? 'border-rose-600 bg-rose-50' : 'transition-colors border-slate-200 hover:border-rose-200 hover:bg-rose-50/50 active:scale-[0.97]')
-                      },
-                        h('div', { className: 'flex items-center gap-2 mb-1' },
-                          h('span', { className: 'text-lg' }, pw.icon),
-                          h('span', { className: 'text-xs font-black', style: { color: ({ '#ef4444': '#b91c1c', '#3b82f6': '#1d4ed8', '#16a34a': '#166534', '#eab308': '#854d0e' })[pw.color] || pw.color } }, pw.title),
-                          isDone ? h('span', { className: 'ml-auto text-[0.6875rem] text-emerald-500 font-bold' }, '\u2713') : null
-                        ),
-                        h('p', { className: 'text-[0.6875rem] text-slate-600 leading-relaxed' }, pw.desc),
-                        pathwayCheckSummary(pw.id) ? h('p', {'data-anatomy-pathway-score':pw.id}, pathwayCheckSummary(pw.id).correct+'/'+pathwayCheckSummary(pw.id).total+' '+t('stem.anatomy.route_latest_score', "correct on the latest completed concept check")) : null
-                      );
-                    })
+                  h('p', { className: 'text-xs text-slate-600 mb-3', dir:'auto' }, t('stem.anatomy.trace_step_by_step_how_blood_flows_air', 'Trace step-by-step how blood flows, air moves, food digests, or nerve signals travel through the body.')),
+                  !activePathwayId ? h('div', null,
+                    h('h5',{id:'anatomy-pathway-menu-title',tabIndex:-1},t('stem.anatomy.pathway_flow_choose','Choose a pathway')),
+                    h('div', { className: 'grid grid-cols-2 gap-2', 'data-anatomy-pathway-choices':true },
+                      PATHWAYS.map(function(pw) {
+                        var isDone = pathwaysCompleted[pw.id], saved = pathwaySessions[pw.id], summary = pathwayCheckSummary(pw.id);
+                        var savedAnswered = saved && saved.recap ? Object.keys(saved.recap.answers).length : 0;
+                        return h('button', { key: pw.id, type:'button', 'data-anatomy-pathway-choice':pw.id, 'data-session':saved?'resumed':'new',
+                          onClick: function() { openPathway(pw.id); },
+                          className: 'text-left rounded-xl p-3 border-2 transition-all ' + (isDone ? 'border-rose-600 bg-rose-50' : 'transition-colors border-slate-200 hover:border-rose-200 hover:bg-rose-50/50 active:scale-[0.97]')
+                        },
+                          h('div', { className: 'flex items-center gap-2 mb-1' },
+                            h('span', { className: 'text-lg', 'aria-hidden':true }, pw.icon),
+                            h('span', { className: 'text-xs font-black', style: { color: ({ '#ef4444': '#b91c1c', '#3b82f6': '#1d4ed8', '#16a34a': '#166534', '#eab308': '#854d0e' })[pw.color] || pw.color } }, pw.title),
+                            isDone ? h('span', { className: 'ml-auto text-[0.6875rem] text-emerald-500 font-bold' }, '\u2713') : null
+                          ),
+                          h('p', { className: 'text-[0.6875rem] text-slate-600 leading-relaxed', dir:'auto' }, pw.desc),
+                          h('p',{className:'anatomy-pathway-session-label'},saved?t('stem.anatomy.pathway_flow_resume','Resume saved progress'):t('stem.anatomy.pathway_flow_start','Start pathway')),
+                          saved && h('p',{className:'anatomy-pathway-session-help'},t('stem.anatomy.pathway_flow_bookmark','Step {step} of {total} · {answered}/{checks} checks answered').replace('{step}',String(saved.step+1)).replace('{total}',String(pw.steps.length)).replace('{answered}',String(savedAnswered)).replace('{checks}',String(pathwayQuestions(pw).length))),
+                          summary ? h('p', {'data-anatomy-pathway-score':pw.id}, summary.correct+'/'+summary.total+' '+t('stem.anatomy.route_latest_score', 'correct on the latest completed concept check')) : null
+                        );
+                      })
+                    )
                   ) : (function() {
-                    var pw = null;
-                    for (var pwi = 0; pwi < PATHWAYS.length; pwi++) { if (PATHWAYS[pwi].id === activePathwayId) { pw = PATHWAYS[pwi]; break; } }
+                    var pw = activePathway;
                     if (!pw) return null;
                     var routeAccent = ({ '#ef4444': '#b91c1c', '#3b82f6': '#1d4ed8', '#16a34a': '#166534', '#eab308': '#854d0e' })[pw.color] || pw.color; var step = pw.steps[pathwayStepIdx];
                     var stepContext = step ? findStructureContext(step.structure, sysKey) : null;
@@ -15219,12 +15425,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     var diagramMatchesStep = !!stepContext && stepContext.systemId === sysKey && stepViewMatches && selectedStructureId === step.structure;
                     return h('div', { className: 'space-y-3' },
                       h('div', { className: 'flex items-center gap-2 mb-2' },
-                        h('span', { className: 'text-lg' }, pw.icon),
+                        h('span', { className: 'text-lg', 'aria-hidden':true }, pw.icon),
                         h('span', { className: 'text-sm font-black', style: { color: routeAccent } }, pw.title),
-                        h('button', { 'aria-label': t('stem.anatomy.back', 'Back'),
-                          onClick: function() { updMulti({ _activePathway: null, _pathwayStep: 0, _pathwayRecap: null }); },
+                        h('button', { type:'button', 'data-anatomy-pathway-list-back':true,
+                          onClick:closePathway,
                           className: 'transition-colors ml-auto text-[0.6875rem] font-bold text-slate-600 hover:text-slate-600 px-2 py-1 rounded hover:bg-slate-100 active:scale-[0.97]'
-                        }, t('stem.anatomy.back_2', '\u2190 Back'))
+                        }, t('stem.anatomy.pathway_flow_back_list','Back to pathways'))
                       ),
                       h('div', { className: 'flex items-center justify-between mb-2' },
                         h('span', { className: 'anatomy-route-progress-label text-xs font-bold px-2 py-0.5 rounded-full', style: { background: pw.color + '18', color: routeAccent } }, t('stem.anatomy.route_step_number','Step {step} of {total}').replace('{step}',String(pathwayStepIdx + 1)).replace('{total}',String(pw.steps.length))),
@@ -15232,44 +15438,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           h('div', { className: 'h-full rounded-full transition-all', style: { width: (((pathwayStepIdx + 1) / pw.steps.length) * 100) + '%', background: routeAccent } })
                         )
                       ),
-                      h('label', {className:'anatomy-route-jump',htmlFor:'anatomy-pathway-jump'}, t('stem.anatomy.route_jump', "Go to step"), h('select',{id:'anatomy-pathway-jump',value:pathwayStepIdx,onChange:function(event){var index=Number(event.target.value);if(!Number.isInteger(index)||!pw.steps[index])return;updMulti(structureFocusPatch(pw.steps[index].structure,{_pathwayStep:index,_pathwayRecap:null}));announceStructure(pw.steps[index].structure);}},pw.steps.map(function(item,index){return h('option',{key:index,value:index},(index+1)+'. '+item.label);}))),
-                      pathwayRecapActive ? renderPathwayRecap(pw) : step ? h('div', { className: 'rounded-xl p-4 border-2', 'data-anatomy-pathway-step':pathwayStepIdx, tabIndex:-1, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { borderColor: pw.color + '40', background: pw.color + '08' } },
+                      h('label', {className:'anatomy-route-jump',htmlFor:'anatomy-pathway-jump'}, t('stem.anatomy.route_jump', 'Go to step'), h('select',{id:'anatomy-pathway-jump',value:pathwayStepIdx,onChange:function(event){changePathwayStep(Number(event.target.value),false);}},pw.steps.map(function(item,index){return h('option',{key:index,value:index},(index+1)+'. '+item.label);}))),
+                      pathwayCheckReturn && h('div',{className:'anatomy-pathway-check-return','data-anatomy-pathway-check-return':true},
+                        h('p',null,t('stem.anatomy.pathway_flow_saved','Your answers are saved. Review this step, then return to the same question.')),
+                        h('button',{type:'button','data-anatomy-pathway-check-resume':true,onClick:resumePathwayCheck},t('stem.anatomy.pathway_flow_return','Return to checks · Question {question}').replace('{question}',String(pathwayQuestions(pw).findIndex(function(question){return question.id===pathwayCheckReturn.questionId;})+1)))
+                      ),
+                      pathwayRecapActive ? renderPathwayRecap(pw) : step ? h('div', { className: 'rounded-xl p-4 border-2', 'data-anatomy-pathway-step':pathwayStepIdx, tabIndex:-1, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', dir:'auto', style: { borderColor: pw.color + '40', background: pw.color + '08' } },
                         h('h5', { className: 'font-bold text-sm mb-2', style: { color: routeAccent } }, (pathwayStepIdx + 1) + '. ' + step.label),
                         h('div', { className: 'flex items-center gap-2 mb-2 flex-wrap' },
                           h('span', { className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-600' }, t('stem.anatomy.route_diagram_context','Diagram: {system} - {view}').replace('{system}',sys.name).replace('{view}',view === 'anterior' ? t('stem.anatomy.route_anterior','Anterior') : t('stem.anatomy.route_posterior','Posterior'))),
-                          h('button', {
+                          h('button', {type:'button',
                             'data-anatomy-pathway-diagram':true, onClick: function() { showPathwayDiagram(step); },
                             className: 'px-2 py-0.5 rounded text-[0.6875rem] font-bold bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200 active:scale-[0.97]'
-                          }, diagramMatchesStep ? t('stem.anatomy.route_show_marker', "Show marker on diagram") : t('stem.anatomy.route_focus_diagram','Focus diagram'))
+                          }, diagramMatchesStep ? t('stem.anatomy.route_show_marker', 'Show marker on diagram') : t('stem.anatomy.route_focus_diagram','Focus diagram'))
                         ),
                         h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, step.detail),
-                        step.scope && h('p',{className:'anatomy-route-scope','data-anatomy-pathway-scope':step.structure},h('strong',null,t('stem.anatomy.route_marker_scope', "What this marker shows: ")),step.scope),
-                        h('a',{href:pw.reference,target:'_blank',rel:'noopener noreferrer',className:'anatomy-route-reference'},t('stem.anatomy.route_reference', "Read about this pathway — OpenStax")),
+                        step.scope && h('p',{className:'anatomy-route-scope','data-anatomy-pathway-scope':step.structure},h('strong',null,t('stem.anatomy.route_marker_scope', 'What this marker shows: ')),step.scope),
+                        h('a',{href:pw.reference,target:'_blank',rel:'noopener noreferrer',className:'anatomy-route-reference'},t('stem.anatomy.route_reference', 'Read about this pathway — OpenStax')),
                         ttsBtn(step.detail + (step.scope ? ' ' + step.scope : ''), t('stem.anatomy.read_step_aloud', 'Read this step aloud'))
                       ) : null,
                       pathwayRecapActive ? null : h('div', { className: 'flex gap-2 justify-between' },
-                        h('button', { 'aria-label': t('stem.anatomy.previous_3', 'Previous'),
-                          onClick: function() {
-                            if (pathwayStepIdx > 0) {
-                              var prev = pathwayStepIdx - 1;
-                              updMulti(structureFocusPatch(pw.steps[prev].structure, { _pathwayStep: prev })); announceStructure(pw.steps[prev].structure); playSound('pathwayStep');
-                            }
-                          },
+                        h('button', { type:'button', 'aria-label': t('stem.anatomy.previous_3', 'Previous'),
+                          onClick: function() { changePathwayStep(pathwayStepIdx-1,true); },
                           disabled: pathwayStepIdx === 0,
                           className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (pathwayStepIdx === 0 ? 'bg-slate-100 text-slate-600' : 'transition-colors bg-rose-100 text-rose-800 hover:bg-rose-200 active:scale-[0.97]')
                         }, t('stem.anatomy.previous_4', '\u2190 Previous')),
-                        pathwayStepIdx < pw.steps.length - 1 ? h('button', { 'aria-label': t('stem.anatomy.next_pathway_step', 'Next pathway step'),
-                          onClick: function() {
-                            var next = pathwayStepIdx + 1;
-                            updMulti(structureFocusPatch(pw.steps[next].structure, { _pathwayStep: next })); announceStructure(pw.steps[next].structure); playSound('pathwayStep');
-                          },
+                        pathwayStepIdx < pw.steps.length - 1 ? h('button', { type:'button', 'aria-label': t('stem.anatomy.next_pathway_step', 'Next pathway step'),
+                          onClick: function() { changePathwayStep(pathwayStepIdx+1,true); },
                           className: 'px-4 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-90 transition-all',
                           style: { background: routeAccent }
-                        }, t('stem.anatomy.next_6', 'Next \u2192')) : getPathwayRecapQuestions().length >= 2 ? h('button', { 'aria-label': t('stem.anatomy.pathway_recap_open', 'Check what you traced'), 'data-anatomy-pathway-recap-open': 'true',
-                          onClick: function() { updMulti({ _pathwayRecap: { active: true, version: 2, pathwayId: pw.id, answers: {} } }); playSound('pathwayStep'); if (typeof announceToSR === 'function') announceToSR(t('stem.anatomy.route_check_announce', "Pathway check: choose explanations for two situations.")); },
+                        }, t('stem.anatomy.next_6', 'Next \u2192')) : getPathwayRecapQuestions().length >= 2 ? h('button', { type:'button', 'aria-label': pathwayCheckReturn ? t('stem.anatomy.pathway_flow_return','Return to checks · Question {question}').replace('{question}',String(pathwayQuestions(pw).findIndex(function(question){return question.id===pathwayCheckReturn.questionId;})+1)) : t('stem.anatomy.pathway_recap_open', 'Check what you traced'), 'data-anatomy-pathway-recap-open': 'true',
+                          onClick: function() { openPathwayChecks(false); },
                           className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-rose-800 text-white hover:bg-rose-900 transition-all active:scale-[0.97]'
-                        }, t('stem.anatomy.pathway_recap_open_2', '\u2713 Check what you traced \u2192')) : h('button', { 'aria-label': t('stem.anatomy.complete_pathway', 'Complete Pathway!'),
-                          onClick: function() { completeActivePathway(pw); },
+                        }, pathwayCheckReturn ? t('stem.anatomy.pathway_flow_return','Return to checks · Question {question}').replace('{question}',String(pathwayQuestions(pw).findIndex(function(question){return question.id===pathwayCheckReturn.questionId;})+1)) : t('stem.anatomy.pathway_recap_open_2', '\u2713 Check what you traced \u2192')) : h('button', { type:'button', 'aria-label': t('stem.anatomy.complete_pathway', 'Complete Pathway!'),
+                          onClick: function() { completeActivePathway(pw,true); },
                           className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 transition-all active:scale-[0.97]'
                         }, t('stem.anatomy.complete_pathway_2', '\uD83C\uDFC6 Complete Pathway!'))
                       )

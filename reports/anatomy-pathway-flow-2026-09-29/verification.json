@@ -1,0 +1,201 @@
+{
+  "uniqueUnitChecks": 321,
+  "uniqueUnitSuites": 8,
+  "initialUnitChecks": 277,
+  "initialPathwayFlowChecks": 40,
+  "finalTargetedChecks": 321,
+  "pathwayFlowChecks": 42,
+  "spotterMarkerChecks": 32,
+  "unitResultsMergedBy": "fullName",
+  "allEffectiveUnitChecksPassed": true,
+  "unitRuns": [
+    {
+      "file": "unit-results.json",
+      "assertions": 277,
+      "passed": 274,
+      "failed": 3
+    },
+    {
+      "file": "pathway-unit-results.json",
+      "assertions": 40,
+      "passed": 34,
+      "failed": 6
+    },
+    {
+      "file": "final-unit-results.json",
+      "assertions": 321,
+      "passed": 321,
+      "failed": 0
+    }
+  ],
+  "browserScenarios": 3,
+  "accessibilityScans": 21,
+  "pathwayAccessibilityScans": 15,
+  "spotterAccessibilityScans": 6,
+  "accessibilityViolations": 0,
+  "pathwayPanelTop": 246,
+  "pathwaySizes": [
+    {
+      "width": 320,
+      "scroll": 320,
+      "theme": "light",
+      "locale": "en"
+    },
+    {
+      "width": 320,
+      "scroll": 320,
+      "theme": "dark",
+      "locale": "en"
+    },
+    {
+      "width": 320,
+      "scroll": 320,
+      "theme": "contrast",
+      "locale": "en"
+    },
+    {
+      "width": 390,
+      "scroll": 390,
+      "theme": "light",
+      "locale": "en"
+    },
+    {
+      "width": 390,
+      "scroll": 390,
+      "theme": "dark",
+      "locale": "en"
+    },
+    {
+      "width": 390,
+      "scroll": 390,
+      "theme": "contrast",
+      "locale": "en"
+    },
+    {
+      "width": 768,
+      "scroll": 768,
+      "theme": "light",
+      "locale": "en"
+    },
+    {
+      "width": 768,
+      "scroll": 768,
+      "theme": "dark",
+      "locale": "en"
+    },
+    {
+      "width": 768,
+      "scroll": 768,
+      "theme": "contrast",
+      "locale": "en"
+    },
+    {
+      "width": 1440,
+      "scroll": 1440,
+      "theme": "light",
+      "locale": "en"
+    },
+    {
+      "width": 1440,
+      "scroll": 1440,
+      "theme": "dark",
+      "locale": "en"
+    },
+    {
+      "width": 1440,
+      "scroll": 1440,
+      "theme": "contrast",
+      "locale": "en"
+    },
+    {
+      "width": 320,
+      "scroll": 320,
+      "theme": "light",
+      "locale": "ar-large"
+    },
+    {
+      "width": 320,
+      "scroll": 320,
+      "theme": "dark",
+      "locale": "ar-large"
+    },
+    {
+      "width": 320,
+      "scroll": 320,
+      "theme": "contrast",
+      "locale": "ar-large"
+    }
+  ],
+  "spotterSizes": [
+    {
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "width": 768,
+      "scrollWidth": 768
+    },
+    {
+      "width": 1440,
+      "scrollWidth": 1440
+    }
+  ],
+  "spotterInitialBlueprintRenders": [
+    {
+      "createdBy": "page",
+      "lost": false,
+      "draws": 413,
+      "renders": 7
+    }
+  ],
+  "spotterRestoredBlueprintRenders": [
+    {
+      "createdBy": "page",
+      "lost": false,
+      "draws": 354,
+      "renders": 6
+    }
+  ],
+  "spotterRestoredSaves": [
+    {
+      "answered": false,
+      "requested3d": true,
+      "requestedModel": "blueprint",
+      "target": "skull",
+      "feedback": null
+    },
+    {
+      "answered": true,
+      "requested3d": true,
+      "requestedModel": "blueprint",
+      "target": "skull",
+      "feedback": "ribs"
+    }
+  ],
+  "browserErrors": [],
+  "baselineMeasurements": {
+    "top": 565.234375,
+    "height": 554
+  },
+  "baselineAndFinalStudyStatesDiffer": true,
+  "sourceSha256": "091ad748a9f5441834ed8137030bf1f35d1adb26113640ece8716df0c02033db",
+  "sourceHashLineEndings": "LF",
+  "sourceMirrorsMatch": true,
+  "canonicalSyntaxCheckPassed": true,
+  "localeCandidateMirrorsMatch": true,
+  "localeLabelsPerPack": 18,
+  "localeCandidateHashes": {
+    "french": "ef2d7fad4770dcdedeeed223baba8de0a12df438d28753c47abca8d6415b3d63",
+    "spanish_latin_america": "789149bb549cf675084e8429e3c8bb6d006d8facd860564a96d32b0da8ec3102",
+    "arabic": "d34045304ef86bd56a53d5a922c9f28cab706484128fba36c521d7d6b278a882"
+  },
+  "requiredCommitExtraTests": [
+    "tests/anatomy_lab_science.test.js",
+    "tests/anatomy_control_names.test.js"
+  ],
+  "readmeDocumentsExtraTestScope": true
+}

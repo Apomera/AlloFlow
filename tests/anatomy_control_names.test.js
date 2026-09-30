@@ -38,10 +38,21 @@ function render(filePath, state) {
 }
 
 function accessibleName(el) {
-  const raw = el.getAttribute('aria-label')
-    || el.getAttribute('placeholder')
-    || el.textContent
-    || '';
+  // The roots here are detached from document. Resolve references inside their
+  // own tree, and remove the embedded control when reading a wrapping label.
+  const root = el.getRootNode();
+  const labelText = (label) => {
+    const copy = label.cloneNode(true);
+    copy.querySelectorAll('button,input,select,textarea,[aria-hidden="true"]').forEach(node => node.remove());
+    return copy.textContent || '';
+  };
+  const referenced = (el.getAttribute('aria-labelledby') || '').split(/\s+/).filter(Boolean)
+    .map(id => [...root.querySelectorAll('[id]')].find(node => node.id === id))
+    .filter(Boolean).map(labelText).join(' ');
+  const labels = [...(el.labels || [])].map(labelText).join(' ');
+  const contents = /^(BUTTON|A)$/.test(el.tagName) ? labelText(el) : '';
+  const raw = referenced || el.getAttribute('aria-label') || labels
+    || contents || el.getAttribute('title') || el.getAttribute('placeholder') || '';
   return raw.replace(/\s+/g, ' ').trim();
 }
 
@@ -60,6 +71,12 @@ function duplicateNames(root) {
 beforeEach(() => { resetStemLab(); });
 
 describe('Anatomy control names', () => {
+  it.each(ANATOMY_PATHS)('uses the distinct visible labels for both Tour selectors in %s', (filePath) => {
+    const root = render(filePath, { _activeTab: 'tour' });
+    expect(accessibleName(root.querySelector('#anatomy-study-system'))).toBe('Body system');
+    expect(accessibleName(root.querySelector('#anatomy-tour-system-select'))).toBe('Choose a tour');
+  });
+
   it.each(ANATOMY_PATHS)('gives every control on a screen its own name in %s', (filePath) => {
     for (const [mode, state] of MODES) {
       const dupes = duplicateNames(render(filePath, state));

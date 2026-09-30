@@ -604,7 +604,7 @@ describe('Anatomy Lab guided diagram synchronization', () => {
     expect(source).not.toContain("'nervous', 'digestive', 'respiratory'");
     expect(source).toContain('function findStructureContext(structureId, preferredSystemId)');
     expect(source).toContain('function structureFocusPatch(structureId, extraPatch)');
-    expect(source).toContain("updMulti(structureFocusPatch(pw.steps[0].structure, { _activePathway: pw.id, _pathwayStep: 0, _pathwayRecap: null }))");
+    expect(source).toContain('openPathway(pw.id)');
     expect(source).toContain("updMulti(structureFocusPatch(tourSteps[next].structureId, { _tourStepIdx: next, _tourSystem: tourSystemId }))");
     expect(source).not.toContain("upd('_pathwayStep', next); upd('selectedStructure'");
     expect(source).not.toContain("upd('_flashcardIdx', ni); upd('_flashcardFlipped'");
@@ -684,7 +684,7 @@ describe('Anatomy Lab guided-mode continuity', () => {
     expect(source).toContain('var randIdx = (flashcardIdx + randomOffset) % flashcardPool.length;');
     expect(source).toContain(`announceToSR(__alloT('stem.anatomy.sr_guided_anatomy_tour_complete_returning_to_explore', 'Guided anatomy tour complete. Returning to Explore.'))`);
     expect(source).toContain(
-      "announceToSR(__alloFill(__alloT('stem.anatomy.sr_pathway_complete', 'Pathway complete: {value1}.'), { value1: pw.title })"
+      "announceToSR(__alloFill(__alloT('stem.anatomy.sr_pathway_complete', 'Pathway complete: {value1}.'), {value1:pw.title}))"
     );
   });
 });
