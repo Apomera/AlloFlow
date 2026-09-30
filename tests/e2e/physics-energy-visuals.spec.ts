@@ -148,8 +148,8 @@ test('paused launch has a truthful single-sample budget and a short flight keeps
   await page.evaluate(() => (window as any).__energyTick());
   await expect(page.locator('[data-physics-energy-panel]')).toHaveCount(0);
   await launch(page, { angle: 5, velocity: 5, gravity: 25, mass: 1, launchHeight: 0 });
-  const result = await assertEnergy(page, 1); expect(result.t).toBeLessThan(.035); await assertBands(page);
-  await expect(page.locator('[data-physics-energy-graph]')).toHaveAttribute('data-plotted-count', '2');
+  const result = await assertEnergy(page, 1); expect(result.t).toBeLessThan(.035); expect(result.values.pe).toBe(0); await assertBands(page);
+  await expect(page.locator('[data-physics-energy-graph]')).toHaveAttribute('data-plotted-count', '3');
 });
 
 test('unsupported sample metadata does not borrow current controls for an energy timeline', async ({ page }) => {

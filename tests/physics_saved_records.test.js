@@ -137,7 +137,7 @@ describe('physics CSV recorded evidence', () => {
     const csv = clipboard.mock.calls[0][0].split('\n');
     expect(csv[0]).toContain('# run=12,');
     expect(csv[0]).toContain('mass_kg=2,model=projectile-v2');
-    expect(csv[2]).toBe('0.000,0.00,0.00,15.00,20.00,25.00');
-    expect(csv[3]).toBe('3.500,50.12,0.00,13.00,-18.00,22.20');
+    expect(csv[2].split(',').map(Number)).toEqual([0, 0, 0, 15, 20, 25]);
+    expect(csv[3].split(',').map(Number)).toEqual([3.5, 50.12, 0, 13, -18, Math.hypot(13, -18)]);
   });
 });

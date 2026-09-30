@@ -245,6 +245,10 @@ test('near-apex canvas precision agrees with the selected record after launch co
   const before = await evidence(page);
   await page.locator('[data-physics-flight-table] [data-physics-sample-index]').first().click();
   await page.locator('[data-physics-sample-jump="highest"]').click();
+  const exactApex = (await readDraw(page)).selected;
+  expect(exactApex).toMatchObject({ apex: true, phase: 'apex', vy: 0 });
+  // Check the neighboring falling observation as well as the exact event.
+  await page.locator('[data-physics-sample-next]').click();
   let draw = await readDraw(page);
   const selected = draw.selected;
   expect(Math.abs(selected.vy)).toBeGreaterThan(0.005);

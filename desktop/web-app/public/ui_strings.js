@@ -67102,6 +67102,14 @@
       "nhu2083": "NH₃"
     },
     "physics": {
+      "sample_phase_rising": "Rising",
+      "sample_phase_release": "Highest point at release",
+      "sample_phase_apex": "At apex",
+      "sample_phase_falling": "Falling",
+      "sample_phase_level": "Vertical velocity is zero",
+      "sample_moments": "Recorded flight moments",
+      "sample_apex_point": "Apex",
+      "sample_phase_help": "Velocity describes motion. Acceleration describes how velocity changes.",
       "investigation_reference_choice_help": "Use the reference selector above to change the baseline for these comparisons.",
       "investigation_trials_missing": "Both trials need matching completed measurements in the recent log.",
       "investigation_trials_selected": "Recorded trials selected. Compare the measured results below.",

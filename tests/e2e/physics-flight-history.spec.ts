@@ -82,7 +82,7 @@ async function assertRun(page: Page, run: number, landmarks = true) {
   expect(state.marker).toMatchObject({ run, index: state.s.index, t: state.s.t });
   if (landmarks) {
     expect(state.text).toContain(`Landed ${state.end.mX.toFixed(1)} m`);
-    if (state.apex?.tSec > .001) expect(state.text.some((t: string) => t.includes(state.apex.mY.toFixed(1) + ' m') && t.includes('APEX'))).toBe(true);
+    if (state.apex?.tSec > .001) expect(state.text.some((t: string) => t.includes((state.apex.mY !== 0 && Math.abs(state.apex.mY) < .01 ? state.apex.mY.toPrecision(3) : state.apex.mY.toFixed(2)) + ' m') && t.includes('APEX'))).toBe(true);
   }
   await expect(page.locator('[data-physics-graph-flight]')).toHaveAttribute('data-physics-graph-flight', String(run));
   await expect(page.locator('[data-physics-flight-summary]')).toHaveAttribute('data-run', String(run));

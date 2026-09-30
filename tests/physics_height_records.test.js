@@ -124,8 +124,8 @@ describe('height evidence and exports', () => {
     const lines = copied.mock.calls[0][0].split('\n');
     expect(lines[0]).toContain('launch_height_m=8');
     expect(lines[0]).toContain('model=projectile-v3');
-    expect(lines[2]).toBe('0.000,0.00,8.00,25.00,0.00,25.00');
-    expect(lines[3].split(',').slice(0, 3)).toEqual(['1.300', '32.50', '0.00']);
+    expect(lines[2].split(',').map(Number)).toEqual([0, 0, 8, 25, 0, 25]);
+    expect(lines[3].split(',').map(Number).slice(0, 3)).toEqual([1.3, 32.5, 0]);
   });
 
   it('suppresses equal-height power-law claims for elevated runs and unverified model versions', () => {

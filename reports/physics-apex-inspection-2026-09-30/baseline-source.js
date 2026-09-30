@@ -151,26 +151,6 @@ window.StemLab = window.StemLab || {
       remaining -= h;
     }
   }
-  // Keep the event resolved by the integrator between its neighboring ticks.
-  // Recording it here preserves the impact and never advances the body twice.
-  function physRecordSample(trail, body) {
-    var fields = ['mX', 'mY', 'mVx', 'mVy', 't'];
-    if (!Array.isArray(trail) || !trail.length || !body || !fields.every(function(k) { return physFinite(body[k]); }) || body.t < 0 || body.mY < 0 || body.mX < 0) return 0;
-    var previous = trail[trail.length - 1], count = trail.length;
-    if (!previous || !fields.every(function(k) { return physFinite(previous[k]); }) || previous.t < 0 || previous.mY < 0 || previous.mX < 0 || previous.t > body.t) return 0;
-    var apex = body.apex;
-    if (apex && fields.every(function(k) { return physFinite(apex[k]); }) && apex.mVy === 0 && apex.mY >= 0 && apex.mX >= 0 && apex.t > previous.t && apex.t <= body.t) {
-      trail.push(physPoint(apex));
-    }
-    var latest = trail[trail.length - 1];
-    // The event solver uses 44 bisections. A tick boundary can therefore land
-    // a few floating-point units after its resolved apex; retain that event
-    // once, while always preserving the final ground impact.
-    var eventTolerance = PHYS_DT / Math.pow(2, 43) + 4 * Number.EPSILON * Math.max(1, Math.abs(body.t));
-    var atResolvedApex = !body.landed && apex && fields.every(function(k) { return latest[k] === apex[k]; }) && body.t - latest.t <= eventTolerance;
-    if (body.t > latest.t && !atResolvedApex) trail.push(physPoint(body));
-    return trail.length - count;
-  }
   function physOutcome(status) { return { status: status, range: null, maxH: null, time: null, apexT: null }; }
   // Heights are measured from the landing ground. This analytic helper also
   // serves the formula and ideal-comparison views without duplicating math.
@@ -410,8 +390,6 @@ window.StemLab = window.StemLab || {
     var ke = 0.5 * p.mass * speed * speed, pe = p.mass * p.gravity * point.mY;
     var initialEnergy = 0.5 * p.mass * p.velocity * p.velocity + p.mass * p.gravity * p.launchHeight;
     if (![speed, fx, fy, ke, pe, initialEnergy, fx / p.mass, fy / p.mass].every(physFinite)) return null;
-    var impact = index === trail.length - 1 && point.t > 0 && point.mY === 0 && point.mVy <= 0;
-    var apex = !!trail.apex && point.mVy === 0 && point.t === trail.apex.tSec && point.mX === trail.apex.mX && point.mY === trail.apex.mY && point.mVx === trail.apex.vx;
     return Object.freeze({
       index: index, count: trail.length, t: point.t, x: point.mX, y: point.mY,
       vx: point.mVx, vy: point.mVy, speed: speed, ax: fx / p.mass, ay: fy / p.mass,
@@ -421,8 +399,7 @@ window.StemLab = window.StemLab || {
       parameters: Object.freeze({ angle: p.angle, velocity: p.velocity, gravity: p.gravity, mass: p.mass,
         launchHeight: p.launchHeight, airResist: p.drag, modelVersion: trail.modelVersion }),
       run: Number.isSafeInteger(trail.run) && trail.run > 0 ? trail.run : null,
-      impact: impact, apex: apex,
-      phase: impact ? 'impact' : apex ? 'apex' : point.mVy > 0 ? 'rising' : point.mVy < 0 ? 'falling' : 'level'
+      impact: index === trail.length - 1 && point.t > 0 && point.mY === 0 && point.mVy <= 0
     });
   }
   function physSelectedInspection(cv) {
@@ -431,10 +408,6 @@ window.StemLab = window.StemLab || {
     return selection && Array.isArray(trails) && trails.indexOf(selection.trail) >= 0 &&
       selection.trail[selection.index] && selection.snapshot
       ? selection.snapshot : null;
-  }
-  function physFormatSampleValue(value) {
-    if (!physFinite(value)) return '—';
-    return value !== 0 && Math.abs(value) < 0.01 ? value.toPrecision(3) : value.toFixed(2);
   }
   function physCompareMeasurements(vacuum, drag) {
     if (!physFinite(vacuum) || !physFinite(drag) || vacuum < 0 || drag < 0) return null;
@@ -447,7 +420,7 @@ window.StemLab = window.StemLab || {
       dragWidth: scaleMax > 0 ? (drag / scaleMax) * 100 : 0 });
   }
   try {
-    window.StemLab._physics = { DT: PHYS_DT, DRAG_K: PHYS_DRAG_K, MODEL_VERSION: PHYS_MODEL_VERSION, step: physStep, recordSample: physRecordSample, simulate: physSimulate, vacuum: physVacuum, solveVelocity: physSolveVelocity, solveAngle: physSolveAngle, inspectSample: physInspectSample, formatSampleValue: physFormatSampleValue, compareMeasurements: physCompareMeasurements,
+    window.StemLab._physics = { DT: PHYS_DT, DRAG_K: PHYS_DRAG_K, MODEL_VERSION: PHYS_MODEL_VERSION, step: physStep, simulate: physSimulate, vacuum: physVacuum, solveVelocity: physSolveVelocity, solveAngle: physSolveAngle, inspectSample: physInspectSample, compareMeasurements: physCompareMeasurements,
       findTrialRun: physFindTrialRun, normalizeInvestigationDraft: physNormalizeInvestigationDraft, normalizeInvestigations: physNormalizeInvestigations, compareRuns: physCompareRuns, createInvestigation: physCreateInvestigation, formatInvestigationReport: physFormatInvestigationReport };
   } catch (e) {}
 
@@ -1810,7 +1783,7 @@ window.StemLab = window.StemLab || {
                   ctx.strokeStyle = '#fde68a'; ctx.lineWidth = 2 * dpr;
                   ctx.beginPath(); ctx.arc(ax * dpr, ay * dpr, 5 * dpr, 0, Math.PI * 2); ctx.stroke();
                   reserveMarker(ax, ay, 5);
-                  tag('apex', [((canvasEl._L || {}).apexCap || 'APEX') + ' ' + physFormatSampleValue(ap.mY) + ' m', 't = ' + ap.tSec.toFixed(2) + ' s · Vy = 0'], ax, ay, '#fde68a', ax, ay - 32, 5);
+                  tag('apex', [((canvasEl._L || {}).apexCap || 'APEX') + ' ' + ap.mY.toFixed(1) + ' m', 't = ' + ap.tSec.toFixed(2) + ' s · Vy = 0'], ax, ay, '#fde68a', ax, ay - 32, 5);
                 }
               }
 
@@ -1824,7 +1797,7 @@ window.StemLab = window.StemLab || {
                 while (!ball.landed && (canvasEl._accumulator || 0) + 1e-12 >= PHYS_DT) {
                   canvasEl._accumulator = Math.max(0, canvasEl._accumulator - PHYS_DT);
                   physStep(ball, PHYS_DT);
-                  if (trails.length > 0) physRecordSample(trails[trails.length - 1], ball);
+                  if (trails.length > 0) trails[trails.length - 1].push({ mX: ball.mX, mY: ball.mY, mVx: ball.mVx, mVy: ball.mVy, t: ball.t });
                 }
 
                 ball.speed = Math.sqrt(ball.mVx * ball.mVx + ball.mVy * ball.mVy);
@@ -2190,8 +2163,7 @@ window.StemLab = window.StemLab || {
                 var readingDecimals = inspection ? 2 : 1;
                 var vectorReadout = canvasEl.dataset.showVectors === 'true';
                 var reading = inspection || { t: ball.t, x: ball.mX, y: ball.mY, vx: ball.mVx, vy: ball.mVy };
-                function readingValue(value) { return inspection ? physFormatSampleValue(value) : value.toFixed(readingDecimals); }
-                var readouts = ['t ' + reading.t.toFixed(inspection ? 3 : 2) + ' s', vectorReadout ? 'Vx ' + readingValue(reading.vx) + ' m/s' : 'x ' + readingValue(reading.x) + ' m', vectorReadout ? 'Vy ' + readingValue(reading.vy) + ' m/s' : 'y ' + readingValue(reading.y) + ' m'];
+                var readouts = ['t ' + reading.t.toFixed(inspection ? 3 : 2) + ' s', vectorReadout ? 'Vx ' + reading.vx.toFixed(readingDecimals) + ' m/s' : 'x ' + reading.x.toFixed(readingDecimals) + ' m', vectorReadout ? 'Vy ' + reading.vy.toFixed(readingDecimals) + ' m/s' : 'y ' + reading.y.toFixed(readingDecimals) + ' m'];
                 readouts.forEach(function(reading, i) { ctx.fillStyle = vectorReadout && i > 0 ? (i === 1 ? '#6ee7b7' : '#c4b5fd') : scene.ink; ctx.fillText(reading, (14 + i * (cssW - 28) / 3) * dpr, 89 * dpr); });
               } else if (canvasEl.dataset.constraintType) {
                 ctx.fillStyle = '#fde68a'; ctx.fillText('🔒 ' + (canvasEl.dataset.constraintType === 'fixedAngle' ? 'θ ' + canvasEl.dataset.constraintValue + '°' : 'v ' + canvasEl.dataset.constraintValue + ' m/s'), 14 * dpr, 89 * dpr);
@@ -2513,9 +2485,7 @@ window.StemLab = window.StemLab || {
             for (var i = 0; i < tr.length; i++) {
               var p = tr[i];
               var vx = p.mVx, vy = p.mVy;
-              // Export the recorded numbers without display rounding so tiny heights
-              // and neighboring event times remain distinct in a spreadsheet.
-              lines.push([p.t, p.mX, p.mY, vx, vy, Math.hypot(vx, vy)].join(','));
+              lines.push([p.t.toFixed(3), p.mX.toFixed(2), p.mY.toFixed(2), vx.toFixed(2), vy.toFixed(2), Math.sqrt(vx * vx + vy * vy).toFixed(2)].join(','));
             }
             return lines.join('\n');
           }
@@ -2752,19 +2722,8 @@ window.StemLab = window.StemLab || {
               #physics-fs-outer :is([data-physics-sample-inspector],[data-physics-flight-data]) button[aria-pressed="true"]{background:var(--phys-selected);border-color:var(--phys-accent);color:var(--phys-accent);box-shadow:inset 0 -2px var(--phys-accent)}
               #physics-fs-outer .phys-sample-navigation{padding:12px;background:var(--phys-soft);border:1px solid var(--phys-line);border-radius:12px;margin-bottom:14px}
               #physics-fs-outer .phys-sample-navigation label{display:block;font-size:.75rem;color:var(--phys-muted);font-weight:650}
-              #physics-fs-outer .phys-sample-navigation input{display:block;width:100%;min-height:44px;margin:6px 0;accent-color:var(--phys-accent)}
+              #physics-fs-outer .phys-sample-navigation input{display:block;width:100%;min-height:30px;margin:6px 0;accent-color:var(--phys-accent)}
               #physics-fs-outer .phys-sample-buttons{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
-              #physics-fs-outer .phys-sample-landmarks{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:8px;margin-top:10px}
-              #physics-fs-outer .phys-sample-landmarks button{display:grid;gap:4px;align-content:center;text-align:left;min-height:68px}
-              #physics-fs-outer .phys-sample-landmarks strong{font-size:14px;font-weight:750;font-variant-numeric:tabular-nums}
-              #physics-fs-outer [data-physics-motion-phase]{padding:14px;margin-bottom:14px;border:1px solid var(--phys-accent);border-radius:12px;background:var(--phys-selected);color:var(--phys-ink);display:grid;gap:10px}
-              #physics-fs-outer .phys-phase-heading{display:flex;align-items:center;gap:9px}
-              #physics-fs-outer .phys-phase-heading>span{font-size:24px;font-weight:750;line-height:1;color:var(--phys-accent)}
-              #physics-fs-outer [data-physics-phase-label]{margin:0;font-size:17px;line-height:1.4;font-weight:750;color:var(--phys-accent)}
-              #physics-fs-outer [data-physics-motion-phase]>p{margin:0;font-size:12px;line-height:1.6}
-              #physics-fs-outer .phys-phase-values{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0;padding-top:9px;border-top:1px solid var(--phys-accent)}
-              #physics-fs-outer .phys-phase-values dt{font-size:12px;color:var(--phys-muted);line-height:1.5}
-              #physics-fs-outer .phys-phase-values dd{margin:4px 0 0;font-size:18px;line-height:1.4;font-weight:750;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
               #physics-fs-outer .phys-measured-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}
               #physics-fs-outer .phys-measured-card{min-width:0;border:1px solid var(--phys-line);border-radius:12px;background:var(--phys-soft);padding:14px}
               #physics-fs-outer .phys-measured-card h4{margin:0 0 10px;font-size:.875rem;font-weight:750;color:var(--phys-ink)}
@@ -2775,7 +2734,7 @@ window.StemLab = window.StemLab || {
               #physics-fs-outer .phys-energy-budget{display:flex;width:100%;height:10px;overflow:hidden;border-radius:5px;background:var(--phys-panel);border:1px solid var(--phys-line);margin:12px 0}
               #physics-fs-outer .phys-energy-key{display:inline-block;width:9px;height:9px;margin-right:6px;border-radius:2px;border:1px solid var(--phys-line)}
               #physics-fs-outer [data-physics-sample-forces]{margin-top:12px;padding:12px;border:1px solid var(--phys-line);border-radius:12px;background:var(--phys-soft)}
-              #physics-fs-outer [data-physics-sample-forces]>summary{min-height:44px;cursor:pointer;font-size:.875rem;font-weight:700;color:var(--phys-accent)}
+              #physics-fs-outer [data-physics-sample-forces]>summary{min-height:32px;cursor:pointer;font-size:.875rem;font-weight:700;color:var(--phys-accent)}
               #physics-fs-outer [data-physics-flight-table-wrap]{position:relative;isolation:isolate;max-height:460px;overflow:auto;overflow-anchor:none;overscroll-behavior:contain;border:1px solid var(--phys-line);border-radius:11px;margin-top:12px;background:var(--phys-panel)}
               #physics-fs-outer [data-physics-flight-table]{width:100%;min-width:620px;border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums;text-align:right;font-size:.8125rem}
               #physics-fs-outer [data-physics-flight-table] :is(th,td){padding:10px 12px;border-bottom:1px solid var(--phys-line);color:var(--phys-ink);white-space:nowrap}
@@ -3057,21 +3016,9 @@ window.StemLab = window.StemLab || {
               var parameters = sample.parameters;
               var highest = 0;
               trail.forEach(function(point, index) { if (point.mY > trail[highest].mY) highest = index; });
-              var apexIndex = trail.apex ? trail.findIndex(function(point) {
-                return point.mVy === 0 && point.t === trail.apex.tSec && point.mX === trail.apex.mX && point.mY === trail.apex.mY && point.mVx === trail.apex.vx;
-              }) : -1;
-              var latest = physInspectSample(trail, trail.length - 1);
-              var phaseLabels = {
-                rising: __alloT('stem.physics.sample_phase_rising', 'Rising'),
-                apex: sample.t === 0 ? __alloT('stem.physics.sample_phase_release', 'Highest point at release') : __alloT('stem.physics.sample_phase_apex', 'At apex'),
-                falling: __alloT('stem.physics.sample_phase_falling', 'Falling'),
-                level: __alloT('stem.physics.sample_phase_level', 'Vertical velocity is zero'),
-                impact: __alloT('stem.physics.sample_ground_impact', 'Ground impact')
-              };
-              var phaseLabel = phaseLabels[sample.phase];
               function measurement(key, label, value, unit) {
                 var swatch = key === 'ke' ? 'var(--phys-accent)' : key === 'pe' ? 'var(--phys-muted)' : key === 'dragLoss' ? 'repeating-linear-gradient(135deg,var(--phys-line),var(--phys-line) 2px,var(--phys-panel) 2px,var(--phys-panel) 4px)' : null;
-                return h('div', { key: key, 'data-physics-measurement': key }, h('dt', null, swatch && h('span', { className: 'phys-energy-key', 'aria-hidden': true, style: { background: swatch } }), label), h('dd', null, physFormatSampleValue(value) + ' ' + unit));
+                return h('div', { key: key, 'data-physics-measurement': key }, h('dt', null, swatch && h('span', { className: 'phys-energy-key', 'aria-hidden': true, style: { background: swatch } }), label), h('dd', null, value.toFixed(2) + ' ' + unit));
               }
               var sampleLabel = __alloT('stem.physics.sample_number', 'Sample') + ' ' + (sample.index + 1) + ' / ' + sample.count;
               var settings = [
@@ -3094,8 +3041,6 @@ window.StemLab = window.StemLab || {
                     }, 0);
                   } }, __alloT('stem.physics.sample_close', 'Close inspector'))),
                 h('div', { className: 'phys-capture-settings', 'aria-label': __alloT('stem.physics.sample_recorded_settings', 'Recorded launch settings') }, settings.map(function(label, index) { return h('span', { key: index }, label); })),
-                h('p', { className: 'sr-only', 'data-physics-sample-status': true, role: 'status', 'aria-live': 'polite', 'aria-atomic': true },
-                  (sample.run != null ? __alloT('stem.physics.investigation_run', 'Run') + ' ' + sample.run + ' · ' : '') + sampleLabel + ' · t = ' + sample.t.toFixed(3) + ' s · ' + phaseLabel),
                 h('div', { className: 'phys-sample-navigation' },
                   h('label', { htmlFor: 'physics-sample-slider' }, __alloT('stem.physics.sample_slider_label', 'Move through the recorded flight')),
                   h('input', { type: 'range', id: 'physics-sample-slider', 'data-physics-sample-slider': true, min: 0, max: Math.max(0, trail.length - 1), step: 1, value: sample.index,
@@ -3103,20 +3048,10 @@ window.StemLab = window.StemLab || {
                     onChange: function(e) { physSelectSample(Number(e.target.value)); } }),
                   h('div', { className: 'phys-sample-buttons' },
                     h('button', { type: 'button', 'data-physics-sample-prev': true, disabled: sample.index === 0, onClick: function() { physSelectSample(sample.index - 1); } }, __alloT('stem.physics.sample_previous', 'Previous point')),
-                    h('button', { type: 'button', 'data-physics-sample-next': true, disabled: sample.index >= trail.length - 1, onClick: function() { physSelectSample(sample.index + 1); } }, __alloT('stem.physics.sample_next', 'Next point'))),
-                  h('div', { className: 'phys-sample-landmarks', role: 'group', 'aria-label': __alloT('stem.physics.sample_moments', 'Recorded flight moments') },
-                    h('button', { type: 'button', 'data-physics-sample-jump': 'launch', 'data-physics-sample-landmark': 'launch', 'aria-pressed': sample.index === 0, onClick: function() { physSelectSample(0); } },
-                      h('span', null, __alloT('stem.physics.sample_launch_point', 'Launch point')), h('strong', null, 't = ' + trail[0].t.toFixed(3) + ' s')),
-                    h('button', { type: 'button', 'data-physics-sample-jump': 'highest', 'data-physics-sample-landmark': apexIndex >= 0 ? 'apex' : 'highest', 'aria-pressed': sample.index === (apexIndex >= 0 ? apexIndex : highest), onClick: function() { physSelectSample(apexIndex >= 0 ? apexIndex : highest); } },
-                      h('span', null, apexIndex >= 0 ? __alloT('stem.physics.sample_apex_point', 'Apex') : __alloT('stem.physics.sample_highest_point', 'Highest recorded point')), h('strong', null, 't = ' + trail[apexIndex >= 0 ? apexIndex : highest].t.toFixed(3) + ' s')),
-                    h('button', { type: 'button', 'data-physics-sample-jump': 'latest', 'data-physics-sample-landmark': latest && latest.impact ? 'impact' : 'latest', 'aria-pressed': sample.index === trail.length - 1, onClick: function() { physSelectSample(trail.length - 1); } },
-                      h('span', null, latest && latest.impact ? __alloT('stem.physics.sample_ground_impact', 'Ground impact') : __alloT('stem.physics.sample_latest_point', 'Latest point')), h('strong', null, 't = ' + trail[trail.length - 1].t.toFixed(3) + ' s')))),
-                h('section', { 'data-physics-motion-phase': sample.phase, 'aria-label': phaseLabel },
-                  h('div', { className: 'phys-phase-heading' }, h('span', { 'aria-hidden': true }, sample.phase === 'rising' ? '↑' : sample.phase === 'falling' || sample.phase === 'impact' ? '↓' : sample.phase === 'apex' ? '∩' : '—'), h('h4', { 'data-physics-phase-label': true }, phaseLabel)),
-                  h('p', null, __alloT('stem.physics.sample_phase_help', 'Velocity describes motion. Acceleration describes how velocity changes.')),
-                  h('dl', { className: 'phys-phase-values' },
-                    h('div', null, h('dt', null, __alloT('stem.physics.sample_vertical_velocity', 'Vertical velocity · vy')), h('dd', { 'data-physics-phase-value': 'vy', 'data-value': sample.vy }, physFormatSampleValue(sample.vy) + ' m/s')),
-                    h('div', null, h('dt', null, __alloT('stem.physics.sample_vertical_acceleration', 'Vertical acceleration · ay')), h('dd', { 'data-physics-phase-value': 'ay', 'data-value': sample.ay }, physFormatSampleValue(sample.ay) + ' m/s²')))),
+                    h('button', { type: 'button', 'data-physics-sample-next': true, disabled: sample.index >= trail.length - 1, onClick: function() { physSelectSample(sample.index + 1); } }, __alloT('stem.physics.sample_next', 'Next point')),
+                    h('button', { type: 'button', 'data-physics-sample-jump': 'launch', 'aria-pressed': sample.index === 0, onClick: function() { physSelectSample(0); } }, __alloT('stem.physics.sample_launch_point', 'Launch point')),
+                    h('button', { type: 'button', 'data-physics-sample-jump': 'highest', 'aria-pressed': sample.index === highest, onClick: function() { physSelectSample(highest); } }, __alloT('stem.physics.sample_highest_point', 'Highest recorded point')),
+                    h('button', { type: 'button', 'data-physics-sample-jump': 'latest', 'aria-pressed': sample.index === trail.length - 1, onClick: function() { physSelectSample(trail.length - 1); } }, __alloT('stem.physics.sample_latest_point', 'Latest point')))),
                 h('div', { className: 'phys-measured-grid' },
                   h('section', { className: 'phys-measured-card', 'aria-labelledby': 'physics-sample-motion' },
                     h('h4', { id: 'physics-sample-motion' }, __alloT('stem.physics.sample_motion', 'Position & velocity')),
@@ -4434,7 +4369,7 @@ window.StemLab = window.StemLab || {
                 function summaryMeasurement(key, label, value, unit) {
                   return React.createElement('div', { key: key },
                     React.createElement('dt', null, label),
-                    React.createElement('dd', { 'data-physics-flight-summary-value': key }, physFormatSampleValue(value) + ' ' + unit));
+                    React.createElement('dd', { 'data-physics-flight-summary-value': key }, value.toFixed(2) + ' ' + unit));
                 }
                 function revealSelectedRow(element) {
                   if (!element) return;
@@ -4471,11 +4406,11 @@ window.StemLab = window.StemLab || {
                             (slider && !slider.disabled ? slider : panel).focus({ preventScroll: true });
                           }, 0);
                         } }, t_sec.toFixed(3))),
-                    React.createElement('td', null, physFormatSampleValue(pt.mX)),
-                    React.createElement('td', null, physFormatSampleValue(pt.mY)),
-                    React.createElement('td', null, physFormatSampleValue(pt.mVx || 0)),
-                    React.createElement('td', null, physFormatSampleValue(pt.mVy || 0)),
-                    React.createElement('td', null, physFormatSampleValue(Math.hypot(pt.mVx || 0, pt.mVy || 0))));
+                    React.createElement('td', null, pt.mX.toFixed(2)),
+                    React.createElement('td', null, pt.mY.toFixed(2)),
+                    React.createElement('td', null, (pt.mVx || 0).toFixed(2)),
+                    React.createElement('td', null, (pt.mVy || 0).toFixed(2)),
+                    React.createElement('td', null, Math.sqrt((pt.mVx || 0) * (pt.mVx || 0) + (pt.mVy || 0) * (pt.mVy || 0)).toFixed(2)));
                 });
                 return React.createElement('div', null,
                   React.createElement('div', { className: 'phys-capture-settings', 'aria-label': __alloT('stem.physics.sample_recorded_settings', 'Recorded launch settings') }, settings.map(function(label, i) { return React.createElement('span', { key: i }, label); })),

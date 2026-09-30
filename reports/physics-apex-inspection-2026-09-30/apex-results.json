@@ -1,0 +1,721 @@
+{
+  "createdAt": "2026-09-30T12:45:46.710Z",
+  "baselineCommit": "a0ec3e9e4b666a2f3ca98800e9a5155a8019354b",
+  "sourceFile": "stem_lab/stem_tool_physics.js",
+  "sourceSha256": {
+    "baseline": "9ea3c1434cd3d8b6a1b69083af17da1e2d4f0374e5589fac6b3dd8076e25fb86",
+    "final": "bebc15bbf88758cf07077b989c11b352314f02fccf2bb0d318ad93fc91e4d4ad"
+  },
+  "auditSha256": "b4ca8bba2237fb4c8479ac12e7672d62ff74beab92d77f265fae95fc4b88a34a",
+  "sourceUnchanged": true,
+  "passed": true,
+  "configurations": [
+    {
+      "version": "baseline",
+      "scenario": "normal-flight",
+      "theme": "default",
+      "width": 1100,
+      "screenshot": "inspector-baseline-default-1100.png",
+      "overflow": 0,
+      "minFontPx": 12,
+      "minContrast": 5.197302355022151,
+      "contrastThreshold": 4.5,
+      "minTargetWidthPx": 86.703125,
+      "minTargetHeightPx": 30,
+      "textCount": 53,
+      "targetCount": 8,
+      "pageErrors": [],
+      "evidenceUnchanged": true,
+      "evidenceSha256": "bf5886254d007d6cae72bb8fc1dcb78db17c07e21d59c0101d175101b9966141",
+      "apexReadings": [
+        {
+          "run": 1,
+          "index": 59,
+          "count": 131,
+          "time": 2.0649999999999986,
+          "height": 30.560534437271816,
+          "vy": -0.16182472771338796,
+          "ay": -9.8,
+          "phase": null,
+          "canonicalApex": false,
+          "statusNodeStable": null,
+          "viewsSynchronized": true
+        },
+        {
+          "run": 2,
+          "index": 55,
+          "count": 128,
+          "time": 1.9249999999999985,
+          "height": 28.93897002903666,
+          "vy": 0.04241427473311343,
+          "ay": -9.802173260107255,
+          "phase": null,
+          "canonicalApex": false,
+          "statusNodeStable": null,
+          "viewsSynchronized": true
+        }
+      ]
+    },
+    {
+      "version": "baseline",
+      "scenario": "normal-flight",
+      "theme": "default",
+      "width": 320,
+      "screenshot": "inspector-baseline-default-320.png",
+      "overflow": 0,
+      "minFontPx": 12,
+      "minContrast": 5.197302355022151,
+      "contrastThreshold": 4.5,
+      "minTargetWidthPx": 109.5,
+      "minTargetHeightPx": 30,
+      "textCount": 53,
+      "targetCount": 8,
+      "pageErrors": [],
+      "evidenceUnchanged": true,
+      "evidenceSha256": "bf5886254d007d6cae72bb8fc1dcb78db17c07e21d59c0101d175101b9966141",
+      "apexReadings": [
+        {
+          "run": 1,
+          "index": 59,
+          "count": 131,
+          "time": 2.0649999999999986,
+          "height": 30.560534437271816,
+          "vy": -0.16182472771338796,
+          "ay": -9.8,
+          "phase": null,
+          "canonicalApex": false,
+          "statusNodeStable": null,
+          "viewsSynchronized": true
+        },
+        {
+          "run": 2,
+          "index": 55,
+          "count": 128,
+          "time": 1.9249999999999985,
+          "height": 28.93897002903666,
+          "vy": 0.04241427473311343,
+          "ay": -9.802173260107255,
+          "phase": null,
+          "canonicalApex": false,
+          "statusNodeStable": null,
+          "viewsSynchronized": true
+        }
+      ]
+    },
+    {
+      "version": "final",
+      "scenario": "normal-flight",
+      "theme": "default",
+      "width": 1100,
+      "screenshot": "inspector-final-default-1100.png",
+      "overflow": 0,
+      "minFontPx": 12,
+      "minContrast": 5.197302355022151,
+      "contrastThreshold": 4.5,
+      "minTargetWidthPx": 86.703125,
+      "minTargetHeightPx": 44,
+      "textCount": 62,
+      "targetCount": 8,
+      "pageErrors": [],
+      "evidenceUnchanged": true,
+      "evidenceSha256": "dfa60a46dbcef170a73c710b13990b8c0c404a95f7d1f8fc87b262a398dbdf77",
+      "apexReadings": [
+        {
+          "run": 1,
+          "index": 59,
+          "count": 132,
+          "time": 2.048487272682306,
+          "height": 30.56187052107281,
+          "vy": 0,
+          "ay": -9.8,
+          "phase": "apex",
+          "canonicalApex": true,
+          "statusNodeStable": true,
+          "viewsSynchronized": true
+        },
+        {
+          "run": 2,
+          "index": 56,
+          "count": 129,
+          "time": 1.9293275074344878,
+          "height": 28.939061799689668,
+          "vy": 0,
+          "ay": -9.8,
+          "phase": "apex",
+          "canonicalApex": true,
+          "statusNodeStable": true,
+          "viewsSynchronized": true
+        }
+      ]
+    },
+    {
+      "version": "final",
+      "scenario": "normal-flight",
+      "theme": "default",
+      "width": 375,
+      "screenshot": "inspector-final-default-375.png",
+      "overflow": 0,
+      "minFontPx": 12,
+      "minContrast": 5.197302355022151,
+      "contrastThreshold": 4.5,
+      "minTargetWidthPx": 111.703125,
+      "minTargetHeightPx": 44,
+      "textCount": 62,
+      "targetCount": 8,
+      "pageErrors": [],
+      "evidenceUnchanged": true,
+      "evidenceSha256": "dfa60a46dbcef170a73c710b13990b8c0c404a95f7d1f8fc87b262a398dbdf77",
+      "apexReadings": [
+        {
+          "run": 1,
+          "index": 59,
+          "count": 132,
+          "time": 2.048487272682306,
+          "height": 30.56187052107281,
+          "vy": 0,
+          "ay": -9.8,
+          "phase": "apex",
+          "canonicalApex": true,
+          "statusNodeStable": true,
+          "viewsSynchronized": true
+        },
+        {
+          "run": 2,
+          "index": 56,
+          "count": 129,
+          "time": 1.9293275074344878,
+          "height": 28.939061799689668,
+          "vy": 0,
+          "ay": -9.8,
+          "phase": "apex",
+          "canonicalApex": true,
+          "statusNodeStable": true,
+          "viewsSynchronized": true
+        }
+      ]
+    },
+    {
+      "version": "final",
+      "scenario": "normal-flight",
+      "theme": "default",
+      "width": 320,
+      "screenshot": "inspector-final-default-320.png",
+      "overflow": 0,
+      "minFontPx": 12,
+      "minContrast": 5.197302355022151,
+      "contrastThreshold": 4.5,
+      "minTargetWidthPx": 109.5,
+      "minTargetHeightPx": 44,
+      "textCount": 62,
+      "targetCount": 8,
+      "pageErrors": [],
+      "evidenceUnchanged": true,
+      "evidenceSha256": "dfa60a46dbcef170a73c710b13990b8c0c404a95f7d1f8fc87b262a398dbdf77",
+      "apexReadings": [
+        {
+          "run": 1,
+          "index": 59,
+          "count": 132,
+          "time": 2.048487272682306,
+          "height": 30.56187052107281,
+          "vy": 0,
+          "ay": -9.8,
+          "phase": "apex",
+          "canonicalApex": true,
+          "statusNodeStable": true,
+          "viewsSynchronized": true
+        },
+        {
+          "run": 2,
+          "index": 56,
+          "count": 129,
+          "time": 1.9293275074344878,
+          "height": 28.939061799689668,
+          "vy": 0,
+          "ay": -9.8,
+          "phase": "apex",
+          "canonicalApex": true,
+          "statusNodeStable": true,
+          "viewsSynchronized": true
+        }
+      ]
+    },
+    {
+      "version": "final",
+      "scenario": "normal-flight",
+      "theme": "dark",
+      "width": 1100,
+      "screenshot": "inspector-final-dark-1100.png",
+      "overflow": 0,
+      "minFontPx": 12,
+      "minContrast": 6.365996421029449,
+      "contrastThreshold": 4.5,
+      "minTargetWidthPx": 86.703125,
+      "minTargetHeightPx": 44,
+      "textCount": 62,
+      "targetCount": 8,
+      "pageErrors": [],
+      "evidenceUnchanged": true,
+      "evidenceSha256": "dfa60a46dbcef170a73c710b13990b8c0c404a95f7d1f8fc87b262a398dbdf77",
+      "apexReadings": [
+        {
+          "run": 1,
+          "index": 59,
+          "count": 132,
+          "time": 2.048487272682306,
+          "height": 30.56187052107281,
+          "vy": 0,
+          "ay": -9.8,
+          "phase": "apex",
+          "canonicalApex": true,
+          "statusNodeStable": true,
+          "viewsSynchronized": true
+        },
+        {
+          "run": 2,
+          "index": 56,
+          "count": 129,
+          "time": 1.9293275074344878,
+          "height": 28.939061799689668,
+          "vy": 0,
+          "ay": -9.8,
+          "phase": "apex",
+          "canonicalApex": true,
+          "statusNodeStable": true,
+          "viewsSynchronized": true
+        }
+      ]
+    },
+    {
+      "version": "final",
+      "scenario": "normal-flight",
+      "theme": "dark",
+      "width": 375,
+      "screenshot": "inspector-final-dark-375.png",
+      "overflow": 0,
+      "minFontPx": 12,
+      "minContrast": 6.365996421029449,
+      "contrastThreshold": 4.5,
+      "minTargetWidthPx": 111.703125,
+      "minTargetHeightPx": 44,
+      "textCount": 62,
+      "targetCount": 8,
+      "pageErrors": [],
+      "evidenceUnchanged": true,
+      "evidenceSha256": "dfa60a46dbcef170a73c710b13990b8c0c404a95f7d1f8fc87b262a398dbdf77",
+      "apexReadings": [
+        {
+          "run": 1,
+          "index": 59,
+          "count": 132,
+          "time": 2.048487272682306,
+          "height": 30.56187052107281,
+          "vy": 0,
+          "ay": -9.8,
+          "phase": "apex",
+          "canonicalApex": true,
+          "statusNodeStable": true,
+          "viewsSynchronized": true
+        },
+        {
+          "run": 2,
+          "index": 56,
+          "count": 129,
+          "time": 1.9293275074344878,
+          "height": 28.939061799689668,
+          "vy": 0,
+          "ay": -9.8,
+          "phase": "apex",
+          "canonicalApex": true,
+          "statusNodeStable": true,
+          "viewsSynchronized": true
+        }
+      ]
+    },
+    {
+      "version": "final",
+      "scenario": "normal-flight",
+      "theme": "dark",
+      "width": 320,
+      "screenshot": "inspector-final-dark-320.png",
+      "overflow": 0,
+      "minFontPx": 12,
+      "minContrast": 6.365996421029449,
+      "contrastThreshold": 4.5,
+      "minTargetWidthPx": 97.5,
+      "minTargetHeightPx": 44,
+      "textCount": 62,
+      "targetCount": 8,
+      "pageErrors": [],
+      "evidenceUnchanged": true,
+      "evidenceSha256": "dfa60a46dbcef170a73c710b13990b8c0c404a95f7d1f8fc87b262a398dbdf77",
+      "apexReadings": [
+        {
+          "run": 1,
+          "index": 59,
+          "count": 132,
+          "time": 2.048487272682306,
+          "height": 30.56187052107281,
+          "vy": 0,
+          "ay": -9.8,
+          "phase": "apex",
+          "canonicalApex": true,
+          "statusNodeStable": true,
+          "viewsSynchronized": true
+        },
+        {
+          "run": 2,
+          "index": 56,
+          "count": 129,
+          "time": 1.9293275074344878,
+          "height": 28.939061799689668,
+          "vy": 0,
+          "ay": -9.8,
+          "phase": "apex",
+          "canonicalApex": true,
+          "statusNodeStable": true,
+          "viewsSynchronized": true
+        }
+      ]
+    },
+    {
+      "version": "final",
+      "scenario": "normal-flight",
+      "theme": "contrast",
+      "width": 1100,
+      "screenshot": "inspector-final-contrast-1100.png",
+      "overflow": 0,
+      "minFontPx": 12,
+      "minContrast": 15.303999999999998,
+      "contrastThreshold": 7,
+      "minTargetWidthPx": 88.703125,
+      "minTargetHeightPx": 44,
+      "textCount": 62,
+      "targetCount": 8,
+      "pageErrors": [],
+      "evidenceUnchanged": true,
+      "evidenceSha256": "dfa60a46dbcef170a73c710b13990b8c0c404a95f7d1f8fc87b262a398dbdf77",
+      "apexReadings": [
+        {
+          "run": 1,
+          "index": 59,
+          "count": 132,
+          "time": 2.048487272682306,
+          "height": 30.56187052107281,
+          "vy": 0,
+          "ay": -9.8,
+          "phase": "apex",
+          "canonicalApex": true,
+          "statusNodeStable": true,
+          "viewsSynchronized": true
+        },
+        {
+          "run": 2,
+          "index": 56,
+          "count": 129,
+          "time": 1.9293275074344878,
+          "height": 28.939061799689668,
+          "vy": 0,
+          "ay": -9.8,
+          "phase": "apex",
+          "canonicalApex": true,
+          "statusNodeStable": true,
+          "viewsSynchronized": true
+        }
+      ]
+    },
+    {
+      "version": "final",
+      "scenario": "normal-flight",
+      "theme": "contrast",
+      "width": 375,
+      "screenshot": "inspector-final-contrast-375.png",
+      "overflow": 0,
+      "minFontPx": 12,
+      "minContrast": 15.303999999999998,
+      "contrastThreshold": 7,
+      "minTargetWidthPx": 113.703125,
+      "minTargetHeightPx": 44,
+      "textCount": 62,
+      "targetCount": 8,
+      "pageErrors": [],
+      "evidenceUnchanged": true,
+      "evidenceSha256": "dfa60a46dbcef170a73c710b13990b8c0c404a95f7d1f8fc87b262a398dbdf77",
+      "apexReadings": [
+        {
+          "run": 1,
+          "index": 59,
+          "count": 132,
+          "time": 2.048487272682306,
+          "height": 30.56187052107281,
+          "vy": 0,
+          "ay": -9.8,
+          "phase": "apex",
+          "canonicalApex": true,
+          "statusNodeStable": true,
+          "viewsSynchronized": true
+        },
+        {
+          "run": 2,
+          "index": 56,
+          "count": 129,
+          "time": 1.9293275074344878,
+          "height": 28.939061799689668,
+          "vy": 0,
+          "ay": -9.8,
+          "phase": "apex",
+          "canonicalApex": true,
+          "statusNodeStable": true,
+          "viewsSynchronized": true
+        }
+      ]
+    },
+    {
+      "version": "final",
+      "scenario": "normal-flight",
+      "theme": "contrast",
+      "width": 320,
+      "screenshot": "inspector-final-contrast-320.png",
+      "overflow": 0,
+      "minFontPx": 12,
+      "minContrast": 15.303999999999998,
+      "contrastThreshold": 7,
+      "minTargetWidthPx": 107.5,
+      "minTargetHeightPx": 44,
+      "textCount": 62,
+      "targetCount": 8,
+      "pageErrors": [],
+      "evidenceUnchanged": true,
+      "evidenceSha256": "dfa60a46dbcef170a73c710b13990b8c0c404a95f7d1f8fc87b262a398dbdf77",
+      "apexReadings": [
+        {
+          "run": 1,
+          "index": 59,
+          "count": 132,
+          "time": 2.048487272682306,
+          "height": 30.56187052107281,
+          "vy": 0,
+          "ay": -9.8,
+          "phase": "apex",
+          "canonicalApex": true,
+          "statusNodeStable": true,
+          "viewsSynchronized": true
+        },
+        {
+          "run": 2,
+          "index": 56,
+          "count": 129,
+          "time": 1.9293275074344878,
+          "height": 28.939061799689668,
+          "vy": 0,
+          "ay": -9.8,
+          "phase": "apex",
+          "canonicalApex": true,
+          "statusNodeStable": true,
+          "viewsSynchronized": true
+        }
+      ]
+    }
+  ],
+  "shortFlights": [
+    {
+      "version": "baseline",
+      "scenario": "short-flight",
+      "theme": "default",
+      "width": 1100,
+      "screenshot": "short-flight-baseline-default-1100.png",
+      "overflow": 0,
+      "minFontPx": 12,
+      "minContrast": 5.197302355022151,
+      "contrastThreshold": 4.5,
+      "minTargetWidthPx": 86.703125,
+      "minTargetHeightPx": 30,
+      "textCount": 53,
+      "targetCount": 8,
+      "pageErrors": [],
+      "evidenceUnchanged": true,
+      "evidenceSha256": "93a8d8878f73736cad9d234566b3d7ac9389a09b466eeee1d6e0086bfa4c7fd6",
+      "apexReadings": [
+        {
+          "run": 1,
+          "index": 0,
+          "count": 2,
+          "time": 0,
+          "height": 0,
+          "vy": 0.4357787137382908,
+          "ay": -25,
+          "phase": null,
+          "canonicalApex": false,
+          "statusNodeStable": null,
+          "viewsSynchronized": true
+        }
+      ]
+    },
+    {
+      "version": "baseline",
+      "scenario": "short-flight",
+      "theme": "default",
+      "width": 320,
+      "screenshot": "short-flight-baseline-default-320.png",
+      "overflow": 0,
+      "minFontPx": 12,
+      "minContrast": 5.197302355022151,
+      "contrastThreshold": 4.5,
+      "minTargetWidthPx": 109.5,
+      "minTargetHeightPx": 30,
+      "textCount": 53,
+      "targetCount": 8,
+      "pageErrors": [],
+      "evidenceUnchanged": true,
+      "evidenceSha256": "93a8d8878f73736cad9d234566b3d7ac9389a09b466eeee1d6e0086bfa4c7fd6",
+      "apexReadings": [
+        {
+          "run": 1,
+          "index": 0,
+          "count": 2,
+          "time": 0,
+          "height": 0,
+          "vy": 0.4357787137382908,
+          "ay": -25,
+          "phase": null,
+          "canonicalApex": false,
+          "statusNodeStable": null,
+          "viewsSynchronized": true
+        }
+      ]
+    },
+    {
+      "version": "final",
+      "scenario": "short-flight",
+      "theme": "default",
+      "width": 1100,
+      "screenshot": "short-flight-final-default-1100.png",
+      "overflow": 0,
+      "minFontPx": 12,
+      "minContrast": 5.197302355022151,
+      "contrastThreshold": 4.5,
+      "minTargetWidthPx": 86.703125,
+      "minTargetHeightPx": 44,
+      "textCount": 62,
+      "targetCount": 8,
+      "pageErrors": [],
+      "evidenceUnchanged": true,
+      "evidenceSha256": "8f5f414b1094351e6f6e0c2f9ccc97b7032bc068f4df58407b8ab7b8bbda3806",
+      "apexReadings": [
+        {
+          "run": 1,
+          "index": 1,
+          "count": 3,
+          "time": 0.017431148549531345,
+          "height": 0.003798061746947984,
+          "vy": 0,
+          "ay": -25,
+          "phase": "apex",
+          "canonicalApex": true,
+          "statusNodeStable": true,
+          "viewsSynchronized": true
+        }
+      ]
+    },
+    {
+      "version": "final",
+      "scenario": "short-flight",
+      "theme": "default",
+      "width": 320,
+      "screenshot": "short-flight-final-default-320.png",
+      "overflow": 0,
+      "minFontPx": 12,
+      "minContrast": 5.197302355022151,
+      "contrastThreshold": 4.5,
+      "minTargetWidthPx": 109.5,
+      "minTargetHeightPx": 44,
+      "textCount": 62,
+      "targetCount": 8,
+      "pageErrors": [],
+      "evidenceUnchanged": true,
+      "evidenceSha256": "8f5f414b1094351e6f6e0c2f9ccc97b7032bc068f4df58407b8ab7b8bbda3806",
+      "apexReadings": [
+        {
+          "run": 1,
+          "index": 1,
+          "count": 3,
+          "time": 0.017431148549531345,
+          "height": 0.003798061746947984,
+          "vy": 0,
+          "ay": -25,
+          "phase": "apex",
+          "canonicalApex": true,
+          "statusNodeStable": true,
+          "viewsSynchronized": true
+        }
+      ]
+    }
+  ],
+  "outcomeComparisons": [
+    {
+      "scenario": "normal-flight",
+      "width": 1100,
+      "bodyUnchanged": true,
+      "runLogUnchanged": true,
+      "lastFlightUnchanged": true,
+      "regularSamplesUnchanged": true,
+      "normalizedEvidenceSha256": "bf5886254d007d6cae72bb8fc1dcb78db17c07e21d59c0101d175101b9966141",
+      "baselineSamples": [
+        131,
+        128
+      ],
+      "finalSamples": [
+        132,
+        129
+      ]
+    },
+    {
+      "scenario": "normal-flight",
+      "width": 320,
+      "bodyUnchanged": true,
+      "runLogUnchanged": true,
+      "lastFlightUnchanged": true,
+      "regularSamplesUnchanged": true,
+      "normalizedEvidenceSha256": "bf5886254d007d6cae72bb8fc1dcb78db17c07e21d59c0101d175101b9966141",
+      "baselineSamples": [
+        131,
+        128
+      ],
+      "finalSamples": [
+        132,
+        129
+      ]
+    },
+    {
+      "scenario": "short-flight",
+      "width": 1100,
+      "bodyUnchanged": true,
+      "runLogUnchanged": true,
+      "lastFlightUnchanged": true,
+      "regularSamplesUnchanged": true,
+      "normalizedEvidenceSha256": "93a8d8878f73736cad9d234566b3d7ac9389a09b466eeee1d6e0086bfa4c7fd6",
+      "baselineSamples": [
+        2
+      ],
+      "finalSamples": [
+        3
+      ]
+    },
+    {
+      "scenario": "short-flight",
+      "width": 320,
+      "bodyUnchanged": true,
+      "runLogUnchanged": true,
+      "lastFlightUnchanged": true,
+      "regularSamplesUnchanged": true,
+      "normalizedEvidenceSha256": "93a8d8878f73736cad9d234566b3d7ac9389a09b466eeee1d6e0086bfa4c7fd6",
+      "baselineSamples": [
+        2
+      ],
+      "finalSamples": [
+        3
+      ]
+    }
+  ],
+  "failures": []
+}

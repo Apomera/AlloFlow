@@ -141,8 +141,8 @@ test('exports preserve capped run IDs and the current flight mass and impact', a
   await page.getByRole('button', { name: 'Copy the flight data as CSV for a spreadsheet', exact: true }).click();
   const exported = await page.evaluate(() => ({ csv: (window as any).__copiedPhysics, flight: (window as any).__toolData.physics.lastFlight }));
   const end = exported.csv.trim().split('\n').at(-1).split(',').map(Number);
-  expect(end[0]).toBe(Number(exported.flight.time.toFixed(3)));
-  expect(end[1]).toBe(Number(exported.flight.range.toFixed(2)));
+  expect(end[0]).toBe(exported.flight.time);
+  expect(end[1]).toBe(exported.flight.range);
   expect(end[2]).toBe(0);
 });
 
