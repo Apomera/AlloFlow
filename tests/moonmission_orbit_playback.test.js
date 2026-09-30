@@ -1,6 +1,7 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { loadTool, makeCtx, newStore, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
+const FILE = process.env.MM_SOURCE || 'stem_lab/stem_tool_moonmission.js';
 let P, frames, observers, hidden;
 function walk(node, predicate) {
   if (!node || typeof node !== 'object') return null;
@@ -35,7 +36,7 @@ function mount(extra = {}) {
     state: () => store.toolData.moonMission };
 }
 beforeEach(() => {
-  resetStemLab(); loadTool('stem_lab/stem_tool_moonmission.js', 'moonMission'); P = window.MoonMissionPure;
+  resetStemLab(); loadTool(FILE, 'moonMission'); P = window.MoonMissionPure;
   frames = []; observers = []; hidden = false;
   vi.spyOn(Math, 'random').mockReturnValue(0.999);
   // The globe's optional offscreen texture can use its vector fallback in jsdom.
@@ -123,8 +124,11 @@ describe('orbit playback and manual TLI', () => {
     const button = document.createElement('button'); app.host.appendChild(button);
     staleButton.props.onClick({ currentTarget: button });
     expect(app.state().tliAccuracy).toMatchObject({ onTime: true, offByDeg: 0 });
-    expect(app.state().missionPhase).toBe(3);
-    expect(app.canvas.dataset.orbitEngine).toBe('firing');
+    expect(app.state().missionPhase).toBe(2);
+    expect(app.state().tliRun).toMatchObject({ time: 0, recorded: false });
+    expect(app.state().tliStarted).toBe(true);
+    expect(app.state().missionXP).toBe(0);
+    expect(app.canvas.dataset.orbitEngine).toBe('off');
   });
   it('does not accept a stale GO snapshot after the live craft leaves the window', () => {
     const start = P.orbitSnapshot(0).nextWindowTime;
@@ -135,7 +139,7 @@ describe('orbit playback and manual TLI', () => {
     const button = document.createElement('button'); app.host.appendChild(button);
     staleButton.props.onClick({ currentTarget: button });
     expect(app.state().tliAccuracy).toMatchObject({ onTime: false, side: 'late' });
-    expect(app.state().missionXP).toBe(10);
+    expect(app.state().missionXP).toBe(0);
   });
   it('exposes readable instruments and labels the enlarged diagram and teaching window', () => {
     const html = renderTool('moonMission', { moonMission: { missionPhase: 2, animPaused: true } });

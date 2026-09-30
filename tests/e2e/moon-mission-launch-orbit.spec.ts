@@ -3,7 +3,7 @@ import { mkdir } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { GlHarness } from './helpers/stem_gl_harness';
 
-const REPORT = resolve('reports/moon-mission-enhancement-pass4-2026-09-28/launch-orbit');
+const REPORT = resolve(process.env.MM_REPORT_DIR || 'reports/moon-mission-enhancement-pass4-2026-09-28/launch-orbit');
 const harness = new GlHarness({
   toolFile: 'stem_lab/stem_tool_moonmission.js', toolId: 'moonMission',
   width: 1100, height: 1000, layout: 'document', appStyles: true,
@@ -297,12 +297,17 @@ test('orbit instruments obey circular-orbit physics and explicit advance grants 
   await mount(page, { moonMission: await saved(page) });
   expect(await orbit(page)).toEqual(aligned);
   await page.getByRole('button', { name: /Execute TLI Burn/ }).evaluate((button: HTMLButtonElement) => { button.click(); button.click(); });
+  await expect(page.locator('[data-tli-canvas]')).toBeVisible();
+  expect((await saved(page)).missionPhase).toBe(2);
+  expect((await saved(page)).missionXP).toBe(0);
+  await page.locator('[data-tli-review]').click();
+  await page.locator('[data-tli-proceed]').click();
   await expect.poll(async () => (await saved(page)).missionPhase).toBe(3);
   expect((await saved(page)).tliAccuracy).toMatchObject({ onTime: true, beforeGo: false });
   expect((await saved(page)).missionXP).toBe(25);
 });
 
-test('an off-window burn uses the current model position and records the required correction', async ({ page }) => {
+test('an off-window ignition reads live position and requires measured cutoff before navigation', async ({ page }) => {
   await mount(page, seed({ missionPhase: 2 }));
   const target = await page.evaluate(() => {
     const P = (window as any).MoonMissionPure;
@@ -313,6 +318,11 @@ test('an off-window burn uses the current model position and records the require
   await mount(page, seed({ missionPhase: 2, orbitRun: { version: 1, time: target.time }, tliWindow: { state: 'go', offByDeg: 0, side: 'early' } }));
   await expect(page.locator('[data-orbit-canvas]')).toHaveAttribute('data-orbit-window', 'aligning');
   await page.getByRole('button', { name: /Execute TLI Burn/ }).click();
+  await expect(page.locator('[data-tli-canvas]')).toBeVisible();
+  expect((await saved(page)).missionPhase).toBe(2);
+  expect((await saved(page)).missionXP).toBe(0);
+  await page.locator('[data-tli-review]').click();
+  await page.locator('[data-tli-proceed]').click();
   await expect.poll(async () => (await saved(page)).missionPhase).toBe(3);
   const state = await saved(page);
   expect(state.tliAccuracy).toMatchObject({ onTime: false, side: 'late', beforeGo: false });

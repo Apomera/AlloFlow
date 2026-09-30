@@ -1,0 +1,310 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass10-2026-09-29/browser-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "moon-mission-finite-injection.spec.ts",
+      "file": "moon-mission-finite-injection.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "finite burn instruments and both cameras follow the computed state",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1779,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T02:20:36.412Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "injection-burn",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass10-2026-09-29\\browser-artifacts\\moon-mission-finite-inject-f5cfa-s-follow-the-computed-state-chromium\\attachments\\injection-burn-7874de090f0740f2f54939d9e3348e77e080e652.png"
+                    },
+                    {
+                      "name": "injection-midburn-forecast",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass10-2026-09-29\\browser-artifacts\\moon-mission-finite-inject-f5cfa-s-follow-the-computed-state-chromium\\attachments\\injection-midburn-forecast-8e120388b0b11618202fdeb3e446339edf681aa6.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "45e705410d54a9a3ab26-b0dabad1127cd25baf0c",
+          "file": "moon-mission-finite-injection.spec.ts",
+          "line": 35,
+          "column": 5
+        },
+        {
+          "title": "cutoff review survives rewind and reload, and plan changes invalidate measured completion",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2906,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T02:20:38.473Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "injection-lunar-distance",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass10-2026-09-29\\browser-artifacts\\moon-mission-finite-inject-89514-alidate-measured-completion-chromium\\attachments\\injection-lunar-distance-44ce9782f94da77ef65daea6994c77dbc22c2711.png"
+                    },
+                    {
+                      "name": "injection-short-burn",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass10-2026-09-29\\browser-artifacts\\moon-mission-finite-inject-89514-alidate-measured-completion-chromium\\attachments\\injection-short-burn-c41d106b2362234532b8d0e18b91a5496f4d6ea5.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "45e705410d54a9a3ab26-a3a66cc8c7ad329100eb",
+          "file": "moon-mission-finite-injection.spec.ts",
+          "line": 42,
+          "column": 5
+        },
+        {
+          "title": "overlong burn has positive orbital energy and explicitly reports escape",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1579,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T02:20:41.394Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "injection-escape",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass10-2026-09-29\\browser-artifacts\\moon-mission-finite-inject-79487-d-explicitly-reports-escape-chromium\\attachments\\injection-escape-f07f600328101acfc4c3a4f47df085df6c9e9451.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "45e705410d54a9a3ab26-cea1cfab59f8390fee8a",
+          "file": "moon-mission-finite-injection.spec.ts",
+          "line": 51,
+          "column": 5
+        },
+        {
+          "title": "corrupted result and malformed run restart unverified and clear stored evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2763,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T02:20:42.986Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "45e705410d54a9a3ab26-8bfd8a4ed140bde5f583",
+          "file": "moon-mission-finite-injection.spec.ts",
+          "line": 57,
+          "column": 5
+        },
+        {
+          "title": "injection playback freezes while hidden and resumes without catch-up",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2591,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T02:20:45.763Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "45e705410d54a9a3ab26-4f9d53ed9ba0da9846d5",
+          "file": "moon-mission-finite-injection.spec.ts",
+          "line": 64,
+          "column": 5
+        },
+        {
+          "title": "320px keyboard, resize, reload and accessibility preserve the measured burn",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2348,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T02:20:48.368Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "injection-phone-320",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass10-2026-09-29\\browser-artifacts\\moon-mission-finite-inject-fed5b--preserve-the-measured-burn-chromium\\attachments\\injection-phone-320-b1fff72ca870c7e62c2291d4e12fdb07a1868507.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "45e705410d54a9a3ab26-595a620ecac05974545e",
+          "file": "moon-mission-finite-injection.spec.ts",
+          "line": 71,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-30T02:20:35.256Z",
+    "duration": 15628.841,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "unitChecks": 478,
+  "unitFiles": 52,
+  "unitFailures": 0,
+  "candidateChecks": 34,
+  "candidateFiles": 5,
+  "candidateFailures": 0,
+  "browserWorkflows": 8,
+  "browserFailures": 0,
+  "browserFlaky": 0,
+  "browserRetries": 0,
+  "browserWorkers": 1,
+  "phoneWidth": 320,
+  "phoneHorizontalOverflow": false,
+  "scopedAxeViolations": 0,
+  "reviewedNewCaptures": 6,
+  "source": {
+    "workingSha256": "ca7369e0a53170e8d01e2cd129a26fd1442a876a7c53981a6bc1320e79bd4b9e",
+    "candidateSha256": "509167cc1dd310280c3c10e2492d133bdf592351516ded4fac8a8124ce7f2642",
+    "canonicalPublicParity": true,
+    "syntaxWorkingAndCandidate": true,
+    "preservedMoonwalkHunks": 34
+  },
+  "initialRunIssues": "Eight STACK_TRACE_ERROR failures in the initial broad run and one in the initial candidate run. Final unchanged assertions and timeouts pass in sequential reruns. Raw results retained."
+}

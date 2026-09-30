@@ -555,13 +555,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   function mmFlightSummary(d, totals, when) {
     totals = totals || {};
     var dl = Array.isArray(d.decisionLog) ? d.decisionLog.filter(mmIsObj) : [];
-    var ta = mmIsObj(d.tliAccuracy) ? d.tliAccuracy : null;
+    var injectionSave = mmCleanTliPlayback(d);
+    var ta = mmIsObj(injectionSave.tliAccuracy) ? injectionSave.tliAccuracy : null;
     var lr = mmIsObj(d.landingResult) && mmNum(d.landingResult.vVel) ? d.landingResult : null;
     var eo = mmCleanEntryOutcome(d.entryOutcome);
     return {
       when: when || '',
       difficulty: MM_MODE_NAMES[d.difficulty] ? d.difficulty : 'pilot',
       launch: d.launchRun && d.launchRun.recorded === true ? mmCleanLaunchResult(d.launchResult) : null,
+      injection: injectionSave.tliResult,
       transit: mmCleanTransitPlayback(d).transitResult,
       loi: mmCleanLoiPlayback(d).loiResult,
       poweredApproach: mmCleanApproachPlayback(d).approachResult,
@@ -592,6 +594,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         ? { call: 'TLI fired inside the burn window', result: 'the timing exercise met its target; outbound navigation starts from its own departure preset' }
         : { call: 'TLI fired ' + sum.tli.offByDeg + MM_DEG_SIGN + ' ' + sum.tli.side, result: 'the timing exercise missed its window; outbound navigation measures a separately specified departure' });
     }
+    if (sum.injection) steps.push({call: 'S-IVB cutoff recorded ' + sum.injection.outcome, result: 'the finite burn used ' + sum.injection.propellantUsed.toFixed(0) + ' kg of third-stage propellant; lunar navigation uses its own targeting preset'});
     if (sum.transit && mmNum(sum.transit.propellantUsed)) steps.push({ call: 'Outbound navigation recorded ' + sum.transit.outcome,
       result: 'the Service Module used ' + sum.transit.propellantUsed.toFixed(1) + ' kg of SPS propellant' + (mmNum(sum.transit.closestAltitude) ? ' and reached a closest lunar altitude of ' + (sum.transit.closestAltitude / 1000).toFixed(1) + ' km' : '') + '; Lunar Module descent uses its own approach preset and fuel tank' });
     else if (sum.mcc === 'corrected' || sum.mcc === 'skipped') steps.push({ call: sum.mcc === 'corrected' ? 'You burned the mid-course correction' : 'You declined the correction', result: 'this earlier save records the decision without a measured trajectory or SPS propellant use' });
@@ -684,6 +687,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     if (sum.ascent && mmNum(sum.ascent.duration) && mmNum(sum.ascent.perilune) && mmNum(sum.ascent.apolune)) ln('Lunar ascent model: ' + sum.ascent.duration.toFixed(1) + ' s burn; ' + (sum.ascent.perilune / 1000).toFixed(1) + ' by ' + (sum.ascent.apolune / 1000).toFixed(1) + ' km insertion orbit.');
     if (sum.docking && mmNum(sum.docking.closingSpeed) && mmNum(sum.docking.offset) && mmNum(sum.docking.propellantRemaining)) ln('Final docking exercise: contact at ' + sum.docking.closingSpeed.toFixed(3) + ' m/s, radial offset ' + sum.docking.offset.toFixed(2) + ' m, RCS propellant remaining ' + sum.docking.propellantRemaining.toFixed(2) + ' kg. Intervening rendezvous burns were not simulated.');
     ln('TLI burn: ' + (!sum.tli ? 'not flown' : sum.tli.onTime ? 'inside the window' : sum.tli.offByDeg + MM_DEG_SIGN + ' ' + sum.tli.side + ', outside the window'));
+    if (sum.injection) ln('Finite S-IVB injection: ' + sum.injection.duration.toFixed(1) + ' s; ' + sum.injection.outcome + '; propellant used ' + sum.injection.propellantUsed.toFixed(1) + ' kg; remaining ' + sum.injection.propellantRemaining.toFixed(1) + ' kg; specific orbital energy ' + (sum.injection.energy/1e6).toFixed(3) + ' MJ/kg. Lunar navigation uses its own departure preset.');
     if (sum.transit && mmNum(sum.transit.actualBurn) && mmNum(sum.transit.propellantUsed)) ln('Outbound navigation: ' + sum.transit.outcome + '; coast duration ' + (sum.transit.duration / 3600).toFixed(2) + ' h, SPS correction ' + sum.transit.actualBurn.toFixed(2) + ' s, propellant used ' + sum.transit.propellantUsed.toFixed(2) + ' kg' +
       (mmNum(sum.transit.closestAltitude) ? '; closest lunar altitude ' + (sum.transit.closestAltitude / 1000).toFixed(2) + ' km, Moon-relative speed ' + (sum.transit.closestSpeed / 1000).toFixed(3) + ' km/s.' : '.') + ' Lunar insertion begins from a separate arrival preset.');
     else ln('Mid-course correction: ' + (sum.mcc === 'corrected' ? 'earlier burn decision; no measured trajectory stored' : sum.mcc === 'skipped' ? 'earlier decision to decline; no measured trajectory stored' : 'not recorded'));
@@ -2735,6 +2739,182 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       inShadow: inShadow, sunrises: time < firstSunrise ? 0 : 1 + Math.floor((time - firstSunrise) / period) };
   }
   try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { orbit: MM_ORBIT, orbitSnapshot: mmOrbitSnapshot }); } catch (e) {}
+
+  // Finite S-IVB burn from the parking preset. The launch model supplies the
+  // remaining tank; the circular reference supplies position and velocity.
+  // Earth-only prograde guidance demonstrates energy, not a lunar intercept.
+  var MM_TLI = Object.freeze({ radius:6371000, mu:3.986004418e14, altitude:185000,
+    moonRadius:384400000, dryMass:58500, reserve:1000,
+    thrust:207000*4.4482216152605, exhaustVelocity:425*9.80665, maxStep:0.25 });
+  var _mmTliProfiles = new Map();
+  function mmTliPlan(raw) { return {duration:raw && [300,342,350].indexOf(raw.duration)>=0?raw.duration:342}; }
+  function mmTliInitialState(propellant) {
+    var C=MM_TLI, fuel=mmNum(propellant)?Math.max(C.reserve,propellant):mmLaunchProfile().summary.propellantRemaining;
+    return {time:0,x:C.radius+C.altitude,y:0,vx:0,vy:Math.sqrt(C.mu/(C.radius+C.altitude)),mass:C.dryMass+fuel};
+  }
+  function mmTliSlice(s,dt,burning) {
+    var C=MM_TLI, flow=burning?C.thrust/C.exhaustVelocity:0;
+    function derivative(q) {
+      var r=Math.hypot(q.x,q.y),v=Math.hypot(q.vx,q.vy),a=burning?C.thrust/q.mass:0;
+      return {x:q.vx,y:q.vy,vx:-C.mu*q.x/(r*r*r)+a*q.vx/Math.max(v,1e-9),vy:-C.mu*q.y/(r*r*r)+a*q.vy/Math.max(v,1e-9),mass:-flow};
+    }
+    function add(q,k,h) {var o={};['x','y','vx','vy','mass'].forEach(function(key){o[key]=q[key]+h*k[key];});return o;}
+    var a=derivative(s),b=derivative(add(s,a,dt/2)),c=derivative(add(s,b,dt/2)),d=derivative(add(s,c,dt)),o={time:s.time+dt};
+    ['x','y','vx','vy','mass'].forEach(function(key){o[key]=s[key]+dt*(a[key]+2*b[key]+2*c[key]+d[key])/6;});
+    o.mass=Math.max(C.dryMass+C.reserve,o.mass);return o;
+  }
+  function mmTliStep(s,dt,engineOn) {
+    if(!mmNum(dt)||dt<=0)return s;
+    var C=MM_TLI,remaining=dt;
+    while(remaining>1e-10){var usable=Math.max(0,s.mass-C.dryMass-C.reserve),on=engineOn!==false&&usable>1e-8;
+      var h=Math.min(remaining,C.maxStep,on?usable*C.exhaustVelocity/C.thrust:Infinity);
+      Object.assign(s,mmTliSlice(s,h,on));remaining-=h;
+    }return s;
+  }
+  function mmTliElements(s) {
+    var C=MM_TLI,r=Math.hypot(s.x,s.y),v2=s.vx*s.vx+s.vy*s.vy,rv=s.x*s.vx+s.y*s.vy;
+    var energy=v2/2-C.mu/r,h=s.x*s.vy-s.y*s.vx;
+    var ex=((v2-C.mu/r)*s.x-rv*s.vx)/C.mu,ey=((v2-C.mu/r)*s.y-rv*s.vy)/C.mu,e=Math.hypot(ex,ey),p=h*h/C.mu;
+    var apo=energy<0?p/(1-e):null;
+    return {energy:energy,angularMomentum:h,eccentricity:e,parameter:p,perigee:p/(1+e)-C.radius,
+      apogee:apo===null?null:apo-C.radius,argument:Math.atan2(ey,ex),bound:energy<0,
+      reachesLunarDistance:energy>=0||apo>=C.moonRadius};
+  }
+  function mmTliMeasured(s,initialMass,on) {
+    var C=MM_TLI,r=Math.hypot(s.x,s.y),speed=Math.hypot(s.vx,s.vy),o=mmTliElements(s);
+    return Object.assign({},s,o,{radius:r,altitude:r-C.radius,speed:speed,
+      radialSpeed:(s.x*s.vx+s.y*s.vy)/r,tangentialSpeed:(s.x*s.vy-s.y*s.vx)/r,
+      propellant:s.mass-C.dryMass,propellantUsed:initialMass-s.mass,
+      deltaV:C.exhaustVelocity*Math.log(initialMass/s.mass),thrust:on?C.thrust:0,properAcceleration:on?C.thrust/s.mass:0});
+  }
+  function mmTliProfile(raw) {
+    var plan=mmTliPlan(raw);if(_mmTliProfiles.has(plan.duration))return _mmTliProfiles.get(plan.duration);
+    var s=mmTliInitialState(),initialMass=s.mass,C=MM_TLI;
+    var duration=Math.min(plan.duration,(s.mass-C.dryMass-C.reserve)*C.exhaustVelocity/C.thrust),rows=[];
+    while(s.time<duration-1e-8){rows.push(Object.freeze(mmTliMeasured(s,initialMass,true)));mmTliStep(s,Math.min(1,duration-s.time));}
+    var end=Object.freeze(mmTliMeasured(s,initialMass,false));rows.push(end);
+    var result=Object.freeze({version:1,planDuration:plan.duration,duration:end.time,
+      outcome:end.energy>=0?'escape':end.reachesLunarDistance?'lunar-distance':'insufficient',
+      altitude:end.altitude,speed:end.speed,radialSpeed:end.radialSpeed,tangentialSpeed:end.tangentialSpeed,
+      mass:end.mass,propellantUsed:end.propellantUsed,propellantRemaining:end.propellant,deltaV:end.deltaV,
+      energy:end.energy,angularMomentum:end.angularMomentum,eccentricity:end.eccentricity,perigee:end.perigee,apogee:end.apogee});
+    var profile=Object.freeze({plan:Object.freeze(plan),initialMass:initialMass,samples:Object.freeze(rows),summary:result});
+    _mmTliProfiles.set(plan.duration,profile);return profile;
+  }
+  function mmTliSample(profile,time) {
+    var t=Math.max(0,Math.min(profile.summary.duration,mmNum(time)?time:0));
+    var i=Math.min(profile.samples.length-1,Math.floor(t)),s=Object.assign({},profile.samples[i]);
+    if(t>s.time)mmTliStep(s,t-s.time);
+    return mmTliMeasured(s,profile.initialMass,t<profile.summary.duration);
+  }
+  function mmCleanTliPlayback(raw) {
+    raw=mmIsObj(raw)?raw:{};var plan=mmTliPlan(raw.tliPlan),saved=raw.tliRun,run=null,result=null;
+    if(mmIsObj(saved)&&saved.version===1&&saved.duration===plan.duration&&mmNum(saved.time)&&mmNum(saved.orbitTime)&&saved.orbitTime>=0&&saved.orbitTime<=MM_ORBIT.maxTime&&typeof saved.recorded==='boolean') {
+      var expected=mmTliProfile(plan).summary,claimed=raw.tliResult;
+      var valid=mmIsObj(claimed)&&Object.keys(expected).every(function(k){return mmNum(expected[k])?mmNum(claimed[k])&&Math.abs(claimed[k]-expected[k])<=Math.max(1e-6,Math.abs(expected[k])*1e-12):claimed[k]===expected[k];});
+      run={version:1,duration:plan.duration,orbitTime:saved.orbitTime,time:saved.recorded&&!valid?0:Math.max(0,Math.min(expected.duration,saved.time)),recorded:saved.recorded&&valid};
+      if(run.recorded)result=Object.assign({},expected);
+    }
+    var timing=run?mmOrbitSnapshot(run.orbitTime):null;
+    return {tliAccuracy:timing?{onTime:timing.state==='go',offByDeg:timing.offByDeg,side:timing.side,beforeGo:timing.state==='systems'}:raw.tliAccuracy,
+      tliPlan:plan,tliRun:run,tliResult:result,tliStarted:raw.tliStarted===true||!!run,
+      tliPaused:raw.tliPaused!==false,tliPlaybackRate:[1,10,60].indexOf(raw.tliPlaybackRate)>=0?raw.tliPlaybackRate:10,
+      tliView:raw.tliView==='orbit'?'orbit':'burn',tliAwarded:raw.tliAwarded===true};
+  }
+  function mmDrawTliScene(ctx,W,H,s,profile,opts) {
+    opts=opts||{};var C=MM_TLI,whole=opts.view==='orbit',angle=mmOrbitSnapshot(opts.orbitTime||0).orbAng,co=Math.cos(angle),si=Math.sin(angle);
+    function rotate(x,y){return{x:x*co-y*si,y:x*si+y*co};}
+    var scale,ox,oy,anchor=0;
+    if(whole){scale=Math.min(W*0.44,H*0.35)/C.moonRadius;ox=W/2;oy=H*0.48;}
+    else{anchor=Math.atan2(profile.samples[profile.samples.length-1].y,profile.samples[profile.samples.length-1].x)/2;scale=Math.min(W*0.88/4000000,H*0.65/900000);ox=W/2;oy=H*0.8;}
+    function point(x,y){if(whole){var r=rotate(x,y);return{x:ox+r.x*scale,y:oy-r.y*scale};}return{x:ox+(y*Math.cos(anchor)-x*Math.sin(anchor))*scale,y:oy-(x*Math.cos(anchor)+y*Math.sin(anchor)-C.radius)*scale};}
+    ctx.fillStyle='#071224';ctx.fillRect(0,0,W,H);
+    for(var star=0;star<50;star++){ctx.fillStyle='rgba(203,213,225,0.5)';ctx.fillRect((star*157.31)%W,(star*97.53)%H,1,1);}
+    ctx.save();ctx.beginPath();ctx.rect(0,35,W,H-75);ctx.clip();
+    if(whole){drawDetailedEarth(ctx,ox,oy,C.radius*scale,0);ctx.strokeStyle='#a78bfa';ctx.setLineDash([4,5]);ctx.beginPath();ctx.arc(ox,oy,C.moonRadius*scale,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
+    else{ctx.fillStyle='#153b53';ctx.beginPath();for(var px=-2;px<=W+2;px+=3){var worldX=(px-ox)/scale,limb=C.radius-Math.sqrt(Math.max(0,C.radius*C.radius-worldX*worldX)),py=oy+limb*scale;if(px===-2)ctx.moveTo(px,py);else ctx.lineTo(px,py);}ctx.lineTo(W+2,H);ctx.lineTo(-2,H);ctx.closePath();ctx.fill();ctx.strokeStyle='#7dd3fc';ctx.lineWidth=2;ctx.beginPath();for(var px2=-2;px2<=W+2;px2+=3){var worldX2=(px2-ox)/scale,py2=oy+(C.radius-Math.sqrt(Math.max(0,C.radius*C.radius-worldX2*worldX2)))*scale;if(px2===-2)ctx.moveTo(px2,py2);else ctx.lineTo(px2,py2);}ctx.stroke();}
+    // Dashed forecast: the current osculating conic if thrust stops now.
+    if(whole&&s.eccentricity>1e-7){
+      var nu=Math.atan2(s.y,s.x)-s.argument;while(nu<0)nu+=2*Math.PI;
+      var limit=Math.min(C.moonRadius*1.1,s.bound?s.apogee+C.radius:Infinity),cosEnd=(s.parameter/limit-1)/s.eccentricity,end=Math.acos(Math.max(-1,Math.min(1,cosEnd)));
+      ctx.strokeStyle='#fbbf24';ctx.setLineDash([4,4]);ctx.lineWidth=1.5;ctx.beginPath();
+      for(var n=0;n<=180;n++){var f=nu+(Math.max(nu,end)-nu)*n/180,r=s.parameter/(1+s.eccentricity*Math.cos(f)),p=point(r*Math.cos(f+s.argument),r*Math.sin(f+s.argument));if(n===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);}ctx.stroke();ctx.setLineDash([]);
+    }
+    ctx.strokeStyle='#67e8f9';ctx.lineWidth=2;ctx.beginPath();profile.samples.forEach(function(row,i){if(row.time>s.time)return;var p=point(row.x,row.y);if(i===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);});var ship=point(s.x,s.y);ctx.lineTo(ship.x,ship.y);ctx.stroke();
+    ctx.restore();
+    var velocity=whole?rotate(s.vx,s.vy):{x:s.vy*Math.cos(anchor)-s.vx*Math.sin(anchor),y:s.vx*Math.cos(anchor)+s.vy*Math.sin(anchor)},heading=Math.atan2(-velocity.y,velocity.x);
+    ctx.save();ctx.translate(ship.x,ship.y);ctx.rotate(heading);
+    if(s.thrust>0){ctx.fillStyle='rgba(147,197,253,0.78)';ctx.beginPath();ctx.moveTo(-28,-4);ctx.lineTo(-28-20-2*s.properAcceleration,0);ctx.lineTo(-28,4);ctx.closePath();ctx.fill();}
+    ctx.fillStyle='#f1f5f9';ctx.fillRect(-25,-5,29,10);ctx.fillStyle='#0f172a';ctx.fillRect(-18,-5,3,10);ctx.fillRect(-10,-5,3,10);ctx.fillStyle='#bba16a';ctx.beginPath();ctx.moveTo(4,-5);ctx.lineTo(16,-4);ctx.lineTo(16,4);ctx.lineTo(4,5);ctx.closePath();ctx.fill();ctx.fillStyle='#cbd5e1';ctx.fillRect(16,-4,9,8);ctx.beginPath();ctx.moveTo(25,-4);ctx.lineTo(32,0);ctx.lineTo(25,4);ctx.closePath();ctx.fill();ctx.restore();
+    var len=55,ex=ship.x+Math.cos(heading)*len,ey=ship.y+Math.sin(heading)*len;ctx.strokeStyle='#67e8f9';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ship.x,ship.y);ctx.lineTo(ex,ey);ctx.stroke();
+    ctx.fillStyle='#e2e8f0';ctx.font='12px system-ui';ctx.fillText(whole?'Orbit if thrust stops here':'Measured S-IVB departure',12,22);
+    if(whole){ctx.fillStyle='#c4b5fd';ctx.fillText('Purple ring: 384,400 km radius',12,42);ctx.fillStyle='#e2e8f0';ctx.fillText('Earth center',Math.max(12,ox-85),oy+28);ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(ox-20,oy+20);ctx.lineTo(ox-3,oy+3);ctx.stroke();}
+    ctx.fillText('Equal axes · spacecraft enlarged',12,H-12);
+    var ruler=whole?100000000:500000;ctx.strokeStyle='#e2e8f0';ctx.beginPath();ctx.moveTo(W-16-ruler*scale,H-37);ctx.lineTo(W-16,H-37);ctx.stroke();ctx.textAlign='right';ctx.fillText((ruler/1000).toLocaleString()+' km',W-16,H-45);ctx.textAlign='left';
+    return {scaleX:scale,scaleY:scale,craftX:ship.x,craftY:ship.y,heading:heading,plume:s.thrust>0};
+  }
+  try {window.MoonMissionPure=Object.assign(window.MoonMissionPure||{},{tliPhysics:MM_TLI,tliPlan:mmTliPlan,tliInitialState:mmTliInitialState,tliStep:mmTliStep,tliElements:mmTliElements,tliProfile:mmTliProfile,tliSample:mmTliSample,cleanTliPlayback:mmCleanTliPlayback,drawTliScene:mmDrawTliScene});}catch(e){}
+
+  function mmRenderTliCard(h,d,upd) {
+    var profile=mmTliProfile(d.tliPlan),run=d.tliRun||{time:0,recorded:false,orbitTime:d.orbitRun?d.orbitRun.time:0};
+    var button={minHeight:'44px',padding:'8px 12px',border:'1px solid #64748b',borderRadius:'8px',background:'#1e293b',color:'#f8fafc',fontSize:'13px',cursor:'pointer'};
+    function action(ev,name,value){var root=ev.currentTarget.closest('[data-tli-workspace]'),cv=root&&root.querySelector('[data-tli-canvas]');if(cv&&cv._tliAction)cv._tliAction(name,value);}
+    return h('section',{'data-tli-workspace':true,'aria-label':'Finite trans-lunar injection',style:{padding:'16px',borderRadius:'12px',border:'1px solid #475569',background:'#0b1729',color:'#e2e8f0',overflow:'hidden'}},
+      h('h4',{style:{fontSize:'18px',fontWeight:800,margin:'0 0 8px'}},'S-IVB: from Earth orbit toward the Moon'),
+      h('p',{style:{fontSize:'13px',lineHeight:1.6,color:'#cbd5e1'}},'The engine burns real model propellant over time. Watch mass fall and acceleration grow, then inspect how cutoff changes the far end of the orbit. The launch simulation leaves '+(profile.initialMass-MM_TLI.dryMass).toFixed(0)+' kg in this tank; 1,000 kg stays in reserve.'),
+      h('div',{style:{display:'flex',flexWrap:'wrap',gap:'10px',margin:'12px 0'}},
+        h('label',{style:{fontSize:'13px'}},'Engine cutoff ',h('select',{'data-tli-plan':true,'aria-label':'TLI burn duration',value:profile.plan.duration,style:button,onChange:function(ev){action(ev,'plan',Number(ev.target.value));}},[300,342,350].map(function(n){return h('option',{key:n,value:n},n+' s'+(n===342?' · lunar distance':''));}))),
+        h('label',{style:{fontSize:'13px'}},'Trajectory view ',h('select',{'data-tli-view':true,'aria-label':'TLI trajectory view',value:d.tliView,style:button,onChange:function(ev){action(ev,'view',ev.target.value);}},h('option',{value:'burn'},'Departure close view'),h('option',{value:'orbit'},'Orbit forecast')))),
+      h('canvas',{'data-tli-canvas':true,role:'img','aria-label':'Computed S-IVB departure with equal physical axes, measured trail, velocity arrow and an enlarged stack aligned with thrust. The forecast shows the current orbit if the engine stops, and a lunar-distance ring without a Moon position. Instruments and controls follow.',style:{display:'block',width:'100%',height:'360px',borderRadius:'8px'},ref:function(cv){
+        if(!cv||cv._tliInit)return;cv._tliInit=true;var ctx=cv.getContext('2d');if(!ctx)return;
+        var p=profile,time=run.time,recorded=run.recorded,orbitTime=run.orbitTime,paused=d.tliPaused,rate=d.tliPlaybackRate,view=d.tliView;
+        var W=cv.offsetWidth||500,H=cv.offsetHeight||360,lastTs=null,lastSave=-Infinity,stamp='',observer;
+        if(!recorded)upd('tliResult',null);
+        function resize(){W=cv.offsetWidth||W;H=cv.offsetHeight||H;cv.width=W*2;cv.height=H*2;ctx.setTransform(2,0,0,2,0,0);}
+        resize();if(typeof ResizeObserver==='function'){observer=new ResizeObserver(resize);observer.observe(cv);}
+        function persist(){
+          if(time>=p.summary.duration&&!recorded){recorded=true;upd('tliResult',Object.assign({},p.summary));if(typeof announceToSR==='function')announceToSR('Injection cutoff reviewed. '+(p.summary.outcome==='insufficient'?'The orbit does not reach lunar distance. Try a longer burn.':p.summary.outcome==='escape'?'The craft is escaping Earth. This does not establish a lunar encounter.':'The orbit reaches lunar distance. Continue to the separate lunar navigation exercise.'));}
+          var next=p.plan.duration+':'+time+':'+recorded;if(next===stamp)return;stamp=next;upd('tliRun',{version:1,duration:p.plan.duration,orbitTime:orbitTime,time:time,recorded:recorded});
+        }
+        function visibility(){lastTs=null;persist();}document.addEventListener('visibilitychange',visibility);
+        cv._tliAction=function(name,value){
+          if(name==='plan'){var next=mmTliPlan({duration:Number(value)});if(next.duration!==p.plan.duration){p=mmTliProfile(next);time=0;recorded=false;paused=true;upd('tliPlan',next);upd('tliResult',null);upd('tliPaused',true);}}
+          if(name==='seek'){time=Math.max(0,Math.min(p.summary.duration,Number(value)||0));paused=true;upd('tliPaused',true);}
+          if(name==='end'){time=p.summary.duration;paused=true;view='orbit';upd('tliPaused',true);upd('tliView',view);}
+          if(name==='pause'){paused=!!value;upd('tliPaused',paused);if(!paused)upd('animPaused',false);}
+          if(name==='rate'&&[1,10,60].indexOf(Number(value))>=0){rate=Number(value);upd('tliPlaybackRate',rate);}
+          if(name==='view'){view=value==='orbit'?'orbit':'burn';upd('tliView',view);}
+          lastTs=null;persist();
+        };
+        function paint(ts){
+          if(!document.contains(cv)){if(observer)observer.disconnect();document.removeEventListener('visibilitychange',visibility);cv._tliAction=null;return;}
+          var running=!paused&&!_mmAnimPaused&&!document.hidden;
+          if(running&&lastTs!==null)time=Math.min(p.summary.duration,time+Math.max(0,Math.min(0.25,(ts-lastTs)/1000))*rate);
+          lastTs=running?ts:null;
+          if(time>=p.summary.duration&&!paused){paused=true;upd('tliPaused',true);}
+          var s=mmTliSample(p,time),geometry=mmDrawTliScene(ctx,W,H,s,p,{view:view,orbitTime:orbitTime});
+          cv.dataset.tliTime=String(time);cv.dataset.tliAltitude=String(s.altitude);cv.dataset.tliSpeed=String(s.speed);cv.dataset.tliMass=String(s.mass);cv.dataset.tliEnergy=String(s.energy);cv.dataset.tliThrust=String(s.thrust);cv.dataset.tliPlume=String(geometry.plume);cv.dataset.tliRecorded=String(recorded);cv.dataset.tliAcceleration=String(s.properAcceleration);
+          var root=cv.closest('[data-tli-workspace]'),values={time:s.time.toFixed(1)+' s',altitude:(s.altitude/1000).toFixed(1)+' km',speed:(s.speed/1000).toFixed(3)+' km/s',radial:s.radialSpeed.toFixed(1)+' m/s',mass:s.mass.toFixed(0)+' kg',fuel:s.propellant.toFixed(0)+' kg',acceleration:s.properAcceleration.toFixed(2)+' m/s²',deltaV:(s.deltaV/1000).toFixed(3)+' km/s',energy:(s.energy/1e6).toFixed(3)+' MJ/kg',apogee:s.apogee===null?'Open escape path':(s.apogee/1000).toLocaleString(undefined,{maximumFractionDigits:0})+' km altitude'};
+          if(root){root.querySelectorAll('[data-tli-value]').forEach(function(el){el.textContent=values[el.dataset.tliValue];});var seek=root.querySelector('[data-tli-seek]');if(seek&&document.activeElement!==seek){seek.max=String(p.summary.duration);seek.value=String(time);}}
+          if(!running||ts-lastSave>500){persist();lastSave=ts;}requestAnimationFrame(paint);
+        }requestAnimationFrame(paint);
+      }}),
+      h('dl',{'data-tli-readouts':true,style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(125px,1fr))',gap:'12px',margin:'14px 0'}},
+        [['time','Time since ignition'],['altitude','Earth altitude'],['speed','Inertial speed'],['radial','Radial speed · up +'],['mass','Attached stack mass'],['fuel','S-IVB propellant left'],['acceleration','Engine acceleration'],['deltaV','Ideal engine Δv'],['energy','Specific orbital energy'],['apogee','If engine stops now']].map(function(item){return h('div',{key:item[0]},h('dt',{style:{fontSize:'12px',color:'#cbd5e1'}},item[1]),h('dd',{'data-tli-value':item[0],style:{margin:0,fontSize:'15px',fontWeight:700,minHeight:'24px'}},'—'));})),
+      h('div',{style:{display:'flex',gap:'8px',flexWrap:'wrap',alignItems:'center'}},
+        h('button',{type:'button','data-tli-pause':true,style:button,onClick:function(ev){action(ev,'pause',!d.tliPaused);}},d.tliPaused?'Play injection':'Pause injection'),
+        h('label',{style:{fontSize:'13px'}},'Playback speed ',h('select',{'data-tli-rate':true,'aria-label':'TLI playback speed',style:button,value:d.tliPlaybackRate,onChange:function(ev){action(ev,'rate',ev.target.value);}},[1,10,60].map(function(n){return h('option',{key:n,value:n},n+'×');}))),
+        h('button',{type:'button','data-tli-review':true,style:button,onClick:function(ev){action(ev,'end');}},'Review engine cutoff')),
+      h('label',{htmlFor:'moon-injection-time',style:{display:'block',fontSize:'13px',marginTop:'12px'}},'Inspect the computed burn'),
+      h('input',{id:'moon-injection-time','data-tli-seek':true,type:'range',min:0,max:profile.summary.duration,step:0.1,defaultValue:run.time,style:{width:'100%',minHeight:'44px',accentColor:'#67e8f9'},onChange:function(ev){action(ev,'seek',ev.target.value);},onKeyDown:function(ev){if(ev.key==='End'){ev.preventDefault();action(ev,'end');}if(ev.key==='Home'){ev.preventDefault();action(ev,'seek',0);}}}),
+      h('div',{'data-tli-comparison':true,'aria-label':'Computed engine cutoff comparison',style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:'8px',marginTop:'14px'}},[300,342,350].map(function(duration){var result=mmTliProfile({duration:duration}).summary;return h('div',{key:duration,style:{padding:'10px',border:'1px solid #475569',borderRadius:'8px',fontSize:'12px',lineHeight:1.6}},h('strong',null,duration+' s · '+(result.outcome==='insufficient'?'short of lunar distance':result.outcome==='escape'?'Earth escape':'reaches lunar distance')),h('p',{style:{margin:0}},result.propellantUsed.toFixed(0)+' kg used'),h('p',{style:{margin:0}},result.apogee===null?'No finite apogee':'Apogee altitude '+(result.apogee/1000).toLocaleString(undefined,{maximumFractionDigits:0})+' km'));})),
+      d.tliResult&&h('p',{'data-tli-result':true,role:'status',style:{fontSize:'13px',lineHeight:1.6,color:'#a5f3fc'}},'Computed cutoff: '+(d.tliResult.outcome==='insufficient'?'the orbit falls short of lunar distance. Choose a longer burn and review again.':d.tliResult.outcome==='escape'?'positive orbital energy; the craft escapes Earth. Lunar arrival still requires targeting.':'the bound orbit reaches lunar distance. Lunar arrival still requires targeting.')),
+      h('details',{'data-tli-model-note':true,style:{fontSize:'13px',lineHeight:1.6,color:'#cbd5e1',marginTop:'12px'}},h('summary',{style:{cursor:'pointer'}},'How this injection model works'),
+        h('p',null,'This starts from the circular 185 km timing preset using the launch model’s remaining S-IVB propellant and a 58,500 kg retained stack. One J-2 engine supplies '+(MM_TLI.thrust/1000).toFixed(1)+' kN with 425 s specific impulse. Position, velocity and changing mass are integrated under Earth’s inverse-square gravity. Thrust follows the current velocity instantly. Ideal engine Δv follows the rocket equation; it differs from the change in inertial speed because gravity also acts.'),
+        h('p',null,'The Earth is spherical. Ignition and cutoff are instantaneous; restart transients, attitude dynamics, drag, Earth rotation effects, Moon and Sun gravity, venting and spacecraft extraction are omitted. The 342 s choice belongs to this educational mass and guidance model. Apollo 11’s measured TLI burn lasted 347.3 s. The forecast is the current two-body orbit if thrust stops, rather than a time-propagated lunar encounter.'),
+        h('p',null,'The purple ring is 384,400 km from Earth’s center. It does not show a Moon position. Reaching that radius is necessary for this exercise; it does not guarantee meeting the moving Moon. The next navigation exercise uses its own departure preset with lunar gravity and targeting errors. Review and plan comparisons award no points.'),
+        h('a',{href:'https://www.nasa.gov/wp-content/uploads/static/apollo50th/pdf/A11_MissionReport.pdf',target:'_blank',rel:'noopener noreferrer',style:{color:'#7dd3fc',display:'inline-block',padding:'10px 0'}},'NASA Apollo 11 mission report')));
+  }
 
   // Whole 1/60 s steps of real time since the last frame, so an animation runs at the
   // same speed on a 30, 60 or 120 Hz screen. The first (untimed) paint steps once; the
@@ -5212,6 +5392,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         });
         Object.assign(s, mmCleanEntryState(s));
         Object.assign(s, mmCleanLaunchPlayback(s));
+        Object.assign(s, mmCleanTliPlayback(s));
         Object.assign(s, mmCleanTransitPlayback(s));
         Object.assign(s, mmCleanReturnPlayback(s));
         Object.assign(s, mmCleanApproachPlayback(s));
@@ -5489,11 +5670,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       // mission. The lock also covers a double-click that lands before the render
       // catches up.
       var eventPending = !!(d.activeEvent || d.eventOutcome);
-      function canProceed() {
+      function canProceed(action) {
         if (eventPending) return false;
-        var now = Date.now();
-        if (_mmProceedLock && _mmProceedLock.phase === phase && now - _mmProceedLock.at < 1000) return false;
-        _mmProceedLock = { phase: phase, at: now };
+        var now = Date.now(), lockPhase = action ? phase + ':' + action : phase;
+        if (_mmProceedLock && _mmProceedLock.phase === lockPhase && now - _mmProceedLock.at < 1000) return false;
+        _mmProceedLock = { phase: lockPhase, at: now };
         return true;
       }
 
@@ -5939,7 +6120,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       var PHASE_TASKS = [
         t('stem.moonmission.task_0', 'Pick a difficulty, look over the mission profile, then press Begin Mission.'),
         t('stem.moonmission.task_1', 'Watch the Saturn V climb. When the banner turns green you are in orbit \u2014 press Proceed to Orbit.'),
-        t('stem.moonmission.task_2_timing', 'Timing call: wait for the green burn window, then fire TLI. Your timing result is recorded for the flight report.'),
+        t('stem.moonmission.task_2_timing', 'Wait for the green timing window, command S-IVB ignition, then review a finite burn that reaches lunar distance. Timing and measured cutoff appear in the flight report.'),
         t('stem.moonmission.task_3_navigation', 'Compare departure and correction plans, review a measured lunar encounter, then prepare lunar orbit insertion.'),
         t('stem.moonmission.task_4_burn', 'Plan the insertion burn, verify a safe lunar orbit, then prepare Eagle for descent.'),
         t('stem.moonmission.task_5', 'Fly the landing: W or \u2191 for thrust, A/D to slide. Touch down under 3 m/s down and 5 m/s sideways.'),
@@ -7295,7 +7476,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         ),
 
         // ═══ PHASE 2: EARTH ORBIT ═══
-        phase === 2 && h('div', { className: 'space-y-3', 'data-orbit-workspace': true, style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
+        phase === 2 && !d.tliStarted && h('div', { className: 'space-y-3', 'data-orbit-workspace': true, style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             // The enlarged orbital diagram keeps the third-stage stack readable.
             h('div', { className: 'relative', style: { height: '320px' } },
@@ -7479,35 +7660,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   h('summary', { className: 'min-h-[44px] flex items-center cursor-pointer text-sky-200' }, 'How this orbit model works'),
                   h('p', { className: 'leading-relaxed mb-2' }, 'This separate parking-orbit reference uses a circular path at 185 km around a spherical Earth. Speed follows v = √(μ/r), and period follows T = 2πr/v. Gravity is still about ' + sample.gravity.toFixed(1) + ' m/s\u00b2; the crew feels weightless because the vehicle is in free fall.'),
                   h('p', { className: 'leading-relaxed mb-2' }, 'The orbit height, spacecraft and Moon are enlarged for readability. At true scale, 185 km is only ' + (100 * MM_ORBIT.altitude / MM_ORBIT.radius).toFixed(1) + '% of Earth’s radius. The cyan arrow shows velocity direction; the amber arrow shows gravity direction. Their lengths are illustrative.'),
-                  h('p', { className: 'leading-relaxed' }, 'The ±20° arc and systems check after 1.35 orbits are a teaching exercise, not Apollo mission timing or a lunar targeting solution. The Moon and dashed transfer path are schematic. This view ends when you command the burn; it does not integrate the finite TLI burn.')));
+                  h('p', { className: 'leading-relaxed' }, 'The ±20° arc and systems check after 1.35 orbits are a teaching exercise, not Apollo mission timing or a lunar targeting solution. The Moon and dashed transfer path are schematic. Commanding TLI opens the finite S-IVB burn model, where thrust, mass and orbital energy are integrated.')));
             })(),
             h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 mb-3' },
               h('p', { className: 'text-[0.6875rem] text-sky-300 font-bold mb-1' }, t('stem.moonmission.trans_lunar_injection_tli', '\uD83D\uDE80 TRANS-LUNAR INJECTION (TLI)')),
-              h('p', { className: 'text-[0.6875rem] text-slate-300 leading-relaxed' },
-                t('stem.moonmission.the_s_ivb_third_stage_will_fire_for_5_', 'The S-IVB third stage will fire for 5 minutes 47 seconds to accelerate from 28,000 km/h to 38,900 km/h \u2014 trans-lunar injection speed, just under escape velocity. This single burn sends you on a trajectory to the Moon, 384,400 km away.')),
-              h('div', { className: 'grid grid-cols-3 gap-2 mt-2' },
-                [
-                  ['\u0394v needed (change in speed)', '3.13 km/s'],
-                  ['Burn Duration', '5m 47s'],
-                  ['Coast Time', '~3 days']
-                ].map(function(item) {
-                  return h('div', { key: item[0], className: 'bg-white/5 rounded p-1.5 text-center' },
-                    h('p', { className: 'text-[0.6875rem] text-slate-400' }, item[0]),
-                    h('p', { className: 'text-[0.6875rem] font-bold text-sky-300' }, item[1])
-                  );
-                })
-              )
+              h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'Command ignition to open the measured S-IVB burn. Choose an engine cutoff, inspect fuel and orbital energy, and review whether the resulting orbit reaches lunar distance before continuing. The attached third-stage tank starts with the launch simulation’s remaining propellant.')
             ),
             h('div', { className: 'bg-indigo-500/10 rounded-lg p-2 border border-indigo-500/20' },
               h('p', { className: 'text-[0.6875rem] text-indigo-300' }, '\uD83D\uDCA1 ' + apolloFact())
             )
             )
           ),
-          // \u2500\u2500 TLI burn, now actually timed \u2500\u2500
-          // Firing outside the window is still allowed: making a student wait out an
-          // alignment is a worse lesson than letting them fire early and showing what it
-          // costs. Real missions fly mid-course corrections for exactly this reason, so an
-          // off-nominal burn buys one \u2014 it just spends propellant and says so.
+          // Ignition records the live timing call; measured cutoff unlocks the next phase.
           (function() {
             var tw = d.orbitRun ? mmOrbitSnapshot(d.orbitRun.time, d.orbitPlaybackRate) : d.tliWindow || { state: 'systems', offByDeg: 0, orbits: 0 };
             var go = tw.state === 'go';
@@ -7522,9 +7686,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       : 'bg-slate-900 border-amber-500/50 text-amber-200')
               },
                 h('p', { role: 'status', 'aria-live': 'polite', 'data-moonmission-tli-state': tw.state },
-                  go ? '\u2705 GO for TLI. You are on the far side of Earth from where the Moon will be, so this burn swings you out to meet it half an orbit later.'
-                    : waitingOnSystems ? '\u23F3 Houston is verifying systems. The burn window comes round after about an orbit and a half.'
-                    : '\u23F3 Aligning with the burn point. Watch for the green arc, or burn now and correct later.'),
+                  go ? '\u2705 GO for the teaching TLI window. You are on the far side of Earth from the schematic target. Command ignition to inspect the finite burn.'
+                    : waitingOnSystems ? '\u23F3 Houston is verifying systems. The teaching burn window comes round after about an orbit and a half.'
+                    : '\u23F3 Aligning with the teaching burn point. Watch for the green arc, or command ignition now to explore an off-window departure.'),
                 !go && h('p', { className: 'mt-0.5 font-normal', 'data-moonmission-tli-detail': 'true' },
                   (waitingOnSystems ? '' : 'About ' + tw.offByDeg + '\u00B0 ' + (tw.side === 'late' ? 'past' : 'before') + ' the burn point. ')
                   + (tw.secsToGo ? 'Window in about ' + tw.secsToGo + ' s.' : '')),
@@ -7533,31 +7697,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('button', {
                 title: go
                   ? t('stem.moonmission.execute_tli_in_window', 'Execute trans-lunar injection burn. You are inside the burn window.')
-                  : t('stem.moonmission.execute_tli_early', 'Execute trans-lunar injection burn early, outside the burn window. This will need a mid-course correction.'),
+                  : t('stem.moonmission.execute_tli_early', 'Execute trans-lunar injection burn outside the teaching timing window. The measured burn model opens next.'),
                 disabled: eventPending,
                 onClick: function(e) {
-                  if (!canProceed()) return;
+                  if (!canProceed('tli-ignition')) return;
                   // Read the exact painted model time, not the throttled render
                   // snapshot. The button is the only action that ignites TLI.
                   var workspace = e && e.currentTarget && e.currentTarget.closest('[data-orbit-workspace]');
                   var canvas = workspace && workspace.querySelector('[data-orbit-canvas]');
                   var liveWindow = canvas && canvas._orbitSnapshot ? canvas._orbitSnapshot() : d.orbitRun ? mmOrbitSnapshot(d.orbitRun.time, d.orbitPlaybackRate) : tw;
                   tw = liveWindow; go = liveWindow.state === 'go'; waitingOnSystems = liveWindow.state === 'systems';
-                  if (canvas) canvas.dataset.orbitEngine = 'firing';
-                  advancePhase(3);
-                  upd('showQuiz', true); // Trigger quiz during coast
+                  if (canvas && canvas._orbitAction) canvas._orbitAction('pause', true);
                   upd('tliAccuracy', { onTime: go, offByDeg: tw.offByDeg, side: tw.side === 'late' ? 'late' : 'early', beforeGo: waitingOnSystems });
-                  if (go) {
-                    log('\uD83D\uDE80 TLI burn on time \u2014 trajectory nominal.');
-                    addXP(25);
-                    if (addToast) addToast('\uD83C\uDF11 Nominal trans-lunar injection! Time for a space knowledge check.', 'success');
-                    if (typeof announceToSR === 'function') announceToSR('Trans-lunar injection burn executed inside the window. Trajectory is nominal.');
-                  } else {
-                    log('\uD83D\uDE80 TLI burn fired ' + tw.offByDeg + '\u00B0 off the window \u2014 a mid-course correction will be needed.');
-                    addXP(10);
-                    if (addToast) addToast('\uD83C\uDF11 Burn away \u2014 but ' + tw.offByDeg + '\u00B0 off the aim point. You will spend propellant on a mid-course correction.', 'info');
-                    if (typeof announceToSR === 'function') announceToSR('Trans-lunar injection executed ' + tw.offByDeg + ' degrees outside the burn window. A mid-course correction will be required.');
-                  }
+                  upd('tliStarted', true); upd('tliPlan', mmTliPlan()); upd('tliResult', null);
+                  upd('tliRun', { version: 1, duration: 342, orbitTime: tw.time || 0, time: 0, recorded: false });
+                  upd('tliPaused', animPaused); upd('tliView', 'burn');
+                  log('S-IVB ignition commanded ' + (go ? 'inside' : 'outside') + ' the teaching timing window. Finite burn review started.');
+                  mmFocusWhenReady('[data-tli-plan]');
+                  if (typeof announceToSR === 'function') announceToSR('S-IVB ignition commanded. Inspect the finite burn and review engine cutoff before continuing.');
                 },
                 className: 'w-full py-3 rounded-xl text-sm font-bold text-white shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed ' +
                   (go ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700'
@@ -7567,6 +7724,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             );
           })()
         ),
+
+        phase === 2 && d.tliStarted && h('div', { className: 'space-y-3' },
+          mmRenderTliCard(h, d, upd),
+          h('p', { className: 'text-xs text-slate-300', 'data-tli-gate-note': true }, 'Review a computed burn that reaches lunar distance to unlock navigation. The next exercise starts from a separate departure preset.'),
+          h('button', { type: 'button', 'data-tli-proceed': true, disabled: eventPending || !d.tliResult || d.tliResult.outcome === 'insufficient',
+            className: 'w-full min-h-[44px] py-3 rounded-xl text-sm font-bold bg-blue-700 text-white disabled:opacity-50',
+            onClick: function() {
+              if (!d.tliResult || d.tliResult.outcome === 'insufficient' || !canProceed()) return;
+              advancePhase(3); upd('showQuiz', true);
+              if (!d.tliAwarded) { upd('tliAwarded', true); addXP(d.tliAccuracy && d.tliAccuracy.onTime ? 25 : 10); }
+              log('S-IVB cutoff reviewed: ' + d.tliResult.outcome + ', ' + d.tliResult.propellantUsed.toFixed(0) + ' kg propellant used. Outbound navigation uses its separate targeting preset.');
+            } }, 'Continue to lunar navigation'),
+          h('button', { type: 'button', className: 'min-h-[44px] px-3 py-2 text-sm text-sky-200 rounded-lg border border-slate-500', disabled: eventPending,
+            onClick: function() { if (!canProceed()) return; upd('tliStarted', false); upd('tliRun', null); upd('tliResult', null); upd('tliAccuracy', null); upd('orbitPaused', true); } }, 'Return to timing exercise')),
 
         // ═══ PHASE 3: TRANS-LUNAR COAST (Animated Canvas) ═══
         phase === 3 && (function() {
@@ -12718,6 +12889,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ? 'The burn met the timing target. Outbound navigation starts from its own specified departure state.'
                     : 'The burn missed the timing target. The navigation exercise measures separately chosen departure errors and their corrections.')
               ),
+              d.tliResult && h('div', { className: 'bg-white/5 rounded-lg p-2 border border-white/10 mb-2', 'data-tli-flight-record': true },
+                h('p', { className: 'text-xs font-bold text-sky-200' }, 'FINITE S-IVB INJECTION: ' + d.tliResult.outcome),
+                h('p', { className: 'text-xs text-slate-200' }, d.tliResult.duration.toFixed(1) + ' s burn; ' + d.tliResult.propellantUsed.toFixed(0) + ' kg of propellant used; specific orbital energy ' + (d.tliResult.energy/1e6).toFixed(3) + ' MJ/kg. Lunar navigation uses its own departure preset.')),
               d.transitResult && h('div', { className: 'bg-white/5 rounded-lg p-2 border border-white/10 mb-2', 'data-transit-flight-record': true },
                 h('p', { className: 'text-xs font-bold text-sky-200' }, 'OUTBOUND NAVIGATION: ' + d.transitResult.outcome),
                 h('p', { className: 'text-xs text-slate-200' }, 'SPS correction: ' + d.transitResult.actualBurn.toFixed(2) + ' s, ' + d.transitResult.propellantUsed.toFixed(2) + ' kg of propellant used. ' + (mmNum(d.transitResult.closestAltitude) ? 'Closest lunar altitude: ' + (Math.max(0, d.transitResult.closestAltitude) / 1000).toFixed(1) + ' km.' : 'No closest lunar approach recorded.'))),
@@ -12995,6 +13169,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 upd('launchPlaybackRate', 30);
                 upd('launchAwarded', false);
                 upd('launchMigrationNote', null);
+                upd('tliStarted', false); upd('tliPlan', null); upd('tliRun', null); upd('tliResult', null);
+                upd('tliPaused', true); upd('tliPlaybackRate', 10); upd('tliView', 'burn'); upd('tliAwarded', false);
                 upd('orbitRun', null);
                 upd('orbitPaused', false);
                 upd('orbitPlaybackRate', 360);

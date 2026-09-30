@@ -12,7 +12,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import fs from 'node:fs';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
-const FILE = 'stem_lab/stem_tool_moonmission.js';
+const FILE = process.env.MM_SOURCE || 'stem_lab/stem_tool_moonmission.js';
 function render(state) {
   loadTool(FILE, 'moonMission');
   return renderTool('moonMission', { moonMission: state });
