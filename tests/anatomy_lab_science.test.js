@@ -112,8 +112,12 @@ describe('Anatomy Lab interaction performance', () => {
 
   it('offers a recovery action when a search has no results', () => {
     const html = renderAnatomy({ system: 'skeletal', complexity: 3, search: 'not-a-real-structure' });
-    // 66296cfd0 made the empty state translatable: 'No matches in this view for "{query}".'
-    expect(html).toMatch(/role="status"><p[^>]*>No matches in this view for .not-a-real-structure.\.<\/p>/);
+    const root = document.createElement('div'); root.innerHTML = html;
+    const empty = root.querySelector('[data-anatomy-search-empty="view"]');
+    expect(empty).not.toBeNull();
+    const status = empty.matches('[role="status"]') ? empty : empty.querySelector('[role="status"]');
+    expect(status).not.toBeNull();
+    expect(status.textContent).toMatch(/No matches in this view for .not-a-real-structure.\./);
     expect(html).toContain('Clear search</button>');
     expect(html).toContain('role="status"');
   });
@@ -340,7 +344,7 @@ describe('Anatomy Lab navigation recovery', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain("activateAnatomyTab('connections')");
     expect(source).toContain('var tourPatch = { _activeTab: tab, quizMode: false, _tourActive: true, _tourStepIdx: nextTourIndex, _tourSystem: tourActive ? tourSystemId : sysKey };');
-    expect(source).toContain('changeTab(structureFocusPatch(tabTourStep.structureId, tourPatch));');
+    expect(source).toContain('changeTab(tabTourStep ? structureFocusPatch(tabTourStep.structureId, tourPatch) : tourPatch, function() {');
     // Completion also clears the end-of-tour recap state.
     expect(source).toContain("updMulti({ _tourCompleted: true, _tourActive: false, _activeTab: 'explore', _tourRecap: null, _tourRecapReturn: null })");
     expect(source).not.toContain("upd('_activeTab', 'tour'); if (!tourActive)");
@@ -613,9 +617,10 @@ describe('Anatomy Lab guided diagram synchronization', () => {
   it('records comparison progress only through unique pair tracking', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain("return [firstId, secondId].sort().join('::')");
-    expect(source).toContain('patch._comparisonPairs = newComparisonPairs;');
-    expect(source).toContain('patch._comparisons = Math.max(comparisons + 1, newComparisonPairs.length);');
-    expect(source).toContain("else { upd('_compareStructure', sel.id); playSound('compareView'); }");
+    expect(source).toContain('patch._comparisonPairs = [pairKey];');
+    expect(source).toContain('_comparisonPairs: pairs, _comparisons: count + added');
+    expect(source).toContain('mergeComparisonHistoryPatch(p.anatomy || {}, obj)');
+    expect(source).toContain('else { pinComparison(sel.id); }');
     expect(source).not.toContain("_compareStructure: sel.id, _comparisons: comparisons + 1");
   });
 });
@@ -673,8 +678,12 @@ describe('Anatomy Lab guided-mode continuity', () => {
 
   it('focuses the current structure whenever a guided tab is entered or resumed', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain('changeTab(structureFocusPatch(tabTourStep.structureId, tourPatch));');
-    expect(source).toContain("changeTab(structureFocusPatch(tabPathwayStep.structure, { _activeTab: tab, _pathwayStep: pathwayStepIdx }))");
+    expect(source).toContain('changeTab(tabTourStep ? structureFocusPatch(tabTourStep.structureId, tourPatch) : tourPatch, function() {');
+    expect(source).toContain("changeTab(structureFocusPatch(tabPathwayStep.structure, { _activeTab: tab, _pathwayStep: pathwayStepIdx }), function() {");
+    expect(source).toContain('announceStructure(tabTourStep.structureId);');
+    expect(source).toContain('else focusTourStep();');
+    expect(source).toContain('announceStructure(tabPathwayStep.structure);');
+    expect(source).toContain('else focusPathwayStep(activePathway,pathwayStepIdx);');
     expect(source).toContain("_flashcardIdx: 0, _flashcardFlipped: false");
   });
 
@@ -1916,7 +1925,7 @@ describe('Anatomy Systems in Motion', () => {
     expect(html).toContain('data-anatomy-compare-tray=');
     expect(html).toContain('Pinned comparison target');
     expect(html).toContain('Comparison target');
-    expect(html).toContain('Open comparison target Ribs');
+    expect(html).toContain('Open target in Explore: Ribs');
     expect(html).toContain('Clear comparison target Ribs');
   });
 

@@ -89,7 +89,8 @@ describe('Structure compare panel', () => {
     expect(states).toEqual(['hit', 'miss']);
     const missed = [wrongFirst, wrongSecond].find((r) => r.querySelector('[data-anatomy-compare-check-state="miss"]'));
     const status = missed.querySelector('[data-anatomy-compare-check] [role="status"]');
-    expect(status.textContent).toMatch(/^This function describes (Femur|Tibia)\./);
+    expect(status.querySelector('h6').textContent).toBe('Comparison feedback');
+    expect(status.querySelector('p').textContent).toMatch(/^This function describes (Femur|Tibia)\./);
     expect(missed.querySelectorAll('button[data-anatomy-compare-option][disabled]')).toHaveLength(2);
 
     // A check answered for a different pair does not carry over.

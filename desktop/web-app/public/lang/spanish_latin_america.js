@@ -33594,7 +33594,14 @@
       "study_ref_card_return_label": "Volver a la tarjeta de {name}",
       "study_ref_search_filter_empty": "Coincidencias para “{query}” en esta vista: {count}. Ninguna coincide con el filtro de estudio «{filter}».",
       "study_ref_search_filter_help": "Muestra todas las coincidencias en esta vista o elige otro filtro de estudio.",
-      "study_ref_search_show_matching": "Mostrar todas las estructuras que coinciden"
+      "study_ref_search_show_matching": "Mostrar todas las estructuras que coinciden",
+      "compare_nav_chosen_choice": "Tu respuesta",
+      "compare_nav_correct_choice": "Respuesta correcta",
+      "compare_nav_elsewhere": "La comparación está lista en «Explorar». Ábrela para revisar estas estructuras juntas.",
+      "compare_nav_feedback": "Resultado de la comparación",
+      "compare_nav_open_target": "Abrir referencia en «Explorar»",
+      "compare_nav_practice": "Ir a la pregunta de práctica",
+      "compare_nav_review": "Volver a la comparación"
     },
     "dna": {
       "back_to_tools": "Volver a las herramientas",

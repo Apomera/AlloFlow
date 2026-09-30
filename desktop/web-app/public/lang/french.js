@@ -32012,7 +32012,14 @@
       "study_ref_card_return_label": "Revenir à la carte sur {name}",
       "study_ref_search_filter_empty": "Résultats pour « {query} » dans cette vue : {count}. Aucun ne correspond au filtre d’étude « {filter} ».",
       "study_ref_search_filter_help": "Affiche tous les résultats dans cette vue, ou choisis un autre filtre d’étude.",
-      "study_ref_search_show_matching": "Afficher toutes les structures correspondantes"
+      "study_ref_search_show_matching": "Afficher toutes les structures correspondantes",
+      "compare_nav_chosen_choice": "Ta réponse",
+      "compare_nav_correct_choice": "Réponse correcte",
+      "compare_nav_elsewhere": "Ta comparaison est prête dans « Explorer ». Ouvre-la pour examiner ces structures ensemble.",
+      "compare_nav_feedback": "Résultat de la comparaison",
+      "compare_nav_open_target": "Ouvrir la cible dans « Explorer »",
+      "compare_nav_practice": "Aller à la question d’entraînement",
+      "compare_nav_review": "Revenir à la comparaison"
     },
     "dna": {
       "back_to_tools": "Retour aux outils",

@@ -102,7 +102,7 @@ for (const file of paths) {
       const s = session(file, { _activeTab: 'explore', _structureConfidence: { ribs: 'practice' } }); s.click('Cards');
       const hiddenAnnouncement = () => {
         const root = s.html(); const card = root.querySelector('[data-anatomy-recall-card]');
-        const name = card.querySelector('h3').textContent; const position = root.querySelector('[aria-label="Flashcard progress"]').textContent.split('/');
+        const name = card.querySelector('h5').textContent; const position = root.querySelector('[aria-label="Flashcard progress"]').textContent.split('/');
         expect(s.announcements.at(-1)).toBe(`Flashcard ${position[0]} / ${position[1]}. ${name}. Answer hidden`);
       };
       hiddenAnnouncement();

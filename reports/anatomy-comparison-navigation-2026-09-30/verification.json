@@ -1,0 +1,142 @@
+{
+  "uniqueUnitChecks": 561,
+  "uniqueUnitSuites": 13,
+  "initialUnitChecks": 557,
+  "finalTargetedChecks": 263,
+  "lastUnitReport": "final-unit-results.json",
+  "lastUnitRunChecks": 263,
+  "unitResultsMergedBy": "fullName",
+  "allEffectiveUnitChecksPassed": true,
+  "unitRuns": [
+    {
+      "file": "initial-unit-results.json",
+      "assertions": 557,
+      "passed": 545,
+      "failed": 12
+    },
+    {
+      "file": "final-unit-results.json",
+      "assertions": 263,
+      "passed": 263,
+      "failed": 0
+    }
+  ],
+  "requiredUnitCounts": {
+    "anatomy_comparison_navigation.test.js": 62
+  },
+  "browserScenarios": 1,
+  "browserValidation": [
+    {
+      "file": "comparison-browser-validation.json",
+      "label": "Comparison navigation",
+      "scans": 15,
+      "violations": 0,
+      "measurements": [
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "comparison-browser-validation.json.comparison.scans[0].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "comparison-browser-validation.json.comparison.scans[1].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "comparison-browser-validation.json.comparison.scans[2].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "comparison-browser-validation.json.comparison.scans[3].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "comparison-browser-validation.json.comparison.scans[4].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "comparison-browser-validation.json.comparison.scans[5].dimensions"
+        },
+        {
+          "width": 768,
+          "scroll": 768,
+          "location": "comparison-browser-validation.json.comparison.scans[6].dimensions"
+        },
+        {
+          "width": 768,
+          "scroll": 768,
+          "location": "comparison-browser-validation.json.comparison.scans[7].dimensions"
+        },
+        {
+          "width": 768,
+          "scroll": 768,
+          "location": "comparison-browser-validation.json.comparison.scans[8].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "comparison-browser-validation.json.comparison.scans[9].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "comparison-browser-validation.json.comparison.scans[10].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "comparison-browser-validation.json.comparison.scans[11].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "comparison-browser-validation.json.comparison.scans[12].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "comparison-browser-validation.json.comparison.scans[13].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "comparison-browser-validation.json.comparison.scans[14].dimensions"
+        }
+      ],
+      "errorArraysChecked": 1
+    }
+  ],
+  "accessibilityScans": 15,
+  "accessibilityViolations": 0,
+  "browserErrors": [],
+  "sourceSha256": "03a6bd8f8c85284667c4ad55d4a8d9eddc7b0839c79a18f06cf2761088cba6be",
+  "sourceHashLineEndings": "LF",
+  "sourceMirrorsMatch": true,
+  "canonicalSyntaxCheckPassed": true,
+  "localeCandidateMirrorsMatch": true,
+  "localeLabelsPerPack": 7,
+  "localeKeys": [
+    "compare_nav_chosen_choice",
+    "compare_nav_correct_choice",
+    "compare_nav_elsewhere",
+    "compare_nav_feedback",
+    "compare_nav_open_target",
+    "compare_nav_practice",
+    "compare_nav_review"
+  ],
+  "localeCandidateHashes": {
+    "french": "67550887229bbf9f8706712c6f7ec878ba2ce273cdc944e9a4c367ad50978cb6",
+    "spanish_latin_america": "cb0a4ff63ee93ab6b8031ac6aa23a0d82be88de2c54a30018db741735c0ede89",
+    "arabic": "62c9cc839df277b0d174241bb2853e3e129841a30275bb3d42f0203e028afb53"
+  },
+  "requiredCommitExtraTests": [
+    "tests/anatomy_lab_science.test.js",
+    "tests/anatomy_learning_reliability.test.js",
+    "tests/anatomy_modality_compare_check.test.js"
+  ]
+}

@@ -79,9 +79,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
     st.id = 'allo-anatomy-refinement-css';
     st.textContent = [
       ".anatomy-tool-shell .anatomy-breathing-study{min-width:0;overflow-wrap:anywhere}.anatomy-breathing-study svg{display:block;width:min(100%,300px);height:auto;margin:12px auto;background:#f8fafc;border-radius:10px}.anatomy-breathing-study figcaption{font-size:13px;line-height:1.6}.anatomy-breathing-study figure{margin:12px 0}.anatomy-breathing-study fieldset{min-width:0;border:1px solid #94a3b8;border-radius:8px;padding:12px;margin-block:14px}.anatomy-breathing-study legend{font-weight:800;padding-inline:4px}.anatomy-breathing-study fieldset>button{display:block;width:100%;margin:8px 0;text-align:start;white-space:normal}.anatomy-breathing-study [data-anatomy-breath-feedback]{padding-block:10px}.anatomy-breathing-study [data-anatomy-breath-feedback=correct]{border-inline-start:4px solid #16a34a;padding-inline-start:10px}.anatomy-breathing-study [data-anatomy-breath-feedback=review]{border-inline-start:4px solid #d97706;padding-inline-start:10px}@media(prefers-reduced-motion:reduce){.anatomy-breathing-study,.anatomy-breathing-study *{transition:none!important;animation:none!important}}",
-      ".anatomy-tool-shell .anatomy-comparison-panel{container-type:inline-size;container-name:anatomy-comparison;min-width:0;overflow-wrap:anywhere}.anatomy-comparison-panel h6{font-weight:800;font-size:15px}.anatomy-comparison-panel table{font-size:inherit}.anatomy-comparison-panel caption{font-weight:800;text-align:start;padding-block:8px}.anatomy-comparison-panel th,.anatomy-comparison-panel td{vertical-align:top}.anatomy-comparison-panel .anatomy-compare-mobile-name{display:none}.anatomy-comparison-panel .anatomy-comparison-note{font-size:13px}.anatomy-comparison-panel .anatomy-science-sources{color:inherit;background:inherit;font-size:inherit}.anatomy-comparison-panel button:disabled{opacity:1;cursor:default}.anatomy-comparison-panel .anatomy-refinement-actions>span{padding:8px;min-height:44px}.anatomy-tool-shell .anatomy-compare-tray [type=button]{min-height:44px;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-compare-tray p,.anatomy-tool-shell .anatomy-compare-tray strong{font-size:14px;line-height:1.5}.anatomy-compare-tray>div:last-child{flex-wrap:wrap}.anatomy-comparison-panel [data-anatomy-compare-check-state=hit]{border-inline-start:4px solid #16a34a}.anatomy-comparison-panel [data-anatomy-compare-check-state=miss]{border-inline-start:4px solid #d97706}@container anatomy-comparison (max-width:520px){.anatomy-comparison-panel caption{display:block;width:100%}.anatomy-comparison-panel table,.anatomy-comparison-panel tbody,.anatomy-comparison-panel tr,.anatomy-comparison-panel th,.anatomy-comparison-panel td{display:block;width:100%}.anatomy-comparison-panel thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}.anatomy-comparison-panel tbody tr{margin-block:12px;border:1px solid #94a3b8;border-radius:8px;overflow:hidden}.anatomy-comparison-panel tbody th{font-weight:800}.anatomy-comparison-panel tbody td:last-child{border-bottom:0}.anatomy-comparison-panel .anatomy-compare-mobile-name{display:block;font-weight:800;margin-block-end:4px}}@media(prefers-reduced-motion:reduce){.anatomy-comparison-panel,.anatomy-comparison-panel *{transition:none!important;animation:none!important}}",
+      ".anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement{container-type:inline-size;container-name:anatomy-comparison;min-width:0;overflow-wrap:anywhere}.anatomy-comparison-panel h6{font-weight:800;font-size:15px}.anatomy-comparison-panel table{font-size:inherit}.anatomy-comparison-panel caption{font-weight:800;text-align:start;padding-block:8px}.anatomy-comparison-panel th,.anatomy-comparison-panel td{vertical-align:top}.anatomy-comparison-panel .anatomy-compare-mobile-name{display:none}.anatomy-comparison-panel .anatomy-comparison-note{font-size:13px}.anatomy-comparison-panel .anatomy-science-sources{color:inherit;background:inherit;font-size:inherit}.anatomy-comparison-panel button:disabled{opacity:1;cursor:default}.anatomy-comparison-panel .anatomy-refinement-actions>span{padding:8px;min-height:44px}.anatomy-tool-shell .anatomy-compare-tray [type=button]{min-height:44px;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-compare-tray p,.anatomy-tool-shell .anatomy-compare-tray strong{font-size:14px;line-height:1.5}.anatomy-compare-tray>div:last-child{flex-wrap:wrap}.anatomy-comparison-panel [data-anatomy-compare-check-state=hit]{border-inline-start:4px solid #16a34a}.anatomy-comparison-panel [data-anatomy-compare-check-state=miss]{border-inline-start:4px solid #d97706}@container anatomy-comparison (max-width:520px){.anatomy-comparison-panel caption{display:block;width:100%}.anatomy-comparison-panel table,.anatomy-comparison-panel tbody,.anatomy-comparison-panel tr,.anatomy-comparison-panel th,.anatomy-comparison-panel td{display:block;width:100%}.anatomy-comparison-panel thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}.anatomy-comparison-panel tbody tr{margin-block:12px;border:1px solid #94a3b8;border-radius:8px;overflow:hidden}.anatomy-comparison-panel tbody th{font-weight:800}.anatomy-comparison-panel tbody td:last-child{border-bottom:0}.anatomy-comparison-panel .anatomy-compare-mobile-name{display:block;font-weight:800;margin-block-end:4px}}@media(prefers-reduced-motion:reduce){.anatomy-comparison-panel,.anatomy-comparison-panel *{transition:none!important;animation:none!important}}",
       '.anatomy-tool-shell{--anatomy-accent:#be185d;--anatomy-soft:#fce7f3;color:#0f172a;}',
       '.anatomy-tool-shell{--practice-ink:#0f172a;--practice-panel:#fff;--practice-soft:#f8fafc;--practice-border:#94a3b8;--practice-nav:#075985;--practice-nav-soft:#f0f9ff;--practice-good:#065f46;--practice-good-bg:#ecfdf5;--practice-good-border:#059669;--practice-bad:#9f1239;--practice-bad-bg:#fff1f2;--practice-bad-border:#e11d48}.theme-dark .anatomy-tool-shell{--practice-ink:#e2e8f0;--practice-panel:#0f172a;--practice-soft:#1e293b;--practice-border:#94a3b8;--practice-nav:#7dd3fc;--practice-nav-soft:#082f49;--practice-good:#d1fae5;--practice-good-bg:#064e3b;--practice-good-border:#6ee7b7;--practice-bad:#ffe4e6;--practice-bad-bg:#881337;--practice-bad-border:#fda4af}.theme-contrast .anatomy-tool-shell{--practice-ink:#000;--practice-panel:#fff;--practice-soft:#fff;--practice-border:#000;--practice-nav:#000;--practice-nav-soft:#fff;--practice-good:#004d2c;--practice-good-bg:#fff;--practice-good-border:#000;--practice-bad:#8b0020;--practice-bad-bg:#fff;--practice-bad-border:#000}',
+      '.anatomy-tool-shell{--compare-first-soft:#f0f9ff;--compare-second-soft:#f5f3ff}.theme-dark .anatomy-tool-shell{--compare-first-soft:#082f49;--compare-second-soft:#312e81}.theme-contrast .anatomy-tool-shell{--compare-first-soft:#fff;--compare-second-soft:#fff}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement{color:var(--practice-ink);background:var(--practice-panel);border:1px solid var(--practice-border);border-radius:16px;padding:16px}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement :is(p,button,summary,td,th,caption,.anatomy-comparison-note){font-size:14px;line-height:1.7}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement h5{font-size:20px;line-height:1.5;font-weight:800;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement h6{font-size:16px;line-height:1.6;color:var(--practice-ink);margin-block:4px 8px}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement :is(th,td){padding:12px;border-color:var(--practice-border)}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement :is(th,td):nth-child(2){background:var(--compare-first-soft)}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement :is(th,td):nth-child(3){background:var(--compare-second-soft)}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement tbody th{background:var(--practice-soft)}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement .anatomy-compare-mobile-name{font-size:14px;font-weight:800}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement caption{padding-block:10px}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement .anatomy-refinement-actions button{color:var(--practice-nav);background:var(--practice-panel);border-color:var(--practice-nav);font-weight:800}',
+      '.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement [data-anatomy-compare-check]{min-width:0;margin:18px 0 0;padding:14px;border:1px solid var(--practice-border);border-radius:12px;background:var(--practice-soft)}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement [data-anatomy-compare-check] legend{max-width:100%;padding-inline:6px}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement .anatomy-compare-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-block:12px}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement [data-anatomy-compare-option]{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-height:52px;margin:0;padding:12px;text-align:start;border:1px solid var(--practice-border);border-radius:9px;color:var(--practice-ink);background:var(--practice-panel);white-space:normal;overflow-wrap:anywhere;font-weight:800}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement [data-anatomy-compare-option][data-anatomy-compare-answer-state=correct]{color:var(--practice-good);background:var(--practice-good-bg);border-color:var(--practice-good-border)}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement [data-anatomy-compare-option][data-anatomy-compare-answer-state=chosen]{color:var(--practice-bad);background:var(--practice-bad-bg);border-color:var(--practice-bad-border)}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement .anatomy-compare-answer-label{font-size:12px;line-height:1.5}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement [data-anatomy-compare-feedback]{padding:12px;margin-block:12px 0;border:1px solid var(--practice-border);border-inline-start:4px solid var(--practice-nav);border-radius:9px;background:var(--practice-panel)}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement [data-anatomy-compare-feedback=correct]{border-inline-start-color:var(--practice-good-border)}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement [data-anatomy-compare-feedback=review]{border-inline-start-color:var(--practice-bad-border)}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement [data-anatomy-compare-review]{min-height:44px;padding:10px 14px;color:var(--practice-nav);background:var(--practice-nav-soft);border:1px solid var(--practice-nav);border-radius:8px;font-weight:800}',
+      '.anatomy-tool-shell .anatomy-compare-tray{color:var(--practice-ink);background:var(--compare-second-soft);border:1px solid var(--practice-border);border-inline-start:4px solid var(--practice-nav);border-radius:10px;padding:12px;gap:12px}.anatomy-tool-shell .anatomy-compare-tray :is(p,strong,.anatomy-kicker){color:var(--practice-ink)}.anatomy-tool-shell .anatomy-compare-tray .anatomy-kicker{display:block;margin-block-end:4px}.anatomy-tool-shell .anatomy-compare-tray :is(p,strong,button){font-size:14px;line-height:1.65}.anatomy-tool-shell .anatomy-compare-tray button{min-height:44px;padding:10px 12px;border:1px solid var(--practice-nav);border-radius:8px;color:var(--practice-nav);background:var(--practice-panel);font-weight:800}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement :is(h5,h6,[data-anatomy-compare-feedback]):focus{outline:3px solid #0284c7;outline-offset:3px}.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement :is(h5,h6,[data-anatomy-compare-feedback]){scroll-margin-top:80px}.anatomy-tool-shell[data-reading-mode=true] .anatomy-comparison-panel :is(p,button,summary,td,th,caption,span,.anatomy-comparison-note),.anatomy-tool-shell[data-reading-mode=true] .anatomy-compare-tray :is(p,strong,button){font-size:17px!important;line-height:1.7!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-comparison-panel h5{font-size:22px!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-comparison-panel h6{font-size:20px!important}@container anatomy-comparison (max-width:520px){.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement .anatomy-compare-choices{grid-template-columns:minmax(0,1fr)}}@media(max-width:520px){.anatomy-tool-shell .anatomy-comparison-panel.anatomy-refinement{padding:12px}.anatomy-tool-shell .anatomy-compare-tray>div:last-child{width:100%}.anatomy-tool-shell .anatomy-compare-tray button{min-width:0;flex:1 1 120px}}',
       '.anatomy-tool-shell .anatomy-spotter-panel{color:var(--practice-ink);background:var(--practice-panel);padding:18px}.anatomy-tool-shell .anatomy-spotter-panel :is(p,button){font-size:14px;line-height:1.6}.anatomy-tool-shell .anatomy-spotter-panel h4{font-size:20px;line-height:1.4}.anatomy-tool-shell .anatomy-spotter-panel h5{font-size:16px;line-height:1.55;font-weight:800}.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-choices]{gap:10px}.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-option]{min-height:52px;padding:12px;flex-wrap:wrap;gap:8px;text-align:start;color:var(--practice-ink)!important;background:var(--practice-panel)!important;border-color:var(--practice-border)!important;opacity:1}.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-option][data-anatomy-spotter-answer-state=correct]{color:var(--practice-good)!important;background:var(--practice-good-bg)!important;border-color:var(--practice-good-border)!important}.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-option][data-anatomy-spotter-answer-state=chosen]{color:var(--practice-bad)!important;background:var(--practice-bad-bg)!important;border-color:var(--practice-bad-border)!important}.anatomy-tool-shell .anatomy-spotter-answer-label{flex-basis:100%;padding-inline-start:36px;font-size:12px;line-height:1.5;font-weight:800}.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-feedback]{border-radius:10px;padding:4px}',
       '.anatomy-tool-shell .anatomy-spotter-navigation{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:12px;border:1px solid var(--practice-border);border-radius:10px;background:var(--practice-nav-soft);color:var(--practice-nav)}.anatomy-tool-shell .anatomy-spotter-navigation p{flex:1;min-width:150px;margin:0}.anatomy-tool-shell .anatomy-spotter-navigation button,.anatomy-tool-shell .anatomy-spotter-return{min-height:44px;padding:10px 14px;border:1px solid var(--practice-nav);border-radius:8px;background:var(--practice-panel);color:var(--practice-nav);font-size:14px;font-weight:800;line-height:1.6}.anatomy-tool-shell .anatomy-spotter-return{width:100%;margin-block:0 10px;background:var(--practice-nav-soft)}.anatomy-tool-shell .anatomy-spotter-panel :is(h5,[data-anatomy-spotter-feedback]):focus,.anatomy-tool-shell .anatomy-spotter-return:focus-visible{outline:3px solid #0284c7;outline-offset:3px}.anatomy-tool-shell .anatomy-spotter-panel h5,.anatomy-tool-shell .anatomy-spotter-return{scroll-margin-top:16px}.anatomy-tool-shell[data-reading-mode=true] .anatomy-spotter-panel :is(p,h5,button),.anatomy-tool-shell[data-reading-mode=true] .anatomy-spotter-return{font-size:17px!important;line-height:1.7}@media(max-width:520px){.anatomy-tool-shell .anatomy-spotter-panel{padding:14px}.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-choices]{grid-template-columns:minmax(0,1fr)}.anatomy-tool-shell .anatomy-spotter-navigation{display:grid}.anatomy-tool-shell .anatomy-spotter-navigation button{width:100%}}',
       '.anatomy-tool-shell .anatomy-imaging-practice{min-width:0;scroll-margin-top:16px}.anatomy-tool-shell .anatomy-imaging-challenge{color:var(--practice-ink)!important;background:var(--practice-panel)!important;border:1px solid var(--practice-border);padding:16px;border-radius:12px;line-height:1.6}.anatomy-tool-shell .anatomy-imaging-challenge :is(p,span){font-size:14px;line-height:1.6;color:var(--practice-ink)!important}.anatomy-tool-shell .anatomy-imaging-challenge h5{font-size:18px;line-height:1.5;color:var(--practice-ink)!important}.anatomy-tool-shell .anatomy-imaging-challenge [data-anatomy-spot-context]{font-size:12px;padding:8px 10px;border-radius:8px;background:var(--practice-nav-soft);color:var(--practice-nav)!important;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-imaging-challenge [data-anatomy-spot-feedback]{padding:10px 12px;border:1px solid var(--practice-border);border-inline-start:4px solid var(--practice-nav);border-radius:8px;background:var(--practice-soft);font-size:16px}.anatomy-tool-shell .anatomy-imaging-challenge [data-anatomy-spot-prompt]{font-size:16px}',
@@ -2960,7 +2963,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         };
         var updMulti = function(obj) {
           setLabToolData(function(p) {
-            return Object.assign({}, p, { anatomy: Object.assign({}, p.anatomy, obj) });
+            return Object.assign({}, p, { anatomy: Object.assign({}, p.anatomy, mergeComparisonHistoryPatch(p.anatomy || {}, obj)) });
           });
         };
         function toggleReadingMode() {
@@ -5556,7 +5559,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             var link = {systemId:tourSystemId, context:tourRecapContext, token:token, questionIndex:focused.index};
             var patch = structureFocusPatch(tourSteps[destination].structureId, {_tourActive:true, _tourSystem:tourSystemId, _tourStepIdx:destination, _tourRecap:Object.assign({},recap,{active:false,version:2,systemId:tourSystemId,context:tourRecapContext,token:token,answers:answers,focusIndex:focused.index}), _tourRecapReturn:link});
             accepted = true;
-            return Object.assign({}, previous, {anatomy:Object.assign({},state,patch)});
+            return Object.assign({}, previous, {anatomy:Object.assign({},state,mergeComparisonHistoryPatch(state,patch))});
           });
           finishTourRecapUpdate(function(){return accepted;},function(){announceStructure(tourSteps[destination].structureId);focusTourStep();});
         }
@@ -6211,40 +6214,117 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         // Resolved across every system, so a pinned target survives a system switch and two
         // structures from different systems can be compared (heart vs lungs).
         var compareSel = compareStructureId ? (function() { var compareContext = findStructureContext(compareStructureId, sysKey); return compareContext ? compareContext.structure : null; })() : null;
-        function comparisonPairKey(firstId, secondId) {
-          return [firstId, secondId].sort().join('::');
+        function comparisonPairKey(firstId, secondId) { return [firstId, secondId].sort().join('::'); }
+        function comparisonPairsOf(state) {
+          var pairs = [];
+          if (!Array.isArray(state._comparisonPairs)) return pairs;
+          state._comparisonPairs.forEach(function(rawPair) {
+            if (typeof rawPair !== 'string') return;
+            var parts = rawPair.split('::');
+            if (parts.length !== 2 || parts[0] === parts[1] || knownStructureIds.indexOf(parts[0]) === -1 || knownStructureIds.indexOf(parts[1]) === -1) return;
+            var pair = comparisonPairKey(parts[0], parts[1]); if (pairs.indexOf(pair) === -1) pairs.push(pair);
+          });
+          return pairs;
         }
-        var comparisonPairs = Array.isArray(d._comparisonPairs) ? d._comparisonPairs.reduce(function(validPairs, rawPair) {
-          if (typeof rawPair !== 'string') return validPairs;
-          var pairParts = rawPair.split('::');
-          if (pairParts.length !== 2 || pairParts[0] === pairParts[1]) return validPairs;
-          if (!findStructureContext(pairParts[0], sysKey) || !findStructureContext(pairParts[1], sysKey)) return validPairs;
-          var canonicalPair = comparisonPairKey(pairParts[0], pairParts[1]);
-          if (validPairs.indexOf(canonicalPair) === -1) validPairs.push(canonicalPair);
-          return validPairs;
-        }, []) : [];
-        var comparisons = Math.max(safeNonNegativeNumber(d._comparisons, 0, true), comparisonPairs.length);
+        function comparisonCountOf(state, pairs) { return Math.max(safeNonNegativeNumber(state._comparisons, 0, true), (pairs || comparisonPairsOf(state)).length); }
+        function mergeComparisonHistoryPatch(state, patch) {
+          if (!patch || typeof patch !== 'object' || !Object.prototype.hasOwnProperty.call(patch, '_comparisonPairs') && !Object.prototype.hasOwnProperty.call(patch, '_comparisons')) return patch;
+          var pairs = comparisonPairsOf(state), count = comparisonCountOf(state, pairs), next = Object.assign({}, state, patch), added = 0;
+          var activePair = knownStructureIds.indexOf(next.selectedStructure) !== -1 && knownStructureIds.indexOf(next._compareStructure) !== -1 && next.selectedStructure !== next._compareStructure
+            ? comparisonPairKey(next.selectedStructure, next._compareStructure) : null;
+          comparisonPairsOf(patch).forEach(function(pair) { if (pair === activePair && pairs.indexOf(pair) === -1) { pairs.push(pair); added++; } });
+          return Object.assign({}, patch, { _comparisonPairs: pairs, _comparisons: count + added });
+        }
+        var comparisonPairs = comparisonPairsOf(d);
+        var comparisons = comparisonCountOf(d, comparisonPairs);
         function comparisonTrackingPatch(structureId, basePatch, contextSystemId) {
           var patch = Object.assign({}, basePatch || {});
-          if (!compareSel || compareSel.id === structureId || contextSystemId !== sysKey) return patch;
-          if (!allStructures.some(function(structure) { return structure.id === structureId; })) return patch;
+          if (!compareSel || compareSel.id === structureId || contextSystemId !== sysKey || !allStructures.some(function(structure) { return structure.id === structureId; })) return patch;
           var pairKey = comparisonPairKey(compareSel.id, structureId);
-          if (comparisonPairs.indexOf(pairKey) !== -1) return patch;
-          var newComparisonPairs = comparisonPairs.concat([pairKey]);
-          patch._comparisonPairs = newComparisonPairs;
-          patch._comparisons = Math.max(comparisons + 1, newComparisonPairs.length);
+          if (comparisonPairs.indexOf(pairKey) === -1) patch._comparisonPairs = [pairKey];
           return patch;
         }
-        function selectionPatch(structureId, extraPatch) {
-          return comparisonTrackingPatch(structureId, Object.assign({}, extraPatch || {}, { selectedStructure: structureId }), sysKey);
-        }
+        function selectionPatch(structureId, extraPatch) { return comparisonTrackingPatch(structureId, Object.assign({}, extraPatch || {}, { selectedStructure: structureId }), sysKey); }
         var activeComparisonPairKey = compareSel && sel && compareSel.id !== sel.id ? comparisonPairKey(compareSel.id, sel.id) : null;
         var activeComparisonRecorded = !!activeComparisonPairKey && comparisonPairs.indexOf(activeComparisonPairKey) !== -1;
-        function focusComparisonTarget() {
+        function comparisonRevisionOf(state) { return safeNonNegativeNumber(state._comparisonRevision, 0, true); }
+        function comparisonModeOf(state) { return anatomyTabOrder.indexOf(state._activeTab) !== -1 ? state._activeTab : state.quizMode === true ? 'quiz' : 'explore'; }
+        function comparisonLevelOf(state) { var level = Number(state.complexity); return [1, 2, 3].indexOf(level) !== -1 ? level : defaultComplexity; }
+        function comparisonBandOf(state) { var level = comparisonLevelOf(state); return level === 1 ? profileGradeBand === 'k2' ? 'k2' : 'g35' : level === 2 ? 'g68' : 'g912'; }
+        function comparisonSelectedOf(state) { return typeof state.selectedStructure === 'string' && knownStructureIds.indexOf(state.selectedStructure) !== -1 ? state.selectedStructure : null; }
+        function comparisonPinOf(state) { return typeof state._compareStructure === 'string' && knownStructureIds.indexOf(state._compareStructure) !== -1 ? state._compareStructure : null; }
+        function comparisonSelectionVisible(state) {
+          var system = SYSTEMS[state.system] || SYSTEMS.skeletal, selected = comparisonSelectedOf(state);
+          return system.structures.some(function(structure) { return structure.id === selected && passesAnatomyLevel(structure, comparisonLevelOf(state)) &&
+            (structure.v === 'b' || structure.v === (state.view === 'posterior' ? 'p' : 'a')); });
+        }
+        var comparisonRevision = comparisonRevisionOf(d);
+        function comparisonOwnedMatches(state) {
+          return comparisonModeOf(state) === activeTab && (SYSTEMS[state.system] ? state.system : 'skeletal') === sysKey &&
+            (state.view === 'posterior' ? 'posterior' : 'anterior') === view && comparisonLevelOf(state) === complexity &&
+            comparisonSelectedOf(state) === comparisonSelectedOf(d) && comparisonPinOf(state) === comparisonPinOf(d) &&
+            comparisonRevisionOf(state) === comparisonRevision && (state._showStudySheet === true) === (d._showStudySheet === true);
+        }
+        function finishComparisonUpdate(accepted, after) {
+          var notified = false;
+          function notify() { var result = accepted(); if (!result || notified) return; notified = true; if (typeof after === 'function') after(result.state, result.patch); }
+          notify(); setTimeout(notify, 0);
+        }
+        function updateComparisonOwned(createPatch, after) {
+          var accepted = null;
+          setLabToolData(function(previous) {
+            var state = previous.anatomy || {}; if (!comparisonOwnedMatches(state)) return previous;
+            var patch = createPatch(state); if (!patch || typeof patch !== 'object') return previous;
+            patch = Object.assign({}, mergeComparisonHistoryPatch(state, patch), { _comparisonRevision: comparisonRevisionOf(state) + 1 });
+            var next = Object.assign({}, state, patch); accepted = { state: next, patch: patch };
+            return Object.assign({}, previous, { anatomy: next });
+          });
+          finishComparisonUpdate(function() { return accepted; }, after);
+        }
+        function pinComparison(structureId, after) {
+          if (!sel || structureId !== sel.id || knownStructureIds.indexOf(structureId) === -1) return;
+          updateComparisonOwned(function(state) { return comparisonPinOf(state) === structureId ? null : { _compareStructure: structureId }; }, function(nextState, patch) {
+            playSound('compareView'); if (typeof after === 'function') after(nextState, patch);
+          });
+        }
+        function clearComparison(after) {
           if (!compareSel) return;
-          updMulti(structureFocusPatch(compareSel.id, { _lastSelectedSource: 'comparison-tray' }));
-          announceStructure(compareSel.id);
-          playSound('compareView');
+          updateComparisonOwned(function() { return { _compareStructure: null }; }, after);
+        }
+        function recordComparison(after) {
+          if (!activeComparisonPairKey) return;
+          updateComparisonOwned(function(state) {
+            if (comparisonPairsOf(state).indexOf(activeComparisonPairKey) !== -1) return null;
+            return { _comparisonPairs: [activeComparisonPairKey] };
+          }, function(nextState, patch) {
+            if (typeof announceToSR === 'function') announceToSR(t('stem.anatomy.compare_ref_recorded', 'Pair recorded'));
+            setTimeout(checkAnatomyChallenges, 50); if (typeof after === 'function') after(nextState, patch);
+          });
+        }
+        function comparisonExplorePatch(state, structureId, includePinnedLevel) {
+          var context = findStructureContext(structureId, SYSTEMS[state.system] ? state.system : 'skeletal'); if (!context) return null;
+          var level = Math.max(comparisonLevelOf(state), anatomyStructureComplexity(context.structure));
+          if (includePinnedLevel) { var pinned = findStructureContext(comparisonPinOf(state), context.systemId); if (pinned) level = Math.max(level, anatomyStructureComplexity(pinned.structure)); }
+          var progress = comparisonModeOf(state) === 'flashcards' ? flashcardStatePatch({}, state) : {};
+          var patch = Object.assign({}, progress, structureFocusPatch(structureId, { _activeTab: 'explore', quizMode: false, complexity: level, _lastSelectedSource: 'comparison-tray' }));
+          // Opening a reading panel keeps the learner's current practice attempt and score.
+          ['quizIdx', 'quizScore', 'quizFeedback', '_quizAttempts'].forEach(function(key) { delete patch[key]; });
+          if (state._anatomyModelFocus === true) patch._anatomyModelFocus = false;
+          if (state._showSystemsMotion === true) patch._showSystemsMotion = false;
+          return patch;
+        }
+        function focusComparisonTarget(after) {
+          if (!compareSel) return;
+          updateComparisonOwned(function(state) { return comparisonExplorePatch(state, compareSel.id, false); }, function(nextState, patch) {
+            announceStructure(compareSel.id); playSound('compareView'); if (typeof after === 'function') after(nextState, patch);
+          });
+        }
+        function openComparison(after) {
+          if (!sel || !compareSel || sel.id === compareSel.id) return;
+          updateComparisonOwned(function(state) { return comparisonExplorePatch(state, sel.id, true); }, function(nextState, patch) {
+            if (typeof announceToSR === 'function') announceToSR(t('stem.anatomy.compare_ref_title', 'Compare structures') + ': ' + sel.name + ' · ' + compareSel.name + '.');
+            if (typeof after === 'function') after(nextState, patch);
+          });
         }
 
         // The question belongs to the unordered pair and learning band, never to its screen position.
@@ -6258,28 +6338,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           return !!value && typeof value === 'object' && !Array.isArray(value) && value.questionKey === comparisonQuestionKey &&
             value.pair === comparisonCheckPair && comparisonStructures.some(function(structure){return structure.id === value.chosen;});
         }
-        function answerComparison(optionId) {
-          if(!comparisonQuestionKey || window.__alloAnatomyComparisonContext !== comparisonQuestionKey || !comparisonStructures.some(function(structure){return structure.id === optionId;}))return;
-          var correct = optionId === comparisonAsk.id, accepted = false, announced = false;
-          setLabToolData(function(previous){
+        function answerComparison(optionId, after) {
+          if (!comparisonQuestionKey || window.__alloAnatomyComparisonContext !== comparisonQuestionKey || !comparisonStructures.some(function(structure) { return structure.id === optionId; })) return;
+          var correct = optionId === comparisonAsk.id, accepted = null;
+          setLabToolData(function(previous) {
             var state = previous.anatomy || {};
-            var currentTab = anatomyTabOrder.indexOf(state._activeTab) !== -1 ? state._activeTab : (state.quizMode === true ? 'quiz' : 'explore');
-            if(currentTab !== 'explore' || window.__alloAnatomyComparisonContext !== comparisonQuestionKey ||
-              [state.selectedStructure,state._compareStructure].sort().join('|') !== comparisonCheckPair || validComparisonAnswer(state._compareCheck))return previous;
-            accepted = true;
-            return Object.assign({},previous,{anatomy:Object.assign({},state,confidenceEvidencePatch(comparisonAsk.id,correct,state),{
-              _compareCheck:{pair:comparisonCheckPair,questionKey:comparisonQuestionKey,chosen:optionId}
-            })});
+            if (comparisonModeOf(state) !== 'explore' || !comparisonSelectionVisible(state) || comparisonLevelOf(state) !== complexity || comparisonBandOf(state) !== gradeBand ||
+              comparisonRevisionOf(state) !== comparisonRevision || (state._showStudySheet === true) !== (d._showStudySheet === true) ||
+              window.__alloAnatomyComparisonContext !== comparisonQuestionKey || [comparisonSelectedOf(state), comparisonPinOf(state)].sort().join('|') !== comparisonCheckPair || validComparisonAnswer(state._compareCheck)) return previous;
+            var patch = Object.assign({}, confidenceEvidencePatch(comparisonAsk.id, correct, state), {
+              _compareCheck: { pair: comparisonCheckPair, questionKey: comparisonQuestionKey, chosen: optionId },
+              _comparisonRevision: comparisonRevisionOf(state) + 1
+            });
+            var next = Object.assign({}, state, patch); accepted = { state: next, patch: patch };
+            return Object.assign({}, previous, { anatomy: next });
           });
-          function notifyComparison(){if(!accepted || announced)return;announced=true;playSound(correct?'quizCorrect':'quizWrong');if(typeof announceToSR === 'function')announceToSR((correct?t('stem.anatomy.recap_correct','Correct: '):t('stem.anatomy.recap_incorrect','Not quite. It was '))+comparisonAsk.name+'.');}
-          notifyComparison();setTimeout(notifyComparison,0);
+          finishComparisonUpdate(function() { return accepted; }, function(nextState, patch) {
+            playSound(correct ? 'quizCorrect' : 'quizWrong');
+            if (typeof announceToSR === 'function') announceToSR((correct ? t('stem.anatomy.recap_correct', 'Correct: ') : t('stem.anatomy.recap_incorrect', 'Not quite. It was ')) + comparisonAsk.name + '.');
+            if (typeof after === 'function') after(nextState, patch);
+          });
         }
-        function focusComparisonPanel() {
-          setTimeout(function(){var heading=document.getElementById('anatomy-comparison-title');if(heading){heading.scrollIntoView({block:'nearest'});heading.focus();}},0);
+        function focusComparisonState(state, destination) {
+          var expectedMode = comparisonModeOf(state), expectedRevision = String(comparisonRevisionOf(state));
+          var expectedContext = (SYSTEMS[state.system] ? state.system : 'skeletal') + ':' + (state.view === 'posterior' ? 'posterior' : 'anterior') + ':' + comparisonLevelOf(state);
+          var expectedSelected = comparisonSelectedOf(state) || '', expectedPin = comparisonPinOf(state) || '';
+          setTimeout(function() {
+            var shell = document.querySelector('[data-anatomy-tool]');
+            if (!shell || shell.getAttribute('data-anatomy-tab') !== expectedMode ||
+              shell.getAttribute('data-anatomy-comparison-revision') !== expectedRevision || shell.getAttribute('data-anatomy-comparison-context') !== expectedContext ||
+              shell.getAttribute('data-anatomy-comparison-selected') !== expectedSelected || shell.getAttribute('data-anatomy-comparison-pin') !== expectedPin ||
+              shell.getAttribute('data-anatomy-comparison-sheet') !== (state._showStudySheet === true ? 'true' : 'false') || state._showStudySheet === true) return;
+            var target = null, panel = shell.querySelector('[data-anatomy-comparison-panel]');
+            if (destination === 'detail') {
+              var detail = shell.querySelector('[data-anatomy-structure-detail]');
+              if (expectedMode !== 'explore' || !detail || detail.getAttribute('data-anatomy-structure-detail') !== expectedSelected || detail.getAttribute('data-anatomy-browser-context') !== expectedContext) return;
+              target = detail.querySelector('[data-anatomy-structure-detail-heading]');
+            } else if (destination === 'clear') {
+              target = expectedMode === 'explore' ? shell.querySelector('[data-anatomy-compare-pin]') : null;
+              if (target && target.getAttribute('data-anatomy-compare-pin') !== expectedSelected) target = null;
+              if (!target) target = Array.prototype.find.call(shell.querySelectorAll('#anatomy-mobile-activity,[role=tab][aria-selected=true],[data-anatomy-study-controls-toggle]'), function(candidate) { return candidate.getClientRects().length > 0; });
+            } else {
+              if (expectedMode !== 'explore' || !panel || panel.getAttribute('data-anatomy-comparison-panel') !== [expectedSelected,expectedPin].sort().join('|') ||
+                panel.getAttribute('data-anatomy-comparison-context') !== expectedContext || panel.getAttribute('data-anatomy-comparison-revision') !== expectedRevision) return;
+              target = panel.querySelector(destination === 'feedback' ? '[data-anatomy-compare-feedback]' : destination === 'question' ? '[data-anatomy-compare-question-title]' : '#anatomy-comparison-title');
+            }
+            if (!target || !target.getClientRects().length) return;
+            target.focus({preventScroll:true});
+            if (target.scrollIntoView) target.scrollIntoView({block:'start',behavior:'auto'});
+          },0);
         }
-        function clearComparison() {
-          upd('_compareStructure',null);
-          setTimeout(function(){var button=document.querySelector('[data-anatomy-compare-pin]');if(button)button.focus();else focusAnatomyStructureDetail();},0);
+        function clearComparisonAndFocus() {
+          clearComparison(function(nextState) { focusComparisonState(nextState,'clear'); });
+        }
+        function navigateComparison(destination) {
+          var accepted = null;
+          setLabToolData(function(previous) {
+            var state = previous.anatomy || {};
+            if (comparisonOwnedMatches(state)) accepted = {state:state,patch:{}};
+            return previous;
+          });
+          finishComparisonUpdate(function(){return accepted;},function(nextState){focusComparisonState(nextState,destination);});
         }
         function renderComparisonPanel() {
           if(comparisonStructures.length !== 2)return null;
@@ -6289,12 +6408,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           function diagramView(structure){return structure.v === 'b' ? t('stem.anatomy.compare_ref_both','Front and back views') : structure.v === 'a' ? t('stem.anatomy.compare_ref_front','Front view (anterior)') : t('stem.anatomy.compare_ref_back','Back view (posterior)');}
           function row(key,label,first,second){return h('tr',{key:key,role:'row','data-anatomy-compare-row':key},
             h('th',{scope:'row',role:'rowheader'},label),[first,second].map(function(value,index){var name=index===0?sel.name:compareSel.name;return h('td',{key:index,role:'cell'},h('span',{className:'anatomy-compare-mobile-name','aria-hidden':'true'},name),h('div',{dir:'auto'},value));}));}
-          return h('section',{className:'anatomy-refinement anatomy-comparison-panel','data-anatomy-comparison-panel':comparisonCheckPair,'aria-labelledby':'anatomy-comparison-title'},
+          return h('section',{className:'anatomy-refinement anatomy-comparison-panel','data-anatomy-comparison-panel':comparisonCheckPair,'data-anatomy-comparison-context':sysKey+':'+view+':'+complexity,'data-anatomy-comparison-revision':comparisonRevision,'aria-labelledby':'anatomy-comparison-title'},
             h('h5',{id:'anatomy-comparison-title',tabIndex:-1},t('stem.anatomy.compare_ref_title','Compare structures')),
             h('p',null,youngLearner?t('stem.anatomy.compare_ref_guide_young','Read what each part does. What is alike? What is different? Try the question, then explain your thinking.'):t('stem.anatomy.compare_ref_guide','Compare each function and system membership. Use those details to explain one similarity and one difference, then try the practice question.')),
             h('div',{className:'anatomy-refinement-actions'},
-              activeComparisonRecorded?h('span',{role:'status'},t('stem.anatomy.compare_ref_recorded','Pair recorded')):h('button',{type:'button',onClick:function(){updMulti(comparisonTrackingPatch(sel.id,{},sysKey));setTimeout(checkAnatomyChallenges,50);}},t('stem.anatomy.compare_ref_record','Record pair')),
-              h('button',{type:'button','data-anatomy-compare-clear':true,onClick:clearComparison},t('stem.anatomy.compare_ref_clear','Clear comparison'))),
+              !comparisonSameConcept?h('button',{type:'button','data-anatomy-compare-practice-jump':true,onClick:function(){navigateComparison('question');}},t('stem.anatomy.compare_nav_practice','Go to practice question')):null,
+              activeComparisonRecorded?h('span',{role:'status'},t('stem.anatomy.compare_ref_recorded','Pair recorded')):h('button',{type:'button',onClick:function(){recordComparison(function(nextState){focusComparisonState(nextState,'panel');});}},t('stem.anatomy.compare_ref_record','Record pair')),
+              h('button',{type:'button','data-anatomy-compare-clear':true,onClick:clearComparisonAndFocus},t('stem.anatomy.compare_ref_clear','Clear comparison'))),
             h('p',{className:'anatomy-comparison-note'},t('stem.anatomy.compare_ref_progress','A recorded pair tracks exploration. It does not mean you have mastered either structure.')),
             comparisonSameConcept?h('p',{'data-anatomy-compare-same-concept':true},t('stem.anatomy.compare_ref_same','These entries describe the same anatomical structure in different browsing collections. Compare their roles; an either-or identification question would be misleading.')):null,
             h('table',{role:'table'},
@@ -6309,13 +6429,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             h('p',{className:'anatomy-comparison-note'},t('stem.anatomy.compare_ref_system_note','A structure can contribute to more than one body system. Browsing collections are navigation groups.')),
             h('p',{className:'anatomy-comparison-note'},t('stem.anatomy.compare_ref_view_note','Front and back describe where this diagram places a marker. They do not describe the full extent of a structure inside the body.')),
             h('details',{'data-anatomy-compare-references':true},h('summary',null,t('stem.anatomy.compare_ref_sources','Sources and further context')), [sel,compareSel].map(function(structure){return h('div',{key:structure.id,className:'anatomy-refinement-item'},h('h6',null,structure.name),renderScienceSources(structure),renderClinicalNote(structure,false));})),
-            !comparisonSameConcept?h('div',{className:'anatomy-refinement-item','data-anatomy-compare-check':comparisonCheckPair,'data-anatomy-compare-question':comparisonQuestionKey,'data-anatomy-compare-check-state':chosen===null?'open':chosen===comparisonAsk.id?'hit':'miss'},
-              h('h6',null,t('stem.anatomy.compare_ref_question_title','Which one does this?')),
-              h('p',null,t('stem.anatomy.compare_ref_practice','Practice with the comparison above. Your answer adds one practice attempt; reading or recording a pair adds none.')),
-              h('p',{className:'italic',dir:'auto','data-anatomy-compare-clue':true},question),
+            !comparisonSameConcept?h('fieldset',{'data-anatomy-compare-check':comparisonCheckPair,'data-anatomy-compare-question':comparisonQuestionKey,'data-anatomy-compare-check-state':chosen===null?'open':chosen===comparisonAsk.id?'hit':'miss','aria-labelledby':'anatomy-comparison-question-title','aria-describedby':'anatomy-comparison-question-hint anatomy-comparison-question-clue'},
+              h('legend',null,h('h6',{id:'anatomy-comparison-question-title','data-anatomy-compare-question-title':true,tabIndex:-1},t('stem.anatomy.compare_ref_question_title','Which one does this?'))),
+              h('p',{id:'anatomy-comparison-question-hint'},t('stem.anatomy.compare_ref_practice','Practice with the comparison above. Your answer adds one practice attempt; reading or recording a pair adds none.')),
+              h('p',{id:'anatomy-comparison-question-clue',className:'italic',dir:'auto','data-anatomy-compare-clue':true},question),
               ttsBtn(question,t('stem.anatomy.compare_ref_read_question','Read the comparison question aloud')),
-              h('div',{className:'anatomy-refinement-actions'},stableQuizShuffle(comparisonStructures,'compare|'+comparisonCheckPair).map(function(option){var hit=option.id===comparisonAsk.id;return h('button',{key:option.id,type:'button','data-anatomy-compare-option':option.id,disabled:chosen!==null,'aria-pressed':chosen===option.id,onClick:function(){answerComparison(option.id);}},(chosen!==null&&hit?'✓ ':chosen===option.id?'✕ ':'')+option.name);})),
-              chosen!==null?h('div',{role:'status','aria-live':'polite','aria-atomic':'true'},h('p',null,(chosen===comparisonAsk.id?t('stem.anatomy.compare_ref_hit','That matches the function: {structure}.'):t('stem.anatomy.compare_ref_miss','This function describes {structure}.')).replace('{structure}',comparisonAsk.name)),h('div',null,h('strong',null,comparisonAsk.name+':'),h('p',{dir:'auto'},learnerText(comparisonAsk))),h('div',null,h('strong',null,other.name+':'),h('p',{dir:'auto'},learnerText(other))),h('p',null,t('stem.anatomy.compare_ref_explain','Explain your choice using a detail from each structure. You can say it aloud or use the “In your own words” notes above.'))):null):null
+              h('div',{className:'anatomy-compare-choices'},stableQuizShuffle(comparisonStructures,'compare|'+comparisonCheckPair).map(function(option){var hit=option.id===comparisonAsk.id;return h('button',{key:option.id,type:'button','data-anatomy-compare-option':option.id,'data-anatomy-compare-answer-state':chosen===null?'open':hit?'correct':chosen===option.id?'chosen':'other',disabled:chosen!==null,'aria-pressed':chosen===option.id,onClick:function(){answerComparison(option.id,function(nextState){focusComparisonState(nextState,'feedback');});}},h('span',null,(chosen!==null&&hit?'✓ ':chosen===option.id?'✕ ':'')+option.name),chosen!==null&&(hit||chosen===option.id)?h('span',{className:'anatomy-compare-answer-label'},hit?t('stem.anatomy.compare_nav_correct_choice','Correct answer'):t('stem.anatomy.compare_nav_chosen_choice','Your answer')):null);})),
+              chosen!==null?h('div',{role:'status','aria-live':'polite','aria-atomic':'true',tabIndex:-1,'data-anatomy-compare-feedback':chosen===comparisonAsk.id?'correct':'review','aria-labelledby':'anatomy-comparison-feedback-title'},h('h6',{id:'anatomy-comparison-feedback-title'},t('stem.anatomy.compare_nav_feedback','Comparison feedback')),h('p',null,(chosen===comparisonAsk.id?t('stem.anatomy.compare_ref_hit','That matches the function: {structure}.'):t('stem.anatomy.compare_ref_miss','This function describes {structure}.')).replace('{structure}',comparisonAsk.name)),h('div',null,h('strong',null,comparisonAsk.name+':'),h('p',{dir:'auto'},learnerText(comparisonAsk))),h('div',null,h('strong',null,other.name+':'),h('p',{dir:'auto'},learnerText(other))),h('p',null,t('stem.anatomy.compare_ref_explain','Explain your choice using a detail from each structure. You can say it aloud or use the “In your own words” notes above.')),h('button',{type:'button','data-anatomy-compare-review':true,onClick:function(){navigateComparison('panel');}},t('stem.anatomy.compare_nav_review','Return to comparison'))):null):null
           );
         }
 
@@ -6458,7 +6578,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             var routes = checkpointPathway(state,validPathwaySessions(state._pathwaySessions),current,fallbackToken), saved = routes[id] || null;
             opened = saved || {pathwayId:id,step:0,recap:null,returnToCheck:null}; delete routes[id];
             var patch = structureFocusPatch(pw.steps[opened.step].structure,{system:state.system,_activePathway:id,_pathwayStep:opened.step,_pathwayRecap:opened.recap,_pathwayRecapReturn:opened.returnToCheck,_pathwaySessions:{version:1,routes:routes},quizMode:false});
-            accepted = true; return Object.assign({},previous,{anatomy:Object.assign({},state,patch)});
+            accepted = true; return Object.assign({},previous,{anatomy:Object.assign({},state,mergeComparisonHistoryPatch(state,patch))});
           });
           finishPathwayUpdate(function(){return accepted;},function(){
             playSound('pathwayStep');
@@ -6487,7 +6607,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             recap.active = false; recap.context = pathwayCheckContext(pw); recap.token = recap.token || fallbackToken; recap.focusQuestionId = question.id;
             var link = {pathwayId:pw.id,context:recap.context,token:recap.token,questionId:question.id};
             var patch = structureFocusPatch(pw.steps[destination].structure,{system:state.system,_pathwayStep:destination,_pathwayRecap:recap,_pathwayRecapReturn:link});
-            accepted = true; return Object.assign({},previous,{anatomy:Object.assign({},state,patch)});
+            accepted = true; return Object.assign({},previous,{anatomy:Object.assign({},state,mergeComparisonHistoryPatch(state,patch))});
           });
           finishPathwayUpdate(function(){return accepted;},function(){announceStructure(pw.steps[destination].structure);focusPathwayStep(pw,destination);});
         }
@@ -6522,7 +6642,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           setLabToolData(function(previous) {
             var state = previous.anatomy || {};
             if (!samePathwayAttempt(state,pw) || normalizedPathwayStep(state,pw) !== pathwayStepIdx || (state._pathwayRecap || {}).active === true) return previous;
-            accepted = true; return Object.assign({},previous,{anatomy:Object.assign({},state,structureFocusPatch(pw.steps[index].structure,{system:state.system,_pathwayStep:index}))});
+            accepted = true; return Object.assign({},previous,{anatomy:Object.assign({},state,mergeComparisonHistoryPatch(state,structureFocusPatch(pw.steps[index].structure,{system:state.system,_pathwayStep:index})))});
           });
           finishPathwayUpdate(function(){return accepted;},function(){announceStructure(pw.steps[index].structure);if(sound)playSound('pathwayStep');focusPathwayStep(pw,index);});
         }
@@ -6561,7 +6681,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           setLabToolData(function(previous) {
             var state = previous.anatomy || {};
             if (!samePathwayAttempt(state,pw) || normalizedPathwayStep(state,pw) !== pathwayStepIdx || (state._pathwayRecap || {}).active === true) return previous;
-            accepted = true; return Object.assign({},previous,{anatomy:Object.assign({},state,structureFocusPatch(step.structure,{system:state.system,_pathwayStep:pathwayStepIdx}))});
+            accepted = true; return Object.assign({},previous,{anatomy:Object.assign({},state,mergeComparisonHistoryPatch(state,structureFocusPatch(step.structure,{system:state.system,_pathwayStep:pathwayStepIdx})))});
           });
           finishPathwayUpdate(function(){return accepted;},function(){announceStructure(step.structure);setTimeout(function(){var root=document.querySelector('[data-anatomy-pathway-panel]');if(!root||root.getAttribute('data-anatomy-pathway-id')!==pw.id)return;var panel=document.querySelector('[data-anatomy-model-shell]');if(panel){panel.focus({preventScroll:true});panel.scrollIntoView({block:'start',behavior:'auto'});}},0);});
         }
@@ -7171,7 +7291,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             if (!(requireCards ? flashcardOwnedMatches(state) : flashcardContextMatches(state))) return previous;
             var round = readActiveFlashcardRound(state, flashcardDeckIds), patch = createPatch(state, round);
             if (!patch || typeof patch !== 'object') return previous;
-            patch = Object.assign({}, patch, { _flashcardRevision: flashcardRevisionOf(state) + 1 });
+            patch = Object.assign({}, mergeComparisonHistoryPatch(state, patch), { _flashcardRevision: flashcardRevisionOf(state) + 1 });
             var next = Object.assign({}, state, patch);
             accepted = { state: next, patch: patch };
             return Object.assign({}, previous, { anatomy: next });
@@ -14186,6 +14306,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         return h('div', {
           className: 'anatomy-tool-shell max-w-6xl mx-auto animate-in fade-in duration-200 outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1',
           'data-anatomy-tool': 'true',
+          'data-anatomy-comparison-revision': comparisonRevision,
+          'data-anatomy-comparison-context': sysKey+':'+view+':'+complexity,
+          'data-anatomy-comparison-selected': comparisonSelectedOf(d) || '',
+          'data-anatomy-comparison-pin': comparisonPinOf(d) || '',
+          'data-anatomy-comparison-sheet': d._showStudySheet === true ? 'true' : 'false',
           'data-reading-mode': readingMode ? 'true' : 'false',
           'data-anatomy-model-focus': anatomyModelFocus ? 'true' : 'false',
           'data-anatomy-focus-studio': anatomyFocusStudio ? 'true' : 'false',
@@ -14669,19 +14794,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             h('div', null,
               h('span', { className: 'anatomy-kicker' }, t('stem.anatomy.compare_ref_target','Comparison target')),
               h('strong', null, compareSel.name),
-              h('p', null, sel && sel.id !== compareSel.id ? t('stem.anatomy.compare_ref_ready','Your comparison is ready below the selected structure.') : t('stem.anatomy.compare_ref_choose','Target pinned. Choose a different structure to compare.'))
+              h('p', null, sel && sel.id !== compareSel.id ? activeTab === 'explore' ? t('stem.anatomy.compare_ref_ready','Your comparison is ready below the selected structure.') : t('stem.anatomy.compare_nav_elsewhere','Comparison is ready in Explore. Open it to review these structures together.') : t('stem.anatomy.compare_ref_choose','Target pinned. Choose a different structure to compare.'))
             ),
             h('div', { className: 'flex items-center gap-1.5' },
               h('button', {
                 type: 'button',
-                onClick: focusComparisonTarget,
-                'aria-label': __alloFill(__alloT('stem.anatomy.a11y_open_comparison_target', 'Open comparison target {value1}'), { value1: compareSel.name }),
+                onClick: function(){focusComparisonTarget(function(nextState){focusComparisonState(nextState,'detail');});},
+                'data-anatomy-compare-open': true,
+                'aria-label': t('stem.anatomy.compare_nav_open_target','Open target in Explore') + ': ' + compareSel.name,
                 className: 'px-2 py-1 rounded-md text-[0.6875rem] font-bold border border-violet-300 bg-white text-violet-800 hover:bg-violet-50 active:scale-[0.97]'
-              }, t('stem.anatomy.compare_ref_open','Open target')),
-              comparisonStructures.length === 2 && activeTab === 'explore' ? h('button',{type:'button',onClick:focusComparisonPanel,'data-anatomy-compare-jump':true},t('stem.anatomy.compare_ref_jump','Go to comparison')) : null,
+              }, t('stem.anatomy.compare_nav_open_target','Open target in Explore')),
+              comparisonStructures.length === 2 ? h('button',{type:'button',onClick:function(){openComparison(function(nextState){focusComparisonState(nextState,'panel');});},'data-anatomy-compare-jump':true},t('stem.anatomy.compare_ref_jump','Go to comparison')) : null,
               h('button', {
                 type: 'button',
-                onClick: clearComparison,
+                onClick: clearComparisonAndFocus,
+                'data-anatomy-compare-clear': true,
                 'aria-label': __alloFill(__alloT('stem.anatomy.a11y_clear_comparison_target', 'Clear comparison target {value1}'), { value1: compareSel.name }),
                 className: 'px-2 py-1 rounded-md text-[0.6875rem] font-bold border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 active:scale-[0.97]'
               }, t('stem.anatomy.compare_ref_clear','Clear comparison'))
@@ -15391,8 +15518,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           }, regionalAtlasOpen ? 'Close atlas' : 'Deep dive') : null,
                           h('button', { type:'button', 'data-anatomy-compare-pin':sel.id, 'aria-label': (compareStructureId === sel.id ? t('stem.anatomy.compare_ref_unpin','Unpin {structure}') : t('stem.anatomy.compare_ref_pin','Compare {structure}')).replace('{structure}',sel.name),
                             'aria-pressed': compareStructureId === sel.id, onClick: function() {
-                              if (compareStructureId === sel.id) { clearComparison(); }
-                              else { upd('_compareStructure', sel.id); playSound('compareView'); }
+                              if (compareStructureId === sel.id) { clearComparisonAndFocus(); }
+                              else { pinComparison(sel.id); }
                             },
                             title: compareStructureId === sel.id ? t('stem.anatomy.compare_ref_clear','Clear comparison') : t('stem.anatomy.compare_ref_pin_hint','Pin this structure, then choose another'),
                             className: 'p-1 rounded text-[0.6875rem] font-bold transition-all ' + (compareStructureId === sel.id ? 'bg-violet-100 text-violet-700' : 'transition-colors hover:bg-violet-50 text-violet-700 active:scale-[0.97]')

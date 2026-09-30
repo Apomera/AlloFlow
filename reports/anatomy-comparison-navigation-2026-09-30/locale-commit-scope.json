@@ -1,0 +1,80 @@
+[
+  {
+    "path": "lang/french.js",
+    "keys": [
+      "compare_nav_chosen_choice",
+      "compare_nav_correct_choice",
+      "compare_nav_elsewhere",
+      "compare_nav_feedback",
+      "compare_nav_open_target",
+      "compare_nav_practice",
+      "compare_nav_review"
+    ],
+    "hash": "67550887229bbf9f8706712c6f7ec878ba2ce273cdc944e9a4c367ad50978cb6"
+  },
+  {
+    "path": "desktop/web-app/public/lang/french.js",
+    "keys": [
+      "compare_nav_chosen_choice",
+      "compare_nav_correct_choice",
+      "compare_nav_elsewhere",
+      "compare_nav_feedback",
+      "compare_nav_open_target",
+      "compare_nav_practice",
+      "compare_nav_review"
+    ],
+    "hash": "67550887229bbf9f8706712c6f7ec878ba2ce273cdc944e9a4c367ad50978cb6"
+  },
+  {
+    "path": "lang/spanish_latin_america.js",
+    "keys": [
+      "compare_nav_chosen_choice",
+      "compare_nav_correct_choice",
+      "compare_nav_elsewhere",
+      "compare_nav_feedback",
+      "compare_nav_open_target",
+      "compare_nav_practice",
+      "compare_nav_review"
+    ],
+    "hash": "cb0a4ff63ee93ab6b8031ac6aa23a0d82be88de2c54a30018db741735c0ede89"
+  },
+  {
+    "path": "desktop/web-app/public/lang/spanish_latin_america.js",
+    "keys": [
+      "compare_nav_chosen_choice",
+      "compare_nav_correct_choice",
+      "compare_nav_elsewhere",
+      "compare_nav_feedback",
+      "compare_nav_open_target",
+      "compare_nav_practice",
+      "compare_nav_review"
+    ],
+    "hash": "cb0a4ff63ee93ab6b8031ac6aa23a0d82be88de2c54a30018db741735c0ede89"
+  },
+  {
+    "path": "lang/arabic.js",
+    "keys": [
+      "compare_nav_chosen_choice",
+      "compare_nav_correct_choice",
+      "compare_nav_elsewhere",
+      "compare_nav_feedback",
+      "compare_nav_open_target",
+      "compare_nav_practice",
+      "compare_nav_review"
+    ],
+    "hash": "62c9cc839df277b0d174241bb2853e3e129841a30275bb3d42f0203e028afb53"
+  },
+  {
+    "path": "desktop/web-app/public/lang/arabic.js",
+    "keys": [
+      "compare_nav_chosen_choice",
+      "compare_nav_correct_choice",
+      "compare_nav_elsewhere",
+      "compare_nav_feedback",
+      "compare_nav_open_target",
+      "compare_nav_practice",
+      "compare_nav_review"
+    ],
+    "hash": "62c9cc839df277b0d174241bb2853e3e129841a30275bb3d42f0203e028afb53"
+  }
+]

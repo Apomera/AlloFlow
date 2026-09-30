@@ -30960,7 +30960,14 @@
       "study_ref_card_return_label": "العودة إلى بطاقة {name}",
       "study_ref_search_filter_empty": "نتائج «{query}» في هذا العرض: {count}. لا توجد نتائج تطابق مرشّح الدراسة «{filter}».",
       "study_ref_search_filter_help": "اعرض جميع النتائج في هذا العرض، أو اختر مرشّح دراسة مختلفًا.",
-      "study_ref_search_show_matching": "عرض جميع البنى المطابقة"
+      "study_ref_search_show_matching": "عرض جميع البنى المطابقة",
+      "compare_nav_chosen_choice": "إجابتك",
+      "compare_nav_correct_choice": "الإجابة الصحيحة",
+      "compare_nav_elsewhere": "المقارنة جاهزة في «استكشاف». افتحها لمراجعة هذين التركيبين معًا.",
+      "compare_nav_feedback": "نتيجة المقارنة",
+      "compare_nav_open_target": "فتح المرجع في «استكشاف»",
+      "compare_nav_practice": "الانتقال إلى سؤال التدريب",
+      "compare_nav_review": "العودة إلى المقارنة"
     },
     "dna": {
       "back_to_tools": "العودة إلى الأدوات",
