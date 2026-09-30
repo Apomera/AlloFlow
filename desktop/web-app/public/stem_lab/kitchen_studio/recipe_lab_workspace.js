@@ -7,6 +7,7 @@
     ['mince','prep','Mince garlic','Press & lift','Start on a clove; press down, lift back up, and release.','M5 4v11h6V4M5 15v6M17 15c-5 0-5 6 0 6s5-6 0-6'],
     ['dry','prep','Dry produce','Blot & wring','Carry the cloth onto wet produce; wring it over the bowl.','M4 5h15v12H4zM8 5v12M4 9h15M17 20h4'],
     ['pot-stir','pot','Separate pasta','Sweep the spoon','Sweep through the visible clumps inside the pot.','M4 11h14v8H4zM2 12h2M18 12h3M12 3l-3 12'],
+    ['sample','pot','Check pasta','Carry, press & lift','Carry a fork sample to the small saucer; press down, lift back, then release.','M6 3v7M10 3v7M14 3v7M6 8h8M10 10v11M17 18h5'],
     ['ladle','pot','Save water','Dip & carry','Dip the ladle in the pot, then carry it to the jug.','M16 3l-6 12M5 15c-2 5 7 7 8 2M18 14h4v7h-6v-7z'],
     ['drain','pot','Drain pasta','Lift & tilt','Move the pot over the colander, then pull down to tilt.','M4 4l12 3-3 8-12-3zM14 17h8l-2 5h-4z'],
     ['stir','pan','Stir & fold','Trace a circle','Sweep a full circle through the sauce pan.','M4 13a7 5 0 1 0 14 0a7 5 0 1 0-14 0M16 4l-5 10M18 12l4-4'],
@@ -31,6 +32,7 @@
     if(id==='mince'){need(v.garlic||n.garlic,'The garlic is already minced. Carry its bowl into the pan when ready.');if(!v.hands)need(true,'Wash hands before preparing the garlic.');}
     if(id==='dry')need(!R.drying(s).enabled||!v.hands||!v.rinsed||n.produce,'Wash hands and rinse produce before blotting it on the board.');
     if(id==='pot-stir')need(s.pastaModel!==1||!p.pasta||p.drained||!p.water,'Add the weighed pasta to boiling water before separating its strands.');
+    if(id==='sample')need(!root.KitchenSampling.available(s,false).ready,root.KitchenSampling.available(s,false).detail);
     if(id==='ladle')need(!R.waterHandling(s).scoop,'The pot needs cooking water and pasta, with room left in the saved-water allowance.');
     if(id==='drain')need(!p.pasta||p.drained||!p.sample,p.drained?'The pasta is drained. Carry the colander into the sauce pan.':'Check a pasta sample before lifting the pot to drain.');
     if(id==='inspect')need(!root.KitchenFoodLens.available(s),'Add prepared produce to the pan to examine its pieces.');
@@ -48,7 +50,7 @@
     if(id==='cut'&&(hit.board||hit.item==='produce'))name='Cutting board';
     if(id==='mince'&&hit.garlic!==undefined)name='Garlic clove '+(hit.garlic+1);
     if(id==='dry'&&hit.item==='cloth')name='Drying cloth';
-    if((id==='pot-stir'||id==='drain')&&hit.pot)name='Pasta pot';
+    if((id==='pot-stir'||id==='drain'||id==='sample')&&hit.pot)name='Pasta pot';
     if(id==='ladle'&&hit.item==='ladle')name='Ladle';
     if(id==='pour'&&hit.item==='jug')name='Saved-water jug';
     if((id==='stir'||id==='pan'||id==='serve')&&(hit.pan||hit.piece!==undefined))name='Sauce pan';
