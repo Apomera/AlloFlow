@@ -12845,26 +12845,70 @@ function createCLHuntFish(T,index){
         // Unlike moray (fixed-hole ambush), grouper patrols open water.
         // Longer detection radius but slower charge; pauses at night when
         // it tucks into a far reef edge.
+        // Static illustrative grouper, authored in +Z and converted into the four
+        // existing child frames. Geometry does not participate in predator rules.
+        function createCLHuntGrouperGeometry(T,kind,side){
+          var p=[],ix=[],colors=[],parts=[],shade=new T.Color();
+          var back=new T.Color(0x625e43).convertSRGBToLinear(),flank=new T.Color(0x8b805c).convertSRGBToLinear(),belly=new T.Color(0xb2ae8e).convertSRGBToLinear(),finColor=new T.Color(0x7b7653).convertSRGBToLinear(),gillColor=new T.Color(0x4e513d).convertSRGBToLinear(),mouthColor=new T.Color(0x332e28).convertSRGBToLinear(),irisColor=new T.Color(0x7d8668).convertSRGBToLinear(),pupilColor=new T.Color(0x141c17).convertSRGBToLinear();
+          var sections=[[1.38,0.275,0.19,-0.12],[1.25,0.40,0.38,-0.03],[1.05,0.49,0.50,0.025],[0.80,0.56,0.57,0.035],[0.50,0.61,0.62,0.025],[0.15,0.61,0.63,0],[-0.20,0.55,0.61,0],[-0.52,0.46,0.54,0],[-0.82,0.34,0.43,0],[-1.08,0.22,0.30,0],[-1.26,0.145,0.215,0],[-1.43,0.10,0.16,0]],segments=20,skinPoints=[],skinFaces=[];
+          function sectionPoint(row,column){var a=column/segments*Math.PI*2,s=sections[row],sy=Math.sin(a);return [Math.cos(a)*s[1],s[3]+sy*s[2],s[0]+(row===0?0.045*Math.max(0,-sy):0)];}
+          for(var row=0;row<sections.length;row++)for(var column=0;column<segments;column++)skinPoints.push(sectionPoint(row,column));
+          for(var row=0;row<sections.length-1;row++)for(var column=0;column<segments;column++){var a=row*segments+column,b=row*segments+(column+1)%segments,c=a+segments,d=b+segments;skinFaces.push(a,c,b,b,c,d);}
+          var rear=skinPoints.length;skinPoints.push([0,0,sections[sections.length-1][0]]);for(var column=0;column<segments;column++)skinFaces.push((sections.length-1)*segments+column,rear,(sections.length-1)*segments+(column+1)%segments);
+          function begin(name){var part={name:name,vertexStart:p.length/3,indexStart:ix.length};parts.push(part);return part;}
+          function end(part){part.vertexCount=p.length/3-part.vertexStart;part.indexCount=ix.length-part.indexStart;}
+          function vertex(point,color,tone){var n=p.length/3;p.push(point[0],point[1],point[2]);tone=tone===undefined?1:tone;colors.push(color.r*tone,color.g*tone,color.b*tone);return n;}
+          function triangle(a,b,c,color,tones,out){var ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2],nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;if(Math.hypot(nx,ny,nz)<0.00000001)return;var flip=out&&(nx*out[0]+ny*out[1]+nz*out[2]<0),a0=vertex(a,color,tones[0]),b0=vertex(b,color,tones[1]),c0=vertex(c,color,tones[2]);if(flip)ix.push(a0,c0,b0);else ix.push(a0,b0,c0);}
+          function bodyPoint(z,column){var row=0;while(row<sections.length-2&&z<sections[row+1][0])row++;var t=Math.max(0,Math.min(1,(sections[row][0]-z)/(sections[row][0]-sections[row+1][0]))),a=sectionPoint(row,column),b=sectionPoint(row+1,column);return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];}
+          function surfaceX(y,z){var x=-Infinity;for(var i=0;i<skinFaces.length;i+=3){var a=skinPoints[skinFaces[i]],b=skinPoints[skinFaces[i+1]],c=skinPoints[skinFaces[i+2]],det=(b[1]-a[1])*(c[2]-a[2])-(b[2]-a[2])*(c[1]-a[1]);if(Math.abs(det)<0.00000001)continue;var u=((y-a[1])*(c[2]-a[2])-(z-a[2])*(c[1]-a[1]))/det,v=((b[1]-a[1])*(z-a[2])-(b[2]-a[2])*(y-a[1]))/det;if(u>=-0.000001&&v>=-0.000001&&u+v<=1.000001)x=Math.max(x,a[0]+u*(b[0]-a[0])+v*(c[0]-a[0]));}return x;}
+          function fin(roots,edge,name,out){var part=begin(name);for(var i=0;i<roots.length-1;i++){var ta=i%2?0.94:1.03,tb=i%2?1.03:0.94;triangle(roots[i],edge[i],roots[i+1],finColor,[0.91,ta,0.91],out);triangle(roots[i+1],edge[i],edge[i+1],finColor,[0.91,ta,tb],out);}end(part);}
+          function median(zs,ys,column,name){var roots=[],edge=[];for(var i=0;i<zs.length;i++){var root=bodyPoint(zs[i],column);roots.push(root);edge.push(i===0||i===zs.length-1?root.slice():[0,ys[i],zs[i]]);}fin(roots,edge,name,[1,0,0]);}
+          if(kind==='body'){
+            var part=begin('skin');
+            for(var i=0;i<skinPoints.length;i++){var point=skinPoints[i],dorsal=Math.max(0,Math.min(1,point[1]/0.64)),ventral=Math.max(0,Math.min(1,-point[1]/0.64)),mottle=(Math.sin(point[2]*5.3+point[1]*4.2)*Math.sin(point[2]*2.7-point[1]*5.1)+1)*0.5;shade.copy(flank).lerp(back,dorsal*0.75).lerp(belly,ventral*0.72);vertex(point,shade,0.94+mottle*0.08);}for(var i=0;i<skinFaces.length;i++)ix.push(part.vertexStart+skinFaces[i]);end(part);
+            // The lip shares the skin's front ring; the dark mouth is recessed,
+            // not a disk pasted onto the snout. Lower lip projects very slightly.
+            var part=begin('mouth-recess'),mouthProfiles=[[0.275,0.19,1.38],[0.231,0.105,1.402],[0.165,0.075,1.16]],mouthStart=p.length/3;
+            for(var row=0;row<mouthProfiles.length;row++)for(var column=0;column<segments;column++){var a=column/segments*Math.PI*2,sy=Math.sin(a),profile=mouthProfiles[row],point=row===0?sectionPoint(0,column):[Math.cos(a)*profile[0],-0.12+sy*profile[1],profile[2]+0.045*Math.max(0,-sy)];shade.copy(row===0?flank:mouthColor);vertex(point,shade,row===1?1.12:1);}
+            for(var row=0;row<mouthProfiles.length-1;row++)for(var column=0;column<segments;column++){var a=mouthStart+row*segments+column,b=mouthStart+row*segments+(column+1)%segments,c=a+segments,d=b+segments;ix.push(a,b,c,b,d,c);}var pole=vertex([0,-0.12,1.145],mouthColor);for(var column=0;column<segments;column++)ix.push(mouthStart+2*segments+column,mouthStart+2*segments+(column+1)%segments,pole);end(part);
+            median([0.84,0.65,0.39,0.10,-0.22,-0.51,-0.80,-1.07],[0,0.79,0.83,0.80,0.82,0.73,0.58,0],5,'dorsal');
+            median([-0.30,-0.47,-0.68,-0.88,-1.08],[0,-0.70,-0.72,-0.54,0],15,'anal');
+            for(var s=-1;s<=1;s+=2){var suffix=s<0?'-left':'-right',column=s>0?0:10,roots=[bodyPoint(0.68,column),bodyPoint(0.53,column),bodyPoint(0.35,column),bodyPoint(0.17,column),bodyPoint(0.08,column)];fin(roots,[roots[0].slice(),[s*0.70,-0.06,0.35],[s*0.76,-0.20,0.05],[s*0.67,-0.25,-0.13],roots[4].slice()],'pectoral'+suffix,[0,1,0]);var column=s>0?17:13,roots=[bodyPoint(0.33,column),bodyPoint(0.16,column),bodyPoint(-0.02,column),bodyPoint(-0.20,column)];fin(roots,[roots[0].slice(),[s*0.43,-0.67,0.03],[s*0.37,-0.69,-0.28],roots[3].slice()],'pelvic'+suffix,[0,-1,0]);
+              var part=begin('gill'+suffix),start=p.length/3;for(var row=0;row<=10;row++){var a=-Math.PI/2+row/10*Math.PI,y=Math.sin(a)*0.40,z=0.48+(1-Math.cos(a))*0.15;for(var edge=0;edge<2;edge++){var zz=z+(edge?0.013:-0.013);vertex([s*(surfaceX(y,zz)+0.004),y,zz],gillColor,edge?1.18:0.94);}}for(var row=0;row<10;row++){var a=start+row*2,b=a+1,c=a+2,d=a+3;if(s>0)ix.push(a,c,b,b,c,d);else ix.push(a,b,c,b,d,c);}end(part);
+            }
+          }else if(kind==='tail'){
+            var part=begin('peduncle'),profiles=[[-1.27,0.10,0.155],[-1.40,0.070,0.17],[-1.53,0.032,0.20]],count=16,start=p.length/3;
+            for(var row=0;row<profiles.length;row++)for(var column=0;column<count;column++){var a=column/count*Math.PI*2,profile=profiles[row];vertex([Math.cos(a)*profile[1],Math.sin(a)*profile[2],profile[0]],finColor);}
+            for(var row=0;row<profiles.length-1;row++)for(var column=0;column<count;column++){var a=start+row*count+column,b=start+row*count+(column+1)%count,c=a+count,d=b+count;ix.push(a,c,b,b,c,d);}for(var cap=0;cap<2;cap++){var row=cap?profiles.length-1:0,pole=vertex([0,0,profiles[row][0]],finColor);for(var column=0;column<count;column++){var a=start+row*count+column,b=start+row*count+(column+1)%count;if(cap)ix.push(a,pole,b);else ix.push(a,b,pole);}}end(part);
+            var part=begin('caudal'),center=[0.025,0,-1.46],outline=[[0,0.16,-1.40],[0,0.34,-1.61],[0,0.47,-1.78],[0,0.44,-1.86],[0,0.27,-1.91],[0,0,-1.93],[0,-0.27,-1.91],[0,-0.44,-1.86],[0,-0.47,-1.78],[0,-0.34,-1.61],[0,-0.16,-1.40]];
+            for(var i=0;i<outline.length;i++)triangle(center,outline[i],outline[(i+1)%outline.length],finColor,[0.89,i%2?1.02:0.95,i%2?0.95:1.02],[1,0,0]);end(part);
+          }else{
+            function eyePart(name,radii,relief,tint){var part=begin(name),n=16,rows=radii[radii.length-1]===0?radii.length-1:radii.length,start=p.length/3;for(var row=0;row<rows;row++)for(var column=0;column<n;column++){var a=column/n*Math.PI*2,y=0.25+Math.sin(a)*radii[row],z=0.94+Math.cos(a)*radii[row];vertex([side*(surfaceX(y,z)+relief[row]),y,z],tint);}function face(a,b,c){if(side>0)ix.push(a,b,c);else ix.push(a,c,b);}for(var row=0;row<rows-1;row++)for(var column=0;column<n;column++){var a=start+row*n+column,b=start+row*n+(column+1)%n,c=a+n,d=b+n;face(a,c,b);face(b,c,d);}if(rows<radii.length){var pole=vertex([side*(surfaceX(0.25,0.94)+relief[rows]),0.25,0.94],tint);for(var column=0;column<n;column++)face(start+(rows-1)*n+column,pole,start+(rows-1)*n+(column+1)%n);}end(part);}
+            eyePart('iris',[0.095,0.075,0.045],[0.001,0.014,0.027],irisColor);eyePart('pupil',[0.045,0.024,0],[0.027,0.034,0.039],pupilColor);
+          }
+          var anchor=kind==='tail'?[-1.5,0,0]:kind==='eye'?[0.9,-side*0.25,0.35]:[0,0,0];
+          for(var i=0;i<p.length;i+=3){var x=p[i]-anchor[0],y=p[i+1]-anchor[1],z=p[i+2]-anchor[2];if(kind==='tail'){p[i]=-y;p[i+1]=x;p[i+2]=z;}else{p[i]=x;p[i+1]=y;p[i+2]=z;}}
+          var geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(p,3));geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));geometry.setIndex(ix);geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();geometry.userData.clGrouperParts=parts;geometry.userData.clGrouperGeometry={kind:kind,side:side||0,authoredFrame:'grouper-root',forward:[0,0,1],rootAnchor:anchor,rootRotationZ:kind==='tail'?-Math.PI/2:0};return geometry;
+        }
         var grouper = new THREE.Group();
-        var gBodyGeo = new THREE.SphereGeometry(0.9, 12, 8);
-        gBodyGeo.scale(1.6, 0.85, 0.85);
+        var gBodyGeo = createCLHuntGrouperGeometry(THREE,'body');
         var gBody = new THREE.Mesh(gBodyGeo,
-          new THREE.MeshStandardMaterial({ color: 0x6b6244, roughness: 0.55 }));
-        grouper.add(gBody);
-        // Tail
+          new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.55, side: THREE.DoubleSide }));
+        gBody.name='cl-grouper-body';grouper.add(gBody);
+        // Tail keeps its existing child frame; its vertices are authored in +Z.
         var gTail = new THREE.Mesh(
-          new THREE.ConeGeometry(0.5, 0.7, 6),
-          new THREE.MeshStandardMaterial({ color: 0x554a32, roughness: 0.6 })
+          createCLHuntGrouperGeometry(THREE,'tail'),
+          new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.6, side: THREE.DoubleSide })
         );
         gTail.position.x = -1.5;
         gTail.rotation.z = -Math.PI / 2;
-        grouper.add(gTail);
-        // Eyes
+        gTail.name='cl-grouper-tail';grouper.add(gTail);
+        // Bilateral eye patches remain two independently owned material slots.
         for (var gei = 0; gei < 2; gei++) {
-          var geye = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 5),
-            new THREE.MeshBasicMaterial({ color: 0xffd400 }));
+          var geye = new THREE.Mesh(createCLHuntGrouperGeometry(THREE,'eye',gei===0?-1:1),
+            new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.36 }));
           geye.position.set(0.9, 0.25 * (gei === 0 ? 1 : -1), 0.35);
-          grouper.add(geye);
+          geye.name=gei===0?'cl-grouper-eye-left':'cl-grouper-eye-right';grouper.add(geye);
         }
         grouper.position.set(-25, 1.8, -20);
         grouper.userData = {
@@ -15468,6 +15512,51 @@ function createCLHuntFish(T,index){
             // DEN" at all. Same shelter, opposite answers, no explanation.
             gameState.inShelterDen = nearAnyShelterDen;gameState.inDen=isShelteredNow();
 
+            // ─── Ink defense ───
+            // Dumbo + vampire squid don't ink (real biology — deep-sea
+            // species evolved away from ink; vampire squid uses biolum mucus).
+            var canInk = capabilities.ink;
+            if (inkRequested && canInk && !gameState.isInked && gameState.inkReserves > 0 && now > gameState.inkCooldownUntil) {
+              inkRequested = false;
+              gameState.isInked = true;
+              gameState.inkUntil = now + 3200;
+              gameState.inkReserves--;
+              gameState.inkCooldownUntil = now + gameState.inkCooldownMs;
+              gameState.runStats.inkUsed++;
+              unlockAchievement('firstInk');
+              var inkGeo = new THREE.SphereGeometry(2.6, 16, 12);
+              var inkMat = new THREE.MeshBasicMaterial({ color: 0x080812, transparent: true, opacity: 0.72 });
+              var inkCloud = new THREE.Mesh(inkGeo, inkMat);
+              inkCloud.position.copy(octopus.position);
+              scene.add(inkCloud);
+              gameState.inkCloudsActive.push({ mesh: inkCloud, expiresAt: now + 3200 });
+              clAnnounce('Ink released — ' + gameState.inkReserves + ' ink left');
+              sfxInk();
+            } else {
+              if (inkRequested) {
+                // Tried to ink but blocked (no reserves, or cooldown, or already inked)
+                if (gameState.inkReserves <= 0) clAnnounce(__alloT('stem.cephalopodlab.sr_out_of_ink_no_refill', 'Ink sac empty. It does not refill during a dive.'));
+                else if (now <= gameState.inkCooldownUntil) {
+                  var remCd = Math.ceil((gameState.inkCooldownUntil - now) / 1000);
+                  clAnnounce('Siphon refilling — ' + remCd + 's');
+                }
+              }
+              inkRequested = false;
+            }
+            if (gameState.isInked && now > gameState.inkUntil) gameState.isInked = false;
+            gameState.inkCloudsActive = gameState.inkCloudsActive.filter(function(ink) {
+              var t = (ink.expiresAt - now) / 3200;
+              if (t <= 0) {
+                scene.remove(ink.mesh);
+                ink.mesh.geometry.dispose();
+                ink.mesh.material.dispose();
+                return false;
+              }
+              ink.mesh.material.opacity = t * 0.72;
+              ink.mesh.scale.setScalar(1 + (1 - t) * 0.7);
+              return true;
+            });
+
             // ─── Mimic-octopus impersonation (hold M) ───────────
             // Costs stamina while held. Visually fades in red spike-tendrils
             // that halo the body like a venomous lionfish. Grouper + shark
@@ -16217,7 +16306,7 @@ function createCLHuntFish(T,index){
               grouper.position.y = 1.8 + Math.sin(now * 0.0015) * 0.2;
               if (grouper.position.x > 55 || grouper.position.x < -55) gr.patrolAngle += Math.PI;
               if (grouper.position.z > 55 || grouper.position.z < -55) gr.patrolAngle += Math.PI;
-              grouper.rotation.y = gr.patrolAngle + Math.PI / 2;
+              grouper.rotation.y = gr.patrolAngle;
               // Detection: aggro range scales with camouflage. Mimic
               // impersonation halves perceived range (lionfish-spike halo).
               var grDx = octopus.position.x - grouper.position.x;
@@ -16554,51 +16643,6 @@ function createCLHuntFish(T,index){
             animal.update(now / 1000, dt, { moving:isMoving, jet:isJetting, camo:gameState.camoEff,
               substrate:gameState.currentSubstrate, display:gameState.isDisplaying,
               strike:strikePose,strikeAim:directedStrikeAim, reducedMotion:gameState.a11y.reducedMotion });
-
-            // ─── Ink defense ───
-            // Dumbo + vampire squid don't ink (real biology — deep-sea
-            // species evolved away from ink; vampire squid uses biolum mucus).
-            var canInk = capabilities.ink;
-            if (inkRequested && canInk && !gameState.isInked && gameState.inkReserves > 0 && now > gameState.inkCooldownUntil) {
-              inkRequested = false;
-              gameState.isInked = true;
-              gameState.inkUntil = now + 3200;
-              gameState.inkReserves--;
-              gameState.inkCooldownUntil = now + gameState.inkCooldownMs;
-              gameState.runStats.inkUsed++;
-              unlockAchievement('firstInk');
-              var inkGeo = new THREE.SphereGeometry(2.6, 16, 12);
-              var inkMat = new THREE.MeshBasicMaterial({ color: 0x080812, transparent: true, opacity: 0.72 });
-              var inkCloud = new THREE.Mesh(inkGeo, inkMat);
-              inkCloud.position.copy(octopus.position);
-              scene.add(inkCloud);
-              gameState.inkCloudsActive.push({ mesh: inkCloud, expiresAt: now + 3200 });
-              clAnnounce('Ink released — ' + gameState.inkReserves + ' ink left');
-              sfxInk();
-            } else {
-              if (inkRequested) {
-                // Tried to ink but blocked (no reserves, or cooldown, or already inked)
-                if (gameState.inkReserves <= 0) clAnnounce(__alloT('stem.cephalopodlab.sr_out_of_ink_no_refill', 'Ink sac empty. It does not refill during a dive.'));
-                else if (now <= gameState.inkCooldownUntil) {
-                  var remCd = Math.ceil((gameState.inkCooldownUntil - now) / 1000);
-                  clAnnounce('Siphon refilling — ' + remCd + 's');
-                }
-              }
-              inkRequested = false;
-            }
-            if (gameState.isInked && now > gameState.inkUntil) gameState.isInked = false;
-            gameState.inkCloudsActive = gameState.inkCloudsActive.filter(function(ink) {
-              var t = (ink.expiresAt - now) / 3200;
-              if (t <= 0) {
-                scene.remove(ink.mesh);
-                ink.mesh.geometry.dispose();
-                ink.mesh.material.dispose();
-                return false;
-              }
-              ink.mesh.material.opacity = t * 0.72;
-              ink.mesh.scale.setScalar(1 + (1 - t) * 0.7);
-              return true;
-            });
 
             // ─── Moray eel AI ───
             var me = moray.userData;

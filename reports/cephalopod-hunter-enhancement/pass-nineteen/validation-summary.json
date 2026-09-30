@@ -1,0 +1,416 @@
+{
+  "pass": 19,
+  "status": "validated",
+  "result": "Recognizable grouper anatomy and nose-first heading; accepted ink and expiry resolved before all predator AI",
+  "source": {
+    "runtime": [
+      {
+        "file": "stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "fe371e12837c9fbccd50a27e06fd7753287a477741ca96d70ab4e5d098bfb96c"
+      },
+      {
+        "file": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "fe371e12837c9fbccd50a27e06fd7753287a477741ca96d70ab4e5d098bfb96c"
+      },
+      {
+        "file": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "fe371e12837c9fbccd50a27e06fd7753287a477741ca96d70ab4e5d098bfb96c"
+      },
+      {
+        "file": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "fe371e12837c9fbccd50a27e06fd7753287a477741ca96d70ab4e5d098bfb96c"
+      }
+    ],
+    "candidateLfSha256": "1da82e8b888098676de458d84a3ad8f7d948c0b4f196802098838c766cb1b4ac",
+    "preservedUnstagedWrappersPerTrackedFile": 12,
+    "protectedRegions": [
+      {
+        "name": "accepted cephalopod rigs",
+        "byteIdentical": true,
+        "lfSha256": "1d24b50c729633a69f6891e4b2e550928612013798e15400cbb63763fdf8cdc7"
+      },
+      {
+        "name": "fish and school memory helpers",
+        "byteIdentical": true,
+        "lfSha256": "e42049ee886c1f287a77c8954187b93516b95e90d24eecfdaca8da0582203c7d"
+      },
+      {
+        "name": "reef, plant and particle shader helpers",
+        "byteIdentical": true,
+        "lfSha256": "beb2b4abb7c34e21050c7e7a410e74972e1fe60a2cfb3735272abf43ae00e57d"
+      },
+      {
+        "name": "crab models and ecology",
+        "byteIdentical": true,
+        "lfSha256": "e1f91809ba70217d7831dd88ee56b355fa49cd602f8c524dcb9fc0e660d0763f"
+      },
+      {
+        "name": "moray model and spawn",
+        "byteIdentical": true,
+        "lfSha256": "f45bea369887add63ab985520b716b8e7f2aa0bd02c0424ef9eaba06a013ea8e"
+      },
+      {
+        "name": "shelters, clam/fish construction and reef world",
+        "byteIdentical": true,
+        "lfSha256": "966d46c2abd3ee2290d1a0181cb14f33b3267a6e05b1c026ecd2675976be889b"
+      },
+      {
+        "name": "clam drill and capture",
+        "byteIdentical": true,
+        "lfSha256": "d726ff45f387a3c61743754948bdc1e93c9297493d89f392b9cfe28741eaf7bd"
+      }
+    ],
+    "grouperAI": "Only the visual patrol-yaw line changes; all position, detection, attack and damage statements remain exact",
+    "inkPhase": "Full existing phase moved byte-identically after player motion/camouflage/shelter synchronization, before all four AI phases"
+  },
+  "guards": {
+    "grouper": {
+      "source": "cb495bf9259bef7d1bf2bb832aa02af83a3058dd8b874a3f345ab49672df0f54",
+      "candidate": "5408053f754fb2b7132028e0096bac746fefaa8a54fcdce7b6d2e5ea6f245618",
+      "candidatePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-nineteen\\grouper-candidate.generated.cjs",
+      "author": {
+        "guard": "Exact grouper block plus patrol-yaw line; reverse-byte proof",
+        "source": "cb495bf9259bef7d1bf2bb832aa02af83a3058dd8b874a3f345ab49672df0f54",
+        "budget": {
+          "vertices": 705,
+          "triangles": 969,
+          "meshes": 4,
+          "materials": 4,
+          "parts": [
+            {
+              "mesh": "cl-grouper-body",
+              "vertices": 460,
+              "triangles": 638,
+              "parts": [
+                {
+                  "name": "skin",
+                  "vertexStart": 0,
+                  "indexStart": 0,
+                  "vertexCount": 241,
+                  "indexCount": 1380
+                },
+                {
+                  "name": "mouth-recess",
+                  "vertexStart": 241,
+                  "indexStart": 1380,
+                  "vertexCount": 61,
+                  "indexCount": 300
+                },
+                {
+                  "name": "dorsal",
+                  "vertexStart": 302,
+                  "indexStart": 1680,
+                  "vertexCount": 36,
+                  "indexCount": 36
+                },
+                {
+                  "name": "anal",
+                  "vertexStart": 338,
+                  "indexStart": 1716,
+                  "vertexCount": 18,
+                  "indexCount": 18
+                },
+                {
+                  "name": "pectoral-left",
+                  "vertexStart": 356,
+                  "indexStart": 1734,
+                  "vertexCount": 18,
+                  "indexCount": 18
+                },
+                {
+                  "name": "pelvic-left",
+                  "vertexStart": 374,
+                  "indexStart": 1752,
+                  "vertexCount": 12,
+                  "indexCount": 12
+                },
+                {
+                  "name": "gill-left",
+                  "vertexStart": 386,
+                  "indexStart": 1764,
+                  "vertexCount": 22,
+                  "indexCount": 60
+                },
+                {
+                  "name": "pectoral-right",
+                  "vertexStart": 408,
+                  "indexStart": 1824,
+                  "vertexCount": 18,
+                  "indexCount": 18
+                },
+                {
+                  "name": "pelvic-right",
+                  "vertexStart": 426,
+                  "indexStart": 1842,
+                  "vertexCount": 12,
+                  "indexCount": 12
+                },
+                {
+                  "name": "gill-right",
+                  "vertexStart": 438,
+                  "indexStart": 1854,
+                  "vertexCount": 22,
+                  "indexCount": 60
+                }
+              ]
+            },
+            {
+              "mesh": "cl-grouper-tail",
+              "vertices": 83,
+              "triangles": 107,
+              "parts": [
+                {
+                  "name": "peduncle",
+                  "vertexStart": 0,
+                  "indexStart": 0,
+                  "vertexCount": 50,
+                  "indexCount": 288
+                },
+                {
+                  "name": "caudal",
+                  "vertexStart": 50,
+                  "indexStart": 288,
+                  "vertexCount": 33,
+                  "indexCount": 33
+                }
+              ]
+            },
+            {
+              "mesh": "cl-grouper-eye-left",
+              "vertices": 81,
+              "triangles": 112,
+              "parts": [
+                {
+                  "name": "iris",
+                  "vertexStart": 0,
+                  "indexStart": 0,
+                  "vertexCount": 48,
+                  "indexCount": 192
+                },
+                {
+                  "name": "pupil",
+                  "vertexStart": 48,
+                  "indexStart": 192,
+                  "vertexCount": 33,
+                  "indexCount": 144
+                }
+              ]
+            },
+            {
+              "mesh": "cl-grouper-eye-right",
+              "vertices": 81,
+              "triangles": 112,
+              "parts": [
+                {
+                  "name": "iris",
+                  "vertexStart": 0,
+                  "indexStart": 0,
+                  "vertexCount": 48,
+                  "indexCount": 192
+                },
+                {
+                  "name": "pupil",
+                  "vertexStart": 48,
+                  "indexStart": 192,
+                  "vertexCount": 33,
+                  "indexCount": 144
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "ink": {
+      "source": "5408053f754fb2b7132028e0096bac746fefaa8a54fcdce7b6d2e5ea6f245618",
+      "candidate": "fe371e12837c9fbccd50a27e06fd7753287a477741ca96d70ab4e5d098bfb96c",
+      "candidatePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-nineteen\\ink-timing-candidate.generated.cjs",
+      "author": {
+        "mode": "candidate written; source untouched",
+        "candidatePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-nineteen\\ink-timing-candidate.generated.cjs",
+        "sourceOutsideMove": "byte-identical",
+        "movedPhase": "byte-identical",
+        "phaseBytes": 2425,
+        "placement": "After final player movement/camouflage and shelter synchronization; before all four predator AI phases",
+        "lifetime": "Original3200ms simulation TTL, fade/growth/removal; current-frame state shared by every predator",
+        "directSeededRandomCallsInPhase": 0,
+        "baselineSha256": "5408053f754fb2b7132028e0096bac746fefaa8a54fcdce7b6d2e5ea6f245618",
+        "candidateSha256": "fe371e12837c9fbccd50a27e06fd7753287a477741ca96d70ab4e5d098bfb96c"
+      }
+    }
+  },
+  "units": {
+    "passed": 52,
+    "failed": 0,
+    "pending": 0,
+    "testTimeoutMs": 30000,
+    "evidence": "unit-results.json",
+    "candidateGeometry": {
+      "passed": 6,
+      "evidence": "unit-grouper-candidate.json"
+    },
+    "files": [
+      {
+        "file": "cephalopodlab_canvas_focus_a11y.test.js",
+        "passed": 4
+      },
+      {
+        "file": "cephalopodlab_clam_geometry.test.js",
+        "passed": 5
+      },
+      {
+        "file": "cephalopodlab_crab_geometry.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_den_geometry.test.js",
+        "passed": 4
+      },
+      {
+        "file": "cephalopodlab_grouper_geometry.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_kelp_fronds.test.js",
+        "passed": 3
+      },
+      {
+        "file": "cephalopodlab_nautilus_eyes.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_prey_fish.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_prey_memory.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_reef_placement.test.js",
+        "passed": 6
+      }
+    ]
+  },
+  "browser": {
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "workers": 1,
+    "retries": 0,
+    "video": "off",
+    "trace": "off",
+    "evidence": [
+      "browser-results.json",
+      "browser-mission-results.json"
+    ],
+    "cases": [
+      {
+        "title": "low grouper renders its actual anatomy, swims nose-first and preserves paused resources",
+        "durationMs": 22023
+      },
+      {
+        "title": "balanced grouper renders its actual anatomy, swims nose-first and preserves paused resources",
+        "durationMs": 31590
+      },
+      {
+        "title": "accepted same-frame ink prevents a real grouper bite after a positive damage control",
+        "durationMs": 17519
+      },
+      {
+        "title": "the real moray keeps the same accepted-ink protection as the grouper",
+        "durationMs": 17336
+      },
+      {
+        "title": "ink freezes in pause and inspection then expires before a bite on the first expired frame",
+        "durationMs": 39821
+      },
+      {
+        "title": "a non-inking vampire squid cannot cancel a real bite by pressing I",
+        "durationMs": 14101
+      },
+      {
+        "title": "cover freezes the remembered prey position, then bounded search disengages",
+        "durationMs": 20586
+      },
+      {
+        "title": "search pauses with the dive and reacquires only after the player becomes visible",
+        "durationMs": 16038
+      },
+      {
+        "title": "a predator cannot bite through nearby rock cover or an active ink cloud",
+        "durationMs": 13796
+      },
+      {
+        "title": "target selection never catches a different nearby animal, and repeated catches persist",
+        "durationMs": 15302
+      },
+      {
+        "title": "reef mission requires both foods and a return home, then writes one debrief",
+        "durationMs": 17840
+      }
+    ],
+    "limits": "Real same-frame controls cover grouper/moray; shark/zonal ordering, empty-reserve and resistance conditions are protected by the exact full-phase move and unchanged predicates, without separate native cases."
+  },
+  "initialDefect": {
+    "sourceSha256": "cb495bf9259bef7d1bf2bb832aa02af83a3058dd8b874a3f345ab49672df0f54",
+    "evidence": "browser-initial-ink.json",
+    "expectedFailure": true,
+    "initialHealth": 100,
+    "noInkControlHealth": 65,
+    "acceptedInkHealthBeforeFix": 30,
+    "acceptedInkClouds": 1,
+    "remainingInk": "2/3",
+    "resolution": "Accepted ink now precedes every predator decision; same-frame and first-expired-frame scenarios pass with positive damage controls."
+  },
+  "visuals": {
+    "captures": [
+      "grouper-oblique.png",
+      "grouper-side.png",
+      "grouper-face.png",
+      "grouper-tail.png",
+      "grouper-reef.png",
+      "grouper-phone.png"
+    ],
+    "errors": [],
+    "warnings": [
+      "[.WebGL-0x105c001b4e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x105c001b4e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x105c001b4e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x105c001b4e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    ],
+    "fixture": "visual-fixtures.json",
+    "seed": 2743,
+    "simTicks": 20,
+    "stepSeconds": 0.05,
+    "review": "Root and independent reviewer accepted all six native views. Fixed world cameras, seeded actor positions and simulation state match exactly; only anatomical forward/yaw intentionally changes.",
+    "cameraAdjustment": "The side view uses the opposite side after initial foreground kelp occlusion. Both baseline/final share that camera, and every other fixture field was checked exact.",
+    "phone": "Natural capture retains scene actors/scenery. Native phone test separately places the same real paused grouper on the actual camera ray using measured geometry/FOV, verifies every vertex in the frustum, then restores its pose."
+  },
+  "resources": {
+    "before": {
+      "meshes": 4,
+      "materials": 4,
+      "geometries": 4,
+      "vertices": 228,
+      "triangles": 282,
+      "bufferBytes": 8988
+    },
+    "after": {
+      "meshes": 4,
+      "materials": 4,
+      "geometries": 4,
+      "vertices": 705,
+      "triangles": 969,
+      "bufferBytes": 31194
+    }
+  },
+  "limits": [
+    "Illustrative grouper with subdued olive coloration and angular static fins; no specimen accuracy, tail beat or jaw animation.",
+    "New static geometry and lit eyes increase resources; four draws/materials remain unchanged. No FPS measurement.",
+    "Existing kelp partly occludes the reef context view; no actors/scenery were hidden or moved for capture.",
+    "Native submissions and screenshots do not establish temporal shimmer or displaced vertex readback.",
+    "Streamed dens still use older shelter visuals, identified during audit and left for a future pass."
+  ]
+}

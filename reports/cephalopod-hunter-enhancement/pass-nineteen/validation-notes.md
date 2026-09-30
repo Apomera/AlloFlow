@@ -1,0 +1,37 @@
+# Grouper and same-frame ink validation
+
+The main task owns execution and runtime integration. This document records the tests, fixture limits and final passing evidence.
+
+## Grouper geometry
+
+`tests/cephalopodlab_grouper_geometry.test.js` extracts the actual helper and complete grouper constructor with bundled Three r128. Six scenarios protect the original four child frames, spawn position and predator metadata, zero construction RNG draws, four independently owned opaque materials and geometries, geometry budget, indexed finite surfaces, unit normals and visible winding. Semantic part spans must cover the actual buffers completely.
+
+Contact assertions use rendered vertices and triangles transformed through the preserved child matrices. Six fins must have several attached roots and exposed membranes. Gills and eye surfaces must follow the actual skin, the iris and pupil meet, and pupil colors remain dark. A ray through the mouth must enter a recessed cavity; welded skin and mouth must close physically. The full leading tail section must embed in the real body, and the tail fan must meet its peduncle. The patrol test executes the actual movement/yaw lines and compares the anatomical nose with displacement at six headings. Static-buffer and independent teardown checks use two constructed actors.
+
+The source guard, maintained by the model author and executed by the main task, provides exact reverse-byte isolation of the visual block and approved patrol-yaw line. No whole-animal or unrelated vegetation hash is migrated.
+
+## Baseline ink reproduction
+
+`tests/e2e/cephalopod-ink-timing.spec.ts` starts with a focused real-grouper reproduction. A no-ink encounter must first cause exactly 35 health damage. After the existing hit-immunity period, the same actor is armed again and the real canvas KeyI handler is dispatched atomically before one counted 50 ms simulation frame. A successfully accepted charge must create one cloud, consume one reserve, block the bite and end the charge. The baseline production order processes the grouper before ink activation, so the health assertion is expected to fail before integration. The test attaches its actual control/defended observations before asserting that difference.
+
+The fixture changes only existing scene actors: incidental rocks move away from the contact path and unrelated predators receive deferred cooldowns. It does not fabricate predators, change health or ink reserves, or call a replacement damage/defense implementation. Ordinary pause forces a current HUD snapshot rather than relying on its 125 ms refresh cadence. Clock steps are counted simulation frames; no correctness assertion uses elapsed wall time. Video and trace are disabled and retries are zero. The main task executes one browser worker serially.
+
+Three additional cases bring the authored native total to four. A real moray has its own positive damage control and same-frame accepted defense. A cloud lifecycle case requires exact state/buffer freeze through ordinary pause and inspection, retains the same cloud through 3151 ms, and places the real grouper in bite range on the next 50 ms step: cloud expiry must occur before that first expired frame's damage decision. The one-millisecond offset avoids a floating-point equality assumption caused by fractional simulation time before the test clock is installed; it does not change the production lifetime. The same fixture then verifies that an attempted defense during the original eight-second cooldown neither creates a cloud nor prevents another real bite. Geometry/material listeners require exactly one expiration disposal and no duplicate disposal at unmount. A vampire-squid fixture verifies that a non-inking species still receives damage when I is pressed, after its own no-input positive control.
+
+The grouper and moray already exist at dive start. Sharks and zonal predators spawn only after approximately 60–110 simulation seconds, so a native matrix for those actors would require over a thousand rendered steps per fixture. Empty-reserve, dynamic predator and resistant predator encounters are not claimed as native coverage here. The phase-move guard separately proves the unchanged full ink block precedes all four AI branches and that acceptance/resistance predicates remain outside the edit. That source proof is not presented as a native resistant-predator encounter.
+
+## Evidence status
+
+The test author prepared six new CPU and six native scenarios: four ink cases and two grouper rendering cases. Root ran the complete integrated batch: 52 unit cases and 11 browser scenarios passed, including five existing search/cover/target/mission regressions. The first baseline test body remains unchanged and independently selectable. The original-source reproduction exited 1 with the intended gameplay failure: initial health 100, no-ink control 65 with 3/3 reserves, then an accepted cloud and 2/3 reserves but health 30 instead of 65. The grouper still reported canBite true. Raw `browser-initial-ink.json` preserves that evidence. The unchanged regression passes after the phase move.
+
+## Native grouper rendering
+
+`tests/e2e/cephalopod-grouper-visuals.spec.ts` adds two low/balanced scenarios, bringing this pass's new browser coverage to six. The main task measured the final model at 705 vertices and 969 triangles across four independently owned meshes/materials. The pair observes all four actual draw submissions, native shader compilation/linking, bound position/normal/color buffers, finite nonsingular normal uniforms, and unchanged native buffer identities.
+
+The original scene grouper remains under the real AI update. Three patrol headings compare actual anatomical nose/rear vertices with displacement, and an actual pursuing state must track the player nose-first through production lookAt. Ordinary pause and inspection freeze the actor; camera orbit still responds to counted render steps. Resume and reduced-motion settings preserve predator travel and static resource ownership. The balanced case checks responsive phone controls, fresh draws and an on-screen actor center after relocating the same paused grouper along the current camera's optical ray. Actual geometry bounds determine distance for the narrow phone frustum, and every projected vertex must remain inside it. This is diagnostic native visibility coverage, not natural-spawn or automatic predator framing; the main task captures the unchanged natural world phone view separately. Eight independent geometry/material resources must each dispose once on unmount. These scenarios use zero retries and no video/trace; execution remains exclusively owned by the main task.
+
+## Final integrated validation
+
+Root integrated both exact guarded stages and verified all four runtimes. The grouper candidate passed six CPU cases; the final integrated batch passed 52 cases. Eleven Chromium scenarios passed without retries, skips or flaky results. Root and independent review accepted all six matched desktop/phone captures. The real baseline grouper reproduction recorded health 100 → 65 without ink, then 65 → 30 despite one accepted cloud and a consumed charge. The unchanged strict regression now passes after the ink phase move.
+
+Actual grouper resources: 705 vertices, 969 triangles, 31,194 raw geometry bytes, four meshes/materials/geometries. Other model and environment regions remain exact. Full hashes, initial defect, native scope and limitations are recorded in validation-summary.json.
