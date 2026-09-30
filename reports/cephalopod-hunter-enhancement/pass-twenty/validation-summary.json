@@ -1,0 +1,589 @@
+{
+  "pass": 20,
+  "status": "validated",
+  "result": "Recognizable moray anatomy and natural home crevice, translucent moon-jelly anatomy with attached live pulses, and accepted rocky shelter visuals during exploration",
+  "source": {
+    "runtime": [
+      {
+        "file": "stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "ce9e6375932acd8c72a06c26059a790c4feb40f92e0c401fbbede04418724857"
+      },
+      {
+        "file": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "ce9e6375932acd8c72a06c26059a790c4feb40f92e0c401fbbede04418724857"
+      },
+      {
+        "file": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "ce9e6375932acd8c72a06c26059a790c4feb40f92e0c401fbbede04418724857"
+      },
+      {
+        "file": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "ce9e6375932acd8c72a06c26059a790c4feb40f92e0c401fbbede04418724857"
+      }
+    ],
+    "candidateLfSha256": "49f33f3dc7486b40849b618469b60461b8354f0471ca1a971a07bbc11a97a51b",
+    "preservedUnstagedWrappersPerTrackedFile": 12,
+    "protectedRegions": [
+      {
+        "name": "accepted cephalopod rigs",
+        "byteIdentical": true,
+        "lfSha256": "1d24b50c729633a69f6891e4b2e550928612013798e15400cbb63763fdf8cdc7"
+      },
+      {
+        "name": "fish and school memory helpers",
+        "byteIdentical": true,
+        "lfSha256": "e42049ee886c1f287a77c8954187b93516b95e90d24eecfdaca8da0582203c7d"
+      },
+      {
+        "name": "reef, plant and water shader helpers",
+        "byteIdentical": true,
+        "lfSha256": "beb2b4abb7c34e21050c7e7a410e74972e1fe60a2cfb3735272abf43ae00e57d"
+      },
+      {
+        "name": "crab models and ecology",
+        "byteIdentical": true,
+        "lfSha256": "e1f91809ba70217d7831dd88ee56b355fa49cd602f8c524dcb9fc0e660d0763f"
+      },
+      {
+        "name": "completed grouper anatomy and spawn",
+        "byteIdentical": true,
+        "lfSha256": "ae988cebc60b4ce5ad0844e4ed92ad3f4e28c7dcab2cbb6b2abe37425e9dac84"
+      },
+      {
+        "name": "initial dens, clams and fish world",
+        "byteIdentical": true,
+        "lfSha256": "9825f421582eff7c34a5818815aded2227ae5110e2a406a7a06698656dd1385a"
+      },
+      {
+        "name": "light shafts and substrate detection",
+        "byteIdentical": true,
+        "lfSha256": "53ea1e9dc553eb7cc931ada74befdac194a8353db40f0209ca2bc36fef84bc94"
+      },
+      {
+        "name": "grouper AI",
+        "byteIdentical": true,
+        "lfSha256": "fdb0037e903f3792cf179d7c966a23827c2ebc23bfc2c6199d66d76f69c26af1"
+      },
+      {
+        "name": "clam drilling and capture",
+        "byteIdentical": true,
+        "lfSha256": "d726ff45f387a3c61743754948bdc1e93c9297493d89f392b9cfe28741eaf7bd"
+      },
+      {
+        "name": "moray AI",
+        "byteIdentical": true,
+        "lfSha256": "cbc768d9fe29aaabf847fde1946923628192225cfa5f3d4dbbce73cb38761e5c"
+      }
+    ],
+    "scope": "Three exact guarded stages, each with a reverse-byte proof. Predator AI, damage, cover, ink timing, mission rules, shelter protection and direct RNG order remain unchanged."
+  },
+  "guards": {
+    "streamedDen": {
+      "source": "fe371e12837c9fbccd50a27e06fd7753287a477741ca96d70ab4e5d098bfb96c",
+      "candidate": "61b073dfb4f514adc294eaf71d20edfd474f89bbcac6e423a28dc4b25444d098",
+      "candidatePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-twenty\\streamed-den-candidate.generated.cjs",
+      "reverseBytesExact": true,
+      "scope": "Streamed den visual construction only; accepted geometry and shader helpers reused unchanged; spawn/radius/cap/recycling remain exact",
+      "directRngCalls": 0
+    },
+    "moonJelly": {
+      "source": "61b073dfb4f514adc294eaf71d20edfd474f89bbcac6e423a28dc4b25444d098",
+      "candidate": "9847139062a13bdb826beb193836dadf0e13b07409a51b29b0eacfbbe865669f",
+      "candidatePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-twenty\\jelly-candidate.generated.cjs",
+      "author": {
+        "guard": "exact jelly construction and two visual update regions; reverse-byte proof",
+        "source": "61b073dfb4f514adc294eaf71d20edfd474f89bbcac6e423a28dc4b25444d098",
+        "candidate": "9847139062a13bdb826beb193836dadf0e13b07409a51b29b0eacfbbe865669f",
+        "constructionBefore": "064205c1818391df374c82906d6bd2e8c627508148d336895e44aa8cad40e20f",
+        "constructionAfter": "7711dcbdc9ecbb3c76dbbf34a31cb6c3b030659136068ac8a2ad64e44585a453",
+        "protectedOutside": true,
+        "spawnAndPhaseRandomLinesExact": true,
+        "existingReducedMotionBehaviorPreserved": true,
+        "contract": {
+          "actors": 5,
+          "meshesPerActor": 8,
+          "independentMaterialsPerActor": 8,
+          "tentPhaseRecords": 6,
+          "executedSpawnPhaseRandomDrawsPerActor": 13,
+          "vertexCeiling": 2500,
+          "triangleCeiling": 3500
+        },
+        "mode": "candidate",
+        "target": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-twenty\\jelly-candidate.generated.cjs"
+      }
+    },
+    "moray": {
+      "source": "9847139062a13bdb826beb193836dadf0e13b07409a51b29b0eacfbbe865669f",
+      "candidate": "ce9e6375932acd8c72a06c26059a790c4feb40f92e0c401fbbede04418724857",
+      "candidatePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-twenty\\moray-candidate.generated.cjs",
+      "author": {
+        "mode": "candidate",
+        "guard": "two exact visual construction replacements plus helpers; reverse restores every original byte",
+        "sourceSHA": "9847139062a13bdb826beb193836dadf0e13b07409a51b29b0eacfbbe865669f",
+        "candidateSHA": "ce9e6375932acd8c72a06c26059a790c4feb40f92e0c401fbbede04418724857",
+        "outsideRegionsUnchanged": true,
+        "meshes": 4,
+        "materials": 4,
+        "vertices": 1164,
+        "triangles": 1856,
+        "bytes": 53040,
+        "minArea": 0.000024499994993210095,
+        "maxNormalError": 3.6937884972942925e-8,
+        "resources": [
+          {
+            "kind": "body",
+            "side": 0,
+            "vertices": 529,
+            "triangles": 828,
+            "parts": [
+              {
+                "name": "body-skin",
+                "vertexStart": 0,
+                "indexStart": 0,
+                "vertexCount": 337,
+                "indexCount": 1944,
+                "triangleStart": 0,
+                "triangleCount": 648
+              },
+              {
+                "name": "continuous-median-fin",
+                "vertexStart": 337,
+                "indexStart": 1944,
+                "vertexCount": 192,
+                "indexCount": 540,
+                "triangleStart": 648,
+                "triangleCount": 180
+              }
+            ]
+          },
+          {
+            "kind": "head",
+            "side": 0,
+            "vertices": 343,
+            "triangles": 548,
+            "parts": [
+              {
+                "name": "head-skin",
+                "vertexStart": 0,
+                "indexStart": 0,
+                "vertexCount": 204,
+                "indexCount": 1032,
+                "triangleStart": 0,
+                "triangleCount": 344
+              },
+              {
+                "name": "mouth-recess",
+                "vertexStart": 204,
+                "indexStart": 1032,
+                "vertexCount": 73,
+                "indexCount": 324,
+                "triangleStart": 344,
+                "triangleCount": 108
+              },
+              {
+                "name": "gill-right",
+                "vertexStart": 277,
+                "indexStart": 1356,
+                "vertexCount": 9,
+                "indexCount": 36,
+                "triangleStart": 452,
+                "triangleCount": 12
+              },
+              {
+                "name": "gill-left",
+                "vertexStart": 286,
+                "indexStart": 1392,
+                "vertexCount": 9,
+                "indexCount": 36,
+                "triangleStart": 464,
+                "triangleCount": 12
+              },
+              {
+                "name": "upper-teeth",
+                "vertexStart": 295,
+                "indexStart": 1428,
+                "vertexCount": 24,
+                "indexCount": 108,
+                "triangleStart": 476,
+                "triangleCount": 36
+              },
+              {
+                "name": "lower-teeth",
+                "vertexStart": 319,
+                "indexStart": 1536,
+                "vertexCount": 24,
+                "indexCount": 108,
+                "triangleStart": 512,
+                "triangleCount": 36
+              }
+            ]
+          },
+          {
+            "kind": "eye",
+            "side": -1,
+            "vertices": 146,
+            "triangles": 240,
+            "parts": [
+              {
+                "name": "iris",
+                "vertexStart": 0,
+                "indexStart": 0,
+                "vertexCount": 97,
+                "indexCount": 504,
+                "triangleStart": 0,
+                "triangleCount": 168
+              },
+              {
+                "name": "pupil",
+                "vertexStart": 97,
+                "indexStart": 504,
+                "vertexCount": 49,
+                "indexCount": 216,
+                "triangleStart": 168,
+                "triangleCount": 72
+              }
+            ]
+          },
+          {
+            "kind": "eye",
+            "side": 1,
+            "vertices": 146,
+            "triangles": 240,
+            "parts": [
+              {
+                "name": "iris",
+                "vertexStart": 0,
+                "indexStart": 0,
+                "vertexCount": 97,
+                "indexCount": 504,
+                "triangleStart": 0,
+                "triangleCount": 168
+              },
+              {
+                "name": "pupil",
+                "vertexStart": 97,
+                "indexStart": 504,
+                "vertexCount": 49,
+                "indexCount": 216,
+                "triangleStart": 168,
+                "triangleCount": 72
+              }
+            ]
+          }
+        ],
+        "homeMarker": {
+          "meshes": 1,
+          "materials": 1,
+          "vertices": 880,
+          "triangles": 400,
+          "bytes": 34080,
+          "parts": [
+            {
+              "name": "stone-0",
+              "vertexStart": 0,
+              "vertexCount": 176,
+              "indexStart": 0,
+              "indexCount": 240,
+              "triangleStart": 0,
+              "triangleCount": 80
+            },
+            {
+              "name": "stone-1",
+              "vertexStart": 176,
+              "vertexCount": 176,
+              "indexStart": 240,
+              "indexCount": 240,
+              "triangleStart": 80,
+              "triangleCount": 80
+            },
+            {
+              "name": "stone-2",
+              "vertexStart": 352,
+              "vertexCount": 176,
+              "indexStart": 480,
+              "indexCount": 240,
+              "triangleStart": 160,
+              "triangleCount": 80
+            },
+            {
+              "name": "stone-3",
+              "vertexStart": 528,
+              "vertexCount": 176,
+              "indexStart": 720,
+              "indexCount": 240,
+              "triangleStart": 240,
+              "triangleCount": 80
+            },
+            {
+              "name": "stone-4",
+              "vertexStart": 704,
+              "vertexCount": 176,
+              "indexStart": 960,
+              "indexCount": 240,
+              "triangleStart": 320,
+              "triangleCount": 80
+            }
+          ]
+        },
+        "candidatePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-twenty\\moray-candidate.generated.cjs"
+      }
+    }
+  },
+  "units": {
+    "passed": 69,
+    "failed": 0,
+    "pending": 0,
+    "testTimeoutMs": 30000,
+    "evidence": "unit-results.json",
+    "candidate": {
+      "moray": {
+        "passed": 7,
+        "evidence": "unit-moray-refined-candidate.json"
+      },
+      "moonJelly": {
+        "passed": 6,
+        "evidence": "unit-jelly-candidate.json"
+      },
+      "streamedDen": {
+        "passed": 4,
+        "evidence": "unit-streamed-den-contact.json"
+      }
+    },
+    "files": [
+      {
+        "file": "cephalopodlab_canvas_focus_a11y.test.js",
+        "passed": 4
+      },
+      {
+        "file": "cephalopodlab_clam_geometry.test.js",
+        "passed": 5
+      },
+      {
+        "file": "cephalopodlab_crab_geometry.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_den_geometry.test.js",
+        "passed": 4
+      },
+      {
+        "file": "cephalopodlab_grouper_geometry.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_kelp_fronds.test.js",
+        "passed": 3
+      },
+      {
+        "file": "cephalopodlab_moon_jelly.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_moray_geometry.test.js",
+        "passed": 7
+      },
+      {
+        "file": "cephalopodlab_nautilus_eyes.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_prey_fish.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_prey_memory.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_reef_placement.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_streamed_den.test.js",
+        "passed": 4
+      }
+    ]
+  },
+  "browser": {
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "workers": 1,
+    "retries": 0,
+    "video": "off",
+    "trace": "off",
+    "evidence": [
+      "browser-results.json",
+      "browser-mission-results.json"
+    ],
+    "cases": [
+      {
+        "title": "accepted same-frame ink prevents a real grouper bite after a positive damage control",
+        "durationMs": 14426
+      },
+      {
+        "title": "the real moray keeps the same accepted-ink protection as the grouper",
+        "durationMs": 14265
+      },
+      {
+        "title": "ink freezes in pause and inspection then expires before a bite on the first expired frame",
+        "durationMs": 35548
+      },
+      {
+        "title": "a non-inking vampire squid cannot cancel a real bite by pressing I",
+        "durationMs": 12167
+      },
+      {
+        "title": "low moray and moon jellies render live anatomy and preserve shelter streaming and cleanup",
+        "durationMs": 25395
+      },
+      {
+        "title": "balanced moray and moon jellies render live anatomy and preserve shelter streaming and cleanup",
+        "durationMs": 25706
+      },
+      {
+        "title": "cover freezes the remembered prey position, then bounded search disengages",
+        "durationMs": 19325
+      },
+      {
+        "title": "search pauses with the dive and reacquires only after the player becomes visible",
+        "durationMs": 15508
+      },
+      {
+        "title": "a predator cannot bite through nearby rock cover or an active ink cloud",
+        "durationMs": 12541
+      },
+      {
+        "title": "target selection never catches a different nearby animal, and repeated catches persist",
+        "durationMs": 12880
+      },
+      {
+        "title": "reef mission requires both foods and a return home, then writes one debrief",
+        "durationMs": 14153
+      }
+    ],
+    "scope": "Low/balanced actual GPU submissions, native buffer/resource identity, pursuit/return, pause/inspection, preserved reduced-motion behavior and cleanup. Low quality also enters the first real streamed den, ray-checks ground and requires a protected moray encounter. Existing ink timing, search/cover, target selection and mission regressions pass."
+  },
+  "initialDefect": {
+    "evidence": "unit-moray-candidate.json",
+    "passed": 5,
+    "failed": 1,
+    "failedCase": "Cephalopod Hunter moray surface anatomy constructs finite indexed anatomy with unit visible normals, noncollapsed faces and complete part ranges",
+    "face": 759,
+    "resolution": "Separate shading vertices for median-fin underside, rim and end caps preserve exact surface points and triangle count while correcting smoothed normals; original strict visible-normal assertion now passes."
+  },
+  "visuals": {
+    "captures": [
+      "moray-oblique.png",
+      "moray-side.png",
+      "moray-face.png",
+      "moray-tail.png",
+      "moray-reef.png",
+      "jelly-oblique.png",
+      "jelly-crown.png",
+      "jelly-underside.png",
+      "moray-phone.png",
+      "jelly-phone.png",
+      "streamed-den-front.png",
+      "streamed-den-rear.png",
+      "streamed-den-phone.png"
+    ],
+    "errors": [],
+    "warnings": [
+      "[.WebGL-0x334c001b4e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x334c001b4e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x334c001b4e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x334c001b4e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    ],
+    "fixture": "visual-fixtures.json",
+    "seed": 2743,
+    "simTicks": 20,
+    "stepSeconds": 0.05,
+    "review": "Root and independent reviewers accepted all thirteen unobscured native desktop/phone views. All seeded creature states, ordered phases, fixed world cameras and actual streamed-den position/yaw/grounding match baseline exactly.",
+    "presentation": "Actual pause/resume isolates each counted frame from screenshot wall time; only the native pause veil is hidden for model QA. Scene actors/scenery/light/fog and other UI remain.",
+    "initialCaptureIssues": "First fixture let zero-delta live frames consume existing RNG between screenshots; strict streamed-den comparison rejected it. Actual pause/resume fixes isolation. A second set retained the pause veil; independent review rejected obscured evidence and both baseline/final were refreshed with an explicit hidden-veil assertion. No production or comparison-tolerance changes."
+  },
+  "resources": {
+    "moray": {
+      "before": {
+        "meshes": 4,
+        "materials": 4,
+        "geometries": 4,
+        "vertices": 199,
+        "triangles": 208,
+        "bufferBytes": 7616
+      },
+      "after": {
+        "meshes": 4,
+        "materials": 4,
+        "geometries": 4,
+        "vertices": 1164,
+        "triangles": 1856,
+        "bufferBytes": 53040
+      }
+    },
+    "morayHome": {
+      "before": {
+        "meshes": 1,
+        "materials": 1,
+        "geometries": 1,
+        "vertices": 153,
+        "triangles": 256,
+        "bufferBytes": 6432
+      },
+      "after": {
+        "meshes": 1,
+        "materials": 1,
+        "geometries": 1,
+        "vertices": 880,
+        "triangles": 400,
+        "bufferBytes": 34080
+      }
+    },
+    "moonJellyPerActor": {
+      "before": {
+        "meshes": 8,
+        "materials": 8,
+        "geometries": 8,
+        "vertices": 423,
+        "triangles": 502,
+        "bufferBytes": 16548
+      },
+      "after": {
+        "meshes": 8,
+        "materials": 8,
+        "geometries": 8,
+        "vertices": 1721,
+        "triangles": 2970,
+        "bufferBytes": 79776
+      }
+    },
+    "streamedDen": {
+      "before": {
+        "meshes": 5,
+        "materials": 3,
+        "geometries": 5,
+        "vertices": 126,
+        "triangles": 86,
+        "bufferBytes": 4548
+      },
+      "after": {
+        "meshes": 5,
+        "materials": 3,
+        "geometries": 5,
+        "vertices": 565,
+        "triangles": 302,
+        "bufferBytes": 20120
+      }
+    }
+  },
+  "limits": [
+    "Illustrative moray has a static mouth, tail and fin; whole-group AI movement remains. No animated jaw ventilation or body undulation.",
+    "Moon jellies use ordinary sorted alpha; no physical refraction, volumetric scattering or perfect internal triangle sorting.",
+    "Added geometry, bell normal uploads and reused rock fragment finish have real costs. Mesh/material slots remain unchanged; no FPS measurement or improvement claim.",
+    "Existing jelly pulse/drift/trails continue under reduced motion as before; pause and inspection freeze them.",
+    "Natural foreground vegetation can overlap the moray crevice in reef/phone views. No actors or scenery were hidden to improve composition.",
+    "The longest oral ribbon reaches the phone control row; captures establish readable anatomy, not fully unobscured trailing tips. Streamed-den interiors remain deliberately dark."
+  ]
+}
