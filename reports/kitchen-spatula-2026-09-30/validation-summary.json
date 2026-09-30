@@ -1,0 +1,210 @@
+{
+  "title": "Kitchen Lab spatula turning and two-face cooking visuals",
+  "validatedOn": "2026-09-30",
+  "summary": "Slide under a slice, lift it, turn it and lower it before releasing to record a canonical flip. Both cut faces use their recorded cooking colors; incomplete or cancelled gestures leave cooking state unchanged.",
+  "unit": {
+    "command": "npx vitest run tests/kitchen_recipe --pool=forks --maxWorkers=1 --testTimeout=30000",
+    "suites": 32,
+    "tests": 360,
+    "passed": true,
+    "durationSeconds": 139.99
+  },
+  "focusedAfterCoachingCopy": {
+    "command": "npx vitest run tests/kitchen_recipe_turning.test.js tests/kitchen_recipe_gesture_guide.test.js --pool=forks --maxWorkers=1 --testTimeout=30000",
+    "suites": 2,
+    "tests": 23,
+    "passed": true,
+    "durationSeconds": 39.85
+  },
+  "browser": {
+    "scenarioChecks": 26,
+    "accessibilityScans": 13,
+    "accessibilityViolations": 0,
+    "pageErrors": 0,
+    "turning": {
+      "checks": [
+        "A tap and a turned-but-still-lifted slice record no action, cooking time or food change.",
+        "Escape, incorrect directions and pointer cancellation restore the slice and spatula without saving a turn.",
+        "Only a complete slide, lift, turn, lower and release records one canonical flip. Actual surface colors, width, position and prior damage are preserved.",
+        "Native turn provenance survives reload; its close-up opens the same slice without changing cooking evidence.",
+        "The keyboard equivalent focuses the selected slice and uses the same canonical flip without advancing cooking time.",
+        "Turning also works for tomato pieces in a wide pan on the trivet, using the pan’s actual position.",
+        "Picking up the spatula pauses a running kitchen and holds cooking time during the movement.",
+        "After deliberate placement, Pan explorer routes into the spatula routine or its keyboard controls without automatically turning anything.",
+        "A real phone touch completes all four movements and records a single turn; the page fits 390px and passes accessibility checks.",
+        "Replay reconstructs the recorded turn while keeping physical and keyboard cooking controls read-only.",
+        "Compact and forced-color layouts pass. Graphics loss cancels a lifted slice and leaves the keyboard equivalent usable."
+      ],
+      "errors": [],
+      "accessibility": [
+        {
+          "name": "Desktop spatula",
+          "violations": []
+        },
+        {
+          "name": "390px touch spatula",
+          "violations": []
+        },
+        {
+          "name": "320px spatula",
+          "violations": []
+        },
+        {
+          "name": "Forced-color spatula",
+          "violations": []
+        },
+        {
+          "name": "Graphics-loss turn controls",
+          "violations": []
+        }
+      ],
+      "pass": true
+    },
+    "quests": {
+      "checks": [
+        "Opening quests or tools changes no evidence. Keyboard launches focus the required wash, rinse, and cutting controls.",
+        "A real spatula slide, lift, turn and lower completes the pan quest only after accepted placement and produce actions.",
+        "A circular spoon gesture and a keyboard sauce check complete the sauce quest, with identical progress after reloading. Supplied rescue work earns no prep or pan steps.",
+        "The quest panel travels into the expanded kitchen, restores tool focus, and fits 320px text view without overflow.",
+        "Real replay navigation shows historical quest observations with both launch methods locked and leaves the finished cook unchanged.",
+        "Graphics-loss fallback retains quest routes and observations without advancing time or cooking."
+      ],
+      "errors": [],
+      "accessibility": [
+        {
+          "name": "Completed quest",
+          "violations": []
+        },
+        {
+          "name": "320px text-view quest",
+          "violations": []
+        },
+        {
+          "name": "Graphics-loss fallback",
+          "violations": []
+        }
+      ],
+      "pass": true
+    },
+    "lens": {
+      "checks": [
+        "A real pointer drag scans multiple food pieces and magnifies the actual 3D canvas. Release selects the view without cooking actions, time or evidence.",
+        "Escape cancels the lens overlay and leaves the cook unchanged.",
+        "Grabbing the lens pauses a running kitchen for an observation.",
+        "Keyboard selection and keeping a view pause the kitchen. Real turning and time advancement update only the current observation; the kept view remains intact.",
+        "Cut labels distinguish unequal widths; sketches show the recorded upward face. Text view offers the same observations and comparisons without changing the cook.",
+        "A fresh cook clears kept observations and disables the lens until food is in the pan.",
+        "Replay observes its historical pan frame, allows comparisons within that recording, and never reads the final dish as an earlier observation or alters stored evidence.",
+        "Real touch scans pieces at 390px, shows the magnifier, and leaves the cook unchanged with no horizontal overflow.",
+        "The lens fits 320px and forced colors. Graphics loss cancels an active lens and retains working observation controls."
+      ],
+      "errors": [],
+      "accessibility": [
+        {
+          "name": "Desktop food lens",
+          "violations": []
+        },
+        {
+          "name": "Text view food comparisons",
+          "violations": []
+        },
+        {
+          "name": "Recorded food observation",
+          "violations": []
+        },
+        {
+          "name": "320px food lens",
+          "violations": []
+        },
+        {
+          "name": "Forced-color observations",
+          "violations": []
+        }
+      ],
+      "pass": true
+    }
+  },
+  "runtime": {
+    "mirroredAssets": 38,
+    "parsed": true,
+    "previewHTTP200": true,
+    "previewCurrentBytes": true,
+    "previewCacheControl": "no-store",
+    "sha256": {
+      "recipe_lab.css": "e84032f57bd765b3172dc08cf1e744af9d19311cbde46242ad9350ddfad28f8d",
+      "recipe_lab.html": "65d1dc9711b9fe959f6599e91ea9c996e027462170b87e74a7dcfad3d5425f80",
+      "recipe_lab.js": "8f82094958875a380f58cb9b55f209dbf17b2fcc1f16f027dda1e5204d282f55",
+      "recipe_lab_burners.js": "fc13e8382c8c1940db07f38840f8792a9a6e8ec34b5edf346bfb4847a674a5da",
+      "recipe_lab_clock.js": "f0af8135f141588689bcc6d004db730994fa9f15e5a70ecb1e7d8d593a10a743",
+      "recipe_lab_compare.js": "ffd184c76d0706e94a043bd27e31547951afa692146775fcdac1f8bafe6d65f8",
+      "recipe_lab_compare_ui.js": "c9bebada0dc61b890323d9d76d8a738dc6e9a29a8bba40403198be7b5f3b4e31",
+      "recipe_lab_cooking.js": "ddd3474366e83027d52031921b23dd7c43db4315d4cd0444ba856723cdd9dfdb",
+      "recipe_lab_crushing.js": "e9aa848a97107a6cb80193d372ec34f5149a4ee8fed5e874f3c1bfd8f82e086c",
+      "recipe_lab_drying.js": "69618c1a37706e230118826bb13b0dece8e5de894cd28ff531e388a470d289f1",
+      "recipe_lab_engine.js": "c30a28cfcc051990d09d267d413676714bc738606c842ff37947f07fe27303c5",
+      "recipe_lab_food.js": "dfbfd05a8538d02d6dcfbcb25a3c9a8e2c3afae97f1bf25787ab917791bc66cd",
+      "recipe_lab_garlic.js": "9a81e36b0bad51d7cd39dce7dd31f914ec703767311961ed8d173e0d59c66657",
+      "recipe_lab_gesture_guide.js": "28aa592e1a080815e78d2c2f960a5b02cb5d9a5bd7b3037ef58874687c65694d",
+      "recipe_lab_hands.css": "6e30f8509cf331c3cc17d0712457255cae159d769056e778a5105ef3ed18530a",
+      "recipe_lab_hands.js": "b115f419aca66fa35181e1819a9ede342e16f9b01ed39e61067a7aa10e62b679",
+      "recipe_lab_hands_ui.js": "a890c318c4c80636df5d398a0ec815aac60c4678494ceb8f180d3c837526cdb3",
+      "recipe_lab_heat.js": "d9e25766b4c2005c7dfb99f12b8cf8512ae3bfd117decbd064a9b5646cbcff88",
+      "recipe_lab_ingredients.css": "58885e362ce048284bca0779a269051d252143703664e4222f2564d94f955667",
+      "recipe_lab_ingredients.js": "c06ce047aa43b0b7dcd5687251dbdd1291cedf9b68ffaf10f6164b0514f3c479",
+      "recipe_lab_inspection.css": "2a9194923e65353c885d66a3b0802f07cf451b160306ee83cb6ac92bdfdc17c6",
+      "recipe_lab_inspection.js": "ac6485ff8acd368f8956d3603821d10b119a423f378023b2e07a8207781c5a05",
+      "recipe_lab_lens.css": "99116e5413f581a769e328c6a0a6e158a2fc7b01a7366cca7a373ab040a654d0",
+      "recipe_lab_lens.js": "56487cb6924c5cdc696b52fd36ff05833296ae390c269c336f78523c64872a43",
+      "recipe_lab_oil.js": "e54f817608314c70cca2ddfeb5c01820017967cbea2571d315ad841c0fedd1e7",
+      "recipe_lab_pasta.js": "12a42b94b7df3de4ca1cece5edb94e5de2de33267447fa1ae9d0f2cdec30d989",
+      "recipe_lab_quests.css": "ac5ffaa0fb7cf040b3a8464852ce8673fa76308ab9292ef3d11ef1deb871e615",
+      "recipe_lab_quests.js": "db937891c813346d789dfcdc56f2359e775b5e5d7fb04107a88138446083e8b4",
+      "recipe_lab_sampling.js": "ef2d8b0634a997ae9597504a46c55fd2fd0868d0fe877ed457b358dd25531471",
+      "recipe_lab_scene.js": "17cab720eed96c3252121e43051379eb2a31249949b7533e35e7a3ab504b7682",
+      "recipe_lab_serving.js": "c1ed67739ac6e2bdb0d1eb4e8691d4e30f4261d7fdedf52247db042e0e518be0",
+      "recipe_lab_stir.js": "4cbcd9c8a3607c2df59ee53e88563134f5bc774ba4a8dc7e045283ce44d9c1dc",
+      "recipe_lab_turning.js": "e749131e7493e15cf89a7d2c166259feee26a27453549198df73815a65c30ebf",
+      "recipe_lab_visuals.js": "a6d95bc086c3d3b1c5989bdc184e6e3459645e56f5988ad915b7199575ae3cf1",
+      "recipe_lab_water.js": "d41a20e3c9a9244923e4481466d688a7e29ba4522eb134742ace9638fe4fbd52",
+      "recipe_lab_weighing.js": "e91f7a0f3a05b902bbff162a4f82688dccc48df9a8104ea12ca29c7ad3da5ce4",
+      "recipe_lab_workspace.css": "c03a96e1a75454755d86a108a96c31c69aa327457cf7fc084b3c27e0d3cef439",
+      "recipe_lab_workspace.js": "8502cee0f8c28de14143c6b340869987789540d17a87ea39812a1ed7685c1ddc"
+    }
+  },
+  "visualReview": [
+    "lift-slice.png",
+    "turn-slice-two-faces.png",
+    "compare-cut-faces.png",
+    "phone-turn-preview.png",
+    "phone-spatula.png",
+    "compact-face-comparison.png",
+    "turn-tomato-on-trivet.png"
+  ],
+  "preview": "http://127.0.0.1:53061/stem_lab/kitchen_studio/recipe_lab.html?v=20260930-spatula",
+  "scopedFiles": [
+    "stem_lab/kitchen_studio/recipe_lab_turning.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_turning.js",
+    "stem_lab/kitchen_studio/recipe_lab.html",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab.html",
+    "stem_lab/kitchen_studio/recipe_lab.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab.js",
+    "stem_lab/kitchen_studio/recipe_lab_scene.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_scene.js",
+    "stem_lab/kitchen_studio/recipe_lab_engine.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_engine.js",
+    "stem_lab/kitchen_studio/recipe_lab_workspace.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_workspace.js",
+    "stem_lab/kitchen_studio/recipe_lab_workspace.css",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_workspace.css",
+    "stem_lab/kitchen_studio/recipe_lab_food.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_food.js",
+    "stem_lab/kitchen_studio/recipe_lab_gesture_guide.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_gesture_guide.js",
+    "stem_lab/kitchen_studio/recipe_lab_quests.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_quests.js",
+    "tests/kitchen_recipe_turning.test.js",
+    "dev-tools/kitchen_recipe_turning_qa.cjs",
+    "dev-tools/kitchen_recipe_quests_qa.cjs",
+    "reports/kitchen-spatula-2026-09-30/validation-summary.json"
+  ]
+}

@@ -2,7 +2,7 @@
 (function(root){
   'use strict';
   function mount(h){
-    var T=h.THREE,R=root.KitchenRecipes,textures={},shapes={},rows=[];
+    var T=h.THREE,R=root.KitchenRecipes,textures={},shapes={},rows=[],panRows=[];
     var tones={pale:'#ffffff',golden:'#dfb26e',dark:'#926744',scorched:'#574134',firm:'#ffffff',softened:'#dda994'};
     function texture(kind){
       if(textures[kind])return textures[kind];
@@ -44,24 +44,28 @@
       var face=new T.ShapeGeometry(shape,12),uv=face.attributes.uv,pos=face.attributes.position;
       for(var i=0;i<uv.count;i++)uv.setXY(i,(pos.getX(i)+.15)/.3,(pos.getY(i)+.14)/.29);
       face.rotateX(-Math.PI/2);face.translate(0,bottom+depth+.001,0);face.scale(.96,1,.96);
-      shapes[kind]={body:body,face:face,bottom:bottom};return shapes[kind];
+      var back=face.clone();back.translate(0,-depth-.002,0);shapes[kind]={body:body,face:face,back:back,bottom:bottom};return shapes[kind];
     }
     function detail(g,parent,color){var o=h.mesh(g,color,0,0,0,parent);o.userData.sceneDecoration=true;return o;}
     function layer(kind,parent){
-      var model=new T.Group();parent.add(model);var g=geometry(kind),body=detail(g.body,model,'#ffffff'),face=detail(g.face,model,'#ffffff');
+      var model=new T.Group();parent.add(model);var g=geometry(kind),body=detail(g.body,model,'#ffffff'),face=detail(g.face,model,'#ffffff'),back=detail(g.back,model,'#ffffff');
+      back.material.map=texture(kind==='mushroom'?'mushroom':'tomato');back.material.side=T.DoubleSide;back.material.needsUpdate=true;
       face.material.map=texture(kind==='mushroom'?'mushroom':'tomato');face.material.bumpMap=face.material.map;face.material.bumpScale=.0008;face.material.needsUpdate=true;
-      return {group:model,body:body,face:face};
+      return {group:model,body:body,face:face,back:back};
     }
     function add(proxy,index,size,floor,serving){
       // Keep the original generous hit volume so small pieces remain easy to manipulate.
       proxy.material.visible=false;proxy.castShadow=false;
       var group=new T.Group();group.scale.setScalar(size);group.rotation.y=index*2.399;proxy.add(group);
-      rows.push({proxy:proxy,index:index,size:size,floor:floor,serving:serving,group:group,models:{}});
+      var row={proxy:proxy,index:index,size:size,floor:floor,serving:serving,group:group,baseY:null,models:{}};rows.push(row);return row;
     }
-    h.pan.forEach(function(o,i){add(o,i,1,1.438,false);});
+    h.pan.forEach(function(o,i){panRows.push(add(o,i,1,1.438,false));});
     h.plate.forEach(function(o,i){add(o,i,.1/.12,1.285,false);});
     h.serving.forEach(function(plate,i){plate.topping.forEach(function(o,k){add(o,(i*4+k)%14,.052/.12,1.313,true);});});
+    function resetTurn(){panRows.forEach(function(row){row.proxy.rotation.z=0;if(row.baseY!==null)row.proxy.position.y=row.baseY;});}
+    function previewTurn(index,lift,angle){var row=panRows[index];if(!row||row.baseY===null)return;row.proxy.position.y=row.baseY+.33*lift;row.proxy.rotation.z=angle;}
     function update(s){
+      resetTurn();
       var red=s.id==='tomato',pieces=R.panSurface(s).pieces,target=R.cutProfile(s).target;
       h.stems.forEach(function(o){o.visible=false;});
       rows.forEach(function(row){
@@ -73,15 +77,15 @@
         Object.keys(row.models).forEach(function(key){row.models[key].forEach(function(o){o.group.visible=key===name;});});
         row.group.userData.foodShape=name;
         if(row.serving){var scale=Math.max(.5,Math.min(1.7,(piece&&piece.width||target)/target));row.proxy.scale.set(scale*(1+stage*.18),.55*scale*(1-stage*.3),scale*(1+stage*.18));}
-        row.proxy.position.y=row.floor+(red?.075:.1)*row.size*row.proxy.scale.y;
+        row.proxy.position.y=row.floor+(red?.075:.1)*row.size*row.proxy.scale.y;row.baseY=row.proxy.position.y;
         row.models[name].forEach(function(o){
           o.body.material.color.copy(row.proxy.material.color);o.body.material.roughness=row.proxy.material.roughness;
           o.face.material.color.set(tones[piece&&piece.topColor]||'#ffffff').convertSRGBToLinear();o.face.material.roughness=row.proxy.material.roughness;
-          o.face.material.emissive.copy(row.proxy.material.emissive);
+          o.face.material.emissive.copy(row.proxy.material.emissive);o.back.material.color.set(tones[piece&&piece.bottomColor]||'#ffffff').convertSRGBToLinear();o.back.material.roughness=row.proxy.material.roughness;
         });
       });
     }
-    return {update:update,dispose:function(){Object.keys(textures).forEach(function(key){textures[key].dispose();});}};
+    return {update:update,previewTurn:previewTurn,resetTurn:resetTurn,dispose:function(){Object.keys(textures).forEach(function(key){textures[key].dispose();});}};
   }
   root.KitchenFoodDetails={mount:mount};
 })(typeof window!=='undefined'?window:globalThis);

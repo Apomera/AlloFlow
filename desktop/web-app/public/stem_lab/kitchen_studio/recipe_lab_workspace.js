@@ -13,6 +13,7 @@
     ['drain','pot','Drain pasta','Lift & tilt','Move the pot over the colander, then pull down to tilt.','M4 4l12 3-3 8-12-3zM14 17h8l-2 5h-4z'],
     ['stir','pan','Stir & fold','Trace a circle','Sweep a full circle through the sauce pan.','M4 13a7 5 0 1 0 14 0a7 5 0 1 0-14 0M16 4l-5 10M18 12l4-4'],
     ['inspect','pan','Inspect food','Slide the lens','Drag across visible pieces to look closely; keep a view to compare.','M15 15l6 6M10 3a7 7 0 1 0 0 14a7 7 0 1 0 0-14'],
+    ['turn','pan','Turn a slice','Slide, lift & lower','Slide right underneath a slice, lift, sweep left to turn, then lower and release.','M4 15h9v5H4zM8 15V4M17 5l4 4-4 4M21 9h-7'],
     ['arrange','pan','Turn & spread','Move each piece','Drag pieces to give them room; tap a piece to turn it.','M4 12a8 8 0 1 0 16 0a8 8 0 1 0-16 0M8 9h3M14 14h3M8 16h2'],
     ['crush','pan','Press tomatoes','Press & release','Press softened tomato pieces to release their juice.','M12 3v12M6 15h12v5H6zM9 15v5M15 15v5'],
     ['pour','pan','Add saved water','Carry & pour','Hold the saved-water jug over the pan to add a splash.','M4 4h10v14H6zM14 7h4v6h-4M19 19l2 2'],
@@ -37,6 +38,7 @@
     if(id==='sample')need(!root.KitchenSampling.available(s,false).ready,root.KitchenSampling.available(s,false).detail);
     if(id==='ladle')need(!R.waterHandling(s).scoop,'The pot needs cooking water and pasta, with room left in the saved-water allowance.');
     if(id==='drain')need(!p.pasta||p.drained||!p.sample,p.drained?'The pasta is drained. Carry the colander into the sauce pan.':'Check a pasta sample before lifting the pot to drain.');
+    if(id==='turn')need(!root.KitchenTurning.available(s,0,false).ready,root.KitchenTurning.available(s,0,false).detail);
     if(id==='inspect')need(!root.KitchenFoodLens.available(s),'Add prepared produce to the pan to examine its pieces.');
     if(id==='stir'||id==='arrange')need(!n.produce||id==='arrange'&&s.panModel!==2,'Add prepared produce to the pan before working with its pieces.');
     if(id==='crush')need(s.id!=='tomato'||s.tomatoModel!==1||!n.produce,'Use a fresh tomato recipe and add its prepared tomatoes to the pan.');
@@ -57,7 +59,7 @@
     if(id==='ladle'&&hit.item==='ladle')name='Ladle';
     if(id==='pour'&&hit.item==='jug')name='Saved-water jug';
     if((id==='stir'||id==='pan'||id==='serve')&&(hit.pan||hit.piece!==undefined))name='Sauce pan';
-    if((id==='arrange'||id==='crush'||id==='inspect')&&hit.piece!==undefined)name='Piece '+(hit.piece+1);
+    if((id==='turn'||id==='arrange'||id==='crush'||id==='inspect')&&hit.piece!==undefined)name='Piece '+(hit.piece+1);
     if(id==='serve'&&hit.servingPlate!==undefined)name='Plate '+(hit.servingPlate+1);
     if(!name)return null;var status=id==='burner'?root.KitchenBurnerDials.available(s,hit.burner,locked):availability(s,id,locked),R=root.KitchenRecipes;if(status.ready&&id==='mince'){var clove=R.garlicPreparation(s).cloves[hit.garlic];if(!clove||clove.stage===3)status={ready:false,detail:'This clove is already minced. Choose another clove.'};}if(status.ready&&id==='crush'){var tomato=R.tomatoHandling(s).pieces[hit.piece];if(!tomato||tomato.stage===2)status={ready:false,detail:'This piece has released its juice. Fold it through the sauce.'};}if(status.ready&&id==='serve'){var portion=R.serving(s);if(hit.servingPlate!==undefined&&!portion.plates[hit.servingPlate])status={ready:false,detail:'This plate is empty. Carry a spoonful from the pan onto it.'};else if(hit.servingPlate===undefined&&!portion.remaining)status={ready:false,detail:'The pan is empty. Rebalance the plates or finish serving.'};}return {name:name,ready:status.ready,detail:status.detail};
   }
