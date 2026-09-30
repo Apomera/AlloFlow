@@ -33587,7 +33587,14 @@
       "practice_flow_spotter_question_help": "Elige una respuesta o usa las teclas del 1 al 4 mientras la pregunta está seleccionada.",
       "practice_flow_spotter_return_feedback": "Volver al resultado",
       "practice_flow_spotter_return_question": "Volver a la pregunta",
-      "practice_flow_spotter_your_answer": "Tu respuesta"
+      "practice_flow_spotter_your_answer": "Tu respuesta",
+      "study_ref_card_diagram_help": "Observa esta estructura en el atlas y vuelve a la misma tarjeta. Tu posición y tus evaluaciones quedan guardadas.",
+      "study_ref_card_keyboard": "Con esta tarjeta seleccionada: las flechas cambian de tarjeta; Espacio muestra u oculta la función. Después de mostrarla: 1 = Necesito practicar, 2 = Estoy aprendiendo, 3 = Ya lo sé.",
+      "study_ref_card_return": "Volver a la tarjeta",
+      "study_ref_card_return_label": "Volver a la tarjeta de {name}",
+      "study_ref_search_filter_empty": "Coincidencias para “{query}” en esta vista: {count}. Ninguna coincide con el filtro de estudio «{filter}».",
+      "study_ref_search_filter_help": "Muestra todas las coincidencias en esta vista o elige otro filtro de estudio.",
+      "study_ref_search_show_matching": "Mostrar todas las estructuras que coinciden"
     },
     "dna": {
       "back_to_tools": "Volver a las herramientas",

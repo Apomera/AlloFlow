@@ -30953,7 +30953,14 @@
       "practice_flow_spotter_question_help": "اختر إجابة واحدة، أو استخدم المفاتيح من 1 إلى 4 عندما يكون السؤال محددًا.",
       "practice_flow_spotter_return_feedback": "العودة إلى النتيجة",
       "practice_flow_spotter_return_question": "العودة إلى السؤال",
-      "practice_flow_spotter_your_answer": "إجابتك"
+      "practice_flow_spotter_your_answer": "إجابتك",
+      "study_ref_card_diagram_help": "تفحّص هذه البنية في الأطلس، ثم عد إلى البطاقة نفسها. يُحفظ موضعك وتقييماتك.",
+      "study_ref_card_keyboard": "عند التركيز على هذه البطاقة: تنقلك الأسهم بين البطاقات، ويُظهر مفتاح المسافة الوظيفة أو يخفيها. بعد إظهارها: 1 = أحتاج إلى تدريب، 2 = ما زلت أتعلم، 3 = فهمت.",
+      "study_ref_card_return": "العودة إلى البطاقة",
+      "study_ref_card_return_label": "العودة إلى بطاقة {name}",
+      "study_ref_search_filter_empty": "نتائج «{query}» في هذا العرض: {count}. لا توجد نتائج تطابق مرشّح الدراسة «{filter}».",
+      "study_ref_search_filter_help": "اعرض جميع النتائج في هذا العرض، أو اختر مرشّح دراسة مختلفًا.",
+      "study_ref_search_show_matching": "عرض جميع البنى المطابقة"
     },
     "dna": {
       "back_to_tools": "العودة إلى الأدوات",

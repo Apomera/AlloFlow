@@ -32005,7 +32005,14 @@
       "practice_flow_spotter_question_help": "Choisis une réponse, ou utilise les touches 1 à 4 quand la question est sélectionnée.",
       "practice_flow_spotter_return_feedback": "Revenir au résultat",
       "practice_flow_spotter_return_question": "Revenir à la question",
-      "practice_flow_spotter_your_answer": "Ta réponse"
+      "practice_flow_spotter_your_answer": "Ta réponse",
+      "study_ref_card_diagram_help": "Observe cette structure dans l’atlas, puis reviens à la même carte. Ta place et tes évaluations restent enregistrées.",
+      "study_ref_card_keyboard": "Quand cette carte a le focus : les flèches changent de carte, Espace affiche ou masque la fonction. Après affichage : 1 = À travailler, 2 = En apprentissage, 3 = Compris.",
+      "study_ref_card_return": "Revenir à la carte",
+      "study_ref_card_return_label": "Revenir à la carte sur {name}",
+      "study_ref_search_filter_empty": "Résultats pour « {query} » dans cette vue : {count}. Aucun ne correspond au filtre d’étude « {filter} ».",
+      "study_ref_search_filter_help": "Affiche tous les résultats dans cette vue, ou choisis un autre filtre d’étude.",
+      "study_ref_search_show_matching": "Afficher toutes les structures correspondantes"
     },
     "dna": {
       "back_to_tools": "Retour aux outils",

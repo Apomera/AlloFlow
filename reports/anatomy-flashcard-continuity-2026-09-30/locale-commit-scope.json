@@ -1,0 +1,80 @@
+[
+  {
+    "path": "lang/french.js",
+    "keys": [
+      "study_ref_card_diagram_help",
+      "study_ref_card_keyboard",
+      "study_ref_card_return",
+      "study_ref_card_return_label",
+      "study_ref_search_filter_empty",
+      "study_ref_search_filter_help",
+      "study_ref_search_show_matching"
+    ],
+    "hash": "bebf6b618b3056ef3d92f991815a7da845e5a4c6cd278dc4da896a986adb7439"
+  },
+  {
+    "path": "desktop/web-app/public/lang/french.js",
+    "keys": [
+      "study_ref_card_diagram_help",
+      "study_ref_card_keyboard",
+      "study_ref_card_return",
+      "study_ref_card_return_label",
+      "study_ref_search_filter_empty",
+      "study_ref_search_filter_help",
+      "study_ref_search_show_matching"
+    ],
+    "hash": "bebf6b618b3056ef3d92f991815a7da845e5a4c6cd278dc4da896a986adb7439"
+  },
+  {
+    "path": "lang/spanish_latin_america.js",
+    "keys": [
+      "study_ref_card_diagram_help",
+      "study_ref_card_keyboard",
+      "study_ref_card_return",
+      "study_ref_card_return_label",
+      "study_ref_search_filter_empty",
+      "study_ref_search_filter_help",
+      "study_ref_search_show_matching"
+    ],
+    "hash": "7f00a7f158d3d3f0a0e7b0f4b6db45e974c66092c7a9f17b3f96fc8ae2d1f075"
+  },
+  {
+    "path": "desktop/web-app/public/lang/spanish_latin_america.js",
+    "keys": [
+      "study_ref_card_diagram_help",
+      "study_ref_card_keyboard",
+      "study_ref_card_return",
+      "study_ref_card_return_label",
+      "study_ref_search_filter_empty",
+      "study_ref_search_filter_help",
+      "study_ref_search_show_matching"
+    ],
+    "hash": "7f00a7f158d3d3f0a0e7b0f4b6db45e974c66092c7a9f17b3f96fc8ae2d1f075"
+  },
+  {
+    "path": "lang/arabic.js",
+    "keys": [
+      "study_ref_card_diagram_help",
+      "study_ref_card_keyboard",
+      "study_ref_card_return",
+      "study_ref_card_return_label",
+      "study_ref_search_filter_empty",
+      "study_ref_search_filter_help",
+      "study_ref_search_show_matching"
+    ],
+    "hash": "402d937d56d5427012fffdcfcc60923e1763a24078f3095c8e8d2982cafb89aa"
+  },
+  {
+    "path": "desktop/web-app/public/lang/arabic.js",
+    "keys": [
+      "study_ref_card_diagram_help",
+      "study_ref_card_keyboard",
+      "study_ref_card_return",
+      "study_ref_card_return_label",
+      "study_ref_search_filter_empty",
+      "study_ref_search_filter_help",
+      "study_ref_search_show_matching"
+    ],
+    "hash": "402d937d56d5427012fffdcfcc60923e1763a24078f3095c8e8d2982cafb89aa"
+  }
+]

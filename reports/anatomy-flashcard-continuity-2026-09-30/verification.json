@@ -1,0 +1,220 @@
+{
+  "uniqueUnitChecks": 286,
+  "uniqueUnitSuites": 12,
+  "initialUnitChecks": 272,
+  "finalTargetedChecks": 286,
+  "lastUnitReport": "completed-unit-results.json",
+  "lastUnitRunChecks": 286,
+  "unitResultsMergedBy": "fullName",
+  "allEffectiveUnitChecksPassed": true,
+  "unitRuns": [
+    {
+      "file": "initial-unit-results.json",
+      "assertions": 272,
+      "passed": 265,
+      "failed": 7
+    },
+    {
+      "file": "final-unit-results.json",
+      "assertions": 280,
+      "passed": 280,
+      "failed": 0
+    },
+    {
+      "file": "completed-unit-results.json",
+      "assertions": 286,
+      "passed": 286,
+      "failed": 0
+    }
+  ],
+  "requiredUnitCounts": {
+    "anatomy_flashcard_continuity.test.js": 54,
+    "anatomy_search_continuity.test.js": 56
+  },
+  "browserScenarios": 2,
+  "browserValidation": [
+    {
+      "file": "study-browser-validation.json",
+      "label": "Flashcards and Search",
+      "scans": 30,
+      "violations": 0,
+      "measurements": [
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "study-browser-validation.json.flashcards.scans[0].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "study-browser-validation.json.flashcards.scans[1].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "study-browser-validation.json.flashcards.scans[2].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "study-browser-validation.json.flashcards.scans[3].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "study-browser-validation.json.flashcards.scans[4].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "study-browser-validation.json.flashcards.scans[5].dimensions"
+        },
+        {
+          "width": 768,
+          "scroll": 768,
+          "location": "study-browser-validation.json.flashcards.scans[6].dimensions"
+        },
+        {
+          "width": 768,
+          "scroll": 768,
+          "location": "study-browser-validation.json.flashcards.scans[7].dimensions"
+        },
+        {
+          "width": 768,
+          "scroll": 768,
+          "location": "study-browser-validation.json.flashcards.scans[8].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "study-browser-validation.json.flashcards.scans[9].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "study-browser-validation.json.flashcards.scans[10].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "study-browser-validation.json.flashcards.scans[11].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "study-browser-validation.json.flashcards.scans[12].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "study-browser-validation.json.flashcards.scans[13].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "study-browser-validation.json.flashcards.scans[14].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "study-browser-validation.json.search.scans[0].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "study-browser-validation.json.search.scans[1].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "study-browser-validation.json.search.scans[2].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "study-browser-validation.json.search.scans[3].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "study-browser-validation.json.search.scans[4].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "study-browser-validation.json.search.scans[5].dimensions"
+        },
+        {
+          "width": 768,
+          "scroll": 768,
+          "location": "study-browser-validation.json.search.scans[6].dimensions"
+        },
+        {
+          "width": 768,
+          "scroll": 768,
+          "location": "study-browser-validation.json.search.scans[7].dimensions"
+        },
+        {
+          "width": 768,
+          "scroll": 768,
+          "location": "study-browser-validation.json.search.scans[8].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "study-browser-validation.json.search.scans[9].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "study-browser-validation.json.search.scans[10].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "study-browser-validation.json.search.scans[11].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "study-browser-validation.json.search.scans[12].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "study-browser-validation.json.search.scans[13].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "study-browser-validation.json.search.scans[14].dimensions"
+        }
+      ],
+      "errorArraysChecked": 2
+    }
+  ],
+  "accessibilityScans": 30,
+  "accessibilityViolations": 0,
+  "browserErrors": [],
+  "sourceSha256": "68a9c0071276f3deba24662ba3582812162c29d9510da46663eb221d5087cca3",
+  "sourceHashLineEndings": "LF",
+  "sourceMirrorsMatch": true,
+  "canonicalSyntaxCheckPassed": true,
+  "localeCandidateMirrorsMatch": true,
+  "localeLabelsPerPack": 7,
+  "localeKeys": [
+    "study_ref_card_diagram_help",
+    "study_ref_card_keyboard",
+    "study_ref_card_return",
+    "study_ref_card_return_label",
+    "study_ref_search_filter_empty",
+    "study_ref_search_filter_help",
+    "study_ref_search_show_matching"
+  ],
+  "localeCandidateHashes": {
+    "french": "bebf6b618b3056ef3d92f991815a7da845e5a4c6cd278dc4da896a986adb7439",
+    "spanish_latin_america": "7f00a7f158d3d3f0a0e7b0f4b6db45e974c66092c7a9f17b3f96fc8ae2d1f075",
+    "arabic": "402d937d56d5427012fffdcfcc60923e1763a24078f3095c8e8d2982cafb89aa"
+  },
+  "requiredCommitExtraTests": []
+}
