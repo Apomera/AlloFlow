@@ -499,11 +499,60 @@
     if (needsDrying) shape('path', {d:'M87 56Q79 66 79 71A8 8 0 0 0 95 71Q95 66 87 56Z',fill:'#a8d2dc',stroke:'#375762','stroke-width':2});
     return svg;
   }
+  function renderWardrobeComparison() {
+    var ready = latestView.scene.clothingReady;
+    byId('wardrobeComparison').hidden = ready;
+    if (ready) return;
+    var examples = Object.keys(wardrobeNames).map(function (id) { return { id: id, timing: wardrobeTiming(E.previewAction(current, id)) }; });
+    var currentMinute = examples[0].timing.travel.minimumDeparture;
+    var chosen = examples[0].timing.travel.routes.find(function (route) { return route.selected; });
+    var longest = Math.max.apply(null, examples.map(function (example) { return example.timing.minutes; }));
+    var busMinutes = chosen && chosen.scheduledDeparture !== null ? chosen.scheduledDeparture - currentMinute : null;
+    var span = Math.max(longest, busMinutes || 0);
+    var axis = byId('wardrobeComparisonAxis'); axis.replaceChildren();
+    axis.appendChild(node('span', '', 'Now ' + examples[0].timing.before));
+    axis.appendChild(node('span', '', busMinutes !== null && busMinutes >= longest ? chosen.label + ' leaves' : examples.find(function (example) { return example.timing.minutes === longest; }).timing.after));
+    var rows = byId('wardrobeTimelines'); rows.replaceChildren();
+    examples.forEach(function (example) {
+      var selected = wardrobePreview && wardrobePreview.actionId === example.id;
+      var row = node('li', selected ? 'wardrobe-timeline wardrobe-timeline-selected' : 'wardrobe-timeline'); row.dataset.outfitTiming = example.id;
+      var heading = node('div', 'wardrobe-timeline-heading');
+      var label = node('strong', '', wardrobeNames[example.id]);
+      if (selected) label.appendChild(node('small', '', 'Exploring this outfit'));
+      heading.append(label, node('span', '', 'Ready ' + example.timing.after));
+      var track = node('div', 'wardrobe-compare-track'); track.setAttribute('aria-hidden', 'true');
+      var bar = node('span', example.id === 'prepare_clothes' ? 'wardrobe-compare-bar wardrobe-compare-drying' : 'wardrobe-compare-bar');
+      bar.style.width = (example.timing.minutes / span * 100) + '%'; track.appendChild(bar);
+      if (busMinutes !== null && busMinutes >= 0 && busMinutes <= span) {
+        var marker = node('i', 'wardrobe-bus-marker'); marker.style.left = (busMinutes / span * 100) + '%'; track.appendChild(marker);
+      }
+      var detail = node('p', 'wardrobe-timeline-detail', example.timing.minutes + ' minutes for clothes');
+      var route = example.timing.travel.routes.find(function (item) { return item.selected; });
+      if (route) {
+        var outcome;
+        if (route.scheduledDeparture !== null) {
+          var remaining = route.scheduledDeparture - example.timing.travel.departureMinute;
+          var unit = Math.abs(remaining) === 1 ? ' minute' : ' minutes';
+          outcome = remaining > 0 ? remaining + unit + ' before the bus leaves' : remaining === 0 ? 'At bus departure · no time for other preparation' : 'Bus leaves ' + Math.abs(remaining) + unit + ' before clothes are ready';
+        } else outcome = 'Then ' + route.label.toLowerCase() + ' · arrive ' + route.arrival + ' · ' + routeOutcome(route);
+        detail.appendChild(node('span', route.available && route.onTime ? '' : 'wardrobe-timeline-caution', outcome));
+        if (route.scheduledDeparture !== null && route.available && !route.onTime) detail.appendChild(node('span', 'wardrobe-timeline-caution', 'Bus arrival ' + route.arrival + ' · ' + routeOutcome(route)));
+      }
+      row.append(heading, track, detail); rows.appendChild(row);
+    });
+    var shortest = examples.reduce(function (best, example) { return example.timing.minutes < best.timing.minutes ? example : best; });
+    text('wardrobeDifference', wardrobeNames[shortest.id] + ' is ready ' + (longest - shortest.timing.minutes) + ' minutes earlier. Both examples start at ' + shortest.timing.before + '.');
+    var note = chosen ? 'These examples use your chosen ' + chosen.label.toLowerCase() + ' and current travel information. Allow time for the rest of your preparation.' : 'Choose a travel plan to compare arrival after getting ready. Allow time for the rest of your preparation.';
+    if (chosen && chosen.scheduledDeparture !== null) note += ' The bus examples assume you reach the stop in time.';
+    if (examples[0].timing.travel.forecastMayChange) note += ' Recheck after a forecast or travel update.';
+    text('wardrobeComparisonNote', note);
+  }
   function renderWardrobeWorkbench() {
     var v = latestView, panel = byId('wardrobeWorkbench');
     panel.hidden = selectedObject !== 'outfit' || v.completed;
     if (panel.hidden) return;
     var ready = v.scene.clothingReady, options = byId('wardrobeOptions'); options.replaceChildren();
+    renderWardrobeComparison();
     options.hidden = ready; byId('wardrobeTimeKey').hidden = ready;
     text('wardrobeInstructions', ready ? 'Your outfit is prepared. Continue packing, or use your choice history to try another way.' : 'Explore an outfit to see when it would be ready. Compare the time for getting dressed with your travel plan.');
     Object.keys(wardrobeNames).forEach(function (id) {
@@ -1238,6 +1287,7 @@
     box(-.69,1.36,-1.4,.24,.34,.09,'#f3d27f',shirt,{class:'pickable',rotation:'0 0 -20'});
     box(.09,1.36,-1.4,.24,.34,.09,'#f3d27f',shirt,{class:'pickable',rotation:'0 0 20'});
     box(-.3,.37,-1.32,.68,.17,.42,'#659884',wardrobe,{id:'clothesFolded',visible:false});
+    sceneLabel('Clothes · compare 2 or 8 min',{id:'outfitSign',position:'-.3 2.08 -1.61',width:1.4,height:.26,class:'pickable'},wardrobe);
     textPlane('WARDROBE',{position:'-.3 .13 -.83',rotation:'-25 0 0'},wardrobe);
     var entry = stationGroup('entry');
     box(1.63,.25,-1.75,1.45,.5,.85,'#d4b696',entry,{class:'pickable'});
@@ -1302,6 +1352,12 @@
     byId('bottleWater').setAttribute('position',s.bottleFilled?'0 0 0':'0 -.1 0');
     byId('shirtObject').querySelectorAll('a-box').forEach(function(el){el.setAttribute('color',s.clothingReady?'#659884':'#f3d27f');});
     byId('clothesFolded').setAttribute('visible',Boolean(s.clothingReady));
+    var clothesChoice = s.clothingReady && E.history(current).find(function (entry) { return entry.actionId === 'wear_ready' || entry.actionId === 'prepare_clothes'; });
+    var outfitSign = sceneLabel(clothesChoice ? 'Clothes ready · ' + clothesChoice.clock : 'Clothes · compare 2 or 8 min',{id:'outfitSign',position:'-.3 2.08 -1.61',width:1.4,height:.26,class:'pickable'},byId('shirtObject').parentElement,{background:clothesChoice ? '#e4eedc' : '#fff6d8'});
+    if (!outfitSign.dataset.outfitControl) {
+      outfitSign.dataset.outfitControl = 'true';
+      outfitSign.addEventListener('click', function (event) { event.stopPropagation(); if (latestView.completed) selectObject('outfit', true); else openWardrobeWorkbench(); });
+    }
     byId('documentObject').setAttribute('visible',!s.documentPacked);
     byId('packedDocument').setAttribute('visible',Boolean(s.documentPacked) && !s.departed);
     var raincoatPacked=latestView.inventory.some(function(item){return item.id==='raincoat';});
@@ -1393,7 +1449,13 @@
     else if (updateTopic === 'travel') openRouteWorkbench();
   });
   byId('prepareOutfit').addEventListener('click', prepareSelectedOutfit);
+  byId('compareOutfitAgain').addEventListener('click', function () {
+    if (latestView.completed || latestView.scene.clothingReady || selectedObject !== 'outfit' || !wardrobePreview) return;
+    var option = byId('wardrobeOptions').querySelector('[data-outfit="' + wardrobePreview.actionId + '"]');
+    if (option) option.focus();
+  });
   byId('wardrobeToBag').addEventListener('click', openPackingWorkbench);
+  byId('wardrobeToTravel').addEventListener('click', function () { if (!latestView.completed && latestView.scene.clothingReady && selectedObject === 'outfit') openRouteWorkbench(); });
   byId('packingPlace').addEventListener('click', placePackingItem);
   byId('packingFill').addEventListener('click', function () {
     if (latestView.completed || packingSelection !== 'bottle' || latestView.scene.bottleFilled) return;
