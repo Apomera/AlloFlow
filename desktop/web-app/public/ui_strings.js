@@ -67146,6 +67146,11 @@
       "nhu2083": "NH₃"
     },
     "physics": {
+      "view_compare_paths": "Compare paths",
+      "flight_view_heading": "Flight view",
+      "launch_settings_heading": "Launch settings",
+      "launch_settings_help": "Adjust these values for the next launch.",
+      "view_motion_graphs": "Motion graphs",
       "sample_phase_rising": "Rising",
       "sample_phase_release": "Highest point at release",
       "sample_phase_apex": "At apex",

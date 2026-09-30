@@ -761,6 +761,11 @@ window.StemLab = window.StemLab || {
           }
           window.StemLab._physics.normalizeState = physNormalizeState;
           const d = physNormalizeState(labToolData.physics);
+          var physicsFullscreen = !!d.physFsMode;
+          if (typeof document !== 'undefined') {
+            var physicsOuter = document.getElementById('physics-fs-outer');
+            physicsFullscreen = physicsFullscreen || !!physicsOuter && (document.fullscreenElement === physicsOuter || document.webkitFullscreenElement === physicsOuter || document.mozFullScreenElement === physicsOuter);
+          }
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, physics: { ...prev.physics, [key]: val } }));
           // Functional increment: safe from setTimeout chains (symmetry demo,
@@ -1227,6 +1232,7 @@ window.StemLab = window.StemLab || {
               if (canvasEl._resizeObserver) canvasEl._resizeObserver.disconnect();
               if (motionQuery && motionQuery.removeEventListener) motionQuery.removeEventListener('change', updateReducedMotion);
               if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onPhysicsVisibilityChange);
+              if (typeof document !== 'undefined') ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange'].forEach(function(name) { document.removeEventListener(name, onPhysicsFullscreenChange); });
               canvasEl._physCleanup = null;
               canvasEl._physScheduleFrame = null;
               canvasEl._physInit = false;
@@ -1243,6 +1249,15 @@ window.StemLab = window.StemLab || {
             canvasEl._physCleanup = cleanupPhysicsCanvas;
             canvasEl._physScheduleFrame = schedulePhysicsFrame;
             if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onPhysicsVisibilityChange);
+            // Native fullscreen can end through Escape or browser UI. Refresh
+            // the toolbar label without treating it as CSS fill-frame mode.
+            function onPhysicsFullscreenChange() {
+              if (!physAlive) return;
+              if (!canvasEl.isConnected) { cleanupPhysicsCanvas(); return; }
+              bump('liveTick', 1);
+              schedulePhysicsFrame();
+            }
+            if (typeof document !== 'undefined') ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange'].forEach(function(name) { document.addEventListener(name, onPhysicsFullscreenChange); });
 
             // Target flags
 
@@ -2705,7 +2720,7 @@ window.StemLab = window.StemLab || {
               #physics-fs-outer[data-physics-theme="contrast"] [data-physics-command]{background:#000;border-color:#fff;box-shadow:none}
               #physics-fs-outer[data-physics-theme="contrast"] :is(.phys-next,.phys-pathway){background:#000;border-color:#fff}
               #physics-fs-outer[data-physics-theme="contrast"] [data-physics-command] :is(p,span,strong,h3,div){color:#fff}
-              #physics-fs-outer[data-physics-theme="contrast"] [data-physics-next-cta],#physics-fs-outer[data-physics-theme="contrast"] [data-physics-controls]>[data-physics-launch]{background:#ff0;color:#000;border-color:#ff0}
+              #physics-fs-outer[data-physics-theme="contrast"] [data-physics-next-cta],#physics-fs-outer[data-physics-theme="contrast"] :is([data-physics-controls],[data-physics-primary-controls])>[data-physics-launch]{background:#ff0;color:#000;border-color:#ff0}
               @container(max-width:720px){#physics-fs-outer .phys-command-top{grid-template-columns:1fr;gap:16px;padding:19px}#physics-fs-outer .phys-command-metrics{gap:10px}#physics-fs-outer .phys-command-metric:first-child{padding-left:0;border-left:0}#physics-fs-outer .phys-command-metric>div:first-child{font-size:22px}#physics-fs-outer .phys-next{padding:13px 19px}#physics-fs-outer .phys-pathway{padding:13px 19px;gap:12px}#physics-fs-outer .phys-pathway-detail{display:none}#physics-fs-outer :is([data-physics-controls],[data-physics-primary-controls]){padding:14px;gap:10px}#physics-fs-outer :is([data-physics-controls],[data-physics-primary-controls])>[data-physics-display-controls],#physics-fs-outer :is([data-physics-controls],[data-physics-primary-controls])>[data-physics-playback]{grid-column:1/-1}#physics-fs-outer [data-physics-sliders]{grid-template-columns:repeat(3,minmax(0,1fr))}}
               @container(max-width:460px){#physics-fs-outer .phys-command-top{padding:17px;gap:15px}#physics-fs-outer .phys-command-title{gap:9px}#physics-fs-outer .phys-command-title h3{font-size:25px}#physics-fs-outer .phys-command-intro{font-size:12px}#physics-fs-outer .phys-command-metric>div:first-child{font-size:20px}#physics-fs-outer .phys-next{padding:12px 17px;align-items:flex-start;flex-direction:column;gap:9px}#physics-fs-outer [data-physics-next-cta]{width:100%;min-height:40px}#physics-fs-outer .phys-pathway{padding:12px 17px;gap:6px}#physics-fs-outer .phys-pathway li{gap:6px;align-items:center}#physics-fs-outer .phys-pathway strong{font-size:11px}#physics-fs-outer :is([data-physics-controls],[data-physics-primary-controls]){padding:12px}#physics-fs-outer :is([data-physics-controls],[data-physics-primary-controls])>[data-physics-launch]{grid-column:span 6}#physics-fs-outer :is([data-physics-controls],[data-physics-primary-controls])>[data-physics-estimation-challenge]{grid-column:span 6;gap:4px;padding:6px}#physics-fs-outer :is([data-physics-controls],[data-physics-primary-controls])>[data-physics-air-drag]{grid-column:1/-1}#physics-fs-outer :is([data-physics-controls],[data-physics-primary-controls])>button{grid-column:1/-1}#physics-fs-outer [data-physics-sliders]{grid-template-columns:repeat(2,minmax(0,1fr))}#physics-fs-outer .phys-parameter{padding:13px 12px 9px}#physics-fs-outer .phys-parameter-value{font-size:28px}#physics-fs-outer :is([data-physics-last-flight],[data-physics-run-log],[data-physics-model-comparison],[data-physics-estimation-reflection],[data-physics-formulas],[data-physics-learning-panel],[data-physics-investigations]){padding:13px!important}#physics-fs-outer .phys-outcome{padding:11px 10px}#physics-fs-outer .phys-outcome>div:nth-child(2){font-size:22px}#physics-fs-outer [data-physics-ideal-summary] p:last-child{font-size:20px}#physics-fs-outer [data-physics-ideal-summary] p:first-child{font-size:10px}#physics-fs-outer [data-physics-learning-panel="challenges"]>.grid{grid-template-columns:1fr}#physics-fs-outer [data-physics-learning-panel="equations"]>.grid{grid-template-columns:1fr}}
               @container(max-width:460px){#physics-fs-outer [data-physics-ideal-summary] p:first-child{font-size:12px}}
@@ -2796,6 +2811,49 @@ window.StemLab = window.StemLab || {
               #physics-fs-outer [data-physics-flight-summary] dd{margin:3px 0 0;font-size:1rem;font-weight:750;line-height:1.4;font-variant-numeric:tabular-nums;color:var(--phys-ink)}
               @container(max-width:720px){#physics-fs-outer [data-physics-flight-scroll-hint]{display:flex}#physics-fs-outer [data-physics-flight-summary]{display:block}}
               @container(max-width:460px){#physics-fs-outer :is([data-physics-sample-inspector],[data-physics-flight-data]){padding:13px}#physics-fs-outer .phys-sample-buttons>button{flex:1 1 95px}#physics-fs-outer .phys-measured-card{padding:12px}}
+              #physics-fs-outer [data-physics-workbench]{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:16px;align-items:start;margin-bottom:16px}
+              #physics-fs-outer .phys-scene{min-width:0}
+              #physics-fs-outer .phys-scene-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+              #physics-fs-outer .phys-scene-tools h3{margin:0;font-size:16px;font-weight:750;color:var(--phys-ink)}
+              #physics-fs-outer .phys-fullscreen-control{min-height:44px;display:flex;align-items:center;justify-content:center;gap:8px;padding:9px 12px;border:1px solid var(--phys-line);border-radius:9px;background:var(--phys-panel);color:var(--phys-ink);font:inherit;font-size:12px;font-weight:650;line-height:1.5}
+              #physics-fs-outer .phys-fullscreen-control>span:first-child{font-size:20px;line-height:1}
+              #physics-fs-outer [data-physics-sliders]{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0;padding:16px;border:1px solid var(--phys-line);border-radius:16px;background:var(--phys-panel);box-shadow:var(--phys-shadow)}
+              #physics-fs-outer .phys-settings-heading{grid-column:1/-1;padding-bottom:4px}
+              #physics-fs-outer .phys-settings-heading h3{margin:0;font-size:16px;line-height:1.5;font-weight:750;color:var(--phys-ink)}
+              #physics-fs-outer .phys-settings-heading p{margin:4px 0 0;font-size:12px;line-height:1.6;color:var(--phys-muted)}
+              #physics-fs-outer .phys-parameter{padding:12px 11px 7px;background:var(--phys-soft);box-shadow:none;border-radius:11px}
+              #physics-fs-outer .phys-parameter label{font-size:12px;line-height:1.5;min-height:20px}
+              #physics-fs-outer .phys-parameter-value{font-size:26px;margin:7px 0 3px;line-height:1.4}
+              #physics-fs-outer .phys-parameter-reading{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px}
+              #physics-fs-outer .phys-parameter-unit{font-size:12px;letter-spacing:0;font-weight:650;color:var(--phys-muted)}
+              #physics-fs-outer .phys-parameter-symbol{font-size:14px}
+              #physics-fs-outer .phys-parameter input[type="range"]{height:44px;margin:0;touch-action:pan-y}
+              #physics-fs-outer .phys-parameter input[type="range"]::-webkit-slider-thumb{height:20px;width:20px;margin-top:-7.5px}
+              #physics-fs-outer .phys-parameter input[type="range"]::-moz-range-thumb{height:14px;width:14px}
+              #physics-fs-outer .phys-parameter-limits{font-size:12px;line-height:1.5;margin:0}
+              #physics-fs-outer .phys-parameter:focus-within{border-color:var(--phys-accent)}
+              #physics-fs-outer [data-physics-parameter-card="launchHeight"]{grid-column:1/-1}
+              #physics-fs-outer [data-physics-height-help]{padding:2px 0 0}
+              #physics-fs-outer #physPredict{min-height:44px}
+              #physics-fs-outer [data-physics-display-controls] .phys-view-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+              #physics-fs-outer [data-physics-display-controls] button[data-physics-view]{display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:6px;min-height:84px;padding:10px 12px;text-align:left}
+              #physics-fs-outer .phys-view-title{display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.5;font-weight:650;color:var(--phys-ink)}
+              #physics-fs-outer .phys-view-title svg{flex:none;margin-top:1px;color:var(--phys-muted)}
+              #physics-fs-outer .phys-view-state{display:inline-flex;align-items:center;gap:5px;font-size:12px;line-height:1.5;font-weight:750;color:var(--phys-muted);padding:2px 7px;border:1px solid var(--phys-line);border-radius:5px;background:var(--phys-soft)}
+              #physics-fs-outer [data-physics-view][aria-pressed="true"] :is(.phys-view-title,.phys-view-title svg,.phys-view-state){color:var(--phys-accent)}
+              #physics-fs-outer [data-physics-view][aria-pressed="true"] .phys-view-state{background:var(--phys-panel);border-color:var(--phys-accent)}
+              #physics-fs-outer [data-physics-controls] [data-physics-playback]{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;align-content:start;align-items:stretch;align-self:start}
+              #physics-fs-outer [data-physics-playback]>:is(span,p){grid-column:1/-1;margin:0}
+              #physics-fs-outer [data-physics-playback]>span:first-child{padding-bottom:3px;font-weight:750;color:var(--phys-ink)}
+              #physics-fs-outer [data-physics-playback]>[data-physics-playback-rate]{padding:9px 6px;min-width:0}
+              #physics-fs-outer [data-physics-playback]>:is([data-physics-step],[data-physics-inspect]){grid-column:span 2}
+              #physics-fs-outer [data-physics-playback]>[data-physics-clear]{grid-column:1/-1;justify-self:end}
+              #physics-fs-outer [data-physics-controls] button:disabled{opacity:1;color:var(--phys-muted);border-style:dashed;background:var(--phys-soft)}
+              #physics-fs-outer .phys-gravity-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+              #physics-fs-outer [data-physics-controls] .phys-gravity-grid button{min-height:68px}
+              #physics-fs-outer [data-physics-controls] legend{font-size:14px;color:var(--phys-ink)}
+              @container(max-width:900px){#physics-fs-outer [data-physics-workbench]{grid-template-columns:minmax(0,1fr)}#physics-fs-outer [data-physics-sliders]{grid-template-columns:repeat(5,minmax(0,1fr))}#physics-fs-outer [data-physics-parameter-card="launchHeight"]{grid-column:auto}#physics-fs-outer [data-physics-controls]>:is([data-physics-display-controls],[data-physics-playback]){grid-column:1/-1}#physics-fs-outer [data-physics-display-controls] .phys-view-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+              @container(max-width:620px){#physics-fs-outer [data-physics-sliders]{grid-template-columns:repeat(2,minmax(0,1fr));padding:13px}#physics-fs-outer [data-physics-parameter-card="launchHeight"]{grid-column:1/-1}#physics-fs-outer [data-physics-display-controls] .phys-view-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#physics-fs-outer [data-physics-controls] [data-physics-playback]{grid-template-columns:repeat(2,minmax(0,1fr))}#physics-fs-outer [data-physics-playback]>:is([data-physics-step],[data-physics-inspect]){grid-column:span 1}#physics-fs-outer .phys-gravity-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#physics-fs-outer [data-physics-display-controls] button[data-physics-view]{padding:10px;min-height:88px}#physics-fs-outer .phys-view-title{display:flex;font-size:12px;gap:6px}#physics-fs-outer .phys-view-title svg{width:16px;height:16px;margin:1px 0 0}#physics-fs-outer [data-physics-display-controls] button[data-physics-view]:last-child{grid-column:1/-1;min-height:68px;flex-direction:row;align-items:center}#physics-fs-outer [data-physics-view]:last-child .phys-view-title{display:flex;align-items:center;gap:8px}#physics-fs-outer [data-physics-view]:last-child svg{margin:0}}
               @media(prefers-reduced-motion:reduce){#physics-fs-outer :is(button,input,summary){transition:none!important;animation:none!important}}
             `),
             (ctx.renderTutorial || function () { return null; })('physics', ctx._tutPhysics || []),
@@ -2919,17 +2977,14 @@ window.StemLab = window.StemLab || {
 
             ),
 
-            React.createElement("div", { id: "physics-fs-wrap", className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: d.physFsMode ? { position: 'relative', height: '75vh', minHeight: 480 } : { height: "480px" } },
-
-              // Fullscreen toggle (top-right). Real OS fullscreen only works where the host iframe
-              // grants it (document.fullscreenEnabled). Inside a sandboxed iframe (e.g. Gemini
-              // Canvas) it's blocked by Permissions Policy — requestFullscreen() rejects/throws
-              // "Disallowed by permissions policy" — so fall back to a CSS "fill the frame" mode
-              // toggled via state (physFsMode): the wrapper goes position:fixed/100vw/100vh and,
-              // because the canvas is width/height:100%, the re-render re-measures it to fill.
+            React.createElement('div', { 'data-physics-workbench': true },
+              React.createElement('div', { className: 'phys-scene' },
+              React.createElement('div', { className: 'phys-scene-tools' },
+                React.createElement('h3', null, __alloT('stem.physics.flight_view_heading', 'Flight view')),
               React.createElement("button", {
-                'aria-label': (d.physFsMode ? __alloT('stem.physics.exit_fullscreen', 'Exit fullscreen') : __alloT('stem.physics.fullscreen', 'Fullscreen')) + __alloT('stem.physics.for_the_physics_canvas', ' for the physics canvas'),
-                title: d.physFsMode ? __alloT('stem.physics.exit_fullscreen', 'Exit fullscreen') : __alloT('stem.physics.fullscreen', 'Fullscreen'),
+                'data-physics-fullscreen': true,
+                'aria-label': (physicsFullscreen ? __alloT('stem.physics.exit_fullscreen', 'Exit fullscreen') : __alloT('stem.physics.fullscreen', 'Fullscreen')) + __alloT('stem.physics.for_the_physics_canvas', ' for the physics canvas'),
+                title: physicsFullscreen ? __alloT('stem.physics.exit_fullscreen', 'Exit fullscreen') : __alloT('stem.physics.fullscreen', 'Fullscreen'),
                 onClick: function() {
                   // Fullscreen the OUTER container (header + canvas + controls),
                   // not just the canvas, so the sim controls stay usable in
@@ -2946,15 +3001,10 @@ window.StemLab = window.StemLab || {
                   }
                   upd('physFsMode', true);                                        // sandboxed iframe — CSS fill-frame
                 },
-                style: {
-                  position: 'absolute', top: 8, right: 8, zIndex: 10,
-                  width: 32, height: 32, borderRadius: 8,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
-                  border: '1px solid rgba(125,211,252,0.5)', color: '#bae6fd',
-                  fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
-                }
-              }, d.physFsMode ? '✕' : '⛶'),
+                className: 'phys-fullscreen-control'
+              }, React.createElement('span', { 'aria-hidden': true }, physicsFullscreen ? '✕' : '⛶'), React.createElement('span', null, physicsFullscreen ? __alloT('stem.physics.exit_fullscreen', 'Exit fullscreen') : __alloT('stem.physics.fullscreen', 'Fullscreen'))),
+              ),
+            React.createElement("div", { id: "physics-fs-wrap", className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: d.physFsMode ? { position: 'relative', height: '75vh', minHeight: 480 } : { height: "480px" } },
 
               React.createElement("canvas", {
 
@@ -3024,6 +3074,50 @@ window.StemLab = window.StemLab || {
             React.createElement('div', { 'data-physics-plot-key': true },
               React.createElement('span', null, physSelectedInspection(typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null) ? __alloT('stem.physics.plot_selected_trail_speed', 'Selected flight speed') : __alloT('stem.physics.plot_trail_speed', 'Latest trail speed'), ' · 0 ', React.createElement('span', { className: 'phys-speed-swatch', 'aria-hidden': true }), ' ≥60 m/s'),
               React.createElement('span', null, React.createElement('span', { className: 'phys-vacuum-swatch', 'aria-hidden': true }), __alloT('stem.physics.plot_vacuum_key', 'White dashed · vacuum reference'))),
+
+              ),
+            React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-3", "data-physics-sliders": "true", role: "group", "aria-labelledby": "physics-settings-heading" },
+              React.createElement("div", { className: "phys-settings-heading" },
+                React.createElement("h3", { id: "physics-settings-heading", "data-physics-settings-heading": true }, __alloT("stem.physics.launch_settings_heading", "Launch settings")),
+                React.createElement("p", null, __alloT("stem.physics.launch_settings_help", "Adjust these values for the next launch."))),
+
+              [{ k: 'angle', label: __alloT('stem.physics.slider_angle', 'Angle (\u00B0)'), min: d.launchHeight > 0 ? 0 : 5, max: 85, step: 1 }, { k: 'velocity', label: __alloT('stem.physics.slider_velocity', 'Velocity (m/s)'), min: 5, max: 50, step: 1 }, { k: 'gravity', label: __alloT('stem.physics.slider_gravity', 'Gravity (m/s\u00B2)'), min: 1, max: 25, step: 0.1 }, { k: 'mass', label: __alloT('stem.physics.slider_mass', 'Mass (kg)'), min: 1, max: 10, step: 1 }, { k: 'launchHeight', label: __alloT('stem.physics.slider_launch_height', 'Launch height (m)'), min: 0, max: 50, step: 1 }].map(function (s) {
+                var isLocked = (s.k === 'launchHeight' && (d.targetMode || d.challengeActive || d.battleMode)) || d.targetMode && d.targetConstraint && (
+                  (d.targetConstraint.type === 'fixedAngle' && s.k === 'angle') ||
+                  (d.targetConstraint.type === 'fixedVelocity' && s.k === 'velocity')
+                );
+                return React.createElement("div", { key: s.k, className: "phys-parameter", 'data-physics-parameter-card': s.k, 'data-locked': isLocked ? 'true' : 'false' },
+
+                  React.createElement("label", { htmlFor: 'physics-parameter-' + s.k }, isLocked ? '\u{1F512} ' + s.label : s.label),
+
+                  React.createElement("div", { className: "phys-parameter-value" },
+                    React.createElement('span', { className: 'phys-parameter-reading' }, d[s.k], React.createElement('span', { className: 'phys-parameter-unit', 'data-physics-parameter-unit': s.k }, { angle: '°', velocity: 'm/s', gravity: 'm/s²', mass: 'kg', launchHeight: 'm' }[s.k])),
+                    React.createElement('span', { className: 'phys-parameter-symbol', 'aria-hidden': true }, { angle: 'θ', velocity: 'v₀', gravity: 'g', mass: 'm', launchHeight: 'h₀' }[s.k])),
+
+                  React.createElement("input", { id: 'physics-parameter-' + s.k, type: "range", style: { '--phys-range': (100 * (d[s.k] - s.min) / (s.max - s.min)) + '%' }, "data-physics-parameter": s.k, "aria-valuetext": (d[s.k] + " " + ((s.label.match(/\(([^)]+)\)/) || ["", ""])[1])), "aria-label": s.label, min: s.min, max: s.max, step: s.step, value: d[s.k], disabled: isLocked, onChange: function (e) {
+                    if (!isLocked) {
+                      var newVal = parseFloat(e.target.value);
+                      if (s.k === 'launchHeight') {
+                        setLabToolData(function(prev) {
+                          var current = prev.physics || {};
+                          if (current.targetMode || current.challengeActive || current.battleMode) return prev;
+                          return Object.assign({}, prev, { physics: Object.assign({}, current, { launchHeight: newVal, angle: newVal === 0 ? Math.max(5, current.angle == null ? 45 : current.angle) : current.angle }) });
+                        });
+                      } else upd(s.k, newVal);
+                      // Canvas Narration: parameter change (high debounce to avoid spam during drag)
+                      if (typeof canvasNarrate === 'function') canvasNarrate('physics', 'param_' + s.k, s.label.split(' ')[0] + ': ' + newVal, { debounce: 800 });
+                    }
+                  }, className: "w-full " + (isLocked ? 'accent-red-400 opacity-50 cursor-not-allowed' : 'accent-sky-600') }),
+                  React.createElement('div', { className: 'phys-parameter-limits', 'aria-hidden': true }, React.createElement('span', null, s.min), React.createElement('span', null, s.max))
+
+                );
+
+              }),
+              React.createElement('p', { 'data-physics-height-help': true, className: 'text-xs text-slate-700' }, __alloT('stem.physics.launch_height_help', 'Launch height is measured above ground; every flight lands at ground level. Raise the launcher to enable a horizontal launch at 0°. Missions and challenges use ground-level launches.'))
+
+            ),
+
+            ),
 
             (function() {
               var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
@@ -3159,49 +3253,24 @@ window.StemLab = window.StemLab || {
 
               React.createElement('fieldset', { 'data-physics-display-controls': true, style: { width: '100%', minWidth: 0 }, className: 'rounded-xl border border-slate-200 p-3' },
                 React.createElement('legend', { className: 'px-1 text-xs font-bold' }, __alloT('stem.physics.display_controls', 'Views and explanations')),
-                React.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: 8 } },
-              React.createElement("button", { type: "button", style: { minHeight: 44, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere" }, "aria-label": __alloT('stem.physics.aria_motion_vectors_currently', 'Velocity and gravity vectors, currently ') + (d.showVectors ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
-                "aria-pressed": !!d.showVectors,
-                onClick: function () { upd('showVectors', !d.showVectors); },
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showVectors ? 'bg-purple-700 text-white shadow-md' : 'bg-purple-50 text-purple-700 border border-purple-200')
-              }, "\u2197\uFE0F " + __alloT('stem.physics.label_motion_vectors', 'Velocity & gravity ') + (d.showVectors ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
-
-              React.createElement("button", { type: "button", style: { minHeight: 44, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere" }, "aria-label": __alloT('stem.physics.aria_energy_currently', 'Energy display, currently ') + (d.showEnergy ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
-                "aria-pressed": !!d.showEnergy,
-                onClick: function () { upd('showEnergy', !d.showEnergy); },
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showEnergy ? 'bg-blue-700 text-white shadow-md' : 'bg-blue-50 text-blue-700 border border-blue-200')
-              }, "\u26A1 " + __alloT('stem.physics.label_energy', 'Energy display ') + (d.showEnergy ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
-
-              React.createElement("button", { type: "button", style: { minHeight: 44, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere" }, "aria-label": __alloT('stem.physics.aria_learn_currently', 'Physics guide, currently ') + (d.showLearn ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
-                "aria-pressed": !!d.showLearn,
-                onClick: function () { upd('showLearn', !d.showLearn); },
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showLearn ? 'bg-emerald-700 text-white shadow-md' : 'bg-emerald-50 text-emerald-700 border border-emerald-200')
-              }, "\uD83D\uDCD6 " + __alloT('stem.physics.label_learn', 'Physics guide')),
-
-              React.createElement("button", { type: "button", style: { minHeight: 44, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere" }, "aria-label": __alloT('stem.physics.aria_data_currently', 'Flight data, currently ') + (d.showFlightData ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
-                "aria-pressed": !!d.showFlightData,
-                onClick: function () { upd('showFlightData', !d.showFlightData); },
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showFlightData ? 'bg-cyan-700 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-200')
-              }, "\uD83D\uDCCA " + __alloT('stem.physics.label_data', 'Flight data ') + (d.showFlightData ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
-
-              React.createElement("button", { type: "button", style: { minHeight: 44, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere" }, "aria-label": __alloT('stem.physics.aria_show_work_currently', 'Show your work formulas panel, currently ') + (d.showFormulas ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
-                "aria-pressed": !!d.showFormulas,
-                onClick: function () { upd('showFormulas', !d.showFormulas); },
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showFormulas ? 'bg-fuchsia-700 text-white shadow-md' : 'bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200')
-              }, "\u{1F4DD} " + __alloT('stem.physics.label_show_work', 'Show your work ') + (d.showFormulas ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
-
-              React.createElement("button", { type: "button", style: { minHeight: 44, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere" }, "aria-label": __alloT('stem.physics.aria_compare_currently', 'Trajectory comparison overlay, currently ') + (d.showOverlay ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
-                "aria-pressed": !!d.showOverlay,
-                onClick: function () { upd('showOverlay', !d.showOverlay); },
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showOverlay ? 'bg-rose-700 text-white shadow-md' : 'bg-rose-50 text-rose-700 border border-rose-200')
-              }, "\u{1F4C8} " + __alloT('stem.physics.label_compare', 'Trajectory comparison ') + (d.showOverlay ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
-
-              React.createElement("button", { type: "button", style: { minHeight: 44, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere" }, "aria-label": __alloT('stem.physics.aria_motion_currently', 'Motion component graphs (Vx vs t and Vy vs t), currently ') + (d.showGraphs ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
-                "aria-pressed": !!d.showGraphs,
-                onClick: function () { upd('showGraphs', !d.showGraphs); },
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showGraphs ? 'bg-teal-700 text-white shadow-md' : 'bg-teal-50 text-teal-700 border border-teal-200')
-              }, "\u{1F4C9} " + __alloT('stem.physics.label_motion', 'Motion component graphs ') + (d.showGraphs ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF')))
-                )
+                React.createElement('div', { className: 'phys-view-grid' }, [
+                  { id: 'vectors', key: 'showVectors', label: __alloT('stem.physics.label_motion_vectors', 'Velocity & gravity ').trim(), aria: __alloT('stem.physics.aria_motion_vectors_currently', 'Velocity and gravity vectors, currently '), path: 'M4 20V4m0 16h16M4 20L19 5m-6 0h6v6' },
+                  { id: 'energy', key: 'showEnergy', label: __alloT('stem.physics.label_energy', 'Energy display ').trim(), aria: __alloT('stem.physics.aria_energy_currently', 'Energy display, currently '), path: 'M13 2L4 14h7l-1 8 10-12h-7l0-8Z' },
+                  { id: 'guide', key: 'showLearn', label: __alloT('stem.physics.label_learn', 'Physics guide').trim(), aria: __alloT('stem.physics.aria_learn_currently', 'Physics guide, currently '), path: 'M3 4h6a3 3 0 0 1 3 3v14a4 4 0 0 0-4-3H3V4Zm18 0h-6a3 3 0 0 0-3 3v14a4 4 0 0 1 4-3h5V4Z' },
+                  { id: 'data', key: 'showFlightData', label: __alloT('stem.physics.label_data', 'Flight data ').trim(), aria: __alloT('stem.physics.aria_data_currently', 'Flight data, currently '), path: 'M3 4h18v16H3V4Zm0 5h18M9 4v16M15 4v16M3 14h18' },
+                  { id: 'formulas', key: 'showFormulas', label: __alloT('stem.physics.label_show_work', 'Show your work ').trim(), aria: __alloT('stem.physics.aria_show_work_currently', 'Show your work formulas panel, currently '), path: 'M18 5H6l7 7-7 7h12M18 5v3m0 8v3' },
+                  { id: 'overlay', key: 'showOverlay', label: __alloT('stem.physics.view_compare_paths', 'Compare paths'), aria: __alloT('stem.physics.aria_compare_currently', 'Trajectory comparison overlay, currently '), path: 'M3 20h18M4 17C8 2 15 2 20 17M4 17C7 7 11 7 14 17' },
+                  { id: 'graphs', key: 'showGraphs', label: __alloT('stem.physics.view_motion_graphs', 'Motion graphs').trim(), aria: __alloT('stem.physics.aria_motion_currently', 'Motion component graphs (Vx vs t and Vy vs t), currently '), path: 'M4 3v17h17M6 14l4-5 4 3 5-7' }
+                ].map(function(view) {
+                  var enabled = !!d[view.key];
+                  return React.createElement('button', { key: view.id, type: 'button', className: 'phys-view-card', 'data-physics-view': view.id,
+                    'aria-label': view.aria + (enabled ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
+                    'aria-pressed': enabled, onClick: function() { upd(view.key, !d[view.key]); } },
+                    React.createElement('span', { className: 'phys-view-title' },
+                      React.createElement('svg', { viewBox: '0 0 24 24', width: 18, height: 18, fill: 'none', stroke: 'currentColor', strokeWidth: 1.75, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true, focusable: false }, React.createElement('path', { d: view.path })),
+                      React.createElement('span', null, view.label)),
+                    React.createElement('span', { className: 'phys-view-state', 'aria-hidden': true }, React.createElement('span', null, enabled ? '✓' : '−'), enabled ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF')));
+                }))
               ),
 
               // ── Simulation speed control (pause + slow-motion) ──
@@ -3277,7 +3346,7 @@ window.StemLab = window.StemLab || {
                     __alloT('stem.physics.inspect_energy_transferred', 'Energy transferred to the air') + ': ' + lost.toFixed(2) + ' J. ' +
                     __alloT('stem.physics.inspect_axes', 'Right and up are positive; potential energy is measured from the ground.'));
                 } }, __alloT('stem.physics.inspect_motion', 'Inspect paused motion & energy')),
-                React.createElement("button", { "aria-label": __alloT('stem.physics.aria_clear_trails', 'Clear all trajectory trails'),
+                React.createElement("button", { 'data-physics-clear': true, "aria-label": __alloT('stem.physics.aria_clear_trails', 'Clear all trajectory trails'),
                   onClick: function () {
                     // Clear IN PLACE. The draw loop keeps its own references to
                     // these arrays and writes them back to the element every
@@ -3427,7 +3496,7 @@ window.StemLab = window.StemLab || {
               React.createElement('fieldset', { 'data-physics-gravity-presets': true, 'aria-describedby': 'physics-gravity-presets-help', style: { width: '100%', minWidth: 0 }, className: 'rounded-xl border border-sky-200 p-3' },
                 React.createElement('legend', { className: 'px-1 text-xs font-bold' }, __alloT('stem.physics.gravity_presets', 'Gravity presets')),
                 React.createElement('p', { id: 'physics-gravity-presets-help', className: 'mb-2 text-xs text-slate-600' }, __alloT('stem.physics.gravity_presets_help', 'Changes gravity only. Launch angle, velocity, mass, and air drag stay as you set them.')),
-                React.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))', gap: 8 } },
+                React.createElement('div', { className: 'phys-gravity-grid' },
               PRESETS.map(function (p) {
 
                 return React.createElement("button", { key: p.label, type: 'button', 'data-gravity-preset': p.gravity, 'aria-pressed': d.gravity === p.gravity, style: { minHeight: 44, minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere' }, onClick: function () { upd('gravity', p.gravity); },
@@ -3471,44 +3540,6 @@ window.StemLab = window.StemLab || {
                 upd('predictionResult', Object.assign({}, d.predictionResult, { reflectionComplete: true }));
                 if (awardStemXP) awardStemXP('estimate_reflection', 5, 'Reflected on range evidence');
               }, className: "mt-2 rounded-lg bg-fuchsia-700 px-3 py-2 text-[0.625rem] font-black text-white disabled:cursor-not-allowed disabled:opacity-45" }, d.predictionResult.reflectionComplete ? __alloT('stem.physics.est_reflection_saved', 'Reflection saved') : __alloT('stem.physics.est_save_reflection', 'Save estimation reflection'))
-            ),
-
-            React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-3", "data-physics-sliders": "true" },
-
-              [{ k: 'angle', label: __alloT('stem.physics.slider_angle', 'Angle (\u00B0)'), min: d.launchHeight > 0 ? 0 : 5, max: 85, step: 1 }, { k: 'velocity', label: __alloT('stem.physics.slider_velocity', 'Velocity (m/s)'), min: 5, max: 50, step: 1 }, { k: 'gravity', label: __alloT('stem.physics.slider_gravity', 'Gravity (m/s\u00B2)'), min: 1, max: 25, step: 0.1 }, { k: 'mass', label: __alloT('stem.physics.slider_mass', 'Mass (kg)'), min: 1, max: 10, step: 1 }, { k: 'launchHeight', label: __alloT('stem.physics.slider_launch_height', 'Launch height (m)'), min: 0, max: 50, step: 1 }].map(function (s) {
-                var isLocked = (s.k === 'launchHeight' && (d.targetMode || d.challengeActive || d.battleMode)) || d.targetMode && d.targetConstraint && (
-                  (d.targetConstraint.type === 'fixedAngle' && s.k === 'angle') ||
-                  (d.targetConstraint.type === 'fixedVelocity' && s.k === 'velocity')
-                );
-                return React.createElement("div", { key: s.k, className: "phys-parameter", 'data-locked': isLocked ? 'true' : 'false' },
-
-                  React.createElement("label", { htmlFor: 'physics-parameter-' + s.k }, isLocked ? '\u{1F512} ' + s.label : s.label),
-
-                  React.createElement("div", { className: "phys-parameter-value" },
-                    React.createElement('span', null, d[s.k]),
-                    React.createElement('span', { className: 'phys-parameter-symbol', 'aria-hidden': true }, { angle: 'θ', velocity: 'v₀', gravity: 'g', mass: 'm', launchHeight: 'h₀' }[s.k])),
-
-                  React.createElement("input", { id: 'physics-parameter-' + s.k, type: "range", style: { '--phys-range': (100 * (d[s.k] - s.min) / (s.max - s.min)) + '%' }, "data-physics-parameter": s.k, "aria-valuetext": (d[s.k] + " " + ((s.label.match(/\(([^)]+)\)/) || ["", ""])[1])), "aria-label": s.label, min: s.min, max: s.max, step: s.step, value: d[s.k], disabled: isLocked, onChange: function (e) {
-                    if (!isLocked) {
-                      var newVal = parseFloat(e.target.value);
-                      if (s.k === 'launchHeight') {
-                        setLabToolData(function(prev) {
-                          var current = prev.physics || {};
-                          if (current.targetMode || current.challengeActive || current.battleMode) return prev;
-                          return Object.assign({}, prev, { physics: Object.assign({}, current, { launchHeight: newVal, angle: newVal === 0 ? Math.max(5, current.angle == null ? 45 : current.angle) : current.angle }) });
-                        });
-                      } else upd(s.k, newVal);
-                      // Canvas Narration: parameter change (high debounce to avoid spam during drag)
-                      if (typeof canvasNarrate === 'function') canvasNarrate('physics', 'param_' + s.k, s.label.split(' ')[0] + ': ' + newVal, { debounce: 800 });
-                    }
-                  }, className: "w-full " + (isLocked ? 'accent-red-400 opacity-50 cursor-not-allowed' : 'accent-sky-600') }),
-                  React.createElement('div', { className: 'phys-parameter-limits', 'aria-hidden': true }, React.createElement('span', null, s.min), React.createElement('span', null, s.max))
-
-                );
-
-              }),
-              React.createElement('p', { 'data-physics-height-help': true, className: 'col-span-2 sm:col-span-3 lg:col-span-5 text-xs text-slate-700' }, __alloT('stem.physics.launch_height_help', 'Launch height is measured above ground; every flight lands at ground level. Raise the launcher to enable a horizontal launch at 0°. Missions and challenges use ground-level launches.'))
-
             ),
 
             // ── XP & Stats Bar ──

@@ -1,0 +1,3430 @@
+{
+  "createdAt": "2026-09-30T15:00:50.641Z",
+  "baselineCommit": "5a98bb0fa28b9ba2f87f443d2340115c92180a38",
+  "sourceFile": "stem_lab/stem_tool_physics.js",
+  "sourceSha256": {
+    "baseline": "bebc15bbf88758cf07077b989c11b352314f02fccf2bb0d318ad93fc91e4d4ad",
+    "final": "77cc2ca00d6eedbbd6012d58fcc7d0b841e3cf2a35b5bf3f1536b650d6315e45"
+  },
+  "auditSha256": "0c9e816e5fbc5edb649b38513cff82d1ab93d560589ff613c22d2a1833031dd7",
+  "dependencySha256": {
+    "reports/physics-deep-review-2026-09-27/preview-harness.cjs": "44477404265b43c0e8ab5a9b9085b9eda584b573019c7bb92f572c17eead31c6",
+    "dev-tools/check_stem_layout_defects.cjs": "213591887bae2fd81c6aa5e1d7c83706e1ce7e02d356385886f34da0b7166f90",
+    "app_styles_module.js": "18a7f13e4eb4453badea9db8c7afefba0717f39ccc7c34f6e4fa7cc28acddc8d",
+    "reports/physics-deep-review-2026-09-27/preview-tailwind.css": "c2a8577c477ae95ad81e407be71baa603e9ec6d61032bef5a383088326148945",
+    "ui_strings.js": "2856a741e2ccafcf77046fd7aec5000c6cd06f2a8543d50b794cbe1dc22feeac",
+    "desktop/web-app/node_modules/react/umd/react.production.min.js": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd",
+    "desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d",
+    "stem_lab/stem_lab_module.js": "76b4b8f537d10ec8f0b51206e8da1ae7fdf623f470c552eb2ea12c67ef11aafa"
+  },
+  "sourceUnchanged": true,
+  "mirrorMatches": true,
+  "auditorUnchanged": true,
+  "dependenciesUnchanged": true,
+  "passed": true,
+  "configurations": [
+    {
+      "version": "baseline",
+      "theme": "default",
+      "width": 1100,
+      "screenshots": [
+        "canvas-baseline-default-1100.png",
+        "settings-baseline-default-1100.png",
+        "controls-baseline-default-1100.png"
+      ],
+      "qualityRequired": false,
+      "contrastThreshold": 4.5,
+      "minFontPx": 12,
+      "minContrast": 5.197302355022151,
+      "minTargetWidthPx": 32,
+      "minTargetHeightPx": 22,
+      "textCount": 45,
+      "targetCount": 29,
+      "disabledTextCount": 0,
+      "violations": {
+        "smallText": [],
+        "contrast": [],
+        "unresolvedBackground": [],
+        "smallTargets": [
+          {
+            "label": "Predicted landing distance in meters",
+            "type": "number",
+            "width": 74,
+            "height": 36,
+            "disabled": false
+          },
+          {
+            "label": "Angle (°)",
+            "type": "range",
+            "width": 166.796875,
+            "height": 22,
+            "disabled": false
+          },
+          {
+            "label": "Velocity (m/s)",
+            "type": "range",
+            "width": 166.796875,
+            "height": 22,
+            "disabled": false
+          },
+          {
+            "label": "Gravity (m/s²)",
+            "type": "range",
+            "width": 166.796875,
+            "height": 22,
+            "disabled": false
+          },
+          {
+            "label": "Mass (kg)",
+            "type": "range",
+            "width": 166.796875,
+            "height": 22,
+            "disabled": false
+          },
+          {
+            "label": "Launch height (m)",
+            "type": "range",
+            "width": 166.8125,
+            "height": 22,
+            "disabled": false
+          },
+          {
+            "label": "Fullscreen for the physics canvas",
+            "type": "submit",
+            "width": 32,
+            "height": 32,
+            "disabled": false
+          }
+        ]
+      },
+      "geometry": {
+        "viewport": 1100,
+        "containerWidth": 1024,
+        "overflow": 0,
+        "workbench": null,
+        "scene": null,
+        "sliders": {
+          "x": 38,
+          "y": 1855.875,
+          "width": 1024,
+          "height": 194,
+          "right": 1062,
+          "bottom": 2049.875
+        },
+        "slidersContentWidth": 1024,
+        "primary": {
+          "x": 38,
+          "y": -373.3125,
+          "width": 1024,
+          "height": 80,
+          "right": 1062,
+          "bottom": -293.3125
+        },
+        "controls": {
+          "x": 38,
+          "y": 1361.875,
+          "width": 1024,
+          "height": 478,
+          "right": 1062,
+          "bottom": 1839.875
+        },
+        "canvas": {
+          "x": 40,
+          "y": -279.3125,
+          "width": 1020,
+          "height": 476,
+          "right": 1060,
+          "bottom": 196.6875
+        },
+        "primaryBeforeCanvas": true,
+        "sceneBeforeSettings": false,
+        "controlsAfterWorkbench": false,
+        "sceneContainsCanvasAndKey": false,
+        "workbenchContainsSettings": false,
+        "parameters": [],
+        "views": [],
+        "playback": [
+          {
+            "x": 570,
+            "y": 1439.25,
+            "width": 94.046875,
+            "height": 44,
+            "right": 664.046875,
+            "bottom": 1483.25
+          },
+          {
+            "x": 672.046875,
+            "y": 1439.25,
+            "width": 116.34375,
+            "height": 44,
+            "right": 788.390625,
+            "bottom": 1483.25
+          },
+          {
+            "x": 796.390625,
+            "y": 1439.25,
+            "width": 136.359375,
+            "height": 44,
+            "right": 932.75,
+            "bottom": 1483.25
+          },
+          {
+            "x": 940.75,
+            "y": 1439.25,
+            "width": 56.5625,
+            "height": 44,
+            "right": 997.3125,
+            "bottom": 1483.25
+          }
+        ],
+        "gravity": [
+          {
+            "x": 71,
+            "y": 1746.875,
+            "width": 233.5,
+            "height": 60,
+            "right": 304.5,
+            "bottom": 1806.875
+          },
+          {
+            "x": 312.5,
+            "y": 1746.875,
+            "width": 233.5,
+            "height": 60,
+            "right": 546,
+            "bottom": 1806.875
+          },
+          {
+            "x": 554,
+            "y": 1746.875,
+            "width": 233.5,
+            "height": 60,
+            "right": 787.5,
+            "bottom": 1806.875
+          },
+          {
+            "x": 795.5,
+            "y": 1746.875,
+            "width": 233.5,
+            "height": 60,
+            "right": 1029,
+            "bottom": 1806.875
+          }
+        ],
+        "playbackDisplay": "flex"
+      },
+      "viewStates": [],
+      "viewToggleCount": 14,
+      "inspectionNavigationCount": 6,
+      "evidenceUnchanged": true,
+      "modelMatchesBaseline": true,
+      "evidenceSha256": "dfa60a46dbcef170a73c710b13990b8c0c404a95f7d1f8fc87b262a398dbdf77",
+      "pageErrors": []
+    },
+    {
+      "version": "baseline",
+      "theme": "default",
+      "width": 320,
+      "screenshots": [
+        "canvas-baseline-default-320.png",
+        "settings-baseline-default-320.png",
+        "controls-baseline-default-320.png"
+      ],
+      "qualityRequired": false,
+      "contrastThreshold": 4.5,
+      "minFontPx": 12,
+      "minContrast": 5.197302355022151,
+      "minTargetWidthPx": 32,
+      "minTargetHeightPx": 22,
+      "textCount": 45,
+      "targetCount": 29,
+      "disabledTextCount": 0,
+      "violations": {
+        "smallText": [],
+        "contrast": [],
+        "unresolvedBackground": [],
+        "smallTargets": [
+          {
+            "label": "Predicted landing distance in meters",
+            "type": "number",
+            "width": 74,
+            "height": 36,
+            "disabled": false
+          },
+          {
+            "label": "Angle (°)",
+            "type": "range",
+            "width": 109,
+            "height": 22,
+            "disabled": false
+          },
+          {
+            "label": "Velocity (m/s)",
+            "type": "range",
+            "width": 109,
+            "height": 22,
+            "disabled": false
+          },
+          {
+            "label": "Gravity (m/s²)",
+            "type": "range",
+            "width": 109,
+            "height": 22,
+            "disabled": false
+          },
+          {
+            "label": "Mass (kg)",
+            "type": "range",
+            "width": 109,
+            "height": 22,
+            "disabled": false
+          },
+          {
+            "label": "Launch height (m)",
+            "type": "range",
+            "width": 109,
+            "height": 22,
+            "disabled": false
+          },
+          {
+            "label": "Fullscreen for the physics canvas",
+            "type": "submit",
+            "width": 32,
+            "height": 32,
+            "disabled": false
+          }
+        ]
+      },
+      "geometry": {
+        "viewport": 320,
+        "containerWidth": 280,
+        "overflow": 0,
+        "workbench": null,
+        "scene": null,
+        "sliders": {
+          "x": 20,
+          "y": 3274.6875,
+          "width": 280,
+          "height": 578.5,
+          "right": 300,
+          "bottom": 3853.1875
+        },
+        "slidersContentWidth": 280,
+        "primary": {
+          "x": 20,
+          "y": -618.5,
+          "width": 280,
+          "height": 134,
+          "right": 300,
+          "bottom": -484.5
+        },
+        "controls": {
+          "x": 20,
+          "y": 1938.6875,
+          "width": 280,
+          "height": 1320,
+          "right": 300,
+          "bottom": 3258.6875
+        },
+        "canvas": {
+          "x": 22,
+          "y": -470.5,
+          "width": 276,
+          "height": 476,
+          "right": 298,
+          "bottom": 5.5
+        },
+        "primaryBeforeCanvas": true,
+        "sceneBeforeSettings": false,
+        "controlsAfterWorkbench": false,
+        "sceneContainsCanvasAndKey": false,
+        "workbenchContainsSettings": false,
+        "parameters": [],
+        "views": [],
+        "playback": [
+          {
+            "x": 47,
+            "y": 2400.6875,
+            "width": 94.046875,
+            "height": 44,
+            "right": 141.046875,
+            "bottom": 2444.6875
+          },
+          {
+            "x": 149.046875,
+            "y": 2400.6875,
+            "width": 116.34375,
+            "height": 44,
+            "right": 265.390625,
+            "bottom": 2444.6875
+          },
+          {
+            "x": 47,
+            "y": 2452.6875,
+            "width": 136.359375,
+            "height": 44,
+            "right": 183.359375,
+            "bottom": 2496.6875
+          },
+          {
+            "x": 191.359375,
+            "y": 2452.6875,
+            "width": 56.5625,
+            "height": 44,
+            "right": 247.921875,
+            "bottom": 2496.6875
+          }
+        ],
+        "gravity": [
+          {
+            "x": 47,
+            "y": 2967.6875,
+            "width": 226,
+            "height": 60,
+            "right": 273,
+            "bottom": 3027.6875
+          },
+          {
+            "x": 47,
+            "y": 3035.6875,
+            "width": 226,
+            "height": 60,
+            "right": 273,
+            "bottom": 3095.6875
+          },
+          {
+            "x": 47,
+            "y": 3103.6875,
+            "width": 226,
+            "height": 60,
+            "right": 273,
+            "bottom": 3163.6875
+          },
+          {
+            "x": 47,
+            "y": 3171.6875,
+            "width": 226,
+            "height": 60,
+            "right": 273,
+            "bottom": 3231.6875
+          }
+        ],
+        "playbackDisplay": "flex"
+      },
+      "viewStates": [],
+      "viewToggleCount": 14,
+      "inspectionNavigationCount": 6,
+      "evidenceUnchanged": true,
+      "modelMatchesBaseline": true,
+      "evidenceSha256": "dfa60a46dbcef170a73c710b13990b8c0c404a95f7d1f8fc87b262a398dbdf77",
+      "pageErrors": []
+    },
+    {
+      "version": "final",
+      "theme": "default",
+      "width": 1100,
+      "screenshots": [
+        "workbench-final-default-1100.png",
+        "controls-final-default-1100.png"
+      ],
+      "qualityRequired": true,
+      "contrastThreshold": 4.5,
+      "minFontPx": 12,
+      "minContrast": 5.197302355022151,
+      "minTargetWidthPx": 74,
+      "minTargetHeightPx": 44,
+      "textCount": 57,
+      "targetCount": 29,
+      "disabledTextCount": 0,
+      "violations": {
+        "smallText": [],
+        "contrast": [],
+        "unresolvedBackground": [],
+        "smallTargets": []
+      },
+      "geometry": {
+        "viewport": 1100,
+        "containerWidth": 1024,
+        "overflow": 0,
+        "workbench": {
+          "x": 38,
+          "y": -446.3125,
+          "width": 1024,
+          "height": 672,
+          "right": 1062,
+          "bottom": 225.6875
+        },
+        "scene": {
+          "x": 38,
+          "y": -446.3125,
+          "width": 698,
+          "height": 603,
+          "right": 736,
+          "bottom": 156.6875
+        },
+        "sliders": {
+          "x": 752,
+          "y": -446.3125,
+          "width": 310,
+          "height": 672,
+          "right": 1062,
+          "bottom": 225.6875
+        },
+        "slidersContentWidth": 276,
+        "primary": {
+          "x": 38,
+          "y": -544.3125,
+          "width": 1024,
+          "height": 86,
+          "right": 1062,
+          "bottom": -458.3125
+        },
+        "controls": {
+          "x": 38,
+          "y": 1341.875,
+          "width": 1024,
+          "height": 638,
+          "right": 1062,
+          "bottom": 1979.875
+        },
+        "canvas": {
+          "x": 40,
+          "y": -384.3125,
+          "width": 694,
+          "height": 476,
+          "right": 734,
+          "bottom": 91.6875
+        },
+        "primaryBeforeCanvas": true,
+        "sceneBeforeSettings": true,
+        "controlsAfterWorkbench": true,
+        "sceneContainsCanvasAndKey": true,
+        "workbenchContainsSettings": true,
+        "parameters": [
+          {
+            "key": "angle",
+            "rect": {
+              "x": 769,
+              "y": -369.3125,
+              "width": 133,
+              "height": 158,
+              "right": 902,
+              "bottom": -211.3125
+            },
+            "unit": "°",
+            "range": "angle"
+          },
+          {
+            "key": "velocity",
+            "rect": {
+              "x": 912,
+              "y": -369.3125,
+              "width": 133,
+              "height": 158,
+              "right": 1045,
+              "bottom": -211.3125
+            },
+            "unit": "m/s",
+            "range": "velocity"
+          },
+          {
+            "key": "gravity",
+            "rect": {
+              "x": 769,
+              "y": -201.3125,
+              "width": 133,
+              "height": 158,
+              "right": 902,
+              "bottom": -43.3125
+            },
+            "unit": "m/s²",
+            "range": "gravity"
+          },
+          {
+            "key": "mass",
+            "rect": {
+              "x": 912,
+              "y": -201.3125,
+              "width": 133,
+              "height": 158,
+              "right": 1045,
+              "bottom": -43.3125
+            },
+            "unit": "kg",
+            "range": "mass"
+          },
+          {
+            "key": "launchHeight",
+            "rect": {
+              "x": 769,
+              "y": -33.3125,
+              "width": 276,
+              "height": 158,
+              "right": 1045,
+              "bottom": 124.6875
+            },
+            "unit": "m",
+            "range": "launchHeight"
+          }
+        ],
+        "views": [
+          {
+            "x": 71,
+            "y": 1389.875,
+            "width": 225.5,
+            "height": 84,
+            "right": 296.5,
+            "bottom": 1473.875
+          },
+          {
+            "x": 304.5,
+            "y": 1389.875,
+            "width": 225.5,
+            "height": 84,
+            "right": 530,
+            "bottom": 1473.875
+          },
+          {
+            "x": 71,
+            "y": 1481.875,
+            "width": 225.5,
+            "height": 84,
+            "right": 296.5,
+            "bottom": 1565.875
+          },
+          {
+            "x": 304.5,
+            "y": 1481.875,
+            "width": 225.5,
+            "height": 84,
+            "right": 530,
+            "bottom": 1565.875
+          },
+          {
+            "x": 71,
+            "y": 1573.875,
+            "width": 225.5,
+            "height": 84,
+            "right": 296.5,
+            "bottom": 1657.875
+          },
+          {
+            "x": 304.5,
+            "y": 1573.875,
+            "width": 225.5,
+            "height": 84,
+            "right": 530,
+            "bottom": 1657.875
+          },
+          {
+            "x": 71,
+            "y": 1665.875,
+            "width": 225.5,
+            "height": 84,
+            "right": 296.5,
+            "bottom": 1749.875
+          }
+        ],
+        "playback": [
+          {
+            "x": 570,
+            "y": 1403.875,
+            "width": 108.75,
+            "height": 56,
+            "right": 678.75,
+            "bottom": 1459.875
+          },
+          {
+            "x": 686.75,
+            "y": 1403.875,
+            "width": 108.75,
+            "height": 56,
+            "right": 795.5,
+            "bottom": 1459.875
+          },
+          {
+            "x": 803.5,
+            "y": 1403.875,
+            "width": 108.75,
+            "height": 56,
+            "right": 912.25,
+            "bottom": 1459.875
+          },
+          {
+            "x": 920.25,
+            "y": 1403.875,
+            "width": 108.75,
+            "height": 56,
+            "right": 1029,
+            "bottom": 1459.875
+          }
+        ],
+        "gravity": [
+          {
+            "x": 71,
+            "y": 1886.875,
+            "width": 233.5,
+            "height": 60,
+            "right": 304.5,
+            "bottom": 1946.875
+          },
+          {
+            "x": 312.5,
+            "y": 1886.875,
+            "width": 233.5,
+            "height": 60,
+            "right": 546,
+            "bottom": 1946.875
+          },
+          {
+            "x": 554,
+            "y": 1886.875,
+            "width": 233.5,
+            "height": 60,
+            "right": 787.5,
+            "bottom": 1946.875
+          },
+          {
+            "x": 795.5,
+            "y": 1886.875,
+            "width": 233.5,
+            "height": 60,
+            "right": 1029,
+            "bottom": 1946.875
+          }
+        ],
+        "playbackDisplay": "grid"
+      },
+      "viewStates": [
+        {
+          "key": "vectors",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Velocity & gravity"
+        },
+        {
+          "key": "energy",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Energy display"
+        },
+        {
+          "key": "guide",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Physics guide"
+        },
+        {
+          "key": "data",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Flight data"
+        },
+        {
+          "key": "formulas",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Show your work"
+        },
+        {
+          "key": "overlay",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Compare paths"
+        },
+        {
+          "key": "graphs",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Motion graphs"
+        }
+      ],
+      "viewToggleCount": 14,
+      "inspectionNavigationCount": 6,
+      "evidenceUnchanged": true,
+      "modelMatchesBaseline": true,
+      "evidenceSha256": "dfa60a46dbcef170a73c710b13990b8c0c404a95f7d1f8fc87b262a398dbdf77",
+      "pageErrors": []
+    },
+    {
+      "version": "final",
+      "theme": "default",
+      "width": 375,
+      "screenshots": [
+        "workbench-final-default-375.png",
+        "controls-final-default-375.png"
+      ],
+      "qualityRequired": true,
+      "contrastThreshold": 4.5,
+      "minFontPx": 12,
+      "minContrast": 5.197302355022151,
+      "minTargetWidthPx": 74,
+      "minTargetHeightPx": 44,
+      "textCount": 57,
+      "targetCount": 29,
+      "disabledTextCount": 0,
+      "violations": {
+        "smallText": [],
+        "contrast": [],
+        "unresolvedBackground": [],
+        "smallTargets": []
+      },
+      "geometry": {
+        "viewport": 375,
+        "containerWidth": 335,
+        "overflow": 0,
+        "workbench": {
+          "x": 20,
+          "y": -1230.5,
+          "width": 335,
+          "height": 1312,
+          "right": 355,
+          "bottom": 81.5
+        },
+        "scene": {
+          "x": 20,
+          "y": -1230.5,
+          "width": 335,
+          "height": 630,
+          "right": 355,
+          "bottom": -600.5
+        },
+        "sliders": {
+          "x": 20,
+          "y": -584.5,
+          "width": 335,
+          "height": 666,
+          "right": 355,
+          "bottom": 81.5
+        },
+        "slidersContentWidth": 307,
+        "primary": {
+          "x": 20,
+          "y": -1384.5,
+          "width": 335,
+          "height": 142,
+          "right": 355,
+          "bottom": -1242.5
+        },
+        "controls": {
+          "x": 20,
+          "y": 1899.6875,
+          "width": 335,
+          "height": 1099,
+          "right": 355,
+          "bottom": 2998.6875
+        },
+        "canvas": {
+          "x": 22,
+          "y": -1168.5,
+          "width": 331,
+          "height": 476,
+          "right": 353,
+          "bottom": -692.5
+        },
+        "primaryBeforeCanvas": true,
+        "sceneBeforeSettings": true,
+        "controlsAfterWorkbench": true,
+        "sceneContainsCanvasAndKey": true,
+        "workbenchContainsSettings": true,
+        "parameters": [
+          {
+            "key": "angle",
+            "rect": {
+              "x": 34,
+              "y": -510.5,
+              "width": 148.5,
+              "height": 158,
+              "right": 182.5,
+              "bottom": -352.5
+            },
+            "unit": "°",
+            "range": "angle"
+          },
+          {
+            "key": "velocity",
+            "rect": {
+              "x": 192.5,
+              "y": -510.5,
+              "width": 148.5,
+              "height": 158,
+              "right": 341,
+              "bottom": -352.5
+            },
+            "unit": "m/s",
+            "range": "velocity"
+          },
+          {
+            "key": "gravity",
+            "rect": {
+              "x": 34,
+              "y": -342.5,
+              "width": 148.5,
+              "height": 158,
+              "right": 182.5,
+              "bottom": -184.5
+            },
+            "unit": "m/s²",
+            "range": "gravity"
+          },
+          {
+            "key": "mass",
+            "rect": {
+              "x": 192.5,
+              "y": -342.5,
+              "width": 148.5,
+              "height": 158,
+              "right": 341,
+              "bottom": -184.5
+            },
+            "unit": "kg",
+            "range": "mass"
+          },
+          {
+            "key": "launchHeight",
+            "rect": {
+              "x": 34,
+              "y": -174.5,
+              "width": 307,
+              "height": 158,
+              "right": 341,
+              "bottom": -16.5
+            },
+            "unit": "m",
+            "range": "launchHeight"
+          }
+        ],
+        "views": [
+          {
+            "x": 47,
+            "y": 1941.6875,
+            "width": 136.5,
+            "height": 88,
+            "right": 183.5,
+            "bottom": 2029.6875
+          },
+          {
+            "x": 191.5,
+            "y": 1941.6875,
+            "width": 136.5,
+            "height": 88,
+            "right": 328,
+            "bottom": 2029.6875
+          },
+          {
+            "x": 47,
+            "y": 2037.6875,
+            "width": 136.5,
+            "height": 88,
+            "right": 183.5,
+            "bottom": 2125.6875
+          },
+          {
+            "x": 191.5,
+            "y": 2037.6875,
+            "width": 136.5,
+            "height": 88,
+            "right": 328,
+            "bottom": 2125.6875
+          },
+          {
+            "x": 47,
+            "y": 2133.6875,
+            "width": 136.5,
+            "height": 88,
+            "right": 183.5,
+            "bottom": 2221.6875
+          },
+          {
+            "x": 191.5,
+            "y": 2133.6875,
+            "width": 136.5,
+            "height": 88,
+            "right": 328,
+            "bottom": 2221.6875
+          },
+          {
+            "x": 47,
+            "y": 2229.6875,
+            "width": 281,
+            "height": 68,
+            "right": 328,
+            "bottom": 2297.6875
+          }
+        ],
+        "playback": [
+          {
+            "x": 47,
+            "y": 2364.6875,
+            "width": 136.5,
+            "height": 44,
+            "right": 183.5,
+            "bottom": 2408.6875
+          },
+          {
+            "x": 191.5,
+            "y": 2364.6875,
+            "width": 136.5,
+            "height": 44,
+            "right": 328,
+            "bottom": 2408.6875
+          },
+          {
+            "x": 47,
+            "y": 2416.6875,
+            "width": 136.5,
+            "height": 44,
+            "right": 183.5,
+            "bottom": 2460.6875
+          },
+          {
+            "x": 191.5,
+            "y": 2416.6875,
+            "width": 136.5,
+            "height": 44,
+            "right": 328,
+            "bottom": 2460.6875
+          }
+        ],
+        "gravity": [
+          {
+            "x": 47,
+            "y": 2843.6875,
+            "width": 136.5,
+            "height": 60,
+            "right": 183.5,
+            "bottom": 2903.6875
+          },
+          {
+            "x": 191.5,
+            "y": 2843.6875,
+            "width": 136.5,
+            "height": 60,
+            "right": 328,
+            "bottom": 2903.6875
+          },
+          {
+            "x": 47,
+            "y": 2911.6875,
+            "width": 136.5,
+            "height": 60,
+            "right": 183.5,
+            "bottom": 2971.6875
+          },
+          {
+            "x": 191.5,
+            "y": 2911.6875,
+            "width": 136.5,
+            "height": 60,
+            "right": 328,
+            "bottom": 2971.6875
+          }
+        ],
+        "playbackDisplay": "grid"
+      },
+      "viewStates": [
+        {
+          "key": "vectors",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Velocity & gravity"
+        },
+        {
+          "key": "energy",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Energy display"
+        },
+        {
+          "key": "guide",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Physics guide"
+        },
+        {
+          "key": "data",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Flight data"
+        },
+        {
+          "key": "formulas",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Show your work"
+        },
+        {
+          "key": "overlay",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Compare paths"
+        },
+        {
+          "key": "graphs",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Motion graphs"
+        }
+      ],
+      "viewToggleCount": 14,
+      "inspectionNavigationCount": 6,
+      "evidenceUnchanged": true,
+      "modelMatchesBaseline": true,
+      "evidenceSha256": "dfa60a46dbcef170a73c710b13990b8c0c404a95f7d1f8fc87b262a398dbdf77",
+      "pageErrors": []
+    },
+    {
+      "version": "final",
+      "theme": "default",
+      "width": 320,
+      "screenshots": [
+        "workbench-final-default-320.png",
+        "controls-final-default-320.png"
+      ],
+      "qualityRequired": true,
+      "contrastThreshold": 4.5,
+      "minFontPx": 12,
+      "minContrast": 5.197302355022151,
+      "minTargetWidthPx": 74,
+      "minTargetHeightPx": 44,
+      "textCount": 57,
+      "targetCount": 29,
+      "disabledTextCount": 0,
+      "violations": {
+        "smallText": [],
+        "contrast": [],
+        "unresolvedBackground": [],
+        "smallTargets": []
+      },
+      "geometry": {
+        "viewport": 320,
+        "containerWidth": 280,
+        "overflow": 0,
+        "workbench": {
+          "x": 20,
+          "y": -1248.5,
+          "width": 280,
+          "height": 1330,
+          "right": 300,
+          "bottom": 81.5
+        },
+        "scene": {
+          "x": 20,
+          "y": -1248.5,
+          "width": 280,
+          "height": 630,
+          "right": 300,
+          "bottom": -618.5
+        },
+        "sliders": {
+          "x": 20,
+          "y": -602.5,
+          "width": 280,
+          "height": 684,
+          "right": 300,
+          "bottom": 81.5
+        },
+        "slidersContentWidth": 252,
+        "primary": {
+          "x": 20,
+          "y": -1402.5,
+          "width": 280,
+          "height": 142,
+          "right": 300,
+          "bottom": -1260.5
+        },
+        "controls": {
+          "x": 20,
+          "y": 1938.6875,
+          "width": 280,
+          "height": 1189,
+          "right": 300,
+          "bottom": 3127.6875
+        },
+        "canvas": {
+          "x": 22,
+          "y": -1186.5,
+          "width": 276,
+          "height": 476,
+          "right": 298,
+          "bottom": -710.5
+        },
+        "primaryBeforeCanvas": true,
+        "sceneBeforeSettings": true,
+        "controlsAfterWorkbench": true,
+        "sceneContainsCanvasAndKey": true,
+        "workbenchContainsSettings": true,
+        "parameters": [
+          {
+            "key": "angle",
+            "rect": {
+              "x": 34,
+              "y": -528.5,
+              "width": 121,
+              "height": 158,
+              "right": 155,
+              "bottom": -370.5
+            },
+            "unit": "°",
+            "range": "angle"
+          },
+          {
+            "key": "velocity",
+            "rect": {
+              "x": 165,
+              "y": -528.5,
+              "width": 121,
+              "height": 158,
+              "right": 286,
+              "bottom": -370.5
+            },
+            "unit": "m/s",
+            "range": "velocity"
+          },
+          {
+            "key": "gravity",
+            "rect": {
+              "x": 34,
+              "y": -360.5,
+              "width": 121,
+              "height": 158,
+              "right": 155,
+              "bottom": -202.5
+            },
+            "unit": "m/s²",
+            "range": "gravity"
+          },
+          {
+            "key": "mass",
+            "rect": {
+              "x": 165,
+              "y": -360.5,
+              "width": 121,
+              "height": 158,
+              "right": 286,
+              "bottom": -202.5
+            },
+            "unit": "kg",
+            "range": "mass"
+          },
+          {
+            "key": "launchHeight",
+            "rect": {
+              "x": 34,
+              "y": -192.5,
+              "width": 252,
+              "height": 158,
+              "right": 286,
+              "bottom": -34.5
+            },
+            "unit": "m",
+            "range": "launchHeight"
+          }
+        ],
+        "views": [
+          {
+            "x": 47,
+            "y": 1980.6875,
+            "width": 109,
+            "height": 88,
+            "right": 156,
+            "bottom": 2068.6875
+          },
+          {
+            "x": 164,
+            "y": 1980.6875,
+            "width": 109,
+            "height": 88,
+            "right": 273,
+            "bottom": 2068.6875
+          },
+          {
+            "x": 47,
+            "y": 2076.6875,
+            "width": 109,
+            "height": 88,
+            "right": 156,
+            "bottom": 2164.6875
+          },
+          {
+            "x": 164,
+            "y": 2076.6875,
+            "width": 109,
+            "height": 88,
+            "right": 273,
+            "bottom": 2164.6875
+          },
+          {
+            "x": 47,
+            "y": 2172.6875,
+            "width": 109,
+            "height": 88,
+            "right": 156,
+            "bottom": 2260.6875
+          },
+          {
+            "x": 164,
+            "y": 2172.6875,
+            "width": 109,
+            "height": 88,
+            "right": 273,
+            "bottom": 2260.6875
+          },
+          {
+            "x": 47,
+            "y": 2268.6875,
+            "width": 226,
+            "height": 68,
+            "right": 273,
+            "bottom": 2336.6875
+          }
+        ],
+        "playback": [
+          {
+            "x": 47,
+            "y": 2403.6875,
+            "width": 109,
+            "height": 56,
+            "right": 156,
+            "bottom": 2459.6875
+          },
+          {
+            "x": 164,
+            "y": 2403.6875,
+            "width": 109,
+            "height": 56,
+            "right": 273,
+            "bottom": 2459.6875
+          },
+          {
+            "x": 47,
+            "y": 2467.6875,
+            "width": 109,
+            "height": 56,
+            "right": 156,
+            "bottom": 2523.6875
+          },
+          {
+            "x": 164,
+            "y": 2467.6875,
+            "width": 109,
+            "height": 56,
+            "right": 273,
+            "bottom": 2523.6875
+          }
+        ],
+        "gravity": [
+          {
+            "x": 47,
+            "y": 2972.6875,
+            "width": 109,
+            "height": 60,
+            "right": 156,
+            "bottom": 3032.6875
+          },
+          {
+            "x": 164,
+            "y": 2972.6875,
+            "width": 109,
+            "height": 60,
+            "right": 273,
+            "bottom": 3032.6875
+          },
+          {
+            "x": 47,
+            "y": 3040.6875,
+            "width": 109,
+            "height": 60,
+            "right": 156,
+            "bottom": 3100.6875
+          },
+          {
+            "x": 164,
+            "y": 3040.6875,
+            "width": 109,
+            "height": 60,
+            "right": 273,
+            "bottom": 3100.6875
+          }
+        ],
+        "playbackDisplay": "grid"
+      },
+      "viewStates": [
+        {
+          "key": "vectors",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Velocity & gravity"
+        },
+        {
+          "key": "energy",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Energy display"
+        },
+        {
+          "key": "guide",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Physics guide"
+        },
+        {
+          "key": "data",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Flight data"
+        },
+        {
+          "key": "formulas",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Show your work"
+        },
+        {
+          "key": "overlay",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Compare paths"
+        },
+        {
+          "key": "graphs",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Motion graphs"
+        }
+      ],
+      "viewToggleCount": 14,
+      "inspectionNavigationCount": 6,
+      "evidenceUnchanged": true,
+      "modelMatchesBaseline": true,
+      "evidenceSha256": "dfa60a46dbcef170a73c710b13990b8c0c404a95f7d1f8fc87b262a398dbdf77",
+      "pageErrors": []
+    },
+    {
+      "version": "final",
+      "theme": "dark",
+      "width": 1100,
+      "screenshots": [
+        "workbench-final-dark-1100.png",
+        "controls-final-dark-1100.png"
+      ],
+      "qualityRequired": true,
+      "contrastThreshold": 4.5,
+      "minFontPx": 12,
+      "minContrast": 5.900518911432192,
+      "minTargetWidthPx": 74,
+      "minTargetHeightPx": 44,
+      "textCount": 57,
+      "targetCount": 29,
+      "disabledTextCount": 0,
+      "violations": {
+        "smallText": [],
+        "contrast": [],
+        "unresolvedBackground": [],
+        "smallTargets": []
+      },
+      "geometry": {
+        "viewport": 1100,
+        "containerWidth": 1024,
+        "overflow": 0,
+        "workbench": {
+          "x": 38,
+          "y": -446.3125,
+          "width": 1024,
+          "height": 672,
+          "right": 1062,
+          "bottom": 225.6875
+        },
+        "scene": {
+          "x": 38,
+          "y": -446.3125,
+          "width": 698,
+          "height": 603,
+          "right": 736,
+          "bottom": 156.6875
+        },
+        "sliders": {
+          "x": 752,
+          "y": -446.3125,
+          "width": 310,
+          "height": 672,
+          "right": 1062,
+          "bottom": 225.6875
+        },
+        "slidersContentWidth": 276,
+        "primary": {
+          "x": 38,
+          "y": -544.3125,
+          "width": 1024,
+          "height": 86,
+          "right": 1062,
+          "bottom": -458.3125
+        },
+        "controls": {
+          "x": 38,
+          "y": 1341.875,
+          "width": 1024,
+          "height": 638,
+          "right": 1062,
+          "bottom": 1979.875
+        },
+        "canvas": {
+          "x": 40,
+          "y": -384.3125,
+          "width": 694,
+          "height": 476,
+          "right": 734,
+          "bottom": 91.6875
+        },
+        "primaryBeforeCanvas": true,
+        "sceneBeforeSettings": true,
+        "controlsAfterWorkbench": true,
+        "sceneContainsCanvasAndKey": true,
+        "workbenchContainsSettings": true,
+        "parameters": [
+          {
+            "key": "angle",
+            "rect": {
+              "x": 769,
+              "y": -369.3125,
+              "width": 133,
+              "height": 158,
+              "right": 902,
+              "bottom": -211.3125
+            },
+            "unit": "°",
+            "range": "angle"
+          },
+          {
+            "key": "velocity",
+            "rect": {
+              "x": 912,
+              "y": -369.3125,
+              "width": 133,
+              "height": 158,
+              "right": 1045,
+              "bottom": -211.3125
+            },
+            "unit": "m/s",
+            "range": "velocity"
+          },
+          {
+            "key": "gravity",
+            "rect": {
+              "x": 769,
+              "y": -201.3125,
+              "width": 133,
+              "height": 158,
+              "right": 902,
+              "bottom": -43.3125
+            },
+            "unit": "m/s²",
+            "range": "gravity"
+          },
+          {
+            "key": "mass",
+            "rect": {
+              "x": 912,
+              "y": -201.3125,
+              "width": 133,
+              "height": 158,
+              "right": 1045,
+              "bottom": -43.3125
+            },
+            "unit": "kg",
+            "range": "mass"
+          },
+          {
+            "key": "launchHeight",
+            "rect": {
+              "x": 769,
+              "y": -33.3125,
+              "width": 276,
+              "height": 158,
+              "right": 1045,
+              "bottom": 124.6875
+            },
+            "unit": "m",
+            "range": "launchHeight"
+          }
+        ],
+        "views": [
+          {
+            "x": 71,
+            "y": 1389.875,
+            "width": 225.5,
+            "height": 84,
+            "right": 296.5,
+            "bottom": 1473.875
+          },
+          {
+            "x": 304.5,
+            "y": 1389.875,
+            "width": 225.5,
+            "height": 84,
+            "right": 530,
+            "bottom": 1473.875
+          },
+          {
+            "x": 71,
+            "y": 1481.875,
+            "width": 225.5,
+            "height": 84,
+            "right": 296.5,
+            "bottom": 1565.875
+          },
+          {
+            "x": 304.5,
+            "y": 1481.875,
+            "width": 225.5,
+            "height": 84,
+            "right": 530,
+            "bottom": 1565.875
+          },
+          {
+            "x": 71,
+            "y": 1573.875,
+            "width": 225.5,
+            "height": 84,
+            "right": 296.5,
+            "bottom": 1657.875
+          },
+          {
+            "x": 304.5,
+            "y": 1573.875,
+            "width": 225.5,
+            "height": 84,
+            "right": 530,
+            "bottom": 1657.875
+          },
+          {
+            "x": 71,
+            "y": 1665.875,
+            "width": 225.5,
+            "height": 84,
+            "right": 296.5,
+            "bottom": 1749.875
+          }
+        ],
+        "playback": [
+          {
+            "x": 570,
+            "y": 1403.875,
+            "width": 108.75,
+            "height": 56,
+            "right": 678.75,
+            "bottom": 1459.875
+          },
+          {
+            "x": 686.75,
+            "y": 1403.875,
+            "width": 108.75,
+            "height": 56,
+            "right": 795.5,
+            "bottom": 1459.875
+          },
+          {
+            "x": 803.5,
+            "y": 1403.875,
+            "width": 108.75,
+            "height": 56,
+            "right": 912.25,
+            "bottom": 1459.875
+          },
+          {
+            "x": 920.25,
+            "y": 1403.875,
+            "width": 108.75,
+            "height": 56,
+            "right": 1029,
+            "bottom": 1459.875
+          }
+        ],
+        "gravity": [
+          {
+            "x": 71,
+            "y": 1886.875,
+            "width": 233.5,
+            "height": 60,
+            "right": 304.5,
+            "bottom": 1946.875
+          },
+          {
+            "x": 312.5,
+            "y": 1886.875,
+            "width": 233.5,
+            "height": 60,
+            "right": 546,
+            "bottom": 1946.875
+          },
+          {
+            "x": 554,
+            "y": 1886.875,
+            "width": 233.5,
+            "height": 60,
+            "right": 787.5,
+            "bottom": 1946.875
+          },
+          {
+            "x": 795.5,
+            "y": 1886.875,
+            "width": 233.5,
+            "height": 60,
+            "right": 1029,
+            "bottom": 1946.875
+          }
+        ],
+        "playbackDisplay": "grid"
+      },
+      "viewStates": [
+        {
+          "key": "vectors",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Velocity & gravity"
+        },
+        {
+          "key": "energy",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Energy display"
+        },
+        {
+          "key": "guide",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Physics guide"
+        },
+        {
+          "key": "data",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Flight data"
+        },
+        {
+          "key": "formulas",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Show your work"
+        },
+        {
+          "key": "overlay",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Compare paths"
+        },
+        {
+          "key": "graphs",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Motion graphs"
+        }
+      ],
+      "viewToggleCount": 14,
+      "inspectionNavigationCount": 6,
+      "evidenceUnchanged": true,
+      "modelMatchesBaseline": true,
+      "evidenceSha256": "dfa60a46dbcef170a73c710b13990b8c0c404a95f7d1f8fc87b262a398dbdf77",
+      "pageErrors": []
+    },
+    {
+      "version": "final",
+      "theme": "dark",
+      "width": 375,
+      "screenshots": [
+        "workbench-final-dark-375.png",
+        "controls-final-dark-375.png"
+      ],
+      "qualityRequired": true,
+      "contrastThreshold": 4.5,
+      "minFontPx": 12,
+      "minContrast": 5.900518911432192,
+      "minTargetWidthPx": 74,
+      "minTargetHeightPx": 44,
+      "textCount": 57,
+      "targetCount": 29,
+      "disabledTextCount": 0,
+      "violations": {
+        "smallText": [],
+        "contrast": [],
+        "unresolvedBackground": [],
+        "smallTargets": []
+      },
+      "geometry": {
+        "viewport": 375,
+        "containerWidth": 311,
+        "overflow": 0,
+        "workbench": {
+          "x": 32,
+          "y": -1230.5,
+          "width": 311,
+          "height": 1312,
+          "right": 343,
+          "bottom": 81.5
+        },
+        "scene": {
+          "x": 32,
+          "y": -1230.5,
+          "width": 311,
+          "height": 630,
+          "right": 343,
+          "bottom": -600.5
+        },
+        "sliders": {
+          "x": 32,
+          "y": -584.5,
+          "width": 311,
+          "height": 666,
+          "right": 343,
+          "bottom": 81.5
+        },
+        "slidersContentWidth": 283,
+        "primary": {
+          "x": 32,
+          "y": -1384.5,
+          "width": 311,
+          "height": 142,
+          "right": 343,
+          "bottom": -1242.5
+        },
+        "controls": {
+          "x": 32,
+          "y": 1917.6875,
+          "width": 311,
+          "height": 1141,
+          "right": 343,
+          "bottom": 3058.6875
+        },
+        "canvas": {
+          "x": 34,
+          "y": -1168.5,
+          "width": 307,
+          "height": 476,
+          "right": 341,
+          "bottom": -692.5
+        },
+        "primaryBeforeCanvas": true,
+        "sceneBeforeSettings": true,
+        "controlsAfterWorkbench": true,
+        "sceneContainsCanvasAndKey": true,
+        "workbenchContainsSettings": true,
+        "parameters": [
+          {
+            "key": "angle",
+            "rect": {
+              "x": 46,
+              "y": -510.5,
+              "width": 136.5,
+              "height": 158,
+              "right": 182.5,
+              "bottom": -352.5
+            },
+            "unit": "°",
+            "range": "angle"
+          },
+          {
+            "key": "velocity",
+            "rect": {
+              "x": 192.5,
+              "y": -510.5,
+              "width": 136.5,
+              "height": 158,
+              "right": 329,
+              "bottom": -352.5
+            },
+            "unit": "m/s",
+            "range": "velocity"
+          },
+          {
+            "key": "gravity",
+            "rect": {
+              "x": 46,
+              "y": -342.5,
+              "width": 136.5,
+              "height": 158,
+              "right": 182.5,
+              "bottom": -184.5
+            },
+            "unit": "m/s²",
+            "range": "gravity"
+          },
+          {
+            "key": "mass",
+            "rect": {
+              "x": 192.5,
+              "y": -342.5,
+              "width": 136.5,
+              "height": 158,
+              "right": 329,
+              "bottom": -184.5
+            },
+            "unit": "kg",
+            "range": "mass"
+          },
+          {
+            "key": "launchHeight",
+            "rect": {
+              "x": 46,
+              "y": -174.5,
+              "width": 283,
+              "height": 158,
+              "right": 329,
+              "bottom": -16.5
+            },
+            "unit": "m",
+            "range": "launchHeight"
+          }
+        ],
+        "views": [
+          {
+            "x": 59,
+            "y": 1959.6875,
+            "width": 124.5,
+            "height": 88,
+            "right": 183.5,
+            "bottom": 2047.6875
+          },
+          {
+            "x": 191.5,
+            "y": 1959.6875,
+            "width": 124.5,
+            "height": 88,
+            "right": 316,
+            "bottom": 2047.6875
+          },
+          {
+            "x": 59,
+            "y": 2055.6875,
+            "width": 124.5,
+            "height": 88,
+            "right": 183.5,
+            "bottom": 2143.6875
+          },
+          {
+            "x": 191.5,
+            "y": 2055.6875,
+            "width": 124.5,
+            "height": 88,
+            "right": 316,
+            "bottom": 2143.6875
+          },
+          {
+            "x": 59,
+            "y": 2151.6875,
+            "width": 124.5,
+            "height": 88,
+            "right": 183.5,
+            "bottom": 2239.6875
+          },
+          {
+            "x": 191.5,
+            "y": 2151.6875,
+            "width": 124.5,
+            "height": 88,
+            "right": 316,
+            "bottom": 2239.6875
+          },
+          {
+            "x": 59,
+            "y": 2247.6875,
+            "width": 257,
+            "height": 68,
+            "right": 316,
+            "bottom": 2315.6875
+          }
+        ],
+        "playback": [
+          {
+            "x": 59,
+            "y": 2382.6875,
+            "width": 124.5,
+            "height": 44,
+            "right": 183.5,
+            "bottom": 2426.6875
+          },
+          {
+            "x": 191.5,
+            "y": 2382.6875,
+            "width": 124.5,
+            "height": 44,
+            "right": 316,
+            "bottom": 2426.6875
+          },
+          {
+            "x": 59,
+            "y": 2434.6875,
+            "width": 124.5,
+            "height": 56,
+            "right": 183.5,
+            "bottom": 2490.6875
+          },
+          {
+            "x": 191.5,
+            "y": 2434.6875,
+            "width": 124.5,
+            "height": 56,
+            "right": 316,
+            "bottom": 2490.6875
+          }
+        ],
+        "gravity": [
+          {
+            "x": 59,
+            "y": 2903.6875,
+            "width": 124.5,
+            "height": 60,
+            "right": 183.5,
+            "bottom": 2963.6875
+          },
+          {
+            "x": 191.5,
+            "y": 2903.6875,
+            "width": 124.5,
+            "height": 60,
+            "right": 316,
+            "bottom": 2963.6875
+          },
+          {
+            "x": 59,
+            "y": 2971.6875,
+            "width": 124.5,
+            "height": 60,
+            "right": 183.5,
+            "bottom": 3031.6875
+          },
+          {
+            "x": 191.5,
+            "y": 2971.6875,
+            "width": 124.5,
+            "height": 60,
+            "right": 316,
+            "bottom": 3031.6875
+          }
+        ],
+        "playbackDisplay": "grid"
+      },
+      "viewStates": [
+        {
+          "key": "vectors",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Velocity & gravity"
+        },
+        {
+          "key": "energy",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Energy display"
+        },
+        {
+          "key": "guide",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Physics guide"
+        },
+        {
+          "key": "data",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Flight data"
+        },
+        {
+          "key": "formulas",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Show your work"
+        },
+        {
+          "key": "overlay",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Compare paths"
+        },
+        {
+          "key": "graphs",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Motion graphs"
+        }
+      ],
+      "viewToggleCount": 14,
+      "inspectionNavigationCount": 6,
+      "evidenceUnchanged": true,
+      "modelMatchesBaseline": true,
+      "evidenceSha256": "dfa60a46dbcef170a73c710b13990b8c0c404a95f7d1f8fc87b262a398dbdf77",
+      "pageErrors": []
+    },
+    {
+      "version": "final",
+      "theme": "dark",
+      "width": 320,
+      "screenshots": [
+        "workbench-final-dark-320.png",
+        "controls-final-dark-320.png"
+      ],
+      "qualityRequired": true,
+      "contrastThreshold": 4.5,
+      "minFontPx": 12,
+      "minContrast": 5.900518911432192,
+      "minTargetWidthPx": 74,
+      "minTargetHeightPx": 44,
+      "textCount": 57,
+      "targetCount": 29,
+      "disabledTextCount": 0,
+      "violations": {
+        "smallText": [],
+        "contrast": [],
+        "unresolvedBackground": [],
+        "smallTargets": []
+      },
+      "geometry": {
+        "viewport": 320,
+        "containerWidth": 256,
+        "overflow": 0,
+        "workbench": {
+          "x": 32,
+          "y": -1798.5,
+          "width": 256,
+          "height": 1354,
+          "right": 288,
+          "bottom": -444.5
+        },
+        "scene": {
+          "x": 32,
+          "y": -1798.5,
+          "width": 256,
+          "height": 654,
+          "right": 288,
+          "bottom": -1144.5
+        },
+        "sliders": {
+          "x": 32,
+          "y": -1128.5,
+          "width": 256,
+          "height": 684,
+          "right": 288,
+          "bottom": -444.5
+        },
+        "slidersContentWidth": 228,
+        "primary": {
+          "x": 32,
+          "y": -1967.5,
+          "width": 256,
+          "height": 157,
+          "right": 288,
+          "bottom": -1810.5
+        },
+        "controls": {
+          "x": 32,
+          "y": 1579.6875,
+          "width": 256,
+          "height": 1273,
+          "right": 288,
+          "bottom": 2852.6875
+        },
+        "canvas": {
+          "x": 34,
+          "y": -1736.5,
+          "width": 252,
+          "height": 476,
+          "right": 286,
+          "bottom": -1260.5
+        },
+        "primaryBeforeCanvas": true,
+        "sceneBeforeSettings": true,
+        "controlsAfterWorkbench": true,
+        "sceneContainsCanvasAndKey": true,
+        "workbenchContainsSettings": true,
+        "parameters": [
+          {
+            "key": "angle",
+            "rect": {
+              "x": 46,
+              "y": -1054.5,
+              "width": 109,
+              "height": 158,
+              "right": 155,
+              "bottom": -896.5
+            },
+            "unit": "°",
+            "range": "angle"
+          },
+          {
+            "key": "velocity",
+            "rect": {
+              "x": 165,
+              "y": -1054.5,
+              "width": 109,
+              "height": 158,
+              "right": 274,
+              "bottom": -896.5
+            },
+            "unit": "m/s",
+            "range": "velocity"
+          },
+          {
+            "key": "gravity",
+            "rect": {
+              "x": 46,
+              "y": -886.5,
+              "width": 109,
+              "height": 158,
+              "right": 155,
+              "bottom": -728.5
+            },
+            "unit": "m/s²",
+            "range": "gravity"
+          },
+          {
+            "key": "mass",
+            "rect": {
+              "x": 165,
+              "y": -886.5,
+              "width": 109,
+              "height": 158,
+              "right": 274,
+              "bottom": -728.5
+            },
+            "unit": "kg",
+            "range": "mass"
+          },
+          {
+            "key": "launchHeight",
+            "rect": {
+              "x": 46,
+              "y": -718.5,
+              "width": 228,
+              "height": 158,
+              "right": 274,
+              "bottom": -560.5
+            },
+            "unit": "m",
+            "range": "launchHeight"
+          }
+        ],
+        "views": [
+          {
+            "x": 59,
+            "y": 1621.6875,
+            "width": 97,
+            "height": 106,
+            "right": 156,
+            "bottom": 1727.6875
+          },
+          {
+            "x": 164,
+            "y": 1621.6875,
+            "width": 97,
+            "height": 106,
+            "right": 261,
+            "bottom": 1727.6875
+          },
+          {
+            "x": 59,
+            "y": 1735.6875,
+            "width": 97,
+            "height": 88,
+            "right": 156,
+            "bottom": 1823.6875
+          },
+          {
+            "x": 164,
+            "y": 1735.6875,
+            "width": 97,
+            "height": 88,
+            "right": 261,
+            "bottom": 1823.6875
+          },
+          {
+            "x": 59,
+            "y": 1831.6875,
+            "width": 97,
+            "height": 106,
+            "right": 156,
+            "bottom": 1937.6875
+          },
+          {
+            "x": 164,
+            "y": 1831.6875,
+            "width": 97,
+            "height": 106,
+            "right": 261,
+            "bottom": 1937.6875
+          },
+          {
+            "x": 59,
+            "y": 1945.6875,
+            "width": 202,
+            "height": 68,
+            "right": 261,
+            "bottom": 2013.6875
+          }
+        ],
+        "playback": [
+          {
+            "x": 59,
+            "y": 2080.6875,
+            "width": 97,
+            "height": 56,
+            "right": 156,
+            "bottom": 2136.6875
+          },
+          {
+            "x": 164,
+            "y": 2080.6875,
+            "width": 97,
+            "height": 56,
+            "right": 261,
+            "bottom": 2136.6875
+          },
+          {
+            "x": 59,
+            "y": 2144.6875,
+            "width": 97,
+            "height": 56,
+            "right": 156,
+            "bottom": 2200.6875
+          },
+          {
+            "x": 164,
+            "y": 2144.6875,
+            "width": 97,
+            "height": 56,
+            "right": 261,
+            "bottom": 2200.6875
+          }
+        ],
+        "gravity": [
+          {
+            "x": 59,
+            "y": 2697.6875,
+            "width": 97,
+            "height": 60,
+            "right": 156,
+            "bottom": 2757.6875
+          },
+          {
+            "x": 164,
+            "y": 2697.6875,
+            "width": 97,
+            "height": 60,
+            "right": 261,
+            "bottom": 2757.6875
+          },
+          {
+            "x": 59,
+            "y": 2765.6875,
+            "width": 97,
+            "height": 60,
+            "right": 156,
+            "bottom": 2825.6875
+          },
+          {
+            "x": 164,
+            "y": 2765.6875,
+            "width": 97,
+            "height": 60,
+            "right": 261,
+            "bottom": 2825.6875
+          }
+        ],
+        "playbackDisplay": "grid"
+      },
+      "viewStates": [
+        {
+          "key": "vectors",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Velocity & gravity"
+        },
+        {
+          "key": "energy",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Energy display"
+        },
+        {
+          "key": "guide",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Physics guide"
+        },
+        {
+          "key": "data",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Flight data"
+        },
+        {
+          "key": "formulas",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Show your work"
+        },
+        {
+          "key": "overlay",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Compare paths"
+        },
+        {
+          "key": "graphs",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Motion graphs"
+        }
+      ],
+      "viewToggleCount": 14,
+      "inspectionNavigationCount": 6,
+      "evidenceUnchanged": true,
+      "modelMatchesBaseline": true,
+      "evidenceSha256": "dfa60a46dbcef170a73c710b13990b8c0c404a95f7d1f8fc87b262a398dbdf77",
+      "pageErrors": []
+    },
+    {
+      "version": "final",
+      "theme": "contrast",
+      "width": 1100,
+      "screenshots": [
+        "workbench-final-contrast-1100.png",
+        "controls-final-contrast-1100.png"
+      ],
+      "qualityRequired": true,
+      "contrastThreshold": 7,
+      "minFontPx": 12,
+      "minContrast": 15.303999999999998,
+      "minTargetWidthPx": 74,
+      "minTargetHeightPx": 44,
+      "textCount": 57,
+      "targetCount": 29,
+      "disabledTextCount": 0,
+      "violations": {
+        "smallText": [],
+        "contrast": [],
+        "unresolvedBackground": [],
+        "smallTargets": []
+      },
+      "geometry": {
+        "viewport": 1100,
+        "containerWidth": 1024,
+        "overflow": 0,
+        "workbench": {
+          "x": 38,
+          "y": -446.3125,
+          "width": 1024,
+          "height": 672,
+          "right": 1062,
+          "bottom": 225.6875
+        },
+        "scene": {
+          "x": 38,
+          "y": -446.3125,
+          "width": 698,
+          "height": 605,
+          "right": 736,
+          "bottom": 158.6875
+        },
+        "sliders": {
+          "x": 752,
+          "y": -446.3125,
+          "width": 310,
+          "height": 672,
+          "right": 1062,
+          "bottom": 225.6875
+        },
+        "slidersContentWidth": 276,
+        "primary": {
+          "x": 38,
+          "y": -544.3125,
+          "width": 1024,
+          "height": 86,
+          "right": 1062,
+          "bottom": -458.3125
+        },
+        "controls": {
+          "x": 38,
+          "y": 1341.875,
+          "width": 1024,
+          "height": 640,
+          "right": 1062,
+          "bottom": 1981.875
+        },
+        "canvas": {
+          "x": 40,
+          "y": -382.3125,
+          "width": 694,
+          "height": 476,
+          "right": 734,
+          "bottom": 93.6875
+        },
+        "primaryBeforeCanvas": true,
+        "sceneBeforeSettings": true,
+        "controlsAfterWorkbench": true,
+        "sceneContainsCanvasAndKey": true,
+        "workbenchContainsSettings": true,
+        "parameters": [
+          {
+            "key": "angle",
+            "rect": {
+              "x": 769,
+              "y": -369.3125,
+              "width": 133,
+              "height": 158,
+              "right": 902,
+              "bottom": -211.3125
+            },
+            "unit": "°",
+            "range": "angle"
+          },
+          {
+            "key": "velocity",
+            "rect": {
+              "x": 912,
+              "y": -369.3125,
+              "width": 133,
+              "height": 158,
+              "right": 1045,
+              "bottom": -211.3125
+            },
+            "unit": "m/s",
+            "range": "velocity"
+          },
+          {
+            "key": "gravity",
+            "rect": {
+              "x": 769,
+              "y": -201.3125,
+              "width": 133,
+              "height": 158,
+              "right": 902,
+              "bottom": -43.3125
+            },
+            "unit": "m/s²",
+            "range": "gravity"
+          },
+          {
+            "key": "mass",
+            "rect": {
+              "x": 912,
+              "y": -201.3125,
+              "width": 133,
+              "height": 158,
+              "right": 1045,
+              "bottom": -43.3125
+            },
+            "unit": "kg",
+            "range": "mass"
+          },
+          {
+            "key": "launchHeight",
+            "rect": {
+              "x": 769,
+              "y": -33.3125,
+              "width": 276,
+              "height": 158,
+              "right": 1045,
+              "bottom": 124.6875
+            },
+            "unit": "m",
+            "range": "launchHeight"
+          }
+        ],
+        "views": [
+          {
+            "x": 71,
+            "y": 1389.875,
+            "width": 225.5,
+            "height": 84,
+            "right": 296.5,
+            "bottom": 1473.875
+          },
+          {
+            "x": 304.5,
+            "y": 1389.875,
+            "width": 225.5,
+            "height": 84,
+            "right": 530,
+            "bottom": 1473.875
+          },
+          {
+            "x": 71,
+            "y": 1481.875,
+            "width": 225.5,
+            "height": 84,
+            "right": 296.5,
+            "bottom": 1565.875
+          },
+          {
+            "x": 304.5,
+            "y": 1481.875,
+            "width": 225.5,
+            "height": 84,
+            "right": 530,
+            "bottom": 1565.875
+          },
+          {
+            "x": 71,
+            "y": 1573.875,
+            "width": 225.5,
+            "height": 84,
+            "right": 296.5,
+            "bottom": 1657.875
+          },
+          {
+            "x": 304.5,
+            "y": 1573.875,
+            "width": 225.5,
+            "height": 84,
+            "right": 530,
+            "bottom": 1657.875
+          },
+          {
+            "x": 71,
+            "y": 1665.875,
+            "width": 225.5,
+            "height": 84,
+            "right": 296.5,
+            "bottom": 1749.875
+          }
+        ],
+        "playback": [
+          {
+            "x": 571,
+            "y": 1404.875,
+            "width": 108.25,
+            "height": 58,
+            "right": 679.25,
+            "bottom": 1462.875
+          },
+          {
+            "x": 687.25,
+            "y": 1404.875,
+            "width": 108.25,
+            "height": 58,
+            "right": 795.5,
+            "bottom": 1462.875
+          },
+          {
+            "x": 803.5,
+            "y": 1404.875,
+            "width": 108.25,
+            "height": 58,
+            "right": 911.75,
+            "bottom": 1462.875
+          },
+          {
+            "x": 919.75,
+            "y": 1404.875,
+            "width": 108.25,
+            "height": 58,
+            "right": 1028,
+            "bottom": 1462.875
+          }
+        ],
+        "gravity": [
+          {
+            "x": 71,
+            "y": 1886.875,
+            "width": 233.5,
+            "height": 62,
+            "right": 304.5,
+            "bottom": 1948.875
+          },
+          {
+            "x": 312.5,
+            "y": 1886.875,
+            "width": 233.5,
+            "height": 62,
+            "right": 546,
+            "bottom": 1948.875
+          },
+          {
+            "x": 554,
+            "y": 1886.875,
+            "width": 233.5,
+            "height": 62,
+            "right": 787.5,
+            "bottom": 1948.875
+          },
+          {
+            "x": 795.5,
+            "y": 1886.875,
+            "width": 233.5,
+            "height": 62,
+            "right": 1029,
+            "bottom": 1948.875
+          }
+        ],
+        "playbackDisplay": "grid"
+      },
+      "viewStates": [
+        {
+          "key": "vectors",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Velocity & gravity"
+        },
+        {
+          "key": "energy",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Energy display"
+        },
+        {
+          "key": "guide",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Physics guide"
+        },
+        {
+          "key": "data",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Flight data"
+        },
+        {
+          "key": "formulas",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Show your work"
+        },
+        {
+          "key": "overlay",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Compare paths"
+        },
+        {
+          "key": "graphs",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Motion graphs"
+        }
+      ],
+      "viewToggleCount": 14,
+      "inspectionNavigationCount": 6,
+      "evidenceUnchanged": true,
+      "modelMatchesBaseline": true,
+      "evidenceSha256": "dfa60a46dbcef170a73c710b13990b8c0c404a95f7d1f8fc87b262a398dbdf77",
+      "pageErrors": []
+    },
+    {
+      "version": "final",
+      "theme": "contrast",
+      "width": 375,
+      "screenshots": [
+        "workbench-final-contrast-375.png",
+        "controls-final-contrast-375.png"
+      ],
+      "qualityRequired": true,
+      "contrastThreshold": 7,
+      "minFontPx": 12,
+      "minContrast": 15.303999999999998,
+      "minTargetWidthPx": 74,
+      "minTargetHeightPx": 44,
+      "textCount": 57,
+      "targetCount": 29,
+      "disabledTextCount": 0,
+      "violations": {
+        "smallText": [],
+        "contrast": [],
+        "unresolvedBackground": [],
+        "smallTargets": []
+      },
+      "geometry": {
+        "viewport": 375,
+        "containerWidth": 331,
+        "overflow": 0,
+        "workbench": {
+          "x": 22,
+          "y": -1232.5,
+          "width": 331,
+          "height": 1314,
+          "right": 353,
+          "bottom": 81.5
+        },
+        "scene": {
+          "x": 22,
+          "y": -1232.5,
+          "width": 331,
+          "height": 632,
+          "right": 353,
+          "bottom": -600.5
+        },
+        "sliders": {
+          "x": 22,
+          "y": -584.5,
+          "width": 331,
+          "height": 666,
+          "right": 353,
+          "bottom": 81.5
+        },
+        "slidersContentWidth": 303,
+        "primary": {
+          "x": 22,
+          "y": -1386.5,
+          "width": 331,
+          "height": 142,
+          "right": 353,
+          "bottom": -1244.5
+        },
+        "controls": {
+          "x": 22,
+          "y": 1899.6875,
+          "width": 331,
+          "height": 1143,
+          "right": 353,
+          "bottom": 3042.6875
+        },
+        "canvas": {
+          "x": 24,
+          "y": -1168.5,
+          "width": 327,
+          "height": 476,
+          "right": 351,
+          "bottom": -692.5
+        },
+        "primaryBeforeCanvas": true,
+        "sceneBeforeSettings": true,
+        "controlsAfterWorkbench": true,
+        "sceneContainsCanvasAndKey": true,
+        "workbenchContainsSettings": true,
+        "parameters": [
+          {
+            "key": "angle",
+            "rect": {
+              "x": 36,
+              "y": -510.5,
+              "width": 146.5,
+              "height": 158,
+              "right": 182.5,
+              "bottom": -352.5
+            },
+            "unit": "°",
+            "range": "angle"
+          },
+          {
+            "key": "velocity",
+            "rect": {
+              "x": 192.5,
+              "y": -510.5,
+              "width": 146.5,
+              "height": 158,
+              "right": 339,
+              "bottom": -352.5
+            },
+            "unit": "m/s",
+            "range": "velocity"
+          },
+          {
+            "key": "gravity",
+            "rect": {
+              "x": 36,
+              "y": -342.5,
+              "width": 146.5,
+              "height": 158,
+              "right": 182.5,
+              "bottom": -184.5
+            },
+            "unit": "m/s²",
+            "range": "gravity"
+          },
+          {
+            "key": "mass",
+            "rect": {
+              "x": 192.5,
+              "y": -342.5,
+              "width": 146.5,
+              "height": 158,
+              "right": 339,
+              "bottom": -184.5
+            },
+            "unit": "kg",
+            "range": "mass"
+          },
+          {
+            "key": "launchHeight",
+            "rect": {
+              "x": 36,
+              "y": -174.5,
+              "width": 303,
+              "height": 158,
+              "right": 339,
+              "bottom": -16.5
+            },
+            "unit": "m",
+            "range": "launchHeight"
+          }
+        ],
+        "views": [
+          {
+            "x": 49,
+            "y": 1941.6875,
+            "width": 134.5,
+            "height": 90,
+            "right": 183.5,
+            "bottom": 2031.6875
+          },
+          {
+            "x": 191.5,
+            "y": 1941.6875,
+            "width": 134.5,
+            "height": 90,
+            "right": 326,
+            "bottom": 2031.6875
+          },
+          {
+            "x": 49,
+            "y": 2039.6875,
+            "width": 134.5,
+            "height": 88,
+            "right": 183.5,
+            "bottom": 2127.6875
+          },
+          {
+            "x": 191.5,
+            "y": 2039.6875,
+            "width": 134.5,
+            "height": 88,
+            "right": 326,
+            "bottom": 2127.6875
+          },
+          {
+            "x": 49,
+            "y": 2135.6875,
+            "width": 134.5,
+            "height": 90,
+            "right": 183.5,
+            "bottom": 2225.6875
+          },
+          {
+            "x": 191.5,
+            "y": 2135.6875,
+            "width": 134.5,
+            "height": 90,
+            "right": 326,
+            "bottom": 2225.6875
+          },
+          {
+            "x": 49,
+            "y": 2233.6875,
+            "width": 277,
+            "height": 68,
+            "right": 326,
+            "bottom": 2301.6875
+          }
+        ],
+        "playback": [
+          {
+            "x": 50,
+            "y": 2369.6875,
+            "width": 133.5,
+            "height": 44,
+            "right": 183.5,
+            "bottom": 2413.6875
+          },
+          {
+            "x": 191.5,
+            "y": 2369.6875,
+            "width": 133.5,
+            "height": 44,
+            "right": 325,
+            "bottom": 2413.6875
+          },
+          {
+            "x": 50,
+            "y": 2421.6875,
+            "width": 133.5,
+            "height": 58,
+            "right": 183.5,
+            "bottom": 2479.6875
+          },
+          {
+            "x": 191.5,
+            "y": 2421.6875,
+            "width": 133.5,
+            "height": 58,
+            "right": 325,
+            "bottom": 2479.6875
+          }
+        ],
+        "gravity": [
+          {
+            "x": 49,
+            "y": 2883.6875,
+            "width": 134.5,
+            "height": 62,
+            "right": 183.5,
+            "bottom": 2945.6875
+          },
+          {
+            "x": 191.5,
+            "y": 2883.6875,
+            "width": 134.5,
+            "height": 62,
+            "right": 326,
+            "bottom": 2945.6875
+          },
+          {
+            "x": 49,
+            "y": 2953.6875,
+            "width": 134.5,
+            "height": 62,
+            "right": 183.5,
+            "bottom": 3015.6875
+          },
+          {
+            "x": 191.5,
+            "y": 2953.6875,
+            "width": 134.5,
+            "height": 62,
+            "right": 326,
+            "bottom": 3015.6875
+          }
+        ],
+        "playbackDisplay": "grid"
+      },
+      "viewStates": [
+        {
+          "key": "vectors",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Velocity & gravity"
+        },
+        {
+          "key": "energy",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Energy display"
+        },
+        {
+          "key": "guide",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Physics guide"
+        },
+        {
+          "key": "data",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Flight data"
+        },
+        {
+          "key": "formulas",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Show your work"
+        },
+        {
+          "key": "overlay",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Compare paths"
+        },
+        {
+          "key": "graphs",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Motion graphs"
+        }
+      ],
+      "viewToggleCount": 14,
+      "inspectionNavigationCount": 6,
+      "evidenceUnchanged": true,
+      "modelMatchesBaseline": true,
+      "evidenceSha256": "dfa60a46dbcef170a73c710b13990b8c0c404a95f7d1f8fc87b262a398dbdf77",
+      "pageErrors": []
+    },
+    {
+      "version": "final",
+      "theme": "contrast",
+      "width": 320,
+      "screenshots": [
+        "workbench-final-contrast-320.png",
+        "controls-final-contrast-320.png"
+      ],
+      "qualityRequired": true,
+      "contrastThreshold": 7,
+      "minFontPx": 12,
+      "minContrast": 15.303999999999998,
+      "minTargetWidthPx": 74,
+      "minTargetHeightPx": 44,
+      "textCount": 57,
+      "targetCount": 29,
+      "disabledTextCount": 0,
+      "violations": {
+        "smallText": [],
+        "contrast": [],
+        "unresolvedBackground": [],
+        "smallTargets": []
+      },
+      "geometry": {
+        "viewport": 320,
+        "containerWidth": 276,
+        "overflow": 0,
+        "workbench": {
+          "x": 22,
+          "y": -1726.5,
+          "width": 276,
+          "height": 1332,
+          "right": 298,
+          "bottom": -394.5
+        },
+        "scene": {
+          "x": 22,
+          "y": -1726.5,
+          "width": 276,
+          "height": 632,
+          "right": 298,
+          "bottom": -1094.5
+        },
+        "sliders": {
+          "x": 22,
+          "y": -1078.5,
+          "width": 276,
+          "height": 684,
+          "right": 298,
+          "bottom": -394.5
+        },
+        "slidersContentWidth": 248,
+        "primary": {
+          "x": 22,
+          "y": -1880.5,
+          "width": 276,
+          "height": 142,
+          "right": 298,
+          "bottom": -1738.5
+        },
+        "controls": {
+          "x": 22,
+          "y": 1522.6875,
+          "width": 276,
+          "height": 1227,
+          "right": 298,
+          "bottom": 2749.6875
+        },
+        "canvas": {
+          "x": 24,
+          "y": -1662.5,
+          "width": 272,
+          "height": 476,
+          "right": 296,
+          "bottom": -1186.5
+        },
+        "primaryBeforeCanvas": true,
+        "sceneBeforeSettings": true,
+        "controlsAfterWorkbench": true,
+        "sceneContainsCanvasAndKey": true,
+        "workbenchContainsSettings": true,
+        "parameters": [
+          {
+            "key": "angle",
+            "rect": {
+              "x": 36,
+              "y": -1004.5,
+              "width": 119,
+              "height": 158,
+              "right": 155,
+              "bottom": -846.5
+            },
+            "unit": "°",
+            "range": "angle"
+          },
+          {
+            "key": "velocity",
+            "rect": {
+              "x": 165,
+              "y": -1004.5,
+              "width": 119,
+              "height": 158,
+              "right": 284,
+              "bottom": -846.5
+            },
+            "unit": "m/s",
+            "range": "velocity"
+          },
+          {
+            "key": "gravity",
+            "rect": {
+              "x": 36,
+              "y": -836.5,
+              "width": 119,
+              "height": 158,
+              "right": 155,
+              "bottom": -678.5
+            },
+            "unit": "m/s²",
+            "range": "gravity"
+          },
+          {
+            "key": "mass",
+            "rect": {
+              "x": 165,
+              "y": -836.5,
+              "width": 119,
+              "height": 158,
+              "right": 284,
+              "bottom": -678.5
+            },
+            "unit": "kg",
+            "range": "mass"
+          },
+          {
+            "key": "launchHeight",
+            "rect": {
+              "x": 36,
+              "y": -668.5,
+              "width": 248,
+              "height": 158,
+              "right": 284,
+              "bottom": -510.5
+            },
+            "unit": "m",
+            "range": "launchHeight"
+          }
+        ],
+        "views": [
+          {
+            "x": 49,
+            "y": 1564.6875,
+            "width": 107,
+            "height": 90,
+            "right": 156,
+            "bottom": 1654.6875
+          },
+          {
+            "x": 164,
+            "y": 1564.6875,
+            "width": 107,
+            "height": 90,
+            "right": 271,
+            "bottom": 1654.6875
+          },
+          {
+            "x": 49,
+            "y": 1662.6875,
+            "width": 107,
+            "height": 90,
+            "right": 156,
+            "bottom": 1752.6875
+          },
+          {
+            "x": 164,
+            "y": 1662.6875,
+            "width": 107,
+            "height": 90,
+            "right": 271,
+            "bottom": 1752.6875
+          },
+          {
+            "x": 49,
+            "y": 1760.6875,
+            "width": 107,
+            "height": 90,
+            "right": 156,
+            "bottom": 1850.6875
+          },
+          {
+            "x": 164,
+            "y": 1760.6875,
+            "width": 107,
+            "height": 90,
+            "right": 271,
+            "bottom": 1850.6875
+          },
+          {
+            "x": 49,
+            "y": 1858.6875,
+            "width": 222,
+            "height": 68,
+            "right": 271,
+            "bottom": 1926.6875
+          }
+        ],
+        "playback": [
+          {
+            "x": 50,
+            "y": 1994.6875,
+            "width": 106,
+            "height": 58,
+            "right": 156,
+            "bottom": 2052.6875
+          },
+          {
+            "x": 164,
+            "y": 1994.6875,
+            "width": 106,
+            "height": 58,
+            "right": 270,
+            "bottom": 2052.6875
+          },
+          {
+            "x": 50,
+            "y": 2060.6875,
+            "width": 106,
+            "height": 58,
+            "right": 156,
+            "bottom": 2118.6875
+          },
+          {
+            "x": 164,
+            "y": 2060.6875,
+            "width": 106,
+            "height": 58,
+            "right": 270,
+            "bottom": 2118.6875
+          }
+        ],
+        "gravity": [
+          {
+            "x": 49,
+            "y": 2590.6875,
+            "width": 107,
+            "height": 62,
+            "right": 156,
+            "bottom": 2652.6875
+          },
+          {
+            "x": 164,
+            "y": 2590.6875,
+            "width": 107,
+            "height": 62,
+            "right": 271,
+            "bottom": 2652.6875
+          },
+          {
+            "x": 49,
+            "y": 2660.6875,
+            "width": 107,
+            "height": 62,
+            "right": 156,
+            "bottom": 2722.6875
+          },
+          {
+            "x": 164,
+            "y": 2660.6875,
+            "width": 107,
+            "height": 62,
+            "right": 271,
+            "bottom": 2722.6875
+          }
+        ],
+        "playbackDisplay": "grid"
+      },
+      "viewStates": [
+        {
+          "key": "vectors",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Velocity & gravity"
+        },
+        {
+          "key": "energy",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Energy display"
+        },
+        {
+          "key": "guide",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Physics guide"
+        },
+        {
+          "key": "data",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Flight data"
+        },
+        {
+          "key": "formulas",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Show your work"
+        },
+        {
+          "key": "overlay",
+          "pressed": "false",
+          "state": "−OFF",
+          "icon": true,
+          "title": "Compare paths"
+        },
+        {
+          "key": "graphs",
+          "pressed": "true",
+          "state": "✓ON",
+          "icon": true,
+          "title": "Motion graphs"
+        }
+      ],
+      "viewToggleCount": 14,
+      "inspectionNavigationCount": 6,
+      "evidenceUnchanged": true,
+      "modelMatchesBaseline": true,
+      "evidenceSha256": "dfa60a46dbcef170a73c710b13990b8c0c404a95f7d1f8fc87b262a398dbdf77",
+      "pageErrors": []
+    }
+  ],
+  "failures": []
+}
