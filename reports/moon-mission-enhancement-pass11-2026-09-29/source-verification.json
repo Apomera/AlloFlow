@@ -1,0 +1,12 @@
+{
+  "workingSha256": "31163a7c118d2f4c6df0c173c3e428ff4fad1b3f3a48582723b5057508b9b0f4",
+  "publicParity": true,
+  "baselineSha256": "ca7369e0a53170e8d01e2cd129a26fd1442a876a7c53981a6bc1320e79bd4b9e",
+  "candidateSha256": "9769ac80fc9d7208439a5be7be7d40c14636f68816971aa4d867db81312c3432",
+  "excludedPreexistingMoonwalkHunks": 34,
+  "syntaxChecks": [
+    "working source",
+    "curated candidate"
+  ],
+  "newCanonicalLines": 251
+}

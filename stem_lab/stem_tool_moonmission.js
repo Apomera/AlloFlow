@@ -566,6 +566,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       injection: injectionSave.tliResult,
       transit: mmCleanTransitPlayback(d).transitResult,
       loi: mmCleanLoiPlayback(d).loiResult,
+      lunarEnvironment: mmCleanLunarEnvironment(d).lunarEnvironmentResult,
       poweredApproach: mmCleanApproachPlayback(d).approachResult,
       returnFlight: mmCleanReturnPlayback(d).returnResult,
       ascent: mmCleanAscentPlayback(d).ascentResult,
@@ -694,6 +695,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     if (sum.loi && mmNum(sum.loi.actualBurn) && mmNum(sum.loi.propellantUsed)) ln('Lunar orbit insertion: ' + sum.loi.outcome + '; SPS burn ' + sum.loi.actualBurn.toFixed(1) + ' s, propellant used ' + sum.loi.propellantUsed.toFixed(1) + ' kg; ' +
       (mmNum(sum.loi.perilune) ? 'perilune ' + (sum.loi.perilune / 1000).toFixed(1) + ' km' : 'perilune unavailable') +
       (mmNum(sum.loi.apolune) ? ', apolune ' + (sum.loi.apolune / 1000).toFixed(1) + ' km.' : ', open escape trajectory.'));
+    if (sum.lunarEnvironment) ln('Lunar orbit environment: ' + (sum.lunarEnvironment.duration/60).toFixed(2) + ' min orbit; radio blocked ' + (sum.lunarEnvironment.radioBlockedSeconds/60).toFixed(2) + ' min; total eclipse ' + (sum.lunarEnvironment.totalEclipseSeconds/60).toFixed(2) + ' min; partial eclipse ' + sum.lunarEnvironment.partialEclipseSeconds.toFixed(2) + ' s; Sun direction ' + sum.lunarEnvironment.sunAngle + MM_DEG_SIGN + '. Fixed-body geometry in the achieved insertion orbit.');
     var L = sum.landing;
     ln('Landing: ' + (!L ? 'not flown'
       : (L.crashed ? 'hard landing at ' : 'touchdown at ') + L.vVel.toFixed(1) + ' m/s, drift ' + L.hVel.toFixed(1) + ' m/s, '
@@ -1313,6 +1315,104 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     return {scaleX:scale,scaleY:scale,craftX:p.x,craftY:p.y,moonRadius:MM_APPROACH.radius*scale,moonX:originX,moonY:originY+MM_APPROACH.radius*scale,pitch:pitch,plume:sample.throttle>0.005};
   }
   try { window.MoonMissionPure=Object.assign(window.MoonMissionPure||{}, { approachPhysics:MM_APPROACH, approachPlan:mmApproachPlan, approachReference:mmApproachReference, approachControl:mmApproachControl, approachStep:mmApproachStep, approachProfile:mmApproachProfile, approachSample:mmApproachSample,cleanApproachPlayback:mmCleanApproachPlayback,drawApproachScene:mmDrawApproachScene }); } catch(e) {}
+
+  function mmDrawLunarEnvironment(ctx,W,H,s,p) {
+    var R=MM_LOI.radius,span=(R+p.orbit.apolune)*1.16,scale=Math.min(W-48,H-190)/(2*span);
+    var cx=W/2,cy=64+(H-190)/2,scx=cx+s.x*scale,scy=cy-s.y*scale,mr=R*scale;
+    var theta=p.sunAngle*Math.PI/180,ux=Math.cos(theta),uy=Math.sin(theta);
+    function point(x,y){return [cx+x*scale,cy-y*scale];}
+    function polygon(points,color){ctx.fillStyle=color;ctx.beginPath();points.forEach(function(v,i){var q=point(v[0],v[1]);if(i)ctx.lineTo(q[0],q[1]);else ctx.moveTo(q[0],q[1]);});ctx.closePath();ctx.fill();}
+    ctx.save();ctx.clearRect(0,0,W,H);ctx.fillStyle='#020713';ctx.fillRect(0,0,W,H);
+    drawStarfield(ctx,W,H,0,65);ctx.textAlign='left';ctx.font='bold 11px system-ui';ctx.fillStyle='#e2e8f0';ctx.fillText('RADIO + SUNLIGHT',14,22);
+    ctx.font='10px system-ui';ctx.fillStyle='#cbd5e1';mmAscentCanvasCaption(ctx,'Equal axes · craft enlarged · Earth / Sun off scale',14,39,W-28,12);
+    ctx.save();ctx.beginPath();ctx.rect(6,55,W-12,H-166);ctx.clip();
+    // Small solar-disc shadow cone; its narrow penumbra is plotted at physical scale.
+    var L=span*3,px=-uy,py=ux,inner=R-L*(MM_LUNAR_ENV.sunRadius-R)/MM_LUNAR_ENV.sunDistance;
+    var outer=R+L*(MM_LUNAR_ENV.sunRadius+R)/MM_LUNAR_ENV.sunDistance;
+    polygon([[px*R,py*R],[-ux*L+px*outer,-uy*L+py*outer],[-ux*L-px*outer,-uy*L-py*outer],[-px*R,-py*R]],'rgba(100,116,139,0.19)');
+    polygon([[px*R,py*R],[-ux*L+px*inner,-uy*L+py*inner],[-ux*L-px*inner,-uy*L-py*inner],[-px*R,-py*R]],'rgba(2,6,23,0.82)');
+    ctx.strokeStyle='#475569';ctx.lineWidth=1;ctx.setLineDash([3,5]);ctx.beginPath();
+    p.samples.forEach(function(row,i){var q=point(row.x,row.y);if(i)ctx.lineTo(q[0],q[1]);else ctx.moveTo(q[0],q[1]);});ctx.stroke();ctx.setLineDash([]);
+    ctx.strokeStyle='#38bdf8';ctx.lineWidth=2;ctx.beginPath();var start=true;
+    p.samples.forEach(function(row){if(row.time>s.time)return;var q=point(row.x,row.y);if(start){ctx.moveTo(q[0],q[1]);start=false;}else ctx.lineTo(q[0],q[1]);});ctx.lineTo(scx,scy);ctx.stroke();
+    var g=ctx.createRadialGradient(cx+mr*ux*.4,cy-mr*uy*.4,mr*.04,cx,cy,mr);g.addColorStop(0,'#b5b8ba');g.addColorStop(1,'#505965');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,mr,0,Math.PI*2);ctx.fill();
+    ctx.save();ctx.beginPath();ctx.arc(cx,cy,mr,0,Math.PI*2);ctx.clip();ctx.translate(cx,cy);ctx.rotate(-theta);ctx.fillStyle='rgba(2,6,23,.79)';ctx.fillRect(-mr,-mr,mr,mr*2);ctx.restore();
+    ctx.strokeStyle='#94a3b8';ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy,mr,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle='#e2e8f0';ctx.textAlign='center';ctx.font='bold 10px system-ui';ctx.fillText('MOON',cx,cy+4);
+    var end=s.earth.hit||s.earth.target,radioEnd=point(end.x,end.y);
+    ctx.strokeStyle=s.earth.visible?'#6ee7b7':'#fb7185';ctx.lineWidth=1.5;ctx.setLineDash(s.earth.visible?[5,3]:[]);
+    ctx.beginPath();ctx.moveTo(scx,scy);ctx.lineTo(radioEnd[0],radioEnd[1]);ctx.stroke();ctx.setLineDash([]);
+    if(s.earth.hit){ctx.fillStyle='#fb7185';ctx.beginPath();ctx.arc(radioEnd[0],radioEnd[1],3,0,Math.PI*2);ctx.fill();}
+    ctx.strokeStyle='#fde68a';ctx.lineWidth=1;ctx.setLineDash([2,4]);ctx.beginPath();ctx.moveTo(scx,scy);var sunRay=mmSegmentMoon(s.x,s.y,s.x+s.sun.directionX*MM_LUNAR_ENV.sunDistance,s.y+s.sun.directionY*MM_LUNAR_ENV.sunDistance),sunEnd=sunRay.hit?point(sunRay.hit.x,sunRay.hit.y):[scx+s.sun.directionX*W*2,scy-s.sun.directionY*W*2];ctx.lineTo(sunEnd[0],sunEnd[1]);ctx.stroke();ctx.setLineDash([]);
+    var vscale=26/s.speed;mmAscentVector(ctx,scx,scy,s.vx*vscale,-s.vy*vscale,'#67e8f9');
+    mmDrawLOIStack(ctx,scx,scy,.63,Math.atan2(-s.vy,s.vx),s);ctx.restore();
+    ctx.textAlign='left';ctx.font='10px system-ui';ctx.fillStyle='#6ee7b7';ctx.fillText('← Earth',14,62);
+    ctx.textAlign='right';ctx.fillStyle='#fde68a';ctx.fillText('Sun '+p.sunAngle+'° '+(p.sunAngle===45?'↗':p.sunAngle===90?'↑':'↖'),W-14,62);
+    var tx=26,tw=W-52,ty=H-94;
+    [['EARTH RADIO',ty],['SUNLIGHT',ty+43]].forEach(function(row,index){ctx.textAlign='left';ctx.fillStyle='#cbd5e1';ctx.font='9px system-ui';ctx.fillText(row[0],tx,row[1]-6);p.intervals.forEach(function(interval){var x=tx+tw*interval.start/p.orbit.period,w=tw*(interval.end-interval.start)/p.orbit.period;
+      ctx.fillStyle=index===0?(interval.radio?'#10b981':'#7f1d1d'):interval.sun==='sunlit'?'#fde68a':interval.sun==='partial'?'#f59e0b':'#334155';ctx.fillRect(x,row[1],Math.max(.7,w),12);});});
+    var cursor=tx+tw*s.time/p.orbit.period;ctx.strokeStyle='#f8fafc';ctx.beginPath();ctx.moveTo(cursor,ty-3);ctx.lineTo(cursor,ty+58);ctx.stroke();
+    ctx.textAlign='left';ctx.fillStyle='#e2e8f0';ctx.font='10px system-ui';ctx.fillText('0 min',tx,H-12);ctx.textAlign='right';ctx.fillText((p.orbit.period/60).toFixed(1)+' min',W-tx,H-12);ctx.restore();
+    return {scaleX:scale,scaleY:scale,moonRadius:mr,spacecraftX:scx,spacecraftY:scy,radioEndX:radioEnd[0],radioEndY:radioEnd[1],plumeVisible:false};
+  }
+  function mmRenderLunarEnvironmentCard(h,d,upd) {
+    var profile=mmLunarEnvironmentProfile(d.loiPlan,d.lunarEnvironmentSunAngle);if(!profile)return null;
+    var run=d.lunarEnvironmentRun||{time:0,recorded:false};
+    var button={minHeight:'44px',padding:'8px 12px',border:'1px solid #64748b',borderRadius:'8px',background:'#1e293b',color:'#f8fafc',fontSize:'13px',cursor:'pointer'};
+    function action(ev,name,value){var root=ev.currentTarget.closest('[data-environment-workspace]'),cv=root&&root.querySelector('[data-environment-canvas]');if(cv&&cv._environmentAction)cv._environmentAction(name,value);}
+    function resultText(p){return 'One orbit reviewed: '+(p.summary.radioBlockedSeconds/60).toFixed(1)+' min without direct Earth radio, '+(p.summary.totalEclipseSeconds/60).toFixed(1)+' min in total eclipse and '+p.summary.partialEclipseSeconds.toFixed(1)+' s in partial eclipse.';}
+    return h('section',{'data-environment-workspace':true,'aria-label':'Radio and sunlight in lunar orbit',style:{padding:'14px',border:'1px solid #475569',borderRadius:'12px',background:'#0b1729',color:'#e2e8f0',overflow:'hidden'}},
+      h('h3',{style:{fontSize:'19px',fontWeight:700,margin:'0 0 8px'}},'Radio and sunlight in lunar orbit'),
+      h('p',{style:{fontSize:'13px',lineHeight:1.6,color:'#cbd5e1'}},'Coast one more revolution from the insertion playback’s final measured state. The Moon can block Earth radio and eclipse the Sun at different times. The far side can be fully sunlit.'),
+      h('label',{style:{fontSize:'13px'}},'Compare Sun direction ',h('select',{'data-environment-sun-control':true,'aria-label':'Sun direction in the orbital plane',value:profile.sunAngle,style:button,onChange:function(ev){action(ev,'sun',Number(ev.target.value));}},[45,90,135].map(function(n){return h('option',{key:n,value:n},n+'° in orbit plane');}))),
+      h('canvas',{'data-environment-canvas':true,role:'img','aria-label':'One achieved lunar orbit with equal axes, solar shadow, Earth radio line, velocity and contact timelines. Numerical instruments and event buttons follow.',style:{display:'block',width:'100%',height:'420px',borderRadius:'8px',marginTop:'12px'},ref:function(cv){
+        if(!cv||cv._environmentInit)return;cv._environmentInit=true;var ctx=cv.getContext('2d');if(!ctx)return;
+        var p=profile,time=run.time,recorded=run.recorded,paused=d.lunarEnvironmentPaused,rate=d.lunarEnvironmentPlaybackRate;
+        var W=cv.offsetWidth||500,H=cv.offsetHeight||420,lastTs=null,lastSave=-Infinity,stamp='',observer;
+        if(!recorded)upd('lunarEnvironmentResult',null);
+        function resize(){W=cv.offsetWidth||W;H=cv.offsetHeight||H;cv.width=W*2;cv.height=H*2;ctx.setTransform(2,0,0,2,0,0);}
+        resize();if(typeof ResizeObserver==='function'){observer=new ResizeObserver(resize);observer.observe(cv);}
+        function persist(){if(time>=p.orbit.period&&!recorded){recorded=true;upd('lunarEnvironmentResult',Object.assign({},p.summary));if(typeof announceToSR==='function')announceToSR(resultText(p));}
+          var next=p.sunAngle+':'+time+':'+recorded;if(next===stamp)return;stamp=next;upd('lunarEnvironmentRun',{version:1,ignitionLead:p.controls.ignitionLead,burnDuration:p.controls.burnDuration,sunAngle:p.sunAngle,time:time,recorded:recorded});}
+        function visibility(){lastTs=null;persist();}document.addEventListener('visibilitychange',visibility);
+        cv._environmentAction=function(name,value){
+          if(name==='sun'&&[45,90,135].indexOf(value)>=0&&value!==p.sunAngle){p=mmLunarEnvironmentProfile(p.controls,value);time=0;recorded=false;paused=true;stamp='';upd('lunarEnvironmentSunAngle',value);upd('lunarEnvironmentResult',null);upd('lunarEnvironmentPaused',true);}
+          if(name==='seek'){time=Math.max(0,Math.min(p.orbit.period,Number(value)||0));paused=true;upd('lunarEnvironmentPaused',true);}
+          if(name==='event'){var event=p.events[Number(value)];if(event){time=Math.min(p.orbit.period,event.time+.25);paused=true;upd('lunarEnvironmentPaused',true);}}
+          if(name==='end'){time=p.orbit.period;paused=true;upd('lunarEnvironmentPaused',true);}
+          if(name==='pause'){paused=!!value;upd('lunarEnvironmentPaused',paused);if(!paused)upd('animPaused',false);}
+          if(name==='rate'&&[1,10,60,240].indexOf(Number(value))>=0){rate=Number(value);upd('lunarEnvironmentPlaybackRate',rate);}
+          lastTs=null;persist();
+        };
+        function paint(ts){
+          if(!document.contains(cv)){if(observer)observer.disconnect();document.removeEventListener('visibilitychange',visibility);cv._environmentAction=null;return;}
+          var running=!paused&&!_mmAnimPaused&&!document.hidden;
+          if(running&&lastTs!==null)time=Math.min(p.orbit.period,time+Math.max(0,Math.min(.1,(ts-lastTs)/1000))*rate);
+          lastTs=running&&Number.isFinite(ts)?ts:null;
+          if(time>=p.orbit.period&&!paused){paused=true;upd('lunarEnvironmentPaused',true);}
+          var s=mmLunarEnvironmentSample(p,time),picture=mmDrawLunarEnvironment(ctx,W,H,s,p);
+          cv.dataset.environmentTime=String(time);cv.dataset.environmentAltitude=String(s.altitude);cv.dataset.environmentSpeed=String(s.speed);cv.dataset.environmentMass=String(s.mass);cv.dataset.environmentFuel=String(s.propellant);
+          cv.dataset.environmentRadio=s.earth.visible?'contact':'blocked';cv.dataset.environmentSun=s.sun.phase;cv.dataset.environmentSunFraction=String(s.sun.fraction);cv.dataset.environmentRange=String(s.earth.range);cv.dataset.environmentDelay=s.earth.oneWayDelay===null?'blocked':String(s.earth.oneWayDelay);cv.dataset.environmentScale=String(picture.scaleX);
+          var root=cv.closest('[data-environment-workspace]'),values={time:(time/60).toFixed(2)+' min',altitude:(s.altitude/1000).toFixed(1)+' km',speed:(s.speed/1000).toFixed(3)+' km/s',radio:s.earth.visible?'Direct Earth contact':'Moon blocks Earth',sun:s.sun.phase==='total'?'Total eclipse':s.sun.phase==='partial'?'Partial eclipse':'Full sunlight',fraction:(s.sun.fraction*100).toFixed(1)+'%',range:(s.earth.range/1000).toFixed(0)+' km',delay:s.earth.visible?s.earth.oneWayDelay.toFixed(3)+' s':'No direct signal',round:s.earth.visible?s.earth.roundTripDelay.toFixed(3)+' s':'No direct signal'};
+          if(root){root.querySelectorAll('[data-environment-value]').forEach(function(node){node.textContent=values[node.getAttribute('data-environment-value')]||'';});var slider=root.querySelector('[data-environment-seek]');if(slider&&document.activeElement!==slider)slider.value=String(time);var status=root.querySelector('[data-environment-status]'),text=values.radio+' · '+values.sun;if(status&&status.textContent!==text)status.textContent=text;}
+          if(Number.isFinite(ts)&&ts-lastSave>=250||time>=p.orbit.period){lastSave=ts;persist();}requestAnimationFrame(paint);
+        }requestAnimationFrame(paint);
+      }}),
+      h('p',{'data-environment-status':true,role:'status',style:{fontSize:'13px',fontWeight:700,color:'#e2e8f0',margin:'12px 0'}},'Inspect radio contact and sunlight'),
+      h('dl',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(120px,1fr))',gap:'12px',margin:'12px 0'}},[['time','Coast time'],['altitude','Lunar altitude'],['speed','Moon-relative speed'],['fraction','Sun disc visible'],['range','Nearest Earth surface'],['delay','One-way radio time'],['round','Round-trip radio time']].map(function(row){return h('div',{key:row[0]},h('dt',{style:{fontSize:'11px',color:'#cbd5e1'}},row[1]),h('dd',{'data-environment-value':row[0],style:{margin:0,fontSize:'15px',fontWeight:700,color:'#f8fafc',fontVariantNumeric:'tabular-nums'}},'—'));})),
+      h('div',{style:{display:'flex',flexWrap:'wrap',gap:'8px',alignItems:'center'}},
+        h('button',{type:'button','data-environment-pause':true,style:button,onClick:function(ev){action(ev,'pause',!(d.lunarEnvironmentPaused||_mmAnimPaused));}},d.lunarEnvironmentPaused||_mmAnimPaused?'Play orbit':'Pause orbit'),
+        h('label',{style:{fontSize:'12px'}},'Playback speed ',h('select',{'data-environment-rate':true,'aria-label':'Orbit environment playback speed',value:d.lunarEnvironmentPlaybackRate,style:button,onChange:function(ev){action(ev,'rate',ev.target.value);}},[1,10,60,240].map(function(n){return h('option',{key:n,value:n},n+'×');}))),
+        h('button',{type:'button','data-environment-review':true,style:button,onClick:function(ev){action(ev,'end');}},'Review one orbit')),
+      h('label',{htmlFor:'mm-environment-time',style:{display:'block',fontSize:'12px',marginTop:'12px'}},'Inspect coast time'),
+      h('input',{id:'mm-environment-time','data-environment-seek':true,type:'range',min:0,max:profile.orbit.period,step:.1,defaultValue:run.time,style:{width:'100%',minHeight:'44px',accentColor:'#38bdf8'},onChange:function(ev){action(ev,'seek',ev.target.value);},onKeyDown:function(ev){if(ev.key==='Home'||ev.key==='End'){ev.preventDefault();action(ev,ev.key==='Home'?'seek':'end',0);}}}),
+      h('h4',{style:{fontSize:'13px',margin:'12px 0 6px'}},'Contact timeline'),
+      h('div',{'data-environment-events':true,role:'group','aria-label':'Radio and eclipse contacts',style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,210px),1fr))',gap:'8px'}},profile.events.map(function(event,i){return h('button',{key:event.time,type:'button','data-environment-event':i,style:Object.assign({},button,{textAlign:'left'}),onClick:function(ev){action(ev,'event',i);}},h('span',{style:{display:'block',color:'#f8fafc'}},event.label),h('span',{style:{fontSize:'11px',color:'#cbd5e1'}},(event.time/60).toFixed(2)+' min · inspect just after contact'));})),
+      d.lunarEnvironmentResult&&h('p',{'data-environment-result':true,role:'status',style:{padding:'12px',border:'1px solid #10b981',borderRadius:'8px',background:'#064e3b',color:'#ecfdf5',fontSize:'13px',lineHeight:1.6}},resultText(profile)),
+      h('p',{'data-environment-model-note':true,style:{fontSize:'12px',lineHeight:1.6,color:'#cbd5e1',marginBottom:0}},'Model: one Kepler coast in the achieved insertion orbit; mass and fuel stay constant. Earth is fixed 384,400 km away; the receiver is its nearest surface point. Sun direction is a comparison preset, fixed at 1 au in the orbital plane. The finite Sun disc gives partial and total eclipses. A visible disc fraction is illumination, not electrical power or temperature. The shadow sketch uses a small-angle cone; the readouts use angular disc overlap. Radio assumes geometric visibility without antennas, relay satellites or a ground-station network.'));
+  }
+  try {window.MoonMissionPure=Object.assign(window.MoonMissionPure||{},{drawLunarEnvironment:mmDrawLunarEnvironment});}catch(e){}
 
   function mmRenderApproachCard(h,d,upd) {
     var profile=mmApproachProfile(d.approachPlan), run=d.approachRun||{time:0,recorded:false};
@@ -3326,6 +3426,146 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   }
   try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { loi: MM_LOI,
     normalizeLoiPlan: mmNormalizeLoiPlan, loiProfile: mmLoiProfile, loiSample: mmLoiSample, loiOrbitElements: mmLoiOrbitElements }); } catch (e) {}
+
+  // Optional environment coast, continuous with the measured LOI endpoint.
+  // Geometry is planar and bodies stay fixed for one orbit. No antenna/ground
+  // network, relay, atmosphere, terrain or electrical/thermal model is implied.
+  var MM_LUNAR_ENV = Object.freeze({ earthDistance: 384400000, earthRadius: 6371000,
+    lightSpeed: 299792458, sunDistance: 149597870700, sunRadius: 695700000, sampleStep: 5 });
+  function mmEnvironmentAngle(value) { return [45, 90, 135].indexOf(value) >= 0 ? value : 45; }
+  function mmSegmentMoon(ax, ay, bx, by) {
+    var dx = bx - ax, dy = by - ay, dd = dx * dx + dy * dy;
+    if (![ax, ay, bx, by].every(mmNum) || dd <= 0) return null;
+    var u = Math.max(0, Math.min(1, -(ax * dx + ay * dy) / dd));
+    var clearance = Math.hypot(ax + u * dx, ay + u * dy) - MM_LOI.radius;
+    var hit = null, b = ax * dx + ay * dy, c = ax * ax + ay * ay - MM_LOI.radius * MM_LOI.radius;
+    var disc = b * b - dd * c;
+    if (clearance <= 0 && disc >= 0) {
+      var roots = [(-b - Math.sqrt(disc)) / dd, (-b + Math.sqrt(disc)) / dd];
+      var first = roots.find(function(t) { return t >= 0 && t <= 1; });
+      if (first !== undefined) hit = { x: ax + first * dx, y: ay + first * dy };
+    }
+    return { clearance: clearance, blocked: clearance <= 0, hit: hit };
+  }
+  function mmLunarEarthLink(s) {
+    if (!s || !mmNum(s.x) || !mmNum(s.y)) return null;
+    var C = MM_LUNAR_ENV, dx = s.x + C.earthDistance, dy = s.y, centerRange = Math.hypot(dx, dy);
+    if (centerRange <= C.earthRadius || Math.hypot(s.x, s.y) <= MM_LOI.radius) return null;
+    var target = { x: -C.earthDistance + C.earthRadius * dx / centerRange, y: C.earthRadius * dy / centerRange };
+    var ray = mmSegmentMoon(s.x, s.y, target.x, target.y), range = centerRange - C.earthRadius;
+    return { visible: !ray.blocked, clearance: ray.clearance, hit: ray.hit, target: target, range: range,
+      geometricLightTime: range / C.lightSpeed, oneWayDelay: ray.blocked ? null : range / C.lightSpeed,
+      roundTripDelay: ray.blocked ? null : 2 * range / C.lightSpeed };
+  }
+  function mmLunarSunlight(s, sunAngle) {
+    if (!s || !mmNum(s.x) || !mmNum(s.y) || Math.hypot(s.x, s.y) <= MM_LOI.radius) return null;
+    var C = MM_LUNAR_ENV, theta = mmEnvironmentAngle(sunAngle) * Math.PI / 180;
+    var sx = C.sunDistance * Math.cos(theta) - s.x, sy = C.sunDistance * Math.sin(theta) - s.y;
+    var sr = Math.hypot(sx, sy), mr = Math.hypot(s.x, s.y);
+    var sun = Math.asin(C.sunRadius / sr), moon = Math.asin(MM_LOI.radius / mr);
+    var clamp = function(x) { return Math.max(-1, Math.min(1, x)); };
+    var sep = Math.acos(clamp((-s.x * sx - s.y * sy) / (mr * sr)));
+    var partialMargin = sep - (moon + sun), totalMargin = sep - (moon - sun), fraction = 1;
+    if (totalMargin <= 0) fraction = 0;
+    else if (partialMargin < 0) {
+      // Angular disc overlap. The small solar disc permits a flat angular plane
+      // approximation; uniform brightness, no limb darkening or diffraction.
+      var d = sep, r = sun, R = moon;
+      var area = r*r*Math.acos(clamp((d*d+r*r-R*R)/(2*d*r))) + R*R*Math.acos(clamp((d*d+R*R-r*r)/(2*d*R))) -
+        0.5*Math.sqrt(Math.max(0, (-d+r+R)*(d+r-R)*(d-r+R)*(d+r+R)));
+      fraction = Math.max(0, Math.min(1, 1 - area / (Math.PI*r*r)));
+    }
+    return { fraction: fraction, phase: totalMargin <= 0 ? 'total' : partialMargin < 0 ? 'partial' : 'sunlit',
+      partialMargin: partialMargin, totalMargin: totalMargin, separation: sep, sunAngularRadius: sun,
+      moonAngularRadius: moon, directionX: sx/sr, directionY: sy/sr };
+  }
+  function mmLunarEnvironmentOrbit(loiProfile) {
+    if (!loiProfile || loiProfile.summary.outcome !== 'captured') return null;
+    var s = loiProfile.samples[loiProfile.samples.length - 1], mu = MM_LOI.mu, r = Math.hypot(s.x,s.y);
+    var vv = s.vx*s.vx+s.vy*s.vy, dot = s.x*s.vx+s.y*s.vy, energy = vv/2-mu/r;
+    var a = -mu/(2*energy), ex = ((vv-mu/r)*s.x-dot*s.vx)/mu, ey = ((vv-mu/r)*s.y-dot*s.vy)/mu;
+    var e = Math.hypot(ex,ey), argument = Math.atan2(ey,ex), cos = Math.cos(argument), sin = Math.sin(argument);
+    var h = s.x*s.vy-s.y*s.vx, sense = h < 0 ? -1 : 1, q = Math.sqrt(1-e*e);
+    var E = Math.atan2((-s.x*sin+s.y*cos)/(a*q*sense), (s.x*cos+s.y*sin)/a+e), n = Math.sqrt(mu/(a*a*a));
+    return Object.freeze({ a:a, e:e, argument:argument, sense:sense, meanStart:E-e*Math.sin(E), meanMotion:n,
+      period:2*Math.PI/n, energy:energy, angularMomentum:h, mass:s.mass, propellant:s.propellant,
+      perilune:a*(1-e)-MM_LOI.radius, apolune:a*(1+e)-MM_LOI.radius });
+  }
+  function mmLunarEnvironmentSample(profile, seconds) {
+    if (!profile || !profile.orbit) return null;
+    var o=profile.orbit, t=mmNum(seconds)?Math.max(0,Math.min(o.period,seconds)):0;
+    var M=o.meanStart+o.meanMotion*t, E=M;
+    for(var i=0;i<16;i++) { var correction=(E-o.e*Math.sin(E)-M)/(1-o.e*Math.cos(E)); E-=correction; if(Math.abs(correction)<1e-13) break; }
+    var q=Math.sqrt(1-o.e*o.e), denom=1-o.e*Math.cos(E), c=Math.cos(o.argument), sn=Math.sin(o.argument);
+    var px=o.a*(Math.cos(E)-o.e), py=o.sense*o.a*q*Math.sin(E);
+    var pvx=-o.a*o.meanMotion*Math.sin(E)/denom, pvy=o.sense*o.a*o.meanMotion*q*Math.cos(E)/denom;
+    var s={time:t,x:px*c-py*sn,y:px*sn+py*c,vx:pvx*c-pvy*sn,vy:pvx*sn+pvy*c,mass:o.mass,propellant:o.propellant,engineOn:false,thrust:0};
+    s.radius=Math.hypot(s.x,s.y);s.altitude=s.radius-MM_LOI.radius;s.speed=Math.hypot(s.vx,s.vy);
+    s.earth=mmLunarEarthLink(s);s.sun=mmLunarSunlight(s,profile.sunAngle);return s;
+  }
+  var _mmEnvironmentCache=[];
+  function mmLunarEnvironmentProfile(loiPlan,sunAngle) {
+    var plan=mmNormalizeLoiPlan(loiPlan), angle=mmEnvironmentAngle(sunAngle), key=plan.ignitionLead+':'+plan.burnDuration+':'+angle;
+    for(var k=0;k<_mmEnvironmentCache.length;k++) if(_mmEnvironmentCache[k].key===key) return _mmEnvironmentCache[k].profile;
+    var orbit=mmLunarEnvironmentOrbit(mmLoiProfile(plan));if(!orbit) return null;
+    var p={version:1,controls:Object.freeze(plan),sunAngle:angle,orbit:orbit}, samples=[],events=[];
+    var tests=[['radio',function(s){return s.earth.clearance;},'Radio restored','Radio lost'],
+      ['partial',function(s){return s.sun.partialMargin;},'Full sunlight restored','Partial eclipse begins'],
+      ['total',function(s){return s.sun.totalMargin;},'Total eclipse ends','Total eclipse begins']];
+    var previous=mmLunarEnvironmentSample(p,0);samples.push(Object.freeze(previous));
+    var minLight=previous.earth.geometricLightTime,maxLight=minLight;
+    for(var t=MM_LUNAR_ENV.sampleStep;;t+=MM_LUNAR_ENV.sampleStep) {
+      t=Math.min(orbit.period,t);var next=mmLunarEnvironmentSample(p,t);samples.push(Object.freeze(next));
+      minLight=Math.min(minLight,next.earth.geometricLightTime);maxLight=Math.max(maxLight,next.earth.geometricLightTime);
+      tests.forEach(function(test){var before=test[1](previous),after=test[1](next);if((before>0)!==(after>0)) {
+        var lo=previous.time,hi=next.time;
+        for(var j=0;j<38;j++){var mid=(lo+hi)/2;if((test[1](mmLunarEnvironmentSample(p,mid))>0)===(before>0))lo=mid;else hi=mid;}
+        events.push(Object.freeze({time:(lo+hi)/2,kind:test[0],entering:after<=0,label:after>0?test[2]:test[3]}));
+      }});
+      previous=next;if(t>=orbit.period) break;
+    }
+    events.sort(function(a,b){return a.time-b.time;});var edges=[0].concat(events.map(function(e){return e.time;}),[orbit.period]);
+    var intervals=[],blocked=0,total=0,partial=0,sunlit=0,equivalent=0;
+    for(var j=1;j<edges.length;j++) {
+      var start=edges[j-1],end=edges[j],dt=end-start,s=mmLunarEnvironmentSample(p,(start+end)/2);
+      intervals.push(Object.freeze({start:start,end:end,radio:s.earth.visible,sun:s.sun.phase}));
+      if(!s.earth.visible)blocked+=dt;
+      if(s.sun.phase==='total')total+=dt;else if(s.sun.phase==='sunlit'){sunlit+=dt;equivalent+=dt;}else {
+        partial+=dt;var sum=0,N=64;
+        for(var z=0;z<=N;z++)sum+=(z===0||z===N?1:z%2?4:2)*mmLunarEnvironmentSample(p,start+dt*z/N).sun.fraction;
+        equivalent+=sum*dt/(3*N);
+      }
+    }
+    p.summary=Object.freeze({version:1,ignitionLead:plan.ignitionLead,burnDuration:plan.burnDuration,sunAngle:angle,
+      duration:orbit.period,perilune:orbit.perilune,apolune:orbit.apolune,radioBlockedSeconds:blocked,
+      totalEclipseSeconds:total,partialEclipseSeconds:partial,sunlitSeconds:sunlit,sunlitEquivalentSeconds:equivalent,
+      minimumLightTime:minLight,maximumLightTime:maxLight});
+    p.samples=Object.freeze(samples);p.events=Object.freeze(events);p.intervals=Object.freeze(intervals);Object.freeze(p);
+    _mmEnvironmentCache.push({key:key,profile:p});if(_mmEnvironmentCache.length>8)_mmEnvironmentCache.shift();return p;
+  }
+  function mmCleanLunarEnvironment(raw) {
+    raw=mmIsObj(raw)?raw:{};var angle=mmEnvironmentAngle(raw.lunarEnvironmentSunAngle),saved=raw.lunarEnvironmentRun,run=null,result=null;
+    var clean={lunarEnvironmentOpen:raw.lunarEnvironmentOpen===true,lunarEnvironmentSunAngle:angle,
+      lunarEnvironmentRun:null,lunarEnvironmentResult:null,lunarEnvironmentPaused:raw.lunarEnvironmentPaused!==false,
+      lunarEnvironmentPlaybackRate:[1,10,60,240].indexOf(raw.lunarEnvironmentPlaybackRate)>=0?raw.lunarEnvironmentPlaybackRate:60};
+    var loi=mmCleanLoiPlayback(raw);
+    if(!loi.loiResult||loi.loiResult.outcome!=='captured'){clean.lunarEnvironmentOpen=false;return clean;}
+    if(mmIsObj(saved)&&saved.version===1&&typeof saved.recorded==='boolean'&&mmNum(saved.time)&&saved.time>=0&&saved.sunAngle===angle&&
+      saved.ignitionLead===loi.loiPlan.ignitionLead&&saved.burnDuration===loi.loiPlan.burnDuration) {
+      var profile=mmLunarEnvironmentProfile(loi.loiPlan,angle),expected=profile.summary,claimed=raw.lunarEnvironmentResult;
+      var valid=mmIsObj(claimed)&&claimed.version===1&&Object.keys(expected).every(function(key){return mmNum(claimed[key])&&Math.abs(claimed[key]-expected[key])<1e-6;});
+      var recorded=saved.recorded===true&&valid;
+      // An unverified terminal save must be reviewed again; reopening cannot award a result.
+      run={version:1,ignitionLead:expected.ignitionLead,burnDuration:expected.burnDuration,sunAngle:angle,
+        time:saved.time>=expected.duration&&!recorded?0:Math.min(expected.duration,saved.time),recorded:recorded};
+      if(recorded)result=Object.assign({},expected);
+    }
+    clean.lunarEnvironmentRun=run;clean.lunarEnvironmentResult=result;return clean;
+  }
+  try { window.MoonMissionPure=Object.assign(window.MoonMissionPure||{}, {lunarEnvironment:MM_LUNAR_ENV,
+    segmentMoon:mmSegmentMoon,lunarEarthLink:mmLunarEarthLink,lunarSunlight:mmLunarSunlight,
+    lunarEnvironmentOrbit:mmLunarEnvironmentOrbit,lunarEnvironmentProfile:mmLunarEnvironmentProfile,
+    lunarEnvironmentSample:mmLunarEnvironmentSample,cleanLunarEnvironment:mmCleanLunarEnvironment}); } catch(e) {}
 
   // Atmospheric entry: planar point-mass dynamics in SI, on a nonrotating sphere.
   // The rounded 122 km / 11.03 km/s interface is an explicit Apollo-like preset;
@@ -5398,6 +5638,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         Object.assign(s, mmCleanApproachPlayback(s));
         if (s.mccChoice !== 'corrected' && s.mccChoice !== 'skipped') s.mccChoice = null;
         Object.assign(s, mmCleanLoiPlayback(s));
+        Object.assign(s, mmCleanLunarEnvironment(s));
         Object.assign(s, mmCleanAscentPlayback(s));
         Object.assign(s, mmCleanDockingPlayback(s));
         if (!s.ascentResult) { s.dockingRun = null; s.dockingResult = null; }
@@ -5670,10 +5911,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       // mission. The lock also covers a double-click that lands before the render
       // catches up.
       var eventPending = !!(d.activeEvent || d.eventOutcome);
+      var proceedClaims = Object.create(null);
       function canProceed(action) {
-        if (eventPending) return false;
+        var claim = action || 'phase';
+        if (eventPending || proceedClaims[claim]) return false;
         var now = Date.now(), lockPhase = action ? phase + ':' + action : phase;
         if (_mmProceedLock && _mmProceedLock.phase === lockPhase && now - _mmProceedLock.at < 1000) return false;
+        // A stale button must not repeat an accepted action after the timed lock expires.
+        proceedClaims[claim] = true;
         _mmProceedLock = { phase: lockPhase, at: now };
         return true;
       }
@@ -7890,7 +8135,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 function visibility() { lastTs = null; persist(); }
                 document.addEventListener('visibilitychange', visibility);
                 cv._loiAction = function(action, value) {
-                  if (action === 'plan') { plan = mmNormalizeLoiPlan(value); profile = mmLoiProfile(plan); time = 0; recorded = false; paused = true; stamp = ''; upd('loiPlan', plan); upd('loiResult', null); upd('loiPaused', true); }
+                  if (action === 'plan') { plan = mmNormalizeLoiPlan(value); profile = mmLoiProfile(plan); time = 0; recorded = false; paused = true; stamp = ''; upd('loiPlan', plan); upd('loiResult', null); upd('loiPaused', true); upd('lunarEnvironmentRun', null); upd('lunarEnvironmentResult', null); upd('lunarEnvironmentOpen', false); }
                   if (action === 'seek') { time = Math.max(0, Math.min(profile.summary.duration, Number(value) || 0)); paused = true; upd('loiPaused', true); }
                   if (action === 'result') { time = profile.summary.duration; paused = true; upd('loiPaused', true); }
                   if (action === 'pause') { paused = !!value; upd('loiPaused', paused); if (!paused) upd('animPaused', false); }
@@ -7951,6 +8196,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('button', { type: 'button', 'aria-pressed': !!d.moonLabels, 'data-moonmission-moon-labels': true, style: buttonStyle, onClick: function() { upd('moonLabels', !d.moonLabels); } }, 'Show the seas and every Apollo landing site'),
               d.moonLabels && h('div', { 'data-moonmission-moon-sites': true, style: { fontSize: '12px', color: '#e2e8f0', marginTop: '8px' } }, h('p', null, 'All six landings were on the near side, the half that always faces Earth.'),
                 h('ul', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: '4px', paddingLeft: '16px' } }, MM_MOON_SITES.map(function(site) { return h('li', { key: site.m }, 'Apollo ' + site.m + ' \u2014 ' + site.name); })))),
+            loiReady && h('button', {type:'button', 'data-environment-toggle':true, 'aria-expanded':!!d.lunarEnvironmentOpen, style:buttonStyle, onClick:function(){upd('lunarEnvironmentOpen',!d.lunarEnvironmentOpen);} }, d.lunarEnvironmentOpen ? 'Close radio and sunlight view' : 'Explore radio and sunlight in this orbit'),
+            loiReady && d.lunarEnvironmentOpen && mmRenderLunarEnvironmentCard(h,d,upd),
             h('button', { type: 'button', 'data-loi-proceed': true, title: 'Undock Lunar Module Eagle from Command Module Columbia after a verified lunar insertion and prepare powered descent', disabled: eventPending || !loiReady, className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed', onClick: function() {
               if (!loiReady || !canProceed()) return;
               advancePhase(5); log('Verified lunar orbit. Eagle undocked; beginning the separate powered-descent approach.');
@@ -12898,6 +13145,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               !d.transitResult && d.mccChoice && h('div', { className: 'bg-white/5 rounded-lg p-2 border border-white/10 mb-2' },
                 h('p', { className: 'text-xs font-bold text-sky-200' }, d.mccChoice === 'corrected' ? 'MID-COURSE CORRECTION: earlier burn decision' : 'MID-COURSE CORRECTION: earlier decision to decline'),
                 h('p', { className: 'text-xs text-slate-200' }, 'This earlier save stores a choice without a measured trajectory or SPS propellant use. The Lunar Module has its own descent engine and fuel tank.')),
+              d.lunarEnvironmentResult && h('div', {'data-lunar-environment-record':true, className:'bg-white/5 rounded-lg p-2 border border-white/10 mb-2'},
+                h('p',{className:'text-xs font-bold text-sky-200'},'LUNAR RADIO AND SUNLIGHT'),
+                h('p',{className:'text-xs text-slate-200'},(d.lunarEnvironmentResult.duration/60).toFixed(1)+' min in the achieved insertion orbit; radio blocked '+(d.lunarEnvironmentResult.radioBlockedSeconds/60).toFixed(1)+' min; total eclipse '+(d.lunarEnvironmentResult.totalEclipseSeconds/60).toFixed(1)+' min; partial eclipse '+d.lunarEnvironmentResult.partialEclipseSeconds.toFixed(1)+' s. Sun comparison: '+d.lunarEnvironmentResult.sunAngle+MM_DEG_SIGN+'.')),
               d.approachResult && h('div', { className: 'bg-white/5 rounded-lg p-2 border border-white/10 mb-2', 'data-powered-approach-record': true },
                 h('p', { className: 'text-xs font-bold text-sky-200' }, 'POWERED LUNAR APPROACH: ' + d.approachResult.duration.toFixed(1) + ' s'),
                 h('p', { className: 'text-xs text-slate-200' }, 'DPS propellant used: ' + d.approachResult.propellantUsed.toFixed(0) + ' kg. Handover: ' + Math.abs(d.approachResult.radialSpeed).toFixed(2) + ' m/s downward and ' + Math.abs(d.approachResult.tangentialSpeed).toFixed(2) + ' m/s sideways. Final landing practice resets its fuel reserve.')),
@@ -13188,6 +13438,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 upd('transitPaused', false); upd('transitPlaybackRate', 3600); upd('transitView', 'system'); upd('transitAwarded', false);
                 upd('loiPlan', null); upd('loiRun', null); upd('loiResult', null);
                 upd('loiPaused', false); upd('loiPlaybackRate', 60); upd('loiAwarded', false);
+                upd('lunarEnvironmentOpen', false); upd('lunarEnvironmentSunAngle', 45); upd('lunarEnvironmentRun', null); upd('lunarEnvironmentResult', null); upd('lunarEnvironmentPaused', true); upd('lunarEnvironmentPlaybackRate', 60);
                 upd('seismoDeployed', false);
                 upd('mccChoice', null);
                 upd('entryAngle', null);

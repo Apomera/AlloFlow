@@ -1,0 +1,8 @@
+import { beforeAll, describe, expect, it } from 'vitest';
+import { loadTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+let P;beforeAll(()=>{resetStemLab();loadTool(process.env.MM_SOURCE||'stem_lab/stem_tool_moonmission.js','moonMission');P=window.MoonMissionPure;});
+function context(){const points=[],labels=[],ctx=new Proxy({}, {get(t,k){if(k==='fillText')return text=>labels.push(text);if(k==='moveTo'||k==='lineTo')return(x,y)=>points.push([x,y]);if(k==='measureText')return text=>({width:text.length*5});if(/^create.*Gradient$/.test(k))return()=>({addColorStop(){}});return t[k]||(()=>{});},set(t,k,v){t[k]=v;return true;}});return {ctx,points,labels};}
+describe('lunar environment geometry',()=>{
+  it.each([260,650])('keeps equal physical axes and finite geometry at %s pixels',width=>{const p=P.lunarEnvironmentProfile({},45);for(const time of [0,2000,3245,6005,p.orbit.period]){const c=context(),s=P.lunarEnvironmentSample(p,time),g=P.drawLunarEnvironment(c.ctx,width,420,s,p);expect(g.scaleX).toBe(g.scaleY);expect(g.scaleX).toBeGreaterThan(0);expect(g.moonRadius/g.scaleX).toBe(P.loi.radius);expect(g.plumeVisible).toBe(false);expect(c.points.every(p=>p.every(Number.isFinite))).toBe(true);expect(c.labels).toContain('MOON');expect(c.labels).toContain('EARTH RADIO');expect(c.labels).toContain('SUNLIGHT');}});
+  it('ends the blocked radio line on the physical lunar limb',()=>{const p=P.lunarEnvironmentProfile({},45),s=P.lunarEnvironmentSample(p,0),g=P.drawLunarEnvironment(context().ctx,650,420,s,p);const dx=(g.radioEndX-325)/g.scaleX,dy=-(g.radioEndY-(64+(420-190)/2))/g.scaleY;expect(Math.hypot(dx,dy)).toBeCloseTo(P.loi.radius,5);});
+});

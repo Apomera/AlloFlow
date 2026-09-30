@@ -1,0 +1,604 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass11-2026-09-29/browser-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "moon-mission-loi.spec.ts",
+      "file": "moon-mission-loi.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "finite SPS burn instruments follow the calculated trajectory and measured capture",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 87516,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T03:49:39.004Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "loi-sps-burn",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser-artifacts\\moon-mission-loi-finite-SP-11b87-ectory-and-measured-capture-chromium\\attachments\\loi-sps-burn-7dcb08ead04ec064d3cf2a6dc794a6d6a3ac03e6.png"
+                    },
+                    {
+                      "name": "loi-captured",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser-artifacts\\moon-mission-loi-finite-SP-11b87-ectory-and-measured-capture-chromium\\attachments\\loi-captured-c266128eddfac72b18dd45761979f57c1aee2a3a.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "02f0317f7fc39a8dbd2f-8ceabb63bf3a7b2f5c89",
+          "file": "moon-mission-loi.spec.ts",
+          "line": 102,
+          "column": 5
+        },
+        {
+          "title": "no-burn flyby and overburn cannot unlock descent, and replanning clears the previous outcome",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 70958,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T03:51:18.990Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "loi-flyby",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser-artifacts\\moon-mission-loi-no-burn-f-a785e-clears-the-previous-outcome-chromium\\attachments\\loi-flyby-292dc3368fb1b9ee4ddf77292924a7d2bd1eaa07.png"
+                    },
+                    {
+                      "name": "loi-overburn",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser-artifacts\\moon-mission-loi-no-burn-f-a785e-clears-the-previous-outcome-chromium\\attachments\\loi-overburn-e3fe17b1108e1e438d32a61328117f364bcac8a5.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "02f0317f7fc39a8dbd2f-7868eaf3451cda1a5c4b",
+          "file": "moon-mission-loi.spec.ts",
+          "line": 136,
+          "column": 5
+        },
+        {
+          "title": "review and reload preserve capture, then undocking rewards the mission once",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5346,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T03:52:30.031Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "02f0317f7fc39a8dbd2f-e1f7929f17f0662d2566",
+          "file": "moon-mission-loi.spec.ts",
+          "line": 161,
+          "column": 5
+        },
+        {
+          "title": "legacy ready flags and malformed playback cannot bypass the capture gate",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3209,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T03:52:35.398Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "02f0317f7fc39a8dbd2f-76fe18be06c02061cc15",
+          "file": "moon-mission-loi.spec.ts",
+          "line": 183,
+          "column": 5
+        },
+        {
+          "title": "paused LOI and the Moon atlas remain readable on a 320px keyboard-controlled view",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7846,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T03:52:38.625Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "loi-accessibility",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    },
+                    {
+                      "name": "loi-paused-320",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser-artifacts\\moon-mission-loi-paused-LO-05adc-px-keyboard-controlled-view-chromium\\attachments\\loi-paused-320-222e21e461b4556d1407016150dcfa79519a9612.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "02f0317f7fc39a8dbd2f-cd2ff1e02c1c19b44966",
+          "file": "moon-mission-loi.spec.ts",
+          "line": 192,
+          "column": 5
+        },
+        {
+          "title": "LOI playback resets its clock while hidden and resumes without catch-up",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3478,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T03:52:46.490Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "02f0317f7fc39a8dbd2f-e742ff9f3ac368c4d23e",
+          "file": "moon-mission-loi.spec.ts",
+          "line": 239,
+          "column": 5
+        },
+        {
+          "title": "radio loss follows the lunar line of sight and stays consistent across display sizes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3331,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T03:52:49.988Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "loi-radio-reacquired",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser-artifacts\\moon-mission-loi-radio-los-c0813-istent-across-display-sizes-chromium\\attachments\\loi-radio-reacquired-a9c0502fc438c6fd02f84bb1d00bcd783e276621.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "02f0317f7fc39a8dbd2f-07c48f443c89a396194d",
+          "file": "moon-mission-loi.spec.ts",
+          "line": 260,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "moon-mission-lunar-environment.spec.ts",
+      "file": "moon-mission-lunar-environment.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "achieved coast distinguishes sunlit far side, contact and partial eclipse",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7402,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T03:52:53.370Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "sunlit-far-side",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser-artifacts\\moon-mission-lunar-environ-6e85b-contact-and-partial-eclipse-chromium\\attachments\\sunlit-far-side-f56845cab0a44af02fb1431cfaa0293bb7f9badf.png"
+                    },
+                    {
+                      "name": "earth-contact",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser-artifacts\\moon-mission-lunar-environ-6e85b-contact-and-partial-eclipse-chromium\\attachments\\earth-contact-5cc37ef6d45d344d516f1de266077f875ef72486.png"
+                    },
+                    {
+                      "name": "partial-eclipse",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser-artifacts\\moon-mission-lunar-environ-6e85b-contact-and-partial-eclipse-chromium\\attachments\\partial-eclipse-322ddc4e2ef51f9a0582168261db692a04370597.png"
+                    },
+                    {
+                      "name": "total-eclipse-earth-contact",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser-artifacts\\moon-mission-lunar-environ-6e85b-contact-and-partial-eclipse-chromium\\attachments\\total-eclipse-earth-contact-f9a275a0908e8111cfbceee6ab27bd7b3195cc84.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f180df5791c8bd347007-74c22dc16a7030c7974e",
+          "file": "moon-mission-lunar-environment.spec.ts",
+          "line": 21,
+          "column": 5
+        },
+        {
+          "title": "review survives rewind and reload; Sun comparison resets only the optional evidence",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 6373,
+                  "error": {
+                    "message": "Error: locator.selectOption: Error: strict mode violation: locator('[data-environment-sun]') resolved to 2 elements:\n    1) <select data-environment-sun=\"true\" aria-label=\"Sun direction in the orbital plane\">…</select> aka getByLabel('Sun direction in the orbital')\n    2) <canvas role=\"img\" width=\"1972\" height=\"840\" data-environment-time=\"300\" data-environment-sun=\"sunlit\" data-environment-canvas=\"true\" data-environment-radio=\"blocked\" data-environment-delay=\"blocked\" data-environment-sun-fraction=\"1\" data-environment-mass=\"32913.16852981796\" data-environment-fuel=\"7413.168529816856\" data-environment-speed=\"1645.9673980408618\" data-environment-range=\"379716727.20413196\" data-environment-altitude=\"118801.60946515296\" data-environment-scale=\"0.00005026855335237012\" aria-…></canvas> aka getByRole('img', { name: 'One achieved lunar orbit with' })\n\nCall log:\n\u001b[2m  - waiting for locator('[data-environment-sun]')\u001b[22m\n",
+                    "stack": "Error: locator.selectOption: Error: strict mode violation: locator('[data-environment-sun]') resolved to 2 elements:\n    1) <select data-environment-sun=\"true\" aria-label=\"Sun direction in the orbital plane\">…</select> aka getByLabel('Sun direction in the orbital')\n    2) <canvas role=\"img\" width=\"1972\" height=\"840\" data-environment-time=\"300\" data-environment-sun=\"sunlit\" data-environment-canvas=\"true\" data-environment-radio=\"blocked\" data-environment-delay=\"blocked\" data-environment-sun-fraction=\"1\" data-environment-mass=\"32913.16852981796\" data-environment-fuel=\"7413.168529816856\" data-environment-speed=\"1645.9673980408618\" data-environment-range=\"379716727.20413196\" data-environment-altitude=\"118801.60946515296\" data-environment-scale=\"0.00005026855335237012\" aria-…></canvas> aka getByRole('img', { name: 'One achieved lunar orbit with' })\n\nCall log:\n\u001b[2m  - waiting for locator('[data-environment-sun]')\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-lunar-environment.spec.ts:31:47",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-lunar-environment.spec.ts",
+                      "column": 47,
+                      "line": 31
+                    },
+                    "snippet": "  29 |  await mount(page);await page.locator('[data-environment-review]').click();await expect(page.locator('[data-environment-result]')).toBeVisible();const raw=await saved(page);expect(raw.lunarEnvironmentRun.recorded).toBe(true);expect(raw.missionXP).toBe(0);await expect(page.locator('[data-loi-proceed]')).toBeEnabled();\n  30 |  await seek(page,300);await mount(page,await saved(page));expect((await live(page)).time).toBe(300);expect((await saved(page)).lunarEnvironmentResult).toEqual(raw.lunarEnvironmentResult);\n> 31 |  await page.locator('[data-environment-sun]').selectOption('135');await expect(page.locator('[data-environment-result]')).toHaveCount(0);const changed=await saved(page);expect(changed.lunarEnvironmentRun.time).toBe(0);expect(changed.lunarEnvironmentRun.recorded).toBe(false);expect(changed.lunarEnvironmentResult).toBeNull();expect(changed.loiResult).toEqual(raw.loiResult);expect((await live(page)).sun).toBe('total');await capture(page,info,'sun-135-comparison');\n     |                                               ^\n  32 |  await page.locator('[data-environment-review]').click();const q=await profile(page);expect((await saved(page)).lunarEnvironmentResult).toEqual(q.summary);await page.locator('[data-environment-toggle]').click();await expect(page.locator('[data-environment-canvas]')).toHaveCount(0);await page.locator('[data-environment-toggle]').click();await expect(page.locator('[data-environment-result]')).toBeVisible();\n  33 |  await page.locator('[data-loi-preset=\"flyby\"]').click();await expect(page.locator('[data-environment-toggle]')).toHaveCount(0);await expect(page.locator('[data-environment-canvas]')).toHaveCount(0);const invalid=await saved(page);expect(invalid.lunarEnvironmentResult).toBeNull();expect(invalid.lunarEnvironmentRun).toBeNull();await expect(page.locator('[data-loi-proceed]')).toBeDisabled();\n  34 | });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-lunar-environment.spec.ts",
+                        "column": 47,
+                        "line": 31
+                      },
+                      "message": "Error: locator.selectOption: Error: strict mode violation: locator('[data-environment-sun]') resolved to 2 elements:\n    1) <select data-environment-sun=\"true\" aria-label=\"Sun direction in the orbital plane\">…</select> aka getByLabel('Sun direction in the orbital')\n    2) <canvas role=\"img\" width=\"1972\" height=\"840\" data-environment-time=\"300\" data-environment-sun=\"sunlit\" data-environment-canvas=\"true\" data-environment-radio=\"blocked\" data-environment-delay=\"blocked\" data-environment-sun-fraction=\"1\" data-environment-mass=\"32913.16852981796\" data-environment-fuel=\"7413.168529816856\" data-environment-speed=\"1645.9673980408618\" data-environment-range=\"379716727.20413196\" data-environment-altitude=\"118801.60946515296\" data-environment-scale=\"0.00005026855335237012\" aria-…></canvas> aka getByRole('img', { name: 'One achieved lunar orbit with' })\n\nCall log:\n\u001b[2m  - waiting for locator('[data-environment-sun]')\u001b[22m\n\n\n  29 |  await mount(page);await page.locator('[data-environment-review]').click();await expect(page.locator('[data-environment-result]')).toBeVisible();const raw=await saved(page);expect(raw.lunarEnvironmentRun.recorded).toBe(true);expect(raw.missionXP).toBe(0);await expect(page.locator('[data-loi-proceed]')).toBeEnabled();\n  30 |  await seek(page,300);await mount(page,await saved(page));expect((await live(page)).time).toBe(300);expect((await saved(page)).lunarEnvironmentResult).toEqual(raw.lunarEnvironmentResult);\n> 31 |  await page.locator('[data-environment-sun]').selectOption('135');await expect(page.locator('[data-environment-result]')).toHaveCount(0);const changed=await saved(page);expect(changed.lunarEnvironmentRun.time).toBe(0);expect(changed.lunarEnvironmentRun.recorded).toBe(false);expect(changed.lunarEnvironmentResult).toBeNull();expect(changed.loiResult).toEqual(raw.loiResult);expect((await live(page)).sun).toBe('total');await capture(page,info,'sun-135-comparison');\n     |                                               ^\n  32 |  await page.locator('[data-environment-review]').click();const q=await profile(page);expect((await saved(page)).lunarEnvironmentResult).toEqual(q.summary);await page.locator('[data-environment-toggle]').click();await expect(page.locator('[data-environment-canvas]')).toHaveCount(0);await page.locator('[data-environment-toggle]').click();await expect(page.locator('[data-environment-result]')).toBeVisible();\n  33 |  await page.locator('[data-loi-preset=\"flyby\"]').click();await expect(page.locator('[data-environment-toggle]')).toHaveCount(0);await expect(page.locator('[data-environment-canvas]')).toHaveCount(0);const invalid=await saved(page);expect(invalid.lunarEnvironmentResult).toBeNull();expect(invalid.lunarEnvironmentRun).toBeNull();await expect(page.locator('[data-loi-proceed]')).toBeDisabled();\n  34 | });\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-lunar-environment.spec.ts:31:47"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T03:53:00.818Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser-artifacts\\moon-mission-lunar-environ-c62c1--only-the-optional-evidence-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser-artifacts\\moon-mission-lunar-environ-c62c1--only-the-optional-evidence-chromium\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser-artifacts\\moon-mission-lunar-environ-c62c1--only-the-optional-evidence-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser-artifacts\\moon-mission-lunar-environ-c62c1--only-the-optional-evidence-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser-artifacts\\moon-mission-lunar-environ-c62c1--only-the-optional-evidence-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-lunar-environment.spec.ts",
+                    "column": 47,
+                    "line": 31
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f180df5791c8bd347007-518feebcb3dbf5e0d729",
+          "file": "moon-mission-lunar-environment.spec.ts",
+          "line": 28,
+          "column": 5
+        },
+        {
+          "title": "corrupted optional results and mismatched Sun plans cannot restore completed evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5690,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T03:53:11.254Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f180df5791c8bd347007-e267744ab5e315e89d1c",
+          "file": "moon-mission-lunar-environment.spec.ts",
+          "line": 35,
+          "column": 5
+        },
+        {
+          "title": "playback freezes while hidden and stops cleanly when closed",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4339,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T03:53:17.340Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f180df5791c8bd347007-57eb2e4cc459c88fb28c",
+          "file": "moon-mission-lunar-environment.spec.ts",
+          "line": 39,
+          "column": 5
+        },
+        {
+          "title": "320px keyboard seeking, resize, reload and accessibility retain measured state",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5844,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T03:53:21.696Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "environment-phone-320",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser-artifacts\\moon-mission-lunar-environ-5caea-ility-retain-measured-state-chromium\\attachments\\environment-phone-320-3b2657965b0ccfbd2670ab901fc7952b170738fe.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f180df5791c8bd347007-d8f4a022b866bc42513d",
+          "file": "moon-mission-lunar-environment.spec.ts",
+          "line": 45,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-30T03:49:19.754Z",
+    "duration": 255328.086,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

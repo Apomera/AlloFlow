@@ -1,0 +1,76 @@
+{
+  "pass": 11,
+  "startedLocalDate": "2026-09-29",
+  "completedLocalDate": "2026-09-30",
+  "unit": {
+    "files": 55,
+    "cases": 503,
+    "passed": 503,
+    "failed": 0,
+    "newCases": 25,
+    "report": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\unit-verified.json"
+  },
+  "candidate": {
+    "files": 9,
+    "cases": 75,
+    "passed": 75,
+    "failed": 0,
+    "report": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\candidate-verified.json"
+  },
+  "browser": {
+    "cases": 12,
+    "passed": 12,
+    "failed": 0,
+    "flaky": 0,
+    "workers": 1,
+    "retries": 0,
+    "traceRecording": false,
+    "videoRecording": false,
+    "report": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser-verified.json"
+  },
+  "visual": {
+    "reviewedCaptures": [
+      "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser\\earth-contact-chromium.png",
+      "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser\\environment-phone-320-chromium.png",
+      "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser\\partial-eclipse-chromium.png",
+      "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser\\sun-135-comparison-chromium.png",
+      "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser\\sunlit-far-side-chromium.png",
+      "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser\\total-eclipse-earth-contact-chromium.png"
+    ],
+    "phoneWidth": 320,
+    "horizontalOverflow": false,
+    "axeViolations": 0
+  },
+  "source": {
+    "workingSha256": "31163a7c118d2f4c6df0c173c3e428ff4fad1b3f3a48582723b5057508b9b0f4",
+    "publicParity": true,
+    "baselineSha256": "ca7369e0a53170e8d01e2cd129a26fd1442a876a7c53981a6bc1320e79bd4b9e",
+    "candidateSha256": "9769ac80fc9d7208439a5be7be7d40c14636f68816971aa4d867db81312c3432",
+    "excludedPreexistingMoonwalkHunks": 34,
+    "syntaxChecks": [
+      "working source",
+      "curated candidate"
+    ],
+    "newCanonicalLines": 251
+  },
+  "retainedFailureReports": {
+    "unit-initial.json": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\unit-initial.json",
+    "unit-full-run.json": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\unit-full-run.json",
+    "unit-handoff-initial.json": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\unit-handoff-initial.json",
+    "unit-handoff-reproduction.json": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\unit-handoff-reproduction.json",
+    "browser-initial.json": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser-initial.json",
+    "browser-clock-initial.json": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser-clock-initial.json",
+    "browser-storage-initial.json": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass11-2026-09-29\\browser-storage-initial.json"
+  },
+  "focusedRecovery": {
+    "cases": 12,
+    "passed": 12,
+    "failed": 0
+  },
+  "handoffVerification": {
+    "cases": 17,
+    "passed": 17,
+    "failed": 0
+  },
+  "commitScope": "Matched runtimes, environment tests, browser report-directory parameter, documentation and verification evidence. The 34 pre-existing Moonwalk hunks are excluded from the commit candidate."
+}
