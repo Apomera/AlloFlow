@@ -4365,6 +4365,10 @@
     document.head.appendChild(wcFiveStyle);
     wcFiveStyle.textContent += "/* Existing canvas guide: readable symbol meanings and depiction scope. */\n.wc-explorer-root .wc-canvas-guide{flex-wrap:wrap;row-gap:8px}\n.wc-explorer-root .wc-canvas-guide-handoff{flex-wrap:wrap;gap:6px 8px;padding:7px 0}\n.wc-explorer-root .wc-canvas-guide-handoff-from,.wc-explorer-root .wc-canvas-guide-handoff-to{overflow:visible;text-overflow:clip;white-space:normal;font-size:12px;line-height:1.35}\n.wc-explorer-root .wc-canvas-guide-handoff-energy{font-size:12px;white-space:normal;line-height:1.35}\n.wc-explorer-root .wc-canvas-visual-key{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 14px;padding:5px 0;font-size:13px;line-height:1.35}\n.wc-explorer-root .wc-canvas-visual-key-item{align-items:flex-start;white-space:normal;gap:7px}\n.wc-explorer-root .wc-canvas-visual-key-mark{width:17px;height:17px;flex:0 0 17px;font-size:16px;margin-top:1px}\n.wc-explorer-root .wc-canvas-visual-key-copy{display:grid;gap:2px;min-width:0}\n.wc-explorer-root .wc-canvas-visual-key-copy strong{font-size:13px;font-weight:800;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-canvas-visual-key-copy small{font-size:12px;line-height:1.35;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-canvas-guide-depiction{flex:1 1 100%;display:flex;flex-wrap:wrap;gap:3px 10px;font-size:12px;line-height:1.45;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-canvas-visual-key[data-energy-transfer=released] .is-energy{color:#be185d}\n.wc-explorer-root.dark .wc-canvas-visual-key[data-energy-transfer=released] .is-energy{color:#f9a8d4}\n.wc-explorer-root[data-visual-contrast=true] .wc-canvas-visual-key-mark{color:var(--wc-viz-ink)}\n@media(max-width:560px){.wc-explorer-root .wc-canvas-visual-key{grid-template-columns:1fr;gap:8px}.wc-explorer-root .wc-canvas-visual-key-copy{display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 8px}.wc-explorer-root .wc-canvas-guide-handoff-energy{flex:1 1 100%;margin-left:0}}\n@media(forced-colors:active){.wc-explorer-root .wc-canvas-guide :is(.wc-canvas-guide-label,.wc-canvas-guide-copy,.wc-canvas-guide-handoff-from,.wc-canvas-guide-handoff-to,.wc-canvas-guide-handoff-process,.wc-canvas-guide-handoff-energy,.wc-canvas-guide-badge){color:CanvasText!important;background:Canvas;border-color:CanvasText}.wc-explorer-root .wc-canvas-visual-key-copy strong,.wc-explorer-root .wc-canvas-visual-key-copy small,.wc-explorer-root .wc-canvas-guide-depiction{color:CanvasText}.wc-explorer-root .wc-canvas-visual-key[data-energy-transfer] .is-energy{color:Highlight}}\n";
 
+    wcFiveStyle.textContent += "/* Water transfer: process, stores, physical states, then separate heat evidence. */\n.wc-explorer-root .wc-canvas-guide-handoff{display:grid;grid-template-columns:minmax(0,1fr) minmax(160px,auto);gap:9px 14px;padding:13px 0;border-top-color:var(--wc-viz-line);color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-canvas-guide-handoff-process{grid-column:1/-1;order:0;justify-self:start;max-width:100%;padding:0;background:transparent;color:var(--wc-viz-ink);font-size:14px;line-height:1.4;white-space:normal;overflow:visible;overflow-wrap:anywhere}\n.wc-explorer-root .wc-canvas-guide-water-flow{display:grid;grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr);align-items:stretch;gap:7px;min-width:0}\n.wc-explorer-root .wc-canvas-guide-handoff-from,.wc-explorer-root .wc-canvas-guide-handoff-to{display:flex;flex-direction:column;justify-content:center;gap:5px;min-width:0;padding:10px 11px;border:1px solid var(--wc-viz-line);border-radius:11px;background:var(--wc-viz-paper);color:var(--wc-viz-ink);white-space:normal;overflow-wrap:anywhere;font-weight:400}\n.wc-explorer-root .wc-canvas-guide-store{display:block;color:var(--wc-viz-muted);font-size:12px;line-height:1.45;font-weight:500}\n.wc-explorer-root .wc-canvas-guide-phase{display:block;color:var(--wc-viz-ink);font-size:14px;line-height:1.4;font-weight:800}\n.wc-explorer-root .wc-canvas-guide-handoff-arrow{display:grid;place-items:center;color:var(--wc-viz-accent);font-size:21px;line-height:1}\n.wc-explorer-root .wc-canvas-guide-handoff-energy{display:flex;align-items:center;gap:4px;order:0;min-width:0;margin:0;padding:10px 12px;border-left:2px solid var(--wc-viz-accent);background:var(--wc-viz-tint);color:var(--wc-viz-ink);border-radius:0 9px 9px 0;font-size:13px;line-height:1.45;overflow-wrap:anywhere}\n.wc-explorer-root .wc-canvas-guide-handoff[data-energy-transfer=released] .wc-canvas-guide-handoff-energy{border-left-color:#be185d}\n.wc-explorer-root.dark .wc-canvas-guide-handoff[data-energy-transfer=released] .wc-canvas-guide-handoff-energy{border-left-color:#f9a8d4}\n.wc-explorer-root .wc-canvas-guide-handoff[data-energy-transfer=none] .wc-canvas-guide-handoff-energy{border-left-color:var(--wc-viz-line);background:transparent;color:var(--wc-viz-muted)}\n@media(max-width:700px){.wc-explorer-root .wc-canvas-guide-handoff{grid-template-columns:minmax(0,1fr)}.wc-explorer-root .wc-canvas-guide-handoff-energy{padding:8px 10px}.wc-explorer-root .wc-canvas-guide-water-flow{grid-template-columns:minmax(0,1fr) 20px minmax(0,1fr);gap:5px}.wc-explorer-root .wc-canvas-guide-handoff-from,.wc-explorer-root .wc-canvas-guide-handoff-to{padding:9px 8px}.wc-explorer-root .wc-canvas-guide-phase{font-size:13px}}\n@media(forced-colors:active){.wc-explorer-root .wc-canvas-guide-store,.wc-explorer-root .wc-canvas-guide-phase{color:CanvasText}.wc-explorer-root .wc-canvas-guide-handoff[data-energy-transfer] .wc-canvas-guide-handoff-energy{border-left-color:CanvasText}.wc-explorer-root .wc-canvas-guide-handoff-arrow{color:CanvasText}}\n";
+
+    wcFiveStyle.textContent += "/* Keep the mobile 3D scene clear while retaining controls inside its fullscreen target. */\n@media(max-width:560px){\n.wc-explorer-root .wc-canvas-shell[data-watercycle-view=\"3d\"]{height:auto!important;display:flex;flex-direction:column}\n.wc-explorer-root .wc-canvas-shell[data-watercycle-view=\"3d\"] .wc-canvas-title>span{display:none}\n.wc-explorer-root .wc-canvas-shell[data-watercycle-view=\"3d\"] .wc-journey-3d{position:relative;inset:auto;flex:0 0 380px!important;width:100%;height:380px!important;min-height:380px!important}\n.wc-explorer-root .wc-canvas-shell[data-watercycle-view=\"3d\"] .wc-viewport-dock{position:relative;inset:auto;flex:0 0 auto;margin:8px;box-shadow:none}\n.wc-explorer-root .wc-canvas-shell[data-watercycle-view=\"3d\"] .wc-viewport-choice{position:relative;inset:auto;transform:none;flex:0 0 auto;min-width:0;width:auto;margin:8px;box-shadow:none}\n.wc-explorer-root .wc-canvas-shell[data-watercycle-view=\"3d\"]:is(:fullscreen,:-webkit-full-screen,[data-allo-fullscreen-active]){overflow-y:auto!important}\n.wc-explorer-root .wc-canvas-shell[data-watercycle-view=\"3d\"]:is(:fullscreen,:-webkit-full-screen,[data-allo-fullscreen-active]) .wc-journey-3d{flex:1 0 380px!important;height:auto!important}\n}\n@media(forced-colors:active){.wc-explorer-root .wc-viewport-dock{background:Canvas;color:CanvasText;border-color:CanvasText}.wc-explorer-root .wc-viewport-state span,.wc-explorer-root .wc-viewport-state strong,.wc-explorer-root .wc-viewport-state-detail,.wc-explorer-root .wc-viewport-actions::before{color:CanvasText}}\n";
+
     wcFiveStyle.textContent += '.wc-explorer-root .wc-log-entry:only-child{grid-column:1/-1}@media(max-width:400px){.wc-notebook-values th:first-child{width:44%}.wc-notebook-values th,.wc-notebook-values td{font-size:11px;padding:6px 3px}.wc-notebook-values thead th:not(:first-child){white-space:nowrap}}';
   }
   var wcWorldsLoading = null;
@@ -25193,7 +25197,20 @@ const d = labToolData.waterCycle || {};
             }
 
             _lastWc3dCanvas = canvasEl;
-            if (canvasEl._wc3dInit) return;
+            // Camera status is observed from this renderer; pause changes only playback.
+            // Refresh the bridge on reused refs so it never captures an old host updater.
+            canvasEl._wc3dCameraModeChanged = function(mode) {
+              var nextCameraMode = mode === 'orbit' ? 'orbit' : 'follow';
+              setLabToolData(function(prev) {
+                var current = prev.waterCycle || {};
+                if (current.wc3dCameraMode === nextCameraMode) return prev;
+                return Object.assign({}, prev, { waterCycle: Object.assign({}, current, { wc3dCameraMode: nextCameraMode }) });
+              });
+            };
+            if (canvasEl._wc3dInit) {
+              if (canvasEl._wc3dSyncCameraMode) canvasEl._wc3dSyncCameraMode();
+              return;
+            }
             if (!window.THREE) {
               canvasEl.dataset.engineState = 'loading';
               return;
@@ -28077,6 +28094,31 @@ const d = labToolData.waterCycle || {};
             };
             var controls3d = null;
             var userOrbit3d = false;
+            var cameraModeSyncTimer3d = null;
+            function syncWc3dCameraMode() {
+              canvasEl.dataset.cameraMode = userOrbit3d ? 'orbit' : 'follow';
+              // Coalesce input events and defer the React bridge outside ref commits.
+              // This helper is called on input/ref events, never from the frame loop.
+              if (cameraModeSyncTimer3d !== null) return;
+              cameraModeSyncTimer3d = setTimeout(function() {
+                cameraModeSyncTimer3d = null;
+                if (!alive3d || !canvasEl.isConnected) return;
+                if (typeof canvasEl._wc3dCameraModeChanged === 'function') {
+                  canvasEl._wc3dCameraModeChanged(canvasEl.dataset.cameraMode);
+                }
+              }, 0);
+            }
+            function setWc3dCameraOrbit(isOrbit) {
+              var nextOrbit = !!isOrbit;
+              var nextMode = nextOrbit ? 'orbit' : 'follow';
+              if (userOrbit3d === nextOrbit && canvasEl.dataset.cameraMode === nextMode) return;
+              userOrbit3d = nextOrbit;
+              syncWc3dCameraMode();
+            }
+            canvasEl._wc3dSyncCameraMode = syncWc3dCameraMode;
+            // A newly created renderer starts guided, including after restoring a
+            // saved UI field or returning from 2D. Do not restore camera behavior.
+            syncWc3dCameraMode();
             if (THREE.OrbitControls) {
               controls3d = new THREE.OrbitControls(camera, canvasEl);
               controls3d.enableDamping = true;
@@ -28085,10 +28127,10 @@ const d = labToolData.waterCycle || {};
               controls3d.minDistance = 4.5;
               controls3d.maxDistance = 18;
               controls3d.maxPolarAngle = Math.PI * 0.86;
-              controls3d.addEventListener('start', function() { userOrbit3d = true; });
+              controls3d.addEventListener('start', function() { setWc3dCameraOrbit(true); });
             }
             canvasEl._wc3dResetCamera = function() {
-              userOrbit3d = false;
+              setWc3dCameraOrbit(false);
             };
 
             var branchRaycaster3d = new THREE.Raycaster();
@@ -28189,7 +28231,7 @@ const d = labToolData.waterCycle || {};
                 offset3d.setLength(nextDistance3d);
               }
               camera.position.copy(focus3d).add(offset3d);
-              userOrbit3d = true;
+              setWc3dCameraOrbit(true);
               if (controls3d) controls3d.update();
               else camera.lookAt(focus3d);
               return true;
@@ -30349,6 +30391,9 @@ const d = labToolData.waterCycle || {};
             function cleanupJourney3d() {
               if (!alive3d) return;
               alive3d = false;
+              if (cameraModeSyncTimer3d !== null) { clearTimeout(cameraModeSyncTimer3d); cameraModeSyncTimer3d = null; }
+              canvasEl._wc3dCameraModeChanged = null;
+              canvasEl._wc3dSyncCameraMode = null;
               if (frame3d) cancelAnimationFrame(frame3d);
               if (stormThunderTimer3d) { clearTimeout(stormThunderTimer3d); stormThunderTimer3d = null; }
               if (motionMedia3d && motionMedia3d.removeEventListener) motionMedia3d.removeEventListener('change', syncMotionPreference3d);
@@ -30474,7 +30519,7 @@ const d = labToolData.waterCycle || {};
                   : d.journeyState === 'evaporating' || d.journeyState === 'condensing' || d.journeyState === 'precipitating'
                     ? 'Atmosphere'
                     : 'Landscape overview';
-          var wcSceneLensMode = d.journeyActive && !d.journeyPaused ? 'Follow camera' : 'Free orbit';
+          var wcSceneLensMode = d.wc3dCameraMode === 'orbit' ? 'Free orbit' : 'Follow camera';
           var wcSceneLensZone = currentSubsurfacePhase !== 'hidden'
             ? 'subsurface'
             : d.journeyState === 'river_runoff' || d.journeyState === 'ground_choice'
@@ -31688,6 +31733,7 @@ const d = labToolData.waterCycle || {};
             React.createElement("div", {
               className: "wc-canvas-shell relative rounded-xl overflow-hidden shadow-lg mb-3 border-2 " + (isDark ? "border-slate-800/80" : "border-sky-300"),
               "data-watercycle-canvas-shell": "true",
+              "data-watercycle-view": journeyView,
               // The fullscreen target the dock's button resolves with closest().
               "data-allo-fs-stage": "true",
               "data-wc-focus-key": wcSignalDriver.key,
@@ -32086,9 +32132,9 @@ const d = labToolData.waterCycle || {};
                     }, cameraControl.icon);
                   }),
 
-                  // Full-screen the whole shell, not just the canvas: this dock is
-                  // absolutely positioned INSIDE .wc-canvas-shell, so the scene keeps
-                  // its pause / speed / camera controls and its stage readout.
+                  // Full-screen the whole shell so the scene keeps its pause,
+                  // speed, camera controls and stage readout. On phones the dock
+                  // sits below the model inside this same fullscreen target.
                   // Fullscreening the canvas alone would strand every one of them.
                   //
                   // Routed through the shared binder (stem_lab_module.js) that 56 other
@@ -32135,15 +32181,25 @@ const d = labToolData.waterCycle || {};
               React.createElement("span", { className: "wc-canvas-guide-copy" }, journeyView === '3d'
                 ? t('stem.watercycle.use_drag_or_arrow_keys_to_explore', "Use drag or arrow keys to explore; highlighted routes are clickable. Press F to follow the droplet.")
                 : (wc2dPaused
-                ? 'Animation paused on ' + wcCanvasGuideProcessLabel + '. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.'
+                ? 'Paused on ' + wcCanvasGuideProcessLabel + '. Trace the water from its starting store to its destination. Press Space or Enter on the model to resume.'
                 : (currentStageCue || t('stem.watercycle.follow_the_moving_water_between_stores', "Follow the moving water between stores; the selected process is highlighted.")) + ' Press Space or Enter on the model to pause.')),
-              React.createElement("span", { className: "wc-canvas-guide-handoff", role: "note", "aria-label": "Matter and energy handoff: " + currentMatterEnergy.phaseFrom + " to " + currentMatterEnergy.phaseTo + ". " + wcCanvasGuideEnergyText },
-              React.createElement("span", { className: "wc-canvas-guide-handoff-from" }, currentMatterEnergy.phaseFrom),
-              React.createElement("span", { className: "wc-canvas-guide-handoff-arrow", "aria-hidden": "true" }, "→"),
-              React.createElement("span", { className: "wc-canvas-guide-handoff-process" }, wcCanvasGuideProcessLabel),
-              React.createElement("span", { className: "wc-canvas-guide-handoff-arrow", "aria-hidden": "true" }, "→"),
-                React.createElement("span", { className: "wc-canvas-guide-handoff-to" }, currentMatterEnergy.phaseTo),
-                React.createElement("span", { className: "wc-canvas-guide-handoff-energy" }, wcCanvasGuideEnergyText)
+              React.createElement("span", { className: "wc-canvas-guide-handoff", role: "note", "data-energy-transfer": currentMatterEnergy.energyTransfer, "aria-label": wcCanvasGuideProcessLabel + ": " + currentMatterEnergy.source + " to " + currentMatterEnergy.destination + ". " + currentMatterEnergy.phaseFrom + " to " + currentMatterEnergy.phaseTo + ". " + wcCanvasGuideEnergyText },
+                React.createElement("span", { className: "wc-canvas-guide-handoff-process" }, wcCanvasGuideProcessLabel),
+                React.createElement("span", { className: "wc-canvas-guide-water-flow" },
+                  React.createElement("span", { className: "wc-canvas-guide-handoff-from" },
+                    React.createElement("small", { className: "wc-canvas-guide-store" }, __alloT('stem.watercycle.process_compare_source', 'From') + ": " + currentMatterEnergy.source),
+                    React.createElement("strong", { className: "wc-canvas-guide-phase" }, currentMatterEnergy.phaseFrom)
+                  ),
+                  React.createElement("span", { className: "wc-canvas-guide-handoff-arrow", "aria-hidden": "true" }, "→"),
+                  React.createElement("span", { className: "wc-canvas-guide-handoff-to" },
+                    React.createElement("small", { className: "wc-canvas-guide-store" }, __alloT('stem.watercycle.process_compare_destination', 'To') + ": " + currentMatterEnergy.destination),
+                    React.createElement("strong", { className: "wc-canvas-guide-phase" }, currentMatterEnergy.phaseTo)
+                  )
+                ),
+                React.createElement("span", { className: "wc-canvas-guide-handoff-energy" },
+                  currentMatterEnergy.energyTransfer !== 'none' && React.createElement("span", { "aria-hidden": "true" }, "✦ "),
+                  wcCanvasGuideEnergyText
+                )
               ),
               React.createElement("span", { className: "wc-canvas-visual-key", role: "note", "data-energy-transfer": currentMatterEnergy.energyTransfer, "aria-label": __alloT('stem.watercycle.a11y_visual_key_tracked_parcel_transfer_path_and_ene', 'Visual key: tracked parcel, transfer path, and energy cue') },
                 React.createElement("span", { className: "wc-canvas-visual-key-item" },

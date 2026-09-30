@@ -71,7 +71,6 @@ describe('water cycle canvas animation loop', () => {
       expect(source).toContain('function draw(forceRender)');
       expect(source).toContain("&& forceRender !== true");
       expect(source).toContain('canvasEl._wcRedraw = function()');
-      expect(source).toContain('Control changes still repaint this frame;');
     });
   });
 });

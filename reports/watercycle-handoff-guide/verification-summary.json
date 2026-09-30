@@ -1,0 +1,17 @@
+{
+  "verifiedAt": "2026-09-30T12:42:45.364Z",
+  "sourceSha256": "3b733011f6f4842a41572ac605e2db17b2b7791cbea724f9e81bf78c154e620b",
+  "publicMirrorMatched": true,
+  "uniqueFocusedTests": 44,
+  "uniqueGuideBrowserAssertions": 1148,
+  "uniqueCameraBrowserAssertions": 182,
+  "renderedGuideCases": 63,
+  "cleanScopedAccessibilityAudits": 9,
+  "runtimeErrors": 0,
+  "ownedBrowsersAndServerClosed": true,
+  "reports": [
+    "final-unit-results.json",
+    "results.json",
+    "camera-results.json"
+  ]
+}

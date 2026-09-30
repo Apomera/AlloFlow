@@ -88,3 +88,13 @@ The existing canvas guide explains the parcel marker, direction arrows, and heat
 Restored paused maps paint an initial frame and stay paused. Control changes repaint the scene without advancing a paused parcel. Returning to a visible tab paints the paused view, and switching from a paused map to the 3D journey restarts its state driver. Both views retain their existing keyboard and journey controls.
 
 See [diagram clarity review](../reports/watercycle-diagram-clarity/README.md) for matched phone captures, rendered-label checks, guide interpretation, and playback verification.
+
+## Follow the water transfer
+
+The scene guide now puts the current process above a pair of water cards. Each card separates its store from its physical state, with one arrow between the starting and destination cards. This reading order stays the same on phones. A separate heat panel identifies absorption or release; transfers with no required phase change have a quieter treatment. Paused guidance asks learners to trace the water and explains the keyboard resume action.
+
+The 3D lens reports the renderer's actual camera mode. Dragging or using camera adjustment controls enters **Free orbit**; **Follow droplet** or the F key restores **Follow camera**. Pausing the parcel preserves the camera mode. Camera status updates on input and initialization, with detached renderer updates canceled during cleanup.
+
+On phones, the 3D camera dock and route choices sit below the scene. The model keeps at least 380px of height, and its controls keep their large targets. The scene and controls remain in the same fullscreen view; the model grows when space allows, and the view scrolls when the controls need more space.
+
+See [handoff guide review](../reports/watercycle-handoff-guide/README.md) for phone and desktop captures, water-state checks, camera controls, and accessibility verification.

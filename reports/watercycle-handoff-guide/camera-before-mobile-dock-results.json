@@ -1,0 +1,1442 @@
+{
+  "title": "Water Cycle observed 3D camera status",
+  "startedAt": "2026-09-30T12:05:11.694Z",
+  "sourceSha256": "1a8c3d240523712f31238b54a3a09640bab6582974778c58f60e99216033738c",
+  "sourceMirrorSha256": "1a8c3d240523712f31238b54a3a09640bab6582974778c58f60e99216033738c",
+  "method": "Owned isolated Chromium page; real React refs, THREE renderer, OrbitControls drag, native keyboard/buttons, and controlled restored UI state. No user browser or preview server is used.",
+  "checks": [
+    {
+      "label": "Restored observed mode reconciles to a new guided renderer: renderer and React agree",
+      "passed": true,
+      "evidence": {
+        "datasetMode": "follow",
+        "engine": "ready",
+        "label": "Follow camera",
+        "aria": "3D orientation lens: Atmosphere. Follow camera",
+        "dock": "Atmosphere · Follow camera",
+        "stateMode": "follow",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          }
+        ],
+        "renderCount": 3
+      }
+    },
+    {
+      "label": "Restored observed mode reconciles to a new guided renderer: visible lens describes camera",
+      "passed": true,
+      "evidence": {
+        "label": "Follow camera",
+        "dock": "Atmosphere · Follow camera"
+      }
+    },
+    {
+      "label": "Restored observed mode reconciles to a new guided renderer: accessible lens describes camera",
+      "passed": true,
+      "evidence": "3D orientation lens: Atmosphere. Follow camera"
+    },
+    {
+      "label": "Restored observed mode reconciles to a new guided renderer: playback stays independent",
+      "passed": true,
+      "evidence": true
+    },
+    {
+      "label": "Paused guided frames produce no camera mode writes",
+      "passed": true,
+      "evidence": {
+        "before": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          }
+        ],
+        "after": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          }
+        ]
+      }
+    },
+    {
+      "label": "Paused guided frames produce no React renders",
+      "passed": true,
+      "evidence": {
+        "before": 3,
+        "after": 3
+      }
+    },
+    {
+      "label": "Dragging a running journey selects free orbit: renderer and React agree",
+      "passed": true,
+      "evidence": {
+        "datasetMode": "orbit",
+        "engine": "ready",
+        "label": "Free orbit",
+        "aria": "3D orientation lens: Atmosphere. Free orbit",
+        "dock": "Atmosphere · Free orbit",
+        "stateMode": "orbit",
+        "paused": false,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          }
+        ],
+        "renderCount": 7
+      }
+    },
+    {
+      "label": "Dragging a running journey selects free orbit: visible lens describes camera",
+      "passed": true,
+      "evidence": {
+        "label": "Free orbit",
+        "dock": "Atmosphere · Free orbit"
+      }
+    },
+    {
+      "label": "Dragging a running journey selects free orbit: accessible lens describes camera",
+      "passed": true,
+      "evidence": "3D orientation lens: Atmosphere. Free orbit"
+    },
+    {
+      "label": "Dragging a running journey selects free orbit: playback stays independent",
+      "passed": true,
+      "evidence": false
+    },
+    {
+      "label": "Pausing an orbiting journey retains free orbit: renderer and React agree",
+      "passed": true,
+      "evidence": {
+        "datasetMode": "orbit",
+        "engine": "ready",
+        "label": "Free orbit",
+        "aria": "3D orientation lens: Atmosphere. Free orbit",
+        "dock": "Atmosphere · Free orbit",
+        "stateMode": "orbit",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          }
+        ],
+        "renderCount": 8
+      }
+    },
+    {
+      "label": "Pausing an orbiting journey retains free orbit: visible lens describes camera",
+      "passed": true,
+      "evidence": {
+        "label": "Free orbit",
+        "dock": "Atmosphere · Free orbit"
+      }
+    },
+    {
+      "label": "Pausing an orbiting journey retains free orbit: accessible lens describes camera",
+      "passed": true,
+      "evidence": "3D orientation lens: Atmosphere. Free orbit"
+    },
+    {
+      "label": "Pausing an orbiting journey retains free orbit: playback stays independent",
+      "passed": true,
+      "evidence": true
+    },
+    {
+      "label": "F resumes guided camera while journey remains paused: renderer and React agree",
+      "passed": true,
+      "evidence": {
+        "datasetMode": "follow",
+        "engine": "ready",
+        "label": "Follow camera",
+        "aria": "3D orientation lens: Atmosphere. Follow camera",
+        "dock": "Atmosphere · Follow camera",
+        "stateMode": "follow",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          }
+        ],
+        "renderCount": 11
+      }
+    },
+    {
+      "label": "F resumes guided camera while journey remains paused: visible lens describes camera",
+      "passed": true,
+      "evidence": {
+        "label": "Follow camera",
+        "dock": "Atmosphere · Follow camera"
+      }
+    },
+    {
+      "label": "F resumes guided camera while journey remains paused: accessible lens describes camera",
+      "passed": true,
+      "evidence": "3D orientation lens: Atmosphere. Follow camera"
+    },
+    {
+      "label": "F resumes guided camera while journey remains paused: playback stays independent",
+      "passed": true,
+      "evidence": true
+    },
+    {
+      "label": "Dragging a paused journey selects free orbit: renderer and React agree",
+      "passed": true,
+      "evidence": {
+        "datasetMode": "orbit",
+        "engine": "ready",
+        "label": "Free orbit",
+        "aria": "3D orientation lens: Atmosphere. Free orbit",
+        "dock": "Atmosphere · Free orbit",
+        "stateMode": "orbit",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          }
+        ],
+        "renderCount": 13
+      }
+    },
+    {
+      "label": "Dragging a paused journey selects free orbit: visible lens describes camera",
+      "passed": true,
+      "evidence": {
+        "label": "Free orbit",
+        "dock": "Atmosphere · Free orbit"
+      }
+    },
+    {
+      "label": "Dragging a paused journey selects free orbit: accessible lens describes camera",
+      "passed": true,
+      "evidence": "3D orientation lens: Atmosphere. Free orbit"
+    },
+    {
+      "label": "Dragging a paused journey selects free orbit: playback stays independent",
+      "passed": true,
+      "evidence": true
+    },
+    {
+      "label": "Climate rerender preserves actual orbit mode: renderer and React agree",
+      "passed": true,
+      "evidence": {
+        "datasetMode": "orbit",
+        "engine": "ready",
+        "label": "Free orbit",
+        "aria": "3D orientation lens: Atmosphere. Free orbit",
+        "dock": "Atmosphere · Free orbit",
+        "stateMode": "orbit",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          }
+        ],
+        "renderCount": 15
+      }
+    },
+    {
+      "label": "Climate rerender preserves actual orbit mode: visible lens describes camera",
+      "passed": true,
+      "evidence": {
+        "label": "Free orbit",
+        "dock": "Atmosphere · Free orbit"
+      }
+    },
+    {
+      "label": "Climate rerender preserves actual orbit mode: accessible lens describes camera",
+      "passed": true,
+      "evidence": "3D orientation lens: Atmosphere. Free orbit"
+    },
+    {
+      "label": "Climate rerender preserves actual orbit mode: playback stays independent",
+      "passed": true,
+      "evidence": true
+    },
+    {
+      "label": "Climate rerender reuses the same connected canvas",
+      "passed": true,
+      "evidence": true
+    },
+    {
+      "label": "Refreshed callback receives uppercase F reset: renderer and React agree",
+      "passed": true,
+      "evidence": {
+        "datasetMode": "follow",
+        "engine": "ready",
+        "label": "Follow camera",
+        "aria": "3D orientation lens: Atmosphere. Follow camera",
+        "dock": "Atmosphere · Follow camera",
+        "stateMode": "follow",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          }
+        ],
+        "renderCount": 17
+      }
+    },
+    {
+      "label": "Refreshed callback receives uppercase F reset: visible lens describes camera",
+      "passed": true,
+      "evidence": {
+        "label": "Follow camera",
+        "dock": "Atmosphere · Follow camera"
+      }
+    },
+    {
+      "label": "Refreshed callback receives uppercase F reset: accessible lens describes camera",
+      "passed": true,
+      "evidence": "3D orientation lens: Atmosphere. Follow camera"
+    },
+    {
+      "label": "Refreshed callback receives uppercase F reset: playback stays independent",
+      "passed": true,
+      "evidence": true
+    },
+    {
+      "label": "Native right arrow selects free orbit: renderer and React agree",
+      "passed": true,
+      "evidence": {
+        "datasetMode": "orbit",
+        "engine": "ready",
+        "label": "Free orbit",
+        "aria": "3D orientation lens: Atmosphere. Free orbit",
+        "dock": "Atmosphere · Free orbit",
+        "stateMode": "orbit",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          }
+        ],
+        "renderCount": 19
+      }
+    },
+    {
+      "label": "Native right arrow selects free orbit: visible lens describes camera",
+      "passed": true,
+      "evidence": {
+        "label": "Free orbit",
+        "dock": "Atmosphere · Free orbit"
+      }
+    },
+    {
+      "label": "Native right arrow selects free orbit: accessible lens describes camera",
+      "passed": true,
+      "evidence": "3D orientation lens: Atmosphere. Free orbit"
+    },
+    {
+      "label": "Native right arrow selects free orbit: playback stays independent",
+      "passed": true,
+      "evidence": true
+    },
+    {
+      "label": "Native zoom arrow selects free orbit: renderer and React agree",
+      "passed": true,
+      "evidence": {
+        "datasetMode": "orbit",
+        "engine": "ready",
+        "label": "Free orbit",
+        "aria": "3D orientation lens: Atmosphere. Free orbit",
+        "dock": "Atmosphere · Free orbit",
+        "stateMode": "orbit",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          }
+        ],
+        "renderCount": 19
+      }
+    },
+    {
+      "label": "Native zoom arrow selects free orbit: visible lens describes camera",
+      "passed": true,
+      "evidence": {
+        "label": "Free orbit",
+        "dock": "Atmosphere · Free orbit"
+      }
+    },
+    {
+      "label": "Native zoom arrow selects free orbit: accessible lens describes camera",
+      "passed": true,
+      "evidence": "3D orientation lens: Atmosphere. Free orbit"
+    },
+    {
+      "label": "Native zoom arrow selects free orbit: playback stays independent",
+      "passed": true,
+      "evidence": true
+    },
+    {
+      "label": "Native reset clears manual zoom mode: renderer and React agree",
+      "passed": true,
+      "evidence": {
+        "datasetMode": "follow",
+        "engine": "ready",
+        "label": "Follow camera",
+        "aria": "3D orientation lens: Atmosphere. Follow camera",
+        "dock": "Atmosphere · Follow camera",
+        "stateMode": "follow",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          }
+        ],
+        "renderCount": 21
+      }
+    },
+    {
+      "label": "Native reset clears manual zoom mode: visible lens describes camera",
+      "passed": true,
+      "evidence": {
+        "label": "Follow camera",
+        "dock": "Atmosphere · Follow camera"
+      }
+    },
+    {
+      "label": "Native reset clears manual zoom mode: accessible lens describes camera",
+      "passed": true,
+      "evidence": "3D orientation lens: Atmosphere. Follow camera"
+    },
+    {
+      "label": "Native reset clears manual zoom mode: playback stays independent",
+      "passed": true,
+      "evidence": true
+    },
+    {
+      "label": "Leaving 3D disposes the owned renderer",
+      "passed": true,
+      "evidence": true
+    },
+    {
+      "label": "Leaving 3D clears the callback and synchronization handle",
+      "passed": true,
+      "evidence": true
+    },
+    {
+      "label": "2D view has no 3D canvas",
+      "passed": true,
+      "evidence": true
+    },
+    {
+      "label": "Disposal sends no detached status updates",
+      "passed": true,
+      "evidence": {
+        "before": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          }
+        ],
+        "after": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          }
+        ]
+      }
+    },
+    {
+      "label": "Native 2D to 3D recreation reconciles camera status: renderer and React agree",
+      "passed": true,
+      "evidence": {
+        "datasetMode": "follow",
+        "engine": "ready",
+        "label": "Follow camera",
+        "aria": "3D orientation lens: Atmosphere. Follow camera",
+        "dock": "Atmosphere · Follow camera",
+        "stateMode": "follow",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          }
+        ],
+        "renderCount": 27
+      }
+    },
+    {
+      "label": "Native 2D to 3D recreation reconciles camera status: visible lens describes camera",
+      "passed": true,
+      "evidence": {
+        "label": "Follow camera",
+        "dock": "Atmosphere · Follow camera"
+      }
+    },
+    {
+      "label": "Native 2D to 3D recreation reconciles camera status: accessible lens describes camera",
+      "passed": true,
+      "evidence": "3D orientation lens: Atmosphere. Follow camera"
+    },
+    {
+      "label": "Native 2D to 3D recreation reconciles camera status: playback stays independent",
+      "passed": true,
+      "evidence": true
+    },
+    {
+      "label": "Returning creates a new renderer canvas",
+      "passed": true,
+      "evidence": true
+    },
+    {
+      "label": "A queued mode observation cannot update the detached host",
+      "passed": true,
+      "evidence": {
+        "before": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          }
+        ],
+        "after": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          }
+        ]
+      }
+    },
+    {
+      "label": "Synchronous detach clears renderer lifecycle handles",
+      "passed": true,
+      "evidence": true
+    },
+    {
+      "label": "Loaded source and public mirror match",
+      "passed": true,
+      "evidence": {
+        "source": "1a8c3d240523712f31238b54a3a09640bab6582974778c58f60e99216033738c",
+        "public": "1a8c3d240523712f31238b54a3a09640bab6582974778c58f60e99216033738c"
+      }
+    },
+    {
+      "label": "Runtime remained unchanged during camera QA",
+      "passed": true,
+      "evidence": {
+        "frozen": "1a8c3d240523712f31238b54a3a09640bab6582974778c58f60e99216033738c",
+        "current": "1a8c3d240523712f31238b54a3a09640bab6582974778c58f60e99216033738c"
+      }
+    },
+    {
+      "label": "No runtime errors in the camera review",
+      "passed": true,
+      "evidence": []
+    }
+  ],
+  "snapshots": [
+    {
+      "label": "Restored observed mode reconciles to a new guided renderer",
+      "state": {
+        "datasetMode": "follow",
+        "engine": "ready",
+        "label": "Follow camera",
+        "aria": "3D orientation lens: Atmosphere. Follow camera",
+        "dock": "Atmosphere · Follow camera",
+        "stateMode": "follow",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          }
+        ],
+        "renderCount": 3
+      }
+    },
+    {
+      "label": "before stable guided frames",
+      "state": {
+        "datasetMode": "follow",
+        "engine": "ready",
+        "label": "Follow camera",
+        "aria": "3D orientation lens: Atmosphere. Follow camera",
+        "dock": "Atmosphere · Follow camera",
+        "stateMode": "follow",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          }
+        ],
+        "renderCount": 3
+      }
+    },
+    {
+      "label": "after stable guided frames",
+      "state": {
+        "datasetMode": "follow",
+        "engine": "ready",
+        "label": "Follow camera",
+        "aria": "3D orientation lens: Atmosphere. Follow camera",
+        "dock": "Atmosphere · Follow camera",
+        "stateMode": "follow",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          }
+        ],
+        "renderCount": 3
+      }
+    },
+    {
+      "label": "Dragging a running journey selects free orbit",
+      "state": {
+        "datasetMode": "orbit",
+        "engine": "ready",
+        "label": "Free orbit",
+        "aria": "3D orientation lens: Atmosphere. Free orbit",
+        "dock": "Atmosphere · Free orbit",
+        "stateMode": "orbit",
+        "paused": false,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          }
+        ],
+        "renderCount": 7
+      }
+    },
+    {
+      "label": "Pausing an orbiting journey retains free orbit",
+      "state": {
+        "datasetMode": "orbit",
+        "engine": "ready",
+        "label": "Free orbit",
+        "aria": "3D orientation lens: Atmosphere. Free orbit",
+        "dock": "Atmosphere · Free orbit",
+        "stateMode": "orbit",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          }
+        ],
+        "renderCount": 8
+      }
+    },
+    {
+      "label": "F resumes guided camera while journey remains paused",
+      "state": {
+        "datasetMode": "follow",
+        "engine": "ready",
+        "label": "Follow camera",
+        "aria": "3D orientation lens: Atmosphere. Follow camera",
+        "dock": "Atmosphere · Follow camera",
+        "stateMode": "follow",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          }
+        ],
+        "renderCount": 11
+      }
+    },
+    {
+      "label": "Dragging a paused journey selects free orbit",
+      "state": {
+        "datasetMode": "orbit",
+        "engine": "ready",
+        "label": "Free orbit",
+        "aria": "3D orientation lens: Atmosphere. Free orbit",
+        "dock": "Atmosphere · Free orbit",
+        "stateMode": "orbit",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          }
+        ],
+        "renderCount": 13
+      }
+    },
+    {
+      "label": "Climate rerender preserves actual orbit mode",
+      "state": {
+        "datasetMode": "orbit",
+        "engine": "ready",
+        "label": "Free orbit",
+        "aria": "3D orientation lens: Atmosphere. Free orbit",
+        "dock": "Atmosphere · Free orbit",
+        "stateMode": "orbit",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          }
+        ],
+        "renderCount": 15
+      }
+    },
+    {
+      "label": "Refreshed callback receives uppercase F reset",
+      "state": {
+        "datasetMode": "follow",
+        "engine": "ready",
+        "label": "Follow camera",
+        "aria": "3D orientation lens: Atmosphere. Follow camera",
+        "dock": "Atmosphere · Follow camera",
+        "stateMode": "follow",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          }
+        ],
+        "renderCount": 17
+      }
+    },
+    {
+      "label": "Native right arrow selects free orbit",
+      "state": {
+        "datasetMode": "orbit",
+        "engine": "ready",
+        "label": "Free orbit",
+        "aria": "3D orientation lens: Atmosphere. Free orbit",
+        "dock": "Atmosphere · Free orbit",
+        "stateMode": "orbit",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          }
+        ],
+        "renderCount": 19
+      }
+    },
+    {
+      "label": "Native zoom arrow selects free orbit",
+      "state": {
+        "datasetMode": "orbit",
+        "engine": "ready",
+        "label": "Free orbit",
+        "aria": "3D orientation lens: Atmosphere. Free orbit",
+        "dock": "Atmosphere · Free orbit",
+        "stateMode": "orbit",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          }
+        ],
+        "renderCount": 19
+      }
+    },
+    {
+      "label": "Native reset clears manual zoom mode",
+      "state": {
+        "datasetMode": "follow",
+        "engine": "ready",
+        "label": "Follow camera",
+        "aria": "3D orientation lens: Atmosphere. Follow camera",
+        "dock": "Atmosphere · Follow camera",
+        "stateMode": "follow",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          }
+        ],
+        "renderCount": 21
+      }
+    },
+    {
+      "label": "before native view switch",
+      "state": {
+        "datasetMode": "orbit",
+        "engine": "ready",
+        "label": "Free orbit",
+        "aria": "3D orientation lens: Atmosphere. Free orbit",
+        "dock": "Atmosphere · Free orbit",
+        "stateMode": "orbit",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          }
+        ],
+        "renderCount": 23
+      }
+    },
+    {
+      "label": "2D after old renderer disposal",
+      "state": {
+        "datasetMode": null,
+        "engine": null,
+        "label": null,
+        "aria": null,
+        "dock": null,
+        "stateMode": "orbit",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          }
+        ],
+        "renderCount": 24
+      }
+    },
+    {
+      "label": "Native 2D to 3D recreation reconciles camera status",
+      "state": {
+        "datasetMode": "follow",
+        "engine": "ready",
+        "label": "Follow camera",
+        "aria": "3D orientation lens: Atmosphere. Follow camera",
+        "dock": "Atmosphere · Follow camera",
+        "stateMode": "follow",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          }
+        ],
+        "renderCount": 27
+      }
+    },
+    {
+      "label": "before synchronous keyboard and detach",
+      "state": {
+        "datasetMode": "follow",
+        "engine": "ready",
+        "label": "Follow camera",
+        "aria": "3D orientation lens: Atmosphere. Follow camera",
+        "dock": "Atmosphere · Follow camera",
+        "stateMode": "follow",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          }
+        ],
+        "renderCount": 27
+      }
+    },
+    {
+      "label": "after synchronous keyboard and detach",
+      "state": {
+        "datasetMode": null,
+        "engine": null,
+        "label": null,
+        "aria": null,
+        "dock": null,
+        "stateMode": "follow",
+        "paused": true,
+        "journeyState": "evaporating",
+        "writes": [
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          },
+          {
+            "from": "follow",
+            "to": "orbit"
+          },
+          {
+            "from": "orbit",
+            "to": "follow"
+          }
+        ],
+        "renderCount": 27
+      }
+    }
+  ],
+  "errors": [],
+  "browserClosed": true,
+  "finishedAt": "2026-09-30T12:05:43.570Z",
+  "passed": 57,
+  "failed": 0
+}
