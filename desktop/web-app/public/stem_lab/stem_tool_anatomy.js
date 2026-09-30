@@ -81,6 +81,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       ".anatomy-tool-shell .anatomy-breathing-study{min-width:0;overflow-wrap:anywhere}.anatomy-breathing-study svg{display:block;width:min(100%,300px);height:auto;margin:12px auto;background:#f8fafc;border-radius:10px}.anatomy-breathing-study figcaption{font-size:13px;line-height:1.6}.anatomy-breathing-study figure{margin:12px 0}.anatomy-breathing-study fieldset{min-width:0;border:1px solid #94a3b8;border-radius:8px;padding:12px;margin-block:14px}.anatomy-breathing-study legend{font-weight:800;padding-inline:4px}.anatomy-breathing-study fieldset>button{display:block;width:100%;margin:8px 0;text-align:start;white-space:normal}.anatomy-breathing-study [data-anatomy-breath-feedback]{padding-block:10px}.anatomy-breathing-study [data-anatomy-breath-feedback=correct]{border-inline-start:4px solid #16a34a;padding-inline-start:10px}.anatomy-breathing-study [data-anatomy-breath-feedback=review]{border-inline-start:4px solid #d97706;padding-inline-start:10px}@media(prefers-reduced-motion:reduce){.anatomy-breathing-study,.anatomy-breathing-study *{transition:none!important;animation:none!important}}",
       ".anatomy-tool-shell .anatomy-comparison-panel{container-type:inline-size;container-name:anatomy-comparison;min-width:0;overflow-wrap:anywhere}.anatomy-comparison-panel h6{font-weight:800;font-size:15px}.anatomy-comparison-panel table{font-size:inherit}.anatomy-comparison-panel caption{font-weight:800;text-align:start;padding-block:8px}.anatomy-comparison-panel th,.anatomy-comparison-panel td{vertical-align:top}.anatomy-comparison-panel .anatomy-compare-mobile-name{display:none}.anatomy-comparison-panel .anatomy-comparison-note{font-size:13px}.anatomy-comparison-panel .anatomy-science-sources{color:inherit;background:inherit;font-size:inherit}.anatomy-comparison-panel button:disabled{opacity:1;cursor:default}.anatomy-comparison-panel .anatomy-refinement-actions>span{padding:8px;min-height:44px}.anatomy-tool-shell .anatomy-compare-tray [type=button]{min-height:44px;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-compare-tray p,.anatomy-tool-shell .anatomy-compare-tray strong{font-size:14px;line-height:1.5}.anatomy-compare-tray>div:last-child{flex-wrap:wrap}.anatomy-comparison-panel [data-anatomy-compare-check-state=hit]{border-inline-start:4px solid #16a34a}.anatomy-comparison-panel [data-anatomy-compare-check-state=miss]{border-inline-start:4px solid #d97706}@container anatomy-comparison (max-width:520px){.anatomy-comparison-panel caption{display:block;width:100%}.anatomy-comparison-panel table,.anatomy-comparison-panel tbody,.anatomy-comparison-panel tr,.anatomy-comparison-panel th,.anatomy-comparison-panel td{display:block;width:100%}.anatomy-comparison-panel thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}.anatomy-comparison-panel tbody tr{margin-block:12px;border:1px solid #94a3b8;border-radius:8px;overflow:hidden}.anatomy-comparison-panel tbody th{font-weight:800}.anatomy-comparison-panel tbody td:last-child{border-bottom:0}.anatomy-comparison-panel .anatomy-compare-mobile-name{display:block;font-weight:800;margin-block-end:4px}}@media(prefers-reduced-motion:reduce){.anatomy-comparison-panel,.anatomy-comparison-panel *{transition:none!important;animation:none!important}}",
       '.anatomy-tool-shell{--anatomy-accent:#be185d;--anatomy-soft:#fce7f3;color:#0f172a;}',
+      '.anatomy-tool-shell{--practice-ink:#0f172a;--practice-panel:#fff;--practice-soft:#f8fafc;--practice-border:#94a3b8;--practice-nav:#075985;--practice-nav-soft:#f0f9ff;--practice-good:#065f46;--practice-good-bg:#ecfdf5;--practice-good-border:#059669;--practice-bad:#9f1239;--practice-bad-bg:#fff1f2;--practice-bad-border:#e11d48}.theme-dark .anatomy-tool-shell{--practice-ink:#e2e8f0;--practice-panel:#0f172a;--practice-soft:#1e293b;--practice-border:#94a3b8;--practice-nav:#7dd3fc;--practice-nav-soft:#082f49;--practice-good:#d1fae5;--practice-good-bg:#064e3b;--practice-good-border:#6ee7b7;--practice-bad:#ffe4e6;--practice-bad-bg:#881337;--practice-bad-border:#fda4af}.theme-contrast .anatomy-tool-shell{--practice-ink:#000;--practice-panel:#fff;--practice-soft:#fff;--practice-border:#000;--practice-nav:#000;--practice-nav-soft:#fff;--practice-good:#004d2c;--practice-good-bg:#fff;--practice-good-border:#000;--practice-bad:#8b0020;--practice-bad-bg:#fff;--practice-bad-border:#000}',
+      '.anatomy-tool-shell .anatomy-spotter-panel{color:var(--practice-ink);background:var(--practice-panel);padding:18px}.anatomy-tool-shell .anatomy-spotter-panel :is(p,button){font-size:14px;line-height:1.6}.anatomy-tool-shell .anatomy-spotter-panel h4{font-size:20px;line-height:1.4}.anatomy-tool-shell .anatomy-spotter-panel h5{font-size:16px;line-height:1.55;font-weight:800}.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-choices]{gap:10px}.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-option]{min-height:52px;padding:12px;flex-wrap:wrap;gap:8px;text-align:start;color:var(--practice-ink)!important;background:var(--practice-panel)!important;border-color:var(--practice-border)!important;opacity:1}.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-option][data-anatomy-spotter-answer-state=correct]{color:var(--practice-good)!important;background:var(--practice-good-bg)!important;border-color:var(--practice-good-border)!important}.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-option][data-anatomy-spotter-answer-state=chosen]{color:var(--practice-bad)!important;background:var(--practice-bad-bg)!important;border-color:var(--practice-bad-border)!important}.anatomy-tool-shell .anatomy-spotter-answer-label{flex-basis:100%;padding-inline-start:36px;font-size:12px;line-height:1.5;font-weight:800}.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-feedback]{border-radius:10px;padding:4px}',
+      '.anatomy-tool-shell .anatomy-spotter-navigation{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:12px;border:1px solid var(--practice-border);border-radius:10px;background:var(--practice-nav-soft);color:var(--practice-nav)}.anatomy-tool-shell .anatomy-spotter-navigation p{flex:1;min-width:150px;margin:0}.anatomy-tool-shell .anatomy-spotter-navigation button,.anatomy-tool-shell .anatomy-spotter-return{min-height:44px;padding:10px 14px;border:1px solid var(--practice-nav);border-radius:8px;background:var(--practice-panel);color:var(--practice-nav);font-size:14px;font-weight:800;line-height:1.6}.anatomy-tool-shell .anatomy-spotter-return{width:100%;margin-block:0 10px;background:var(--practice-nav-soft)}.anatomy-tool-shell .anatomy-spotter-panel :is(h5,[data-anatomy-spotter-feedback]):focus,.anatomy-tool-shell .anatomy-spotter-return:focus-visible{outline:3px solid #0284c7;outline-offset:3px}.anatomy-tool-shell .anatomy-spotter-panel h5,.anatomy-tool-shell .anatomy-spotter-return{scroll-margin-top:16px}.anatomy-tool-shell[data-reading-mode=true] .anatomy-spotter-panel :is(p,h5,button),.anatomy-tool-shell[data-reading-mode=true] .anatomy-spotter-return{font-size:17px!important;line-height:1.7}@media(max-width:520px){.anatomy-tool-shell .anatomy-spotter-panel{padding:14px}.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-choices]{grid-template-columns:minmax(0,1fr)}.anatomy-tool-shell .anatomy-spotter-navigation{display:grid}.anatomy-tool-shell .anatomy-spotter-navigation button{width:100%}}',
+      '.anatomy-tool-shell .anatomy-imaging-practice{min-width:0;scroll-margin-top:16px}.anatomy-tool-shell .anatomy-imaging-challenge{color:var(--practice-ink)!important;background:var(--practice-panel)!important;border:1px solid var(--practice-border);padding:16px;border-radius:12px;line-height:1.6}.anatomy-tool-shell .anatomy-imaging-challenge :is(p,span){font-size:14px;line-height:1.6;color:var(--practice-ink)!important}.anatomy-tool-shell .anatomy-imaging-challenge h5{font-size:18px;line-height:1.5;color:var(--practice-ink)!important}.anatomy-tool-shell .anatomy-imaging-challenge [data-anatomy-spot-context]{font-size:12px;padding:8px 10px;border-radius:8px;background:var(--practice-nav-soft);color:var(--practice-nav)!important;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-imaging-challenge [data-anatomy-spot-feedback]{padding:10px 12px;border:1px solid var(--practice-border);border-inline-start:4px solid var(--practice-nav);border-radius:8px;background:var(--practice-soft);font-size:16px}.anatomy-tool-shell .anatomy-imaging-challenge [data-anatomy-spot-prompt]{font-size:16px}',
+      '.anatomy-tool-shell .anatomy-imaging-challenge button{min-height:44px;padding:10px 14px;border:1px solid var(--practice-nav);border-radius:8px;background:var(--practice-panel)!important;color:var(--practice-nav)!important;font-size:14px;font-weight:800;line-height:1.6;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-imaging-challenge :is([data-anatomy-spot-start],[data-anatomy-spot-next]){background:var(--practice-nav)!important;color:var(--practice-panel)!important}.anatomy-tool-shell .anatomy-imaging-practice :is(button,[tabindex]):focus-visible,.anatomy-tool-shell .anatomy-imaging-challenge :is([data-anatomy-spot-prompt],[data-anatomy-spot-feedback]):focus{outline:3px solid #0284c7;outline-offset:3px}.anatomy-tool-shell .anatomy-imaging-practice [data-anatomy-imaging-canvas]{scroll-margin-top:16px}.anatomy-tool-shell[data-reading-mode=true] .anatomy-imaging-challenge :is(p,button){font-size:17px!important;line-height:1.7}.anatomy-tool-shell[data-reading-mode=true] .anatomy-imaging-challenge h5{font-size:20px!important}@media(max-width:520px){.anatomy-tool-shell .anatomy-imaging-challenge{padding:12px}.anatomy-tool-shell .anatomy-imaging-challenge button{flex:1 1 140px}}',
+      '.anatomy-tool-shell .anatomy-spotter-panel #anatomy-spotter-question-title,.anatomy-tool-shell .anatomy-spotter-panel #anatomy-spotter-feedback-title{color:var(--practice-ink)!important}',
       '.anatomy-skip-link{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;}.anatomy-skip-link:focus{position:static;width:auto;height:auto;clip-path:none;white-space:normal;display:inline-block;margin:0 0 8px;padding:8px 12px;border-radius:8px;background:#1e293b;color:#ffffff;font-size:12px;font-weight:800;}',
       '.anatomy-topbar{padding:4px 0;}',
       '.anatomy-mission{position:relative;overflow:hidden;border-radius:12px;border:1px solid rgba(15,23,42,.10);background:linear-gradient(135deg,#fff 0%,#f8fafc 58%,var(--anatomy-soft) 160%);box-shadow:0 8px 22px rgba(15,23,42,.06);}',
@@ -3034,14 +3040,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         // and left two independently controlled system selectors on phones.
         var anatomyCompactMode = anatomyStudyMode || activeTab === 'homeoHunt' || activeTab === 'aiTutor' || activeTab === 'tour' || activeTab === 'pathways' || activeTab === 'spotter';
         var studyControlsExpanded = d._studyControlsExpanded === true;
-        function activateAnatomyTab(tab) {
+        function activateAnatomyTab(tab, keepTabFocus) {
           function changeTab(patch) {
             var progress = activeTab === 'flashcards' && tab !== 'flashcards' ? { _flashcardRounds: flashcardStatePatch()._flashcardRounds } : {};
             updMulti(Object.assign(progress, { _showSystemsMotion: false }, patch));
           }
           if (tab === 'quiz') {
             changeTab({ _activeTab: 'quiz', quizMode: true, _quizQuestion: currentQuizQuestion });
-            focusQuizQuestion();
+            if (!keepTabFocus) focusQuizQuestion();
             if (typeof announceToSR === 'function') announceToSR(t('stem.anatomy.quiz_mode_opened', 'Quiz opened. Questions use the structures in the current diagram.'));
             return;
           }
@@ -3053,18 +3059,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               changeTab(structureFocusPatch(tabTourStep.structureId, tourPatch));
               announceStructure(tabTourStep.structureId);
             } else changeTab(tourPatch);
-            if(tourRecapActive)focusTourRecap(rawTourRecap.focusIndex,true,rawTourRecap.token);else focusTourStep();
+            if (!keepTabFocus) { if(tourRecapActive)focusTourRecap(rawTourRecap.focusIndex,true,rawTourRecap.token);else focusTourStep(); }
             return;
           }
           if (tab === 'pathways' && activePathway && activePathway.steps[pathwayStepIdx]) {
             var tabPathwayStep = activePathway.steps[pathwayStepIdx];
             changeTab(structureFocusPatch(tabPathwayStep.structure, { _activeTab: tab, _pathwayStep: pathwayStepIdx }));
             announceStructure(tabPathwayStep.structure);
-            if (pathwayRecapActive) { var tabPathwayQuestion = focusedPathwayQuestion(currentPathwayRecap,activePathway); focusPathwayCheck(activePathway,tabPathwayQuestion && tabPathwayQuestion.id,true,currentPathwayRecap.token); }
-            else focusPathwayStep(activePathway,pathwayStepIdx);
+            if (!keepTabFocus) { if (pathwayRecapActive) { var tabPathwayQuestion = focusedPathwayQuestion(currentPathwayRecap,activePathway); focusPathwayCheck(activePathway,tabPathwayQuestion && tabPathwayQuestion.id,true,currentPathwayRecap.token); }
+              else focusPathwayStep(activePathway,pathwayStepIdx); }
             return;
           }
-          if (tab === 'pathways') { changeTab({ _activeTab: tab, quizMode: false }); focusPathwayMenu(); return; }
+          if (tab === 'pathways') { changeTab({ _activeTab: tab, quizMode: false }); if (!keepTabFocus) focusPathwayMenu(); return; }
           if (tab === 'flashcards') {
             var cardPatch = flashcardRoundPatch(flashcardScope, sysKey, complexity);
             changeTab(cardPatch);
@@ -3072,16 +3078,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             return;
           }
           changeTab({ _activeTab: tab, quizMode: false });
+          if (tab === 'spotter' && !keepTabFocus) focusCurrentSpotter();
         }
         function handleAnatomyTabKey(event) {
           if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(event.key) === -1) return;
+          if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
           event.preventDefault();
+          var rightToLeft = event.currentTarget && typeof window.getComputedStyle === 'function' && window.getComputedStyle(event.currentTarget).direction === 'rtl';
           var current = Math.max(0, navigableAnatomyTabs.indexOf(activeTab));
           var next = event.key === 'Home' ? 0 : event.key === 'End' ? navigableAnatomyTabs.length - 1 :
-            (current + (event.key === 'ArrowRight' ? 1 : -1) + navigableAnatomyTabs.length) % navigableAnatomyTabs.length;
-          activateAnatomyTab(navigableAnatomyTabs[next]);
+            (current + ((event.key === 'ArrowRight') !== rightToLeft ? 1 : -1) + navigableAnatomyTabs.length) % navigableAnatomyTabs.length;
+          activateAnatomyTab(navigableAnatomyTabs[next], true);
           var tabButtons = event.currentTarget.querySelectorAll('[role="tab"]');
-          if (tabButtons[next]) setTimeout(function() { tabButtons[next].focus(); }, 0);
+          if (tabButtons[next]) setTimeout(function() { if (tabButtons[next].isConnected && tabButtons[next].getAttribute('aria-selected') === 'true') tabButtons[next].focus({preventScroll:true}); }, 0);
+        }
+        function revealAnatomyModeTab(tabStrip) {
+          if (!tabStrip || !tabStrip.isConnected || tabStrip._anatomyActiveTab !== activeTab) return;
+          var tab = tabStrip.querySelector('#anatomy-mode-tab-' + activeTab);
+          if (!tab) return;
+          var viewport = tabStrip.getBoundingClientRect(), bounds = tab.getBoundingClientRect();
+          var offset = bounds.left < viewport.left ? bounds.left - viewport.left : bounds.right > viewport.right ? bounds.right - viewport.right : 0;
+          if (offset) tabStrip.scrollLeft += offset;
         }
 
         var ANAT_CHALLENGES = [
@@ -6054,6 +6071,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           return JSON.stringify([state._spotterTarget,state._spotterStartTime,state._spotterSerial,state._spotterRoundTimed === true,
             Array.isArray(state._spotterOpts) ? state._spotterOpts.map(function(option){return option && option.id;}) : []]);
         }
+        function spotterContextKey(state) {
+          return JSON.stringify([state.system,state.view,state.complexity]);
+        }
+        function focusSpotterStage(stage, questionKey, contextKey, answerId) {
+          setTimeout(function() {
+            var panel = document.querySelector('[data-anatomy-spotter-panel]');
+            if (!panel || panel.getAttribute('data-anatomy-spotter-question') !== questionKey || panel.getAttribute('data-anatomy-spotter-context') !== contextKey) return;
+            if (typeof answerId === 'string' && panel.getAttribute('data-anatomy-spotter-answer') !== answerId) return;
+            var active = panel.getAttribute('data-anatomy-spotter-active') === 'true';
+            if ((stage === 'start' && active) || (stage !== 'start' && stage !== 'panel' && !active)) return;
+            var target = stage === 'diagram' ? document.querySelector('[data-anatomy-model-shell] [data-anatomy-canvas]')
+              : stage === 'feedback' ? panel.querySelector('[data-anatomy-spotter-feedback]')
+              : stage === 'question' ? panel.querySelector('#anatomy-spotter-question-title')
+              : stage === 'start' ? panel.querySelector('[data-anatomy-spotter-start]') : panel;
+            if (!target || typeof target.focus !== 'function') return;
+            target.focus({preventScroll:true});
+            var anchor = stage === 'diagram' ? document.querySelector('[data-anatomy-spotter-return]') || target : target;
+            if (typeof anchor.scrollIntoView === 'function') anchor.scrollIntoView({block:'start',behavior:'auto'});
+          },0);
+        }
+        function focusCurrentSpotter() {
+          var stage = !spotterActive ? 'start' : !spotterRoundReady ? 'panel' : spotterFeedback !== null ? 'feedback' : 'question';
+          var key = spotterQuestionKey(d), context = spotterContextKey(d), answer = spotterFeedback || '', accepted = false;
+          setLabToolData(function(previous) {
+            var current = previous.anatomy || {};
+            var currentAnswer = spotterOptions.some(function(option) { return option.id === current._spotterFeedback; }) ? current._spotterFeedback : '';
+            if (!sameSpotterContext(current) || spotterQuestionKey(current) !== key || currentAnswer !== answer) return previous;
+            accepted = true;
+            if (current._anatomyModelFocus !== true) return previous;
+            return Object.assign({}, previous, { anatomy: Object.assign({}, current, { _anatomyModelFocus: false }) });
+          });
+          setTimeout(function() { if (accepted) focusSpotterStage(stage, key, context, answer); }, 0);
+        }
+        function showSpotterDiagram() {
+          if (!spotterActive || !spotterRoundReady) return;
+          focusSpotterStage('diagram',spotterQuestionKey(d),spotterContextKey(d),spotterFeedback || '');
+        }
+
         function sameSpotterContext(state) {
           return state._activeTab === 'spotter' && state.system === d.system && state.view === d.view && state.complexity === d.complexity;
         }
@@ -6070,14 +6125,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           var candidates=pool.filter(function(structure){return anatomyEvidenceId(structure.id,knownStructureIds)!==previousConcept;});
           var target=candidates[Math.floor(Math.random()*candidates.length)];
           var opts=shuffleSpotter(shuffleSpotter(pool.filter(function(structure){return structure.id!==target.id;})).slice(0,3).concat([target]));
-          var expected=spotterQuestionKey(d),accepted=false;
+          var expected=spotterQuestionKey(d),accepted=false,nextQuestionKey=null;
           setLabToolData(function(previous){
             var current=previous.anatomy||{};
             if(!sameSpotterContext(current)||spotterQuestionKey(current)!==expected||(isStart&&current._spotterActive===true))return previous;
             var patch={_spotterActive:true,_spotterTarget:target.id,_spotterFeedback:null,_spotterOpts:opts.map(function(option){return {id:option.id};}),_spotterStartTime:Date.now(),_spotterElapsed:null,_spotterRoundTimed:current._spotterTimed===true,_spotterSerial:safeNonNegativeNumber(current._spotterSerial,0,true)+1};
+            nextQuestionKey=spotterQuestionKey(Object.assign({},current,patch));
             accepted=true;return Object.assign({},previous,{anatomy:Object.assign({},current,patch)});
           });
-          setTimeout(function(){if(!accepted)return;if(typeof announceToSR==='function')announceToSR(t('stem.anatomy.spot_ref_next_prompt','Identify the marked structure. ')+spotterRegionCue(target));var panel=document.querySelector('[data-anatomy-spotter-panel]');if(panel)panel.focus();},0);
+          setTimeout(function(){if(!accepted)return;if(typeof announceToSR==='function')announceToSR(t('stem.anatomy.spot_ref_next_prompt','Identify the marked structure. ')+spotterRegionCue(target));focusSpotterStage('question',nextQuestionKey,spotterContextKey(d),'');},0);
           return true;
         };
         function spotterAnswerPatch(current,optionId,expected,now) {
@@ -6100,6 +6156,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             playSound(correct?'spotterCorrect':'spotterWrong');
             if(typeof announceToSR==='function')announceToSR((correct?t('stem.anatomy.spot_ref_correct','Correct. '):t('stem.anatomy.spot_ref_answer','The marked structure is '))+spotterTargetStruct.name+'. '+learnerText(spotterTargetStruct));
             checkAnatomyChallenges();
+            focusSpotterStage('feedback',expected,spotterContextKey(d),opt.id);
           },0);
         }
         function setSpotterTiming(enabled) {
@@ -6107,9 +6164,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         }
         function renderSpotterEndButton() {
           return h('button',{type:'button','data-anatomy-spotter-end':true,'aria-label':t('stem.anatomy.end_test','End Test'),className:'anatomy-spotter-end',onClick:function(){
-            var expected=spotterQuestionKey(d),ended=false;
-            setLabToolData(function(previous){var current=previous.anatomy||{};if(!sameSpotterContext(current)||spotterQuestionKey(current)!==expected)return previous;ended=true;return Object.assign({},previous,{anatomy:Object.assign({},current,{_spotterActive:false,_spotterTarget:null,_spotterFeedback:null,_spotterOpts: [], _spotterStartTime: 0, _spotterElapsed: 0,_spotterRoundTimed:false})});});
-            setTimeout(function(){if(!ended)return;var start=document.querySelector('[data-anatomy-spotter-start]');if(start)start.focus();},0);
+            var expected=spotterQuestionKey(d),ended=false,endQuestionKey=null;
+            setLabToolData(function(previous){var current=previous.anatomy||{};if(!sameSpotterContext(current)||spotterQuestionKey(current)!==expected)return previous;var next=Object.assign({},current,{_spotterActive:false,_spotterTarget:null,_spotterFeedback:null,_spotterOpts: [], _spotterStartTime: 0, _spotterElapsed: 0,_spotterRoundTimed:false});endQuestionKey=spotterQuestionKey(next);ended=true;return Object.assign({},previous,{anatomy:next});});
+            setTimeout(function(){if(ended)focusSpotterStage('start',endQuestionKey,spotterContextKey(d),'');},0);
           }},t('stem.anatomy.end_test_2','End Test'));
         }
 
@@ -14042,7 +14099,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
           // Tab bar: the single mode navigation. Order is learn → practice → deeper; the two
           // clinician-level workspaces sit last and are hidden for a known K-5 profile.
-          h('div', { className: 'anatomy-tab-strip flex gap-1 mb-3', role: 'tablist', 'aria-label': t('stem.anatomy.learning_modes', 'Anatomy learning modes'), 'aria-orientation': 'horizontal', onKeyDown: handleAnatomyTabKey, 'data-anatomy-tab-strip': 'true', ref: function(tabStrip) { if (!tabStrip || tabStrip._anatomyActiveTab === activeTab) return; tabStrip._anatomyActiveTab = activeTab; setTimeout(function() { if (!tabStrip.isConnected) return; var activeModeTab = tabStrip.querySelector('#anatomy-mode-tab-' + activeTab); if (activeModeTab && typeof activeModeTab.scrollIntoView === 'function') activeModeTab.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' }); }, 0); } },
+          h('div', { className: 'anatomy-tab-strip flex gap-1 mb-3', role: 'tablist', 'aria-label': t('stem.anatomy.learning_modes', 'Anatomy learning modes'), 'aria-orientation': 'horizontal', onKeyDown: handleAnatomyTabKey, 'data-anatomy-tab-strip': 'true', ref: function(tabStrip) { if (!tabStrip || tabStrip._anatomyActiveTab === activeTab) return; tabStrip._anatomyActiveTab = activeTab; setTimeout(function() { revealAnatomyModeTab(tabStrip); }, 0); } },
             h('button', { id: 'anatomy-mode-tab-explore', title: ANATOMY_TAB_HINTS.explore, 'aria-label': t('stem.anatomy.explore', 'Explore'),
               role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'explore', tabIndex: activeTab === 'explore' ? 0 : -1,
               onClick: function() { activateAnatomyTab('explore'); },
@@ -14662,6 +14719,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   body3dStyle !== 'clinical' && expertModesAvailable && h('button', { type: 'button', className: 'anatomy-3d-procedure-button', 'data-anatomy-3d-procedure-launch': 'true', onClick: function() { var launchScenario = getAnatomyProcedureScenario({ caseId: systemProcedureCase, scenarioSeed: 100, approach: 'central', scenarioDifficulty: 'adaptive' }); updMulti({ _activeTab: 'procedure', procedure: normalizeAnatomyProcedureState({ caseId: systemProcedureCase, scenarioSeed: 100, approach: 'central', scenarioDifficulty: 'adaptive', planSlice: launchScenario.planSlice, feedback: 'Scenario created from the ' + sys.name + ' 3D overview. Review the scan and configure the case.' }) }); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.anatomy.sr_opening_a_matching_synthetic_procedure_scenario_f', 'Opening a matching synthetic procedure scenario from the 3D body overview.')); } }, 'Open matching procedure')
                 )
               ),
+              activeTab === 'spotter' && spotterActive && spotterRoundReady && h('button',{type:'button',className:'anatomy-route-return anatomy-spotter-return','data-anatomy-spotter-return':true,onClick:focusCurrentSpotter},spotterFeedback !== null ? t('stem.anatomy.practice_flow_spotter_return_feedback','Return to feedback') : t('stem.anatomy.practice_flow_spotter_return_question','Return to question')),
               h('div', { className: 'anatomy-canvas-frame', 'data-anatomy-canvas-frame': 'true', 'data-allo-fs-stage': 'true', style: { position: 'relative' }, 'data-anatomy-view': bodyView3d ? '3d' : '2d' },
                 h('button', {
                   type: 'button',
@@ -14683,7 +14741,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 ),
                 bodyView3d && h('span', { className: 'anatomy-canvas-mode-chip', 'data-mode': body3dStyle, 'aria-hidden': 'true' }, body3dStyle === 'clinical' ? 'Clinical Atlas' : body3dStyle === 'realistic' ? '3D Surface' : '3D Blueprint'),
                 bodyView3d && h('canvas', { role: 'img', tabIndex: 0, width: 360, height: 520, ref: stableAnatomy3dRef, className: 'anatomy-3d-canvas', 'data-anatomy-3d-canvas': 'true', 'data-anatomy-3d-style': body3dStyle, 'data-anatomy-atlas-pack': body3dStyle === 'clinical' && selectedClinicalAtlasPack ? selectedClinicalAtlasPack.id : undefined, 'data-anatomy-clinical-selection': body3dStyle === 'clinical' && selectedClinicalConceptId ? selectedClinicalConceptId : undefined, 'aria-keyshortcuts': body3dStyle === 'clinical' || detailedSurfaceView ? 'ArrowUp ArrowDown ArrowLeft ArrowRight + - R Home 0' : 'ArrowUp ArrowDown ArrowLeft ArrowRight + - [ ] R Home 0', 'aria-label': detailedSurfaceView ? t('stem.anatomy.surface_canvas_compact',"Interactive external body surface. Choose a body region, drag or open Rotate & tilt to rotate, and use plus or minus to zoom. Refit view keeps your current region and angle. Reset, Home, or R returns to the whole body. Explore structure pins in Blueprint or the 2D Atlas.") : body3dStyle === 'clinical' && selectedClinicalAtlasPack ? 'Interactive clinical atlas organ-focus model of the ' + selectedClinicalAtlasPack.focusLabel + '. On touch devices, use the camera buttons above. Otherwise drag to rotate and use the wheel or plus and minus to zoom. Use the 2D Atlas for whole-body structure selection.' : 'Interactive ' + (body3dStyle === 'realistic' ? 'realistic surface' : 'blueprint') + ' 3D overview of the ' + sys.name + '. On touch devices, use the camera buttons above. Otherwise drag to rotate and use the wheel to zoom. Use arrow keys to rotate, plus and minus to zoom, and square brackets to cycle labeled markers.', 'aria-describedby': 'anatomy-3d-status anatomy-canvas-instructions' + (body3dStyle === 'clinical' && selectedClinicalAtlasPack ? ' anatomy-clinical-visual-key-' + selectedClinicalAtlasPack.id : '') }),
-                !bodyView3d && h('canvas', { role: 'img', tabIndex: 0, 'aria-label': canvasLabel,
+                !bodyView3d && h('canvas', { role: 'img', tabIndex: 0, 'aria-label': spotterActive && activeTab === 'spotter' ? spotterFeedback === null ? t('stem.anatomy.practice_flow_spotter_diagram_label','Spotter diagram. Identify the structure at the crosshair. Use the diagram controls to inspect it, then return to the question to answer.') : formatAnatomyStudyText(t('stem.anatomy.practice_flow_spotter_diagram_review','Spotter answer review. The crosshair marks {name}. Inspect the diagram, then return to feedback.'),{name:spotterTargetStruct ? spotterTargetStruct.name : ''}) : canvasLabel,
                   'aria-describedby': 'anatomy-canvas-instructions',
                   'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight + - 0 Home F Escape',
                   ref: stableAnatomy2dRef,
@@ -15395,7 +15453,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 )
               ) : activeTab === 'spotter' ? (
                 // Spotter Panel
-                h('div', { className: 'anatomy-spotter-panel bg-white rounded-xl border-2 border-amber-200 p-4 space-y-3', 'data-anatomy-spotter-panel': 'true', tabIndex: -1,
+                h('div', { className: 'anatomy-spotter-panel bg-white rounded-xl border-2 border-amber-200 p-4 space-y-3', 'data-anatomy-spotter-panel': 'true', 'data-anatomy-spotter-question':spotterQuestionKey(d), 'data-anatomy-spotter-context':spotterContextKey(d), 'data-anatomy-spotter-answer':spotterFeedback || '', 'data-anatomy-spotter-active':spotterActive ? 'true' : 'false', tabIndex: -1,
                   onKeyDown: function(e) {
                     var keyNumber = parseInt(e.key, 10);
                     if (!spotterActive || !spotterRoundReady || spotterFeedback !== null) return;
@@ -15406,7 +15464,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   }
                 },
                   h('div', { className: 'anatomy-spotter-heading flex items-center justify-between mb-2' },
-                    h('h4', { className: 'font-bold text-amber-800 text-sm' }, t('stem.anatomy.anatomy_spotter_test', '\uD83C\uDFAF Anatomy Spotter Test')),
+                    h('h4', { id:'anatomy-spotter-title', tabIndex:-1, className: 'font-bold text-amber-800 text-sm' }, t('stem.anatomy.anatomy_spotter_test', '\uD83C\uDFAF Anatomy Spotter Test')),
                     h('div', { className: 'flex gap-2' },
                       h('span', { className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700' }, h('bdi',{dir:'ltr','data-anatomy-spotter-score':true},spotterScore + '/' + spotterTotal)),
                       spotterTimed && spotterBestTime > 0 ? h('span', { className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700' }, formatAnatomyStudyText(t('stem.anatomy.spot_ref_best','Best timed response: {seconds} s'),{seconds:spotterBestTime.toFixed(1)})) : null
@@ -15425,7 +15483,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   ) : h('div', { className: 'space-y-3' },
                     h('p',{'data-anatomy-spotter-mode':true},spotterRoundTimed?t('stem.anatomy.spot_ref_timed','Timing enabled'):t('stem.anatomy.spot_ref_untimed','Untimed practice')),
                     h('div', { className: 'bg-cyan-50 rounded-lg p-3 border border-cyan-200 text-center' },
-                      h('p', { className: 'text-sm font-bold text-cyan-900 mb-1' }, t('stem.anatomy.what_structure_is_marked_on_the_figure', 'What structure is marked on the figure?')),
+                      h('h5', { id:'anatomy-spotter-question-title', tabIndex:-1, className: 'text-sm font-bold text-cyan-900 mb-1' }, t('stem.anatomy.what_structure_is_marked_on_the_figure', 'What structure is marked on the figure?')),
                       h('p',{'data-anatomy-spotter-cue':true},spotterCueText),
                       h('p',null,t('stem.anatomy.spot_ref_viewer','Left and right refer to the viewer. The cue locates the marker, not the full extent of the structure.')),
                       ttsBtn(t('stem.anatomy.what_structure_is_marked_on_the_figure','What structure is marked on the figure?')+' '+spotterCueText,t('stem.anatomy.spot_ref_read_prompt','Read the spotter prompt aloud'))
@@ -15442,12 +15500,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         '.'
                       )
                     ) : null,
-                    h('div', { className: 'grid grid-cols-2 gap-2' },
+                    spotterRoundReady && h('div',{className:'anatomy-spotter-navigation','data-anatomy-spotter-navigation':true},
+                      h('button',{type:'button','data-anatomy-spotter-diagram':true,onClick:showSpotterDiagram},t('stem.anatomy.practice_flow_spotter_diagram','Show diagram')),
+                      h('p',null,t('stem.anatomy.practice_flow_spotter_navigation_help','Move between the crosshair and this question. Your current attempt stays the same.'))),
+                    spotterRoundReady && spotterFeedback === null && h('p',{id:'anatomy-spotter-answer-help'},t('stem.anatomy.practice_flow_spotter_question_help','Choose one answer, or use keys 1–4 while the question is focused.')),
+                    h('div', { className: 'grid grid-cols-2 gap-2', role:'group', 'aria-labelledby':'anatomy-spotter-question-title', 'aria-describedby':spotterRoundReady && spotterFeedback === null ? 'anatomy-spotter-answer-help' : undefined, 'data-anatomy-spotter-choices':true },
                       (spotterRoundReady ? spotterOptions : []).map(function(opt, optIndex) {
                         var isCorrect = opt.id === spotterTarget;
                         var showResult = spotterFeedback !== null;
                         var wasChosen = showResult && spotterFeedback === opt.id;
-                        return h('button', { key: opt.id, 'data-anatomy-spotter-option':opt.id,
+                        return h('button', { key: opt.id, 'data-anatomy-spotter-option':opt.id, 'aria-pressed':wasChosen, 'data-anatomy-spotter-answer-state':showResult ? isCorrect ? 'correct' : wasChosen ? 'chosen' : 'neutral' : 'neutral',
                           disabled: showResult,
                           'aria-keyshortcuts': String(optIndex + 1),
                           onClick: function() { answerSpotterOption(opt); },
@@ -15457,7 +15519,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                                 'transition-colors border-slate-200 hover:border-amber-600 text-slate-700 hover:bg-amber-50 active:scale-[0.97]')
                         },
                           h('span', { className: 'anatomy-quiz-key', 'aria-hidden': 'true' }, showResult && isCorrect ? '\u2713' : showResult && wasChosen ? '\u2717' : String(optIndex + 1)),
-                          h('span', null, opt.name)
+                          h('span', null, opt.name),
+                          wasChosen && h('span',{className:'anatomy-spotter-answer-label'},t('stem.anatomy.practice_flow_spotter_your_answer','Your answer')),
+                          showResult && isCorrect && h('span',{className:'anatomy-spotter-answer-label'},t('stem.anatomy.practice_flow_spotter_correct_answer','Correct answer'))
                         );
                       })
                     ),
@@ -15466,9 +15530,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       var selectedStruct = allStructures.find(function(s) { return s.id === spotterFeedback; }) || {};
                       var isRight = spotterFeedback === spotterTarget;
 
-                      return h('div', { className: 'space-y-2', 'data-anatomy-spotter-feedback':true },
+                      return h('div', { className: 'space-y-2', 'data-anatomy-spotter-feedback':true, tabIndex:-1, role:'group', 'aria-labelledby':'anatomy-spotter-feedback-title' },
                         h('div', { className: 'rounded-lg p-3 text-xs leading-relaxed ' + (isRight ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200') },
-                          h('p', { className: 'font-bold ' + (isRight ? 'text-green-800' : 'text-red-800') },
+                          h('h5', { id:'anatomy-spotter-feedback-title', className: 'font-bold ' + (isRight ? 'text-green-800' : 'text-red-800') },
                             isRight ? t('stem.anatomy.spot_ref_correct','Correct. ') + targetStruct.name : t('stem.anatomy.spot_ref_answer','The marked structure is ') + targetStruct.name
                           ),
                           h('p', { className: 'text-slate-600 mt-1' },
@@ -15488,7 +15552,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           onClick: function() { updMulti(structureFocusPatch(targetStruct.id, { _activeTab: 'explore', quizMode: false })); announceStructure(targetStruct.id); focusAnatomyStructureDetail(); },
                           className: 'w-full py-2 rounded-lg text-xs font-bold bg-white text-amber-800 border border-amber-600 hover:bg-amber-50 transition-all active:scale-[0.97]'
                         }, formatAnatomyStudyText(t('stem.anatomy.spot_ref_study','Study {name} on the diagram'),{name:targetStruct.name})) : null,
-                        h('button', { 'aria-label': t('stem.anatomy.next_structure', 'Next Structure'),
+                        h('button', { type:'button', 'data-anatomy-spotter-next':true, 'aria-label': t('stem.anatomy.next_structure', 'Next Structure'),
                           onClick: function() { pickSpotterRound(false); },
                           className: 'w-full py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 transition-all active:scale-[0.97]'
                         }, t('stem.anatomy.next_structure_2', 'Next Structure ➔'))
@@ -15985,7 +16049,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 );
               })() : activeTab === 'imaging' ? (function() {
                 var savedImaging = d.imaging && typeof d.imaging === 'object' && !Array.isArray(d.imaging) ? d.imaging : {};
-                var modality = savedImaging.modality === 'MRI' ? t('stem.anatomy.mri', 'MRI') : t('stem.anatomy.ct', 'CT');
+                var modality = savedImaging.modality === 'MRI' ? 'MRI' : 'CT';
                 var region = ['head', 'chest', 'abdomen'].indexOf(savedImaging.region) >= 0 ? savedImaging.region : 'chest';
                 var plane = ['axial', 'coronal', 'sagittal'].indexOf(savedImaging.plane) >= 0 ? savedImaging.plane : 'axial';
                 var restoredSlice = Number(savedImaging.slice);
@@ -16012,47 +16076,121 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 var SPOT_EXCLUDED = ['Chest wall', 'Abdominal wall', 'Diaphragm', 'Ribs', 'Skull'];
                 var spotCandidates = imagingRegions.filter(function(item) { return SPOT_EXCLUDED.indexOf(item.text) === -1; });
                 var rawSpot = savedImaging.spot && typeof savedImaging.spot === 'object' && !Array.isArray(savedImaging.spot) ? savedImaging.spot : {};
+                // A question owns an exact scan and serial. Saved legacy questions cannot
+                // be reinterpreted against another slice, and old callbacks cannot answer a new round.
+                function imagingContext(value) {
+                  value = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+                  var slice = Number(value.slice), scanModality = value.modality === 'MRI' ? 'MRI' : 'CT';
+                  return { modality: scanModality, region: ['head','chest','abdomen'].indexOf(value.region) >= 0 ? value.region : 'chest', plane: ['axial','coronal','sagittal'].indexOf(value.plane) >= 0 ? value.plane : 'axial', slice: Math.max(0, Math.min(100, Number.isFinite(slice) ? slice : 50)), sequence: scanModality === 'MRI' ? (value.sequence === 'T2' ? 'T2' : 'T1') : null };
+                }
+                function imagingContextKey(value) {
+                  var scan = imagingContext(value);
+                  return JSON.stringify([scan.modality,scan.region,scan.plane,scan.slice,scan.sequence]);
+                }
+                function boundImagingContextKey(value) {
+                  if (!value || typeof value !== 'object' || Array.isArray(value) || ['CT','MRI'].indexOf(value.modality) < 0 || ['head','chest','abdomen'].indexOf(value.region) < 0 || ['axial','coronal','sagittal'].indexOf(value.plane) < 0 || typeof value.slice !== 'number' || !Number.isFinite(value.slice) || value.slice < 0 || value.slice > 100 || (value.modality === 'CT' ? value.sequence !== null : ['T1','T2'].indexOf(value.sequence) < 0)) return '';
+                  return imagingContextKey(value);
+                }
+                function imagingSpotRecord(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
+                function imagingSpotSerial(value) { return Number.isSafeInteger(value) && value >= 0 ? value : 0; }
+                function imagingSpotCount(value) { value = Number(value); return Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0; }
+                function imagingSpotSignature(value) {
+                  var round = imagingSpotRecord(value.spot);
+                  return JSON.stringify([imagingSpotSerial(round.serial),round.active === true,typeof round.target === 'string' ? round.target : null,round.result === 'hit' || round.result === 'miss' ? round.result : null,round.version === 1,boundImagingContextKey(round.context)]);
+                }
+                function closeImagingSpot(value, reason) {
+                  return Object.assign({}, value, { version: 1, serial: imagingSpotSerial(value.serial) + 1, active: false, target: null, result: null, context: null, clickX: null, clickY: null, interrupted: reason || null });
+                }
+                var scanContext = imagingContext(savedImaging), scanContextKey = imagingContextKey(savedImaging);
+                var renderedSpotSignature = imagingSpotSignature(savedImaging);
                 var spotTargetRegion = typeof rawSpot.target === 'string' ? imagingRegions.find(function(item) { return item.text === rawSpot.target; }) || null : null;
                 var spot = {
-                  active: rawSpot.active === true && !!spotTargetRegion,
+                  active: rawSpot.active === true && rawSpot.version === 1 && Number.isSafeInteger(rawSpot.serial) && rawSpot.serial >= 0 && boundImagingContextKey(rawSpot.context) === scanContextKey && !!spotTargetRegion && (rawSpot.result == null || rawSpot.result === 'hit' || rawSpot.result === 'miss'),
+                  serial: imagingSpotSerial(rawSpot.serial),
                   target: spotTargetRegion ? spotTargetRegion.text : null,
                   result: rawSpot.result === 'hit' || rawSpot.result === 'miss' ? rawSpot.result : null,
-                  clickX: Number.isFinite(Number(rawSpot.clickX)) ? Number(rawSpot.clickX) : null,
-                  clickY: Number.isFinite(Number(rawSpot.clickY)) ? Number(rawSpot.clickY) : null,
-                  score: Math.max(0, Math.floor(Number(rawSpot.score) || 0)),
-                  total: Math.max(0, Math.floor(Number(rawSpot.total) || 0)),
-                  labelsWere: rawSpot.labelsWere !== false
+                  clickX: typeof rawSpot.clickX === 'number' && Number.isFinite(rawSpot.clickX) ? Math.max(0,Math.min(1,rawSpot.clickX)) : null,
+                  clickY: typeof rawSpot.clickY === 'number' && Number.isFinite(rawSpot.clickY) ? Math.max(0,Math.min(1,rawSpot.clickY)) : null,
+                  score: imagingSpotCount(rawSpot.score), total: imagingSpotCount(rawSpot.total)
                 };
+                var needsSpotRecovery = rawSpot.active === true && !spot.active;
                 var spotRoundOpen = spot.active && spot.result === null;
+                function sameRenderedImaging(state, current) {
+                  return state._activeTab === 'imaging' && imagingContextKey(current) === scanContextKey && imagingSpotSignature(current) === renderedSpotSignature;
+                }
+                function updateImagingOwned(createPatch, after) {
+                  var acceptedPatch = null;
+                  setLabToolData(function(previous) {
+                    var state = previous.anatomy || {}, current = state.imaging && typeof state.imaging === 'object' && !Array.isArray(state.imaging) ? state.imaging : {};
+                    if (!sameRenderedImaging(state,current)) return previous;
+                    var patch = createPatch(current);
+                    if (!patch) return previous;
+                    acceptedPatch = patch;
+                    return Object.assign({},previous,{anatomy:Object.assign({},state,{imaging:Object.assign({},current,patch)})});
+                  });
+                  if (after) setTimeout(function() { if (acceptedPatch) after(acceptedPatch); },0);
+                }
+                function focusImagingSpot(destination, serial) {
+                  setTimeout(function() {
+                    if (typeof document === 'undefined') return;
+                    var workspace = document.querySelector('[data-anatomy-imaging-workspace]');
+                    if (!workspace || workspace.getAttribute('data-anatomy-imaging-context') !== scanContextKey || workspace.getAttribute('data-anatomy-imaging-round') !== String(serial)) return;
+                    var panel = workspace.querySelector('[data-anatomy-spot-challenge]'), phase = panel && panel.getAttribute('data-anatomy-spot-challenge');
+                    if ((destination === 'canvas' || destination === 'prompt') && phase !== 'open') return;
+                    if ((destination === 'review' || destination === 'feedback') && phase !== 'hit' && phase !== 'miss') return;
+                    if (destination === 'start' && phase !== 'idle') return;
+                    var selector = destination === 'canvas' || destination === 'review' ? '[data-anatomy-imaging-canvas]' : '[data-anatomy-spot-' + destination + ']';
+                    var target = workspace.querySelector(selector), practice = workspace.querySelector('[data-anatomy-imaging-practice]');
+                    if (!target) return;
+                    try { target.focus({preventScroll:true}); } catch (error) { target.focus(); }
+                    if (practice && practice.scrollIntoView) practice.scrollIntoView({block:'start',behavior:'auto'});
+                  },0);
+                }
                 function pickSpotTarget(previous) {
                   var pool = spotCandidates.filter(function(item) { return item.text !== previous; });
                   if (!pool.length) pool = spotCandidates;
                   return pool.length ? pool[Math.floor(Math.random() * pool.length)].text : null;
                 }
                 function startSpotRound(isStart) {
-                  var nextTarget = pickSpotTarget(spot.target);
-                  if (!nextTarget) { if (typeof addToast === 'function') addToast(t('stem.anatomy.spot_no_targets', 'This slice has no labelled targets to find. Scroll to another slice.')); return; }
-                  setImaging({
-                    spot: { active: true, target: nextTarget, result: null, clickX: null, clickY: null, score: spot.score, total: spot.total, labelsWere: isStart ? showLabels : spot.labelsWere },
-                    rulerStart: null
+                  updateImagingOwned(function(current) {
+                    var round = imagingSpotRecord(current.spot);
+                    if (isStart ? spot.active : !spot.active) return null;
+                    var nextTarget = pickSpotTarget(round.target);
+                    if (!nextTarget) return null;
+                    return { spot: Object.assign({},round,{version:1,serial:imagingSpotSerial(round.serial)+1,context:imagingContext(current),active:true,target:nextTarget,result:null,clickX:null,clickY:null,score:imagingSpotCount(round.score),total:imagingSpotCount(round.total),interrupted:null}), rulerStart:null };
+                  },function(patch) {
+                    if (typeof announceToSR === 'function') announceToSR(t('stem.anatomy.spot_announce_prefix','Find the ') + patch.spot.target + t('stem.anatomy.spot_announce_suffix',' on the scan. Labels are hidden. Use the arrow keys or pointer, then Enter or click to answer.'));
+                    focusImagingSpot('canvas',patch.spot.serial);
                   });
-                  if (typeof announceToSR === 'function') announceToSR(t('stem.anatomy.spot_announce_prefix', 'Find the ') + nextTarget + t('stem.anatomy.spot_announce_suffix', ' on the scan. Labels are hidden. Use the arrow keys or pointer, then Enter or click to answer.'));
                 }
                 function endSpotChallenge() {
-                  setImaging({ spot: { active: false, target: null, result: null, clickX: null, clickY: null, score: spot.score, total: spot.total, labelsWere: true }, showLabels: spot.labelsWere });
+                  updateImagingOwned(function(current) {
+                    var round = imagingSpotRecord(current.spot);
+                    return round.active === true ? {spot:closeImagingSpot(round,null)} : null;
+                  },function(patch) {
+                    if (typeof announceToSR === 'function') announceToSR(t('stem.anatomy.practice_flow_scan_ended','Challenge ended. You can place observations on the scan.'));
+                    focusImagingSpot('start',patch.spot.serial);
+                  });
                 }
-                function answerSpot(x, y) {
-                  if (!spotRoundOpen || !spotTargetRegion) return false;
-                  var px = 44 + x * 552, py = 28 + y * 408;
-                  var dx = (px - spotTargetRegion.x) / (Math.max(10, spotTargetRegion.rx) + 16), dy = (py - spotTargetRegion.y) / (Math.max(10, spotTargetRegion.ry) + 16);
-                  var hit = dx * dx + dy * dy <= 1;
-                  setImaging({ spot: Object.assign({}, spot, { result: hit ? 'hit' : 'miss', clickX: x, clickY: y, score: spot.score + (hit ? 1 : 0), total: spot.total + 1 }) });
-                  playSound(hit ? 'spotterCorrect' : 'spotterWrong');
-                  if (typeof announceToSR === 'function') announceToSR(hit ? t('stem.anatomy.spot_hit', 'Hit. That is the ') + spot.target + '.' : t('stem.anatomy.spot_miss_prefix', 'Not there. The ') + spot.target + t('stem.anatomy.spot_miss_suffix', ' is now outlined on the scan.'));
-                  return true;
+                function imagingCursor(value) { return typeof value === 'number' && Number.isFinite(value) ? Math.max(0,Math.min(1,value)) : 0.5; }
+                function answerSpot(x,y,keyboard) {
+                  if (!spotRoundOpen || !spotTargetRegion) return;
+                  updateImagingOwned(function(current) {
+                    var round = imagingSpotRecord(current.spot);
+                    if (round.active !== true || round.result != null || boundImagingContextKey(round.context) !== scanContextKey) return null;
+                    var answerX = keyboard ? imagingCursor(current.kbX) : imagingCursor(x), answerY = keyboard ? imagingCursor(current.kbY) : imagingCursor(y);
+                    var px = 44 + answerX * 552, py = 28 + answerY * 408;
+                    var dx = (px - spotTargetRegion.x) / (Math.max(10,spotTargetRegion.rx)+16), dy = (py - spotTargetRegion.y) / (Math.max(10,spotTargetRegion.ry)+16), hit = dx*dx+dy*dy <= 1;
+                    return {kbX:answerX,kbY:answerY,spot:Object.assign({},round,{result:hit?'hit':'miss',clickX:answerX,clickY:answerY,score:imagingSpotCount(round.score)+(hit?1:0),total:imagingSpotCount(round.total)+1})};
+                  },function(patch) {
+                    var hit = patch.spot.result === 'hit';
+                    playSound(hit?'spotterCorrect':'spotterWrong');
+                    if (typeof announceToSR === 'function') announceToSR(hit ? t('stem.anatomy.spot_hit','Hit. That is the ') + patch.spot.target + '.' : t('stem.anatomy.spot_miss_prefix','Not there. The ') + patch.spot.target + t('stem.anatomy.spot_miss_suffix',' is now outlined on the scan.'));
+                    focusImagingSpot('feedback',patch.spot.serial);
+                  });
                 }
                 var spotReveal = spot.active && spot.result && spotTargetRegion
-                  ? { x: spotTargetRegion.x, y: spotTargetRegion.y, rx: spotTargetRegion.rx, ry: spotTargetRegion.ry, label: spot.target, hit: spot.result === 'hit', clickX: spot.clickX, clickY: spot.clickY }
+                  ? { x:spotTargetRegion.x,y:spotTargetRegion.y,rx:spotTargetRegion.rx,ry:spotTargetRegion.ry,label:spot.target,hit:spot.result==='hit',clickX:spot.clickX,clickY:spot.clickY }
                   : null;
                 var bodyScopeProfile = getBodyScopeSpatialProfile(region, plane, sliceValue);
                 var rawBodyScopeAnswers = savedImaging.bodyScopeAnswers && typeof savedImaging.bodyScopeAnswers === 'object' && !Array.isArray(savedImaging.bodyScopeAnswers) ? savedImaging.bodyScopeAnswers : {};
@@ -16063,7 +16201,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 var bodyScopeDepth = bodyScopeProfile.depthLayers.find(function(layer) { return layer.id === requestedBodyScopeDepthId; })
                   || bodyScopeProfile.depthLayers.find(function(layer) { return layer.id === 'field'; })
                   || bodyScopeProfile.depthLayers[0];
-                function setImaging(patch) { setLabToolData(function(previous){var state=previous.anatomy||{},current=state.imaging&&typeof state.imaging==='object'?state.imaging:{};return Object.assign({},previous,{anatomy:Object.assign({},state,{imaging:Object.assign({},current,patch)})});}); }
+                function setImaging(patch) {
+                  var contextChanged = false;
+                  setLabToolData(function(previous) {
+                    var state = previous.anatomy || {}, current = state.imaging && typeof state.imaging === 'object' && !Array.isArray(state.imaging) ? state.imaging : {};
+                    if (!sameRenderedImaging(state,current)) return previous;
+                    var round = imagingSpotRecord(current.spot), next = Object.assign({},current,patch);
+                    if (round.active === true && round.result == null && Object.prototype.hasOwnProperty.call(patch,'showLabels')) next.showLabels = current.showLabels;
+                    if (round.active === true && imagingContextKey(next) !== imagingContextKey(current)) {
+                      next.spot = closeImagingSpot(round,'context');
+                      next.rulerStart = null;
+                      contextChanged = true;
+                    }
+                    return Object.assign({},previous,{anatomy:Object.assign({},state,{imaging:next})});
+                  });
+                  setTimeout(function() { if (contextChanged && typeof announceToSR === 'function') announceToSR(t('stem.anatomy.practice_flow_scan_changed','The scan changed, so the previous question ended. Start a new question on this scan. Your score and observations are saved.')); },0);
+                }
+
                 // ── Same slice, three ways ──
                 // The lab shows one modality at a time, so the concept students most often miss
                 // (why a clinician picks CT over MRI, or T2 over T1) never gets a direct comparison.
@@ -16329,31 +16483,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 // onClick and NO key handler, so it took focus, announced itself, and did
                 // nothing on Enter. Placing pins and rulers on a scan is the whole
                 // activity here, and it was impossible without a mouse.
-                function placeImagingAt(x, y) {
-                  // During a spot round the click is an answer, never an annotation.
-                  if (spot.active) { if (spotRoundOpen) answerSpot(x,y); return; }
-                  if (imagingTool === 'ruler' && savedImaging.rulerStart && typeof savedImaging.rulerStart === 'object') {
-                    var start = savedImaging.rulerStart;
-                    var dx = (x - start.x) * 552, dy = (y - start.y) * 408;
-                    var distance = Math.sqrt(dx * dx + dy * dy) * ANATOMY_IMAGING_PIXEL_SPACING_MM;
-                    var ruler = { id: 'img-' + Date.now(), type: 'ruler', x: start.x, y: start.y, x2: x, y2: y, distanceMm: Math.round(distance * 10) / 10, note: imagingNote || 'Measured span', modality: modality, region: region, plane: plane, slice: sliceValue };
-                    setImaging({ annotations: allImagingAnnotations.concat([ruler]).slice(-12), rulerStart: null, note: '' });
-                    if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.anatomy.sr_ruler_recorded_millimeters_in_this_teaching_phant', 'Ruler recorded: {value1} millimeters in this teaching phantom.'), { value1: ruler.distanceMm }));
-                  } else if (imagingTool === 'ruler') {
-                    setImaging({ rulerStart: { x: x, y: y } });
-                    if (typeof announceToSR === 'function') announceToSR(__alloT('stem.anatomy.sr_ruler_start_placed_select_an_end_point', 'Ruler start placed. Select an end point.'));
-                  } else {
-                    var pin = { id: 'img-' + Date.now(), type: 'pin', x: x, y: y, note: imagingNote || 'Observation pin', modality: modality, region: region, plane: plane, slice: sliceValue };
-                    setImaging({ annotations: allImagingAnnotations.concat([pin]).slice(-12), note: '' });
-                    if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.anatomy.sr_observation_pin_recorded_on_slice', 'Observation pin recorded on slice {value1}.'), { value1: Math.round(sliceValue) }));
-                  }
+                function placeImagingAt(x,y,keyboard) {
+                  // A restored unmatched challenge still owns the canvas until Start or End.
+                  if (rawSpot.active === true) { if (spotRoundOpen) answerSpot(x,y,keyboard); return; }
+                  var placementAnnouncement = '';
+                  updateImagingOwned(function(current) {
+                    if (imagingSpotRecord(current.spot).active === true || (current.tool === 'ruler' ? 'ruler' : 'pin') !== imagingTool) return null;
+                    var pointX = keyboard ? imagingCursor(current.kbX) : imagingCursor(x), pointY = keyboard ? imagingCursor(current.kbY) : imagingCursor(y);
+                    var note = typeof current.note === 'string' ? current.note.slice(0,120) : '';
+                    var history = Array.isArray(current.annotations) ? current.annotations.filter(function(item) { return item && typeof item === 'object' && !Array.isArray(item); }).slice(-12) : [];
+                    var start = current.rulerStart, patch = {kbX:pointX,kbY:pointY};
+                    if (imagingTool === 'ruler' && start && typeof start === 'object' && typeof start.x === 'number' && typeof start.y === 'number' && Number.isFinite(start.x) && Number.isFinite(start.y)) {
+                      var dx = (pointX-start.x)*552, dy = (pointY-start.y)*408, distance = Math.sqrt(dx*dx+dy*dy)*ANATOMY_IMAGING_PIXEL_SPACING_MM;
+                      var ruler = {id:'img-'+Date.now(),type:'ruler',x:start.x,y:start.y,x2:pointX,y2:pointY,distanceMm:Math.round(distance*10)/10,note:note||'Measured span',modality:modality,region:region,plane:plane,slice:sliceValue};
+                      patch.annotations = history.concat([ruler]).slice(-12); patch.rulerStart = null; patch.note = '';
+                      placementAnnouncement = __alloFill(__alloT('stem.anatomy.sr_ruler_recorded_millimeters_in_this_teaching_phant','Ruler recorded: {value1} millimeters in this teaching phantom.'),{value1:ruler.distanceMm});
+                    } else if (imagingTool === 'ruler') {
+                      patch.rulerStart = {x:pointX,y:pointY};
+                      placementAnnouncement = __alloT('stem.anatomy.sr_ruler_start_placed_select_an_end_point','Ruler start placed. Select an end point.');
+                    } else {
+                      var pin = {id:'img-'+Date.now(),type:'pin',x:pointX,y:pointY,note:note||'Observation pin',modality:modality,region:region,plane:plane,slice:sliceValue};
+                      patch.annotations = history.concat([pin]).slice(-12); patch.note = '';
+                      placementAnnouncement = __alloFill(__alloT('stem.anatomy.sr_observation_pin_recorded_on_slice','Observation pin recorded on slice {value1}.'),{value1:Math.round(sliceValue)});
+                    }
+                    return patch;
+                  },function() { if (placementAnnouncement && typeof announceToSR === 'function') announceToSR(placementAnnouncement); });
                 }
                 function handleImagingClick(event) {
                   var canvas = event.currentTarget, rect = canvas.getBoundingClientRect();
                   var x = Math.max(0, Math.min(1, ((event.clientX - rect.left) / rect.width - 44 / 640) / (552 / 640)));
                   var y = Math.max(0, Math.min(1, ((event.clientY - rect.top) / rect.height - 28 / 480) / (408 / 480)));
-                  setImaging({ kbX: x, kbY: y });
-                  placeImagingAt(x, y);
+                  placeImagingAt(x, y, false);
                 }
 
                 // Keyboard equivalent: arrows walk a cursor across the slice, Enter or
@@ -16361,39 +16521,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 // Shift takes a coarse step so crossing the image does not take fifty
                 // presses. Every move is announced, because the cursor is the only thing
                 // a screen-reader user has to go on.
-                var kbX = typeof savedImaging.kbX === 'number' ? savedImaging.kbX : 0.5;
-                var kbY = typeof savedImaging.kbY === 'number' ? savedImaging.kbY : 0.5;
+                var kbX = imagingCursor(savedImaging.kbX), kbY = imagingCursor(savedImaging.kbY);
                 function handleImagingKey(event) {
-                  if(event.ctrlKey||event.metaKey||event.altKey||event.isComposing||event.repeat)return;
-                  var k = event.key;
-                  var step = event.shiftKey ? 0.1 : 0.02;
-                  var nx = kbX, ny = kbY;
-                  if (k === 'ArrowLeft') nx = Math.max(0, kbX - step);
-                  else if (k === 'ArrowRight') nx = Math.min(1, kbX + step);
-                  else if (k === 'ArrowUp') ny = Math.max(0, kbY - step);
-                  else if (k === 'ArrowDown') ny = Math.min(1, kbY + step);
-                  else if (k === 'Enter' || k === ' ' || k === 'Spacebar') {
-                    event.preventDefault();
-                    placeImagingAt(kbX, kbY);
-                    return;
-                  } else if (k === 'Escape') {
-                    if (savedImaging.rulerStart) {
-                      setImaging({ rulerStart: null });
-                      if (typeof announceToSR === 'function') announceToSR(__alloT('stem.anatomy.sr_ruler_cancelled', 'Ruler cancelled.'));
-                    }
-                    return;
-                  } else {
-                    return;   // never swallow Tab, and leave every other key alone
+                  if (event.ctrlKey || event.metaKey || event.altKey || event.isComposing || event.repeat) return;
+                  var key = event.key, step = event.shiftKey ? 0.1 : 0.02;
+                  if (key === 'Enter' || key === ' ' || key === 'Spacebar') {
+                    event.preventDefault(); placeImagingAt(kbX,kbY,true); return;
                   }
+                  if (key === 'Escape') {
+                    if (spot.active) { event.preventDefault(); focusImagingSpot(spotRoundOpen?'prompt':'feedback',spot.serial); }
+                    else if (savedImaging.rulerStart) updateImagingOwned(function(current) { return current.rulerStart ? {rulerStart:null} : null; },function() { if (typeof announceToSR === 'function') announceToSR(__alloT('stem.anatomy.sr_ruler_cancelled','Ruler cancelled.')); });
+                    return;
+                  }
+                  if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].indexOf(key) < 0) return;
                   event.preventDefault();
-                  setImaging({ kbX: nx, kbY: ny });
-                  if (typeof announceToSR === 'function') {
-                    announceToSR(__alloFill(__alloT('stem.anatomy.sr_cursor_at_percent_across_percent_down', 'Cursor at {value1} percent across, {value2} percent down.'), { value1: Math.round(nx * 100), value2: Math.round(ny * 100) }));
-                  }
+                  updateImagingOwned(function(current) {
+                    var nx = imagingCursor(current.kbX), ny = imagingCursor(current.kbY);
+                    if (key === 'ArrowLeft') nx = Math.max(0,nx-step);
+                    else if (key === 'ArrowRight') nx = Math.min(1,nx+step);
+                    else if (key === 'ArrowUp') ny = Math.max(0,ny-step);
+                    else ny = Math.min(1,ny+step);
+                    return {kbX:nx,kbY:ny};
+                  },function(patch) { if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.anatomy.sr_cursor_at_percent_across_percent_down','Cursor at {value1} percent across, {value2} percent down.'),{value1:Math.round(patch.kbX*100),value2:Math.round(patch.kbY*100)})); });
+                }
+                function renderSpotChallenge() {
+                  var contextText = __alloFill(t('stem.anatomy.practice_flow_scan_context','{modality} · {region} · {plane} · slice {slice}'),{modality:'\u2068'+modality+(modality==='MRI'?' '+sequence:'')+'\u2069',region:t('stem.anatomy.'+region,region.charAt(0).toUpperCase()+region.slice(1)),plane:t('stem.anatomy.'+plane+'_2',plane.charAt(0).toUpperCase()+plane.slice(1)),slice:'\u2068'+Math.round(sliceValue)+'\u2069'});
+                  return h('div',{className:'anatomy-imaging-challenge mb-3 rounded-lg border border-cyan-300 bg-white p-3','data-anatomy-spot-challenge':spot.active?(spot.result||'open'):'idle',role:'group','aria-labelledby':'anatomy-imaging-spot-title'},
+                    h('div',{className:'flex flex-wrap items-center justify-between gap-2'},h('h5',{id:'anatomy-imaging-spot-title',className:'text-sm font-black text-cyan-950'},t('stem.anatomy.spot_challenge_title','🎯 Spot it on the scan')),spot.total>0?h('span',{className:'text-xs font-bold text-cyan-900'},spot.score+' / '+spot.total):null),
+                    h('p',{'data-anatomy-spot-context':true,className:'mt-1 text-xs font-bold text-slate-700'},contextText),
+                    !spot.active ? h('div',null,
+                      h('p',{className:'mt-1 text-xs leading-relaxed text-slate-700'},t('stem.anatomy.practice_flow_scan_intro','Choose a scan, then find the named structure. Each question uses the selected modality, region, plane, and slice.')),
+                      needsSpotRecovery?h('p',{role:'status','aria-live':'polite',className:'mt-2 text-xs text-amber-900'},t('stem.anatomy.practice_flow_scan_recovery','This saved question cannot be matched to this scan. Start a new question here, or end the challenge to place observations.')):rawSpot.interrupted==='context'?h('p',{role:'status','aria-live':'polite',className:'mt-2 text-xs text-amber-900'},t('stem.anatomy.practice_flow_scan_changed','The scan changed, so the previous question ended. Start a new question on this scan. Your score and observations are saved.')):null,
+                      h('div',{className:'mt-2 flex flex-wrap gap-2'},h('button',{type:'button','data-anatomy-spot-start':true,onClick:function(){startSpotRound(true);},disabled:!spotCandidates.length,className:'min-h-[44px] rounded-lg bg-cyan-800 px-3 py-2 text-xs font-bold text-white disabled:opacity-50'},t('stem.anatomy.spot_start','Start spot challenge')),needsSpotRecovery?h('button',{type:'button','data-anatomy-spot-end':true,onClick:endSpotChallenge,className:'min-h-[44px] rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700'},t('stem.anatomy.spot_end','End challenge')):null)
+                    ) : spotRoundOpen ? h('div',null,
+                      h('p',{id:'anatomy-imaging-spot-prompt',tabIndex:-1,'data-anatomy-spot-prompt':true,className:'mt-2 text-sm font-black text-cyan-900',role:'status','aria-live':'polite'},t('stem.anatomy.spot_prompt_prefix','Click the ')+spot.target+t('stem.anatomy.spot_prompt_suffix',' on the scan.')),
+                      h('p',{id:'anatomy-imaging-spot-hint',className:'text-xs text-slate-600'},t('stem.anatomy.practice_flow_scan_labels_hidden','Labels are hidden until you answer.')+' '+t('stem.anatomy.spot_prompt_hint','Keyboard: arrow keys move the cursor, Enter answers.')+' '+t('stem.anatomy.practice_flow_scan_escape','On the scan, Escape returns to the question controls.')),
+                      h('div',{className:'mt-2 flex flex-wrap gap-2'},h('button',{type:'button','data-anatomy-spot-skip':true,onClick:function(){startSpotRound(false);},className:'min-h-[44px] rounded-lg border border-cyan-300 px-3 py-2 text-xs font-bold text-cyan-900'},t('stem.anatomy.spot_skip','Skip this one')),h('button',{type:'button','data-anatomy-spot-end':true,onClick:endSpotChallenge,className:'min-h-[44px] rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700'},t('stem.anatomy.spot_end','End challenge')))
+                    ) : h('div',null,
+                      h('p',{id:'anatomy-imaging-spot-feedback',tabIndex:-1,'data-anatomy-spot-feedback':true,className:'mt-2 text-sm font-black '+(spot.result==='hit'?'text-emerald-800':'text-amber-800'),role:'status','aria-live':'polite'},spot.result==='hit'?t('stem.anatomy.spot_hit_title','✓ Hit! That is the ')+spot.target+'.':__alloFill(t('stem.anatomy.practice_flow_scan_miss_review','Check the outlined target: {name}. Your answer is marked by the red cross.'),{name:spot.target})),
+                      h('p',{id:'anatomy-imaging-spot-hint',className:'text-xs text-slate-600'},t('stem.anatomy.practice_flow_scan_escape','On the scan, Escape returns to the question controls.')),
+                      h('div',{className:'mt-2 flex flex-wrap gap-2'},h('button',{type:'button','data-anatomy-spot-next':true,onClick:function(){startSpotRound(false);},className:'min-h-[44px] rounded-lg bg-cyan-800 px-3 py-2 text-xs font-bold text-white'},t('stem.anatomy.spot_next','Next structure →')),h('button',{type:'button','data-anatomy-spot-review-scan':true,onClick:function(){focusImagingSpot('review',spot.serial);},className:'min-h-[44px] rounded-lg border border-cyan-300 px-3 py-2 text-xs font-bold text-cyan-900'},t('stem.anatomy.practice_flow_scan_review','Review outlined structure on scan')),h('button',{type:'button','data-anatomy-spot-end':true,onClick:endSpotChallenge,className:'min-h-[44px] rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700'},t('stem.anatomy.spot_end','End challenge')))
+                    )
+                  );
                 }
 
                 var drawingState = { kbX: kbX, kbY: kbY, modality: modality, region: region, plane: plane, slice: sliceValue, sequence: sequence, windowWidth: windowWidth, windowLevel: windowLevel, showLabels: showLabels && !spotRoundOpen, showCrosshair: showCrosshair, focusTerms: spotRoundOpen ? [] : bodyScopeDepth.targets, annotations: visibleImagingAnnotations, spotReveal: spotReveal };
-                return h('section', { className: 'rounded-2xl border-2 border-cyan-200 bg-white p-4 shadow-sm', 'data-anatomy-imaging-workspace': 'true', 'aria-labelledby': 'anatomy-imaging-title' },
+                return h('section', { className: 'rounded-2xl border-2 border-cyan-200 bg-white p-4 shadow-sm', 'data-anatomy-imaging-workspace': 'true', 'data-anatomy-imaging-context':scanContextKey, 'data-anatomy-imaging-round':String(spot.serial), 'aria-labelledby': 'anatomy-imaging-title' },
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
                     h('div', null,
                       h('div', { className: 'text-[0.6875rem] font-black uppercase tracking-wider text-cyan-800' }, t('stem.anatomy.medical_imaging_literacy', 'Medical imaging literacy')),
@@ -16405,30 +16578,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   h('div', { className: 'mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.8fr)]' },
                     h('div', null,
                       h('div', { className: 'flex flex-wrap gap-2 mb-2' },
-                        h('div', { className: 'inline-flex rounded-lg border border-cyan-200 bg-cyan-50 p-1', role: 'group', 'aria-label': t('stem.anatomy.imaging_modality', 'Imaging modality') }, ['CT', 'MRI'].map(function(item) { return h('button', { key: item, type: 'button', 'aria-pressed': modality === item, onClick: function() { chooseModality(item); }, className: 'rounded-md px-3 py-1.5 text-xs font-black ' + (modality === item ? 'bg-cyan-800 text-white' : 'text-cyan-900 hover:bg-white') }, item); })),
-                        h('div', { className: 'inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1', role: 'group', 'aria-label': t('stem.anatomy.body_region', 'Body region') }, [['head', t('stem.anatomy.head', 'Head')], ['chest', t('stem.anatomy.chest', 'Chest')], ['abdomen', t('stem.anatomy.abdomen', 'Abdomen')]].map(function(item) { return h('button', { key: item[0], type: 'button', 'aria-pressed': region === item[0], onClick: function() { setImaging({ region: item[0], slice: 50, rulerStart: null }); }, className: 'rounded-md px-2.5 py-1.5 text-xs font-bold ' + (region === item[0] ? 'bg-slate-800 text-white' : 'text-slate-700 hover:bg-white') }, item[1]); })),
-                        h('div', { className: 'inline-flex rounded-lg border border-indigo-200 bg-indigo-50 p-1', role: 'group', 'aria-label': t('stem.anatomy.anatomical_plane', 'Anatomical plane') }, [['axial', t('stem.anatomy.axial_2', 'Axial')], ['coronal', t('stem.anatomy.coronal_2', 'Coronal')], ['sagittal', t('stem.anatomy.sagittal_2', 'Sagittal')]].map(function(item) { return h('button', { key: item[0], type: 'button', 'aria-pressed': plane === item[0], onClick: function() { setImaging({ plane: item[0], rulerStart: null }); }, className: 'rounded-md px-2.5 py-1.5 text-xs font-bold ' + (plane === item[0] ? 'bg-indigo-700 text-white' : 'text-indigo-800 hover:bg-white') }, item[1]); })),
+                        h('div', { className: 'inline-flex rounded-lg border border-cyan-200 bg-cyan-50 p-1', role: 'group', 'aria-label': t('stem.anatomy.imaging_modality', 'Imaging modality') }, ['CT', 'MRI'].map(function(item) { return h('button', { key: item, type: 'button', 'aria-pressed': modality === item, 'data-anatomy-imaging-modality':item, onClick: function() { chooseModality(item); }, className: 'rounded-md px-3 py-1.5 text-xs font-black ' + (modality === item ? 'bg-cyan-800 text-white' : 'text-cyan-900 hover:bg-white') }, item); })),
+                        h('div', { className: 'inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1', role: 'group', 'aria-label': t('stem.anatomy.body_region', 'Body region') }, [['head', t('stem.anatomy.head', 'Head')], ['chest', t('stem.anatomy.chest', 'Chest')], ['abdomen', t('stem.anatomy.abdomen', 'Abdomen')]].map(function(item) { return h('button', { key: item[0], type: 'button', 'aria-pressed': region === item[0], 'data-anatomy-imaging-region':item[0], onClick: function() { setImaging({ region: item[0], slice: 50, rulerStart: null }); }, className: 'rounded-md px-2.5 py-1.5 text-xs font-bold ' + (region === item[0] ? 'bg-slate-800 text-white' : 'text-slate-700 hover:bg-white') }, item[1]); })),
+                        h('div', { className: 'inline-flex rounded-lg border border-indigo-200 bg-indigo-50 p-1', role: 'group', 'aria-label': t('stem.anatomy.anatomical_plane', 'Anatomical plane') }, [['axial', t('stem.anatomy.axial_2', 'Axial')], ['coronal', t('stem.anatomy.coronal_2', 'Coronal')], ['sagittal', t('stem.anatomy.sagittal_2', 'Sagittal')]].map(function(item) { return h('button', { key: item[0], type: 'button', 'aria-pressed': plane === item[0], 'data-anatomy-imaging-plane':item[0], onClick: function() { setImaging({ plane: item[0], rulerStart: null }); }, className: 'rounded-md px-2.5 py-1.5 text-xs font-bold ' + (plane === item[0] ? 'bg-indigo-700 text-white' : 'text-indigo-800 hover:bg-white') }, item[1]); })),
                         h('button', { type: 'button', 'data-anatomy-imaging-compare-toggle': 'true', 'aria-pressed': compareModalities,
                           onClick: function() { setImaging({ compareModalities: !compareModalities }); if (!compareModalities && typeof announceToSR === 'function') announceToSR(t('stem.anatomy.modality_compare_opened', 'Comparison strip opened below the scan: CT, MRI T1 and MRI T2 of the same slice.')); },
                           className: 'rounded-lg border px-3 py-1.5 text-xs font-bold transition-all active:scale-[0.97] ' + (compareModalities ? 'bg-cyan-800 text-white border-cyan-800' : 'bg-white text-cyan-900 border-cyan-300 hover:bg-cyan-50')
                         }, compareModalities ? t('stem.anatomy.modality_compare_hide', '🔬 Hide CT vs MRI') : t('stem.anatomy.modality_compare_show', '🔬 Compare CT vs MRI'))
                       ),
+                      h('div',{className:'anatomy-imaging-practice','data-anatomy-imaging-practice':true},
+                        renderSpotChallenge(),
                       h('div', { className: 'overflow-hidden rounded-xl border-2 border-slate-700 bg-slate-950 shadow-xl' },
-                        h('canvas', { width: 640, height: 480, role: 'application', tabIndex: 0, 'data-anatomy-imaging-canvas': 'true', 'aria-label': modality + ' synthetic ' + region + ' phantom in the ' + plane + ' plane, slice ' + Math.round(sliceValue) + '. Visible teaching structures: ' + regionStructures.join(', ') + '. Depth focus: ' + bodyScopeDepth.targetLabel + '. ' + visibleImagingAnnotations.length + ' annotations on this slice.' + (spot.active ? (spotRoundOpen?t("stem.anatomy.ref2_scan_answer_keys"," Arrow keys move the answer cursor; Enter submits an answer."):t("stem.anatomy.ref2_scan_review_keys"," Answer review. Choose Next structure or End challenge before placing annotations.")) : t("stem.anatomy.ref2_scan_place_keys"," Arrow keys move a placement cursor, Enter places the current tool, Escape cancels a ruler.")), onClick: handleImagingClick, onKeyDown: handleImagingKey, style: { display: 'block', width: '100%', height: 'auto', cursor: imagingTool === 'ruler' ? 'crosshair' : 'copy' }, ref: function(canvas) { if (!canvas) return; var context = canvas.getContext && canvas.getContext('2d'); if (context) drawAnatomyImagingSlice(context, canvas.width, canvas.height, drawingState); } })
+                        h('canvas', { width: 640, height: 480, role: 'application', tabIndex: 0, 'data-anatomy-imaging-canvas': 'true', 'aria-describedby':spot.active?(spotRoundOpen?'anatomy-imaging-spot-prompt anatomy-imaging-spot-hint':'anatomy-imaging-spot-feedback anatomy-imaging-spot-hint'):undefined, 'aria-label': modality + ' synthetic ' + region + ' phantom in the ' + plane + ' plane, slice ' + Math.round(sliceValue) + '. Visible teaching structures: ' + regionStructures.join(', ') + '. Depth focus: ' + bodyScopeDepth.targetLabel + '. ' + visibleImagingAnnotations.length + ' annotations on this slice.' + (spot.active ? (spotRoundOpen?t("stem.anatomy.ref2_scan_answer_keys"," Arrow keys move the answer cursor; Enter submits an answer."):t("stem.anatomy.ref2_scan_review_keys"," Answer review. Choose Next structure or End challenge before placing annotations.")) : t("stem.anatomy.ref2_scan_place_keys"," Arrow keys move a placement cursor, Enter places the current tool, Escape cancels a ruler.")), onClick: handleImagingClick, onKeyDown: handleImagingKey, style: { display: 'block', width: '100%', height: 'auto', cursor: imagingTool === 'ruler' ? 'crosshair' : 'copy' }, ref: function(canvas) { if (!canvas) return; var context = canvas.getContext && canvas.getContext('2d'); if (context) drawAnatomyImagingSlice(context, canvas.width, canvas.height, drawingState); } })
                       ),
                       h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
                         h('span', { className: 'text-xs font-black text-slate-700', 'aria-hidden': 'true' }, 'Slice ' + Math.round(sliceValue) + ' / 100'),
                         h('input', { id: 'anatomy-imaging-slice', type: 'range', min: 0, max: 100, step: 1, value: sliceValue,
                           'aria-valuetext': t('stem.anatomy.slice_valuetext', 'Slice ') + Math.round(sliceValue) + t('stem.anatomy.slice_valuetext_of', ' of 100'), onChange: function(event) { setImaging({ slice: Number(event.target.value), rulerStart: null }); }, className: 'min-w-[220px] flex-1 accent-cyan-700', 'aria-label': t('stem.anatomy.imaging_slice_position', 'Imaging slice position') }),
                         h('button', { type: 'button', onClick: function() { setImaging({ showCrosshair: !showCrosshair }); }, 'aria-pressed': showCrosshair, className: 'rounded-lg border border-cyan-200 px-2 py-1 text-xs font-bold text-cyan-900' }, showCrosshair ? t('stem.anatomy.hide_crosshair', 'Hide crosshair') : t('stem.anatomy.show_crosshair', 'Show crosshair')),
-                        h('button', { type: 'button', onClick: function() { setImaging({ showLabels: !showLabels }); }, 'aria-pressed': showLabels, className: 'rounded-lg border border-cyan-200 px-2 py-1 text-xs font-bold text-cyan-900' }, showLabels ? t('stem.anatomy.hide_labels', 'Hide labels') : t('stem.anatomy.show_labels', 'Show labels'))
+                        h('button', { type: 'button', disabled:spotRoundOpen, 'data-anatomy-imaging-labels':true, onClick: function() { setImaging({ showLabels: !showLabels }); }, 'aria-pressed': showLabels && !spotRoundOpen, className: 'rounded-lg border border-cyan-200 px-2 py-1 text-xs font-bold text-cyan-900' }, showLabels ? t('stem.anatomy.hide_labels', 'Hide labels') : t('stem.anatomy.show_labels', 'Show labels'))
                       ),
                       h('div', { className: 'mt-2 rounded-lg border border-slate-200 bg-slate-50 p-2 text-[0.6875rem] leading-relaxed text-slate-700' }, h('strong', null, t('stem.anatomy.orientation', 'Orientation: ')), 'R/L refer to the patient. S/I mean superior/inferior; sagittal views use A/P for anterior/posterior. The 50 mm scale assumes a simplified 0.8 mm display spacing.')
+                      )
                     ),
                     h('aside', { className: 'space-y-3' },
                       h('div', { className: 'rounded-xl border border-cyan-200 bg-cyan-50/60 p-3' },
                         h('h5', { className: 'text-xs font-black uppercase tracking-wide text-cyan-900' }, modality === 'CT' ? t('stem.anatomy.ct_window_level', 'CT window / level') : t('stem.anatomy.mri_display_contrast', 'MRI display contrast')),
-                        modality === 'MRI' ? h('div', { className: 'mt-2 flex gap-2', role: 'group', 'aria-label': t('stem.anatomy.mri_sequence', 'MRI sequence') }, ['T1', 'T2'].map(function(item) { return h('button', { key: item, type: 'button', 'aria-pressed': sequence === item, onClick: function() { setImaging({ sequence: item }); }, className: 'flex-1 rounded-lg border px-3 py-2 text-xs font-bold ' + (sequence === item ? 'border-cyan-800 bg-cyan-800 text-white' : 'border-cyan-200 bg-white text-cyan-900') }, item); })) : h('div', { className: 'mt-2 grid grid-cols-2 gap-1.5', role: 'group', 'aria-label': t('stem.anatomy.ct_window_presets', 'CT window presets') }, [['soft', t('stem.anatomy.soft_tissue', 'Soft tissue')], ['lung', t('stem.anatomy.lung', 'Lung')], ['bone', t('stem.anatomy.bone', 'Bone')], ['brain', t('stem.anatomy.brain', 'Brain')]].map(function(item) { return h('button', { key: item[0], type: 'button', onClick: function() { applyWindowPreset(item[0]); }, className: 'rounded-lg border border-cyan-200 bg-white px-2 py-1.5 text-xs font-bold text-cyan-900 hover:bg-cyan-100' }, item[1]); })),
+                        modality === 'MRI' ? h('div', { className: 'mt-2 flex gap-2', role: 'group', 'aria-label': t('stem.anatomy.mri_sequence', 'MRI sequence') }, ['T1', 'T2'].map(function(item) { return h('button', { key: item, type: 'button', 'aria-pressed': sequence === item, 'data-anatomy-imaging-sequence':item, onClick: function() { setImaging({ sequence: item }); }, className: 'flex-1 rounded-lg border px-3 py-2 text-xs font-bold ' + (sequence === item ? 'border-cyan-800 bg-cyan-800 text-white' : 'border-cyan-200 bg-white text-cyan-900') }, item); })) : h('div', { className: 'mt-2 grid grid-cols-2 gap-1.5', role: 'group', 'aria-label': t('stem.anatomy.ct_window_presets', 'CT window presets') }, [['soft', t('stem.anatomy.soft_tissue', 'Soft tissue')], ['lung', t('stem.anatomy.lung', 'Lung')], ['bone', t('stem.anatomy.bone', 'Bone')], ['brain', t('stem.anatomy.brain', 'Brain')]].map(function(item) { return h('button', { key: item[0], type: 'button', onClick: function() { applyWindowPreset(item[0]); }, className: 'rounded-lg border border-cyan-200 bg-white px-2 py-1.5 text-xs font-bold text-cyan-900 hover:bg-cyan-100' }, item[1]); })),
                         h('div', { className: 'mt-3 block text-[0.6875rem] font-bold text-slate-700' },
                           h('label', { htmlFor: 'imaging-window-width' }, t('stem.anatomy.window_width', 'Window width')),
                           h('span', { 'aria-hidden': 'true' }, ' ' + Math.round(windowWidth))),
@@ -16441,9 +16617,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       ),
                       h('div', { className: 'rounded-xl border border-amber-200 bg-amber-50/60 p-3' },
                         h('h5', { className: 'text-xs font-black uppercase tracking-wide text-amber-900' }, t('stem.anatomy.observe_and_measure', 'Observe and measure')),
-                        h('div', { className: 'mt-2 flex gap-2', role: 'group', 'aria-label': t('stem.anatomy.imaging_annotation_tool', 'Imaging annotation tool') }, [['pin', t('stem.anatomy.pin', 'Pin')], ['ruler', t('stem.anatomy.ruler', 'Ruler')]].map(function(item) { return h('button', { key: item[0], type: 'button', 'aria-pressed': imagingTool === item[0], onClick: function() { setImaging({ tool: item[0], rulerStart: null }); }, className: 'flex-1 rounded-lg border px-3 py-2 text-xs font-black ' + (imagingTool === item[0] ? 'border-amber-700 bg-amber-700 text-white' : 'border-amber-200 bg-white text-amber-900') }, item[1]); })),
+                        h('div', { className: 'mt-2 flex gap-2', role: 'group', 'aria-label': t('stem.anatomy.imaging_annotation_tool', 'Imaging annotation tool') }, [['pin', t('stem.anatomy.pin', 'Pin')], ['ruler', t('stem.anatomy.ruler', 'Ruler')]].map(function(item) { return h('button', { key: item[0], type: 'button', 'aria-pressed': imagingTool === item[0], disabled:spot.active||needsSpotRecovery, onClick: function() { setImaging({ tool: item[0], rulerStart: null }); }, className: 'flex-1 rounded-lg border px-3 py-2 text-xs font-black ' + (imagingTool === item[0] ? 'border-amber-700 bg-amber-700 text-white' : 'border-amber-200 bg-white text-amber-900') }, item[1]); })),
                         h('label', { htmlFor: 'imaging-note', className: 'mt-2 block text-[0.6875rem] font-bold text-slate-700' }, t('stem.anatomy.observation_note', 'Observation note')),
-                        h('input', { id: 'imaging-note', type: 'text', maxLength: 120, value: imagingNote, onChange: function(event) { setImaging({ note: event.target.value }); }, placeholder: imagingTool === 'ruler' ? t('stem.anatomy.what_are_you_measuring', 'What are you measuring?') : t('stem.anatomy.what_do_you_notice', 'What do you notice?'), className: 'mt-1 w-full rounded-lg border border-amber-600 bg-white px-2 py-1.5 text-xs' }),
+                        h('input', { id: 'imaging-note', type: 'text', dir:'auto', maxLength: 120, value: imagingNote, onChange: function(event) { setImaging({ note: event.target.value }); }, placeholder: imagingTool === 'ruler' ? t('stem.anatomy.what_are_you_measuring', 'What are you measuring?') : t('stem.anatomy.what_do_you_notice', 'What do you notice?'), className: 'mt-1 w-full rounded-lg border border-amber-600 bg-white px-2 py-1.5 text-xs' }),
+                        spot.active||needsSpotRecovery?h('p',{className:'mt-2 text-xs leading-relaxed text-amber-900'},t('stem.anatomy.practice_flow_scan_annotations_paused','End the challenge to place pins and rulers. Your observation note stays saved.')):null,
                         savedImaging.rulerStart ? h('div', { role: 'status', className: 'mt-2 rounded-lg bg-white p-2 text-xs font-bold text-amber-900' }, t('stem.anatomy.ruler_start_placed_select_the_end_poin', 'Ruler start placed—select the end point.')) : null,
                         h('p', { className: 'mt-2 text-[0.6875rem] text-slate-600' }, t('stem.anatomy.pins_and_rulers_are_stored_only_in_thi', 'Pins and rulers are stored only in this activity state. Measurements use the phantom scale and are not clinical measurements.'))
                       ),
@@ -16457,32 +16634,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   renderBodyScopeNavigator(),
                   h('div', { className: 'mt-4 grid gap-3 lg:grid-cols-2' },
                     h('div', { className: 'rounded-xl border border-indigo-200 bg-indigo-50/60 p-3' },
-                      h('div', { className: 'mb-3 rounded-lg border border-cyan-300 bg-white p-3', 'data-anatomy-spot-challenge': spot.active ? (spot.result || 'open') : 'idle', role: 'group', 'aria-label': t('stem.anatomy.spot_challenge', 'Spot it on the scan') },
-                        h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
-                          h('h5', { className: 'text-sm font-black text-cyan-950' }, t('stem.anatomy.spot_challenge_title', '🎯 Spot it on the scan')),
-                          spot.total > 0 ? h('span', { className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-900' }, spot.score + ' / ' + spot.total) : null
-                        ),
-                        !spot.active ? h('div', null,
-                          h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-700' }, t('stem.anatomy.spot_intro', 'Labels hide, you get a structure name, and you click where it is on the current slice. Change modality, region, plane or slice first to set the difficulty.')),
-                          h('button', { type: 'button', onClick: function() { startSpotRound(true); }, disabled: !spotCandidates.length,
-                            className: 'mt-2 rounded-lg bg-cyan-800 px-3 py-1.5 text-xs font-bold text-white hover:bg-cyan-900 disabled:opacity-50 active:scale-[0.97]'
-                          }, t('stem.anatomy.spot_start', 'Start spot challenge'))
-                        ) : spotRoundOpen ? h('div', null,
-                          h('p', { className: 'mt-1 text-sm font-black text-cyan-900', role: 'status', 'aria-live': 'polite' }, t('stem.anatomy.spot_prompt_prefix', 'Click the ') + spot.target + t('stem.anatomy.spot_prompt_suffix', ' on the scan.')),
-                          h('p', { className: 'text-[0.6875rem] text-slate-600' }, t('stem.anatomy.spot_prompt_hint', 'Keyboard: arrow keys move the cursor, Enter answers.')),
-                          h('div', { className: 'mt-2 flex flex-wrap gap-2' },
-                            h('button', { type: 'button', onClick: function() { startSpotRound(false); }, className: 'rounded-lg border border-cyan-300 bg-white px-3 py-1.5 text-xs font-bold text-cyan-900 hover:bg-cyan-50 active:scale-[0.97]' }, t('stem.anatomy.spot_skip', 'Skip this one')),
-                            h('button', { type: 'button', onClick: endSpotChallenge, className: 'rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 active:scale-[0.97]' }, t('stem.anatomy.spot_end', 'End challenge'))
-                          )
-                        ) : h('div', null,
-                          h('p', { className: 'mt-1 text-sm font-black ' + (spot.result === 'hit' ? 'text-emerald-800' : 'text-amber-800'), role: 'status', 'aria-live': 'polite' },
-                            spot.result === 'hit' ? t('stem.anatomy.spot_hit_title', '✓ Hit! That is the ') + spot.target + '.' : t('stem.anatomy.spot_miss_title', 'Not there. The ') + spot.target + t('stem.anatomy.spot_miss_body', ' is outlined in amber; your click is the red cross.')),
-                          h('div', { className: 'mt-2 flex flex-wrap gap-2' },
-                            h('button', { type: 'button', onClick: function() { startSpotRound(false); }, className: 'rounded-lg bg-cyan-800 px-3 py-1.5 text-xs font-bold text-white hover:bg-cyan-900 active:scale-[0.97]' }, t('stem.anatomy.spot_next', 'Next structure →')),
-                            h('button', { type: 'button', onClick: endSpotChallenge, className: 'rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 active:scale-[0.97]' }, t('stem.anatomy.spot_end', 'End challenge'))
-                          )
-                        )
-                      ),
                       h('h5', { className: 'text-sm font-black text-indigo-950' }, t('stem.anatomy.what_should_i_identify', 'What should I identify?')),
                       h('ul', { className: 'mt-2 grid grid-cols-2 gap-1 text-xs text-indigo-900' }, regionStructures.map(function(item) { return h('li', { key: item, className: 'rounded-md bg-white px-2 py-1' }, '• ' + item); })),
                       h('button', { type: 'button', onClick: function() { openAnatomyScaleDestination('cell', 'cell', { mode: 'microdissection', _cellPicked: true, _cellCategory: 'interactive' }, t('stem.anatomy.cell_microdissection', 'Cell Microdissection')); }, className: 'mt-3 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-900 hover:bg-indigo-100' }, t('stem.anatomy.continue_to_cell_scale_imaging', 'Continue to cell-scale imaging →'))

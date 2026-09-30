@@ -1,0 +1,221 @@
+{
+  "uniqueUnitChecks": 236,
+  "uniqueUnitSuites": 9,
+  "initialUnitChecks": 236,
+  "finalTargetedChecks": 236,
+  "lastUnitReport": "initial-unit-results.json",
+  "lastUnitRunChecks": 236,
+  "unitResultsMergedBy": "fullName",
+  "allEffectiveUnitChecksPassed": true,
+  "unitRuns": [
+    {
+      "file": "initial-unit-results.json",
+      "assertions": 236,
+      "passed": 236,
+      "failed": 0
+    }
+  ],
+  "requiredUnitCounts": {
+    "anatomy_spotter_navigation.test.js": 36,
+    "anatomy_imaging_practice_context.test.js": 76,
+    "anatomy_tab_navigation.test.js": 14
+  },
+  "browserScenarios": 7,
+  "browserValidation": [
+    {
+      "file": "practice-browser-validation.json",
+      "label": "Practice navigation",
+      "scans": 30,
+      "violations": 0,
+      "measurements": [
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "practice-browser-validation.json.spotter.scans[0].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "practice-browser-validation.json.spotter.scans[1].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "practice-browser-validation.json.spotter.scans[2].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "practice-browser-validation.json.spotter.scans[3].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "practice-browser-validation.json.spotter.scans[4].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "practice-browser-validation.json.spotter.scans[5].dimensions"
+        },
+        {
+          "width": 768,
+          "scroll": 768,
+          "location": "practice-browser-validation.json.spotter.scans[6].dimensions"
+        },
+        {
+          "width": 768,
+          "scroll": 768,
+          "location": "practice-browser-validation.json.spotter.scans[7].dimensions"
+        },
+        {
+          "width": 768,
+          "scroll": 768,
+          "location": "practice-browser-validation.json.spotter.scans[8].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "practice-browser-validation.json.spotter.scans[9].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "practice-browser-validation.json.spotter.scans[10].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "practice-browser-validation.json.spotter.scans[11].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "practice-browser-validation.json.spotter.scans[12].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "practice-browser-validation.json.spotter.scans[13].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "practice-browser-validation.json.spotter.scans[14].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "practice-browser-validation.json.imaging.scans[0].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "practice-browser-validation.json.imaging.scans[1].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "practice-browser-validation.json.imaging.scans[2].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "practice-browser-validation.json.imaging.scans[3].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "practice-browser-validation.json.imaging.scans[4].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "practice-browser-validation.json.imaging.scans[5].dimensions"
+        },
+        {
+          "width": 768,
+          "scroll": 768,
+          "location": "practice-browser-validation.json.imaging.scans[6].dimensions"
+        },
+        {
+          "width": 768,
+          "scroll": 768,
+          "location": "practice-browser-validation.json.imaging.scans[7].dimensions"
+        },
+        {
+          "width": 768,
+          "scroll": 768,
+          "location": "practice-browser-validation.json.imaging.scans[8].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "practice-browser-validation.json.imaging.scans[9].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "practice-browser-validation.json.imaging.scans[10].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "practice-browser-validation.json.imaging.scans[11].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "practice-browser-validation.json.imaging.scans[12].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "practice-browser-validation.json.imaging.scans[13].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "practice-browser-validation.json.imaging.scans[14].dimensions"
+        }
+      ],
+      "errorArraysChecked": 2
+    }
+  ],
+  "accessibilityScans": 30,
+  "accessibilityViolations": 0,
+  "browserErrors": [],
+  "sourceSha256": "bf3435958da5afe1a26b76b6dad41e6c9fc6e320d88fa333e14aa61316c2d0e1",
+  "sourceHashLineEndings": "LF",
+  "sourceMirrorsMatch": true,
+  "canonicalSyntaxCheckPassed": true,
+  "localeCandidateMirrorsMatch": true,
+  "localeLabelsPerPack": 19,
+  "localeKeys": [
+    "practice_flow_scan_annotations_paused",
+    "practice_flow_scan_changed",
+    "practice_flow_scan_context",
+    "practice_flow_scan_ended",
+    "practice_flow_scan_escape",
+    "practice_flow_scan_intro",
+    "practice_flow_scan_labels_hidden",
+    "practice_flow_scan_miss_review",
+    "practice_flow_scan_recovery",
+    "practice_flow_scan_review",
+    "practice_flow_spotter_correct_answer",
+    "practice_flow_spotter_diagram",
+    "practice_flow_spotter_diagram_label",
+    "practice_flow_spotter_diagram_review",
+    "practice_flow_spotter_navigation_help",
+    "practice_flow_spotter_question_help",
+    "practice_flow_spotter_return_feedback",
+    "practice_flow_spotter_return_question",
+    "practice_flow_spotter_your_answer"
+  ],
+  "localeCandidateHashes": {
+    "french": "5c831c851fd5cf51fb18b71521e239869a0cf04546da1cb93dd5f34ed654c22f",
+    "spanish_latin_america": "98c6e43640616c306c9dbb650a7ca7e4f64537762bf53058999a3660ede9d489",
+    "arabic": "f723b6add2fee05697d100b34f0e723713a1d77222783d3ce29e2ecf9d75e834"
+  },
+  "requiredCommitExtraTests": []
+}
