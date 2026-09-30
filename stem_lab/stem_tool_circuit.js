@@ -3150,8 +3150,55 @@ function CircuitActiveObservationCompare(props) {
           state.previousInvestigation&&h('button',{type:'button',onClick:function(){props.restore();setError(false);setMessage('Previous investigation restored.');}},'Restore previous investigation'))));
   }
 
-// Product fragment: insert alongside the other Active workbench components.
-// State changes are owned by onAction(id, action, value), not this component.
+// Opening the guided lesson preserves the live circuit and saved work.
+function CircuitActiveLearningEntry(props) {
+  var React=props.React,h=React.createElement,t=circuitToolT(props),state=props.state||{},uid=React.useId();
+  var ids=['gain','limit','sensor'],records=circuitActiveLessonRecords(state);
+  var selected=state.lessonId||(state.challenge&&state.challenge.id)||'gain';
+  if(ids.indexOf(selected)<0)selected='gain';
+  var lesson=circuitActiveLesson(selected),record=records[selected]||null,tested=!!(record&&record.tested);
+  var done=ids.filter(function(id){return records[id]&&records[id].tested;}).length;
+  var phase=!record?'fresh':tested?'result':'prediction';
+  var action=!record?t('stem.circuit.learning_entry_open','Open guided experiment'):tested?t('stem.circuit.learning_entry_review','Review saved result'):t('stem.circuit.learning_entry_resume','Resume prediction');
+  var cue=!record?t('stem.circuit.learning_entry_fresh_cue','Make a prediction, test a change, and explain the readings.'):tested?t('stem.circuit.learning_entry_result_cue','Review the saved readings and continue your explanation.'):t('stem.circuit.learning_entry_prediction_cue','Choose or review your prediction, then test the change.');
+  return h('section',{className:'circuit-active-learning-entry','data-entry-phase':phase,'data-lesson-id':selected,'aria-labelledby':uid+'-title'},
+    h('div',{className:'circuit-learning-entry-copy'},
+      h('div',{className:'circuit-learning-entry-meta'},h('span',{className:'circuit-learning-entry-label'},t('stem.circuit.learning_entry_label','Guided experiments')),h('span',{className:'circuit-learning-entry-count'},t('stem.circuit.learning_entry_count','{count} of 3 tested').replace('{count}',String(done)))),
+      h('h3',{id:uid+'-title'},t('stem.circuit.active_lesson_'+selected+'_title',lesson.title)),
+      h('p',{id:uid+'-cue',className:'circuit-learning-entry-cue'},cue)),
+    h('button',{type:'button',className:'circuit-learning-entry-action','aria-describedby':uid+'-cue',disabled:typeof props.onOpen!=='function',onClick:function(){if(typeof props.onOpen==='function')props.onOpen();}},action));
+}
+
+// Compare the fixed before/after circuits of the tested lesson.
+function CircuitActiveLessonTrace(props) {
+  var h=props.React.createElement,t=circuitToolT(props);
+  var lesson=props.lesson,before=props.before,after=props.after;
+  if(!lesson||!before||!after)return null;
+  var rows=[
+    {key:'baseCurrent',label:t('stem.circuit.trace_base_current','Base current'),format:circuitCurrentText},
+    {key:'collectorCurrent',label:t('stem.circuit.trace_lamp_current','Lamp current'),format:circuitCurrentText},
+    {key:'collectorVoltage',label:t('stem.circuit.trace_transistor_voltage','Collector–emitter voltage'),format:circuitPreciseVoltageText}
+  ];
+  if(before.sensor&&after.sensor)rows.push({key:'driveVoltage',label:t('stem.circuit.trace_divider_voltage','Connected divider junction voltage'),format:circuitPreciseVoltageText});
+  var prompts={
+    gain:t('stem.circuit.trace_gain_question','How does the change in base current explain the lamp-current change, and where does the lamp’s energy come from?'),
+    limit:t('stem.circuit.trace_limit_question','Base current rises while lamp current stays the same. What sets the lamp-current limit in these two readings?'),
+    sensor:t('stem.circuit.trace_sensor_question','How does the connected divider junction voltage help explain the changes in base current and lamp current?')
+  };
+  return h('details',{className:'circuit-active-lesson-trace'},
+    h('summary',null,t('stem.circuit.trace_change','Trace the change')),
+    h('div',{className:'circuit-lesson-trace-body'},
+      h('p',{className:'circuit-lesson-trace-context'},t('stem.circuit.trace_saved_context','Readings from this experiment’s saved before and after circuits. Displayed values are rounded.')),
+      h('dl',{className:'circuit-lesson-trace-readings','aria-label':t('stem.circuit.trace_saved_measurements','Saved experiment measurements')},rows.map(function(row){
+        return h('div',{key:row.key,className:'circuit-lesson-trace-row','data-lesson-trace-metric':row.key},
+          h('dt',null,row.label),
+          h('dd',{'data-stage':'before'},h('span',null,t('stem.circuit.trace_before','Before')),h('strong',null,row.format(before[row.key]))),
+          h('dd',{'data-stage':'after'},h('span',null,t('stem.circuit.trace_after','After')),h('strong',null,row.format(after[row.key]))));
+      })),
+      h('p',{className:'circuit-lesson-trace-question'},prompts[lesson.id]||t('stem.circuit.trace_reasoning_question','Which readings support or revise your prediction?'))));
+}
+
+// Lesson changes are owned by onAction(id, action, value).
 function CircuitActiveLessonLab(props) {
   var React=props.React,h=React.createElement,state=props.state||{},t=circuitToolT(props);
   var ids=['gain','limit','sensor'],records=circuitActiveLessonRecords(state);
@@ -3166,6 +3213,7 @@ function CircuitActiveLessonLab(props) {
   var resultMatch=circuitActiveComparison({version:1,design:after.design},state).unchanged;
   var scale=Math.max(before.collectorCurrent,after.collectorCurrent),delta=after.collectorCurrent-before.collectorCurrent;
   var uid=React.useId(),questionRef=React.useRef(null),resultRef=React.useRef(null),pendingFocus=React.useRef(null);
+  var entrySeen=React.useRef(props.entryVersion||0);
   var focusState=React.useState(0),focusVersion=focusState[0];
   React.useEffect(function(){
     var request=pendingFocus.current;
@@ -3173,6 +3221,13 @@ function CircuitActiveLessonLab(props) {
     var element=request.target==='result'?resultRef.current:questionRef.current;
     if(element){pendingFocus.current=null;element.focus();}
   },[focusVersion,selected,tested]);
+  React.useEffect(function(){
+    var version=props.entryVersion||0;
+    if(version===entrySeen.current)return;
+    entrySeen.current=version;
+    var element=tested?resultRef.current:questionRef.current;
+    if(element){element.focus({preventScroll:true});if(typeof element.scrollIntoView==='function')element.scrollIntoView({block:'start',behavior:'instant'});}
+  },[props.entryVersion,selected,tested]);
   var act=function(id,action,value,focus){
     pendingFocus.current=focus?{id:id,target:focus}:null;
     props.onAction(id,action,value);
@@ -3200,7 +3255,8 @@ function CircuitActiveLessonLab(props) {
           h('div',{className:'circuit-active-lesson-result-heading'},h('div',null,h('span',{className:'circuit-eyebrow'},t('stem.circuit.active_observed_result','OBSERVED RESULT')),h('h5',{id:uid+'-result',ref:resultRef,tabIndex:-1,'data-active-lesson-result':true,'aria-describedby':uid+'-result-summary'},resultTitle)),h('p',{className:'circuit-active-lesson-delta'},h('span',null,t('stem.circuit.active_current_change','Change in lamp current')),h('strong',null,(delta>0?'+':'')+circuitCurrentText(delta)))),
           h('p',{id:uid+'-result-summary'},h('strong',null,record.choice===lesson.answer?t('stem.circuit.active_prediction_matches','Your prediction matches these readings.'):t('stem.circuit.active_prediction_revise','Use these readings to revise your explanation.')),' '+t('stem.circuit.active_lesson_'+selected+'_reason',lesson.reason)),
           h('div',{className:'circuit-active-lesson-chart','aria-describedby':uid+'-scale'},[{key:'before',label:t('stem.circuit.active_lesson_before','Before · lamp current'),solved:before},{key:'after',label:t('stem.circuit.active_lesson_after','After · lamp current'),solved:after}].map(function(item){return h('div',{key:item.key,className:'circuit-active-lesson-reading','data-stage':item.key},h('span',null,item.label),h('strong',null,circuitCurrentText(item.solved.collectorCurrent)),h('div',{className:'circuit-active-lesson-track','aria-hidden':true},h('span',{style:{width:(scale>0?item.solved.collectorCurrent/scale*100:0)+'%'}})),h('span',{className:'circuit-active-lesson-region'},regionText(item.solved.region)),h('small',null,item.solved.sensor?t('stem.circuit.active_lesson_light_setting','Relative light: {value} / 100').replace('{value}',String(item.solved.design.light)):t('stem.circuit.active_lesson_input_setting','Input: {value} V').replace('{value}',item.solved.design.input.toFixed(2))));})),
-          h('p',{id:uid+'-scale',className:'circuit-active-lesson-help'},scale>0?t('stem.circuit.active_lesson_shared_scale','Both bars use the same scale. Full width = {value}.').replace('{value}',circuitCurrentText(scale)):t('stem.circuit.active_lesson_zero_scale','Both currents are zero; neither bar has a filled length.')))),
+          h('p',{id:uid+'-scale',className:'circuit-active-lesson-help'},scale>0?t('stem.circuit.active_lesson_shared_scale','Both bars use the same scale. Full width = {value}.').replace('{value}',circuitCurrentText(scale)):t('stem.circuit.active_lesson_zero_scale','Both currents are zero; neither bar has a filled length.')),
+          h(CircuitActiveLessonTrace,{React:React,t:props.t,lesson:lesson,before:before,after:after}))),
       h('div',{className:'circuit-active-lesson-replay'},h('h5',null,t('stem.circuit.active_revisit_experiment','Revisit the circuit')),h('p',{role:'status',className:'circuit-active-lesson-bench-note'},replayNote),h('div',{className:'circuit-active-lesson-actions'},h('button',{type:'button','aria-pressed':baselineMatch,onClick:function(){act(selected,'baseline');}},t('stem.circuit.active_load_baseline','Load experiment baseline')),tested&&h('button',{type:'button','aria-pressed':resultMatch,onClick:function(){act(selected,'result');}},t('stem.circuit.active_load_result','Load this experiment result'))),h('p',{className:'circuit-active-lesson-help'},t('stem.circuit.active_replay_help','Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.'))),
       h('label',{className:'circuit-active-lesson-explanation',htmlFor:uid+'-explanation'},t('stem.circuit.active_my_lesson_explanation','My explanation for this experiment')),
       h('p',{id:uid+'-explanation-help',className:'circuit-active-lesson-help'},t('stem.circuit.active_explanation_help','Use the lamp current and operating regions to explain the change. This response stays with this experiment; your investigation notebook has its own explanation.')),
@@ -3249,6 +3305,7 @@ function CircuitActiveLessonLab(props) {
     var __alloT=circuitToolT(props);
     // Derive the translator once for this subtree; children get it as a prop.
     var cktT=(ctx&&typeof ctx.t==='function')?ctx.t:null;
+    var entryState=React.useState(0),entryVersion=entryState[0];
     var patch=function(values,electrical){ctx.setToolData(function(prev){var old=prev._circuitActive||{},next=Object.assign({},old,{lessonRecords:circuitActiveLessonRecords(old)},values);
       if(electrical&&JSON.stringify(circuitActiveDesign(old))!==JSON.stringify(circuitActiveDesign(next))){next.undo=(old.undo||[]).slice(-29).concat([circuitActiveDesign(old)]);next.redo=[];}
       return Object.assign({},prev,{_circuitActive:next});});};
@@ -3277,6 +3334,7 @@ function CircuitActiveLessonLab(props) {
     var download=function(){var url;try{url=URL.createObjectURL(new Blob([circuitActiveCSV(d)],{type:'text/csv;charset=utf-8'}));var a=document.createElement('a');a.href=url;a.download='npn-'+d.project+'-dc-sweep.csv';document.body.appendChild(a);a.click();a.remove();setDownloadMessage('Saved 201 calculated DC operating points with circuit settings and model constants.');setTimeout(function(){URL.revokeObjectURL(url);},1000);}catch(e){if(url)URL.revokeObjectURL(url);setDownloadMessage('The sweep could not be saved. Try again.');}};
     return h('section',{'data-circuit-builder-root':'true',className:'circuit-active-root','aria-label':__alloT('stem.circuit.active_electronics_workbench','Active electronics workbench')},
       h('header',{className:'circuit-active-hero'},h('span',{className:'circuit-eyebrow'},'ACTIVE ELECTRONICS · NPN TRANSISTOR'),h('h2',null,'A small signal. A brighter idea.'),h('p',null,'Control a lamp with a transistor, then let light become the input. Follow the base, collector, and emitter through three connected experiments.')),
+      h(CircuitActiveLearningEntry,{React:React,t:cktT,state:state,onOpen:function(){entryState[1](function(version){return version+1;});}}),
       h(CircuitActiveInvestigationTools,{React:React,t:cktT,state:state,patch:patch,record:record,appendEvidence:function(target){notebookAction('appendEvidence',target);},load:loadInvestigation,restore:restoreInvestigation,
         note:function(entry,note){notebookAction('note',entry,note);},
         revisit:function(entry){notebookAction('revisit',entry);},reference:function(entry){notebookAction('reference',entry);},remove:function(entry){notebookAction('remove',entry);},
@@ -3306,7 +3364,7 @@ function CircuitActiveLessonLab(props) {
         h('p',null,'Lamp drop '+circuitPreciseVoltageText(s.loadVoltage)+' + transistor drop '+circuitPreciseVoltageText(s.collectorVoltage)+' = supply '+circuitPreciseVoltageText(d.supply)+'.'),
         s.sensor&&h('div',{className:'circuit-active-loading'},h('strong',null,'The sensor divider is loaded'),h('p',null,'LDR: '+(s.ldr/1000).toFixed(2)+' kΩ. Junction with no base connection: '+circuitPreciseVoltageText(s.theveninVoltage)+'. Connected junction: '+circuitPreciseVoltageText(s.driveVoltage)+'.'),h('p',null,'Upper resistor current = lower resistor current + base current: '+circuitCurrentText(s.topCurrent)+' = '+circuitCurrentText(s.bottomCurrent)+' + '+circuitCurrentText(s.baseCurrent)+'. The input branch draws current, so the connected divider voltage can be lower.')),
         h('details',null,h('summary',null,'Where does the energy come from?'),h('p',null,'Main supply: '+circuitPowerText(s.supplyPower)+(s.sensor?'':'. Separate input source: '+circuitPowerText(s.inputPower))+'. Total supplied: '+circuitPowerText(s.totalPower)+'.'),h('p',null,'Lamp '+circuitPowerText(s.loadPower)+' + base resistor '+circuitPowerText(s.basePower)+' + transistor '+circuitPowerText(s.transistorPower)+(s.sensor?' + divider '+circuitPowerText(s.dividerPower):'')+' = '+circuitPowerText(s.lossPower)+'.'),h('p',null,'The transistor controls energy supplied to the lamp. It does not create energy. Transistor dissipation includes both collector and base input power. Values are rounded.')),
-        h(CircuitActiveLessonLab,{React:React,t:cktT,state:state,onAction:lessonAction})),
+        h(CircuitActiveLessonLab,{React:React,t:cktT,state:state,onAction:lessonAction,entryVersion:entryVersion})),
       h('details',{className:'circuit-active-panel circuit-model-details'},h('summary',null,'Model and connections'),h('p',null,'These are fixed, prewired DC experiments using a generic NPN model. Conducting VBE = 0.70 V; saturation VCE = 0.20 V. IB = max(0, (Vth − 0.70)/(Rth + RB)); IC = min(β × IB, (VCC − 0.20)/Rlamp). The divider is replaced by its Thevenin equivalent for the base-current calculation, then all actual branch currents are recovered.'),h('p',null,'Relative light 0–100 maps to an illustrative resistance of 100 kΩ × 100^(−level/100), from 100 kΩ to 1 kΩ. This is not a lux calibration. The light sensor places the LDR above the divider junction; the dark sensor places it below. Both use the main supply. Manual control uses a separate ideal input source with the same return.'),h('p',null,'Gain and junction voltages are idealized constants, not device guarantees. Temperature, leakage, breakdown, reverse operation, switching delay, and lamp heating are outside this model. Transistor heat does not change its parameters. No arbitrary wiring or transistor transient simulation is implied.'),h('p',null,h('a',{href:'https://www.onsemi.com/pdf/datasheet/2n3904-d.pdf',target:'_blank',rel:'noopener noreferrer'},'Compare real transistor characteristics'),' · ',h('a',{href:'https://wiki.analog.com/university/courses/electronics/text/light-sensors-photodiodes',target:'_blank',rel:'noopener noreferrer'},'Read about light-sensor interfaces'))));
   }
 
@@ -4586,6 +4644,43 @@ function CircuitActiveLessonLab(props) {
 @media(max-width:600px){.circuit-active-root .circuit-voltage-layout{grid-template-columns:minmax(0,1fr);gap:20px}.circuit-active-root .circuit-voltage-graphic{padding:8px 0 3px}.circuit-active-root .circuit-voltage-column-frame{height:232px}.circuit-active-root .circuit-voltage-graphic-key{gap:9px 17px}.circuit-active-root .circuit-reflection-editor{padding:12px}.circuit-active-root .circuit-reflection-size-toggle{flex:1 1 170px}.circuit-active-root .circuit-voltage-reading{padding:12px}}
 @media(prefers-reduced-motion:reduce){.circuit-active-root .circuit-voltage-reading button,.circuit-active-root .circuit-reflection-size-toggle{transition:none!important;transition-duration:0s!important}}
 @media(forced-colors:active){.circuit-active-root .circuit-voltage-explorer,.circuit-active-root .circuit-voltage-reading,.circuit-active-root .circuit-voltage-insight,.circuit-active-root .circuit-reflection-editor{background:Canvas;border-color:CanvasText;color:CanvasText}.circuit-active-root .circuit-voltage-column{outline-color:CanvasText;background:Canvas;box-shadow:none}.circuit-active-root .circuit-voltage-segment[data-voltage-segment=lamp],.circuit-active-root .circuit-voltage-graphic-key i[data-voltage-part=lamp]{background:repeating-linear-gradient(135deg,Canvas 0,Canvas 6px,CanvasText 6px,CanvasText 8px);forced-color-adjust:none}.circuit-active-root .circuit-voltage-segment[data-voltage-segment=transistor],.circuit-active-root .circuit-voltage-graphic-key i[data-voltage-part=transistor]{background:Highlight;forced-color-adjust:none}.circuit-active-root .circuit-voltage-collector-marker,.circuit-active-root .circuit-voltage-collector-marker>span{background:CanvasText;box-shadow:none;border-color:Canvas}.circuit-active-root .circuit-voltage-reading button,.circuit-active-root .circuit-reflection-size-toggle{border-color:ButtonText;background:ButtonFace;color:ButtonText}.circuit-active-root .circuit-voltage-reading button[aria-pressed=true]{background:Highlight;color:HighlightText;forced-color-adjust:none}.circuit-active-root .circuit-voltage-reading button:focus-visible,.circuit-active-root .circuit-reflection-size-toggle:focus-visible,.circuit-active-root .circuit-reflection-editor textarea:focus{outline-color:Highlight}}
+`;
+  circStyle.textContent += `
+/* Direct access to the selected guided lesson. */
+.circuit-active-root .circuit-active-learning-entry{box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px 20px;min-width:0;margin:0 0 20px;padding:15px 17px;border:1px solid #638982;border-radius:12px;background:#143530;color:#e0efe7}
+.circuit-active-root .circuit-learning-entry-copy{min-width:0}
+.circuit-active-root .circuit-learning-entry-meta{display:flex;align-items:baseline;flex-wrap:wrap;gap:5px 13px;min-width:0;margin-bottom:7px}
+.circuit-active-root .circuit-learning-entry-label{font-size:11px;font-weight:750;line-height:1.6;letter-spacing:.045em;color:#b7ddcf;overflow-wrap:anywhere}
+.circuit-active-root .circuit-learning-entry-count{font-size:12px;line-height:1.6;color:#c5d9d3;overflow-wrap:anywhere}
+.circuit-active-root .circuit-active-learning-entry h3{font-size:17px;font-weight:700;line-height:1.55;letter-spacing:0;color:#e4f2e9;margin:0;overflow-wrap:anywhere}
+.circuit-active-root .circuit-active-learning-entry .circuit-learning-entry-cue{max-width:100%;font-size:12px;line-height:1.75;color:#c8ddd4;margin:7px 0 0;overflow-wrap:anywhere}
+.circuit-active-root .circuit-learning-entry-action{box-sizing:border-box;min-height:44px;min-width:0;max-width:15em;padding:10px 14px;border:1px solid #9bccb8;border-radius:9px;background:#244b3e;color:#e4f4e9;font-size:13px;font-weight:700;line-height:1.65;text-align:center;white-space:normal;overflow-wrap:anywhere;transition:background-color .15s,border-color .15s}
+.circuit-active-root .circuit-learning-entry-action:hover:not(:disabled){background:#2e5b49;border-color:#c0e5d1}
+.circuit-active-root .circuit-learning-entry-action:disabled{opacity:1;background:#203b35;color:#b9cdc5;border-color:#6c857c;cursor:not-allowed}
+.circuit-active-root .circuit-learning-entry-action:focus-visible{outline:3px solid #f2d296;outline-offset:3px}
+.circuit-active-root .circuit-active-lesson-lab [data-active-lesson-question],.circuit-active-root .circuit-active-lesson-lab [data-active-lesson-result]{scroll-margin-block-start:24px}
+@media(max-width:600px){.circuit-active-root .circuit-active-learning-entry{grid-template-columns:minmax(0,1fr);gap:13px;padding:13px;margin:0 0 17px}.circuit-active-root .circuit-learning-entry-action{width:100%;max-width:100%}.circuit-active-root .circuit-learning-entry-meta{gap:5px 11px}}
+@media(prefers-reduced-motion:reduce){.circuit-active-root .circuit-learning-entry-action{transition:none!important;transition-duration:0s!important}}
+@media(forced-colors:active){.circuit-active-root .circuit-active-learning-entry{border-color:CanvasText;background:Canvas;color:CanvasText}.circuit-active-root .circuit-learning-entry-action{border-color:ButtonText;background:ButtonFace;color:ButtonText}.circuit-active-root .circuit-learning-entry-action:disabled{border-color:GrayText;color:GrayText}.circuit-active-root .circuit-learning-entry-action:focus-visible{outline-color:Highlight}}
+
+.circuit-active-root .circuit-active-lesson-trace{min-width:0;margin:16px 0 0;border:1px solid #537682;border-radius:11px;background:#0d2732;color:#dcebef;overflow-wrap:anywhere}
+.circuit-active-root .circuit-active-lesson-trace>summary{box-sizing:border-box;min-height:44px;padding:11px 14px;border-radius:10px;cursor:pointer;font-size:14px;line-height:1.6;font-weight:650;color:#e5f3f5;overflow-wrap:anywhere}
+.circuit-active-root .circuit-active-lesson-trace>summary:hover{background:#1b3c48}
+.circuit-active-root .circuit-active-lesson-trace>summary:focus-visible{outline:3px solid #f9dd9a;outline-offset:3px}
+.circuit-active-root .circuit-active-lesson-trace[open]>summary{border-bottom:1px solid #456670;border-radius:10px 10px 0 0}
+.circuit-active-root .circuit-lesson-trace-body{min-width:0;padding:12px 14px 14px}
+.circuit-active-root .circuit-lesson-trace-context{margin:0 0 12px;color:#c4d8df;font-size:12px;line-height:1.75}
+.circuit-active-root .circuit-lesson-trace-readings{min-width:0;margin:0}
+.circuit-active-root .circuit-lesson-trace-row{display:grid;grid-template-columns:minmax(0,1.35fr) repeat(2,minmax(0,1fr));align-items:start;gap:10px 14px;padding:13px 0;border-top:1px solid #3e5e69;min-width:0}
+.circuit-active-root .circuit-lesson-trace-row:first-child{border-top:0;padding-top:0}
+.circuit-active-root .circuit-lesson-trace-row>dt{min-width:0;font-size:13px;line-height:1.65;font-weight:600;color:#d7e7eb}
+.circuit-active-root .circuit-lesson-trace-row>dd{display:grid;gap:3px;min-width:0;margin:0;padding:0}
+.circuit-active-root .circuit-lesson-trace-row>dd>span{font-size:12px;line-height:1.6;color:#bed2dc}
+.circuit-active-root .circuit-lesson-trace-row>dd>strong{font-size:16px;line-height:1.6;font-weight:650;font-variant-numeric:tabular-nums;white-space:normal;overflow-wrap:anywhere;color:#e0f0ed}
+.circuit-active-root .circuit-lesson-trace-row>dd[data-stage=after]>strong{color:#bce9d9}
+.circuit-active-root .circuit-lesson-trace-question{margin:12px 0 0;padding:12px 13px;border-left:3px solid #a0d5c4;border-radius:0 8px 8px 0;background:#173c35;color:#d9ede4;font-size:13px;line-height:1.75}
+@media(max-width:640px){.circuit-active-root .circuit-lesson-trace-body{padding:11px 12px 13px}.circuit-active-root .circuit-lesson-trace-row{grid-template-columns:repeat(auto-fit,minmax(min(100%,7em),1fr));gap:7px 12px}.circuit-active-root .circuit-lesson-trace-row>dt{grid-column:1/-1}}
+@media(forced-colors:active){.circuit-active-root .circuit-active-lesson-trace,.circuit-active-root .circuit-active-lesson-trace>summary,.circuit-active-root .circuit-lesson-trace-question{background:Canvas;color:CanvasText;border-color:CanvasText}.circuit-active-root .circuit-active-lesson-trace>summary:hover{background:Canvas}.circuit-active-root .circuit-active-lesson-trace>summary:focus-visible{outline-color:Highlight}.circuit-active-root .circuit-lesson-trace-row{border-color:CanvasText}.circuit-active-root .circuit-lesson-trace-context,.circuit-active-root .circuit-lesson-trace-row>dt,.circuit-active-root .circuit-lesson-trace-row>dd>span,.circuit-active-root .circuit-lesson-trace-row>dd>strong,.circuit-active-root .circuit-lesson-trace-row>dd[data-stage=after]>strong{color:CanvasText}}
 `;
   document.head.appendChild(circStyle);
   }

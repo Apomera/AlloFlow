@@ -1,0 +1,57 @@
+{
+  "passed": true,
+  "validatedAt": "2026-09-30T03:19:15.840Z",
+  "sourceSha256": "d5754bb02a788f9e5b8b8fe0c63e1375d5da9347e0174527baa1aa9c46be5eee",
+  "mirrored": true,
+  "sourceCompiles": true,
+  "regression": {
+    "passedTests": 338,
+    "files": 22,
+    "startedAt": "2026-09-30T02:55:40.491Z",
+    "finishedAt": "2026-09-30T02:59:46.434Z"
+  },
+  "browser": {
+    "workflows": 3,
+    "axeScans": 22,
+    "fullContrastScans": 20,
+    "forcedColorsScans": 2,
+    "forcedColorsTextNodes": 28,
+    "numericReadings": 62,
+    "focusChecks": 22,
+    "focusTransitions": 8,
+    "textResizeCases": 2,
+    "screenshots": 22,
+    "visualIssues": 0
+  },
+  "reportHashes": {
+    "regression.json": "77f0a749fb264c99367de1bea2e2f4e9e1a7f791664e14a47e5b5034658204b9",
+    "regression-receipt.json": "ce498c050a1c6fce2ea4226c21e51e0029b5d7d08a857fdf275fa3c1522cc54d",
+    "browser-results.json": "be069232a3d309dea37cc98dba36dbb2013d6d61906604b3dba4d8c52370e94d",
+    "forced-colors-diagnostic.json": "fc110d980e2ff556e8ffcf8115322d10918238e416f411089e5d9026f52afb9e"
+  },
+  "screenshotHashes": {
+    "fresh-guided-entry-1280.png": "a739e32e9a1d54814ff55e12cebd6cd02989aa3ad5c18047aa0b6613d9f90d7f",
+    "fresh-guided-entry-390.png": "77312c38c6d13375590867b06dd2af1f2484a0e16384ee51e20efb2dcedeb2b0",
+    "fresh-guided-entry-320.png": "bfcede0a184f936641aae44cfc2d0158c02017d27389386bfef5907c4ca4beea",
+    "question-destination-320.png": "2ad44fcf8d63cebef5127da6d4cf9058e7da578ad8abcb6e870d577b476746ad",
+    "resume-prediction-entry-1280.png": "c06719f2b237f4ae87b90abbe1d83be935d2f68ffeeb4ec96fbcad0e3fe4970c",
+    "resume-prediction-entry-390.png": "509ff234181938d28f85937712c071f7bf2536c045a52f5cd76305faa0552aa9",
+    "resume-prediction-entry-320.png": "c0b55dd36b79603a55e50c5e043dcd268fa98d8b0bb70d9f8e0a8dcd26e8a78d",
+    "saved-result-entry-1280.png": "802f2db511228db44ce57fa71113212b111351da6e7fdc3df69f6ae11041cac4",
+    "saved-result-entry-390.png": "a31ad5e8fc7497c2917e661fd6d481dd40f7d99e17237cc83af7ce639d89cd34",
+    "saved-result-entry-320.png": "697a781c8ad36abb820863ee6a548989ed1b762d3214fbf7462970f8b2f3d5ca",
+    "saved-result-destination-390.png": "467872b08636be08076de06f7fb5ccd4fd592f148c4822b436e478d290368a61",
+    "gain-trace-1280.png": "c5ca70135136d8b93b18da0edfa72e1eebad542fa6ae5ed29307ef30b12ceeb5",
+    "gain-trace-390.png": "0432404c1168f2d305369b2e9c39191f5a6990ad4670a3b9fe13b5df1230b838",
+    "gain-trace-320.png": "30858e6aef4d3656963b094606d4690e4fc814f6f2ae5dc0553cc210be8a9e52",
+    "limit-trace-1280.png": "d78b7017db2c2b420b29eba2435f75372b171f8e0f4fc907f1f4197644ef2d63",
+    "limit-trace-320.png": "873a9a376afbf67d604ea75b11f5332eacd890f7e326e87170ddc0db52fb9b51",
+    "sensor-trace-390.png": "07e0471f87f1eaec42faa6a59687cebd9ff42b8e572d27ee0dc289d80752c503",
+    "sensor-trace-320.png": "08d6e02ae774be0bef7d3e12d2c8b541f365201efcb1b7e520861cc817b75efe",
+    "guided-entry-200pct-text-320.png": "d2948dffcd7f1b34a8da3e80a69d1f4d24663decc451eab2dbfb132270687ab5",
+    "sensor-trace-200pct-text-320.png": "751170d8f91de5b08e95006b989ae7da40597b1ec0c802c0dc061f2894abd06c",
+    "forced-colors-entry-320.png": "3c7f262e4bfcdff8f0136bbc69e6cb03dd00ba8b59bb015b69e9ed8d6903afac",
+    "forced-colors-trace-320.png": "f6a515403e8c31d338c63fa6a24cea0319ed060808071f06757eff317a658b4e"
+  },
+  "whitespaceCheck": true
+}
