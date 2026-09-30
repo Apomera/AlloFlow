@@ -28,6 +28,8 @@
   var wardrobeNames = { wear_ready: 'Clean, dry outfit', prepare_clothes: 'Outfit that needs drying' };
   var updateTopic = null, updateSnapshot = null;
   var departureGuess = null, departureReview = null, departureVisited = false;
+  var waterMoment = null, waterMotionTimer = null;
+  var motionPreference = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
   var notes = Object.create(null), comparison = null, reviewRevision = null, importSerial = 0, lastSaveOk = false;
   var icons = { kitchen: '◒', wardrobe: '♧', entry: '▣', travel: '↗' };
   var supportNames = { guided: 'Guided', try: 'Try it', independent: 'Independent' };
@@ -91,6 +93,7 @@
   }
   function changeRun(run, extras) {
     abortStory();
+    clearWater(true);
     clearRehearsal(true);
     clearPacking(true);
     clearWardrobe(true);
@@ -138,6 +141,7 @@
   }
   function selectStation(id, moveFocus) {
     if (!latestView.stations.some(function (s) { return s.id === id; })) return;
+    clearWater(true);
     clearRehearsal(true);
     clearPacking(true);
     clearWardrobe(true);
@@ -152,6 +156,7 @@
   function selectObject(id, moveFocus) {
     var object = latestView.objects.find(function (item) { return item.id === id; });
     if (!object) return;
+    clearWater(true);
     clearRehearsal(true);
     clearPacking(true);
     clearWardrobe(true);
@@ -161,6 +166,7 @@
     activeStation = object.station;
     if (id === 'route' && !latestView.completed) departureVisited = true;
     renderActions();
+    if (id === 'bottle' && !latestView.completed) byId('waterWorkbench').open = true;
     if (id === 'bag' && !latestView.completed) byId('packingWorkbench').open = true;
     if (id === 'outfit' && !latestView.completed) byId('wardrobeWorkbench').open = true;
     if (id === 'forecast' && latestView.event && !latestView.completed) byId('updateWorkbench').open = true;
@@ -171,9 +177,12 @@
   function act(id, source) {
     var focusedAction = document.activeElement && document.activeElement.dataset.action;
     var wasComplete = latestView.completed, oldEvent = latestView.event && latestView.event.title;
+    var bottlePosition = byId('bottleObject') && byId('bottleObject').getAttribute('position');
+    var bottleFrom = bottlePosition && typeof bottlePosition === 'object' ? [bottlePosition.x,bottlePosition.y,bottlePosition.z].join(' ') : bottlePosition;
     try {
       var next = E.dispatch(current, id, current.commands.length, 'ui-' + Date.now().toString(36) + '-' + (++eventSerial));
       abortStory();
+      clearWater(false);
       clearRehearsal(true);
       clearPacking(false);
       clearWardrobe(false);
@@ -183,8 +192,13 @@
       current = next;
       if (id === 'hint') shownHint = true;
       render();
+      if (id === 'fill_water' || id === 'pack_water') playWaterMoment(id, bottleFrom);
       persist();
       if (id === 'hint') byId('hintButton').focus({ preventScroll: true });
+      else if (source === 'water') {
+        text('waterStatus', latestView.feedback + ' Practice clock: ' + latestView.clock + '.');
+        (latestView.scene.bottlePacked ? byId('waterReadyTitle') : byId('packAtTap')).focus();
+      }
       else if (source === 'packing') (byId('packingItems').querySelector('button:not(:disabled)') || byId('packingWorkbench').querySelector('summary')).focus();
       else if (source === 'wardrobe') byId('wardrobeReadyTitle').focus();
       else if (source === 'update') byId('updateReadStatus').focus();
@@ -222,6 +236,7 @@
     });
     text('stationTitle', station.label);
     text('stationDescription', station.description);
+    byId('openWater').hidden = v.completed || station.id !== 'kitchen' || selectedObject === 'bottle';
     byId('openPacking').hidden = v.completed || (station.id !== 'kitchen' && station.id !== 'entry');
     byId('openWardrobe').hidden = v.completed || station.id !== 'wardrobe';
     byId('openUpdates').hidden = v.completed || station.id !== 'entry' || !v.event;
@@ -246,6 +261,7 @@
     });
     byId('objectInspector').hidden = !object;
     if (object) { text('objectTitle', object.label); text('objectStatus', object.status); text('objectDescription', object.description); }
+    renderWaterWorkbench();
     renderPackingWorkbench();
     renderWardrobeWorkbench();
     renderUpdateWorkbench();
@@ -272,6 +288,86 @@
     highlightObjects();
     if (closeView) fitScene();
   }
+  function clearWater(collapse) {
+    clearWaterMotion(); text('waterStatus', '');
+    if (collapse) byId('waterWorkbench').open = false;
+  }
+  function clearWaterMotion() {
+    if (waterMotionTimer !== null) window.clearTimeout(waterMotionTimer);
+    waterMotionTimer = null; waterMoment = null;
+    var bottle = byId('bottleObject'); if (bottle) bottle.removeAttribute('animation__transfer');
+    var stream = byId('tapStream'); if (stream) stream.setAttribute('visible', false);
+    var cap = byId('bottleCap'); if (cap) cap.setAttribute('visible', true);
+    if (latestView) { renderWaterWorkbench(); updateScene(); }
+  }
+  function waterIllustration() {
+    var s = latestView.scene, svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 320 184'); svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('focusable', 'false');
+    svg.setAttribute('class', waterMoment ? 'water-moment-' + waterMoment : '');
+    function shape(tag, attrs, parent) {
+      var el = document.createElementNS(svg.namespaceURI, tag);
+      Object.keys(attrs).forEach(function (key) { el.setAttribute(key, attrs[key]); }); (parent || svg).appendChild(el); return el;
+    }
+    shape('rect', {x:4,y:4,width:312,height:176,rx:16,fill:'#e8f1ed'});
+    shape('rect', {x:16,y:24,width:165,height:132,rx:10,fill:'#d6e9e4'});
+    shape('path', {d:'M42 138V54Q42 34 63 34H92Q115 34 115 57V66',fill:'none',stroke:'#587275','stroke-width':10,'stroke-linecap':'round'});
+    shape('path', {d:'M42 138V54Q42 34 63 34H92Q115 34 115 57V66',fill:'none',stroke:'#99b4b5','stroke-width':4,'stroke-linecap':'round'});
+    shape('path', {d:'M29 81H55',stroke:'#587275','stroke-width':7,'stroke-linecap':'round'});
+    shape('rect', {x:16,y:148,width:170,height:12,rx:4,fill:'#b6c9bc'});
+    shape('ellipse', {cx:114,cy:148,rx:48,ry:7,fill:'#7f9e9d'});
+    shape('path', {d:'M205 162H301',stroke:'#b7cbbd','stroke-width':4,'stroke-linecap':'round'});
+    shape('path', {d:'M232 110V98Q232 80 250 80Q268 80 268 98V110',fill:'none',stroke:'#a86e54','stroke-width':7});
+    shape('rect', {x:208,y:106,width:84,height:54,rx:10,fill:'#c38c70',stroke:'#80523f','stroke-width':2});
+    if (waterMoment === 'fill' && !s.bottlePacked) shape('path', {d:'M115 69V98',stroke:'#4595a0','stroke-width':4,'stroke-linecap':'round',class:'water-picture-stream'});
+    var location = shape('g', {transform:s.bottlePacked?'translate(234 71)':'translate(97 87)'});
+    var bottle = shape('g', {class:'water-picture-bottle'}, location);
+    shape('rect', {x:0,y:9,width:36,height:51,rx:10,fill:'#f5fbf9',stroke:'#375762','stroke-width':2}, bottle);
+    if (s.bottleFilled) shape('path', {d:'M3 29H33V49Q33 57 25 57H11Q3 57 3 49Z',fill:'#4595a0',class:'water-picture-level'}, bottle);
+    shape('rect', {x:8,y:0,width:20,height:11,rx:3,fill:'#375762',visibility:waterMoment==='fill'?'hidden':'visible'}, bottle);
+    shape('path', {d:'M7 20V26',stroke:'#fffef9','stroke-width':3,'stroke-linecap':'round'}, bottle);
+    if (s.bottlePacked) shape('rect', {x:216,y:119,width:68,height:34,rx:6,fill:'#b57859',stroke:'#80523f','stroke-width':2});
+    return svg;
+  }
+  function renderWaterWorkbench() {
+    var v = latestView, panel = byId('waterWorkbench');
+    panel.hidden = selectedObject !== 'bottle' || v.completed;
+    if (panel.hidden) return;
+    var actions = v.stations.find(function (station) { return station.id === 'kitchen'; }).actions;
+    var fill = actions.find(function (action) { return action.id === 'fill_water'; });
+    var pack = actions.find(function (action) { return action.id === 'pack_water'; });
+    byId('waterIllustration').replaceChildren(waterIllustration());
+    text('waterPictureCaption', v.scene.bottlePacked ? 'Filled water bottle · in your bag' : v.scene.bottleFilled ? 'Filled water bottle · on the counter' : 'Empty water bottle · on the counter');
+    text('waterFillState', v.scene.bottleFilled ? 'Done · water inside' : 'Ready to fill');
+    text('waterPackState', v.scene.bottlePacked ? 'Done · packed' : v.scene.bottleFilled ? 'Ready to pack' : 'Fill the bottle first');
+    byId('waterFillStep').classList.toggle('water-step-done', v.scene.bottleFilled);
+    byId('waterPackStep').classList.toggle('water-step-done', v.scene.bottlePacked);
+    byId('fillAtTap').disabled = !fill || fill.disabled; byId('packAtTap').disabled = !pack || pack.disabled;
+    text('waterFillReason', fill && fill.reason); text('waterPackReason', pack && pack.reason);
+    byId('waterReady').hidden = !v.scene.bottlePacked;
+  }
+  function openWaterWorkbench() {
+    if (latestView.completed) return;
+    selectObject('bottle', false);
+    (latestView.scene.bottlePacked ? byId('waterReadyTitle') : latestView.scene.bottleFilled ? byId('packAtTap') : byId('fillAtTap')).focus();
+  }
+  function prepareWater(id) {
+    if (latestView.completed || selectedObject !== 'bottle') return;
+    var action = latestView.stations.find(function (station) { return station.id === 'kitchen'; }).actions.find(function (item) { return item.id === id; });
+    if (!action || action.disabled) return;
+    act(id, 'water');
+  }
+  function playWaterMoment(id, from) {
+    if (latestView.completed || motionPreference && motionPreference.matches || document.hidden) return;
+    waterMoment = id === 'fill_water' ? 'fill' : 'pack'; renderWaterWorkbench();
+    if (sceneReady && !byId('sceneContainer').hidden) {
+      if (waterMoment === 'fill') { byId('tapStream').setAttribute('visible', true); byId('bottleCap').setAttribute('visible', false); }
+      else if (from) byId('bottleObject').setAttribute('animation__transfer', 'property: position; from: ' + from + '; to: 2.08 1.05 -1.61; dur: 600; easing: easeInOutCubic');
+    }
+    waterMotionTimer = window.setTimeout(clearWaterMotion, 650);
+  }
+  function motionPreferenceChanged(event) { if (event.matches) clearWaterMotion(); }
+  if (motionPreference && motionPreference.addEventListener) motionPreference.addEventListener('change', motionPreferenceChanged);
+  document.addEventListener('visibilitychange', function () { if (document.hidden) clearWaterMotion(); });
   function clearPacking(collapse) {
     packingSelection = null;
     text('packingStatus', '');
@@ -619,6 +715,7 @@
       selectStation('travel', false);
       (byId('actionList').querySelector('button:not(:disabled)') || byId('stationActions')).focus();
     } else {
+      if (id === 'water' && !latestView.scene.bottleFilled) { openWaterWorkbench(); return; }
       selectObject({water:'bottle', document:'card', weather:'forecast'}[id], false);
       (byId('actionList').querySelector('button:not(:disabled)') || byId('objectTitle')).focus();
     }
@@ -1025,12 +1122,15 @@
     [-3.16,-2.08].forEach(function(x){box(x,.52,-1.275,.91,.87,.035,'#94ad97',kitchen);});
     [-2.83,-2.39].forEach(function(x){box(x,.68,-1.24,.035,.18,.05,'#596c5d',kitchen);});
     box(-3.23,1.13,-1.92,.72,.025,.66,'#789392',kitchen);
-    cylinder(-3.35,1.32,-2.16,.025,.42,'#587275',kitchen);
-    cylinder(-3.35,1.51,-2.02,.025,.29,'#587275',kitchen,{rotation:'90 0 0'});
+    var tap = entity('a-entity', {id:'tapObject'}, kitchen);
+    cylinder(-3.35,1.48,-2.16,.025,.72,'#587275',tap);
+    cylinder(-3.35,1.84,-2.02,.025,.29,'#587275',tap,{rotation:'90 0 0'});
+    cylinder(-3.35,1.8,-1.88,.032,.1,'#587275',tap);
+    cylinder(-3.35,1.65,-1.88,.015,.25,'#4595a0',kitchen,{id:'tapStream',visible:false,material:'opacity: .7; transparent: true'});
     var bottle = entity('a-entity',{id:'bottleObject',position:'-2.1 1.32 -1.8'},kitchen);
     cylinder(0,0,0,.105,.39,'#8ecbd0',bottle,{class:'pickable',material:'opacity: .7; transparent: true'});
     cylinder(0,-.1,0,.097,.03,'#21778c',bottle,{id:'bottleWater'});
-    cylinder(0,.23,0,.075,.085,'#375762',bottle);
+    cylinder(0,.23,0,.075,.085,'#375762',bottle,{id:'bottleCap'});
     textPlane('KITCHEN',{position:'-2.63 .13 -.83',rotation:'-25 0 0'},kitchen);
     var wardrobe = stationGroup('wardrobe');
     box(-.3,.94,-2.1,1.65,1.88,.85,'#b48765',wardrobe,{class:'pickable'});
@@ -1072,7 +1172,7 @@
     sceneLabel('Check before leaving',{id:'departureSign',position:'.45 2.12 .13',width:.8,height:.24,class:'pickable'},hinge,{background:'#fff6d8'});
     box(3.15,.045,-1.26,1.15,.03,.56,'#83957e',travel,{class:'pickable'});
     textPlane('HEAD OUT',{position:'3.12 .13 -.83',rotation:'-25 0 0',width:1.4},travel);
-    [['bottleObject','bottle'],['shirtObject','outfit'],['clothesFolded','outfit'],['documentObject','card'],['packedDocument','card'],['forecastObject','forecast'],['weatherObject','raincoat'],['hatObject','hat'],['bagObject','bag'],['doorHinge','route']].forEach(function (pair) { attachObject(byId(pair[0]),pair[1]); });
+    [['bottleObject','bottle'],['tapObject','bottle'],['shirtObject','outfit'],['clothesFolded','outfit'],['documentObject','card'],['packedDocument','card'],['forecastObject','forecast'],['weatherObject','raincoat'],['hatObject','hat'],['bagObject','bag'],['doorHinge','route']].forEach(function (pair) { attachObject(byId(pair[0]),pair[1]); });
     sceneReady=true;
     var scene=byId('outingScene'); if (scene.canvas) scene.canvas.setAttribute('tabindex','-1');
     scene.addEventListener('loaded', function () {
@@ -1098,7 +1198,7 @@
   function updateScene() {
     if(!sceneReady || !latestView)return;
     var s=latestView.scene;
-    byId('bottleObject').setAttribute('position',s.bottlePacked?'2.08 1.05 -1.61':'-2.1 1.32 -1.8');
+    byId('bottleObject').setAttribute('position',s.bottlePacked?'2.08 1.05 -1.61':s.bottleFilled?'-3.35 1.32 -1.88':'-2.1 1.32 -1.8');
     byId('bottleObject').setAttribute('visible',!s.departed);
     byId('bottleWater').setAttribute('height',s.bottleFilled?.31:.03);
     byId('bottleWater').setAttribute('position',s.bottleFilled?'0 0 0':'0 -.1 0');
@@ -1141,6 +1241,7 @@
     catch(error){text('saveStatus','That saved practice could not be read. It has been preserved.');}
   });
   byId('sceneToggle').addEventListener('click',function(){
+    clearWaterMotion();
     sceneHidden=!sceneHidden;byId('sceneContainer').hidden=sceneHidden;this.setAttribute('aria-pressed',String(sceneHidden));this.textContent=sceneHidden?'Show 3D view':'Hide 3D view';
     byId('focusView').disabled=sceneHidden;
     var scene=byId('outingScene'); if (scene.canvas) scene.canvas.setAttribute('tabindex','-1');if(sceneHidden&&scene.pause)scene.pause();if(!sceneHidden&&scene.play){scene.play();window.dispatchEvent(new Event('resize'));}
@@ -1152,6 +1253,10 @@
   });
   byId('travelPreview').addEventListener('click',function(){selectObject('route',true);});
   byId('openPacking').addEventListener('click', openPackingWorkbench);
+  byId('openWater').addEventListener('click', openWaterWorkbench);
+  byId('fillAtTap').addEventListener('click', function () { prepareWater('fill_water'); });
+  byId('packAtTap').addEventListener('click', function () { prepareWater('pack_water'); });
+  byId('waterToBag').addEventListener('click', openPackingWorkbench);
   byId('openWardrobe').addEventListener('click', openWardrobeWorkbench);
   byId('reviewUpdate').addEventListener('click', openUpdateWorkbench);
   byId('openUpdates').addEventListener('click', openUpdateWorkbench);
@@ -1180,8 +1285,7 @@
   byId('packingPlace').addEventListener('click', placePackingItem);
   byId('packingFill').addEventListener('click', function () {
     if (latestView.completed || packingSelection !== 'bottle' || latestView.scene.bottleFilled) return;
-    selectObject('bottle', false);
-    (byId('actionList').querySelector('[data-action="fill_water"]') || byId('stationActions')).focus();
+    openWaterWorkbench();
   });
   byId('exploreTravel').addEventListener('click',openTravelExplorer);
   byId('openTravelLab').addEventListener('click',openTravelExplorer);
@@ -1290,7 +1394,7 @@
     reader.onerror=function(){if(serial===importSerial)text('backupStatus','This file could not be opened. Your current practice is unchanged.');};
     reader.readAsText(file);
   });
-  window.addEventListener('beforeunload',function(){abortStory();if(client)client.destroy();});
+  window.addEventListener('beforeunload',function(){abortStory();clearWaterMotion();if(motionPreference&&motionPreference.removeEventListener)motionPreference.removeEventListener('change',motionPreferenceChanged);if(client)client.destroy();});
   var restored;
   try{var key=storage&&storage.getItem(ACTIVE_KEY);if(key)restored=E.readRun(storage,key);}catch(_){}
   if(!restored){var valid=savedRuns().find(function(entry){return entry.run;});if(valid)restored=valid.run;}

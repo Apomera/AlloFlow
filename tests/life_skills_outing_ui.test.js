@@ -8,9 +8,10 @@ const windows = [];
 const activeKey = 'alloflow-life-outing-active:v1';
 const flush = async () => { await Promise.resolve(); await Promise.resolve(); await Promise.resolve(); };
 
-function mount({ saved = [], provider, noScene = false, noStorage = false } = {}) {
+function mount({ saved = [], provider, noScene = false, noStorage = false, reducedMotion = false } = {}) {
   const dom = new JSDOM(html, { url: 'http://localhost:3000/life_skills_outing/life_skills_outing.html', runScripts: 'outside-only', pretendToBeVisual: true });
   const w = dom.window; windows.push(w);
+  const motion = new w.EventTarget(); motion.matches = reducedMotion; w.matchMedia = () => motion;
   if (noStorage) Object.defineProperty(w, 'localStorage', { get() { throw Error('Storage blocked'); } });
   else for (const [key, value] of saved) w.localStorage.setItem(key, value);
   // Rendering is verified in real Chromium. These stubs leave real DOM event handlers intact.
@@ -21,7 +22,7 @@ function mount({ saved = [], provider, noScene = false, noStorage = false } = {}
   w.eval(scripts[2]);
   const $ = selector => w.document.querySelector(selector);
   return {
-    w, $, E: w.AlloOutingEngine,
+    w, $, motion, E: w.AlloOutingEngine,
     run: () => JSON.parse(w.localStorage.getItem(w.localStorage.getItem(activeKey))),
     save: () => Array.from({ length: w.localStorage.length }, (_, i) => { const k = w.localStorage.key(i); return [k, w.localStorage.getItem(k)]; }),
     station: name => { const b = [...w.document.querySelectorAll('#stationNavigation button')].find(el => el.textContent.includes(name)); if (!b) throw Error(name); b.click(); },
@@ -53,6 +54,98 @@ async function openBackup(h, source) {
 }
 
 describe('Life Skills outing interaction', () => {
+  it('inspects the water station from its tap, bottle and native controls without changing the outing', () => {
+    let calls=0; const h=mount({provider:()=>{calls++;return Promise.resolve({text:'Hello.',status:'generated'});}}), saved=h.save();
+    h.$('#tapObject').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));
+    expect(h.$('#waterWorkbench').open).toBe(true); expect(h.$('#waterWorkbench').hidden).toBe(false);
+    expect(h.$('#waterPictureCaption').textContent).toBe('Empty water bottle · on the counter');
+    expect(h.$('#waterIllustration .water-picture-level')).toBe(null); expect(h.$('#packAtTap').disabled).toBe(true);
+    h.$('#packAtTap').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true})); expect(h.save()).toEqual(saved);
+    h.station('Kitchen'); expect(h.$('#waterWorkbench').open).toBe(false); h.$('#openWater').click();
+    expect(h.w.document.activeElement.id).toBe('fillAtTap');
+    h.$('#bottleObject').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));
+    expect(h.$('#waterWorkbench').open).toBe(true); expect(h.save()).toEqual(saved); expect(calls).toBe(0);
+    expect(h.$('#clock').textContent).toBe('09:00'); expect(h.E.view(h.run()).observations).toEqual([]);
+  });
+  it.each([['community','guided','plain'],['work','independent','standard']])('fills and packs water for %s with %s support using deliberate actions', (context,support,language) => {
+    const h=mount(); h.$('#contextSelect').value=context; h.$('#supportSelect').value=support; h.$('#languageSelect').value=language;
+    h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true})); const before=h.run();
+    h.$('#openWater').click(); h.$('#fillAtTap').focus(); h.$('#fillAtTap').click();
+    expect(h.$('#clock').textContent).toBe('09:01'); expect(h.w.document.activeElement.id).toBe('packAtTap');
+    expect(h.$('#waterPictureCaption').textContent).toBe('Filled water bottle · on the counter');
+    expect(h.$('#waterIllustration .water-picture-level')).not.toBe(null); expect(h.$('#fillAtTap').disabled).toBe(true);
+    expect(h.$('#waterPackState').textContent).toBe('Ready to pack'); expect(h.$('#bottleObject').getAttribute('position')).toBe('-3.35 1.32 -1.88');
+    h.$('#packAtTap').click(); expect(h.$('#clock').textContent).toBe('09:02'); expect(h.w.document.activeElement.id).toBe('waterReadyTitle');
+    expect(h.$('#waterPictureCaption').textContent).toBe('Filled water bottle · in your bag'); expect(h.$('#waterPackState').textContent).toBe('Done · packed');
+    expect(h.$('#fillAtTap').disabled).toBe(true); expect(h.$('#packAtTap').disabled).toBe(true); expect(h.$('#waterReady').hidden).toBe(false);
+    const expected=h.E.dispatch(h.E.dispatch(before,'fill_water',0,'expected-fill'),'pack_water',1,'expected-pack');
+    expect(h.E.view(h.run())).toEqual(h.E.view(expected)); expect(h.run().commands.map(c=>c.actionId)).toEqual(['fill_water','pack_water']);
+    const saved=h.save(); h.$('#fillAtTap').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true})); h.$('#packAtTap').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));
+    expect(h.save()).toEqual(saved); h.$('#waterToBag').click(); expect(h.$('#packingWorkbench').open).toBe(true);
+    expect(h.$('[data-pack-item="bottle"]').disabled).toBe(true); expect(h.$('#packingContents').textContent).toContain('Filled water bottle · packed');
+    expect(h.save()).toEqual(saved);
+  });
+  it('clears brief water feedback without advancing practice time or saving another action', () => {
+    vi.useFakeTimers();
+    try {
+      const h=mount(); h.$('#openWater').click(); h.$('#fillAtTap').click(); const saved=h.save();
+      expect(h.$('#waterIllustration .water-moment-fill')).not.toBe(null); expect(h.$('#tapStream').getAttribute('visible')).toBe('true');
+      expect(h.$('#bottleCap').getAttribute('visible')).toBe('false');
+      vi.advanceTimersByTime(700); expect(h.$('#waterIllustration .water-moment-fill')).toBe(null);
+      expect(h.$('#tapStream').getAttribute('visible')).toBe('false'); expect(h.$('#bottleCap').getAttribute('visible')).toBe('true');
+      expect(h.save()).toEqual(saved); expect(h.$('#clock').textContent).toBe('09:01');
+      h.$('#packAtTap').click(); const packed=h.save(); expect(h.$('#bottleObject').hasAttribute('animation__transfer')).toBe(true);
+      expect(h.$('#waterIllustration .water-moment-pack')).not.toBe(null); vi.advanceTimersByTime(700);
+      expect(h.$('#bottleObject').hasAttribute('animation__transfer')).toBe(false); expect(h.$('#bottleObject').getAttribute('position')).toBe('2.08 1.05 -1.61');
+      expect(h.save()).toEqual(packed); expect(h.$('#clock').textContent).toBe('09:02');
+    } finally { vi.useRealTimers(); }
+  });
+  it('prepares water with reduced motion and cancels movement if that preference changes', () => {
+    const h=mount({reducedMotion:true}); h.$('#openWater').click(); h.$('#fillAtTap').click();
+    expect(h.$('#waterIllustration .water-moment-fill')).toBe(null); expect(h.$('#tapStream').getAttribute('visible')).toBe('false');
+    h.$('#packAtTap').click(); expect(h.$('#bottleObject').hasAttribute('animation__transfer')).toBe(false); expect(h.$('#clock').textContent).toBe('09:02');
+    const other=mount(); other.$('#openWater').click(); other.$('#fillAtTap').click(); other.$('#packAtTap').click(); const saved=other.save();
+    const event=new other.w.Event('change'); event.matches=true; other.motion.matches=true; other.motion.dispatchEvent(event);
+    expect(other.$('#waterIllustration .water-moment-pack')).toBe(null); expect(other.$('#bottleObject').hasAttribute('animation__transfer')).toBe(false);
+    expect(other.$('#bottleObject').getAttribute('position')).toBe('2.08 1.05 -1.61'); expect(other.save()).toEqual(saved);
+  });
+  it('cancels water feedback on navigation, scene hiding, backgrounding and a new practice', () => {
+    const h=mount(); h.$('#openWater').click(); h.$('#fillAtTap').click(); h.station('Wardrobe');
+    expect(h.$('#tapStream').getAttribute('visible')).toBe('false'); expect(h.$('#waterWorkbench').hidden).toBe(true);
+    const saved=h.save(); h.$('#packAtTap').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true})); expect(h.save()).toEqual(saved);
+    h.station('Kitchen'); h.$('#openWater').click(); h.$('#packAtTap').click(); h.$('#sceneToggle').click();
+    expect(h.$('#bottleObject').hasAttribute('animation__transfer')).toBe(false); expect(h.$('#waterIllustration .water-moment-pack')).toBe(null);
+    h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true})); expect(h.$('#waterWorkbench').open).toBe(false);
+    h.$('#openWater').click(); expect(h.$('#waterPictureCaption').textContent).toContain('Empty'); h.$('#fillAtTap').click();
+    Object.defineProperty(h.w.document,'hidden',{configurable:true,value:true}); h.w.document.dispatchEvent(new h.w.Event('visibilitychange'));
+    expect(h.$('#waterIllustration .water-moment-fill')).toBe(null); expect(h.$('#tapStream').getAttribute('visible')).toBe('false');
+  });
+  it('routes an empty bottle from the bag table to the tap and back to the other essentials', () => {
+    const h=mount(); h.$('#openPacking').click(); h.$('[data-pack-item="bottle"]').click(); h.$('#packingPlace').click(); h.$('#packingFill').click();
+    expect(h.$('#waterWorkbench').open).toBe(true); expect(h.w.document.activeElement.id).toBe('fillAtTap');
+    h.$('#fillAtTap').click(); h.$('#packAtTap').click(); h.$('#waterToBag').click();
+    expect(h.$('#packingWorkbench').open).toBe(true); expect(h.$('#packingCount').textContent).toBe('1 of 3 packed');
+    expect(h.E.view(h.run()).observations.map(o=>o.skill)).toEqual(['Preparation sequence']);
+  });
+  it('restores the actual bottle location without replaying movement and supports scene-free, storage-free practice', () => {
+    const h=mount(); h.$('#openWater').click(); h.$('#fillAtTap').click(); const filled=mount({saved:h.save()}); filled.$('#openWater').click();
+    expect(filled.$('#waterPictureCaption').textContent).toContain('Filled water bottle · on the counter');
+    expect(filled.$('#tapStream').getAttribute('visible')).toBe('false'); expect(filled.$('#waterIllustration .water-moment-fill')).toBe(null);
+    expect(filled.w.document.activeElement.id).toBe('packAtTap'); filled.$('#packAtTap').click(); const packed=mount({saved:filled.save(),noScene:true});
+    packed.$('#openWater').click(); expect(packed.w.document.activeElement.id).toBe('waterReadyTitle'); expect(packed.$('#packAtTap').disabled).toBe(true);
+    expect(packed.$('#waterIllustration .water-moment-pack')).toBe(null);
+    const offline=mount({noScene:true,noStorage:true,reducedMotion:true}); offline.$('#openWater').click(); offline.$('#fillAtTap').click(); offline.$('#packAtTap').click();
+    expect(offline.$('#clock').textContent).toBe('09:02'); expect(offline.$('#waterReady').hidden).toBe(false);
+    expect(offline.$('#saveStatus').textContent).toContain('unavailable');
+  });
+  it('guards water controls after completing the outing and keeps departure rechecks fresh', () => {
+    const h=mount(); h.station('Travel'); h.$('#openDeparture').click(); h.$('#checkDeparture').click(); h.$('[data-departure-target="water"]').click();
+    expect(h.w.document.activeElement.id).toBe('fillAtTap'); h.$('#fillAtTap').click(); h.$('#packAtTap').click(); h.$('#backToDeparture').click();
+    expect(h.$('[data-departure-check="water"]').textContent).toContain('Filled and packed'); expect(h.$('#departureResultTitle').textContent).toBe('1 of 5 preparation checks ready');
+    h.station('Wardrobe'); h.act('wear_ready'); h.station('Doorway'); h.act('pack_document'); h.act('pack_raincoat'); h.station('Travel'); h.act('choose_bus'); h.act('depart');
+    const saved=h.save(); h.$('#openWater').click(); h.$('#fillAtTap').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true})); h.$('#packAtTap').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true})); h.$('#waterToBag').click();
+    expect(h.save()).toEqual(saved); expect(h.$('#waterWorkbench').hidden).toBe(true);
+  });
   it('opens the departure check from the 3D door and keeps estimates separate from practice actions', () => {
     let calls = 0; const h = mount({provider: () => { calls++; return Promise.resolve({text:'Hello.',status:'generated'}); }});
     const saved = h.save(); h.$('#departureSign').dispatchEvent(new h.w.MouseEvent('click', {bubbles:true}));
@@ -354,7 +447,7 @@ describe('Life Skills outing interaction', () => {
     h.$('[data-pack-item="bottle"]').click();
     expect(h.$('[data-pack-item="bottle"]').getAttribute('aria-pressed')).toBe('true');
     expect(h.w.document.activeElement.id).toBe('packingPlace');
-    expect(h.$('#bottleObject').getAttribute('position')).toBe('-2.1 1.32 -1.8');
+    expect(h.$('#bottleObject').getAttribute('position')).toBe('-3.35 1.32 -1.88');
     expect(h.save()).toEqual(saved); expect(calls).toBe(0);
     h.$('#packingPlace').click();
     expect(h.run().commands.map(c => c.actionId)).toEqual(['fill_water', 'pack_water']);

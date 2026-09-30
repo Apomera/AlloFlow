@@ -65,6 +65,7 @@
 <div class="action-panel" id="stationActions" tabindex="-1">
 <div class="section-header"><div><p class="eyebrow">Your next choice</p><h3 id="stationTitle">Kitchen</h3></div><span class="step-tag" id="stepTag">Step 1</span></div>
 <p id="stationDescription" class="muted"></p>
+<button id="openWater" class="quiet-button water-entry" type="button" aria-controls="waterWorkbench" hidden>Prepare water at the tap</button>
 <button id="openPacking" class="quiet-button packing-entry" type="button" aria-controls="packingWorkbench" hidden>Open bag table</button>
 <button id="openWardrobe" class="quiet-button wardrobe-entry" type="button" aria-controls="wardrobeWorkbench" hidden>Compare the outfits</button>
 <button id="openUpdates" class="quiet-button update-entry" type="button" aria-controls="updateWorkbench" hidden>Review the received update</button>
@@ -73,6 +74,16 @@
 <button id="exploreTravel" class="quiet-button travel-entry" type="button" aria-controls="travelLab" hidden>Explore departure and arrival times</button>
 <div id="objectChoices" class="object-choices" role="group" aria-label="Inspect an object"></div>
 <section id="objectInspector" class="object-inspector" aria-labelledby="objectTitle" hidden><div class="section-header"><h4 id="objectTitle" tabindex="-1"></h4><span id="objectStatus" class="object-status"></span></div><p id="objectDescription"></p></section>
+<details id="waterWorkbench" class="water-workbench" hidden>
+<summary>At the tap · fill, then pack</summary>
+<div class="water-body"><p id="waterInstructions" class="muted">Prepare drinking water for this fictional outing. Fill the bottle, then put it in your bag. Each action takes one practice minute.</p>
+<figure class="water-picture"><div id="waterIllustration" aria-hidden="true"></div><figcaption id="waterPictureCaption"></figcaption></figure>
+<ol id="waterSteps" class="water-steps" aria-label="Water preparation sequence"><li id="waterFillStep"><span class="water-step-number" aria-hidden="true">1</span><div><strong>Fill the bottle</strong><span id="waterFillState"></span></div></li><li id="waterPackStep"><span class="water-step-number" aria-hidden="true">2</span><div><strong>Put it in your bag</strong><span id="waterPackState"></span></div></li></ol>
+<div class="water-controls"><button id="fillAtTap" class="primary-button" type="button" data-action="fill_water" aria-describedby="waterFillReason">Fill the water bottle · 1 min</button><button id="packAtTap" class="quiet-button" type="button" data-action="pack_water" aria-describedby="waterPackReason" disabled>Pack the filled bottle · 1 min</button></div>
+<div class="water-reasons"><p id="waterFillReason" class="muted small"></p><p id="waterPackReason" class="muted small"></p></div>
+<section id="waterReady" class="water-ready" aria-labelledby="waterReadyTitle" hidden><h4 id="waterReadyTitle" tabindex="-1">Your filled bottle is packed</h4><p>Check the other essentials for your outing.</p><button id="waterToBag" class="quiet-button" type="button">Open bag table</button></section>
+<p id="waterStatus" class="water-status" role="status" aria-live="polite" aria-atomic="true"></p>
+</div></details>
 <details id="departureWorkbench" class="departure-workbench" hidden>
 <summary>At the door · check before leaving</summary>
 <div class="departure-body"><p class="muted">Think about your clothes, bag, forecast and route. Compare your estimate with this outing. Checking takes no practice time.</p>
