@@ -10,7 +10,7 @@ function region(start, end) {
   if (a < 0 || b <= a) throw new Error('Could not locate live plant region: ' + start);
   return source.slice(a, b);
 }
-const helperSource = region('function createCLHuntPlantGeometry(', 'function createCLHuntMarineSnowGeometry(');
+const helperSource = region('function shadeCLHuntPlantFlex(', 'function createCLHuntMarineSnowGeometry(');
 const noRandom = Object.create(Math);
 noRandom.random = () => { throw new Error('Plant geometry must not consume the gameplay random stream'); };
 const createPlant = new Function('Math', helperSource + ';return createCLHuntPlantGeometry;')(noRandom);
@@ -37,7 +37,7 @@ if (guardAt < 0) throw new Error('Could not locate the production pause guard');
 const guard = source.slice(guardAt, source.indexOf('\n', guardAt));
 const kelpSway = region('            kelpStrands.forEach(function(k) {', '            // Vent plume rises');
 const grassSway = region('            grass.forEach(function(g) {', '            // ─── Floor + caustics follow');
-const sway = new Function('kelpStrands', 'grass', 'gameState', 'now', guard + '\n' + kelpSway + grassSway + '\n}');
+const sway = new Function('kelpStrands', 'grass', 'gameState', 'now', helperSource + ';' + guard + '\n' + kelpSway + grassSway + '\n}');
 
 describe('Cephalopod Hunter plant geometry', () => {
   it('builds finite folded ribbons with valid triangles, normals and final bounds across plant variants', () => {
@@ -140,18 +140,23 @@ describe('Cephalopod Hunter plant geometry', () => {
     } finally { dispose(fixture); }
   });
 
-  it('retains sway frequency and amplitude, freezes both kinds under pause, and makes both static under reduced motion', () => {
+  it('retains primary sway frequency, freezes flex under pause, and makes both kinds static under reduced motion', () => {
     const fixture = construct(), state = { paused: false, gameOver: false, a11y: { reducedMotion: false } };
     try {
       const all = [...fixture.grass, ...fixture.kelp], arrays = all.map(plant => plant.mesh.geometry.attributes.position.array), snapshots = arrays.map(array => Array.from(array));
       sway(fixture.kelp, fixture.grass, state, 1200);
-      fixture.grass.forEach(plant => expect(plant.mesh.rotation.z).toBe(Math.sin(1200 * .001 + plant.phase) * .12));
-      fixture.kelp.forEach(plant => expect(plant.mesh.rotation.z).toBe(Math.sin(1200 * .0008 + plant.phase) * .12));
-      const poses = all.map(plant => plant.mesh.rotation.z);state.paused = true;
+      fixture.grass.forEach(plant => expect(plant.flex.value.x).toBe((1200 * .001 + plant.phase) % (Math.PI * 2)));
+      fixture.kelp.forEach(plant => expect(plant.flex.value.x).toBe((1200 * .0008 + plant.phase) % (Math.PI * 2)));
+      expect(all.every(plant => plant.mesh.rotation.z === 0 && plant.flex.value.w === 1)).toBe(true);
+      const poses = all.map(plant => plant.flex.value.toArray());state.paused = true;
       sway(fixture.kelp, fixture.grass, state, 5500);
-      expect(all.map(plant => plant.mesh.rotation.z)).toEqual(poses);
+      expect(all.map(plant => plant.flex.value.toArray())).toEqual(poses);
       state.paused = false;state.a11y.reducedMotion = true;
-      for (const now of [5600, 8000, 15000]) { sway(fixture.kelp, fixture.grass, state, now);expect(all.every(plant => plant.mesh.rotation.z === 0)).toBe(true); }
+      for (const now of [5600, 8000, 15000]) { sway(fixture.kelp, fixture.grass, state, now);expect(all.every(plant => plant.mesh.rotation.z === 0 && plant.flex.value.w === 0)).toBe(true);expect(all.map(plant => plant.flex.value.toArray())).toEqual(poses.map(pose => [...pose.slice(0, 3), 0])); }
+      state.a11y.reducedMotion = false;sway(fixture.kelp, fixture.grass, state, 16000);
+      fixture.grass.forEach(plant => expect(plant.flex.value.x).toBe((16000 * .001 + plant.phase) % (Math.PI * 2)));
+      fixture.kelp.forEach(plant => expect(plant.flex.value.x).toBe((16000 * .0008 + plant.phase) % (Math.PI * 2)));
+      expect(all.every(plant => plant.flex.value.w === 1)).toBe(true);
       all.forEach((plant, i) => { expect(plant.mesh.geometry.attributes.position.array).toBe(arrays[i]);expect(Array.from(arrays[i])).toEqual(snapshots[i]); });
     } finally { dispose(fixture); }
   });

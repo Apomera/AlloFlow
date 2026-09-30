@@ -18,7 +18,10 @@ function meshes(animal){const result=[];animal.root.traverse(o=>{if(o.isMesh)res
 const eyes=animal=>meshes(animal).filter(o=>eyeNames.has(o.name));
 const pair=(animal,name)=>meshes(animal).filter(o=>o.name===name);
 function points(mesh){mesh.updateWorldMatrix(true,false);return Array.from({length:mesh.geometry.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(mesh.geometry.attributes.position,i).applyMatrix4(mesh.matrixWorld));}
-function fingerprint(animal,excludeEyes){const rows=meshes(animal).filter(o=>!excludeEyes||!eyeNames.has(o.name)).map(o=>[o.name,Object.entries(o.geometry.attributes).map(([name,attr])=>[name,Array.from(attr.array)]),o.geometry.index?Array.from(o.geometry.index.array):null,o.position.toArray(),o.quaternion.toArray(),o.scale.toArray(),o.isInstancedMesh?Array.from(o.instanceMatrix.array):null]);return createHash('sha256').update(JSON.stringify(rows)).digest('hex');}
+
+// Captured before pass-fifteen: exclude only the intentionally replaced shell subtree.
+function insideNautilusShell(o){for(let p=o;p;p=p.parent)if(p.name==='cl-shell')return true;return false;}
+function fingerprint(animal,excludeEyes){const rows=meshes(animal).filter(o=>(!excludeEyes||!eyeNames.has(o.name))&&!insideNautilusShell(o)).map(o=>[o.name,Object.entries(o.geometry.attributes).map(([name,attr])=>[name,Array.from(attr.array)]),o.geometry.index?Array.from(o.geometry.index.array):null,o.position.toArray(),o.quaternion.toArray(),o.scale.toArray(),o.isInstancedMesh?Array.from(o.instanceMatrix.array):null]);return createHash('sha256').update(JSON.stringify(rows)).digest('hex');}
 afterEach(()=>{for(const animal of allocated.splice(0)){const geometries=new Set(),materials=new Set();meshes(animal).forEach(o=>{geometries.add(o.geometry);materials.add(o.material);});geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());}});
 
 describe('Benthic octopus curved eye surfaces',()=>{
@@ -91,11 +94,11 @@ describe('Benthic octopus curved eye surfaces',()=>{
     }
   });
 
-  it('preserves captured non-eye octopus geometry and complete squid, nautilus and four-swimmer rigs',()=>{
+  it('preserves captured non-eye octopus geometry and complete squid/four-swimmer rigs and nautilus non-shell anatomy',()=>{
     // Captured before pass-thirteen integration; exclusions are only the five named eye surfaces/groups.
     const baseline={
       commonOcto:'fb3c872f587639a3092b7980a5cea4eda017694c688aa422ee81549f9e9abf04',blueRinged:'ea6f4965d8a861670c745ce8917aace25b764808cb51a14e8c6305841b367adc',mimicOcto:'fb3c872f587639a3092b7980a5cea4eda017694c688aa422ee81549f9e9abf04',giantPacific:'041016f41d929ad094747fabd9fe30a2b5b94ce4b7b2a7551f36aa155777ed0f',caribReef:'fb3c872f587639a3092b7980a5cea4eda017694c688aa422ee81549f9e9abf04',coconutOcto:'fb3c872f587639a3092b7980a5cea4eda017694c688aa422ee81549f9e9abf04',
-      humboldtSquid:'584d69c9bd479e1645bb017557896d69c4d23b13bbf65c2d6f6f4e0db632f246',nautilus:'dcea324dd9666d66967b056772592e5eb2ca48901f852ccd06c5d6df0dfcda2a',cuttlefish:'a0d4bb51fae780771b4dcf1c7c7890cd3c0c7a8e796e9d95ad739eb5e15c8b31',bobtailSquid:'28d6ae5749d749c3d82f9490dab425630b9fd431aa263e213b582433a8761c81',dumboOcto:'bf6090a22eae7b8421c7c0f67107978d4cccd199dd9923d17e12a9fb6fdae55b',vampireSquid:'7bb9a0fb32f9b95dfb53cc7c6664924bc8303155b12cef82870c00c5faaeb232'
+      humboldtSquid:'584d69c9bd479e1645bb017557896d69c4d23b13bbf65c2d6f6f4e0db632f246',nautilus:'4068584646816ac382a819e42ae7106eee19f74d7ee2334feaa791eb3e87343b',cuttlefish:'a0d4bb51fae780771b4dcf1c7c7890cd3c0c7a8e796e9d95ad739eb5e15c8b31',bobtailSquid:'28d6ae5749d749c3d82f9490dab425630b9fd431aa263e213b582433a8761c81',dumboOcto:'bf6090a22eae7b8421c7c0f67107978d4cccd199dd9923d17e12a9fb6fdae55b',vampireSquid:'7bb9a0fb32f9b95dfb53cc7c6664924bc8303155b12cef82870c00c5faaeb232'
     };
     for(const [id,expected]of Object.entries(baseline))expect(fingerprint(rig(id),ids.includes(id)),id).toBe(expected);
   });

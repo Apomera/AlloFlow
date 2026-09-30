@@ -1,0 +1,205 @@
+{
+  "pass": 15,
+  "status": "validated",
+  "result": "Smooth painted nautilus shell with a real aperture; root-fixed seagrass and kelp flex",
+  "units": {
+    "passed": 61,
+    "failed": 0,
+    "files": [
+      {
+        "file": "cephalopodlab_canvas_focus_a11y.test.js",
+        "passed": 4,
+        "failed": 0
+      },
+      {
+        "file": "cephalopodlab_coral_surface.test.js",
+        "passed": 4,
+        "failed": 0
+      },
+      {
+        "file": "cephalopodlab_cuttle_surface.test.js",
+        "passed": 6,
+        "failed": 0
+      },
+      {
+        "file": "cephalopodlab_eye_surfaces.test.js",
+        "passed": 8,
+        "failed": 0
+      },
+      {
+        "file": "cephalopodlab_fin_membranes.test.js",
+        "passed": 9,
+        "failed": 0
+      },
+      {
+        "file": "cephalopodlab_nautilus_shell.test.js",
+        "passed": 6,
+        "failed": 0
+      },
+      {
+        "file": "cephalopodlab_octopus_eyes.test.js",
+        "passed": 7,
+        "failed": 0
+      },
+      {
+        "file": "cephalopodlab_plant_flex.test.js",
+        "passed": 4,
+        "failed": 0
+      },
+      {
+        "file": "cephalopodlab_plant_geometry.test.js",
+        "passed": 6,
+        "failed": 0
+      },
+      {
+        "file": "cephalopodlab_squid_arm_detail.test.js",
+        "passed": 7,
+        "failed": 0
+      }
+    ],
+    "evidence": "unit-final.json",
+    "initialFailures": {
+      "count": 2,
+      "scope": "Existing coral tests",
+      "resolution": "Stop coral helper extraction before the newly adjacent plant shader. Preserve every constraint in the exhaustive 54-shape case while replacing dense Vitest matchers with equivalent strict native assertions and giving that CPU case 30 seconds of headroom. The unmodified production coral fingerprint still matches exactly.",
+      "evidence": [
+        "unit-results.json",
+        "unit-coral-final.json"
+      ]
+    },
+    "shellCandidateHeadroom": "The unchanged 48-state parity audit exceeded its original five-second default during one candidate run; its assertions remain intact with an explicit 30-second ceiling. The final integrated 61-case batch passed."
+  },
+  "browser": {
+    "passed": 5,
+    "failed": 0,
+    "flaky": 0,
+    "workers": 1,
+    "retries": 0,
+    "video": "off",
+    "trace": "off",
+    "qualities": [
+      "low",
+      "balanced"
+    ],
+    "evidence": [
+      "browser-results.json",
+      "browser-shell-final.json",
+      "browser-inspection-results.json"
+    ],
+    "durationMs": 321295.208,
+    "successfulExecutions": 7,
+    "finalPigmentRecheck": "Two initial shell/plants cases were superseded by two passing low/balanced cases after the outer pigment refinement; unchanged plant-only and existing inspection cases remain valid.",
+    "checks": [
+      "Native submitted shell and grass/kelp shader compilation and linking",
+      "Actual native vec4 plant uniform uploads",
+      "Independent persistent uniforms; phase wrapping and reduced motion",
+      "Frozen simulation during inspection; ordinary orbit/zoom controls",
+      "Phone 390x844 shell framing",
+      "Stable geometry/instance arrays, placement, resource identities and disposal",
+      "Existing inspection movement-key release behavior"
+    ]
+  },
+  "visuals": {
+    "captures": [
+      "nautilus-three-quarter.png",
+      "nautilus-shell-side.png",
+      "nautilus-aperture.png",
+      "nautilus-phone.png",
+      "nautilus-opposite-side.png",
+      "seagrass-flex-early.png",
+      "seagrass-flex-late.png",
+      "kelp-flex-early.png",
+      "kelp-flex-late.png"
+    ],
+    "errors": [],
+    "warnings": [
+      "[.WebGL-0x2d9c001b4e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x2d9c001b4e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x2d9c001b4e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x2d9c001b4e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)",
+      "[.WebGL-0x1274001a4e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x1274001a4e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x1274001a4e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x1274001a4e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)",
+      "[.WebGL-0x2424001a8e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x2424001a8e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x2424001a8e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x2424001a8e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    ],
+    "fixture": "visual-fixtures.json",
+    "review": "Accepted nine final canvas views: smooth ivory shell, painted irregular brown bands, readable aperture and unbanded interior from both sides and front-quarter; desktop/phone inspection fit; seagrass and kelp bending at two deterministic times with fixed roots.",
+    "fixturePreservation": "Strict same-seed plant position, height, variant, yaw, instance matrices and camera equality before/after. Nautilus views use existing inspection controls. Actual scene lighting, fog and surrounding objects are retained."
+  },
+  "source": {
+    "runtime": [
+      {
+        "file": "stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "370db22149565f8f90605053afb16190b121c2b4effb7781ff1c7276fdd1095e"
+      },
+      {
+        "file": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "370db22149565f8f90605053afb16190b121c2b4effb7781ff1c7276fdd1095e"
+      },
+      {
+        "file": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "370db22149565f8f90605053afb16190b121c2b4effb7781ff1c7276fdd1095e"
+      },
+      {
+        "file": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "370db22149565f8f90605053afb16190b121c2b4effb7781ff1c7276fdd1095e"
+      }
+    ],
+    "candidateLfSha256": "fc4fb0d73d2e3e58c9a9fbafc436a8fa6f482f924a1a927c98202e5deb22fae2",
+    "preservedUnstagedWrappersPerTrackedFile": 12,
+    "scope": "One nautilus shell factory block and five guarded plant-helper/wiring/motion edits. Other species, nautilus non-shell rig, strategy, input, depth, collision, feeding and scene lighting are preserved."
+  },
+  "preservation": {
+    "protectedRigStates": 48,
+    "shellRockingSamples": 17,
+    "minimumHeadClearance": 0.024574321083260686,
+    "plantRngDraws": 525,
+    "plantRecords": 105,
+    "geometryAndInstanceBuffers": "byte-identical",
+    "originalCoralGeometryCases": 54,
+    "originalCoralFingerprint": "3a0ba84fb12bc9f6654bf090a07905e793cf8b99983c9c4ea4185151efd32f2c"
+  },
+  "cost": {
+    "shell": {
+      "before": {
+        "meshes": 27,
+        "materials": 2,
+        "vertices": 3139,
+        "triangles": 5072
+      },
+      "after": {
+        "meshes": 3,
+        "materials": 2,
+        "vertices": 2550,
+        "triangles": 4800
+      },
+      "newTextures": 0,
+      "newUniforms": 0,
+      "outerFragmentExtraSineEvaluationsAfterImageRefinement": 4
+    },
+    "plants": {
+      "meshes": 105,
+      "materials": 105,
+      "uniqueVertices": 4065,
+      "maximumSubmittedVertices": 19905,
+      "maximumSubmittedTriangles": 24200,
+      "rawBufferBytes": 244700,
+      "newUniformVectors": 105,
+      "newLogicalUniformBytes": 1680,
+      "newMeshes": 0,
+      "newAttributes": 0,
+      "newTextures": 0,
+      "newPasses": 0,
+      "vertexWork": "Two sine and two cosine evaluations plus inverse-shear normal correction; no added fragment work."
+    }
+  },
+  "limits": [
+    "Illustrative procedural nautilus proportions and the preserved generic head/hood/filaments are not a specimen reconstruction.",
+    "Plant sway is decorative motion, not a simulated water-current field.",
+    "CPU root/normal checks, native shader/uniform checks and deterministic stills do not establish GPU vertex readback, FPS or temporal shimmer performance."
+  ]
+}

@@ -22,6 +22,13 @@ async function mount(page: Page, quality: 'low' | 'balanced') {
     w.__scene = w.__glRecorder.records.filter((record: any) => record.scene && record.canvas.isConnected).at(-1).scene;
     w.__plants = w.__scene.children.filter((object: any) => ['cl-seagrass', 'cl-kelp'].includes(object.name));
     if (w.__plants.length !== 105) throw new Error('Expected 80 live seagrass patches and 25 kelp strands');
+    w.__plantMotion = w.__plants.map((mesh: any) => {
+      const shader = { uniforms: {}, vertexShader: w.THREE.ShaderLib.standard.vertexShader, fragmentShader: w.THREE.ShaderLib.standard.fragmentShader };
+      mesh.material.onBeforeCompile(shader);
+      const motion = (shader.uniforms as any).clPlantMotion?.value;
+      if (!motion?.isVector4) throw new Error('Expected the live per-material plant flex uniform');
+      return motion;
+    });
     w.__plantStep = 0;
     w.THREE.Clock.prototype.getDelta = function () { const dt = w.__plantStep; w.__plantStep = 0; return dt; };
     w.__scene.children.forEach((object: any) => { if ('cooldownUntil' in object.userData) object.userData.cooldownUntil = 1e9; });
@@ -53,6 +60,7 @@ async function plantState(page: Page) {
   return page.evaluate(() => {
     const w = window as any;
     return { poses: w.__plants.map((mesh: any) => ({ name: mesh.name, position: mesh.position.toArray(), quaternion: mesh.quaternion.toArray(), scale: mesh.scale.toArray() })),
+      motion: w.__plantMotion.map((value: any) => value.toArray()),
       stable: w.__plantOwned.every((owned: any) => owned.mesh.geometry === owned.geometry && owned.mesh.material === owned.material && owned.mesh.instanceMatrix?.array === owned.instances && Object.entries(owned.attributes).every(([name, attribute]: [string, any]) => owned.geometry.attributes[name] === attribute.attribute && owned.geometry.attributes[name].array === attribute.array)),
       buffersUnchanged: w.__plantOwned.every((owned: any) => Object.values(owned.attributes).every((attribute: any) => attribute.initial.every((value: number, index: number) => value === attribute.array[index])) && (!owned.initialInstances || owned.initialInstances.every((value: number, index: number) => value === owned.instances[index]))),
       disposed: w.__plantResources.filter((resource: any) => resource.disposed).length };
@@ -138,23 +146,24 @@ for (const quality of ['low', 'balanced'] as const) {
     expect(audit['cl-seagrass'].program.shaders.some((shader: any) => shader.source.includes('#define USE_INSTANCING'))).toBe(true);
     await expectRootedPlants(page);
     const initial = await plantState(page); await advance(page, 8); const moving = await plantState(page);
-    expect(moving.poses).not.toEqual(initial.poses); expect(moving.stable && moving.buffersUnchanged).toBe(true); expect(moving.disposed).toBe(0);
-    // Existing seeded phases naturally cover the ends of the sway range.
-    expect(Math.max(...(await rootAttachment(page)).map((plant: any) => Math.abs(plant.angle)))).toBeGreaterThan(.11);
+    expect(moving.motion).not.toEqual(initial.motion); expect(moving.poses).toEqual(initial.poses); expect(moving.stable && moving.buffersUnchanged).toBe(true); expect(moving.disposed).toBe(0);
+    expect(moving.motion.every((value: number[]) => value[3] === 1)).toBe(true);
+    expect((await rootAttachment(page)).every((plant: any) => plant.angle === 0)).toBe(true);
     await expectRootedPlants(page);
     await page.getByRole('button', { name: 'Inspect [F]', exact: true }).click();
     const inspected = await plantState(page); await advance(page, 7);
     expect(await plantState(page)).toEqual(inspected); await expectRootedPlants(page);
     await page.getByRole('button', { name: 'Return to dive', exact: true }).click(); await advance(page, 5);
-    expect((await plantState(page)).poses).not.toEqual(inspected.poses);
+    expect((await plantState(page)).motion).not.toEqual(inspected.motion);
     await page.getByRole('button', { name: 'Help / settings', exact: true }).click(); await page.getByLabel('Reduced motion', { exact: true }).check();
     await page.getByRole('button', { name: 'Resume dive', exact: true }).click(); await advance(page, 2);
     const reduced = await plantState(page); await advance(page, 8);
     expect(await plantState(page)).toEqual(reduced);
+    expect(reduced.motion.every((value: number[]) => value[3] === 0)).toBe(true);
     expect((await rootAttachment(page)).every((plant: any) => plant.angle === 0)).toBe(true); await expectRootedPlants(page);
     await page.getByRole('button', { name: 'Help / settings', exact: true }).click(); await page.getByLabel('Reduced motion', { exact: true }).uncheck();
     await page.getByRole('button', { name: 'Resume dive', exact: true }).click(); await advance(page, 5);
-    const resumed = await plantState(page); expect(resumed.poses).not.toEqual(reduced.poses); expect(resumed.stable && resumed.buffersUnchanged).toBe(true); expect(resumed.disposed).toBe(0);
+    const resumed = await plantState(page); expect(resumed.motion).not.toEqual(reduced.motion); expect(resumed.motion.every((value: number[]) => value[3] === 1)).toBe(true); expect(resumed.stable && resumed.buffersUnchanged).toBe(true); expect(resumed.disposed).toBe(0);
     await harness.unmount(page); expect(await harness.leakedAfterUnmount(page)).toEqual([]);
     expect(await page.evaluate(() => (window as any).__plantResources.filter((resource: any) => !resource.disposed))).toEqual([]);
   });

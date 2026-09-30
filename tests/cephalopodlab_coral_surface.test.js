@@ -2,11 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
+import assert from 'node:assert/strict';
 
 const require = createRequire(import.meta.url), THREE = require('../vendor/three-r128/three.min.js');
 const source = readFileSync('stem_lab/stem_tool_cephalopodlab.js', 'utf8').replace(/\r\n/g, '\n');
 function region(start, end) { const a = source.indexOf(start), b = source.indexOf(end, a);if (a < 0 || b <= a) throw new Error('Missing coral region: ' + start);return source.slice(a, b); }
-const helper = region('function shadeCLHuntCoralSurface(', 'function createCLHuntPlantGeometry(');
+const helper = region('function shadeCLHuntCoralSurface(', 'function shadeCLHuntPlantFlex(');
 const factory = region('function createReefCoralGeometry(height,index){', 'var coralColors =');
 const noRandom = Object.assign(Object.create(Math), { random() { throw new Error('Coral geometry consumed dive RNG'); } });
 const build = new Function('THREE', 'Math', factory + ';return createReefCoralGeometry;')(THREE, noRandom);
@@ -30,39 +31,42 @@ function construct(webgl2, supported) {
 }
 
 describe('Cephalopod Hunter coral surface', () => {
+  // This exhaustive fixture validates every ring/vertex across 54 geometries;
+  // allow CPU headroom while retaining all geometry and preservation assertions.
+  // Strict native assertions avoid matcher allocation in its dense vertex loops.
   it('preserves all original geometry and colors while adding finite branch coordinates with sealed cap detail', () => {
     const protectedData = [];let memory = 0, tips = 0;
     for (const height of [1, 1.75, 2.5]) for (let index = 0; index < 18; index++) {
       const geometry = build(height, index);
       try {
         const p = geometry.attributes.position, a = geometry.attributes.clCoralSurface;
-        expect(a.itemSize).toBe(4);expect(a.count).toBe(p.count);
-        expect(p.count).toBe([675, 711, 972][index % 3]);expect(geometry.index.count / 3).toBe([984, 1024, 1320][index % 3]);
-        expect(Array.from(a.array).every(Number.isFinite)).toBe(true);
+        assert.equal(a.itemSize, 4);assert.equal(a.count, p.count);
+        assert.equal(p.count, [675, 711, 972][index % 3]);assert.equal(geometry.index.count / 3, [984, 1024, 1320][index % 3]);
+        assert.equal(Array.from(a.array).every(Number.isFinite), true);
         for (let row = 0; row < a.count; row += 9) {
           const period = a.getW(row), v = a.getY(row), fade = a.getZ(row);
-          expect(Number.isInteger(period) && period >= 6 && period <= 29).toBe(true);
-          expect(v >= 0 && v < 319 && fade >= 0 && fade <= 1).toBe(true);
+          assert.equal(Number.isInteger(period) && period >= 6 && period <= 29, true);
+          assert.equal(v >= 0 && v < 319 && fade >= 0 && fade <= 1, true);
           for (let side = 0; side < 9; side++) {
-            expect(a.getX(row + side)).toBe(side / 8 * period);expect(a.getY(row + side)).toBe(v);expect(a.getZ(row + side)).toBe(fade);expect(a.getW(row + side)).toBe(period);
+            assert.equal(a.getX(row + side), side / 8 * period);assert.equal(a.getY(row + side), v);assert.equal(a.getZ(row + side), fade);assert.equal(a.getW(row + side), period);
           }
-          expect(new THREE.Vector3().fromBufferAttribute(p, row).distanceTo(new THREE.Vector3().fromBufferAttribute(p, row + 8))).toBeLessThan(1e-6);
+          assert.ok(new THREE.Vector3().fromBufferAttribute(p, row).distanceTo(new THREE.Vector3().fromBufferAttribute(p, row + 8)) < 1e-6);
           const diameter = new THREE.Vector3().fromBufferAttribute(p, row).distanceTo(new THREE.Vector3().fromBufferAttribute(p, row + 4));
           if (diameter < 1e-7) {
-            tips++;expect(fade).toBe(0);
+            tips++;assert.equal(fade, 0);
             // All three hemisphere rings are smooth, and the next branch begins with zero detail.
-            for (let offset = 0; offset < 3; offset++) expect(a.getZ(row - offset * 9)).toBe(0);
-            if (row + 9 < a.count) expect(a.getZ(row + 9)).toBe(0);
+            for (let offset = 0; offset < 3; offset++) assert.equal(a.getZ(row - offset * 9), 0);
+            if (row + 9 < a.count) assert.equal(a.getZ(row + 9), 0);
           }
         }
-        expect(a.getZ(0)).toBe(0);
+        assert.equal(a.getZ(0), 0);
         if (height === 1) memory += a.array.byteLength;
         protectedData.push({ height, index, position: Array.from(p.array), normal: Array.from(geometry.attributes.normal.array), color: Array.from(geometry.attributes.color.array), indices: Array.from(geometry.index.array) });
       } finally { geometry.dispose(); }
     }
-    expect(tips).toBeGreaterThan(500);expect(memory).toBe(226368);
-    expect(createHash('sha256').update(JSON.stringify(protectedData)).digest('hex')).toBe('3a0ba84fb12bc9f6654bf090a07905e793cf8b99983c9c4ea4185151efd32f2c');
-  });
+    assert.ok(tips > 500);assert.equal(memory, 226368);
+    assert.equal(createHash('sha256').update(JSON.stringify(protectedData)).digest('hex'), '3a0ba84fb12bc9f6654bf090a07905e793cf8b99983c9c4ea4185151efd32f2c');
+  }, 30000);
 
   it('keeps jittered pore cells bounded, continuous at cell edges and periodic only at the wrapped branch seam', () => {
     const f = scalarFunctions();let min = Infinity, max = -Infinity, maxSeamError = 0, finite = true;

@@ -70,10 +70,13 @@ function cupRows(animal) {
   return rows;
 }
 
+
+// Captured before pass-fifteen: exclude only the intentionally replaced shell subtree.
+function insideNautilusShell(o){for(let p=o;p;p=p.parent)if(p.name==='cl-shell')return true;return false;}
 function geometrySnapshot(animal) {
   const records = [];
   animal.root.traverse(object => {
-    if (!object.isMesh) return;
+    if (!object.isMesh || insideNautilusShell(object)) return;
     const geometry = object.geometry;
     records.push([object.name, Array.from(geometry.attributes.position.array), geometry.attributes.normal ? Array.from(geometry.attributes.normal.array) : null, geometry.index ? Array.from(geometry.index.array) : null, object.position.toArray(), object.quaternion.toArray(), object.scale.toArray(), object.isInstancedMesh ? Array.from(object.instanceMatrix.array) : null]);
   });
@@ -209,7 +212,7 @@ describe('Cephalopod squid arm and feeding-club detail', () => {
     }
   });
 
-  it('preserves all geometry outside the explicitly upgraded eye assemblies', () => {
+  it('preserves all geometry outside the explicitly upgraded eyes and nautilus shell', () => {
     // Pass-ten baselines with named eye exclusions for pass eleven's swimmers and pass thirteen's six benthic octopuses.
     // Each newly filtered body hash was captured before its eye patch was integrated.
     // Include index/normal buffers and instance matrices, not UUIDs or shaders.
@@ -225,7 +228,7 @@ describe('Cephalopod squid arm and feeding-club detail', () => {
       "mimicOcto": "2dc598544f08432585302351e17cb6c6ff9fe10551ee98b06fdc4dbb8537f9f8",
       "caribReef": "2dc598544f08432585302351e17cb6c6ff9fe10551ee98b06fdc4dbb8537f9f8",
       "coconutOcto": "2dc598544f08432585302351e17cb6c6ff9fe10551ee98b06fdc4dbb8537f9f8",
-      "nautilus": "a03c43f10854e182f47c19b852c5f09b318b2b774e901cfc077db48c8808855b"
+      "nautilus": "7619bccdd01f79cb2bb447e0726cd691e60b3865dd4e84a6e39069abdd67ae4c"
 };
     for (const [id, fingerprint] of Object.entries(baselines)) {
       const animal = rig(id);

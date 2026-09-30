@@ -11568,11 +11568,45 @@ function createCLHuntAnimal(T, species) {
   if(bobtail)bobtailGlow=ellipsoid('cl-photophore',0.25,0,-0.22,-0.15,1,0.2,1.5,new T.MeshBasicMaterial({color:0xc5eeff,transparent:true,opacity:0.4}));
   if(nautilus){
     nautilusShell=new T.Group();nautilusShell.name='cl-shell';root.add(nautilusShell);mantle.visible=false;
-    var shellGeo=new T.SphereGeometry(0.73,40,28);shellGeo.scale(0.42,1,1);
-    var shellMat=new T.MeshStandardMaterial({color:0xf1debc,roughness:0.42});
-    var shell=new T.Mesh(shellGeo,shellMat);shell.position.set(0,0.35,-0.30);nautilusShell.add(shell);
-    var stripeMat=new T.MeshStandardMaterial({color:0x9b6040,roughness:0.58});
-    for(var ns=0;ns<26;ns++){var curve=[];for(var ni=0;ni<=12;ni++){var phi=ni/12*Math.PI;var ang=ns/26*Math.PI*2;curve.push(new T.Vector3(Math.cos(phi)*0.31,0.35+Math.sin(phi)*Math.cos(ang)*0.734,-0.30+Math.sin(phi)*Math.sin(ang)*0.734));}nautilusShell.add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(curve),14,0.013,4,false),stripeMat));}
+    // The living chamber opens below and in front of the coiled shell. Its cut plane
+    // clears the existing head throughout the shell's small, unchanged rocking motion.
+    var shellAxisY=-0.7,shellAxisZ=Math.sqrt(0.51),shellCut=0.49,shellStart=Math.acos(shellCut),shellSegments=48;
+    function shellPoint(phi,angle,inside){
+      var circle=Math.sin(phi),nx=circle*Math.cos(angle),ny=shellAxisY*Math.cos(phi)+shellAxisZ*circle*Math.sin(angle),nz=shellAxisZ*Math.cos(phi)-shellAxisY*circle*Math.sin(angle);
+      var rho=Math.sqrt(ny*ny+nz*nz),turn=Math.atan2(nz,ny),whorl=0.18+0.10*(turn+Math.PI)/(Math.PI*2);
+      var dimple=1-0.25*Math.exp(-rho*rho/0.020),relief=0.018*Math.exp(-Math.pow((rho-whorl)/0.035,2))*Math.pow(Math.sin((turn+Math.PI)/2),2);
+      var x=0.338*nx*dimple-Math.sign(nx)*relief,y=0.73*ny,z=0.73*nz;
+      if(inside){x*=0.965;y=y*0.965-shellAxisY*0.016;z=z*0.965-shellAxisZ*0.016;}
+      return [x,0.35+y,-0.30+z];
+    }
+    function shellGeometry(rows,inside,lip){
+      var positions=[],indices=[],rowCount=lip?4:rows,stride=shellSegments+1;
+      for(var shellRow=0;shellRow<rowCount;shellRow++)for(var shellColumn=0;shellColumn<=shellSegments;shellColumn++){
+        var angle=shellColumn/shellSegments*Math.PI*2,phi=lip?shellStart:shellStart+(Math.PI-shellStart)*shellRow/rows,p=shellPoint(phi,angle,inside);
+        if(lip){var outer=shellPoint(phi,angle,false),inner=shellPoint(phi,angle,true),blend=shellRow/3;p=[outer[0]+(inner[0]-outer[0])*blend,outer[1]+(inner[1]-outer[1])*blend,outer[2]+(inner[2]-outer[2])*blend];}
+        positions.push(p[0],p[1],p[2]);
+      }
+      function shellFace(a,b,c){if(inside||lip)indices.push(a,c,b);else indices.push(a,b,c);}
+      for(var shellRow=0;shellRow<rowCount-1;shellRow++)for(var shellColumn=0;shellColumn<shellSegments;shellColumn++){var q=shellRow*stride+shellColumn,b=q+stride;shellFace(q,b,q+1);shellFace(q+1,b,b+1);}
+      if(!lip){var tip=shellPoint(Math.PI,0,inside),pole=positions.length/3;positions.push(tip[0],tip[1],tip[2]);for(var shellColumn=0;shellColumn<shellSegments;shellColumn++)shellFace((rowCount-1)*stride+shellColumn,pole,(rowCount-1)*stride+shellColumn+1);}
+      var geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setIndex(indices);geometry.computeVertexNormals();
+      // Average duplicated meridian normals so the fixed angular seam remains invisible.
+      var normals=geometry.attributes.normal;
+      for(var shellRow=0;shellRow<rowCount;shellRow++){var a=shellRow*stride,b=a+shellSegments,nx=normals.getX(a)+normals.getX(b),ny=normals.getY(a)+normals.getY(b),nz=normals.getZ(a)+normals.getZ(b),length=Math.hypot(nx,ny,nz);normals.setXYZ(a,nx/length,ny/length,nz/length);normals.setXYZ(b,nx/length,ny/length,nz/length);}
+      geometry.computeBoundingBox();geometry.computeBoundingSphere();return geometry;
+    }
+    var shellMat=new T.MeshStandardMaterial({color:0xe8dbc0,roughness:0.36,metalness:0});shellMat.name='cl-nautilus-shell-material';shellMat.color.convertSRGBToLinear();
+    shellMat.onBeforeCompile=function(shader,renderer){
+      shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 clShellPos;').replace('#include <begin_vertex>','#include <begin_vertex>\nclShellPos=position;');
+      shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 clShellPos;');
+      var shellDerivatives=!!(renderer&&renderer.capabilities&&(renderer.capabilities.isWebGL2||(renderer.extensions&&renderer.extensions.has('OES_standard_derivatives'))));
+      shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\nvec2 clShellRadial=vec2(clShellPos.y-0.35,clShellPos.z+0.30); float clShellRadius=length(clShellRadial)/0.73; float clShellAngle=clShellRadius>0.0001?atan(clShellRadial.y,clShellRadial.x):0.0; float clShellInset=1.0-clamp(clShellRadius,0.0,1.0); float clShellCurve=clShellInset*clShellInset*(2.1+1.35*sin(clShellAngle*3.0+0.65)); float clShellWave=cos(clShellAngle*14.0+sin(clShellAngle*3.0+0.5)*1.1+sin(clShellAngle*7.0)*0.23+clShellRadius*1.3+clShellCurve); '+(shellDerivatives?'float clShellAA=max(0.055,fwidth(clShellWave)*0.85);':'float clShellAA=0.10;')+' float clShellThreshold=0.10+sin(clShellAngle*5.0+clShellRadius*2.0)*0.14+clShellInset*0.18*sin(clShellAngle*3.0-clShellRadius*4.0+0.4); float clShellStart=0.16+0.14*(0.5+0.5*sin(clShellAngle*3.0+0.2))+0.10*(0.5+0.5*sin(clShellAngle*7.0-1.0)); float clShellBand=smoothstep(clShellThreshold-clShellAA,clShellThreshold+clShellAA,clShellWave)*smoothstep(clShellStart,clShellStart+0.18,clShellRadius); diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.225,0.075,0.027),clShellBand*0.86);');
+    };
+    shellMat.customProgramCacheKey=function(){return 'cl-nautilus-shell-v15';};
+    var shellInnerMat=new T.MeshStandardMaterial({color:0xb9a58b,roughness:0.49,metalness:0});shellInnerMat.name='cl-nautilus-shell-inner-material';shellInnerMat.color.convertSRGBToLinear();
+    var shell=new T.Mesh(shellGeometry(32,false,false),shellMat);shell.name='cl-shell-outer';nautilusShell.add(shell);
+    var shellLip=new T.Mesh(shellGeometry(0,false,true),shellInnerMat);shellLip.name='cl-shell-lip';nautilusShell.add(shellLip);
+    var shellInner=new T.Mesh(shellGeometry(16,true,false),shellInnerMat);shellInner.name='cl-shell-interior';nautilusShell.add(shellInner);
   }
   var passingCloudOverlay=cuttle?{material:{opacity:0}}:null;
   var tangent=new T.Vector3(),normal=new T.Vector3(),binormal=new T.Vector3(),up=new T.Vector3(0,1,0);
@@ -11928,6 +11962,42 @@ function createCLHuntFish(T,index){
           .replace('#include <color_fragment>','#include <color_fragment>\n'+sample)
           .replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=clCoralRoughness(roughnessFactor,clCoralField,clCoralAA);')
           .replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\n'+relief);
+      }
+
+      // Root-fixed decorative flex: existing simulation phases drive two bounded traveling waves.
+      // Correct object normals before Three applies the immutable instance and model transforms.
+      function shadeCLHuntPlantFlex(shader) {
+        shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\n'+[
+          'uniform vec4 clPlantMotion;',
+          'vec2 clPlantWave(float t,float phase,float travel,float amplitude){float angle=phase-travel*t;float s=sin(angle);float c=cos(angle);return vec2(amplitude*t*t*s,amplitude*(2.0*t*s-travel*t*t*c));}',
+        ].join('\n'));
+        shader.vertexShader=shader.vertexShader.replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\n'+[
+          'float clPlantT=clamp(position.y/max(clPlantMotion.z,0.001),0.0,1.0);',
+          'float clPlantInstancePhase=0.0;',
+          '#ifdef USE_INSTANCING',
+          'clPlantInstancePhase=dot(instanceMatrix[3].xz,vec2(7.1,11.3));',
+          '#endif',
+          'vec2 clPlantX=clPlantWave(clPlantT,clPlantMotion.x+clPlantInstancePhase,1.6,0.12);',
+          'vec2 clPlantZ=clPlantWave(clPlantT,clPlantMotion.y+clPlantInstancePhase*0.73,2.1,0.035);',
+          'vec3 clPlantOffset=vec3(clPlantX.x,0.0,clPlantZ.x)*clPlantMotion.z*clPlantMotion.w;',
+          'vec2 clPlantSlope=vec2(clPlantX.y,clPlantZ.y)*clPlantMotion.w;',
+          'objectNormal.y-=dot(clPlantSlope,objectNormal.xz);',
+        ].join('\n'));
+        shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed+=clPlantOffset;');
+      }
+      function createCLHuntPlantFlex(THREE,mesh,height) {
+        var motion={value:new THREE.Vector4(0,0,height,0)};
+        mesh.material.onBeforeCompile=function(shader){shader.uniforms.clPlantMotion=motion;shadeCLHuntPlantFlex(shader);};
+        mesh.material.customProgramCacheKey=function(){return 'cl-plant-flex-v15';};
+        // Grass already disables frustum culling for its distributed instances. Kelp needs
+        // a conservative static box/sphere enclosing every possible shader bend.
+        if(mesh.frustumCulled){var box=mesh.geometry.boundingBox;box.min.x-=height*0.12;box.max.x+=height*0.12;box.min.z-=height*0.035;box.max.z+=height*0.035;box.getBoundingSphere(mesh.geometry.boundingSphere);}
+        return motion;
+      }
+      function updateCLHuntPlantFlex(motion,now,phase,rate,reducedMotion) {
+        if(reducedMotion){motion.value.w=0;return;}
+        var turn=Math.PI*2,clock=now*rate;
+        motion.value.x=(clock+phase)%turn;motion.value.y=(clock*0.79+phase*1.17)%turn;motion.value.w=1;
       }
 
       // Static tapered ribbons: three columns give each blade a shallow folded center vein.
@@ -12383,6 +12453,7 @@ function createCLHuntFish(T,index){
           gmesh.userData.substrateRadius = 0.6;
           scene.add(gmesh);
           grass.push({ mesh: gmesh, phase: Math.random() * Math.PI * 2 });
+          grass[grass.length-1].flex=createCLHuntPlantFlex(THREE,gmesh,gH);
         }
 
         // Terrain-conforming caustics: seamless cellular light, anchored to the same world tile.
@@ -13256,6 +13327,7 @@ function createCLHuntFish(T,index){
           kmesh.userData.substrateRadius = 1.4;
           scene.add(kmesh);
           kelpStrands.push({ mesh: kmesh, phase: Math.random() * Math.PI * 2, baseHeight: kH });
+          kelpStrands[kelpStrands.length-1].flex=createCLHuntPlantFlex(THREE,kmesh,kH);
         }
 
         // ─── Hydrothermal vent (deep zone only — visual landmark) ───
@@ -15404,7 +15476,7 @@ function createCLHuntFish(T,index){
 
             // ─── Kelp + hydrothermal vent animation ────────────────
             kelpStrands.forEach(function(k) {
-              k.mesh.rotation.z = gameState.a11y.reducedMotion?0:Math.sin(now * 0.0008 + k.phase) * 0.12;
+              updateCLHuntPlantFlex(k.flex,now,k.phase,0.0008,gameState.a11y.reducedMotion);
             });
             // Vent plume rises (texture offset would be ideal but cheap rotate)
             ventPlume.rotation.y += dt * 0.3;
@@ -15500,7 +15572,7 @@ function createCLHuntFish(T,index){
 
             // ─── Sea grass swaying ───
             grass.forEach(function(g) {
-              g.mesh.rotation.z = gameState.a11y.reducedMotion?0:Math.sin(now * 0.001 + g.phase) * 0.12;
+              updateCLHuntPlantFlex(g.flex,now,g.phase,0.001,gameState.a11y.reducedMotion);
             });
 
             // ─── Floor + caustics follow the player ───
