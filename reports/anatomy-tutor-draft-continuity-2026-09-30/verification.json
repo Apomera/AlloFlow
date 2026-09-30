@@ -1,0 +1,153 @@
+{
+  "uniqueUnitChecks": 495,
+  "uniqueUnitSuites": 10,
+  "initialUnitChecks": 495,
+  "finalTargetedChecks": 495,
+  "lastUnitReport": "final-unit-results.json",
+  "lastUnitRunChecks": 495,
+  "unitResultsMergedBy": "fullName",
+  "allEffectiveUnitChecksPassed": true,
+  "unitRuns": [
+    {
+      "file": "final-unit-results.json",
+      "assertions": 495,
+      "passed": 495,
+      "failed": 0
+    }
+  ],
+  "requiredUnitCounts": {
+    "anatomy_tutor_draft_continuity.test.js": 106
+  },
+  "browserScenarios": 1,
+  "browserValidation": [
+    {
+      "file": "tutor-draft-browser-validation.json",
+      "label": "Tutor draft continuity",
+      "scans": 15,
+      "violations": 0,
+      "measurements": [
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "tutor-draft-browser-validation.json.tutor.scans[0].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "tutor-draft-browser-validation.json.tutor.scans[1].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "tutor-draft-browser-validation.json.tutor.scans[2].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "tutor-draft-browser-validation.json.tutor.scans[3].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "tutor-draft-browser-validation.json.tutor.scans[4].dimensions"
+        },
+        {
+          "width": 390,
+          "scroll": 390,
+          "location": "tutor-draft-browser-validation.json.tutor.scans[5].dimensions"
+        },
+        {
+          "width": 768,
+          "scroll": 768,
+          "location": "tutor-draft-browser-validation.json.tutor.scans[6].dimensions"
+        },
+        {
+          "width": 768,
+          "scroll": 768,
+          "location": "tutor-draft-browser-validation.json.tutor.scans[7].dimensions"
+        },
+        {
+          "width": 768,
+          "scroll": 768,
+          "location": "tutor-draft-browser-validation.json.tutor.scans[8].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "tutor-draft-browser-validation.json.tutor.scans[9].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "tutor-draft-browser-validation.json.tutor.scans[10].dimensions"
+        },
+        {
+          "width": 1440,
+          "scroll": 1440,
+          "location": "tutor-draft-browser-validation.json.tutor.scans[11].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "tutor-draft-browser-validation.json.tutor.scans[12].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "tutor-draft-browser-validation.json.tutor.scans[13].dimensions"
+        },
+        {
+          "width": 320,
+          "scroll": 320,
+          "location": "tutor-draft-browser-validation.json.tutor.scans[14].dimensions"
+        }
+      ],
+      "errorArraysChecked": 1
+    }
+  ],
+  "accessibilityScans": 15,
+  "accessibilityViolations": 0,
+  "browserErrors": [],
+  "sourceSha256": "c5a242298c88924c8524501278584d6f99f5bc419e44793cf7268479a9df4ef0",
+  "sourceHashLineEndings": "LF",
+  "sourceMirrorsMatch": true,
+  "canonicalSyntaxCheckPassed": true,
+  "localeCandidateMirrorsMatch": true,
+  "localeLabelsPerPack": 25,
+  "localeKeys": [
+    "study_ref_all_collections",
+    "study_ref_collection",
+    "study_ref_counts_help",
+    "study_ref_due_help",
+    "study_ref_evidence_help",
+    "study_ref_export_due",
+    "study_ref_export_title",
+    "study_ref_filter_empty",
+    "study_ref_guide_title",
+    "study_ref_notes",
+    "study_ref_rated_days",
+    "study_ref_reset",
+    "study_ref_results",
+    "study_ref_review_collection",
+    "study_ref_saved_work",
+    "study_ref_schedule_help",
+    "study_ref_shared_help",
+    "study_ref_undated",
+    "study_ref_viewed",
+    "tutor_draft_clear",
+    "tutor_draft_context",
+    "tutor_draft_context_help",
+    "tutor_draft_current",
+    "tutor_draft_kept",
+    "tutor_draft_reused"
+  ],
+  "localeCandidateHashes": {
+    "french": "acd207c96141b4d0f6c63ba04e42ef859e1a30082799c15a0049bf1355a46dfe",
+    "spanish_latin_america": "5d1d46e9d1cf21a91429433b3d6adc9e7ffec85c0b6796b2deeb87926bce988d",
+    "arabic": "dbeab4679bc6d347765ada65cf0ef568fb503348d7036dcf425900dbafe91b26"
+  },
+  "requiredCommitExtraTests": [
+    "tests/anatomy_lab_science.test.js",
+    "tests/anatomy_study_localization.test.js"
+  ]
+}

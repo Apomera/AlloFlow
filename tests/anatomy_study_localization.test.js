@@ -42,7 +42,7 @@ describe('Anatomy study localization', () => {
       expect(s.html().querySelector('[data-anatomy-study-controls]').textContent).toContain(dictionary.body_system);
       expect(s.html().querySelector('[data-anatomy-study-controls-toggle]').textContent).toBe(dictionary.more_study_controls);
       s.click(dictionary.flashcard_due + ' (1)');
-      const card = s.html().querySelector('[data-anatomy-recall-card]'); const name = card.querySelector('h3').textContent;
+      const card = s.html().querySelector('[data-anatomy-recall-card]'); const name = card.querySelector('h5').textContent;
       const fields = { current: 1, total: 1, name };
       expect(card.getAttribute('aria-label')).toBe(format(dictionary.flashcard_group, fields));
       expect(s.announcements.at(-1)).toBe(format(dictionary.flashcard_announcement, fields) + dictionary.answer_hidden);

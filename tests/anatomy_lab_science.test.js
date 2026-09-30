@@ -451,8 +451,10 @@ describe('Anatomy Lab AI Tutor resilience', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain('if (!tutorRequest(token)) return;');
     expect(source).toContain('Promise.resolve(request).then(function(resp)');
-    expect(source).toContain("updMulti({ _aiMessages: newMsgs, _aiLoading: true, _aiInput: '', _aiQuestions: newAiQ, _aiRequestToken:requestToken, _aiConversationBand:gradeBand })");
-    expect(source).toContain("function clearTutorConversation(){releaseTutorRequest(d._aiRequestToken);");
+    expect(source).toContain("_aiMessages: newMsgs, _aiLoading: true, _aiInput: '', _aiDraftContext: null");
+    expect(source).toContain('_aiQuestions: safeNonNegativeNumber(state._aiQuestions, 0, true) + 1');
+    expect(source).toContain('function clearTutorConversation(after)');
+    expect(source).toContain('releaseTutorRequest(tutorRequestTokenOf(d));');
     expect(source).not.toContain("upd('_aiLoading', true)");
   });
 });
