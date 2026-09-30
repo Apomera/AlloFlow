@@ -571,6 +571,62 @@
       reference: reference ? { small: inquirySnapshot(reference.small), big: inquirySnapshot(reference.big) } : null };
   }
 
+  var DRAWING_UNITS = { mm: 1, cm: 10, m: 1000, in: 25.4 }, DRAWING_WIDTH = 180;
+  function validDrawingSize(value, unit) {
+    if (typeof unit !== 'string' || !Object.prototype.hasOwnProperty.call(DRAWING_UNITS, unit) || (typeof value !== 'number' && typeof value !== 'string')) return null;
+    if (typeof value === 'string' && !/^\+?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(value.trim())) return null;
+    var mm = Number(value) * DRAWING_UNITS[unit];
+    return isFinite(mm) && mm >= 1e-6 && mm <= 1e6 ? mm : null;
+  }
+  function drawingModel(reference, target, value, unit) {
+    var mm = validDrawingSize(value, unit);
+    if (mm === null || !reference || !target || typeof reference.size !== 'number' || typeof target.size !== 'number' || !(reference.size > 0) || !(target.size > 0) || !isFinite(reference.size) || !isFinite(target.size)) return null;
+    var ratio = target.size / reference.size, targetMM = mm * ratio, scale = mm / 1000 / reference.size;
+    if (!(targetMM > 0) || !isFinite(targetMM) || !(scale > 0) || !isFinite(scale)) return null;
+    return { reference: reference, target: target, referenceMM: mm, targetMM: targetMM, scale: scale, ratio: ratio };
+  }
+  function drawingSpan(mm) { return { length: Math.min(DRAWING_WIDTH, mm), offPage: mm > DRAWING_WIDTH, unresolved: mm < .5 }; }
+  function readDrawing(raw, completed) {
+    var valid = raw && typeof raw === 'object' && !Array.isArray(raw);
+    var reference = valid ? inquiryMeasurement(raw.reference) : null, target = valid ? inquiryMeasurement(raw.target) : null;
+    if (completed && (!reference || !target || validDrawingSize(raw.size, raw.unit) === null)) return null;
+    var size = valid && (typeof raw.size === 'number' || typeof raw.size === 'string') ? String(raw.size).slice(0, 70) : '10';
+    var unit = valid && typeof raw.unit === 'string' && Object.prototype.hasOwnProperty.call(DRAWING_UNITS, raw.unit) ? raw.unit : 'cm';
+    return { reference: inquirySnapshot(reference || inquiryMeasurement({ id: 'earth' })), target: inquirySnapshot(target || inquiryMeasurement({ id: 'moon' })),
+      size: size, unit: unit, note: valid && typeof raw.note === 'string' ? raw.note.slice(0, NOTE_LIMIT) : '' };
+  }
+  function drawingXml(text) {
+    return String(text || '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\uFFFE\uFFFF]/g, '').replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[c]; });
+  }
+  // A physical 210 mm sheet. All dimension coordinates are millimetres;
+  // clipping marks the page edge without changing the chosen model scale.
+  function drawingSvg(model, labels) {
+    if (!model) return '';
+    var description = [labels.description, labels.scale, labels.names[0] + ': ' + labels.real[0] + ' → ' + labels.mapped[0], labels.names[1] + ': ' + labels.real[1] + ' → ' + labels.mapped[1], labels.calibration, labels.print, labels.scope].join(' ');
+    var lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="145mm" viewBox="0 0 210 145" role="img" aria-labelledby="drawing-title" aria-describedby="drawing-description">',
+      '<title id="drawing-title">' + drawingXml(labels.title) + '</title><desc id="drawing-description">' + drawingXml(description) + '</desc>',
+      '<rect width="210" height="145" fill="white"/><g font-family="sans-serif" fill="#172033">'];
+    function text(x, y, value, size) { lines.push('<text x="' + x + '" y="' + y + '" font-size="' + size + '">' + drawingXml(value) + '</text>'); }
+    function wrapped(value, y, size, max) {
+      var remaining = String(value), row = 0;
+      while (remaining && row < 5) { var cut = remaining.length <= max ? remaining.length : remaining.lastIndexOf(' ', max); if (cut < max / 2) cut = Math.min(max, remaining.length); text(15, y + row * 4, remaining.slice(0, cut), size); remaining = remaining.slice(cut).trim(); row++; }
+    }
+    text(15, 12, labels.title, 5); wrapped(labels.scale, 21, 3.2, 95);
+    [model.referenceMM, model.targetMM].forEach(function (mm, index) {
+      var item = index === 0 ? model.reference : model.target, span = drawingSpan(mm), y = index === 0 ? 50 : 84, end = 15 + span.length;
+      wrapped((index + 1) + '. ' + labels.names[index] + ' · ' + labels.real[index], y - 14, 3.5, 82);
+      lines.push('<g stroke="' + (index === 0 ? '#146675' : '#92541b') + '" stroke-width=".55" fill="none">',
+        '<line data-drawing-measure="' + index + '" data-model-mm="' + mm + '" transform="translate(15 0)" x1="0" y1="' + y + '" x2="' + span.length + '" y2="' + y + '"' + (item.dim === 'distance' ? ' stroke-dasharray="2 2"' : '') + '/>',
+        '<path d="M15 ' + (y - 2) + 'v4' + (span.offPage ? '' : 'M' + end + ' ' + (y - 2) + 'v4') + '"/>');
+      if (span.offPage) lines.push('<path data-drawing-off-page="' + index + '" d="M192 ' + (y - 2) + 'l4 2-4 2"/>');
+      if (span.unresolved) lines.push('<path data-drawing-locator="' + index + '" stroke-dasharray=".5 .5" d="M13 ' + y + 'h4m-2 -2v4"/>');
+      lines.push('</g>'); wrapped(labels.mapped[index] + (span.offPage ? ' · ' + labels.offPage : ''), y + 7, 3.5, 88);
+    });
+    lines.push('<path data-drawing-calibration="10" d="M15 103v4m0-2h10m0-2v4" fill="none" stroke="#172033" stroke-width=".4"/>');
+    text(30, 106, labels.calibration, 3.5); wrapped(labels.print, 116, 3.2, 94); wrapped(labels.scope, 129, 3, 98);
+    lines.push('</g></svg>'); return lines.join('\n');
+  }
+
   var INQUIRY_LIMIT = 12, ESTIMATE_MAX = 45;
   var INQUIRY_THEMES = [
     { id: 'home', small: 'human', big: 'earth', title: 'From human scale to Earth',
@@ -1572,6 +1628,13 @@
         updateSlice(function (cur) { cur.scalingDraft = { factor: scalingFactor, reflection: scalingReflection, reference: scalingReference }; });
       }, [scalingFactor, scalingReflection, scalingReference]);
 
+      var _drawingDraft = React.useState(function () { return readDrawing(slice.drawingDraft, false); }); var drawingDraft = _drawingDraft[0], setDrawingDraft = _drawingDraft[1];
+      var _drawingRecord = React.useState(function () { return readDrawing(slice.drawingRecord, true); }); var drawingRecord = _drawingRecord[0], setDrawingRecord = _drawingRecord[1];
+      var _drawingMessage = React.useState(''); var drawingMessage = _drawingMessage[0], setDrawingMessage = _drawingMessage[1];
+      var drawingPanelRef = React.useRef(null);
+      var drawing = drawingModel(inquiryMeasurement(drawingDraft.reference), inquiryMeasurement(drawingDraft.target), drawingDraft.size, drawingDraft.unit);
+      React.useEffect(function () { updateSlice(function (cur) { cur.drawingDraft = drawingDraft; }); }, [drawingDraft]);
+
       var canvasRef = React.useRef(null);
       var atlasCanvasRef = React.useRef(null);
       var markerLayerRef = React.useRef(null);
@@ -1726,20 +1789,33 @@
           if (scalingRecord.reflection) lines.push(S('atlas_scaling_reflection_record', 'My model explanation: {text}', { text: scalingRecord.reflection }));
           lines.push('');
         }
+        if (drawingRecord) {
+          var physical = drawingModel(inquiryMeasurement(drawingRecord.reference), inquiryMeasurement(drawingRecord.target), drawingRecord.size, drawingRecord.unit);
+          lines.push(S('atlas_drawing_export_title', 'Scale Explorer · scale drawing'), drawingScaleLine(physical), drawingScope());
+          [physical.reference, physical.target].forEach(function (item, index) {
+            var mm = index === 0 ? physical.referenceMM : physical.targetMM;
+            lines.push(itemText(item, 'name') + ': ' + drawingReal(item) + ' → ' + drawingPhysical(mm));
+            if (drawingSpan(mm).offPage) lines.push(S('atlas_drawing_off_page', 'Continues beyond the page'));
+          });
+          if (drawingRecord.note) lines.push(S('atlas_drawing_note_record', 'My drawing plan: {text}', { text: drawingRecord.note }));
+          lines.push(S('atlas_drawing_print', 'Print at 100% scale. Check the 10 mm ruler with a real ruler; fit-to-page printing changes the dimensions.'), '');
+        }
         var url, anchor;
         try {
           url = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' }));
           anchor = document.createElement('a'); anchor.href = url; anchor.download = 'scale-explorer-notebook.txt';
           document.body.appendChild(anchor); anchor.click();
-          var downloaded = investigations.length || scalingRecord ? S('atlas_inquiry_downloaded', 'Saved notebook evidence downloaded.') : S('atlas_notebook_downloaded', 'Saved observations downloaded.');
+          var downloaded = investigations.length || scalingRecord || drawingRecord ? S('atlas_inquiry_downloaded', 'Saved notebook evidence downloaded.') : S('atlas_notebook_downloaded', 'Saved observations downloaded.');
           setNotebookMessage(downloaded);
           if (investigations.length) setInquiryMessage(downloaded);
           if (scalingRecord) setScalingMessage(downloaded);
+          if (drawingRecord) setDrawingMessage(downloaded);
         } catch (_) {
-          var failed = investigations.length || scalingRecord ? S('atlas_inquiry_download_failed', 'The download could not start here. Your saved work is still in the notebook.') : S('atlas_notebook_download_failed', 'The download could not start here. Your saved observations are still in the notebook.');
+          var failed = investigations.length || scalingRecord || drawingRecord ? S('atlas_inquiry_download_failed', 'The download could not start here. Your saved work is still in the notebook.') : S('atlas_notebook_download_failed', 'The download could not start here. Your saved observations are still in the notebook.');
           setNotebookMessage(failed);
           if (investigations.length) setInquiryMessage(failed);
           if (scalingRecord) setScalingMessage(failed);
+          if (drawingRecord) setDrawingMessage(failed);
         }
         finally { if (anchor) anchor.remove(); if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000); }
       }
@@ -2555,6 +2631,117 @@
             h('button', { type: 'button', style: btn, disabled: !scalingRecord, onClick: downloadObservations }, S('atlas_scaling_download', 'Download model notes')),
             h('p', { role: 'status', style: { margin: 0, minHeight: '1.5em', fontSize: '.75rem' } }, scalingMessage)));
       }
+      function editDrawing(changes) {
+        setDrawingDraft(function (prev) { return Object.assign({}, prev, changes); }); setDrawingMessage('');
+      }
+      function changeDrawingUnit(unit) {
+        var mm = validDrawingSize(drawingDraft.size, drawingDraft.unit);
+        editDrawing({ unit: unit, size: mm === null ? drawingDraft.size : String(mm / DRAWING_UNITS[unit]) });
+      }
+      function useDrawingComparison() {
+        if (compare) editDrawing({ reference: inquirySnapshot(compare.a), target: inquirySnapshot(compare.b) });
+      }
+      function fitDrawing() {
+        var a = inquiryMeasurement(drawingDraft.reference), b = inquiryMeasurement(drawingDraft.target);
+        editDrawing({ reference: inquirySnapshot(a.size >= b.size ? a : b), target: inquirySnapshot(a.size >= b.size ? b : a), size: '16', unit: 'cm' });
+        setDrawingMessage(S('atlas_drawing_fitted', 'The larger measurement is now the 16 cm reference. Both dimensions fit on the drawing.'));
+      }
+      function openDrawingWorkshop() {
+        if (!drawingPanelRef.current) return;
+        drawingPanelRef.current.open = true; var summary = drawingPanelRef.current.querySelector('summary'); summary.scrollIntoView({ block: 'nearest' }); summary.focus();
+      }
+      function saveDrawing() {
+        if (!drawing) return;
+        var record = readDrawing(Object.assign({}, drawingDraft, { note: drawingDraft.note.trim() }), true);
+        setDrawingRecord(record); updateSlice(function (cur) { cur.drawingRecord = record; });
+        setDrawingMessage(S('atlas_drawing_saved', 'Drawing plan saved in the notebook.'));
+      }
+      function restoreDrawing() {
+        if (!drawingRecord) return;
+        setDrawingDraft(drawingRecord); openDrawingWorkshop(); setDrawingMessage(S('atlas_drawing_restored', 'Returned to the saved drawing plan and measurements.'));
+      }
+      function removeDrawing() {
+        setDrawingRecord(null); updateSlice(function (cur) { delete cur.drawingRecord; }); openDrawingWorkshop();
+        setDrawingMessage(S('atlas_drawing_removed', 'Saved drawing removed. Your current draft is still here.'));
+      }
+      function drawingScaleLine(model) {
+        return S('atlas_drawing_scale', 'Model length = real length × {factor}. One model centimetre represents {real}.', { factor: scalingValue(model.scale), real: S('atlas_drawing_metres', '{n} m', { n: scalingValue(.01 / model.scale) }) });
+      }
+      function drawingPhysical(mm) { return S('atlas_drawing_mm', '{n} mm', { n: scalingValue(mm) }); }
+      function drawingReal(item) { return S('atlas_drawing_metres', '{n} m', { n: scalingValue(item.size) }) + ' · ' + S('dim_' + item.dim.replace(/\s+/g, '_'), item.dim); }
+      function drawingScope() { return S('atlas_drawing_scope', 'Each line represents its stated dimension. Dashed dimension lines are distances, not object diameters. This compares lengths; it does not map positions, areas or volumes.'); }
+      function downloadDrawingSvg() {
+        if (!drawingRecord) return;
+        var model = drawingModel(inquiryMeasurement(drawingRecord.reference), inquiryMeasurement(drawingRecord.target), drawingRecord.size, drawingRecord.unit), url, anchor;
+        try {
+          var svg = drawingSvg(model, { title: S('atlas_drawing_export_title', 'Scale Explorer · scale drawing'), description: drawingScope() + ' ' + drawingRecord.note,
+            scale: drawingScaleLine(model), names: [itemText(model.reference, 'name'), itemText(model.target, 'name')], real: [drawingReal(model.reference), drawingReal(model.target)],
+            mapped: [drawingPhysical(model.referenceMM), drawingPhysical(model.targetMM)], offPage: S('atlas_drawing_off_page', 'Continues beyond the page'),
+            calibration: S('atlas_drawing_calibration', '10 mm calibration ruler'), print: S('atlas_drawing_print', 'Print at 100% scale. Check the 10 mm ruler with a real ruler; fit-to-page printing changes the dimensions.'),
+            scope: drawingScope() + ' ' + S('atlas_drawing_locator_note', 'Dashed locators mark dimensions below 0.5 mm without enlarging them.') });
+          url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }));
+          anchor = document.createElement('a'); anchor.href = url; anchor.download = 'scale-explorer-drawing.svg'; document.body.appendChild(anchor); anchor.click();
+          setDrawingMessage(S('atlas_drawing_downloaded', 'Saved drawing downloaded. Print at 100% scale and check its calibration ruler.'));
+        } catch (_) { setDrawingMessage(S('atlas_drawing_download_failed', 'The drawing download could not start here. Your saved plan is still in the notebook.')); }
+        finally { if (anchor) anchor.remove(); if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000); }
+      }
+      function drawingPreview(model) {
+        var marks = [];
+        [model.referenceMM, model.targetMM].forEach(function (mm, index) {
+          var item = index === 0 ? model.reference : model.target, span = drawingSpan(mm), y = 30 + index * 40, end = 15 + span.length, color = index === 0 ? '#9ee4da' : '#e3c698';
+          marks.push(h('text', { key: 'number' + index, x: 4, y: y + 3, fontSize: 10, fill: color }, index + 1));
+          marks.push(h('line', { key: 'line' + index, 'data-drawing-measure': index, 'data-model-mm': mm, transform: 'translate(15 0)', x1: 0, y1: y, x2: span.length, y2: y, stroke: color, strokeWidth: 1, strokeDasharray: item.dim === 'distance' ? '2 2' : undefined }));
+          marks.push(h('path', { key: 'ticks' + index, d: 'M15 ' + (y - 3) + 'v6' + (span.offPage ? '' : 'M' + end + ' ' + (y - 3) + 'v6'), stroke: color, strokeWidth: 1, fill: 'none' }));
+          if (span.offPage) marks.push(h('path', { key: 'off' + index, 'data-drawing-off-page': index, d: 'M192 ' + (y - 3) + 'l4 3-4 3', stroke: color, strokeWidth: 1, fill: 'none' }));
+          if (span.unresolved) marks.push(h('path', { key: 'tiny' + index, 'data-drawing-locator': index, d: 'M12 ' + y + 'h6m-3 -3v6', stroke: color, strokeDasharray: '1 1', strokeWidth: .7, fill: 'none' }));
+        });
+        marks.push(h('path', { key: 'calibration', 'data-drawing-calibration': 10, d: 'M15 92v6m0-3h10m0-3v6', stroke: '#cbd5e1', strokeWidth: .7, fill: 'none' }));
+        marks.push(h('text', { key: 'ruler-label', x: 32, y: 98, fontSize: 10, fill: '#cbd5e1' }, drawingPhysical(10)));
+        return h('svg', { className: 'sx-drawing-preview', viewBox: '0 0 210 108', role: 'img', 'aria-label': S('atlas_drawing_preview_aria', 'Drawing dimensions: {first}, {second}. Preview at a shared scale; the downloaded SVG carries physical millimetre dimensions.', { first: drawingPhysical(model.referenceMM), second: drawingPhysical(model.targetMM) }),
+          style: { display: 'block', width: '100%', height: 'auto', background: '#0f172a', borderRadius: 8 } }, marks);
+      }
+      function drawingWorkshop() {
+        var model = drawing, saved = drawingRecord && drawingModel(inquiryMeasurement(drawingRecord.reference), inquiryMeasurement(drawingRecord.target), drawingRecord.size, drawingRecord.unit);
+        return h('details', { className: 'sx-drawing-workshop', ref: drawingPanelRef },
+          h('summary', { style: { padding: '10px 0', cursor: 'pointer', fontSize: '.8125rem', fontWeight: 700 } }, S('atlas_drawing_title', 'Make a scale drawing')),
+          h('div', { style: Object.assign({}, card, { display: 'flex', flexDirection: 'column', gap: 10, overflowWrap: 'anywhere' }) },
+            h('p', { style: { margin: 0, fontSize: '.75rem', lineHeight: 1.5 } }, S('atlas_drawing_intro', 'Choose a physical size for one reference. Give the second measurement the same model scale, then plan a drawing you can print and measure.')),
+            [[S('atlas_drawing_reference', 'Drawing reference'), 'reference'], [S('atlas_drawing_target', 'Second drawing measurement'), 'target']].map(function (field) {
+              return h('label', { key: field[1], style: { fontSize: '.75rem' } }, field[0], h('select', { value: drawingDraft[field[1]].id, style: Object.assign({}, sel, { width: '100%', marginTop: 4 }),
+                onChange: function (event) { var change = {}; change[field[1]] = inquirySnapshot(byId[event.target.value]); editDrawing(change); } }, itemOptions()));
+            }),
+            h('label', { style: { fontSize: '.75rem' } }, S('atlas_drawing_size', 'Reference size in the drawing'),
+              h('input', { type: 'number', step: 'any', value: drawingDraft.size, 'aria-invalid': !model ? 'true' : undefined, 'aria-describedby': descId + '-drawing-help',
+                onChange: function (event) { editDrawing({ size: event.target.value }); }, style: Object.assign({}, sel, { width: '100%', marginTop: 4 }) })),
+            h('label', { style: { fontSize: '.75rem' } }, S('atlas_drawing_unit', 'Drawing size unit'), h('select', { value: drawingDraft.unit, onChange: function (event) { changeDrawingUnit(event.target.value); }, style: Object.assign({}, sel, { width: '100%', marginTop: 4 }) },
+              [['mm', S('atlas_drawing_unit_mm', 'Millimetres')], ['cm', S('atlas_drawing_unit_cm', 'Centimetres')], ['m', S('atlas_drawing_unit_m', 'Metres')], ['in', S('atlas_drawing_unit_in', 'Inches')]].map(function (unit) { return h('option', { key: unit[0], value: unit[0] }, unit[1]); }))),
+            h('p', { id: descId + '-drawing-help', style: { margin: 0, fontSize: '.6875rem', lineHeight: 1.5, color: model ? P.dim : P.warn } }, S('atlas_drawing_help', 'Enter a positive size from 10⁻⁶ to 10⁶ mm, using the chosen unit. Changing units keeps the physical size. Measurements are captured when selected; use the current comparison again after changing your height.')),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 6 } },
+              h('button', { type: 'button', style: btn, disabled: !compare, onClick: useDrawingComparison }, S('atlas_drawing_use_pair', 'Use current comparison')),
+              h('button', { type: 'button', style: btn, onClick: function () { editDrawing({ reference: drawingDraft.target, target: drawingDraft.reference }); } }, S('atlas_drawing_swap', 'Swap measurements')),
+              h('button', { type: 'button', style: Object.assign({}, btn, { gridColumn: '1 / -1' }), onClick: fitDrawing }, S('atlas_drawing_fit', 'Fit both on the drawing'))),
+            model ? h('div', { className: 'sx-drawing-results', 'data-drawing-scale': model.scale },
+              h('p', { style: { margin: '0 0 10px', fontSize: '.75rem', lineHeight: 1.5 } }, drawingScaleLine(model)), drawingPreview(model),
+              h('p', { style: { fontSize: '.6875rem', lineHeight: 1.5, color: P.dim } }, S('atlas_drawing_page', 'The drawing has 180 mm of usable width. Arrows mean a dimension continues beyond the page. Dashed locators mark dimensions below 0.5 mm without enlarging them. Drawing labels use three significant figures.')),
+              h('table', { className: 'sx-drawing-table', style: { width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: '.75rem', lineHeight: 1.5 } },
+                h('caption', { style: { textAlign: 'left', marginBottom: 6 } }, S('atlas_drawing_table', 'The two measurements at one physical model scale')),
+                h('thead', null, h('tr', null, [S('atlas_drawing_measurement', 'Measurement'), S('atlas_drawing_real', 'Real dimension'), S('atlas_drawing_model', 'Drawing dimension')].map(function (label, i) { return h('th', { key: i, scope: 'col', style: { textAlign: 'left', padding: 3, width: i === 0 ? '38%' : '31%' } }, label); }))),
+                h('tbody', null, [model.reference, model.target].map(function (item, i) { var mm = i === 0 ? model.referenceMM : model.targetMM;
+                  return h('tr', { key: i }, h('th', { scope: 'row', style: { textAlign: 'left', fontWeight: 400, padding: '8px 3px', borderTop: '1px solid ' + P.line } }, (i + 1) + '. ' + itemText(item, 'name')),
+                    h('td', { style: { padding: '8px 3px', borderTop: '1px solid ' + P.line } }, drawingReal(item)), h('td', { style: { padding: '8px 3px', borderTop: '1px solid ' + P.line } }, drawingPhysical(mm), drawingSpan(mm).offPage ? h('span', { style: { display: 'block', color: P.warn } }, S('atlas_drawing_off_page', 'Continues beyond the page')) : null)); }))),
+              h('p', { style: { fontSize: '.6875rem', lineHeight: 1.5, color: P.dim } }, drawingScope())) : null,
+            h('label', { style: { fontSize: '.75rem' } }, S('atlas_drawing_note', 'My drawing plan'), h('textarea', { value: drawingDraft.note, rows: 3, maxLength: NOTE_LIMIT,
+              onChange: function (event) { editDrawing({ note: event.target.value.slice(0, NOTE_LIMIT) }); }, style: Object.assign({}, sel, { display: 'block', width: '100%', marginTop: 4, resize: 'vertical', minHeight: 76, font: 'inherit' }) })),
+            h('button', { type: 'button', style: goBtn, disabled: !model, onClick: saveDrawing }, drawingRecord ? S('atlas_drawing_update', 'Update drawing plan') : S('atlas_drawing_save', 'Save drawing plan')),
+            saved ? h('div', { className: 'sx-drawing-saved', style: { fontSize: '.75rem', lineHeight: 1.5 } },
+              h('p', null, S('atlas_drawing_saved_summary', 'Saved drawing: {first} → {a}; {second} → {b}.', { first: itemText(saved.reference, 'name'), a: drawingPhysical(saved.referenceMM), second: itemText(saved.target, 'name'), b: drawingPhysical(saved.targetMM) })),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } }, h('button', { type: 'button', style: btn, onClick: restoreDrawing }, S('atlas_drawing_return', 'Return to saved drawing')),
+                h('button', { type: 'button', style: btn, onClick: removeDrawing }, S('atlas_drawing_remove', 'Remove saved drawing'))),
+              h('p', { style: { fontSize: '.6875rem', color: P.dim } }, S('atlas_drawing_print', 'Print at 100% scale. Check the 10 mm ruler with a real ruler; fit-to-page printing changes the dimensions.'))) : null,
+            h('button', { type: 'button', style: btn, disabled: !drawingRecord, onClick: downloadDrawingSvg }, S('atlas_drawing_download', 'Download saved drawing SVG')),
+            h('button', { type: 'button', style: btn, disabled: !drawingRecord, onClick: downloadObservations }, S('atlas_drawing_notes', 'Download drawing notes')),
+            h('p', { role: 'status', style: { margin: 0, minHeight: '1.5em', fontSize: '.75rem' } }, drawingMessage)));
+      }
       function comparisonDiagram() {
         if (!compare) return null;
         var W = 600, children = [];
@@ -2808,6 +2995,7 @@
               })),
               h('p', { style: { fontSize: '.75rem', color: P.dim, lineHeight: 1.5 } }, S('atlas_comparison_scope', 'The ratio compares the stated length, height, width or distance. Areas and volumes need additional shape assumptions.')),
               h('button', { type: 'button', style: btn, onClick: openScalingLab }, S('atlas_scaling_open', 'Explore length, area and volume')),
+              h('button', { type: 'button', style: btn, onClick: function () { useDrawingComparison(); openDrawingWorkshop(); } }, S('atlas_drawing_title', 'Make a scale drawing')),
               compare.ratio >= 100 ? h('p', { style: { fontSize: '.75rem', color: P.dim, lineHeight: 1.5 } }, S('atlas_comparison_resolution', 'A smaller specimen may fall below a screen pixel at this scale. A dashed locator marks its position; Inspect brings it into view at its own scale.')) : null,
               h('button', { type: 'button', style: btn, onClick: function () { inspectCompared(focused); } }, S('atlas_comparison_exit', 'Back to exploration'))) : null,
             viewMode === 'atlas' ? h('div', { className: 'sx-inspection', style: { display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',padding:'9px 12px',border:'1px solid '+P.line,borderRadius:10,background:P.panel } },
@@ -2976,7 +3164,7 @@
                       h('button', { type: 'button', style: btn, onClick: function () { revisitObservation(entry); }, 'aria-label': S('atlas_observation_return_aria', 'Return to {name}', { name: title }) }, S('atlas_observation_return', 'Return to view')),
                       h('button', { type: 'button', style: btn, onClick: function () { removeObservation(entry); }, 'aria-label': S('atlas_observation_remove_aria', 'Remove observation of {name}', { name: title }) }, S('atlas_observation_remove', 'Remove'))));
                 })) : h('p', { style: { color: P.dim, fontSize: '0.75rem' } }, S('atlas_notebook_empty', 'Saved observations will appear here.')),
-                h('button', { type: 'button', style: btn, disabled: !observations.length && !investigations.length && !scalingRecord, onClick: downloadObservations }, S('atlas_notebook_download', 'Download notes'))),
+                h('button', { type: 'button', style: btn, disabled: !observations.length && !investigations.length && !scalingRecord && !drawingRecord, onClick: downloadObservations }, S('atlas_notebook_download', 'Download notes'))),
               h('p', { role: 'status', style: { margin: 0, fontSize: '0.75rem', minHeight: '1.5em' } }, notebookMessage)),
 
             // Estimate first, then check: the house Predict → Explore → Explain
@@ -3056,6 +3244,7 @@
                 compare && compare.decades > 0.000001 ? staircase() : null)),
 
             scalingLab(),
+            drawingWorkshop(),
 
             h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.71875rem', color: P.dim, cursor: 'pointer' } },
               h('input', { type: 'checkbox', checked: sci, onChange: function (e) { var on = !!e.target.checked; setSci(on); updateSlice(function (cur) { cur.sci = on; }); } }),
