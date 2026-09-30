@@ -1,0 +1,52 @@
+{
+  "passed": true,
+  "validatedAt": "2026-09-30T02:10:06.096Z",
+  "sourceSha256": "341933d4dd3646295259fc4dea0d051b56926e0dc945b211d22f39155175446f",
+  "mirrored": true,
+  "sourceCompiles": true,
+  "regression": {
+    "passedTests": 320,
+    "files": 21,
+    "startedAt": "2026-09-30T02:06:56.841Z",
+    "finishedAt": "2026-09-30T02:08:26.796Z"
+  },
+  "browser": {
+    "workflows": 3,
+    "axeScans": 22,
+    "focusChecks": 44,
+    "focusTransitions": 2,
+    "textResizeCases": 2,
+    "screenshots": 22,
+    "visualIssues": 0
+  },
+  "reportHashes": {
+    "regression.json": "f6e5a213508db63f0b7d98f05dfb56c2edce32a862b5737d905b018bc75c66f6",
+    "regression-receipt.json": "c1669adc7de4a281e507f0e34c5ee4ad811ab4d902fdefd8b8bad223863939fe",
+    "browser-results.json": "1b92b2e075ecc130a91f58e48a7bc45284eee45a634cafb569f436333652c608"
+  },
+  "screenshotHashes": {
+    "active-voltage-1280.png": "c4f699113ce5ff4039fe2300fa501e1be7ac2c3a182b75e7beed6e4c9e5e36fb",
+    "active-voltage-390.png": "c82e5c0045cf26183e4a9517955ba74c874e89d6e78baa9711d069080f9fc01e",
+    "active-voltage-320.png": "ccdc8b260e99d755a82e177336d7a2e908233e9cba77592c906fc8bc3edce4e3",
+    "cutoff-voltage-1280.png": "7db4675b72e94d3617c729d770aa8cd44ec12956402ba6d89e998ecd992efa58",
+    "cutoff-voltage-390.png": "60bab8ed9aac87362e5b5d8c5f80fdf1cbafb3f579710556d81452f298ea0be5",
+    "cutoff-voltage-320.png": "fea0f599d893d76bc7d2e039ff06f9480192e3faecf5457fbbdfcae3819a1451",
+    "saturated-voltage-1280.png": "36518247e9332c6542077b894d99ed2f6bd303f6083c0a658aba453aeb18a0ca",
+    "saturated-voltage-390.png": "a98f833448a0a7d11a4a854a35c94da0174c74b1086e6c5e85de3b925f6cd6f8",
+    "saturated-voltage-320.png": "59f8e0d3d3633a89ac795a030b7ce12f7a478b44cc0297b4ed583dbdf29a8487",
+    "light-sensor-voltage-1280.png": "fe2a2d88ea469f3f5070d1c64b14e3fd6d161e20f9425741a2f7238a3254522c",
+    "light-sensor-voltage-390.png": "65da550743f944886772d37cbfb796c0784e0dba24e939c74da5a5222e7cf98d",
+    "light-sensor-voltage-320.png": "cfcbbd35ff7e26fe884406af23adbbed7884d5dd8df9afaa90fb3b44f16dbd5f",
+    "dark-sensor-voltage-1280.png": "74561e84f8aed2892d6896d4455291c60c3be1aa7c965d096e6da51f4d99c0a0",
+    "dark-sensor-voltage-390.png": "3d130df9493759fc3595418165bb2b8fae47863a444022780ea5e4cc3de6bb75",
+    "dark-sensor-voltage-320.png": "96f838445e23892046057cfa91831072455c22803e12fc55e371f383eed0036d",
+    "voltage-200pct-text-320.png": "99bf9425b791540d275c6560cb55fed0bccaba1fd5bcaad500d156b339a93e41",
+    "reversed-nondefault-probes-320.png": "1e26dd598119f0f5b9b5d8009930764c70fe17981be4f18dcaf8e5d7eb2d126f",
+    "default-writing-space-1280.png": "8715646e52b21b7582b94c004faa1055c1dca67cff45f40efe21a756e90973f3",
+    "expanded-writing-space-1280.png": "09bd7e20bcec19135b7aef83b2d925c96c0d76c310a61fd32b2165d766c9b82f",
+    "expanded-writing-space-390.png": "7820fe52f2180914fcf706ca92956d18d7d4ea30e800442cbb373374a1636280",
+    "expanded-writing-space-320.png": "e0afeafc0478830afc739cfb0612be03ecf2df9fd5360b1d0a281178adc88289",
+    "expanded-writing-space-200pct-text-320.png": "db8244221ff336235b7c7c9f7d7ee0bbb69637a495c6750cba553b8d9121d331"
+  },
+  "whitespaceCheck": true
+}

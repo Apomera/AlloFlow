@@ -2573,6 +2573,22 @@ window.StemLab = window.StemLab || {
     var supplyCurrent=ic+it,supplyPower=d.supply*supplyCurrent,inputPower=sensor?0:d.input*ib;
     return {design:d,sensor:sensor,ldr:ldr,topResistance:top,bottomResistance:bottom,theveninVoltage:vth,theveninResistance:rth,driveVoltage:drive,baseVoltage:vb,collectorVoltage:vc,baseCurrent:ib,collectorCurrent:ic,emitterCurrent:ib+ic,topCurrent:it,bottomCurrent:ibottom,loadLimit:limit,region:region,loadVoltage:d.supply-vc,loadPower:loadPower,basePower:basePower,transistorPower:transistorPower,dividerPower:dividerPower,supplyCurrent:supplyCurrent,supplyPower:supplyPower,inputPower:inputPower,totalPower:supplyPower+inputPower,lossPower:loadPower+basePower+transistorPower+dividerPower,brightness:loadPower/(d.supply*d.supply/d.loadResistance),nodes:{supply:d.supply,drive:drive,base:vb,collector:vc,emitter:0}};
   }
+  function circuitActiveVoltageBudget(state) {
+    var solved=solveActiveCircuit(state),supply=solved.design.supply;
+    return {
+      supply:supply,
+      collector:solved.collectorVoltage,
+      emitter:0,
+      collectorCurrent:solved.collectorCurrent,
+      region:solved.region,
+      project:solved.design.project,
+      segments:[
+        {id:'lamp',red:'supply',black:'collector',voltage:solved.loadVoltage,fraction:solved.loadVoltage/supply},
+        {id:'transistor',red:'collector',black:'emitter',voltage:solved.collectorVoltage,fraction:solved.collectorVoltage/supply}
+      ]
+    };
+  }
+  window.StemLab.circuitActiveVoltageBudget=circuitActiveVoltageBudget;
   function circuitActiveSweep(state) {
     var d=circuitActiveDesign(state),manual=d.project==='manual';
     return Array.from({length:201},function(_,i){var control=(manual?5:100)*i/200,s=solveActiveCircuit(Object.assign({},d,manual?{input:control}:{light:control}));return {control:control,baseCurrent:s.baseCurrent,collectorCurrent:s.collectorCurrent,collectorVoltage:s.collectorVoltage,driveVoltage:s.driveVoltage,region:s.region};});
@@ -3076,6 +3092,7 @@ function CircuitActiveObservationCompare(props) {
     var __alloT=circuitToolT(props);
     var notebookRef=React.useRef(null),seenFocus=React.useRef(state.notebookFocusToken||0);
     var reflectionRef=React.useRef(null),seenReflectionFocus=React.useRef(state.reflectionFocusToken||0);
+    var reflectionSize=React.useState(false),reflectionId=React.useId();
     var removed=Array.isArray(state.removedObservations)?state.removedObservations:state.removedObservation?[state.removedObservation]:[],recoveryFull=removed.length>=8;
     var currentKey=circuitActiveObservationKey(circuitActiveObservation(state,'')),recordedIndex=observations.findIndex(function(o){return circuitActiveObservationKey(o)===currentKey;});
     React.useEffect(function(){var token=state.notebookFocusToken||0;if(token===seenFocus.current)return;seenFocus.current=token;var notebook=notebookRef.current,card=notebook&&notebook.querySelectorAll('.circuit-notebook-observation')[state.notebookFocusIndex],note=card&&card.querySelector('textarea');if(note){card.open=true;note.focus();}},[state.notebookFocusToken,state.notebookFocusIndex,observations]);
@@ -3088,7 +3105,16 @@ function CircuitActiveObservationCompare(props) {
     var readFile=function(e){var file=e.target.files&&e.target.files[0],request=++generation.current;candidateRef.current=null;setCandidate(null);setMessage('');setError(false);if(!file){setBusy(false);return;}if(file.size>131072){setBusy(false);setError(true);setMessage('Choose an investigation JSON file smaller than 128 KB.');return;}setBusy(true);
       file.text().then(function(text){if(generation.current!==request)return;try{var parsed=parseCircuitInvestigation(text);candidateRef.current={value:parsed,generation:request};setCandidate(parsed);setMessage('Preview ready. Review the investigation before loading it.');}catch(err){setError(true);setMessage(err.message);}}).catch(function(){if(generation.current===request){setError(true);setMessage('The investigation could not be read. Choose it again.');}}).finally(function(){if(generation.current===request)setBusy(false);});};
     var consumeCandidate=function(){var current=candidateRef.current;if(!candidate||!current||current.value!==candidate||current.generation!==generation.current)return false;candidateRef.current=null;generation.current++;setBusy(false);return true;};
-    var field=function(label,key,max,rows,placeholder){var attributes={'aria-label':label,value:state[key]||'',maxLength:max,onChange:function(e){var update={};update[key]=e.target.value;props.patch(update);},placeholder:placeholder};if(key==='reflection'){attributes.ref=reflectionRef;attributes.className='circuit-notebook-reflection';}return h('label',{className:'circuit-notebook-field'},label,rows?h('textarea',Object.assign({rows:rows},attributes)):h('input',Object.assign({type:'text'},attributes)));};
+    var field=function(label,key,max,rows,placeholder){
+      var attributes={'aria-label':label,value:state[key]||'',maxLength:max,onChange:function(e){var update={};update[key]=e.target.value;props.patch(update);},placeholder:placeholder};
+      if(key==='reflection'){attributes.ref=reflectionRef;attributes.className='circuit-notebook-reflection';attributes.id=reflectionId+'-field';attributes.rows=reflectionSize[0]?12:6;attributes['aria-describedby']=reflectionId+'-cue '+reflectionId+'-count';}
+      var control=h('label',{className:'circuit-notebook-field'},key==='reflection'?h('span',{className:'circuit-reflection-label'},label):label,rows?h('textarea',Object.assign({rows:rows},attributes)):h('input',Object.assign({type:'text'},attributes)));
+      if(key!=='reflection')return control;
+      return h('section',{className:'circuit-reflection-editor','aria-labelledby':reflectionId+'-heading'},
+        h('div',{className:'circuit-reflection-heading'},h('h3',{id:reflectionId+'-heading'},label),h('button',{type:'button',className:'circuit-reflection-size-toggle','aria-controls':reflectionId+'-field','aria-expanded':reflectionSize[0],onClick:function(){if(reflectionRef.current)reflectionRef.current.style.height='';reflectionSize[1](function(expanded){return !expanded;});}},reflectionSize[0]?__alloT('stem.circuit.reflection_reduce','Reduce writing space'):__alloT('stem.circuit.reflection_expand','Expand writing space'))),
+        h('p',{id:reflectionId+'-cue',className:'circuit-reflection-cue'},__alloT('stem.circuit.reflection_reasoning_cue','Explain what changed, then use the readings to support or revise your prediction.')),
+        control,h('p',{id:reflectionId+'-count',className:'circuit-reflection-count'},__alloT('stem.circuit.reflection_character_count','{count} / 4000 characters').replace('{count}',String((state.reflection||'').length))));
+    };
     return h('details',{id:'circuit-active-notebook',ref:notebookRef,className:'circuit-active-notebook',open:!!state.notebookOpen,onToggle:function(e){if(e.target===e.currentTarget&&e.currentTarget.open!==!!state.notebookOpen)props.patch({notebookOpen:e.currentTarget.open});}},
       h('summary',null,h('span',null,'Investigation notebook'),h('small',null,observations.length+'/8 observations')),
       h('div',{className:'circuit-notebook-content'},h('p',{className:'circuit-help'},'Ask a question, keep readings as evidence, and explain what you found. Recorded points stay fixed as the live circuit changes.'),
@@ -3115,7 +3141,7 @@ function CircuitActiveObservationCompare(props) {
             h('h4',null,'Removed observation '+(index+1)),h('p',null,({manual:'Manual control',light:'Light sensor',dark:'Dark sensor'})[point.design.project]+' · '+(point.sensor?'Relative light '+point.design.light+'/100':'Input '+point.design.input+' V')+' · '+point.region),
             h('p',null,'Lamp current: '+circuitCurrentText(point.collectorCurrent)+' · Probe '+reading.red+' − '+reading.black+': '+circuitPreciseVoltageText(reading.voltage)),h('p',{className:'circuit-notebook-removed-note'},item.entry.note||'No observation note recorded.'),
             h('div',{className:'circuit-notebook-record-actions circuit-notebook-recovery-actions'},h('button',{type:'button',disabled:observations.length>=8,onClick:function(e){props.restoreObservation(item);focusNotebook(e);}},'Restore removed observation'+(index?' '+(index+1):'')),h('button',{type:'button',onClick:function(e){props.discardObservation(item);focusNotebook(e);}},'Discard removed observation'+(index?' '+(index+1):''))));})),
-        field('My evidence-based explanation','reflection',4000,3,'Use your recorded readings to support or revise your prediction.'),
+        field(__alloT('stem.circuit.reflection_heading','My evidence-based explanation'),'reflection',4000,6,__alloT('stem.circuit.reflection_placeholder','Use your recorded readings to support or revise your prediction.')),
         h('section',{className:'circuit-notebook-files','aria-label':__alloT('stem.circuit.investigation_files','Investigation files')},h('h3',null,'Keep or share your investigation'),h('p',{className:'circuit-help'},'JSON reopens the investigation in this lab. The report is a self-contained HTML page with settings, comparison curves, recorded measurements, and notes; open it in a browser to print.'),
           h('div',{className:'circuit-notebook-record-actions'},h('button',{type:'button',onClick:function(){save(false);}},'Save investigation JSON'),h('button',{type:'button',onClick:function(){save(true);}},'Download investigation report')),
           h('label',{className:'circuit-notebook-file-label'},'Open investigation file',h('input',{type:'file','aria-label':__alloT('stem.circuit.open_investigation_file','Open investigation file'),accept:'.json,application/json',ref:input,onChange:readFile})),
@@ -3183,6 +3209,41 @@ function CircuitActiveLessonLab(props) {
       h('div',{className:'circuit-active-lesson-retry'},h('p',{className:'circuit-active-lesson-help'},t('stem.circuit.active_retry_help','Starting again replaces this experiment’s saved prediction, result, and explanation, and loads its baseline. Your investigation notebook stays saved.')),h('button',{type:'button',onClick:function(){act(selected,'start',undefined,'question');}},t('stem.circuit.start_transistor_prediction','Start transistor prediction')))));
 }
 
+  function CircuitActiveVoltageExplorer(props) {
+    var React=props.React,h=React.createElement,t=circuitToolT(props),uid=React.useId();
+    if(!props.solved||!props.solved.design)return null;
+    var budget=circuitActiveVoltageBudget(props.solved.design),probe=props.probe||{},lamp=budget.segments[0];
+    var region=t('stem.circuit.active_region_'+budget.region,{cutoff:'Cutoff',active:'Active region',saturated:'Saturation'}[budget.region]||budget.region);
+    var insight={
+      cutoff:t('stem.circuit.voltage_cutoff_insight','No lamp current flows. The lamp drop is zero, so the supply voltage appears across the transistor.'),
+      active:t('stem.circuit.voltage_active_insight','For these supply and lamp settings, increasing lamp current increases the lamp drop and reduces the transistor drop.'),
+      saturated:t('stem.circuit.voltage_saturated_insight','In saturation, this model holds the transistor drop at 0.20 V. The remaining supply voltage is across the lamp.')
+    }[budget.region];
+    var partName=function(id){return id==='lamp'?t('stem.circuit.voltage_lamp_drop','Lamp drop'):t('stem.circuit.voltage_transistor_drop','Transistor drop');};
+    return h('section',{className:'circuit-active-panel circuit-active-voltage-explorer circuit-voltage-explorer','aria-labelledby':uid+'-heading'},
+      h('header',{className:'circuit-voltage-heading'},h('span',{className:'circuit-eyebrow'},t('stem.circuit.voltage_loop_eyebrow','LAMP LOOP')),h('h3',{id:uid+'-heading'},t('stem.circuit.voltage_heading','See the voltage drops')),h('p',null,t('stem.circuit.voltage_intro','Follow the supply through the lamp and transistor to common return.'))),
+      h('div',{className:'circuit-voltage-layout'},
+        h('div',{className:'circuit-voltage-graphic','aria-hidden':true},
+          h('span',{className:'circuit-voltage-endpoint'},t('stem.circuit.voltage_supply','Supply')),
+          h('div',{className:'circuit-voltage-column-frame'},h('div',{className:'circuit-voltage-column'},budget.segments.map(function(segment){return h('span',{key:segment.id,className:'circuit-voltage-segment','data-voltage-segment':segment.id,'data-selected':probe.red===segment.red&&probe.black===segment.black,style:{height:segment.fraction*100+'%'}});})),h('span',{className:'circuit-voltage-collector-marker',style:{top:lamp.fraction*100+'%'}},h('span',null))),
+          h('span',{className:'circuit-voltage-endpoint'},t('stem.circuit.voltage_common_return','Common return')),
+          h('span',{className:'circuit-voltage-marker-key'},'◆ '+t('stem.circuit.voltage_collector_connection','Collector connection')),
+          h('div',{className:'circuit-voltage-graphic-key'},budget.segments.map(function(segment){return h('span',{key:segment.id},h('i',{'data-voltage-part':segment.id}),partName(segment.id));}))),
+        h('div',{className:'circuit-voltage-readings'},
+          h('dl',{className:'circuit-voltage-node-readings'},[
+            ['supply',t('stem.circuit.voltage_supply_reading','Supply voltage'),circuitPreciseVoltageText(budget.supply)],
+            ['collector',t('stem.circuit.voltage_collector_reading','Collector above common return'),circuitPreciseVoltageText(budget.collector)],
+            ['current',t('stem.circuit.voltage_lamp_current','Lamp current'),circuitCurrentText(budget.collectorCurrent)]
+          ].map(function(item){return h('div',{key:item[0],'data-voltage-node':item[0]},h('dt',null,item[1]),h('dd',null,item[2]));})),
+          h('div',{className:'circuit-voltage-parts'},budget.segments.map(function(segment){var pressed=probe.red===segment.red&&probe.black===segment.black;return h('div',{key:segment.id,className:'circuit-voltage-reading','data-voltage-part':segment.id},
+            h('dl',null,h('div',null,h('dt',null,partName(segment.id)),h('dd',null,circuitPreciseVoltageText(segment.voltage)))),
+            h('p',{className:'circuit-voltage-leads'},segment.id==='lamp'?t('stem.circuit.voltage_lamp_leads','Red: supply · Black: collector'):t('stem.circuit.voltage_transistor_leads','Red: collector · Black: common return')),
+            h('button',{type:'button','aria-pressed':pressed,disabled:typeof props.onMeasure!=='function',onClick:function(){if(typeof props.onMeasure==='function')props.onMeasure(segment.id);}},segment.id==='lamp'?t('stem.circuit.voltage_measure_lamp','Measure lamp drop'):t('stem.circuit.voltage_measure_transistor','Measure transistor drop')));})))),
+      h('p',{className:'circuit-voltage-scale-note'},t('stem.circuit.voltage_scale_note','The column represents the supply voltage. The lamp and transistor drops add to that voltage; common return is 0 V.')),
+      h('div',{className:'circuit-voltage-insight','data-region':budget.region},h('strong',null,region),h('p',null,insight)),
+      budget.project!=='manual'&&h('p',{className:'circuit-voltage-branch-note'},t('stem.circuit.voltage_sensor_branch_note','This is the lamp loop, one branch of the sensor circuit. The loaded sensor divider controls the base drive.')));
+  }
+
   function CircuitActiveWorkbench(props) {
     var ctx=props.ctx,React=ctx.React,h=React.createElement,state=(ctx.toolData||{})._circuitActive||{},d=circuitActiveDesign(state),s=solveActiveCircuit(d);
     var __alloT=circuitToolT(props);
@@ -3231,6 +3292,7 @@ function CircuitActiveLessonLab(props) {
         h(CircuitActiveDiagram,{React:React,t:cktT,solved:s,solid:solid,probe:probe,lead:state.placeLead,onPlace:function(node){var v={};v[state.placeLead==='black'?'probeBlack':'probeRed']=node;patch(v);}}),
         h('p',{className:'circuit-help'},'Gold: base input · Mint: lamp path · Blue: common return. Arrows show conventional current. This board is prewired; B, C, and E label circuit terminals, not a real package’s pin order. Select a lead, then choose a labeled node on the board or use the menus below. Scroll the diagram on a narrow screen.'),
         h('div',{className:'circuit-active-probes'},h('strong',null,'Measure between nodes'),h('div',null,selectNode('Red probe','red'),selectNode('Black probe','black'),h('button',{type:'button',onClick:function(){patch({probeRed:probe.black,probeBlack:probe.red});}},'Reverse active probes')),h('div',{className:'circuit-active-probe-shortcuts'},[['Transistor','collector','emitter'],['Base resistor','drive','base'],['Supply','supply','emitter']].map(function(p){return h('button',{type:'button',key:p[0],'aria-label':__alloFill(__alloT('stem.circuit.a11y_measure', 'Measure {value1}'), { value1: p[0].toLowerCase() }),onClick:function(){patch({probeRed:p[1],probeBlack:p[2]});}},p[0]);})),h('output',{'aria-label':__alloT('stem.circuit.active_voltmeter_reading','Active voltmeter reading')},circuitPreciseVoltageText(probe.voltage)),h('span',null,'Red minus black · R / K markers on the board'))),
+      h(CircuitActiveVoltageExplorer,{React:React,t:cktT,solved:s,probe:probe,onMeasure:function(id){if(id==='lamp')patch({probeRed:'supply',probeBlack:'collector'});else if(id==='transistor')patch({probeRed:'collector',probeBlack:'emitter'});}}),
       h('details',{className:'circuit-active-panel'},h('summary',null,'Tune the components'),h('div',{className:'circuit-active-tuning'},range('Supply voltage (V)','supply',3,12,.1,function(v){return v.toFixed(1)+' V';}),range('Base resistance (Ω)','baseResistance',1000,100000,1000,circuitActiveResistanceText),range('Lamp resistance (Ω)','loadResistance',100,2000,10,circuitActiveResistanceText),range('Transistor gain β','beta',20,300,10),s.sensor&&range('Divider resistance (Ω)','dividerResistance',1000,100000,1000,circuitActiveResistanceText)),h('p',{className:'circuit-help'},'The lamp has fixed resistance in this model. Its glow indicates calculated power; filament temperature and real brightness are not simulated.')),
       h('section',{className:'circuit-active-panel'},h('div',{className:'circuit-active-toolbar'},h('h3',null,'03 · Discover the response'),h('button',{type:'button',onClick:download},'Export active sweep CSV')),
         h(CircuitActiveReference,{React:React,t:cktT,comparison:comparison,capture:function(){patch({reference:{version:1,design:circuitActiveDesign(d)}});},restore:function(){if(comparison)patch(comparison.before.design,true);},clear:function(){patch({reference:null});}}),
@@ -4468,6 +4530,62 @@ function CircuitActiveLessonLab(props) {
 @media(max-width:600px){.circuit-active-root .circuit-comparison-writing-actions button{flex:1 1 180px}.circuit-active-root .circuit-comparison-writing-readings>summary{padding:10px}.circuit-active-root .circuit-comparison-writing-preview{padding:4px 10px 12px}}
 @media(prefers-reduced-motion:reduce){.circuit-active-root .circuit-comparison-writing-actions button{transition:none!important;transition-duration:0s!important}}
 @media(forced-colors:active){.circuit-active-root .circuit-comparison-writing,.circuit-active-root .circuit-comparison-writing-readings,.circuit-active-root .circuit-notebook-next-reading{border-color:CanvasText;background:Canvas;color:CanvasText}.circuit-active-root .circuit-comparison-writing-actions button{border-color:ButtonText;background:ButtonFace;color:ButtonText}.circuit-active-root .circuit-comparison-writing-actions button:disabled{border-color:GrayText;color:GrayText}.circuit-active-root .circuit-comparison-writing button:focus-visible,.circuit-active-root .circuit-comparison-writing summary:focus-visible,.circuit-active-root .circuit-notebook-reflection:focus{outline-color:Highlight}}
+/* Live voltage explorer. Segment heights remain the raw solver fractions. */
+.circuit-active-root .circuit-voltage-explorer{min-width:0;border-color:#668d8a;background:linear-gradient(125deg,#143832,#132c3c)}
+.circuit-active-root .circuit-voltage-heading{min-width:0;margin-bottom:18px}
+.circuit-active-root .circuit-voltage-heading h3{font-size:21px;line-height:1.5;color:#e3f2e9;margin:7px 0 9px;overflow-wrap:anywhere}
+.circuit-active-root .circuit-voltage-heading p{font-size:14px;line-height:1.75;color:#c7deda;margin:0;overflow-wrap:anywhere}
+.circuit-active-root .circuit-voltage-layout{display:grid;grid-template-columns:minmax(116px,.65fr) minmax(0,2fr);align-items:start;gap:22px;min-width:0}
+.circuit-active-root .circuit-voltage-graphic{display:flex;flex-direction:column;align-items:center;gap:13px;min-width:0;padding:5px 0;font-size:12px;line-height:1.6;color:#cededc;text-align:center}
+.circuit-active-root .circuit-voltage-endpoint{font-size:12px;font-weight:650;line-height:1.6;max-width:100%;overflow-wrap:anywhere}
+.circuit-active-root .circuit-voltage-column-frame{position:relative;width:82px;height:252px;max-width:100%;margin:1px 12px}
+.circuit-active-root .circuit-voltage-column{box-sizing:border-box;display:flex;flex-direction:column;width:100%;height:100%;outline:1px solid #8fb2ac;outline-offset:0;border-radius:9px;overflow:hidden;background:#15323e;box-shadow:0 7px 20px #071a2240}
+.circuit-active-root .circuit-voltage-segment{display:block;box-sizing:border-box;flex:none;width:100%;min-height:0;max-height:none;border:0;padding:0;margin:0;transition:none;animation:none}
+.circuit-active-root .circuit-voltage-segment[data-voltage-segment=lamp],.circuit-active-root .circuit-voltage-graphic-key i[data-voltage-part=lamp]{background:repeating-linear-gradient(135deg,#efcf89 0,#efcf89 8px,#c3a35f 8px,#c3a35f 10px)}
+.circuit-active-root .circuit-voltage-segment[data-voltage-segment=transistor],.circuit-active-root .circuit-voltage-graphic-key i[data-voltage-part=transistor]{background:#9ed6c6}
+.circuit-active-root .circuit-voltage-segment[data-selected=true]{box-shadow:inset 0 0 0 2px #f4fff9,inset 0 0 0 4px #264c40}
+.circuit-active-root .circuit-voltage-collector-marker{position:absolute;left:-10px;right:-10px;height:2px;background:#f5f0d6;box-shadow:0 0 0 1px #183337;transform:translateY(-50%);transition:none;animation:none}
+.circuit-active-root .circuit-voltage-collector-marker>span{position:absolute;right:-5px;top:-4px;width:10px;height:10px;background:#f5f0d6;border:1px solid #183337;transform:rotate(45deg)}
+.circuit-active-root .circuit-voltage-marker-key{font-size:11px;line-height:1.6;color:#ece3be;overflow-wrap:anywhere;max-width:100%}
+.circuit-active-root .circuit-voltage-graphic-key{display:flex;justify-content:center;flex-wrap:wrap;gap:7px 12px;max-width:100%;font-size:11px;line-height:1.6}
+.circuit-active-root .circuit-voltage-graphic-key>span{display:flex;align-items:center;gap:6px;min-width:0;overflow-wrap:anywhere}
+.circuit-active-root .circuit-voltage-graphic-key i{display:inline-block;flex:none;width:12px;height:12px;border:1px solid #7faaa0;border-radius:2px}
+.circuit-active-root .circuit-voltage-readings{min-width:0}
+.circuit-active-root .circuit-voltage-node-readings{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,9em),1fr));gap:12px;margin:0 0 16px;font-size:13px;min-width:0}
+.circuit-active-root .circuit-voltage-node-readings>div{min-width:0;padding-bottom:10px;border-bottom:1px solid #5c7f80}
+.circuit-active-root .circuit-voltage-node-readings dt{font-size:12px;line-height:1.7;color:#c3d9d7;overflow-wrap:anywhere}
+.circuit-active-root .circuit-voltage-node-readings dd{margin:4px 0 0;font-size:20px;font-weight:650;line-height:1.5;font-variant-numeric:tabular-nums;color:#e0f1e8;white-space:normal;overflow-wrap:anywhere}
+.circuit-active-root .circuit-voltage-parts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,12em),1fr));gap:12px;min-width:0;font-size:13px}
+.circuit-active-root .circuit-voltage-reading{box-sizing:border-box;min-width:0;padding:14px;border:1px solid #77928d;border-radius:11px;background:#122e36}
+.circuit-active-root .circuit-voltage-reading[data-voltage-part=lamp]{border-top:3px solid #d5b978}
+.circuit-active-root .circuit-voltage-reading[data-voltage-part=transistor]{border-top:3px solid #9ed6c6}
+.circuit-active-root .circuit-voltage-reading dl{margin:0;min-width:0}
+.circuit-active-root .circuit-voltage-reading dt{font-size:14px;font-weight:650;line-height:1.65;color:#e0ede6;overflow-wrap:anywhere}
+.circuit-active-root .circuit-voltage-reading dd{margin:7px 0 0;font-size:26px;font-weight:650;line-height:1.5;font-variant-numeric:tabular-nums;color:#e7f5eb;white-space:normal;overflow-wrap:anywhere}
+.circuit-active-root .circuit-voltage-reading .circuit-voltage-leads{font-size:12px;line-height:1.75;color:#c3d9d9;margin:9px 0 13px;overflow-wrap:anywhere}
+.circuit-active-root .circuit-voltage-reading button{box-sizing:border-box;min-height:44px;min-width:0;max-width:100%;width:100%;border:1px solid #87aca1;border-radius:8px;padding:9px 12px;background:#24443e;color:#e4f3e9;font-size:13px;font-weight:650;line-height:1.65;white-space:normal;overflow-wrap:anywhere;transition:background-color .15s,border-color .15s}
+.circuit-active-root .circuit-voltage-reading button[aria-pressed=true]{background:#c2ebd9;border-color:#d8f4e6;color:#14372d}
+.circuit-active-root .circuit-voltage-reading button:hover:not(:disabled){border-color:#ddf3e8}
+.circuit-active-root .circuit-voltage-scale-note,.circuit-active-root .circuit-voltage-branch-note{font-size:12px;line-height:1.75;color:#c4d8d6;margin:17px 0 0;overflow-wrap:anywhere}
+.circuit-active-root .circuit-voltage-insight{min-width:0;margin-top:16px;padding:12px 14px;border-left:3px solid #a8d9c3;border-radius:0 9px 9px 0;background:#1b403a}
+.circuit-active-root .circuit-voltage-insight strong{font-size:14px;line-height:1.65;color:#e4f1e9;overflow-wrap:anywhere}
+.circuit-active-root .circuit-voltage-insight p{font-size:13px;line-height:1.75;color:#cfe2da;margin:5px 0 0;overflow-wrap:anywhere}
+.circuit-active-root .circuit-voltage-insight[data-region=cutoff],.circuit-active-root .circuit-voltage-insight[data-region=saturated]{border-left-color:#d3bd83;background:#2a3c37}
+
+/* One persistent reflection textarea; expansion changes rows, never its value. */
+.circuit-active-root .circuit-reflection-editor{box-sizing:border-box;min-width:0;margin:22px 0;padding:18px;border:1px solid #80959a;border-radius:12px;background:#112d3b;color:#dfebee}
+.circuit-active-root .circuit-reflection-heading{display:flex;align-items:start;justify-content:space-between;flex-wrap:wrap;gap:12px;min-width:0}
+.circuit-active-root .circuit-reflection-heading h3{flex:1 1 190px;min-width:0;margin:0;font-size:18px;line-height:1.55;color:#e4eef2;overflow-wrap:anywhere}
+.circuit-active-root .circuit-reflection-size-toggle{box-sizing:border-box;min-height:44px;min-width:0;max-width:100%;padding:9px 12px;border:1px solid #819fa9;border-radius:8px;background:#1e3b4b;color:#e2edf2;font-size:13px;font-weight:650;line-height:1.65;white-space:normal;overflow-wrap:anywhere;transition:background-color .15s,border-color .15s}
+.circuit-active-root .circuit-reflection-cue{font-size:14px;line-height:1.75;color:#c6dbe4;overflow-wrap:anywhere;margin:13px 0}
+.circuit-active-root .circuit-reflection-editor .circuit-notebook-field{margin:12px 0 8px}
+.circuit-active-root .circuit-reflection-label{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.circuit-active-root .circuit-reflection-editor textarea.circuit-notebook-reflection{display:block;box-sizing:border-box;width:100%;min-width:0;max-width:100%;min-height:10.2em;font-size:16px;line-height:1.7;padding:12px;background:#081e2b;color:#e5f0f5;resize:vertical;white-space:pre-wrap;overflow-wrap:anywhere;scroll-margin-block:24px}
+.circuit-active-root .circuit-reflection-count{font-size:12px;line-height:1.65;color:#bed2df;text-align:right;overflow-wrap:anywhere;margin:8px 0 0}
+.circuit-active-root .circuit-voltage-reading button:focus-visible,.circuit-active-root .circuit-reflection-size-toggle:focus-visible,.circuit-active-root .circuit-reflection-editor textarea:focus{outline:3px solid #f2d296;outline-offset:3px}
+@media(max-width:600px){.circuit-active-root .circuit-voltage-layout{grid-template-columns:minmax(0,1fr);gap:20px}.circuit-active-root .circuit-voltage-graphic{padding:8px 0 3px}.circuit-active-root .circuit-voltage-column-frame{height:232px}.circuit-active-root .circuit-voltage-graphic-key{gap:9px 17px}.circuit-active-root .circuit-reflection-editor{padding:12px}.circuit-active-root .circuit-reflection-size-toggle{flex:1 1 170px}.circuit-active-root .circuit-voltage-reading{padding:12px}}
+@media(prefers-reduced-motion:reduce){.circuit-active-root .circuit-voltage-reading button,.circuit-active-root .circuit-reflection-size-toggle{transition:none!important;transition-duration:0s!important}}
+@media(forced-colors:active){.circuit-active-root .circuit-voltage-explorer,.circuit-active-root .circuit-voltage-reading,.circuit-active-root .circuit-voltage-insight,.circuit-active-root .circuit-reflection-editor{background:Canvas;border-color:CanvasText;color:CanvasText}.circuit-active-root .circuit-voltage-column{outline-color:CanvasText;background:Canvas;box-shadow:none}.circuit-active-root .circuit-voltage-segment[data-voltage-segment=lamp],.circuit-active-root .circuit-voltage-graphic-key i[data-voltage-part=lamp]{background:repeating-linear-gradient(135deg,Canvas 0,Canvas 6px,CanvasText 6px,CanvasText 8px);forced-color-adjust:none}.circuit-active-root .circuit-voltage-segment[data-voltage-segment=transistor],.circuit-active-root .circuit-voltage-graphic-key i[data-voltage-part=transistor]{background:Highlight;forced-color-adjust:none}.circuit-active-root .circuit-voltage-collector-marker,.circuit-active-root .circuit-voltage-collector-marker>span{background:CanvasText;box-shadow:none;border-color:Canvas}.circuit-active-root .circuit-voltage-reading button,.circuit-active-root .circuit-reflection-size-toggle{border-color:ButtonText;background:ButtonFace;color:ButtonText}.circuit-active-root .circuit-voltage-reading button[aria-pressed=true]{background:Highlight;color:HighlightText;forced-color-adjust:none}.circuit-active-root .circuit-voltage-reading button:focus-visible,.circuit-active-root .circuit-reflection-size-toggle:focus-visible,.circuit-active-root .circuit-reflection-editor textarea:focus{outline-color:Highlight}}
 `;
   document.head.appendChild(circStyle);
   }
