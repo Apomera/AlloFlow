@@ -1,0 +1,651 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/micro-lab-evidence-recovery-2026-09-29/browser-layout-test-output",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "microbiology-draft-review.spec.ts",
+      "file": "microbiology-draft-review.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "resumes exact working measurement settings while preserving checked evidence and unresolved phage visibility",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3953,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T01:16:52.826Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "64bbf617905ece59b201-68436e8e2373fb3ccf97",
+          "file": "microbiology-draft-review.spec.ts",
+          "line": 23,
+          "column": 5
+        },
+        {
+          "title": "compares changed mystery fields across report views, tabs, and JSON reload without replacing notes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4473,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T01:16:56.926Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "64bbf617905ece59b201-d95425700fb5ef4202b1",
+          "file": "microbiology-draft-review.spec.ts",
+          "line": 78,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "microbiology-evidence-recovery.spec.ts",
+      "file": "microbiology-evidence-recovery.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "compares saved resistance counts at a shared round without changing the live culture",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2276,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T01:17:01.425Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "411c355e01bdd5c4d3a8-318683c866a054ba4f80",
+          "file": "microbiology-evidence-recovery.spec.ts",
+          "line": 47,
+          "column": 5
+        },
+        {
+          "title": "keeps extinct resistance shares undefined and requires reselection when an evidence ID is removed",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2238,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T01:17:03.722Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "411c355e01bdd5c4d3a8-51acfcfa27a13dcafb70",
+          "file": "microbiology-evidence-recovery.spec.ts",
+          "line": 68,
+          "column": 5
+        },
+        {
+          "title": "keeps a valid saved resistance comparison attached to its original snapshot when another ID is damaged",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1897,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T01:17:05.971Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "411c355e01bdd5c4d3a8-449eed6f2d5f00cd5788",
+          "file": "microbiology-evidence-recovery.spec.ts",
+          "line": 84,
+          "column": 5
+        },
+        {
+          "title": "previews and swaps calibrated microscope estimates while keeping the working draft and view",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2689,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T01:17:07.878Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "411c355e01bdd5c4d3a8-bacf193109d7c6c2376d",
+          "file": "microbiology-evidence-recovery.spec.ts",
+          "line": 99,
+          "column": 5
+        },
+        {
+          "title": "recovers a removed Growth trial after reload with its original ID, position, and evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1855,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T01:17:10.576Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "411c355e01bdd5c4d3a8-ee113c28d70e2f65a508",
+          "file": "microbiology-evidence-recovery.spec.ts",
+          "line": 133,
+          "column": 5
+        },
+        {
+          "title": "a new saved Growth trial completes the removal and keeps the remaining evidence and next ID",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1655,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T01:17:12.441Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "411c355e01bdd5c4d3a8-931d54c9aa1afb808356",
+          "file": "microbiology-evidence-recovery.spec.ts",
+          "line": 149,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "microbiology-growth-inspection-export.spec.ts",
+      "file": "microbiology-growth-inspection-export.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "downloads the restored hour comparison with original controls, notes, and final prediction outcomes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2330,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T01:17:14.122Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1ede69aced600da6cb2d-b4f81ea1b1dc06a82e53",
+          "file": "microbiology-growth-inspection-export.spec.ts",
+          "line": 55,
+          "column": 5
+        },
+        {
+          "title": "reports an unavailable comparison download without losing the normalized hour or evidence, then allows a retry",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1743,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T01:17:16.471Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1ede69aced600da6cb2d-bcca5c14f21d1516144d",
+          "file": "microbiology-growth-inspection-export.spec.ts",
+          "line": 124,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "microbiology-guided-resume.spec.ts",
+      "file": "microbiology-guided-resume.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Home finds Mystery revisions, opens working notes, and cycles without replacing reports",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2117,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T01:17:18.240Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9d41580ef5e1da340899-9935c54b7e86c0096737",
+          "file": "microbiology-guided-resume.spec.ts",
+          "line": 36,
+          "column": 5
+        },
+        {
+          "title": "Home opens an unchecked estimate in its notebook before the learner resumes the view",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2353,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T01:17:20.377Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9d41580ef5e1da340899-6eacf1b4579f27f52620",
+          "file": "microbiology-guided-resume.spec.ts",
+          "line": 66,
+          "column": 5
+        },
+        {
+          "title": "Home and the growth editor move through missing explanations while keeping the experiment",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2072,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T01:17:22.741Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9d41580ef5e1da340899-84dd0469dbf6b0b8b772",
+          "file": "microbiology-guided-resume.spec.ts",
+          "line": 81,
+          "column": 5
+        },
+        {
+          "title": "each Gram shortcut focuses the next action without advancing observations or replacing a report",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7739,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T01:17:24.822Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9d41580ef5e1da340899-aed213378ec055852eab",
+          "file": "microbiology-guided-resume.spec.ts",
+          "line": 102,
+          "column": 5
+        },
+        {
+          "title": "quiz shortcuts resume unanswered work, submission, and unchecked practice without changing the score",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4196,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T01:17:32.571Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9d41580ef5e1da340899-3c20c7a0afd4022888bc",
+          "file": "microbiology-guided-resume.spec.ts",
+          "line": 123,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "microbiology-resistance-notebook.spec.ts",
+      "file": "microbiology-resistance-notebook.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "preserves partial resistance evidence through edits, reset, downloads, JSON reload, and mobile review",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3479,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T01:17:36.792Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7cd29bd580b54b48f070-682816c1e9d2a1f07da7",
+          "file": "microbiology-resistance-notebook.spec.ts",
+          "line": 41,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-30T01:16:52.113Z",
+    "duration": 48310.336,
+    "expected": 16,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

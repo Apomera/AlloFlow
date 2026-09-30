@@ -4,8 +4,9 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 test.describe.configure({ mode: 'serial', retries: 0, timeout: 90000 });
+test.use({ video: 'off' });
 
-const out = path.resolve('reports/micro-lab-workspace-evidence-2026-09-28');
+const out = path.resolve(process.env.MICROBIOLOGY_REPORT_DIR || 'reports/micro-lab-workspace-evidence-2026-09-28');
 const harness = new GlHarness({
   toolFile: 'stem_lab/stem_tool_microbiology.js',
   toolId: 'microbiology',

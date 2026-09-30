@@ -12,6 +12,16 @@ beforeEach(() => {
   loadTool('stem_lab/stem_tool_microbiology.js', 'microbiology');
 });
 
+function comparisonNotebook() {
+  const first = { day: 0, sensitive: 68, resistant: 12 };
+  return { selectedId: 4, nextId: 10, records: [
+    { id: 4, evidence: { dose: 60, duration: 3, initRes: 15, prediction: 'increase', notes: 'Original A',
+      history: [first, { day: 1, sensitive: 12, resistant: 12 }, { day: 2, sensitive: 0, resistant: 20 }, { day: 3, sensitive: 0, resistant: 30 }] } },
+    { id: 9, evidence: { dose: 30, duration: 8, initRes: 15, prediction: 'similar', notes: 'Original B',
+      history: [first, { day: 1, sensitive: 0, resistant: 2 }] } }
+  ] };
+}
+
 describe('Microbiology resistance investigation', () => {
   it('models a resistance advantage consistently', () => {
     const probabilities = window.__MicrobiologyCore.getResistanceKillProbabilities;
@@ -179,6 +189,90 @@ describe('Microbiology resistance investigation', () => {
     expect(csv).toContain('snapshots may share a run');
     expect(api.evidence({ ...evidence, notes: '\u0000' + 'x'.repeat(2000) }).notes).toBe('x'.repeat(1200));
   });
+
+  it('applies the record limit after rejecting malformed evidence so valid restored records survive', () => {
+    const api = window.__MicrobiologyCore.resistance;
+    const evidence = comparisonNotebook().records[1].evidence;
+    const records = Array.from({ length: 8 }, (_, index) => ({ id: index + 1, evidence: { ...evidence, notes: 'Record ' + index } }));
+    const restored = api.normalizeNotebook({ records: records.concat([{ id: 99, evidence: {} }, { id: 100, evidence: { history: 'damaged' } }]), selectedId: 1, nextId: 101 });
+    expect(restored.records.map(record => record.id)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(restored).toMatchObject({ selectedId: 1, nextId: 101 });
+    const withNinth = api.normalizeNotebook({ records: records.concat([{ id: 99, evidence: {} }, { id: 9, evidence }]) });
+    expect(withNinth.records.map(record => record.id)).toEqual([2, 3, 4, 5, 6, 7, 8, 9]);
+  });
+
+  it('compares the latest shared observed round and distinguishes resistant counts from rounded shares', () => {
+    const api = window.__MicrobiologyCore.resistance;
+    const result = api.compare(comparisonNotebook(), { aId: 4, bId: 9 });
+    expect(result.records.map(record => record.evidence.day)).toEqual([3, 1]);
+    expect(result.sharedRound).toBe(1);
+    expect(result.counts).toEqual({ a: { sensitive: 12, resistant: 12, totalAlive: 24, sharePct: 50 }, b: { sensitive: 0, resistant: 2, totalAlive: 2, sharePct: 100 } });
+    expect(result.difference).toEqual({ sensitive: -12, resistant: -10, totalAlive: -22, sharePercentagePoints: 50 });
+    expect(result.changedSettings).toEqual(['dose', 'duration']);
+    expect(result.records[0].evidence.finalPct).toBe(100);
+    const reversed = api.compare(comparisonNotebook(), { aId: 9, bId: 4 });
+    expect(reversed.difference.resistant).toBe(10);
+    expect(reversed.difference.sharePercentagePoints).toBe(-50);
+  });
+
+  it('reserves retained valid IDs before repairing malformed or duplicate IDs so explicit pairs keep their evidence', () => {
+    const api = window.__MicrobiologyCore.resistance, evidence = comparisonNotebook().records[1].evidence;
+    const record = (id, notes) => ({ id, evidence: { ...evidence, notes } });
+    const records = [record('bad', 'Malformed A'), record(1, 'Valid B'), record(9, 'Valid C'), record(1, 'Duplicate D')];
+    const raw = { records, selectedId: 1, nextId: 10 }, before = JSON.stringify(raw);
+    const normalized = api.normalizeNotebook(raw);
+    expect(normalized.records.map(item => [item.id, item.evidence.notes])).toEqual([[2, 'Malformed A'], [1, 'Valid B'], [9, 'Valid C'], [3, 'Duplicate D']]);
+    expect(normalized).toMatchObject({ selectedId: 1, nextId: 10 });
+    expect(api.compare(raw, { aId: 1, bId: 9 }).records.map(item => item.evidence.notes)).toEqual(['Valid B', 'Valid C']);
+    expect(api.normalizeNotebook(JSON.parse(JSON.stringify(normalized)))).toEqual(normalized);
+    expect(JSON.stringify(raw)).toBe(before);
+    const atCapacity = { records: [record(1, 'Discarded oldest')].concat(records, [record(5, 'E'), record(6, 'F'), record(7, 'G'), record(8, 'H'), { id: 4, evidence: {} }]), selectedId: 1 };
+    const retained = api.normalizeNotebook(atCapacity);
+    expect(retained.records.map(item => item.id)).toEqual([2, 1, 9, 3, 5, 6, 7, 8]);
+    expect(api.compare(atCapacity, { aId: 1, bId: 9 }).records.map(item => item.evidence.notes)).toEqual(['Valid B', 'Valid C']);
+    expect(retained.records.some(item => item.evidence.notes === 'Discarded oldest')).toBe(false);
+  });
+
+  it('uses observed shares at the common round and keeps extinct shares and differences undefined', () => {
+    const api = window.__MicrobiologyCore.resistance;
+    const book = comparisonNotebook();
+    book.records[0].evidence.history = book.records[0].evidence.history.slice(0, 2).concat([{ day: 2, sensitive: 0, resistant: 0 }]);
+    const beforeExtinction = api.compare(book, { aId: 4, bId: 9 });
+    expect(beforeExtinction.records[0].evidence.status).toBe('extinct');
+    expect(beforeExtinction.sharedRound).toBe(1);
+    expect(beforeExtinction.counts.a.sharePct).toBe(50);
+    book.records[1].evidence.history[1] = { day: 1, sensitive: 0, resistant: 0 };
+    const extinct = api.compare(book, { aId: 4, bId: 9 });
+    expect(extinct.counts.b).toEqual({ sensitive: 0, resistant: 0, totalAlive: 0, sharePct: null });
+    expect(extinct.difference).toEqual({ sensitive: -12, resistant: -12, totalAlive: -24, sharePercentagePoints: null });
+  });
+
+  it('requires distinct explicit numeric IDs and never substitutes for missing or deleted snapshots', () => {
+    const api = window.__MicrobiologyCore.resistance, book = comparisonNotebook();
+    for (const pair of [null, [], { aId: '4', bId: 9 }, { aId: 4, bId: true }, { aId: 4, bId: Infinity }, { aId: 4, bId: 500 }, { aId: 4, bId: 4 }]) {
+      expect(api.compare(book, pair)).toBe(null);
+    }
+    expect(api.normalizeComparison({ aId: '4', bId: 9 }, book)).toEqual({ aId: null, bId: 9 });
+    book.records = book.records.filter(record => record.id !== 4);
+    expect(api.normalizeComparison({ aId: 4, bId: 9 }, book)).toEqual({ aId: null, bId: 9 });
+    expect(api.compare(book, { aId: 4, bId: 9 })).toBe(null);
+  });
+
+  it('keeps paired projections immutable and stable through JSON without randomness or record mutation', () => {
+    const api = window.__MicrobiologyCore.resistance, book = comparisonNotebook();
+    const before = JSON.stringify(book), pair = { aId: 4, bId: 9 };
+    const random = vi.spyOn(Math, 'random');
+    try {
+      const result = api.compare(book, pair);
+      expect(api.compare(JSON.parse(before), JSON.parse(JSON.stringify(pair)))).toEqual(result);
+      expect(random).not.toHaveBeenCalled();
+      expect(JSON.stringify(book)).toBe(before);
+      for (const value of [result, result.records, result.counts, result.counts.a, result.difference, result.changedSettings, result.records[0].evidence.history[1]]) expect(Object.isFrozen(value)).toBe(true);
+      book.records[0].evidence.history[1].resistant = 0;
+      expect(result.counts.a.resistant).toBe(12);
+      expect(result.records[0].evidence.notes).toBe('Original A');
+    } finally { random.mockRestore(); }
+  });
 });
 
 describe('Mounted resistance controls', { timeout: 20000 }, () => {
@@ -255,6 +349,23 @@ describe('Mounted resistance controls', { timeout: 20000 }, () => {
 
   function counts() {
     return [...container.querySelectorAll('[data-resistance-current-history] tbody tr')].map(row => [...row.cells].map(cell => cell.textContent));
+  }
+
+  function openComparison() {
+    const details = container.querySelector('#micro-resistance-comparison');
+    expect(details).not.toBe(null);
+    if (!details.open) act(() => details.querySelector('summary').click());
+    return details;
+  }
+
+  function compareSelect(side, value) {
+    const select = container.querySelector('#micro-resistance-compare-' + side);
+    act(() => { select.value = String(value); select.dispatchEvent(new Event('change', { bubbles: true })); });
+    return select;
+  }
+
+  function comparisonCells(metric) {
+    return [...container.querySelector(`[data-resistance-compare-row="${metric}"]`).cells].map(cell => cell.textContent);
   }
 
   function tab(id) { act(() => container.querySelector('#micro-tab-' + id).click()); }
@@ -548,5 +659,107 @@ describe('Mounted resistance controls', { timeout: 20000 }, () => {
     expect(awardXP).not.toHaveBeenCalled();
     expect(window.__MicrobiologyCore.resistance.normalizeNotebook(latestData.microbiology.resistanceNotebook).records[0].evidence)
       .toMatchObject({ prediction: 'increase', explanation: 'learned', explanationSubmitted: true, notes: 'Original interpretation' });
+  });
+
+  it('requires explicit comparison choices and preserves the active run, playback, notes, selection and XP', () => {
+    const awardXP = vi.fn(), notebook = comparisonNotebook();
+    const active = { dose: 0, duration: 3, initRes: 15, prediction: 'similar', notes: 'Current notes',
+      history: [{ day: 0, sensitive: 68, resistant: 12 }, { day: 1, sensitive: 68, resistant: 12 }] };
+    mount({ resistanceNotebook: notebook, resistanceInvestigation: active }, awardXP);
+    const before = JSON.parse(JSON.stringify(latestData.microbiology.resistanceInvestigation));
+    click('▶ Play');
+    const randomCalls = Math.random.mock.calls.length;
+    const region = openComparison();
+    expect(region.querySelectorAll('label')).toHaveLength(2);
+    expect(region.querySelector('label[for="micro-resistance-compare-a"]').textContent).toBe('Snapshot A');
+    expect(region.querySelector('label[for="micro-resistance-compare-b"]').textContent).toBe('Snapshot B');
+    expect(region.querySelectorAll('select')).toHaveLength(2);
+    expect(container.querySelector('#micro-resistance-compare-a').value).toBe('');
+    expect(container.querySelector('#micro-resistance-compare-b').value).toBe('');
+    expect(region.querySelector('#micro-resistance-comparison-table')).toBe(null);
+    compareSelect('a', 4);
+    expect(region.querySelector('#micro-resistance-comparison-unavailable')).not.toBe(null);
+    const b = container.querySelector('#micro-resistance-compare-b'); b.focus(); compareSelect('b', 9);
+    expect(document.activeElement).toBe(b);
+    expect(latestData.microbiology.resistanceComparison).toEqual({ aId: 4, bId: 9 });
+    expect(latestData.microbiology.resistanceNotebook).toEqual(notebook);
+    expect(latestData.microbiology.resistanceInvestigation).toEqual(before);
+    expect(container.querySelector('#micro-resistance-notes').value).toBe('Current notes');
+    expect(region.querySelector('#micro-resistance-comparison-round').textContent).toContain('Comparing round 1.');
+    expect(region.textContent).toContain('ends at round 3/3');
+    expect(region.textContent).toContain('ends at round 1/8');
+    expect(region.textContent).toContain('Actual starting resistant cells: 12/80 (15%)');
+    expect(region.querySelector('[data-resistance-comparison-settings]').textContent).toBe('Different saved settings: Exposure strength, Planned rounds.');
+    expect(comparisonCells('resistant')).toEqual(['Resistant cells', '12', '2', '-10']);
+    expect(comparisonCells('totalAlive')).toEqual(['Total living cells', '24', '2', '-22']);
+    expect(comparisonCells('sharePct')).toEqual(['Resistant share', '50%', '100%', '+50 percentage points']);
+    expect(region.querySelectorAll('thead th[scope="col"]')).toHaveLength(4);
+    expect(region.querySelectorAll('tbody th[scope="row"]')).toHaveLength(4);
+    expect(region.querySelector('table').closest('[role="region"]').tabIndex).toBe(0);
+    expect(Math.random.mock.calls).toHaveLength(randomCalls);
+    expect(awardXP).not.toHaveBeenCalled();
+    expect([...container.querySelectorAll('button')].some(button => button.textContent === '⏸ Pause')).toBe(true);
+    act(() => vi.advanceTimersByTime(600));
+    expect(latestData.microbiology.resistanceInvestigation.day).toBe(2);
+    expect(comparisonCells('resistant')).toEqual(['Resistant cells', '12', '2', '-10']);
+  });
+
+  it('restores comparison preferences through JSON independently of review selection and reset', () => {
+    const notebook = comparisonNotebook(), pair = { aId: 9, bId: 4 };
+    mount({ resistanceNotebook: notebook, resistanceComparison: pair });
+    openComparison();
+    expect(comparisonCells('resistant')).toEqual(['Resistant cells', '2', '12', '+10']);
+    openNotebook(); act(() => container.querySelector('#micro-resistance-evidence-9').click());
+    expect(latestData.microbiology.resistanceComparison).toEqual(pair);
+    click('↺ Reset current run');
+    const restored = JSON.parse(JSON.stringify(latestData.microbiology));
+    act(() => root.unmount()); root = null; mount(restored);
+    const region = openComparison();
+    expect(container.querySelector('#micro-resistance-compare-a').value).toBe('9');
+    expect(container.querySelector('#micro-resistance-compare-b').value).toBe('4');
+    expect(region.querySelector('caption').textContent).toBe('Saved counts at shared round 1');
+    expect(latestData.microbiology.resistanceNotebook.selectedId).toBe(9);
+    expect(latestData.microbiology.resistanceNotebook.records).toEqual(window.__MicrobiologyCore.resistance.normalizeNotebook(notebook).records);
+    expect(latestData.microbiology.resistanceComparison).toEqual(pair);
+    expect(comparisonCells('sharePct')).toEqual(['Resistant share', '100%', '50%', '-50 percentage points']);
+  });
+
+  it('leaves same-ID and deleted-ID comparisons unavailable until distinct existing records are selected', () => {
+    const notebook = comparisonNotebook();
+    mount({ resistanceNotebook: notebook, resistanceComparison: { aId: 4, bId: 4 } });
+    const region = openComparison();
+    expect(region.querySelector('#micro-resistance-comparison-table')).toBe(null);
+    expect(region.querySelector('#micro-resistance-comparison-unavailable').textContent).toContain('two different');
+    compareSelect('b', 9);
+    expect(region.querySelector('#micro-resistance-comparison-table')).not.toBe(null);
+    openNotebook(); click('Remove selected evidence');
+    expect(latestData.microbiology.resistanceNotebook.records.map(record => record.id)).toEqual([9]);
+    expect(container.querySelector('#micro-resistance-compare-a').value).toBe('');
+    expect(container.querySelector('#micro-resistance-compare-b').value).toBe('9');
+    expect(region.querySelector('#micro-resistance-comparison-table')).toBe(null);
+    expect(region.querySelector('#micro-resistance-comparison-unavailable').textContent).toContain('not replaced automatically');
+    const restored = JSON.parse(JSON.stringify(latestData.microbiology));
+    act(() => root.unmount()); root = null; mount(restored);
+    expect(container.querySelector('#micro-resistance-compare-a').value).toBe('');
+    expect(container.querySelector('#micro-resistance-compare-b').value).toBe('9');
+    compareSelect('a', 9);
+    expect(openComparison().querySelector('#micro-resistance-comparison-table')).toBe(null);
+    expect(latestData.microbiology.resistanceNotebook.nextId).toBe(10);
+  });
+
+  it('shows undefined extinct shares and differences without changing either original saved prediction', () => {
+    const notebook = comparisonNotebook();
+    notebook.records[1].evidence.history[1] = { day: 1, sensitive: 0, resistant: 0 };
+    notebook.records[1].evidence.prediction = 'extinct';
+    mount({ resistanceNotebook: notebook, resistanceComparison: { aId: 4, bId: 9 } });
+    const region = openComparison();
+    expect(comparisonCells('totalAlive')).toEqual(['Total living cells', '24', '0', '-24']);
+    expect(comparisonCells('sharePct')).toEqual(['Resistant share', '50%', 'Undefined', 'Undefined']);
+    expect(region.textContent).toContain('Ended with no survivors');
+    expect(region.textContent).toContain('Original prediction: Increase');
+    expect(region.textContent).toContain('Original prediction: No survivors to compare');
+    expect(region.textContent).toContain('Snapshots may come from different rounds of the same run');
+    expect(latestData.microbiology.resistanceNotebook).toEqual(notebook);
+    expect(region.querySelector('[data-resistance-prediction-review]')).toBe(null);
   });
 });

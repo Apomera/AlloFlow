@@ -1,0 +1,45 @@
+{
+  "date": "2026-09-29",
+  "sourceFile": "stem_lab/stem_tool_microbiology.js",
+  "sourceSha256": "1309d891f767a6f67876ec7873d869fd7afbaf60638dace6502542695ed37ebe",
+  "unit": {
+    "passed": 277,
+    "failed": 0,
+    "files": 13,
+    "report": "unit-results.json",
+    "priorRuns": [
+      "unit-initial-results.json",
+      "unit-recovery-before-layout-results.json",
+      "unit-recovery-mirror-results.json"
+    ],
+    "note": "The final consolidated focused regression run passes. Earlier attempt reports, if any, are retained."
+  },
+  "browser": {
+    "passed": 16,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "project": "chromium",
+    "report": "browser-results.json",
+    "priorRuns": [
+      "browser-initial-results.json",
+      "browser-recovery-before-layout-results.json"
+    ],
+    "scope": "Resistance snapshot comparison, microscope estimate history, and Growth removal recovery plus saved-work regressions, served from the local working tree."
+  },
+  "interface": {
+    "keys": 1577,
+    "missing": 0,
+    "changedFallbacks": 0,
+    "runtimeMirrored": true,
+    "microbiologyNamespacesMatch": true,
+    "syntaxChecksPassed": true
+  },
+  "visualReview": [
+    "resistance-comparison-desktop.png",
+    "resistance-comparison-phone.png",
+    "microscope-estimate-history-phone.png",
+    "growth-removal-recovery-phone.png"
+  ],
+  "scope": "Micro Lab source, desktop mirror, Micro Lab translation entries, focused tests, and validation artifacts."
+}

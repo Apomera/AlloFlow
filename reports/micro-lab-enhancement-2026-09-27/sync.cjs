@@ -3,6 +3,13 @@ const acorn = require('acorn');
 const sourceFile = 'stem_lab/stem_tool_microbiology.js';
 const source = fs.readFileSync(sourceFile, 'utf8');
 const strings = new Map();
+// Existing-file handles avoid recreation failures in synchronized Windows folders.
+function writeExisting(file, value) {
+  const bytes = Buffer.isBuffer(value) ? value : Buffer.from(value, 'utf8');
+  const fd = fs.openSync(file, 'r+');
+  try { fs.writeFileSync(fd, bytes); fs.ftruncateSync(fd, bytes.length); }
+  finally { fs.closeSync(fd); }
+}
 function walk(node) {
   if (!node || typeof node.type !== 'string') return;
   if (node.type === 'CallExpression' && node.callee.type === 'Identifier') {
@@ -15,6 +22,7 @@ function walk(node) {
       if (name === 'pt') strings.set('stem.microbiology.print_' + key.value, fallback.value);
       if (name === 'ht') strings.set('stem.microbiology.workspace_' + key.value, fallback.value);
       if (name === 'glt') strings.set('stem.microbiology.gram_lab_' + key.value, fallback.value);
+      if (name === 'ct') strings.set('stem.microbiology.resistance_comparison_' + key.value, fallback.value);
       if (['__alloT', '__alloMBT'].includes(name) && key.value.startsWith('stem.microbiology.')) strings.set(key.value, fallback.value);
     }
   }
@@ -39,9 +47,9 @@ for (const file of ['ui_strings.js', 'desktop/web-app/public/ui_strings.js']) {
     const inserted = missing.map(([key, fallback]) => '      ' + JSON.stringify(key.slice('stem.microbiology.'.length)) + ': ' + JSON.stringify(fallback)).join(',\n');
     text = text.slice(0, last.end) + ',\n' + inserted + text.slice(last.end);
     JSON.parse(text);
-    fs.writeFileSync(file, text);
+    writeExisting(file, text);
   }
   console.log(file + ': registered ' + missing.length + ' new Micro Lab strings');
 }
-fs.copyFileSync(sourceFile, 'desktop/web-app/public/stem_lab/stem_tool_microbiology.js');
+writeExisting('desktop/web-app/public/stem_lab/stem_tool_microbiology.js', fs.readFileSync(sourceFile));
 console.log('Micro Lab runtime mirror synchronized.');

@@ -12,6 +12,7 @@ const end = source.indexOf('  // Plugin registration', start);
 const VirtualMicroscope = new Function('R', 'hh', 'microInkFor', '__alloMBT', source.slice(start, end) + '\nreturn VirtualMicroscope;')(
   React, React.createElement, value => value, (_key, fallback) => fallback
 );
+const measurementsCore = window.__MicrobiologyCore.measurements;
 let root;
 let container;
 let latestState;
@@ -581,6 +582,193 @@ describe('Microscope notebook review and export', () => {
     expect(document.querySelector('a[download="micro-lab-microscope-notebook.txt"]')).toBeNull();
     act(() => vi.advanceTimersByTime(1000));
     expect(download.revokeUrl).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('Previous checked microscope estimates', () => {
+  function entryWithHistory(id = 'ecoli') {
+    const context = savedMeasurementContext(id, 'lightbright', 1000, 20);
+    return {
+      draft: { value: '3000', unit: 'nm', context: savedMeasurementContext(id, 'lightbright', 400, 50) },
+      result: { value: 2, unit: 'um', context },
+      previousResult: { value: 1000, unit: 'nm', context: savedMeasurementContext(id, 'em', 10000, 1) }
+    };
+  }
+  function openHistory(id = 'ecoli') {
+    const notebook = [...container.querySelectorAll('details')].find(node => node.querySelector('summary')?.textContent.startsWith('Measurement notebook'));
+    if (!notebook.open) act(() => notebook.querySelector('summary').click());
+    const preview = container.querySelector(`[data-measurement-history="${id}"]`);
+    expect(preview).toBeTruthy();
+    if (!preview.open) act(() => preview.querySelector('summary').click());
+    return preview;
+  }
+
+  it('keeps one independent validated previous result, strips nested history, and preserves the draft', () => {
+    const entry = entryWithHistory();
+    entry.previousResult.previousResult = { value: 999 };
+    entry.previousResult.context.extra = 'discard';
+    const raw = { ecoli: entry }, before = JSON.stringify(raw);
+    const clean = measurementsCore.normalize(raw);
+    expect(clean.ecoli.draft).toEqual(entry.draft);
+    expect(clean.ecoli.result).toEqual(entry.result);
+    expect(clean.ecoli.previousResult).toEqual({ value: 1000, unit: 'nm', context: savedMeasurementContext('ecoli', 'em', 10000, 1) });
+    expect(clean.ecoli.previousResult).not.toBe(entry.previousResult);
+    expect(clean.ecoli.previousResult.context).not.toBe(entry.previousResult.context);
+    expect(measurementsCore.normalize(clean)).toEqual(clean);
+    expect(JSON.stringify(raw)).toBe(before);
+  });
+
+  it('rejects orphaned, identical, damaged, unresolved and cropped history without losing valid evidence', () => {
+    const entry = entryWithHistory();
+    const badContexts = [
+      { ...entry.previousResult.context, specimen: 'strep' },
+      { ...entry.previousResult.context, referenceUm: 2000 },
+      { ...entry.previousResult.context, fieldUm: 99 },
+      { ...entry.previousResult.context, scaleUm: 99 },
+      savedMeasurementContext('ecoli', 'lightbright', 1000, 1),
+      savedMeasurementContext('ecoli', 'em', 100000, 50)
+    ];
+    for (const previousResult of [null, [], 'bad', entry.result, { ...entry.previousResult, value: 0 }, { ...entry.previousResult, value: Infinity }, { ...entry.previousResult, unit: 'mm' }, ...badContexts.map(context => ({ ...entry.previousResult, context }))]) {
+      expect(measurementsCore.normalize({ ecoli: { ...entry, previousResult } })).toEqual({ ecoli: { draft: entry.draft, result: entry.result } });
+    }
+    expect(measurementsCore.normalize({ ecoli: { ...entry, result: null } })).toEqual({ ecoli: { draft: entry.draft } });
+    expect(measurementsCore.normalize({ ecoli: { previousResult: entry.previousResult } })).toEqual({});
+    const phageContext = savedMeasurementContext('phage', 'em', 100000, 1);
+    const phage = { result: { value: 200, unit: 'nm', context: phageContext }, previousResult: { value: 100, unit: 'nm', context: savedMeasurementContext('phage', 'lightbright', 1000, 20) } };
+    expect(measurementsCore.normalize({ phage })).toEqual({ phage: { result: phage.result } });
+  });
+
+  it('retains the displaced estimate only on a changed check and preserves history on identical checks', () => {
+    mount({ microscopeFocus: 50 });
+    enterEstimate(4); click('Check and save estimate');
+    const first = JSON.parse(JSON.stringify(latestState.microscopeMeasurements.ecoli.result));
+    expect(latestState.microscopeMeasurements.ecoli.previousResult).toBeUndefined();
+    expect(container.querySelector('[data-measurement-history]')).toBeNull();
+    enterEstimate(2);
+    expect(latestState.microscopeMeasurements.ecoli.previousResult).toBeUndefined();
+    click('Check and save estimate');
+    expect(latestState.microscopeMeasurements.ecoli.previousResult).toEqual(first);
+    enterEstimate('2.0'); click('Check and save estimate');
+    expect(latestState.microscopeMeasurements.ecoli.previousResult).toEqual(first);
+    const second = JSON.parse(JSON.stringify(latestState.microscopeMeasurements.ecoli.result));
+    click('400×'); zoomTo(50); click('Start estimate for this view'); enterEstimate(2);
+    click('Check and save estimate');
+    expect(latestState.microscopeMeasurements.ecoli.previousResult).toEqual(second);
+    expect(latestState.microscopeMeasurements.ecoli.result.context).toMatchObject({ mag: 400, zoom: 50 });
+    expect(Object.keys(latestState.microscopeMeasurements.ecoli.previousResult).sort()).toEqual(['context', 'unit', 'value']);
+    const before = JSON.parse(JSON.stringify(latestState.microscopeMeasurements));
+    click('Check and save estimate');
+    expect(latestState.microscopeMeasurements).toEqual(before);
+    enterEstimate(0);
+    expect(button('Check and save estimate').disabled).toBe(true);
+    expect(latestState.microscopeMeasurements.ecoli.previousResult).toEqual(second);
+  });
+
+  it('previews both original units and calibrations with separate reference comparisons and no editable evidence', () => {
+    const entry = entryWithHistory();
+    entry.result.value = 2.1234567890123;
+    mount({ microscopeMeasurements: { ecoli: entry } });
+    const before = JSON.parse(JSON.stringify(latestState));
+    expect(container.querySelector('[data-measurement-history="ecoli"]').open).toBe(false);
+    const preview = openHistory();
+    expect(preview.querySelector('summary').textContent).toBe('Compare checked estimates · E. coli');
+    const current = preview.querySelector('[data-measurement-version="current"]');
+    const previous = preview.querySelector('[data-measurement-version="previous"]');
+    expect(current.textContent).toContain('Your estimate: 2.1234567890123 µm');
+    expect(current.textContent).toContain('6.17% · above the drawing reference');
+    expect(current.textContent).toContain('Light microscope · 1,000× · display zoom 20× · Scale bar 2 µm');
+    expect(current.textContent).toContain('Model field width: 9 µm');
+    expect(previous.textContent).toContain('Your estimate: 1000 nm');
+    expect(previous.textContent).toContain('Estimate converted to micrometers: 1 µm');
+    expect(previous.textContent).toContain('50% · below the drawing reference');
+    expect(previous.textContent).toContain('Electron view · 10,000× · display zoom 1× · Scale bar 1 µm');
+    expect(previous.textContent).toContain('Model field width: 4 µm');
+    for (const panel of [current, previous]) {
+      expect(panel.textContent).toContain('Length of the rod-shaped cell, from end to end');
+      expect(panel.textContent).toContain('Reference size: 2 µm');
+      expect(panel.textContent).toContain('Practice band (±20%): 1.6 µm–2.4 µm');
+      expect(panel.querySelectorAll('input,textarea,select,button')).toHaveLength(0);
+      expect(panel.querySelector('h5').id).toBe(panel.getAttribute('aria-labelledby'));
+    }
+    expect(preview.textContent).toContain('does not describe uncertainty in a real laboratory measurement');
+    expect(button('Restore previous estimate · E. coli').getAttribute('aria-describedby')).toBe('micro-measurement-history-ecoli-note');
+    expect(latestState).toEqual(before);
+  });
+
+  it('reversibly restores another slide’s estimate while keeping every draft, view setting, focus and progress field', () => {
+    const entry = entryWithHistory();
+    const phageDraft = { value: '250', unit: 'nm', context: savedMeasurementContext('phage', 'lightbright', 1000, 20) };
+    const awards = mount({ scopeOrganism: 'phage', magnification: 1000, microscopeZoom: 50, microscopeFocus: 92, microscopeTargetFocus: 13, microscopeLabels: false, microscopeSeenSlides: ['ecoli'], microscopeMeasurements: { ecoli: entry, phage: { draft: phageDraft } } });
+    openHistory();
+    const before = JSON.parse(JSON.stringify(latestState));
+    click('Restore previous estimate · E. coli');
+    expect(latestState).toEqual({ ...before, microscopeMeasurements: { ...before.microscopeMeasurements, ecoli: { ...entry, result: entry.previousResult, previousResult: entry.result } } });
+    expect(awards).not.toHaveBeenCalled();
+    expect(document.activeElement.id).toBe('micro-measurement-history-ecoli-current');
+    expect(document.activeElement.textContent).toBe('Current checked estimate');
+    expect(container.querySelector('[data-measurement-history-notice="ecoli"]').textContent).toContain('Your working estimate and microscope settings were kept');
+    expect(text()).toContain('Measurement notebook · 1/5');
+    click('Restore previous estimate · E. coli');
+    expect(latestState).toEqual(before);
+    expect(awards).not.toHaveBeenCalled();
+    enterEstimate(275);
+    expect(container.querySelector('[data-measurement-history-notice="ecoli"]').textContent).toBe('');
+  });
+
+  it('keeps history separate by slide through JSON reload without persisting restore messages or moving focus later', () => {
+    vi.useFakeTimers();
+    const strepContext = savedMeasurementContext('strep', 'lightbright', 1000, 20);
+    const strep = { result: { value: 1, unit: 'um', context: strepContext }, previousResult: { value: 2, unit: 'um', context: strepContext } };
+    mount({ microscopeMeasurements: { ecoli: entryWithHistory(), strep } });
+    openHistory(); click('Restore previous estimate · E. coli');
+    const saved = JSON.parse(JSON.stringify(latestState));
+    expect(saved.microscopeMeasurements.strep).toEqual(strep);
+    act(() => root.unmount()); root = null; container.remove();
+    mount(saved);
+    expect(latestState).toEqual(saved);
+    expect(container.querySelectorAll('[data-measurement-history]')).toHaveLength(2);
+    expect(container.querySelector('[data-measurement-history-notice="ecoli"]').textContent).toBe('');
+    const notebookButton = button('Open measurement notebook · 2/5'); notebookButton.focus();
+    act(() => vi.runOnlyPendingTimers());
+    expect(document.activeElement).toBe(notebookButton);
+    openHistory('strep'); click('Restore previous estimate · Streptococcus');
+    expect(latestState.microscopeMeasurements.ecoli).toEqual(saved.microscopeMeasurements.ecoli);
+    expect(latestState.microscopeMeasurements.strep).toEqual({ result: strep.previousResult, previousResult: strep.result });
+  });
+
+  it('does not focus an estimate inside a collapsed comparison', () => {
+    mount({ microscopeMeasurements: { ecoli: entryWithHistory() } });
+    const notebookButton = button('Open measurement notebook · 1/5'); notebookButton.focus();
+    click('Restore previous estimate · E. coli');
+    expect(document.activeElement).toBe(notebookButton);
+    expect(container.querySelector('[data-measurement-history="ecoli"]').open).toBe(false);
+    expect(latestState.microscopeMeasurements.ecoli.result.value).toBe(1000);
+  });
+
+  it('exports current and previous evidence with their own units and calibration, keeping working notes separate', () => {
+    const entry = entryWithHistory();
+    entry.result.value = 2.1234567890123;
+    mount({ microscopeMeasurements: { ecoli: entry } });
+    const before = JSON.parse(JSON.stringify(latestState));
+    const download = captureNotebookDownload(); vi.useFakeTimers();
+    click('Download measurement notebook');
+    const report = download.contents[0];
+    const [current, remaining] = report.split('Previous checked estimate (available to restore)');
+    const previous = remaining.split('2. Streptococcus')[0];
+    expect(current).toContain('Current checked estimate\nYour estimate: 2.1234567890123 µm');
+    expect(current).toContain('Difference: 6.17% · above the drawing reference');
+    expect(current).toContain('Light microscope · 1,000× · display zoom 20× · Scale bar 2 µm');
+    expect(previous).toContain('Your estimate: 1000 nm');
+    expect(previous).toContain('Difference: 50% · below the drawing reference');
+    expect(previous).toContain('Electron view · 10,000× · display zoom 1× · Scale bar 1 µm');
+    expect(previous).toContain('Model field width: 4 µm');
+    expect(report).toContain('The current checked estimate and any previous checked estimate are included for each slide. Working estimates remain saved in the lab.');
+    expect(report).not.toContain('3000');
+    expect(report.match(/No checked estimate yet./g)).toHaveLength(4);
+    expect(latestState).toEqual(before);
+    act(() => vi.advanceTimersByTime(1000));
+    expect(download.revokeUrl).toHaveBeenCalledWith('blob:micro-notebook-test');
+    expect(document.querySelector('a[download="micro-lab-microscope-notebook.txt"]')).toBeNull();
   });
 });
 

@@ -683,3 +683,134 @@ describe('Microbiology growth investigation workflow', { timeout: 20000 }, () =>
     expect(mounted.container.querySelector('#gl-explanation').value).toBe('Recovered note');
   });
 });
+
+describe('Growth removal recovery workflow', { timeout: 20000 }, () => {
+  function trial(id) { return { id, control: baseConditions, conditions: { ...baseConditions, oxygen: 0 }, prediction: 'higher', hypothesis: 'Original reasoning ' + id, explanation: '<b>Literal saved evidence</b> ' + id }; }
+
+  it('recovers a middle trial after navigation and JSON reload while preserving later draft, control, sweep, and hour changes', () => {
+    mount({ growthLab: { ...baseConditions, tempC: 30 }, growthReviewHour: 6,
+      growthInvestigation: { trials: [2, 7, 11].map(trial), selectedId: 7, nextId: 20, control: baseConditions, prediction: 'lower', hypothesis: 'Next run draft', sweepVariable: 'pH', sweep: { variable: 'oxygen', conditions: baseConditions } } });
+    const saved = structuredClone(book().trials[1]);
+    button('Remove selected trial').focus(); click('Remove selected trial');
+    expect(document.activeElement).toBe(mounted.container.querySelector('#gl-restore-removed'));
+    expect(book().trials.map(item => item.id)).toEqual([2, 11]);
+    expect(book().removed).toEqual({ trial: saved, index: 1 });
+    const recovery = mounted.container.querySelector('#gl-removed-trial');
+    expect(recovery.textContent).toContain('Original reasoning 7');
+    expect(recovery.textContent).toContain('<b>Literal saved evidence</b> 7');
+    expect(recovery.querySelector('b')).toBeNull();
+    expect(mounted.container.querySelector('#gl-removal-notice').textContent).toBe('Removed trial 7. You can restore it below.');
+    write('#gl-hypothesis', 'Revised next-run reasoning'); choose('unsure'); write('#gl-tempC', '18');
+    click('Use current conditions as control'); write('#gl-sweep-variable', 'tempC'); click('Run variable sweep'); write('#gl-review-hour', '12');
+    const beforeRestore = JSON.parse(JSON.stringify(mounted.state));
+    click(mounted.container.querySelector('#micro-tab-home')); click(mounted.container.querySelector('#micro-tab-growthLab'));
+    expect(book().removed).toEqual({ trial: saved, index: 1 });
+    const reloaded = JSON.parse(JSON.stringify(mounted.state));
+    act(() => mounted.root.unmount()); mounted.container.remove(); mounted = null; mount(reloaded);
+    expect(mounted.container.querySelector('#gl-removal-notice').textContent).toBe('');
+    expect(mounted.container.querySelector('#gl-removed-trial')).toBeTruthy();
+    click('Restore removed trial');
+    expect(book().trials.map(item => item.id)).toEqual([2, 7, 11]);
+    expect(book().trials[1]).toEqual(saved);
+    expect(book().selectedId).toBe(7);
+    expect(book()).not.toHaveProperty('removed');
+    expect(document.activeElement).toBe(mounted.container.querySelector('#gl-trial-7'));
+    expect(mounted.container.querySelector('#gl-removal-notice').textContent).toBe('Restored trial 7. Your current settings and next-run notes are unchanged.');
+    expect(mounted.state.growthLab).toEqual(beforeRestore.growthLab);
+    expect(mounted.state.growthReviewHour).toBe(12);
+    for (const field of ['control', 'prediction', 'hypothesis', 'explanation', 'sweep', 'sweepVariable', 'nextId']) expect(book()[field]).toEqual(beforeRestore.growthInvestigation[field]);
+  });
+
+  it('keeps recovery reachable after the last trial disappears and focuses the notebook when removal is kept', () => {
+    mount({ growthInvestigation: { trials: [trial(7)], selectedId: 7, nextId: 20 } });
+    button('Remove selected trial').focus(); click('Remove selected trial');
+    expect(book().trials).toEqual([]);
+    expect(mounted.container.querySelector('.micro-growth-trials')).toBeNull();
+    expect(mounted.container.querySelector('#gl-removed-trial')).toBeTruthy();
+    expect(document.activeElement).toBe(mounted.container.querySelector('#gl-restore-removed'));
+    const notice = mounted.container.querySelector('#gl-removal-notice');
+    expect(notice.getAttribute('role')).toBe('status');
+    expect(notice.getAttribute('aria-live')).toBe('polite');
+    click('Keep removal');
+    expect(book()).not.toHaveProperty('removed');
+    expect(book().nextId).toBe(20);
+    expect(document.activeElement).toBe(mounted.container.querySelector('#gl-notebook-heading'));
+    expect(notice.textContent).toContain('Recovery for this trial has ended.');
+  });
+
+  it('clearly warns before a successful new run ends recovery and frees capacity without reusing IDs', () => {
+    const trials = Array.from({ length: 12 }, (_, index) => trial(index + 1));
+    mount({ growthLab: baseConditions, growthInvestigation: { trials, selectedId: 7, nextId: 20, control: baseConditions, prediction: 'lower', hypothesis: 'Next run draft' } });
+    expect(button('Run comparison').disabled).toBe(true);
+    click('Remove selected trial');
+    expect(button('Run comparison').disabled).toBe(false);
+    expect(button('Run comparison').getAttribute('aria-describedby')).toBe('gl-run-removal-warning');
+    const warning = mounted.container.querySelector('#gl-run-removal-warning');
+    expect(warning.textContent).toBe('Restore this trial before saving another trial or removing another.');
+    expect(warning.compareDocumentPosition(button('Run comparison')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    click('Run comparison');
+    expect(book().trials.map(item => item.id)).toEqual([1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 20]);
+    expect(book().nextId).toBe(21);
+    expect(book()).not.toHaveProperty('removed');
+    expect(mounted.container.querySelector('#gl-removed-trial')).toBeNull();
+    expect(mounted.container.querySelector('#gl-removal-notice').textContent).toBe('A new trial was saved. The earlier removed trial can no longer be restored.');
+    expect(button('Run comparison').disabled).toBe(true);
+  });
+
+  it('replaces the one-step slot only when another trial is removed', () => {
+    mount({ growthInvestigation: { trials: [2, 7, 11].map(trial), selectedId: 7, nextId: 20 } });
+    click('Remove selected trial');
+    expect(book().removed.trial.id).toBe(7);
+    click(mounted.container.querySelector('#gl-trial-2'));
+    write('#gl-explanation', 'Updated retained evidence');
+    expect(book().removed.trial.id).toBe(7);
+    expect(button('Remove selected trial').getAttribute('aria-describedby')).toBe('gl-removal-policy');
+    click('Remove selected trial');
+    expect(book().removed).toMatchObject({ index: 0, trial: { id: 2, explanation: 'Updated retained evidence' } });
+    click('Restore removed trial');
+    expect(book().trials.map(item => item.id)).toEqual([2, 11]);
+    expect(book().trials[0].explanation).toBe('Updated retained evidence');
+    expect(document.activeElement).toBe(mounted.container.querySelector('#gl-trial-2'));
+  });
+
+  it('shows a blocked imported recovery slot at capacity without silently evicting a saved trial', () => {
+    mount({ growthInvestigation: { trials: Array.from({ length: 12 }, (_, index) => trial(index + 1)), selectedId: 3, removed: { trial: trial(20), index: 4 } } });
+    const original = JSON.stringify(book());
+    expect(button('Restore removed trial').disabled).toBe(true);
+    expect(mounted.container.querySelector('#gl-removal-full').textContent).toBe('The notebook is full. Restoring cannot replace another saved trial.');
+    click('Restore removed trial');
+    expect(JSON.stringify(book())).toBe(original);
+    click('Keep removal');
+    expect(book().trials.map(item => item.id)).toEqual(Array.from({ length: 12 }, (_, i) => i + 1));
+    expect(document.activeElement).toBe(mounted.container.querySelector('#gl-trial-3'));
+  });
+
+  it('does not move focus back into Growth after removal and immediate navigation away', () => {
+    mount({ growthInvestigation: { trials: [trial(7)], selectedId: 7 } });
+    const remove = button('Remove selected trial'), home = mounted.container.querySelector('#micro-tab-home');
+    act(() => { remove.click(); home.focus(); home.click(); });
+    expect(mounted.state.tab).toBe('home');
+    expect(document.activeElement).toBe(home);
+    expect(mounted.state.growthInvestigation.removed.trial.id).toBe(7);
+    click(mounted.container.querySelector('#micro-tab-growthLab'));
+    expect(document.activeElement).not.toBe(mounted.container.querySelector('#gl-restore-removed'));
+    expect(mounted.container.querySelector('#gl-removed-trial')).toBeTruthy();
+  });
+
+  it('downloads only active trials and leaves the recoverable snapshot and inspection hour untouched', () => {
+    const blobs = [];
+    vi.stubGlobal('Blob', class { constructor(parts) { blobs.push(parts.join('')); } });
+    vi.stubGlobal('URL', { createObjectURL: vi.fn(() => 'blob:growth-recovery'), revokeObjectURL: vi.fn() });
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {}); vi.useFakeTimers();
+    mount({ growthReviewHour: 6, growthInvestigation: { trials: [trial(2), trial(7)], selectedId: 7, nextId: 20 } });
+    click('Remove selected trial');
+    const snapshot = JSON.stringify(mounted.state);
+    click('Download notebook'); click('Download trial CSV');
+    for (const exported of blobs) { expect(exported).toContain('Literal saved evidence</b> 2'); expect(exported).not.toContain('Literal saved evidence</b> 7'); }
+    expect(JSON.stringify(mounted.state)).toBe(snapshot);
+    expect(mounted.state.growthReviewHour).toBe(6);
+    click('Restore removed trial'); click('Download notebook');
+    expect(blobs[2]).toContain('Literal saved evidence</b> 7');
+    act(() => vi.runOnlyPendingTimers());
+  });
+});

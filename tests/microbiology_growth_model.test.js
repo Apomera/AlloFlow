@@ -506,3 +506,92 @@ describe('Microbiology saved-run review', () => {
     expect(Object.isFrozen(changed.rows[0].changed)).toBe(true);
   });
 });
+
+describe('Growth notebook removal recovery', () => {
+  function trial(id) { return { id, control: optimum('ecoli'), conditions: optimum('ecoli', 0), prediction: 'higher', hypothesis: '<b>Original reasoning</b> ' + id, explanation: 'Saved evidence ' + id }; }
+
+  it('restores the original ID, index, and immutable evidence after JSON reload without replacing current drafts', () => {
+    const original = growth.normalizeNotebook({ trials: [2, 7, 11].map(trial), selectedId: 7, nextId: 20,
+      control: optimum('thermus'), prediction: 'lower', hypothesis: 'Next run', explanation: 'Draft note', sweepVariable: 'pH', sweep: { variable: 'oxygen', conditions: optimum('ecoli') } });
+    const removed = growth.removeTrial(original, 7);
+    expect(removed).toMatchObject({ status: 'removed', id: 7, notebook: { selectedId: 11, nextId: 20, removed: { trial: original.trials[1], index: 1 } } });
+    expect(removed.notebook.trials.map(item => item.id)).toEqual([2, 11]);
+    expect(Object.isFrozen(removed.notebook.removed.trial.conditions)).toBe(true);
+    const restored = growth.restoreTrial(JSON.parse(JSON.stringify(removed.notebook)));
+    expect(restored).toMatchObject({ status: 'restored', id: 7 });
+    expect(restored.notebook).toEqual(original);
+    expect(restored.notebook).not.toHaveProperty('removed');
+    expect(original.trials.map(item => item.id)).toEqual([2, 7, 11]);
+  });
+
+  it('keeps only the latest removal and lets the learner end recovery without changing surviving records', () => {
+    const first = growth.removeTrial({ trials: [2, 7, 11].map(trial), nextId: 20 }, 7).notebook;
+    expect(growth.removeTrial(first, '11')).toMatchObject({ status: 'missing', notebook: first });
+    const second = growth.removeTrial(first, 11).notebook;
+    expect(second.removed).toMatchObject({ index: 1, trial: { id: 11 } });
+    expect(growth.restoreTrial(second).notebook.trials.map(item => item.id)).toEqual([2, 11]);
+    const kept = growth.keepRemoval(second);
+    expect(kept).toMatchObject({ status: 'kept', id: 11, notebook: { nextId: 20, selectedId: 2, trials: second.trials } });
+    expect(kept.notebook).not.toHaveProperty('removed');
+    expect(growth.restoreTrial(kept.notebook).status).toBe('missing');
+  });
+
+  it('rejects malformed, orphaned, and colliding recovery slots without repairing the removed trial identity', () => {
+    for (const removed of [null, [], {}, { trial: trial(0), index: 0 }, { trial: trial('7'), index: 0 },
+      { trial: trial(7), index: -1 }, { trial: trial(7), index: 0.5 }, { trial: trial(7), index: '0' },
+      { trial: trial(7), index: 2 }, { trial: { id: 7, conditions: [] }, index: 0 }, { trial: trial(2), index: 0 }]) {
+      const normalized = growth.normalizeNotebook({ trials: [trial(2)], removed });
+      expect(normalized).not.toHaveProperty('removed');
+      expect(normalized.trials.map(item => item.id)).toEqual([2]);
+      expect(growth.restoreTrial({ trials: [trial(2)], removed }).status).toBe('missing');
+    }
+    const missingControl = growth.normalizeNotebook({ trials: [], removed: { trial: { ...trial(7), control: null }, index: 0 } });
+    expect(missingControl.removed.trial.control).toBeNull();
+    expect(growth.restoreTrial(missingControl).notebook.trials[0].control).toBeNull();
+  });
+
+  it('reserves removed IDs during identifier repair and at the bounded ID horizon', () => {
+    const repaired = growth.normalizeNotebook({ trials: [{ ...trial(2), id: 'bad' }], removed: { trial: trial(1), index: 0 }, nextId: 1 });
+    expect(repaired.trials[0].id).toBe(2);
+    expect(repaired.removed.trial.id).toBe(1);
+    expect(repaired.nextId).toBe(3);
+    const maximum = growth.normalizeNotebook({ trials: [trial(1)], removed: { trial: trial(1000000000), index: 1 }, nextId: 1000000001, control: optimum('ecoli'), prediction: 'lower' });
+    expect(maximum.nextId).toBe(2);
+    const saved = growth.saveTrial(maximum, optimum('ecoli', 0));
+    expect(saved.id).toBe(2);
+    expect(saved.notebook.trials.map(item => item.id)).toEqual([1, 2]);
+    const ordinary = growth.normalizeNotebook({ removed: { trial: trial(40), index: 0 }, nextId: 2 });
+    expect(ordinary.nextId).toBe(41);
+    expect(growth.keepRemoval(ordinary).notebook.nextId).toBe(41);
+  });
+
+  it('refuses restoration at capacity without truncation and retains recovery after a failed new save', () => {
+    const full = growth.normalizeNotebook({ trials: Array.from({ length: 12 }, (_, i) => trial(i + 1)), removed: { trial: trial(20), index: 4 }, control: optimum('ecoli'), prediction: 'lower' });
+    expect(growth.restoreTrial(full)).toMatchObject({ status: 'full', id: 20, notebook: full });
+    expect(growth.saveTrial(full, optimum('ecoli', 0))).toMatchObject({ status: 'full', notebook: full });
+    const unready = growth.normalizeNotebook({ removed: { trial: trial(7), index: 0 }, prediction: 'lower' });
+    expect(growth.saveTrial(unready, optimum('ecoli'))).toMatchObject({ status: 'unready', notebook: unready });
+    expect(full.trials.map(item => item.id)).toEqual(Array.from({ length: 12 }, (_, i) => i + 1));
+  });
+
+  it('clears recovery only after a successful new trial save and uses the reserved next ID', () => {
+    const original = growth.normalizeNotebook({ trials: [trial(9)], selectedId: 9, control: optimum('ecoli'), prediction: 'lower', hypothesis: 'Next question', nextId: 10 });
+    const removed = growth.removeTrial(original, 9).notebook;
+    const saved = growth.saveTrial(removed, optimum('ecoli', 0));
+    expect(saved).toMatchObject({ status: 'saved', id: 10, notebook: { selectedId: 10, nextId: 11, hypothesis: 'Next question', prediction: 'lower' } });
+    expect(saved.notebook).not.toHaveProperty('removed');
+    expect(saved.notebook.trials).toHaveLength(1);
+    expect(saved.notebook.trials[0]).toMatchObject({ id: 10, hypothesis: 'Next question', prediction: 'lower', explanation: '' });
+    expect(removed.removed.trial).toEqual(original.trials[0]);
+  });
+
+  it('excludes removed evidence from review, export, and Home progress until it is restored', () => {
+    const removed = growth.removeTrial({ trials: [trial(7)], selectedId: 7 }, 7).notebook;
+    expect(growth.reviewNotebook(removed).rows).toEqual([]);
+    expect(growth.csv(removed)).not.toContain('Saved evidence 7');
+    expect(growth.reviewCSV(removed, 6)).not.toContain('Saved evidence 7');
+    expect(window.__MicrobiologyCore.work.summarize({ growthInvestigation: removed }).growth.records).toBe(0);
+    expect(window.__MicrobiologyCore.work.nextActions({ growthInvestigation: removed }).growth).toBeNull();
+    expect(growth.csv(growth.restoreTrial(removed).notebook)).toContain('Saved evidence 7');
+  });
+});
