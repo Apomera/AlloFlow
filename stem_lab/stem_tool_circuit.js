@@ -2742,6 +2742,21 @@ window.StemLab.circuitActiveLessonPlan=circuitActiveLessonPlan;
   }
   window.StemLab.circuitActiveLessonJourney=circuitActiveLessonJourney;
 
+  // Show each fixed experiment's settings and saved-work stage without revealing results.
+  function circuitActiveLessonMap(state) {
+    return ['gain','limit','sensor'].map(function(id) {
+      var plan=circuitActiveLessonPlan(id),journey=circuitActiveLessonJourney(state,id);
+      return {
+        id:id,
+        project:plan.project,
+        change:{key:plan.change.key,before:plan.change.before,after:plan.change.after},
+        phase:journey.phase,
+        explanationSaved:journey.explanationSaved
+      };
+    });
+  }
+  window.StemLab.circuitActiveLessonMap=circuitActiveLessonMap;
+
   window.StemLab.circuitActiveLessonRecords=circuitActiveLessonRecords;
   window.StemLab.circuitActiveLessonUpdate=circuitActiveLessonUpdate;
 
@@ -3311,6 +3326,55 @@ function CircuitActiveLessonJourney(props) {
         h('p', { className: 'circuit-journey-cue' }, cues[journey.phase] || cues.predict));
 }
 
+function CircuitActiveLessonMap(props) {
+    var React = props.React, h = React.createElement, t = circuitToolT(props), map = props.map;
+    if (!Array.isArray(map) || !map.length) return null;
+    var statusLabels = {
+        start: t('stem.circuit.map_not_started', 'Not started'),
+        predict: t('stem.circuit.map_prediction_needed', 'Prediction needed'),
+        test: t('stem.circuit.map_prediction_saved', 'Prediction saved'),
+        explain: t('stem.circuit.map_result_saved', 'Result saved · explanation needed'),
+        review: t('stem.circuit.map_explanation_saved', 'Explanation saved')
+    };
+    return h('details', { className: 'circuit-active-lesson-map' },
+        h('summary', { className: 'circuit-lesson-map-summary' },
+            h('span', { className: 'circuit-map-summary-label' }, t('stem.circuit.map_title', 'Experiment map')),
+            h('span', { className: 'circuit-map-summary-count' }, t('stem.circuit.map_count', '{count} experiments').replace('{count}', String(map.length)))),
+        h('p', { className: 'circuit-map-help' }, t('stem.circuit.map_open_help', 'Opening an experiment keeps your circuit and saved work.')),
+        h('div', { className: 'circuit-lesson-map-grid' }, map.map(function (row) {
+            var selected = row.id === props.selected, lesson = circuitActiveLesson(row.id);
+            var title = t('stem.circuit.active_lesson_' + row.id + '_title', lesson.title);
+            var light = row.change.key === 'light';
+            var action = row.phase === 'start'
+                ? t('stem.circuit.map_open_experiment', 'Open experiment')
+                : row.phase === 'explain' || row.phase === 'review'
+                    ? t('stem.circuit.map_review_result', 'Review result')
+                    : t('stem.circuit.map_resume_prediction', 'Resume prediction');
+            var project = row.project === 'manual'
+                ? t('stem.circuit.plan_manual', 'Manual control')
+                : row.project === 'dark'
+                    ? t('stem.circuit.plan_dark', 'Dark sensor')
+                    : t('stem.circuit.plan_light', 'Light sensor');
+            return h('article', { key: row.id, className: 'circuit-lesson-map-card', 'data-map-id': row.id, 'data-map-phase': row.phase, 'data-map-selected': selected ? 'true' : 'false' },
+                h('div', { className: 'circuit-map-card-heading' },
+                    selected && h('span', { className: 'circuit-map-current' }, t('stem.circuit.map_current', 'Current experiment')),
+                    h('h5', null, title),
+                    h('p', { className: 'circuit-map-project' }, project)),
+                h('div', { className: 'circuit-map-change' },
+                    h('p', { className: 'circuit-map-control' }, light ? t('stem.circuit.plan_relative_light', 'Relative light') : t('stem.circuit.plan_input_voltage', 'Input voltage')),
+                    h('dl', { className: 'circuit-map-values' }, ['before', 'after'].map(function (stage) {
+                        var value = row.change[stage];
+                        return h('div', { key: stage, className: 'circuit-map-reading' },
+                            h('dt', null, stage === 'before' ? t('stem.circuit.plan_from', 'From') : t('stem.circuit.plan_to', 'To')),
+                            h('dd', { className: 'circuit-map-value', 'data-map-stage': stage },
+                                h('span', { className: 'circuit-map-value-number' }, light ? String(value) : value.toFixed(2)),
+                                h('span', { className: 'circuit-map-value-unit' }, light ? '/100' : 'V')));
+                    }))),
+                h('p', { className: 'circuit-map-status' }, statusLabels[row.phase] || statusLabels.start),
+                h('button', { type: 'button', className: 'circuit-map-open', 'aria-label': t('stem.circuit.map_action_title', '{action}: {title}').replace('{action}', action).replace('{title}', title), 'aria-pressed': selected, disabled: typeof props.onSelect !== 'function', onClick: function () { if (typeof props.onSelect === 'function') props.onSelect(row.id); } }, action));
+        })));
+}
+
 // Lesson changes are owned by onAction(id, action, value).
 function CircuitActiveLessonLab(props) {
   var React=props.React,h=React.createElement,state=props.state||{},t=circuitToolT(props);
@@ -3318,7 +3382,7 @@ function CircuitActiveLessonLab(props) {
   var selected=state.lessonId||(state.challenge&&state.challenge.id)||'gain';
   if(ids.indexOf(selected)<0)selected='gain';
   var lesson=circuitActiveLesson(selected),record=records[selected]||null,tested=!!(record&&record.tested);
-  var journey=circuitActiveLessonJourney(state,selected);
+  var journey=circuitActiveLessonJourney(state,selected),map=circuitActiveLessonMap(state);
   var done=ids.filter(function(id){return records[id]&&records[id].tested;}).length;
   var next=ids.find(function(id){return !records[id]||!records[id].tested;});
   var before=solveActiveCircuit(circuitActiveDesign(lesson.before));
@@ -3347,7 +3411,10 @@ function CircuitActiveLessonLab(props) {
     props.onAction(id,action,value);
     if(focus)focusState[1](function(version){return version+1;});
   };
-  var select=function(id){act(id,'select',undefined,records[id]&&records[id].tested?'result':'question');};
+  var select=function(id){
+    if(id===selected){var element=tested?resultRef.current:questionRef.current;if(element)element.focus();return;}
+    act(id,'select',undefined,records[id]&&records[id].tested?'result':'question');
+  };
   var choiceText=function(value){return t('stem.circuit.active_prediction_'+value,{more:'Increases',same:'Stays the same',less:'Decreases'}[value]||'');};
   var regionText=function(region){return t('stem.circuit.active_region_'+region,{cutoff:'Cutoff',active:'Active region',saturated:'Saturation'}[region]||region);};
   var title=t('stem.circuit.active_lesson_'+selected+'_title',lesson.title);
@@ -3358,6 +3425,7 @@ function CircuitActiveLessonLab(props) {
     h('div',{className:'circuit-active-lesson-progress'},h('p',{role:'status'},t('stem.circuit.active_lesson_count','{count} of 3 experiments tested').replace('{count}',String(done))),h('progress',{max:3,value:done,'aria-label':t('stem.circuit.active_tested_count','Transistor experiments tested')})),
     h('label',{className:'circuit-active-lesson-picker',htmlFor:uid+'-select'},t('stem.circuit.active_choose_experiment','Choose an experiment'),h('select',{id:uid+'-select','aria-label':t('stem.circuit.transistor_prediction_experiment','Transistor prediction experiment'),value:selected,onChange:function(e){select(e.target.value);}},ids.map(function(id){var item=circuitActiveLesson(id);return h('option',{key:id,value:id},t('stem.circuit.active_lesson_'+id+'_title',item.title));}))),
     h('p',{className:'circuit-active-lesson-help'},t('stem.circuit.active_lesson_switch_help','Switching experiments keeps your live circuit and saved work.')),
+    h(CircuitActiveLessonMap,{React:React,t:props.t,map:map,selected:selected,onSelect:select}),
     h(CircuitActiveLessonJourney,{React:React,t:props.t,journey:journey}),
     h('div',{className:'circuit-active-lesson-question-block'},h('span',{className:'circuit-eyebrow'},title),h('h5',{ref:questionRef,tabIndex:-1,'data-active-lesson-question':true,'aria-describedby':!record?uid+'-start-help':undefined},t('stem.circuit.active_lesson_'+selected+'_question',lesson.question))),
     h(CircuitActiveExperimentPlan,{React:React,t:props.t,plan:circuitActiveLessonPlan(selected)}),
@@ -4930,6 +4998,237 @@ function CircuitActiveLessonLab(props) {
 }
 .circuit-active-root .circuit-lesson-explanation-jump{margin-top:14px}
 .circuit-active-root .circuit-active-lesson-lab textarea{scroll-margin-block-start:24px}
+`;
+  circStyle.textContent += `
+.circuit-active-root .circuit-active-lesson-map {
+    min-width: 0;
+    margin: 12px 0 16px;
+    padding: 0;
+    border: 1px solid #54717c;
+    border-radius: 12px;
+    background: #102b36;
+    color: #e2edf2;
+    font-size: 13px;
+}
+.circuit-active-root .circuit-active-lesson-map > .circuit-lesson-map-summary {
+    min-height: 44px;
+    box-sizing: border-box;
+    padding: 12px;
+    cursor: pointer;
+    color: #e2edf2;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+.circuit-active-root .circuit-map-summary-label {
+    font-weight: 700;
+}
+.circuit-active-root .circuit-map-summary-count {
+    display: inline-block;
+    margin-inline-start: 10px;
+    color: #bdd1db;
+    font-size: 12px;
+    font-weight: 400;
+}
+.circuit-active-root .circuit-map-help {
+    margin: 0;
+    padding: 0 12px 12px;
+    color: #c9dce4;
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+.circuit-active-root .circuit-lesson-map-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15em), 1fr));
+    gap: 10px;
+    min-width: 0;
+    padding: 0 12px 12px;
+    font-size: 13px;
+}
+.circuit-active-root .circuit-lesson-map-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid #567381;
+    border-inline-start-width: 3px;
+    border-radius: 10px;
+    background: #142f3d;
+}
+.circuit-active-root .circuit-lesson-map-card[data-map-selected='true'] {
+    border-color: #a0decb;
+    background: #193c39;
+}
+.circuit-active-root .circuit-map-current {
+    display: block;
+    margin: 0 0 5px;
+    color: #c3f1de;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+.circuit-active-root .circuit-map-card-heading h5 {
+    margin: 0;
+    color: #f0f6f8;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+.circuit-active-root .circuit-map-project {
+    margin: 3px 0 0;
+    color: #c7dce6;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+.circuit-active-root .circuit-map-change {
+    min-width: 0;
+    padding-block: 10px;
+    border-block: 1px solid #54717c;
+}
+.circuit-active-root .circuit-map-control {
+    margin: 0 0 7px;
+    color: #d7e6f0;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+.circuit-active-root .circuit-map-values {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.5em), 1fr));
+    gap: 8px 12px;
+    margin: 0;
+    min-width: 0;
+    font-size: 13px;
+}
+.circuit-active-root .circuit-map-reading {
+    min-width: 0;
+}
+.circuit-active-root .circuit-map-reading dt {
+    margin: 0 0 3px;
+    color: #bfd0db;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+.circuit-active-root .circuit-map-value {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: flex-start;
+    gap: 1px 5px;
+    min-width: 0;
+    margin: 0;
+    direction: ltr;
+    unicode-bidi: isolate;
+    color: #f5dfaa;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.5;
+}
+.circuit-active-root .circuit-map-value-number {
+    font-size: 17px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.circuit-active-root .circuit-map-value-unit {
+    color: #d2e3ed;
+    font-size: 12px;
+    white-space: nowrap;
+}
+.circuit-active-root .circuit-map-status {
+    margin: 0;
+    color: #d2e3eb;
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+.circuit-active-root button.circuit-map-open {
+    align-self: stretch;
+    min-height: 44px;
+    min-width: 0;
+    max-width: 100%;
+    margin-top: auto;
+    padding: 10px 12px;
+    border: 1px solid #7c9eaa;
+    border-radius: 9px;
+    background: #1b4050;
+    color: #edf6fa;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.6;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+    transition: none;
+}
+.circuit-active-root button.circuit-map-open[aria-pressed='true'] {
+    border-color: #a0decb;
+    background: #224b43;
+    color: #edfff7;
+}
+.circuit-active-root .circuit-lesson-map-summary:focus-visible,
+.circuit-active-root button.circuit-map-open:focus-visible {
+    outline: 3px solid #f6d894;
+    outline-offset: 3px;
+}
+@media (max-width: 480px) {
+    .circuit-active-root .circuit-lesson-map-grid {
+        grid-template-columns: 1fr;
+        padding-inline: 9px;
+    }
+    .circuit-active-root .circuit-lesson-map-card {
+        padding: 10px;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .circuit-active-root .circuit-lesson-map-summary,
+    .circuit-active-root button.circuit-map-open {
+        animation: none;
+        transition: none;
+    }
+}
+@media (forced-colors: active) {
+    .circuit-active-root .circuit-active-lesson-map,
+    .circuit-active-root .circuit-lesson-map-card,
+    .circuit-active-root .circuit-lesson-map-card[data-map-selected='true'],
+    .circuit-active-root .circuit-map-change {
+        border-color: CanvasText;
+        background: Canvas;
+        color: CanvasText;
+    }
+    .circuit-active-root .circuit-lesson-map-card[data-map-selected='true'] {
+        border-color: Highlight;
+        border-inline-start-width: 5px;
+    }
+    .circuit-active-root .circuit-lesson-map-summary,
+    .circuit-active-root .circuit-map-summary-count,
+    .circuit-active-root .circuit-map-help,
+    .circuit-active-root .circuit-map-current,
+    .circuit-active-root .circuit-map-card-heading h5,
+    .circuit-active-root .circuit-map-project,
+    .circuit-active-root .circuit-map-control,
+    .circuit-active-root .circuit-map-reading dt,
+    .circuit-active-root .circuit-map-value,
+    .circuit-active-root .circuit-map-value-unit,
+    .circuit-active-root .circuit-map-status {
+        color: CanvasText;
+    }
+    .circuit-active-root button.circuit-map-open,
+    .circuit-active-root button.circuit-map-open[aria-pressed='true'] {
+        border-color: ButtonText;
+        background: ButtonFace;
+        color: ButtonText;
+    }
+    .circuit-active-root .circuit-lesson-map-summary:focus-visible,
+    .circuit-active-root button.circuit-map-open:focus-visible {
+        outline-color: Highlight;
+    }
+}
 `;
   document.head.appendChild(circStyle);
   }
