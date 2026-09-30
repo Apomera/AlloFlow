@@ -470,6 +470,89 @@ describe('Life Skills outing interaction', () => {
     expect(h.run().manifestVersion).toBe(1); expect(h.E.view(h.run()).completed).toBe(true);
     expect(h.E.view(h.run()).observations.filter(o=>o.skill==='Checking information')).toEqual([]);
   });
+  it('connects received weather to the actual packed item and lets learners compare without recording a decision', () => {
+    let calls=0; const h=mount({provider:()=>{calls++;return Promise.resolve({text:'Hello.',status:'generated'});}});
+    h.station('Doorway'); h.act('pack_hat'); h.act('pack_document'); h.station('Kitchen'); h.act('fill_water');
+    const saved=h.save(), observations=h.E.view(h.run()).observations;
+    h.$('#reviewUpdate').click(); h.$('[data-update-topic="weather"]').click();
+    expect(h.$('#updateTopicPicture svg').getAttribute('aria-hidden')).toBe('true'); expect(h.$('#updateTopicPicture').querySelectorAll('figure')).toHaveLength(2);
+    expect(h.$('#updateAssessment').hidden).toBe(true);
+    for(const choice of ['keep','adjust','compare']) {
+      h.$('[data-update-choice="'+choice+'"]').click(); expect(h.$('#updateAssessment').hidden).toBe(false);
+      expect(h.w.document.activeElement.id).toBe('updateAssessmentTitle');
+      expect(h.$('#updateAssessmentReason').textContent).toContain('Rain is in the received forecast');
+      expect(h.$('#updateAssessmentReason').textContent).toContain('Your sun hat is packed');
+      expect(h.$('#updateAssessment').classList.contains('update-assessment-fits')).toBe(false);
+      expect(h.$('[data-update-choice="'+choice+'"]').getAttribute('aria-pressed')).toBe('true');
+      expect(h.$('#updateStatus').textContent).toContain('practice clock stays 09:03');
+    }
+    expect(h.save()).toEqual(saved); expect(h.E.view(h.run()).observations).toEqual(observations); expect(calls).toBe(0);
+    h.$('#updateOtherTopic').click(); expect(h.$('#updateTopicTitle').textContent).toBe('Travel and your plan');
+    expect(h.$('#updateAssessment').hidden).toBe(true); expect(h.$('[data-update-choice][aria-pressed="true"]')).toBe(null);
+    h.$('[data-update-choice="keep"]').click(); expect(h.$('#updateAssessmentReason').textContent).toContain('There is no chosen route');
+    expect(h.$('#updateTopicPicture .timeline-journey')).toBe(null); expect(h.save()).toEqual(saved);
+  });
+  it.each([['rain','raincoat'],['warm','hat']])('rechecks the %s assessment after actually replacing the weather item with %s', (variation, needed) => {
+    const h=mount(); h.$('#scenarioSelect').value=variation; h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
+    h.station('Doorway'); h.act(needed==='raincoat'?'pack_hat':'pack_raincoat'); h.act('pack_document'); h.station('Kitchen'); h.act('fill_water');
+    h.$('#reviewUpdate').click(); h.$('[data-update-topic="weather"]').click(); h.$('[data-update-choice="keep"]').click();
+    expect(h.$('#updateAssessment').classList.contains('update-assessment-fits')).toBe(false);
+    h.$('#updateTopicAction').click(); expect(h.$('#updateAssessment').hidden).toBe(true);
+    h.$('[data-pack-item="'+needed+'"]').click(); h.$('#packingPlace').click();
+    h.$('#reviewUpdate').click(); h.$('[data-update-topic="weather"]').click(); expect(h.$('#updateAssessment').hidden).toBe(true);
+    const saved=h.save(); h.$('[data-update-choice="keep"]').click();
+    expect(h.$('#updateAssessmentTitle').textContent).toContain('fits the received weather');
+    expect(h.$('#updateAssessment').classList.contains('update-assessment-fits')).toBe(true);
+    expect(h.$('#updateAssessmentNext').textContent).toContain('keep this item');
+    h.$('[data-update-choice="adjust"]').click(); expect(h.$('#updateAssessmentTitle').textContent).toBe('You can compare another choice');
+    expect(h.save()).toEqual(saved); expect(h.$('#clock').textContent).toBe('09:03');
+  });
+  it.each([['bus-delay','choose_bus',45,false],['rain','choose_late_bus',50,false],['rain','choose_bus',30,true],['bus-delay','choose_walk',21,true],['warm','choose_ride',18,true]])('uses current received timing for %s and %s in the review diagram and assessment', (variation, action, arrival, fits) => {
+    const h=mount(); h.$('#scenarioSelect').value=variation; h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
+    h.station('Travel'); h.act(action); h.station('Kitchen'); h.act('fill_water'); h.act('pack_water'); h.station('Doorway'); h.act('pack_document');
+    const saved=h.save(), timing=h.E.travelAt(h.run()), route=timing.routes.find(r=>r.selected);
+    h.$('#reviewUpdate').click(); h.$('[data-update-topic="travel"]').click(); h.$('[data-update-choice="keep"]').click();
+    expect(route.arrivalMinute).toBe(arrival); expect(h.$('#updateAssessment').classList.contains('update-assessment-fits')).toBe(fits);
+    expect(h.$('#updateAssessmentReason').textContent).toContain(route.arrival); expect(h.$('#updateAssessmentReason').textContent).toContain(Math.abs(route.minutesBeforeStart)+' min '+(fits?'before':'after'));
+    expect(h.$('#updateAssessmentNext').textContent).toContain('Finish your clothes and bag');
+    const diagram=h.$('#updateTopicPicture .timeline-diagram'); expect(diagram.getAttribute('aria-hidden')).toBe('true');
+    expect(diagram.querySelector('.timeline-deadline').style.left).toBe('43.75%');
+    const travel=diagram.querySelector('.timeline-journey'); expect(parseFloat(travel.style.left)+parseFloat(travel.style.width)).toBeCloseTo(100*arrival/80);
+    expect(!!diagram.querySelector('.timeline-wait')).toBe(route.waitingMinutes>0); expect(h.save()).toEqual(saved);
+    h.$('#updateTopicAction').click(); h.$('[data-route-option="walk"]').click(); h.$('#confirmRoute').click();
+    h.$('#reviewUpdate').click(); h.$('[data-update-topic="travel"]').click(); h.$('[data-update-choice="compare"]').click();
+    expect(h.$('#updateAssessmentReason').textContent).toContain('Walk plan would arrive at 09:21');
+    expect(h.$('#updateAssessment').classList.contains('update-assessment-fits')).toBe(true);
+  });
+  it('clears temporary judgments on reading, navigation, resume and replay and rejects detached topic controls', () => {
+    const h=mount(); h.act('fill_water'); h.act('pack_water'); h.station('Doorway'); h.act('pack_document');
+    h.$('#reviewUpdate').click(); h.$('[data-update-topic="weather"]').click(); h.$('[data-update-choice="compare"]').click();
+    expect(h.$('#updateAssessmentReason').textContent).toContain('No weather item is packed yet');
+    const detached=h.$('[data-update-topic="travel"]'); h.$('[data-update-choice="keep"]').click(); detached.click();
+    expect(h.$('#updateTopicTitle').textContent).toBe('Weather and your bag');
+    h.$('#readUpdateNote').click(); expect(h.$('#updateAssessment').hidden).toBe(true); expect(h.$('#updateTopicResult').hidden).toBe(true);
+    h.$('[data-update-topic="weather"]').click(); h.$('[data-update-choice="keep"]').click();
+    const resumed=mount({saved:h.save()}); resumed.$('#reviewUpdate').click(); resumed.$('[data-update-topic="weather"]').click(); expect(resumed.$('#updateAssessment').hidden).toBe(true);
+    h.station('Kitchen'); const saved=h.save(); h.$('[data-update-choice="keep"]').click(); h.$('#updateOtherTopic').click(); expect(h.$('#updateAssessment').hidden).toBe(true); expect(h.save()).toEqual(saved);
+    h.$('#sameReplayButton').click(); h.$('[data-update-choice="compare"]').click(); expect(h.$('#updateAssessment').hidden).toBe(true); expect(h.$('#updateWorkbench').hidden).toBe(true);
+  });
+  it('opens the current review from replaced forecast textures and preserves native focus after a 3D click', async () => {
+    const h=mount(), oldCanvas=h.$('#forecastNote').dataset.canvasId;
+    h.$('#forecastNote').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true})); expect(h.$('#updateWorkbench').hidden).toBe(true);
+    h.station('Kitchen'); h.act('fill_water'); h.act('pack_water'); h.station('Doorway'); h.act('pack_document');
+    expect(h.w.document.getElementById(oldCanvas)).toBe(null); expect(h.$('#forecastNote').dataset.forecastControl).toBe('true');
+    const canvas=h.w.document.createElement('canvas'); canvas.tabIndex=-1; h.$('#outingScene').appendChild(canvas); h.$('#outingScene').canvas=canvas;
+    const saved=h.save(); h.$('#forecastNote').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true})); canvas.focus();
+    await vi.waitFor(()=>expect(h.w.document.activeElement.dataset.updateTopic).toBe('weather'));
+    expect(h.$('#updateWorkbench').open).toBe(true); expect(h.$('#updateTopicResult').hidden).toBe(true); expect(h.save()).toEqual(saved);
+  });
+  it('keeps accessible judgments available without 3D or storage and guards completed review controls', () => {
+    const offline=mount({noScene:true,noStorage:true,reducedMotion:true}); offline.act('fill_water'); offline.act('pack_water'); offline.station('Doorway'); offline.act('pack_document');
+    offline.$('#reviewUpdate').click(); offline.$('[data-update-topic="weather"]').click(); offline.$('[data-update-choice="compare"]').click();
+    expect(offline.$('#updateAssessment').hidden).toBe(false); expect(offline.$('#clock').textContent).toBe('09:03');
+    const done=mount(); complete(done); const saved=done.save(); done.$('[data-update-choice="keep"]').click(); done.$('#updateOtherTopic').click(); done.$('#forecastNote').click();
+    expect(done.$('#updateAssessment').hidden).toBe(true); expect(done.$('#updateWorkbench').hidden).toBe(true); expect(done.save()).toEqual(saved);
+  });
   it('keeps the update board unavailable until a change is received and reconstructs its original time', () => {
     const h = mount(); h.$('#scenarioSelect').value = 'bus-delay';
     h.$('#settingsForm').dispatchEvent(new h.w.Event('submit', { cancelable: true }));

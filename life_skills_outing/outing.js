@@ -27,7 +27,7 @@
   var packingActions = { bottle: 'pack_water', card: 'pack_document', raincoat: 'pack_raincoat', hat: 'pack_hat' };
   var wardrobePreview = null;
   var wardrobeNames = { wear_ready: 'Clean, dry outfit', prepare_clothes: 'Outfit that needs drying' };
-  var updateTopic = null, updateSnapshot = null;
+  var updateTopic = null, updateSnapshot = null, updateAssessment = null;
   var departureGuess = null, departureReview = null, departureVisited = false;
   var waterMoment = null, waterMotionTimer = null;
   var motionPreference = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
@@ -680,7 +680,9 @@
     act(wardrobePreview.actionId, 'wardrobe');
   }
   function clearUpdate(collapse) {
-    updateTopic = null; byId('updateTopicResult').hidden = true;
+    updateTopic = null; updateAssessment = null; byId('updateTopicResult').hidden = true;
+    byId('updateAssessment').hidden = true;
+    byId('updateChoices').querySelectorAll('button').forEach(function (button) { button.setAttribute('aria-pressed', 'false'); });
     text('updateStatus', '');
     if (collapse) byId('updateWorkbench').open = false;
   }
@@ -738,27 +740,73 @@
     [['weather', 'Weather item in my bag'], ['travel', 'My travel plan']].forEach(function (topic) {
       var button = node('button', 'update-topic', topic[1]); button.type = 'button'; button.dataset.updateTopic = topic[0];
       button.setAttribute('aria-pressed', String(updateTopic === topic[0]));
-      button.addEventListener('click', function () {
-        if (!latestView.event || latestView.completed || selectedObject !== 'forecast') return;
-        updateTopic = topic[0]; renderUpdateWorkbench(); byId('updateTopicTitle').focus();
-        text('updateStatus', topic[1] + ' review opened. The practice clock stays ' + latestView.clock + '.');
-      }); topics.appendChild(button);
+      var owner = current;
+      button.addEventListener('click', function () { if (owner === current && button.isConnected) chooseUpdateTopic(topic[0]); }); topics.appendChild(button);
     });
     byId('updateTopicResult').hidden = !updateTopic;
     if (!updateTopic) return;
-    var facts = byId('updateTopicFacts'); facts.replaceChildren();
+    var facts = byId('updateTopicFacts'), picture = byId('updateTopicPicture'); facts.replaceChildren(); picture.replaceChildren();
     function fact(label, value) { facts.append(node('dt', '', label), node('dd', '', value)); }
     if (updateTopic === 'weather') {
       var packed = v.inventory.find(function (item) { return item.id === 'raincoat' || item.id === 'hat'; });
+      picture.className = 'update-topic-picture update-weather-pair';
+      [[updateWeatherIcon(received.afterWeather), 'Received weather'], [packed ? packingIcon(packed.id) : departureMark(false), packed ? 'Packed weather item' : 'Weather item to pack']].forEach(function (part) {
+        var figure = node('figure'); figure.append(part[0], node('figcaption', '', part[1])); picture.appendChild(figure);
+      });
       text('updateTopicTitle', 'Weather and your bag'); fact('Received forecast', received.afterForecast); fact('Weather item packed now', packed ? packed.label : 'No weather item packed');
       text('updateTopicQuestion', 'A raincoat helps keep clothes dry. A sun hat gives shade. Does your packed item fit this forecast?');
       text('updateTopicAction', 'Open bag table');
+      text('updateOtherTopic', 'Recheck my travel plan');
     } else {
+      var timing = E.travelAt(current), route = timing.routes.find(function (item) { return item.selected; });
+      picture.className = 'update-topic-picture update-route-picture';
+      if (route) {
+        var heading = node('div', 'update-route-heading'); heading.append(routeIcon(route.id), node('p', '', route.label + ' · ' + (route.available ? 'arrive ' + route.arrival : 'bus already left'))); picture.appendChild(heading);
+        picture.appendChild(travelDiagram(timing, route));
+        picture.appendChild(node('p', 'update-timeline-key', 'Filled bar: travel. Striped bar: waiting. Dashed line: 09:35 outing start.'));
+      } else picture.appendChild(node('p', 'update-route-empty', 'Choose a route to see its arrival beside the outing start.'));
       text('updateTopicTitle', 'Travel and your plan'); fact('Outing start', '09:35'); fact('Chosen route now', v.travel ? v.travel.label : 'No route chosen');
       fact('Current arrival', v.travel ? v.travel.arrival + (v.travel.arrival === 'Unavailable' ? '' : v.travel.onTime ? ' · ' + v.travel.minutesBeforeStart + ' min before the start' : ' · ' + Math.abs(v.travel.minutesBeforeStart) + ' min after the start') : 'Choose a route to compare its arrival');
       text('updateTopicQuestion', 'Would your current plan still get you there in time? Compare another route if you need to change it.');
       text('updateTopicAction', 'Compare routes in the outing');
+      text('updateOtherTopic', 'Recheck my weather item');
     }
+    var fresh = updateAssessment && updateAssessment.topic === updateTopic && updateAssessment.revision === current.commands.length;
+    byId('updateChoices').querySelectorAll('button').forEach(function (button) { button.setAttribute('aria-pressed', String(!!fresh && button.dataset.updateChoice === updateAssessment.choice)); });
+    byId('updateAssessment').hidden = !fresh;
+    if (fresh) renderUpdateAssessment(received);
+  }
+  function chooseUpdateTopic(topic) {
+    if (!latestView.event || latestView.completed || selectedObject !== 'forecast' || !byId('updateWorkbench').open || ['weather', 'travel'].indexOf(topic) === -1) return;
+    updateTopic = topic; updateAssessment = null; renderUpdateWorkbench(); byId('updateTopicTitle').focus();
+    text('updateStatus', (topic === 'weather' ? 'Weather item' : 'Travel plan') + ' review opened. The practice clock stays ' + latestView.clock + '.');
+  }
+  function assessUpdateChoice(choice) {
+    if (!latestView.event || latestView.completed || selectedObject !== 'forecast' || !updateTopic || !byId('updateWorkbench').open || ['keep', 'adjust', 'compare'].indexOf(choice) === -1) return;
+    updateAssessment = {topic:updateTopic, choice:choice, revision:current.commands.length}; renderUpdateWorkbench();
+    byId('updateAssessmentTitle').focus(); text('updateStatus', byId('updateAssessmentReason').textContent + ' The practice clock stays ' + latestView.clock + '.');
+  }
+  function renderUpdateAssessment(received) {
+    var v = latestView, choice = updateAssessment.choice, title, reason, next, fits = false;
+    if (updateTopic === 'weather') {
+      var packed = v.inventory.find(function (item) { return item.id === 'raincoat' || item.id === 'hat'; });
+      var needed = received.afterWeather === 'rain' ? 'raincoat' : 'hat';
+      fits = !!packed && packed.id === needed;
+      title = !packed ? 'Choose a weather item for your bag' : fits ? 'Your packed item fits the received weather' : 'Recheck your packed weather item';
+      reason = received.afterWeather === 'rain' ? 'Rain is in the received forecast. A raincoat helps keep clothes dry.' : 'Warm sunshine is in the received forecast. A sun hat gives shade.';
+      reason += !packed ? ' No weather item is packed yet.' : packed.id === 'hat' ? ' Your sun hat is packed.' : ' Your raincoat is packed.';
+      next = fits ? 'You can keep this item and recheck your travel plan. You can also explore the bag table before deciding.' : 'Open the bag table to compare items, then choose what to pack. Exploring an item leaves your bag as it is.';
+    } else {
+      var timing = E.travelAt(current), route = timing.routes.find(function (item) { return item.selected; });
+      fits = !!route && route.available && route.onTime;
+      title = !route ? 'Choose a route to compare' : fits ? 'This arrival fits the start time for now' : 'Recheck your route before leaving';
+      reason = !route ? 'There is no chosen route. The outing starts at 09:35.' : !route.available ? 'The ' + route.label + ' has already left. Compare a route that is still available.' : 'At ' + v.clock + ', your ' + route.label + ' plan would arrive at ' + route.arrival + '. ' + routeOutcome(route);
+      next = timing.preparationReady ? 'Compare routes if you want to change your choice, or recheck your weather item.' : 'These arrivals assume you leave at the current practice time. Finish your clothes and bag, then recheck arrival before leaving.';
+    }
+    if (choice === 'adjust' && fits) title = 'You can compare another choice';
+    else if (choice === 'compare') title = updateTopic === 'weather' ? 'Connect the weather to your packed item' : 'Compare arrival with the outing start';
+    byId('updateAssessment').classList.toggle('update-assessment-fits', fits);
+    text('updateAssessmentTitle', title); text('updateAssessmentReason', reason); text('updateAssessmentNext', next);
   }
   function openUpdateWorkbench() {
     if (!latestView.event || latestView.completed) return;
@@ -1094,16 +1142,7 @@
       heading.append(name,node('strong','timeline-arrival',route.available?'Arrive '+route.arrival:'Bus missed'));row.appendChild(heading);
       var outcome=!route.available?'This bus leaves at '+(route.id==='bus'?'09:20':'09:40')+'. It would have gone before '+timing.departure+'.':route.minutesBeforeStart>0?minutes(route.minutesBeforeStart)+' before the 09:35 start.':route.onTime?'Arrives at the 09:35 start, with no extra time.':minutes(Math.abs(route.minutesBeforeStart))+' after the 09:35 start.';
       row.appendChild(node('p','timeline-outcome'+(route.onTime?'':' timeline-caution'),outcome));
-      var diagram=node('div','timeline-diagram');diagram.setAttribute('aria-hidden','true');
-      var axis=node('div','timeline-axis');axis.append(node('span','','09:00'),node('span','timeline-start','09:35'),node('span','','10:20'));diagram.appendChild(axis);
-      var track=node('div','timeline-track');
-      var marker=node('span','timeline-deadline');marker.style.left=(100*timing.deadlineMinute/timing.axisEnd)+'%';track.appendChild(marker);
-      if(route.available){
-        if(route.waitingMinutes){var wait=node('span','timeline-wait');wait.style.left=(100*timing.departureMinute/timing.axisEnd)+'%';wait.style.width=(100*route.waitingMinutes/timing.axisEnd)+'%';track.appendChild(wait);}
-        var journey=node('span','timeline-journey');journey.style.left=(100*(timing.departureMinute+route.waitingMinutes)/timing.axisEnd)+'%';journey.style.width=(100*route.travelMinutes/timing.axisEnd)+'%';track.appendChild(journey);
-        var leave=node('span','timeline-leave');leave.style.left=(100*timing.departureMinute/timing.axisEnd)+'%';track.appendChild(leave);
-      }
-      diagram.appendChild(track);row.appendChild(diagram);
+      row.appendChild(travelDiagram(timing, route));
       if(route.available)row.appendChild(node('p','timeline-duration',route.scheduledDeparture===null?minutes(route.travelMinutes)+' of travel.':minutes(route.waitingMinutes)+' waiting at the stop + '+minutes(route.travelMinutes)+' of travel.'));
       row.appendChild(node('p','timeline-latest',route.latestOnTimeDeparture?'To arrive by 09:35, leave by '+route.latestOnTimeDeparture+'.':'This service arrives after the 09:35 start. Compare another route.'));
       rows.appendChild(row);
@@ -1115,6 +1154,18 @@
     byId('travelLab').open=true;
     renderTravelLab();byId('departureTime').focus();
     announce('Travel time explorer. Move the example departure to compare routes. The practice clock stays the same.');
+  }
+  function travelDiagram(timing, route) {
+    var diagram=node('div','timeline-diagram');diagram.setAttribute('aria-hidden','true');
+    var axis=node('div','timeline-axis');axis.append(node('span','','09:00'),node('span','timeline-start','09:35'),node('span','','10:20'));diagram.appendChild(axis);
+    var track=node('div','timeline-track');
+    var marker=node('span','timeline-deadline');marker.style.left=(100*timing.deadlineMinute/timing.axisEnd)+'%';track.appendChild(marker);
+    if(route.available){
+      if(route.waitingMinutes){var wait=node('span','timeline-wait');wait.style.left=(100*timing.departureMinute/timing.axisEnd)+'%';wait.style.width=(100*route.waitingMinutes/timing.axisEnd)+'%';track.appendChild(wait);}
+      var journey=node('span','timeline-journey');journey.style.left=(100*(timing.departureMinute+route.waitingMinutes)/timing.axisEnd)+'%';journey.style.width=(100*route.travelMinutes/timing.axisEnd)+'%';track.appendChild(journey);
+      var leave=node('span','timeline-leave');leave.style.left=(100*timing.departureMinute/timing.axisEnd)+'%';track.appendChild(leave);
+    }
+    diagram.appendChild(track);return diagram;
   }
   function exploreDeparture(value,announceChange) {
     var minimum=E.travelAt(current).minimumDeparture;
@@ -1442,7 +1493,11 @@
     byId('rainDrops').setAttribute('visible',s.weather==='rain');
     byId('forecastBoard').setAttribute('color',latestView.event?'#e5c788':'#fff6d8');
     var noteText = s.busDelayed ? 'Rain · bus arrives 09:45' : s.weather === 'cloudy' ? 'Cloudy · update expected' : s.weather === 'rain' ? 'Updated forecast · rain' : 'Updated forecast · warm';
-    sceneLabel(noteText,{id:'forecastNote',position:'1.64 2.3 -2.435',width:1.22,height:.31,class:'pickable'},byId('forecastObject'));
+    var forecastNote = sceneLabel(noteText,{id:'forecastNote',position:'1.64 2.3 -2.435',width:1.22,height:.31,class:'pickable'},byId('forecastObject'));
+    if (!forecastNote.dataset.forecastControl) {
+      forecastNote.dataset.forecastControl = 'true';
+      forecastNote.addEventListener('click', function (event) { openSceneWorkbench(event, function () { if (latestView.event && !latestView.completed) openUpdateWorkbench(); else selectObject('forecast', true); }); });
+    }
     var depart = departureAction(), ready = depart && !depart.disabled;
     sceneLabel(s.departed ? 'Outing complete' : ready ? 'Ready to leave' : 'Check before leaving',{id:'departureSign',position:'.45 2.12 .13',width:.8,height:.24,class:'pickable'},byId('doorHinge'),{background:ready || s.departed ? '#e4eedc' : '#fff6d8'});
     var routeSign = sceneLabel(latestView.travel ? latestView.travel.label + ' · ' + latestView.travel.arrival : 'Choose a route',{id:'routeSign',position:'.45 .72 .13',width:.8,height:.26,class:'pickable'},byId('doorHinge'),{background:latestView.travel && !latestView.travel.onTime ? '#f5dfb1' : '#fff6d8'});
@@ -1532,6 +1587,8 @@
     if (updateTopic === 'weather') openPackingWorkbench();
     else if (updateTopic === 'travel') openRouteWorkbench();
   });
+  byId('updateChoices').querySelectorAll('button').forEach(function (button) { button.addEventListener('click', function () { assessUpdateChoice(button.dataset.updateChoice); }); });
+  byId('updateOtherTopic').addEventListener('click', function () { if (updateTopic) chooseUpdateTopic(updateTopic === 'weather' ? 'travel' : 'weather'); });
   byId('prepareOutfit').addEventListener('click', prepareSelectedOutfit);
   byId('compareOutfitAgain').addEventListener('click', function () {
     if (latestView.completed || latestView.scene.clothingReady || selectedObject !== 'outfit' || !wardrobePreview) return;

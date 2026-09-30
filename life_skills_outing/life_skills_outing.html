@@ -118,7 +118,10 @@
 <p id="updateBusChange" class="muted small"></p>
 <div class="update-read"><button id="readUpdateNote" class="quiet-button" type="button">Read the forecast note · 1 min</button><p id="updateReadStatus" class="muted small" tabindex="-1"></p></div>
 <h4 class="update-topic-prompt">What would you like to recheck?</h4><div id="updateTopics" class="update-topics" role="group" aria-label="Choose what to recheck"></div>
-<section id="updateTopicResult" class="update-topic-result" aria-labelledby="updateTopicTitle" hidden><h4 id="updateTopicTitle" tabindex="-1"></h4><dl id="updateTopicFacts"></dl><p id="updateTopicQuestion"></p><button id="updateTopicAction" class="primary-button" type="button"></button></section>
+<section id="updateTopicResult" class="update-topic-result" aria-labelledby="updateTopicTitle" hidden><h4 id="updateTopicTitle" tabindex="-1"></h4><div id="updateTopicPicture" class="update-topic-picture"></div><dl id="updateTopicFacts"></dl><p id="updateTopicQuestion"></p>
+<div id="updateChoices" class="update-choices" role="group" aria-label="Think about keeping or adjusting this choice" aria-describedby="updateTopicQuestion"><button class="quiet-button" type="button" data-update-choice="keep" aria-pressed="false">Keep this choice</button><button class="quiet-button" type="button" data-update-choice="adjust" aria-pressed="false">Adjust this choice</button><button class="quiet-button" type="button" data-update-choice="compare" aria-pressed="false">Help me compare</button></div>
+<section id="updateAssessment" class="update-assessment" aria-labelledby="updateAssessmentTitle" hidden><h5 id="updateAssessmentTitle" tabindex="-1"></h5><p id="updateAssessmentReason"></p><p id="updateAssessmentNext" class="muted small"></p></section>
+<div class="button-row"><button id="updateTopicAction" class="primary-button" type="button"></button><button id="updateOtherTopic" class="quiet-button" type="button"></button></div></section>
 <p id="updateStatus" class="update-status" role="status" aria-live="polite" aria-atomic="true"></p>
 </div></details>
 <details id="wardrobeWorkbench" class="wardrobe-workbench" hidden>
