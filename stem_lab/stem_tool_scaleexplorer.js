@@ -532,6 +532,45 @@
     return { a: raw && known(raw.a) ? raw.a : fallbackA, b: raw && known(raw.b) ? raw.b : fallbackB };
   }
 
+  function validScalingFactor(value) {
+    if (typeof value !== 'number' && typeof value !== 'string') return null;
+    if (typeof value === 'string' && !/^\+?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(value.trim())) return null;
+    var number = Number(value);
+    return isFinite(number) && number >= .01 && number <= 1e45 ? number : null;
+  }
+  function geometricScale(value) {
+    var factor = validScalingFactor(value);
+    return factor === null ? null : { factor: factor, edge: factor, faceArea: factor * factor,
+      surfaceArea: 6 * factor * factor, volume: factor * factor * factor, relativeSurfaceVolume: 1 / factor };
+  }
+  function scalingDiagramMeasures(value) {
+    var factor = validScalingFactor(value);
+    if (factor === null) return null;
+    var original = 68 / Math.max(1, factor), copy = original * factor;
+    var ratio = Math.max(factor, 1 / factor), integer = Math.round(ratio);
+    var divisions = integer >= 2 && integer <= 8 && Math.abs(ratio - integer) < 1e-10 ? integer : 1;
+    return { original: original, copy: copy, originalDivisions: factor < 1 ? divisions : 1, copyDivisions: factor > 1 ? divisions : 1 };
+  }
+  function scalingValue(value) {
+    if (value >= 1e6 || value < .001) {
+      var exponent = Math.floor(log10(value)), coefficient = Number((value / Math.pow(10, exponent)).toPrecision(3));
+      if (coefficient >= 10) { coefficient /= 10; exponent++; }
+      return coefficient + ' × 10' + sup(exponent);
+    }
+    return String(Number(value.toPrecision(3)));
+  }
+  function readScaling(raw, completed) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return completed ? null : { factor: '2', reflection: '', reference: null };
+    var factor = typeof raw.factor === 'string' ? raw.factor.slice(0, 70) : typeof raw.factor === 'number' ? String(raw.factor) : '2';
+    var model = geometricScale(factor);
+    if (completed && (!model || validScalingFactor(raw.factor) === null)) return null;
+    var reference = raw.reference && compareMeasurements(inquiryMeasurement(raw.reference.small), inquiryMeasurement(raw.reference.big));
+    if (reference && (!model || reference.small.id === reference.big.id || reference.small.dim === 'distance' || reference.big.dim === 'distance' || Math.abs(log10(reference.ratio / model.factor)) > 1e-12)) reference = null;
+    return { factor: model ? String(model.factor) : factor,
+      reflection: typeof raw.reflection === 'string' ? raw.reflection.slice(0, NOTE_LIMIT) : '',
+      reference: reference ? { small: inquirySnapshot(reference.small), big: inquirySnapshot(reference.big) } : null };
+  }
+
   var INQUIRY_LIMIT = 12, ESTIMATE_MAX = 45;
   var INQUIRY_THEMES = [
     { id: 'home', small: 'human', big: 'earth', title: 'From human scale to Earth',
@@ -1521,6 +1560,18 @@
         updateSlice(function (cur) { cur.inquiryDraft = Object.assign({}, pair, { guess: guess, revealed: revealed, reflection: reflection }); });
       }, [pair, guess, revealed, reflection]);
 
+      var initialScaling = React.useMemo(function () { return readScaling(slice.scalingDraft, false); }, []);
+      var _scalingFactor = React.useState(initialScaling.factor); var scalingFactor = _scalingFactor[0], setScalingFactor = _scalingFactor[1];
+      var _scalingReflection = React.useState(initialScaling.reflection); var scalingReflection = _scalingReflection[0], setScalingReflection = _scalingReflection[1];
+      var _scalingReference = React.useState(initialScaling.reference); var scalingReference = _scalingReference[0], setScalingReference = _scalingReference[1];
+      var _scalingRecord = React.useState(function () { return readScaling(slice.scalingRecord, true); }); var scalingRecord = _scalingRecord[0], setScalingRecord = _scalingRecord[1];
+      var _scalingMessage = React.useState(''); var scalingMessage = _scalingMessage[0], setScalingMessage = _scalingMessage[1];
+      var scalingPanelRef = React.useRef(null);
+      var scalingModel = geometricScale(scalingFactor);
+      React.useEffect(function () {
+        updateSlice(function (cur) { cur.scalingDraft = { factor: scalingFactor, reflection: scalingReflection, reference: scalingReference }; });
+      }, [scalingFactor, scalingReflection, scalingReference]);
+
       var canvasRef = React.useRef(null);
       var atlasCanvasRef = React.useRef(null);
       var markerLayerRef = React.useRef(null);
@@ -1664,18 +1715,31 @@
             lines.push('');
           });
         }
+        if (scalingRecord) {
+          var model = geometricScale(scalingRecord.factor);
+          lines.push(S('atlas_scaling_export', 'Similar-shape model evidence'), '');
+          lines.push(S('atlas_scaling_scope', 'These are copies of the same cube. Every corresponding edge changes by the same factor. A length ratio between different objects does not establish their area, volume or mass.'));
+          lines.push(S('atlas_scaling_results', 'Edge factor: {edge}. One-face area factor: {area}. Volume factor: {volume}. Surface-to-volume ratio relative to the original: {relative}.',
+            { edge: scalingValue(model.edge), area: scalingValue(model.faceArea), volume: scalingValue(model.volume), relative: scalingValue(model.relativeSurfaceVolume) }));
+          lines.push(S('atlas_scaling_surface_record', 'For an original unit cube, total surface area changes from 6 to {area} square units.', { area: scalingValue(model.surfaceArea) }));
+          if (scalingRecord.reference) lines.push(scalingReferenceLine(scalingRecord.reference));
+          if (scalingRecord.reflection) lines.push(S('atlas_scaling_reflection_record', 'My model explanation: {text}', { text: scalingRecord.reflection }));
+          lines.push('');
+        }
         var url, anchor;
         try {
           url = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' }));
           anchor = document.createElement('a'); anchor.href = url; anchor.download = 'scale-explorer-notebook.txt';
           document.body.appendChild(anchor); anchor.click();
-          var downloaded = investigations.length ? S('atlas_inquiry_downloaded', 'Saved notebook evidence downloaded.') : S('atlas_notebook_downloaded', 'Saved observations downloaded.');
+          var downloaded = investigations.length || scalingRecord ? S('atlas_inquiry_downloaded', 'Saved notebook evidence downloaded.') : S('atlas_notebook_downloaded', 'Saved observations downloaded.');
           setNotebookMessage(downloaded);
           if (investigations.length) setInquiryMessage(downloaded);
+          if (scalingRecord) setScalingMessage(downloaded);
         } catch (_) {
-          var failed = investigations.length ? S('atlas_inquiry_download_failed', 'The download could not start here. Your saved work is still in the notebook.') : S('atlas_notebook_download_failed', 'The download could not start here. Your saved observations are still in the notebook.');
+          var failed = investigations.length || scalingRecord ? S('atlas_inquiry_download_failed', 'The download could not start here. Your saved work is still in the notebook.') : S('atlas_notebook_download_failed', 'The download could not start here. Your saved observations are still in the notebook.');
           setNotebookMessage(failed);
           if (investigations.length) setInquiryMessage(failed);
+          if (scalingRecord) setScalingMessage(failed);
         }
         finally { if (anchor) anchor.remove(); if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000); }
       }
@@ -2394,6 +2458,103 @@
       // real object at that decade. "5.36 powers of ten" is a number; five
       // visible steps from a person up to the Earth, each ten times the last,
       // is the idea. Steps are the whole decades; the remainder is said in words.
+      function editScalingFactor(value, reference) {
+        setScalingFactor(String(value)); setScalingReference(reference || null); setScalingMessage('');
+      }
+      function scalingReferenceLine(reference) {
+        var measured = compareMeasurements(inquiryMeasurement(reference.small), inquiryMeasurement(reference.big));
+        return S('atlas_scaling_reference', 'The edge factor uses only the recorded length ratio: {small} ({smallSize}) to {big} ({bigSize}). The cube model supplies the shape assumption.',
+          { small: itemText(measured.small, 'name'), smallSize: humanLength(measured.small.size), big: itemText(measured.big, 'name'), bigSize: humanLength(measured.big.size) });
+      }
+      function openScalingLab() {
+        if (!scalingPanelRef.current) return;
+        scalingPanelRef.current.open = true;
+        var summary = scalingPanelRef.current.querySelector('summary'); summary.scrollIntoView({ block: 'nearest' }); summary.focus();
+      }
+      function saveScalingModel() {
+        if (!scalingModel) return;
+        var record = readScaling({ factor: scalingFactor, reflection: scalingReflection.trim(), reference: scalingReference }, true);
+        setScalingRecord(record); updateSlice(function (cur) { cur.scalingRecord = record; });
+        setScalingMessage(S('atlas_scaling_saved', 'Model evidence saved in the notebook.'));
+      }
+      function restoreScalingModel() {
+        if (!scalingRecord) return;
+        setScalingFactor(scalingRecord.factor); setScalingReflection(scalingRecord.reflection); setScalingReference(scalingRecord.reference);
+        openScalingLab(); setScalingMessage(S('atlas_scaling_restored', 'Returned to the saved model and explanation.'));
+      }
+      function removeScalingModel() {
+        setScalingRecord(null); updateSlice(function (cur) { delete cur.scalingRecord; });
+        openScalingLab(); setScalingMessage(S('atlas_scaling_removed', 'Saved model removed. Your current draft is still here.'));
+      }
+      function scalingDiagram(cubes) {
+        if (!scalingModel) return null;
+        var layout = scalingDiagramMeasures(scalingModel.factor), children = [], model = scalingModel;
+        var geometries = [{ key: 'original', x: 18, size: layout.original, divisions: layout.originalDivisions, color: '#9ee4da', label: S('atlas_scaling_original', 'Original') },
+          { key: 'copy', x: 153, size: layout.copy, divisions: layout.copyDivisions, color: '#e3c698', label: S('atlas_scaling_copy', 'Scaled copy') }];
+        geometries.forEach(function (shape) {
+          var x = shape.x, y = 140, s = shape.size, d = cubes ? s * .36 : 0;
+          children.push(h('text', { key: shape.key + '-label', x: x, y: 20, fill: P.text, fontSize: 14 }, shape.label));
+          children.push(h('rect', { key: shape.key + '-front', 'data-scaling-shape': shape.key, x: x, y: y - s, width: s, height: s, fill: shape.color, fillOpacity: .3, stroke: shape.color, strokeWidth: .8 }));
+          if (cubes) {
+            children.push(h('path', { key: shape.key + '-top', d: 'M' + x + ' ' + (y - s) + 'l' + d + ' ' + (-d) + 'h' + s + 'l' + (-d) + ' ' + d + 'Z', fill: shape.color, fillOpacity: .55, stroke: shape.color, strokeWidth: .8 }));
+            children.push(h('path', { key: shape.key + '-side', d: 'M' + (x + s) + ' ' + y + 'l' + d + ' ' + (-d) + 'v' + (-s) + 'l' + (-d) + ' ' + d + 'Z', fill: shape.color, fillOpacity: .18, stroke: shape.color, strokeWidth: .8 }));
+          }
+          for (var i = 1; i < shape.divisions; i++) {
+            var f = i / shape.divisions, commands = 'M' + (x + s * f) + ' ' + y + 'v' + (-s) + 'M' + x + ' ' + (y - s * f) + 'h' + s;
+            if (cubes) commands += 'l' + d + ' ' + (-d) + 'M' + (x + s * f) + ' ' + (y - s) + 'l' + d + ' ' + (-d) + 'M' + (x + d * f) + ' ' + (y - s - d * f) + 'h' + s + 'v' + s;
+            children.push(h('path', { key: shape.key + '-grid-' + i, 'data-scaling-grid': shape.key, d: commands, fill: 'none', stroke: shape.color, strokeWidth: .7 }));
+          }
+          if (s < 2) children.push(h('path', { key: shape.key + '-locator', 'data-scaling-locator': shape.key, d: 'M' + (x - 4) + ' ' + y + 'h8m-4 -4v8', fill: 'none', stroke: P.dim, strokeWidth: 1, strokeDasharray: '2 2' }));
+          children.push(h('text', { key: shape.key + '-edge', x: x, y: 166, fill: shape.color, fontSize: 14 }, S('atlas_scaling_edge_label', 'Edge ×{n}', { n: shape.key === 'original' ? '1' : scalingValue(model.factor) })));
+        });
+        return h('svg', { className: 'sx-scaling-diagram', viewBox: '0 0 260 182', role: 'img', 'data-scaling-kind': cubes ? 'cube' : 'square',
+          'aria-label': cubes ? S('atlas_scaling_cube_aria', 'Same-scale cubes. Edge factor {edge}; volume factor {volume}.', { edge: scalingValue(model.edge), volume: scalingValue(model.volume) }) : S('atlas_scaling_square_aria', 'Same-scale squares. Edge factor {edge}; area factor {area}.', { edge: scalingValue(model.edge), area: scalingValue(model.faceArea) }),
+          style: { width: '100%', height: 182, display: 'block', borderRadius: 8, background: P.bg } }, children);
+      }
+      function scalingLab() {
+        var model = scalingModel, canUsePair = compare && compare.a.dim !== 'distance' && compare.b.dim !== 'distance';
+        var rows = model ? [[S('atlas_scaling_edge', 'Edge length'), 1, model.edge], [S('atlas_scaling_face', 'One-face area'), 1, model.faceArea],
+          [S('atlas_scaling_surface', 'Total surface area'), 6, model.surfaceArea], [S('atlas_scaling_volume', 'Volume'), 1, model.volume],
+          [S('atlas_scaling_relative', 'Surface/volume, relative to original'), 1, model.relativeSurfaceVolume]] : [];
+        return h('details', { ref: scalingPanelRef, className: 'sx-scaling-lab' },
+          h('summary', { style: { padding: '10px 0', cursor: 'pointer', fontSize: '.8125rem', fontWeight: 700 } }, S('atlas_scaling_title', 'Length, area and volume')),
+          h('div', { style: Object.assign({}, card, { display: 'flex', flexDirection: 'column', gap: 10, overflowWrap: 'anywhere' }) },
+            h('p', { style: { margin: 0, fontSize: '.75rem', lineHeight: 1.5 } }, S('atlas_scaling_intro', 'Change every edge of a cube. Predict what happens to its face area and volume, then inspect the copies at one shared scale.')),
+            h('label', { style: { fontSize: '.75rem' } }, S('atlas_scaling_factor', 'Edge multiplier'),
+              h('input', { type: 'number', min: '.01', max: '1e45', step: 'any', value: scalingFactor, 'aria-invalid': !model ? 'true' : undefined, 'aria-describedby': descId + '-scaling-help',
+                onChange: function (event) { editScalingFactor(event.target.value); }, style: Object.assign({}, sel, { width: '100%', marginTop: 4 }) })),
+            h('p', { id: descId + '-scaling-help', style: { margin: 0, color: model ? P.dim : P.warn, fontSize: '.6875rem', lineHeight: 1.5 } }, S('atlas_scaling_help', 'Use a factor from 0.01 to 10⁴⁵. Factors below 1 shrink the copy. The slider covers 0.01 to 100; the number field also accepts scientific notation.')),
+            !model || model.factor <= 100 ? h('label', { style: { fontSize: '.75rem' } }, S('atlas_scaling_slider', 'Adjust edge factor'),
+              h('input', { type: 'range', min: -2, max: 2, step: .01, value: model ? log10(model.factor) : log10(2), 'aria-valuetext': model ? S('atlas_scaling_edge_label', 'Edge ×{n}', { n: scalingValue(model.factor) }) : undefined,
+                onChange: function (event) { editScalingFactor(Number(Math.pow(10, Number(event.target.value)).toPrecision(8))); }, style: { display: 'block', width: '100%', accentColor: P.accent } })) : null,
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 6 } },
+              [[.5, S('atlas_scaling_half', 'Half the edge')], [2, S('atlas_scaling_double', 'Double the edge')], [3, S('atlas_scaling_triple', 'Triple the edge')], [10, S('atlas_scaling_tenfold', 'Tenfold edge')]].map(function (preset) {
+                return h('button', { key: preset[0], type: 'button', style: btn, onClick: function () { editScalingFactor(preset[0]); } }, preset[1]);
+              })),
+            h('button', { type: 'button', style: btn, disabled: !canUsePair, onClick: function () { if (canUsePair) editScalingFactor(compare.ratio, { small: inquirySnapshot(compare.small), big: inquirySnapshot(compare.big) }); } }, S('atlas_scaling_use_pair', 'Use selected length ratio')),
+            !canUsePair ? h('p', { style: { margin: 0, fontSize: '.6875rem', color: P.dim, lineHeight: 1.5 } }, S('atlas_scaling_distance', 'A distance reference is not an edge of a solid. Choose two object dimensions to use their length ratio in this cube model.')) : null,
+            scalingReference && model ? h('p', { className: 'sx-scaling-reference', style: { margin: 0, fontSize: '.6875rem', lineHeight: 1.5, color: P.dim } }, scalingReferenceLine(scalingReference)) : null,
+            model ? h('div', { className: 'sx-scaling-results', 'data-edge-factor': model.factor, 'data-area-factor': model.faceArea, 'data-volume-factor': model.volume, 'data-relative-surface-volume': model.relativeSurfaceVolume },
+              h('p', { style: { fontSize: '.75rem', fontWeight: 600, lineHeight: 1.5 } }, S('atlas_scaling_rule', 'Edge ×k → face area ×k² → volume ×k³. Surface area grows with k², so surface/volume changes by 1/k.')),
+              h('h4', { style: { fontSize: '.8125rem', margin: '8px 0 4px' } }, S('atlas_scaling_squares', 'Area: two squares')), scalingDiagram(false),
+              h('h4', { style: { fontSize: '.8125rem', margin: '10px 0 4px' } }, S('atlas_scaling_cubes', 'Volume: two cubes')), scalingDiagram(true),
+              h('p', { style: { fontSize: '.6875rem', color: P.dim, lineHeight: 1.5 } }, S('atlas_scaling_grid', 'For whole-number ratios up to 8, grid divisions follow the smaller edge. Dashed marks locate copies too small to resolve; their dimensions stay unchanged.')),
+              h('table', { className: 'sx-scaling-table', style: { tableLayout: 'fixed', width: '100%', borderCollapse: 'collapse', fontSize: '.75rem', lineHeight: 1.5 } },
+                h('caption', { style: { textAlign: 'left', marginBottom: 6 } }, S('atlas_scaling_units', 'An original unit cube: lengths in units, areas in square units and volumes in cubic units. Values shown to three significant figures.')),
+                h('thead', null, h('tr', null, [S('atlas_scaling_measure', 'Measure'), S('atlas_scaling_original', 'Original'), S('atlas_scaling_copy', 'Scaled copy')].map(function (label, i) { return h('th', { key: i, scope: 'col', style: { width: i === 0 ? '46%' : '27%', textAlign: 'left', padding: '6px 3px', borderBottom: '1px solid ' + P.line } }, label); }))),
+                h('tbody', null, rows.map(function (row, i) { return h('tr', { key: i, 'data-scaling-measure': i }, h('th', { scope: 'row', style: { textAlign: 'left', fontWeight: 400, padding: '6px 3px', borderBottom: '1px solid ' + P.line } }, row[0]),
+                  h('td', { style: { padding: '6px 3px', borderBottom: '1px solid ' + P.line } }, scalingValue(row[1])), h('td', { style: { padding: '6px 3px', borderBottom: '1px solid ' + P.line } }, scalingValue(row[2]))); })))) : null,
+            h('p', { style: { margin: 0, fontSize: '.75rem', color: P.dim, lineHeight: 1.5 } }, S('atlas_scaling_scope', 'These are copies of the same cube. Every corresponding edge changes by the same factor. A length ratio between different objects does not establish their area, volume or mass.')),
+            h('label', { style: { fontSize: '.75rem' } }, S('atlas_scaling_reflection', 'My model explanation'),
+              h('textarea', { value: scalingReflection, rows: 3, maxLength: NOTE_LIMIT, onChange: function (event) { setScalingReflection(event.target.value); setScalingMessage(''); }, style: Object.assign({}, sel, { display: 'block', width: '100%', marginTop: 4, resize: 'vertical' }) })),
+            h('button', { type: 'button', style: goBtn, disabled: !model, onClick: saveScalingModel }, scalingRecord ? S('atlas_scaling_update', 'Update model evidence') : S('atlas_scaling_save', 'Save model evidence')),
+            scalingRecord ? h('div', { className: 'sx-scaling-saved', style: { fontSize: '.75rem', lineHeight: 1.5 } },
+              h('p', null, S('atlas_scaling_saved_summary', 'Saved model: edge ×{edge}; face area ×{area}; volume ×{volume}.', { edge: scalingValue(Number(scalingRecord.factor)), area: scalingValue(geometricScale(scalingRecord.factor).faceArea), volume: scalingValue(geometricScale(scalingRecord.factor).volume) })),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } }, h('button', { type: 'button', style: btn, onClick: restoreScalingModel }, S('atlas_scaling_return', 'Return to saved model')),
+                h('button', { type: 'button', style: btn, onClick: removeScalingModel }, S('atlas_scaling_remove', 'Remove saved model')))) : null,
+            h('button', { type: 'button', style: btn, disabled: !scalingRecord, onClick: downloadObservations }, S('atlas_scaling_download', 'Download model notes')),
+            h('p', { role: 'status', style: { margin: 0, minHeight: '1.5em', fontSize: '.75rem' } }, scalingMessage)));
+      }
       function comparisonDiagram() {
         if (!compare) return null;
         var W = 600, children = [];
@@ -2646,6 +2807,7 @@
                   h('button', { type: 'button', style: btn, onClick: function () { inspectCompared(item); } }, S('atlas_comparison_inspect', 'Inspect {name}', { name: itemText(item, 'name') })));
               })),
               h('p', { style: { fontSize: '.75rem', color: P.dim, lineHeight: 1.5 } }, S('atlas_comparison_scope', 'The ratio compares the stated length, height, width or distance. Areas and volumes need additional shape assumptions.')),
+              h('button', { type: 'button', style: btn, onClick: openScalingLab }, S('atlas_scaling_open', 'Explore length, area and volume')),
               compare.ratio >= 100 ? h('p', { style: { fontSize: '.75rem', color: P.dim, lineHeight: 1.5 } }, S('atlas_comparison_resolution', 'A smaller specimen may fall below a screen pixel at this scale. A dashed locator marks its position; Inspect brings it into view at its own scale.')) : null,
               h('button', { type: 'button', style: btn, onClick: function () { inspectCompared(focused); } }, S('atlas_comparison_exit', 'Back to exploration'))) : null,
             viewMode === 'atlas' ? h('div', { className: 'sx-inspection', style: { display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',padding:'9px 12px',border:'1px solid '+P.line,borderRadius:10,background:P.panel } },
@@ -2814,7 +2976,7 @@
                       h('button', { type: 'button', style: btn, onClick: function () { revisitObservation(entry); }, 'aria-label': S('atlas_observation_return_aria', 'Return to {name}', { name: title }) }, S('atlas_observation_return', 'Return to view')),
                       h('button', { type: 'button', style: btn, onClick: function () { removeObservation(entry); }, 'aria-label': S('atlas_observation_remove_aria', 'Remove observation of {name}', { name: title }) }, S('atlas_observation_remove', 'Remove'))));
                 })) : h('p', { style: { color: P.dim, fontSize: '0.75rem' } }, S('atlas_notebook_empty', 'Saved observations will appear here.')),
-                h('button', { type: 'button', style: btn, disabled: !observations.length && !investigations.length, onClick: downloadObservations }, S('atlas_notebook_download', 'Download notes'))),
+                h('button', { type: 'button', style: btn, disabled: !observations.length && !investigations.length && !scalingRecord, onClick: downloadObservations }, S('atlas_notebook_download', 'Download notes'))),
               h('p', { role: 'status', style: { margin: 0, fontSize: '0.75rem', minHeight: '1.5em' } }, notebookMessage)),
 
             // Estimate first, then check: the house Predict → Explore → Explain
@@ -2892,6 +3054,8 @@
                   [compare.a, compare.b].map(function (item, index) { return item.note || item.dim === 'distance' ? h('p', { key: index }, h('strong', null, itemText(item, 'name') + ': '), item.dim === 'distance' ? itemText(item, 'describe') + ' ' : '', item.note ? itemText(item, 'note') : '') : null; })) : null,
                 compare && compare.ratio >= 1.02 && compare.decades < 2 ? tiling() : null,
                 compare && compare.decades > 0.000001 ? staircase() : null)),
+
+            scalingLab(),
 
             h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.71875rem', color: P.dim, cursor: 'pointer' } },
               h('input', { type: 'checkbox', checked: sci, onChange: function (e) { var on = !!e.target.checked; setSci(on); updateSlice(function (cur) { cur.sci = on; }); } }),

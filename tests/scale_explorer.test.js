@@ -26,6 +26,7 @@ const MIRROR = 'desktop/web-app/public/stem_lab/stem_tool_scaleexplorer.js';
 // way magnetism_numeric_render_guard and sel_four_copy_parity do.
 const UI_COPIES = ['ui_strings.js', 'desktop/web-app/public/ui_strings.js', 'desktop/web-app/build/ui_strings.js', 'desktop/app-build/ui_strings.js'].filter((p) => existsSync(p));
 const src = read(TOOL);
+const mirroredSrc = read(MIRROR);
 
 function readArray(text, name) {
   const s = text.indexOf('var ' + name + ' = ');
@@ -228,7 +229,7 @@ describe('Scale Explorer wiring', () => {
     }
   });
   it('keeps the desktop mirror byte-identical', () => {
-    expect(read(MIRROR)).toBe(src);
+    expect(mirroredSrc).toBe(src);
   });
 
   it('is in the desktop bundle list, so an offline classroom gets it too', () => {
@@ -333,7 +334,7 @@ describe('Scale Explorer camera cost', () => {
     // frame, on top of the one-per-decade announcement that already exists.
     // Only this element's own props, so a legitimately-live sibling (the
     // end-of-ladder notice) cannot be mistaken for it.
-    const at = src.indexOf("h('p', { id: descId");
+    const at = src.indexOf("h('p', { id: descId,");
     const readout = src.slice(at, src.indexOf('}, viewLine)', at));
     expect(readout, 'the readout must not be a live region').not.toMatch(/role: 'status'/);
     expect(readout).toMatch(/ref: readoutRef/);
