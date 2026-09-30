@@ -1,0 +1,723 @@
+{
+  "uniqueTests": 119,
+  "passed": 119,
+  "failed": 0,
+  "method": "Use the latest full result for each file; replace the single renderer failure with the inspected isolated retry. Repeated checks are counted once.",
+  "checks": [
+    {
+      "file": "tests/watercycle_2d_process_evidence.test.js",
+      "name": "Water Cycle 2D process-evidence visuals stem_lab/stem_tool_watercycle.js exposes the active process and existing land-routing evidence",
+      "status": "passed",
+      "durationMs": 34.356299999999464
+    },
+    {
+      "file": "tests/watercycle_2d_process_evidence.test.js",
+      "name": "Water Cycle 2D process-evidence visuals desktop/web-app/public/stem_lab/stem_tool_watercycle.js exposes the active process and existing land-routing evidence",
+      "status": "passed",
+      "durationMs": 379.66249999999854
+    },
+    {
+      "file": "tests/watercycle_2d_process_evidence.test.js",
+      "name": "Water Cycle 2D process-evidence visuals stem_lab/stem_tool_watercycle.js draws process evidence through one stage-aware helper",
+      "status": "passed",
+      "durationMs": 46.374299999995856
+    },
+    {
+      "file": "tests/watercycle_2d_process_evidence.test.js",
+      "name": "Water Cycle 2D process-evidence visuals desktop/web-app/public/stem_lab/stem_tool_watercycle.js draws process evidence through one stage-aware helper",
+      "status": "passed",
+      "durationMs": 49.582900000001246
+    },
+    {
+      "file": "tests/watercycle_2d_process_evidence.test.js",
+      "name": "Water Cycle 2D process-evidence visuals stem_lab/stem_tool_watercycle.js follows live reduced-motion changes and removes its listener",
+      "status": "passed",
+      "durationMs": 21.192800000004354
+    },
+    {
+      "file": "tests/watercycle_2d_process_evidence.test.js",
+      "name": "Water Cycle 2D process-evidence visuals desktop/web-app/public/stem_lab/stem_tool_watercycle.js follows live reduced-motion changes and removes its listener",
+      "status": "passed",
+      "durationMs": 44.90770000000339
+    },
+    {
+      "file": "tests/watercycle_2d_process_evidence.test.js",
+      "name": "Water Cycle 2D process-evidence visuals stem_lab/stem_tool_watercycle.js keeps grass stable and particle work responsive to model signals",
+      "status": "passed",
+      "durationMs": 60.31459999999788
+    },
+    {
+      "file": "tests/watercycle_2d_process_evidence.test.js",
+      "name": "Water Cycle 2D process-evidence visuals desktop/web-app/public/stem_lab/stem_tool_watercycle.js keeps grass stable and particle work responsive to model signals",
+      "status": "passed",
+      "durationMs": 40.75300000000425
+    },
+    {
+      "file": "tests/watercycle_2d_process_evidence.test.js",
+      "name": "Water Cycle 2D process-evidence visuals stem_lab/stem_tool_watercycle.js preserves the plant-return seam from transpiration into condensation",
+      "status": "passed",
+      "durationMs": 31.782200000001467
+    },
+    {
+      "file": "tests/watercycle_2d_process_evidence.test.js",
+      "name": "Water Cycle 2D process-evidence visuals desktop/web-app/public/stem_lab/stem_tool_watercycle.js preserves the plant-return seam from transpiration into condensation",
+      "status": "passed",
+      "durationMs": 25.3353000000061
+    },
+    {
+      "file": "tests/watercycle_2d_visual_refinement.test.js",
+      "name": "Water Cycle 2D visual refinement contracts stem_lab/stem_tool_watercycle.js renders readable stage labels in one clamped coordinate system",
+      "status": "passed",
+      "durationMs": 33.65859999999884
+    },
+    {
+      "file": "tests/watercycle_2d_visual_refinement.test.js",
+      "name": "Water Cycle 2D visual refinement contracts desktop/web-app/public/stem_lab/stem_tool_watercycle.js renders readable stage labels in one clamped coordinate system",
+      "status": "passed",
+      "durationMs": 46.95469999999841
+    },
+    {
+      "file": "tests/watercycle_2d_visual_refinement.test.js",
+      "name": "Water Cycle 2D visual refinement contracts stem_lab/stem_tool_watercycle.js keeps land precipitation and infiltration over the catchment",
+      "status": "passed",
+      "durationMs": 103.40039999999863
+    },
+    {
+      "file": "tests/watercycle_2d_visual_refinement.test.js",
+      "name": "Water Cycle 2D visual refinement contracts desktop/web-app/public/stem_lab/stem_tool_watercycle.js keeps land precipitation and infiltration over the catchment",
+      "status": "passed",
+      "durationMs": 232.9311000000016
+    },
+    {
+      "file": "tests/watercycle_2d_visual_refinement.test.js",
+      "name": "Water Cycle 2D visual refinement contracts stem_lab/stem_tool_watercycle.js makes process evidence metric-responsive and shows physical time",
+      "status": "passed",
+      "durationMs": 95.88360000000102
+    },
+    {
+      "file": "tests/watercycle_2d_visual_refinement.test.js",
+      "name": "Water Cycle 2D visual refinement contracts desktop/web-app/public/stem_lab/stem_tool_watercycle.js makes process evidence metric-responsive and shows physical time",
+      "status": "passed",
+      "durationMs": 76.90049999999974
+    },
+    {
+      "file": "tests/watercycle_2d_visual_refinement.test.js",
+      "name": "Water Cycle 2D visual refinement contracts stem_lab/stem_tool_watercycle.js scales river width and particle work with runoff",
+      "status": "passed",
+      "durationMs": 112.79729999999836
+    },
+    {
+      "file": "tests/watercycle_2d_visual_refinement.test.js",
+      "name": "Water Cycle 2D visual refinement contracts desktop/web-app/public/stem_lab/stem_tool_watercycle.js scales river width and particle work with runoff",
+      "status": "passed",
+      "durationMs": 26.716700000000856
+    },
+    {
+      "file": "tests/watercycle_2d_visual_refinement.test.js",
+      "name": "Water Cycle 2D visual refinement contracts stem_lab/stem_tool_watercycle.js derives transpiration from vegetation, energy, water, and temperature",
+      "status": "passed",
+      "durationMs": 129.61260000000038
+    },
+    {
+      "file": "tests/watercycle_2d_visual_refinement.test.js",
+      "name": "Water Cycle 2D visual refinement contracts desktop/web-app/public/stem_lab/stem_tool_watercycle.js derives transpiration from vegetation, energy, water, and temperature",
+      "status": "passed",
+      "durationMs": 30.45809999999983
+    },
+    {
+      "file": "tests/watercycle_2d_visual_refinement.test.js",
+      "name": "Water Cycle 2D visual refinement contracts stem_lab/stem_tool_watercycle.js draws only one decorative bird flock",
+      "status": "passed",
+      "durationMs": 274.09760000000097
+    },
+    {
+      "file": "tests/watercycle_2d_visual_refinement.test.js",
+      "name": "Water Cycle 2D visual refinement contracts desktop/web-app/public/stem_lab/stem_tool_watercycle.js draws only one decorative bird flock",
+      "status": "passed",
+      "durationMs": 53.98939999999857
+    },
+    {
+      "file": "tests/watercycle_3d_handoff.test.js",
+      "name": "Water Cycle pooled 3D matter-and-energy handoff constructs and reuses one source/destination beacon pair outside the animation loop",
+      "status": "passed",
+      "durationMs": 44.177000000000135
+    },
+    {
+      "file": "tests/watercycle_3d_handoff.test.js",
+      "name": "Water Cycle pooled 3D matter-and-energy handoff positions pooled beacons at route endpoints and exposes every visual mode",
+      "status": "passed",
+      "durationMs": 107.46979999999985
+    },
+    {
+      "file": "tests/watercycle_3d_handoff.test.js",
+      "name": "Water Cycle pooled 3D matter-and-energy handoff keeps reduced-motion handoffs informative but static",
+      "status": "passed",
+      "durationMs": 137.5545000000002
+    },
+    {
+      "file": "tests/watercycle_3d_handoff.test.js",
+      "name": "Water Cycle pooled 3D matter-and-energy handoff keeps atmospheric, land-choice, and return-to-storage route seams continuous",
+      "status": "passed",
+      "durationMs": 177.26099999999997
+    },
+    {
+      "file": "tests/watercycle_canvas_loop.test.js",
+      "name": "water cycle canvas animation loop cleans up frames/listeners while preserving journey progression under reduced motion",
+      "status": "passed",
+      "durationMs": 86.80009999999993
+    },
+    {
+      "file": "tests/watercycle_canvas_loop.test.js",
+      "name": "water cycle canvas animation loop makes the focusable 2D canvas keyboard-controllable",
+      "status": "passed",
+      "durationMs": 89.7832000000003
+    },
+    {
+      "file": "tests/watercycle_canvas_loop.test.js",
+      "name": "water cycle canvas animation loop repaints the paused 2D frame when state changes",
+      "status": "passed",
+      "durationMs": 93.57670000000007
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout desktop keeps \"LATENT HEAT IN\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 4.524100000002363
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout desktop keeps \"INVISIBLE VAPOR — PATH SHOWN\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 2.1460000000006403
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout desktop keeps \"LATENT HEAT OUT\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 1.8145999999978812
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout desktop keeps \"DROPLETS / ICE ON NUCLEI\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 2.503599999996368
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout desktop keeps \"GRAVITY — FALLING TRANSPORT\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 1.6172999999980675
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout desktop keeps \"RUNOFF → SURFACE STORAGE\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 3.132400000002235
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout desktop keeps \"SCHEMATIC SURFACE STORE\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.8096000000005006
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout desktop keeps \"ROOT → XYLEM\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 1.0720000000001164
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout desktop keeps \"XYLEM → LEAF\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 4.41189999999915
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout desktop keeps \"LIMITED VEGETATION / STOMATA CLOSED\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 2.1525000000037835
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout desktop keeps \"STOMATA → INVISIBLE VAPOR\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 1.8866000000052736
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout desktop keeps \"GROUNDWATER → DISCHARGE\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 1.9769000000014785
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout desktop keeps \"SELECTED DEEP RECHARGE\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.9323000000003958
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout desktop keeps \"SOIL PORE WATER (VADOSE ZONE)\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.8658999999970547
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas keeps \"LATENT HEAT IN\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 1.3843000000051688
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas keeps \"INVISIBLE VAPOR — PATH SHOWN\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 1.2105000000010477
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas keeps \"LATENT HEAT OUT\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.7906999999977415
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas keeps \"DROPLETS / ICE ON NUCLEI\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.7188999999998487
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas keeps \"GRAVITY — FALLING TRANSPORT\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.7487000000037369
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas keeps \"RUNOFF → SURFACE STORAGE\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 2.328300000001036
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas keeps \"SCHEMATIC SURFACE STORE\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 1.0206000000034692
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas keeps \"ROOT → XYLEM\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.7442000000010012
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas keeps \"XYLEM → LEAF\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.7405999999973574
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas keeps \"LIMITED VEGETATION / STOMATA CLOSED\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.7445999999981723
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas keeps \"STOMATA → INVISIBLE VAPOR\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.7143999999971129
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas keeps \"GROUNDWATER → DISCHARGE\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.8259000000034575
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas keeps \"SELECTED DEEP RECHARGE\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.7093000000022585
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas keeps \"SOIL PORE WATER (VADOSE ZONE)\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.7385999999969499
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas at double density keeps \"LATENT HEAT IN\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.7600000000020373
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas at double density keeps \"INVISIBLE VAPOR — PATH SHOWN\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.7491999999983818
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas at double density keeps \"LATENT HEAT OUT\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.7430999999996857
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas at double density keeps \"DROPLETS / ICE ON NUCLEI\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.7249999999985448
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas at double density keeps \"GRAVITY — FALLING TRANSPORT\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.720500000003085
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas at double density keeps \"RUNOFF → SURFACE STORAGE\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.7198999999964144
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas at double density keeps \"SCHEMATIC SURFACE STORE\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.7233000000051106
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas at double density keeps \"ROOT → XYLEM\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.7281000000002678
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas at double density keeps \"XYLEM → LEAF\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.7275000000008731
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas at double density keeps \"LIMITED VEGETATION / STOMATA CLOSED\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 0.7269000000014785
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas at double density keeps \"STOMATA → INVISIBLE VAPOR\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 98.99020000000019
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas at double density keeps \"GROUNDWATER → DISCHARGE\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 2.5973999999987427
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas at double density keeps \"SELECTED DEEP RECHARGE\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 5.4879000000000815
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout 272px canvas at double density keeps \"SOIL PORE WATER (VADOSE ZONE)\" readable and inside the canvas",
+      "status": "passed",
+      "durationMs": 2.74029999999766
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout wraps at word boundaries when a whole word fits",
+      "status": "passed",
+      "durationMs": 15.168400000002293
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout splits a long token without breaking Unicode characters or dropping text",
+      "status": "passed",
+      "durationMs": 1.2589999999981956
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout clamps a callout requested beyond each edge without losing its label",
+      "status": "passed",
+      "durationMs": 16.259899999997288
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout clears both wrapped corner overlays at density 1",
+      "status": "passed",
+      "durationMs": 77.2986000000019
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout clears both wrapped corner overlays at density 2",
+      "status": "passed",
+      "durationMs": 3.4369000000006054
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout reserves distinct callouts before subsequent labels choose their space",
+      "status": "passed",
+      "durationMs": 2.821300000003248
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout keeps the bottom callout within the canvas when its text wraps",
+      "status": "passed",
+      "durationMs": 1.0564999999987776
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle evidence callout layout ships the same helpers in the source and public runtime",
+      "status": "passed",
+      "durationMs": 97.37919999999576
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle plant evidence stages shows root uptake before drawing a leaf vapor path",
+      "status": "passed",
+      "durationMs": 2.5328000000008615
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle plant evidence stages shows leaf transfer and the invisible vapor path for transpiring",
+      "status": "passed",
+      "durationMs": 1.798900000001595
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle plant evidence stages shows leaf transfer and the invisible vapor path for idle",
+      "status": "passed",
+      "durationMs": 1.0001000000047497
+    },
+    {
+      "file": "tests/watercycle_evidence_callout_layout.test.js",
+      "name": "Water Cycle plant evidence stages keeps root uptake direction marks on the root to stem transfer",
+      "status": "passed",
+      "durationMs": 2.695499999994354
+    },
+    {
+      "file": "tests/watercycle_label_placement.test.js",
+      "name": "Water Cycle canvas label placement treats touching edges as clear and true overlap as a clash",
+      "status": "passed",
+      "durationMs": 3.0512000000016997
+    },
+    {
+      "file": "tests/watercycle_label_placement.test.js",
+      "name": "Water Cycle canvas label placement steps a label clear of one already placed at the same spot",
+      "status": "passed",
+      "durationMs": 1.3879000000015367
+    },
+    {
+      "file": "tests/watercycle_label_placement.test.js",
+      "name": "Water Cycle canvas label placement steps clear of reserved chrome without being asked to move it",
+      "status": "passed",
+      "durationMs": 0.9548999999969965
+    },
+    {
+      "file": "tests/watercycle_label_placement.test.js",
+      "name": "Water Cycle canvas label placement leaves a label where it was asked rather than dropping it when nothing is free",
+      "status": "passed",
+      "durationMs": 2.1984000000011292
+    },
+    {
+      "file": "tests/watercycle_label_placement.test.js",
+      "name": "Water Cycle canvas label placement clears wrapped corner overlays in a 320px viewport at double pixel density",
+      "status": "passed",
+      "durationMs": 2.288799999998446
+    },
+    {
+      "file": "tests/watercycle_label_placement.test.js",
+      "name": "Water Cycle canvas label placement survives a canvas with no measurable chrome",
+      "status": "passed",
+      "durationMs": 4.32209999999759
+    },
+    {
+      "file": "tests/watercycle_label_placement.test.js",
+      "name": "Water Cycle canvas label placement is wired: evidence lays out first, stages step, and the register clears each frame",
+      "status": "passed",
+      "durationMs": 40.28570000000036
+    },
+    {
+      "file": "tests/watercycle_matter_energy.test.js",
+      "name": "Water Cycle matter and energy trace defines one complete trace for all six visible stages",
+      "status": "passed",
+      "durationMs": 337.616399999999
+    },
+    {
+      "file": "tests/watercycle_matter_energy.test.js",
+      "name": "Water Cycle matter and energy trace distinguishes liquid plant uptake from liquid-to-vapor transpiration",
+      "status": "passed",
+      "durationMs": 87.64870000000155
+    },
+    {
+      "file": "tests/watercycle_matter_energy.test.js",
+      "name": "Water Cycle matter and energy trace server-renders the visible semantic summary and 2D canvas contract",
+      "status": "passed",
+      "durationMs": 9390,
+      "verifiedBy": "isolated-render-retry.json"
+    },
+    {
+      "file": "tests/watercycle_matter_energy.test.js",
+      "name": "Water Cycle matter and energy trace applies journey-specific matter semantics to the 3D canvas contract",
+      "status": "passed",
+      "durationMs": 659.0913
+    },
+    {
+      "file": "tests/watercycle_matter_energy.test.js",
+      "name": "Water Cycle matter and energy trace includes the current trace in the semantic Data view",
+      "status": "passed",
+      "durationMs": 226.49689999999828
+    },
+    {
+      "file": "tests/watercycle_readable_ink.test.js",
+      "name": "wcReadableInk in stem_lab/stem_tool_watercycle.js still uses the palette values these assertions measure",
+      "status": "passed",
+      "durationMs": 1534.6003999999994
+    },
+    {
+      "file": "tests/watercycle_readable_ink.test.js",
+      "name": "wcReadableInk in stem_lab/stem_tool_watercycle.js leaves a colour that already passes completely untouched",
+      "status": "passed",
+      "durationMs": 0.7297999999973399
+    },
+    {
+      "file": "tests/watercycle_readable_ink.test.js",
+      "name": "wcReadableInk in stem_lab/stem_tool_watercycle.js LIGHTENS on a dark ground and DARKENS on a light one",
+      "status": "passed",
+      "durationMs": 0.4360999999989872
+    },
+    {
+      "file": "tests/watercycle_readable_ink.test.js",
+      "name": "wcReadableInk in stem_lab/stem_tool_watercycle.js every watershed component name clears 4.5:1 on the dark card",
+      "status": "passed",
+      "durationMs": 0.6032999999988533
+    },
+    {
+      "file": "tests/watercycle_readable_ink.test.js",
+      "name": "wcReadableInk in stem_lab/stem_tool_watercycle.js every stage chip clears its own tinted ground in BOTH themes",
+      "status": "passed",
+      "durationMs": 0.8165999999982887
+    },
+    {
+      "file": "tests/watercycle_readable_ink.test.js",
+      "name": "wcReadableInk in stem_lab/stem_tool_watercycle.js degrades safely on input it cannot parse",
+      "status": "passed",
+      "durationMs": 0.38409999999930733
+    },
+    {
+      "file": "tests/watercycle_readable_ink.test.js",
+      "name": "wcReadableInk in desktop/web-app/public/stem_lab/stem_tool_watercycle.js still uses the palette values these assertions measure",
+      "status": "passed",
+      "durationMs": 14.604400000000169
+    },
+    {
+      "file": "tests/watercycle_readable_ink.test.js",
+      "name": "wcReadableInk in desktop/web-app/public/stem_lab/stem_tool_watercycle.js leaves a colour that already passes completely untouched",
+      "status": "passed",
+      "durationMs": 0.5626000000011118
+    },
+    {
+      "file": "tests/watercycle_readable_ink.test.js",
+      "name": "wcReadableInk in desktop/web-app/public/stem_lab/stem_tool_watercycle.js LIGHTENS on a dark ground and DARKENS on a light one",
+      "status": "passed",
+      "durationMs": 0.30610000000160653
+    },
+    {
+      "file": "tests/watercycle_readable_ink.test.js",
+      "name": "wcReadableInk in desktop/web-app/public/stem_lab/stem_tool_watercycle.js every watershed component name clears 4.5:1 on the dark card",
+      "status": "passed",
+      "durationMs": 0.4969999999993888
+    },
+    {
+      "file": "tests/watercycle_readable_ink.test.js",
+      "name": "wcReadableInk in desktop/web-app/public/stem_lab/stem_tool_watercycle.js every stage chip clears its own tinted ground in BOTH themes",
+      "status": "passed",
+      "durationMs": 0.5627999999996973
+    },
+    {
+      "file": "tests/watercycle_readable_ink.test.js",
+      "name": "wcReadableInk in desktop/web-app/public/stem_lab/stem_tool_watercycle.js degrades safely on input it cannot parse",
+      "status": "passed",
+      "durationMs": 0.32969999999841093
+    },
+    {
+      "file": "tests/watercycle_route_2d_consistency.test.js",
+      "name": "Water Cycle 2D route evidence consistency uses the same relative shares and leader state as the 3D route chooser",
+      "status": "passed",
+      "durationMs": 42.16640000000007
+    },
+    {
+      "file": "tests/watercycle_route_2d_consistency.test.js",
+      "name": "Water Cycle 2D route evidence consistency makes the 2D decision point visibly and non-visually discoverable",
+      "status": "passed",
+      "durationMs": 140.38520000000017
+    },
+    {
+      "file": "tests/watercycle_stage_label_ground.test.js",
+      "name": "Water Cycle stage labels have a ground of their own paints a chip behind every label before the text",
+      "status": "passed",
+      "durationMs": 2.0659000000005108
+    },
+    {
+      "file": "tests/watercycle_stage_label_ground.test.js",
+      "name": "Water Cycle stage labels have a ground of their own uses a near-white ink instead of the identity hue at partial alpha",
+      "status": "passed",
+      "durationMs": 0.3149999999995998
+    },
+    {
+      "file": "tests/watercycle_stage_label_ground.test.js",
+      "name": "Water Cycle stage labels have a ground of their own clears AA against its own chip over any backdrop the scene can put behind it",
+      "status": "passed",
+      "durationMs": 0.3973999999998341
+    },
+    {
+      "file": "tests/watercycle_stage_label_ground.test.js",
+      "name": "Water Cycle stage labels have a ground of their own keeps the active label distinguishable from the other five",
+      "status": "passed",
+      "durationMs": 0.23279999999977008
+    },
+    {
+      "file": "tests/watercycle_stage_label_ground.test.js",
+      "name": "Water Cycle stage labels have a ground of their own ships identically in both copies",
+      "status": "passed",
+      "durationMs": 26.545199999999568
+    },
+    {
+      "file": "tests/watercycle_subsurface_gate.test.js",
+      "name": "Water Cycle vadose-zone and selected-recharge gate distinguishes soil pore water from groundwater in the 3D scene",
+      "status": "passed",
+      "durationMs": 80.64069999999992
+    },
+    {
+      "file": "tests/watercycle_subsurface_gate.test.js",
+      "name": "Water Cycle vadose-zone and selected-recharge gate gates recharge, water-table storage, groundwater transfer, and discharge to aquifer states",
+      "status": "passed",
+      "durationMs": 116.98149999999987
+    },
+    {
+      "file": "tests/watercycle_subsurface_gate.test.js",
+      "name": "Water Cycle vadose-zone and selected-recharge gate reuses pooled percolation geometry with distinct shallow and deep spans",
+      "status": "passed",
+      "durationMs": 61.94580000000133
+    },
+    {
+      "file": "tests/watercycle_subsurface_gate.test.js",
+      "name": "Water Cycle vadose-zone and selected-recharge gate exposes deterministic runtime phase and percolation semantics",
+      "status": "passed",
+      "durationMs": 66.57910000000084
+    },
+    {
+      "file": "tests/watercycle_subsurface_gate.test.js",
+      "name": "Water Cycle vadose-zone and selected-recharge gate keeps both canvas attributes and visible/Data View science copy aligned",
+      "status": "passed",
+      "durationMs": 65.42050000000017
+    }
+  ]
+}

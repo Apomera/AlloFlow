@@ -1,0 +1,9 @@
+{
+  "command": "node node_modules/vitest/vitest.mjs run tests/watercycle_matter_energy.test.js --maxWorkers=1 --reporter=verbose -t server-renders",
+  "exitCode": 0,
+  "testsPassed": 1,
+  "testsSkipped": 4,
+  "test": "Water Cycle matter and energy trace server-renders the visible semantic summary and 2D canvas contract",
+  "durationMs": 9390,
+  "verification": "Root inspected the completed shell output. The renderer passed in isolation; its larger-run attempts exceeded the explicit 15-second test deadline. No test deadline or assertion was changed."
+}

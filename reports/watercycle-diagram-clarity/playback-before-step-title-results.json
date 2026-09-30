@@ -1,0 +1,1299 @@
+{
+  "title": "Water Cycle diagram playback and guide browser checks",
+  "startedAt": "2026-09-30T03:50:11.199Z",
+  "sourceSha256": "9cb2f6c45d397f6c3dba2fba746c26b42fab7d51aa497bb9b02a35c79c5b1a97",
+  "sourceMirrorSha256": "9cb2f6c45d397f6c3dba2fba746c26b42fab7d51aa497bb9b02a35c79c5b1a97",
+  "method": "One isolated Chromium context, real React callbacks and native view/process buttons; controlled document.hidden override dispatches the actual visibilitychange handler.",
+  "checks": [
+    {
+      "label": "Initial restored paused 2D canvas paints",
+      "passed": true,
+      "evidence": {
+        "width": 2008,
+        "height": 1036,
+        "painted": true,
+        "pixel": [
+          75,
+          167,
+          185,
+          255
+        ],
+        "pendingFrame": false,
+        "initialized": true,
+        "journeyProgress": 0,
+        "journeyState": "idle",
+        "renderMode": "visual",
+        "wc2dPaused": "true",
+        "journeyPaused": "false",
+        "stage": "evaporation",
+        "phaseFrom": "Liquid water",
+        "phaseTo": "Water vapor",
+        "energy": "absorbed",
+        "solar": "1",
+        "temp": "15",
+        "guide": "WATCH FOR\nAnimation paused on Evaporation. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.\nLiquid water\n→\nEvaporation\n→\nWater vapor\nLatent heat absorbed\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nWater vapor is invisible; drawn marks trace its path.\nMarkers are enlarged; the scene is not to scale.\n▶ Resume\n☀ Evaporation",
+        "guideProcess": "Evaporation",
+        "guideBadge": "☀ Evaporation",
+        "canvasAria": "Water cycle animation showing Evaporation. Water moves from Surface water to Atmosphere.",
+        "guideEnergy": "Latent heat absorbed",
+        "vaporGuidance": "visible",
+        "guideAssociation": "wcStageFocusDescription wcCanvasGuideDescription",
+        "engine": null,
+        "state": {
+          "wcMode": "explore",
+          "wcSection": "explore",
+          "journeyView": "2d",
+          "activeStage": "evaporation",
+          "wc2dPaused": true
+        }
+      }
+    },
+    {
+      "label": "Initial paused 2D has no pending animation frame",
+      "passed": true,
+      "evidence": {
+        "before": false,
+        "after": false
+      }
+    },
+    {
+      "label": "Initial paused 2D stays visually stable",
+      "passed": true,
+      "evidence": {
+        "before": [
+          75,
+          167,
+          185,
+          255
+        ],
+        "after": [
+          75,
+          167,
+          185,
+          255
+        ]
+      }
+    },
+    {
+      "label": "Canonical dataset.wc2dPaused reports pause",
+      "passed": true,
+      "evidence": "true"
+    },
+    {
+      "label": "2D canvas remains associated with the visible guide",
+      "passed": true,
+      "evidence": "wcStageFocusDescription wcCanvasGuideDescription"
+    },
+    {
+      "label": "Paused 2D React control update reaches the actual canvas",
+      "passed": true,
+      "evidence": {
+        "temp": "31",
+        "solar": "0.35"
+      }
+    },
+    {
+      "label": "Paused active 2D repaint preserves journey progress",
+      "passed": true,
+      "evidence": {
+        "before": 0.23,
+        "after": 0.23
+      }
+    },
+    {
+      "label": "Paused 2D control update leaves a painted canvas without RAF",
+      "passed": true,
+      "evidence": {
+        "painted": true,
+        "pendingFrame": false
+      }
+    },
+    {
+      "label": "Explicit paused 2D redraw preserves journey progress",
+      "passed": true,
+      "evidence": {
+        "start": 0.23,
+        "redrawn": 0.23,
+        "after": 0.23
+      }
+    },
+    {
+      "label": "Explicit paused 2D redraw leaves no RAF",
+      "passed": true,
+      "evidence": {
+        "redrawn": false,
+        "after": false
+      }
+    },
+    {
+      "label": "Hidden restored paused 2D schedules no frame",
+      "passed": true,
+      "evidence": false
+    },
+    {
+      "label": "Visibility restoration paints paused 2D",
+      "passed": true,
+      "evidence": {
+        "before": [
+          75,
+          167,
+          185,
+          255
+        ],
+        "after": [
+          75,
+          167,
+          185,
+          255
+        ]
+      }
+    },
+    {
+      "label": "Visibility restoration keeps paused 2D free of RAF",
+      "passed": true,
+      "evidence": {
+        "before": false,
+        "after": false
+      }
+    },
+    {
+      "label": "Visibility restoration preserves canonical pause state",
+      "passed": true,
+      "evidence": {
+        "before": "true",
+        "after": "true"
+      }
+    },
+    {
+      "label": "2D evaporation: selected process reaches canvas",
+      "passed": true,
+      "evidence": "evaporation"
+    },
+    {
+      "label": "2D evaporation: handoff names the selected standalone process",
+      "passed": true,
+      "evidence": "Evaporation"
+    },
+    {
+      "label": "2D evaporation: badge names the selected standalone process",
+      "passed": true,
+      "evidence": "☀ Evaporation"
+    },
+    {
+      "label": "2D evaporation: correct resolved heat description",
+      "passed": true,
+      "evidence": "Latent heat absorbed"
+    },
+    {
+      "label": "2D evaporation: correct invisible-vapor guidance",
+      "passed": true,
+      "evidence": "visible"
+    },
+    {
+      "label": "2D evaporation: all three existing symbols have meanings",
+      "passed": true,
+      "evidence": "WATCH FOR\nAnimation paused on Evaporation. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.\nLiquid water\n→\nEvaporation\n→\nWater vapor\nLatent heat absorbed\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nWater vapor is invisible; drawn marks trace its path.\nMarkers are enlarged; the scene is not to scale.\n▶ Resume\n☀ Evaporation"
+    },
+    {
+      "label": "2D evaporation: marker scale guidance is visible",
+      "passed": true,
+      "evidence": "WATCH FOR\nAnimation paused on Evaporation. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.\nLiquid water\n→\nEvaporation\n→\nWater vapor\nLatent heat absorbed\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nWater vapor is invisible; drawn marks trace its path.\nMarkers are enlarged; the scene is not to scale.\n▶ Resume\n☀ Evaporation"
+    },
+    {
+      "label": "2D evaporation: raw energy enum is absent",
+      "passed": true,
+      "evidence": "Latent heat absorbed"
+    },
+    {
+      "label": "2D condensation: selected process reaches canvas",
+      "passed": true,
+      "evidence": "condensation"
+    },
+    {
+      "label": "2D condensation: handoff names the selected standalone process",
+      "passed": true,
+      "evidence": "Condensation"
+    },
+    {
+      "label": "2D condensation: badge names the selected standalone process",
+      "passed": true,
+      "evidence": "☁ Condensation"
+    },
+    {
+      "label": "2D condensation: correct resolved heat description",
+      "passed": true,
+      "evidence": "Latent heat released"
+    },
+    {
+      "label": "2D condensation: correct invisible-vapor guidance",
+      "passed": true,
+      "evidence": "visible"
+    },
+    {
+      "label": "2D condensation: all three existing symbols have meanings",
+      "passed": true,
+      "evidence": "WATCH FOR\nAnimation paused on Condensation. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.\nWater vapor\n→\nCondensation\n→\nLiquid droplets or ice\nLatent heat released\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nWater vapor is invisible; drawn marks trace its path.\nMarkers are enlarged; the scene is not to scale.\n▶ Resume\n☁ Condensation"
+    },
+    {
+      "label": "2D condensation: marker scale guidance is visible",
+      "passed": true,
+      "evidence": "WATCH FOR\nAnimation paused on Condensation. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.\nWater vapor\n→\nCondensation\n→\nLiquid droplets or ice\nLatent heat released\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nWater vapor is invisible; drawn marks trace its path.\nMarkers are enlarged; the scene is not to scale.\n▶ Resume\n☁ Condensation"
+    },
+    {
+      "label": "2D condensation: raw energy enum is absent",
+      "passed": true,
+      "evidence": "Latent heat released"
+    },
+    {
+      "label": "2D precipitation: selected process reaches canvas",
+      "passed": true,
+      "evidence": "precipitation"
+    },
+    {
+      "label": "2D precipitation: handoff names the selected standalone process",
+      "passed": true,
+      "evidence": "Precipitation"
+    },
+    {
+      "label": "2D precipitation: badge names the selected standalone process",
+      "passed": true,
+      "evidence": "🌧 Precipitation"
+    },
+    {
+      "label": "2D precipitation: correct resolved heat description",
+      "passed": true,
+      "evidence": "No required phase change"
+    },
+    {
+      "label": "2D precipitation: correct invisible-vapor guidance",
+      "passed": true,
+      "evidence": "not-applicable"
+    },
+    {
+      "label": "2D precipitation: all three existing symbols have meanings",
+      "passed": true,
+      "evidence": "WATCH FOR\nAnimation paused on Precipitation. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.\nCloud water or ice\n→\nPrecipitation\n→\nFalling liquid or solid water\nNo required phase change\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nMarkers are enlarged; the scene is not to scale.\n▶ Resume\n🌧 Precipitation"
+    },
+    {
+      "label": "2D precipitation: marker scale guidance is visible",
+      "passed": true,
+      "evidence": "WATCH FOR\nAnimation paused on Precipitation. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.\nCloud water or ice\n→\nPrecipitation\n→\nFalling liquid or solid water\nNo required phase change\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nMarkers are enlarged; the scene is not to scale.\n▶ Resume\n🌧 Precipitation"
+    },
+    {
+      "label": "2D precipitation: raw energy enum is absent",
+      "passed": true,
+      "evidence": "No required phase change"
+    },
+    {
+      "label": "2D collection: selected process reaches canvas",
+      "passed": true,
+      "evidence": "collection"
+    },
+    {
+      "label": "2D collection: handoff names the selected standalone process",
+      "passed": true,
+      "evidence": "Collection"
+    },
+    {
+      "label": "2D collection: badge names the selected standalone process",
+      "passed": true,
+      "evidence": "🌊 Collection"
+    },
+    {
+      "label": "2D collection: correct resolved heat description",
+      "passed": true,
+      "evidence": "No required phase change"
+    },
+    {
+      "label": "2D collection: correct invisible-vapor guidance",
+      "passed": true,
+      "evidence": "not-applicable"
+    },
+    {
+      "label": "2D collection: all three existing symbols have meanings",
+      "passed": true,
+      "evidence": "WATCH FOR\nAnimation paused on Collection. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.\nLiquid or solid water\n→\nCollection\n→\nStored liquid water or ice\nNo required phase change\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nMarkers are enlarged; the scene is not to scale.\n▶ Resume\n🌊 Collection"
+    },
+    {
+      "label": "2D collection: marker scale guidance is visible",
+      "passed": true,
+      "evidence": "WATCH FOR\nAnimation paused on Collection. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.\nLiquid or solid water\n→\nCollection\n→\nStored liquid water or ice\nNo required phase change\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nMarkers are enlarged; the scene is not to scale.\n▶ Resume\n🌊 Collection"
+    },
+    {
+      "label": "2D collection: raw energy enum is absent",
+      "passed": true,
+      "evidence": "No required phase change"
+    },
+    {
+      "label": "2D transpiration: selected process reaches canvas",
+      "passed": true,
+      "evidence": "transpiration"
+    },
+    {
+      "label": "2D transpiration: handoff names the selected standalone process",
+      "passed": true,
+      "evidence": "Transpiration"
+    },
+    {
+      "label": "2D transpiration: badge names the selected standalone process",
+      "passed": true,
+      "evidence": "🌿 Transpiration"
+    },
+    {
+      "label": "2D transpiration: correct resolved heat description",
+      "passed": true,
+      "evidence": "Latent heat absorbed"
+    },
+    {
+      "label": "2D transpiration: correct invisible-vapor guidance",
+      "passed": true,
+      "evidence": "visible"
+    },
+    {
+      "label": "2D transpiration: all three existing symbols have meanings",
+      "passed": true,
+      "evidence": "WATCH FOR\nAnimation paused on Transpiration. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.\nLiquid plant water\n→\nTranspiration\n→\nWater vapor\nLatent heat absorbed\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nWater vapor is invisible; drawn marks trace its path.\nMarkers are enlarged; the scene is not to scale.\n▶ Resume\n🌿 Transpiration"
+    },
+    {
+      "label": "2D transpiration: marker scale guidance is visible",
+      "passed": true,
+      "evidence": "WATCH FOR\nAnimation paused on Transpiration. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.\nLiquid plant water\n→\nTranspiration\n→\nWater vapor\nLatent heat absorbed\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nWater vapor is invisible; drawn marks trace its path.\nMarkers are enlarged; the scene is not to scale.\n▶ Resume\n🌿 Transpiration"
+    },
+    {
+      "label": "2D transpiration: raw energy enum is absent",
+      "passed": true,
+      "evidence": "Latent heat absorbed"
+    },
+    {
+      "label": "2D infiltration: selected process reaches canvas",
+      "passed": true,
+      "evidence": "infiltration"
+    },
+    {
+      "label": "2D infiltration: handoff names the selected standalone process",
+      "passed": true,
+      "evidence": "Infiltration"
+    },
+    {
+      "label": "2D infiltration: badge names the selected standalone process",
+      "passed": true,
+      "evidence": "🪴 Infiltration"
+    },
+    {
+      "label": "2D infiltration: correct resolved heat description",
+      "passed": true,
+      "evidence": "No required phase change"
+    },
+    {
+      "label": "2D infiltration: correct invisible-vapor guidance",
+      "passed": true,
+      "evidence": "not-applicable"
+    },
+    {
+      "label": "2D infiltration: all three existing symbols have meanings",
+      "passed": true,
+      "evidence": "WATCH FOR\nAnimation paused on Infiltration. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.\nLiquid surface water\n→\nInfiltration\n→\nLiquid soil pore water\nNo required phase change\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nMarkers are enlarged; the scene is not to scale.\n▶ Resume\n🪴 Infiltration"
+    },
+    {
+      "label": "2D infiltration: marker scale guidance is visible",
+      "passed": true,
+      "evidence": "WATCH FOR\nAnimation paused on Infiltration. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.\nLiquid surface water\n→\nInfiltration\n→\nLiquid soil pore water\nNo required phase change\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nMarkers are enlarged; the scene is not to scale.\n▶ Resume\n🪴 Infiltration"
+    },
+    {
+      "label": "2D infiltration: raw energy enum is absent",
+      "passed": true,
+      "evidence": "No required phase change"
+    },
+    {
+      "label": "View-switch starts from a paused 2D canvas without RAF",
+      "passed": true,
+      "evidence": {
+        "pause": "true",
+        "frame": false
+      }
+    },
+    {
+      "label": "Switching paused 2D to 3D resumes hidden driver RAF",
+      "passed": true,
+      "evidence": {
+        "mode": "state-only",
+        "before": true,
+        "after": true
+      }
+    },
+    {
+      "label": "Started unpaused 3D journey advances despite retained 2D pause",
+      "passed": true,
+      "evidence": {
+        "before": 0.018000000000000002,
+        "after": 0.072,
+        "beforeState": "ocean",
+        "afterState": "ocean",
+        "wc2dPaused": "true"
+      }
+    },
+    {
+      "label": "3D engine successfully creates WebGL renderer",
+      "passed": true,
+      "evidence": "ready"
+    },
+    {
+      "label": "Paused 3D journey progress stays fixed",
+      "passed": true,
+      "evidence": {
+        "before": 0.078,
+        "after": 0.078
+      }
+    },
+    {
+      "label": "Paused 3D journey state stays fixed",
+      "passed": true,
+      "evidence": {
+        "before": "ocean",
+        "after": "ocean"
+      }
+    },
+    {
+      "label": "3D evaporation: selected process reaches canvas",
+      "passed": true,
+      "evidence": "evaporation"
+    },
+    {
+      "label": "3D evaporation: handoff names the selected standalone process",
+      "passed": true,
+      "evidence": "Evaporation"
+    },
+    {
+      "label": "3D evaporation: badge names the selected standalone process",
+      "passed": true,
+      "evidence": "☀ Evaporation"
+    },
+    {
+      "label": "3D evaporation: correct resolved heat description",
+      "passed": true,
+      "evidence": "Latent heat absorbed"
+    },
+    {
+      "label": "3D evaporation: correct invisible-vapor guidance",
+      "passed": true,
+      "evidence": "visible"
+    },
+    {
+      "label": "3D evaporation: all three existing symbols have meanings",
+      "passed": true,
+      "evidence": "WATCH FOR\nUse drag or arrow keys to explore; highlighted routes are clickable. Press F to follow the droplet.\nLiquid water\n→\nEvaporation\n→\nWater vapor\nLatent heat absorbed\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nWater vapor is invisible; drawn marks trace its path.\nMarkers are enlarged; the scene is not to scale.\n☀ Evaporation"
+    },
+    {
+      "label": "3D evaporation: marker scale guidance is visible",
+      "passed": true,
+      "evidence": "WATCH FOR\nUse drag or arrow keys to explore; highlighted routes are clickable. Press F to follow the droplet.\nLiquid water\n→\nEvaporation\n→\nWater vapor\nLatent heat absorbed\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nWater vapor is invisible; drawn marks trace its path.\nMarkers are enlarged; the scene is not to scale.\n☀ Evaporation"
+    },
+    {
+      "label": "3D evaporation: raw energy enum is absent",
+      "passed": true,
+      "evidence": "Latent heat absorbed"
+    },
+    {
+      "label": "3D condensation: selected process reaches canvas",
+      "passed": true,
+      "evidence": "condensation"
+    },
+    {
+      "label": "3D condensation: handoff names the selected standalone process",
+      "passed": true,
+      "evidence": "Condensation"
+    },
+    {
+      "label": "3D condensation: badge names the selected standalone process",
+      "passed": true,
+      "evidence": "☁ Condensation"
+    },
+    {
+      "label": "3D condensation: correct resolved heat description",
+      "passed": true,
+      "evidence": "Latent heat released"
+    },
+    {
+      "label": "3D condensation: correct invisible-vapor guidance",
+      "passed": true,
+      "evidence": "visible"
+    },
+    {
+      "label": "3D condensation: all three existing symbols have meanings",
+      "passed": true,
+      "evidence": "WATCH FOR\nUse drag or arrow keys to explore; highlighted routes are clickable. Press F to follow the droplet.\nWater vapor\n→\nCondensation\n→\nLiquid droplets or ice\nLatent heat released\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nWater vapor is invisible; drawn marks trace its path.\nMarkers are enlarged; the scene is not to scale.\n☁ Condensation"
+    },
+    {
+      "label": "3D condensation: marker scale guidance is visible",
+      "passed": true,
+      "evidence": "WATCH FOR\nUse drag or arrow keys to explore; highlighted routes are clickable. Press F to follow the droplet.\nWater vapor\n→\nCondensation\n→\nLiquid droplets or ice\nLatent heat released\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nWater vapor is invisible; drawn marks trace its path.\nMarkers are enlarged; the scene is not to scale.\n☁ Condensation"
+    },
+    {
+      "label": "3D condensation: raw energy enum is absent",
+      "passed": true,
+      "evidence": "Latent heat released"
+    },
+    {
+      "label": "3D precipitation: selected process reaches canvas",
+      "passed": true,
+      "evidence": "precipitation"
+    },
+    {
+      "label": "3D precipitation: handoff names the selected standalone process",
+      "passed": true,
+      "evidence": "Precipitation"
+    },
+    {
+      "label": "3D precipitation: badge names the selected standalone process",
+      "passed": true,
+      "evidence": "🌧 Precipitation"
+    },
+    {
+      "label": "3D precipitation: correct resolved heat description",
+      "passed": true,
+      "evidence": "No required phase change"
+    },
+    {
+      "label": "3D precipitation: correct invisible-vapor guidance",
+      "passed": true,
+      "evidence": "not-applicable"
+    },
+    {
+      "label": "3D precipitation: all three existing symbols have meanings",
+      "passed": true,
+      "evidence": "WATCH FOR\nUse drag or arrow keys to explore; highlighted routes are clickable. Press F to follow the droplet.\nCloud water or ice\n→\nPrecipitation\n→\nFalling liquid or solid water\nNo required phase change\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nMarkers are enlarged; the scene is not to scale.\n🌧 Precipitation"
+    },
+    {
+      "label": "3D precipitation: marker scale guidance is visible",
+      "passed": true,
+      "evidence": "WATCH FOR\nUse drag or arrow keys to explore; highlighted routes are clickable. Press F to follow the droplet.\nCloud water or ice\n→\nPrecipitation\n→\nFalling liquid or solid water\nNo required phase change\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nMarkers are enlarged; the scene is not to scale.\n🌧 Precipitation"
+    },
+    {
+      "label": "3D precipitation: raw energy enum is absent",
+      "passed": true,
+      "evidence": "No required phase change"
+    },
+    {
+      "label": "3D collection: selected process reaches canvas",
+      "passed": true,
+      "evidence": "collection"
+    },
+    {
+      "label": "3D collection: handoff names the selected standalone process",
+      "passed": true,
+      "evidence": "Collection"
+    },
+    {
+      "label": "3D collection: badge names the selected standalone process",
+      "passed": true,
+      "evidence": "🌊 Collection"
+    },
+    {
+      "label": "3D collection: correct resolved heat description",
+      "passed": true,
+      "evidence": "No required phase change"
+    },
+    {
+      "label": "3D collection: correct invisible-vapor guidance",
+      "passed": true,
+      "evidence": "not-applicable"
+    },
+    {
+      "label": "3D collection: all three existing symbols have meanings",
+      "passed": true,
+      "evidence": "WATCH FOR\nUse drag or arrow keys to explore; highlighted routes are clickable. Press F to follow the droplet.\nLiquid or solid water\n→\nCollection\n→\nStored liquid water or ice\nNo required phase change\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nMarkers are enlarged; the scene is not to scale.\n🌊 Collection"
+    },
+    {
+      "label": "3D collection: marker scale guidance is visible",
+      "passed": true,
+      "evidence": "WATCH FOR\nUse drag or arrow keys to explore; highlighted routes are clickable. Press F to follow the droplet.\nLiquid or solid water\n→\nCollection\n→\nStored liquid water or ice\nNo required phase change\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nMarkers are enlarged; the scene is not to scale.\n🌊 Collection"
+    },
+    {
+      "label": "3D collection: raw energy enum is absent",
+      "passed": true,
+      "evidence": "No required phase change"
+    },
+    {
+      "label": "3D transpiration: selected process reaches canvas",
+      "passed": true,
+      "evidence": "transpiration"
+    },
+    {
+      "label": "3D transpiration: handoff names the selected standalone process",
+      "passed": true,
+      "evidence": "Transpiration"
+    },
+    {
+      "label": "3D transpiration: badge names the selected standalone process",
+      "passed": true,
+      "evidence": "🌿 Transpiration"
+    },
+    {
+      "label": "3D transpiration: correct resolved heat description",
+      "passed": true,
+      "evidence": "Latent heat absorbed"
+    },
+    {
+      "label": "3D transpiration: correct invisible-vapor guidance",
+      "passed": true,
+      "evidence": "visible"
+    },
+    {
+      "label": "3D transpiration: all three existing symbols have meanings",
+      "passed": true,
+      "evidence": "WATCH FOR\nUse drag or arrow keys to explore; highlighted routes are clickable. Press F to follow the droplet.\nLiquid plant water\n→\nTranspiration\n→\nWater vapor\nLatent heat absorbed\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nWater vapor is invisible; drawn marks trace its path.\nMarkers are enlarged; the scene is not to scale.\n🌿 Transpiration"
+    },
+    {
+      "label": "3D transpiration: marker scale guidance is visible",
+      "passed": true,
+      "evidence": "WATCH FOR\nUse drag or arrow keys to explore; highlighted routes are clickable. Press F to follow the droplet.\nLiquid plant water\n→\nTranspiration\n→\nWater vapor\nLatent heat absorbed\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nWater vapor is invisible; drawn marks trace its path.\nMarkers are enlarged; the scene is not to scale.\n🌿 Transpiration"
+    },
+    {
+      "label": "3D transpiration: raw energy enum is absent",
+      "passed": true,
+      "evidence": "Latent heat absorbed"
+    },
+    {
+      "label": "3D infiltration: selected process reaches canvas",
+      "passed": true,
+      "evidence": "infiltration"
+    },
+    {
+      "label": "3D infiltration: handoff names the selected standalone process",
+      "passed": true,
+      "evidence": "Infiltration"
+    },
+    {
+      "label": "3D infiltration: badge names the selected standalone process",
+      "passed": true,
+      "evidence": "🪴 Infiltration"
+    },
+    {
+      "label": "3D infiltration: correct resolved heat description",
+      "passed": true,
+      "evidence": "No required phase change"
+    },
+    {
+      "label": "3D infiltration: correct invisible-vapor guidance",
+      "passed": true,
+      "evidence": "not-applicable"
+    },
+    {
+      "label": "3D infiltration: all three existing symbols have meanings",
+      "passed": true,
+      "evidence": "WATCH FOR\nUse drag or arrow keys to explore; highlighted routes are clickable. Press F to follow the droplet.\nLiquid surface water\n→\nInfiltration\n→\nLiquid soil pore water\nNo required phase change\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nMarkers are enlarged; the scene is not to scale.\n🪴 Infiltration"
+    },
+    {
+      "label": "3D infiltration: marker scale guidance is visible",
+      "passed": true,
+      "evidence": "WATCH FOR\nUse drag or arrow keys to explore; highlighted routes are clickable. Press F to follow the droplet.\nLiquid surface water\n→\nInfiltration\n→\nLiquid soil pore water\nNo required phase change\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nMarkers are enlarged; the scene is not to scale.\n🪴 Infiltration"
+    },
+    {
+      "label": "3D infiltration: raw energy enum is absent",
+      "passed": true,
+      "evidence": "No required phase change"
+    },
+    {
+      "label": "3D root uptake handoff names the active step",
+      "passed": true,
+      "evidence": "Plant uptake"
+    },
+    {
+      "label": "3D root uptake badge names the active step",
+      "passed": true,
+      "evidence": "🌿 Plant uptake"
+    },
+    {
+      "label": "Root uptake canvas text alternative names the active step",
+      "passed": true,
+      "evidence": "Water cycle animation showing Plant uptake. Water moves from Soil water to Plant xylem."
+    },
+    {
+      "label": "3D root uptake trace stays liquid-to-liquid",
+      "passed": true,
+      "evidence": {
+        "from": "Liquid soil water",
+        "to": "Liquid plant water"
+      }
+    },
+    {
+      "label": "3D root uptake requires no phase change",
+      "passed": true,
+      "evidence": {
+        "guide": "No required phase change",
+        "transfer": "none"
+      }
+    },
+    {
+      "label": "3D root uptake does not imply invisible vapor formation",
+      "passed": true,
+      "evidence": "WATCH FOR\nUse drag or arrow keys to explore; highlighted routes are clickable. Press F to follow the droplet.\nLiquid soil water\n→\nPlant uptake\n→\nLiquid plant water\nNo required phase change\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nMarkers are enlarged; the scene is not to scale.\n🌿 Plant uptake"
+    },
+    {
+      "label": "3D transpiring handoff names Transpiration",
+      "passed": true,
+      "evidence": "Transpiration"
+    },
+    {
+      "label": "3D transpiring badge names Transpiration",
+      "passed": true,
+      "evidence": "🌿 Transpiration"
+    },
+    {
+      "label": "Transpiring canvas text alternative names the active step",
+      "passed": true,
+      "evidence": "Water cycle animation showing Transpiration. Water moves from Plant xylem to Atmospheric vapor."
+    },
+    {
+      "label": "3D transpiring trace changes liquid plant water to vapor",
+      "passed": true,
+      "evidence": {
+        "from": "Liquid plant water",
+        "to": "Water vapor"
+      }
+    },
+    {
+      "label": "3D transpiring requires absorbed latent heat",
+      "passed": true,
+      "evidence": {
+        "guide": "Latent heat absorbed",
+        "transfer": "absorbed"
+      }
+    },
+    {
+      "label": "3D transpiring explains invisible vapor marks",
+      "passed": true,
+      "evidence": "WATCH FOR\nUse drag or arrow keys to explore; highlighted routes are clickable. Press F to follow the droplet.\nLiquid plant water\n→\nTranspiration\n→\nWater vapor\nLatent heat absorbed\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nWater vapor is invisible; drawn marks trace its path.\nMarkers are enlarged; the scene is not to scale.\n🌿 Transpiration"
+    },
+    {
+      "label": "3D river_runoff handoff names the active journey transfer",
+      "passed": true,
+      "evidence": "River runoff"
+    },
+    {
+      "label": "3D river_runoff badge names the active journey transfer",
+      "passed": true,
+      "evidence": "🌊 River runoff"
+    },
+    {
+      "label": "3D aquifer_flow handoff names the active journey transfer",
+      "passed": true,
+      "evidence": "Aquifer flow"
+    },
+    {
+      "label": "3D aquifer_flow badge names the active journey transfer",
+      "passed": true,
+      "evidence": "🪴 Aquifer flow"
+    },
+    {
+      "label": "No browser runtime errors",
+      "passed": true,
+      "evidence": []
+    },
+    {
+      "label": "Runtime source stayed unchanged during playback verification",
+      "passed": true,
+      "evidence": {
+        "before": "9cb2f6c45d397f6c3dba2fba746c26b42fab7d51aa497bb9b02a35c79c5b1a97",
+        "after": "9cb2f6c45d397f6c3dba2fba746c26b42fab7d51aa497bb9b02a35c79c5b1a97"
+      }
+    },
+    {
+      "label": "Source and desktop public mirror match at verification end",
+      "passed": true,
+      "evidence": {
+        "source": "9cb2f6c45d397f6c3dba2fba746c26b42fab7d51aa497bb9b02a35c79c5b1a97",
+        "mirror": "9cb2f6c45d397f6c3dba2fba746c26b42fab7d51aa497bb9b02a35c79c5b1a97"
+      }
+    }
+  ],
+  "snapshots": [
+    {
+      "name": "initial-paused-2d",
+      "before": {
+        "width": 2008,
+        "height": 1036,
+        "painted": true,
+        "pixel": [
+          75,
+          167,
+          185,
+          255
+        ],
+        "pendingFrame": false,
+        "initialized": true,
+        "journeyProgress": 0,
+        "journeyState": "idle",
+        "renderMode": "visual",
+        "wc2dPaused": "true",
+        "journeyPaused": "false",
+        "stage": "evaporation",
+        "phaseFrom": "Liquid water",
+        "phaseTo": "Water vapor",
+        "energy": "absorbed",
+        "solar": "1",
+        "temp": "15",
+        "guide": "WATCH FOR\nAnimation paused on Evaporation. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.\nLiquid water\n→\nEvaporation\n→\nWater vapor\nLatent heat absorbed\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nWater vapor is invisible; drawn marks trace its path.\nMarkers are enlarged; the scene is not to scale.\n▶ Resume\n☀ Evaporation",
+        "guideProcess": "Evaporation",
+        "guideBadge": "☀ Evaporation",
+        "canvasAria": "Water cycle animation showing Evaporation. Water moves from Surface water to Atmosphere.",
+        "guideEnergy": "Latent heat absorbed",
+        "vaporGuidance": "visible",
+        "guideAssociation": "wcStageFocusDescription wcCanvasGuideDescription",
+        "engine": null,
+        "state": {
+          "wcMode": "explore",
+          "wcSection": "explore",
+          "journeyView": "2d",
+          "activeStage": "evaporation",
+          "wc2dPaused": true
+        }
+      },
+      "after": {
+        "width": 2008,
+        "height": 1036,
+        "painted": true,
+        "pixel": [
+          75,
+          167,
+          185,
+          255
+        ],
+        "pendingFrame": false,
+        "initialized": true,
+        "journeyProgress": 0,
+        "journeyState": "idle",
+        "renderMode": "visual",
+        "wc2dPaused": "true",
+        "journeyPaused": "false",
+        "stage": "evaporation",
+        "phaseFrom": "Liquid water",
+        "phaseTo": "Water vapor",
+        "energy": "absorbed",
+        "solar": "1",
+        "temp": "15",
+        "guide": "WATCH FOR\nAnimation paused on Evaporation. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.\nLiquid water\n→\nEvaporation\n→\nWater vapor\nLatent heat absorbed\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nWater vapor is invisible; drawn marks trace its path.\nMarkers are enlarged; the scene is not to scale.\n▶ Resume\n☀ Evaporation",
+        "guideProcess": "Evaporation",
+        "guideBadge": "☀ Evaporation",
+        "canvasAria": "Water cycle animation showing Evaporation. Water moves from Surface water to Atmosphere.",
+        "guideEnergy": "Latent heat absorbed",
+        "vaporGuidance": "visible",
+        "guideAssociation": "wcStageFocusDescription wcCanvasGuideDescription",
+        "engine": null,
+        "state": {
+          "wcMode": "explore",
+          "wcSection": "explore",
+          "journeyView": "2d",
+          "activeStage": "evaporation",
+          "wc2dPaused": true
+        }
+      },
+      "intervalMs": 500
+    },
+    {
+      "name": "paused-active-2d-forced-redraw",
+      "before": {
+        "width": 2008,
+        "height": 1036,
+        "painted": true,
+        "pixel": [
+          59,
+          110,
+          120,
+          255
+        ],
+        "pendingFrame": false,
+        "initialized": true,
+        "journeyProgress": 0.23,
+        "journeyState": "evaporating",
+        "renderMode": "visual",
+        "wc2dPaused": "true",
+        "journeyPaused": "false",
+        "stage": "evaporation",
+        "phaseFrom": "Liquid water",
+        "phaseTo": "Water vapor",
+        "energy": "absorbed",
+        "solar": "0.35",
+        "temp": "31",
+        "guide": "WATCH FOR\nAnimation paused on Evaporation. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.\nLiquid water\n→\nEvaporation\n→\nWater vapor\nLatent heat absorbed\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nWater vapor is invisible; drawn marks trace its path.\nMarkers are enlarged; the scene is not to scale.\n▶ Resume\n☀ Evaporation",
+        "guideProcess": "Evaporation",
+        "guideBadge": "☀ Evaporation",
+        "canvasAria": "Water cycle animation showing Evaporation. Water moves from Ocean surface to Atmospheric vapor.",
+        "guideEnergy": "Latent heat absorbed",
+        "vaporGuidance": "visible",
+        "guideAssociation": "wcStageFocusDescription wcCanvasGuideDescription",
+        "engine": null,
+        "state": {
+          "wcMode": "explore",
+          "wcSection": "explore",
+          "journeyView": "2d",
+          "activeStage": "evaporation",
+          "journeyActive": true,
+          "journeyState": "evaporating",
+          "journeyPaused": false,
+          "wc2dPaused": true,
+          "climTemp": 31,
+          "climSolar": 0.35
+        }
+      },
+      "after": {
+        "width": 2008,
+        "height": 1036,
+        "painted": true,
+        "pixel": [
+          59,
+          110,
+          120,
+          255
+        ],
+        "pendingFrame": false,
+        "initialized": true,
+        "journeyProgress": 0.23,
+        "journeyState": "evaporating",
+        "renderMode": "visual",
+        "wc2dPaused": "true",
+        "journeyPaused": "false",
+        "stage": "evaporation",
+        "phaseFrom": "Liquid water",
+        "phaseTo": "Water vapor",
+        "energy": "absorbed",
+        "solar": "0.35",
+        "temp": "31",
+        "guide": "WATCH FOR\nAnimation paused on Evaporation. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.\nLiquid water\n→\nEvaporation\n→\nWater vapor\nLatent heat absorbed\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nWater vapor is invisible; drawn marks trace its path.\nMarkers are enlarged; the scene is not to scale.\n▶ Resume\n☀ Evaporation",
+        "guideProcess": "Evaporation",
+        "guideBadge": "☀ Evaporation",
+        "canvasAria": "Water cycle animation showing Evaporation. Water moves from Ocean surface to Atmospheric vapor.",
+        "guideEnergy": "Latent heat absorbed",
+        "vaporGuidance": "visible",
+        "guideAssociation": "wcStageFocusDescription wcCanvasGuideDescription",
+        "engine": null,
+        "state": {
+          "wcMode": "explore",
+          "wcSection": "explore",
+          "journeyView": "2d",
+          "activeStage": "evaporation",
+          "journeyActive": true,
+          "journeyState": "evaporating",
+          "journeyPaused": false,
+          "wc2dPaused": true,
+          "climTemp": 31,
+          "climSolar": 0.35
+        }
+      },
+      "intervalMs": 500
+    },
+    {
+      "name": "restored-paused-2d-visible",
+      "before": {
+        "width": 2008,
+        "height": 1036,
+        "painted": true,
+        "pixel": [
+          75,
+          167,
+          185,
+          255
+        ],
+        "pendingFrame": false,
+        "initialized": true,
+        "journeyProgress": 0,
+        "journeyState": "idle",
+        "renderMode": "visual",
+        "wc2dPaused": "true",
+        "journeyPaused": "false",
+        "stage": "infiltration",
+        "phaseFrom": "Liquid surface water",
+        "phaseTo": "Liquid soil pore water",
+        "energy": "none",
+        "solar": "1",
+        "temp": "15",
+        "guide": "WATCH FOR\nAnimation paused on Infiltration. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.\nLiquid surface water\n→\nInfiltration\n→\nLiquid soil pore water\nNo required phase change\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nMarkers are enlarged; the scene is not to scale.\n▶ Resume\n🪴 Infiltration",
+        "guideProcess": "Infiltration",
+        "guideBadge": "🪴 Infiltration",
+        "canvasAria": "Water cycle animation showing Infiltration. Water moves from Surface water to Soil and aquifer.",
+        "guideEnergy": "No required phase change",
+        "vaporGuidance": "not-applicable",
+        "guideAssociation": "wcStageFocusDescription wcCanvasGuideDescription",
+        "engine": null,
+        "state": {
+          "wcMode": "explore",
+          "wcSection": "explore",
+          "journeyView": "2d",
+          "activeStage": "infiltration",
+          "wc2dPaused": true
+        }
+      },
+      "after": {
+        "width": 2008,
+        "height": 1036,
+        "painted": true,
+        "pixel": [
+          75,
+          167,
+          185,
+          255
+        ],
+        "pendingFrame": false,
+        "initialized": true,
+        "journeyProgress": 0,
+        "journeyState": "idle",
+        "renderMode": "visual",
+        "wc2dPaused": "true",
+        "journeyPaused": "false",
+        "stage": "infiltration",
+        "phaseFrom": "Liquid surface water",
+        "phaseTo": "Liquid soil pore water",
+        "energy": "none",
+        "solar": "1",
+        "temp": "15",
+        "guide": "WATCH FOR\nAnimation paused on Infiltration. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.\nLiquid surface water\n→\nInfiltration\n→\nLiquid soil pore water\nNo required phase change\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nMarkers are enlarged; the scene is not to scale.\n▶ Resume\n🪴 Infiltration",
+        "guideProcess": "Infiltration",
+        "guideBadge": "🪴 Infiltration",
+        "canvasAria": "Water cycle animation showing Infiltration. Water moves from Surface water to Soil and aquifer.",
+        "guideEnergy": "No required phase change",
+        "vaporGuidance": "not-applicable",
+        "guideAssociation": "wcStageFocusDescription wcCanvasGuideDescription",
+        "engine": null,
+        "state": {
+          "wcMode": "explore",
+          "wcSection": "explore",
+          "journeyView": "2d",
+          "activeStage": "infiltration",
+          "wc2dPaused": true
+        }
+      },
+      "intervalMs": 500
+    },
+    {
+      "name": "paused-2d-switch-running-3d",
+      "before": {
+        "width": 2008,
+        "height": 1036,
+        "painted": true,
+        "pixel": [
+          74,
+          167,
+          185,
+          255
+        ],
+        "pendingFrame": true,
+        "initialized": true,
+        "journeyProgress": 0.018000000000000002,
+        "journeyState": "ocean",
+        "renderMode": "state-only",
+        "wc2dPaused": "true",
+        "journeyPaused": "false",
+        "stage": "collection",
+        "phaseFrom": "Stored liquid water",
+        "phaseTo": "Stored liquid water",
+        "energy": "none",
+        "solar": "1",
+        "temp": "15",
+        "guide": "WATCH FOR\nUse drag or arrow keys to explore; highlighted routes are clickable. Press F to follow the droplet.\nStored liquid water\n→\nOcean storage\n→\nStored liquid water\nNo required phase change\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nMarkers are enlarged; the scene is not to scale.\n🌊 Ocean storage",
+        "guideProcess": "Ocean storage",
+        "guideBadge": "🌊 Ocean storage",
+        "canvasAria": "Water cycle animation showing Ocean storage. Water moves from Ocean storage to Ocean storage.",
+        "guideEnergy": "No required phase change",
+        "vaporGuidance": "not-applicable",
+        "guideAssociation": null,
+        "engine": "ready",
+        "state": {
+          "wcMode": "explore",
+          "wcSection": "explore",
+          "journeyView": "3d",
+          "activeStage": "collection",
+          "wc2dPaused": true,
+          "stagesViewed": {
+            "evaporation": true,
+            "condensation": true,
+            "precipitation": true,
+            "collection": true,
+            "transpiration": true,
+            "infiltration": true
+          },
+          "completedChallenges": [
+            "explore_all_stages"
+          ],
+          "researchPoints": 35,
+          "journeyActive": true,
+          "journeyState": "ocean",
+          "journeyPaused": false
+        }
+      },
+      "after": {
+        "width": 2008,
+        "height": 1036,
+        "painted": true,
+        "pixel": [
+          74,
+          167,
+          185,
+          255
+        ],
+        "pendingFrame": true,
+        "initialized": true,
+        "journeyProgress": 0.072,
+        "journeyState": "ocean",
+        "renderMode": "state-only",
+        "wc2dPaused": "true",
+        "journeyPaused": "false",
+        "stage": "collection",
+        "phaseFrom": "Stored liquid water",
+        "phaseTo": "Stored liquid water",
+        "energy": "none",
+        "solar": "1",
+        "temp": "15",
+        "guide": "WATCH FOR\nUse drag or arrow keys to explore; highlighted routes are clickable. Press F to follow the droplet.\nStored liquid water\n→\nOcean storage\n→\nStored liquid water\nNo required phase change\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nMarkers are enlarged; the scene is not to scale.\n🌊 Ocean storage",
+        "guideProcess": "Ocean storage",
+        "guideBadge": "🌊 Ocean storage",
+        "canvasAria": "Water cycle animation showing Ocean storage. Water moves from Ocean storage to Ocean storage.",
+        "guideEnergy": "No required phase change",
+        "vaporGuidance": "not-applicable",
+        "guideAssociation": null,
+        "engine": "ready",
+        "state": {
+          "wcMode": "explore",
+          "wcSection": "explore",
+          "journeyView": "3d",
+          "activeStage": "collection",
+          "wc2dPaused": true,
+          "stagesViewed": {
+            "evaporation": true,
+            "condensation": true,
+            "precipitation": true,
+            "collection": true,
+            "transpiration": true,
+            "infiltration": true
+          },
+          "completedChallenges": [
+            "explore_all_stages"
+          ],
+          "researchPoints": 35,
+          "journeyActive": true,
+          "journeyState": "ocean",
+          "journeyPaused": false
+        }
+      },
+      "intervalMs": 800
+    },
+    {
+      "name": "paused-3d-journey",
+      "before": {
+        "width": 2008,
+        "height": 1036,
+        "painted": true,
+        "pixel": [
+          74,
+          167,
+          185,
+          255
+        ],
+        "pendingFrame": true,
+        "initialized": true,
+        "journeyProgress": 0.078,
+        "journeyState": "ocean",
+        "renderMode": "state-only",
+        "wc2dPaused": "true",
+        "journeyPaused": "true",
+        "stage": "collection",
+        "phaseFrom": "Stored liquid water",
+        "phaseTo": "Stored liquid water",
+        "energy": "none",
+        "solar": "1",
+        "temp": "15",
+        "guide": "WATCH FOR\nUse drag or arrow keys to explore; highlighted routes are clickable. Press F to follow the droplet.\nStored liquid water\n→\nOcean storage\n→\nStored liquid water\nNo required phase change\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nMarkers are enlarged; the scene is not to scale.\n🌊 Ocean storage",
+        "guideProcess": "Ocean storage",
+        "guideBadge": "🌊 Ocean storage",
+        "canvasAria": "Water cycle animation showing Ocean storage. Water moves from Ocean storage to Ocean storage.",
+        "guideEnergy": "No required phase change",
+        "vaporGuidance": "not-applicable",
+        "guideAssociation": null,
+        "engine": "ready",
+        "state": {
+          "wcMode": "explore",
+          "wcSection": "explore",
+          "journeyView": "3d",
+          "activeStage": "collection",
+          "wc2dPaused": true,
+          "stagesViewed": {
+            "evaporation": true,
+            "condensation": true,
+            "precipitation": true,
+            "collection": true,
+            "transpiration": true,
+            "infiltration": true
+          },
+          "completedChallenges": [
+            "explore_all_stages"
+          ],
+          "researchPoints": 35,
+          "journeyActive": true,
+          "journeyState": "ocean",
+          "journeyPaused": true
+        }
+      },
+      "after": {
+        "width": 2008,
+        "height": 1036,
+        "painted": true,
+        "pixel": [
+          74,
+          167,
+          185,
+          255
+        ],
+        "pendingFrame": true,
+        "initialized": true,
+        "journeyProgress": 0.078,
+        "journeyState": "ocean",
+        "renderMode": "state-only",
+        "wc2dPaused": "true",
+        "journeyPaused": "true",
+        "stage": "collection",
+        "phaseFrom": "Stored liquid water",
+        "phaseTo": "Stored liquid water",
+        "energy": "none",
+        "solar": "1",
+        "temp": "15",
+        "guide": "WATCH FOR\nUse drag or arrow keys to explore; highlighted routes are clickable. Press F to follow the droplet.\nStored liquid water\n→\nOcean storage\n→\nStored liquid water\nNo required phase change\nTracked parcel\nLocation, not amount\n→\nWater direction\nArrows show the route\n✦\nHeat cue\nEnergy, not water\nMarkers are enlarged; the scene is not to scale.\n🌊 Ocean storage",
+        "guideProcess": "Ocean storage",
+        "guideBadge": "🌊 Ocean storage",
+        "canvasAria": "Water cycle animation showing Ocean storage. Water moves from Ocean storage to Ocean storage.",
+        "guideEnergy": "No required phase change",
+        "vaporGuidance": "not-applicable",
+        "guideAssociation": null,
+        "engine": "ready",
+        "state": {
+          "wcMode": "explore",
+          "wcSection": "explore",
+          "journeyView": "3d",
+          "activeStage": "collection",
+          "wc2dPaused": true,
+          "stagesViewed": {
+            "evaporation": true,
+            "condensation": true,
+            "precipitation": true,
+            "collection": true,
+            "transpiration": true,
+            "infiltration": true
+          },
+          "completedChallenges": [
+            "explore_all_stages"
+          ],
+          "researchPoints": 35,
+          "journeyActive": true,
+          "journeyState": "ocean",
+          "journeyPaused": true
+        }
+      },
+      "intervalMs": 700
+    }
+  ],
+  "errors": [],
+  "browserClosed": true,
+  "finishedAt": "2026-09-30T03:52:16.836Z",
+  "finalSourceSha256": "9cb2f6c45d397f6c3dba2fba746c26b42fab7d51aa497bb9b02a35c79c5b1a97",
+  "finalMirrorSha256": "9cb2f6c45d397f6c3dba2fba746c26b42fab7d51aa497bb9b02a35c79c5b1a97",
+  "passed": 135,
+  "failed": 0
+}

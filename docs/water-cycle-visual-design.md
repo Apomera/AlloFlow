@@ -78,3 +78,13 @@ The action names its input and destination. It switches to the conditions worksp
 The next-test panel distinguishes missing, incomplete, unchanged, one-input, and several-input baselines. An absent baseline is explicitly saved by the action. Existing baselines remain intact. A comparison with several changed inputs points to the existing **Keep only this change** action. Guidance asks learners to compare signed readings and explains that rounding or model limits can leave a small change invisible. It makes no claim about measured water volume, groundwater recharge, cloud formation, or independent plant water use.
 
 See [next-experiment review](../reports/watercycle-next-experiment/README.md) for navigation, preservation, accessibility, and visual checks.
+
+## Read the simulation clearly
+
+The 2D evidence captions now wrap at a readable size, stay within the canvas, and clear the process title and weather controls. Rounded, opaque backings give the text a consistent ground. A displaced caption uses a plain leader to its process; arrowheads continue to indicate movement or heat transfer. Process labels reserve space after the evidence captions have been placed.
+
+The existing canvas guide explains the parcel marker, direction arrows, and heat cues. It names latent heat absorption or release and describes transfers with no required phase change. Vapor guidance follows the current physical-state trace, and the guide explains that markers are enlarged and the scene is not to scale. Root uptake shows liquid movement into xylem; its evidence path does not extend into a leaf-to-vapor step.
+
+Restored paused maps paint an initial frame and stay paused. Control changes repaint the scene without advancing a paused parcel. Returning to a visible tab paints the paused view, and switching from a paused map to the 3D journey restarts its state driver. Both views retain their existing keyboard and journey controls.
+
+See [diagram clarity review](../reports/watercycle-diagram-clarity/README.md) for matched phone captures, rendered-label checks, guide interpretation, and playback verification.

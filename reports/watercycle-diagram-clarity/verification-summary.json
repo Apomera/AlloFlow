@@ -1,0 +1,35 @@
+{
+  "runtimeSha256": "9f068f4432fd54895dcba3895b889144c32ccaae7b16d5650ff14328733adaa6",
+  "runtimeMirrorsMatched": true,
+  "uniqueUnitTestsPassed": 119,
+  "browser": [
+    {
+      "report": "results.json",
+      "passedAssertions": 601,
+      "uniqueAssertionLabels": 601,
+      "renderedCases": 55,
+      "cleanAccessibilityAudits": 5,
+      "runtimeErrors": 0
+    },
+    {
+      "report": "playback-results.json",
+      "passedAssertions": 139,
+      "uniqueAssertionLabels": 139,
+      "runtimeErrors": 0
+    }
+  ],
+  "screenshotCount": 11,
+  "screenshots": [
+    "before-condensation-light-320.png",
+    "before-infiltration-light-320.png",
+    "condensation-light-320.png",
+    "evaporation-light-1280.png",
+    "guide-keyboard-focus-light-320.png",
+    "infiltration-forced-colors-320.png",
+    "infiltration-light-320.png",
+    "plant-uptake-light-320.png",
+    "playback-guide-root-uptake.png",
+    "playback-guide-transpiring.png",
+    "transpiration-dark-320.png"
+  ]
+}

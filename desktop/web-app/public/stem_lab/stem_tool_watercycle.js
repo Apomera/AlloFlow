@@ -4363,6 +4363,8 @@
     wcFiveStyle.textContent += "/* Process comparison activity */\n.wc-explorer-root .wc-process-compare {\n  --wc-process-earth: #805733;\n  --wc-process-earth-tint: #f5eee4;\n  margin: 16px 0;\n  border: 1px solid var(--wc-viz-line);\n  border-radius: 17px;\n  background: var(--wc-viz-card);\n  color: var(--wc-viz-ink);\n  overflow: visible;\n}\n.wc-explorer-root .wc-process-compare,\n.wc-explorer-root .wc-process-compare * { box-sizing: border-box; }\n.wc-explorer-root .wc-process-compare-summary {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  min-height: 68px;\n  padding: 15px 17px;\n  border-radius: 16px;\n  list-style: none;\n  cursor: pointer;\n  color: var(--wc-viz-ink);\n}\n.wc-explorer-root .wc-process-compare-summary::-webkit-details-marker { display: none; }\n.wc-explorer-root .wc-process-compare-summary > svg {\n  flex: 0 0 38px;\n  width: 38px;\n  height: 38px;\n  padding: 7px;\n  border: 1px solid var(--wc-viz-line);\n  border-radius: 12px;\n  background: var(--wc-viz-tint);\n  color: var(--wc-viz-accent);\n}\n.wc-explorer-root .wc-process-compare-summary > span:not(.wc-process-disclosure-indicator) { flex: 1; min-width: 0; }\n.wc-explorer-root .wc-process-compare-summary strong { display: block; font-size: 16px; font-weight: 800; line-height: 1.35; letter-spacing: -.015em; }\n.wc-explorer-root .wc-process-compare-summary small { display: block; margin-top: 3px; color: var(--wc-viz-muted); font-size: 12px; font-weight: 450; line-height: 1.5; }\n.wc-explorer-root .wc-process-disclosure-indicator { display: grid; place-items: center; flex: 0 0 28px; width: 28px; height: 28px; border: 1px solid var(--wc-viz-line); border-radius: 50%; color: var(--wc-viz-ink); background: var(--wc-viz-paper); font-size: 0; }\n.wc-explorer-root .wc-process-disclosure-indicator::before { content: ''; width: 7px; height: 7px; margin-top: -3px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); }\n.wc-explorer-root .wc-process-compare[open] .wc-process-disclosure-indicator::before { margin-top: 3px; transform: rotate(225deg); }\n.wc-explorer-root .wc-process-compare[open] > summary { border-radius: 16px 16px 0 0; border-bottom: 1px solid var(--wc-viz-line); }\n.wc-explorer-root .wc-process-compare-summary:hover { background: var(--wc-viz-tint); }\n.wc-explorer-root .wc-process-compare-body { display: grid; gap: 17px; min-width: 0; padding: 17px; }\n.wc-explorer-root .wc-process-intro { margin: 0; max-width: 74ch; color: var(--wc-viz-muted); font-size: 13px; line-height: 1.65; }\n.wc-explorer-root .wc-process-pairs { display: flex; flex-wrap: wrap; gap: 7px; }\n.wc-explorer-root .wc-process-pairs > button { flex: 1 1 180px; min-height: 44px; min-width: 0; padding: 10px 12px; border: 1px solid var(--wc-viz-line); border-radius: 10px; background: var(--wc-viz-paper); color: var(--wc-viz-ink); font: inherit; font-size: 12px; font-weight: 700; line-height: 1.45; text-align: left; white-space: normal; cursor: pointer; box-shadow: none; }\n.wc-explorer-root .wc-process-pairs > button:hover { background: var(--wc-viz-tint); border-color: var(--wc-viz-accent); }\n.wc-explorer-root .wc-process-pairs > button[aria-pressed=true] { border-color: var(--wc-viz-accent); background: var(--wc-viz-tint); box-shadow: inset 0 0 0 1px var(--wc-viz-accent); text-decoration: underline; text-underline-offset: 3px; }\n.wc-explorer-root .wc-process-selectors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }\n.wc-explorer-root .wc-process-selectors > * { min-width: 0; }\n.wc-explorer-root .wc-process-selectors label { display: block; margin-bottom: 6px; color: var(--wc-viz-ink); font-size: 12px; font-weight: 800; line-height: 1.45; }\n.wc-explorer-root .wc-process-selectors select { display: block; width: 100%; max-width: 100%; min-width: 0; min-height: 44px; padding: 9px 30px 9px 11px; border: 1px solid var(--wc-viz-line); border-radius: 10px; background: var(--wc-viz-paper); color: var(--wc-viz-ink); font: inherit; font-size: 13px; line-height: 1.45; }\n.wc-explorer-root .wc-process-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }\n.wc-explorer-root .wc-process-card { --wc-process-slot-color: var(--wc-viz-accent); --wc-process-slot-tint: var(--wc-viz-tint); min-width: 0; padding: 15px; border: 1px solid var(--wc-viz-line); border-top: 3px solid var(--wc-process-slot-color); border-radius: 13px; background: var(--wc-viz-paper); }\n.wc-explorer-root .wc-process-card[data-slot=second] { --wc-process-slot-color: var(--wc-process-earth); --wc-process-slot-tint: var(--wc-process-earth-tint); }\n.wc-explorer-root .wc-process-card > header { display: flex; align-items: center; gap: 9px; margin-bottom: 15px; }\n.wc-explorer-root .wc-process-letter { display: grid; place-items: center; flex: 0 0 28px; width: 28px; height: 28px; border: 1px solid var(--wc-process-slot-color); border-radius: 9px; color: var(--wc-process-slot-color); background: var(--wc-process-slot-tint); font-size: 13px; font-weight: 800; }\n.wc-explorer-root .wc-process-card h4 { min-width: 0; margin: 0; color: var(--wc-viz-ink); font-size: 17px; font-weight: 800; line-height: 1.35; letter-spacing: -.015em; }\n.wc-explorer-root .wc-process-state-flow { display: grid; grid-template-columns: minmax(0, 1fr) 20px minmax(0, 1fr); align-items: center; gap: 7px; min-width: 0; margin-bottom: 15px; }\n.wc-explorer-root .wc-process-state { display: grid; justify-items: center; align-content: center; gap: 5px; min-width: 0; min-height: 124px; padding: 12px 7px; border: 1px solid var(--wc-viz-line); border-radius: 11px; background: var(--wc-viz-card); text-align: center; }\n.wc-explorer-root .wc-process-state svg { display: block; width: 40px; height: 40px; color: var(--wc-process-slot-color); }\n.wc-explorer-root .wc-process-state strong { color: var(--wc-viz-ink); font-size: 13px; font-weight: 800; line-height: 1.35; }\n.wc-explorer-root .wc-process-state small { color: var(--wc-viz-muted); font-size: 11px; line-height: 1.45; }\n.wc-explorer-root .wc-process-state-arrow { color: var(--wc-process-slot-color); font-size: 22px; font-weight: 600; line-height: 1; text-align: center; }\n.wc-explorer-root .wc-process-facts { display: grid; gap: 10px; margin: 0; }\n.wc-explorer-root .wc-process-facts > div { min-width: 0; padding-top: 10px; border-top: 1px solid var(--wc-viz-line); }\n.wc-explorer-root .wc-process-facts dt { color: var(--wc-viz-muted); font-size: 11px; font-weight: 750; line-height: 1.4; }\n.wc-explorer-root .wc-process-facts dd { margin: 3px 0 0; color: var(--wc-viz-ink); font-size: 13px; line-height: 1.6; }\n.wc-explorer-root .wc-process-caveat { display: block; margin-top: 12px; padding: 10px 11px; border-left: 2px solid var(--wc-process-slot-color); border-radius: 0 8px 8px 0; background: var(--wc-process-slot-tint); color: var(--wc-viz-muted); font-size: 11px; line-height: 1.6; }\n.wc-explorer-root .wc-process-card .wc-process-energy { min-width: 0; margin-top: 13px; padding: 12px; border: 1px solid var(--wc-viz-line); border-left: 3px solid var(--wc-process-slot-color); border-radius: 10px; background: var(--wc-process-slot-tint); color: var(--wc-viz-ink); }\n.wc-explorer-root .wc-process-card .wc-process-energy > strong { display: block; margin: 0; color: var(--wc-viz-ink); font-size: 13px; font-weight: 800; line-height: 1.45; }\n.wc-explorer-root .wc-process-card .wc-process-energy > p { margin: 5px 0 0; color: var(--wc-viz-muted); font-size: 12px; line-height: 1.65; }\n.wc-explorer-root .wc-process-question-modes,\n.wc-explorer-root .wc-process-answer { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; min-width: 0; margin: 0; padding: 0; border: 0; }\n.wc-explorer-root .wc-process-question-modes legend,\n.wc-explorer-root .wc-process-answer legend { display: block; width: 100%; margin-bottom: 10px; padding: 0; color: var(--wc-viz-ink); font-size: 14px; font-weight: 800; line-height: 1.5; }\n.wc-explorer-root .wc-process-question-modes label,\n.wc-explorer-root .wc-process-answer label { display: grid; grid-template-columns: 18px minmax(0, 1fr); align-items: start; column-gap: 9px; row-gap: 3px; min-width: 0; min-height: 48px; padding: 12px; border: 1px solid var(--wc-viz-line); border-radius: 11px; background: var(--wc-viz-paper); color: var(--wc-viz-ink); cursor: pointer; }\n.wc-explorer-root .wc-process-question-modes label:hover,\n.wc-explorer-root .wc-process-answer label:hover { background: var(--wc-viz-tint); border-color: var(--wc-viz-accent); }\n.wc-explorer-root .wc-process-question-modes input[type=radio],\n.wc-explorer-root .wc-process-answer input[type=radio] { grid-column: 1; grid-row: 1 / span 2; width: 16px; height: 16px; margin: 2px 0 0; accent-color: var(--wc-viz-accent); }\n.wc-explorer-root .wc-process-question-modes label > :not(input),\n.wc-explorer-root .wc-process-answer label > :not(input) { grid-column: 2; min-width: 0; }\n.wc-explorer-root .wc-process-question-modes label > span,\n.wc-explorer-root .wc-process-answer label > span { display: grid; gap: 3px; max-width: 100%; white-space: normal; overflow: visible; }\n.wc-explorer-root .wc-process-question-modes strong,\n.wc-explorer-root .wc-process-answer strong { min-width: 0; max-width: 100%; color: inherit; font-size: 13px; font-weight: 750; line-height: 1.45; white-space: normal; overflow: visible; text-overflow: clip; }\n.wc-explorer-root .wc-process-question-modes small,\n.wc-explorer-root .wc-process-answer small { display: block; min-width: 0; max-width: 100%; color: var(--wc-viz-muted); font-size: 12px; line-height: 1.55; white-space: normal; overflow: visible; text-overflow: clip; }\n.wc-explorer-root .wc-process-question-modes label:has(input:checked),\n.wc-explorer-root .wc-process-answer label:has(input:checked) { border-color: var(--wc-viz-accent); background: var(--wc-viz-tint); box-shadow: inset 0 0 0 1px var(--wc-viz-accent); }\n.wc-explorer-root .wc-process-question-modes label:has(input:checked) strong,\n.wc-explorer-root .wc-process-answer label:has(input:checked) strong { text-decoration: underline; text-underline-offset: 3px; }\n.wc-explorer-root .wc-process-question-modes > button { min-width: 0; min-height: 44px; padding: 10px 12px; border: 1px solid var(--wc-viz-line); border-radius: 10px; background: var(--wc-viz-paper); color: var(--wc-viz-ink); font: inherit; font-size: 13px; font-weight: 750; line-height: 1.45; white-space: normal; cursor: pointer; }\n.wc-explorer-root .wc-process-question-modes > button[aria-pressed=true] { border-color: var(--wc-viz-accent); background: var(--wc-viz-tint); box-shadow: inset 0 0 0 1px var(--wc-viz-accent); text-decoration: underline; text-underline-offset: 3px; }\n.wc-explorer-root .wc-process-check { justify-self: start; min-width: 150px; min-height: 44px; max-width: 100%; padding: 11px 16px; border: 1px solid var(--wc-viz-accent); border-radius: 11px; background: var(--wc-viz-accent); color: #fff; font: inherit; font-size: 13px; font-weight: 800; line-height: 1.45; white-space: normal; cursor: pointer; box-shadow: none; }\n.wc-explorer-root .wc-process-check:hover:not(:disabled):not(:focus-visible) { outline: 1px solid var(--wc-viz-accent); outline-offset: 2px; }\n.wc-explorer-root .wc-process-check:disabled { border-color: var(--wc-viz-line); background: var(--wc-viz-paper); color: var(--wc-viz-muted); cursor: default; }\n.wc-explorer-root .wc-process-feedback { min-width: 0; padding: 15px; border: 1px solid var(--wc-viz-line); border-left: 3px solid var(--wc-viz-accent); border-radius: 12px; background: var(--wc-viz-tint); color: var(--wc-viz-ink); }\n.wc-explorer-root .wc-process-feedback h4 { margin: 0 0 6px; color: var(--wc-viz-ink); font-size: 15px; font-weight: 800; line-height: 1.4; }\n.wc-explorer-root .wc-process-feedback p { margin: 0; color: var(--wc-viz-ink); font-size: 13px; line-height: 1.65; }\n.wc-explorer-root .wc-process-feedback ul { display: grid; gap: 6px; margin: 10px 0 0; padding-left: 18px; color: var(--wc-viz-muted); font-size: 12px; line-height: 1.65; }\n.wc-explorer-root .wc-process-reflection { padding-top: 15px; border-top: 1px solid var(--wc-viz-line); min-width: 0; }\n.wc-explorer-root .wc-process-reflection label { display: block; color: var(--wc-viz-ink); font-size: 13px; font-weight: 800; line-height: 1.5; }\n.wc-explorer-root .wc-process-reflection p { margin: 4px 0 8px; color: var(--wc-viz-muted); font-size: 12px; line-height: 1.6; }\n.wc-explorer-root .wc-process-reflection textarea { display: block; width: 100%; max-width: 100%; min-height: 100px; padding: 11px 12px; border: 1px solid var(--wc-viz-line); border-radius: 10px; background: var(--wc-viz-paper); color: var(--wc-viz-ink); font: inherit; font-size: 13px; line-height: 1.6; resize: vertical; }\n.wc-explorer-root .wc-process-compare :is(button, select, input, textarea, summary):focus-visible { outline: 3px solid var(--wc-viz-focus); outline-offset: 3px; }\n.wc-explorer-root .wc-process-question-modes label:has(input:focus-visible),\n.wc-explorer-root .wc-process-answer label:has(input:focus-visible) { outline: 3px solid var(--wc-viz-focus); outline-offset: 3px; }\n.wc-explorer-root .wc-process-compare :is(strong, small, h4, p, li, dd, label, button) { overflow-wrap: anywhere; }\n.wc-explorer-root.dark .wc-process-compare { --wc-process-earth: #e9c39a; --wc-process-earth-tint: #343b37; }\n.wc-explorer-root[data-visual-contrast=true] .wc-process-compare { --wc-process-earth: var(--wc-viz-ink); --wc-process-earth-tint: var(--wc-viz-paper); }\n.wc-explorer-root[data-visual-contrast=true] .wc-process-check:not(:disabled) { color: #000; }\n@media (max-width: 700px) {\n  .wc-explorer-root .wc-process-compare { margin: 12px 0; border-radius: 14px; }\n  .wc-explorer-root .wc-process-compare-summary { min-height: 64px; gap: 9px; padding: 13px 12px; border-radius: 13px; }\n  .wc-explorer-root .wc-process-compare[open] > summary { border-radius: 13px 13px 0 0; }\n  .wc-explorer-root .wc-process-compare-summary > svg { flex-basis: 32px; width: 32px; height: 32px; padding: 5px; border-radius: 10px; }\n  .wc-explorer-root .wc-process-compare-summary strong { font-size: 15px; }\n  .wc-explorer-root .wc-process-compare-body { gap: 15px; padding: 12px; }\n  .wc-explorer-root .wc-process-cards { grid-template-columns: 1fr; gap: 10px; }\n  .wc-explorer-root .wc-process-pairs > button { flex-basis: 100%; }\n  .wc-explorer-root .wc-process-card { padding: 13px; }\n  .wc-explorer-root .wc-process-feedback { padding: 13px; }\n}\n@media (max-width: 440px) {\n  .wc-explorer-root .wc-process-selectors,\n  .wc-explorer-root .wc-process-question-modes,\n  .wc-explorer-root .wc-process-answer { grid-template-columns: 1fr; }\n  .wc-explorer-root .wc-process-check { width: 100%; }\n  .wc-explorer-root .wc-process-compare-summary small { font-size: 11px; }\n}\n@media (forced-colors: active) {\n  .wc-explorer-root .wc-process-compare,\n  .wc-explorer-root.dark .wc-process-compare,\n  .wc-explorer-root[data-visual-contrast=true] .wc-process-compare { --wc-process-earth: CanvasText; --wc-process-earth-tint: Canvas; }\n  .wc-explorer-root .wc-process-card { --wc-process-slot-color: CanvasText; --wc-process-slot-tint: Canvas; }\n  .wc-explorer-root .wc-process-compare :is(button, select, textarea) { background: ButtonFace; color: ButtonText; border-color: ButtonText; box-shadow: none; }\n  .wc-explorer-root .wc-process-pairs > button[aria-pressed=true],\n  .wc-explorer-root .wc-process-question-modes > button[aria-pressed=true],\n  .wc-explorer-root .wc-process-question-modes label:has(input:checked),\n  .wc-explorer-root .wc-process-answer label:has(input:checked),\n  .wc-explorer-root .wc-process-check:not(:disabled),\n  .wc-explorer-root[data-visual-contrast=true] .wc-process-check:not(:disabled) { forced-color-adjust: none; border-color: ButtonText; background: Highlight; color: HighlightText; box-shadow: none; }\n  .wc-explorer-root .wc-process-compare :is(label:has(input:checked), button[aria-pressed=true]) :is(strong, small, span) { background: transparent; color: inherit; }\n  .wc-explorer-root .wc-process-check:disabled { background: Canvas; color: GrayText; border-color: GrayText; }\n  .wc-explorer-root .wc-process-compare :focus-visible,\n  .wc-explorer-root .wc-process-compare label:has(input:focus-visible) { outline-color: Highlight; }\n  .wc-explorer-root .wc-process-state svg { color: CanvasText; }\n}\n@media (prefers-reduced-motion: reduce) {\n  .wc-explorer-root .wc-process-compare * { animation: none; transition: none; scroll-behavior: auto; }\n}\n";
     wcFiveStyle.textContent += "/* Evidence to the next experiment: one input, one reading, one visible destination. */\n.wc-explorer-root .wc-next-test {\n  display: grid;\n  grid-template-columns: minmax(0, 1fr) minmax(170px, 210px);\n  align-items: start;\n  gap: 22px;\n  min-width: 0;\n  margin: 16px 0 12px;\n  padding: 19px;\n  border: 1px solid var(--wc-viz-line);\n  border-left: 3px solid var(--wc-viz-accent);\n  border-radius: 17px;\n  background: var(--wc-viz-card);\n  color: var(--wc-viz-ink);\n  box-shadow: none;\n}\n.wc-explorer-root .wc-next-test,\n.wc-explorer-root .wc-next-test * { box-sizing: border-box; }\n.wc-explorer-root .wc-next-test-copy { min-width: 0; }\n.wc-explorer-root .wc-next-test-heading {\n  display: grid;\n  grid-template-columns: 40px minmax(0, 1fr);\n  align-items: start;\n  gap: 12px;\n  min-width: 0;\n}\n.wc-explorer-root .wc-next-test-icon {\n  display: grid;\n  place-items: center;\n  width: 40px;\n  height: 40px;\n  margin: 0;\n  border: 1px solid var(--wc-viz-line);\n  border-radius: 12px;\n  background: var(--wc-viz-tint);\n  color: var(--wc-viz-accent);\n}\n.wc-explorer-root .wc-next-test-icon svg { display: block; width: 23px; height: 23px; }\n.wc-explorer-root .wc-next-test .wc-next-test-kicker {\n  display: block;\n  margin: 0 0 5px;\n  color: var(--wc-viz-muted);\n  font-size: 10px;\n  font-weight: 800;\n  line-height: 1.4;\n  letter-spacing: .075em;\n  text-transform: uppercase;\n}\n.wc-explorer-root .wc-next-test-copy > strong,\n.wc-explorer-root .wc-next-test #wcNextTestTitle {\n  display: block;\n  max-width: 52ch;\n  margin: 0;\n  color: var(--wc-viz-ink);\n  font-size: clamp(17px, 1.6vw, 20px);\n  font-weight: 800;\n  line-height: 1.4;\n  letter-spacing: -.015em;\n}\n.wc-explorer-root .wc-next-test-copy > span:not(.wc-next-test-kicker):not(.wc-next-test-status),\n.wc-explorer-root .wc-next-test-guidance {\n  display: block;\n  max-width: 68ch;\n  margin: 10px 0 0;\n  color: var(--wc-viz-muted);\n  font-size: 13px;\n  line-height: 1.65;\n}\n.wc-explorer-root .wc-next-test .wc-next-test-control-label {\n  display: block;\n  margin: 0;\n  color: var(--wc-viz-ink);\n  font-size: 12px;\n  font-weight: 750;\n  line-height: 1.5;\n}\n.wc-explorer-root .wc-next-test-controls {\n  display: grid;\n  gap: 7px;\n  min-width: 0;\n  max-width: 52ch;\n  margin-top: 15px;\n}\n.wc-explorer-root .wc-next-test #wcNextTestInput {\n  display: block;\n  width: 100%;\n  min-width: 0;\n  max-width: 100%;\n  min-height: 44px;\n  margin: 0;\n  padding: 10px 30px 10px 12px;\n  border: 1px solid var(--wc-viz-line);\n  border-radius: 10px;\n  background: var(--wc-viz-paper);\n  color: var(--wc-viz-ink);\n  font: inherit;\n  font-size: 13px;\n  font-weight: 700;\n  line-height: 1.45;\n  text-align: left;\n  box-shadow: none;\n  cursor: pointer;\n}\n.wc-explorer-root .wc-next-test #wcNextTestInput:hover {\n  border-color: var(--wc-viz-accent);\n  background: var(--wc-viz-tint);\n}\n.wc-explorer-root .wc-next-test #wcNextTestInputHint {\n  display: block;\n  min-width: 0;\n  margin: 0;\n  color: var(--wc-viz-muted);\n  font-size: 12px;\n  line-height: 1.6;\n}\n.wc-explorer-root .wc-next-test-evidence {\n  min-width: 0;\n  margin: 12px 0 0;\n  padding: 11px 12px;\n  border: 1px solid var(--wc-viz-line);\n  border-radius: 10px;\n  background: var(--wc-viz-tint);\n  color: var(--wc-viz-ink);\n}\n.wc-explorer-root .wc-next-test .wc-next-test-evidence-label {\n  display: block;\n  margin: 0 0 4px;\n  color: var(--wc-viz-muted);\n  font-size: 10px;\n  font-weight: 800;\n  line-height: 1.4;\n  letter-spacing: .065em;\n  text-transform: uppercase;\n}\n.wc-explorer-root .wc-next-test .wc-next-test-evidence > strong,\n.wc-explorer-root .wc-next-test .wc-next-test-reading {\n  display: block;\n  margin: 0;\n  color: var(--wc-viz-ink);\n  font-size: 13px;\n  font-weight: 750;\n  line-height: 1.5;\n}\n.wc-explorer-root .wc-next-test .wc-next-test-evidence > small,\n.wc-explorer-root .wc-next-test .wc-next-test-scope {\n  display: block;\n  margin: 5px 0 0;\n  color: var(--wc-viz-muted);\n  font-size: 12px;\n  line-height: 1.6;\n}\n.wc-explorer-root .wc-next-test .wc-next-test-status {\n  display: block;\n  max-width: 70ch;\n  margin: 13px 0 0 !important;\n  padding-top: 11px;\n  border-top: 1px solid var(--wc-viz-line);\n  color: var(--wc-viz-muted) !important;\n  font-size: 12px;\n  line-height: 1.6;\n}\n.wc-explorer-root .wc-next-test-action {\n  display: grid;\n  align-content: start;\n  gap: 9px;\n  min-width: 0;\n  padding-left: 18px;\n  border-left: 1px solid var(--wc-viz-line);\n}\n.wc-explorer-root .wc-next-test .wc-next-test-open,\n.wc-explorer-root .wc-next-test .wc-next-test-open:hover {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 10px;\n  min-width: 0;\n  min-height: 48px;\n  max-width: 100%;\n  padding: 12px 14px;\n  border: 1px solid var(--wc-viz-accent);\n  border-radius: 11px;\n  background: var(--wc-viz-accent);\n  color: #fff;\n  font: inherit;\n  font-size: 13px;\n  font-weight: 800;\n  line-height: 1.5;\n  text-align: left;\n  white-space: normal;\n  cursor: pointer;\n  box-shadow: none;\n}\n.wc-explorer-root .wc-next-test .wc-next-test-open > span {\n  display: block;\n  min-width: 0;\n  margin: 0;\n  color: inherit;\n  font-size: inherit;\n  line-height: inherit;\n}\n.wc-explorer-root .wc-next-test-open svg {\n  display: block;\n  flex: 0 0 19px;\n  width: 19px;\n  height: 19px;\n  color: currentColor;\n}\n.wc-explorer-root .wc-next-test .wc-next-test-open:hover:not(:focus-visible) {\n  outline: 1px solid var(--wc-viz-accent);\n  outline-offset: 2px;\n}\n.wc-explorer-root .wc-next-test .wc-next-test-destination {\n  display: block;\n  margin: 0;\n  color: var(--wc-viz-muted);\n  font-size: 12px;\n  line-height: 1.6;\n}\n.wc-explorer-root .wc-next-test :is(button, select):focus-visible {\n  outline: 3px solid var(--wc-viz-focus);\n  outline-offset: 3px;\n}\n.wc-explorer-root .wc-next-test :is(h4, strong, p, span, small, button) { overflow-wrap: anywhere; }\n.wc-explorer-root[data-visual-contrast=true] .wc-next-test .wc-next-test-open {\n  border-color: var(--wc-viz-ink);\n  background: var(--wc-viz-ink);\n  color: var(--wc-viz-paper);\n}\n@media (max-width: 700px) {\n  .wc-explorer-root .wc-next-test {\n    grid-template-columns: minmax(0, 1fr);\n    gap: 15px;\n    margin: 12px 0;\n    padding: 15px;\n    border-radius: 14px;\n  }\n  .wc-explorer-root .wc-next-test-action {\n    padding: 13px 0 0;\n    border-top: 1px solid var(--wc-viz-line);\n    border-left: 0;\n  }\n  .wc-explorer-root .wc-next-test .wc-next-test-open { justify-self: stretch; }\n  .wc-explorer-root .wc-next-test .wc-next-test-destination { max-width: 64ch; }\n}\n@media (max-width: 440px) {\n  .wc-explorer-root .wc-next-test { padding: 13px; }\n  .wc-explorer-root .wc-next-test-heading { grid-template-columns: 33px minmax(0, 1fr); gap: 9px; }\n  .wc-explorer-root .wc-next-test-icon { width: 33px; height: 33px; border-radius: 10px; }\n  .wc-explorer-root .wc-next-test-icon svg { width: 20px; height: 20px; }\n  .wc-explorer-root .wc-next-test #wcNextTestTitle { font-size: 17px; }\n}\n@media (forced-colors: active) {\n  .wc-explorer-root .wc-next-test,\n  .wc-explorer-root.dark .wc-next-test,\n  .wc-explorer-root[data-visual-contrast=true] .wc-next-test {\n    border-color: CanvasText;\n    background: Canvas;\n    color: CanvasText;\n    box-shadow: none;\n  }\n  .wc-explorer-root .wc-next-test .wc-next-test-icon,\n  .wc-explorer-root .wc-next-test .wc-next-test-evidence,\n  .wc-explorer-root .wc-next-test #wcNextTestInput {\n    border-color: CanvasText;\n    background: Canvas;\n    color: CanvasText;\n    box-shadow: none;\n  }\n  .wc-explorer-root .wc-next-test :is(.wc-next-test-kicker, #wcNextTestTitle, .wc-next-test-guidance, .wc-next-test-control-label, #wcNextTestInputHint, .wc-next-test-status, .wc-next-test-destination, .wc-next-test-evidence-label, .wc-next-test-reading, .wc-next-test-scope) {\n    color: CanvasText !important;\n  }\n  .wc-explorer-root .wc-next-test :is(.wc-next-test-action, .wc-next-test-status) { border-color: CanvasText; }\n  .wc-explorer-root .wc-next-test .wc-next-test-open,\n  .wc-explorer-root .wc-next-test .wc-next-test-open:hover,\n  .wc-explorer-root[data-visual-contrast=true] .wc-next-test .wc-next-test-open,\n  .wc-explorer-root[data-visual-contrast=true] .wc-next-test .wc-next-test-open:hover {\n    forced-color-adjust: none;\n    border-color: ButtonText;\n    background: Highlight;\n    color: HighlightText;\n  }\n  .wc-explorer-root .wc-next-test button:hover:not(:focus-visible) { outline-color: ButtonText; }\n  .wc-explorer-root .wc-next-test :is(button, select):focus-visible { outline-color: Highlight; }\n}\n@media (prefers-reduced-motion: reduce) {\n  .wc-explorer-root .wc-next-test * { animation: none; transition: none; scroll-behavior: auto; }\n}\n\n.wc-explorer-root .wc-next-test .wc-next-test-guidance,.wc-explorer-root .wc-next-test-evidence>p{margin:10px 0 0;color:var(--wc-viz-muted);font-size:13px;line-height:1.65;overflow-wrap:anywhere}\n@media(forced-colors:active){.wc-explorer-root [data-watercycle-land] :is(#wc-land-title,.wc-land-head p,p[role=note]){color:CanvasText!important}}\n";
     document.head.appendChild(wcFiveStyle);
+    wcFiveStyle.textContent += "/* Existing canvas guide: readable symbol meanings and depiction scope. */\n.wc-explorer-root .wc-canvas-guide{flex-wrap:wrap;row-gap:8px}\n.wc-explorer-root .wc-canvas-guide-handoff{flex-wrap:wrap;gap:6px 8px;padding:7px 0}\n.wc-explorer-root .wc-canvas-guide-handoff-from,.wc-explorer-root .wc-canvas-guide-handoff-to{overflow:visible;text-overflow:clip;white-space:normal;font-size:12px;line-height:1.35}\n.wc-explorer-root .wc-canvas-guide-handoff-energy{font-size:12px;white-space:normal;line-height:1.35}\n.wc-explorer-root .wc-canvas-visual-key{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 14px;padding:5px 0;font-size:13px;line-height:1.35}\n.wc-explorer-root .wc-canvas-visual-key-item{align-items:flex-start;white-space:normal;gap:7px}\n.wc-explorer-root .wc-canvas-visual-key-mark{width:17px;height:17px;flex:0 0 17px;font-size:16px;margin-top:1px}\n.wc-explorer-root .wc-canvas-visual-key-copy{display:grid;gap:2px;min-width:0}\n.wc-explorer-root .wc-canvas-visual-key-copy strong{font-size:13px;font-weight:800;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-canvas-visual-key-copy small{font-size:12px;line-height:1.35;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-canvas-guide-depiction{flex:1 1 100%;display:flex;flex-wrap:wrap;gap:3px 10px;font-size:12px;line-height:1.45;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-canvas-visual-key[data-energy-transfer=released] .is-energy{color:#be185d}\n.wc-explorer-root.dark .wc-canvas-visual-key[data-energy-transfer=released] .is-energy{color:#f9a8d4}\n.wc-explorer-root[data-visual-contrast=true] .wc-canvas-visual-key-mark{color:var(--wc-viz-ink)}\n@media(max-width:560px){.wc-explorer-root .wc-canvas-visual-key{grid-template-columns:1fr;gap:8px}.wc-explorer-root .wc-canvas-visual-key-copy{display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 8px}.wc-explorer-root .wc-canvas-guide-handoff-energy{flex:1 1 100%;margin-left:0}}\n@media(forced-colors:active){.wc-explorer-root .wc-canvas-guide :is(.wc-canvas-guide-label,.wc-canvas-guide-copy,.wc-canvas-guide-handoff-from,.wc-canvas-guide-handoff-to,.wc-canvas-guide-handoff-process,.wc-canvas-guide-handoff-energy,.wc-canvas-guide-badge){color:CanvasText!important;background:Canvas;border-color:CanvasText}.wc-explorer-root .wc-canvas-visual-key-copy strong,.wc-explorer-root .wc-canvas-visual-key-copy small,.wc-explorer-root .wc-canvas-guide-depiction{color:CanvasText}.wc-explorer-root .wc-canvas-visual-key[data-energy-transfer] .is-energy{color:Highlight}}\n";
+
     wcFiveStyle.textContent += '.wc-explorer-root .wc-log-entry:only-child{grid-column:1/-1}@media(max-width:400px){.wc-notebook-values th:first-child{width:44%}.wc-notebook-values th,.wc-notebook-values td{font-size:11px;padding:6px 3px}.wc-notebook-values thead th:not(:first-child){white-space:nowrap}}';
   }
   var wcWorldsLoading = null;
@@ -22296,7 +22298,9 @@ const d = labToolData.waterCycle || {};
             _lastWcCanvas = canvasEl;
 
             if (canvasEl._wcInit) {
-              if (canvasEl.dataset.renderMode !== 'state-only' && canvasEl._wcRedraw) canvasEl._wcRedraw();
+              // A paused map has no pending frame. A switch to the 3D journey must
+              // restart this canvas's state driver as well as repaint visible views.
+              if (canvasEl._wcRedraw) canvasEl._wcRedraw();
               return;
             }
 
@@ -22379,7 +22383,7 @@ const d = labToolData.waterCycle || {};
               if (!wcAlive) return;
               if (!canvasEl.isConnected) { cleanupWaterCycleCanvas(); return; }
               if (isWaterCycleHidden()) cancelWaterCycleFrame();
-              else { cancelWaterCycleFrame(); draw(); }
+              else { cancelWaterCycleFrame(); draw(true); }
             }
 
             canvasEl._wcCleanup = cleanupWaterCycleCanvas;
@@ -22702,8 +22706,8 @@ const d = labToolData.waterCycle || {};
             // callout ran straight through "Precipitation". Neither was visible at desktop width,
             // which is the only width anything had ever been looked at.
             //
-            // Evidence callouts have arrows drawn to them, so they may only RESERVE their space,
-            // never move. Stage labels carry no arrow, so they step down until clear.
+            // Evidence callouts wrap within the canvas and clear its controls. When a callout
+            // moves, a plain leader keeps it attached to its process; arrowheads still mean flow.
             var wcLabelRects2d = [];
             var wcChromeCache2d = { key: '', rects: [] };
             function wcCanvasChromeRects2d() {
@@ -22756,23 +22760,78 @@ const d = labToolData.waterCycle || {};
               return y;
             }
 
-            function evidenceLabel2d(text, x, y, color) {
+            function wcWrapEvidenceText2d(text, maxWidth) {
+              var lines = [], line = '';
+              String(text).trim().split(/\s+/).forEach(function(word) {
+                if (line && ctx.measureText(line + ' ' + word).width <= maxWidth) {
+                  line += ' ' + word;
+                  return;
+                }
+                if (line) { lines.push(line); line = ''; }
+                // Keep a long translated word readable without cutting a Unicode character.
+                Array.from(word).forEach(function(letter) {
+                  if (line && ctx.measureText(line + letter).width > maxWidth) {
+                    lines.push(line); line = '';
+                  }
+                  line += letter;
+                });
+              });
+              if (line || !lines.length) lines.push(line);
+              return lines;
+            }
+
+            function wcEvidenceLabelLayout2d(text, x, y) {
+              var paddingX = 5 * dpr, lineHeight = 14 * dpr;
+              var maximumWidth = Math.max(1, Math.min(280 * dpr, cW - 16 * dpr));
+              var lines = wcWrapEvidenceText2d(text, Math.max(1, maximumWidth - paddingX * 2));
+              var width = Math.min(maximumWidth, Math.max.apply(Math, lines.map(function(line) {
+                return ctx.measureText(line).width;
+              })) + paddingX * 2);
+              var height = lines.length * lineHeight + 4 * dpr;
+              var left = Math.max(6 * dpr, Math.min(cW - width - 6 * dpr, x - paddingX));
+              var top = Math.max(6 * dpr, Math.min(cH - height - 6 * dpr, y - 9 * dpr));
+              top = wcPlaceLabelY2d(left, top, width, height);
+              return { x: left, y: top, w: width, h: height, lines: lines,
+                lineHeight: lineHeight, paddingX: paddingX };
+            }
+
+            function evidenceLabel2d(text, x, y, color, anchorX, anchorY) {
               ctx.save();
               ctx.font = 'bold ' + (11 * dpr) + 'px sans-serif';
               ctx.textAlign = 'left';
               ctx.textBaseline = 'middle';
-              var paddingX = 5 * dpr;
-              var labelWidth = ctx.measureText(text).width + paddingX * 2;
-              ctx.fillStyle = 'rgba(2,6,23,0.78)';
-              ctx.fillRect(x - paddingX, y - 9 * dpr, labelWidth, 18 * dpr);
+              var layout = wcEvidenceLabelLayout2d(text, x, y);
+              var displaced = Math.abs(layout.x + layout.paddingX - x) > 2 * dpr ||
+                Math.abs(layout.y + 9 * dpr - y) > 2 * dpr || layout.lines.length > 1;
+              if (displaced && isFinite(anchorX) && isFinite(anchorY)) {
+                var edgeX = Math.max(layout.x, Math.min(layout.x + layout.w, anchorX));
+                var edgeY = Math.max(layout.y, Math.min(layout.y + layout.h, anchorY));
+                if (Math.hypot(edgeX - anchorX, edgeY - anchorY) > 6 * dpr) {
+                  ctx.strokeStyle = color;
+                  ctx.lineWidth = 1 * dpr;
+                  ctx.globalAlpha = 0.8;
+                  ctx.setLineDash([]);
+                  ctx.beginPath();
+                  ctx.moveTo(anchorX, anchorY);
+                  ctx.lineTo(edgeX, edgeY);
+                  ctx.stroke();
+                  ctx.globalAlpha = 1;
+                }
+              }
+              ctx.fillStyle = 'rgba(2,6,23,0.90)';
               ctx.strokeStyle = color;
-              ctx.lineWidth = 1.5 * dpr;
-              ctx.strokeRect(x - paddingX, y - 9 * dpr, labelWidth, 18 * dpr);
+              ctx.lineWidth = 1 * dpr;
+              ctx.beginPath();
+              if (ctx.roundRect) ctx.roundRect(layout.x, layout.y, layout.w, layout.h, 4 * dpr);
+              else ctx.rect(layout.x, layout.y, layout.w, layout.h);
+              ctx.fill();
+              ctx.stroke();
               ctx.fillStyle = '#f8fafc';
-              ctx.fillText(text, x, y);
+              layout.lines.forEach(function(line, index) {
+                ctx.fillText(line, layout.x + layout.paddingX, layout.y + 9 * dpr + index * layout.lineHeight);
+              });
               ctx.restore();
-              // Reserved, not moved: an arrow is already drawn to this spot.
-              wcReserveLabelRect2d(x - paddingX, y - 9 * dpr, labelWidth, 18 * dpr);
+              return layout;
             }
 
             function evidenceArrow2d(x1, y1, x2, y2, color, dashed) {
@@ -22820,6 +22879,10 @@ const d = labToolData.waterCycle || {};
                   point: function(t) { return { x: 0.65 + Math.sin(t * Math.PI) * 0.012, y: 0.67 + t * 0.18 }; } }
               };
               var spec2d = flowSpecs2d[cueStage2d];
+              if (journeyState === 'plant_absorb') {
+                spec2d = { color: '#4ade80', count: 3, speed: 0.007,
+                  point: function(t) { return { x: 0.61, y: 0.70 - t * 0.19 }; } };
+              }
               if (!spec2d) return;
               var phase2d = wcMotionReduced ? 0.42 : (tick * spec2d.speed) % 1;
               var pointDelta2d = 0.018;
@@ -22912,7 +22975,7 @@ const d = labToolData.waterCycle || {};
                 var evapSurfaceX2d = cW * 0.22;
                 var evapSurfaceY2d = cH * 0.61;
                 evidenceArrow2d(cW * 0.08, cH * 0.38, evapSurfaceX2d - 8 * dpr, evapSurfaceY2d - 4 * dpr, '#f59e0b', false);
-                evidenceLabel2d('LATENT HEAT IN', cW * 0.035, cH * 0.35, '#f59e0b');
+                evidenceLabel2d('LATENT HEAT IN', cW * 0.035, cH * 0.35, '#f59e0b', evapSurfaceX2d, evapSurfaceY2d);
                 ctx.strokeStyle = 'rgba(186,230,253,0.86)';
                 ctx.lineWidth = 1.5 * dpr;
                 ctx.setLineDash([4 * dpr, 4 * dpr]);
@@ -22929,7 +22992,7 @@ const d = labToolData.waterCycle || {};
                   ctx.stroke();
                 }
                 ctx.globalAlpha = 1;
-                evidenceLabel2d('INVISIBLE VAPOR — PATH SHOWN', cW * 0.12, cH * 0.28, '#7dd3fc');
+                evidenceLabel2d('INVISIBLE VAPOR — PATH SHOWN', cW * 0.12, cH * 0.28, '#7dd3fc', cW * 0.25, cH * 0.30);
               } else if (stageId === 'condensation' || evidenceState2d === 'condensing') {
                 var lensX2d = cW * 0.38;
                 var lensY2d = cH * 0.16;
@@ -22956,11 +23019,11 @@ const d = labToolData.waterCycle || {};
                   ctx.stroke();
                 }
                 evidenceArrow2d(lensX2d + lensRadius2d, lensY2d, lensX2d + 78 * dpr, lensY2d, '#fb7185', false);
-                evidenceLabel2d('LATENT HEAT OUT', cW * 0.47, cH * 0.13, '#fb7185');
-                evidenceLabel2d('DROPLETS / ICE ON NUCLEI', cW * 0.29, cH * 0.255, '#7dd3fc');
+                evidenceLabel2d('LATENT HEAT OUT', cW * 0.47, cH * 0.13, '#fb7185', lensX2d + lensRadius2d, lensY2d);
+                evidenceLabel2d('DROPLETS / ICE ON NUCLEI', cW * 0.29, cH * 0.255, '#7dd3fc', lensX2d, lensY2d);
               } else if (stageId === 'precipitation' || evidenceState2d === 'precipitating') {
                 evidenceArrow2d(cW * 0.36, cH * 0.24, cW * 0.36, cH * 0.56, '#60a5fa', false);
-                evidenceLabel2d('GRAVITY — FALLING TRANSPORT', cW * 0.20, cH * 0.46, '#60a5fa');
+                evidenceLabel2d('GRAVITY — FALLING TRANSPORT', cW * 0.20, cH * 0.46, '#60a5fa', cW * 0.36, cH * 0.40);
               } else if (stageId === 'collection' || evidenceState2d === 'river_runoff' || evidenceState2d === 'ocean' || evidenceState2d === 'complete') {
                 ctx.strokeStyle = '#38bdf8';
                 ctx.lineWidth = 2 * dpr;
@@ -22968,7 +23031,7 @@ const d = labToolData.waterCycle || {};
                 ctx.ellipse(cW * 0.22, cH * 0.67, cW * 0.12, 8 * dpr, 0, 0, Math.PI * 2);
                 ctx.stroke();
                 evidenceArrow2d(cW * 0.46, cH * 0.62, cW * 0.32, cH * 0.66, '#38bdf8', false);
-                evidenceLabel2d(evidenceState2d === 'river_runoff' ? 'RUNOFF → SURFACE STORAGE' : 'SCHEMATIC SURFACE STORE', cW * 0.07, cH * 0.73, '#38bdf8');
+                evidenceLabel2d(evidenceState2d === 'river_runoff' ? 'RUNOFF → SURFACE STORAGE' : 'SCHEMATIC SURFACE STORE', cW * 0.07, cH * 0.73, '#38bdf8', cW * 0.22, cH * 0.67);
               } else if (stageId === 'transpiration' || evidenceState2d === 'plant_absorb' || evidenceState2d === 'transpiring') {
                 var plantBaseX2d = cW * 0.61;
                 ctx.strokeStyle = '#4ade80';
@@ -22980,15 +23043,17 @@ const d = labToolData.waterCycle || {};
                 ctx.lineTo(cW * 0.66, cH * 0.44);
                 ctx.stroke();
                 evidenceArrow2d(plantBaseX2d - 18 * dpr, cH * 0.70, plantBaseX2d, cH * 0.51, '#4ade80', false);
-                ctx.strokeStyle = 'rgba(187,247,208,0.88)';
-                ctx.setLineDash([4 * dpr, 4 * dpr]);
-                ctx.beginPath();
-                ctx.moveTo(cW * 0.66, cH * 0.44);
-                ctx.bezierCurveTo(cW * 0.68, cH * 0.37, cW * 0.63, cH * 0.31, cW * 0.68, cH * 0.25);
-                ctx.stroke();
-                ctx.setLineDash([]);
-                evidenceLabel2d(evidenceState2d === 'plant_absorb' ? 'ROOT → XYLEM' : 'XYLEM → LEAF', cW * 0.51, cH * 0.54, '#4ade80');
-                evidenceLabel2d(metrics.transpiration < 0.12 ? 'LIMITED VEGETATION / STOMATA CLOSED' : 'STOMATA → INVISIBLE VAPOR', cW * 0.58, cH * 0.24, '#86efac');
+                evidenceLabel2d(evidenceState2d === 'plant_absorb' ? 'ROOT → XYLEM' : 'XYLEM → LEAF', cW * 0.51, cH * 0.54, '#4ade80', plantBaseX2d, cH * 0.51);
+                if (evidenceState2d !== 'plant_absorb') {
+                  ctx.strokeStyle = 'rgba(187,247,208,0.88)';
+                  ctx.setLineDash([4 * dpr, 4 * dpr]);
+                  ctx.beginPath();
+                  ctx.moveTo(cW * 0.66, cH * 0.44);
+                  ctx.bezierCurveTo(cW * 0.68, cH * 0.37, cW * 0.63, cH * 0.31, cW * 0.68, cH * 0.25);
+                  ctx.stroke();
+                  ctx.setLineDash([]);
+                  evidenceLabel2d(metrics.transpiration < 0.12 ? 'LIMITED VEGETATION / STOMATA CLOSED' : 'STOMATA → INVISIBLE VAPOR', cW * 0.58, cH * 0.24, '#86efac', cW * 0.66, cH * 0.44);
+                }
               } else if (stageId === 'infiltration' || evidenceState2d === 'infiltrating' || evidenceState2d === 'aquifer_flow') {
                 var subsurfaceEvidencePhase2d = canvasEl.dataset.subsurfacePhase || 'soil-storage';
                 var deepRechargeEvidence2d = subsurfaceEvidencePhase2d === 'selected-deep-recharge';
@@ -23003,7 +23068,7 @@ const d = labToolData.waterCycle || {};
                   ctx.stroke();
                   ctx.setLineDash([]);
                   evidenceArrow2d(cW * 0.68, cH * 0.80, cW * 0.77, cH * 0.79, '#67e8f9', false);
-                  evidenceLabel2d('GROUNDWATER → DISCHARGE', cW * 0.49, cH * 0.87, '#67e8f9');
+                  evidenceLabel2d('GROUNDWATER → DISCHARGE', cW * 0.49, cH * 0.87, '#67e8f9', cW * 0.68, cH * 0.80);
                 } else {
                   var vadoseFrontY2d = deepRechargeEvidence2d ? cH * 0.82 : cH * 0.765;
                   ctx.setLineDash(deepRechargeEvidence2d ? [6 * dpr, 4 * dpr] : []);
@@ -23017,7 +23082,7 @@ const d = labToolData.waterCycle || {};
                       deepRechargeEvidence2d ? cH * 0.815 : cH * 0.75, '#67e8f9', deepRechargeEvidence2d);
                   }
                   evidenceLabel2d(deepRechargeEvidence2d ? 'SELECTED DEEP RECHARGE' : 'SOIL PORE WATER (VADOSE ZONE)',
-                    cW * 0.49, deepRechargeEvidence2d ? cH * 0.87 : cH * 0.81, '#67e8f9');
+                    cW * 0.49, deepRechargeEvidence2d ? cH * 0.87 : cH * 0.81, '#67e8f9', cW * 0.65, vadoseFrontY2d);
                 }
               }
               ctx.restore();
@@ -24896,7 +24961,9 @@ const d = labToolData.waterCycle || {};
 
               // ═══ JOURNEY MODE  -  Draw droplet + update state ═══
               var jState = canvasEl.dataset.journeyState || 'idle';
-              var journeyPaused2 = canvasEl.dataset.journeyPaused === 'true';
+              // A control change can force a paint while the map is paused;
+              // repaint the parcel at its saved progress without advancing it.
+              var journeyPaused2 = canvasEl.dataset.journeyPaused === 'true' || canvasEl.dataset.wc2dPaused === 'true';
               var journeySpeed2 = parseFloat(canvasEl.dataset.journeySpeed || '1');
               if (!isFinite(journeySpeed2) || journeySpeed2 <= 0) journeySpeed2 = 1;
               if (jState !== 'idle') {
@@ -25019,8 +25086,6 @@ const d = labToolData.waterCycle || {};
               draw(true);
             };
 
-            scheduleWaterCycleFrame();
-
             // Journey callbacks
             canvasEl._onJourneyTransition = function(nextState) {
               // Sync active stage to match journey
@@ -25105,6 +25170,10 @@ const d = labToolData.waterCycle || {};
                 return Object.assign({}, prev, { waterCycle: nextWaterCycle });
               });
             };
+
+            // Paint restored paused views once after the journey callbacks are ready.
+            // draw() schedules another frame only when playback is running.
+            canvasEl._wcRedraw();
 
           };
 
@@ -30416,6 +30485,12 @@ const d = labToolData.waterCycle || {};
           var currentStageFlow = activeJourneyMatterEnergy
             ? { from: activeJourneyMatterEnergy.source, to: activeJourneyMatterEnergy.destination }
             : (STAGE_FLOW[resolvedStageId] || STAGE_FLOW.collection);
+          var wcCanvasGuideEnergyText = currentMatterEnergy.energyTransfer === 'absorbed'
+            ? __alloT('stem.watercycle.diagram_guide_heat_absorbed', 'Latent heat absorbed')
+            : currentMatterEnergy.energyTransfer === 'released'
+              ? __alloT('stem.watercycle.diagram_guide_heat_released', 'Latent heat released')
+              : __alloT('stem.watercycle.diagram_guide_no_phase_change', 'No required phase change');
+          var wcCanvasGuideHasVapor = /vapor/i.test(currentMatterEnergy.phaseFrom + ' ' + currentMatterEnergy.phaseTo);
           var currentMatterEnergyPhaseLabel = currentMatterEnergy.phaseFrom + ' → ' + currentMatterEnergy.phaseTo;
           var resolvedStageIndex = Math.max(0, STAGES.findIndex(function(stage) { return stage.id === resolvedStageId; })) + 1;
           // Compare named processes without changing the active parcel or scene.
@@ -30584,6 +30659,7 @@ const d = labToolData.waterCycle || {};
             complete: 'Cycle complete'
           };
           var journeyStateLabel = journeyStateLabels[d.journeyState || (d.journeyActive ? 'ocean' : 'idle')] || 'Water droplet in motion';
+          var wcCanvasGuideProcessLabel = d.journeyActive ? journeyStateLabel : currentStageLabel;
           var journeyTransitionStatus = !d.journeyActive
             ? 'Journey inactive. Start Journey to follow one droplet.'
             : d.journeyState === 'ground_choice'
@@ -31621,7 +31697,7 @@ const d = labToolData.waterCycle || {};
               React.createElement("div", { className: "wc-canvas-topbar", "aria-hidden": "true" },
                 React.createElement("div", { className: "wc-canvas-title" },
                   React.createElement("span", null, (journeyView === '3d' ? "Immersive droplet journey" : t('stem.watercycle.live_cycle_model', "Live cycle model"))),
-                  React.createElement("strong", null, currentStageLabel)
+                  React.createElement("strong", null, wcCanvasGuideProcessLabel)
                 ),
                 React.createElement("div", { className: "wc-chip-row" },
                   React.createElement("span", { className: "wc-chip" }, weatherLabel),
@@ -31647,7 +31723,7 @@ const d = labToolData.waterCycle || {};
                 role: "img",
                 tabIndex: journeyView === '2d' ? 0 : -1,
                 "aria-hidden": journeyView === '3d' ? "true" : undefined,
-                "aria-label": "Water cycle animation showing the " + currentStageLabel + " process. Water moves from " + currentStageFlow.from + " to " + currentStageFlow.to + ".",
+                "aria-label": "Water cycle animation showing " + wcCanvasGuideProcessLabel + ". Water moves from " + currentStageFlow.from + " to " + currentStageFlow.to + ".",
                 "aria-describedby": journeyView === '2d' ? "wcStageFocusDescription wcCanvasGuideDescription" : undefined,
                 "aria-keyshortcuts": journeyView === '2d' ? "Space Enter" : undefined,
                 onKeyDown: journeyView === '2d' ? handleWc2dKey : undefined,
@@ -31672,7 +31748,7 @@ const d = labToolData.waterCycle || {};
                 "data-percolation": currentSubsurfacePhase === 'soil-storage' ? 'retained-in-soil' : currentSubsurfacePhase === 'selected-deep-recharge' ? 'deep-recharge' : 'hidden',
                 "data-journey-state": d.journeyActive ? (d.journeyState || 'ocean') : 'idle',
                 "data-journey-paused": String(!!d.journeyPaused),
-                "data-wc-2d-paused": String(wc2dPaused),
+                "data-wc2d-paused": String(wc2dPaused),
                 "data-journey-speed": String(d.journeySpeed || 1),
                 "data-clim-solar": String((typeof d.climSolar === 'number' && isFinite(d.climSolar)) ? d.climSolar : 1.0),
                 "data-clim-temp": String((typeof d.climTemp === 'number' && isFinite(d.climTemp)) ? d.climTemp : 15),
@@ -32059,29 +32135,42 @@ const d = labToolData.waterCycle || {};
               React.createElement("span", { className: "wc-canvas-guide-copy" }, journeyView === '3d'
                 ? t('stem.watercycle.use_drag_or_arrow_keys_to_explore', "Use drag or arrow keys to explore; highlighted routes are clickable. Press F to follow the droplet.")
                 : (wc2dPaused
-                ? 'Animation paused on ' + currentStageLabel + '. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.'
+                ? 'Animation paused on ' + wcCanvasGuideProcessLabel + '. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.'
                 : (currentStageCue || t('stem.watercycle.follow_the_moving_water_between_stores', "Follow the moving water between stores; the selected process is highlighted.")) + ' Press Space or Enter on the model to pause.')),
-              React.createElement("span", { className: "wc-canvas-guide-handoff", role: "note", "aria-label": "Matter and energy handoff: " + currentMatterEnergy.phaseFrom + " to " + currentMatterEnergy.phaseTo + ". " + currentMatterEnergy.energyTransfer },
+              React.createElement("span", { className: "wc-canvas-guide-handoff", role: "note", "aria-label": "Matter and energy handoff: " + currentMatterEnergy.phaseFrom + " to " + currentMatterEnergy.phaseTo + ". " + wcCanvasGuideEnergyText },
               React.createElement("span", { className: "wc-canvas-guide-handoff-from" }, currentMatterEnergy.phaseFrom),
               React.createElement("span", { className: "wc-canvas-guide-handoff-arrow", "aria-hidden": "true" }, "→"),
-              React.createElement("span", { className: "wc-canvas-guide-handoff-process" }, currentStageLabel),
+              React.createElement("span", { className: "wc-canvas-guide-handoff-process" }, wcCanvasGuideProcessLabel),
               React.createElement("span", { className: "wc-canvas-guide-handoff-arrow", "aria-hidden": "true" }, "→"),
                 React.createElement("span", { className: "wc-canvas-guide-handoff-to" }, currentMatterEnergy.phaseTo),
-                React.createElement("span", { className: "wc-canvas-guide-handoff-energy" }, "Energy: " + currentMatterEnergy.energyTransfer)
+                React.createElement("span", { className: "wc-canvas-guide-handoff-energy" }, wcCanvasGuideEnergyText)
               ),
-              React.createElement("span", { className: "wc-canvas-visual-key", role: "note", "aria-label": __alloT('stem.watercycle.a11y_visual_key_tracked_parcel_transfer_path_and_ene', 'Visual key: tracked parcel, transfer path, and energy cue') },
+              React.createElement("span", { className: "wc-canvas-visual-key", role: "note", "data-energy-transfer": currentMatterEnergy.energyTransfer, "aria-label": __alloT('stem.watercycle.a11y_visual_key_tracked_parcel_transfer_path_and_ene', 'Visual key: tracked parcel, transfer path, and energy cue') },
                 React.createElement("span", { className: "wc-canvas-visual-key-item" },
                   React.createElement("span", { className: "wc-canvas-visual-key-mark is-parcel", "aria-hidden": "true" }),
-                  "Tracked parcel"
+                  React.createElement("span", { className: "wc-canvas-visual-key-copy" },
+                    React.createElement("strong", null, __alloT('stem.watercycle.diagram_guide_parcel', 'Tracked parcel')),
+                    React.createElement("small", null, __alloT('stem.watercycle.diagram_guide_parcel_detail', 'Location, not amount'))
+                  )
                 ),
                 React.createElement("span", { className: "wc-canvas-visual-key-item" },
                   React.createElement("span", { className: "wc-canvas-visual-key-mark is-path", "aria-hidden": "true" }, "→"),
-                  "Transfer path"
+                  React.createElement("span", { className: "wc-canvas-visual-key-copy" },
+                    React.createElement("strong", null, __alloT('stem.watercycle.diagram_guide_direction', 'Water direction')),
+                    React.createElement("small", null, __alloT('stem.watercycle.diagram_guide_direction_detail', 'Arrows show the route'))
+                  )
                 ),
                 React.createElement("span", { className: "wc-canvas-visual-key-item" },
                   React.createElement("span", { className: "wc-canvas-visual-key-mark is-energy", "aria-hidden": "true" }, "✦"),
-                  "Energy cue"
+                  React.createElement("span", { className: "wc-canvas-visual-key-copy" },
+                    React.createElement("strong", null, __alloT('stem.watercycle.diagram_guide_heat', 'Heat cue')),
+                    React.createElement("small", null, __alloT('stem.watercycle.diagram_guide_heat_detail', 'Energy, not water'))
+                  )
                 )
+              ),
+              React.createElement("span", { className: "wc-canvas-guide-depiction", "data-vapor-guidance": wcCanvasGuideHasVapor ? "visible" : "not-applicable" },
+                wcCanvasGuideHasVapor && React.createElement("span", null, __alloT('stem.watercycle.diagram_guide_vapor_note', 'Water vapor is invisible; drawn marks trace its path.')),
+                React.createElement("span", null, __alloT('stem.watercycle.diagram_guide_scale_note', 'Markers are enlarged; the scene is not to scale.'))
               ),
               journeyView === '2d' && React.createElement("button", {
                 type: "button",
@@ -32090,7 +32179,7 @@ const d = labToolData.waterCycle || {};
                 "aria-pressed": wc2dPaused,
                 onClick: toggleWc2dPlayback
               }, wc2dPaused ? "\u25B6 Resume" : "\u23F8 Pause"),
-              React.createElement("span", { className: "wc-canvas-guide-badge" }, (resolvedStage ? resolvedStage.emoji + " " : "") + currentStageLabel)
+              React.createElement("span", { className: "wc-canvas-guide-badge" }, (resolvedStage ? resolvedStage.emoji + " " : "") + wcCanvasGuideProcessLabel)
             ),
 
             h('details', { className: 'wc-learning-drawer' },

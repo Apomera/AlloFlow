@@ -13,8 +13,8 @@ import { resolve } from 'node:path';
 // title block, and the long "INVISIBLE VAPOR — PATH SHOWN" callout ran straight through
 // "Precipitation". Neither is visible at desktop width, the only width ever looked at.
 //
-// Evidence callouts have arrows drawn to them, so they may only RESERVE space. Stage labels carry
-// no arrow, so they step down until clear.
+// Evidence callouts wrap and reserve their final box; a moved callout can use a plain leader.
+// Stage labels then step down until clear of the controls and reserved evidence.
 const PATHS = [
   resolve(process.cwd(), 'stem_lab/stem_tool_watercycle.js'),
   resolve(process.cwd(), 'desktop/web-app/public/stem_lab/stem_tool_watercycle.js'),
@@ -100,9 +100,10 @@ describe('Water Cycle canvas label placement', () => {
     expect(() => build(hostile).chrome()).not.toThrow();
   });
 
-  it('is wired: evidence reserves, stages step, and the register clears each frame', () => {
-    // An evidence callout has an arrow pointing at it, so it registers where it is and stays.
-    expect(src).toContain('wcReserveLabelRect2d(x - paddingX, y - 9 * dpr, labelWidth, 18 * dpr);');
+  it('is wired: evidence lays out first, stages step, and the register clears each frame', () => {
+    // Evidence reserves its final wrapped position, so later stage labels avoid the actual box.
+    expect(src).toContain('var layout = wcEvidenceLabelLayout2d(text, x, y);');
+    expect(src).toContain('top = wcPlaceLabelY2d(left, top, width, height);');
     // A stage label has no arrow, so it may move.
     expect(src).toContain('stageLabelY2d = wcPlaceLabelY2d(stageLabelX2d - 4 * dpr, stageLabelY2d - 14 * dpr, stageLabelWidth2d + 8 * dpr, 19 * dpr) + 14 * dpr;');
     // Without the reset the register would grow every frame and eventually push every label away.
