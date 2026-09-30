@@ -30,6 +30,8 @@
   var departureGuess = null, departureReview = null, departureVisited = false;
   var waterMoment = null, waterMotionTimer = null;
   var motionPreference = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  var routePreview = null;
+  var routeActions = {walk:'choose_walk', bus:'choose_bus', ride:'choose_ride', late_bus:'choose_late_bus'};
   var notes = Object.create(null), comparison = null, reviewRevision = null, importSerial = 0, lastSaveOk = false;
   var icons = { kitchen: '◒', wardrobe: '♧', entry: '▣', travel: '↗' };
   var supportNames = { guided: 'Guided', try: 'Try it', independent: 'Independent' };
@@ -93,6 +95,7 @@
   }
   function changeRun(run, extras) {
     abortStory();
+    clearRoute(true);
     clearWater(true);
     clearRehearsal(true);
     clearPacking(true);
@@ -141,6 +144,7 @@
   }
   function selectStation(id, moveFocus) {
     if (!latestView.stations.some(function (s) { return s.id === id; })) return;
+    clearRoute(true);
     clearWater(true);
     clearRehearsal(true);
     clearPacking(true);
@@ -156,6 +160,7 @@
   function selectObject(id, moveFocus) {
     var object = latestView.objects.find(function (item) { return item.id === id; });
     if (!object) return;
+    clearRoute(true);
     clearWater(true);
     clearRehearsal(true);
     clearPacking(true);
@@ -182,6 +187,7 @@
     try {
       var next = E.dispatch(current, id, current.commands.length, 'ui-' + Date.now().toString(36) + '-' + (++eventSerial));
       abortStory();
+      clearRoute(false);
       clearWater(false);
       clearRehearsal(true);
       clearPacking(false);
@@ -195,6 +201,10 @@
       if (id === 'fill_water' || id === 'pack_water') playWaterMoment(id, bottleFrom);
       persist();
       if (id === 'hint') byId('hintButton').focus({ preventScroll: true });
+      else if (source === 'route') {
+        text('routeStatus', latestView.feedback + ' Choosing a route takes no practice time.');
+        byId('routeChosenTitle').focus();
+      }
       else if (source === 'water') {
         text('waterStatus', latestView.feedback + ' Practice clock: ' + latestView.clock + '.');
         (latestView.scene.bottlePacked ? byId('waterReadyTitle') : byId('packAtTap')).focus();
@@ -240,6 +250,7 @@
     byId('openPacking').hidden = v.completed || (station.id !== 'kitchen' && station.id !== 'entry');
     byId('openWardrobe').hidden = v.completed || station.id !== 'wardrobe';
     byId('openUpdates').hidden = v.completed || station.id !== 'entry' || !v.event;
+    byId('openRoutes').hidden = v.completed || station.id !== 'travel';
     byId('openDeparture').hidden = v.completed || station.id !== 'travel' || selectedObject === 'route';
     byId('backToDeparture').hidden = v.completed || !departureVisited || station.id === 'travel';
     byId('exploreTravel').hidden = station.id !== 'travel';
@@ -261,6 +272,7 @@
     });
     byId('objectInspector').hidden = !object;
     if (object) { text('objectTitle', object.label); text('objectStatus', object.status); text('objectDescription', object.description); }
+    renderRouteWorkbench();
     renderWaterWorkbench();
     renderPackingWorkbench();
     renderWardrobeWorkbench();
@@ -712,8 +724,7 @@
     } else if (id === 'weather' && latestView.event) {
       openUpdateWorkbench(); updateTopic = 'weather'; renderUpdateWorkbench(); byId('updateTopicTitle').focus();
     } else if (id === 'travel') {
-      selectStation('travel', false);
-      (byId('actionList').querySelector('button:not(:disabled)') || byId('stationActions')).focus();
+      openRouteWorkbench();
     } else {
       if (id === 'water' && !latestView.scene.bottleFilled) { openWaterWorkbench(); return; }
       selectObject({water:'bottle', document:'card', weather:'forecast'}[id], false);
@@ -724,6 +735,92 @@
     var depart = departureAction();
     if (latestView.completed || selectedObject !== 'route' || !departureReview || departureReview.revision !== current.commands.length || !depart || depart.disabled) return;
     act('depart', 'departure');
+  }
+  function clearRoute(collapse) {
+    routePreview = null; byId('routePreviewResult').hidden = true; byId('confirmRoute').disabled = true;
+    text('routeStatus', '');
+    if (collapse) byId('routeWorkbench').open = false;
+  }
+  function routeOutcome(route) {
+    if (!route.available) return 'This bus has already left.';
+    if (route.minutesBeforeStart === 0) return 'At the 09:35 start · no extra time.';
+    return Math.abs(route.minutesBeforeStart) + ' min ' + (route.onTime ? 'before' : 'after') + ' the 09:35 start.';
+  }
+  function routeIcon(id) {
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 96 72'); svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('focusable', 'false');
+    function shape(tag, attrs) {
+      var el = document.createElementNS(svg.namespaceURI, tag);
+      Object.keys(attrs).forEach(function (key) { el.setAttribute(key, attrs[key]); }); svg.appendChild(el);
+    }
+    shape('rect', {x:2,y:2,width:92,height:68,rx:16,fill:'#e6efe4'});
+    shape('path', {d:'M14 61H82',stroke:'#849e89','stroke-width':2,'stroke-linecap':'round'});
+    if (id === 'walk') {
+      shape('circle', {cx:44,cy:16,r:6,fill:'#d4ad8c',stroke:'#596c5d','stroke-width':2});
+      shape('path', {d:'M43 24L38 39L50 45L55 59M39 39L28 58M42 26L56 35L64 34M41 28L30 37',fill:'none',stroke:'#346959','stroke-width':5,'stroke-linecap':'round','stroke-linejoin':'round'});
+    } else if (id === 'ride') {
+      shape('path', {d:'M20 39L29 26H60L72 39L79 43V55H17V44Z',fill:'#c99874',stroke:'#80523f','stroke-width':2,'stroke-linejoin':'round'});
+      shape('path', {d:'M32 29H43V39H25ZM47 29H59L68 39H47Z',fill:'#e8f4f0',stroke:'#80523f','stroke-width':1.5});
+      shape('path', {d:'M51 45H56',stroke:'#80523f','stroke-width':2,'stroke-linecap':'round'});
+      [29,67].forEach(function (x) { shape('circle', {cx:x,cy:55,r:6,fill:'#375762'}); shape('circle', {cx:x,cy:55,r:2.5,fill:'#d6e9e4'}); });
+    } else {
+      shape('rect', {x:20,y:14,width:57,height:42,rx:8,fill:id==='late_bus'?'#c39b56':'#629b9c',stroke:'#375762','stroke-width':2});
+      shape('rect', {x:26,y:21,width:44,height:16,rx:3,fill:'#eef7ee'});
+      shape('path', {d:'M41 21V37M56 21V37M25 45H71',stroke:'#375762','stroke-width':2});
+      [31,66].forEach(function (x) { shape('circle', {cx:x,cy:56,r:6,fill:'#375762'}); shape('circle', {cx:x,cy:56,r:2.5,fill:'#d6e9e4'}); });
+    }
+    return svg;
+  }
+  function renderRouteWorkbench() {
+    var v = latestView, panel = byId('routeWorkbench');
+    panel.hidden = selectedObject !== 'route' || v.completed;
+    if (panel.hidden) return;
+    // Actual route choices always use the current clock, independently of the later-departure explorer.
+    var timing = E.travelAt(current), options = byId('routeOptions'); options.replaceChildren();
+    text('routeClock', 'Practice clock: ' + timing.practiceClock + ' · outing starts at 09:35');
+    timing.routes.forEach(function (route) {
+      var button = node('button', 'route-option' + (route.onTime ? '' : ' route-option-late')); button.type = 'button'; button.dataset.routeOption = route.id;
+      button.setAttribute('aria-pressed', String(!!routePreview && routePreview.id === route.id));
+      button.append(routeIcon(route.id), node('strong', 'route-option-name', route.label), node('span', 'route-option-arrival', route.available ? 'Arrive ' + route.arrival : 'Bus missed'), node('span', 'route-option-outcome', routeOutcome(route)));
+      if (route.selected) button.appendChild(node('span', 'route-actual-badge', 'Chosen in outing'));
+      if (routePreview && routePreview.id === route.id) button.appendChild(node('span', 'route-preview-badge', 'Exploring this route'));
+      button.addEventListener('click', function () {
+        if (latestView.completed || selectedObject !== 'route' || !byId('routeWorkbench').open || !latestView.routes.some(function (item) { return item.id === route.id; })) return;
+        routePreview = {id:route.id, revision:current.commands.length}; renderRouteWorkbench();
+        (byId('confirmRoute').disabled ? byId('routePreviewTitle') : byId('confirmRoute')).focus();
+        text('routeStatus', route.label + ' example opened. The practice clock stays ' + latestView.clock + '.');
+      }); options.appendChild(button);
+    });
+    text('routeKnowledge', timing.forecastMayChange ? 'These arrivals use the information available now. Recheck after the forecast or travel update.' : 'These arrivals use the latest received forecast and travel information.');
+    byId('routeChosen').hidden = !v.travel;
+    if (v.travel) text('routeChosenSummary', v.travel.label + ' · arrival ' + v.travel.arrival + '. ' + routeOutcome(timing.routes.find(function (route) { return route.selected; })));
+    var route = routePreview && routePreview.revision === current.commands.length && timing.routes.find(function (item) { return item.id === routePreview.id; });
+    byId('routePreviewResult').hidden = !route; byId('confirmRoute').disabled = true;
+    if (!route) return;
+    text('routePreviewTitle', route.label + ' · leave at ' + timing.preparationTime);
+    var journey = byId('routeJourney'); journey.replaceChildren();
+    var wait = route.scheduledDeparture === null ? ['Start the journey', timing.preparationTime] : ['Wait at the stop', route.available ? route.waitingMinutes + ' min' : 'Bus already left'];
+    [wait, ['Travel', route.travelMinutes + ' min'], ['Arrive', route.available ? route.arrival : 'Unavailable']].forEach(function (part, index) {
+      var li = node('li', index === 0 && route.scheduledDeparture !== null ? 'route-waiting' : '');
+      li.append(node('span', '', part[0]), node('strong', '', part[1])); journey.appendChild(li);
+    });
+    text('routeArrivalNote', routeOutcome(route));
+    text('routePreparationNote', timing.preparationReady ? 'Your clothes and bag are ready. Recheck arrival if your plan changes.' : 'These times assume no more preparation. Finish your clothes and bag, then compare arrival again.');
+    var action = v.stations.find(function (station) { return station.id === 'travel'; }).actions.find(function (item) { return item.id === routeActions[route.id]; });
+    byId('confirmRoute').disabled = !action || action.disabled;
+    text('confirmRoute', action && action.disabled ? 'Already your chosen route' : 'Use this route in my outing');
+    text('routeConfirmReason', action && action.reason);
+  }
+  function openRouteWorkbench() {
+    if (latestView.completed) { selectObject('route', true); return; }
+    selectObject('route', false); byId('departureWorkbench').open = false; byId('routeWorkbench').open = true;
+    byId('routeOptions').querySelector('button').focus();
+  }
+  function confirmExploredRoute() {
+    if (latestView.completed || selectedObject !== 'route' || !byId('routeWorkbench').open || !routePreview || routePreview.revision !== current.commands.length) return;
+    var action = latestView.stations.find(function (station) { return station.id === 'travel'; }).actions.find(function (item) { return item.id === routeActions[routePreview.id]; });
+    if (!action || action.disabled) return;
+    act(action.id, 'route');
   }
   function renderStory() {
     var entries = current.content || [];
@@ -1170,6 +1267,7 @@
     box(.45,1.46,.09,.62,1.53,.025,'#82ac98',hinge);
     entity('a-sphere',{position:'.77 1.17 .13',radius:.045,color:'#efd697'},hinge);
     sceneLabel('Check before leaving',{id:'departureSign',position:'.45 2.12 .13',width:.8,height:.24,class:'pickable'},hinge,{background:'#fff6d8'});
+    sceneLabel('Choose a route',{id:'routeSign',position:'.45 .72 .13',width:.8,height:.26,class:'pickable'},hinge,{background:'#fff6d8'});
     box(3.15,.045,-1.26,1.15,.03,.56,'#83957e',travel,{class:'pickable'});
     textPlane('HEAD OUT',{position:'3.12 .13 -.83',rotation:'-25 0 0',width:1.4},travel);
     [['bottleObject','bottle'],['tapObject','bottle'],['shirtObject','outfit'],['clothesFolded','outfit'],['documentObject','card'],['packedDocument','card'],['forecastObject','forecast'],['weatherObject','raincoat'],['hatObject','hat'],['bagObject','bag'],['doorHinge','route']].forEach(function (pair) { attachObject(byId(pair[0]),pair[1]); });
@@ -1221,6 +1319,11 @@
     sceneLabel(noteText,{id:'forecastNote',position:'1.64 2.3 -2.435',width:1.22,height:.31,class:'pickable'},byId('forecastObject'));
     var depart = departureAction(), ready = depart && !depart.disabled;
     sceneLabel(s.departed ? 'Outing complete' : ready ? 'Ready to leave' : 'Check before leaving',{id:'departureSign',position:'.45 2.12 .13',width:.8,height:.24,class:'pickable'},byId('doorHinge'),{background:ready || s.departed ? '#e4eedc' : '#fff6d8'});
+    var routeSign = sceneLabel(latestView.travel ? latestView.travel.label + ' · ' + latestView.travel.arrival : 'Choose a route',{id:'routeSign',position:'.45 .72 .13',width:.8,height:.26,class:'pickable'},byId('doorHinge'),{background:latestView.travel && !latestView.travel.onTime ? '#f5dfb1' : '#fff6d8'});
+    if (!routeSign.dataset.routeControl) {
+      routeSign.dataset.routeControl = 'true';
+      routeSign.addEventListener('click', function (event) { event.stopPropagation(); openRouteWorkbench(); });
+    }
     byId('doorHinge').setAttribute('rotation',s.departed?'0 -65 0':'0 0 0');
     byId('bagObject').setAttribute('visible',!s.departed);
     if(s.departed)text('sceneCaption','Ready to head out · reflect on your choices below.');
@@ -1251,7 +1354,16 @@
     closeView=!closeView;this.setAttribute('aria-pressed',String(closeView));this.textContent=closeView?'Whole room':'Closer view';fitScene();
     announce(closeView?'Closer view of the selected station. Use the action buttons below the room.':'Whole room shown.');
   });
-  byId('travelPreview').addEventListener('click',function(){selectObject('route',true);});
+  byId('travelPreview').addEventListener('click',openRouteWorkbench);
+  byId('openRoutes').addEventListener('click',openRouteWorkbench);
+  byId('confirmRoute').addEventListener('click',confirmExploredRoute);
+  byId('compareRouteAgain').addEventListener('click',function(){
+    if(latestView.completed||selectedObject!=='route'||!routePreview||!byId('routeWorkbench').open)return;
+    var option=Array.from(byId('routeOptions').querySelectorAll('button')).find(function(button){return button.dataset.routeOption===routePreview.id;});
+    if(option)option.focus();
+  });
+  byId('routeToDeparture').addEventListener('click',function(){if(latestView.completed)return;openDepartureWorkbench();checkDepartureReadiness();});
+  byId('routeToExplorer').addEventListener('click',openTravelExplorer);
   byId('openPacking').addEventListener('click', openPackingWorkbench);
   byId('openWater').addEventListener('click', openWaterWorkbench);
   byId('fillAtTap').addEventListener('click', function () { prepareWater('fill_water'); });
@@ -1278,7 +1390,7 @@
   byId('updateTopicAction').addEventListener('click', function () {
     if (!latestView.event || latestView.completed || selectedObject !== 'forecast') return;
     if (updateTopic === 'weather') openPackingWorkbench();
-    else if (updateTopic === 'travel') selectObject('route', true);
+    else if (updateTopic === 'travel') openRouteWorkbench();
   });
   byId('prepareOutfit').addEventListener('click', prepareSelectedOutfit);
   byId('wardrobeToBag').addEventListener('click', openPackingWorkbench);
@@ -1294,7 +1406,7 @@
   byId('earlierDeparture').addEventListener('click',function(){exploreDeparture(Number(byId('departureTime').value)-1,true);if(this.disabled)byId('departureTime').focus();});
   byId('laterDeparture').addEventListener('click',function(){exploreDeparture(Number(byId('departureTime').value)+1,true);if(this.disabled)byId('departureTime').focus();});
   byId('resetDeparture').addEventListener('click',function(){exploredDeparture=null;var timing=renderTravelLab();text('travelLabStatus','Example reset to '+timing.preparationTime+'.');byId('departureTime').focus();});
-  byId('returnToTravel').addEventListener('click',function(){selectObject('route',true);});
+  byId('returnToTravel').addEventListener('click',openRouteWorkbench);
   byId('rehearsalAction').addEventListener('change',function(){clearRehearsal(false);});
   byId('prediction').addEventListener('input',function(){clearRehearsal(false);});
   byId('previewActionButton').addEventListener('click',function(){

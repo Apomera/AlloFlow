@@ -69,11 +69,23 @@
 <button id="openPacking" class="quiet-button packing-entry" type="button" aria-controls="packingWorkbench" hidden>Open bag table</button>
 <button id="openWardrobe" class="quiet-button wardrobe-entry" type="button" aria-controls="wardrobeWorkbench" hidden>Compare the outfits</button>
 <button id="openUpdates" class="quiet-button update-entry" type="button" aria-controls="updateWorkbench" hidden>Review the received update</button>
+<button id="openRoutes" class="quiet-button route-entry" type="button" aria-controls="routeWorkbench" hidden>Compare travel choices</button>
 <button id="openDeparture" class="quiet-button departure-entry" type="button" aria-controls="departureWorkbench" hidden>Check before you leave</button>
 <button id="backToDeparture" class="quiet-button departure-entry" type="button" aria-controls="departureWorkbench" hidden>Recheck before leaving</button>
 <button id="exploreTravel" class="quiet-button travel-entry" type="button" aria-controls="travelLab" hidden>Explore departure and arrival times</button>
 <div id="objectChoices" class="object-choices" role="group" aria-label="Inspect an object"></div>
 <section id="objectInspector" class="object-inspector" aria-labelledby="objectTitle" hidden><div class="section-header"><h4 id="objectTitle" tabindex="-1"></h4><span id="objectStatus" class="object-status"></span></div><p id="objectDescription"></p></section>
+<details id="routeWorkbench" class="route-workbench" hidden>
+<summary>Choose a route · compare the journey</summary>
+<div class="route-body"><p id="routeInstructions" class="muted">Explore a route, then choose whether to use it. These arrivals use the current practice clock. Allow time for the preparation you still need.</p>
+<p id="routeClock" class="route-clock"></p>
+<div id="routeOptions" class="route-options" role="group" aria-label="Routes to explore" aria-describedby="routeInstructions"></div>
+<p id="routeKnowledge" class="muted small"></p>
+<section id="routePreviewResult" class="route-preview" aria-labelledby="routePreviewTitle" hidden><p class="eyebrow">Before you choose</p><h4 id="routePreviewTitle" tabindex="-1"></h4><ol id="routeJourney" class="route-journey" aria-label="Parts of this journey"></ol><p id="routeArrivalNote"></p><p id="routePreparationNote" class="muted small"></p><p class="route-question">How much time is waiting? How much is travelling? What else would you allow time for?</p><div class="button-row"><button id="confirmRoute" class="primary-button" type="button" aria-describedby="routePreviewTitle routeArrivalNote" disabled>Use this route in my outing</button><button id="compareRouteAgain" class="quiet-button" type="button">Compare another route</button></div><p id="routeConfirmReason" class="muted small"></p></section>
+<section id="routeChosen" class="route-chosen" aria-labelledby="routeChosenTitle" hidden><h4 id="routeChosenTitle" tabindex="-1">Your chosen travel plan</h4><p id="routeChosenSummary"></p><button id="routeToDeparture" class="quiet-button" type="button">Check clothes, bag and route</button></section>
+<button id="routeToExplorer" class="quiet-button" type="button">Explore leaving later</button><p class="muted small">Bus examples assume you reach the stop by its departure time. Think about getting to the stop too.</p>
+<p id="routeStatus" class="route-status" role="status" aria-live="polite" aria-atomic="true"></p>
+</div></details>
 <details id="waterWorkbench" class="water-workbench" hidden>
 <summary>At the tap · fill, then pack</summary>
 <div class="water-body"><p id="waterInstructions" class="muted">Prepare drinking water for this fictional outing. Fill the bottle, then put it in your bag. Each action takes one practice minute.</p>

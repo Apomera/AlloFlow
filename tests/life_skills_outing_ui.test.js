@@ -54,6 +54,90 @@ async function openBackup(h, source) {
 }
 
 describe('Life Skills outing interaction', () => {
+  it('explores illustrated route cards from the 3D sign without choosing, saving or revealing future updates', () => {
+    let calls=0; const h=mount({provider:()=>{calls++;return Promise.resolve({text:'Hello.',status:'generated'});}});
+    h.$('#scenarioSelect').value='bus-delay'; h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true})); const saved=h.save();
+    h.$('#routeSign').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));
+    expect(h.$('#routeWorkbench').open).toBe(true); expect(h.$('#departureWorkbench').open).toBe(false); expect(h.w.document.activeElement.dataset.routeOption).toBe('walk');
+    expect(h.w.document.querySelectorAll('#routeOptions button')).toHaveLength(4);
+    h.$('[data-route-option="bus"]').click(); expect(h.w.document.activeElement.id).toBe('confirmRoute');
+    expect(h.$('#routePreviewTitle').textContent).toBe('09:20 bus · leave at 09:00');
+    expect(h.$('#routeJourney').textContent).toContain('Wait at the stop20 min'); expect(h.$('#routeJourney').textContent).toContain('Travel10 min');
+    expect(h.$('#routeJourney').textContent).toContain('Arrive09:30'); expect(h.$('#routeKnowledge').textContent).toContain('Recheck after');
+    expect(h.$('#routeOptions').textContent).not.toContain('09:45'); expect(h.$('#routeSign').dataset.noteText).toBe('Choose a route');
+    h.$('#compareRouteAgain').click(); expect(h.w.document.activeElement.dataset.routeOption).toBe('bus');
+    h.$('[data-route-option="ride"]').click(); expect(h.$('[data-route-option="ride"]').getAttribute('aria-pressed')).toBe('true');
+    expect(h.$('#routeJourney').textContent).toContain('Start the journey09:00'); expect(h.$('#routeJourney').textContent).toContain('Travel15 min');
+    expect(h.save()).toEqual(saved); expect(h.$('#clock').textContent).toBe('09:00'); expect(calls).toBe(0);
+    expect(h.E.view(h.run()).observations).toEqual([]); expect(h.E.view(h.run()).travel).toBe(null);
+  });
+  it.each([['walk','choose_walk','09:18'],['bus','choose_bus','09:30'],['ride','choose_ride','09:15'],['late_bus','choose_late_bus','09:50']])('confirms %s through %s and shows arrival %s', (route,action,arrival) => {
+    const h=mount(); h.$('#supportSelect').value='independent'; h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true})); const before=h.run();
+    h.station('Travel'); h.$('#openRoutes').click(); h.$('[data-route-option="'+route+'"]').click(); const explored=h.save();
+    expect(h.$('#confirmRoute').disabled).toBe(false); h.$('#confirmRoute').click();
+    expect(h.run().commands.map(c=>c.actionId)).toEqual([action]); expect(h.E.view(h.run())).toEqual(h.E.view(h.E.dispatch(before,action,0,'expected-route')));
+    expect(h.w.document.activeElement.id).toBe('routeChosenTitle'); expect(h.$('#routePreviewResult').hidden).toBe(true);
+    expect(h.$('#routeChosenSummary').textContent).toContain(arrival); expect(h.$('#routeSign').dataset.noteText).toContain(arrival);
+    expect(h.$('[data-route-option="'+route+'"] .route-actual-badge').textContent).toBe('Chosen in outing'); expect(h.save()).not.toEqual(explored);
+    const saved=h.save(); h.$('[data-route-option="'+route+'"]').click();
+    expect(h.$('#confirmRoute').disabled).toBe(true); expect(h.w.document.activeElement.id).toBe('routePreviewTitle');
+    expect(h.$('#routeConfirmReason').textContent).toContain('current plan'); h.$('#confirmRoute').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));
+    expect(h.save()).toEqual(saved); expect(h.$('#clock').textContent).toBe('09:00'); expect(h.E.view(h.run()).completed).toBe(false);
+  });
+  it('uses the practice clock for actual choices even after exploring a later departure', () => {
+    const h=mount(); h.station('Wardrobe'); h.act('prepare_clothes'); const saved=h.save();
+    h.$('#openTravelLab').click(); h.$('#departureTime').value='45'; h.$('#departureTime').dispatchEvent(new h.w.Event('input'));
+    expect(h.$('#departureOutput').textContent).toBe('09:45'); h.$('#returnToTravel').click(); h.$('[data-route-option="walk"]').click();
+    expect(h.$('#routePreviewTitle').textContent).toBe('Walk · leave at 09:08'); expect(h.$('#routeJourney').textContent).toContain('Arrive09:26');
+    expect(h.$('#routePreparationNote').textContent).toContain('Finish your clothes and bag'); expect(h.save()).toEqual(saved);
+    h.$('#confirmRoute').click(); expect(h.E.view(h.run()).travel.arrival).toBe('09:26'); expect(h.$('#clock').textContent).toBe('09:08');
+  });
+  it('rechecks a delayed bus and confirms another route through the update board to complete the outing', () => {
+    const h=mount(); h.$('#scenarioSelect').value='bus-delay'; h.$('#contextSelect').value='work'; h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
+    h.station('Travel'); h.$('#openRoutes').click(); h.$('[data-route-option="bus"]').click(); h.$('#confirmRoute').click();
+    expect(h.$('#routeSign').dataset.noteText).toBe('09:20 bus · 09:30');
+    h.station('Kitchen'); h.$('#openWater').click(); h.$('#fillAtTap').click(); h.$('#packAtTap').click(); h.station('Wardrobe'); h.act('wear_ready');
+    expect(h.$('#routeSign').dataset.noteText).toBe('09:20 bus · 09:45'); h.station('Doorway'); h.act('pack_document'); h.act('pack_raincoat');
+    h.$('#reviewUpdate').click(); h.$('[data-update-topic="travel"]').click(); h.$('#updateTopicAction').click();
+    expect(h.$('[data-route-option="bus"]').classList.contains('route-option-late')).toBe(true); expect(h.$('#routeChosenSummary').textContent).toContain('10 min after');
+    h.$('[data-route-option="ride"]').click(); expect(h.$('#routeJourney').textContent).toContain('Arrive09:21');
+    expect(h.$('#routeSign').dataset.noteText).toBe('09:20 bus · 09:45'); expect(h.$('#routePreparationNote').textContent).toContain('clothes and bag are ready');
+    h.$('#confirmRoute').click(); expect(h.$('#routeSign').dataset.noteText).toBe('Arranged ride · 09:21');
+    h.$('#routeToDeparture').click(); expect(h.w.document.activeElement.id).toBe('departureResultTitle'); expect(h.$('#departureResultTitle').textContent).toBe('5 of 5 preparation checks ready');
+    expect(h.E.view(h.run()).completed).toBe(false); h.$('#departFromCheck').click();
+    expect(h.E.view(h.run()).completed).toBe(true); expect(h.w.document.activeElement.id).toBe('debriefTitle'); expect(h.E.materialize(h.run()).hints).toBe(0);
+    expect(h.E.view(h.run()).observations.some(o=>o.skill==='Checking information')).toBe(false);
+  });
+  it('invalidates route examples after hints, preparation, navigation and a new practice', () => {
+    const h=mount(); h.station('Travel'); h.$('#openRoutes').click(); h.$('[data-route-option="walk"]').click(); const confirm=h.$('#confirmRoute');
+    h.$('#hintButton').click(); expect(h.$('#routePreviewResult').hidden).toBe(true); expect(confirm.disabled).toBe(true);
+    const hinted=h.save(); confirm.dispatchEvent(new h.w.MouseEvent('click',{bubbles:true})); expect(h.save()).toEqual(hinted);
+    h.$('[data-route-option="bus"]').click(); h.station('Kitchen'); const navigated=h.save(); confirm.dispatchEvent(new h.w.MouseEvent('click',{bubbles:true})); expect(h.save()).toEqual(navigated);
+    h.act('fill_water'); h.station('Travel'); h.$('#openRoutes').click(); h.$('[data-route-option="walk"]').click();
+    expect(h.$('#routeJourney').textContent).toContain('Arrive09:19'); h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
+    expect(h.$('#routeWorkbench').open).toBe(false); h.station('Travel'); h.$('#openRoutes').click();
+    expect(h.$('#routePreviewResult').hidden).toBe(true); expect(h.$('#routeChosen').hidden).toBe(true); expect(confirm.disabled).toBe(true);
+    expect(h.$('[data-route-option="walk"]').getAttribute('aria-pressed')).toBe('false');
+  });
+  it('restores the confirmed route without saving the explored alternative and respects legacy choices', () => {
+    const h=mount(); h.station('Travel'); h.$('#openRoutes').click(); h.$('[data-route-option="bus"]').click(); h.$('#confirmRoute').click();
+    const saved=h.save(); h.$('[data-route-option="ride"]').click(); expect(h.save()).toEqual(saved);
+    const resumed=mount({saved,noScene:true}); resumed.station('Travel'); resumed.$('#openRoutes').click();
+    expect(resumed.$('#routeChosenSummary').textContent).toContain('09:20 bus'); expect(resumed.$('#routePreviewResult').hidden).toBe(true);
+    expect(resumed.$('[data-route-option="ride"]').getAttribute('aria-pressed')).toBe('false');
+    const legacy=h.run(); legacy.manifestVersion=1; const key=h.E.saveKey(legacy), old=mount({saved:[[key,JSON.stringify(legacy)],[activeKey,key]]});
+    old.station('Travel'); old.$('#openRoutes').click(); expect(old.w.document.querySelectorAll('#routeOptions button')).toHaveLength(3);
+    expect(old.$('[data-route-option="ride"]')).toBe(null); expect(old.run().manifestVersion).toBe(1);
+    old.$('[data-route-option="walk"]').click(); old.$('#confirmRoute').click(); expect(old.E.view(old.run()).travel.id).toBe('walk');
+  });
+  it('supports routes without storage or 3D and guards completed route controls', () => {
+    const h=mount({noScene:true,noStorage:true,reducedMotion:true}); h.station('Travel'); h.$('#openRoutes').click(); h.$('[data-route-option="walk"]').click(); h.$('#confirmRoute').click();
+    expect(h.$('#routeChosenSummary').textContent).toContain('09:18'); expect(h.$('#clock').textContent).toBe('09:00');
+    h.$('#routeToDeparture').click(); expect(h.$('#departFromCheck').disabled).toBe(true); expect(h.$('#departureResultTitle').textContent).toBe('1 of 5 preparation checks ready');
+    const done=mount(); complete(done); const saved=done.save(); done.$('#openRoutes').click();
+    done.$('#confirmRoute').dispatchEvent(new done.w.MouseEvent('click',{bubbles:true})); done.$('#routeToDeparture').click();
+    expect(done.$('#routeWorkbench').hidden).toBe(true); expect(done.save()).toEqual(saved); expect(done.$('#openRoutes').hidden).toBe(true);
+  });
   it('inspects the water station from its tap, bottle and native controls without changing the outing', () => {
     let calls=0; const h=mount({provider:()=>{calls++;return Promise.resolve({text:'Hello.',status:'generated'});}}), saved=h.save();
     h.$('#tapObject').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));
@@ -179,7 +263,7 @@ describe('Life Skills outing interaction', () => {
     h.$('#backToDeparture').click(); h.$('[data-departure-target="weather"]').click(); expect(h.w.document.activeElement.id).toBe('updateTopicTitle');
     expect(h.$('#updateTopicTitle').textContent).toBe('Weather and your bag');
     h.$('#updateTopicAction').click(); h.$('[data-pack-item="'+weatherItem+'"]').click(); h.$('#packingPlace').click();
-    h.$('#backToDeparture').click(); h.$('[data-departure-target="travel"]').click(); expect(h.w.document.activeElement.dataset.action).toBe('choose_walk');
+    h.$('#backToDeparture').click(); h.$('[data-departure-target="travel"]').click(); expect(h.w.document.activeElement.dataset.routeOption).toBe('walk');
     h.act('choose_walk'); expect(h.$('#departureSign').dataset.noteText).toBe('Ready to leave');
     h.$('#openDeparture').click(); h.$('[data-departure-guess="prepare"]').click(); h.$('#checkDeparture').click();
     expect(h.$('#departureResultTitle').textContent).toBe('5 of 5 preparation checks ready');
@@ -564,7 +648,7 @@ describe('Life Skills outing interaction', () => {
     expect(h.$('#travelTimelines [data-route="late_bus"]').textContent).toContain('19 minutes waiting');
     expect(h.$('#travelLabStatus').textContent).toContain('practice clock stays 09:00');
     expect(h.$('#clock').textContent).toBe('09:00');expect(h.save()).toEqual(saved);expect(calls).toBe(0);
-    h.$('#returnToTravel').click();expect(h.w.document.activeElement.id).toBe('stationActions');
+    h.$('#returnToTravel').click();expect(h.w.document.activeElement.dataset.routeOption).toBe('walk');
     expect(h.$('#stationTitle').textContent).toBe('Travel plan');expect(h.run().commands).toHaveLength(0);
     expect(h.$('#travelPreview').textContent).toContain('Choose a route');
   });
