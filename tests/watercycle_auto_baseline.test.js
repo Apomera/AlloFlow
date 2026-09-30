@@ -24,7 +24,7 @@ describe('Water Cycle experiment baseline discovery', () => {
       const source = readFileSync(filePath, 'utf8');
 
       expect(source).toContain('Experiment baseline saved before this change. Choose a prediction, then use the comparison values as evidence.');
-      expect(source).toContain('Before reading the evidence, what will shift most?');
+      expect(source).toContain('Which effect will you investigate?');
     });
   });
 });

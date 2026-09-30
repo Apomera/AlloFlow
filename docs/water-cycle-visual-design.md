@@ -68,3 +68,13 @@ Writing is retained for each ordered process pair, so changing questions or expl
 The cards explain the scope of each named process. Condensation is presented as vapor becoming liquid droplets, with direct vapor-to-ice identified as deposition. Precipitation does not require a state change during the fall; infiltration into soil does not guarantee aquifer recharge. These descriptions use the existing matter and energy traces and make no water-volume or timing calculation.
 
 See [process comparison review](../reports/watercycle-process-compare/README.md) for behavioral, browser, and visual verification.
+
+## Plan the next experiment
+
+The existing next-investigation panel now connects a chosen input to the readings that can show its modeled effect. Learners can select sunlight, temperature, rainfall intensity, soil saturation, soil permeability, slope, or land cover. Sunlight and temperature point to the evaporation index; land inputs point to runoff tendency and infiltration opportunity. Wind remains available for observing scene transport, while this quantitative bridge uses inputs that affect the saved comparison readings.
+
+The action names its input and destination. It switches to the conditions workspace, opens the appropriate lab, and focuses the chosen slider or selected categorical option. **Change the weather** uses the same handoff to reach Sunlight from any Explore section. Reduced motion uses an immediate scroll. Navigation preserves the live inputs, paused journey, saved evidence, and process-comparison writing.
+
+The next-test panel distinguishes missing, incomplete, unchanged, one-input, and several-input baselines. An absent baseline is explicitly saved by the action. Existing baselines remain intact. A comparison with several changed inputs points to the existing **Keep only this change** action. Guidance asks learners to compare signed readings and explains that rounding or model limits can leave a small change invisible. It makes no claim about measured water volume, groundwater recharge, cloud formation, or independent plant water use.
+
+See [next-experiment review](../reports/watercycle-next-experiment/README.md) for navigation, preservation, accessibility, and visual checks.

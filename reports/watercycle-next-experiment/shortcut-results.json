@@ -1,0 +1,357 @@
+{
+  "capturedAt": "2026-09-30T02:05:58.028Z",
+  "sourceSha256": "5022d843e629bff62ad3eec609c5191254d2d9cb465ae851d37f06e58322d335",
+  "mirrorSha256": "5022d843e629bff62ad3eec609c5191254d2d9cb465ae851d37f06e58322d335",
+  "provenance": "Source bytes captured before the isolated localhost server starts. Only an owned headless Playwright browser is used; the learner preview and tabs are untouched.",
+  "checks": [
+    {
+      "label": "source and desktop public runtime match at capture",
+      "pass": true
+    },
+    {
+      "label": "next investigation is visible in Data",
+      "pass": true
+    },
+    {
+      "label": "native select offers exactly seven supported inputs",
+      "pass": true
+    },
+    {
+      "label": "wind is not offered as a measured investigation input",
+      "pass": true
+    },
+    {
+      "label": "Sunlight selection changes only the intended input choice",
+      "pass": true
+    },
+    {
+      "label": "Sunlight opens and focuses its actual native control",
+      "pass": true,
+      "detail": {
+        "focusId": "wc-climate-solar",
+        "focusText": "",
+        "labOpen": true
+      }
+    },
+    {
+      "label": "Sunlight navigation preserves inputs, baseline, writing, and paused journey",
+      "pass": true
+    },
+    {
+      "label": "Sunlight navigates to Conditions outside Focus Canvas",
+      "pass": true
+    },
+    {
+      "label": "Sunlight names the supported readings",
+      "pass": true,
+      "detail": "Evaporation index"
+    },
+    {
+      "label": "Sunlight respects reduced motion when scrolling",
+      "pass": true,
+      "detail": {
+        "id": "wc-climate-solar",
+        "lab": "other",
+        "options": {
+          "behavior": "auto",
+          "block": "center"
+        }
+      }
+    },
+    {
+      "label": "Temperature selection changes only the intended input choice",
+      "pass": true
+    },
+    {
+      "label": "Temperature opens and focuses its actual native control",
+      "pass": true,
+      "detail": {
+        "focusId": "wc-climate-temperature",
+        "focusText": "",
+        "labOpen": true
+      }
+    },
+    {
+      "label": "Temperature navigation preserves inputs, baseline, writing, and paused journey",
+      "pass": true
+    },
+    {
+      "label": "Temperature navigates to Conditions outside Focus Canvas",
+      "pass": true
+    },
+    {
+      "label": "Temperature names the supported readings",
+      "pass": true,
+      "detail": "Evaporation index"
+    },
+    {
+      "label": "Temperature respects reduced motion when scrolling",
+      "pass": true,
+      "detail": {
+        "id": "wc-climate-temperature",
+        "lab": "other",
+        "options": {
+          "behavior": "auto",
+          "block": "center"
+        }
+      }
+    },
+    {
+      "label": "Rainfall intensity selection changes only the intended input choice",
+      "pass": true
+    },
+    {
+      "label": "Rainfall intensity opens and focuses its actual native control",
+      "pass": true,
+      "detail": {
+        "focusId": "wc-land-rain",
+        "focusText": "",
+        "labOpen": true
+      }
+    },
+    {
+      "label": "Rainfall intensity navigation preserves inputs, baseline, writing, and paused journey",
+      "pass": true
+    },
+    {
+      "label": "Rainfall intensity navigates to Conditions outside Focus Canvas",
+      "pass": true
+    },
+    {
+      "label": "Rainfall intensity names the supported readings",
+      "pass": true,
+      "detail": "Runoff tendency and infiltration opportunity"
+    },
+    {
+      "label": "Rainfall intensity respects reduced motion when scrolling",
+      "pass": true,
+      "detail": {
+        "id": "wc-land-rain",
+        "lab": "other",
+        "options": {
+          "behavior": "auto",
+          "block": "center"
+        }
+      }
+    },
+    {
+      "label": "Soil saturation selection changes only the intended input choice",
+      "pass": true
+    },
+    {
+      "label": "Soil saturation opens and focuses its actual native control",
+      "pass": true,
+      "detail": {
+        "focusId": "wc-land-saturation",
+        "focusText": "",
+        "labOpen": true
+      }
+    },
+    {
+      "label": "Soil saturation navigation preserves inputs, baseline, writing, and paused journey",
+      "pass": true
+    },
+    {
+      "label": "Soil saturation navigates to Conditions outside Focus Canvas",
+      "pass": true
+    },
+    {
+      "label": "Soil saturation names the supported readings",
+      "pass": true,
+      "detail": "Runoff tendency and infiltration opportunity"
+    },
+    {
+      "label": "Soil saturation respects reduced motion when scrolling",
+      "pass": true,
+      "detail": {
+        "id": "wc-land-saturation",
+        "lab": "other",
+        "options": {
+          "behavior": "auto",
+          "block": "center"
+        }
+      }
+    },
+    {
+      "label": "Soil permeability selection changes only the intended input choice",
+      "pass": true
+    },
+    {
+      "label": "Soil permeability opens and focuses its actual native control",
+      "pass": true,
+      "detail": {
+        "focusId": "",
+        "focusText": "✓ Medium",
+        "labOpen": true
+      }
+    },
+    {
+      "label": "Soil permeability focuses the selected categorical option",
+      "pass": true
+    },
+    {
+      "label": "Soil permeability navigation preserves inputs, baseline, writing, and paused journey",
+      "pass": true
+    },
+    {
+      "label": "Soil permeability navigates to Conditions outside Focus Canvas",
+      "pass": true
+    },
+    {
+      "label": "Soil permeability names the supported readings",
+      "pass": true,
+      "detail": "Runoff tendency and infiltration opportunity"
+    },
+    {
+      "label": "Soil permeability respects reduced motion when scrolling",
+      "pass": true,
+      "detail": {
+        "id": "",
+        "lab": "other",
+        "options": {
+          "behavior": "auto",
+          "block": "center"
+        }
+      }
+    },
+    {
+      "label": "Slope selection changes only the intended input choice",
+      "pass": true
+    },
+    {
+      "label": "Slope opens and focuses its actual native control",
+      "pass": true,
+      "detail": {
+        "focusId": "",
+        "focusText": "✓ Moderate",
+        "labOpen": true
+      }
+    },
+    {
+      "label": "Slope focuses the selected categorical option",
+      "pass": true
+    },
+    {
+      "label": "Slope navigation preserves inputs, baseline, writing, and paused journey",
+      "pass": true
+    },
+    {
+      "label": "Slope navigates to Conditions outside Focus Canvas",
+      "pass": true
+    },
+    {
+      "label": "Slope names the supported readings",
+      "pass": true,
+      "detail": "Runoff tendency and infiltration opportunity"
+    },
+    {
+      "label": "Slope respects reduced motion when scrolling",
+      "pass": true,
+      "detail": {
+        "id": "",
+        "lab": "other",
+        "options": {
+          "behavior": "auto",
+          "block": "center"
+        }
+      }
+    },
+    {
+      "label": "Land cover selection changes only the intended input choice",
+      "pass": true
+    },
+    {
+      "label": "Land cover opens and focuses its actual native control",
+      "pass": true,
+      "detail": {
+        "focusId": "",
+        "focusText": "✓ Grass",
+        "labOpen": true
+      }
+    },
+    {
+      "label": "Land cover focuses the selected categorical option",
+      "pass": true
+    },
+    {
+      "label": "Land cover navigation preserves inputs, baseline, writing, and paused journey",
+      "pass": true
+    },
+    {
+      "label": "Land cover navigates to Conditions outside Focus Canvas",
+      "pass": true
+    },
+    {
+      "label": "Land cover names the supported readings",
+      "pass": true,
+      "detail": "Runoff tendency and infiltration opportunity"
+    },
+    {
+      "label": "Land cover respects reduced motion when scrolling",
+      "pass": true,
+      "detail": {
+        "id": "",
+        "lab": "other",
+        "options": {
+          "behavior": "auto",
+          "block": "center"
+        }
+      }
+    },
+    {
+      "label": "source and desktop public runtime match at capture",
+      "pass": true
+    }
+  ],
+  "audits": [],
+  "errors": [],
+  "failures": [
+    "locator.click: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Open climate controls and run a one-variable experiment', exact: true })\u001b[22m\n\n    at main (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\watercycle_next_experiment_qa.cjs:174:120)"
+  ],
+  "timings": [
+    {
+      "key": "climSolar",
+      "milliseconds": 674.1999999992549
+    },
+    {
+      "key": "climTemp",
+      "milliseconds": 721.8999999985099
+    },
+    {
+      "key": "landRainIntensity",
+      "milliseconds": 820.5
+    },
+    {
+      "key": "landSaturation",
+      "milliseconds": 848.1000000014901
+    },
+    {
+      "key": "landPermeability",
+      "milliseconds": 632.6999999992549
+    },
+    {
+      "key": "landSlope",
+      "milliseconds": 643.1000000014901
+    },
+    {
+      "key": "landCover",
+      "milliseconds": 641.9000000022352
+    }
+  ],
+  "verificationRuns": [
+    {
+      "sourceSha256": "5022d843e629bff62ad3eec609c5191254d2d9cb465ae851d37f06e58322d335",
+      "capturedAt": "2026-09-30T02:03:21.566Z",
+      "completedAt": "2026-09-30T02:04:00.416Z",
+      "checks": 49,
+      "stoppedAt": "Weather shortcut accessible-name selector",
+      "correction": "Use the existing accessible name: Open climate controls and run a one-variable experiment."
+    }
+  ],
+  "lastStep": "mount light Explorer",
+  "completedAt": "2026-09-30T02:06:21.238Z",
+  "sourceUnchangedAtCompletion": true,
+  "mirrorUnchangedAtCompletion": true,
+  "ownedBrowserClosed": true,
+  "ownedServerClosed": true
+}

@@ -1,0 +1,169 @@
+{
+  "capturedAt": "2026-09-30T02:15:15.577Z",
+  "sourceSha256": "35eff63fc4c5ecc4d2755a92c2b0a688e80801daea5520d797b46af21a7fbdaa",
+  "mirrorSha256": "35eff63fc4c5ecc4d2755a92c2b0a688e80801daea5520d797b46af21a7fbdaa",
+  "provenance": "Source bytes captured before the isolated localhost server starts. Only an owned headless Playwright browser is used; the learner preview and tabs are untouched.",
+  "checks": [
+    {
+      "label": "Sunlight learning loop changes exactly its chosen input",
+      "pass": true,
+      "detail": [
+        "climSolar"
+      ]
+    },
+    {
+      "label": "Sunlight learning loop preserves the saved baseline",
+      "pass": true
+    },
+    {
+      "label": "Sunlight learning loop preserves saved writing",
+      "pass": true
+    },
+    {
+      "label": "Sunlight return to Data describes a one-input comparison",
+      "pass": true,
+      "detail": "One input already differs from the baseline. Opening another control preserves that difference."
+    },
+    {
+      "label": "Sunlight return to Data updates the supported comparison reading",
+      "pass": false,
+      "detail": {
+        "before": "Evaporation index",
+        "after": "Evaporation index"
+      }
+    },
+    {
+      "label": "Sunlight completes the loop with retained choice and paused journey",
+      "pass": true
+    },
+    {
+      "label": "Soil permeability learning loop changes exactly its chosen input",
+      "pass": true,
+      "detail": [
+        "landPermeability"
+      ]
+    },
+    {
+      "label": "Soil permeability learning loop preserves the saved baseline",
+      "pass": true
+    },
+    {
+      "label": "Soil permeability learning loop preserves saved writing",
+      "pass": true
+    },
+    {
+      "label": "Soil permeability return to Data describes a one-input comparison",
+      "pass": true,
+      "detail": "One input already differs from the baseline. Opening another control preserves that difference."
+    },
+    {
+      "label": "Soil permeability return to Data updates the supported comparison reading",
+      "pass": false,
+      "detail": {
+        "before": "Runoff tendency and infiltration opportunity",
+        "after": "Runoff tendency and infiltration opportunity"
+      }
+    },
+    {
+      "label": "Soil permeability completes the loop with retained choice and paused journey",
+      "pass": true
+    },
+    {
+      "label": "forced-colors follow-up retains native action keyboard focus",
+      "pass": true,
+      "detail": {
+        "active": true,
+        "visible": true,
+        "width": "3px"
+      }
+    },
+    {
+      "label": "forced-colors follow-up bridge fits 320px",
+      "pass": true
+    },
+    {
+      "label": "forced-colors follow-up opened land controls fit 320px",
+      "pass": true
+    },
+    {
+      "label": "navigation awards no XP or mastery",
+      "pass": true
+    }
+  ],
+  "audits": [
+    {
+      "label": "learning-loop-climSolar",
+      "violations": []
+    },
+    {
+      "label": "learning-loop-landPermeability",
+      "violations": []
+    },
+    {
+      "label": "forced-colors-320-bridge-follow-up",
+      "violations": []
+    },
+    {
+      "label": "forced-colors-320-opened-land-follow-up",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "failures": [
+    "Sunlight return to Data updates the supported comparison reading",
+    "Soil permeability return to Data updates the supported comparison reading"
+  ],
+  "timings": [],
+  "verificationRuns": [
+    {
+      "sourceSha256": "5022d843e629bff62ad3eec609c5191254d2d9cb465ae851d37f06e58322d335",
+      "capturedAt": "2026-09-30T02:03:21.566Z",
+      "completedAt": "2026-09-30T02:04:00.416Z",
+      "checks": 49,
+      "stoppedAt": "Weather shortcut accessible-name selector",
+      "correction": "Use the existing accessible name: Open climate controls and run a one-variable experiment."
+    },
+    {
+      "sourceSha256": "5022d843e629bff62ad3eec609c5191254d2d9cb465ae851d37f06e58322d335",
+      "capturedAt": "2026-09-30T02:05:58.028Z",
+      "completedAt": "2026-09-30T02:06:21.238Z",
+      "stoppedAt": "Existing weather button is inside the closed learning-guide disclosure.",
+      "correction": "Open the native learning-guide disclosure before invoking its weather button."
+    },
+    {
+      "sourceSha256": "5022d843e629bff62ad3eec609c5191254d2d9cb465ae851d37f06e58322d335",
+      "capturedAt": "2026-09-30T02:08:02.621Z",
+      "completedAt": "2026-09-30T02:10:45.381Z",
+      "checks": 102,
+      "audits": 14,
+      "passingAudits": 13,
+      "coverage": "All destinations, shortcuts, baseline semantics, keyboard focus, and responsive themes.",
+      "failedAudit": "Forced-colors land text author colors; the raw audit is retained in pre-forced-colors-results.json.",
+      "correction": "Explicit CanvasText declarations for Land Lab text in forced colors."
+    }
+  ],
+  "resolvedFailures": [
+    {
+      "initialReport": "initial-results.json",
+      "initialFailure": "Locator expected visible text as accessible name for the weather shortcut.",
+      "correctiveValidation": "All three original non-Conditions sections activate the existing named native button and focus sunlight."
+    },
+    {
+      "initialReport": "shortcut-results.json",
+      "initialFailure": "Weather button parent learning-guide disclosure was closed.",
+      "correctiveValidation": "Open the native parent disclosure and then activate its weather button in all three sections."
+    },
+    {
+      "initialReport": "pre-forced-colors-results.json",
+      "initialFailure": "Forced-colors Land Lab author colors triggered a color-contrast audit.",
+      "correctiveValidation": "Explicit system text colors pass the same scoped axe audit and preserve the readable forced-colors screenshot."
+    }
+  ],
+  "lastStep": "axe forced-colors-320-opened-land-follow-up",
+  "completedAt": "2026-09-30T02:16:09.966Z",
+  "sourceUnchangedAtCompletion": true,
+  "mirrorUnchangedAtCompletion": true,
+  "ownedBrowserClosed": true,
+  "ownedServerClosed": true,
+  "priorEvidenceReport": "pre-forced-colors-results.json"
+}

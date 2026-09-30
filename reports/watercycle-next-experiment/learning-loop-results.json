@@ -1,0 +1,85 @@
+{
+  "capturedAt": "2026-09-30T02:25:03.762Z",
+  "sourceSha256": "35eff63fc4c5ecc4d2755a92c2b0a688e80801daea5520d797b46af21a7fbdaa",
+  "mirrorSha256": "35eff63fc4c5ecc4d2755a92c2b0a688e80801daea5520d797b46af21a7fbdaa",
+  "provenance": "Source bytes captured before the isolated localhost server starts. Only an owned headless Playwright browser is used; the learner preview and tabs are untouched.",
+  "checks": [
+    {
+      "label": "Sunlight return to Data updates the supported comparison reading",
+      "pass": true,
+      "detail": {
+        "before": [
+          {
+            "label": "Evaporation index",
+            "value": "1.00x"
+          }
+        ],
+        "after": [
+          {
+            "label": "Evaporation index",
+            "value": "1.05x"
+          }
+        ]
+      }
+    },
+    {
+      "label": "Soil permeability return to Data updates the supported comparison reading",
+      "pass": true,
+      "detail": {
+        "before": [
+          {
+            "label": "Runoff tendency",
+            "value": "Moderate | 47/100"
+          },
+          {
+            "label": "Infiltration opportunity",
+            "value": "Moderate | 55/100"
+          }
+        ],
+        "after": [
+          {
+            "label": "Runoff tendency",
+            "value": "Moderate | 43/100"
+          },
+          {
+            "label": "Infiltration opportunity",
+            "value": "High | 65/100"
+          }
+        ]
+      }
+    }
+  ],
+  "audits": [],
+  "errors": [],
+  "failures": [],
+  "timings": [],
+  "resolvedFailures": [
+    {
+      "initialReport": "initial-results.json",
+      "initialFailure": "Locator expected visible text as accessible name for the weather shortcut.",
+      "correctiveValidation": "All three original non-Conditions sections activate the existing named native button and focus sunlight."
+    },
+    {
+      "initialReport": "shortcut-results.json",
+      "initialFailure": "Weather button parent learning-guide disclosure was closed.",
+      "correctiveValidation": "Open the native parent disclosure and then activate its weather button in all three sections."
+    },
+    {
+      "initialReport": "pre-forced-colors-results.json",
+      "initialFailure": "Forced-colors Land Lab author colors triggered a color-contrast audit.",
+      "correctiveValidation": "Explicit system text colors pass the same scoped axe audit and preserve the readable forced-colors screenshot."
+    },
+    {
+      "initialReport": "followup-results.json",
+      "initialFailure": "Two harness predicates expected static metric-name labels to change.",
+      "correctiveValidation": "The two real native learning loops update the numerical Scenario Readout values after returning to Data."
+    }
+  ],
+  "lastStep": "mount light Explorer",
+  "completedAt": "2026-09-30T02:25:32.807Z",
+  "sourceUnchangedAtCompletion": true,
+  "mirrorUnchangedAtCompletion": true,
+  "ownedBrowserClosed": true,
+  "ownedServerClosed": true,
+  "priorEvidenceReport": "followup-results.json"
+}
