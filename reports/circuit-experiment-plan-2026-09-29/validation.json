@@ -1,0 +1,55 @@
+{
+  "passed": true,
+  "validatedAt": "2026-09-30T11:50:42.287Z",
+  "sourceSha256": "7e8163bdea895ddfe487bcdb18abb5993ceb907496afa1eb8cdd760700a9b3ba",
+  "mirrored": true,
+  "sourceCompiles": true,
+  "regression": {
+    "passedTests": 362,
+    "files": 23,
+    "startedAt": "2026-09-30T11:33:43.158Z",
+    "finishedAt": "2026-09-30T11:38:16.464Z"
+  },
+  "browser": {
+    "workflows": 4,
+    "axeScans": 20,
+    "fullContrastScans": 18,
+    "forcedColorsScans": 2,
+    "forcedColorsTextNodes": 49,
+    "numericReadings": 115,
+    "focusChecks": 23,
+    "focusTransitions": 5,
+    "textResizeCases": 2,
+    "screenshots": 20,
+    "visualIssues": 0
+  },
+  "reportHashes": {
+    "regression.json": "aed91280c089b796f4d133f1094a25724f0bd6f223ff6809565e795ccc2e781d",
+    "regression-receipt.json": "513bd63b86798cc68317bb16ba72684bc95aa2fbdab111c7eadf710b48bdc145",
+    "browser-results.json": "839d909035a2184ca1a4dbf4f4aeda935265f00689ba14b6e6330c0c44548ba2",
+    "forced-colors-diagnostic.json": "211de59d56f77fdc793293b7bf74730196b3c21d386fd35a6d95387022fbe8d5"
+  },
+  "screenshotHashes": {
+    "gain-plan-closed-1280.png": "6054c753b1ff22e3f4013ce32b9d9396db17e7a7bbef1d5d3244f1555453f0e7",
+    "gain-plan-closed-390.png": "1873eba54d58fe93395b0c3545f709e366d55ea6ece08600c1616072030bcf74",
+    "gain-plan-closed-320.png": "6dbae683cd6504d13d38e64c94d6955bbb2f8be46058e3eab6e685ef6f9ba2fe",
+    "gain-plan-constants-1280.png": "c43e8d1549cb9f21de55e084e5f01885e8e25c07ffa1566025608ac94888e37b",
+    "gain-plan-constants-390.png": "4234e831bda8439fc43455a83822598378712f2f94fdf1ff734623eabf5208b9",
+    "gain-plan-constants-320.png": "3a188df3bdf1a1d8483b115acb8496259107171dfd8f660bd8e0661f9a96f338",
+    "gain-prediction-context-1280.png": "9fec77cbc7e3b94c1ff3b2abd41df417e108849f806a3c8fb1614a5f4bc438c6",
+    "gain-prediction-context-390.png": "64ea08fb53a5a5dafc34b81ba88c6a5ffafec95b96b1dcf1218ae08839c1747d",
+    "gain-prediction-context-320.png": "033aaa07006b0921d499c1920bb66a483238971d2720801f1d1d39f7b6242467",
+    "limit-plan-constants-1280.png": "10c51c31baf6e1485225ea6e663f14a743ac316a42baf5f45c9a192f6332a565",
+    "limit-plan-constants-320.png": "d238df501cbd838cecfabb1e675be9ef983bfa4de68b19eaee8c88cefe5bf023",
+    "sensor-plan-constants-1280.png": "4cc5498023e5d843749e8a060ead9f0e4dc2924665d6e052337b86d3e3830891",
+    "sensor-plan-constants-390.png": "066d926ec853227345852c5690805c0ddfca8a87c53b56eff6cc354ea074756e",
+    "sensor-plan-constants-320.png": "26bd533f6c9efee7478d7b948c601e3519057ffa5043e9b3ff2623727ddec83b",
+    "saved-sensor-plan-320.png": "26bd533f6c9efee7478d7b948c601e3519057ffa5043e9b3ff2623727ddec83b",
+    "matching-sensor-replay-320.png": "26bd533f6c9efee7478d7b948c601e3519057ffa5043e9b3ff2623727ddec83b",
+    "gain-plan-200pct-text-320.png": "71d78a57be719903aca824f772bbb9510af2e604cc53c681284f8d64df2844fc",
+    "sensor-plan-200pct-text-320.png": "2253c8e9158a04ccb31f6425178869392a64b444f30edc12a9bb175fbafc2c9e",
+    "forced-colors-gain-plan-320.png": "ec87a63df333e7a0930ab5d3e9f17865b7f5a08f9033c46aeb42f2778f22aa21",
+    "forced-colors-sensor-plan-320.png": "4a5382201c51ffd583fd354595b4f17203154e307e96a8f465a995c84ebdca93"
+  },
+  "whitespaceCheck": true
+}
