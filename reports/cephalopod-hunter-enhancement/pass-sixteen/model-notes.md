@@ -1,0 +1,27 @@
+# Nautilus pinhole eyes — pass sixteen
+
+The pass-fifteen captures made the remaining generic eyes conspicuous: oversized gold irises, blue horizontal pupils and painted white dots attached to the pale head. This pass changes only the nautilus eye branch. The accepted shell, whole head, siphon, 90 filament meshes and poses, movement and feeding contracts remain unchanged.
+
+The replacement uses pale short fleshy eye cups with small circular openings and recessed dark interiors. There is no lens, transparent dome or painted glint. This anatomical distinction is supported by [Zhang et al., 2021](https://www.nature.com/articles/s41559-021-01448-6), which describes the lens- and cornea-free pinhole eye and an opening to seawater. [Hurley, Lange and Hartline, 1978](https://onlinelibrary.wiley.com/doi/10.1002/jez.1402050106) measured an adjustable pupil responding to illumination. The model presents one static aperture size; it does not simulate that physiological response or claim measured specimen proportions. The [Monterey Bay Aquarium's own close-up photograph](https://www.montereybayaquarium.org/animals-the-ocean/animals-a-to-z/cephalopods) provides an external visual reference.
+
+## Scope and cost
+
+Each side contains a short outer cup (`cl-eye-rim`), pale curved annular aperture tissue (`cl-iris`, preserving its legacy identifier), and a recessed dark cavity (`cl-pupil`). An empty `cl-eye-highlight` group preserves the legacy name and position without a rendered dot. The iris identifier does not imply a lens. Attachment positions remain exactly the old positions; each new geometry is local to its original anchor.
+
+Measured combined cost is six meshes, 1,190 vertices and 1,984 triangles, compared with eight meshes, 3,400 vertices and 5,760 triangles previously. Two independently owned opaque standard materials are shared by the two sides: `cl-nautilus-eye-material` and `cl-nautilus-eye-interior-material`. Both use linearized colors, zero metalness and restrained roughness. Neither has textures, transparency, emissive light, custom shader code or new uniforms. No random calls or per-update geometry allocations are added.
+
+The annular opening radius is .025 model units; its circumference is shared with the first ring of the cavity. The measured central recess is .0335923 units. Every basal-ring vertex lies at or below .906447 of the head's normalized ellipsoid radius, so the whole attachment loop is embedded. Every cavity vertex is at or above 1.048816 of that radius, so the head does not plug the opening. Minimum signed eye-vertex clearance from the shell's aperture plane is .215587 units over the existing 17-sample rocking range. Geometry checks use actual transformed vertices and ray intersections, rather than only idealized surface formulas. These dimensions are illustrative and bounded to the current model, not anatomical measurements.
+
+## Validation and integration
+
+`apply-nautilus-eyes.cjs` guards one exact existing eye branch, parses the candidate, and reverses the change to prove all original bytes outside that branch are recovered. It accepts independent approved changes outside the branch. `--candidate` writes an ignored `eyes-candidate.generated.cjs`; `--check` validates only. The default application is reserved for the root integrator, who also owns mirrors and browser review.
+
+Six focused tests cover finite outward geometry and mirrored normals; retained anchors and actual basal attachment; welded circular openings and recessed ray hits; eye/head/shell visibility through 17 rocking angles and four animation states; plain materials and stable owned buffers; and complete protected geometry/material/shader records over all twelve rigs. The protected nautilus record includes its entire accepted shell and excludes only changed eye meshes. Existing-suite baseline migration belongs to the test agent, who captures only the approved nautilus eye exclusions from the saved pre-pass source.
+
+After the root's baseline browser capture released the host, the serial candidate guard passed all 48 protected-rig comparisons and original-byte reversal (`eyes-guard.log`). All six new CPU tests passed in 7.92 seconds overall (`eyes-unit-candidate.log`). The CPU slot was explicitly handed to the environment author afterward. No canonical, mirror, Git or browser actions were performed by this author.
+
+The aperture center used by clearance tests is the centroid of the 32 unique vertices in the iris's final ring (row eight, stride 33), matching the pupil's first ring. Legacy mesh origins remain meaningful attachment anchors, but using those origins alone would not test the exact new opening; the test agent updates the old shell clearance check to use these real ring centroids without loosening its rays or rocking range.
+
+Lit desktop/phone and both-side eye checks remain pending integration. The intentionally preserved egg-shaped head and stylized filament crown are separate limitations, not addressed by this eye-only change.
+
+Final integrated validation: 70 latest focused unit cases and four serial native browser cases passed, without browser retries. Seven final views were accepted using actual scene lighting/fog and original seeded placement. The one initial normal-oracle failure was resolved with an inward finite difference at the clamped blade tip; production and the strict normal threshold were unchanged. All four runtime copies match. This does not establish FPS or temporal shimmer.

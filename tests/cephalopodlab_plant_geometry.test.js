@@ -46,8 +46,8 @@ describe('Cephalopod Hunter plant geometry', () => {
       const geometry = createPlant(THREE, kind, height, variant);
       try {
         const positions = geometry.attributes.position, normals = geometry.attributes.normal, colors = geometry.attributes.color, index = geometry.index;
-        expect(positions.count).toBe(kind === 'grass' ? 33 : 57);
-        expect(index.count / 3).toBe(kind === 'grass' ? 40 : 72);
+        expect(positions.count).toBe(kind === 'grass' ? 33 : 141);
+        expect(index.count / 3).toBe(kind === 'grass' ? 40 : 168);
         expect(Array.from(positions.array).every(Number.isFinite)).toBe(true);
         expect(Array.from(colors.array).every(value => Number.isFinite(value) && value >= 0 && value <= 1)).toBe(true);
         expect(geometry.boundingBox.min.y).toBe(0);
@@ -59,7 +59,9 @@ describe('Cephalopod Hunter plant geometry', () => {
           a.fromBufferAttribute(positions, index.getX(i));b.fromBufferAttribute(positions, index.getX(i + 1));c.fromBufferAttribute(positions, index.getX(i + 2));
           expect(b.sub(a).cross(c.sub(a)).length()).toBeGreaterThan(1e-8);
         }
-        const top = positions.count - 3, middle = Math.floor(geometry.userData.clPlantSections / 2) * 3;
+        // The original central ribbon is still first; kelp leaf ribbons are appended.
+        // Measure its actual apex rather than the end of the merged vertex array.
+        const top = geometry.userData.clPlantSections * geometry.userData.clPlantColumns, middle = Math.floor(geometry.userData.clPlantSections / 2) * 3;
         const widthAt = row => new THREE.Vector3().fromBufferAttribute(positions, row).distanceTo(new THREE.Vector3().fromBufferAttribute(positions, row + 2));
         expect(widthAt(top)).toBeLessThan(widthAt(middle) * .12);
         const edgeMidpoint = new THREE.Vector3().fromBufferAttribute(positions, middle).add(new THREE.Vector3().fromBufferAttribute(positions, middle + 2)).multiplyScalar(.5);

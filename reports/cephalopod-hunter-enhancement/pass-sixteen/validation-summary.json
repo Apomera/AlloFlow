@@ -1,0 +1,287 @@
+{
+  "pass": 16,
+  "status": "validated",
+  "result": "Nautilus pinhole eyes and fuller folded kelp fronds",
+  "units": {
+    "latestPassed": 70,
+    "latestFailed": 0,
+    "evidence": [
+      "unit-initial.json",
+      "plant-flex-recovery.json"
+    ],
+    "files": [
+      {
+        "file": "cephalopodlab_canvas_focus_a11y.test.js",
+        "passed": 4,
+        "evidence": "unit-initial.json"
+      },
+      {
+        "file": "cephalopodlab_coral_surface.test.js",
+        "passed": 4,
+        "evidence": "unit-initial.json"
+      },
+      {
+        "file": "cephalopodlab_cuttle_surface.test.js",
+        "passed": 6,
+        "evidence": "unit-initial.json"
+      },
+      {
+        "file": "cephalopodlab_eye_surfaces.test.js",
+        "passed": 8,
+        "evidence": "unit-initial.json"
+      },
+      {
+        "file": "cephalopodlab_fin_membranes.test.js",
+        "passed": 9,
+        "evidence": "unit-initial.json"
+      },
+      {
+        "file": "cephalopodlab_kelp_fronds.test.js",
+        "passed": 3,
+        "evidence": "unit-initial.json"
+      },
+      {
+        "file": "cephalopodlab_nautilus_eyes.test.js",
+        "passed": 6,
+        "evidence": "unit-initial.json"
+      },
+      {
+        "file": "cephalopodlab_nautilus_shell.test.js",
+        "passed": 6,
+        "evidence": "unit-initial.json"
+      },
+      {
+        "file": "cephalopodlab_octopus_eyes.test.js",
+        "passed": 7,
+        "evidence": "unit-initial.json"
+      },
+      {
+        "file": "cephalopodlab_plant_geometry.test.js",
+        "passed": 6,
+        "evidence": "unit-initial.json"
+      },
+      {
+        "file": "cephalopodlab_squid_arm_detail.test.js",
+        "passed": 7,
+        "evidence": "unit-initial.json"
+      },
+      {
+        "file": "cephalopodlab_plant_flex.test.js",
+        "passed": 4,
+        "evidence": "plant-flex-recovery.json"
+      }
+    ],
+    "initialBatch": {
+      "passed": 69,
+      "failed": 1
+    },
+    "recovery": {
+      "passed": 4,
+      "failed": 0,
+      "resolution": "Appended leaves exposed central-stipe vertex54 to the older normal oracle. Its central finite difference crossed the actual height clamp. All 159 interior samples remained accurate; second-order inward differences at the physical tip restore the existing strict threshold. No production change or tolerance relaxation.",
+      "sourceUnchanged": true
+    }
+  },
+  "browser": {
+    "passed": 4,
+    "failed": 0,
+    "flaky": 0,
+    "workers": 1,
+    "retries": 0,
+    "video": "off",
+    "trace": "off",
+    "qualities": [
+      "low",
+      "balanced"
+    ],
+    "durationMs": 262474.005,
+    "evidence": "browser-results.json",
+    "checks": [
+      "Actual six eye mesh submissions, linked native programs and bound position data",
+      "Finite submitted normal matrices and opaque plain eye materials",
+      "Actual 25 kelp meshes with 141 vertices/168 triangles and expanded culling bounds",
+      "Native persistent plant motion uniform uploads",
+      "Live motion, paused inspection, reduced motion and resume",
+      "Complete visible animal framed on phone390x844",
+      "Static buffers/resources and traversal disposal",
+      "Existing rooted plant rendering, seeded grounding and cleanup cases"
+    ]
+  },
+  "visuals": {
+    "captures": [
+      "nautilus-three-quarter.png",
+      "nautilus-shell-side.png",
+      "nautilus-aperture.png",
+      "nautilus-phone.png",
+      "nautilus-opposite-side.png",
+      "kelp-flex-early.png",
+      "kelp-flex-late.png"
+    ],
+    "errors": [],
+    "warnings": [
+      "[.WebGL-0x566c00178e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x566c00178e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x566c00178e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x566c00178e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    ],
+    "fixture": "visual-fixtures.json",
+    "review": "Accepted five nautilus desktop/phone/side/front views and two kelp poses. Pale eye tissue has a small dark recessed opening without a painted glint or blue slit; head and shell remain clear. Attached folded kelp leaves broaden the silhouette and stay joined during bending.",
+    "fixturePreservation": "Same-seed kelp position, height, variant, yaw and camera are identical before/after. Existing inspection buttons provide the animal views. Actual lights, fog and surrounding scenery are retained."
+  },
+  "source": {
+    "runtime": [
+      {
+        "file": "stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "e545c278e3ad6ae619973306a0c51ac41fae1f58c4ccaff9b773e2318d1ded1e"
+      },
+      {
+        "file": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "e545c278e3ad6ae619973306a0c51ac41fae1f58c4ccaff9b773e2318d1ded1e"
+      },
+      {
+        "file": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "e545c278e3ad6ae619973306a0c51ac41fae1f58c4ccaff9b773e2318d1ded1e"
+      },
+      {
+        "file": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "e545c278e3ad6ae619973306a0c51ac41fae1f58c4ccaff9b773e2318d1ded1e"
+      }
+    ],
+    "candidateLfSha256": "6fff9ff408e419f87d45e42cbc694965e5b22ea66fc3a17442220364fbe574b9",
+    "preservedUnstagedWrappersPerTrackedFile": 12,
+    "scope": "One exact nautilus eye branch and one kelp-only append. Accepted shell, head, siphon, 90 filaments, other 11 rigs, grass, seeded placement, flex shader, clocks and gameplay remain protected."
+  },
+  "preservation": {
+    "protectedRigStates": 48,
+    "originalFingerprintAssertions": 66,
+    "approvedNautilusFingerprintMigrations": 6,
+    "migrationEvidence": "baseline-migration-proof.json",
+    "migration": {
+      "baselineLFHash": "370db22149565f8f90605053afb16190b121c2b4effb7781ff1c7276fdd1095e",
+      "method": "Run each existing preservation callback and exact serializer against saved original source; verify every old hash before deriving eye-only exclusions from the same original source.",
+      "files": [
+        {
+          "file": "cephalopodlab_eye_surfaces.test.js",
+          "verifiedOriginalAssertions": 7,
+          "unchangedAssertions": 6,
+          "migrations": [
+            {
+              "label": "nautilus",
+              "before": "1fa2886ab4fca7caa733b34e0e934ba9223e92569faab68cf1f9f95674c2ed90",
+              "after": "b368c9aaf0111fbe689dd64288b7dae52bd626866626e3334291ade22685b086"
+            }
+          ]
+        },
+        {
+          "file": "cephalopodlab_octopus_eyes.test.js",
+          "verifiedOriginalAssertions": 12,
+          "unchangedAssertions": 11,
+          "migrations": [
+            {
+              "label": "nautilus",
+              "before": "4068584646816ac382a819e42ae7106eee19f74d7ee2334feaa791eb3e87343b",
+              "after": "3223bcf0ce8d008ac1baf5492a1896e7106e039c25f12313c922d9f0d4a5d85d"
+            }
+          ]
+        },
+        {
+          "file": "cephalopodlab_squid_arm_detail.test.js",
+          "verifiedOriginalAssertions": 12,
+          "unchangedAssertions": 11,
+          "migrations": [
+            {
+              "label": "nautilus",
+              "before": "7619bccdd01f79cb2bb447e0726cd691e60b3865dd4e84a6e39069abdd67ae4c",
+              "after": "e2a1387b0fbb9f577e089f0edc0cf7aed2cc97f86014a7ac3e993e2d897bd15d"
+            }
+          ]
+        },
+        {
+          "file": "cephalopodlab_cuttle_surface.test.js",
+          "verifiedOriginalAssertions": 23,
+          "unchangedAssertions": 21,
+          "migrations": [
+            {
+              "label": "nautilus geometry",
+              "before": "3e1d65a16d453681acb3b11927e4749b01e60b19ee3a8c9e21325d8bdaa66b25",
+              "after": "e4f571c1c18a7b7f1711d0e0c5f24359d99136bae21acd8826dea4848af8cfde"
+            },
+            {
+              "label": "nautilus complete materials/shaders/uniforms",
+              "before": "379e4322a9da08520bac5210b2e88429942c5569943f355d4bf8d91179568dee",
+              "after": "30cb9bd8aec3e1bb71a6209c3c98732bb5705ad2279c10485c9f41c2c9589c5b"
+            }
+          ]
+        },
+        {
+          "file": "cephalopodlab_nautilus_shell.test.js",
+          "verifiedOriginalAssertions": 12,
+          "unchangedAssertions": 11,
+          "migrations": [
+            {
+              "label": "nautilus",
+              "before": "88bf2d9393be708245299cfc26048a701c671c75ad450a31ab52495d627ba374",
+              "after": "2e589536a86ed76b23108faea2fd93accde9f660f0d6c95fc4e9e8eac69fee74"
+            }
+          ]
+        }
+      ]
+    },
+    "plantRandomDraws": 525,
+    "plantRecords": 105,
+    "grassByteFingerprint": "c70667ade1521cb02324cecefe784c82f5579f4e0f67000ddc0221b211fb6691",
+    "centralKelpPrefixFingerprint": "7303381a48058e243908182d076a8d74208380a7c1918d063d042f074e75df28",
+    "originalKelpPrefix": {
+      "vertices": 57,
+      "triangles": 72,
+      "attributes": "byte-identical"
+    },
+    "eyeRockingSamples": 17,
+    "eyeAnimationStates": 4,
+    "minimumEyeAperturePlaneClearance": 0.21559,
+    "eyeRecessDepth": 0.0335923,
+    "maximumKelpRestRadius": 1.1723468254263645
+  },
+  "cost": {
+    "eyes": {
+      "before": {
+        "meshes": 8,
+        "vertices": 3400,
+        "triangles": 5760
+      },
+      "after": {
+        "meshes": 6,
+        "materials": 2,
+        "vertices": 1190,
+        "triangles": 1984
+      },
+      "newTextures": 0,
+      "newShaders": 0,
+      "newUniforms": 0
+    },
+    "plants": {
+      "kelpVertices": 141,
+      "kelpTriangles": 168,
+      "meshes": 105,
+      "materials": 105,
+      "maximumSubmittedVertices": 22005,
+      "maximumSubmittedTriangles": 26600,
+      "rawBuffersBefore": 244700,
+      "rawBuffersAfter": 351500,
+      "additionalRawBufferBytes": 106800,
+      "newMeshes": 0,
+      "newMaterials": 0,
+      "newAttributes": 0,
+      "newTextures": 0,
+      "newUniforms": 0,
+      "newDraws": 0,
+      "shaderWork": "Same flex shader work per submitted vertex; more vertices when fronds are visible."
+    }
+  },
+  "limits": [
+    "Eye proportions and kelp forms are illustrative; no particular specimen or kelp species is reconstructed.",
+    "The pinhole aperture is static; physiological light adaptation is not simulated.",
+    "Preserved head and filament shapes remain simplified. Added leaves do not change canopy cover or collision rules.",
+    "CPU geometry/kernel checks, native shader/state checks and stills do not establish FPS, temporal shimmer or GPU-displaced vertex readbacks."
+  ]
+}

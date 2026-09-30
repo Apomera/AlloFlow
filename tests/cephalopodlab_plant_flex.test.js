@@ -65,14 +65,30 @@ describe('Cephalopod Hunter rooted shader plant flex', () => {
     for (const kind of ['grass', 'kelp']) {
       const height = kind === 'grass' ? 1.4 : 8.7, geometry = create(THREE, kind, height, 7);
       try {
-        for (let i = 3; i < geometry.attributes.position.count - 3; i += 3) for (const phase of [.1, 1.8, 4.7]) {
+        for (let i = 0; i < geometry.attributes.position.count; i += 3) for (const phase of [.1, 1.8, 4.7]) {
           const point = new THREE.Vector3().fromBufferAttribute(geometry.attributes.position, i), normal = new THREE.Vector3().fromBufferAttribute(geometry.attributes.normal, i).normalize();
+          // An authored endpoint can round just outside [0,H] when stored as
+          // Float32. Only that representational error may snap to the boundary.
+          if (point.y < 0 || point.y > height) {
+            const boundary = Math.max(0, Math.min(height, point.y));
+            expect(Math.abs(point.y - boundary)).toBeLessThanOrEqual(Math.max(1, height) * 2 ** -23);
+            point.y = boundary;
+          }
           const reference = Math.abs(normal.y) < .9 ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(1, 0, 0);
           const tangentA = reference.cross(normal).normalize(), tangentB = normal.clone().cross(tangentA).normalize(), epsilon = 1e-5;
-          const derivative = tangent => sample(point.clone().addScaledVector(tangent, epsilon), height, [phase, phase * .79], .6).point.applyMatrix4(transform).sub(sample(point.clone().addScaledVector(tangent, -epsilon), height, [phase, phase * .79], .6).point.applyMatrix4(transform)).multiplyScalar(.5 / epsilon);
+          const derivative = tangent => {
+            const at = step => sample(point.clone().addScaledVector(tangent, step), height, [phase, phase * .79], .6).point.applyMatrix4(transform);
+            const plusInside = point.y + epsilon * tangent.y >= 0 && point.y + epsilon * tangent.y <= height;
+            const minusInside = point.y - epsilon * tangent.y >= 0 && point.y - epsilon * tangent.y <= height;
+            if (plusInside && minusInside) return at(epsilon).sub(at(-epsilon)).multiplyScalar(.5 / epsilon);
+            // At physical roots/tips, differentiate toward existing material;
+            // a central probe would cross the shader's clamp and halve the slope.
+            const direction = plusInside ? 1 : -1;
+            return at(0).multiplyScalar(-3).addScaledVector(at(direction * epsilon), 4).sub(at(direction * 2 * epsilon)).multiplyScalar(direction / (2 * epsilon));
+          };
           const finiteNormal = derivative(tangentA).cross(derivative(tangentB)).normalize(), result = sample(point, height, [phase, phase * .79], .6);
           const corrected = normal.clone();corrected.y -= result.slope[0] * normal.x + result.slope[1] * normal.z;corrected.applyMatrix3(normalMatrix).normalize();
-          expect(corrected.toArray().every(Number.isFinite)).toBe(true);expect(corrected.dot(finiteNormal)).toBeGreaterThan(1 - 1e-9);
+          expect(corrected.toArray().every(Number.isFinite)).toBe(true);expect(corrected.dot(finiteNormal), `${kind} vertex ${i}, phase ${phase}`).toBeGreaterThan(1 - 1e-9);
         }
       } finally { geometry.dispose(); }
     }

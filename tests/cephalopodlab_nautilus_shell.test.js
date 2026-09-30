@@ -15,7 +15,9 @@ function meshes(a){const all=[];a.root.traverse(o=>{if(o.isMesh)all.push(o);});r
 function shellChild(o){for(let p=o;p;p=p.parent)if(p.name==='cl-shell')return true;return false;}
 function shellMeshes(a){return meshes(a).filter(shellChild);}
 function compiled(m,renderer={capabilities:{isWebGL2:true}}){const s={vertexShader:THREE.ShaderLib.standard.vertexShader,fragmentShader:THREE.ShaderLib.standard.fragmentShader,uniforms:{}};m.onBeforeCompile(s,renderer);return s;}
-function protectedRecords(a){return meshes(a).filter(o=>!shellChild(o)).map(o=>{const g=o.geometry,m=o.material,s=compiled(m);return[o.name,Object.entries(g.attributes).map(([k,v])=>[k,Array.from(v.array)]),g.index?Array.from(g.index.array):null,o.position.toArray(),o.quaternion.toArray(),o.scale.toArray(),o.isInstancedMesh?Array.from(o.instanceMatrix.array):null,m.type,m.name,m.color?.toArray(),m.roughness,m.metalness,m.side,m.opacity,m.transparent,m.customProgramCacheKey(),s.vertexShader,s.fragmentShader,Object.fromEntries(Object.entries(s.uniforms).map(([k,v])=>[k,v.value?.toArray?v.value.toArray():v.value]))];});}
+// Pass sixteen excludes only the four approved nautilus eye subtrees; other species and anatomy remain protected.
+function insideNautilusEye(o){let eye=false;for(let p=o;p;p=p.parent){if(['cl-eye-rim','cl-iris','cl-pupil','cl-eye-highlight'].includes(p.name))eye=true;if(p.userData.species==='nautilus')return eye;}return false;}
+function protectedRecords(a){return meshes(a).filter(o=>!shellChild(o)&&!insideNautilusEye(o)).map(o=>{const g=o.geometry,m=o.material,s=compiled(m);return[o.name,Object.entries(g.attributes).map(([k,v])=>[k,Array.from(v.array)]),g.index?Array.from(g.index.array):null,o.position.toArray(),o.quaternion.toArray(),o.scale.toArray(),o.isInstancedMesh?Array.from(o.instanceMatrix.array):null,m.type,m.name,m.color?.toArray(),m.roughness,m.metalness,m.side,m.opacity,m.transparent,m.customProgramCacheKey(),s.vertexShader,s.fragmentShader,Object.fromEntries(Object.entries(s.uniforms).map(([k,v])=>[k,v.value?.toArray?v.value.toArray():v.value]))];});}
 const hash=x=>createHash('sha256').update(JSON.stringify(x)).digest('hex');
 function points(mesh){const p=mesh.geometry.attributes.position;return Array.from({length:p.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(p,i).applyMatrix4(mesh.matrixWorld));}
 afterEach(()=>{for(const a of allocated.splice(0)){const geometries=new Set(),materials=new Set();meshes(a).forEach(o=>{geometries.add(o.geometry);materials.add(o.material);});geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());}});
@@ -50,12 +52,17 @@ describe('Nautilus external shell and living-chamber opening',()=>{
     expect(compiled(inner.material).fragmentShader).not.toContain('clShellBand');expect(lip.material).toBe(inner.material);
   });
 
-  it('clears the unchanged head and both eyes through the complete existing shell-rocking range',()=>{
+  it('clears the unchanged head and both pinhole apertures through the complete existing shell-rocking range',()=>{
     const a=rig(),shell=a.nautilusShell,head=a.root.getObjectByName('cl-head'),axis=new THREE.Vector3(0,-.7,Math.sqrt(.51)),center=new THREE.Vector3(0,.35,-.3),v=new THREE.Vector3(),inverse=new THREE.Matrix4();
     const eyes=meshes(a).filter(o=>o.name==='cl-iris'||o.name==='cl-pupil');let minimum=Infinity;
     for(let step=0;step<=16;step++){shell.rotation.z=-.04+step*.005;a.root.updateMatrixWorld(true);inverse.copy(shell.matrixWorld).invert();
       for(const point of points(head)){v.copy(point).applyMatrix4(inverse).sub(center);minimum=Math.min(minimum,v.dot(axis)-.73*.49);}
-      for(const eye of eyes){const target=eye.getWorldPosition(new THREE.Vector3()),side=Math.sign(target.x);
+      for(const eye of eyes){
+        // Geometry is local to the retained attachment anchors. Aim through the
+        // real opening: the iris final ring and pupil first ring coincide.
+        const positions=eye.geometry.attributes.position,stride=33,first=eye.name==='cl-iris'?positions.count-stride:0,target=new THREE.Vector3();
+        for(let vertex=0;vertex<stride-1;vertex++)target.add(new THREE.Vector3().fromBufferAttribute(positions,first+vertex));
+        target.multiplyScalar(1/(stride-1)).applyMatrix4(eye.matrixWorld);const side=Math.sign(target.x);
         for(const direction of [new THREE.Vector3(side,0,0),new THREE.Vector3(side*.7,.12,.7).normalize()]){const ray=new THREE.Raycaster(target.clone().addScaledVector(direction,2),direction.clone().negate(),0,1.999);expect(ray.intersectObjects(shellMeshes(a),false),eye.name+' shell occlusion at '+shell.rotation.z).toHaveLength(0);}
       }
     }
@@ -91,8 +98,8 @@ describe('Nautilus external shell and living-chamber opening',()=>{
     const events=[];for(const geometry of geometries){geometry.addEventListener('dispose',()=>events.push(geometry));geometry.dispose();}for(const material of materials){material.addEventListener('dispose',()=>events.push(material));material.dispose();}expect(new Set(events).size).toBe(5);
   });
 
-  it('preserves pre-change complete other-species rigs and all nautilus non-shell geometry, materials and shaders',()=>{
-    const expected={commonOcto:'062749c57c069d1144ba02361e100b9cc357e646e7a6d6cde864cb98f1f36121',blueRinged:'93198a1edb04aa7894c65c563d945ca17483c046c025d04a5a0c0c92e71a2aaf',mimicOcto:'062749c57c069d1144ba02361e100b9cc357e646e7a6d6cde864cb98f1f36121',giantPacific:'bbd7f1259032347eaf63884ca47074e90ccea89f3e37a014395e7a5011c464c0',caribReef:'062749c57c069d1144ba02361e100b9cc357e646e7a6d6cde864cb98f1f36121',coconutOcto:'062749c57c069d1144ba02361e100b9cc357e646e7a6d6cde864cb98f1f36121',humboldtSquid:'ff0ccdb4b94b5ba2dbf1a80f924e17958d21450260a32eb5d60f65c6c97f1e55',nautilus:'88bf2d9393be708245299cfc26048a701c671c75ad450a31ab52495d627ba374',cuttlefish:'05067cfb886de1799621787d65729da2b9888d0e9f7bab36adce7176b14e14f6',bobtailSquid:'4ee65934d880254c0949288a9955588e46912707c2b6dae5c4e71b02e3291e38',dumboOcto:'fa760b6a4268d0af180653270cf5708467461425420bdfe93db17236104f836b',vampireSquid:'7497d5c70ed65a3b7bf94ecc0d081369d1dcfc124c16dbd12f56da5545751d70'};
+  it('preserves pre-change complete other-species rigs and nautilus non-shell/non-eye geometry, materials and shaders',()=>{
+    const expected={commonOcto:'062749c57c069d1144ba02361e100b9cc357e646e7a6d6cde864cb98f1f36121',blueRinged:'93198a1edb04aa7894c65c563d945ca17483c046c025d04a5a0c0c92e71a2aaf',mimicOcto:'062749c57c069d1144ba02361e100b9cc357e646e7a6d6cde864cb98f1f36121',giantPacific:'bbd7f1259032347eaf63884ca47074e90ccea89f3e37a014395e7a5011c464c0',caribReef:'062749c57c069d1144ba02361e100b9cc357e646e7a6d6cde864cb98f1f36121',coconutOcto:'062749c57c069d1144ba02361e100b9cc357e646e7a6d6cde864cb98f1f36121',humboldtSquid:'ff0ccdb4b94b5ba2dbf1a80f924e17958d21450260a32eb5d60f65c6c97f1e55',nautilus:'2e589536a86ed76b23108faea2fd93accde9f660f0d6c95fc4e9e8eac69fee74',cuttlefish:'05067cfb886de1799621787d65729da2b9888d0e9f7bab36adce7176b14e14f6',bobtailSquid:'4ee65934d880254c0949288a9955588e46912707c2b6dae5c4e71b02e3291e38',dumboOcto:'fa760b6a4268d0af180653270cf5708467461425420bdfe93db17236104f836b',vampireSquid:'7497d5c70ed65a3b7bf94ecc0d081369d1dcfc124c16dbd12f56da5545751d70'};
     for(const [id,fingerprint]of Object.entries(expected)){const a=rig(id),frames=[];for(let i=0;i<4;i++){a.update(1+i*.05,.05,state({moving:i>0,jet:i===2,strike:i===3?.6:0,camo:.6,substrate:['sand','rock','grass','sand'][i],display:i===2,reducedMotion:i===3}));frames.push(hash(protectedRecords(a)));}expect(hash(frames),id).toBe(fingerprint);}
   },30000); // Forty-eight complete geometry/shader snapshots can exceed the default 5s on a busy host.
 });

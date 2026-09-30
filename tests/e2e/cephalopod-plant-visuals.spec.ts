@@ -136,7 +136,7 @@ for (const quality of ['low', 'balanced'] as const) {
     expect(anatomy.filter((plant: any) => plant.name === 'cl-kelp')).toHaveLength(25);
     for (const plant of anatomy) {
       expect(plant.finite && plant.lit && plant.colors).toBe(true); expect(plant.substrate).toBe('grass'); expect(plant.radius).toBeGreaterThan(0);
-      expect(plant.instances).toBe(plant.name === 'cl-seagrass' ? 7 : 1); expect(plant.vertices).toBe(plant.name === 'cl-seagrass' ? 33 : 57);
+      expect(plant.instances).toBe(plant.name === 'cl-seagrass' ? 7 : 1); expect(plant.vertices).toBe(plant.name === 'cl-seagrass' ? 33 : 141);
     }
     const audit = await page.evaluate(() => (window as any).__plantPrograms);
     for (const kind of ['cl-seagrass', 'cl-kelp']) {

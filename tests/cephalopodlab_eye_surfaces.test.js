@@ -22,9 +22,11 @@ function pair(animal, name) { return meshes(animal).filter(object => object.name
 function worldPoints(mesh) { mesh.updateWorldMatrix(true, false); const p = mesh.geometry.attributes.position; return Array.from({ length: p.count }, (_, i) => new THREE.Vector3().fromBufferAttribute(p, i).applyMatrix4(mesh.matrixWorld)); }
 
 // Captured before pass-fifteen: exclude only the intentionally replaced shell subtree.
+// Pass sixteen excludes only the four approved nautilus eye subtrees; other species and anatomy remain protected.
+function insideNautilusEye(o){let eye=false;for(let p=o;p;p=p.parent){if(['cl-eye-rim','cl-iris','cl-pupil','cl-eye-highlight'].includes(p.name))eye=true;if(p.userData.species==='nautilus')return eye;}return false;}
 function insideNautilusShell(o){for(let p=o;p;p=p.parent)if(p.name==='cl-shell')return true;return false;}
 function geometryRecords(animal, excludeEyes = false) {
-  return meshes(animal).filter(object => (!excludeEyes || !eyeNames.has(object.name)) && !insideNautilusShell(object)).map(object => {
+  return meshes(animal).filter(object => (!excludeEyes || !eyeNames.has(object.name)) && !insideNautilusShell(object) && !insideNautilusEye(object)).map(object => {
     const geometry = object.geometry;
     return [object.name, Array.from(geometry.attributes.position.array), geometry.attributes.normal ? Array.from(geometry.attributes.normal.array) : null,
       geometry.index ? Array.from(geometry.index.array) : null, object.position.toArray(), object.quaternion.toArray(), object.scale.toArray(),
@@ -208,7 +210,7 @@ describe('Cephalopod curved swimmer eyes', () => {
     }
   });
 
-  it('preserves pre-change non-eye geometry for affected swimmers and complete protected species rigs', () => {
+  it('preserves pre-change non-eye swimmers and protected rigs outside later nautilus shell and eye upgrades', () => {
     // Captured before the relevant eye patches. Pass thirteen additionally excludes the named common-octopus eyes, not its body.
     const before = {
       cuttlefish: '86e78517f7209f7bbc6429b8bdfb04844a868e8ea482e8a0297b36caf4201b7a',
@@ -217,7 +219,7 @@ describe('Cephalopod curved swimmer eyes', () => {
       vampireSquid: '28a7f2cf71c767b454e657f23840bce3032c7e52531f9f59d977d7bdb6d3d9c3',
       humboldtSquid: 'a546090fcede9d5ecc0124c1431704a64375647fdb4bc76ca93ab26f32603adb',
       commonOcto: '9f67f8a43befbca0672310972a170a6c0b8e374fbb73062affe72b56e3bdbbfb',
-      nautilus: '1fa2886ab4fca7caa733b34e0e934ba9223e92569faab68cf1f9f95674c2ed90',
+      nautilus: 'b368c9aaf0111fbe689dd64288b7dae52bd626866626e3334291ade22685b086',
     };
     for (const [id, expected] of Object.entries(before)) expect(hash(rig(id), ids.includes(id)||id==='commonOcto'), id).toBe(expected);
   });

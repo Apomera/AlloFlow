@@ -11502,14 +11502,34 @@ function createCLHuntAnimal(T, species) {
       var octopusLid=new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(octopusLidPoints),18,0.009*scale,6,false),skin);octopusLid.name='cl-eye-lid';octopusEyeCompatibility.add(octopusLid);
     }
   }else{
-    var irisMat=new T.MeshStandardMaterial({color:squid?0x756e61:vampire?0x899fba:0xc3a666,roughness:squid?0.38:0.27});
-    irisMat.color.convertSRGBToLinear();
-    var darkMat=new T.MeshStandardMaterial({color:0x091322,roughness:0.19,metalness:0});
-    for(var side=-1;side<=1;side+=2){
-      ellipsoid('cl-eye-rim',squid?0.137:0.165,side*(squid?0.235:0.31),0.075,0.41,squid?0.65:0.70,1,1,skin);
-      ellipsoid('cl-iris',squid?0.117:0.14,side*(squid?0.316:0.375),0.075,0.43,squid?0.18:0.32,1,1,irisMat);
-      ellipsoid('cl-pupil',squid?0.095:0.116,side*(squid?0.332:0.423),0.075,0.43,squid?0.10:0.16,squid||vampire?0.93:0.32,1,darkMat);
-      ellipsoid('cl-eye-highlight',squid?0.008:0.013,side*(squid?0.343:0.435),squid?0.099:0.109,0.456,0.3,1,1,new T.MeshBasicMaterial({color:0xbbd5d0}));
+    // Nautilus has an open pinhole eye, without a cornea or lens. The legacy iris
+    // name identifies the pale aperture tissue; the dark surface is recessed inside.
+    var nautilusEyeMat=new T.MeshStandardMaterial({color:0xcebea3,roughness:0.62,metalness:0});nautilusEyeMat.name='cl-nautilus-eye-material';nautilusEyeMat.color.convertSRGBToLinear();
+    var nautilusEyeInnerMat=new T.MeshStandardMaterial({color:0x151917,roughness:0.83,metalness:0});nautilusEyeInnerMat.name='cl-nautilus-eye-interior-material';nautilusEyeInnerMat.color.convertSRGBToLinear();
+    var nautilusEyeSegments=32,nautilusEyeOuter=0.124,nautilusEyeOpening=0.025;
+    function nautilusEyeSurfaceX(radius){return 0.348+0.094*Math.sqrt(1-radius*radius/(0.145*0.145));}
+    function nautilusEyeSurface(name,side,anchor,profile,closed,material){
+      var positions=[],indices=[],stride=nautilusEyeSegments+1,rows=closed?profile.length-1:profile.length;
+      for(var eyeRow=0;eyeRow<rows;eyeRow++)for(var eyeColumn=0;eyeColumn<=nautilusEyeSegments;eyeColumn++){
+        var angle=eyeColumn/nautilusEyeSegments*Math.PI*2,radius=profile[eyeRow][1];
+        positions.push((side*profile[eyeRow][0]-anchor[0])*scale,(0.075+Math.sin(angle)*radius-anchor[1])*scale,(0.430+Math.cos(angle)*radius-anchor[2])*scale);
+      }
+      function nautilusEyeFace(a,b,c){if(side>0)indices.push(a,b,c);else indices.push(a,c,b);}
+      for(var eyeRow=0;eyeRow<rows-1;eyeRow++)for(var eyeColumn=0;eyeColumn<nautilusEyeSegments;eyeColumn++){var q=eyeRow*stride+eyeColumn,b=q+stride;nautilusEyeFace(q,b,q+1);nautilusEyeFace(q+1,b,b+1);}
+      if(closed){var pole=positions.length/3;positions.push((side*profile[rows][0]-anchor[0])*scale,(0.075-anchor[1])*scale,(0.430-anchor[2])*scale);for(var eyeColumn=0;eyeColumn<nautilusEyeSegments;eyeColumn++)nautilusEyeFace((rows-1)*stride+eyeColumn,pole,(rows-1)*stride+eyeColumn+1);}
+      var geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setIndex(indices);geometry.computeVertexNormals();
+      var normals=geometry.attributes.normal;
+      for(var eyeRow=0;eyeRow<rows;eyeRow++){var a=eyeRow*stride,b=a+nautilusEyeSegments,nx=normals.getX(a)+normals.getX(b),ny=normals.getY(a)+normals.getY(b),nz=normals.getZ(a)+normals.getZ(b),length=Math.hypot(nx,ny,nz);normals.setXYZ(a,nx/length,ny/length,nz/length);normals.setXYZ(b,nx/length,ny/length,nz/length);}
+      geometry.computeBoundingBox();geometry.computeBoundingSphere();var mesh=new T.Mesh(geometry,material);mesh.name=name;mesh.position.set(anchor[0]*scale,anchor[1]*scale,anchor[2]*scale);root.add(mesh);return mesh;
+    }
+    var nautilusEyeRimProfile=[[0.275,0.090],[0.312,0.116],[0.355,0.128],[0.380,0.130],[nautilusEyeSurfaceX(nautilusEyeOuter),nautilusEyeOuter]],nautilusEyeApertureProfile=[];
+    for(var nautilusEyeRing=0;nautilusEyeRing<=8;nautilusEyeRing++){var radius=nautilusEyeOuter+(nautilusEyeOpening-nautilusEyeOuter)*nautilusEyeRing/8;nautilusEyeApertureProfile.push([nautilusEyeSurfaceX(radius),radius]);}
+    var nautilusEyeInnerProfile=[[nautilusEyeSurfaceX(nautilusEyeOpening),nautilusEyeOpening],[0.433,0.027],[0.420,0.030],[0.410,0.021],[0.407,0]];
+    for(var nautilusEyeSide=-1;nautilusEyeSide<=1;nautilusEyeSide+=2){
+      nautilusEyeSurface('cl-eye-rim',nautilusEyeSide,[nautilusEyeSide*0.31,0.075,0.41],nautilusEyeRimProfile,false,nautilusEyeMat);
+      nautilusEyeSurface('cl-iris',nautilusEyeSide,[nautilusEyeSide*0.375,0.075,0.43],nautilusEyeApertureProfile,false,nautilusEyeMat);
+      nautilusEyeSurface('cl-pupil',nautilusEyeSide,[nautilusEyeSide*0.423,0.075,0.43],nautilusEyeInnerProfile,true,nautilusEyeInnerMat);
+      var nautilusEyeCompatibility=new T.Group();nautilusEyeCompatibility.name='cl-eye-highlight';nautilusEyeCompatibility.position.set(nautilusEyeSide*0.435*scale,0.109*scale,0.456*scale);root.add(nautilusEyeCompatibility);
     }
   }
   // Smooth tapered tubes use stable topology; their buffers are updated in place.
@@ -12022,6 +12042,28 @@ function createCLHuntFish(T,index){
           }
         }
         for(var strip=0;strip<sections;strip++)for(var cell=0;cell<2;cell++){var a=strip*columns+cell,b=a+1,c=a+columns,d=c+1;indices.push(a,b,c,b,d,c);}
+        // Four attached folded ribbons broaden each kelp silhouette without new scene objects.
+        // Keep the original central ribbon and root byte-for-byte; use only the existing variant.
+        if(kelp)for(var leaf=0;leaf<4;leaf++){
+          var leafSide=(leaf%2?1:-1)*sign,leafRow=4+leaf*3,leafAnchor=(leafRow*3+(leafSide<0?0:2))*3;
+          var leafX=positions[leafAnchor],leafY=positions[leafAnchor+1],leafZ=positions[leafAnchor+2],leafStart=positions.length/3;
+          var leafVariation=((variant*5+leaf*3)%11)/10,leafReach=0.48+leafVariation*0.07,leafRise=height*0.22*(0.94+leafVariation*0.06);
+          var leafTwist=Math.sin(leafRow/sections*3.5+phase)*0.35*(leafRow/sections);
+          for(var leafRing=0;leafRing<=6;leafRing++){
+            var u=leafRing/6,leafEnvelope=Math.pow(Math.sin(u*Math.PI),0.8),leafWidth=0.012*(1-u)+0.004*u+(0.18+leafVariation*0.035)*leafEnvelope;
+            var leafCenterX=leafX+leafSide*leafReach*Math.sin(u*Math.PI*0.5),leafCenterY=leafY+leafRise*u;
+            var leafCenterZ=leafZ+Math.sin(u*Math.PI)*(0.07+leafVariation*0.035)*sign+leafSide*0.045*u*u;
+            var leafAngle=leafTwist+leafSide*(0.28+leafVariation*0.10)*u,leafFold=leafWidth*0.20*Math.sin(u*Math.PI);
+            for(var leafColumn=0;leafColumn<3;leafColumn++){
+              var leafAcross=(leafColumn-1)*leafWidth;
+              positions.push(leafCenterX+Math.cos(leafAngle)*leafAcross,leafCenterY,leafCenterZ+Math.sin(leafAngle)*leafAcross+(leafColumn===1?leafFold:0));
+              var leafT=leafCenterY/height,leafLight=(0.94+variation*0.12)*(leafColumn===1?1.06:0.90),leafBlend=Math.min(1,u*3);
+              colors.push(colors[leafAnchor]+((0.055+leafT*0.065)*leafLight-colors[leafAnchor])*leafBlend,colors[leafAnchor+1]+((0.10+leafT*0.10)*leafLight-colors[leafAnchor+1])*leafBlend,colors[leafAnchor+2]+((0.023+leafT*0.027)*leafLight-colors[leafAnchor+2])*leafBlend);
+              uvs.push(leafColumn/2,u);
+            }
+          }
+          for(var leafStrip=0;leafStrip<6;leafStrip++)for(var leafCell=0;leafCell<2;leafCell++){var la=leafStart+leafStrip*3+leafCell,lb=la+1,lc=la+3,ld=lc+1;indices.push(la,lb,lc,lb,ld,lc);}
+        }
         var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();
         geometry.userData={clPlantKind:kind,clPlantHeight:height,clPlantVariant:variant,clPlantSections:sections,clPlantColumns:columns};return geometry;
       }
