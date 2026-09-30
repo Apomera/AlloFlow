@@ -234,6 +234,92 @@ describe('Microbiology resistance investigation', () => {
     expect(api.save(full, full.records[3].evidence).notebook.records).toEqual(full.records);
   });
 
+  it('recovers the full removed snapshot at its original position with the same ID and reflection through JSON', () => {
+    const api = window.__MicrobiologyCore.resistance;
+    const book = api.normalizeNotebook({ ...comparisonNotebook(), records: comparisonNotebook().records.map(item => ({ ...item, reviewNote: 'Reflection ' + item.id })) });
+    const before = JSON.stringify(book), random = vi.spyOn(Math, 'random');
+    try {
+      const removed = api.removeRecord(book, 4);
+      expect(removed).toMatchObject({ status: 'removed', id: 4, notebook: { selectedId: 9, nextId: 10, removed: { record: book.records[0], index: 0 } } });
+      expect(removed.notebook.records.map(item => item.id)).toEqual([9]);
+      expect(Object.isFrozen(removed.notebook.removed)).toBe(true);
+      expect(Object.isFrozen(removed.notebook.removed.record.evidence.history[1])).toBe(true);
+      const restored = api.restoreRecord(JSON.parse(JSON.stringify(removed.notebook)));
+      expect(restored).toMatchObject({ status: 'restored', id: 4, notebook: book });
+      expect(restored.notebook).not.toHaveProperty('removed');
+      const imported = { ...removed.notebook, removed: { ...removed.notebook.removed, index: 7 } };
+      expect(api.restoreRecord(imported).notebook.records.map(item => item.id)).toEqual([9, 4]);
+      const onlyRemoved = api.removeRecord({ records: [book.records[0]] }, 4).notebook;
+      expect(api.restoreRecord({ ...onlyRemoved, removed: { ...onlyRemoved.removed, index: 7 } }).notebook.records).toEqual([book.records[0]]);
+      expect(JSON.stringify(book)).toBe(before);
+      expect(random).not.toHaveBeenCalled();
+    } finally { random.mockRestore(); }
+  });
+
+  it('reserves removed identities without selecting them or attaching them to repaired active records', () => {
+    const api = window.__MicrobiologyCore.resistance, evidence = comparisonNotebook().records[1].evidence;
+    const raw = { records: [{ id: 'bad', evidence }, { id: 1, evidence }, { id: 1, evidence }], selectedId: 2,
+      removed: { record: { id: 2, evidence, reviewNote: 'Historical record 2' }, index: 7 } };
+    const normalized = api.normalizeNotebook(raw);
+    expect(normalized.records.map(item => item.id)).toEqual([3, 1, 4]);
+    expect(normalized).toMatchObject({ selectedId: null, nextId: 5, removed: { record: { id: 2, reviewNote: 'Historical record 2' }, index: 7 } });
+    expect(api.normalizeComparison({ aId: 2, bId: 1 }, raw)).toEqual({ aId: null, bId: 1 });
+    expect(api.compare(raw, { aId: 2, bId: 1 })).toBe(null);
+    expect(api.removeRecord(raw, 3).status).toBe('missing');
+    expect(api.removeRecord(raw, 2).status).toBe('missing');
+    expect(api.removeRecord(raw, 1).notebook.removed.record.id).toBe(1);
+    expect(api.normalizeNotebook({ ...raw, selectedId: 3 }).selectedId).toBe(null);
+    expect(api.normalizeNotebook({ ...normalized, selectedId: 3 }).selectedId).toBe(3);
+    const malformed = [null, [], {}, { record: { id: '2', evidence }, index: 0 }, { record: { id: 2, evidence: {} }, index: 0 },
+      { record: { id: 2, evidence }, index: '0' }, { record: { id: 2, evidence }, index: -1 },
+      { record: { id: 2, evidence }, index: 8 }, { record: { id: 2, evidence }, index: 0.5 },
+      { record: { id: 1, evidence }, index: 0 }];
+    for (const removed of malformed) expect(api.normalizeNotebook({ records: [{ id: 1, evidence }], removed })).not.toHaveProperty('removed');
+    expect(api.normalizeNotebook(null)).toEqual({ records: [], selectedId: null, nextId: 1 });
+  });
+
+  it('preserves blocked recovery at capacity and reserves the maximum historical ID during repair and saving', () => {
+    const api = window.__MicrobiologyCore.resistance, evidence = comparisonNotebook().records[1].evidence;
+    const records = Array.from({ length: 8 }, (_, index) => ({ id: index + 1, evidence: { ...evidence, notes: 'Active ' + index }, reviewNote: 'Keep ' + index }));
+    const full = api.normalizeNotebook({ records, selectedId: 3, removed: { record: { id: 99, evidence, reviewNote: 'Recover this' }, index: 7 } });
+    expect(api.restoreRecord(full)).toMatchObject({ status: 'full', id: 99, notebook: full });
+    expect(api.save(full, evidence)).toMatchObject({ status: 'full', notebook: full });
+    expect(api.normalizeNotebook(JSON.parse(JSON.stringify(full)))).toEqual(full);
+    const high = api.normalizeNotebook({ records: [{ id: 'broken', evidence }], selectedId: 1000000000,
+      removed: { record: { id: 1000000000, evidence }, index: 7 }, nextId: 1000000000 });
+    expect(high).toMatchObject({ selectedId: null, nextId: 2 });
+    expect(high.records[0].id).toBe(1);
+    expect(api.restoreRecord(high).notebook.records.map(item => item.id)).toEqual([1, 1000000000]);
+    const next = api.save(high, { ...evidence, notes: 'Distinct' });
+    expect(next).toMatchObject({ status: 'saved', id: 2 });
+    expect(next.notebook).not.toHaveProperty('removed');
+  });
+
+  it('keeps recovery through duplicate saves and annotations but ends it only on a new save, second removal or explicit keep', () => {
+    const api = window.__MicrobiologyCore.resistance, book = api.normalizeNotebook(comparisonNotebook());
+    const removed = api.removeRecord(book, 4).notebook;
+    expect(api.save(removed, {}).notebook).toEqual(removed);
+    expect(api.save(removed, book.records[1].evidence).notebook.removed).toEqual(removed.removed);
+    expect(api.setReviewNote(removed, 9, 'Updated B').notebook.removed).toEqual(removed.removed);
+    expect(api.exportText(removed)).not.toContain('Original A');
+    expect(api.exportCSV(removed)).not.toContain('Original A');
+    expect(api.exportComparisonText(removed, { aId: 4, bId: 9 })).toBe(null);
+    const safePair = api.normalizeComparison({ aId: 4, bId: 9 }, removed), restored = api.restoreRecord(removed).notebook;
+    expect(api.compare(restored, safePair)).toBe(null);
+    expect(api.exportText(restored)).toContain('Original A');
+    const fresh = api.save(removed, book.records[0].evidence);
+    expect(fresh).toMatchObject({ status: 'saved', id: 10 });
+    expect(fresh.notebook).not.toHaveProperty('removed');
+    const second = api.removeRecord(removed, 9).notebook;
+    expect(second.removed).toEqual({ record: book.records[1], index: 0 });
+    expect(api.restoreRecord(second).notebook.records.map(item => item.id)).toEqual([9]);
+    const kept = api.keepRemoval(removed);
+    expect(kept).toMatchObject({ status: 'kept', id: 4, notebook: { records: removed.records, selectedId: 9, nextId: 10 } });
+    expect(kept.notebook).not.toHaveProperty('removed');
+    expect(api.restoreRecord(kept.notebook).status).toBe('missing');
+    expect(api.keepRemoval(kept.notebook).status).toBe('missing');
+  });
+
   it('exports later reflections separately from original notes with safe CSV cells in notebooks and paired comparisons', () => {
     const api = window.__MicrobiologyCore.resistance, book = comparisonNotebook(), pair = { aId: 4, bId: 9 };
     book.records[0].reviewNote = '=SUM(A1:A2), "reflection"\nCounts need context.';
@@ -884,23 +970,24 @@ describe('Mounted resistance controls', { timeout: 20000 }, () => {
     expect(latestData.microbiology.resistanceInvestigation.day).toBe(0);
   });
 
-  it('announces removal and moves focus to remaining evidence without changing its stable ID or the active run', () => {
+  it('announces removal and focuses recovery without changing remaining stable IDs or the active run', () => {
     const evidence = { dose: 0, duration: 3, initRes: 15, prediction: 'similar', notes: 'Saved observations',
       history: [{ day: 0, sensitive: 68, resistant: 12 }, { day: 1, sensitive: 68, resistant: 12 }] };
     mount({ resistanceInvestigation: evidence, resistanceNotebook: { records: [{ id: 4, evidence }, { id: 9, evidence: { ...evidence, notes: 'Other observations' } }], selectedId: 4, nextId: 12 } });
     const active = JSON.parse(JSON.stringify(latestData.microbiology.resistanceInvestigation));
-    const retained = window.__MicrobiologyCore.resistance.normalizeNotebook(latestData.microbiology.resistanceNotebook).records[1];
+    const normalized = window.__MicrobiologyCore.resistance.normalizeNotebook(latestData.microbiology.resistanceNotebook);
+    const retained = normalized.records[1];
     openNotebook();
     const remove = [...container.querySelectorAll('button')].find(node => node.textContent === 'Remove selected evidence');
     remove.focus();
     click('Remove selected evidence');
-    expect(document.activeElement).toBe(container.querySelector('#micro-resistance-evidence-9'));
-    expect(container.querySelector('[data-resistance-notebook-notice]').textContent).toBe('Removed evidence 4. Selected evidence 9.');
-    expect(latestData.microbiology.resistanceNotebook).toEqual({ records: [retained], selectedId: 9, nextId: 12 });
+    expect(document.activeElement).toBe(container.querySelector('#micro-resistance-restore-removed'));
+    expect(container.querySelector('[data-resistance-notebook-notice]').textContent).toBe('Removed evidence 4. It is available to restore below.');
+    expect(latestData.microbiology.resistanceNotebook).toEqual({ records: [retained], selectedId: 9, nextId: 12, removed: { record: normalized.records[0], index: 0 } });
     expect(latestData.microbiology.resistanceInvestigation).toEqual(active);
   });
 
-  it('focuses the notebook heading and announces an empty notebook after the last record is removed', () => {
+  it('keeps recovery visible and focused after the last record is removed until a new snapshot is saved', () => {
     const evidence = { dose: 0, duration: 3, initRes: 15, prediction: 'similar', notes: 'Current evidence remains',
       history: [{ day: 0, sensitive: 68, resistant: 12 }, { day: 1, sensitive: 68, resistant: 12 }] };
     mount({ resistanceInvestigation: evidence, resistanceNotebook: { records: [{ id: 6, evidence }], selectedId: 6, nextId: 8 } });
@@ -912,13 +999,140 @@ describe('Mounted resistance controls', { timeout: 20000 }, () => {
     const notice = container.querySelector('[data-resistance-notebook-notice]');
     expect(notice.getAttribute('role')).toBe('status');
     expect(notice.getAttribute('aria-live')).toBe('polite');
-    expect(notice.textContent).toBe('Removed evidence 6. No saved snapshots remain. Your current run is unchanged.');
-    expect(document.activeElement).toBe(container.querySelector('#micro-resistance-notebook-title'));
+    expect(notice.textContent).toBe('Removed evidence 6. It is available to restore below.');
+    expect(document.activeElement).toBe(container.querySelector('#micro-resistance-restore-removed'));
     expect(container.querySelector('.micro-resistance-saved')).toBe(null);
-    expect(latestData.microbiology.resistanceNotebook).toEqual({ records: [], selectedId: null, nextId: 8 });
+    expect(latestData.microbiology.resistanceNotebook).toMatchObject({ records: [], selectedId: null, nextId: 8, removed: { record: { id: 6 }, index: 0 } });
     expect(latestData.microbiology.resistanceInvestigation).toEqual(active);
     click('Save evidence');
     expect(latestData.microbiology.resistanceNotebook.records.map(item => item.id)).toEqual([8]);
+    expect(latestData.microbiology.resistanceNotebook).not.toHaveProperty('removed');
+    expect(notice.textContent).toContain('The earlier removed evidence can no longer be restored.');
+  });
+
+  it('restores evidence and reflection without restarting live playback or reinstating a cleared comparison choice', () => {
+    const api = window.__MicrobiologyCore.resistance, raw = comparisonNotebook(), awardXP = vi.fn();
+    raw.records[0].reviewNote = 'A later explanation of A';
+    const book = api.normalizeNotebook(raw), pair = { aId: 4, bId: 9 };
+    mount({ resistanceNotebook: book, resistanceComparison: pair, resistanceInvestigation: { ...book.records[1].evidence, dose: 0, notes: 'Live draft' } }, awardXP);
+    openNotebook(); openComparison(); click('▶ Play');
+    const active = JSON.stringify(latestData.microbiology.resistanceInvestigation), randomCalls = Math.random.mock.calls.length;
+    click('Remove selected evidence');
+    expect(latestData.microbiology.resistanceComparison).toEqual({ aId: null, bId: 9 });
+    expect(container.querySelector('#micro-resistance-compare-a').value).toBe('');
+    expect(container.querySelector('#micro-resistance-comparison-table')).toBe(null);
+    click('Restore removed evidence');
+    expect(latestData.microbiology.resistanceNotebook).toEqual(book);
+    expect(latestData.microbiology.resistanceComparison).toEqual({ aId: null, bId: 9 });
+    expect(document.activeElement).toBe(container.querySelector('#micro-resistance-evidence-4'));
+    expect(openNotebook().querySelector('#micro-resistance-reflection-4').value).toBe('A later explanation of A');
+    expect(container.querySelector('[data-resistance-notebook-notice]').textContent).toBe('Restored evidence 4. Selected evidence 4.');
+    expect(JSON.stringify(latestData.microbiology.resistanceInvestigation)).toBe(active);
+    expect(Math.random.mock.calls).toHaveLength(randomCalls);
+    expect(awardXP).not.toHaveBeenCalled();
+    expect([...container.querySelectorAll('button')].some(button => button.textContent === '⏸ Pause')).toBe(true);
+    act(() => vi.advanceTimersByTime(600));
+    expect(latestData.microbiology.resistanceInvestigation.day).toBe(2);
+    expect(latestData.microbiology.resistanceNotebook).toEqual(book);
+  });
+
+  it('previews removed-only extinct evidence through reset, navigation and JSON and restores its exportable history', () => {
+    const evidence = { dose: 100, duration: 3, initRes: 0, prediction: 'extinct', explanation: 'extinction', explanationSubmitted: true,
+      notes: '<script>Original literal notes</script>', history: [{ day: 0, sensitive: 80, resistant: 0 }, { day: 1, sensitive: 0, resistant: 0 }] };
+    mount({ resistanceNotebook: { records: [{ id: 7, evidence, reviewNote: 'Later reflection\nNo share remains.' }], selectedId: 7, nextId: 8 } });
+    openNotebook(); click('Remove selected evidence');
+    const removed = JSON.parse(JSON.stringify(latestData.microbiology.resistanceNotebook.removed));
+    const panel = container.querySelector('#micro-resistance-removed-evidence');
+    expect(panel.tabIndex).toBe(-1);
+    act(() => panel.querySelector('summary').click());
+    expect(panel.querySelector('[data-resistance-removed-notes]').textContent).toBe(evidence.notes);
+    expect(panel.querySelector('[data-resistance-removed-reflection]').textContent).toBe('Later reflection\nNo share remains.');
+    expect(panel.querySelector('script')).toBe(null);
+    expect([...panel.querySelectorAll('#micro-resistance-removed-counts tbody tr')].map(row => [...row.cells].map(cell => cell.textContent))).toEqual([
+      ['0', '80', '0', '80', '0%'], ['1', '0', '0', '0', 'Undefined']
+    ]);
+    expect(click('Download resistance notebook').disabled).toBe(true);
+    expect(click('Download resistance CSV').disabled).toBe(true);
+    writeNotes('Working notes outside the snapshot'); click('↺ Reset current run');
+    expect(latestData.microbiology.resistanceNotebook.removed).toEqual(removed);
+    tab('home'); tab('resistance');
+    const saved = JSON.parse(JSON.stringify(latestData.microbiology));
+    act(() => root.unmount()); root = null; mount(saved);
+    expect(latestData.microbiology.resistanceNotebook.removed).toEqual(removed);
+    expect(container.querySelector('[data-resistance-notebook-notice]').textContent).toBe('');
+    click('Restore removed evidence');
+    expect(container.querySelector('.micro-resistance-saved').open).toBe(true);
+    expect(document.activeElement).toBe(container.querySelector('#micro-resistance-evidence-7'));
+    expect(container.querySelector('#micro-resistance-reflection-7').value).toBe(removed.record.reviewNote);
+    const downloads = captureComparisonDownloads();
+    click('Download resistance notebook'); click('Download resistance CSV');
+    expect(downloads.blobs[0].parts.join('')).toContain('My written evidence: ' + evidence.notes);
+    expect(downloads.blobs[0].parts.join('')).toContain('Later reflection: ' + removed.record.reviewNote);
+    expect(readComparisonCSV(downloads.blobs[1].parts.join(''))[1]).toMatchObject({ evidence_id: '7', total_alive: '0', resistant_share_pct_rounded: 'Undefined', later_reflection: removed.record.reviewNote });
+  });
+
+  it('keeps a full imported recovery intact and lets the learner explicitly keep removal without evicting a saved record', () => {
+    const evidence = comparisonNotebook().records[1].evidence;
+    const records = Array.from({ length: 8 }, (_, index) => ({ id: index + 1, evidence, reviewNote: 'Reflection ' + index }));
+    mount({ resistanceNotebook: { records, selectedId: 3, nextId: 100, removed: { record: { id: 99, evidence, reviewNote: 'Recovery annotation' }, index: 7 } } });
+    const before = JSON.stringify(latestData.microbiology.resistanceNotebook);
+    expect(click('Restore removed evidence').disabled).toBe(true);
+    expect(container.querySelector('#micro-resistance-restore-removed').getAttribute('aria-describedby')).toBe('micro-resistance-recovery-full');
+    expect(container.querySelector('#micro-resistance-recovery-full').textContent).toContain('cannot be restored while the notebook is full');
+    expect(JSON.stringify(latestData.microbiology.resistanceNotebook)).toBe(before);
+    openNotebook(); writeReflection('Revised reflection on active record 3');
+    expect(latestData.microbiology.resistanceNotebook.removed.record.reviewNote).toBe('Recovery annotation');
+    click('Keep removal');
+    expect(document.activeElement).toBe(container.querySelector('#micro-resistance-evidence-3'));
+    expect(latestData.microbiology.resistanceNotebook.records.map(item => item.id)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(latestData.microbiology.resistanceNotebook).not.toHaveProperty('removed');
+    expect(container.querySelector('#micro-resistance-removed-evidence')).toBe(null);
+    expect(container.querySelector('[data-resistance-notebook-notice]').textContent).toBe('Kept removal of evidence 99. Selected evidence 3.');
+  });
+
+  it('preserves recovery on a duplicate save and explains replacement before a second removal or new save', () => {
+    const book = comparisonNotebook();
+    mount({ resistanceNotebook: book, resistanceInvestigation: book.records[1].evidence });
+    openNotebook(); click('Remove selected evidence');
+    const removed = JSON.parse(JSON.stringify(latestData.microbiology.resistanceNotebook.removed));
+    expect(click('Save evidence').getAttribute('aria-describedby')).toBe('micro-resistance-removal-policy');
+    expect(latestData.microbiology.resistanceNotebook.removed).toEqual(removed);
+    expect(container.querySelector('#micro-resistance-removal-policy').textContent).toContain('saving an unchanged existing snapshot keeps it');
+    const remove = [...container.querySelectorAll('button')].find(button => button.textContent === 'Remove selected evidence');
+    expect(remove.getAttribute('aria-describedby')).toBe('micro-resistance-removal-policy');
+    click('Remove selected evidence');
+    expect(latestData.microbiology.resistanceNotebook.removed.record.id).toBe(9);
+    expect(latestData.microbiology.resistanceNotebook.records).toEqual([]);
+    click('Keep removal');
+    expect(document.activeElement).toBe(container.querySelector('#micro-resistance-notebook-title'));
+    expect(latestData.microbiology.resistanceNotebook).not.toHaveProperty('removed');
+    expect(latestData.microbiology.resistanceInvestigation.notes).toBe(book.records[1].evidence.notes);
+    click('Save evidence');
+    expect(latestData.microbiology.resistanceNotebook.records.map(item => item.id)).toEqual([10]);
+  });
+
+  it.each(['focus', 'draft', 'active tab', 'topic library', 'away and back'])('does not steal focus after a later %s action following removal', action => {
+    mount({ resistanceNotebook: comparisonNotebook() }); openNotebook();
+    const remove = [...container.querySelectorAll('button')].find(button => button.textContent === 'Remove selected evidence');
+    let target;
+    if (action === 'away and back') {
+      act(() => remove.click()); tab('home'); tab('resistance');
+      target = container.querySelector('#micro-tab-resistance'); act(() => target.focus());
+    } else {
+      target = action === 'focus' || action === 'draft' ? container.querySelector('#micro-resistance-notes') :
+        action === 'active tab' ? container.querySelector('#micro-tab-resistance') : container.querySelector('.micro-library-toggle');
+      act(() => {
+        remove.click(); target.focus();
+        if (action === 'draft') {
+          Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set.call(target, 'New live notes');
+          target.dispatchEvent(new Event('input', { bubbles: true }));
+        } else if (action !== 'focus') target.click();
+      });
+    }
+    act(() => vi.runOnlyPendingTimers());
+    expect(document.activeElement).toBe(target);
+    expect(latestData.microbiology.resistanceNotebook.removed.record.id).toBe(4);
+    expect(latestData.microbiology.resistanceNotebook.records.map(item => item.id)).toEqual([9]);
   });
 
   it('keeps extinction undefined in the saved table and both downloadable artifacts', () => {

@@ -524,9 +524,14 @@
     }
     function normalizeNotebook(value) {
       var raw = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-      var used = Object.create(null), reserved = Object.create(null), available = 1;
+      var used = Object.create(null), reserved = Object.create(null), originalIds = Object.create(null), available = 1;
       var retained = retainedRecords(raw);
-      retained.forEach(function(item) { if (validId(item.id)) reserved[item.id] = true; });
+      var removed = raw.removed && typeof raw.removed === 'object' && !Array.isArray(raw.removed) ? raw.removed : null;
+      var removedRecord = removed && removed.record && !Array.isArray(removed.record) ? retainedRecords({ records: [removed.record] })[0] : null;
+      var removedId = removedRecord && validId(removedRecord.id) && Number.isInteger(removed.index) && removed.index >= 0 && removed.index < MAX_RECORDS &&
+        !retained.some(function(item) { return item.id === removedRecord.id; }) ? removedRecord.id : null;
+      retained.forEach(function(item) { if (validId(item.id)) { reserved[item.id] = true; originalIds[item.id] = true; } });
+      if (removedId !== null) reserved[removedId] = true;
       while (reserved[available]) available++;
       var records = retained.map(function(item) {
         var id = validId(item.id) && !used[item.id] ? item.id : available;
@@ -534,11 +539,32 @@
         while (used[available] || reserved[available]) available++;
         return Object.freeze({ id: id, evidence: item.evidence, reviewNote: item.reviewNote });
       });
-      var maximum = records.reduce(function(maximum, item) { return Math.max(maximum, item.id); }, 0);
-      return Object.freeze({
-        records: Object.freeze(records), selectedId: validId(raw.selectedId) && reserved[raw.selectedId] ? raw.selectedId : null,
+      var maximum = records.reduce(function(maximum, item) { return Math.max(maximum, item.id); }, removedId || 0);
+      var notebook = {
+        records: Object.freeze(records), selectedId: validId(raw.selectedId) && originalIds[raw.selectedId] ? raw.selectedId : null,
         nextId: validId(raw.nextId) && raw.nextId > maximum ? raw.nextId : maximum < 1000000000 ? maximum + 1 : available
-      });
+      };
+      if (removedId !== null) notebook.removed = Object.freeze({ record: Object.freeze(removedRecord), index: removed.index });
+      return Object.freeze(notebook);
+    }
+    function removeRecord(value, id) {
+      var notebook = normalizeNotebook(value);
+      if (normalizeComparison({ aId: id }, value).aId === null) return { notebook: notebook, status: 'missing', id: null };
+      var index = notebook.records.findIndex(function(item) { return item.id === id; });
+      var remaining = notebook.records.filter(function(item) { return item.id !== id; });
+      return { notebook: normalizeNotebook(Object.assign({}, notebook, { records: remaining,
+        selectedId: remaining.length ? remaining[remaining.length - 1].id : null, removed: { record: notebook.records[index], index: index } })), status: 'removed', id: id };
+    }
+    function restoreRecord(value) {
+      var notebook = normalizeNotebook(value), removed = notebook.removed;
+      if (!removed) return { notebook: notebook, status: 'missing', id: null };
+      if (notebook.records.length >= MAX_RECORDS) return { notebook: notebook, status: 'full', id: removed.record.id };
+      var records = notebook.records.slice(); records.splice(Math.min(removed.index, records.length), 0, removed.record);
+      return { notebook: normalizeNotebook(Object.assign({}, notebook, { records: records, selectedId: removed.record.id, removed: null })), status: 'restored', id: removed.record.id };
+    }
+    function keepRemoval(value) {
+      var notebook = normalizeNotebook(value), removed = notebook.removed;
+      return { notebook: normalizeNotebook(Object.assign({}, notebook, { removed: null })), status: removed ? 'kept' : 'missing', id: removed ? removed.record.id : null };
     }
     function save(value, current) {
       var notebook = normalizeNotebook(value), snapshot = evidence(current);
@@ -548,6 +574,7 @@
       if (match) return { notebook: normalizeNotebook(Object.assign({}, notebook, { selectedId: match.id })), status: 'duplicate', id: match.id };
       if (notebook.records.length >= MAX_RECORDS) return { notebook: notebook, status: 'full', id: null };
       var item = { id: notebook.nextId, evidence: snapshot };
+      // A distinct successful save ends recovery; duplicate and failed saves keep it.
       return { notebook: normalizeNotebook({ records: notebook.records.concat([item]), selectedId: item.id, nextId: item.id + 1 }), status: 'saved', id: item.id };
     }
     function normalizeComparison(value, notebookValue) {
@@ -675,7 +702,8 @@
       })).join('\r\n');
     }
     return Object.freeze({ evidence: evidence, status: function(value) { return evidence(value).status; }, normalizeNotebook: normalizeNotebook,
-      save: save, setReviewNote: setReviewNote, normalizeComparison: normalizeComparison, compare: compare, exportText: exportText, exportCSV: exportCSV,
+      save: save, setReviewNote: setReviewNote, removeRecord: removeRecord, restoreRecord: restoreRecord, keepRemoval: keepRemoval,
+      normalizeComparison: normalizeComparison, compare: compare, exportText: exportText, exportCSV: exportCSV,
       exportComparisonText: exportComparisonText, exportComparisonCSV: exportComparisonCSV, maxRecords: MAX_RECORDS });
   })();
   window.__MicrobiologyCore = { getResistanceKillProbabilities: getResistanceKillProbabilities, classifyResistanceTrend: classifyResistanceTrend, evaluateResistancePrediction: evaluateResistancePrediction, evaluateResistanceExplanation: evaluateResistanceExplanation, createResistancePopulation: createResistancePopulation, normalizeResistanceInvestigation: normalizeResistanceInvestigation };
@@ -725,13 +753,21 @@
     var notebook = MicroResistanceNotebook.normalizeNotebook(rawNotebook);
     var comparisonPair = MicroResistanceNotebook.normalizeComparison(props.d && props.d.resistanceComparison, rawNotebook);
     R.useEffect(function() { setComparisonNotice(''); }, [comparisonPair.aId, comparisonPair.bId]);
-    var notebookFocusRef = R.useRef(null);
+    var notebookFocusRef = R.useRef(null), resistanceOwnerRef = R.useRef(null);
     R.useEffect(function() {
-      if (!notebookFocusRef.current) return;
-      var target = document.getElementById(notebookFocusRef.current);
+      var request = notebookFocusRef.current, owner = resistanceOwnerRef.current;
       notebookFocusRef.current = null;
-      if (target) target.focus();
-    }, [notebook.selectedId, notebook.records.length]);
+      if (!request || !owner || !owner.isConnected || request.version !== __alloMBUpdateVersion) return;
+      var tab = document.getElementById('micro-tab-resistance');
+      if (!tab || tab.getAttribute('aria-selected') !== 'true') return;
+      var target = owner.querySelector('#' + request.id);
+      if (target) {
+        var disclosure = target.closest('details');
+        if (disclosure) disclosure.open = true;
+        target.focus();
+      }
+    }, [notebook]);
+    function cancelNotebookFocus() { notebookFocusRef.current = null; }
     var ers = R.useState(function() {
       if (!restored.explanationSubmitted) return null;
       var last = restored.history[restored.history.length - 1], total = last.sensitive + last.resistant;
@@ -847,7 +883,29 @@
       if (result.status === 'empty' || result.status === 'full') return;
       setPlaying(false);
       updateNotebook(result.notebook);
-      setNotebookNotice(result.status === 'duplicate' ? __alloMBT('stem.microbiology.resistance_notebook_duplicate', 'This exact snapshot was already saved. Selected evidence') + ' ' + result.id + '.' : __alloMBT('stem.microbiology.resistance_notebook_saved', 'Saved evidence') + ' ' + result.id + '.');
+      var message = result.status === 'duplicate' ? __alloMBT('stem.microbiology.resistance_notebook_duplicate', 'This exact snapshot was already saved. Selected evidence') + ' ' + result.id + '.' : __alloMBT('stem.microbiology.resistance_notebook_saved', 'Saved evidence') + ' ' + result.id + '.';
+      if (notebook.removed && result.status === 'saved') message += ' ' + __alloMBT('stem.microbiology.resistance_recovery_new_save', 'The earlier removed evidence can no longer be restored.');
+      setNotebookNotice(message);
+    }
+    function changeRemoval(action) {
+      var result = action === 'remove' ? MicroResistanceNotebook.removeRecord(rawNotebook, notebook.selectedId) :
+        action === 'restore' ? MicroResistanceNotebook.restoreRecord(rawNotebook) : MicroResistanceNotebook.keepRemoval(rawNotebook);
+      if (result.status === 'missing') return;
+      if (result.status === 'full') {
+        setNotebookNotice(__alloMBT('stem.microbiology.resistance_recovery_full', 'This imported notebook has eight saved snapshots. The removed record is kept, but cannot be restored while the notebook is full.'));
+        return;
+      }
+      updateNotebook(result.notebook);
+      var selectedId = result.notebook.selectedId;
+      notebookFocusRef.current = { id: action === 'remove' ? 'micro-resistance-restore-removed' :
+        selectedId ? 'micro-resistance-evidence-' + selectedId : 'micro-resistance-notebook-title', version: __alloMBUpdateVersion };
+      var message = action === 'remove' ? __alloMBT('stem.microbiology.resistance_notebook_removed', 'Removed evidence') :
+        action === 'restore' ? __alloMBT('stem.microbiology.resistance_recovery_restored', 'Restored evidence') : __alloMBT('stem.microbiology.resistance_recovery_kept', 'Kept removal of evidence');
+      message += ' ' + result.id + '. ';
+      if (action === 'remove') message += __alloMBT('stem.microbiology.resistance_recovery_available', 'It is available to restore below.');
+      else message += selectedId ? __alloMBT('stem.microbiology.resistance_notebook_now_selected', 'Selected evidence') + ' ' + selectedId + '.' :
+        __alloMBT('stem.microbiology.resistance_notebook_empty', 'No saved snapshots remain. Your current run is unchanged.');
+      setNotebookNotice(message);
     }
     function downloadEvidence(format) {
       if (!notebook.records.length) return;
@@ -979,6 +1037,38 @@
         ) : null,
         hh('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, ct('limits', 'This random teaching model illustrates survival and reproduction. Snapshots may come from different rounds of the same run. A difference between snapshots does not establish which setting caused it. Original predictions are reviewed against each saved endpoint in the evidence review.')));
     }
+    function removedEvidence() {
+      if (!notebook.removed) return null;
+      var item = notebook.removed.record, saved = item.evidence, full = notebook.records.length >= MicroResistanceNotebook.maxRecords;
+      return hh('section', { id: 'micro-resistance-removed-evidence', tabIndex: -1, 'aria-labelledby': 'micro-resistance-removed-title',
+        style: { marginTop: 16, padding: 14, border: '1px solid #7dd3fc', borderRadius: 8, overflowWrap: 'anywhere' } },
+        hh('h4', { id: 'micro-resistance-removed-title', style: { margin: '0 0 8px' } }, __alloMBT('stem.microbiology.resistance_recovery_title', 'Recover removed evidence') + ' ' + item.id),
+        hh('p', null, evidenceStatus(saved.status) + ' · ' + __alloMBT('stem.microbiology.resistance_recovery_round', 'Round') + ' ' + saved.day + '/' + saved.duration +
+          ' · ' + __alloMBT('stem.microbiology.resistance_recovery_strength', 'Exposure strength') + ' ' + saved.dose + '/100 · ' + __alloMBT('stem.microbiology.resistance_recovery_requested', 'Requested initial resistance') + ' ' + saved.initRes + '%.'),
+        hh('p', { id: 'micro-resistance-removal-policy' }, __alloMBT('stem.microbiology.resistance_recovery_policy', 'Restore this record before saving a new snapshot or removing another record. Either action replaces this recovery; saving an unchanged existing snapshot keeps it.')),
+        hh('p', null, __alloMBT('stem.microbiology.resistance_recovery_excluded', 'Removed evidence is not included in saved counts, comparisons, or downloads until restored. Its original evidence and later reflection are kept here.')),
+        hh('details', null, hh('summary', null, __alloMBT('stem.microbiology.resistance_recovery_review', 'Review removed evidence and reflection')),
+          hh('p', null, __alloMBT('stem.microbiology.resistance_recovery_prediction', 'Original prediction') + ': ' + evidencePrediction(saved.prediction)),
+          hh('p', null, __alloMBT('stem.microbiology.resistance_recovery_explanation', 'Selected explanation') + ': ' + evidenceExplanation(saved.explanation) +
+            (saved.explanation ? ' · ' + (saved.explanationSubmitted ? __alloMBT('stem.microbiology.resistance_recovery_submitted', 'Submitted') : __alloMBT('stem.microbiology.resistance_recovery_unsubmitted', 'Not submitted')) : '')),
+          hh('p', null, hh('strong', null, __alloMBT('stem.microbiology.resistance_recovery_original_notes', 'Original written evidence'))),
+          hh('blockquote', { 'data-resistance-removed-notes': true }, saved.notes || __alloMBT('stem.microbiology.resistance_recovery_not_recorded', 'Not recorded')),
+          hh('p', null, hh('strong', null, __alloMBT('stem.microbiology.resistance_recovery_reflection', 'Later reflection'))),
+          hh('blockquote', { 'data-resistance-removed-reflection': true }, item.reviewNote || __alloMBT('stem.microbiology.resistance_recovery_not_recorded', 'Not recorded')),
+          hh('div', { role: 'region', tabIndex: 0, 'aria-label': __alloMBT('stem.microbiology.resistance_recovery_counts_region', 'Removed snapshot counts'), style: { overflowX: 'auto' } },
+            hh('table', { id: 'micro-resistance-removed-counts', style: { width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', overflowWrap: 'anywhere', textAlign: 'right' } },
+              hh('caption', { style: { textAlign: 'left' } }, __alloMBT('stem.microbiology.resistance_recovery_counts_caption', 'Original living-cell counts. Shares are rounded to whole percentages; no survivors means an undefined share.')),
+              hh('thead', null, hh('tr', null, [__alloMBT('stem.microbiology.resistance_recovery_round', 'Round'), __alloMBT('stem.microbiology.resistance_recovery_sensitive', 'Sensitive'), __alloMBT('stem.microbiology.resistance_recovery_resistant', 'Resistant'), __alloMBT('stem.microbiology.resistance_recovery_total', 'Total alive'), __alloMBT('stem.microbiology.resistance_recovery_share', 'Resistant share')].map(function(label) { return hh('th', { key: label, scope: 'col', style: { padding: '7px 3px' } }, label); }))),
+              hh('tbody', null, saved.history.map(function(row) {
+                var total = row.sensitive + row.resistant;
+                return hh('tr', { key: row.day }, hh('th', { scope: 'row', style: { padding: '7px 3px' } }, row.day),
+                  [row.sensitive, row.resistant, total, total ? Math.round(row.resistant / total * 100) + '%' : __alloMBT('stem.microbiology.resistance_recovery_undefined', 'Undefined')].map(function(value, index) { return hh('td', { key: index, style: { padding: '7px 3px' } }, value); }));
+              }))))),
+        full ? hh('p', { id: 'micro-resistance-recovery-full' }, __alloMBT('stem.microbiology.resistance_recovery_full', 'This imported notebook has eight saved snapshots. The removed record is kept, but cannot be restored while the notebook is full.')) : null,
+        hh('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+          hh('button', { id: 'micro-resistance-restore-removed', type: 'button', disabled: full, 'aria-describedby': full ? 'micro-resistance-recovery-full' : 'micro-resistance-removal-policy', onClick: function() { changeRemoval('restore'); }, style: notebookButtonStyle }, __alloMBT('stem.microbiology.resistance_recovery_restore', 'Restore removed evidence')),
+          hh('button', { id: 'micro-resistance-keep-removal', type: 'button', onClick: function() { changeRemoval('keep'); }, style: notebookButtonStyle }, __alloMBT('stem.microbiology.resistance_recovery_keep', 'Keep removal'))));
+    }
     function evidenceNotebook() {
       var saved = selectedEvidence && selectedEvidence.evidence;
       var savedLast = saved && saved.history[saved.history.length - 1];
@@ -992,7 +1082,7 @@
         hh('textarea', { id: 'micro-resistance-notes', rows: 3, maxLength: 1200, value: notes, 'aria-describedby': 'micro-resistance-notes-hint', onChange: function(event) { setNotes(event.target.value.slice(0, 1200)); }, style: { display: 'block', boxSizing: 'border-box', width: '100%', minHeight: 88, resize: 'vertical', padding: 10, font: 'inherit', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid #64748b', borderRadius: 7 } }),
         hh('p', { id: 'micro-resistance-notes-hint', style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloMBT('stem.microbiology.resistance_notebook_notes_hint', 'Cite counts as well as percentages. Explain how survival and reproduction could account for the pattern. Editing this field changes the current run only; saved snapshots stay unchanged.')),
         hh('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
-          hh('button', { type: 'button', onClick: saveEvidence, disabled: !day || (notebook.records.length >= 8 && !matchingEvidence), style: notebookButtonStyle }, __alloMBT('stem.microbiology.resistance_notebook_save', 'Save evidence')),
+          hh('button', { type: 'button', onClick: saveEvidence, disabled: !day || (notebook.records.length >= 8 && !matchingEvidence), 'aria-describedby': notebook.removed ? 'micro-resistance-removal-policy' : undefined, style: notebookButtonStyle }, __alloMBT('stem.microbiology.resistance_notebook_save', 'Save evidence')),
           hh('button', { type: 'button', onClick: function() { downloadEvidence('text'); }, disabled: !notebook.records.length, style: notebookButtonStyle }, __alloMBT('stem.microbiology.resistance_notebook_download', 'Download resistance notebook')),
           hh('button', { type: 'button', onClick: function() { downloadEvidence('csv'); }, disabled: !notebook.records.length, style: notebookButtonStyle }, __alloMBT('stem.microbiology.resistance_notebook_download_csv', 'Download resistance CSV'))),
         hh('p', { role: 'status', 'aria-live': 'polite' }, notebook.records.length + '/8 ' + __alloMBT('stem.microbiology.resistance_notebook_record_count', 'snapshots saved.') + ' ' + (!day ? __alloMBT('stem.microbiology.resistance_notebook_need_round', 'Observe at least one round to save evidence.') : matchingEvidence ? __alloMBT('stem.microbiology.resistance_notebook_current_saved', 'The current evidence matches a saved snapshot.') : notebook.records.length >= 8 ? __alloMBT('stem.microbiology.resistance_notebook_full', 'The notebook is full. Download it, then remove a selected record to make room. Reset remains available and clears the current unsaved run.') : __alloMBT('stem.microbiology.resistance_notebook_unsaved', 'Current observations have not been saved. Saving pauses playback.'))),
@@ -1032,22 +1122,18 @@
                 hh('caption', { style: { textAlign: 'left', marginBottom: 6 } }, __alloMBT('stem.microbiology.resistance_notebook_caption', 'Saved living-cell counts. Shares are rounded to whole percentages; no surviving cells means an undefined share.')),
                 hh('thead', null, hh('tr', null, [__alloMBT('stem.microbiology.resistance_notebook_round', 'Round'), __alloMBT('stem.microbiology.resistance_notebook_sensitive_label', 'Sensitive'), __alloMBT('stem.microbiology.resistance_notebook_resistant_label', 'Resistant'), __alloMBT('stem.microbiology.resistance_notebook_total_label', 'Total alive'), __alloMBT('stem.microbiology.resistance_notebook_share_label', 'Resistant share')].map(function(label) { return hh('th', { key: label, scope: 'col' }, label); }))),
                 hh('tbody', null, saved.history.map(function(row) { var total = row.sensitive + row.resistant; return hh('tr', { key: row.day }, hh('th', { scope: 'row' }, row.day), hh('td', null, row.sensitive), hh('td', null, row.resistant), hh('td', null, total), hh('td', null, total ? Math.round(row.resistant / total * 100) + '%' : __alloMBT('stem.microbiology.resistance_notebook_undefined_short', 'Undefined'))); })))),
-            hh('button', { type: 'button', onClick: function() {
-              var removedId = selectedEvidence.id;
-              var records = notebook.records.filter(function(item) { return item.id !== removedId; });
-              var selectedId = records.length ? records[records.length - 1].id : null;
-              notebookFocusRef.current = selectedId ? 'micro-resistance-evidence-' + selectedId : 'micro-resistance-notebook-title';
-              updateNotebook({ records: records, selectedId: selectedId, nextId: notebook.nextId });
-              setNotebookNotice(__alloMBT('stem.microbiology.resistance_notebook_removed', 'Removed evidence') + ' ' + removedId + '. ' +
-                (selectedId ? __alloMBT('stem.microbiology.resistance_notebook_now_selected', 'Selected evidence') + ' ' + selectedId + '.' : __alloMBT('stem.microbiology.resistance_notebook_empty', 'No saved snapshots remain. Your current run is unchanged.')));
-            }, style: Object.assign({}, notebookButtonStyle, { marginTop: 12 }) }, __alloMBT('stem.microbiology.resistance_notebook_remove', 'Remove selected evidence'))
+            hh('button', { type: 'button', 'aria-describedby': notebook.removed ? 'micro-resistance-removal-policy' : undefined,
+              onClick: function() { changeRemoval('remove'); }, style: Object.assign({}, notebookButtonStyle, { marginTop: 12 }) }, __alloMBT('stem.microbiology.resistance_notebook_remove', 'Remove selected evidence'))
           ) : hh('p', null, __alloMBT('stem.microbiology.resistance_notebook_select', 'Choose a saved record to review it.'))
         ) : null,
+        removedEvidence(),
         evidenceComparison()
       );
     }
 
-    return hh('div', { style: { background: 'var(--allo-stem-deeper, rgba(15,23,42,0.7))', borderRadius: 12, padding: 16, marginBottom: 14, borderTop: '1px solid rgba(239,68,68,0.30)', borderRight: '1px solid rgba(239,68,68,0.30)', borderBottom: '1px solid rgba(239,68,68,0.30)', borderLeft: '4px solid #ef4444', boxShadow: '0 4px 20px rgba(239,68,68,0.10)' } },
+    return hh('div', { ref: resistanceOwnerRef, onClickCapture: cancelNotebookFocus, onPointerDownCapture: cancelNotebookFocus,
+      onKeyDownCapture: cancelNotebookFocus, onFocusCapture: cancelNotebookFocus, onInputCapture: cancelNotebookFocus, onChangeCapture: cancelNotebookFocus,
+      style: { background: 'var(--allo-stem-deeper, rgba(15,23,42,0.7))', borderRadius: 12, padding: 16, marginBottom: 14, borderTop: '1px solid rgba(239,68,68,0.30)', borderRight: '1px solid rgba(239,68,68,0.30)', borderBottom: '1px solid rgba(239,68,68,0.30)', borderLeft: '4px solid #ef4444', boxShadow: '0 4px 20px rgba(239,68,68,0.10)' } },
       hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(239,68,68,0.18)', border: '1.5px solid #ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🧫'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
@@ -1518,7 +1604,50 @@
       var value = parseEstimate(draft.value, draft.unit);
       return value === null || !saved || value !== saved.value || draft.unit !== saved.unit || ['method', 'mag', 'zoom'].some(function(key) { return draft.context[key] !== saved.context[key]; });
     }
-    return { sizes: sizes, normalize: normalize, finiteEstimate: finiteEstimate, parseEstimate: parseEstimate, pending: pending, sameResult: sameResult };
+    function exportRows(value) {
+      var measurements = normalize(value), rows = [];
+      var specimens = {
+        ecoli: ['E. coli', 'Length of the rod-shaped cell, from end to end'],
+        strep: ['Streptococcus', 'Diameter of one spherical cell, not the chain'],
+        parame: ['Paramecium', 'Length of the cell body, excluding cilia'],
+        plasmo: ['Plasmodium', 'Diameter of the host red blood cell, not the parasite ring'],
+        phage: ['T4 bacteriophage', 'Full height, from the top of the head to the lowest tail-fiber tip']
+      };
+      function add(id, record, kind) {
+        var context = record.context, checked = kind !== 'pending_draft';
+        var parsed = parseEstimate(record.value, record.unit);
+        var converted = parsed === null ? null : record.unit === 'nm' ? parsed / 1000 : parsed;
+        var error = checked ? Math.abs(converted - context.referenceUm) / context.referenceUm * 100 : null;
+        rows.push({ specimen_id: id, specimen_name: specimens[id][0], measured_feature: specimens[id][1], record_kind: kind,
+          original_value_text: String(record.value), original_unit: record.unit, estimate_um: converted,
+          value_status: parsed === null ? 'invalid_numeric' : 'valid_numeric', viewing_method: context.method,
+          magnification_x: context.mag, display_zoom_x: context.zoom, field_width_um: context.fieldUm, scale_bar_um: context.scaleUm,
+          reference_um: checked ? context.referenceUm : null, absolute_error_pct: error, within_practice_band: checked ? error <= 20 + 1e-9 : null,
+          model_note: 'Calibrated teaching drawing, not a biological sample or diagnostic result. The practice band is ±20% of the drawing reference, not laboratory uncertainty.',
+          calibration_note: 'Each row uses its own saved viewing context; historical focus is not stored. Draft readiness is not confirmed. um means micrometers; nm means nanometers.' });
+      }
+      Object.keys(sizes).forEach(function(id) {
+        var entry = measurements[id]; if (!entry) return;
+        if (entry.result) add(id, entry.result, 'current_checked');
+        if (entry.previousResult) add(id, entry.previousResult, 'previous_checked');
+        if (pending(entry)) add(id, entry.draft, 'pending_draft');
+      });
+      return rows;
+    }
+    function exportCSV(value) {
+      var rows = exportRows(value);
+      if (!rows.length) return null;
+      var headers = ['specimen_id', 'specimen_name', 'measured_feature', 'record_kind', 'original_value_text', 'original_unit', 'estimate_um', 'value_status',
+        'viewing_method', 'magnification_x', 'display_zoom_x', 'field_width_um', 'scale_bar_um', 'reference_um', 'absolute_error_pct', 'within_practice_band', 'model_note', 'calibration_note'];
+      function cell(value) {
+        var text = value === null ? '' : String(value);
+        // Keep malformed draft text visible without letting a spreadsheet execute it.
+        if (typeof value === 'string' && /^\s*[=+@-]/.test(text)) text = "'" + text;
+        return '"' + text.replace(/"/g, '""') + '"';
+      }
+      return [headers.map(cell).join(',')].concat(rows.map(function(row) { return headers.map(function(key) { return cell(row[key]); }).join(','); })).join('\r\n');
+    }
+    return { sizes: sizes, normalize: normalize, finiteEstimate: finiteEstimate, parseEstimate: parseEstimate, pending: pending, sameResult: sameResult, exportRows: exportRows, exportCSV: exportCSV };
   })();
   window.__MicrobiologyCore = window.__MicrobiologyCore || {};
   window.__MicrobiologyCore.measurements = MicroMeasurements;
@@ -1579,6 +1708,8 @@
     var notebookNoticeState = R.useState('');
     var notebookNotice = notebookNoticeState[0];
     var setNotebookNotice = notebookNoticeState[1];
+    var csvNoticeState = R.useState(null), csvNotice = csvNoticeState[0], setCsvNotice = csvNoticeState[1];
+    var csvSequenceRef = R.useRef(0);
     var historyNoticeState = R.useState(null);
     var historyNotice = historyNoticeState[0], setHistoryNotice = historyNoticeState[1];
     var measurementContext = { version: 1, specimen: organism, method: electronMode ? 'em' : 'lightbright', mag: mag, zoom: displayZoom, fieldUm: fieldUm, scaleUm: scaleUm, referenceUm: sel.sizeUm };
@@ -1586,6 +1717,8 @@
     // Records contain their own calibration, so later view changes cannot relabel them.
     function finiteEstimate(value) { return MicroMeasurements.finiteEstimate(value); }
     var measurements = MicroMeasurements.normalize(d.microscopeMeasurements);
+    var measurementCSV = MicroMeasurements.exportCSV(measurements);
+    R.useEffect(function() { setCsvNotice(null); }, [measurementCSV]);
     var measurement = measurements[organism] || {};
     var measurementDraft = measurement.draft || { value: '', unit: 'um', context: measurementContext };
     var estimateValue = MicroMeasurements.parseEstimate(measurementDraft.value, measurementDraft.unit);
@@ -1743,6 +1876,21 @@
         setNotebookNotice(__alloMBT('stem.microbiology.measure_export_started', 'The measurement notebook download has started.'));
       } catch (error) {
         setNotebookNotice(__alloMBT('stem.microbiology.measure_export_failed', 'The notebook download could not start. Your checked results and working estimates are still saved here.'));
+      } finally {
+        if (link) link.remove();
+        if (url) setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+      }
+    }
+    function downloadMeasurementCSV() {
+      if (measurementCSV === null) return;
+      var url = null, link = null;
+      try {
+        url = URL.createObjectURL(new Blob([measurementCSV], { type: 'text/csv;charset=utf-8' }));
+        link = document.createElement('a'); link.href = url; link.download = 'micro-lab-microscope-notebook.csv';
+        document.body.appendChild(link); link.click();
+        setCsvNotice({ text: measurementCSV, sequence: ++csvSequenceRef.current, message: __alloMBT('stem.microbiology.measure_csv_started', 'The measurement CSV download has started. Your saved results, working estimates, and microscope settings were kept.') });
+      } catch (error) {
+        setCsvNotice({ text: measurementCSV, sequence: ++csvSequenceRef.current, message: __alloMBT('stem.microbiology.measure_csv_failed', 'The measurement CSV could not download. Your saved results and working estimates are still here; try again.') });
       } finally {
         if (link) link.remove();
         if (url) setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
@@ -1973,7 +2121,10 @@
           );
         })),
         hh('button', { type: 'button', disabled: !notebookSlides.length, onClick: exportMeasurementNotebook, style: Object.assign({}, buttonStyle, { opacity: notebookSlides.length ? 1 : 0.6 }) }, __alloMBT('stem.microbiology.measure_download', 'Download measurement notebook')),
-        hh('p', { style: { marginBottom: 0, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloMBT('stem.microbiology.measure_export_history', 'The current checked estimate and any previous checked estimate are included for each slide. Working estimates remain saved in the lab.'))
+        hh('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloMBT('stem.microbiology.measure_export_history', 'The current checked estimate and any previous checked estimate are included for each slide. Working estimates remain saved in the lab.')),
+        hh('button', { id: 'micro-measurement-download-csv', type: 'button', disabled: measurementCSV === null, onClick: downloadMeasurementCSV, 'aria-describedby': 'micro-measurement-csv-help', style: Object.assign({}, buttonStyle, { opacity: measurementCSV === null ? 0.6 : 1 }) }, __alloMBT('stem.microbiology.measure_download_csv', 'Download measurement CSV')),
+        hh('p', { id: 'micro-measurement-csv-help', style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloMBT('stem.microbiology.measure_csv_help', 'The CSV separates current checks, previous checks, and pending drafts into rows with their own units and calibration. Draft rows are unscored; invalid text stays visible without a numeric conversion. Slides with no evidence have no row. Historical focus is not stored, and draft readiness is not confirmed.')),
+        hh('p', { id: 'micro-measurement-csv-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, style: { marginBottom: 0, color: microInk('#7dd3fc') } }, csvNotice && csvNotice.text === measurementCSV ? hh('span', { key: csvNotice.sequence }, csvNotice.message) : '')
       ),
       hh('p', { role: 'status', 'aria-live': 'polite', style: { margin: notebookNotice ? '10px 0 0' : 0, color: microInk('#7dd3fc'), fontSize: 11, lineHeight: 1.7 } }, notebookNotice),
       hh('p', { style: { margin: '12px 0 0', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloMBT('stem.microbiology.scope_references', 'Learn more') + ': ',
@@ -2363,6 +2514,16 @@
         claim: report.claim, evidence: unique(report.evidence, evidenceIds), reasoning: text(report.reasoning), limitation: 'bounded'
       } : null;
     }
+    function historyComparison(id, value) {
+      if (ids.indexOf(id) < 0) return null;
+      var entry = object(value), current = normalizeReport(id, entry.record), previous = normalizeReport(id, entry.previousRecord);
+      if (!current || !previous) return null;
+      var changes = reportChanges(Object.assign({}, current, { record: previous }));
+      if (!changes.length) return null;
+      return { current: current, previous: previous, changes: changes,
+        evidenceOnlyCurrent: current.evidence.filter(function(key) { return previous.evidence.indexOf(key) < 0; }),
+        evidenceOnlyPrevious: previous.evidence.filter(function(key) { return current.evidence.indexOf(key) < 0; }) };
+    }
     function normalize(value) {
       var raw = object(value), cases = {};
       ids.forEach(function(id) {
@@ -2419,7 +2580,7 @@
           feedback: mt('unresolved_feedback', 'The evidence supports a prokaryotic cell, but does not distinguish bacterium from archaeon. Requesting membrane, wall, or sequence evidence is a stronger next step than guessing.') }
       ];
     }
-    return { ids: ids.slice(), claims: claims.slice(), normalize: normalize, evaluate: evaluate, catalog: catalog, reportChanges: reportChanges, hasPendingRevision: hasPendingRevision };
+    return { ids: ids.slice(), claims: claims.slice(), normalize: normalize, evaluate: evaluate, catalog: catalog, reportChanges: reportChanges, hasPendingRevision: hasPendingRevision, historyComparison: historyComparison };
   })();
   window.__MicrobiologyCore.mystery = MicroMystery;
 
@@ -2660,7 +2821,7 @@
         mystery: mysteryId === undefined ? null : { kind: mysteryKind, id: mysteryId },
         microscope: slideId === undefined ? null : { kind: 'estimate', id: slideId },
         growth: growth.removed ? { kind: 'recovery', id: growth.removed.trial.id } : trialId === undefined ? null : { kind: 'explanation', id: trialId },
-        resistance: resistanceId === undefined ? null : { kind: unreflected.length ? 'reflection' : 'review', id: resistanceId },
+        resistance: resistanceBook.removed ? { kind: 'recovery', id: resistanceBook.removed.record.id } : resistanceId === undefined ? null : { kind: unreflected.length ? 'reflection' : 'review', id: resistanceId },
         gram: { kind: MicroGram.evaluate(raw.gramInvestigation, raw.gramStep).nextStep },
         quiz: quizAction
       };
@@ -2690,7 +2851,7 @@
         mystery: { records: mysteryRecorded, drafts: mysteryDrafts, revisions: mysteryRevisions, active: mysteries.active, started: mysteryRecorded + mysteryDrafts > 0 },
         microscope: { records: measured, drafts: measurementDrafts, started: measured + measurementDrafts > 0 },
         growth: { records: growth.trials.length, unexplained: growth.trials.filter(function(trial) { return !trial.explanation.trim(); }).length, removedId: growth.removed ? growth.removed.trial.id : null, sweep: !!growth.sweep, control: !!growth.control, legacyNotes: legacyNotes, started: !!(growth.removed || growth.trials.length || growth.sweep || growth.control || growth.prediction || growth.hypothesis.trim() || legacyNotes) },
-        resistance: { records: resistanceBook.records.length, unreflected: resistanceBook.records.filter(function(record) { return !record.reviewNote.trim(); }).length, round: resistance.day, duration: resistance.duration, status: window.__MicrobiologyCore.resistance.status(resistance), started: !!(resistanceBook.records.length || resistance.day || resistance.prediction || resistance.notes) },
+        resistance: { records: resistanceBook.records.length, unreflected: resistanceBook.records.filter(function(record) { return !record.reviewNote.trim(); }).length, removedId: resistanceBook.removed ? resistanceBook.removed.record.id : null, round: resistance.day, duration: resistance.duration, status: window.__MicrobiologyCore.resistance.status(resistance), started: !!(resistanceBook.removed || resistanceBook.records.length || resistance.day || resistance.prediction || resistance.notes) },
         quiz: { answered: quiz.answered, total: quiz.total, submitted: raw.quizSubmitted === true && quiz.missing.length === 0, correct: quiz.correct, missed: quiz.missed.length, practiced: practiced, started: quiz.answered > 0 },
         gram: { step: gram.step, observed: gram.maxStep, recorded: !!gram.record, revision: gramReview.pendingRevision, nextStep: gramReview.nextStep, started: !!(gram.record || gram.maxStep || gram.prediction || gram.interpretation || gram.explanation.trim()) }
       };
@@ -2907,6 +3068,8 @@
             return destinations[next.kind];
           }
           if (id === 'resistance') {
+            if (next.kind === 'recovery') return { label: ht('review_removed_evidence', 'Review removed evidence') + ' ' + next.id,
+              anchor: work.resistance.records >= MicroResistanceNotebook.maxRecords ? 'micro-resistance-removed-evidence' : 'micro-resistance-restore-removed' };
             var originalNotebook = objectValue(d.resistanceNotebook);
             var resistancePatch = Object.assign({}, originalNotebook, { selectedId: next.id });
             var resistanceUpdates = { resistanceNotebook: resistancePatch };
@@ -2955,7 +3118,9 @@
           { id: 'resistance', tab: 'resistance', icon: '🧫', title: ht('resistance', 'Resistance investigation'),
             count: String(work.resistance.records), metric: ht('resistance_records', 'saved evidence snapshots'),
             description: ht('resistance_prompt', 'Observe how survival changes a population across rounds.'),
-            detail: (work.resistance.status === 'extinct' ? ht('resistance_extinct', 'The current culture is extinct; its observations remain available.') : work.resistance.round ? ht('resistance_round', 'Current run at round') + ' ' + work.resistance.round + '/' + work.resistance.duration + '. ' + ht('resistance_paused', 'Playback is paused when you return.') : ht('resistance_detail', 'Save evidence before starting another run.')) + (work.resistance.unreflected ? ' ' + ht('resistance_unreflected', 'Saved snapshots without a later reflection') + ': ' + work.resistance.unreflected : ''),
+            detail: h('span', null,
+              h('span', null, (work.resistance.status === 'extinct' ? ht('resistance_extinct', 'The current culture is extinct; its observations remain available.') : work.resistance.round ? ht('resistance_round', 'Current run at round') + ' ' + work.resistance.round + '/' + work.resistance.duration + '. ' + ht('resistance_paused', 'Playback is paused when you return.') : ht('resistance_detail', 'Save evidence before starting another run.')) + (work.resistance.unreflected ? ' ' + ht('resistance_unreflected', 'Saved snapshots without a later reflection') + ': ' + work.resistance.unreflected : '')),
+              work.resistance.removedId !== null ? h('span', { 'data-work-recovery': 'resistance', style: { display: 'block', marginTop: 8 } }, ht('removed_evidence', 'Removed evidence') + ' ' + work.resistance.removedId + '. ' + ht('resistance_recovery', 'Review its recovery before saving a new snapshot or removing another. It is not included in the saved-evidence count.')) : null),
             action: ht('open_resistance', 'Open resistance notebook') },
           { id: 'quiz', tab: 'quiz', icon: '📝', title: ht('quiz', 'Quiz and practice'),
             count: (work.quiz.submitted ? work.quiz.correct : work.quiz.answered) + '/' + work.quiz.total,
@@ -6647,26 +6812,31 @@
         }
         function focusReport(view, caseId) {
           caseId = caseId || state.active;
-          var priorHeading = document.getElementById('micro-mystery-report-heading');
-          var owner = priorHeading && priorHeading.closest('[data-micro-mystery]');
+          focusAfterUpdate('micro-mystery-report-heading', caseId, view);
+        }
+        function focusAfterUpdate(id, caseId, view) {
+          var priorHeading = document.getElementById(id), owner = priorHeading && priorHeading.closest('[data-micro-mystery]');
+          var request = {}, updateVersion = __alloMBUpdateVersion;
+          if (owner) owner.__microMysteryFocusRequest = request;
           setTimeout(function() {
-            var heading = document.getElementById('micro-mystery-report-heading');
-            if (owner && owner.isConnected && heading === priorHeading && owner.contains(heading) && heading.getAttribute('data-case') === caseId && heading.getAttribute('data-report-view') === view) heading.focus();
+            var heading = document.getElementById(id), tab = document.getElementById('micro-tab-mystery');
+            if (updateVersion === __alloMBUpdateVersion && owner && owner.isConnected && owner.__microMysteryFocusRequest === request &&
+              heading === priorHeading && owner.contains(heading) && heading.getAttribute('data-case') === caseId &&
+              (!view || heading.getAttribute('data-report-view') === view) && tab && tab.getAttribute('aria-selected') === 'true') {
+              owner.__microMysteryFocusRequest = null;
+              heading.focus();
+            }
           }, 0);
         }
+        function cancelDeferredFocus(event) { event.currentTarget.__microMysteryFocusRequest = null; }
         function chooseReportView(view) {
           if (view === 'recorded' && !draft.record) return;
           save({ reportView: view });
           focusReport(view);
         }
         function chooseCase(id) {
-          var priorHeading = document.getElementById('micro-mystery-observation-heading');
-          var owner = priorHeading && priorHeading.closest('[data-micro-mystery]');
           upd({ mysteryLab: Object.assign({}, state, { active: id, notice: '' }) });
-          setTimeout(function() {
-            var heading = document.getElementById('micro-mystery-observation-heading');
-            if (owner && owner.isConnected && heading === priorHeading && owner.contains(heading) && heading.getAttribute('data-case') === id) heading.focus();
-          }, 0);
+          focusAfterUpdate('micro-mystery-observation-heading', id);
         }
         function chooseRevision(id) {
           var updated = Object.assign({}, state.cases);
@@ -6765,10 +6935,36 @@
             h('p', null, limitationLabel(saved.limitation)),
             h('small', null, mt('recorded_read_only', 'This is a read-only view of your recorded report. Switch to Working notes to continue your unfinished revisions.')));
         }
+        function compareRecordedVersions() {
+          var comparison = M.historyComparison(state.active, draft);
+          if (!comparison) return null;
+          var names = { claim: mt('compare_claim', 'Classification'), evidence: mt('compare_evidence', 'Cited observations'), reasoning: mt('compare_reasoning', 'Written reasoning'), limitation: mt('compare_limit', 'Conclusion about limits') };
+          var headingId = 'micro-mystery-history-comparison-heading-' + state.active;
+          function citationNames(ids) {
+            return ids.length ? evidence.filter(function(pair) { return ids.indexOf(pair[0]) >= 0; }).map(function(pair) { return pair[1]; }).join('; ') : mt('history_no_exclusive_citations', 'None');
+          }
+          return h('section', { 'data-mystery-history-comparison': state.active, 'aria-labelledby': headingId },
+            h('h5', { id: headingId }, mt('history_compare_title', 'Compare recorded versions')),
+            h('p', null, mt('history_compare_note', 'Only fields that differ are shown. This compares the two saved reports; your working notes and observation view stay separate. Restoring swaps which version is current.')),
+            h('p', { 'data-mystery-history-fields': true }, mt('history_changed_fields', 'Fields that differ') + ': ' + comparison.changes.map(function(key) { return names[key]; }).join('; ') + '.'),
+            comparison.changes.map(function(key) {
+              var fieldId = 'micro-mystery-history-comparison-' + state.active + '-' + key;
+              return h('section', { key: key, 'data-mystery-history-change': key, 'aria-labelledby': fieldId },
+                h('h6', { id: fieldId }, names[key]),
+                key === 'evidence' ? h('div', null,
+                  h('p', { 'data-history-citations': 'previous' }, mt('history_only_previous', 'Cited only in the previous report') + ': ' + citationNames(comparison.evidenceOnlyPrevious)),
+                  h('p', { 'data-history-citations': 'current' }, mt('history_only_current', 'Cited only in the current report') + ': ' + citationNames(comparison.evidenceOnlyCurrent))) : null,
+                h('div', { className: 'micro-mystery-comparison-values' },
+                  h('div', { 'data-history-version': 'previous' }, h('p', null, h('strong', null, mt('history_previous_version', 'Previous recorded report'))), comparisonValue(key, comparison.previous)),
+                  h('div', { 'data-history-version': 'current' }, h('p', null, h('strong', null, mt('history_current_version', 'Current recorded report'))), comparisonValue(key, comparison.current))));
+            }));
+        }
         function previousReport() {
           return h('details', { key: 'history-' + state.active, className: 'micro-mystery-comparison', 'data-mystery-history': state.active },
             h('summary', null, mt('previous_review', 'Review previous report')),
             h('p', null, mt('previous_note', 'One previous report is kept for this case. Restoring swaps the two recorded reports and keeps your working notes. Your next report update replaces the previous report.')),
+            compareRecordedVersions(),
+            h('h5', null, mt('history_full_previous', 'Full previous report')),
             h('div', { 'data-previous-report': state.active },
               [['claim', mt('previous_claim', 'Previous recorded classification')], ['evidence', mt('previous_evidence', 'Previous supporting observations')],
                 ['reasoning', mt('previous_reasoning', 'Previous written reasoning')], ['limitation', mt('previous_limit', 'Previous conclusion about limits')]].map(function(pair) {
@@ -6794,7 +6990,9 @@
             h('svg', { viewBox: '0 0 260 200', role: 'img', 'aria-label': visible ? current.size : mt('drawing_hidden', 'Specimen image not yet revealed') }, graphic),
             h('figcaption', null, visible ? mt('drawing_note', 'Illustrative shape only; each image uses its own scale. Read the size observation for units.') : mt('drawing_prompt', 'Reveal “Size and shape” to inspect this specimen.')));
         }
-        return h('div', { className: 'micro-mystery', 'data-micro-mystery': current.id },
+        return h('div', { className: 'micro-mystery', 'data-micro-mystery': current.id,
+          onClickCapture: cancelDeferredFocus, onPointerDownCapture: cancelDeferredFocus, onKeyDownCapture: cancelDeferredFocus,
+          onFocusCapture: cancelDeferredFocus, onInputCapture: cancelDeferredFocus, onChangeCapture: cancelDeferredFocus },
           h('style', null,
             '.micro-mystery{max-width:1160px;margin:auto;padding:24px;color:var(--allo-stem-text,#e2e8f0);font-size:14px;line-height:1.6}.micro-mystery *{box-sizing:border-box}.micro-mystery h3{font-size:29px;line-height:1.2;margin:4px 0 10px}.micro-mystery h4{font-size:18px;margin:0 0 12px}.micro-mystery p{margin:8px 0 14px}.micro-mystery-kicker{font-size:11px;font-weight:800;letter-spacing:1.4px;color:#7dd3fc}.micro-mystery small{color:var(--allo-stem-text-soft,#94a3b8);font-size:12px}.micro-mystery-header{display:flex;gap:20px;justify-content:space-between;align-items:center}.micro-mystery-header>div{max-width:760px}.micro-mystery-progress{flex-shrink:0;font-size:14px;border:1px solid #0e7490;border-radius:12px;padding:16px;background:#083344;color:#cffafe}.micro-mystery button{min-height:44px;padding:10px 14px;background:var(--allo-stem-button-bg,#0f172a);color:var(--allo-stem-button-text,#e2e8f0);border:1px solid #475569;border-radius:8px;font:inherit;font-size:13px;cursor:pointer}.micro-mystery button:disabled{opacity:.5;cursor:default}.micro-mystery :is(button,input,textarea,summary,a,h4):focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}.micro-mystery-cases{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:22px 0}.micro-mystery-cases button{display:flex;align-items:center;gap:12px;text-align:left}.micro-mystery-cases button[aria-pressed=true]{background:#083344;border-color:#7dd3fc}.micro-mystery-cases b{font-size:22px;color:#7dd3fc}.micro-mystery-cases span{display:block}.micro-mystery-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}.micro-mystery-card{background:var(--allo-stem-panel,#1e293b);border:1px solid var(--allo-stem-border,#334155);padding:22px;border-radius:14px;min-width:0;margin-bottom:18px}.micro-mystery-figure{background:#071426;border:1px solid #334155;border-radius:12px;margin:0 0 18px;padding:14px}.micro-mystery-figure svg{display:block;width:100%;max-height:230px}.micro-mystery-figure figcaption{font-size:12px;color:#cbd5e1;text-align:center}.micro-mystery-clue{border-top:1px solid #475569;padding:12px 0}.micro-mystery-clue button{width:100%;text-align:left}.micro-mystery-clue p{margin:10px 0 4px;font-size:13px}.micro-mystery fieldset{border:0;padding:0;margin:18px 0}.micro-mystery legend{font-weight:800;font-size:14px;margin-bottom:9px}.micro-mystery label{display:flex;align-items:flex-start;gap:9px;padding:9px 0;font-size:13px;cursor:pointer}.micro-mystery input{margin-top:5px;accent-color:#34d399;flex-shrink:0}.micro-mystery .micro-mystery-choice{padding:9px 12px;border:1px solid #475569;border-radius:8px;margin:7px 0}.micro-mystery-choice:has(input:checked){border-color:#6ee7b7;background:#064e3b}.micro-mystery label:has(input:disabled){opacity:.5;cursor:default}.micro-mystery textarea{width:100%;background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text,#e2e8f0);border:1px solid #64748b;border-radius:8px;padding:12px;font:inherit;resize:vertical;min-height:110px}.micro-mystery .micro-mystery-primary{background:#6ee7b7;color:#052e22;border-color:#6ee7b7;font-weight:800}.micro-mystery-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.micro-mystery-review{padding:14px;border:1px solid #fbbf24;border-radius:9px;margin-top:16px;background:#1c2536}.micro-mystery-review[data-ready=true]{border-color:#6ee7b7}.micro-mystery-record{border-left:3px solid #6ee7b7;padding:14px;margin-top:20px;background:#0f172a}.micro-mystery-record p{white-space:pre-wrap;overflow-wrap:anywhere}.micro-mystery a{color:#7dd3fc;text-underline-offset:3px}.micro-mystery footer{font-size:12px;color:#cbd5e1}.micro-mystery summary{cursor:pointer;padding:7px 0;font-weight:700}.micro-mystery-comparison{margin-top:16px}.micro-mystery-comparison section{border-top:1px solid #64748b;padding:12px 0}.micro-mystery-comparison h5{font-size:14px;margin:0 0 8px}.micro-mystery-comparison h6{font-size:12px;margin:0 0 8px}.micro-mystery-comparison-values{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.micro-mystery-comparison-values>div{min-width:0;background:var(--allo-stem-canvas,#0f172a);padding:10px;border:1px solid var(--allo-stem-border,#334155);border-radius:8px}.micro-mystery-comparison :is(p,li){white-space:pre-wrap;overflow-wrap:anywhere}.micro-mystery-comparison ul{padding-left:18px;margin:8px 0}@media(max-width:760px){.micro-mystery{padding:16px 12px}.micro-mystery-grid,.micro-mystery-comparison-values{grid-template-columns:1fr}.micro-mystery-cases{grid-template-columns:repeat(2,minmax(0,1fr))}.micro-mystery-header{display:block}.micro-mystery-progress{display:inline-block;padding:8px 14px}.micro-mystery-card{padding:16px}.micro-mystery h3{font-size:25px}.micro-mystery-cases button{padding:10px;gap:8px;font-size:12px}}.theme-contrast .micro-mystery :is(p,span,small,b,h3,h4,legend,label,figcaption,a){color:#ffff00}.theme-contrast .micro-mystery :is(button,.micro-mystery-card,.micro-mystery-choice,.micro-mystery-progress,.micro-mystery-record,.micro-mystery-review){background:#000;color:#ffff00;border-color:#ffff00}'
           ),
@@ -7315,8 +7513,7 @@
         ),
         h('button', { type: 'button', className: 'micro-library-toggle', style: { alignSelf: 'flex-end', width: 'auto', margin: '8px 16px' }, 'aria-expanded': showFullMicroNav, onClick: function() { upd({ showMicroLibrary: !showFullMicroNav, tab: showFullMicroNav && MICRO_CORE_TABS.indexOf(d.tab) === -1 ? 'home' : d.tab }); } }, showFullMicroNav ? __alloT('stem.microbiology.hide_topic_library', 'Hide topic library') : __alloT('stem.microbiology.show_topic_library', 'Show topic library')),
         tabBar,
-        d.tab === 'home' && renderWorkspaceHome(),
-        h('section', { id: 'micro-content', role: 'tabpanel', 'aria-labelledby': 'micro-tab-' + d.tab, tabIndex: 0, className: 'micro-content-region', 'aria-label': currentMicroTab.label + ' content', style: { flex: 1, overflow: 'auto', minWidth: 0 } }, body)
+        h('section', { id: 'micro-content', role: 'tabpanel', 'aria-labelledby': 'micro-tab-' + d.tab, tabIndex: 0, className: 'micro-content-region', 'aria-label': currentMicroTab.label + ' content', style: { flex: 1, overflow: 'auto', minWidth: 0 } }, d.tab === 'home' ? renderWorkspaceHome() : body)
       );
     }
   });

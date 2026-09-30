@@ -29,6 +29,35 @@ function measurement(value = 2, unit = 'um') {
 function caseRecord() { return { claim: 'protist', evidence: ['structure', 'behavior'], reasoning: 'Nuclei and coordinated cilia support a ciliated protist.', limitation: 'bounded' }; }
 
 describe('Micro Lab saved-work overview', { timeout: 20000 }, () => {
+  it('places all Home activity content inside the panel linked to the selected tab', () => {
+    const seed = { growthInvestigation: { trials: [{ id: 7, conditions: {}, explanation: 'A saved observation.' }] } };
+    mount(seed);
+    const panel = mounted.container.querySelector('#micro-content');
+    expect(panel.getAttribute('role')).toBe('tabpanel');
+    expect(panel.getAttribute('aria-labelledby')).toBe('micro-tab-home');
+    expect(mounted.container.querySelector('#micro-tab-home').getAttribute('aria-selected')).toBe('true');
+    expect(panel.querySelectorAll('[data-work-card]')).toHaveLength(6);
+    expect(panel.contains(mounted.container.querySelector('#micro-workspace-title'))).toBe(true);
+    click(mounted.container.querySelector('#micro-tab-growthLab'));
+    click(mounted.container.querySelector('#micro-tab-home'));
+    expect(panel.querySelectorAll('[data-work-card]')).toHaveLength(6);
+    expect(mounted.state.growthInvestigation).toEqual(seed.growthInvestigation);
+  });
+
+  it('counts removed Resistance evidence as started work without counting it as saved or unreflected', () => {
+    const evidence = core().resistance.evidence({ dose: 30, duration: 3, initRes: 10, prediction: 'increase', notes: 'Original evidence.',
+      history: [{ day: 0, sensitive: 72, resistant: 8 }, { day: 1, sensitive: 60, resistant: 8 }] });
+    const resistanceNotebook = { records: [], removed: { record: { id: 7, evidence, reviewNote: 'Later reflection.' }, index: 0 } };
+    const before = JSON.stringify(resistanceNotebook);
+    expect(core().work.summarize({ resistanceNotebook }).resistance).toMatchObject({ started: true, records: 0, unreflected: 0, removedId: 7 });
+    mount({ resistanceNotebook });
+    const card = mounted.container.querySelector('[data-work-card="resistance"]');
+    expect(card.querySelector('strong').textContent).toBe('0');
+    expect(card.querySelector('[data-work-recovery="resistance"]').textContent).toContain('Removed evidence 7');
+    expect(card.querySelector('[data-work-next="resistance"]').textContent).toBe('Review removed evidence 7');
+    expect(JSON.stringify(mounted.state.resistanceNotebook)).toBe(before);
+  });
+
   it('starts with six accurate empty activity cards and no invented completion', () => {
     mount(); const summary = core().work.summarize({});
     expect(summary.started).toBe(0);

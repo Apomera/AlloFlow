@@ -121,11 +121,14 @@ test('announces the last resistance-record removal and keeps keyboard focus and 
   const remove = notebook.getByRole('button', { name: 'Remove selected evidence', exact: true });
   await remove.focus();
   await page.keyboard.press('Enter');
-  await expect(notebook.getByRole('heading', { name: 'Resistance evidence notebook', exact: true })).toBeFocused();
-  await expect(notebook.locator('[data-resistance-notebook-notice]')).toHaveText('Removed evidence 6. No saved snapshots remain. Your current run is unchanged.');
+  await expect(notebook.locator('#micro-resistance-restore-removed')).toBeFocused();
+  await expect(notebook.locator('[data-resistance-notebook-notice]')).toHaveText('Removed evidence 6. It is available to restore below.');
   await expect(notebook.locator('[data-resistance-notebook-notice]')).toHaveAttribute('role', 'status');
   await expect(notebook.locator('[data-resistance-notebook-notice]')).toHaveAttribute('aria-live', 'polite');
   await expect(disclosure).toHaveCount(0);
+  expect((await state(page)).resistanceNotebook.removed.record.id).toBe(6);
+  await notebook.locator('#micro-resistance-keep-removal').press('Enter');
+  await expect(notebook.getByRole('heading', { name: 'Resistance evidence notebook', exact: true })).toBeFocused();
   expect((await state(page)).resistanceNotebook).toEqual({ records: [], selectedId: null, nextId: 8 });
   expect((await state(page)).resistanceInvestigation).toEqual(currentRun);
   await page.keyboard.press('Tab');

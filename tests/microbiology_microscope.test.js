@@ -80,6 +80,23 @@ function savedMeasurementContext(id, method, mag, zoom) {
   return { version: 1, specimen: id, method, mag, zoom, fieldUm, scaleUm, referenceUm };
 }
 
+function parseMeasurementCSV(csv) {
+  const rows = []; let row = [], field = '', quoted = false;
+  for (let i = 0; i < csv.length; i++) {
+    const character = csv[i];
+    if (character === '"') {
+      if (quoted && csv[i + 1] === '"') { field += '"'; i++; } else quoted = !quoted;
+    } else if (!quoted && character === ',') { row.push(field); field = ''; }
+    else if (!quoted && (character === '\r' || character === '\n')) {
+      if (character === '\r' && csv[i + 1] === '\n') i++;
+      row.push(field); rows.push(row); row = []; field = '';
+    } else field += character;
+  }
+  row.push(field); rows.push(row);
+  const headers = rows.shift();
+  return { headers, rows: rows.map(values => Object.fromEntries(headers.map((header, index) => [header, values[index]]))) };
+}
+
 describe('Calibrated virtual microscope', () => {
   it('keeps light microscopy resolution separate from large saved magnification and display zoom', () => {
     const awardXP = mount({ scopeOrganism: 'phage', magnification: 100000, microscopeZoom: 50, microscopeFocus: 50 });
@@ -582,6 +599,200 @@ describe('Microscope notebook review and export', () => {
     expect(document.querySelector('a[download="micro-lab-microscope-notebook.txt"]')).toBeNull();
     act(() => vi.advanceTimersByTime(1000));
     expect(download.revokeUrl).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('Microscope measurement CSV evidence', () => {
+  const ecoliContext = () => savedMeasurementContext('ecoli', 'lightbright', 1000, 20);
+  const checked = (value, unit = 'um', context = ecoliContext()) => ({ value, unit, context });
+  const historyEntry = () => ({
+    result: checked(2.1234567890123),
+    previousResult: checked(1000, 'nm', savedMeasurementContext('ecoli', 'em', 10000, 1)),
+    draft: { value: '3000', unit: 'nm', context: savedMeasurementContext('ecoli', 'lightbright', 400, 50) }
+  });
+
+  it('exports all five features and checked versions with exact units and their own saved calibration', () => {
+    const raw = {
+      ecoli: historyEntry(),
+      strep: { result: checked(1000, 'nm', savedMeasurementContext('strep', 'lightbright', 1000, 20)) },
+      parame: { result: checked(250, 'um', savedMeasurementContext('parame', 'lightbright', 400, 1)) },
+      plasmo: { result: checked(7.5, 'um', savedMeasurementContext('plasmo', 'lightbright', 1000, 4)) },
+      phage: { result: checked(200, 'nm', savedMeasurementContext('phage', 'em', 100000, 1)) }
+    };
+    const before = JSON.stringify(raw), rows = measurementsCore.exportRows(raw);
+    expect(rows.map(row => [row.specimen_id, row.record_kind])).toEqual([
+      ['ecoli', 'current_checked'], ['ecoli', 'previous_checked'], ['ecoli', 'pending_draft'],
+      ['strep', 'current_checked'], ['parame', 'current_checked'], ['plasmo', 'current_checked'], ['phage', 'current_checked']
+    ]);
+    expect(rows[0]).toMatchObject({ original_value_text: '2.1234567890123', original_unit: 'um', estimate_um: 2.1234567890123,
+      viewing_method: 'lightbright', magnification_x: 1000, display_zoom_x: 20, field_width_um: 9, scale_bar_um: 2, reference_um: 2, within_practice_band: true });
+    expect(rows[0].absolute_error_pct).toBeCloseTo(6.172839450615, 9);
+    expect(rows[1]).toMatchObject({ original_value_text: '1000', original_unit: 'nm', estimate_um: 1,
+      viewing_method: 'em', magnification_x: 10000, display_zoom_x: 1, field_width_um: 4, scale_bar_um: 1, reference_um: 2, absolute_error_pct: 50, within_practice_band: false });
+    expect(rows[2]).toMatchObject({ original_value_text: '3000', estimate_um: 3, magnification_x: 400, display_zoom_x: 50, reference_um: null, absolute_error_pct: null, within_practice_band: null });
+    expect(rows[3].measured_feature).toContain('one spherical cell');
+    expect(rows[4].measured_feature).toContain('excluding cilia');
+    expect(rows[5].measured_feature).toContain('host red blood cell, not the parasite');
+    expect(rows[6]).toMatchObject({ specimen_name: 'T4 bacteriophage', original_value_text: '200', original_unit: 'nm', estimate_um: 0.2, reference_um: 0.2 });
+    expect(rows[6].measured_feature).toContain('lowest tail-fiber tip');
+    for (const row of rows) {
+      expect(row.calibration_note).toContain('historical focus is not stored');
+      expect(row.calibration_note).toContain('Draft readiness is not confirmed');
+      expect(row.model_note).toContain('not laboratory uncertainty');
+    }
+    expect(measurementsCore.exportRows(JSON.parse(before))).toEqual(rows);
+    expect(JSON.stringify(raw)).toBe(before);
+  });
+
+  it('rejects invalid or orphan checked evidence and omits empty and already checked drafts', () => {
+    for (const raw of [null, [], 'bad', {}, { unknown: { result: checked(2) } },
+      { ecoli: { previousResult: checked(2) } }, { ecoli: { result: checked('2') } },
+      { ecoli: { result: checked(2, 'um', { ...ecoliContext(), fieldUm: 0 }) } },
+      { ecoli: { draft: { value: '  ', unit: 'um', context: ecoliContext() } } },
+      { ecoli: { draft: { value: '2', unit: 'um', context: { ...ecoliContext(), specimen: 'phage' } } } }]) {
+      expect(measurementsCore.exportRows(raw)).toEqual([]); expect(measurementsCore.exportCSV(raw)).toBeNull();
+    }
+    const raw = { ecoli: { result: checked(2), previousResult: checked(2), draft: { value: '2e0', unit: 'um', context: ecoliContext() } } };
+    expect(measurementsCore.exportRows(raw).map(row => row.record_kind)).toEqual(['current_checked']);
+    const retained = measurementsCore.exportRows({ ecoli: { result: checked(0), previousResult: checked(4), draft: { value: '3', unit: 'um', context: ecoliContext() } } });
+    expect(retained).toHaveLength(1); expect(retained[0]).toMatchObject({ record_kind: 'pending_draft', original_value_text: '3', reference_um: null });
+  });
+
+  it('preserves invalid numeric drafts and only converts strict finite positive values without grading them', () => {
+    for (const value of ['0x2', '+2', '2.', ' 2 ', '5e-324', '1e-999', 'NaN', '1e10', '0', '-2']) {
+      const row = measurementsCore.exportRows({ ecoli: { draft: { value, unit: 'nm', context: ecoliContext() } } })[0];
+      expect(row).toMatchObject({ record_kind: 'pending_draft', original_value_text: value, original_unit: 'nm', value_status: 'invalid_numeric',
+        estimate_um: null, reference_um: null, absolute_error_pct: null, within_practice_band: null });
+    }
+    for (const [value, unit, converted] of [['2e3', 'nm', 2], ['.2', 'um', 0.2], ['5e-324', 'um', Number.MIN_VALUE], ['5e-321', 'nm', Number.MIN_VALUE]]) {
+      const row = measurementsCore.exportRows({ ecoli: { draft: { value, unit, context: ecoliContext() } } })[0];
+      expect(row).toMatchObject({ original_value_text: value, value_status: 'valid_numeric', estimate_um: converted,
+        reference_um: null, absolute_error_pct: null, within_practice_band: null });
+    }
+  });
+
+  it('keeps unresolved, cropped and too-small draft views without claiming readiness or a checked estimate', () => {
+    for (const [id, method, mag, zoom] of [['phage', 'lightbright', 1000, 20], ['parame', 'lightbright', 1000, 1], ['ecoli', 'lightbright', 1000, 1]]) {
+      const context = savedMeasurementContext(id, method, mag, zoom);
+      const rows = measurementsCore.exportRows({ [id]: { draft: { value: '225', unit: 'nm', context } } });
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toMatchObject({ specimen_id: id, record_kind: 'pending_draft', estimate_um: 0.225,
+        viewing_method: method, magnification_x: mag, display_zoom_x: zoom, field_width_um: context.fieldUm, scale_bar_um: context.scaleUm,
+        reference_um: null, absolute_error_pct: null, within_practice_band: null });
+      expect(rows[0].calibration_note).toContain('Draft readiness is not confirmed');
+    }
+  });
+
+  it('writes a stable CSV schema and safely quotes malformed draft formulas, commas, quotes and newlines', () => {
+    const headers = ['specimen_id', 'specimen_name', 'measured_feature', 'record_kind', 'original_value_text', 'original_unit', 'estimate_um', 'value_status',
+      'viewing_method', 'magnification_x', 'display_zoom_x', 'field_width_um', 'scale_bar_um', 'reference_um', 'absolute_error_pct', 'within_practice_band', 'model_note', 'calibration_note'];
+    for (const value of ['=SUM(1,2)\n"draft"', '  +2', '\t@draft', '-2', '"a,b"\nsecond line', 'x'.repeat(40)]) {
+      const csv = measurementsCore.exportCSV({ ecoli: { draft: { value, unit: 'um', context: ecoliContext() } } });
+      const parsed = parseMeasurementCSV(csv), original = value.slice(0, 32);
+      expect(parsed.headers).toEqual(headers); expect(parsed.rows).toHaveLength(1);
+      expect(parsed.rows[0].original_value_text).toBe((/^\s*[=+@-]/.test(original) ? "'" : '') + original);
+      expect(parsed.rows[0]).toMatchObject({ estimate_um: '', reference_um: '', absolute_error_pct: '', within_practice_band: '', value_status: 'invalid_numeric' });
+      expect(Object.values(parsed.rows[0]).every(value => typeof value === 'string')).toBe(true);
+    }
+    const numeric = parseMeasurementCSV(measurementsCore.exportCSV({ ecoli: { result: checked(2) } })).rows[0];
+    expect(numeric).toMatchObject({ original_value_text: '2', estimate_um: '2', absolute_error_pct: '0', within_practice_band: 'true' });
+  });
+
+  it('enables CSV for an unchecked-only notebook while keeping empty downloads and checked-only TXT disabled', () => {
+    const awards = mount();
+    expect(button('Download measurement CSV').disabled).toBe(true); expect(button('Download measurement notebook').disabled).toBe(true);
+    const draft = { value: '=2+2', unit: 'nm', context: savedMeasurementContext('phage', 'lightbright', 1000, 20) };
+    act(() => updateState({ microscopeMeasurements: { phage: { draft } } }));
+    const trigger = button('Download measurement CSV');
+    expect(trigger.id).toBe('micro-measurement-download-csv'); expect(trigger.disabled).toBe(false);
+    expect(trigger.getAttribute('aria-describedby')).toBe('micro-measurement-csv-help');
+    expect(button('Download measurement notebook').disabled).toBe(true);
+    const download = captureNotebookDownload(); vi.useFakeTimers(); click('Download measurement CSV');
+    expect(parseMeasurementCSV(download.contents[0]).rows[0]).toMatchObject({ specimen_id: 'phage', record_kind: 'pending_draft', original_value_text: "'=2+2", viewing_method: 'lightbright', estimate_um: '', reference_um: '' });
+    expect(latestState.microscopeMeasurements).toEqual({ phage: { draft } }); expect(awards).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(1000));
+  });
+
+  it('downloads original contexts without substituting the current view or changing focus, work or awards', () => {
+    const entry = historyEntry(), awards = mount({ scopeOrganism: 'phage', selectedScope: 'em', magnification: 100000, microscopeZoom: 1,
+      microscopeMeasurements: { ecoli: entry }, microscopeSeenSlides: ['ecoli'] });
+    const before = JSON.parse(JSON.stringify(latestState)), download = captureNotebookDownload(); vi.useFakeTimers();
+    const trigger = button('Download measurement CSV'); trigger.focus(); click('Download measurement CSV');
+    expect(download.links).toEqual([{ filename: 'micro-lab-microscope-notebook.csv', href: 'blob:micro-notebook-test' }]);
+    expect(parseMeasurementCSV(download.contents[0]).rows.map(row => [row.record_kind, row.viewing_method, row.magnification_x, row.display_zoom_x])).toEqual([
+      ['current_checked', 'lightbright', '1000', '20'], ['previous_checked', 'em', '10000', '1'], ['pending_draft', 'lightbright', '400', '50']
+    ]);
+    expect(latestState).toEqual(before); expect(document.activeElement).toBe(trigger); expect(awards).not.toHaveBeenCalled();
+    const notice = container.querySelector('#micro-measurement-csv-status');
+    expect(notice.getAttribute('role')).toBe('status'); expect(notice.getAttribute('aria-live')).toBe('polite');
+    expect(notice.textContent).toContain('CSV download has started');
+    expect(document.querySelector('a[download="micro-lab-microscope-notebook.csv"]')).toBeNull();
+    act(() => vi.advanceTimersByTime(1000)); expect(download.revokeUrl).toHaveBeenCalledWith('blob:micro-notebook-test');
+  });
+
+  it('reports CSV failures, cleans links and URLs, retries, and reannounces repeated successful downloads', () => {
+    mount({ microscopeMeasurements: { ecoli: historyEntry() } });
+    const before = JSON.parse(JSON.stringify(latestState)), download = captureNotebookDownload(); vi.useFakeTimers();
+    const trigger = button('Download measurement CSV'); trigger.focus();
+    download.createUrl.mockImplementationOnce(() => { throw new Error('URL unavailable'); });
+    click('Download measurement CSV'); expect(container.querySelector('#micro-measurement-csv-status').textContent).toContain('could not download');
+    download.linkClick.mockImplementationOnce(() => { throw new Error('download unavailable'); });
+    click('Download measurement CSV'); expect(container.querySelector('#micro-measurement-csv-status').textContent).toContain('could not download');
+    expect(document.querySelector('a[download="micro-lab-microscope-notebook.csv"]')).toBeNull();
+    click('Download measurement CSV');
+    const notice = container.querySelector('#micro-measurement-csv-status span'); expect(notice.textContent).toContain('download has started');
+    click('Download measurement CSV'); expect(container.querySelector('#micro-measurement-csv-status span')).not.toBe(notice);
+    expect(latestState).toEqual(before); expect(document.activeElement).toBe(trigger);
+    act(() => vi.advanceTimersByTime(1000)); expect(download.revokeUrl).toHaveBeenCalledTimes(3);
+  });
+
+  it('clears stale CSV feedback on evidence edits and keeps exact export data through a JSON remount', () => {
+    mount({ microscopeMeasurements: { ecoli: historyEntry() } });
+    const download = captureNotebookDownload(); vi.useFakeTimers(); click('Download measurement CSV');
+    enterEstimate('3500');
+    expect(container.querySelector('#micro-measurement-csv-status').textContent).toBe('');
+    click('Download measurement CSV');
+    const report = download.contents[1], saved = JSON.parse(JSON.stringify(latestState));
+    expect(parseMeasurementCSV(report).rows.find(row => row.record_kind === 'pending_draft').original_value_text).toBe('3500');
+    act(() => root.unmount()); root = null; container.remove(); mount(saved);
+    expect(container.querySelector('#micro-measurement-csv-status').textContent).toBe('');
+    click('Download measurement CSV'); expect(download.contents[2]).toBe(report);
+    expect(latestState).toEqual(saved);
+    act(() => vi.advanceTimersByTime(1000)); expect(download.revokeUrl).toHaveBeenCalledTimes(3);
+  });
+
+  it('permanently clears old CSV feedback after edits are reversed or previous estimates are restored twice', () => {
+    mount({ microscopeMeasurements: { ecoli: historyEntry() } });
+    const download = captureNotebookDownload(); vi.useFakeTimers();
+    const initialCSV = measurementsCore.exportCSV(latestState.microscopeMeasurements);
+    const status = () => container.querySelector('#micro-measurement-csv-status').textContent;
+    click('Download measurement CSV'); expect(status()).toContain('download has started');
+    enterEstimate('3500'); expect(status()).toBe('');
+    enterEstimate('3000');
+    expect(measurementsCore.exportCSV(latestState.microscopeMeasurements)).toBe(initialCSV);
+    expect(status()).toBe('');
+    download.linkClick.mockImplementationOnce(() => { throw new Error('download unavailable'); });
+    click('Download measurement CSV'); expect(status()).toContain('could not download');
+    click('Restore previous estimate · E. coli'); expect(status()).toBe('');
+    click('Restore previous estimate · E. coli');
+    expect(measurementsCore.exportCSV(latestState.microscopeMeasurements)).toBe(initialCSV);
+    expect(status()).toBe('');
+    act(() => vi.advanceTimersByTime(1000)); expect(download.revokeUrl).toHaveBeenCalledTimes(2);
+  });
+
+  it('reflects an explicit previous-estimate restore in checked rows while preserving the independent draft', () => {
+    mount({ microscopeMeasurements: { ecoli: historyEntry() } });
+    const draft = JSON.parse(JSON.stringify(latestState.microscopeMeasurements.ecoli.draft));
+    const download = captureNotebookDownload(); vi.useFakeTimers(); click('Download measurement CSV');
+    click('Restore previous estimate · E. coli');
+    expect(container.querySelector('#micro-measurement-csv-status').textContent).toBe('');
+    click('Download measurement CSV');
+    const rows = parseMeasurementCSV(download.contents[1]).rows;
+    expect(rows[0]).toMatchObject({ record_kind: 'current_checked', original_value_text: '1000', original_unit: 'nm', viewing_method: 'em' });
+    expect(rows[1]).toMatchObject({ record_kind: 'previous_checked', original_value_text: '2.1234567890123', original_unit: 'um', viewing_method: 'lightbright' });
+    expect(rows[2]).toMatchObject({ record_kind: 'pending_draft', original_value_text: '3000', reference_um: '', within_practice_band: '' });
+    expect(latestState.microscopeMeasurements.ecoli.draft).toEqual(draft);
+    act(() => vi.advanceTimersByTime(1000));
   });
 });
 

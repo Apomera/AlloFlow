@@ -155,6 +155,62 @@ describe('Micro Lab contextual Home navigation', { timeout: 20000 }, () => {
   const resistanceEvidence = { dose: 30, duration: 3, initRes: 10, prediction: 'increase', notes: 'Original counts matter.',
     history: [{ day: 0, sensitive: 72, resistant: 8 }, { day: 1, sensitive: 60, resistant: 8 }] };
 
+  it('opens removed-only Resistance recovery after JSON reload without changing the notebook or restoring evidence', () => {
+    const resistanceNotebook = { records: [], selectedId: null, nextId: 20,
+      removed: { record: { id: 7, evidence: resistanceEvidence, reviewNote: 'Keep this later reflection.' }, index: 0 } };
+    const resistanceInvestigation = window.__MicrobiologyCore.normalizeResistanceInvestigation({ ...resistanceEvidence, notes: 'Independent current notes.' });
+    const resistanceComparison = { aId: null, bId: null };
+    const seed = { resistanceNotebook, resistanceInvestigation, resistanceComparison, growthLab: { hypothesis: 'Keep other work.' } };
+    mount(seed);
+    const restored = JSON.parse(JSON.stringify(mounted.state));
+    act(() => mounted.root.unmount()); mounted.container.remove(); mounted = null; mount(restored);
+    const random = vi.spyOn(Math, 'random');
+    expect(node('[data-work-next="resistance"]').textContent).toBe('Review removed evidence 7');
+    open('resistance');
+    expect(document.activeElement).toBe(node('#micro-resistance-restore-removed'));
+    expect(node('#micro-resistance-restore-removed').disabled).toBe(false);
+    expect(node('.micro-resistance-saved')).toBeNull();
+    expect(node('[data-resistance-removed-reflection]').textContent).toBe('Keep this later reflection.');
+    for (const [key, value] of Object.entries(seed)) expect(mounted.state[key], key).toEqual(value);
+    expect(mounted.state.resistanceNotebook.records).toEqual([]);
+    expect(mounted.state.resistanceNotebook.removed.record.id).toBe(7);
+    expect(mounted.awardXP).not.toHaveBeenCalled(); expect(random).not.toHaveBeenCalled();
+  });
+
+  it('focuses a full imported Resistance recovery panel without evicting records or changing the selected snapshot', () => {
+    const resistanceNotebook = { records: Array.from({ length: 8 }, (_, index) => ({
+      id: index + 1, evidence: { ...resistanceEvidence, notes: 'Saved evidence ' + index }, reviewNote: ''
+    })), selectedId: 3, nextId: 100,
+    removed: { record: { id: 99, evidence: resistanceEvidence, reviewNote: 'Recovery reflection' }, index: 7 } };
+    const resistanceComparison = { aId: 3, bId: 4 };
+    const resistanceInvestigation = window.__MicrobiologyCore.normalizeResistanceInvestigation({ ...resistanceEvidence, notes: 'Live notes' });
+    mount({ resistanceNotebook, resistanceComparison, resistanceInvestigation });
+    expect(node('[data-work-next="resistance"]').textContent).toBe('Review removed evidence 99');
+    open('resistance');
+    expect(document.activeElement).toBe(node('#micro-resistance-removed-evidence'));
+    expect(node('#micro-resistance-removed-evidence').tabIndex).toBe(-1);
+    expect(node('#micro-resistance-restore-removed').disabled).toBe(true);
+    click('#micro-resistance-restore-removed');
+    expect(mounted.state.resistanceNotebook).toEqual(resistanceNotebook);
+    expect(mounted.state.resistanceNotebook.records).toHaveLength(8);
+    expect(mounted.state.resistanceComparison).toEqual(resistanceComparison);
+    expect(mounted.state.resistanceInvestigation).toEqual(resistanceInvestigation);
+    expect(mounted.awardXP).not.toHaveBeenCalled();
+  });
+
+  it('cancels queued Home Resistance recovery focus after a newer active-tab action', () => {
+    const resistanceNotebook = { records: [], selectedId: null, nextId: 8,
+      removed: { record: { id: 7, evidence: resistanceEvidence, reviewNote: '' }, index: 0 } };
+    mount({ resistanceNotebook });
+    click('[data-work-next="resistance"]');
+    click('#micro-tab-resistance');
+    node('#micro-tab-resistance').focus(); flush();
+    expect(document.activeElement).toBe(node('#micro-tab-resistance'));
+    expect(mounted.state.resistanceNotebook).toEqual(resistanceNotebook);
+    expect(node('#micro-resistance-restore-removed').disabled).toBe(false);
+    expect(mounted.awardXP).not.toHaveBeenCalled();
+  });
+
   it('opens the saved Resistance reflection while keeping original evidence, a live run, and comparison choices', () => {
     const resistanceNotebook = { records: [{ id: 3, evidence: resistanceEvidence, reviewNote: 'Already explained.' }, { id: 7, evidence: resistanceEvidence }], selectedId: 3, nextId: 8 };
     const resistanceComparison = { aId: 3, bId: 7 };

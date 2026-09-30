@@ -190,6 +190,45 @@ describe('Micro Lab next-action projection', () => {
     expect(JSON.stringify(state)).toBe(before);
   });
 
+  it('prioritizes Resistance recovery over reflections and returns to normal resume after an explicit decision or new save', () => {
+    const evidence = { dose: 30, duration: 3, initRes: 10, prediction: 'increase',
+      history: [{ day: 0, sensitive: 72, resistant: 8 }, { day: 1, sensitive: 60, resistant: 8 }] };
+    const state = freezeDeep({ resistanceNotebook: {
+      records: [{ id: 3, evidence: { ...evidence, notes: 'Active snapshot' }, reviewNote: '  ' }], selectedId: 3, nextId: 20,
+      removed: { record: { id: 7, evidence: { ...evidence, notes: 'Removed original notes' }, reviewNote: '' }, index: 0 }
+    }, resistanceInvestigation: { ...evidence, notes: 'Independent live work' }, resistanceComparison: { aId: null, bId: 3 } });
+    const before = JSON.stringify(state), api = core().resistance;
+    expect(actions(state).resistance).toEqual({ kind: 'recovery', id: 7 });
+    expect(actions(JSON.parse(before)).resistance).toEqual({ kind: 'recovery', id: 7 });
+    expect(actions({ ...state, resistanceNotebook: api.restoreRecord(state.resistanceNotebook).notebook }).resistance).toEqual({ kind: 'reflection', id: 7 });
+    expect(actions({ ...state, resistanceNotebook: api.keepRemoval(state.resistanceNotebook).notebook }).resistance).toEqual({ kind: 'reflection', id: 3 });
+    const saved = api.save(state.resistanceNotebook, { ...evidence, notes: 'A distinct new snapshot' });
+    expect(saved.status).toBe('saved');
+    expect(actions({ ...state, resistanceNotebook: saved.notebook }).resistance).toEqual({ kind: 'reflection', id: 20 });
+    const duplicate = api.save(state.resistanceNotebook, state.resistanceNotebook.records[0].evidence);
+    expect(duplicate.status).toBe('duplicate');
+    expect(actions({ ...state, resistanceNotebook: duplicate.notebook }).resistance).toEqual({ kind: 'recovery', id: 7 });
+    expect(JSON.stringify(state)).toBe(before);
+  });
+
+  it('ignores invalid or colliding Resistance recovery but retains a removed-only snapshot with an imported position', () => {
+    const evidence = { dose: 30, duration: 3, initRes: 10, prediction: 'increase',
+      history: [{ day: 0, sensitive: 72, resistant: 8 }, { day: 1, sensitive: 60, resistant: 8 }] };
+    const records = [{ id: 3, evidence, reviewNote: '' }];
+    for (const removed of [null, [], {}, { record: { id: 3, evidence }, index: 0 },
+      { record: { id: '7', evidence }, index: 0 }, { record: { id: 7, evidence: {} }, index: 0 },
+      { record: { id: 7, evidence }, index: 8 }, { record: { id: 7, evidence }, index: '0' }]) {
+      const state = freezeDeep({ resistanceNotebook: { records, selectedId: 3, removed } }), before = JSON.stringify(state);
+      expect(actions(state).resistance).toEqual({ kind: 'reflection', id: 3 });
+      expect(JSON.stringify(state)).toBe(before);
+    }
+    const removedOnly = freezeDeep({ resistanceNotebook: { records: [], selectedId: 7, nextId: 8,
+      removed: { record: { id: 7, evidence, reviewNote: 'Preserved later reflection' }, index: 7 } } });
+    expect(actions(removedOnly).resistance).toEqual({ kind: 'recovery', id: 7 });
+    expect(core().resistance.normalizeNotebook(removedOnly.resistanceNotebook).selectedId).toBeNull();
+    expect(actions({ resistanceNotebook: core().resistance.keepRemoval(removedOnly.resistanceNotebook).notebook }).resistance).toBeNull();
+  });
+
   it('projects Resistance review from retained snapshots without accepting stale repaired-ID preferences', () => {
     const evidence = { dose: 30, duration: 3, initRes: 10, prediction: 'increase', history: [{ day: 0, sensitive: 72, resistant: 8 }, { day: 1, sensitive: 60, resistant: 8 }] };
     const resistanceNotebook = { records: [{ id: 'broken', evidence, reviewNote: 'Already reflected.' }, { id: 1, evidence, reviewNote: 'Also reflected.' }], selectedId: 2 };

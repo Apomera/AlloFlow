@@ -1,0 +1,42 @@
+{
+  "date": "2026-09-30",
+  "sourceFile": "stem_lab/stem_tool_microbiology.js",
+  "sourceSha256": "06825c3281b0531e615330f8bca4210bf47c77c489add3a374d2c5f6f304c5e7",
+  "unit": {
+    "passed": 401,
+    "failed": 0,
+    "files": 13,
+    "report": "unit-results.json",
+    "priorRuns": [
+      "unit-initial-results.json"
+    ],
+    "note": "The final consolidated focused regression run passes. Earlier attempt reports, if any, are retained."
+  },
+  "browser": {
+    "passed": 24,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "project": "chromium",
+    "report": "browser-results.json",
+    "priorRuns": [
+      "browser-initial-results.json"
+    ],
+    "scope": "Resistance removal recovery and Home resume, microscope CSV provenance, Mystery saved-version comparisons, and retained evidence, reflection, history and navigation regressions, served from the local working tree."
+  },
+  "interface": {
+    "keys": 1666,
+    "missing": 0,
+    "changedFallbacks": 0,
+    "runtimeMirrored": true,
+    "microbiologyNamespacesMatch": true,
+    "syntaxChecksPassed": true
+  },
+  "visualReview": [
+    "resistance-recovery-home-phone.png",
+    "resistance-removed-evidence-phone.png",
+    "microscope-csv-drafts-phone.png",
+    "mystery-history-comparison-phone.png"
+  ],
+  "scope": "Micro Lab source, desktop mirror, Micro Lab translation entries, focused tests, and validation artifacts."
+}

@@ -1,0 +1,26 @@
+Mystery specimens
+Fictional teaching specimens. The observations support broad classifications, not species identification or safety decisions.
+
+C · The wall is the clue
+Revision status: Working notes contain revisions that have not replaced the recorded report.
+Recorded claim: Bacterium
+Recorded reasoning: Second report: peptidoglycan distinguishes bacteria; rod size supports the broader cell description.
+• The prepared image shows rods about 2 µm long. Rod shape is shared by many different microbes.
+• The supplied cell map has no membrane-bound nucleus. Chemical analysis detects peptidoglycan in the cell wall.
+The evidence supports a broad group or an unresolved classification; species and safety remain unknown.
+Previous recorded report (available to restore)
+Previous recorded classification: Bacterium
+Previous written reasoning: First report: peptidoglycan and division support bacteria, but species and safety remain unknown.
+Cell structure and chemistry: The supplied cell map has no membrane-bound nucleus. Chemical analysis detects peptidoglycan in the cell wall.
+Behavior and reproduction: The observation sequence shows cells dividing into two. Division by itself does not distinguish bacteria from archaea.
+Previous conclusion about limits: The evidence supports a broad group or an unresolved classification; species and safety remain unknown.
+Current working notes
+My classification: Archaeon
+Unfinished revision: compare another interpretation before changing my conclusion.
+Current cited observations: Size and shape; Cell structure and chemistry
+Current conclusion about limits: These observations establish the exact species.
+Revealed observations:
+Sample context: This fictional specimen was found near a plant root. Many unrelated microbes live around roots.
+Size and shape: The prepared image shows rods about 2 µm long. Rod shape is shared by many different microbes.
+Cell structure and chemistry: The supplied cell map has no membrane-bound nucleus. Chemical analysis detects peptidoglycan in the cell wall.
+Behavior and reproduction: The observation sequence shows cells dividing into two. Division by itself does not distinguish bacteria from archaea.

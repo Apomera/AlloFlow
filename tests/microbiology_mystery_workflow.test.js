@@ -19,11 +19,11 @@ afterEach(() => {
 const core = () => window.__MicrobiologyCore.mystery;
 function mount(seed = {}) {
   const container = document.createElement('div'); document.body.appendChild(container);
-  const view = { container, root: ReactDOMClient.createRoot(container), state: null };
+  const view = { container, root: ReactDOMClient.createRoot(container), state: null, awardXP: vi.fn() };
   function Host() {
     const [data, setData] = React.useState({ microbiology: { tab: 'mystery', ...seed } });
     view.state = data.microbiology;
-    return tool.render(makeCtx({ toolData: data, setToolData: setData }));
+    return tool.render(makeCtx({ toolData: data, setToolData: setData, awardXP: view.awardXP }));
   }
   mounted = view; act(() => view.root.render(React.createElement(Host))); return view;
 }
@@ -599,5 +599,146 @@ describe('Previous mystery report recovery', { timeout: 20000 }, () => {
     act(() => vi.runOnlyPendingTimers());
     expect(document.activeElement).toBe(tab);
     expect(button('Recorded report').getAttribute('aria-pressed')).toBe('true');
+  });
+});
+
+describe('Mystery saved-version comparison', { timeout: 20000 }, () => {
+  const previous = { claim: 'bacterium', evidence: ['structure', 'behavior'], reasoning: 'Earlier explanation.\n<img src=x> is literal.', limitation: 'bounded' };
+  const current = { claim: 'bacterium', evidence: ['size', 'structure'], reasoning: 'Current explanation.\n<script>Keep these words.</script>', limitation: 'bounded' };
+  function entry(overrides = {}) {
+    return { revealed: ['context'], collapsed: ['context'], reportView: 'working', claim: 'archaeon', evidence: [],
+      reasoning: 'Unfinished working reasoning.', limitation: 'species', checked: true, record: current, previousRecord: previous, ...overrides };
+  }
+  function openHistory() {
+    const history = mounted.container.querySelector('[data-mystery-history="wall"]');
+    click(history.querySelector('summary')); return history;
+  }
+  function comparison() { return mounted.container.querySelector('[data-mystery-history-comparison="wall"]'); }
+
+  it('compares canonical citation membership and literal reasoning independently of the draft and view', () => {
+    const raw = entry({ record: { ...current, evidence: ['structure', 'size', 'structure', 'unknown'] },
+      previousRecord: { ...previous, evidence: ['behavior', 'structure', 'behavior'] } });
+    const before = JSON.stringify(raw), result = core().historyComparison('wall', raw);
+    expect(result).toEqual({ current, previous, changes: ['evidence', 'reasoning'], evidenceOnlyCurrent: ['size'], evidenceOnlyPrevious: ['behavior'] });
+    expect(result.current.evidence).not.toBe(raw.record.evidence); expect(result.previous.evidence).not.toBe(raw.previousRecord.evidence);
+    expect(core().historyComparison('wall', { ...raw, claim: 'yeast', reasoning: 'Changed draft.', revealed: ['context', 'size'], reportView: 'recorded', checked: false })).toEqual(result);
+    expect(core().historyComparison('wall', JSON.parse(before))).toEqual(result);
+    result.previous.reasoning = 'Mutated projection'; result.current.evidence.push('context');
+    expect(JSON.stringify(raw)).toBe(before);
+  });
+
+  it('rejects invalid case IDs, invalid snapshots, orphaned history and identical normalized reports', () => {
+    for (const id of [null, [], 'bad', '__proto__', 0]) expect(core().historyComparison(id, entry())).toBeNull();
+    for (const value of [null, [], 2, 'bad', {}, { record: current }, { previousRecord: previous }]) expect(core().historyComparison('wall', value)).toBeNull();
+    for (const invalid of [null, [], { ...current, claim: 'protist' }, { ...current, evidence: ['size'] }, { ...current, limitation: 'safe' }, { ...current, reasoning: ' ' }]) {
+      expect(core().historyComparison('wall', entry({ record: invalid }))).toBeNull();
+      expect(core().historyComparison('wall', entry({ previousRecord: invalid }))).toBeNull();
+    }
+    expect(core().historyComparison('wall', entry({ previousRecord: { ...current, evidence: ['structure', 'size', 'size'] } }))).toBeNull();
+  });
+
+  it('treats text changes literally and reverses version-specific citations when reports are swapped', () => {
+    const changed = core().historyComparison('wall', entry({ previousRecord: { ...current, reasoning: current.reasoning + ' ' } }));
+    expect(changed.changes).toEqual(['reasoning']);
+    expect(changed.previous.reasoning).toBe(current.reasoning + ' ');
+    expect(changed.evidenceOnlyCurrent).toEqual([]); expect(changed.evidenceOnlyPrevious).toEqual([]);
+    const swapped = core().historyComparison('wall', entry({ record: previous, previousRecord: current }));
+    expect(swapped).toEqual({ current: previous, previous: current, changes: ['evidence', 'reasoning'], evidenceOnlyCurrent: ['behavior'], evidenceOnlyPrevious: ['size'] });
+  });
+
+  it('shows complete literal values for changed saved fields while preserving the full previous preview', () => {
+    mount({ mysteryLab: { active: 'wall', cases: { wall: entry() } }, growthReviewHour: 6 });
+    const before = JSON.stringify(mounted.state), history = openHistory(), compared = comparison();
+    expect(history.open).toBe(true);
+    expect(compared.textContent).toContain('Compare recorded versions');
+    expect([...compared.querySelectorAll('[data-mystery-history-change]')].map(node => node.dataset.mysteryHistoryChange)).toEqual(['evidence', 'reasoning']);
+    expect(compared.querySelector('[data-mystery-history-fields]').textContent).toBe('Fields that differ: Cited observations; Written reasoning.');
+    const citations = compared.querySelector('[data-mystery-history-change="evidence"]');
+    expect(citations.querySelector('[data-history-citations="previous"]').textContent).toBe('Cited only in the previous report: Behavior and reproduction');
+    expect(citations.querySelector('[data-history-citations="current"]').textContent).toBe('Cited only in the current report: Size and shape');
+    const catalog = core().catalog().find(item => item.id === 'wall');
+    for (const version of ['previous', 'current']) expect(citations.querySelector('[data-history-version="' + version + '"]').textContent).toContain(catalog.structure);
+    expect(citations.querySelector('[data-history-version="previous"]').textContent).toContain(catalog.behavior);
+    expect(citations.querySelector('[data-history-version="current"]').textContent).toContain(catalog.size);
+    const reasoning = compared.querySelector('[data-mystery-history-change="reasoning"]');
+    expect(reasoning.querySelector('[data-history-version="previous"] > p:last-child').textContent).toBe(previous.reasoning);
+    expect(reasoning.querySelector('[data-history-version="current"] > p:last-child').textContent).toBe(current.reasoning);
+    expect(compared.querySelector('img,script,input,textarea,button')).toBeNull();
+    expect(compared.textContent).not.toContain('Unfinished working reasoning.');
+    expect(history.querySelectorAll('[data-previous-field]')).toHaveLength(4);
+    expect(history.querySelector('[data-previous-report]').textContent).toContain(previous.reasoning);
+    for (const region of compared.querySelectorAll('[aria-labelledby]')) expect(document.getElementById(region.getAttribute('aria-labelledby'))).toBeTruthy();
+    expect(JSON.stringify(mounted.state)).toBe(before); expect(mounted.awardXP).not.toHaveBeenCalled();
+  });
+
+  it('keeps the comparison open during draft edits and swaps version labels only after an explicit restore', () => {
+    vi.useFakeTimers(); mount({ mysteryLab: { active: 'wall', cases: { wall: entry() } }, growthReviewHour: 6 });
+    const history = openHistory(); write('Later working reasoning.');
+    expect(mounted.container.querySelector('[data-mystery-history="wall"]')).toBe(history); expect(history.open).toBe(true);
+    const before = JSON.parse(JSON.stringify(data().cases.wall));
+    const unchangedComparison = comparison().textContent;
+    click('Recorded report'); act(() => vi.runOnlyPendingTimers());
+    expect(comparison().textContent).toBe(unchangedComparison); expect(history.open).toBe(true);
+    const restoreBefore = JSON.parse(JSON.stringify(data().cases.wall));
+    click('Restore previous report'); act(() => vi.runOnlyPendingTimers());
+    expect(data().cases.wall).toEqual({ ...restoreBefore, record: previous, previousRecord: current });
+    expect(document.activeElement.id).toBe('micro-mystery-report-heading');
+    expect(document.activeElement.dataset.reportView).toBe('recorded');
+    const reasoning = comparison().querySelector('[data-mystery-history-change="reasoning"]');
+    expect(reasoning.querySelector('[data-history-version="previous"]').textContent).toContain(current.reasoning);
+    expect(reasoning.querySelector('[data-history-version="current"]').textContent).toContain(previous.reasoning);
+    expect(comparison().querySelector('[data-history-citations="current"]').textContent).toContain('Behavior and reproduction');
+    expect(history.open).toBe(true); expect(mounted.state.growthReviewHour).toBe(6);
+    click('Restore previous report'); act(() => vi.runOnlyPendingTimers());
+    expect(data().cases.wall).toEqual(restoreBefore);
+    click('Working notes'); expect(data().cases.wall).toEqual(before);
+    expect(mounted.awardXP).not.toHaveBeenCalled();
+  });
+
+  it('shows only the differing saved field and keeps comparison case-specific across JSON reload', () => {
+    const reasoningOnly = entry({ previousRecord: { ...current, reasoning: 'Previous reasoning only.' } });
+    mount({ mysteryLab: { active: 'wall', cases: { wall: reasoningOnly } } });
+    openHistory();
+    expect([...comparison().querySelectorAll('[data-mystery-history-change]')].map(node => node.dataset.mysteryHistoryChange)).toEqual(['reasoning']);
+    expect(comparison().querySelector('[data-history-citations]')).toBeNull();
+    const saved = JSON.parse(JSON.stringify(mounted.state));
+    openCase('pond'); expect(mounted.container.querySelector('[data-mystery-history-comparison]')).toBeNull();
+    openCase('wall'); expect(mounted.container.querySelector('[data-mystery-history="wall"]').open).toBe(false);
+    act(() => mounted.root.unmount()); mounted.container.remove(); mounted = null; mount(saved);
+    expect(mounted.container.querySelector('[data-mystery-history="wall"]').open).toBe(false);
+    openHistory();
+    expect(comparison().querySelector('[data-history-version="previous"]').textContent).toContain('Previous reasoning only.');
+    expect(data().cases.wall).toEqual(saved.mysteryLab.cases.wall);
+  });
+
+  it.each(['focus', 'typing', 'observation', 'download', 'active tab', 'topic library', 'away and back'])('cancels queued restore focus after a later %s action', action => {
+    vi.useFakeTimers(); mount({ mysteryLab: { active: 'wall', cases: { wall: entry() } } });
+    openHistory(); click('Restore previous report');
+    let target;
+    if (action === 'focus' || action === 'typing') {
+      target = mounted.container.querySelector('#micro-mystery-reasoning'); act(() => target.focus());
+      if (action === 'typing') write('A subsequent edit.');
+    } else if (action === 'observation') { target = button('Show: Sample context'); act(() => target.focus()); click(target); }
+    else if (action === 'download') { captureReportDownload('blob:mystery-history-comparison'); target = button('Download specimen reports'); act(() => target.focus()); click(target); }
+    else if (action === 'active tab') { target = mounted.container.querySelector('#micro-tab-mystery'); act(() => target.focus()); click(target); }
+    else if (action === 'topic library') { target = mounted.container.querySelector('.micro-library-toggle'); act(() => target.focus()); click(target); }
+    else { click(mounted.container.querySelector('#micro-tab-home')); click(mounted.container.querySelector('#micro-tab-mystery')); target = mounted.container.querySelector('#micro-tab-mystery'); act(() => target.focus()); }
+    act(() => vi.runOnlyPendingTimers());
+    expect(document.activeElement).toBe(target);
+    expect(data().cases.wall.record).toEqual(previous); expect(data().cases.wall.previousRecord).toEqual(current);
+    expect(mounted.awardXP).not.toHaveBeenCalled();
+  });
+
+  it('keeps later control focus after view and case navigation while allowing an uninterrupted case transition', () => {
+    vi.useFakeTimers(); mount({ mysteryLab: { active: 'wall', cases: { wall: entry() } } });
+    click('Recorded report');
+    const tab = mounted.container.querySelector('#micro-tab-mystery'); act(() => tab.focus()); click(tab);
+    act(() => vi.runOnlyPendingTimers()); expect(document.activeElement).toBe(tab);
+    openCase('pond');
+    const textarea = mounted.container.querySelector('#micro-mystery-reasoning'); act(() => textarea.focus()); write('A new case draft.');
+    act(() => vi.runOnlyPendingTimers()); expect(document.activeElement).toBe(textarea);
+    openCase('wall'); act(() => vi.runOnlyPendingTimers());
+    expect(document.activeElement.id).toBe('micro-mystery-observation-heading'); expect(document.activeElement.dataset.case).toBe('wall');
+    expect(data().cases.pond.reasoning).toBe('A new case draft.');
   });
 });
