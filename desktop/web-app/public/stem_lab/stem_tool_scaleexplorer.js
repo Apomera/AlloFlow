@@ -532,6 +532,69 @@
     return { a: raw && known(raw.a) ? raw.a : fallbackA, b: raw && known(raw.b) ? raw.b : fallbackB };
   }
 
+  var INQUIRY_LIMIT = 12, ESTIMATE_MAX = 45;
+  var INQUIRY_THEMES = [
+    { id: 'home', small: 'human', big: 'earth', title: 'From human scale to Earth',
+      reflect: 'Which familiar size helped you judge the gap? What changed when you followed the scale bridge?' },
+    { id: 'cells', small: 'dna', big: 'rbc', title: 'DNA and a blood cell',
+      reflect: 'Both measurements are widths. What does their ratio tell you, and what would you still need to know about their shapes?' },
+    { id: 'worlds', small: 'moon', big: 'earth', title: 'Earth and Moon',
+      reflect: 'How did a fraction of a power of ten change your prediction? Describe what you noticed in the shared-scale view.' },
+    { id: 'stars', small: 'earth', big: 'sun', title: 'Earth and Sun',
+      reflect: 'How many tenfold steps did you need? Why does this length ratio leave the volume comparison unanswered?' },
+    { id: 'matter', small: 'nucleus', big: 'carbon', title: 'Inside an atom',
+      reflect: 'What can you learn from the scale gap, and what do the illustrative colors and shapes leave uncertain?' },
+    { id: 'distance', small: 'sun', big: 'alpha-cen-dist', title: 'A star and the gap to another',
+      reflect: 'One reference is a diameter and one is a distance. How would you explain that difference in a drawing?' }
+  ];
+  function validEstimate(value) {
+    if (typeof value !== 'number' && typeof value !== 'string') return null;
+    if (typeof value === 'string' && !/^\+?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(value.trim())) return null;
+    var number = Number(value);
+    return isFinite(number) && number >= 0 && number <= ESTIMATE_MAX ? number : null;
+  }
+  function inquiryMeasurement(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    var item = ITEMS.filter(function (it) { return it.id === raw.id; })[0];
+    if (!item) return null;
+    var personal = item.id === 'human' && raw.you === true && typeof raw.size === 'number' && !!validHeightCm(raw.size * 100);
+    return Object.assign({}, item, { size: personal ? raw.size : item.size, you: personal });
+  }
+  function inquirySnapshot(item) { return { id: item.id, size: item.size, you: !!item.you }; }
+  function readInquiry(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    var small = inquiryMeasurement(raw.small), big = inquiryMeasurement(raw.big), pair = compareMeasurements(small, big);
+    if (!pair || small.id === big.id) return null;
+    var theme = INQUIRY_THEMES.filter(function (it) { return it.id === raw.theme && it.small === pair.small.id && it.big === pair.big.id; })[0];
+    var guess = validEstimate(raw.guess);
+    return { id: typeof raw.id === 'string' && raw.id.length <= 64 && /^inquiry-[a-z0-9]+-[a-z0-9]+$/i.test(raw.id) ? raw.id : '',
+      theme: theme ? theme.id : 'mixed', small: inquirySnapshot(pair.small), big: inquirySnapshot(pair.big),
+      guess: guess === null ? '' : String(guess), revealed: raw.revealed === true && guess !== null,
+      reflection: typeof raw.reflection === 'string' ? raw.reflection.slice(0, NOTE_LIMIT) : '' };
+  }
+  function readInvestigations(raw) {
+    var result = [], seen = new Set();
+    if (!Array.isArray(raw)) return result;
+    raw.slice(0, 200).forEach(function (entry) {
+      if (result.length >= INQUIRY_LIMIT) return;
+      var record = readInquiry(entry);
+      if (!record || !record.id || !record.revealed || seen.has(record.id)) return;
+      seen.add(record.id); result.push(record);
+    });
+    return result;
+  }
+  function predictionDifference(prediction, actualDecades) {
+    var guess = validEstimate(prediction);
+    if (guess === null || typeof actualDecades !== 'number' || !isFinite(actualDecades) || actualDecades < 0 || actualDecades > ESTIMATE_MAX) return null;
+    var delta = guess - actualDecades;
+    return { delta: delta, off: Math.abs(delta), factor: Math.pow(10, Math.abs(delta)), direction: delta < 0 ? 'under' : delta > 0 ? 'over' : 'equal' };
+  }
+  function freshInquiry(theme, small, big) {
+    var pair = compareMeasurements(small, big);
+    return { id: 'inquiry-' + Date.now().toString(36) + '-' + (Math.random().toString(36).slice(2, 9) || '0'), theme: theme,
+      small: inquirySnapshot(pair.small), big: inquirySnapshot(pair.big), guess: '', revealed: false, reflection: '' };
+  }
+
   function createScaleAtlas(T, canvas, read, pick, fail, inspect, markers, comparisonLabels) {
     var renderer = new T.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'low-power' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.7));
@@ -1442,9 +1505,21 @@
       // One place decides how a length is written, so the card, the ladder, the
       // selects and the stage never disagree.
       function lengthText(m) { return sci ? humanLength(m) + ' · ' + sciNotation(m) : humanLength(m); }
-      var _pair = React.useState({ big: 'earth', small: 'human' }); var pair = _pair[0], setPair = _pair[1];
-      var _guess = React.useState(''); var guess = _guess[0], setGuess = _guess[1];
-      var _revealed = React.useState(false); var revealed = _revealed[0], setRevealed = _revealed[1];
+      var initialInquiry = React.useMemo(function () {
+        var stored = readInquiry(slice.inquiryDraft);
+        return stored && stored.id ? stored : freshInquiry('home', items.filter(function (it) { return it.id === 'human'; })[0], items.filter(function (it) { return it.id === 'earth'; })[0]);
+      }, []);
+      var _pair = React.useState(initialInquiry); var pair = _pair[0], setPair = _pair[1];
+      var _guess = React.useState(initialInquiry.guess); var guess = _guess[0], setGuess = _guess[1];
+      var _revealed = React.useState(initialInquiry.revealed); var revealed = _revealed[0], setRevealed = _revealed[1];
+      var _reflection = React.useState(initialInquiry.reflection); var reflection = _reflection[0], setReflection = _reflection[1];
+      var _investigations = React.useState(function () { return readInvestigations(slice.investigations); }); var investigations = _investigations[0], setInvestigations = _investigations[1];
+      var _themeChoice = React.useState(initialInquiry.theme); var themeChoice = _themeChoice[0], setThemeChoice = _themeChoice[1];
+      var _inquiryMessage = React.useState(''); var inquiryMessage = _inquiryMessage[0], setInquiryMessage = _inquiryMessage[1];
+      var inquiryPanelRef = React.useRef(null), inquiryHistoryRef = React.useRef(null);
+      React.useEffect(function () {
+        updateSlice(function (cur) { cur.inquiryDraft = Object.assign({}, pair, { guess: guess, revealed: revealed, reflection: reflection }); });
+      }, [pair, guess, revealed, reflection]);
 
       var canvasRef = React.useRef(null);
       var atlasCanvasRef = React.useRef(null);
@@ -1569,13 +1644,39 @@
           if (item.note) lines.push(itemText(item, 'note'));
           lines.push(shareLinkFor(item), '');
         });
+        if (investigations.length) {
+          lines.push(S('atlas_inquiry_export_heading', 'Saved scale investigations'), '');
+          investigations.forEach(function (entry, index) {
+            var measured = compareMeasurements(inquiryMeasurement(entry.small), inquiryMeasurement(entry.big));
+            lines.push((index + 1) + '. ' + inquiryTitle(entry));
+            lines.push(S('atlas_inquiry_prediction_record', 'Prediction: {n} powers of ten ({ratio}).', { n: entry.guess, ratio: timesPhrase(Math.pow(10, Number(entry.guess))) }));
+            lines.push(S('atlas_inquiry_measured_record', 'Measured gap: {n} powers of ten ({ratio}).', { n: round2(measured.decades), ratio: timesPhrase(measured.ratio) }));
+            lines.push(predictionFeedback(Number(entry.guess), measured));
+            [measured.small, measured.big].forEach(function (item) {
+              lines.push(itemText(item, 'name') + ': ' + humanLength(item.size) + ' · ' + S('dim_' + item.dim.replace(/\s+/g, '_'), item.dim));
+              lines.push(sciNotation(item.size));
+              if (item.note) lines.push(itemText(item, 'note'));
+              lines.push(shareLinkFor(item));
+            });
+            var theme = INQUIRY_THEMES.filter(function (it) { return it.id === entry.theme; })[0];
+            lines.push(theme ? S('atlas_inquiry_reflect_' + theme.id, theme.reflect) : S('atlas_inquiry_reflect_mixed', 'Which reference helped your prediction? What would you change in your explanation after exploring the comparison?'));
+            if (entry.reflection) lines.push(S('atlas_inquiry_reflection_record', 'My reflection: {text}', { text: entry.reflection }));
+            lines.push('');
+          });
+        }
         var url, anchor;
         try {
           url = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' }));
           anchor = document.createElement('a'); anchor.href = url; anchor.download = 'scale-explorer-notebook.txt';
           document.body.appendChild(anchor); anchor.click();
-          setNotebookMessage(S('atlas_notebook_downloaded', 'Saved observations downloaded.'));
-        } catch (_) { setNotebookMessage(S('atlas_notebook_download_failed', 'The download could not start here. Your saved observations are still in the notebook.')); }
+          var downloaded = investigations.length ? S('atlas_inquiry_downloaded', 'Saved notebook evidence downloaded.') : S('atlas_notebook_downloaded', 'Saved observations downloaded.');
+          setNotebookMessage(downloaded);
+          if (investigations.length) setInquiryMessage(downloaded);
+        } catch (_) {
+          var failed = investigations.length ? S('atlas_inquiry_download_failed', 'The download could not start here. Your saved work is still in the notebook.') : S('atlas_notebook_download_failed', 'The download could not start here. Your saved observations are still in the notebook.');
+          setNotebookMessage(failed);
+          if (investigations.length) setInquiryMessage(failed);
+        }
         finally { if (anchor) anchor.remove(); if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000); }
       }
       function chooseDetail(detail){
@@ -2125,23 +2226,36 @@
         return { big: 'earth', small: 'human' };
       }
       function newChallenge() {
-        setPair(pickPair());
+        var chosen = pickPair();
+        setPair(freshInquiry('mixed', byId[chosen.small], byId[chosen.big]));
         setGuess('');
         setRevealed(false);
+        setReflection(''); setThemeChoice('mixed'); setInquiryMessage('');
+      }
+      function startInvestigation() {
+        var theme = INQUIRY_THEMES.filter(function (it) { return it.id === themeChoice; })[0];
+        if (!theme) { newChallenge(); return; }
+        setPair(freshInquiry(theme.id, byId[theme.small], byId[theme.big]));
+        setGuess(''); setRevealed(false); setReflection(''); setInquiryMessage('');
       }
       function lockInEstimate() {
         if (revealed) return;
-        var n = parseFloat(guess);
-        if (!isFinite(n)) return;
+        var n = validEstimate(guess);
+        if (n === null) return;
         setRevealed(true);
         updateSlice(function (cur) { cur.estimateCount = (cur.estimateCount || 0) + 1; });
         say(estimateVerdict(n) + ' ' + challengeReveal());
       }
       var challenge = React.useMemo(function () {
-        var big = byId[pair.big], small = byId[pair.small];
-        if (!big || !small) return null;
-        return { big: big, small: small, decades: log10(big.size / small.size), ratio: big.size / small.size };
-      }, [pair, byId]);
+        return compareMeasurements(inquiryMeasurement(pair.small), inquiryMeasurement(pair.big));
+      }, [pair]);
+      var prediction = validEstimate(guess);
+      var savedInvestigation = investigations.filter(function (entry) { return entry.id === pair.id; })[0];
+      var activeInquiryTheme = INQUIRY_THEMES.filter(function (theme) { return theme.id === pair.theme; })[0];
+      function inquiryTitle(entry) {
+        var theme = INQUIRY_THEMES.filter(function (it) { return it.id === entry.theme; })[0];
+        return theme ? S('atlas_inquiry_theme_' + theme.id, theme.title) : itemText(inquiryMeasurement(entry.small), 'name') + ' ↔ ' + itemText(inquiryMeasurement(entry.big), 'name');
+      }
       function estimateVerdict(n) {
         if (!challenge) return '';
         var off = Math.abs(n - challenge.decades);
@@ -2154,9 +2268,66 @@
       }
       function challengeReveal() {
         if (!challenge) return '';
-        return S('est_reveal', 'The gap is {dec} powers of ten: {big} is about {times} bigger across than {small}.',
-          { dec: round2(challenge.decades), big: itemText(challenge.big, 'name'),
-            times: timesPhrase(challenge.ratio), small: lowerArticle(itemText(challenge.small, 'name')) });
+        return S('atlas_inquiry_reveal', 'The gap is {dec} powers of ten. Ratio of the stated dimensions: {times}.',
+          { dec: round2(challenge.decades), times: timesPhrase(challenge.ratio) });
+      }
+      function predictionFeedback(n, measured) {
+        var difference = predictionDifference(n, measured.decades);
+        if (!difference) return '';
+        if (difference.off < .05) return S('atlas_inquiry_match', 'Your predicted ratio and the measured ratio nearly match.');
+        return difference.direction === 'under'
+          ? S('atlas_inquiry_under', 'Your predicted ratio was about {factor} smaller than the measured ratio.', { factor: timesPhrase(difference.factor) })
+          : S('atlas_inquiry_over', 'Your predicted ratio was about {factor} larger than the measured ratio.', { factor: timesPhrase(difference.factor) });
+      }
+      function predictionChart() {
+        var maximum = Math.min(ESTIMATE_MAX, Math.max(3, Math.ceil(Math.max(prediction, challenge.decades) + 1)));
+        function x(value) { return 20 + value / maximum * 260; }
+        return h('svg', { className: 'sx-prediction-plot', viewBox: '0 0 300 148', role: 'img',
+          'data-prediction': prediction, 'data-measured': challenge.decades, 'data-domain': maximum,
+          'aria-label': S('atlas_inquiry_plot_aria', 'Prediction: {guess} powers of ten. Measured gap: {actual} powers of ten. {feedback}',
+            { guess: round2(prediction), actual: round2(challenge.decades), feedback: predictionFeedback(prediction, challenge) }),
+          style: { width: '100%', height: 148, display: 'block', background: P.bg, borderRadius: 8 } },
+          h('text', { x: 20, y: 21, fill: P.text, fontSize: 16 }, S('atlas_inquiry_plot_guess', 'Predicted · {n} powers of ten', { n: round2(prediction) })),
+          h('line', { x1: 20, y1: 38, x2: x(prediction), y2: 38, stroke: P.warn, strokeWidth: 5 }),
+          h('circle', { 'data-prediction-point': 'guess', cx: x(prediction), cy: 38, r: 5, fill: P.warn }),
+          h('text', { x: 20, y: 72, fill: P.text, fontSize: 16 }, S('atlas_inquiry_plot_actual', 'Measured · {n} powers of ten', { n: round2(challenge.decades) })),
+          h('line', { x1: 20, y1: 89, x2: x(challenge.decades), y2: 89, stroke: P.accent, strokeWidth: 5 }),
+          h('circle', { 'data-prediction-point': 'actual', cx: x(challenge.decades), cy: 89, r: 5, fill: P.accent }),
+          [0, maximum / 2, maximum].map(function (value, index) { return h('text', { key: index, x: x(value), y: 125, textAnchor: index === 0 ? 'start' : index === 2 ? 'end' : 'middle', fill: P.dim, fontSize: 14 }, round2(value)); }));
+      }
+      function saveInvestigation() {
+        if (!revealed || prediction === null || (!savedInvestigation && investigations.length >= INQUIRY_LIMIT)) return;
+        var entry = readInquiry(Object.assign({}, pair, { guess: guess, revealed: true, reflection: reflection.trim() }));
+        if (!entry) return;
+        var next = [entry].concat(investigations.filter(function (old) { return old.id !== entry.id; }));
+        setInvestigations(next); updateSlice(function (cur) { cur.investigations = next; });
+        if (inquiryHistoryRef.current) inquiryHistoryRef.current.open = true;
+        setInquiryMessage(savedInvestigation ? S('atlas_inquiry_updated', 'Investigation updated.') : S('atlas_inquiry_saved', 'Investigation saved.'));
+      }
+      function removeInvestigation(entry) {
+        var next = investigations.filter(function (old) { return old.id !== entry.id; });
+        setInvestigations(next); updateSlice(function (cur) { cur.investigations = next; });
+        if (inquiryHistoryRef.current) inquiryHistoryRef.current.querySelector('summary').focus();
+        setInquiryMessage(S('atlas_inquiry_removed', 'Investigation removed.'));
+      }
+      function loadInvestigation(entry) {
+        setPair(entry); setGuess(entry.guess); setRevealed(true); setReflection(entry.reflection); setThemeChoice(entry.theme);
+        setInquiryMessage(S('atlas_inquiry_loaded', 'Returned to the recorded prediction and measurements.'));
+        if (inquiryPanelRef.current) {
+          inquiryPanelRef.current.open = true;
+          var summary = inquiryPanelRef.current.querySelector('summary'); summary.scrollIntoView({ block: 'nearest' }); summary.focus();
+        }
+      }
+      function showInvestigation(entry) {
+        var measured = compareMeasurements(inquiryMeasurement(entry.small), inquiryMeasurement(entry.big));
+        var person = [measured.small, measured.big].filter(function (item) { return item.id === 'human'; })[0];
+        if (person) {
+          var cm = person.you ? person.size * 100 : null;
+          setYourCm(cm); updateSlice(function (cur) { if (cm) cur.yourHeightCm = cm; else delete cur.yourHeightCm; });
+        }
+        changeComparison(measured.small.id, measured.big.id);
+        if (cmpDetailsRef.current) cmpDetailsRef.current.open = true;
+        runCompare(measured);
       }
       function tourText(tour, field, stop) {
         if (field === 'title') return t('stem.scaleExplorer.tour_' + tour.id + '_title', tour.title);
@@ -2185,16 +2356,19 @@
         say(S('cmp_from_focus_sr', '{name} is now the first thing to compare. Choose the second.', { name: itemText(item, 'name') }));
         setTimeout(function () { var el = cmpSecondRef.current; if (el && el.focus) { try { el.scrollIntoView({ block: 'nearest' }); } catch (_) {} el.focus(); } }, 0);
       }
-      function runCompare() {
-        if (!compare) return;
-        flyTo(compare.big, { instant: true });
+      function runCompare(recordedPair) {
+        var selected = recordedPair && recordedPair.big && recordedPair.small ? recordedPair : compare;
+        if (!selected) return;
+        flyTo(selected.big, { instant: true });
         setInspectionZoom(1); setDetailId('');
         if (atlasRef.current) atlasRef.current.reset();
         setComparisonActive(true);
         var cv = viewMode === 'atlas' ? atlasCanvasRef.current : canvasRef.current;
         if (cv && cv.parentElement) cv.parentElement.scrollIntoView({ block: 'center', behavior: 'auto' });
         updateSlice(function (cur) { cur.compareCount = (cur.compareCount || 0) + 1; });
-        say(compareSentence());
+        say(recordedPair && recordedPair.big && recordedPair.small
+          ? S('atlas_inquiry_show_sr', 'Showing the recorded comparison of {small} and {big}. Length ratio: {ratio}.', { small: itemText(selected.small, 'name'), big: itemText(selected.big, 'name'), ratio: timesPhrase(selected.ratio) })
+          : compareSentence());
       }
       function changeComparison(a, b) {
         if (!byId[a] || !byId[b]) return;
@@ -2640,29 +2814,66 @@
                       h('button', { type: 'button', style: btn, onClick: function () { revisitObservation(entry); }, 'aria-label': S('atlas_observation_return_aria', 'Return to {name}', { name: title }) }, S('atlas_observation_return', 'Return to view')),
                       h('button', { type: 'button', style: btn, onClick: function () { removeObservation(entry); }, 'aria-label': S('atlas_observation_remove_aria', 'Remove observation of {name}', { name: title }) }, S('atlas_observation_remove', 'Remove'))));
                 })) : h('p', { style: { color: P.dim, fontSize: '0.75rem' } }, S('atlas_notebook_empty', 'Saved observations will appear here.')),
-                h('button', { type: 'button', style: btn, disabled: !observations.length, onClick: downloadObservations }, S('atlas_notebook_download', 'Download notes'))),
+                h('button', { type: 'button', style: btn, disabled: !observations.length && !investigations.length, onClick: downloadObservations }, S('atlas_notebook_download', 'Download notes'))),
               h('p', { role: 'status', style: { margin: 0, fontSize: '0.75rem', minHeight: '1.5em' } }, notebookMessage)),
 
             // Estimate first, then check: the house Predict → Explore → Explain
             // shape. The reveal is never withheld and never scored.
-            challenge ? h('details', null,
+            challenge ? h('details', { ref: inquiryPanelRef, className: 'sx-inquiry' },
               h('summary', { style: { padding: '10px 0', cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 700, color: P.text } }, S('est_heading', 'Estimate first')),
               h('div', { style: Object.assign({}, card, { display: 'flex', flexDirection: 'column', gap: 8 }) },
+                h('label', { style: { fontSize: '.75rem' } }, S('atlas_inquiry_theme', 'Investigation theme'),
+                  h('select', { value: themeChoice, onChange: function (event) { setThemeChoice(event.target.value); }, style: Object.assign({}, sel, { width: '100%', marginTop: 4 }) },
+                    INQUIRY_THEMES.map(function (theme) { return h('option', { key: theme.id, value: theme.id }, S('atlas_inquiry_theme_' + theme.id, theme.title)); }),
+                    h('option', { value: 'mixed' }, S('atlas_inquiry_mixed', 'Mixed scales')))),
+                h('button', { type: 'button', style: btn, onClick: startInvestigation }, S('atlas_inquiry_start', 'Start investigation')),
+                h('h4', { style: { margin: '6px 0 0', fontSize: '.875rem' } }, inquiryTitle(pair)),
                 h('p', { style: { margin: 0 } },
-                  S('est_question', 'How many powers of ten bigger across is {big} than {small}?',
-                    { big: itemText(challenge.big, 'name'), small: lowerArticle(itemText(challenge.small, 'name')) })),
+                  S('atlas_inquiry_question', 'How many powers of ten separate {big} and {small} along their stated dimensions?',
+                    { big: lowerArticle(itemText(challenge.big, 'name')), small: lowerArticle(itemText(challenge.small, 'name')) })),
                 h('label', { style: { fontSize: '0.71875rem', color: P.dim } },
                   S('est_label', 'Your estimate, in powers of ten'),
-                  h('input', { type: 'number', inputMode: 'decimal', step: '1', min: '0', max: '45', value: guess, disabled: revealed,
+                  h('input', { type: 'number', inputMode: 'decimal', step: '.1', min: '0', max: ESTIMATE_MAX, value: guess, disabled: revealed,
+                    'aria-invalid': guess !== '' && prediction === null ? 'true' : undefined, 'aria-describedby': descId + '-prediction-help',
                     onChange: function (e) { setGuess(e.target.value); },
                     onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); lockInEstimate(); } },
                     style: Object.assign({}, sel, { width: '100%', marginTop: 2 }) })),
+                h('p', { id: descId + '-prediction-help', style: { margin: 0, fontSize: '.6875rem', color: guess !== '' && prediction === null ? P.warn : P.dim, lineHeight: 1.5 } },
+                  S('atlas_inquiry_help', 'Enter a number from 0 to 45. One power of ten is a tenfold ratio; decimal predictions are welcome.')),
                 h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
-                  !revealed ? h('button', { type: 'button', style: Object.assign({}, goBtn, guess === '' ? { opacity: 0.55, cursor: 'not-allowed' } : null), disabled: guess === '', onClick: lockInEstimate }, S('est_go', 'Lock in my estimate')) : null,
-                  revealed ? h('button', { type: 'button', style: btn, onClick: function () { setCmpA(challenge.small.id); setCmpB(challenge.big.id); flyTo(challenge.big); } }, S('est_show', 'Show me')) : null,
+                  !revealed ? h('button', { type: 'button', style: goBtn, disabled: prediction === null, onClick: lockInEstimate }, S('est_go', 'Lock in my estimate')) : null,
+                  revealed ? h('button', { type: 'button', style: btn, onClick: function () { showInvestigation(pair); } }, S('est_show', 'Show me')) : null,
                   h('button', { type: 'button', style: btn, onClick: newChallenge }, S('est_new', 'Another pair'))),
                 revealed ? h('p', { role: 'status', style: { margin: 0, fontWeight: 600 } },
-                  estimateVerdict(parseFloat(guess)) + ' ' + challengeReveal()) : null)) : null,
+                  estimateVerdict(prediction) + ' ' + challengeReveal()) : null,
+                revealed ? h('div', { className: 'sx-inquiry-evidence' },
+                  predictionChart(),
+                  h('p', { style: { fontSize: '.75rem', lineHeight: 1.5 } }, predictionFeedback(prediction, challenge)),
+                  h('ul', { style: { paddingLeft: 18, margin: '8px 0', fontSize: '.75rem', lineHeight: 1.6 } }, [challenge.small, challenge.big].map(function (item) {
+                    return h('li', { key: item.id }, itemText(item, 'name') + ': ' + lengthText(item.size) + ' · ' + S('dim_' + item.dim.replace(/\s+/g, '_'), item.dim), item.note ? h('p', { style: { margin: '3px 0', color: P.dim, fontSize: '.6875rem' } }, itemText(item, 'note')) : null);
+                  })),
+                  h('p', { style: { fontSize: '.75rem', lineHeight: 1.5 } }, activeInquiryTheme ? S('atlas_inquiry_reflect_' + activeInquiryTheme.id, activeInquiryTheme.reflect) : S('atlas_inquiry_reflect_mixed', 'Which reference helped your prediction? What would you change in your explanation after exploring the comparison?')),
+                  h('label', { style: { fontSize: '.75rem' } }, S('atlas_inquiry_reflection', 'My reflection'),
+                    h('textarea', { value: reflection, maxLength: NOTE_LIMIT, rows: 3, onChange: function (event) { setReflection(event.target.value); setInquiryMessage(''); },
+                      style: Object.assign({}, sel, { display: 'block', width: '100%', marginTop: 4, resize: 'vertical' }) })),
+                  h('button', { type: 'button', style: Object.assign({}, goBtn, { marginTop: 8 }), disabled: !savedInvestigation && investigations.length >= INQUIRY_LIMIT, onClick: saveInvestigation },
+                    savedInvestigation ? S('atlas_inquiry_update', 'Update investigation') : S('atlas_inquiry_save', 'Save investigation')),
+                  !savedInvestigation && investigations.length >= INQUIRY_LIMIT ? h('p', { style: { color: P.warn, fontSize: '.75rem' } }, S('atlas_inquiry_full', 'You have 12 saved investigations. Remove one to save another; existing investigations can still be updated.')) : null) : null,
+                challenge.small.id === 'human' || challenge.big.id === 'human' ? h('p', { style: { margin: 0, fontSize: '.6875rem', lineHeight: 1.5, color: P.dim } }, S('atlas_inquiry_snapshot_hint', 'This investigation keeps the measurements it started with. Start another after changing your height to use the new reference.')) : null,
+                h('details', { ref: inquiryHistoryRef, className: 'sx-inquiry-history' },
+                  h('summary', { style: { padding: '8px 0', cursor: 'pointer', fontWeight: 600 } }, S('atlas_inquiry_count', 'Saved investigations · {n}', { n: investigations.length })),
+                  investigations.length ? h('ol', { style: { listStyle: 'none', padding: 0, margin: 0, maxHeight: 300, overflowY: 'auto' } }, investigations.map(function (entry) {
+                    var title = inquiryTitle(entry), measured = compareMeasurements(inquiryMeasurement(entry.small), inquiryMeasurement(entry.big));
+                    return h('li', { key: entry.id, 'data-investigation': entry.id, style: { borderTop: '1px solid ' + P.line, padding: '10px 0', overflowWrap: 'anywhere', fontSize: '.75rem' } },
+                      h('strong', null, title),
+                      h('p', { style: { margin: '4px 0', color: P.dim } }, S('atlas_inquiry_history_ratio', 'Predicted {guess}; measured {actual} powers of ten.', { guess: entry.guess, actual: round2(measured.decades) })),
+                      entry.reflection ? h('p', { style: { whiteSpace: 'pre-wrap', margin: '4px 0 8px' } }, entry.reflection) : null,
+                      h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                        h('button', { type: 'button', style: btn, onClick: function () { loadInvestigation(entry); }, 'aria-label': S('atlas_inquiry_return_aria', 'Return to investigation: {name}', { name: title }) }, S('atlas_inquiry_return', 'Return to investigation')),
+                        h('button', { type: 'button', style: btn, onClick: function () { removeInvestigation(entry); }, 'aria-label': S('atlas_inquiry_remove_aria', 'Remove investigation: {name}', { name: title }) }, S('atlas_inquiry_remove', 'Remove'))));
+                  })) : h('p', { style: { fontSize: '.75rem', color: P.dim } }, S('atlas_inquiry_empty', 'Save a prediction and reflection to keep the evidence here.')),
+                  h('button', { type: 'button', style: btn, disabled: !investigations.length, onClick: downloadObservations }, S('atlas_inquiry_download', 'Download investigations'))),
+                h('p', { role: 'status', style: { fontSize: '.75rem', margin: 0, minHeight: '1.5em' } }, inquiryMessage))) : null,
 
             // Compare
             h('details', { ref: cmpDetailsRef, className: 'sx-comparison-workbench' },

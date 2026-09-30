@@ -9,6 +9,11 @@ for (const m of source.matchAll(/S\('(atlas_[a-z_]+)', ('(?:\\.|[^'\\])*')/g)) {
 }
 const realms = vm.runInNewContext('(' + source.match(/var REALMS = (\[[\s\S]*?\n  \]);/)[1] + ')');
 for (const realm of realms) additions['atlas_realm_' + realm.id] = realm.name;
+const inquiries = vm.runInNewContext('(' + source.match(/var INQUIRY_THEMES = (\[[\s\S]*?\n  \]);/)[1] + ')');
+for (const inquiry of inquiries) {
+  additions['atlas_inquiry_theme_' + inquiry.id] = inquiry.title;
+  additions['atlas_inquiry_reflect_' + inquiry.id] = inquiry.reflect;
+}
 for (const file of ['ui_strings.js', 'desktop/web-app/public/ui_strings.js', 'desktop/web-app/build/ui_strings.js', 'desktop/app-build/ui_strings.js']) {
   if (!fs.existsSync(file)) continue;
   const raw = fs.readFileSync(file, 'utf8');
