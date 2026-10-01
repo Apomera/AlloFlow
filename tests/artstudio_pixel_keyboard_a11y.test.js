@@ -483,7 +483,8 @@ describe('Art Studio Pixel Art keyboard accessibility', () => {
     canvas.getBoundingClientRect=()=>({left:0,top:0,width:80,height:80});
     const event=(x,y,type)=>({clientX:x,clientY:y,type,pointerId:1,button:0,preventDefault(){}});
     await act(async()=>canvas.onpointerdown(event(5,5,'pointerdown')));
-    await act(async()=>harness.updateArtwork({pixelRestoreToken:'restored',pixelData:{'7,7':'green'}}));
+    // A legacy checkpoint replaces every pixel field, as the real study-fork path does.
+    await act(async()=>harness.updateArtwork({pixelRestoreToken:'restored',pixelData:{'7,7':'green'},pixelLayers:undefined,pixelActiveLayer:undefined}));
     await act(async()=>canvas.onpointerup(event(75,5,'pointerup')));
     expect(canvas._captureArtStudioState().pixelData).toEqual({'7,7':'green'});
     expect([...host.querySelectorAll('button')].find(b=>b.textContent==='Undo').disabled).toBe(true);
@@ -502,7 +503,7 @@ describe('Art Studio Pixel Art keyboard accessibility', () => {
     })();
 
     expect(html).toContain('move the cell cursor with Arrow keys');
-    expect(html).toContain('aria-describedby="artstudio-pixel-keyboard-help"');
+    expect(html).toContain('aria-describedby="artstudio-pixel-keyboard-help artstudio-pixel-layer-help"');
     const shortcuts=html.match(/id="pixelCanvas"[^>]*aria-keyshortcuts="([^"]+)"/)[1].split(' ');
     expect(shortcuts).toEqual(expect.arrayContaining(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End','Enter','Space','Control+C','Control+X','Control+V','Meta+C','Meta+X','Meta+V','Delete','Escape']));
     expect(html).toContain('focus-visible:ring-4');
@@ -513,7 +514,7 @@ describe('Art Studio Pixel Art keyboard accessibility', () => {
 
   it('moves the keyboard cursor, paints the selected cell, and announces both actions', async () => {
     await mount({ pixelGrid: 8, pixelTool: 'brush', pixelData: {} });
-    const canvas = host.querySelector('canvas[aria-describedby="artstudio-pixel-keyboard-help"]');
+    const canvas = host.querySelector('canvas[aria-describedby~="artstudio-pixel-keyboard-help"]');
     canvas.focus();
 
     await act(async () => {
@@ -536,7 +537,7 @@ describe('Art Studio Pixel Art keyboard accessibility', () => {
       pixelTool: 'eraser',
       pixelData: { '0,0': 'red', '7,7': 'blue' },
     });
-    let canvas = host.querySelector('canvas[aria-describedby="artstudio-pixel-keyboard-help"]');
+    let canvas = host.querySelector('canvas[aria-describedby~="artstudio-pixel-keyboard-help"]');
     canvas.focus();
 
     await act(async () => {
@@ -546,7 +547,7 @@ describe('Art Studio Pixel Art keyboard accessibility', () => {
     });
     expect(host.querySelector('[data-testid="pixel-state"]').textContent).not.toContain('"7,7"');
 
-    canvas = host.querySelector('canvas[aria-describedby="artstudio-pixel-keyboard-help"]');
+    canvas = host.querySelector('canvas[aria-describedby~="artstudio-pixel-keyboard-help"]');
     canvas.focus();
     await act(async () => {
       canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true, cancelable: true }));

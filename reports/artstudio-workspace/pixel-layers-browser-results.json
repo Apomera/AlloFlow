@@ -1,0 +1,39 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "expandedGrid": {
+        "x": 174,
+        "y": 79,
+        "width": 854,
+        "height": 854
+      }
+    },
+    {
+      "alphaComposite": {
+        "solid": [
+          224,
+          79,
+          117,
+          255
+        ],
+        "partial": [
+          167,
+          68,
+          49,
+          255
+        ]
+      }
+    },
+    "Hidden and locked paint is protected; toggles and pixels restore with Undo",
+    "Rename, independent duplication, active-layer clearing, deletion and stacking Undo pass",
+    "Merge keeps the visible sprite byte-identical and Undo restores both layers",
+    "Changing layers cancels an unfinished shape without changing exported pixels",
+    {
+      "phoneControls": 12,
+      "minHeight": 44,
+      "noHorizontalOverflow": true
+    }
+  ],
+  "errors": []
+}

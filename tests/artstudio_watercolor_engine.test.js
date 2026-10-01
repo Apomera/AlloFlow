@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { Buffer } from 'node:buffer';
 import {
   React,
   ReactDOMClient,
@@ -191,6 +192,92 @@ describe('Art Studio watercolor simulation engine', () => {
     return mass;
   }
   const bloomParams = { water: 1, flowDirection: 'none', flowStrength: 0, drying: 0, humidity: 1, airflow: 0, absorption: 0, granulation: 0, sizing: 1, separation: 0 };
+
+  const mobileFields=['pigmentR','pigmentG','pigmentB','pigmentDensity','pigmentStainingMass','pigmentOpacityMass','pigmentGranulationMass','pigmentMobilityMass','pigmentMobilityRMass','pigmentMobilityGMass','pigmentMobilityBMass'];
+  const fixedFields=['stainR','stainG','stainB','stainDensity','stainStainingMass','stainOpacityMass','stainGranulationMass','stainMobilityMass','stainMobilityRMass','stainMobilityGMass','stainMobilityBMass'];
+  const sum=values=>values.reduce((total,value)=>total+value,0);
+  const maxDifference=(a,b)=>a.reduce((max,value,index)=>Math.max(max,Math.abs(value-b[index])),0);
+  function expectIdenticalField(actual, expected, name) {
+    expect(actual.constructor, name).toBe(expected.constructor);
+    expect(actual.length, name).toBe(expected.length);
+    // Compare every stored byte without walking millions of properties through
+    // the general-purpose deep-equality matcher on a contended test worker.
+    expect(Buffer.from(actual.buffer, actual.byteOffset, actual.byteLength)
+      .equals(Buffer.from(expected.buffer, expected.byteOffset, expected.byteLength)), name).toBe(true);
+  }
+
+  it('blots water and whole mobile pigment parcels while preserving dry glazes, masks, and brush loads',async()=>{
+    const {engine}=await mountWatercolor();const seed=dampWash(engine,false);
+    seed.stainDensity.fill(0.2);seed.stainR.fill(0.1);seed.stainG.fill(0.04);seed.stainB.fill(0.02);
+    for(let y=0;y<192;y++)for(let x=94;x<=97;x++)seed.mask[y*192+x]=1;
+    engine.restoreState(seed);const before=engine.captureState();engine.configure(baseParams('blot',{size:60,blottingStrength:0.8}));engine.dabAt(96,96,0.8);const after=engine.captureState();
+    expect(sum(after.water)).toBeLessThan(sum(before.water));expect(sum(after.pigmentDensity)).toBeLessThan(sum(before.pigmentDensity));
+    for(const field of mobileFields){expect(after[field].every((v,i)=>Number.isFinite(v)&&v>=0&&v<=before[field][i]),field).toBe(true);}
+    const at=96*192+100;
+    for(const field of mobileFields)if(before[field][at]>0)expect(after[field][at]/before[field][at],field).toBeCloseTo(after.pigmentDensity[at]/before.pigmentDensity[at],6);
+    for(const field of fixedFields)expectIdenticalField(after[field],before[field],field);expectIdenticalField(after.mask,before.mask,'mask');
+    for(let y=0;y<192;y++)for(let x=94;x<=97;x++){const i=y*192+x;expect(after.water[i]).toBe(before.water[i]);expect(after.pigmentDensity[i]).toBe(before.pigmentDensity[i]);}
+    expect(after.reservoirWater).toBe(before.reservoirWater);expect(after.reservoirPigment).toBe(before.reservoirPigment);
+  },WATERCOLOR_SIM_TIMEOUT_MS);
+
+  it('leaves completely dry loose pigment and settled paint unchanged when blotting',async()=>{
+    const {engine}=await mountWatercolor();const seed=dampWash(engine,false);seed.water.fill(0);seed.stainDensity.fill(0.15);seed.stainB.fill(0.12);engine.restoreState(seed);
+    const before=engine.captureState();engine.configure(baseParams('blot',{size:80,water:1,pigment:1,blottingStrength:1}));engine.dabAt(96,96,1);const after=engine.captureState();
+    for(const field of ['water','bloom','mask',...mobileFields,...fixedFields])expectIdenticalField(after[field],before[field],field);
+  },WATERCOLOR_SIM_TIMEOUT_MS);
+
+  it('gives blot strength and pressure independent control over textured pickup without adding water or color',async()=>{
+    const {engine}=await mountWatercolor();const seed=dampWash(engine,false);
+    const blot=(strength,pressure)=>{engine.restoreState(seed);engine.configure(baseParams('blot',{size:60,blottingStrength:strength,water:1,pigment:1}));engine.dabAt(96,96,pressure);return engine.captureState();};
+    const off=blot(0,1),gentle=blot(0.2,0.3),strong=blot(1,1);
+    expectIdenticalField(off.water,seed.water,'water');expectIdenticalField(off.pigmentDensity,seed.pigmentDensity,'pigmentDensity');
+    expect(sum(strong.water)).toBeLessThan(sum(gentle.water));expect(sum(gentle.water)).toBeLessThan(sum(seed.water));
+    const center=96*192+96;const pickup=[];for(let y=94;y<=98;y++)for(let x=94;x<=98;x++)pickup.push(seed.water[y*192+x]-strong.water[y*192+x]);
+    expect(Math.max(...pickup)-Math.min(...pickup)).toBeGreaterThan(0.015);expect(strong.pigmentDensity[center]).toBeGreaterThan(0);
+    for(let i=0;i<12;i++)engine.dabAt(96,96,1);const repeated=engine.captureState();
+    expect(repeated.water.every(v=>Number.isFinite(v)&&v>=0)).toBe(true);expect(repeated.pigmentDensity.every(v=>Number.isFinite(v)&&v>=0)).toBe(true);
+  },WATERCOLOR_SIM_TIMEOUT_MS);
+
+  it('can take up a clear-water puddle and differs from the rewetted Lift brush',async()=>{
+    const {engine}=await mountWatercolor();const seed=dampWash(engine,false);engine.restoreState(seed);engine.configure(baseParams('lift',{size:50}));engine.dabAt(96,96,0.8);const lifted=engine.captureState();
+    engine.restoreState(seed);engine.configure(baseParams('blot',{size:50}));engine.dabAt(96,96,0.8);const blotted=engine.captureState();
+    expect(sum(lifted.water)).toBeGreaterThan(sum(seed.water));expect(sum(blotted.water)).toBeLessThan(sum(seed.water));
+    for(const field of mobileFields)seed[field].fill(0);engine.restoreState(seed);engine.dabAt(96,96,0.8);const clear=engine.captureState();expect(sum(clear.water)).toBeLessThan(sum(seed.water));expect(sum(clear.pigmentDensity)).toBe(0);
+  },WATERCOLOR_SIM_TIMEOUT_MS);
+
+  it('takes up rewetted low-staining color more readily and leaves the remaining fixed color anchored',async()=>{
+    const {engine}=await mountWatercolor();const empty=engine.captureState();
+    const pickup=staining=>{
+      const seed={...empty,stainDensity:new Float32Array(192*192).fill(0.5),stainR:new Float32Array(192*192).fill(0.1),stainG:new Float32Array(192*192).fill(0.2),stainB:new Float32Array(192*192).fill(0.4),stainStainingMass:new Float32Array(192*192).fill(0.5*staining)};
+      engine.restoreState(seed);engine.configure(baseParams('water',{size:60,water:1,rewetting:1}));engine.dabAt(96,96,1);const rewet=engine.captureState();
+      engine.configure(baseParams('blot',{size:60,blottingStrength:1}));engine.dabAt(96,96,1);const after=engine.captureState();for(const field of fixedFields)expectIdenticalField(after[field],rewet[field],field);
+      return sum(rewet.pigmentDensity)-sum(after.pigmentDensity);
+    };
+    const low=pickup(0.1),high=pickup(0.9);expect(high).toBeGreaterThan(0);expect(low).toBeGreaterThan(high*2);
+  },WATERCOLOR_SIM_TIMEOUT_MS);
+
+  it('keeps a complete blotting stroke in one history step and retains pickup through compact restore',async()=>{
+    const {canvas,engine}=await mountWatercolor();const seed=dampWash(engine,false);engine.restoreState(seed);engine.configure(baseParams('blot',{size:36,blottingStrength:0.8}));
+    canvas.getBoundingClientRect=()=>({left:0,top:0,width:192,height:192});canvas.onpointerdown(stylus(70,96,0));canvas.onpointermove(stylus(110,96,80,{getCoalescedEvents:()=>[stylus(85,96,30),stylus(100,96,60)]}));canvas.onpointerup(stylus(120,96,100,{type:'pointerup'}));
+    const after=engine.captureState();expect(after.water[96*192+95]).toBeLessThan(seed.water[96*192+95]);expect(after.water[96*192+120]).toBeLessThan(seed.water[96*192+120]);
+    expect(engine.undo()).toBe(true);expect(maxDifference(engine.captureState().water,seed.water)).toBeLessThan(0.00006);expect(engine.redo()).toBe(true);expect(maxDifference(engine.captureState().pigmentDensity,after.pigmentDensity)).toBeLessThan(0.00006);
+    const compact=engine.captureState(true);expect(compact.packed).toBe('uint16-v1');engine.clear();engine.restoreState(compact);expect(maxDifference(engine.captureState().water,after.water)).toBeLessThan(0.00006);
+  },WATERCOLOR_SIM_TIMEOUT_MS);
+
+  it('offers Blot with an accessible strength control and disables only its inactive paint loads',async()=>{
+    await mountWatercolor({},true);const button=[...container.querySelectorAll('button')].find(b=>b.textContent.endsWith(' Blot'));await React.act(async()=>button.click());
+    expect(button.getAttribute('aria-pressed')).toBe('true');const strength=container.querySelector('input[aria-label="Blot strength"]');expect(strength.value).toBe('70');expect(strength.disabled).toBe(false);
+    for(const label of ['Water','Pigment'])expect(container.querySelector('input[aria-label="'+label+'"]').disabled).toBe(true);
+    expect(strength.getAttribute('aria-describedby')).toBe('artstudio-watercolor-blot-help');expect(container.querySelector('#artstudio-watercolor-blot-help').textContent).toContain('Dry paint and masking stay intact');
+    const lift=[...container.querySelectorAll('button')].find(b=>b.textContent.endsWith(' Lift'));await React.act(async()=>lift.click());
+    expect(container.querySelector('input[aria-label="Blot strength"]')).toBeNull();for(const label of ['Water','Pigment'])expect(container.querySelector('input[aria-label="'+label+'"]').disabled).toBe(false);
+  },WATERCOLOR_SIM_TIMEOUT_MS);
+
+  it('keeps a late pointer release from redrawing after Clear and recovers the interrupted mark',async()=>{
+    const {canvas,engine}=await mountWatercolor();canvas.getBoundingClientRect=()=>({left:0,top:0,width:192,height:192});canvas.onpointerdown(stylus(60,96,0));const partial=engine.captureState();engine.clear();
+    canvas.onpointermove(stylus(110,96,80));canvas.onpointerup(stylus(140,96,100,{type:'pointerup'}));expect(sum(engine.captureState().pigmentDensity)).toBe(0);expect(sum(engine.captureState().water)).toBe(0);
+    expect(engine.undo()).toBe(true);expect(maxDifference(engine.captureState().pigmentDensity,partial.pigmentDensity)).toBeLessThan(0.00006);expect(engine.redo()).toBe(true);expect(sum(engine.captureState().pigmentDensity)).toBe(0);
+  },WATERCOLOR_SIM_TIMEOUT_MS);
 
   it('pushes pigment out of a wetter patch into a backrun without adding or deleting paint', async () => {
     const { engine } = await mountWatercolor();

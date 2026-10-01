@@ -1,0 +1,70 @@
+{
+  "passed": true,
+  "checks": [
+    "Actual Blot selection exposes strength, keeps help associated, and disables inactive Water and Pigment loads",
+    {
+      "desktopCanvas": {
+        "x": 159,
+        "y": 106,
+        "width": 810,
+        "height": 810
+      },
+      "backing": [
+        1024,
+        1024
+      ],
+      "pickup": {
+        "before": {
+          "water": 3910.460070937872,
+          "mobile": 5270.620040535927,
+          "fixed": 680.0799847990274,
+          "mask": 114,
+          "paused": true
+        },
+        "after": {
+          "water": 3095.4340032450855,
+          "mobile": 4272.197311598808,
+          "fixed": 680.0799847990274,
+          "mask": 114,
+          "paused": true
+        },
+        "preservation": {
+          "masked": true,
+          "dry": true
+        }
+      }
+    },
+    {
+      "visibleHistory": {
+        "undoMaxWaterError": 0.000009149312973022461,
+        "redoMaxPigmentError": 0.000019073486328125
+      }
+    },
+    "The visible Export PNG action downloads the exact 1024-pixel painting",
+    {
+      "savedStudy": {
+        "brush": "blot",
+        "strength": 85,
+        "restored": {
+          "water": 3095.377864856273,
+          "mobile": 4272.27369671315,
+          "fixed": 680.1059531271458,
+          "mask": 114,
+          "paused": true
+        },
+        "originalUnchanged": true
+      }
+    },
+    {
+      "phoneWidth": 390,
+      "strengthHeight": 44,
+      "noHorizontalOverflow": true
+    },
+    {
+      "phoneWidth": 320,
+      "strengthHeight": 44,
+      "noHorizontalOverflow": true
+    }
+  ],
+  "errors": []
+}

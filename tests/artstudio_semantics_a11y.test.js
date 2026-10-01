@@ -25,7 +25,7 @@ describe('Art Studio graphic and form semantics', () => {
     expect(fs.readFileSync(publicPath, 'utf8')).toBe(fs.readFileSync(sourcePath, 'utf8'));
   });
 
-  it('names the harmony visualization, inquiry fields, and scoped data headers', () => {
+  it('names the harmony visualization, inquiry fields, and restorable experiments', () => {
     loadTool('stem_lab/stem_tool_artstudio.js', 'artStudio');
     const html = renderTool('artStudio', {
       artStudio: {
@@ -48,7 +48,12 @@ describe('Art Studio graphic and form semantics', () => {
     expect(html).toContain('aria-label="Color harmony wheel showing');
     expect(html).toContain('aria-label="Color harmony hypothesis"');
     expect(html).toContain('aria-label="Explain your understanding of color harmony"');
-    expect(html).toContain('scope="col"');
+    const host=document.createElement('div');host.innerHTML=html;
+    const experiments=host.querySelector('[data-harmony-experiments]');
+    expect(experiments.tagName).toBe('SECTION');
+    expect(experiments.querySelector('h3').textContent).toBe('Palette experiments');
+    expect(experiments.querySelector('button').getAttribute('aria-label')).toBe('Restore experiment 1');
+    expect(experiments.querySelector('button').textContent).toContain('3 colors');
   });
 
   it('names the interactive and output stereogram canvases', () => {

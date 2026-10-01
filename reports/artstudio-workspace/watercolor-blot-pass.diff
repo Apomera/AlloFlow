@@ -1,0 +1,154 @@
+diff --git a/C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-going-you-re-doing/artstudio-before-watercolor-blot.js b/stem_lab/stem_tool_artstudio.js
+index 64fd65b8a..0ced6b1cc 100644
+--- a/C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-going-you-re-doing/artstudio-before-watercolor-blot.js
++++ b/stem_lab/stem_tool_artstudio.js
+@@ -4938,6 +4938,7 @@ const d = labToolData.artStudio || {};
+               var airflow = Number(d.watercolorAirflow);
+               var sizing = Number(d.watercolorSizing);
+               var bloomSensitivity = Number(d.watercolorBloomSensitivity);
++              var blottingStrength = Number(d.watercolorBlotting);
+               return {
+                 color: parseColor(d.watercolorColor || '#2f6fb0'),
+                 touchMode: d.watercolorTouchMode === 'draw' ? 'draw' : 'scroll',
+@@ -4963,7 +4964,8 @@ const d = labToolData.artStudio || {};
+                 humidity: clamp((isFinite(humidity) ? humidity : 45) / 100, 0, 1),
+                 airflow: clamp((isFinite(airflow) ? airflow : 25) / 100, 0, 1),
+                 sizing: clamp((isFinite(sizing) ? sizing : 58) / 100, 0, 1),
+-                bloomSensitivity: clamp((isFinite(bloomSensitivity) ? bloomSensitivity : 60) / 100, 0, 1)
++                bloomSensitivity: clamp((isFinite(bloomSensitivity) ? bloomSensitivity : 60) / 100, 0, 1),
++                blottingStrength: clamp((isFinite(blottingStrength) ? blottingStrength : 70) / 100, 0, 1)
+               };
+             }
+ 
+@@ -5912,7 +5914,7 @@ const d = labToolData.artStudio || {};
+             }
+ 
+             function brushFootprint(pressure, tilt, angle) {
+-              var scale = { wash:1.55, dry:0.72, flat:1.05, mop:1.52, rigger:0.52, water:1.18, lift:0.92, splatter:1.75, salt:1.08, mask:0.88, peel:1.02 }[params.brush] || 1;
++              var scale = { wash:1.55, dry:0.72, flat:1.05, mop:1.52, rigger:0.52, water:1.18, lift:0.92, blot:1.12, splatter:1.75, salt:1.08, mask:0.88, peel:1.02 }[params.brush] || 1;
+               var radius = Math.max(1.5, params.size * (SIM_W / LOGICAL_W) * scale * (0.20 + 0.98 * Math.sqrt(clamp(pressure,0.05,1))));
+               var aspect = 1 + tilt * (params.brush === 'wash' ? 1.05 : 0.72);
+               var major = radius * aspect, minor = radius / (1 + tilt * 0.18);
+@@ -5946,6 +5948,7 @@ const d = labToolData.artStudio || {};
+               var waterScale = 1, pigmentScale = 1, softness = 1;
+               var clearWater = params.brush === 'water';
+               var liftPigment = params.brush === 'lift';
++              var blotWash = params.brush === 'blot';
+               var splatter = params.brush === 'splatter';
+               var saltTexture = params.brush === 'salt';
+               var maskingFluid = params.brush === 'mask';
+@@ -5960,6 +5963,7 @@ const d = labToolData.artStudio || {};
+               if (riggerBrush) { waterScale = 0.70; pigmentScale = 0.94; softness = 0.82; }
+               if (clearWater) { waterScale = 1.62; pigmentScale = 0; softness = 1.32; }
+               if (liftPigment) { waterScale = 0.78; pigmentScale = 0; softness = 1.05; }
++              if (blotWash) { waterScale = 0; pigmentScale = 0; softness = 0.82; }
+               if (splatter) { waterScale = 0.78; pigmentScale = 0.82; softness = 0.68; }
+               if (saltTexture) { waterScale = 0; pigmentScale = 0; softness = 0.9; }
+               if (maskingFluid) { waterScale = 0; pigmentScale = 0; softness = 1.12; }
+@@ -5987,6 +5991,7 @@ const d = labToolData.artStudio || {};
+               var maxY = Math.min(SIM_H - 1, Math.ceil(y + extent + 1));
+               var color = params.color;
+               var saltFields = saltTexture ? [pigmentR,pigmentG,pigmentB,pigmentDensity,pigmentStainingMass,pigmentOpacityMass,pigmentGranulationMass,pigmentMobilityMass,pigmentMobilityRMass,pigmentMobilityGMass,pigmentMobilityBMass] : null;
++              var blotFields = blotWash ? [pigmentR,pigmentG,pigmentB,pigmentDensity,pigmentStainingMass,pigmentOpacityMass,pigmentGranulationMass,pigmentMobilityMass,pigmentMobilityRMass,pigmentMobilityGMass,pigmentMobilityBMass] : null;
+ 
+               for (var yy = minY; yy <= maxY; yy++) {
+                 for (var xx = minX; xx <= maxX; xx++) {
+@@ -6030,6 +6035,23 @@ const d = labToolData.artStudio || {};
+                   var resist = 1 - mask[index];
+                   if (resist <= 0.01) continue;
+                   deposit *= resist;
++                  if (blotWash) {
++                    // A dry absorbent tool takes up the surface wash without
++                    // adding water or scrubbing fixed color out of the fibers.
++                    // Remove whole mobile parcels so their hue and material
++                    // properties stay consistent with the remaining pigment.
++                    var wetResponse = clamp((water[index] - 0.002) / 0.22, 0, 1);
++                    var blotStrength = clamp(isFinite(Number(params.blottingStrength)) ? Number(params.blottingStrength) : 0.70, 0, 1);
++                    var pore = 0.30 + seededNoise(Math.floor(xx / 2) * 19.7 + Math.floor(yy / 2) * 67.1 + strokeSeed * 13.9) * 0.70;
++                    var uptake = 1 - Math.exp(-deposit * wetResponse * blotStrength * (0.40 + safePressure * 1.20) * pore * 1.8);
++                    if (uptake <= 0) continue;
++                    var looseStaining = pigmentDensity[index] > 0.0001 ? clamp(pigmentStainingMass[index] / pigmentDensity[index], 0, 1) : 0;
++                    var pigmentPickup = uptake * (0.88 - looseStaining * 0.28);
++                    setCellWater(index, water[index] * (1 - uptake));
++                    for (var blotField = 0; blotField < blotFields.length; blotField++) blotFields[blotField][index] *= 1 - pigmentPickup;
++                    bloom[index] *= 1 - uptake * 0.5;
++                    continue;
++                  }
+                   if (saltTexture) {
+                     // Salt acts on damp, mobile washes. Preserve fixed dry
+                     // glazes and move whole pigment parcels into irregular
+@@ -6138,8 +6160,8 @@ const d = labToolData.artStudio || {};
+                 }
+               }
+               var waterDrain = params.brush === 'wash' ? 0.026 : (mopBrush ? 0.034 : (riggerBrush ? 0.009 : 0.014));
+-              var pigmentDrain = (clearWater || liftPigment || saltTexture || maskingFluid || peelMask) ? 0 : (params.brush === 'dry' ? 0.022 : (riggerBrush ? 0.009 : (flatBrush ? 0.019 : 0.016)));
+-              if (!maskingFluid && !peelMask && !saltTexture) reservoirWater = clamp(reservoirWater - waterDrain * depositScale * (0.55 + params.water * 0.7), 0.04, 1);
++              var pigmentDrain = (clearWater || liftPigment || blotWash || saltTexture || maskingFluid || peelMask) ? 0 : (params.brush === 'dry' ? 0.022 : (riggerBrush ? 0.009 : (flatBrush ? 0.019 : 0.016)));
++              if (!maskingFluid && !peelMask && !saltTexture && !blotWash) reservoirWater = clamp(reservoirWater - waterDrain * depositScale * (0.55 + params.water * 0.7), 0.04, 1);
+               reservoirPigment = clamp(reservoirPigment - pigmentDrain * depositScale * (0.55 + params.pigment * 0.7), 0.04, 1);
+               updateStatus();
+             }
+@@ -6175,6 +6197,7 @@ const d = labToolData.artStudio || {};
+               },
+               clear: function () {
+                 localRevision += 1;
++                finishWatercolorPointer(null, true);
+                 pushHistory();
+                 if (frameId) cancelAnimationFrame(frameId);
+                 running = false; wetCells = 0; maskedCells = 0; waterTotal = 0; baseImage = null; loadedSnapshot = ''; ignoredFlatSnapshot = '';
+@@ -7767,6 +7790,7 @@ const d = labToolData.artStudio || {};
+             var frame={width:canvas.width,height:canvas.height,data:copyArtStudioPixels(image)};
+             editAnimationFrames(function(current){var next=current.slice();if(replacing)next[replaceIndex]=frame;else next.push(frame);return next;});
+             var number=replacing?replaceIndex+1:animationDepthHistoryRef.current.current.stereoAnimKeyframes.length;
++            if(!replacing && typeof addToast==='function')addToast(formatArtStudioLearningText(__alloT('stem.artstudio.toast_keyframe_captured','📸 Keyframe {value1} captured!'),{value1:number}),'success');
+             if(typeof announceToSR==='function')announceToSR(formatArtStudioLearningText(replacing?__alloT('stem.artstudio.anim_depth_replaced','Keyframe {number} replaced.'):__alloT('stem.artstudio.sr_keyframe_captured','Keyframe {value1} captured.'),{number:number,value1:number}));
+           }
+           function loadAnimationKeyframe(index){
+@@ -10187,10 +10211,11 @@ const d = labToolData.artStudio || {};
+               React.createElement("div", { className: "space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-2" },
+                 React.createElement("div", { role: "group", 'aria-label': __alloT('stem.artstudio.a11y_watercolor_brush', 'Watercolor brush'), className: "flex items-center gap-2 flex-wrap" },
+                   React.createElement("span", { className: "text-xs font-bold text-slate-600" }, __alloT('stem.artstudio.watercolor_brush', "Brush:")),
+-                  [{ id: 'round', icon: '\uD83D\uDD8C', label: __alloT('stem.artstudio.round_brush', 'Round') }, { id: 'flat', icon: '\u25B0', label: __alloT('stem.artstudio.flat_brush', 'Flat') }, { id: 'mop', icon: '\u25CF', label: __alloT('stem.artstudio.mop_brush', 'Mop') }, { id: 'rigger', icon: '\u2571', label: __alloT('stem.artstudio.rigger_brush', 'Rigger') }, { id: 'wash', icon: '\uD83D\uDCA7', label: __alloT('stem.artstudio.wash_brush', 'Wash') }, { id: 'dry', icon: '\uD83C\uDF2C', label: __alloT('stem.artstudio.dry_brush', 'Dry') }, { id: 'water', icon: '\uD83D\uDCA6', label: __alloT('stem.artstudio.clear_water_brush', 'Clear water') }, { id: 'lift', icon: '\u2728', label: __alloT('stem.artstudio.lift_brush', 'Lift') }, { id: 'splatter', icon: '\u2726', label: __alloT('stem.artstudio.splatter_brush', 'Splatter') }, { id: 'salt', icon: '\u2744', label: __alloT('stem.artstudio.salt_texture_brush', 'Salt texture') }, { id: 'mask', icon: '\u25C7', label: __alloT('stem.artstudio.masking_fluid_brush', 'Masking fluid') }, { id: 'peel', icon: '\u25CC', label: __alloT('stem.artstudio.peel_mask_brush', 'Peel mask') }].map(function (brush) {
++                  [{ id: 'round', icon: '\uD83D\uDD8C', label: __alloT('stem.artstudio.round_brush', 'Round') }, { id: 'flat', icon: '\u25B0', label: __alloT('stem.artstudio.flat_brush', 'Flat') }, { id: 'mop', icon: '\u25CF', label: __alloT('stem.artstudio.mop_brush', 'Mop') }, { id: 'rigger', icon: '\u2571', label: __alloT('stem.artstudio.rigger_brush', 'Rigger') }, { id: 'wash', icon: '\uD83D\uDCA7', label: __alloT('stem.artstudio.wash_brush', 'Wash') }, { id: 'dry', icon: '\uD83C\uDF2C', label: __alloT('stem.artstudio.dry_brush', 'Dry') }, { id: 'water', icon: '\uD83D\uDCA6', label: __alloT('stem.artstudio.clear_water_brush', 'Clear water') }, { id: 'lift', icon: '\u2728', label: __alloT('stem.artstudio.lift_brush', 'Lift') }, { id: 'blot', icon: '\u25CC', label: __alloT('stem.artstudio.blot_brush', 'Blot') }, { id: 'splatter', icon: '\u2726', label: __alloT('stem.artstudio.splatter_brush', 'Splatter') }, { id: 'salt', icon: '\u2744', label: __alloT('stem.artstudio.salt_texture_brush', 'Salt texture') }, { id: 'mask', icon: '\u25C7', label: __alloT('stem.artstudio.masking_fluid_brush', 'Masking fluid') }, { id: 'peel', icon: '\u25CC', label: __alloT('stem.artstudio.peel_mask_brush', 'Peel mask') }].map(function (brush) {
+                     return React.createElement("button", { type: "button", key: brush.id, "aria-pressed": (d.watercolorBrush || 'round') === brush.id, onClick: function () { upd('watercolorBrush', brush.id); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.watercolorBrush || 'round') === brush.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 hover:bg-teal-50') }, brush.icon + ' ' + brush.label);
+                   })
+                 ),
++                d.watercolorBrush === 'blot' && React.createElement('p',{id:'artstudio-watercolor-blot-help',className:'rounded-lg border border-teal-200 bg-teal-50 p-2 text-xs text-teal-900'},__alloT('stem.artstudio.watercolor_blot_help','Press or drag to absorb water and loose pigment from a wet wash. Dry paint and masking stay intact. Use Clear water first to loosen dried color, then blot. Brush size, pressure, and Blot strength control pickup; Water and Pigment settings are inactive.')),
+                 d.watercolorBrush === 'salt' && React.createElement('p',{className:'rounded-lg border border-teal-200 bg-teal-50 p-2 text-xs text-teal-900'},__alloT('stem.artstudio.watercolor_salt_damp_help','Sprinkle onto a damp wash for pale crystal centers and darker rims. Fully dry paint stays unchanged; very wet puddles make a softer effect.')),
+                 React.createElement("div", { role: "group", 'aria-label': __alloT('stem.artstudio.a11y_watercolor_paper_state', 'Watercolor paper state'), className: "flex items-center gap-2 flex-wrap" },
+                   React.createElement("span", { className: "text-xs font-bold text-slate-600" }, __alloT('stem.artstudio.watercolor_surface', "Paper:")),
+@@ -10240,6 +10265,7 @@ const d = labToolData.artStudio || {};
+                   { key: 'watercolorPaper', label: __alloT('stem.artstudio.paper_texture', 'Paper texture'), min: 0, max: 100, fallback: 48, unit: '%' },
+                   { key: 'watercolorGranulation', label: __alloT('stem.artstudio.granulation', 'Granulation'), min: 0, max: 100, fallback: 54, unit: '%' }
+                 ];
++                if(d.watercolorBrush==='blot')basicControls.splice(1,0,{key:'watercolorBlotting',label:__alloT('stem.artstudio.watercolor_blot_strength','Blot strength'),min:0,max:100,fallback:70,unit:'%'});
+                 var advancedControls = [
+                   { key: 'watercolorStaining', label: __alloT('stem.artstudio.staining_strength', 'Staining strength'), fallback: 50 },
+                   { key: 'watercolorOpacity', label: __alloT('stem.artstudio.pigment_opacity', 'Pigment opacity'), fallback: 40 },
+@@ -10260,7 +10286,7 @@ const d = labToolData.artStudio || {};
+                   if (!isFinite(value)) value = control.fallback;
+                   return React.createElement("label", { key: control.key, className: "text-[0.6875rem] font-bold text-slate-600" },
+                     control.label + ': ' + Math.round(value) + control.unit,
+-                    React.createElement("input", { type: "range", min: control.min, max: control.max, value: value, 'aria-label': control.label, onChange: function (e) { upd(control.key, parseInt(e.target.value)); }, className: "block w-full accent-teal-700 mt-1" })
++                    React.createElement("input", { type: "range", min: control.min, max: control.max, value: value, disabled:d.watercolorBrush==='blot' && (control.key==='watercolorWater' || control.key==='watercolorPigment'), 'aria-describedby':d.watercolorBrush==='blot'?'artstudio-watercolor-blot-help':undefined, 'aria-label': control.label, onChange: function (e) { upd(control.key, parseInt(e.target.value)); }, className: "block w-full accent-teal-700 mt-1 disabled:opacity-40" })
+                   );
+                 };
+                 return React.createElement("div", { className: "space-y-2" },
+@@ -10515,7 +10541,7 @@ const d = labToolData.artStudio || {};
+                     React.createElement('div',{className:'my-2 flex flex-wrap gap-1'},
+                       React.createElement('button',{id:'artstudio-pixel-use-color',type:'button',disabled:!pixelReplacementHex,onClick:usePixelArtworkColor,className:'rounded-lg border border-slate-400 bg-white px-2 text-xs font-bold disabled:opacity-40'},__alloT('stem.artstudio.pixel_use_artwork_color','Use for brush')),
+                       React.createElement('button',{id:'artstudio-pixel-replace-color',type:'button',disabled:!pixelLayerEditable || !pixelReplacementHex || pixelReplacementHex===pixelSelectedHex.slice(0,7),onClick:replacePixelArtworkColor,className:'rounded-lg bg-pink-700 px-2 text-xs font-bold text-white disabled:opacity-40'},__alloT('stem.artstudio.pixel_replace_color','Replace this color'))),
+-                    React.createElement('p',{id:'artstudio-pixel-recolor-help',className:'text-xs'},__alloT('stem.artstudio.pixel_recolor_help','Replace every matching cell on the active layer in one undoable edit. Cell opacity is preserved.')))
++                    React.createElement('p',{id:'artstudio-pixel-recolor-help',className:'text-xs'},__alloT('stem.artstudio.pixel_layer_recolor_help','Replace every matching cell on the active layer in one undoable edit. Cell opacity is preserved.')))
+                 ),
+                 React.createElement('details', {className:'my-2 rounded-lg border border-slate-300 p-2'},
+                   React.createElement('summary',{className:'min-h-[44px] cursor-pointer text-xs font-bold',style:{paddingTop:10}},__alloT('stem.artstudio.pixel_brush_settings','Brush settings')+' · '+pixelBrushSize+' px'),
+@@ -14207,7 +14233,7 @@ const d = labToolData.artStudio || {};
+ 
+                   React.createElement("div", { 'data-stereo-depth-export':'true',className: "flex gap-2 mt-2" },
+ 
+-                    React.createElement("button", { "aria-label": __alloT('stem.artstudio.save_depth_map_png', "Save Depth Map PNG"), onClick: function () { var c = document.getElementById('depthMapCanvas');if(!c)return;var finish=function(){if(!c.isConnected)return;try{var src=c.toDataURL('image/png');if(!src||src==='data:,')throw new Error('Empty depth image');var link=document.createElement('a');link.download='depth-map.png';link.href=src;link.click();}catch(_){if(typeof addToast==='function')addToast(__alloT('stem.artstudio.stereo_export_failed','The image could not be exported. Please try again.'),'error');}};if(c._artStudioRestoring&&c._artStudioReady)c._artStudioReady.then(finish);else finish(); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-200 hover:from-indigo-100 hover:to-purple-100 transition-all" }, __alloT('stem.artstudio.save_depth_map_png_2', "\u2B07\uFE0F Save Depth Map PNG"))
++                    React.createElement("button", { "aria-label": __alloT('stem.artstudio.save_depth_map_png', "Save Depth Map PNG"), onClick: function () { var c = document.getElementById('depthMapCanvas');if(!c)return;var finish=function(){if(!c.isConnected)return;try{var src=c.toDataURL('image/png');if(!src||src==='data:,')throw new Error('Empty depth image');var link=document.createElement('a');link.download='depth-map.png';link.href=src;link.click();if(typeof addToast==='function')addToast(__alloT('stem.artstudio.toast_depth_map_saved_as_png','📥 Depth map saved as PNG!'),'success');}catch(_){if(typeof addToast==='function')addToast(__alloT('stem.artstudio.stereo_export_failed','The image could not be exported. Please try again.'),'error');}};if(c._artStudioRestoring&&c._artStudioReady)c._artStudioReady.then(finish);else finish(); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-200 hover:from-indigo-100 hover:to-purple-100 transition-all" }, __alloT('stem.artstudio.save_depth_map_png_2', "\u2B07\uFE0F Save Depth Map PNG"))
+ 
+                   ),
+ 

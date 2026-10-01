@@ -1,0 +1,77 @@
+{
+  "date": "2026-10-01",
+  "committed": true,
+  "sourceSha256": "60e5b3cab9586099d41a5d5508f827b802ebca6a168422a558105fe0aca50053",
+  "prePassSourceSha256": "3bb6698582f3619be505f75df73dd497d0157496d7fc24f3e5eb95a1d0901488",
+  "publicMirrorMatches": true,
+  "englishEntriesVerified": 10,
+  "tests": {
+    "passed": 207,
+    "failed": 0,
+    "files": 19,
+    "report": "symmetry-workspace-regression-results.json"
+  },
+  "browser": {
+    "passed": true,
+    "report": "symmetry-workspace-browser-results.json",
+    "workspace": {
+      "normalCanvas": {
+        "x": 93,
+        "y": 419,
+        "width": 626,
+        "height": 626
+      },
+      "expandedCanvas": {
+        "x": 166,
+        "y": 99,
+        "width": 816,
+        "height": 816
+      },
+      "backing": [
+        1024,
+        1024
+      ],
+      "sameCanvas": true
+    },
+    "phone": {
+      "phoneCanvas": {
+        "x": 31,
+        "y": 515.5,
+        "width": 328,
+        "height": 328
+      },
+      "phoneExpanded": {
+        "x": 31,
+        "y": 193,
+        "width": 328,
+        "height": 328
+      },
+      "phoneControls": 54,
+      "minControlHeight": 44,
+      "noHorizontalOverflow": true
+    },
+    "fallback": {
+      "smallPhoneFallback": {
+        "x": 31,
+        "y": 193,
+        "width": 258,
+        "height": 258
+      },
+      "nativeFullscreenRejectionRecovered": true,
+      "escapeRestoresScrolling": true,
+      "noHorizontalOverflow": true
+    }
+  },
+  "previews": [
+    "symmetry-workspace-desktop.png",
+    "symmetry-workspace-phone-canvas.png",
+    "symmetry-workspace-phone-controls.png",
+    "symmetry-workspace-phone-fallback.png",
+    "symmetry-workspace-export.png"
+  ],
+  "syntaxChecks": true,
+  "scopedDiffCheck": true,
+  "pinnedSpectralCheck": true,
+  "preservationDiff": "symmetry-workspace-pass.diff",
+  "testTiming": "Broad tests preceded the final phone layout and fallback contrast CSS adjustments; the browser check verifies the final layout."
+}

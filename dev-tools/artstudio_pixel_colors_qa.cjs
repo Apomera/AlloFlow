@@ -57,7 +57,7 @@ const shell=read('dev-tools/pixel_contrast_probe.cjs').match(/const SHELL = `([\
   assert(targets.every(target=>target.height>=44));checks.push({phoneTargets:targets.length,minHeight:Math.min(...targets.map(t=>t.height)),noHorizontalOverflow:true});
   await page.screenshot({path:path.join(out,'pixel-colors-phone.png')});
   // Dense palettes stay bounded to 24 swatches, with every color reachable.
-  await page.evaluate(()=>{const pixels={};for(let i=0;i<65;i++)pixels[(i%16)+','+Math.floor(i/16)]='#'+(0x100000+i*251).toString(16);__edit(prev=>({...prev,artStudio:{...prev.artStudio,pixelData:pixels,pixelRestoreToken:'qa-new-artwork'}}));});
+  await page.evaluate(()=>{const pixels={};for(let i=0;i<65;i++)pixels[(i%16)+','+Math.floor(i/16)]='#'+(0x100000+i*251).toString(16);__edit(prev=>({...prev,artStudio:{...prev.artStudio,pixelData:pixels,pixelLayers:undefined,pixelActiveLayer:undefined,pixelRestoreToken:'qa-new-artwork'}}));});
   await page.waitForFunction(()=>document.querySelectorAll('[data-pixel-artwork-color]').length===24);
   assert.notEqual(await page.locator('#artstudio-pixel-replacement-hex').inputValue(),'#234567');
   await review.getByRole('button',{name:'Next artwork colors'}).click();assert.equal(await review.locator('[data-pixel-artwork-color]').count(),24);

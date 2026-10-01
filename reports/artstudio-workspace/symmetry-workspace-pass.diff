@@ -1,0 +1,605 @@
+diff --git a/C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-going-you-re-doing/artstudio-before-symmetry-workspace.js b/stem_lab/stem_tool_artstudio.js
+index 9a3ffd9bc..3b548964f 100644
+--- a/C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-going-you-re-doing/artstudio-before-symmetry-workspace.js
++++ b/stem_lab/stem_tool_artstudio.js
+@@ -2362,6 +2362,12 @@ const d = labToolData.artStudio || {};
+           const pixelImportRequestRef = React.useRef({sequence:0,context:null});
+           const watercolorPaperRef = React.useRef(null);
+           const [watercolorFit, setWatercolorFit] = React.useState(512);
++          const symmetryPaperRef = React.useRef(null);
++          const [symmetryFit, setSymmetryFit] = React.useState(512);
++          function changeSymmetrySettings(values) {
++            var canvas=document.getElementById('symmetryCanvas');if(canvas && canvas._symCancelGesture)canvas._symCancelGesture();updMany(values);
++          }
++          function changeSymmetrySetting(key,value){var values={};values[key]=value;changeSymmetrySettings(values);}
+           const pixelGridSize = [8, 16, 24, 32, 48, 64].indexOf(Number(d.pixelGrid)) >= 0 ? Number(d.pixelGrid) : 16;
+           const pixelLayerDefaultName = function(index){return formatArtStudioLearningText(__alloT('stem.artstudio.pixel_layer_default_name','Layer {number}'),{number:index+1});};
+           const pixelLayerModel = artStudioPixelLayerModel(d,pixelLayerDefaultName);
+@@ -2561,6 +2567,17 @@ const d = labToolData.artStudio || {};
+             window.addEventListener('resize',measure);
+             return function(){if(observer)observer.disconnect();window.removeEventListener('resize',measure);};
+           }, [d.tab, d.studioHome]);
++          React.useEffect(function(){
++            var paper=symmetryPaperRef.current;if(!paper)return;
++            var workspace=paper.closest('#symmetryFullscreenWorkspace');
++            var measure=function(){
++              if(workspace){var wide=workspace.clientWidth>=850?'true':'false';if(workspace.dataset.symmetryWide!==wide)workspace.dataset.symmetryWide=wide;}
++              if(paper.clientWidth && paper.clientHeight)setSymmetryFit(Math.max(128,Math.floor(Math.min(paper.clientWidth-24,paper.clientHeight-24))));
++            };
++            measure();var observer=typeof ResizeObserver==='function'?new ResizeObserver(measure):null;
++            if(observer){observer.observe(paper);if(workspace)observer.observe(workspace);}window.addEventListener('resize',measure);
++            return function(){if(observer)observer.disconnect();window.removeEventListener('resize',measure);};
++          },[d.tab,d.studioHome]);
+           const normalizeThreadKitColor = function (color) {
+             if (!color || typeof color !== 'object') return null;
+             if (!['h', 's', 'l'].every(function (key) { return typeof color[key] === 'number' || (typeof color[key] === 'string' && color[key].trim() !== ''); })) return null;
+@@ -6982,7 +6999,12 @@ const d = labToolData.artStudio || {};
+ 
+             var ctx = canvas.getContext('2d');
+ 
+-            var W = canvas.width, H = canvas.height;
++            if(!ctx)return;
++            // Keep geometry, brush sizes, and saved origins in the established
++            // 512-unit coordinate space; the fixed backing store resolves twice
++            // as much detail without resetting artwork when the view resizes.
++            var W = 512, H = 512;
++            if(typeof ctx.setTransform==='function')ctx.setTransform(canvas.width/W,0,0,canvas.height/H,0,0);
+ 
+             var requestedCenterX = Number(d.symCenterX);
+             var requestedCenterY = Number(d.symCenterY);
+@@ -7037,8 +7059,11 @@ const d = labToolData.artStudio || {};
+                 cursor.style.top = ((canvas.offsetTop || 0) + keyboardCursor.y / H * displayH - 10) + 'px';
+                 cursor.style.display = show ? 'block' : 'none';
+               }
+-              canvas.setAttribute('aria-label', 'Symmetry drawing canvas in ' + patternName + ' mode with ' + (patternMode === 'bilateral' ? '2 reflected copies' : folds + ' folds') + ', using ' + (strokeMode === 'dots' ? 'dot stamps' : strokeMode === 'line' ? 'straight lines' : strokeMode === 'eraser' ? 'symmetric erasing' : 'continuous freehand') + ' and ' + symBlendMode + ' blending. Origin at ' + Math.round(centerXRatio * 100) + ' percent x, ' + Math.round(centerYRatio * 100) + ' percent y. Keyboard cursor at x ' +
+-                Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
++              canvas.setAttribute('aria-label',formatArtStudioLearningText(__alloT('stem.artstudio.sym_workspace_canvas','Symmetry drawing canvas in {pattern} mode with {copies}, using {stroke} and {blend} blending. Origin at {x} percent x, {y} percent y. Keyboard cursor at x {cursorX}, y {cursorY}.'),{
++                pattern:patternMode==='bilateral'?__alloT('stem.artstudio.a11y_sym_pattern_bilateral','bilateral mirror'):patternMode==='kaleidoscope'?__alloT('stem.artstudio.a11y_sym_pattern_kaleidoscope','kaleidoscope'):__alloT('stem.artstudio.a11y_sym_pattern_rotational','rotational'),
++                copies:patternMode==='bilateral'?__alloT('stem.artstudio.sym_workspace_reflected','2 reflected copies'):formatArtStudioLearningText(__alloT('stem.artstudio.sym_workspace_folds','{count} folds'),{count:folds}),
++                stroke:strokeMode==='dots'?__alloT('stem.artstudio.a11y_sym_stroke_dots','dot stamps'):strokeMode==='line'?__alloT('stem.artstudio.a11y_sym_stroke_line','straight lines'):strokeMode==='eraser'?__alloT('stem.artstudio.a11y_sym_stroke_eraser','symmetric erasing'):__alloT('stem.artstudio.a11y_sym_stroke_freehand','continuous freehand'),
++                blend:symBlendMode==='glow'?__alloT('stem.artstudio.a11y_blend_glow','glow'):__alloT('stem.artstudio.a11y_blend_normal','normal'),x:Math.round(centerXRatio*100),y:Math.round(centerYRatio*100),cursorX:Math.round(keyboardCursor.x),cursorY:Math.round(keyboardCursor.y)}));
+             }
+ 
+             // Store previous point for continuous line drawing
+@@ -7059,7 +7084,7 @@ const d = labToolData.artStudio || {};
+             }
+ 
+             function captureSymmetryCanvas() {
+-              try { return ctx.getImageData(0, 0, W, H); } catch (e) { return null; }
++              try { return ctx.getImageData(0, 0, canvas.width, canvas.height); } catch (e) { return null; }
+             }
+ 
+             function restoreSymmetryCanvas(snapshot) {
+@@ -7070,15 +7095,27 @@ const d = labToolData.artStudio || {};
+             function persistSymmetryArtwork() {
+               if (canvas._symRestoring) return;
+               var checkpoint = canvas._captureArtStudioState();
+-              if (checkpoint) updMany(checkpoint);
++              if (checkpoint) {canvas._symSnapshot=checkpoint.symmetrySnapshot;updMany(checkpoint);}
++            }
++
++            function committedSymmetryCanvas() {
++              if(!canvas._symDrawing || !canvas._symLineSnapshot)return canvas;
++              var clean=document.createElement('canvas');clean.width=canvas.width;clean.height=canvas.height;
++              var cleanContext=clean.getContext('2d');if(!cleanContext)return null;
++              try{cleanContext.putImageData(canvas._symLineSnapshot,0,0);return clean;}catch(_){return null;}
++            }
++            function refreshSymmetryHistory() {
++              var undo=document.getElementById('artstudio-sym-undo'),redo=document.getElementById('artstudio-sym-redo');
++              if(undo)undo.disabled=!!canvas._symRestoring || !!canvas._symDrawing || !(canvas._symUndo||[]).length;
++              if(redo)redo.disabled=!!canvas._symRestoring || !!canvas._symDrawing || !(canvas._symRedo||[]).length;
+             }
+ 
+             canvas._captureArtStudioState = function () {
+               if (canvas._symRestoring) return { symmetrySnapshot: canvas._symSnapshot || '' };
+               try {
+-                var snapshot = canvas.toDataURL('image/png');
++                var clean=committedSymmetryCanvas();if(!clean)return {symmetrySnapshot:canvas._symSnapshot||''};
++                var snapshot = clean.toDataURL('image/png');
+                 if (!snapshot || snapshot === 'data:,') return null;
+-                canvas._symSnapshot = snapshot;
+                 return { symmetrySnapshot: snapshot };
+               } catch (_) { return null; }
+             };
+@@ -7088,9 +7125,12 @@ const d = labToolData.artStudio || {};
+               canvas._symUndo = (canvas._symUndo || []).concat([before]).slice(-20);
+               canvas._symRedo = [];
+               persistSymmetryArtwork();
++              refreshSymmetryHistory();
+             }
+ 
+             function undoSymmetry() {
++              if(canvas._symRestoring)return;
++              finishPointer(null,true);
+               var history = canvas._symUndo || [];
+               if (!history.length) {
+                 if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_nothing_to_undo', 'Nothing to undo.'));
+@@ -7102,10 +7142,13 @@ const d = labToolData.artStudio || {};
+               canvas._symUndo = history.slice(0, -1);
+               if (current) canvas._symRedo = (canvas._symRedo || []).concat([current]).slice(-20);
+               persistSymmetryArtwork();
++              refreshSymmetryHistory();
+               if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_undid_the_last_symmetry_change', 'Undid the last symmetry change.'));
+             }
+ 
+             function redoSymmetry() {
++              if(canvas._symRestoring)return;
++              finishPointer(null,true);
+               var future = canvas._symRedo || [];
+               if (!future.length) {
+                 if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_nothing_to_redo', 'Nothing to redo.'));
+@@ -7117,10 +7160,12 @@ const d = labToolData.artStudio || {};
+               if (current) canvas._symUndo = (canvas._symUndo || []).concat([current]).slice(-20);
+               canvas._symRedo = future.slice(0, -1);
+               persistSymmetryArtwork();
++              refreshSymmetryHistory();
+               if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_redid_the_symmetry_change', 'Redid the symmetry change.'));
+             }
+ 
+             function clearSymmetry() {
++              finishPointer(null,true);
+               var before = canvas._symRestoring ? null : captureSymmetryCanvas();
+               if (canvas._symRestoring) {
+                 // Clear cancels the import itself, not just the temporary blank
+@@ -7138,6 +7183,7 @@ const d = labToolData.artStudio || {};
+               canvas._prevX = null; canvas._prevY = null;
+               if (before) recordSymmetryChange(before);
+               else persistSymmetryArtwork();
++              refreshSymmetryHistory();
+               if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_cleared_the_symmetry_artwork', 'Cleared the symmetry artwork.'));
+             }
+ 
+@@ -7153,16 +7199,17 @@ const d = labToolData.artStudio || {};
+                 });
+               }
+               try {
+-                if (symBackgroundMode === 'transparent') return canvas.toDataURL('image/png');
++                var clean=committedSymmetryCanvas();if(!clean)return canvas._symSnapshot||'';
++                if (symBackgroundMode === 'transparent') return clean.toDataURL('image/png');
+                 var exportCanvas = document.createElement('canvas');
+-                exportCanvas.width = W; exportCanvas.height = H;
++                exportCanvas.width = canvas.width; exportCanvas.height = canvas.height;
+                 var exportContext = exportCanvas.getContext('2d');
+-                if (!exportContext || typeof exportContext.drawImage !== 'function') return canvas.toDataURL('image/png');
++                if (!exportContext || typeof exportContext.drawImage !== 'function') return clean.toDataURL('image/png');
+                 exportContext.fillStyle = symBackgroundMode === 'light' ? '#f8fafc' : '#0f172a';
+-                exportContext.fillRect(0, 0, W, H);
+-                exportContext.drawImage(canvas, 0, 0);
++                exportContext.fillRect(0, 0, canvas.width, canvas.height);
++                exportContext.drawImage(clean, 0, 0);
+                 return exportCanvas.toDataURL('image/png');
+-              } catch (e) { return canvas.toDataURL('image/png'); }
++              } catch (e) { return canvas._symDrawing && canvas._symLineSnapshot ? canvas._symSnapshot||'' : canvas.toDataURL('image/png'); }
+             };
+ 
+             if (!canvas._symInit) {
+@@ -7177,11 +7224,14 @@ const d = labToolData.artStudio || {};
+ 
+             var incomingSymmetrySnapshot = d.symmetrySnapshot || '';
+             var symmetryRestoreToken = d.symmetryRestoreToken || '';
+-            if (canvas._symSnapshot !== incomingSymmetrySnapshot || canvas._symRestoreToken !== symmetryRestoreToken) {
++            var symmetryOwner=studioPersistenceScope+'|'+symmetryRestoreToken;
++            if (canvas._symOwner!==symmetryOwner || canvas._symSnapshot !== incomingSymmetrySnapshot || canvas._symRestoreToken !== symmetryRestoreToken) {
++              canvas._symOwner=symmetryOwner;
+               canvas._symSnapshot = incomingSymmetrySnapshot;
+               canvas._symRestoreToken = symmetryRestoreToken;
+               canvas._symUndo = []; canvas._symRedo = [];
+               canvas._symDrawing = false;
++              canvas._symPointerId=null;canvas._symLineSnapshot=null;canvas._symLineStart=null;canvas._symStrokeStartSnapshot=null;canvas._symSmoothPoint=null;
+               paintSymmetryBackground();
+               var symmetryGeneration = (canvas._symRestoreGeneration || 0) + 1;
+               canvas._symRestoreGeneration = symmetryGeneration;
+@@ -7198,11 +7248,12 @@ const d = labToolData.artStudio || {};
+                 symmetryImage.onload = function () {
+                   if (canvas._symRestoreGeneration !== symmetryGeneration) { finishSymmetryRestore(); return; }
+                   paintSymmetryBackground();
+-                  try { ctx.drawImage(symmetryImage, 0, 0, W, H); } finally { canvas._symRestoring = false; canvas._artStudioRestoring = false; finishSymmetryRestore(); }
++                  try { ctx.drawImage(symmetryImage, 0, 0, W, H); } finally { canvas._symRestoring = false; canvas._artStudioRestoring = false; finishSymmetryRestore();refreshSymmetryHistory(); }
+                 };
+                 symmetryImage.onerror = function () {
+                   if (canvas._symRestoreGeneration === symmetryGeneration) { canvas._symRestoring = false; canvas._artStudioRestoring = false; }
+                   finishSymmetryRestore();
++                  refreshSymmetryHistory();
+                 };
+                 symmetryImage.src = incomingSymmetrySnapshot;
+               }
+@@ -7347,30 +7398,35 @@ const d = labToolData.artStudio || {};
+               var source = e.touches && e.touches[0] ? e.touches[0] : e;
+               if (!pressureEnabled || !source || source.pointerType !== 'pen') return null;
+               var value = Number(source.pressure);
+-              return isFinite(value) && value > 0 ? Math.max(0, Math.min(1, value)) : 0.5;
++              if(isFinite(value) && value>0){canvas._symLastPressure=Math.max(0,Math.min(1,value));return canvas._symLastPressure;}
++              return typeof canvas._symLastPressure==='number'?canvas._symLastPressure:isFinite(value)?0:0.5;
+             }
+ 
+-            function handleDraw(e, isStart) {
++            function handleDraw(e, isStart, finish) {
+               var point = eventPoint(e);
+-              if ((strokeMode === 'freehand' || strokeMode === 'eraser') && !isStart && strokeSmoothing > 0 && canvas._symSmoothPoint) {
++              var pressure=eventPressure(e);
++              if(!isStart && strokeMode!=='dots' && canvas._prevX===point.x && canvas._prevY===point.y)return point;
++              if (!finish && (strokeMode === 'freehand' || strokeMode === 'eraser') && !isStart && strokeSmoothing > 0 && canvas._symSmoothPoint) {
+                 var follow = 1 - strokeSmoothing;
+                 point.x = canvas._symSmoothPoint.x + (point.x - canvas._symSmoothPoint.x) * follow;
+                 point.y = canvas._symSmoothPoint.y + (point.y - canvas._symSmoothPoint.y) * follow;
+               }
+               canvas._symSmoothPoint = { x: point.x, y: point.y };
+-              drawSymmetric(point.x, point.y, isStart, false, eventPressure(e));
++              drawSymmetric(point.x, point.y, isStart, false, pressure);
+               return point;
+             }
+ 
+-            function drawPointerSamples(e, isStart) {
++            function drawPointerSamples(e, isStart, finish) {
+               var samples = [e];
+               if (strokeMode !== 'line' && e && typeof e.getCoalescedEvents === 'function') {
+                 try { samples = e.getCoalescedEvents() || samples; } catch (err) {}
+                 if (!samples.length) samples = [e];
++                var last=samples[samples.length-1];
++                if(last.clientX!==e.clientX || last.clientY!==e.clientY || last.pressure!==e.pressure)samples=samples.concat([e]);
+               }
+               var lastPoint = null;
+               for (var sampleIndex = 0; sampleIndex < samples.length; sampleIndex++) {
+-                lastPoint = handleDraw(samples[sampleIndex], strokeMode === 'dots' ? true : isStart && sampleIndex === 0);
++                lastPoint = handleDraw(samples[sampleIndex], strokeMode === 'dots' ? true : isStart && sampleIndex === 0,finish && sampleIndex===samples.length-1);
+               }
+               return lastPoint;
+             }
+@@ -7381,7 +7437,8 @@ const d = labToolData.artStudio || {};
+             }
+ 
+             function finishPointer(e, cancelled) {
+-              if (!canvas._symDrawing) return;
++              if (!canvas._symDrawing || (e && (e.pointerId===undefined?'legacy':e.pointerId)!==canvas._symPointerId)) return;
++              var pointerId=canvas._symPointerId;
+               var before = canvas._symStrokeStartSnapshot;
+               if (strokeMode === 'line') {
+                 restoreLineSnapshot();
+@@ -7393,23 +7450,32 @@ const d = labToolData.artStudio || {};
+               } else if (!cancelled && e && (strokeMode === 'freehand' || strokeMode === 'eraser')) {
+                 // Pointer-up can carry a final coordinate that was never sent as
+                 // pointermove; consume it so fast strokes reach the release point.
+-                drawPointerSamples(e, false);
++                drawPointerSamples(e, false, true);
+               }
+-              if (!cancelled || strokeMode !== 'line') recordSymmetryChange(before);
++              var commitChange=!cancelled || strokeMode!=='line';
+               canvas._symDrawing = false;
++              canvas._symPointerId = null;
+               canvas._symLineStart = null;
+               canvas._symLineSnapshot = null;
+               canvas._symStrokeStartSnapshot = null;
+               canvas._symSmoothPoint = null;
++              canvas._symLastPressure = null;
+               canvas._prevX = null; canvas._prevY = null;
+-              try { if (e && e.pointerId !== undefined) canvas.releasePointerCapture(e.pointerId); } catch (err) {}
++              if(commitChange)recordSymmetryChange(before);
++              refreshSymmetryHistory();
++              try { if(pointerId!=='legacy' && pointerId!==null)canvas.releasePointerCapture(pointerId); } catch (err) {}
+             }
+ 
++            canvas._symCancelGesture=function(){finishPointer(null,true);};
++            canvas._symRefreshHistory=refreshSymmetryHistory;
+             canvas.onpointerdown = function (e) {
++              if(canvas._symRestoring || canvas._symDrawing)return;
+               if (e.button !== undefined && e.button !== 0) return;
+               if (!canvasAllowsFingerInteraction(canvas, e)) return;
+               e.preventDefault();
+               canvas._symDrawing = true;
++              canvas._symPointerId=e.pointerId===undefined?'legacy':e.pointerId;canvas._symLastPressure=null;
++              try{canvas.focus({preventScroll:true});}catch(_){canvas.focus();}canvas._symKeyboardFocused=false;updateKeyboardCursor(false);
+               canvas._prevX = null; canvas._prevY = null;
+               var point = eventPoint(e);
+               canvas._symSmoothPoint = { x: point.x, y: point.y };
+@@ -7417,10 +7483,11 @@ const d = labToolData.artStudio || {};
+               canvas._symStrokeStartSnapshot = captureSymmetryCanvas();
+               canvas._symLineSnapshot = strokeMode === 'line' ? canvas._symStrokeStartSnapshot : null;
+               drawSymmetric(point.x, point.y, true, false, eventPressure(e));
++              refreshSymmetryHistory();
+               try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+             };
+             canvas.onpointermove = function (e) {
+-              if (!canvas._symDrawing) return;
++              if (!canvas._symDrawing || (e.pointerId===undefined?'legacy':e.pointerId)!==canvas._symPointerId) return;
+               e.preventDefault();
+               if (strokeMode === 'line') {
+                 restoreLineSnapshot();
+@@ -7438,9 +7505,10 @@ const d = labToolData.artStudio || {};
+             // cannot be delivered twice on browsers that synthesize mouse events.
+             canvas.onmousedown = canvas.onmousemove = canvas.onmouseup = canvas.onmouseleave = null;
+             canvas.ontouchstart = canvas.ontouchmove = canvas.ontouchend = null;
+-            canvas.onfocus = function () { updateKeyboardCursor(true); };
+-            canvas.onblur = function () { updateKeyboardCursor(false); };
++            canvas.onfocus = function () {canvas._symKeyboardFocused=true;updateKeyboardCursor(true);};
++            canvas.onblur = function () {canvas._symKeyboardFocused=false;updateKeyboardCursor(false);};
+             canvas.onkeydown = function (event) {
++              if(event.key==='Escape' && canvas._symDrawing){event.preventDefault();finishPointer(null,true);return;}
+               var historyKey = String(event.key || '').toLowerCase();
+               if ((event.ctrlKey || event.metaKey) && historyKey === 'z') {
+                 event.preventDefault();
+@@ -7452,6 +7520,8 @@ const d = labToolData.artStudio || {};
+                 redoSymmetry();
+                 return;
+               }
++              if(canvas._symRestoring || canvas._symDrawing)return;
++              canvas._symKeyboardFocused=true;
+               var step = event.altKey ? 1 : 10;
+               var oldX = keyboardCursor.x, oldY = keyboardCursor.y;
+               var moved = true;
+@@ -7489,7 +7559,8 @@ const d = labToolData.artStudio || {};
+                 }
+               }
+             };
+-            updateKeyboardCursor(false);
++            updateKeyboardCursor(!!canvas._symKeyboardFocused && document.activeElement===canvas);
++            refreshSymmetryHistory();
+ 
+           };
+ 
+@@ -10432,7 +10503,54 @@ const d = labToolData.artStudio || {};
+ 
+             tab === 'symmetry' && React.createElement("div", { id: 'symmetryFullscreenWorkspace', className: "space-y-3", 'data-symmetry-fullscreen-workspace': 'true', role: 'region', 'aria-label': __alloT('stem.artstudio.a11y_symmetry_studio_canvas_and_drawing_controls', 'Symmetry Studio canvas and drawing controls') },
+ 
+-              React.createElement("style", null, '#symmetryFullscreenWorkspace:fullscreen,#symmetryFullscreenWorkspace:-webkit-full-screen{box-sizing:border-box;width:100vw;height:100vh;overflow:auto;padding:clamp(10px,2vw,20px);background:#020617}#symmetryFullscreenWorkspace:fullscreen #symmetryCanvasContainer,#symmetryFullscreenWorkspace:-webkit-full-screen #symmetryCanvasContainer{min-height:calc(100vh - 150px)}'),
++              React.createElement("style",null,`
++                #symmetryFullscreenWorkspace{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto auto auto;gap:12px;min-width:0}
++                #symmetryFullscreenWorkspace>*{margin-top:0;min-width:0}
++                .artstudio-symmetry-header{grid-row:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;background:#fff;color:#0f172a;padding:8px;border:1px solid #cbd5e1;border-radius:12px}
++                .artstudio-symmetry-header .symmetry-actions{display:flex;flex-wrap:wrap;gap:4px}
++                #symmetryCanvasContainer{grid-row:2;height:min(76dvh,820px);padding:12px;background:#0f172a;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid #64748b;border-radius:12px}
++                #symmetryFullscreenWorkspace #symmetryCanvas{width:var(--symmetry-side)!important;height:var(--symmetry-side)!important;max-height:none!important;max-width:none!important}
++                .artstudio-symmetry-controls{grid-row:3;padding:10px;background:#fff;color:#0f172a;border:1px solid #cbd5e1;border-radius:12px}
++                .artstudio-symmetry-controls>summary{min-height:44px;padding:10px 0;font-size:12px;font-weight:800;cursor:pointer}
++                .artstudio-symmetry-controls>div>*{max-width:100%;min-width:0}
++                #symmetryFullscreenWorkspace :is(button,input,select){min-height:44px;max-width:100%}
++                #symmetryFullscreenWorkspace button{min-width:44px}
++                #symmetryFullscreenWorkspace input[type=range]{min-width:0}
++                #symmetryFullscreenWorkspace button:disabled{opacity:.4}
++                #symmetryFullscreenWorkspace :is(button,input,select,summary):focus-visible{outline:3px solid #2563eb;outline-offset:2px}
++                #artstudio-symmetry-keyboard-help{grid-row:4;color:#334155;font-size:12px}
++                [data-symmetry-info]{grid-row:5}
++                .symmetry-exit-label{display:none}
++                #symmetryFullscreenWorkspace[data-symmetry-wide=true]{grid-template-columns:minmax(0,1fr) 280px;grid-template-rows:auto minmax(0,1fr) auto auto}
++                #symmetryFullscreenWorkspace[data-symmetry-wide=true] .artstudio-symmetry-header{grid-column:1/-1}
++                #symmetryFullscreenWorkspace[data-symmetry-wide=true] .artstudio-symmetry-controls{grid-column:2;grid-row:2;max-height:min(76dvh,820px);overflow:auto;align-self:start}
++                #symmetryFullscreenWorkspace[data-symmetry-wide=true] #symmetryCanvasContainer{grid-column:1}
++                #symmetryFullscreenWorkspace[data-symmetry-wide=true] #artstudio-symmetry-keyboard-help{grid-column:1;grid-row:3}
++                #symmetryFullscreenWorkspace[data-symmetry-wide=true] [data-symmetry-info]{grid-column:1/-1;grid-row:4}
++                #symmetryFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active=true]){display:grid!important;box-sizing:border-box;width:100%;height:100dvh;padding:12px;background:#f8fafc!important;overflow:auto;grid-template-rows:auto minmax(0,1fr) auto}
++                #symmetryFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active=true]) #symmetryCanvasContainer{height:100%;min-height:0}
++                #symmetryFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active=true]) .artstudio-symmetry-controls{max-height:100%}
++                #symmetryFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active=true]) [data-symmetry-info]{display:none}
++                #symmetryFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active=true]) .symmetry-expand-label{display:none}
++                #symmetryFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active=true]) .symmetry-exit-label{display:inline}
++                #symmetryFullscreenWorkspace[data-allo-fullscreen-active=true] #artstudio-symmetry-keyboard-help{color:#e2e8f0}
++                @media(max-width:700px){#symmetryCanvasContainer{height:min(72dvh,calc(100vw - 36px))}#symmetryFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active=true]){display:flex!important;flex-direction:column;gap:10px}#symmetryFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active=true]) #symmetryCanvasContainer{height:min(72dvh,calc(100vw - 36px));flex-shrink:0}#symmetryFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active=true]) .artstudio-symmetry-controls{max-height:none;flex-shrink:0}}
++                @media(max-width:700px){#symmetryFullscreenWorkspace .artstudio-symmetry-header{order:0}#symmetryCanvasContainer{order:1}.artstudio-symmetry-controls{order:2}#artstudio-symmetry-keyboard-help{order:3}}
++              `),
++              React.createElement('div',{className:'artstudio-symmetry-header'},React.createElement('div',null,React.createElement('strong',{className:'text-sm'},__alloT('stem.artstudio.sym_workspace_title','Symmetry drawing')),React.createElement('p',{className:'text-xs'},__alloT('stem.artstudio.sym_workspace_resolution','1024 × 1024 PNG · Reflections and rotations'))),React.createElement('div',{className:'symmetry-actions'},
++                React.createElement("button", { id: 'artstudio-sym-undo', ref:function(button){if(!button)return;var canvas=document.getElementById('symmetryCanvas');if(canvas && canvas._symRefreshHistory)canvas._symRefreshHistory();else button.disabled=true;}, "aria-label": __alloT('stem.artstudio.a11y_undo_symmetry_change', 'Undo symmetry change'), onClick: function () { var c = document.getElementById('symmetryCanvas'); if (c && c._symUndoAction) c._symUndoAction(); }, className: "ml-auto px-2 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200" }, "\u21B6 Undo"),
++
++                React.createElement("button", { id: 'artstudio-sym-redo', ref:function(button){if(!button)return;var canvas=document.getElementById('symmetryCanvas');if(canvas && canvas._symRefreshHistory)canvas._symRefreshHistory();else button.disabled=true;}, "aria-label": __alloT('stem.artstudio.a11y_redo_symmetry_change', 'Redo symmetry change'), onClick: function () { var c = document.getElementById('symmetryCanvas'); if (c && c._symRedoAction) c._symRedoAction(); }, className: "px-2 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200" }, "\u21B7 Redo"),
++
++                React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (c && c._symClearAction) c._symClearAction(); else changeSymmetrySetting('symmetryClear', Date.now()); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_3', "\uD83D\uDDD1 Clear")),
++
++                React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; var picture = c._symExportAction ? c._symExportAction() : c.toDataURL('image/png'); var finishExport = function (src) { if (!src) return; link.href = src; link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_symmetry_png_exported_without_editing_guides', 'Symmetry PNG exported without editing guides.')); }; return picture && typeof picture.then === 'function' ? picture.then(finishExport) : finishExport(picture); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, __alloT('stem.artstudio.export_png_2', "\uD83D\uDCE5 Export PNG")),
++
++                React.createElement('button',{type:'button','data-symmetry-expand':true,'aria-label':__alloT('stem.artstudio.fullscreen','Toggle fullscreen Symmetry Studio workspace'),'data-fs-out':__alloT('stem.artstudio.fullscreen','Toggle fullscreen Symmetry Studio workspace'),'data-fs-in':__alloT('stem.artstudio.sym_workspace_exit','Exit expanded canvas (Esc)'),ref:function(button){if(button && window.__alloStemFsBind)window.__alloStemFsBind(button,document.getElementById('symmetryFullscreenWorkspace'));},onClick:function(){toggleFullscreen('symmetryFullscreenWorkspace');},className:'rounded-lg bg-slate-800 px-3 text-xs font-bold text-white'},'⛶ ',React.createElement('span',{className:'symmetry-expand-label'},__alloT('stem.artstudio.sym_workspace_expand','Expand canvas')),React.createElement('span',{className:'symmetry-exit-label'},__alloT('stem.artstudio.sym_workspace_exit_short','Exit canvas')))
++              )),
++              React.createElement('details',{className:'artstudio-symmetry-controls',open:!isCompactStudio||undefined},
++                React.createElement('summary',null,__alloT('stem.artstudio.sym_workspace_controls','Pattern, brush, and colors')),
++                React.createElement('div',{className:'space-y-3'},
+ 
+               React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
+ 
+@@ -10440,41 +10558,41 @@ const d = labToolData.artStudio || {};
+ 
+                 [4, 6, 8, 12, 16].map(function (f) {
+ 
+-                  return React.createElement("button", { "aria-label": f + ' symmetry folds', "aria-pressed": (d.symmetryFolds || 6) === f, key: f, onClick: function () { upd('symmetryFolds', f); }, className: "px-3 py-1 rounded-lg text-xs font-bold transition-all " + ((d.symmetryFolds || 6) === f ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, f);
++                  return React.createElement("button", { "aria-label": f + ' symmetry folds', "aria-pressed": (d.symmetryFolds || 6) === f, key: f, onClick: function () { changeSymmetrySetting('symmetryFolds', f); }, className: "px-3 py-1 rounded-lg text-xs font-bold transition-all " + ((d.symmetryFolds || 6) === f ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, f);
+ 
+                 }),
+ 
+-                React.createElement("input", { type: "range", min: 2, max: 24, step: 1, value: Math.max(2, Math.min(24, parseInt(d.symmetryFolds, 10) || 6)), "aria-label": __alloT('stem.artstudio.a11y_custom_symmetry_fold_count', 'Custom symmetry fold count'), "aria-valuetext": (Math.max(2, Math.min(24, parseInt(d.symmetryFolds, 10) || 6))) + " folds", onChange: function (e) { upd('symmetryFolds', parseInt(e.target.value, 10)); }, className: "w-24 accent-violet-600" }),
++                React.createElement("input", { type: "range", min: 2, max: 24, step: 1, value: Math.max(2, Math.min(24, parseInt(d.symmetryFolds, 10) || 6)), "aria-label": __alloT('stem.artstudio.a11y_custom_symmetry_fold_count', 'Custom symmetry fold count'), "aria-valuetext": (Math.max(2, Math.min(24, parseInt(d.symmetryFolds, 10) || 6))) + " folds", onChange: function (e) { changeSymmetrySetting('symmetryFolds', parseInt(e.target.value, 10)); }, className: "w-24 accent-violet-600" }),
+ 
+                 React.createElement("output", { className: "min-w-[24px] text-xs font-black text-violet-700" }, Math.max(2, Math.min(24, parseInt(d.symmetryFolds, 10) || 6))),
+ 
+                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-3" }, "Brush:"),
+ 
+-                React.createElement("input", { type: "range", min: 1, max: 10, value: d.brushSize || 3, 'aria-label': __alloT('stem.artstudio.brush_size', 'Brush size'), onChange: function (e) { upd('brushSize', parseInt(e.target.value)); }, className: "w-20 accent-pink-600" }),
++                React.createElement("input", { type: "range", min: 1, max: 10, value: d.brushSize || 3, 'aria-label': __alloT('stem.artstudio.brush_size', 'Brush size'), onChange: function (e) { changeSymmetrySetting('brushSize', parseInt(e.target.value)); }, className: "w-20 accent-pink-600" }),
+ 
+                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Opacity:"),
+ 
+-                React.createElement("input", { type: "range", min: 10, max: 100, step: 5, value: Math.round((isFinite(Number(d.symBrushOpacity)) ? Math.max(0.1, Math.min(1, Number(d.symBrushOpacity))) : 1) * 100), "aria-label": __alloT('stem.artstudio.a11y_symmetry_brush_opacity', 'Symmetry brush opacity'), "aria-valuetext": Math.round((isFinite(Number(d.symBrushOpacity)) ? Math.max(0.1, Math.min(1, Number(d.symBrushOpacity))) : 1) * 100) + " percent", onChange: function (e) { upd('symBrushOpacity', parseInt(e.target.value, 10) / 100); }, className: "w-20 accent-pink-600" }),
++                React.createElement("input", { type: "range", min: 10, max: 100, step: 5, value: Math.round((isFinite(Number(d.symBrushOpacity)) ? Math.max(0.1, Math.min(1, Number(d.symBrushOpacity))) : 1) * 100), "aria-label": __alloT('stem.artstudio.a11y_symmetry_brush_opacity', 'Symmetry brush opacity'), "aria-valuetext": Math.round((isFinite(Number(d.symBrushOpacity)) ? Math.max(0.1, Math.min(1, Number(d.symBrushOpacity))) : 1) * 100) + " percent", onChange: function (e) { changeSymmetrySetting('symBrushOpacity', parseInt(e.target.value, 10) / 100); }, className: "w-20 accent-pink-600" }),
+ 
+                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Stabilize:"),
+ 
+-                React.createElement("input", { type: "range", min: 0, max: 85, step: 5, value: Math.round((isFinite(Number(d.symSmoothing)) ? Math.max(0, Math.min(0.85, Number(d.symSmoothing))) : 0) * 100), "aria-label": __alloT('stem.artstudio.a11y_symmetry_stroke_stabilization', 'Symmetry stroke stabilization'), "aria-valuetext": Math.round((isFinite(Number(d.symSmoothing)) ? Math.max(0, Math.min(0.85, Number(d.symSmoothing))) : 0) * 100) + " percent", onChange: function(e) { upd('symSmoothing', parseInt(e.target.value, 10) / 100); }, className: "w-20 accent-violet-600" }),
++                React.createElement("input", { type: "range", min: 0, max: 85, step: 5, value: Math.round((isFinite(Number(d.symSmoothing)) ? Math.max(0, Math.min(0.85, Number(d.symSmoothing))) : 0) * 100), "aria-label": __alloT('stem.artstudio.a11y_symmetry_stroke_stabilization', 'Symmetry stroke stabilization'), "aria-valuetext": Math.round((isFinite(Number(d.symSmoothing)) ? Math.max(0, Math.min(0.85, Number(d.symSmoothing))) : 0) * 100) + " percent", onChange: function(e) { changeSymmetrySetting('symSmoothing', parseInt(e.target.value, 10) / 100); }, className: "w-20 accent-violet-600" }),
+ 
+                 React.createElement("output", { className: "min-w-[32px] text-xs font-black text-violet-700" }, Math.round((isFinite(Number(d.symSmoothing)) ? Math.max(0, Math.min(0.85, Number(d.symSmoothing))) : 0) * 100) + "%"),
+ 
+-                React.createElement("button", { "aria-label": __alloT('stem.artstudio.a11y_use_pen_pressure_for_symmetry_brush_size', 'Use pen pressure for symmetry brush size'), "aria-pressed": !!d.symPressureEnabled, onClick: function() { upd('symPressureEnabled', !d.symPressureEnabled); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (d.symPressureEnabled ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, "\u270D Pen pressure"),
++                React.createElement("button", { "aria-label": __alloT('stem.artstudio.a11y_use_pen_pressure_for_symmetry_brush_size', 'Use pen pressure for symmetry brush size'), "aria-pressed": !!d.symPressureEnabled, onClick: function() { changeSymmetrySetting('symPressureEnabled', !d.symPressureEnabled); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (d.symPressureEnabled ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, "\u270D Pen pressure"),
+ 
+                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Stroke:"),
+ 
+                 [{ id: 'dots', label: '\u2022 Dots', aria: 'Dot stamp stroke mode' }, { id: 'freehand', label: '\u223F Freehand', aria: 'Continuous freehand stroke mode' }, { id: 'line', label: '\u2571 Line', aria: 'Straight line stroke mode' }, { id: 'eraser', label: '\u232B Eraser', aria: 'Symmetric continuous eraser mode' }].map(function (stroke) {
+-                  return React.createElement("button", { key: stroke.id, "aria-label": stroke.aria, "aria-pressed": (d.symStrokeMode || 'freehand') === stroke.id, onClick: function () { upd('symStrokeMode', stroke.id); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + ((d.symStrokeMode || 'freehand') === stroke.id ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, stroke.label);
++                  return React.createElement("button", { key: stroke.id, "aria-label": stroke.aria, "aria-pressed": (d.symStrokeMode || 'freehand') === stroke.id, onClick: function () { changeSymmetrySetting('symStrokeMode', stroke.id); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + ((d.symStrokeMode || 'freehand') === stroke.id ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, stroke.label);
+                 }),
+ 
+                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Color:"),
+ 
+-                React.createElement("button", { "aria-pressed": (d.symBrushMode || 'rainbow') === 'solid', onClick: function () { upd('symBrushMode', 'solid'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'solid' ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, __alloT('stem.artstudio.solid', "\uD83D\uDD8C Solid")),
++                React.createElement("button", { "aria-pressed": (d.symBrushMode || 'rainbow') === 'solid', onClick: function () { changeSymmetrySetting('symBrushMode', 'solid'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'solid' ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, __alloT('stem.artstudio.solid', "\uD83D\uDD8C Solid")),
+ 
+-                React.createElement("button", { "aria-pressed": (d.symBrushMode || 'rainbow') === 'rainbow', onClick: function () { upd('symBrushMode', 'rainbow'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'rainbow' ? 'bg-gradient-to-r from-red-600 via-yellow-700 to-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, __alloT('stem.artstudio.rainbow', "\uD83C\uDF08 Rainbow")),
++                React.createElement("button", { "aria-pressed": (d.symBrushMode || 'rainbow') === 'rainbow', onClick: function () { changeSymmetrySetting('symBrushMode', 'rainbow'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'rainbow' ? 'bg-gradient-to-r from-red-600 via-yellow-700 to-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, __alloT('stem.artstudio.rainbow', "\uD83C\uDF08 Rainbow")),
+ 
+                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Pattern:"),
+ 
+@@ -10482,34 +10600,26 @@ const d = labToolData.artStudio || {};
+                   var activePattern = ['rotate', 'kaleidoscope', 'bilateral'].indexOf(d.symPatternMode) !== -1 ? d.symPatternMode : (d.symMirrorOnly ? 'kaleidoscope' : 'rotate');
+                   return React.createElement("button", { key: pattern.id, "aria-label": pattern.aria, "aria-pressed": activePattern === pattern.id, onClick: function () {
+                     if (activePattern === pattern.id) return;
+-                    updMany({ symPatternMode: pattern.id, symMirrorOnly: pattern.id === 'kaleidoscope' });
++                    changeSymmetrySettings({ symPatternMode: pattern.id, symMirrorOnly: pattern.id === 'kaleidoscope' });
+                   }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (activePattern === pattern.id ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, pattern.label);
+                 }),
+ 
+-                React.createElement("button", { "aria-label": __alloT('stem.artstudio.a11y_undo_symmetry_change', 'Undo symmetry change'), onClick: function () { var c = document.getElementById('symmetryCanvas'); if (c && c._symUndoAction) c._symUndoAction(); }, className: "ml-auto px-2 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200" }, "\u21B6 Undo"),
+-
+-                React.createElement("button", { "aria-label": __alloT('stem.artstudio.a11y_redo_symmetry_change', 'Redo symmetry change'), onClick: function () { var c = document.getElementById('symmetryCanvas'); if (c && c._symRedoAction) c._symRedoAction(); }, className: "px-2 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200" }, "\u21B7 Redo"),
+ 
+-                React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (c && c._symClearAction) c._symClearAction(); else upd('symmetryClear', Date.now()); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_3', "\uD83D\uDDD1 Clear")),
+-
+-                React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; var picture = c._symExportAction ? c._symExportAction() : c.toDataURL('image/png'); var finishExport = function (src) { if (!src) return; link.href = src; link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_symmetry_png_exported_without_editing_guides', 'Symmetry PNG exported without editing guides.')); }; return picture && typeof picture.then === 'function' ? picture.then(finishExport) : finishExport(picture); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, __alloT('stem.artstudio.export_png_2', "\uD83D\uDCE5 Export PNG")),
+-
+-                React.createElement("button", { "aria-label": __alloT('stem.artstudio.fullscreen', "Toggle fullscreen Symmetry Studio workspace"), onClick: function () { toggleFullscreen('symmetryFullscreenWorkspace'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all" }, __alloT('stem.artstudio.fullscreen_2', "\u26F6 Fullscreen"))
+ 
+               ),
+ 
+               React.createElement("div", { className: "flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 p-2 flex-wrap", role: "group", "aria-label": __alloT('stem.artstudio.a11y_symmetry_origin_and_blending', 'Symmetry origin and blending') },
+                 React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "Origin X:"),
+-                React.createElement("input", { type: "range", min: 10, max: 90, step: 5, value: Math.round((isFinite(Number(d.symCenterX)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterX))) : 0.5) * 100), "aria-label": __alloT('stem.artstudio.a11y_symmetry_origin_horizontal_position', 'Symmetry origin horizontal position'), "aria-valuetext": Math.round((isFinite(Number(d.symCenterX)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterX))) : 0.5) * 100) + " percent", onChange: function(e) { upd('symCenterX', parseInt(e.target.value, 10) / 100); }, className: "w-24 accent-violet-600" }),
++                React.createElement("input", { type: "range", min: 10, max: 90, step: 5, value: Math.round((isFinite(Number(d.symCenterX)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterX))) : 0.5) * 100), "aria-label": __alloT('stem.artstudio.a11y_symmetry_origin_horizontal_position', 'Symmetry origin horizontal position'), "aria-valuetext": Math.round((isFinite(Number(d.symCenterX)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterX))) : 0.5) * 100) + " percent", onChange: function(e) { changeSymmetrySetting('symCenterX', parseInt(e.target.value, 10) / 100); }, className: "w-24 accent-violet-600" }),
+                 React.createElement("output", { className: "min-w-[32px] text-xs font-black text-violet-700" }, Math.round((isFinite(Number(d.symCenterX)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterX))) : 0.5) * 100) + "%"),
+                 React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "Origin Y:"),
+-                React.createElement("input", { type: "range", min: 10, max: 90, step: 5, value: Math.round((isFinite(Number(d.symCenterY)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterY))) : 0.5) * 100), "aria-label": __alloT('stem.artstudio.a11y_symmetry_origin_vertical_position', 'Symmetry origin vertical position'), "aria-valuetext": Math.round((isFinite(Number(d.symCenterY)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterY))) : 0.5) * 100) + " percent", onChange: function(e) { upd('symCenterY', parseInt(e.target.value, 10) / 100); }, className: "w-24 accent-violet-600" }),
++                React.createElement("input", { type: "range", min: 10, max: 90, step: 5, value: Math.round((isFinite(Number(d.symCenterY)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterY))) : 0.5) * 100), "aria-label": __alloT('stem.artstudio.a11y_symmetry_origin_vertical_position', 'Symmetry origin vertical position'), "aria-valuetext": Math.round((isFinite(Number(d.symCenterY)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterY))) : 0.5) * 100) + " percent", onChange: function(e) { changeSymmetrySetting('symCenterY', parseInt(e.target.value, 10) / 100); }, className: "w-24 accent-violet-600" }),
+                 React.createElement("output", { className: "min-w-[32px] text-xs font-black text-violet-700" }, Math.round((isFinite(Number(d.symCenterY)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterY))) : 0.5) * 100) + "%"),
+-                React.createElement("button", { className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-violet-700 border border-violet-200 hover:bg-violet-100", "aria-label": __alloT('stem.artstudio.a11y_reset_symmetry_origin_to_center', 'Reset symmetry origin to center'), onClick: function() { updMany({ symCenterX: 0.5, symCenterY: 0.5 }); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_symmetry_origin_reset_to_the_center', 'Symmetry origin reset to the center.')); } }, "Center"),
++                React.createElement("button", { className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-violet-700 border border-violet-200 hover:bg-violet-100", "aria-label": __alloT('stem.artstudio.a11y_reset_symmetry_origin_to_center', 'Reset symmetry origin to center'), onClick: function() { changeSymmetrySettings({ symCenterX: 0.5, symCenterY: 0.5 }); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_symmetry_origin_reset_to_the_center', 'Symmetry origin reset to the center.')); } }, "Center"),
+                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Blend:"),
+                 [{ id: 'normal', label: 'Normal', aria: 'Normal symmetry brush blending' }, { id: 'glow', label: '\u2728 Glow', aria: 'Glow symmetry brush blending' }].map(function(blend) {
+                   var activeBlend = d.symBlendMode === 'glow' ? 'glow' : 'normal';
+-                  return React.createElement("button", { key: blend.id, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (activeBlend === blend.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 border border-violet-200 hover:bg-violet-100'), "aria-label": blend.aria, "aria-pressed": activeBlend === blend.id, onClick: function() { upd('symBlendMode', blend.id); } }, blend.label);
++                  return React.createElement("button", { key: blend.id, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (activeBlend === blend.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 border border-violet-200 hover:bg-violet-100'), "aria-label": blend.aria, "aria-pressed": activeBlend === blend.id, onClick: function() { changeSymmetrySetting('symBlendMode', blend.id); } }, blend.label);
+                 }),
+                 React.createElement("span", { className: "text-[0.625rem] text-slate-500" }, "Pattern, fold, and origin changes affect new marks; existing artwork stays.")
+               ),
+@@ -10527,38 +10637,38 @@ const d = labToolData.artStudio || {};
+                   React.createElement("div", { className: "mt-2 space-y-2" },
+                     React.createElement("div", { className: "flex flex-wrap items-center gap-2", role: "group", "aria-label": __alloT('stem.artstudio.a11y_symmetry_pattern_geometry', 'Symmetry pattern geometry') },
+                       React.createElement("label", { className: "grid grid-cols-[54px_110px_38px] items-center gap-1 text-[0.625rem] font-bold text-slate-600" }, 'Rotate',
+-                        React.createElement("input", { type: "range", min: -180, max: 180, step: 5, value: phaseValue, "aria-label": __alloT('stem.artstudio.a11y_symmetry_pattern_rotation', 'Symmetry pattern rotation'), "aria-valuetext": Math.round(phaseValue) + ' degrees', onChange: function(event) { upd('symPhaseDeg', parseInt(event.target.value, 10)); }, className: "accent-cyan-600" }),
++                        React.createElement("input", { type: "range", min: -180, max: 180, step: 5, value: phaseValue, "aria-label": __alloT('stem.artstudio.a11y_symmetry_pattern_rotation', 'Symmetry pattern rotation'), "aria-valuetext": Math.round(phaseValue) + ' degrees', onChange: function(event) { changeSymmetrySetting('symPhaseDeg', parseInt(event.target.value, 10)); }, className: "accent-cyan-600" }),
+                         React.createElement("output", null, Math.round(phaseValue) + '\u00B0')
+                       ),
+                       React.createElement("label", { className: "grid grid-cols-[66px_110px_38px] items-center gap-1 text-[0.625rem] font-bold text-slate-600" }, 'Mirror axis',
+-                        React.createElement("input", { type: "range", min: 0, max: 180, step: 5, value: mirrorValue, disabled: currentPattern === 'rotate', "aria-label": __alloT('stem.artstudio.a11y_symmetry_mirror_axis_angle', 'Symmetry mirror axis angle'), "aria-valuetext": Math.round(mirrorValue) + ' degrees', onChange: function(event) { upd('symMirrorAxisDeg', parseInt(event.target.value, 10)); }, className: "accent-cyan-600" }),
++                        React.createElement("input", { type: "range", min: 0, max: 180, step: 5, value: mirrorValue, disabled: currentPattern === 'rotate', "aria-label": __alloT('stem.artstudio.a11y_symmetry_mirror_axis_angle', 'Symmetry mirror axis angle'), "aria-valuetext": Math.round(mirrorValue) + ' degrees', onChange: function(event) { changeSymmetrySetting('symMirrorAxisDeg', parseInt(event.target.value, 10)); }, className: "accent-cyan-600" }),
+                         React.createElement("output", null, Math.round(mirrorValue) + '\u00B0')
+                       ),
+                       React.createElement("span", { className: "text-[0.625rem] font-bold text-slate-600" }, 'Direction'),
+                       [{ id: 'clockwise', label: '\u21BB CW', aria: 'Repeat symmetry copies clockwise' }, { id: 'counterclockwise', label: '\u21BA CCW', aria: 'Repeat symmetry copies counterclockwise' }].map(function(direction) {
+                         var activeDirection = (d.symCopyDirection === 'counterclockwise' ? 'counterclockwise' : 'clockwise') === direction.id;
+-                        return React.createElement("button", { key: direction.id, type: "button", className: "rounded px-2 py-1 min-h-[24px] text-[0.625rem] font-bold " + (activeDirection ? 'bg-cyan-700 text-white' : 'border border-cyan-200 bg-white text-cyan-800 hover:bg-cyan-100'), "aria-label": direction.aria, "aria-pressed": activeDirection, onClick: function() { upd('symCopyDirection', direction.id); } }, direction.label);
++                        return React.createElement("button", { key: direction.id, type: "button", className: "rounded px-2 py-1 min-h-[24px] text-[0.625rem] font-bold " + (activeDirection ? 'bg-cyan-700 text-white' : 'border border-cyan-200 bg-white text-cyan-800 hover:bg-cyan-100'), "aria-label": direction.aria, "aria-pressed": activeDirection, onClick: function() { changeSymmetrySetting('symCopyDirection', direction.id); } }, direction.label);
+                       })
+                     ),
+                     React.createElement("div", { className: "flex flex-wrap items-center gap-3", role: "group", "aria-label": __alloT('stem.artstudio.a11y_variation_across_symmetry_copies', 'Variation across symmetry copies') },
+                       [{ field: 'symCopyHueStep', label: 'Hue / copy', value: hueStepValue, min: -180, max: 180, unit: '\u00B0', aria: 'Hue change per symmetry copy' }, { field: 'symCopySizeStep', label: 'Size / copy', value: sizeStepValue, min: -25, max: 25, unit: '%', aria: 'Brush size change per symmetry copy' }, { field: 'symCopyOpacityStep', label: 'Opacity / copy', value: opacityStepValue, min: -20, max: 20, unit: '%', aria: 'Opacity change per symmetry copy' }].map(function(variation) {
+                         return React.createElement("label", { key: variation.field, className: "grid grid-cols-[72px_110px_42px] items-center gap-1 text-[0.625rem] font-bold text-slate-600" }, variation.label,
+-                          React.createElement("input", { type: "range", min: variation.min, max: variation.max, step: 5, value: variation.value, "aria-label": variation.aria, "aria-valuetext": Math.round(variation.value) + variation.unit, onChange: function(event) { upd(variation.field, parseInt(event.target.value, 10)); }, className: "accent-fuchsia-600" }),
++                          React.createElement("input", { type: "range", min: variation.min, max: variation.max, step: 5, value: variation.value, "aria-label": variation.aria, "aria-valuetext": Math.round(variation.value) + variation.unit, onChange: function(event) { changeSymmetrySetting(variation.field, parseInt(event.target.value, 10)); }, className: "accent-fuchsia-600" }),
+                           React.createElement("output", null, Math.round(variation.value) + variation.unit)
+                         );
+                       }),
+-                      React.createElement("button", { type: "button", className: "rounded border border-cyan-200 bg-white px-2 py-1 text-[0.625rem] font-bold text-cyan-800 hover:bg-cyan-100", "aria-label": __alloT('stem.artstudio.a11y_reset_symmetry_repeat_variation', 'Reset symmetry repeat variation'), onClick: function() { updMany({ symPhaseDeg: 0, symMirrorAxisDeg: currentPattern === 'bilateral' ? 90 : 0, symCopyDirection: 'clockwise', symCopyHueStep: 0, symCopySizeStep: 0, symCopyOpacityStep: 0 }); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_symmetry_repeat_variation_reset', 'Symmetry repeat variation reset.')); } }, 'Reset variation')
++                      React.createElement("button", { type: "button", className: "rounded border border-cyan-200 bg-white px-2 py-1 text-[0.625rem] font-bold text-cyan-800 hover:bg-cyan-100", "aria-label": __alloT('stem.artstudio.a11y_reset_symmetry_repeat_variation', 'Reset symmetry repeat variation'), onClick: function() { changeSymmetrySettings({ symPhaseDeg: 0, symMirrorAxisDeg: currentPattern === 'bilateral' ? 90 : 0, symCopyDirection: 'clockwise', symCopyHueStep: 0, symCopySizeStep: 0, symCopyOpacityStep: 0 }); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_symmetry_repeat_variation_reset', 'Symmetry repeat variation reset.')); } }, 'Reset variation')
+                     ),
+                     React.createElement("div", { className: "flex flex-wrap items-center gap-2", role: "group", "aria-label": __alloT('stem.artstudio.a11y_symmetry_canvas_appearance', 'Symmetry canvas appearance') },
+-                      React.createElement("button", { type: "button", className: "rounded px-2 py-1 min-h-[24px] text-[0.625rem] font-bold " + (d.symShowGuides === false ? 'border border-cyan-200 bg-white text-cyan-800' : 'bg-cyan-700 text-white'), "aria-label": __alloT('stem.artstudio.a11y_show_symmetry_guides', 'Show symmetry guides'), "aria-pressed": d.symShowGuides !== false, onClick: function() { upd('symShowGuides', d.symShowGuides === false); } }, 'Guides'),
++                      React.createElement("button", { type: "button", className: "rounded px-2 py-1 min-h-[24px] text-[0.625rem] font-bold " + (d.symShowGuides === false ? 'border border-cyan-200 bg-white text-cyan-800' : 'bg-cyan-700 text-white'), "aria-label": __alloT('stem.artstudio.a11y_show_symmetry_guides', 'Show symmetry guides'), "aria-pressed": d.symShowGuides !== false, onClick: function() { changeSymmetrySetting('symShowGuides', d.symShowGuides === false); } }, 'Guides'),
+                       React.createElement("label", { className: "grid grid-cols-[78px_100px_36px] items-center gap-1 text-[0.625rem] font-bold text-slate-600" }, 'Guide opacity',
+-                        React.createElement("input", { type: "range", min: 5, max: 60, step: 5, value: Math.round(guideOpacityValue * 100), disabled: d.symShowGuides === false, "aria-label": __alloT('stem.artstudio.a11y_symmetry_guide_opacity', 'Symmetry guide opacity'), "aria-valuetext": Math.round(guideOpacityValue * 100) + ' percent', onChange: function(event) { upd('symGuideOpacity', parseInt(event.target.value, 10) / 100); }, className: "accent-cyan-600" }),
++                        React.createElement("input", { type: "range", min: 5, max: 60, step: 5, value: Math.round(guideOpacityValue * 100), disabled: d.symShowGuides === false, "aria-label": __alloT('stem.artstudio.a11y_symmetry_guide_opacity', 'Symmetry guide opacity'), "aria-valuetext": Math.round(guideOpacityValue * 100) + ' percent', onChange: function(event) { changeSymmetrySetting('symGuideOpacity', parseInt(event.target.value, 10) / 100); }, className: "accent-cyan-600" }),
+                         React.createElement("output", null, Math.round(guideOpacityValue * 100) + '%')
+                       ),
+                       React.createElement("span", { className: "text-[0.625rem] font-bold text-slate-600" }, 'Background'),
+                       [{ id: 'dark', label: 'Dark' }, { id: 'light', label: 'Light' }, { id: 'transparent', label: 'Transparent' }].map(function(background) {
+                         var activeBackground = (['dark', 'light', 'transparent'].indexOf(d.symBackgroundMode) !== -1 ? d.symBackgroundMode : 'dark') === background.id;
+-                        return React.createElement("button", { key: background.id, type: "button", className: "rounded px-2 py-1 min-h-[24px] text-[0.625rem] font-bold " + (activeBackground ? 'bg-cyan-700 text-white' : 'border border-cyan-200 bg-white text-cyan-800 hover:bg-cyan-100'), "aria-label": background.label + ' symmetry canvas background', "aria-pressed": activeBackground, onClick: function() { upd('symBackgroundMode', background.id); } }, background.label);
++                        return React.createElement("button", { key: background.id, type: "button", className: "rounded px-2 py-1 min-h-[24px] text-[0.625rem] font-bold " + (activeBackground ? 'bg-cyan-700 text-white' : 'border border-cyan-200 bg-white text-cyan-800 hover:bg-cyan-100'), "aria-label": background.label + ' symmetry canvas background', "aria-pressed": activeBackground, onClick: function() { changeSymmetrySetting('symBackgroundMode', background.id); } }, background.label);
+                       }),
+                       React.createElement("span", { className: "text-[0.625rem] text-slate-500" }, 'Guides are editing aids and are not included in PNG exports.')
+                     )
+@@ -10566,9 +10676,9 @@ const d = labToolData.artStudio || {};
+                 );
+               })(),
+ 
+-              React.createElement("div", { id: 'symmetryCanvasContainer', className: "bg-slate-900 rounded-xl p-2 relative flex flex-col items-center justify-center w-full" },
+ 
+-                React.createElement("div", { className: "bg-slate-800/80 rounded-xl p-2 border border-slate-700 w-full mb-3" },
++
++                React.createElement("div", { className: "bg-slate-50 rounded-xl p-2 border border-slate-300 w-full mb-3" },
+ 
+                   React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
+ 
+@@ -10576,7 +10686,7 @@ const d = labToolData.artStudio || {};
+ 
+                   [{ id: 'retro', label: __alloT('stem.artstudio.retro_2', '\uD83D\uDD79 Retro') }, { id: 'nature', label: __alloT('stem.artstudio.nature_2', '\uD83C\uDF3F Nature') }, { id: 'warm', label: __alloT('stem.artstudio.warm_2', '\uD83D\uDD25 Warm') }, { id: 'cool', label: __alloT('stem.artstudio.cool_2', '\u2744 Cool') }, { id: 'neon', label: __alloT('stem.artstudio.neon_2', '\uD83D\uDCA5 Neon') }].map(function (pal) {
+ 
+-                    return React.createElement("button", { key: pal.id, "aria-pressed": symmetryActivePalette === pal.id, onClick: function () { upd('symmetryActivePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (symmetryActivePalette === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-pink-50') }, pal.label);
++                    return React.createElement("button", { key: pal.id, "aria-pressed": symmetryActivePalette === pal.id, onClick: function () { changeSymmetrySetting('symmetryActivePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (symmetryActivePalette === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-pink-50') }, pal.label);
+ 
+                   })
+ 
+@@ -10593,7 +10703,7 @@ const d = labToolData.artStudio || {};
+                     return activePal.map(function (c, i) {
+ 
+                       var selected = symmetryColor.h === c[0] && symmetryColor.s === c[1] && symmetryColor.l === c[2];
+-                      return React.createElement("button", { "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_choose_color_hue_degrees_saturation_percent_li', 'Choose color: hue {value1} degrees, saturation {value2} percent, lightness {value3} percent'), { value1: c[0], value2: c[1], value3: c[2] }), "aria-pressed": selected, key: i, onClick: function () { updMany({ symHue: c[0], symSat: c[1], symLit: c[2] }); }, className: "rounded-md border-2 transition-all hover:scale-110", style: { width: 28, height: 28, background: 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)', borderColor: selected ? '#ec4899' : 'rgba(255,255,255,0.6)', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }, title: 'HSL(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)' });
++                      return React.createElement("button", { "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_choose_color_hue_degrees_saturation_percent_li', 'Choose color: hue {value1} degrees, saturation {value2} percent, lightness {value3} percent'), { value1: c[0], value2: c[1], value3: c[2] }), "aria-pressed": selected, key: i, onClick: function () { changeSymmetrySettings({ symHue: c[0], symSat: c[1], symLit: c[2] }); }, className: "rounded-md border-2 transition-all hover:scale-110", style: { width: 28, height: 28, background: 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)', borderColor: selected ? '#ec4899' : 'rgba(255,255,255,0.6)', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }, title: 'HSL(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)' });
+ 
+                     });
+ 
+@@ -10613,17 +10723,19 @@ const d = labToolData.artStudio || {};
+                 scrollHelp: 'One-finger scrolling is active. A stylus and mouse can still draw; choose Draw pattern for finger drawing.'
+               }),
+ 
+-              React.createElement("p", { id: "artstudio-symmetry-keyboard-help", className: "mb-1 text-xs text-slate-200 text-center" },
+-                "Pointer: drag for dots, freehand, or symmetric erasing; in Line mode, drag from start to end. Stabilization softens hand jitter, and optional pen pressure changes stylus width. Pattern changes apply to new marks without flattening existing artwork. Keyboard: Arrow keys move the cursor; hold Shift with an Arrow key to draw a line; Space or Enter stamps marks; Home returns to the pattern origin; Alt makes one-pixel moves; Ctrl or Command+Z undoes and Shift+Ctrl or Command+Z redoes."
++              )),
++              React.createElement("p", { id: "artstudio-symmetry-keyboard-help", className: "text-xs text-slate-600 text-center" },
++                __alloT('stem.artstudio.sym_workspace_keyboard','Pointer: drag for dots, freehand, or symmetric erasing; in Line mode, drag from start to end. Stabilization softens hand jitter, and optional pen pressure changes stylus width. Pattern changes apply to new marks without flattening existing artwork. Escape cancels an unfinished line. Keyboard: Arrow keys move the cursor; hold Shift with an Arrow key to draw a line; Space or Enter stamps marks; Home returns to the pattern origin; Alt makes one-pixel moves; Ctrl or Command+Z undoes and Shift+Ctrl or Command+Z redoes.')
+               ),
+-              React.createElement("div", { className: "relative mx-auto mt-3 w-fit max-w-full overflow-hidden rounded-xl", style: { background: d.symBackgroundMode === 'light' ? '#f8fafc' : d.symBackgroundMode === 'transparent' ? 'repeating-conic-gradient(#e2e8f0 0 25%,#ffffff 0 50%) 0 / 20px 20px' : '#0f172a' } },
+-                React.createElement("canvas", { tabIndex: 0, id: 'symmetryCanvas', ref: symmetryRef, width: 512, height: 512, role: "img",
++              React.createElement("div", {id:'symmetryCanvasContainer',ref:symmetryPaperRef},
++              React.createElement("div", { className: "relative mx-auto w-fit max-w-full overflow-hidden rounded-xl", style: {width:symmetryFit,height:symmetryFit, background: d.symBackgroundMode === 'light' ? '#f8fafc' : d.symBackgroundMode === 'transparent' ? 'repeating-conic-gradient(#e2e8f0 0 25%,#ffffff 0 50%) 0 / 20px 20px' : '#0f172a' } },
++                React.createElement("canvas", { tabIndex: 0, id: 'symmetryCanvas', ref: symmetryRef, width: 1024, height: 1024, role: "img",
+                   'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_symmetry_canvas', 'Symmetry drawing canvas in {value1} mode, using {value2} and {value3} blending. Origin at {value4} percent x, {value5} percent y.'), { value1: ((d.symPatternMode || (d.symMirrorOnly ? 'kaleidoscope' : 'rotate')) === 'bilateral' ? __alloT('stem.artstudio.a11y_sym_pattern_bilateral', 'bilateral mirror') : (d.symPatternMode || (d.symMirrorOnly ? 'kaleidoscope' : 'rotate')) === 'kaleidoscope' ? __alloT('stem.artstudio.a11y_sym_pattern_kaleidoscope', 'kaleidoscope') : __alloT('stem.artstudio.a11y_sym_pattern_rotational', 'rotational')), value2: ((d.symStrokeMode || 'freehand') === 'dots' ? __alloT('stem.artstudio.a11y_sym_stroke_dots', 'dot stamps') : (d.symStrokeMode || 'freehand') === 'line' ? __alloT('stem.artstudio.a11y_sym_stroke_line', 'straight lines') : (d.symStrokeMode || 'freehand') === 'eraser' ? __alloT('stem.artstudio.a11y_sym_stroke_eraser', 'symmetric erasing') : __alloT('stem.artstudio.a11y_sym_stroke_freehand', 'continuous freehand')), value3: (d.symBlendMode === 'glow' ? __alloT('stem.artstudio.a11y_blend_glow', 'glow') : __alloT('stem.artstudio.a11y_blend_normal', 'normal')), value4: Math.round((isFinite(Number(d.symCenterX)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterX))) : 0.5) * 100), value5: Math.round((isFinite(Number(d.symCenterY)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterY))) : 0.5) * 100) }),
+                   'aria-describedby': "artstudio-symmetry-touch-help artstudio-symmetry-keyboard-help",
+-                  'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space Control+Z Meta+Z Control+Shift+Z Meta+Shift+Z Control+Y Meta+Y",
++                  'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space Escape Control+Z Meta+Z Control+Shift+Z Meta+Shift+Z Control+Y Meta+Y",
+                   key: 'sym-' + (d.symmetryClear || 0),
+                   className: "relative z-0 block max-w-full flex-shrink-0 cursor-crosshair rounded-xl border-2 border-pink-200 bg-transparent shadow-lg focus-visible:ring-4 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900",
+-                  style: { maxHeight: '80vh', objectFit: 'contain', background: 'transparent', touchAction: d.symmetryTouchMode === 'draw' ? 'none' : 'pan-y' } }),
++                  style: { '--symmetry-side':symmetryFit+'px',width:symmetryFit,height:symmetryFit, background: 'transparent', touchAction: d.symmetryTouchMode === 'draw' ? 'none' : 'pan-y' } }),
+                 d.symShowGuides === false ? null : (function() {
+                   var guidePattern = ['rotate', 'kaleidoscope', 'bilateral'].indexOf(d.symPatternMode) !== -1 ? d.symPatternMode : (d.symMirrorOnly ? 'kaleidoscope' : 'rotate');
+                   var guideFolds = Math.max(2, Math.min(24, parseInt(d.symmetryFolds, 10) || 6));
+@@ -10657,14 +10769,14 @@ const d = labToolData.artStudio || {};
+ 
+               ), // end symmetryCanvasContainer
+ 
+-              React.createElement("div", { className: "mt-3 bg-gradient-to-br from-violet-50 to-pink-50 rounded-xl p-4 border border-violet-200" },
++              React.createElement("div", {'data-symmetry-info':true, className: "mt-3 bg-gradient-to-br from-violet-50 to-pink-50 rounded-xl p-4 border border-violet-200" },
+ 
+                 React.createElement("button", {
+                   id: "artstudio-symmetry-info-toggle",
+                   type: "button",
+                   "aria-expanded": !!d.showSymInfo,
+                   "aria-controls": "artstudio-symmetry-info",
+-                  onClick: function () { upd('showSymInfo', !d.showSymInfo); },
++                  onClick: function () { changeSymmetrySetting('showSymInfo', !d.showSymInfo); },
+                   className: "w-full flex items-center justify-between rounded py-1 text-xs font-bold text-violet-700 focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2"
+                 },
+ 

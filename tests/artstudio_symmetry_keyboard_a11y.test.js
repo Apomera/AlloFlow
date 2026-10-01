@@ -328,8 +328,9 @@ describe('Art Studio Symmetry keyboard accessibility', () => {
     expect(context.lineTo.mock.calls[0][1]).toBeCloseTo(110, 5);
     expect(context.lineTo.mock.calls[6][0]).toBeCloseTo(125, 5);
     expect(context.lineTo.mock.calls[6][1]).toBeCloseTo(125, 5);
-    expect(context.lineTo.mock.calls[12][0]).toBeCloseTo(132.5, 5);
-    expect(context.lineTo.mock.calls[12][1]).toBeCloseTo(132.5, 5);
+    // Stabilization follows motion, then flushes to the actual release point.
+    expect(context.lineTo.mock.calls[12][0]).toBeCloseTo(140, 5);
+    expect(context.lineTo.mock.calls[12][1]).toBeCloseTo(140, 5);
   });
 
   it('rotates repeat geometry and varies hue, size, and opacity per copy', async () => {

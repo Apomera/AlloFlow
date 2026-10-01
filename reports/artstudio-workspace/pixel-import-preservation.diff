@@ -1,0 +1,199 @@
+diff --git a/C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-going-you-re-doing/artstudio-before-pixel-import.js "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_artstudio.js"
+index 251f3bf2b..9a3ffd9bc 100644
+--- a/C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-going-you-re-doing/artstudio-before-pixel-import.js
++++ "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_artstudio.js"
+@@ -1052,6 +1052,53 @@ window.StemLab = window.StemLab || {
+   }
+   // END ART STUDIO PIXEL LAYER HELPERS
+ 
++  // BEGIN ART STUDIO PIXEL IMPORT HELPERS
++  function artStudioPixelImportPalette(samples,limit) {
++    var colors=new Map();
++    samples.forEach(function(sample){var key=sample.rgb.join(',');if(!colors.has(key))colors.set(key,{rgb:sample.rgb,weight:0});colors.get(key).weight+=sample.alpha/255;});
++    var unique=Array.from(colors.values());
++    if(!limit || unique.length<=limit)return null;
++    function box(values) {
++      var ranges=[0,1,2].map(function(channel){var min=255,max=0;values.forEach(function(value){min=Math.min(min,value.rgb[channel]);max=Math.max(max,value.rgb[channel]);});return max-min;});
++      var channel=ranges.indexOf(Math.max.apply(Math,ranges)),weight=values.reduce(function(sum,value){return sum+value.weight;},0);
++      return {values:values,channel:channel,weight:weight,score:values.length>1?ranges[channel]*Math.sqrt(weight):-1};
++    }
++    var boxes=[box(unique)];
++    while(boxes.length<limit) {
++      var index=0;boxes.forEach(function(candidate,i){if(candidate.score>boxes[index].score)index=i;});
++      var current=boxes[index];if(current.score<0)break;
++      var channel=current.channel,values=current.values.slice().sort(function(a,b){return a.rgb[channel]-b.rgb[channel] || a.rgb[0]-b.rgb[0] || a.rgb[1]-b.rgb[1] || a.rgb[2]-b.rgb[2];});
++      var weight=0,split=1;
++      for(var i=0;i<values.length-1;i++){weight+=values[i].weight;split=i+1;if(weight>=current.weight/2)break;}
++      boxes.splice(index,1,box(values.slice(0,split)),box(values.slice(split)));
++    }
++    return boxes.map(function(group){return [0,1,2].map(function(channel){return Math.round(group.values.reduce(function(sum,value){return sum+value.rgb[channel]*value.weight;},0)/group.weight);});});
++  }
++  function artStudioPixelImportPixels(image,size,fit,colorLimit) {
++    size=[8,16,24,32,48,64].indexOf(Number(size))>=0?Number(size):16;
++    var empty={pixels:{},size:size,cells:0,colors:0};
++    if(!image || !Number.isInteger(image.width) || !Number.isInteger(image.height) || image.width<1 || image.height<1 || image.width>1024 || image.height>1024 || !image.data || image.data.length<image.width*image.height*4)return empty;
++    var width=image.width,height=image.height,scale=fit==='cover'?Math.max(size/width,size/height):Math.min(size/width,size/height);
++    var scaleX=fit==='stretch'?size/width:scale,scaleY=fit==='stretch'?size/height:scale;
++    var offsetX=(size-width*scaleX)/2,offsetY=(size-height*scaleY)/2,samples=[];
++    for(var y=0;y<size;y++)for(var x=0;x<size;x++) {
++      var sx=(x+0.5-offsetX)/scaleX,sy=(y+0.5-offsetY)/scaleY;
++      if(sx<0 || sx>=width || sy<0 || sy>=height)continue;
++      var index=(Math.floor(sy)*width+Math.floor(sx))*4,alpha=Math.round(Math.max(0,Math.min(255,Number(image.data[index+3])||0)));
++      if(!alpha)continue;
++      samples.push({key:x+','+y,rgb:[0,1,2].map(function(channel){return Math.round(Math.max(0,Math.min(255,Number(image.data[index+channel])||0)));}),alpha:alpha});
++    }
++    var limit=[8,16,32,64].indexOf(Number(colorLimit))>=0?Number(colorLimit):0,palette=artStudioPixelImportPalette(samples,limit),pixels={},used=new Set();
++    samples.forEach(function(sample){
++      var rgb=sample.rgb;
++      if(palette){var best=Infinity;palette.forEach(function(color){var distance=color.reduce(function(sum,value,index){return sum+Math.pow(value-sample.rgb[index],2);},0);if(distance<best){best=distance;rgb=color;}});}
++      var hex='#'+rgb.map(function(value){return value.toString(16).padStart(2,'0');}).join('');used.add(hex);
++      pixels[sample.key]=hex+(sample.alpha===255?'':sample.alpha.toString(16).padStart(2,'0'));
++    });
++    return {pixels:pixels,size:size,cells:samples.length,colors:used.size};
++  }
++  // END ART STUDIO PIXEL IMPORT HELPERS
++
+   // BEGIN ART STUDIO CONTRAST HELPERS
+   function artStudioContrastModel(raw) {
+     var d=raw||{},model={contrastAccessibilityTarget:Number(d.contrastAccessibilityTarget)===7?7:4.5};
+@@ -2307,6 +2354,12 @@ const d = labToolData.artStudio || {};
+           const [pixelHexDraft, setPixelHexDraft] = React.useState(null);
+           const [pixelColorPage, setPixelColorPage] = React.useState(0);
+           const [pixelLayerNameDraft, setPixelLayerNameDraft] = React.useState(null);
++          const [pixelImport, setPixelImport] = React.useState(null);
++          const [pixelImportFit, setPixelImportFit] = React.useState('contain');
++          const [pixelImportColors, setPixelImportColors] = React.useState(0);
++          const [pixelImportBusy, setPixelImportBusy] = React.useState(false);
++          const [pixelImportStatus, setPixelImportStatus] = React.useState(null);
++          const pixelImportRequestRef = React.useRef({sequence:0,context:null});
+           const watercolorPaperRef = React.useRef(null);
+           const [watercolorFit, setWatercolorFit] = React.useState(512);
+           const pixelGridSize = [8, 16, 24, 32, 48, 64].indexOf(Number(d.pixelGrid)) >= 0 ? Number(d.pixelGrid) : 16;
+@@ -2397,6 +2450,57 @@ const d = labToolData.artStudio || {};
+             if(JSON.stringify(before)===JSON.stringify(after))return;
+             rememberPixelArtwork(before);updMany(after);
+           }
++          function cancelPixelImport() {
++            pixelImportRequestRef.current.sequence++;setPixelImport(null);setPixelImportBusy(false);setPixelImportStatus(null);
++          }
++          function readPixelImport(event) {
++            var file=event.target.files && event.target.files[0];event.target.value='';if(!file)return;
++            var request=++pixelImportRequestRef.current.sequence,context=pixelImportRequestRef.current.context;
++            var current=function(){return pixelImportRequestRef.current.sequence===request && pixelImportRequestRef.current.context===context;};
++            function fail(message){if(current()){setPixelImportBusy(false);setPixelImportStatus({error:true,text:message});}}
++            setPixelImport(null);setPixelImportBusy(true);setPixelImportStatus({text:__alloT('stem.artstudio.pixel_import_reading','Reading image…')});
++            if(['image/png','image/jpeg','image/webp'].indexOf(file.type)<0){fail(__alloT('stem.artstudio.pixel_import_type_error','Choose a PNG, JPEG, or WebP image.'));return;}
++            if(file.size>10*1024*1024){fail(__alloT('stem.artstudio.pixel_import_size_error','Choose an image under 10 MB and 40 megapixels.'));return;}
++            var reader=new FileReader();
++            reader.onerror=function(){fail(__alloT('stem.artstudio.pixel_import_read_error','The image could not be read. Try another file.'));};
++            reader.onload=function(){
++              if(!current())return;
++              var image=new Image();
++              image.onerror=function(){fail(__alloT('stem.artstudio.pixel_import_read_error','The image could not be read. Try another file.'));};
++              image.onload=function(){
++                if(!current())return;
++                try {
++                  var width=image.naturalWidth,height=image.naturalHeight;
++                  if(!width || !height || width*height>40000000 || Math.max(width,height)>16384){fail(__alloT('stem.artstudio.pixel_import_size_error','Choose an image under 10 MB and 40 megapixels.'));return;}
++                  var scale=Math.min(1,1024/Math.max(width,height)),buffer=document.createElement('canvas');
++                  buffer.width=Math.max(1,Math.round(width*scale));buffer.height=Math.max(1,Math.round(height*scale));
++                  var ctx=buffer.getContext('2d');if(!ctx)throw new Error('Image context unavailable');
++                  ctx.imageSmoothingEnabled=false;ctx.drawImage(image,0,0,buffer.width,buffer.height);
++                  var data=ctx.getImageData(0,0,buffer.width,buffer.height).data;
++                  setPixelImport({owner:pixelArtworkOwner,name:file.name.replace(/\.[^.]+$/,'').trim().slice(0,60),width:width,height:height,image:{width:buffer.width,height:buffer.height,data:data}});
++                  setPixelImportBusy(false);setPixelImportStatus(null);
++                }catch(_){fail(__alloT('stem.artstudio.pixel_import_read_error','The image could not be read. Try another file.'));}
++                finally{image.onload=image.onerror=null;image.src='';}
++              };
++              image.src=reader.result;
++            };
++            reader.readAsDataURL(file);
++          }
++          function applyPixelImport() {
++            if(!pixelImportResult || !pixelImportResult.cells || pixelImportBusy || pixelImport.owner!==pixelArtworkOwner)return;
++            var canvas=document.getElementById('pixelCanvas');if(canvas && canvas._pixelCancelGesture)canvas._pixelCancelGesture();
++            var before=currentPixelCheckpoint(),model=artStudioPixelLayerModel(before,pixelLayerDefaultName);
++            if(model.layers.length>=ART_STUDIO_PIXEL_MAX_LAYERS)return;
++            var result=model.size===pixelImportResult.size?pixelImportResult:artStudioPixelImportPixels(pixelImport.image,model.size,pixelImportFit,pixelImportColors);
++            if(!result.cells)return;
++            var number=1;while(model.layers.some(function(layer){return layer.id==='layer-'+number;}))number++;
++            var layer={id:'layer-'+number,name:pixelImport.name.trim().slice(0,60)||__alloT('stem.artstudio.pixel_import_layer','Imported image'),visible:true,locked:false,pixels:Object.assign({},result.pixels)};
++            model.layers.push(layer);model.activeId=layer.id;
++            rememberPixelArtwork(before);updMany(artStudioPixelLayerSnapshot(model));
++            pixelImportRequestRef.current.sequence++;setPixelImport(null);setPixelImportBusy(false);
++            var message=formatArtStudioLearningText(__alloT('stem.artstudio.pixel_import_done','Imported {name} as a new layer. Undo restores the previous artwork.'),{name:layer.name});
++            setPixelImportStatus({text:message});if(typeof announceToSR==='function')announceToSR(message);
++          }
+           function clearPixelLayer() {
+             if(!pixelLayerEditable || !Object.keys(pixelActiveLayer.pixels).length)return;
+             var canvas=document.getElementById('pixelCanvas');if(canvas && canvas._pixelCancelGesture)canvas._pixelCancelGesture();
+@@ -3376,6 +3480,10 @@ const d = labToolData.artStudio || {};
+             if (prefix === 'gen') { patch.genFrame = 0; patch.genState = null; patch.genSnapshot = ''; }
+             updMany(patch);
+           };
++          const pixelImportContext = pixelArtworkOwner+'|'+tab;
++          if(pixelImportRequestRef.current.context!==pixelImportContext){pixelImportRequestRef.current.sequence++;pixelImportRequestRef.current.context=pixelImportContext;}
++          React.useEffect(function(){cancelPixelImport();},[pixelArtworkOwner,tab]);
++          React.useEffect(function(){return function(){pixelImportRequestRef.current.sequence++;};},[]);
+           const pixelColor = readStudioScopedColor('pixel');
+           const pixelArtworkColors = tab === 'pixel' ? artStudioPixelInventory(pixelActiveLayer.pixels,pixelGridSize) : [];
+           const pixelSelectedColor = pixelArtworkColors.find(function(color){return color.hex===pixelEditColor;}) || pixelArtworkColors[0] || null;
+@@ -3386,6 +3494,7 @@ const d = labToolData.artStudio || {};
+           const pixelPreviewPaper = ['light','dark'].indexOf(d.pixelPreviewPaper)>=0 ? d.pixelPreviewPaper : 'checker';
+           const pixelColorPages = Math.max(1,Math.ceil(pixelArtworkColors.length/24));
+           const pixelVisibleColorPage = Math.min(pixelColorPages-1,pixelColorPage);
++          const pixelImportResult = React.useMemo(function(){return tab==='pixel' && pixelImport && pixelImport.owner===pixelArtworkOwner?artStudioPixelImportPixels(pixelImport.image,pixelGridSize,pixelImportFit,pixelImportColors):null;},[tab,pixelImport,pixelArtworkOwner,pixelGridSize,pixelImportFit,pixelImportColors]);
+           React.useEffect(function(){setPixelEditColor(null);setPixelHexDraft(null);setPixelColorPage(0);},[pixelArtworkOwner]);
+           React.useEffect(function(){setPixelLayerNameDraft(null);setPixelEditColor(null);setPixelHexDraft(null);setPixelColorPage(0);},[pixelArtworkOwner,pixelLayerModel.activeId]);
+           React.useEffect(function(){setPixelHexDraft(null);},[pixelSelectedHex]);
+@@ -10065,8 +10174,18 @@ const d = labToolData.artStudio || {};
+                 .artstudio-pixel-layer-list button{text-align:left;overflow-wrap:anywhere;padding:6px 8px;border:1px solid #94a3b8;border-radius:6px;background:#fff;color:#0f172a;font-size:12px}
+                 .artstudio-pixel-layer-list button[aria-pressed=true]{border:2px solid #be185d;background:#fdf2f8}
+                 .artstudio-pixel-layers button:focus-visible,.artstudio-pixel-layers input:focus-visible{outline:3px solid #2563eb;outline-offset:2px}
++                .artstudio-pixel-import{background:#fff;color:#0f172a;min-width:0}
++                .artstudio-pixel-import :is(button,input,select){min-height:44px;max-width:100%;min-width:0;border:1px solid #94a3b8;border-radius:6px;background:#fff;color:#0f172a;padding:0 8px;font-size:12px}
++                .artstudio-pixel-import :is(input,select){width:100%}
++                .artstudio-pixel-import input[type=file]{padding:8px 0;border:0;font-size:11px}
++                .artstudio-pixel-import input::file-selector-button{min-height:44px;border:1px solid #94a3b8;border-radius:6px;background:#f8fafc;color:#0f172a}
++                .artstudio-pixel-import :is(button,input,select):focus-visible{outline:3px solid #2563eb;outline-offset:2px}
++                .artstudio-pixel-import button:disabled{opacity:0.45}
++                .artstudio-pixel-import p{overflow-wrap:anywhere}
++                .artstudio-pixel-import .artstudio-pixel-preview-stage canvas{width:100%;height:100%;image-rendering:pixelated}
+                 .artstudio-pixel-exit-label{display:none}
+                 #pixelFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-pixel-current-label{display:none}
++                #pixelFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) [data-pixel-layer-badge]{max-width:128px!important}
+                 #pixelFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-pixel-expand-label{display:none}
+                 #pixelFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-pixel-exit-label{display:inline}
+                 .artstudio-pixel-viewport{height:72dvh;min-height:280px;overflow:auto;overscroll-behavior:contain;border-radius:12px;border:1px solid #64748b;background:#121826;display:flex;padding:12px}
+@@ -10177,6 +10296,31 @@ const d = labToolData.artStudio || {};
+                   React.createElement('p',{className:'mt-2 text-xs text-slate-700'},__alloT('stem.artstudio.pixel_selection_transform_help','Rotate turns the selection 90° clockwise. Flips affect selected pixels. A rotated region shifts inward if needed to stay on the grid.'))
+                 ),
+ 
++                React.createElement('details',{id:'artstudio-pixel-import',className:'artstudio-pixel-import my-2 rounded-lg border border-slate-300 p-2'},
++                  React.createElement('summary',{className:'min-h-[44px] cursor-pointer text-xs font-bold',style:{paddingTop:10}},__alloT('stem.artstudio.pixel_import_title','Import an image')),
++                  React.createElement('p',{id:'artstudio-pixel-import-help',className:'my-2 text-xs'},__alloT('stem.artstudio.pixel_import_help','Preview a PNG, JPEG, or WebP on the current grid. Import adds a new top layer. Your image stays on this device.')),
++                  React.createElement('label',{htmlFor:'artstudio-pixel-import-file',className:'block text-xs font-bold'},__alloT('stem.artstudio.pixel_import_file','Choose image')),
++                  React.createElement('input',{id:'artstudio-pixel-import-file',type:'file',accept:'image/png,image/jpeg,image/webp','aria-describedby':'artstudio-pixel-import-help',onChange:readPixelImport}),
++                  pixelImportStatus && React.createElement('p',{role:pixelImportStatus.error?'alert':'status',className:'my-2 rounded-lg p-2 text-xs '+(pixelImportStatus.error?'bg-red-50 text-red-900':'bg-sky-50 text-sky-950')},pixelImportStatus.text),
++                  pixelImportResult && React.createElement('div',null,
++                    React.createElement('label',{htmlFor:'artstudio-pixel-import-fit',className:'mt-2 block text-xs font-bold'},__alloT('stem.artstudio.pixel_import_fit','Image fitting')),
++                    React.createElement('select',{id:'artstudio-pixel-import-fit',value:pixelImportFit,onChange:function(e){setPixelImportFit(e.target.value);}},
++                      [['contain',__alloT('stem.artstudio.pixel_import_contain','Fit whole image')],['cover',__alloT('stem.artstudio.pixel_import_cover','Fill grid (crop edges)')],['stretch',__alloT('stem.artstudio.pixel_import_stretch','Stretch to square')]].map(function(option){return React.createElement('option',{key:option[0],value:option[0]},option[1]);})),
++                    React.createElement('label',{htmlFor:'artstudio-pixel-import-colors',className:'mt-2 block text-xs font-bold'},__alloT('stem.artstudio.pixel_import_colors','RGB palette limit')),
++                    React.createElement('select',{id:'artstudio-pixel-import-colors',value:pixelImportColors,onChange:function(e){setPixelImportColors(Number(e.target.value));},'aria-describedby':'artstudio-pixel-import-palette-help'},
++                      React.createElement('option',{value:0},__alloT('stem.artstudio.pixel_import_keep_colors','Keep sampled colors')),
++                      [8,16,32,64].map(function(count){return React.createElement('option',{key:count,value:count},formatArtStudioLearningText(__alloT('stem.artstudio.pixel_import_color_limit','Up to {count} colors'),{count:count}));})),
++                    React.createElement('p',{id:'artstudio-pixel-import-palette-help',className:'my-2 text-xs'},__alloT('stem.artstudio.pixel_import_palette_help','Samples use sharp pixel edges. A smaller palette simplifies RGB colors; each cell keeps its original opacity.')),
++                    React.createElement('div',{className:'artstudio-pixel-preview-stage','data-paper':'checker'},
++                      React.createElement('canvas',{id:'pixelImportPreview',role:'img','aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.pixel_import_preview','Image import preview: {size} by {size} cells, {colors} RGB colors.'),{size:pixelGridSize,colors:pixelImportResult.colors}),ref:function(canvas){artStudioPixelPreview(canvas,pixelImportResult.pixels,pixelGridSize,'sprite');}})),
++                    React.createElement('p',{id:'artstudio-pixel-import-count',role:'status',className:'my-2 text-xs'},formatArtStudioLearningText(__alloT('stem.artstudio.pixel_import_count','{width} × {height} image → {size} × {size} grid. {colors} RGB colors · {cells} painted cells.'),{width:pixelImport.width,height:pixelImport.height,size:pixelGridSize,colors:pixelImportResult.colors,cells:pixelImportResult.cells})),
++                    !pixelImportResult.cells && React.createElement('p',{className:'my-2 text-xs text-amber-950'},__alloT('stem.artstudio.pixel_import_empty','No visible cells at this grid size. Try a larger grid or Fill grid.')),
++                    React.createElement('label',{htmlFor:'artstudio-pixel-import-name',className:'mt-2 block text-xs font-bold'},__alloT('stem.artstudio.pixel_import_name','Imported layer name')),
++                    React.createElement('input',{id:'artstudio-pixel-import-name',type:'text',value:pixelImport.name,maxLength:60,onChange:function(e){var name=e.target.value;setPixelImport(function(draft){return draft?Object.assign({},draft,{name:name}):draft;});}}),
++                    pixelLayerModel.layers.length>=ART_STUDIO_PIXEL_MAX_LAYERS && React.createElement('p',{className:'my-2 text-xs text-amber-950'},__alloT('stem.artstudio.pixel_import_limit','The stack has 16 layers. Remove or merge a layer before importing.')),
++                    React.createElement('button',{id:'artstudio-pixel-import-apply',type:'button',disabled:!pixelImportResult.cells || pixelImportBusy || pixelLayerModel.layers.length>=ART_STUDIO_PIXEL_MAX_LAYERS,onClick:applyPixelImport,className:'mt-2 w-full font-bold'},__alloT('stem.artstudio.pixel_import_apply','Import as new layer'))),
++                  (pixelImportResult || pixelImportBusy) && React.createElement('button',{id:'artstudio-pixel-import-cancel',type:'button',onClick:cancelPixelImport,className:'mt-2 w-full font-bold'},__alloT('stem.artstudio.pixel_import_cancel','Cancel import'))
++                ),
+                 React.createElement('details',{id:'artstudio-pixel-review',open:true,className:'artstudio-pixel-review my-2 rounded-lg border border-slate-300 p-2'},
+                   React.createElement('summary',{className:'min-h-[44px] cursor-pointer text-xs font-bold',style:{paddingTop:10}},__alloT('stem.artstudio.pixel_artwork_review','Artwork colors and preview')),
+                   React.createElement('label',{className:'block text-xs font-bold',htmlFor:'artstudio-pixel-preview-mode'},__alloT('stem.artstudio.pixel_preview_mode','Preview')),

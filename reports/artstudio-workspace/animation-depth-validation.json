@@ -1,0 +1,63 @@
+{
+  "date": "2026-10-01",
+  "committed": true,
+  "sourceSha256": "0a6db45db5074eb4351c58ff217951d49180e2c2106579645d90a3c83b56b96c",
+  "prePassSourceSha256": "60e5b3cab9586099d41a5d5508f827b802ebca6a168422a558105fe0aca50053",
+  "publicMirrorMatches": true,
+  "englishEntriesVerified": 17,
+  "tests": {
+    "passed": 300,
+    "failed": 0,
+    "files": 29,
+    "report": "animation-depth-regression-results.json"
+  },
+  "browser": {
+    "passed": true,
+    "report": "animation-depth-browser-results.json",
+    "desktop": {
+      "desktopCanvas": {
+        "x": 340,
+        "y": 538,
+        "width": 760,
+        "height": 760
+      },
+      "backing": [
+        400,
+        400
+      ]
+    },
+    "phone": {
+      "phoneCanvas": {
+        "x": 25,
+        "y": 73.5,
+        "width": 340,
+        "height": 340
+      },
+      "controls": 24,
+      "minControlHeight": 44,
+      "noHorizontalOverflow": true
+    },
+    "savedStudyPreview": {
+      "width": 180,
+      "height": 180,
+      "corner": 0,
+      "whiteLine": 254,
+      "grayLine": 136
+    },
+    "smallPhoneWidth": 320,
+    "pageErrors": 0
+  },
+  "previews": [
+    "animation-depth-drawing-desktop.png",
+    "animation-depth-keyframes-desktop.png",
+    "animation-depth-phone-drawing.png",
+    "animation-depth-phone-keyframes.png",
+    "animation-depth-export.png"
+  ],
+  "syntaxChecks": true,
+  "jsonRegistriesValid": true,
+  "scopedDiffCheck": true,
+  "pinnedSpectralCheck": true,
+  "preservationDiff": "animation-depth-pass.diff",
+  "verificationScope": "Standalone Art & Design tool in Chromium; depth PNG download and six-frame stereogram render exercised. Existing GIF export was retained and was not exercised in this pass."
+}

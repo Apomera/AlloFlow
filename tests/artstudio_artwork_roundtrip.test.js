@@ -140,6 +140,31 @@ async function save() {
 }
 
 describe('Art Studio artwork checkpoints', () => {
+  it('saves a full pixel layer stack, keeps the study immutable, and forks every layer and active selection', async () => {
+    const layers=[{id:'background',name:'Background',visible:true,locked:true,pixels:{'0,0':'#aabbcc'}},{id:'subject',name:'Subject',visible:true,locked:false,pixels:{'1,1':'#f00'}},{id:'draft',name:'Draft',visible:false,locked:false,pixels:{'7,7':'#00f'}}];
+    await mount({tab:'pixel',pixelGrid:8,pixelLayers:layers,pixelActiveLayer:'subject'});
+    const study=await save(),savedFingerprint=fingerprint(study.data);
+    expect(study.data.pixelLayers).toEqual(layers);expect(study.data.pixelActiveLayer).toBe('subject');expect(study.data.pixelData).toEqual({'0,0':'#aabbcc','1,1':'#f00'});
+    await key(host.querySelector('#pixelCanvas'),'Enter');await click(host.querySelector('#artstudio-pixel-layer-add'));
+    expect(host.querySelector('#pixelCanvas')._captureArtStudioState().pixelLayers).toHaveLength(4);
+    await click(host.querySelector('button[aria-label^="Fork Pixel Art"]'));
+    const restored=host.querySelector('#pixelCanvas')._captureArtStudioState();expect(restored.pixelLayers).toEqual(layers);expect(restored.pixelActiveLayer).toBe('subject');
+    expect(fingerprint(study.data)).toBe(savedFingerprint);expect([...host.querySelectorAll('button')].find(b=>b.textContent==='Undo').disabled).toBe(true);
+    await click(host.querySelector('#artstudio-tab-spinArt'));await click(host.querySelector('#artstudio-tab-pixel'));
+    expect(host.querySelector('#pixelCanvas')._captureArtStudioState().pixelLayers).toEqual(layers);
+  });
+
+  it('opens an old flat pixel study through the real fork path without inheriting newer layers', async () => {
+    await mount({tab:'pixel',pixelGrid:8,pixelData:{'2,3':'#abc'}});const study=await save();
+    // Represent the historical format, which contained only pixelData and pixelGrid.
+    delete study.data.pixelLayers;delete study.data.pixelActiveLayer;
+    await click(host.querySelector('#artstudio-pixel-layer-add'));await key(host.querySelector('#pixelCanvas'),'Enter');
+    expect(latest.artStudio.pixelLayers).toHaveLength(2);
+    await click(host.querySelector('button[aria-label^="Fork Pixel Art"]'));
+    const restored=host.querySelector('#pixelCanvas')._captureArtStudioState();expect(restored.pixelLayers).toHaveLength(1);expect(restored.pixelData).toEqual({'2,3':'#abc'});
+    expect(study.data.pixelLayers).toBeUndefined();
+  });
+
   it('preserves Spin Art paint and live drips through navigation and a same-lab study fork', async () => {
     await mount({ tab: 'spinArt', spinPaused: false });
     let canvas = host.querySelector('#spinCanvas');

@@ -1,0 +1,95 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "normalCanvas": {
+        "x": 93,
+        "y": 419,
+        "width": 626,
+        "height": 626
+      },
+      "expandedCanvas": {
+        "x": 166,
+        "y": 99,
+        "width": 816,
+        "height": 816
+      },
+      "backing": [
+        1024,
+        1024
+      ],
+      "sameCanvas": true
+    },
+    "A real mouse gesture commits one history step; actual Undo/Redo buttons restore exact pixels",
+    {
+      "transparentExport": {
+        "width": 1024,
+        "height": 1024,
+        "corner": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "painted": 23772
+      }
+    },
+    "Line previews stay out of captures and exports; Escape cancels, unrelated pointers are ignored, and owner release saves the completed line",
+    "Changing pattern cancels a pending line without replacing the canvas or changing its pixels",
+    {
+      "backgrounds": {
+        "light": [
+          248,
+          250,
+          252,
+          255
+        ],
+        "dark": [
+          15,
+          23,
+          42,
+          255
+        ],
+        "transparent": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "guidesExcluded": true
+    },
+    "The visible Export PNG action downloads the exact clean 1024px artwork",
+    "Exit, resize, and expand again preserve the backing canvas, artwork and undo history",
+    "Save and Fork restore the exact drawing, keep the saved study immutable, and clear stale history",
+    {
+      "phoneCanvas": {
+        "x": 31,
+        "y": 515.5,
+        "width": 328,
+        "height": 328
+      },
+      "phoneExpanded": {
+        "x": 31,
+        "y": 193,
+        "width": 328,
+        "height": 328
+      },
+      "phoneControls": 54,
+      "minControlHeight": 44,
+      "noHorizontalOverflow": true
+    },
+    {
+      "smallPhoneFallback": {
+        "x": 31,
+        "y": 193,
+        "width": 258,
+        "height": 258
+      },
+      "nativeFullscreenRejectionRecovered": true,
+      "escapeRestoresScrolling": true,
+      "noHorizontalOverflow": true
+    }
+  ],
+  "errors": []
+}

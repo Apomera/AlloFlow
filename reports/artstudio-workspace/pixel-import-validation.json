@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-01",
+  "committed": true,
+  "sourceSha256": "3bb6698582f3619be505f75df73dd497d0157496d7fc24f3e5eb95a1d0901488",
+  "prePassSourceSha256": "999e33bc1ae9ff99152241531392ef8c91ce61b6b5616189ba7aa2769758dde5",
+  "publicMirrorMatches": true,
+  "englishEntriesVerified": 24,
+  "tests": {
+    "passed": 179,
+    "failed": 0,
+    "files": 17,
+    "report": "pixel-import-regression-results.json"
+  },
+  "browser": {
+    "passed": true,
+    "report": "pixel-import-browser-results.json",
+    "expandedGrid": {
+      "x": 174,
+      "y": 79,
+      "width": 854,
+      "height": 854
+    },
+    "phone": {
+      "phoneControls": 6,
+      "minHeight": 44,
+      "noHorizontalOverflow": true
+    }
+  },
+  "previews": [
+    "pixel-import-desktop.png",
+    "pixel-import-phone.png",
+    "pixel-import-sprite.png"
+  ],
+  "syntaxChecks": true,
+  "scopedDiffCheck": true,
+  "pinnedSpectralCheck": true
+}
