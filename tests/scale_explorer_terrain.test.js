@@ -29,7 +29,7 @@ describe('Everest geographic elevation grid',()=>{
  });
  it('keeps terrain viewpoints and their light direction in saved observations',()=>{
    const all=details('everest',(_k,f)=>f);
-   expect(all).toHaveLength(6);
+   expect(all).toHaveLength(7);
    all.forEach(d=>{expect(d.terrain).toBe(true);expect(notes([{itemId:'everest',detailId:d.id,zoom:d.zoom,sunAngle:155}])[0]).toMatchObject({itemId:'everest',detailId:d.id,zoom:d.zoom,sunAngle:155});});
    expect(details('earth',(_k,f)=>f).find(d=>d.id==='himalaya').visit).toBe('everest');
  });
