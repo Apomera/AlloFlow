@@ -1264,7 +1264,10 @@ describe('Plate Boundary Simulator: the quake log reads the slab dip off the dat
     expect(text).toMatch(/if \(cur\.qlogRestored\) \{ patch\.qlog = \[\]; patch\.qlogRestored = false; \}/);
     // Keep the original coordinate/depth recording and bounded history checks.
     expect(text).toMatch(/patch\.qlog = liveLog\.concat\(\[\{ x: Math\.round\(distKm\), z: Math\.round\(depthKm\), m: Math\.round\(magnitude \* 10\) \/ 10 \}\]\)\.slice\(-200\);/);
-    expect(text).toMatch(/qlog: \[\], dipLocked: false, dipSample: null, dipRestored: false, qlogRestored: false \}\);/);
+    // Reset now also initializes rate provenance for the guided comparison.
+    const reset = text.slice(text.indexOf('function reset(clearSavedSample) {'), text.indexOf('var info = BOUNDARY[s.mode];'));
+    expect(reset).toMatch(/qlog: \[\], dipLocked: false, dipSample: null, dipRestored: false, qlogRestored: false,/);
+    expect(reset).toMatch(/depthRunRate: sRef\.current\.rate, depthRunRateConstant: true \}\);/);
   });
 
   it('fits only the deep quakes, through the boundary, and asks for a guess first', () => {

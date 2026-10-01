@@ -309,3 +309,42 @@ Full-tool restoration checks also exposed an inactive audio sweep announcing tha
 - Source, public asset and local build match SHA-256 cc9dc2e0d35f5fec033d09e7b7c560c558099d58eaa3d2ffd18ec8cccafe32a9. Both English tectonic registries contain all 25 new labels with matching fallbacks. Existing tectonic registry values and source fallbacks are preserved. Acorn syntax and JSON parsing pass. The exact 3D renderer declaration matches the snapshot tested across 48 actual WebGL layouts.
 
 The combined test report, affected reruns, browser reports and source-integrity evidence are linked in [verification.json](C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-6/tectonics-force-refinement/verification.json). Measurement and force-return captures are in the adjacent task review folders; motion-arrow captures are in scratch/tectonics-motion-labels-review/. The motion-label report precedes unrelated force changes, and the integrity report verifies that renderer code is identical. Measurement and review reports cover unchanged helpers before the final inactive-audio cleanup guard. That two-anchor source difference is verified in the integrity report; final cleanup tests, registered-tool restoration and idle browser checks cover the final source.
+
+
+## Inspecting boundary structures and comparing saved investigations
+
+Students can select the descending slab, trench, volcanic arc, spreading ridge, cooling crust, transform fault or matching markers. The 3D outlines follow exposed mesh edges and the current cut plane; hidden structures have a clear view instruction. Each keyboard-accessible choice has its own description. Selection leaves camera orientation, model time, rate and recorded observations unchanged. Motion arrows now have a contrasting core and outline in light, dark and high-contrast views. The 2D spreading view also distinguishes a solid gray cooling-crust band from the narrow axial melt fissure.
+
+An optional guided comparison asks for a prediction, then runs all three boundaries at a shared rate and duration. Each trial starts paused and advances only through an explicit action. Matching checks require the actual recorded time and a constant rate from reset. Saved explanations freeze their three samples and can include a written interpretation of an unfamiliar earthquake-depth diagram. Reopening restores the plan paused; revising an explanation retains an earlier application response. Invalid callbacks cannot replace evidence, and newer plan saves preserve earlier completed comparisons and unrelated student work.
+
+The student and teacher views show the exact evidence saved with each explanation. Print saved investigation opens an escaped local document with numeric depth and speed figures, tables and submitted writing. Later trials and drafts cannot alter that report. Older submissions without a snapshot retain their text and identify the missing observations. Blocked print windows report the problem while preserving saved work. Imported sea-floor ages are bounded by their recorded model time.
+
+Phone controls use readable text, larger touch targets and a keyboard-operable cut slider with a meaningful position description. The desktop model keeps its own aspect ratio beside taller controls. Long rock and force explanations are expandable; live force readings stay near the model controls.
+
+### Verification of the feature inspector and saved comparison
+
+- All 665 distinct focused checks have passing results across 40 files. The broad run precedes only the final hidden-marker view hint; affected reruns cover that correction and the updated source contracts for larger text, the local report translator and reset provenance.
+- 188 browser checks passed on the final source, with 105 captured views. Reviewed model, phone, comparison, student, teacher and print panels have no browser errors, horizontal overflow or scoped WCAG violations. Final browser checks use the real English registry where recorded in the proof.
+- The idle audit again covers 1,200 actual draw frames, automatic drift, stationary inputs, rerenders and restored progress: no repeated rewards, sounds or notices. Guided idle checks also leave saved data and callbacks unchanged. Deliberate gestures retain their existing one-time rewards.
+- Source, public asset and local build match SHA-256 d7a1d579c6f3bb9178f8239c738bb9414fb642742c4f57582305c5f8c549d985. Both English registries contain 131 new labels. Existing tectonic registry values and every retained source fallback are preserved; two retired force-result labels remain in the registries. Syntax and JSON parsing pass. Scoped dictionary hashes verify tectonic labels independently of concurrent registry edits for other labs.
+
+The consolidated [verification.json](C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-6/tectonics-feature-refinement/verification.json) links the unit reports, final browser reports and asset integrity proof. Captures are saved beside the browser reports.
+
+
+## Reading transform slip and saving application evidence
+
+The small transform inset now moves both stream halves in their arrow directions without re-aligning every 26 km. The 2D and 3D pictures share the existing 280 km display extent. A nearby note explains when that finite picture limit is reached; cumulative fault slip keeps its full numerical value and remains readable during later steps. Matching-marker descriptions distinguish schematic separation from distance. The original 3D geometry, camera controls and physical updates are preserved.
+
+Application responses have an explicit Save button. Checking an answer leaves a draft; Save attaches the checked choice and written evidence to the last saved comparison, even after a newer plan changes the live settings. The original three samples, prediction and explanation remain fixed. Earlier Claim/Evidence/Reasoning submissions and their printed HTML remain unchanged; a deliberate new writing save captures the revised response. Empty application fields show Draft. Duplicate and stale-check saves are guarded synchronously.
+
+Live, recorded and frozen comparison cards now show shallow, intermediate and deep event counts beside their depth ranges. Saved student/teacher evidence and both printed depth tables carry the same actual counts. Labels explain the model depth bands and qualify the counts as observations from a sample. An empty run at the shared target time stays empty, explains random sampling, and offers an explicit restart that retains the plan and earlier records.
+
+### Verification of transform extent and explicit application saves
+
+- All 686 distinct focused checks have passing results across 41 files. The initial broad run timed out one registered-parent case and omitted seven files after worker startup timeouts; focused reruns cover every omitted file and that case. New transform behavior and saved-report tests are included.
+- 230 distinct final-source browser checks passed. A focused transform rerun adds world-coordinate direction assertions under existing check names, so it is not counted twice. Reviewed phone, desktop, high-contrast, oblique, saved-evidence and print views remain readable. Final browser reports contain no runtime errors; affected controls pass their recorded overflow and accessibility checks.
+- The registered parent preserves the frozen comparison during a changed live plan. Editing and checking do not persist an application response; explicit Save changes only that response. Earlier saved writing and byte-identical printed HTML remain fixed, while a new writing save captures the revision.
+- The idle audit covers 1,200 real draw frames, drift, stationary input, rerenders and restored progress: no repeated rewards, sounds or notices. Deliberate gestures retain their one-time rewards. Transform idle and application checks also preserve recorded data and settle GPU rendering.
+- All three source copies match SHA-256 23fe546b408b1af0f82cead3058eaa30f716e33fdd94e0190700222ed462bf8b. Both English tectonic dictionaries match their scoped hash, include all 25 new labels for this pass, and preserve existing values and retained source fallbacks. Five retired transform wording keys remain available in the registries. Syntax and JSON parsing pass.
+
+The consolidated [verification.json](C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-6/tectonics-application-refinement/verification.json) links the complete test results, final browser reports and asset integrity proof. Captures are stored beside those reports.

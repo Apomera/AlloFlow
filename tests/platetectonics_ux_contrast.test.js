@@ -306,9 +306,9 @@ describe('Motion — the canvases honour prefers-reduced-motion', () => {
 
   it('starts the boundary simulator paused, and the drift off, rather than removing them', () => {
     const text = src();
-    // Restored checked evidence always opens paused. Fresh sessions still
+    // Restored checked evidence and guided plans always open paused. Fresh sessions still
     // respect reduced motion; neither clock control is taken away.
-    expect(text).toMatch(/running: restoredSlab \? false : !ptReducedMotion\(\),/);
+    expect(text).toMatch(/running: \(restoredSlab \|\| ptBoundaryInquiry\(props && props\.savedBoundaryInquiry\)\) \? false : !ptReducedMotion\(\),/);
     // Drift is now off for everyone until chosen (see the force lab), which
     // satisfies reduced motion a fortiori.
     expect(text).toMatch(/var ptDrift = !!d\.ptDrift;/);
@@ -1021,7 +1021,7 @@ describe('Phone legibility — figures drawn in a fixed space', () => {
   it('keeps the boundary widget at 540 px inside a sideways-scrolling frame with a swipe hint', () => {
     const text = src();
     expect(text).toMatch(/className: 'pt-tect-frame md:col-span-2 rounded-xl overflow-hidden border relative /);
-    expect(text).toMatch(/className: 'pt-tect-swipe text-\[11px\][^']*' \+ \(isDark[\s\S]{0,200}style: \{ position: 'sticky', left: 0 \}/);
+    expect(text).toMatch(/className: 'pt-tect-swipe text-sm[^']*' \+ \(isDark[\s\S]{0,200}style: \{ position: 'sticky', left: 0 \}/);
   });
 
   it('scales the epicenter map text and readings box by the canvas shrink, and redraws when that changes', () => {
@@ -1580,9 +1580,17 @@ describe('The plate encyclopedia cards do something', () => {
     const b = text.indexOf("label: 'Plate Tectonics',", a);
     expect(b).toBeGreaterThan(a);
     const body = text.slice(a, b);
-    const wrapped = new Set(
-      [...body.matchAll(/__alloT\('stem\.platetectonics\.[a-z0-9_]+', '([^']+)'\)/g)].map((m) => m[1])
-    );
+    // Saved-evidence and report helpers receive the same translator as local t.
+    // Exempt only actual literal fallback arguments, so identical bare prose
+    // elsewhere still fails this check.
+    const wrapped = new Set(syntax().calls.filter(call =>
+      call.start >= a && call.end <= b && call.callee.type === 'Identifier'
+      && ['__alloT', 't'].includes(call.callee.name)
+      && call.arguments[0]?.type === 'Literal'
+      && /^stem\.platetectonics\.[a-z0-9_]+$/.test(call.arguments[0].value)
+      && call.arguments[1]?.type === 'Literal'
+      && typeof call.arguments[1].value === 'string'
+    ).map(call => call.arguments[1].start));
     // Anything starting with a capital and long enough to be a sentence or a
     // label. The three arrow-key names are DOM VALUES compared against
     // KeyboardEvent.key - translating those would break the keyboard handler.
@@ -1596,8 +1604,8 @@ describe('The plate encyclopedia cards do something', () => {
       // beginning with M still needs translation everywhere else.
       .filter((m) => !(/(?:\{|,)\s*d:\s*$/.test(body.slice(Math.max(0, m.index - 40), m.index))
         && /^[Mm][MmLlHhVvCcSsQqTtAaZz\d+.,eE\s-]+$/.test(m[1]) && /\d/.test(m[1])))
-      .map((m) => m[1])
-      .filter((t) => !wrapped.has(t) && !KEEP.has(t));
+      .filter((m) => !wrapped.has(a + m.index) && !KEEP.has(m[1]))
+      .map((m) => m[1]);
     expect(bare, 'untranslated: ' + bare.slice(0, 4).join(' | ')).toHaveLength(0);
   });
 
