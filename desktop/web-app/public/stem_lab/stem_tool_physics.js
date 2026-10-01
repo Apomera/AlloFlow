@@ -405,17 +405,21 @@ window.StemLab = window.StemLab || {
         point.t < 0 || point.mX < 0 || point.mY < 0) return null;
     var speed = Math.hypot(point.mVx, point.mVy);
     var dragK = p.drag ? PHYS_DRAG_K : 0;
-    var fx = -dragK * speed * point.mVx;
-    var fy = -p.mass * p.gravity - dragK * speed * point.mVy;
+    var gravityFx = 0, gravityFy = -p.mass * p.gravity;
+    var dragFx = -dragK * speed * point.mVx, dragFy = -dragK * speed * point.mVy;
+    var fx = dragFx, fy = gravityFy + dragFy;
+    var gravityForce = p.mass * p.gravity, dragForce = dragK * speed * speed;
     var ke = 0.5 * p.mass * speed * speed, pe = p.mass * p.gravity * point.mY;
     var initialEnergy = 0.5 * p.mass * p.velocity * p.velocity + p.mass * p.gravity * p.launchHeight;
-    if (![speed, fx, fy, ke, pe, initialEnergy, fx / p.mass, fy / p.mass].every(physFinite)) return null;
+    if (![speed, gravityFy, dragFx, dragFy, gravityForce, dragForce, Math.hypot(fx, fy),
+        fx, fy, ke, pe, initialEnergy, fx / p.mass, fy / p.mass].every(physFinite)) return null;
     var impact = index === trail.length - 1 && point.t > 0 && point.mY === 0 && point.mVy <= 0;
     var apex = !!trail.apex && point.mVy === 0 && point.t === trail.apex.tSec && point.mX === trail.apex.mX && point.mY === trail.apex.mY && point.mVx === trail.apex.vx;
     return Object.freeze({
       index: index, count: trail.length, t: point.t, x: point.mX, y: point.mY,
       vx: point.mVx, vy: point.mVy, speed: speed, ax: fx / p.mass, ay: fy / p.mass,
-      fx: fx, fy: fy, gravityForce: p.mass * p.gravity, dragForce: dragK * speed * speed,
+      fx: fx, fy: fy, gravityForce: gravityForce, dragForce: dragForce,
+      gravityFx: gravityFx, gravityFy: gravityFy, dragFx: dragFx, dragFy: dragFy,
       ke: ke, pe: pe, totalEnergy: ke + pe, initialEnergy: initialEnergy,
       dragLoss: p.drag ? Math.max(0, initialEnergy - ke - pe) : 0,
       parameters: Object.freeze({ angle: p.angle, velocity: p.velocity, gravity: p.gravity, mass: p.mass,
@@ -827,14 +831,14 @@ window.StemLab = window.StemLab || {
             cv._inspection = { trail: trail, index: index, snapshot: snapshot };
             if (cv._physScheduleFrame) cv._physScheduleFrame();
             var text = __alloT('stem.physics.inspect_captured', 'Captured flight state at') + ' ' + snapshot.t.toFixed(3) + ' s. ' +
-              'x = ' + snapshot.x.toFixed(2) + ' m; y = ' + snapshot.y.toFixed(2) + ' m. ' +
-              'Vx = ' + snapshot.vx.toFixed(2) + ' m/s; Vy = ' + snapshot.vy.toFixed(2) + ' m/s. ' +
-              __alloT('stem.physics.inspect_acceleration', 'Total acceleration') + ': ax = ' + snapshot.ax.toFixed(2) + ' m/s²; ay = ' + snapshot.ay.toFixed(2) + ' m/s². ' +
-              __alloT('stem.physics.inspect_gravity_force', 'Gravitational force downward') + ': ' + snapshot.gravityForce.toFixed(2) + ' N. ' +
-              __alloT('stem.physics.inspect_drag_force', 'Drag force opposite velocity') + ': ' + snapshot.dragForce.toFixed(2) + ' N. ' +
-              'Fx = ' + snapshot.fx.toFixed(2) + ' N; Fy = ' + snapshot.fy.toFixed(2) + ' N. ' +
-              'KE = ' + snapshot.ke.toFixed(2) + ' J; PE = ' + snapshot.pe.toFixed(2) + ' J; KE + PE = ' + snapshot.totalEnergy.toFixed(2) + ' J. ' +
-              __alloT('stem.physics.inspect_energy_transferred', 'Energy transferred to the air') + ': ' + snapshot.dragLoss.toFixed(2) + ' J. ' +
+              'x = ' + physFormatSampleValue(snapshot.x) + ' m; y = ' + physFormatSampleValue(snapshot.y) + ' m. ' +
+              'Vx = ' + physFormatSampleValue(snapshot.vx) + ' m/s; Vy = ' + physFormatSampleValue(snapshot.vy) + ' m/s. ' +
+              __alloT('stem.physics.inspect_acceleration', 'Total acceleration') + ': ax = ' + physFormatSampleValue(snapshot.ax) + ' m/s²; ay = ' + physFormatSampleValue(snapshot.ay) + ' m/s². ' +
+              __alloT('stem.physics.inspect_gravity_force', 'Gravitational force downward') + ': ' + physFormatSampleValue(snapshot.gravityForce) + ' N. ' +
+              __alloT('stem.physics.inspect_drag_force', 'Drag force opposite velocity') + ': ' + physFormatSampleValue(snapshot.dragForce) + ' N. ' +
+              'Fx = ' + physFormatSampleValue(snapshot.fx) + ' N; Fy = ' + physFormatSampleValue(snapshot.fy) + ' N. ' +
+              'KE = ' + physFormatSampleValue(snapshot.ke) + ' J; PE = ' + physFormatSampleValue(snapshot.pe) + ' J; KE + PE = ' + physFormatSampleValue(snapshot.totalEnergy) + ' J. ' +
+              __alloT('stem.physics.inspect_energy_transferred', 'Energy transferred to the air') + ': ' + physFormatSampleValue(snapshot.dragLoss) + ' J. ' +
               __alloT('stem.physics.inspect_axes', 'Right and up are positive; potential energy is measured from the ground.');
             setLabToolData(function(prev) { return Object.assign({}, prev, { physics: Object.assign({}, prev.physics, {
               simSpeed: 0, showFlightData: true, showGraphs: true, inspectionSnapshot: text,
@@ -2818,6 +2822,25 @@ window.StemLab = window.StemLab || {
               #physics-fs-outer .phys-measured-card dd{margin:0;font-size:1rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--phys-ink)}
               #physics-fs-outer .phys-energy-budget{display:flex;width:100%;height:10px;overflow:hidden;border-radius:5px;background:var(--phys-panel);border:1px solid var(--phys-line);margin:12px 0}
               #physics-fs-outer .phys-energy-key{display:inline-block;width:9px;height:9px;margin-right:6px;border-radius:2px;border:1px solid var(--phys-line)}
+              #physics-fs-outer [data-physics-vertical-balance]{border-top:1px solid var(--phys-accent);padding-top:10px;min-width:0}
+              #physics-fs-outer [data-physics-vertical-balance] p{margin:0 0 5px;font-size:12px;line-height:1.6}
+              #physics-fs-outer [data-physics-vertical-balance] strong{font-size:16px;line-height:1.6;font-weight:750;overflow-wrap:anywhere}
+              #physics-fs-outer [data-physics-force-balance]{margin:4px 0 14px}
+              #physics-fs-outer [data-physics-force-balance]>h4{font-size:16px;font-weight:750;line-height:1.5;margin:0 0 5px;color:var(--phys-ink)}
+              #physics-fs-outer [data-physics-force-balance]>p{font-size:12px;line-height:1.65;color:var(--phys-muted);margin:7px 0;overflow-wrap:anywhere}
+              #physics-fs-outer .phys-force-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+              #physics-fs-outer [data-physics-force-card]{min-width:0;padding:12px;border:1px solid var(--phys-line);border-radius:12px;background:var(--phys-panel)}
+              #physics-fs-outer [data-physics-force-card="net"]{border-color:var(--phys-accent);background:var(--phys-selected)}
+              #physics-fs-outer .phys-force-title h5{margin:0;font-size:15px;font-weight:750;line-height:1.5;color:var(--phys-ink)}
+              #physics-fs-outer .phys-force-title p{margin:2px 0 9px;font-size:12px;line-height:1.6;color:var(--phys-muted)}
+              #physics-fs-outer .phys-force-body{display:grid;grid-template-columns:minmax(60px,90px) minmax(0,1fr);align-items:center;gap:10px}
+              #physics-fs-outer [data-physics-force-vector]{display:block;width:100%;height:auto}
+              #physics-fs-outer .phys-force-body dl{margin:0;display:grid;gap:6px;min-width:0}
+              #physics-fs-outer .phys-force-body dt{font-size:12px;line-height:1.5;color:var(--phys-muted)}
+              #physics-fs-outer .phys-force-body dd{margin:0;font-size:14px;font-weight:750;line-height:1.5;color:var(--phys-ink);overflow-wrap:anywhere}
+              #physics-fs-outer .phys-force-note{margin:9px 0 0;font-size:12px;line-height:1.6;color:var(--phys-muted)}
+              @container(max-width:720px){#physics-fs-outer .phys-force-cards{grid-template-columns:1fr}#physics-fs-outer .phys-force-body{grid-template-columns:80px minmax(0,1fr)}#physics-fs-outer .phys-force-body dl{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}}
+              @container(max-width:460px){#physics-fs-outer .phys-force-body{grid-template-columns:72px minmax(0,1fr)}#physics-fs-outer .phys-force-body dl{grid-template-columns:1fr;gap:5px}#physics-fs-outer .phys-force-body dl>div{display:flex;flex-wrap:wrap;justify-content:space-between;gap:1px 8px}#physics-fs-outer [data-physics-force-card]{padding:10px}}
               #physics-fs-outer [data-physics-sample-forces]{margin-top:12px;padding:12px;border:1px solid var(--phys-line);border-radius:12px;background:var(--phys-soft)}
               #physics-fs-outer [data-physics-sample-forces]>summary{min-height:44px;cursor:pointer;font-size:.875rem;font-weight:700;color:var(--phys-accent)}
               #physics-fs-outer [data-physics-flight-table-wrap]{position:relative;isolation:isolate;max-height:460px;overflow:auto;overflow-anchor:none;overscroll-behavior:contain;border:1px solid var(--phys-line);border-radius:11px;margin-top:12px;background:var(--phys-panel)}
@@ -3114,7 +3137,8 @@ window.StemLab = window.StemLab || {
 
             React.createElement('div', { 'data-physics-plot-key': true },
               React.createElement('span', null, physSelectedInspection(typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null) ? __alloT('stem.physics.plot_selected_trail_speed', 'Selected flight speed') : __alloT('stem.physics.plot_trail_speed', 'Latest trail speed'), ' · 0 ', React.createElement('span', { className: 'phys-speed-swatch', 'aria-hidden': true }), ' ≥60 m/s'),
-              React.createElement('span', null, React.createElement('span', { className: 'phys-vacuum-swatch', 'aria-hidden': true }), __alloT('stem.physics.plot_vacuum_key', 'White dashed · vacuum reference'))),
+              React.createElement('span', null, React.createElement('span', { className: 'phys-vacuum-swatch', 'aria-hidden': true }), __alloT('stem.physics.plot_vacuum_key', 'White dashed · vacuum reference')),
+              d.showVectors && React.createElement('span', { 'data-physics-gravity-vector-key': true }, __alloT('stem.physics.plot_gravity_vector_key', 'Velocity arrows show m/s; the red dotted arrow shows gravity g in m/s².'))),
 
               ),
             React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-3", "data-physics-sliders": "true", role: "group", "aria-labelledby": "physics-settings-heading" },
@@ -3202,6 +3226,61 @@ window.StemLab = window.StemLab || {
                 impact: __alloT('stem.physics.sample_ground_impact', 'Ground impact')
               };
               var phaseLabel = phaseLabels[sample.phase];
+              var phaseHelp = sample.phase === 'impact'
+                ? __alloT('stem.physics.force_phase_impact', 'These forces describe arrival just before contact. The collision force is not simulated.')
+                : sample.vy > 0
+                  ? parameters.airResist
+                    ? __alloT('stem.physics.force_phase_rising_drag', 'While the projectile rises, gravity and vertical air drag act downward.')
+                    : __alloT('stem.physics.force_phase_rising_vacuum', 'While the projectile rises, gravity changes its vertical velocity downward.')
+                  : sample.vy < 0
+                    ? parameters.airResist
+                      ? __alloT('stem.physics.force_phase_falling_drag', 'During descent, vertical air drag acts upward. Net force determines the acceleration.')
+                      : __alloT('stem.physics.force_phase_falling_vacuum', 'During descent, gravity changes its vertical velocity downward.')
+                    : __alloT('stem.physics.force_phase_zero_vertical', 'Vertical velocity is zero at this moment. Gravity still acts downward.');
+              if (sample.gravityForce === 0 && !sample.impact) phaseHelp = parameters.airResist
+                ? __alloT('stem.physics.force_phase_no_gravity_drag', 'With no gravity, air drag alone determines acceleration.')
+                : __alloT('stem.physics.force_phase_no_forces', 'With gravity and air drag both absent, velocity stays unchanged.');
+              if (sample.vy === 0 && sample.dragFx !== 0) phaseHelp += ' ' +
+                __alloT('stem.physics.force_phase_horizontal_drag', 'Horizontal motion still produces air drag.');
+              var forceVectors = [
+                { key: 'gravity', label: __alloT('stem.physics.force_gravity', 'Gravity'),
+                  description: sample.gravityForce === 0 ? __alloT('stem.physics.force_no_gravity', 'Gravity is zero') : __alloT('stem.physics.force_downward', 'Acts downward'), x: sample.gravityFx, y: sample.gravityFy, magnitude: sample.gravityForce, dash: '4 3' },
+                { key: 'drag', label: __alloT('stem.physics.force_air_drag', 'Air drag'),
+                  description: parameters.airResist ? __alloT('stem.physics.force_opposes_velocity', 'Opposes velocity') : __alloT('stem.physics.sample_drag_off', 'Air drag off'),
+                  x: sample.dragFx, y: sample.dragFy, magnitude: sample.dragForce, dash: '2 3' },
+                { key: 'net', label: __alloT('stem.physics.force_net', 'Net force'),
+                  description: __alloT('stem.physics.force_sets_acceleration', 'Sets acceleration'), x: sample.fx, y: sample.fy, magnitude: Math.hypot(sample.fx, sample.fy), dash: null }
+              ];
+              var forceScale = Math.max.apply(null, forceVectors.map(function(vector) { return vector.magnitude; }));
+              function forceCard(vector) {
+                var length = forceScale > 0 ? 42 * (vector.magnitude / forceScale) : 0;
+                var endX = 64 + (forceScale > 0 ? 42 * (vector.x / forceScale) : 0);
+                var endY = 64 - (forceScale > 0 ? 42 * (vector.y / forceScale) : 0);
+                var direction = Math.atan2(-vector.y, vector.x), head = Math.min(6, length / 3);
+                function component(field, label, value) {
+                  return h('div', { key: field }, h('dt', null, label),
+                    h('dd', { 'data-physics-force-component': vector.key + '-' + field, 'data-value': value }, physFormatSampleValue(value) + ' N'));
+                }
+                return h('section', { key: vector.key, 'data-physics-force-card': vector.key, 'aria-label': vector.label },
+                  h('div', { className: 'phys-force-title' }, h('h5', null, vector.label), h('p', null, vector.description)),
+                  h('div', { className: 'phys-force-body' },
+                    h('svg', { 'data-physics-force-vector': vector.key, viewBox: '0 0 128 128', 'aria-hidden': true, focusable: 'false' },
+                      h('circle', { cx: 64, cy: 64, r: 51, fill: 'none', stroke: 'var(--phys-line)' }),
+                      h('path', { d: 'M12 64H116M64 12V116', fill: 'none', stroke: 'var(--phys-line)', strokeDasharray: '2 4' }),
+                      vector.magnitude > 0 && h('g', { fill: 'none', stroke: 'var(--phys-accent)', strokeWidth: vector.key === 'net' ? 3 : 2.5 },
+                        h('line', { 'data-physics-force-arrow': vector.key, 'data-fx': vector.x, 'data-fy': vector.y,
+                          'data-magnitude': vector.magnitude, 'data-scale': forceScale, x1: 64, y1: 64, x2: endX, y2: endY, strokeDasharray: vector.dash }),
+                        h('path', { d: 'M' + (endX - Math.cos(direction - .45) * head) + ' ' + (endY - Math.sin(direction - .45) * head) +
+                          'L' + endX + ' ' + endY + 'L' + (endX - Math.cos(direction + .45) * head) + ' ' + (endY - Math.sin(direction + .45) * head) })),
+                      h('circle', { cx: 64, cy: 64, r: 3, fill: 'var(--phys-ink)' })),
+                    h('dl', null,
+                      component('x', __alloT('stem.physics.force_horizontal', 'Horizontal · x'), vector.x),
+                      component('y', __alloT('stem.physics.force_vertical', 'Vertical · y'), vector.y),
+                      component('magnitude', __alloT('stem.physics.force_magnitude', 'Magnitude'), vector.magnitude))),
+                  vector.magnitude === 0 ? h('p', { className: 'phys-force-note', 'data-physics-force-zero': vector.key },
+                    __alloT('stem.physics.force_zero', 'Zero force: no arrow.')) : length < 4.5 ? h('p', { className: 'phys-force-note' },
+                    __alloT('stem.physics.force_tiny', 'The arrow is too short to see clearly at this scale; the values above retain its size.')) : null);
+              }
               function measurement(key, label, value, unit) {
                 var swatch = key === 'ke' ? 'var(--phys-accent)' : key === 'pe' ? 'var(--phys-muted)' : key === 'dragLoss' ? 'repeating-linear-gradient(135deg,var(--phys-line),var(--phys-line) 2px,var(--phys-panel) 2px,var(--phys-panel) 4px)' : null;
                 return h('div', { key: key, 'data-physics-measurement': key }, h('dt', null, swatch && h('span', { className: 'phys-energy-key', 'aria-hidden': true, style: { background: swatch } }), label), h('dd', null, physFormatSampleValue(value) + ' ' + unit));
@@ -3246,10 +3325,13 @@ window.StemLab = window.StemLab || {
                       h('span', null, latest && latest.impact ? __alloT('stem.physics.sample_ground_impact', 'Ground impact') : __alloT('stem.physics.sample_latest_point', 'Latest point')), h('strong', null, 't = ' + trail[trail.length - 1].t.toFixed(3) + ' s')))),
                 h('section', { 'data-physics-motion-phase': sample.phase, 'aria-label': phaseLabel },
                   h('div', { className: 'phys-phase-heading' }, h('span', { 'aria-hidden': true }, sample.phase === 'rising' ? '↑' : sample.phase === 'falling' || sample.phase === 'impact' ? '↓' : sample.phase === 'apex' ? '∩' : '—'), h('h4', { 'data-physics-phase-label': true }, phaseLabel)),
-                  h('p', null, __alloT('stem.physics.sample_phase_help', 'Velocity describes motion. Acceleration describes how velocity changes.')),
+                  h('p', { 'data-physics-phase-help': true }, phaseHelp),
                   h('dl', { className: 'phys-phase-values' },
                     h('div', null, h('dt', null, __alloT('stem.physics.sample_vertical_velocity', 'Vertical velocity · vy')), h('dd', { 'data-physics-phase-value': 'vy', 'data-value': sample.vy }, physFormatSampleValue(sample.vy) + ' m/s')),
-                    h('div', null, h('dt', null, __alloT('stem.physics.sample_vertical_acceleration', 'Vertical acceleration · ay')), h('dd', { 'data-physics-phase-value': 'ay', 'data-value': sample.ay }, physFormatSampleValue(sample.ay) + ' m/s²')))),
+                    h('div', null, h('dt', null, __alloT('stem.physics.sample_vertical_acceleration', 'Vertical acceleration · ay')), h('dd', { 'data-physics-phase-value': 'ay', 'data-value': sample.ay }, physFormatSampleValue(sample.ay) + ' m/s²'))),
+                  h('div', { 'data-physics-vertical-balance': true },
+                    h('p', null, __alloT('stem.physics.force_vertical_equation', 'Gravity + vertical air drag = net vertical force')),
+                    h('strong', null, physFormatSampleValue(sample.gravityFy) + ' N + (' + physFormatSampleValue(sample.dragFy) + ' N) = ' + physFormatSampleValue(sample.fy) + ' N'))),
                 h('div', { className: 'phys-measured-grid' },
                   h('section', { className: 'phys-measured-card', 'aria-labelledby': 'physics-sample-motion' },
                     h('h4', { id: 'physics-sample-motion' }, __alloT('stem.physics.sample_motion', 'Position & velocity')),
@@ -3273,6 +3355,14 @@ window.StemLab = window.StemLab || {
                       h('span', { style: { width: Math.max(0, Math.min(100, sample.dragLoss / sample.initialEnergy * 100)) + '%', background: 'repeating-linear-gradient(135deg,var(--phys-line),var(--phys-line) 3px,var(--phys-panel) 3px,var(--phys-panel) 6px)' } })))),
                 h('details', { 'data-physics-sample-forces': true },
                   h('summary', null, __alloT('stem.physics.sample_forces', 'Forces & acceleration')),
+                  h('section', { 'data-physics-force-balance': true, 'data-force-scale': forceScale, 'aria-labelledby': 'physics-force-heading' },
+                    h('h4', { id: 'physics-force-heading' }, __alloT('stem.physics.force_heading', 'Forces at this recorded moment')),
+                    h('p', { className: 'phys-force-explanation' }, __alloT('stem.physics.force_equation', 'Gravity + air drag = net force. Acceleration = net force ÷ recorded mass.')),
+                    h('div', { className: 'phys-force-cards' }, forceVectors.map(forceCard)),
+                    h('p', { className: 'phys-force-scale' }, (forceScale > 0 ? __alloT('stem.physics.force_scale', 'All arrows share one scale; the longest represents') + ' ' + physFormatSampleValue(forceScale) + ' N. ' : __alloT('stem.physics.force_all_zero', 'All recorded forces are zero.') + ' ') +
+                      __alloT('stem.physics.force_axes', 'Right and up are positive. The scale updates when you choose another moment.')),
+                    h('p', { className: 'phys-force-mass' }, __alloT('stem.physics.force_recorded_mass', 'Recorded mass') + ': ' + parameters.mass + ' kg · ay = ' + physFormatSampleValue(sample.fy) +
+                      ' N ÷ ' + parameters.mass + ' kg = ' + physFormatSampleValue(sample.ay) + ' m/s²')),
                   h('div', { className: 'phys-measured-grid' },
                     h('div', { className: 'phys-measured-card' }, h('dl', null,
                       measurement('ax', __alloT('stem.physics.sample_horizontal_acceleration', 'Horizontal acceleration · ax'), sample.ax, 'm/s²'),
