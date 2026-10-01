@@ -1,3 +1,4 @@
+import { showScaleExplorerTools } from './helpers/scale_explorer_workspace';
 import {test,expect} from '@playwright/test';
 import {GlHarness,looksBlank} from './helpers/stem_gl_harness';
 import {mkdirSync,readFileSync} from 'node:fs';
@@ -14,7 +15,7 @@ const route=(p:any)=>p.getByRole('region',{name:'Navigate the river',exact:true}
 const slider=(p:any)=>p.getByRole('slider',{name:'Position along the illustrated river',exact:true});
 async function mount(page:any,phone=false){
  await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize(phone?{width:320,height:780}:{width:1400,height:1100});
- await harness.mount(page,{},'!!document.querySelector("[data-atlas-ready]")');
+ await harness.mount(page,{},'!!document.querySelector("[data-atlas-ready]")'); await showScaleExplorerTools(page);
  await page.addStyleTag({content:'#wrap{width:100%!important}body{font-family:system-ui,sans-serif}button,input,select,textarea{font-family:inherit}'});
  await page.getByRole('combobox',{name:'Choose a destination',exact:true}).selectOption('grand-canyon');
  await expect(canvas(page)).toHaveAttribute('data-atlas-objects','grand-canyon');

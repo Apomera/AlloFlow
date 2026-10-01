@@ -1,3 +1,4 @@
+import { showScaleExplorerTools } from './helpers/scale_explorer_workspace';
 import { test, expect } from '@playwright/test';
 import { GlHarness, looksBlank } from './helpers/stem_gl_harness';
 import { mkdirSync } from 'node:fs';
@@ -13,7 +14,7 @@ test.afterEach(async({page})=>{await page.evaluate(()=>{delete (performance as a
 const canvas=(p:any)=>p.locator('[data-atlas-ready]');
 async function mount(page:any,phone=false){
   await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize(phone?{width:320,height:780}:{width:1400,height:1100});
-  await harness.mount(page,{},'!!document.querySelector("[data-atlas-ready]")');
+  await harness.mount(page,{},'!!document.querySelector("[data-atlas-ready]")'); await showScaleExplorerTools(page);
   await page.addStyleTag({content:'#wrap{width:100%!important}body{font-family:system-ui,sans-serif}button,input,select,textarea{font-family:inherit}'});
   await page.getByRole('combobox',{name:'Choose a destination',exact:true}).selectOption('solar-system');
   await expect(canvas(page)).toHaveAttribute('data-atlas-objects','solar-system');
@@ -88,9 +89,11 @@ test('Escape, a new destination and a change to reduced motion each settle an ac
   await enter(page);await advance(page,1700);
   await page.getByRole('combobox',{name:'Choose a destination',exact:true}).selectOption('sun');
   await advance(page,6000);await settled(page,'sun');await expect(page.getByRole('navigation',{name:'Your exploration route'})).toHaveCount(0);
-  await page.emulateMedia({reducedMotion:'reduce'});await page.getByRole('combobox',{name:'Choose a destination',exact:true}).selectOption('solar-system');
+  await page.emulateMedia({reducedMotion:'reduce'});await expect(page.getByRole('button',{name:'Reduced motion',exact:true})).toBeVisible();
+  await page.getByRole('combobox',{name:'Choose a destination',exact:true}).selectOption('solar-system');
   await page.locator('.sx-details').getByRole('button',{name:'Jupiter',exact:true}).click();await expect(canvas(page)).toHaveAttribute('data-atlas-detail','jupiter-orbit');
-  await page.emulateMedia({reducedMotion:'no-preference'});await enter(page);await advance(page,7200);await expect(canvas(page)).toHaveAttribute('data-atlas-flight','descent');
+  await page.emulateMedia({reducedMotion:'no-preference'});await expect(page.getByRole('button',{name:'Reduced motion',exact:true})).toHaveCount(0);
+  await enter(page);await advance(page,7200);await expect(canvas(page)).toHaveAttribute('data-atlas-flight','descent');
   await page.emulateMedia({reducedMotion:'reduce'});await settled(page,'jupiter');await expect(page.getByRole('button',{name:'Reduced motion',exact:true})).toBeVisible();
 });
 

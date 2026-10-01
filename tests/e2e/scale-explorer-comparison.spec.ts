@@ -1,3 +1,4 @@
+import { showScaleExplorerTools } from './helpers/scale_explorer_workspace';
 import { test, expect } from '@playwright/test';
 import { GlHarness, looksBlank } from './helpers/stem_gl_harness';
 import { mkdirSync } from 'node:fs';
@@ -25,7 +26,7 @@ async function mount(page: any, data = {}, fallback = false) {
       return /webgl/i.test(type) ? null : (original as any).call(this, type, ...args);
     };
   });
-  await harness.mount(page, data, '!!document.querySelector("[data-atlas-ready]")', { expectCanvas: !fallback });
+  await harness.mount(page, data, '!!document.querySelector("[data-atlas-ready]")', { expectCanvas: !fallback }); await showScaleExplorerTools(page);
   await page.addStyleTag({ content: '#wrap{width:100%!important}body{font-family:system-ui,sans-serif}button,input,select,textarea{font-family:inherit}' });
 }
 async function compare(page: any, a: string, b: string, atlas = true) {
@@ -117,7 +118,7 @@ test('subpixel locators, exact bridge navigation, notebook protection and record
   const stored = await page.evaluate(() => (window as any).__toolData);
   expect(stored.unrelated).toEqual({ keep: true });
   expect(stored._scaleExplorer.observations[0].size).toBe(1.23);
-  await harness.mount(page, stored, '!!document.querySelector("[data-atlas-ready]")');
+  await harness.mount(page, stored, '!!document.querySelector("[data-atlas-ready]")'); await showScaleExplorerTools(page);
   await page.getByText('Compare two sizes', { exact: true }).click();
   await expect(page.locator('.sx-comparison-workbench').getByRole('combobox', { name: 'First thing', exact: true })).toHaveValue('human');
   await expect(page.locator('.sx-comparison-workbench').getByRole('combobox', { name: 'Second thing', exact: true })).toHaveValue('door');

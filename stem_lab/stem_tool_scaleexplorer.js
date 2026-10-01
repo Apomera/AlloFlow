@@ -886,6 +886,25 @@
     return Object.assign({}, item, { size: personal ? raw.size : item.size, you: personal });
   }
   function inquirySnapshot(item) { return { id: item.id, size: item.size, you: !!item.you }; }
+  var WORKSPACE_VIEWS = ['explore', 'investigate', 'compare', 'model', 'draw', 'notebook'];
+  function readWorkspaceView(value) { return typeof value === 'string' && (WORKSPACE_VIEWS.indexOf(value) !== -1 || value === 'all') ? value : 'explore'; }
+  function readInquiryComparison(raw, small, big) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    var measured = compareMeasurements(inquiryMeasurement(raw.small), inquiryMeasurement(raw.big));
+    if (!measured || drawingSnapshotKey(measured.small) !== drawingSnapshotKey(small) || drawingSnapshotKey(measured.big) !== drawingSnapshotKey(big)) return null;
+    return { small: inquirySnapshot(small), big: inquirySnapshot(big) };
+  }
+  function readInquiryDrawing(raw, small, big) {
+    var drawing = readDrawing(raw, true);
+    if (!drawing) return null;
+    var keys = [drawing.reference, drawing.target].concat(drawing.extras).map(drawingSnapshotKey);
+    return keys.indexOf(drawingSnapshotKey(small)) !== -1 && keys.indexOf(drawingSnapshotKey(big)) !== -1 ? drawing : null;
+  }
+  function inquiryEvidence(entry) {
+    if (!entry) return [false, false, false, false];
+    return [entry.revealed === true && validEstimate(entry.guess) !== null, !!entry.comparison, !!entry.drawing,
+      typeof entry.reflection === 'string' && !!entry.reflection.trim()];
+  }
   function readInquiry(raw) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
     var small = inquiryMeasurement(raw.small), big = inquiryMeasurement(raw.big), pair = compareMeasurements(small, big);
@@ -895,7 +914,9 @@
     return { id: typeof raw.id === 'string' && raw.id.length <= 64 && /^inquiry-[a-z0-9]+-[a-z0-9]+$/i.test(raw.id) ? raw.id : '',
       theme: theme ? theme.id : 'mixed', small: inquirySnapshot(pair.small), big: inquirySnapshot(pair.big),
       guess: guess === null ? '' : String(guess), revealed: raw.revealed === true && guess !== null,
-      reflection: typeof raw.reflection === 'string' ? raw.reflection.slice(0, NOTE_LIMIT) : '' };
+      question: typeof raw.question === 'string' ? raw.question.slice(0, 400) : '',
+      reflection: typeof raw.reflection === 'string' ? raw.reflection.slice(0, NOTE_LIMIT) : '',
+      comparison: readInquiryComparison(raw.comparison, pair.small, pair.big), drawing: readInquiryDrawing(raw.drawing, pair.small, pair.big) };
   }
   function readInvestigations(raw) {
     var result = [], seen = new Set();
@@ -917,7 +938,7 @@
   function freshInquiry(theme, small, big) {
     var pair = compareMeasurements(small, big);
     return { id: 'inquiry-' + Date.now().toString(36) + '-' + (Math.random().toString(36).slice(2, 9) || '0'), theme: theme,
-      small: inquirySnapshot(pair.small), big: inquirySnapshot(pair.big), guess: '', revealed: false, reflection: '' };
+      small: inquirySnapshot(pair.small), big: inquirySnapshot(pair.big), guess: '', revealed: false, question: '', reflection: '', comparison: null, drawing: null };
   }
 
   function createScaleAtlas(T, canvas, read, pick, fail, inspect, markers, comparisonLabels, onImagery, hoverCard, flightLabels, airHud) {
@@ -2658,6 +2679,8 @@
       var _themeChoice = React.useState(initialInquiry.theme); var themeChoice = _themeChoice[0], setThemeChoice = _themeChoice[1];
       var _inquiryMessage = React.useState(''); var inquiryMessage = _inquiryMessage[0], setInquiryMessage = _inquiryMessage[1];
       var inquiryPanelRef = React.useRef(null), inquiryHistoryRef = React.useRef(null);
+      var _workspace = React.useState(readWorkspaceView(slice.workspaceView)); var workspace = _workspace[0], setWorkspace = _workspace[1];
+      var workspaceRef = React.useRef(null);
       React.useEffect(function () {
         updateSlice(function (cur) { cur.inquiryDraft = Object.assign({}, pair, { guess: guess, revealed: revealed, reflection: reflection }); });
       }, [pair, guess, revealed, reflection]);
@@ -2676,6 +2699,7 @@
 
       var _drawingDraft = React.useState(function () { return readDrawing(slice.drawingDraft, false); }); var drawingDraft = _drawingDraft[0], setDrawingDraft = _drawingDraft[1];
       var _drawingRecord = React.useState(function () { return readDrawing(slice.drawingRecord, true); }); var drawingRecord = _drawingRecord[0], setDrawingRecord = _drawingRecord[1];
+      var _drawingInquiryId = React.useState(slice.drawingInquiryId === initialInquiry.id ? initialInquiry.id : ''); var drawingInquiryId = _drawingInquiryId[0], setDrawingInquiryId = _drawingInquiryId[1];
       var _drawingMessage = React.useState(''); var drawingMessage = _drawingMessage[0], setDrawingMessage = _drawingMessage[1];
       var drawingPanelRef = React.useRef(null);
       var _drawingExtra = React.useState(''); var drawingExtra = _drawingExtra[0], setDrawingExtra = _drawingExtra[1];
@@ -2747,6 +2771,50 @@
       var speakTokenRef = React.useRef(0);
       var speakTimerRef = React.useRef(null);
       var descId = React.useMemo(function () { return 'sx-desc-' + Math.random().toString(36).slice(2, 8); }, []);
+      React.useEffect(function () {
+        updateSlice(function (cur) { cur.workspaceView = workspace; });
+        var ref = { investigate: inquiryPanelRef, compare: cmpDetailsRef, model: scalingPanelRef, draw: drawingPanelRef, notebook: inquiryHistoryRef }[workspace];
+        if (ref && ref.current) ref.current.open = true;
+      }, [workspace]);
+      React.useEffect(function () { updateSlice(function (cur) { cur.drawingInquiryId = drawingInquiryId; }); }, [drawingInquiryId]);
+
+      function workspaceLabel(key) {
+        return { explore: S('atlas_workspace_explore', 'Explore'), investigate: S('atlas_workspace_investigate', 'Investigate'),
+          compare: S('atlas_workspace_compare', 'Compare'), model: S('atlas_workspace_model', 'Model'),
+          draw: S('atlas_workspace_draw', 'Draw'), notebook: S('atlas_workspace_notebook', 'Notebook') }[key];
+      }
+      function selectWorkspace(key) { setWorkspace(readWorkspaceView(key)); }
+      function revealWorkspace(key, ref, selector) {
+        if (workspace !== 'all') selectWorkspace(key);
+        setTimeout(function () {
+          var node = ref && ref.current;
+          if (!node) return;
+          if (node.tagName === 'DETAILS') node.open = true;
+          var target = selector ? node.querySelector(selector) : node;
+          if (target) { target.scrollIntoView({ block: 'nearest' }); target.focus({ preventScroll: true }); }
+        }, 0);
+      }
+      function workspacePanel(key, child) {
+        return h('div', { id: descId + '-workspace-' + key, className: 'sx-workspace-panel', hidden: workspace !== key && workspace !== 'all',
+          role: workspace === 'all' ? 'region' : 'tabpanel', 'aria-labelledby': descId + '-tab-' + key, tabIndex: 0 }, child);
+      }
+      function workspaceNavigation() {
+        return h('div', { className: 'sx-workspace-navigation' },
+          h('div', { role: workspace === 'all' ? 'group' : 'tablist', 'aria-label': S('atlas_workspace_navigation', 'Learning workspace'), className: 'sx-workspace-tabs' }, WORKSPACE_VIEWS.map(function (key, index) {
+            var active = workspace === key;
+            return h('button', { key: key, id: descId + '-tab-' + key, type: 'button', role: workspace === 'all' ? undefined : 'tab',
+              'aria-selected': workspace === 'all' ? undefined : active, 'aria-controls': descId + '-workspace-' + key,
+              tabIndex: workspace === 'all' || active ? 0 : -1, style: active ? goBtn : btn, onClick: function () { selectWorkspace(key); },
+              onKeyDown: function (event) {
+                var next = event.key === 'ArrowRight' ? (index + 1) % WORKSPACE_VIEWS.length : event.key === 'ArrowLeft' ? (index + WORKSPACE_VIEWS.length - 1) % WORKSPACE_VIEWS.length : event.key === 'Home' ? 0 : event.key === 'End' ? WORKSPACE_VIEWS.length - 1 : -1;
+                if (next < 0) return;
+                event.preventDefault(); selectWorkspace(WORKSPACE_VIEWS[next]);
+                setTimeout(function () { var tab = workspaceRef.current && workspaceRef.current.querySelector('[id="' + descId + '-tab-' + WORKSPACE_VIEWS[next] + '"]'); if (tab) tab.focus({ preventScroll: true }); }, 0);
+              } }, workspaceLabel(key));
+          })),
+          h('button', { type: 'button', style: Object.assign({}, btn, { fontSize: '.75rem' }), 'aria-pressed': workspace === 'all', onClick: function () { selectWorkspace(workspace === 'all' ? 'explore' : 'all'); } },
+            workspace === 'all' ? S('atlas_workspace_focused', 'Show focused tabs') : S('atlas_workspace_all', 'Show all tools')));
+      }
 
       var sorted = React.useMemo(function () {
         return items.slice().sort(function (a, b) { return b.size - a.size; });
@@ -2844,6 +2912,7 @@
           investigations.forEach(function (entry, index) {
             var measured = compareMeasurements(inquiryMeasurement(entry.small), inquiryMeasurement(entry.big));
             lines.push((index + 1) + '. ' + inquiryTitle(entry));
+            lines.push(S('atlas_workspace_question_record', 'Investigation question: {text}', { text: investigationQuestion(entry) }));
             lines.push(S('atlas_inquiry_prediction_record', 'Prediction: {n} powers of ten ({ratio}).', { n: entry.guess, ratio: timesPhrase(Math.pow(10, Number(entry.guess))) }));
             lines.push(S('atlas_inquiry_measured_record', 'Measured gap: {n} powers of ten ({ratio}).', { n: round2(measured.decades), ratio: timesPhrase(measured.ratio) }));
             lines.push(predictionFeedback(Number(entry.guess), measured));
@@ -2853,6 +2922,14 @@
               if (item.note) lines.push(itemText(item, 'note'));
               lines.push(shareLinkFor(item));
             });
+            if (entry.comparison) lines.push(S('atlas_workspace_comparison_record', 'The recorded measurements were explored in the shared-scale comparison.'));
+            if (entry.drawing) {
+              var linkedDrawing = drawingModel(inquiryMeasurement(entry.drawing.reference), inquiryMeasurement(entry.drawing.target), entry.drawing.size, entry.drawing.unit);
+              lines.push(S('atlas_workspace_drawing_record', 'Drawing evidence saved with this investigation.'), drawingScaleLine(linkedDrawing), drawingScope());
+              drawingCollection(linkedDrawing, entry.drawing.extras).forEach(function (row) { lines.push(itemText(row.item, 'name') + ': ' + drawingReal(row.item) + ' → ' + drawingPhysical(row.mm)); });
+              if (entry.drawing.note) lines.push(S('atlas_drawing_note_record', 'My drawing plan: {text}', { text: entry.drawing.note }));
+              lines.push(S('atlas_drawing_print', 'Print at 100% scale. Check the 10 mm ruler with a real ruler; fit-to-page printing changes the dimensions.'));
+            }
             var theme = INQUIRY_THEMES.filter(function (it) { return it.id === entry.theme; })[0];
             lines.push(theme ? S('atlas_inquiry_reflect_' + theme.id, theme.reflect) : S('atlas_inquiry_reflect_mixed', 'Which reference helped your prediction? What would you change in your explanation after exploring the comparison?'));
             if (entry.reflection) lines.push(S('atlas_inquiry_reflection_record', 'My reflection: {text}', { text: entry.reflection }));
@@ -3760,6 +3837,41 @@
         var theme = INQUIRY_THEMES.filter(function (it) { return it.id === entry.theme; })[0];
         return theme ? S('atlas_inquiry_theme_' + theme.id, theme.title) : itemText(inquiryMeasurement(entry.small), 'name') + ' ↔ ' + itemText(inquiryMeasurement(entry.big), 'name');
       }
+      function investigationQuestion(entry) {
+        return entry.question && entry.question.trim() || S('atlas_inquiry_question', 'How many powers of ten separate {big} and {small} along their stated dimensions?',
+          { big: lowerArticle(itemText(inquiryMeasurement(entry.big), 'name')), small: lowerArticle(itemText(inquiryMeasurement(entry.small), 'name')) });
+      }
+      function currentInvestigation() { return readInquiry(Object.assign({}, pair, { guess: guess, revealed: revealed, question: (pair.question || '').trim(), reflection: reflection.trim() })); }
+      function returnToInquiry(explain) { revealWorkspace('investigate', inquiryPanelRef, explain && revealed ? 'textarea' : 'summary'); }
+      function drawInvestigation(entry) {
+        if (!entry || !(entry.id === pair.id ? revealed : entry.revealed)) return;
+        var draft = entry.drawing || readDrawing({ reference: entry.big, target: entry.small, size: '16', unit: 'cm' }, false);
+        setDrawingDraft(readDrawing(draft, false)); setDrawingInquiryId(entry.id); setDrawingExtra('');
+        if (entry.drawing) { setDrawingRecord(readDrawing(entry.drawing, true)); updateSlice(function (cur) { cur.drawingRecord = readDrawing(entry.drawing, true); }); }
+        setDrawingMessage(S('atlas_workspace_drawing_started', 'This drawing uses the investigation measurements. Save the drawing plan, then save the investigation to keep them together.'));
+        revealWorkspace('draw', drawingPanelRef, 'summary');
+      }
+      function investigationWorkspace() {
+        if (workspace === 'explore' && !revealed && !guess && !pair.question) return h('button', { type: 'button', style: btn, onClick: function () { returnToInquiry(false); } }, S('atlas_workspace_begin', 'Start a scale investigation'));
+        var current = currentInvestigation(), evidence = inquiryEvidence(current), done = evidence.filter(Boolean).length;
+        var dirty = !savedInvestigation || JSON.stringify(current) !== JSON.stringify(savedInvestigation);
+        var steps = [S('atlas_workspace_prediction', 'Prediction'), S('atlas_workspace_comparison', 'Explore comparison'), S('atlas_workspace_drawing', 'Scale drawing'), S('atlas_workspace_explanation', 'Explanation')];
+        return h('section', { className: 'sx-investigation-workspace', 'aria-label': S('atlas_workspace_active', 'Active investigation'), 'data-investigation-id': pair.id, 'data-investigation-dirty': dirty ? 'true' : 'false', style: Object.assign({}, card, { borderColor: P.accent }) },
+          h('p', { className: 'sx-workspace-eyebrow', style: { color: P.dim } }, S('atlas_workspace_active', 'Active investigation')),
+          h('strong', null, inquiryTitle(pair)),
+          h('p', { className: 'sx-workspace-question' }, investigationQuestion(pair)),
+          h('p', { className: 'sx-workspace-count', 'data-evidence-count': done }, S('atlas_workspace_progress', '{n} of 4 evidence steps recorded', { n: done })),
+          h('div', { className: 'sx-workspace-steps' }, steps.map(function (label, index) {
+            return h('button', { key: index, type: 'button', style: btn, 'data-workflow-step': index, disabled: index > 0 && !revealed,
+              'aria-label': S('atlas_workspace_step', '{step}: {state}', { step: label, state: evidence[index] ? S('atlas_workspace_recorded', 'recorded') : S('atlas_workspace_pending', 'to explore') }),
+              onClick: function () { if (index === 0) returnToInquiry(false); else if (index === 1) showInvestigation(pair); else if (index === 2) drawInvestigation(pair); else returnToInquiry(true); } },
+              h('span', { 'aria-hidden': 'true' }, evidence[index] ? '✓ ' : (index + 1) + ' · '), label);
+          })),
+          h('p', { className: 'sx-workspace-save-state', style: { color: P.dim } }, savedInvestigation ? dirty ? S('atlas_workspace_unsaved', 'Unsaved investigation changes. The notebook keeps the last saved version.') : S('atlas_workspace_saved', 'This investigation and its evidence are saved together.') : S('atlas_workspace_draft', 'Draft investigation. Save it to include its evidence in the notebook.')),
+          h('div', { className: 'sx-workspace-actions' },
+            h('button', { type: 'button', style: goBtn, disabled: !revealed || prediction === null || !savedInvestigation && investigations.length >= INQUIRY_LIMIT, onClick: saveInvestigation }, S('atlas_workspace_save', 'Save linked investigation')),
+            h('button', { type: 'button', style: btn, onClick: function () { revealWorkspace('notebook', inquiryHistoryRef, 'summary'); } }, S('atlas_workspace_review', 'Review saved investigations'))));
+      }
       function estimateVerdict(n) {
         if (!challenge) return '';
         var off = Math.abs(n - challenge.decades);
@@ -3801,12 +3913,33 @@
       }
       function saveInvestigation() {
         if (!revealed || prediction === null || (!savedInvestigation && investigations.length >= INQUIRY_LIMIT)) return;
-        var entry = readInquiry(Object.assign({}, pair, { guess: guess, revealed: true, reflection: reflection.trim() }));
+        var entry = currentInvestigation();
         if (!entry) return;
         var next = [entry].concat(investigations.filter(function (old) { return old.id !== entry.id; }));
         setInvestigations(next); updateSlice(function (cur) { cur.investigations = next; });
         if (inquiryHistoryRef.current) inquiryHistoryRef.current.open = true;
         setInquiryMessage(savedInvestigation ? S('atlas_inquiry_updated', 'Investigation updated.') : S('atlas_inquiry_saved', 'Investigation saved.'));
+      }
+      function investigationHistory() {
+        return h('details', { ref: inquiryHistoryRef, className: 'sx-inquiry-history' },
+          h('summary', { style: { padding: '8px 0', cursor: 'pointer', fontWeight: 600 } }, S('atlas_inquiry_count', 'Saved investigations · {n}', { n: investigations.length })),
+          investigations.length ? h('ol', { style: { listStyle: 'none', padding: 0, margin: 0, maxHeight: 500, overflowY: 'auto' } }, investigations.map(function (entry) {
+            var title = inquiryTitle(entry), measured = compareMeasurements(inquiryMeasurement(entry.small), inquiryMeasurement(entry.big));
+            var evidence = inquiryEvidence(entry);
+            return h('li', { key: entry.id, 'data-investigation': entry.id, style: { borderTop: '1px solid ' + P.line, padding: '10px 0', overflowWrap: 'anywhere', fontSize: '.75rem' } },
+              h('strong', null, title),
+              h('p', { style: { margin: '6px 0' } }, investigationQuestion(entry)),
+              h('p', { style: { margin: '4px 0', color: P.dim } }, S('atlas_inquiry_history_ratio', 'Predicted {guess}; measured {actual} powers of ten.', { guess: entry.guess, actual: round2(measured.decades) })),
+              h('p', { 'data-saved-evidence-count': evidence.filter(Boolean).length, style: { margin: '4px 0', color: P.dim } }, S('atlas_workspace_progress', '{n} of 4 evidence steps recorded', { n: evidence.filter(Boolean).length })),
+              entry.drawing ? h('p', { className: 'sx-investigation-drawing-note' }, S('atlas_workspace_drawing_record', 'Drawing evidence saved with this investigation.'), entry.drawing.note ? ' ' + entry.drawing.note : '') : null,
+              entry.reflection ? h('p', { style: { whiteSpace: 'pre-wrap', margin: '4px 0 8px' } }, entry.reflection) : null,
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                h('button', { type: 'button', style: btn, onClick: function () { loadInvestigation(entry); }, 'aria-label': S('atlas_inquiry_return_aria', 'Return to investigation: {name}', { name: title }) }, S('atlas_inquiry_return', 'Return to investigation')),
+                entry.drawing ? h('button', { type: 'button', style: btn, onClick: function () { downloadDrawingSvg(entry.drawing); } }, S('atlas_workspace_download_drawing', 'Download investigation drawing')) : null,
+                h('button', { type: 'button', style: btn, onClick: function () { removeInvestigation(entry); }, 'aria-label': S('atlas_inquiry_remove_aria', 'Remove investigation: {name}', { name: title }) }, S('atlas_inquiry_remove', 'Remove'))));
+          })) : h('p', { style: { fontSize: '.75rem', color: P.dim } }, S('atlas_inquiry_empty', 'Save a prediction and reflection to keep the evidence here.')),
+          h('button', { type: 'button', style: btn, disabled: !investigations.length, onClick: downloadObservations }, S('atlas_inquiry_download', 'Download investigations')),
+          workspace !== 'all' ? h('p', { role: 'status', style: { fontSize: '.75rem', margin: '6px 0', minHeight: '1.5em' } }, inquiryMessage) : null);
       }
       function removeInvestigation(entry) {
         var next = investigations.filter(function (old) { return old.id !== entry.id; });
@@ -3817,10 +3950,7 @@
       function loadInvestigation(entry) {
         setPair(entry); setGuess(entry.guess); setRevealed(true); setReflection(entry.reflection); setThemeChoice(entry.theme);
         setInquiryMessage(S('atlas_inquiry_loaded', 'Returned to the recorded prediction and measurements.'));
-        if (inquiryPanelRef.current) {
-          inquiryPanelRef.current.open = true;
-          var summary = inquiryPanelRef.current.querySelector('summary'); summary.scrollIntoView({ block: 'nearest' }); summary.focus();
-        }
+        revealWorkspace('investigate', inquiryPanelRef, 'summary');
       }
       function showInvestigation(entry) {
         var measured = compareMeasurements(inquiryMeasurement(entry.small), inquiryMeasurement(entry.big));
@@ -3832,6 +3962,12 @@
         changeComparison(measured.small.id, measured.big.id);
         if (cmpDetailsRef.current) cmpDetailsRef.current.open = true;
         runCompare(measured);
+        if (workspace !== 'all') selectWorkspace('compare');
+        setTimeout(function () {
+          var cv = viewModeRef.current === 'atlas' ? atlasCanvasRef.current : canvasRef.current;
+          var target = viewModeRef.current === 'atlas' ? cv : cv && cv.parentElement.querySelector('.sx-comparison-diagram');
+          if (target) { target.scrollIntoView({ block: 'center' }); target.focus({ preventScroll: true }); }
+        }, 0);
       }
       function tourText(tour, field, stop) {
         if (field === 'title') return t('stem.scaleExplorer.tour_' + tour.id + '_title', tour.title);
@@ -3854,6 +3990,7 @@
       // From the focus card: put what you are looking at into the first slot and
       // hand focus to the second, so the next keystroke picks the other thing.
       function compareFocused() {
+        if (workspace !== 'all') selectWorkspace('compare');
         if (cmpDetailsRef.current) cmpDetailsRef.current.open = true;
         var item = focused;
         changeComparison(item.id, cmpB === item.id ? (item.id === 'human' ? 'rbc' : 'human') : cmpB);
@@ -3867,6 +4004,8 @@
         setInspectionZoom(1); setDetailId('');
         if (atlasRef.current) atlasRef.current.reset();
         setComparisonActive(true);
+        var investigated = readInquiryComparison({ small: inquirySnapshot(selected.small), big: inquirySnapshot(selected.big) }, pair.small, pair.big);
+        if (revealed && investigated) setPair(function (prev) { return Object.assign({}, prev, { comparison: investigated }); });
         var cv = viewMode === 'atlas' ? atlasCanvasRef.current : canvasRef.current;
         if (cv && cv.parentElement) cv.parentElement.scrollIntoView({ block: 'center', behavior: 'auto' });
         updateSlice(function (cur) { cur.compareCount = (cur.compareCount || 0) + 1; });
@@ -3881,6 +4020,7 @@
         if (atlasRef.current) atlasRef.current.reset();
       }
       function inspectCompared(item) {
+        if (workspace !== 'all') selectWorkspace('explore');
         setInspectionZoom(1); if (atlasRef.current) atlasRef.current.reset();
         openItem(item);
         setTimeout(function () { var cv = viewModeRef.current === 'atlas' ? atlasCanvasRef.current : canvasRef.current; if (cv) { cv.scrollIntoView({ block: 'center' }); cv.focus({ preventScroll: true }); } }, 0);
@@ -4003,6 +4143,7 @@
         editDrawing({ unit: unit, size: mm === null ? drawingDraft.size : String(mm / DRAWING_UNITS[unit]) });
       }
       function useDrawingComparison() {
+        setDrawingInquiryId(revealed && compare && readInquiryComparison({ small: inquirySnapshot(compare.small), big: inquirySnapshot(compare.big) }, pair.small, pair.big) ? pair.id : '');
         if (compare) editDrawing({ reference: inquirySnapshot(compare.a), target: inquirySnapshot(compare.b) });
       }
       function fitDrawing() {
@@ -4022,17 +4163,19 @@
         if (drawingExtraRef.current) drawingExtraRef.current.focus();
       }
       function openDrawingWorkshop() {
-        if (!drawingPanelRef.current) return;
-        drawingPanelRef.current.open = true; var summary = drawingPanelRef.current.querySelector('summary'); summary.scrollIntoView({ block: 'nearest' }); summary.focus();
+        revealWorkspace('draw', drawingPanelRef, 'summary');
       }
       function saveDrawing() {
         if (!drawing) return;
         var record = readDrawing(Object.assign({}, drawingDraft, { note: drawingDraft.note.trim() }), true);
         setDrawingRecord(record); updateSlice(function (cur) { cur.drawingRecord = record; });
-        setDrawingMessage(S('atlas_drawing_saved', 'Drawing plan saved in the notebook.'));
+        var linked = drawingInquiryId === pair.id && readInquiryDrawing(record, pair.small, pair.big);
+        if (linked) setPair(function (prev) { return Object.assign({}, prev, { drawing: linked }); });
+        setDrawingMessage(linked ? S('atlas_workspace_drawing_attached', 'Drawing evidence added to the investigation draft. Save the linked investigation to update its notebook record.') : S('atlas_drawing_saved', 'Drawing plan saved in the notebook.'));
       }
       function restoreDrawing() {
         if (!drawingRecord) return;
+        setDrawingInquiryId('');
         setDrawingDraft(drawingRecord); openDrawingWorkshop(); setDrawingMessage(S('atlas_drawing_restored', 'Returned to the saved drawing plan and measurements.'));
       }
       function removeDrawing() {
@@ -4045,19 +4188,24 @@
       function drawingPhysical(mm) { return S('atlas_drawing_mm', '{n} mm', { n: scalingValue(mm) }); }
       function drawingReal(item) { return S('atlas_drawing_metres', '{n} m', { n: scalingValue(item.size) }) + ' · ' + S('dim_' + item.dim.replace(/\s+/g, '_'), item.dim); }
       function drawingScope() { return S('atlas_drawing_scope', 'Each line represents its stated dimension. Dashed dimension lines are distances, not object diameters. This compares lengths; it does not map positions, areas or volumes.'); }
-      function downloadDrawingSvg() {
-        if (!drawingRecord) return;
-        var model = drawingModel(inquiryMeasurement(drawingRecord.reference), inquiryMeasurement(drawingRecord.target), drawingRecord.size, drawingRecord.unit), rows = drawingCollection(model, drawingRecord.extras), url, anchor;
+      function downloadDrawingSvg(recorded) {
+        var record = recorded && recorded.reference ? readDrawing(recorded, true) : drawingRecord;
+        if (!record) return;
+        var model = drawingModel(inquiryMeasurement(record.reference), inquiryMeasurement(record.target), record.size, record.unit), rows = drawingCollection(model, record.extras), url, anchor;
         try {
-          var svg = drawingSvg(model, { title: S('atlas_drawing_export_title', 'Scale Explorer · scale drawing'), description: drawingScope() + ' ' + drawingRecord.note,
+          var svg = drawingSvg(model, { title: S('atlas_drawing_export_title', 'Scale Explorer · scale drawing'), description: drawingScope() + ' ' + record.note,
             scale: drawingScaleLine(model), names: rows.map(function (row) { return itemText(row.item, 'name'); }), real: rows.map(function (row) { return drawingReal(row.item); }),
             mapped: rows.map(function (row) { return drawingPhysical(row.mm); }), offPage: S('atlas_drawing_off_page', 'Continues beyond the page'),
             calibration: S('atlas_drawing_calibration', '10 mm calibration ruler'), print: S('atlas_drawing_print', 'Print at 100% scale. Check the 10 mm ruler with a real ruler; fit-to-page printing changes the dimensions.'),
-            scope: drawingScope() + ' ' + S('atlas_drawing_locator_note', 'Dashed locators mark dimensions below 0.5 mm without enlarging them.') }, drawingRecord.extras);
+            scope: drawingScope() + ' ' + S('atlas_drawing_locator_note', 'Dashed locators mark dimensions below 0.5 mm without enlarging them.') }, record.extras);
           url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }));
           anchor = document.createElement('a'); anchor.href = url; anchor.download = 'scale-explorer-drawing.svg'; document.body.appendChild(anchor); anchor.click();
-          setDrawingMessage(S('atlas_drawing_downloaded', 'Saved drawing downloaded. Print at 100% scale and check its calibration ruler.'));
-        } catch (_) { setDrawingMessage(S('atlas_drawing_download_failed', 'The drawing download could not start here. Your saved plan is still in the notebook.')); }
+          var message = S('atlas_drawing_downloaded', 'Saved drawing downloaded. Print at 100% scale and check its calibration ruler.');
+          setDrawingMessage(message); if (recorded && recorded.reference) setNotebookMessage(message);
+        } catch (_) {
+          var failed = S('atlas_drawing_download_failed', 'The drawing download could not start here. Your saved plan is still in the notebook.');
+          setDrawingMessage(failed); if (recorded && recorded.reference) setNotebookMessage(failed);
+        }
         finally { if (anchor) anchor.remove(); if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000); }
       }
       function drawingPreview(model) {
@@ -4081,6 +4229,7 @@
         return h('details', { className: 'sx-drawing-workshop', ref: drawingPanelRef },
           h('summary', { style: { padding: '10px 0', cursor: 'pointer', fontSize: '.8125rem', fontWeight: 700 } }, S('atlas_drawing_title', 'Make a scale drawing')),
           h('div', { style: Object.assign({}, card, { display: 'flex', flexDirection: 'column', gap: 10, overflowWrap: 'anywhere' }) },
+            drawingInquiryId === pair.id ? h('p', { className: 'sx-drawing-investigation', style: { margin: 0, fontSize: '.75rem', color: P.dim, lineHeight: 1.5 } }, readInquiryDrawing(drawingDraft, pair.small, pair.big) ? S('atlas_workspace_drawing_linked', 'Saving this plan adds drawing evidence to the active investigation draft.') : S('atlas_workspace_drawing_separate', 'This plan no longer contains both investigation measurements. Draw the investigation measurements again to reconnect it.')) : null,
             h('p', { style: { margin: 0, fontSize: '.75rem', lineHeight: 1.5 } }, drawingDraft.extras.length ? S('atlas_collection_intro', 'Choose a physical size for one reference. Give every measurement the same model scale, then plan a drawing you can print and measure.') : S('atlas_drawing_intro', 'Choose a physical size for one reference. Give the second measurement the same model scale, then plan a drawing you can print and measure.')),
             [[S('atlas_drawing_reference', 'Drawing reference'), 'reference'], [S('atlas_drawing_target', 'Second drawing measurement'), 'target']].map(function (field) {
               return h('label', { key: field[1], style: { fontSize: '.75rem' } }, field[0], h('select', { value: drawingDraft[field[1]].id, style: Object.assign({}, sel, { width: '100%', marginTop: 4 }),
@@ -4110,6 +4259,8 @@
                   h('p', { style: { margin: '0 0 4px', fontSize: '.75rem', lineHeight: 1.5 } }, name + ' · ' + drawingReal(item)),
                   h('button', { type: 'button', style: btn, 'aria-label': S('atlas_collection_remove_aria', 'Remove {name} from the drawing', { name: removalName }), onClick: function () { removeDrawingMeasurement(snapshot); } }, S('atlas_collection_remove', 'Remove'))); })) : null,
               drawingDraft.extras.length > 1 ? h('button', { type: 'button', style: btn, onClick: function () { editDrawing({ extras: drawingDraft.extras.slice().sort(function (a, b) { return a.size - b.size; }) }); } }, S('atlas_collection_sort', 'Sort additions by length')) : null),
+            revealed ? h('button', { type: 'button', style: btn, onClick: function () { drawInvestigation(pair); } }, S('atlas_workspace_draw_pair', 'Draw investigation measurements')) : null,
+            drawingInquiryId === pair.id ? h('button', { type: 'button', style: btn, onClick: function () { returnToInquiry(true); } }, S('atlas_workspace_continue', 'Continue my explanation')) : null,
             model ? h('div', { className: 'sx-drawing-results', 'data-drawing-scale': model.scale },
               h('p', { style: { margin: '0 0 10px', fontSize: '.75rem', lineHeight: 1.5 } }, drawingScaleLine(model)), drawingPreview(model),
               h('p', { style: { fontSize: '.6875rem', lineHeight: 1.5, color: P.dim } }, S('atlas_drawing_page', 'The drawing has 180 mm of usable width. Arrows mean a dimension continues beyond the page. Dashed locators mark dimensions below 0.5 mm without enlarging them. Drawing labels use three significant figures.')),
@@ -4144,7 +4295,7 @@
           if (width < 2) children.push(h('path', { key: 'locator' + index, 'data-comparison-locator': item.id, d: 'M40 ' + (y - 6) + 'v30m-5 -15h10', fill: 'none', stroke: '#dbeaf4', strokeDasharray: '2 3', strokeWidth: 1 }));
           children.push(h('text', { key: 'size' + index, className: 'sx-diagram-size', x: 40, y: y + 44, fill: '#bacfdd', fontSize: 13 }, humanLength(item.size) + ' · ' + S('dim_' + item.dim.replace(/\s+/g, '_'), item.dim)));
         });
-        return h('svg', { className: 'sx-comparison-diagram', viewBox: '0 0 ' + W + ' 310', role: 'img',
+        return h('svg', { className: 'sx-comparison-diagram', viewBox: '0 0 ' + W + ' 310', role: 'img', tabIndex: 0,
           'aria-label': S('atlas_comparison_diagram', 'Length diagram at one shared scale. {line}', { line: compareSentence() }),
           style: { position: 'absolute', inset: '90px 0 35px', width: '100%', height: 'calc(100% - 125px)' } }, children);
       }
@@ -4331,8 +4482,8 @@
         h('p', { style: { margin: 0, fontSize: '0.8125rem', color: P.dim, lineHeight: 1.55 } },
           S('atlas_blurb', 'Travel from the familiar to the almost unimaginable. Orbit a world, find your next destination, and feel what a power of ten changes.')),
 
-        h('style', null, '.sx-panel{align-self:flex-start}.sx-stage:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(3,9,17,.38),transparent 29%,transparent 82%,rgba(3,9,17,.45))}.sx-hud,.sx-stage-note{z-index:1}.sx-hud h3{letter-spacing:-.025em}.sx-stage canvas:active{cursor:grabbing!important}.sx-markers{position:absolute;inset:0;pointer-events:none;z-index:2}.sx-marker{position:absolute;left:0;top:0;width:44px;height:44px;padding:6px;background:transparent;border:0;pointer-events:auto;cursor:pointer;color:#f2f8ec;font:600 12px system-ui}.sx-marker[hidden]{display:none}.sx-marker span{display:grid;place-items:center;width:30px;height:30px;border:1px solid #d0dec2;border-radius:50%;background:rgba(11,27,23,.88);box-shadow:0 0 0 4px rgba(180,215,162,.10),0 3px 12px #0005}.sx-marker:hover span,.sx-marker[aria-pressed="true"] span{background:#deebbe;color:#172819;border-color:#eff5de}.sx-detail-choices{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.sx-detail-choices button{flex:1 1 130px;text-align:left}.sx-detail-note a:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}'),
-        h('style', null, '.sx-comparison-points{position:absolute;inset:0;pointer-events:none;z-index:2}.sx-comparison-point{position:absolute;left:0;top:0;pointer-events:auto;width:172px;border:1px dashed #bed3de;border-radius:8px;padding:7px 9px;color:#eef6fc;background:rgba(9,22,32,.93);font:12px system-ui;cursor:pointer}.sx-comparison-point:before{content:"+";display:block;font-size:20px;line-height:22px}.sx-comparison-point[hidden]{display:none}.sx-comparison-pair{display:flex;gap:8px;flex-wrap:wrap}.sx-comparison-pair article{flex:1 1 200px;min-width:0;overflow-wrap:anywhere}.sx-scale-bridge button{text-align:left;max-width:100%}.sx-explorer textarea:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}'),
+        h('style', null, '.sx-panel{align-self:flex-start;flex-basis:420px}@media(min-width:701px){.sx-panel.sx-workspace-all{flex-basis:310px}}.sx-panel [hidden]{display:none!important}.sx-workspace-navigation{display:flex;flex-direction:column;gap:7px}.sx-workspace-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.sx-workspace-tabs button{font-size:.8125rem!important;padding:8px 5px!important;overflow-wrap:anywhere}.sx-workspace-panel{min-width:0}.sx-workspace-panel:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}.sx-workspace-eyebrow{font-size:.6875rem;letter-spacing:.07em;text-transform:uppercase;margin:0 0 5px}.sx-workspace-question{font-size:.8125rem;line-height:1.5;margin:7px 0;overflow-wrap:anywhere}.sx-workspace-count{font-size:.75rem;margin:7px 0}.sx-workspace-steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.sx-workspace-steps button{text-align:left;font-size:.75rem!important;padding:8px!important}.sx-workspace-save-state{font-size:.6875rem;line-height:1.5;margin:9px 0}.sx-workspace-actions{display:flex;gap:6px;flex-wrap:wrap}.sx-workspace-actions button{font-size:.75rem!important;flex:1 1 145px}.sx-investigation-workspace{overflow-wrap:anywhere}@media(max-width:700px){.sx-panel{flex-basis:100%}.sx-workspace-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}}.sx-stage:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(3,9,17,.38),transparent 29%,transparent 82%,rgba(3,9,17,.45))}.sx-hud,.sx-stage-note{z-index:1}.sx-hud h3{letter-spacing:-.025em}.sx-stage canvas:active{cursor:grabbing!important}.sx-markers{position:absolute;inset:0;pointer-events:none;z-index:2}.sx-marker{position:absolute;left:0;top:0;width:44px;height:44px;padding:6px;background:transparent;border:0;pointer-events:auto;cursor:pointer;color:#f2f8ec;font:600 12px system-ui}.sx-marker[hidden]{display:none}.sx-marker span{display:grid;place-items:center;width:30px;height:30px;border:1px solid #d0dec2;border-radius:50%;background:rgba(11,27,23,.88);box-shadow:0 0 0 4px rgba(180,215,162,.10),0 3px 12px #0005}.sx-marker:hover span,.sx-marker[aria-pressed="true"] span{background:#deebbe;color:#172819;border-color:#eff5de}.sx-detail-choices{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.sx-detail-choices button{flex:1 1 130px;text-align:left}.sx-detail-note a:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}'),
+        h('style', null, '.sx-comparison-points{position:absolute;inset:0;pointer-events:none;z-index:2}.sx-comparison-point{position:absolute;left:0;top:0;pointer-events:auto;width:172px;border:1px dashed #bed3de;border-radius:8px;padding:7px 9px;color:#eef6fc;background:rgba(9,22,32,.93);font:12px system-ui;cursor:pointer}.sx-comparison-point:before{content:"+";display:block;font-size:20px;line-height:22px}.sx-comparison-point[hidden]{display:none}.sx-comparison-pair{display:flex;gap:8px;flex-wrap:wrap}.sx-comparison-pair article{flex:1 1 200px;min-width:0;overflow-wrap:anywhere}.sx-scale-bridge button{text-align:left;max-width:100%}.sx-explorer textarea:focus-visible,.sx-explorer .sx-comparison-diagram:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}'),
         h('style', null, '@media(max-width:700px){.sx-comparison-diagram text{font-size:30px}.sx-comparison-diagram .sx-diagram-size{font-size:26px}}'),
         h('style',null,'.sx-marker[data-offset="true"]:before{content:"";position:absolute;left:21px;top:-22px;width:1px;height:28px;background:#d7e9bd;pointer-events:none}.sx-marker[data-offset="true"]:after{content:"";position:absolute;left:19px;top:-24px;width:5px;height:5px;border-radius:50%;background:#d7e9bd;pointer-events:none}'),
         h('style',null,'.sx-route{display:flex;align-items:center;flex-wrap:wrap;gap:5px 8px;padding:8px 12px;border:1px solid #344756;border-radius:10px;background:#101c29;color:#b3c5cf;font-size:12px}.sx-route-label{font-size:10px;text-transform:uppercase;letter-spacing:.09em;margin-right:6px}.sx-route button{font:inherit;min-height:40px;color:#b7e1df;background:transparent;border:1px solid transparent;border-radius:6px;padding:6px}.sx-route button:hover{border-color:#628489;background:#1b303c}.sx-route strong{color:#edf2ec;font-weight:550}.sx-orbit-hover{position:absolute;z-index:3;pointer-events:none;bottom:56px;left:50%;transform:translateX(-50%);max-width:calc(100% - 28px);padding:9px 14px;border:1px solid #76969d;border-radius:8px;background:rgba(7,21,32,.96);box-shadow:0 6px 24px #0008;color:#e8f6f4;font-size:12px;text-align:center}.sx-portal{display:flex;flex:none;align-items:center;justify-content:space-between;gap:12px;padding:11px 18px;border-top:1px solid #435456;background:linear-gradient(110deg,#172a32,#1c2429);color:#ece3ce}.sx-portal span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#a5c3c3;margin-bottom:4px}.sx-portal strong{font-size:12px;font-weight:500}.sx-portal button{border:1px solid #e4d5b0;border-radius:7px;padding:9px 15px;background:#e8d5ae;color:#252b2b;font:600 13px system-ui;cursor:pointer;min-height:44px}.sx-portal button:hover{background:#f7e6bf}@media(max-width:700px){.sx-stage-portal{height:510px}.sx-portal{padding:9px 12px;gap:8px}.sx-portal button{padding:8px 10px;font-size:12px}.sx-portal strong{font-size:11px}.sx-route{gap:3px 5px;font-size:11px}}'),
@@ -4561,8 +4712,11 @@
           ),
 
           // ── Side panel ──
-          h('aside', { className: 'sx-panel', 'aria-label': S('panel_aria', 'Scale details'), style: { background: P.panel, border: '1px solid ' + P.line, borderRadius: 12, padding: 12, display: 'flex', flexDirection: 'column', gap: 10 } },
+          h('aside', { ref: workspaceRef, className: 'sx-panel' + (workspace === 'all' ? ' sx-workspace-all' : ''), 'aria-label': S('panel_aria', 'Scale details'), style: { background: P.panel, border: '1px solid ' + P.line, borderRadius: 12, padding: 12, display: 'flex', flexDirection: 'column', gap: 10 } },
 
+            workspaceNavigation(),
+            investigationWorkspace(),
+            workspacePanel('explore', h(React.Fragment, null,
             h('div', null,
               h('h3', { style: { margin: '0 0 4px', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: P.dim } }, S('focus_heading', 'In focus')),
               h('div', { style: card },
@@ -4602,6 +4756,25 @@
                   h('input', { type: 'text', readOnly: true, value: shareLinkFor(focused), 'aria-label': S('link_field_aria', 'Link to this view'),
                     onFocus: function (e) { try { e.target.select(); } catch (_) {} },
                     style: { width: '100%', boxSizing: 'border-box', fontSize: '0.71875rem', padding: '4px 6px', borderRadius: 6, border: '1px solid ' + P.line, background: P.bg, color: P.text } })) : null)),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.71875rem', color: P.dim, cursor: 'pointer' } },
+              h('input', { type: 'checkbox', checked: sci, onChange: function (e) { var on = !!e.target.checked; setSci(on); updateSlice(function (cur) { cur.sci = on; }); } }),
+              S('sci_toggle', 'Also show sizes in scientific notation (the exponent is the power of ten)')),
+
+            // The scale ladder: the complete non-visual path through the tool.
+            h('div', { style: { minHeight: 0, display: 'flex', flexDirection: 'column' } },
+              h('button', { type: 'button', onClick: function () { setShowLadder(!showLadder); }, 'aria-expanded': showLadder ? 'true' : 'false', 'aria-controls': 'sx-ladder', style: btn },
+                (showLadder ? '▾ ' : '▸ ') + S('ladder_heading', 'Everything, largest first')),
+              showLadder ? h('input', { className: 'sx-search', type: 'search', value: search, onChange: function (e) { setSearch(e.target.value); }, 'aria-label': S('atlas_search', 'Find an object'), placeholder: S('atlas_search', 'Find an object'), style: { background: P.bg, color: P.text, borderColor: P.line, marginTop: 8 } }) : null,
+              h('ul', { id: 'sx-ladder', hidden: !showLadder, style: { listStyle: 'none', margin: '6px 0 0', padding: 0, maxHeight: 220, overflowY: 'auto', border: '1px solid ' + P.line, borderRadius: 8 } },
+                sorted.filter(function (i) { return itemText(i, 'name').toLocaleLowerCase().indexOf(search.toLocaleLowerCase().trim()) !== -1; }).map(function (i) {
+                  var on = i.id === focusId;
+                  return h('li', { key: i.id },
+                    h('button', { type: 'button', onClick: function () { openItem(i); },
+                      'aria-current': on ? 'true' : undefined,
+                      style: { display: 'block', width: '100%', textAlign: 'left', border: 'none', borderBottom: '1px solid ' + P.line, background: on ? P.selBg : P.panel, color: on ? P.selFg : P.text, padding: '6px 9px', fontSize: '0.75rem', cursor: 'pointer', font: 'inherit' } },
+                      h('span', { style: { fontWeight: on ? 700 : 500 } }, itemText(i, 'name')),
+                      h('span', { style: { color: on ? P.selFg : P.dim, float: 'right', fontSize: '0.6875rem' } }, lengthText(i.size))));
+                }))))),
 
             // Your height: the one personalisation that changes what every other
             // number means. Shown when the person is in focus, and always once set.
@@ -4617,6 +4790,7 @@
               h('button', { type: 'button', onClick: submitHeight, style: Object.assign({}, btn, { padding: '4px 8px', fontSize: '0.6875rem' }) }, S('you_apply', 'Use my height')),
               yourCm ? h('button', { type: 'button', onClick: function () { applyHeight(null); }, style: Object.assign({}, btn, { padding: '4px 8px', fontSize: '0.6875rem' }) }, S('you_reset', 'Back to average')) : null) : null,
 
+            workspacePanel('notebook', h(React.Fragment, null,
             h('section', { className: 'sx-notebook', 'aria-label': S('atlas_notebook_heading', 'Field notebook'), style: Object.assign({}, card, { display: 'flex', flexDirection: 'column', gap: 8 }) },
               h('h3', { style: { fontSize: '0.875rem', margin: 0 } }, S('atlas_notebook_heading', 'Field notebook')),
               h('p', { style: { margin: 0, color: P.dim, fontSize: '0.75rem' } }, itemText(focused, 'name') + (observationDetail ? ' · ' + selectedDetail.label : '')),
@@ -4642,9 +4816,11 @@
                 })) : h('p', { style: { color: P.dim, fontSize: '0.75rem' } }, S('atlas_notebook_empty', 'Saved observations will appear here.')),
                 h('button', { type: 'button', style: btn, disabled: !observations.length && !investigations.length && !scalingRecord && !drawingRecord, onClick: downloadObservations }, S('atlas_notebook_download', 'Download notes'))),
               h('p', { role: 'status', style: { margin: 0, fontSize: '0.75rem', minHeight: '1.5em' } }, notebookMessage)),
+              workspace !== 'all' ? investigationHistory() : null)),
 
             // Estimate first, then check: the house Predict → Explore → Explain
             // shape. The reveal is never withheld and never scored.
+            workspacePanel('investigate',
             challenge ? h('details', { ref: inquiryPanelRef, className: 'sx-inquiry' },
               h('summary', { style: { padding: '10px 0', cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 700, color: P.text } }, S('est_heading', 'Estimate first')),
               h('div', { style: Object.assign({}, card, { display: 'flex', flexDirection: 'column', gap: 8 }) },
@@ -4654,9 +4830,11 @@
                     h('option', { value: 'mixed' }, S('atlas_inquiry_mixed', 'Mixed scales')))),
                 h('button', { type: 'button', style: btn, onClick: startInvestigation }, S('atlas_inquiry_start', 'Start investigation')),
                 h('h4', { style: { margin: '6px 0 0', fontSize: '.875rem' } }, inquiryTitle(pair)),
-                h('p', { style: { margin: 0 } },
-                  S('atlas_inquiry_question', 'How many powers of ten separate {big} and {small} along their stated dimensions?',
-                    { big: lowerArticle(itemText(challenge.big, 'name')), small: lowerArticle(itemText(challenge.small, 'name')) })),
+                h('p', { style: { margin: 0 } }, investigationQuestion(pair)),
+                h('label', { style: { fontSize: '.75rem' } }, S('atlas_workspace_question', 'My investigation question'),
+                  h('input', { type: 'text', value: pair.question || '', maxLength: 400, placeholder: S('atlas_workspace_question_hint', 'Use the suggested question or write your own'),
+                    onChange: function (event) { var text = event.target.value; setPair(function (prev) { return Object.assign({}, prev, { question: text }); }); setInquiryMessage(''); },
+                    style: Object.assign({}, sel, { width: '100%', marginTop: 4 }) })),
                 h('label', { style: { fontSize: '0.71875rem', color: P.dim } },
                   S('est_label', 'Your estimate, in powers of ten'),
                   h('input', { type: 'number', inputMode: 'decimal', step: '.1', min: '0', max: ESTIMATE_MAX, value: guess, disabled: revealed,
@@ -4669,6 +4847,7 @@
                 h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
                   !revealed ? h('button', { type: 'button', style: goBtn, disabled: prediction === null, onClick: lockInEstimate }, S('est_go', 'Lock in my estimate')) : null,
                   revealed ? h('button', { type: 'button', style: btn, onClick: function () { showInvestigation(pair); } }, S('est_show', 'Show me')) : null,
+                  revealed ? h('button', { type: 'button', style: btn, onClick: function () { drawInvestigation(pair); } }, S('atlas_workspace_draw_pair', 'Draw investigation measurements')) : null,
                   h('button', { type: 'button', style: btn, onClick: newChallenge }, S('est_new', 'Another pair'))),
                 revealed ? h('p', { role: 'status', style: { margin: 0, fontWeight: 600 } },
                   estimateVerdict(prediction) + ' ' + challengeReveal()) : null,
@@ -4686,22 +4865,11 @@
                     savedInvestigation ? S('atlas_inquiry_update', 'Update investigation') : S('atlas_inquiry_save', 'Save investigation')),
                   !savedInvestigation && investigations.length >= INQUIRY_LIMIT ? h('p', { style: { color: P.warn, fontSize: '.75rem' } }, S('atlas_inquiry_full', 'You have 12 saved investigations. Remove one to save another; existing investigations can still be updated.')) : null) : null,
                 challenge.small.id === 'human' || challenge.big.id === 'human' ? h('p', { style: { margin: 0, fontSize: '.6875rem', lineHeight: 1.5, color: P.dim } }, S('atlas_inquiry_snapshot_hint', 'This investigation keeps the measurements it started with. Start another after changing your height to use the new reference.')) : null,
-                h('details', { ref: inquiryHistoryRef, className: 'sx-inquiry-history' },
-                  h('summary', { style: { padding: '8px 0', cursor: 'pointer', fontWeight: 600 } }, S('atlas_inquiry_count', 'Saved investigations · {n}', { n: investigations.length })),
-                  investigations.length ? h('ol', { style: { listStyle: 'none', padding: 0, margin: 0, maxHeight: 300, overflowY: 'auto' } }, investigations.map(function (entry) {
-                    var title = inquiryTitle(entry), measured = compareMeasurements(inquiryMeasurement(entry.small), inquiryMeasurement(entry.big));
-                    return h('li', { key: entry.id, 'data-investigation': entry.id, style: { borderTop: '1px solid ' + P.line, padding: '10px 0', overflowWrap: 'anywhere', fontSize: '.75rem' } },
-                      h('strong', null, title),
-                      h('p', { style: { margin: '4px 0', color: P.dim } }, S('atlas_inquiry_history_ratio', 'Predicted {guess}; measured {actual} powers of ten.', { guess: entry.guess, actual: round2(measured.decades) })),
-                      entry.reflection ? h('p', { style: { whiteSpace: 'pre-wrap', margin: '4px 0 8px' } }, entry.reflection) : null,
-                      h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
-                        h('button', { type: 'button', style: btn, onClick: function () { loadInvestigation(entry); }, 'aria-label': S('atlas_inquiry_return_aria', 'Return to investigation: {name}', { name: title }) }, S('atlas_inquiry_return', 'Return to investigation')),
-                        h('button', { type: 'button', style: btn, onClick: function () { removeInvestigation(entry); }, 'aria-label': S('atlas_inquiry_remove_aria', 'Remove investigation: {name}', { name: title }) }, S('atlas_inquiry_remove', 'Remove'))));
-                  })) : h('p', { style: { fontSize: '.75rem', color: P.dim } }, S('atlas_inquiry_empty', 'Save a prediction and reflection to keep the evidence here.')),
-                  h('button', { type: 'button', style: btn, disabled: !investigations.length, onClick: downloadObservations }, S('atlas_inquiry_download', 'Download investigations'))),
-                h('p', { role: 'status', style: { fontSize: '.75rem', margin: 0, minHeight: '1.5em' } }, inquiryMessage))) : null,
+                workspace === 'all' ? investigationHistory() : null,
+                h('p', { role: 'status', style: { fontSize: '.75rem', margin: 0, minHeight: '1.5em' } }, inquiryMessage))) : null),
 
             // Compare
+            workspacePanel('compare',
             h('details', { ref: cmpDetailsRef, className: 'sx-comparison-workbench' },
               h('summary', { style: { padding: '10px 0', cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 700, color: P.text } }, S('cmp_heading', 'Compare two sizes')),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
@@ -4711,36 +4879,19 @@
                   h('select', { ref: cmpSecondRef, value: cmpB, onChange: function (e) { changeComparison(cmpA, e.target.value); }, style: Object.assign({}, sel, { width: '100%', marginTop: 2 }) }, itemOptions())),
                 h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
                   h('button', { type: 'button', style: goBtn, onClick: runCompare, 'aria-pressed': comparisonActive }, S('cmp_go', 'Compare them')),
-                  h('button', { type: 'button', style: btn, onClick: function () { changeComparison(cmpB, cmpA); } }, S('atlas_comparison_swap', 'Swap specimens'))),
+                  h('button', { type: 'button', style: btn, onClick: function () { changeComparison(cmpB, cmpA); } }, S('atlas_comparison_swap', 'Swap specimens')),
+                  revealed ? h('button', { type: 'button', style: btn, onClick: function () { showInvestigation(pair); } }, S('atlas_workspace_use_pair', 'Use investigation measurements')) : null),
                 compare ? h('p', { role: 'status', style: Object.assign({}, card, { margin: 0, borderColor: P.accent }) }, compareSentence()) : null,
                 compare && (compare.a.note || compare.b.note || compare.a.dim === 'distance' || compare.b.dim === 'distance') ? h('details', { className: 'sx-comparison-evidence', style: { fontSize: '.75rem', lineHeight: 1.5 } },
                   h('summary', { style: { padding: '6px 0', cursor: 'pointer', color: P.dim } }, S('atlas_comparison_notes', 'Measurement notes')),
                   [compare.a, compare.b].map(function (item, index) { return item.note || item.dim === 'distance' ? h('p', { key: index }, h('strong', null, itemText(item, 'name') + ': '), item.dim === 'distance' ? itemText(item, 'describe') + ' ' : '', item.note ? itemText(item, 'note') : '') : null; })) : null,
                 compare && compare.ratio >= 1.02 && compare.decades < 2 ? tiling() : null,
-                compare && compare.decades > 0.000001 ? staircase() : null)),
+                compare && compare.decades > 0.000001 ? staircase() : null))),
 
-            scalingLab(),
-            drawingWorkshop(),
+            workspacePanel('model', scalingLab()),
+            workspacePanel('draw', drawingWorkshop()),
 
-            h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.71875rem', color: P.dim, cursor: 'pointer' } },
-              h('input', { type: 'checkbox', checked: sci, onChange: function (e) { var on = !!e.target.checked; setSci(on); updateSlice(function (cur) { cur.sci = on; }); } }),
-              S('sci_toggle', 'Also show sizes in scientific notation (the exponent is the power of ten)')),
 
-            // The scale ladder: the complete non-visual path through the tool.
-            h('div', { style: { minHeight: 0, display: 'flex', flexDirection: 'column' } },
-              h('button', { type: 'button', onClick: function () { setShowLadder(!showLadder); }, 'aria-expanded': showLadder ? 'true' : 'false', 'aria-controls': 'sx-ladder', style: btn },
-                (showLadder ? '▾ ' : '▸ ') + S('ladder_heading', 'Everything, largest first')),
-              showLadder ? h('input', { className: 'sx-search', type: 'search', value: search, onChange: function (e) { setSearch(e.target.value); }, 'aria-label': S('atlas_search', 'Find an object'), placeholder: S('atlas_search', 'Find an object'), style: { background: P.bg, color: P.text, borderColor: P.line, marginTop: 8 } }) : null,
-              h('ul', { id: 'sx-ladder', hidden: !showLadder, style: { listStyle: 'none', margin: '6px 0 0', padding: 0, maxHeight: 220, overflowY: 'auto', border: '1px solid ' + P.line, borderRadius: 8 } },
-                sorted.filter(function (i) { return itemText(i, 'name').toLocaleLowerCase().indexOf(search.toLocaleLowerCase().trim()) !== -1; }).map(function (i) {
-                  var on = i.id === focusId;
-                  return h('li', { key: i.id },
-                    h('button', { type: 'button', onClick: function () { openItem(i); },
-                      'aria-current': on ? 'true' : undefined,
-                      style: { display: 'block', width: '100%', textAlign: 'left', border: 'none', borderBottom: '1px solid ' + P.line, background: on ? P.selBg : P.panel, color: on ? P.selFg : P.text, padding: '6px 9px', fontSize: '0.75rem', cursor: 'pointer', font: 'inherit' } },
-                      h('span', { style: { fontWeight: on ? 700 : 500 } }, itemText(i, 'name')),
-                      h('span', { style: { color: on ? P.selFg : P.dim, float: 'right', fontSize: '0.6875rem' } }, lengthText(i.size))));
-                })))
           )
         ),
 

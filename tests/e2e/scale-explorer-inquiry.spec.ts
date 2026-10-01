@@ -1,3 +1,4 @@
+import { showScaleExplorerTools } from './helpers/scale_explorer_workspace';
 import { test, expect } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
 import { mkdirSync, readFileSync } from 'node:fs';
@@ -21,7 +22,7 @@ async function mount(page: any, data = {}, fallback = false) {
       return /webgl/i.test(type) ? null : (original as any).call(this, type, ...args);
     };
   });
-  await harness.mount(page, data, '!!document.querySelector("[data-atlas-ready]")', { expectCanvas: !fallback });
+  await harness.mount(page, data, '!!document.querySelector("[data-atlas-ready]")', { expectCanvas: !fallback }); await showScaleExplorerTools(page);
   await page.addStyleTag({ content: '#wrap{width:100%!important}body{font-family:system-ui,sans-serif}button,input,select,textarea{font-family:inherit}' });
   const panel = page.locator('.sx-inquiry');
   await panel.locator(':scope > summary').click();

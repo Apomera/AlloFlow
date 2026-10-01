@@ -1,3 +1,4 @@
+import { showScaleExplorerTools } from './helpers/scale_explorer_workspace';
 import { test, expect } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
 import { mkdirSync, readFileSync } from 'node:fs';
@@ -21,7 +22,7 @@ async function mount(page: any, data = {}, fallback = false) {
       return /webgl/i.test(type) ? null : (original as any).call(this, type, ...args);
     };
   });
-  await harness.mount(page, data, '!!document.querySelector("[data-atlas-ready]")', { expectCanvas: !fallback });
+  await harness.mount(page, data, '!!document.querySelector("[data-atlas-ready]")', { expectCanvas: !fallback }); await showScaleExplorerTools(page);
   await page.addStyleTag({ content: '#wrap{width:100%!important}body{font-family:system-ui,sans-serif}button,input,select,textarea{font-family:inherit}' });
   if (fallback) await expect(page.getByRole('button', { name: 'Scale chart', exact: true })).toHaveAttribute('aria-pressed', 'true');
 }
@@ -98,7 +99,7 @@ test('phone chart notes and per-feature drafts survive reopening, with recorded 
   const stored = await data(page);
   expect(stored._otherTool).toEqual({ keep: true });
   await harness.unmount(page); expect(await harness.leakedAfterUnmount(page)).toEqual([]);
-  await harness.mount(page, stored, undefined, { expectCanvas: false });
+  await harness.mount(page, stored, undefined, { expectCanvas: false }); await showScaleExplorerTools(page);
   await page.addStyleTag({ content: '#wrap{width:100%!important}' });
   await expect(page.getByRole('button', { name: 'Scale chart', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await fly(page, 'earth', false);
@@ -125,7 +126,7 @@ test('a full notebook protects existing notes and allows updates', async ({ page
   await mount(page, {}, true);
   const ids = await page.getByRole('combobox', { name: 'Choose a destination', exact: true }).evaluate((select: HTMLSelectElement) => Array.from(select.options).slice(0, 24).map(o => o.value));
   await harness.unmount(page); expect(await harness.leakedAfterUnmount(page)).toEqual([]);
-  await harness.mount(page, { _scaleExplorer: { observations: ids.map((itemId, i) => ({ itemId, note: 'Keep ' + i, view: 'chart' })) } }, undefined, { expectCanvas: false });
+  await harness.mount(page, { _scaleExplorer: { observations: ids.map((itemId, i) => ({ itemId, note: 'Keep ' + i, view: 'chart' })) } }, undefined, { expectCanvas: false }); await showScaleExplorerTools(page);
   const book = page.getByRole('region', { name: 'Field notebook', exact: true });
   await expect(book.getByRole('button', { name: 'Save observation', exact: true })).toBeDisabled();
   await expect(book).toContainText('24 observations');

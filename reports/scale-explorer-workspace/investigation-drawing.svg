@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="163mm" viewBox="0 0 210 163" role="img" aria-labelledby="drawing-title" aria-describedby="drawing-description">
+<title id="drawing-title">Scale Explorer · scale drawing</title><desc id="drawing-description">Each line represents its stated dimension. Dashed dimension lines are distances, not object diameters. This compares lengths; it does not map positions, areas or volumes. Keep my recorded 1.23 m height. &lt;b&gt;Literal drawing&lt;/b&gt;. Model length = real length × 1.12 × 10⁻⁹. One model centimetre represents 8.94 × 10⁶ m. Jupiter: 1.43 × 10⁸ m · across → 160 mm You: 1.23 m · tall → 1.38 × 10⁻⁶ mm The Earth: 1.27 × 10⁷ m · across → 14.3 mm 10 mm calibration ruler Print at 100% scale. Check the 10 mm ruler with a real ruler; fit-to-page printing changes the dimensions. Each line represents its stated dimension. Dashed dimension lines are distances, not object diameters. This compares lengths; it does not map positions, areas or volumes. Dashed locators mark dimensions below 0.5 mm without enlarging them.</desc>
+<rect width="210" height="163" fill="white"/><g font-family="sans-serif" fill="#172033">
+<text x="15" y="12" font-size="5">Scale Explorer · scale drawing</text>
+<text x="15" y="21" font-size="3.2">Model length = real length × 1.12 × 10⁻⁹. One model centimetre represents 8.94 × 10⁶ m.</text>
+<text x="15" y="38" font-size="3.5">1. Jupiter · 1.43 × 10⁸ m · across</text>
+<g stroke="#146675" stroke-width=".55" fill="none">
+<line data-drawing-measure="0" data-drawing-item="jupiter" data-model-mm="160" transform="translate(15 0)" x1="0" y1="50" x2="160" y2="50"/>
+<path d="M15 48v4M175 48v4"/>
+</g>
+<text x="15" y="57" font-size="3.5">160 mm</text>
+<text x="15" y="62" font-size="3.5">2. You · 1.23 m · tall</text>
+<g stroke="#92541b" stroke-width=".55" fill="none">
+<line data-drawing-measure="1" data-drawing-item="human" data-model-mm="0.0000013762237762237763" transform="translate(15 0)" x1="0" y1="74" x2="0.0000013762237762237763" y2="74"/>
+<path d="M15 72v4M15.000001376223777 72v4"/>
+<path data-drawing-locator="1" stroke-dasharray=".5 .5" d="M13 74h4m-2 -2v4"/>
+</g>
+<text x="15" y="81" font-size="3.5">1.38 × 10⁻⁶ mm</text>
+<text x="15" y="86" font-size="3.5">3. The Earth · 1.27 × 10⁷ m · across</text>
+<g stroke="#92541b" stroke-width=".55" fill="none">
+<line data-drawing-measure="2" data-drawing-item="earth" data-model-mm="14.256783216783218" transform="translate(15 0)" x1="0" y1="98" x2="14.256783216783218" y2="98"/>
+<path d="M15 96v4M29.25678321678322 96v4"/>
+</g>
+<text x="15" y="105" font-size="3.5">14.3 mm</text>
+<path data-drawing-calibration="10" d="M15 117v4m0-2h10m0-2v4" fill="none" stroke="#172033" stroke-width=".4"/>
+<text x="30" y="120" font-size="3.5">10 mm calibration ruler</text>
+<text x="15" y="130" font-size="3.2">Print at 100% scale. Check the 10 mm ruler with a real ruler; fit-to-page printing changes the</text>
+<text x="15" y="134" font-size="3.2">dimensions.</text>
+<text x="15" y="143" font-size="3">Each line represents its stated dimension. Dashed dimension lines are distances, not object</text>
+<text x="15" y="147" font-size="3">diameters. This compares lengths; it does not map positions, areas or volumes. Dashed locators</text>
+<text x="15" y="151" font-size="3">mark dimensions below 0.5 mm without enlarging them.</text>
+</g></svg>
