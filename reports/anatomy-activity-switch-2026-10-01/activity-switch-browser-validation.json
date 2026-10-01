@@ -1,0 +1,997 @@
+{
+  "activitySwitch": {
+    "errors": [],
+    "scans": [
+      {
+        "width": 320,
+        "theme": "light",
+        "locale": "en",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "layout": {
+          "clientWidth": 302,
+          "scrollWidth": 302,
+          "clientHeight": 158,
+          "scrollHeight": 158,
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "bounds": {
+            "left": 8,
+            "right": 312,
+            "width": 304,
+            "height": 159.59375
+          }
+        },
+        "targets": [
+          {
+            "text": "Return to Question 2",
+            "width": 153.4375,
+            "height": 44
+          }
+        ],
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "dark",
+        "locale": "en",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "layout": {
+          "clientWidth": 302,
+          "scrollWidth": 302,
+          "clientHeight": 158,
+          "scrollHeight": 158,
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "bounds": {
+            "left": 8,
+            "right": 312,
+            "width": 304,
+            "height": 159.59375
+          }
+        },
+        "targets": [
+          {
+            "text": "Return to Question 2",
+            "width": 153.4375,
+            "height": 44
+          }
+        ],
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "contrast",
+        "locale": "en",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "layout": {
+          "clientWidth": 298,
+          "scrollWidth": 298,
+          "clientHeight": 178,
+          "scrollHeight": 178,
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "bounds": {
+            "left": 10,
+            "right": 310,
+            "width": 300,
+            "height": 180.390625
+          }
+        },
+        "targets": [
+          {
+            "text": "Return to Question 2",
+            "width": 153.4375,
+            "height": 44
+          }
+        ],
+        "violations": []
+      },
+      {
+        "width": 720,
+        "theme": "light",
+        "locale": "en",
+        "dimensions": {
+          "width": 720,
+          "scroll": 720
+        },
+        "layout": {
+          "clientWidth": 702,
+          "scrollWidth": 702,
+          "clientHeight": 137,
+          "scrollHeight": 137,
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "bounds": {
+            "left": 8,
+            "right": 712,
+            "width": 704,
+            "height": 138.796875
+          }
+        },
+        "targets": [
+          {
+            "text": "Return to Question 2",
+            "width": 153.4375,
+            "height": 44
+          }
+        ],
+        "violations": []
+      },
+      {
+        "width": 720,
+        "theme": "dark",
+        "locale": "en",
+        "dimensions": {
+          "width": 720,
+          "scroll": 720
+        },
+        "layout": {
+          "clientWidth": 702,
+          "scrollWidth": 702,
+          "clientHeight": 137,
+          "scrollHeight": 137,
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "bounds": {
+            "left": 8,
+            "right": 712,
+            "width": 704,
+            "height": 138.796875
+          }
+        },
+        "targets": [
+          {
+            "text": "Return to Question 2",
+            "width": 153.4375,
+            "height": 44
+          }
+        ],
+        "violations": []
+      },
+      {
+        "width": 720,
+        "theme": "contrast",
+        "locale": "en",
+        "dimensions": {
+          "width": 720,
+          "scroll": 720
+        },
+        "layout": {
+          "clientWidth": 698,
+          "scrollWidth": 698,
+          "clientHeight": 137,
+          "scrollHeight": 137,
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "bounds": {
+            "left": 10,
+            "right": 710,
+            "width": 700,
+            "height": 138.796875
+          }
+        },
+        "targets": [
+          {
+            "text": "Return to Question 2",
+            "width": 153.4375,
+            "height": 44
+          }
+        ],
+        "violations": []
+      },
+      {
+        "width": 1280,
+        "theme": "light",
+        "locale": "en",
+        "dimensions": {
+          "width": 1280,
+          "scroll": 1280
+        },
+        "layout": {
+          "clientWidth": 676,
+          "scrollWidth": 676,
+          "clientHeight": 137,
+          "scrollHeight": 137,
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "bounds": {
+            "left": 526,
+            "right": 1204,
+            "width": 678,
+            "height": 138.796875
+          }
+        },
+        "targets": [
+          {
+            "text": "Return to Question 2",
+            "width": 153.4375,
+            "height": 44
+          }
+        ],
+        "violations": []
+      },
+      {
+        "width": 1280,
+        "theme": "dark",
+        "locale": "en",
+        "dimensions": {
+          "width": 1280,
+          "scroll": 1280
+        },
+        "layout": {
+          "clientWidth": 676,
+          "scrollWidth": 676,
+          "clientHeight": 137,
+          "scrollHeight": 137,
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "bounds": {
+            "left": 526,
+            "right": 1204,
+            "width": 678,
+            "height": 138.796875
+          }
+        },
+        "targets": [
+          {
+            "text": "Return to Question 2",
+            "width": 153.4375,
+            "height": 44
+          }
+        ],
+        "violations": []
+      },
+      {
+        "width": 1280,
+        "theme": "contrast",
+        "locale": "en",
+        "dimensions": {
+          "width": 1280,
+          "scroll": 1280
+        },
+        "layout": {
+          "clientWidth": 672,
+          "scrollWidth": 672,
+          "clientHeight": 137,
+          "scrollHeight": 137,
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "bounds": {
+            "left": 528,
+            "right": 1202,
+            "width": 674,
+            "height": 138.796875
+          }
+        },
+        "targets": [
+          {
+            "text": "Return to Question 2",
+            "width": 153.4375,
+            "height": 44
+          }
+        ],
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "light",
+        "locale": "ar-larger",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "layout": {
+          "clientWidth": 302,
+          "scrollWidth": 302,
+          "clientHeight": 188,
+          "scrollHeight": 188,
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "bounds": {
+            "left": 8,
+            "right": 312,
+            "width": 304,
+            "height": 190.375
+          }
+        },
+        "targets": [
+          {
+            "text": "العودة إلى السؤال 2",
+            "width": 167.671875,
+            "height": 48.59375
+          }
+        ],
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "dark",
+        "locale": "ar-larger",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "layout": {
+          "clientWidth": 302,
+          "scrollWidth": 302,
+          "clientHeight": 188,
+          "scrollHeight": 188,
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "bounds": {
+            "left": 8,
+            "right": 312,
+            "width": 304,
+            "height": 190.375
+          }
+        },
+        "targets": [
+          {
+            "text": "العودة إلى السؤال 2",
+            "width": 167.671875,
+            "height": 48.59375
+          }
+        ],
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "contrast",
+        "locale": "ar-larger",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "layout": {
+          "clientWidth": 298,
+          "scrollWidth": 298,
+          "clientHeight": 188,
+          "scrollHeight": 188,
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "bounds": {
+            "left": 10,
+            "right": 310,
+            "width": 300,
+            "height": 190.375
+          }
+        },
+        "targets": [
+          {
+            "text": "العودة إلى السؤال 2",
+            "width": 167.671875,
+            "height": 48.59375
+          }
+        ],
+        "violations": []
+      }
+    ],
+    "focusGuards": {
+      "newerMode": true,
+      "studySheet": true,
+      "writingSelection": true,
+      "newerQuestion": true
+    },
+    "answeredQuiz": {
+      "score": 1,
+      "attempts": 1,
+      "feedback": {
+        "chosen": "ribs",
+        "correct": true,
+        "questionKey": "science-v3|skeletal|anterior|3|g912|skull,mandible,clavicle,sternum,ribs,humerus,radius,ulna,carpals,pelvis,femur,patella,tibia,fibula,tarsals,hyoid,metatarsals,metacarpals,scaphoid_bone|0"
+      },
+      "question": {
+        "context": "science-v3|skeletal|anterior|3|g912|skull,mandible,clavicle,sternum,ribs,humerus,radius,ulna,carpals,pelvis,femur,patella,tibia,fibula,tarsals,hyoid,metatarsals,metacarpals,scaphoid_bone",
+        "index": 0,
+        "poolIds": [
+          "ribs",
+          "skull",
+          "mandible",
+          "clavicle",
+          "sternum",
+          "humerus",
+          "radius",
+          "ulna",
+          "carpals",
+          "pelvis",
+          "femur",
+          "patella",
+          "tibia",
+          "fibula",
+          "tarsals",
+          "hyoid",
+          "metatarsals",
+          "metacarpals",
+          "scaphoid_bone"
+        ],
+        "schedule": "coverage-v1",
+        "structureId": "ribs",
+        "type": 0,
+        "token": "muq2zyj7-pl33gub915",
+        "binaryTrue": true
+      }
+    },
+    "tourAnnouncements": [
+      "Correct. 12 pairs: 7 true (1–7), 3 false (8–10), 2 floating (11–12). Protect thoracic organs and assist ventilation.",
+      "Carotid Arteries. Common carotid bifurcates at C4 into internal (brain) and external (face/scalp). Internal carotid supplies anterior 2/3 of brain."
+    ],
+    "savedTourRecap": {
+      "active": true,
+      "version": 2,
+      "systemId": "circulatory",
+      "context": "tour-v2|circulatory|heart,aorta,coronary,carotid",
+      "token": "muq2zzzu-xbnbeosoxus",
+      "answers": {
+        "0": "heart"
+      },
+      "focusIndex": 0
+    },
+    "pathwayAnnouncements": [
+      "Trachea. 10–12 cm tube from C6 to T4–T5 (carina). 16–20 C-shaped cartilage rings (open posteriorly to allow esophageal expansion). Pseudostratified ciliated columnar epithelium with goblet cells — mucociliary escalator traps and clears particles.",
+      "Challenges updated. You have completed 1 of 6 challenges. Research points: 15"
+    ],
+    "partialCards": {
+      "deck": [
+        "ribs",
+        "skull"
+      ],
+      "index": 1,
+      "rated": {
+        "ribs": true
+      },
+      "context": "skeletal:3:review:skull,mandible,clavicle,sternum,ribs,scapula,humerus,radius,ulna,carpals,vertebral,pelvis,femur,patella,tibia,fibula,tarsals,sacrum,hyoid,atlas_axis,metatarsals,metacarpals,scaphoid_bone",
+      "flipped": true
+    },
+    "keyboardDirections": [
+      "ltr-right-to-quiz",
+      "rtl-right-to-explore",
+      "rtl-left-to-quiz"
+    ],
+    "latestQuiz": {
+      "index": 1,
+      "score": 2,
+      "attempts": 2,
+      "feedback": {
+        "chosen": "true",
+        "correct": true,
+        "questionKey": "science-v3|skeletal|anterior|3|g912|skull,mandible,clavicle,sternum,ribs,humerus,radius,ulna,carpals,pelvis,femur,patella,tibia,fibula,tarsals,hyoid,metatarsals,metacarpals,scaphoid_bone|1"
+      },
+      "question": {
+        "context": "science-v3|skeletal|anterior|3|g912|skull,mandible,clavicle,sternum,ribs,humerus,radius,ulna,carpals,pelvis,femur,patella,tibia,fibula,tarsals,hyoid,metatarsals,metacarpals,scaphoid_bone",
+        "index": 1,
+        "poolIds": [
+          "ribs",
+          "skull",
+          "mandible",
+          "clavicle",
+          "sternum",
+          "humerus",
+          "radius",
+          "ulna",
+          "carpals",
+          "pelvis",
+          "femur",
+          "patella",
+          "tibia",
+          "fibula",
+          "tarsals",
+          "hyoid",
+          "metatarsals",
+          "metacarpals",
+          "scaphoid_bone"
+        ],
+        "schedule": "coverage-v1",
+        "structureId": "skull",
+        "type": 1,
+        "token": "muq3049o-ozcm3op9ssm",
+        "binaryTrue": true
+      }
+    },
+    "readingFonts": [
+      {
+        "tag": "H3",
+        "text": "السؤال 2 محفوظ",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "تُحفظ إجابتك ودرجتك أثناء استخدامك للأنشطة الأخرى. عد متى أردت.",
+        "size": 17
+      },
+      {
+        "tag": "BUTTON",
+        "text": "العودة إلى السؤال 2",
+        "size": 17
+      }
+    ],
+    "finalState": {
+      "_activeTab": "quiz",
+      "quizMode": true,
+      "system": "skeletal",
+      "view": "anterior",
+      "complexity": 3,
+      "selectedStructure": null,
+      "_bodyView3d": false,
+      "_startHereDismissed": true,
+      "_tourActive": true,
+      "_tourSystem": "circulatory",
+      "_tourStepIdx": 3,
+      "_activePathway": "path_air",
+      "_pathwayStep": 3,
+      "_flashcardScope": "review",
+      "_flashcardDeck": [
+        "ribs",
+        "skull"
+      ],
+      "_flashcardDeckContext": "skeletal:3:review:skull,mandible,clavicle,sternum,ribs,scapula,humerus,radius,ulna,carpals,vertebral,pelvis,femur,patella,tibia,fibula,tarsals,sacrum,hyoid,atlas_axis,metatarsals,metacarpals,scaphoid_bone",
+      "_flashcardRoundContext": "skeletal:3:review:skull,mandible,clavicle,sternum,ribs,scapula,humerus,radius,ulna,carpals,vertebral,pelvis,femur,patella,tibia,fibula,tarsals,sacrum,hyoid,atlas_axis,metatarsals,metacarpals,scaphoid_bone",
+      "_flashcardIdx": 1,
+      "_flashcardRoundRated": {
+        "ribs": true
+      },
+      "_flashcardFlipped": true,
+      "_flashcardRounds": {
+        "skeletal:3:review": {
+          "context": "skeletal:3:review:skull,mandible,clavicle,sternum,ribs,scapula,humerus,radius,ulna,carpals,vertebral,pelvis,femur,patella,tibia,fibula,tarsals,sacrum,hyoid,atlas_axis,metatarsals,metacarpals,scaphoid_bone",
+          "deckIds": [
+            "ribs",
+            "skull"
+          ],
+          "index": 1,
+          "rated": {
+            "ribs": true
+          }
+        }
+      },
+      "_structureConfidence": {
+        "ribs": "learning",
+        "heart": "learning",
+        "skull": "learning"
+      },
+      "_confidenceAt": {
+        "ribs": 1790892241472,
+        "heart": 1790892239795,
+        "skull": 1790892245578
+      },
+      "_structureNotes": {
+        "skull": "The skull protects the brain. شرح محفوظ."
+      },
+      "_aiInput": "How does this structure help protect nearby organs?\nHow does its location support that function?",
+      "_aiDraftContext": {
+        "version": 1,
+        "systemId": "skeletal",
+        "structureId": "skull",
+        "band": "g912"
+      },
+      "_aiDraftRevision": 3,
+      "_aiConversationBand": "g912",
+      "_aiMessages": [
+        {
+          "role": "user",
+          "text": "My earlier saved question.",
+          "systemId": "skeletal",
+          "structureId": "skull",
+          "band": "g912"
+        }
+      ],
+      "_quizQuestion": {
+        "context": "science-v3|skeletal|anterior|3|g912|skull,mandible,clavicle,sternum,ribs,humerus,radius,ulna,carpals,pelvis,femur,patella,tibia,fibula,tarsals,hyoid,metatarsals,metacarpals,scaphoid_bone",
+        "index": 1,
+        "poolIds": [
+          "ribs",
+          "skull",
+          "mandible",
+          "clavicle",
+          "sternum",
+          "humerus",
+          "radius",
+          "ulna",
+          "carpals",
+          "pelvis",
+          "femur",
+          "patella",
+          "tibia",
+          "fibula",
+          "tarsals",
+          "hyoid",
+          "metatarsals",
+          "metacarpals",
+          "scaphoid_bone"
+        ],
+        "schedule": "coverage-v1",
+        "structureId": "skull",
+        "type": 1,
+        "token": "muq3049o-ozcm3op9ssm",
+        "binaryTrue": true
+      },
+      "_systemsExplored": {
+        "skeletal": true,
+        "circulatory": true,
+        "respiratory": true
+      },
+      "_viewsUsed": {
+        "anterior": true
+      },
+      "_structuresViewed": {
+        "skull": true,
+        "carotid": true,
+        "trachea": true,
+        "ribs": true
+      },
+      "_badges": {
+        "firstStructure": true
+      },
+      "_confettiParticles": [
+        {
+          "x": 0.5547847959223811,
+          "y": 0.25428652685431363,
+          "vx": -0.7412571922827973,
+          "vy": -1.1263617308962266,
+          "rot": 0.9472920525070158,
+          "spin": 0.8802433783250163,
+          "ci": 0,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.6994265318471349,
+          "y": 0.2879538158429715,
+          "vx": -0.8076925634691383,
+          "vy": -1.2248430072828702,
+          "rot": 4.937801961912064,
+          "spin": -0.6260026699214036,
+          "ci": 1,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.45583149150147395,
+          "y": 0.21890692997181907,
+          "vx": -0.5367946542766666,
+          "vy": -1.3399480498004794,
+          "rot": 0.4166216200237047,
+          "spin": -2.942331709899496,
+          "ci": 2,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.38362549616807656,
+          "y": 0.18398004122397718,
+          "vx": -0.40489670467210037,
+          "vy": -2.2779127925344675,
+          "rot": 2.0475160720169137,
+          "spin": -0.4184920029820334,
+          "ci": 3,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.3435069080677108,
+          "y": 0.27906001214391424,
+          "vx": 0.8456510632383711,
+          "vy": -2.685093237926625,
+          "rot": 1.9670492306038696,
+          "spin": 1.0352360873450202,
+          "ci": 4,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.41357333014103015,
+          "y": 0.25740758524373636,
+          "vx": -0.8855690899146498,
+          "vy": -2.364360192415428,
+          "rot": 5.508334948627963,
+          "spin": -0.6990707053598726,
+          "ci": 5,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.30396277924101006,
+          "y": 0.270614641354074,
+          "vx": 0.8183052978839693,
+          "vy": -1.395866852845133,
+          "rot": 3.857150257263385,
+          "spin": -0.318364463912439,
+          "ci": 6,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.6831028878545465,
+          "y": 0.1118764749205752,
+          "vx": -0.4046304708499988,
+          "vy": -2.6946272662315542,
+          "rot": 3.2650139542080963,
+          "spin": -1.9266832999111858,
+          "ci": 7,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.31578027657024593,
+          "y": 0.14068970007763176,
+          "vx": -0.1934582635266051,
+          "vy": -2.442788255844314,
+          "rot": 1.2131309732231705,
+          "spin": 2.972731205114747,
+          "ci": 8,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.40255835281365326,
+          "y": 0.25646089366920743,
+          "vx": 0.8718190388920881,
+          "vy": -1.5536058251969918,
+          "rot": 5.721963721085129,
+          "spin": 1.5775338363346882,
+          "ci": 9,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.5743734751746753,
+          "y": 0.15913144065056797,
+          "vx": -0.16928870765687298,
+          "vy": -2.7419279207502,
+          "rot": 0.21251489093379552,
+          "spin": -2.1836192814403397,
+          "ci": 10,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.5381454226070209,
+          "y": 0.26301800226169547,
+          "vx": -0.8887830285003344,
+          "vy": -2.139700131777043,
+          "rot": 3.5928557078587455,
+          "spin": -2.639762120839542,
+          "ci": 11,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.3827105656169064,
+          "y": 0.16330506395020183,
+          "vx": -0.7066071233328826,
+          "vy": -2.501873720598617,
+          "rot": 6.087038846272139,
+          "spin": 0.22162042086534028,
+          "ci": 12,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.514930872825651,
+          "y": 0.29536044850614873,
+          "vx": 0.5243522724022018,
+          "vy": -2.3330082059324493,
+          "rot": 2.6186366658551945,
+          "spin": -1.6025136833280507,
+          "ci": 13,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.6789407203739921,
+          "y": 0.12858249520054132,
+          "vx": 0.8099749771607503,
+          "vy": -2.291308370111085,
+          "rot": 4.8039544445363935,
+          "spin": 2.097549489493055,
+          "ci": 14,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.6753370438787287,
+          "y": 0.1381303494891151,
+          "vx": -0.21257225012517966,
+          "vy": -2.8340204387744556,
+          "rot": 0.7325953963581254,
+          "spin": -1.2359360982815397,
+          "ci": 15,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.6920350930625602,
+          "y": 0.17017250747324997,
+          "vx": -0.48164001531298517,
+          "vy": -2.4079567647544717,
+          "rot": 3.0739668577740655,
+          "spin": 0.6543196689685038,
+          "ci": 16,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.42826195161772596,
+          "y": 0.26706100408821076,
+          "vx": -0.12495800455687078,
+          "vy": -1.195201755680507,
+          "rot": 2.9455529674739163,
+          "spin": 1.8103662777092446,
+          "ci": 17,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.583428794111865,
+          "y": 0.2986867448385141,
+          "vx": 0.8791439909162451,
+          "vy": -2.9733977221700902,
+          "rot": 2.555242483144066,
+          "spin": -1.7326750447273114,
+          "ci": 18,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.37731995219772246,
+          "y": 0.23217174245055958,
+          "vx": -0.8280802682846258,
+          "vy": -2.019381752578089,
+          "rot": 0.32136251298046503,
+          "spin": 2.239295988016363,
+          "ci": 19,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.6440952796988388,
+          "y": 0.1400911376911873,
+          "vx": -0.40611458888357754,
+          "vy": -2.9863155879310614,
+          "rot": 2.4442143698455667,
+          "spin": -0.9113215791597773,
+          "ci": 20,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.4555117812014276,
+          "y": 0.23460923713149087,
+          "vx": -0.1894797972299751,
+          "vy": -1.8642856295404036,
+          "rot": 1.061175482004854,
+          "spin": 2.2572441208191414,
+          "ci": 21,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.46760161112811305,
+          "y": 0.1908472747670576,
+          "vx": -0.2134341338948802,
+          "vy": -2.791676235320837,
+          "rot": 3.3155212261022706,
+          "spin": 2.697717710360066,
+          "ci": 22,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.4914604216151824,
+          "y": 0.17302728053453265,
+          "vx": 0.015902903720338646,
+          "vy": -2.822583007827939,
+          "rot": 1.3915990621167202,
+          "spin": 0.449045596427353,
+          "ci": 23,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.4332335969688434,
+          "y": 0.16547019689492942,
+          "vx": -0.04902352652265907,
+          "vy": -1.143385628754671,
+          "rot": 5.058386770773658,
+          "spin": -0.9316030615676434,
+          "ci": 24,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.3936276282607219,
+          "y": 0.1816944721161337,
+          "vx": -0.6334049732359011,
+          "vy": -1.7630876401025377,
+          "rot": 5.394351365481094,
+          "spin": 2.5435255247928983,
+          "ci": 25,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.5078779497807665,
+          "y": 0.16709181127860354,
+          "vx": 0.2857181628008243,
+          "vy": -2.700643952015877,
+          "rot": 3.5086623308037512,
+          "spin": 0.6656913502463886,
+          "ci": 26,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.6151363721623282,
+          "y": 0.23767424849181648,
+          "vx": -0.29391013298364377,
+          "vy": -2.3781879011122116,
+          "rot": 5.310104814457147,
+          "spin": 0.002971774938865357,
+          "ci": 27,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.4253915472964868,
+          "y": 0.1632909893188638,
+          "vx": -0.99098849147138,
+          "vy": -2.786362361612236,
+          "rot": 5.6779332746168,
+          "spin": 1.4076385617920923,
+          "ci": 28,
+          "born": 1790892238457
+        },
+        {
+          "x": 0.5926866608392483,
+          "y": 0.21943959812809644,
+          "vx": -0.2373732366027177,
+          "vy": -2.359808886035891,
+          "rot": 4.177916056423503,
+          "spin": -1.1777920914903377,
+          "ci": 29,
+          "born": 1790892238457
+        }
+      ],
+      "quizFeedback": {
+        "chosen": "true",
+        "correct": true,
+        "questionKey": "science-v3|skeletal|anterior|3|g912|skull,mandible,clavicle,sternum,ribs,humerus,radius,ulna,carpals,pelvis,femur,patella,tibia,fibula,tarsals,hyoid,metatarsals,metacarpals,scaphoid_bone|1"
+      },
+      "_quizAttempts": 2,
+      "_streak": 2,
+      "quizScore": 2,
+      "_totalCorrect": 2,
+      "_retrievalEvidence": {
+        "ribs": {
+          "attempts": 1,
+          "correct": 1
+        },
+        "heart": {
+          "attempts": 1,
+          "correct": 1
+        },
+        "skull": {
+          "attempts": 1,
+          "correct": 1
+        }
+      },
+      "search": "",
+      "_quizActivityReturn": {
+        "questionKey": "science-v3|skeletal|anterior|3|g912|skull,mandible,clavicle,sternum,ribs,humerus,radius,ulna,carpals,pelvis,femur,patella,tibia,fibula,tarsals,hyoid,metatarsals,metacarpals,scaphoid_bone|1",
+        "token": "muq3049o-ozcm3op9ssm",
+        "index": 1,
+        "score": 2,
+        "attempts": 2
+      },
+      "_studyCopyToken": null,
+      "_showStudySheet": false,
+      "_showSystemsMotion": false,
+      "_anatomyModelFocus": false,
+      "_guidanceRevision": 23,
+      "_studySheetRevision": 25,
+      "_tourRecap": {
+        "active": true,
+        "version": 2,
+        "systemId": "circulatory",
+        "context": "tour-v2|circulatory|heart,aorta,coronary,carotid",
+        "token": "muq2zzzu-xbnbeosoxus",
+        "answers": {
+          "0": "heart"
+        },
+        "focusIndex": 0
+      },
+      "_tourRecapReturn": null,
+      "_studyFilter": "all",
+      "completedChallenges": [
+        "explore_systems"
+      ],
+      "researchPoints": 15,
+      "totalRP": 15,
+      "_flashcardRevision": 6,
+      "_studyImportReading": false,
+      "_studyImportToken": null,
+      "quizIdx": 1,
+      "_readingMode": true
+    }
+  }
+}

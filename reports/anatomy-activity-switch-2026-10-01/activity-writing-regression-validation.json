@@ -1,0 +1,1718 @@
+{
+  "activityWriting": {
+    "errors": [],
+    "scans": [
+      {
+        "width": 320,
+        "theme": "light",
+        "locale": "en",
+        "area": "motion",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "dark",
+        "locale": "en",
+        "area": "motion",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "contrast",
+        "locale": "en",
+        "area": "motion",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "width": 768,
+        "theme": "light",
+        "locale": "en",
+        "area": "motion",
+        "dimensions": {
+          "width": 768,
+          "scroll": 768
+        },
+        "violations": []
+      },
+      {
+        "width": 768,
+        "theme": "dark",
+        "locale": "en",
+        "area": "motion",
+        "dimensions": {
+          "width": 768,
+          "scroll": 768
+        },
+        "violations": []
+      },
+      {
+        "width": 768,
+        "theme": "contrast",
+        "locale": "en",
+        "area": "motion",
+        "dimensions": {
+          "width": 768,
+          "scroll": 768
+        },
+        "violations": []
+      },
+      {
+        "width": 1440,
+        "theme": "light",
+        "locale": "en",
+        "area": "motion",
+        "dimensions": {
+          "width": 1440,
+          "scroll": 1440
+        },
+        "violations": []
+      },
+      {
+        "width": 1440,
+        "theme": "dark",
+        "locale": "en",
+        "area": "motion",
+        "dimensions": {
+          "width": 1440,
+          "scroll": 1440
+        },
+        "violations": []
+      },
+      {
+        "width": 1440,
+        "theme": "contrast",
+        "locale": "en",
+        "area": "motion",
+        "dimensions": {
+          "width": 1440,
+          "scroll": 1440
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "light",
+        "locale": "en",
+        "area": "saved-feedback",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "dark",
+        "locale": "en",
+        "area": "saved-feedback",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "contrast",
+        "locale": "en",
+        "area": "saved-feedback",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "width": 768,
+        "theme": "light",
+        "locale": "en",
+        "area": "saved-feedback",
+        "dimensions": {
+          "width": 768,
+          "scroll": 768
+        },
+        "violations": []
+      },
+      {
+        "width": 768,
+        "theme": "dark",
+        "locale": "en",
+        "area": "saved-feedback",
+        "dimensions": {
+          "width": 768,
+          "scroll": 768
+        },
+        "violations": []
+      },
+      {
+        "width": 768,
+        "theme": "contrast",
+        "locale": "en",
+        "area": "saved-feedback",
+        "dimensions": {
+          "width": 768,
+          "scroll": 768
+        },
+        "violations": []
+      },
+      {
+        "width": 1440,
+        "theme": "light",
+        "locale": "en",
+        "area": "saved-feedback",
+        "dimensions": {
+          "width": 1440,
+          "scroll": 1440
+        },
+        "violations": []
+      },
+      {
+        "width": 1440,
+        "theme": "dark",
+        "locale": "en",
+        "area": "saved-feedback",
+        "dimensions": {
+          "width": 1440,
+          "scroll": 1440
+        },
+        "violations": []
+      },
+      {
+        "width": 1440,
+        "theme": "contrast",
+        "locale": "en",
+        "area": "saved-feedback",
+        "dimensions": {
+          "width": 1440,
+          "scroll": 1440
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "light",
+        "locale": "ar-larger",
+        "area": "saved-feedback",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "dark",
+        "locale": "ar-larger",
+        "area": "saved-feedback",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "contrast",
+        "locale": "ar-larger",
+        "area": "saved-feedback",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "light",
+        "locale": "ar-larger",
+        "area": "motion",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "dark",
+        "locale": "ar-larger",
+        "area": "motion",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "contrast",
+        "locale": "ar-larger",
+        "area": "motion",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      }
+    ],
+    "initialState": {
+      "_activeTab": "explore",
+      "system": "skeletal",
+      "view": "anterior",
+      "complexity": 3,
+      "selectedStructure": "ribs",
+      "_bodyView3d": false,
+      "_startHereDismissed": true,
+      "_showSystemsMotion": true,
+      "_systemsMotionScenario": "exercise",
+      "_systemsMotionStep": 0,
+      "_systemsMotionPerturbation": false,
+      "_systemsMotionLearning": {
+        "exercise": {
+          "prediction": "",
+          "explanation": "",
+          "transfer": null,
+          "transferExplanation": "",
+          "selfReview": false
+        },
+        "meal": {
+          "prediction": "same",
+          "explanation": "My other meal explanation stays saved.",
+          "transfer": 2,
+          "transferExplanation": "My other meal comparison.",
+          "selfReview": true
+        }
+      },
+      "_structureNotes": {
+        "ribs": "My structure note remains."
+      },
+      "_structureConfidence": {
+        "ribs": "learning"
+      },
+      "_confidenceAt": {
+        "ribs": 1790892253512
+      },
+      "_retrievalEvidence": {
+        "ribs": {
+          "attempts": 4,
+          "correct": 2
+        }
+      },
+      "quizIdx": 4,
+      "quizScore": 7,
+      "quizFeedback": null,
+      "_quizAttempts": 9,
+      "_flashcardScope": "review",
+      "_flashcardDeck": [
+        "ribs",
+        "skull"
+      ],
+      "_flashcardDeckContext": "skeletal:3:review:skull,mandible,clavicle,sternum,ribs,scapula,humerus,radius,ulna,carpals,vertebral,pelvis,femur,patella,tibia,fibula,tarsals,sacrum,hyoid,atlas_axis,metatarsals,metacarpals,scaphoid_bone",
+      "_flashcardRoundContext": "skeletal:3:review:skull,mandible,clavicle,sternum,ribs,scapula,humerus,radius,ulna,carpals,vertebral,pelvis,femur,patella,tibia,fibula,tarsals,sacrum,hyoid,atlas_axis,metatarsals,metacarpals,scaphoid_bone",
+      "_flashcardRoundRated": {
+        "ribs": true
+      },
+      "_flashcardIdx": 1,
+      "_flashcardFlipped": true,
+      "_flashcardRounds": {
+        "skeletal:3:review": {
+          "context": "skeletal:3:review:skull,mandible,clavicle,sternum,ribs,scapula,humerus,radius,ulna,carpals,vertebral,pelvis,femur,patella,tibia,fibula,tarsals,sacrum,hyoid,atlas_axis,metatarsals,metacarpals,scaphoid_bone",
+          "deckIds": [
+            "ribs",
+            "skull"
+          ],
+          "index": 1,
+          "rated": {
+            "ribs": true
+          }
+        }
+      },
+      "_aiInput": "My unrelated Tutor draft stays saved.",
+      "_aiDraftContext": {
+        "version": 1,
+        "systemId": "circulatory",
+        "structureId": "heart",
+        "band": "g912"
+      },
+      "_aiDraftRevision": 4,
+      "_aiConversationBand": "g912",
+      "_aiMessages": [
+        {
+          "role": "user",
+          "text": "My previous Tutor question.",
+          "systemId": "circulatory",
+          "structureId": "heart",
+          "band": "g912"
+        }
+      ],
+      "_feedbackExperiment": {
+        "direction": "warm",
+        "context": "temperature-feedback-v1|warm",
+        "token": "saved-warm-writing-attempt",
+        "prediction": "",
+        "revealed": false,
+        "explanation": "My saved warming explanation: feedback reduces the temperature disturbance. شرح محفوظ للتدفئة.",
+        "sessions": {
+          "cool": {
+            "prediction": "disabled",
+            "revealed": true,
+            "explanation": "My saved cooling explanation: the corrective response opposes the temperature drop. شرح محفوظ للتبريد."
+          }
+        }
+      },
+      "homeoHunt": {
+        "tempC": 37,
+        "pH": 7.4,
+        "glucose": 90,
+        "hypothesis": "Keep reference ranges separate from model comparison.",
+        "explanation": "My reference-range writing remains.",
+        "understood": true,
+        "log": []
+      },
+      "_systemsExplored": {
+        "skeletal": true
+      },
+      "_viewsUsed": {
+        "anterior": true
+      },
+      "_structuresViewed": {
+        "ribs": true
+      },
+      "_badges": {
+        "firstStructure": true
+      },
+      "_confettiParticles": [
+        {
+          "x": 0.6154292042534946,
+          "y": 0.15510275084509895,
+          "vx": 0.773295304378065,
+          "vy": -1.5966811926201185,
+          "rot": 1.307502330317269,
+          "spin": 0.9051445287929218,
+          "ci": 0,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6864401597248755,
+          "y": 0.20099058582591522,
+          "vx": 0.9283603565960343,
+          "vy": -1.8825326155753623,
+          "rot": 4.292652940949426,
+          "spin": 0.30309234280378883,
+          "ci": 1,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6361760691991099,
+          "y": 0.2236397530908656,
+          "vx": -0.5872329931973221,
+          "vy": -2.5844282696365175,
+          "rot": 4.5114201814611965,
+          "spin": -2.045022894374536,
+          "ci": 2,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6960481860506185,
+          "y": 0.2328697017012309,
+          "vx": -0.6914616777645199,
+          "vy": -1.117070806618295,
+          "rot": 4.3326540827515,
+          "spin": 0.4790368389780886,
+          "ci": 3,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6295940546267182,
+          "y": 0.15531036610030982,
+          "vx": 0.5661151650016187,
+          "vy": -2.8919690107052913,
+          "rot": 5.44683148135444,
+          "spin": -2.0278858678658054,
+          "ci": 4,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6786068789815691,
+          "y": 0.16332024254082617,
+          "vx": -0.6906920139831054,
+          "vy": -2.612424128540212,
+          "rot": 4.760767645927795,
+          "spin": -0.5761921067709947,
+          "ci": 5,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.37393872241949644,
+          "y": 0.17317944855769785,
+          "vx": 0.8576449763864653,
+          "vy": -2.9604186244954582,
+          "rot": 0.8810127664796583,
+          "spin": -1.1969049164063708,
+          "ci": 6,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.5998307389941407,
+          "y": 0.12951347352006698,
+          "vx": -0.5006406660828331,
+          "vy": -2.0576781209456945,
+          "rot": 4.6552620360494545,
+          "spin": -0.34386721153982114,
+          "ci": 7,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.48601130137942467,
+          "y": 0.19473334498985984,
+          "vx": -0.5122461800683809,
+          "vy": -1.7056721216892292,
+          "rot": 6.218411983206146,
+          "spin": 1.5796178859351808,
+          "ci": 8,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.4842482893013745,
+          "y": 0.1561418375548511,
+          "vx": -0.14307418118738258,
+          "vy": -2.9510152153390363,
+          "rot": 4.709262469050138,
+          "spin": -1.581248732678072,
+          "ci": 9,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.5796166290905534,
+          "y": 0.17799836086581794,
+          "vx": 0.5934960665957849,
+          "vy": -2.357228340895392,
+          "rot": 2.946428586323646,
+          "spin": -0.4192790790282188,
+          "ci": 10,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6189987208401426,
+          "y": 0.13789888222600527,
+          "vx": 0.6591051667761703,
+          "vy": -2.426080244408638,
+          "rot": 5.474916003531881,
+          "spin": -2.9780191924751405,
+          "ci": 11,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.5327634593287247,
+          "y": 0.10281406477369526,
+          "vx": 0.5823599510298612,
+          "vy": -2.0612618358962957,
+          "rot": 4.54117865890825,
+          "spin": -0.5368564950953774,
+          "ci": 12,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.4784284238003362,
+          "y": 0.29953501655762804,
+          "vx": 0.36439320684642174,
+          "vy": -2.646301302691291,
+          "rot": 0.5424069146592967,
+          "spin": -2.2702130494738295,
+          "ci": 13,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.4459081732608494,
+          "y": 0.119174865858359,
+          "vx": -0.14534922108843507,
+          "vy": -1.5241171882780935,
+          "rot": 3.807243518787641,
+          "spin": -0.18376126850819796,
+          "ci": 14,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.318005457796893,
+          "y": 0.242831489963973,
+          "vx": 0.36736632578252526,
+          "vy": -2.8557699734181297,
+          "rot": 1.521295456933737,
+          "spin": 1.2185716007503984,
+          "ci": 15,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.66532452482107,
+          "y": 0.26591020501697327,
+          "vx": 0.850741390512175,
+          "vy": -2.8454918896978354,
+          "rot": 3.6538083667974246,
+          "spin": -2.3489903571627693,
+          "ci": 16,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6688208969976335,
+          "y": 0.286444666390619,
+          "vx": 0.7732639018237855,
+          "vy": -2.0105355875677926,
+          "rot": 5.068264141167172,
+          "spin": 0.6851864305768347,
+          "ci": 17,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.398787465788495,
+          "y": 0.19735960093156257,
+          "vx": 0.3645964713864418,
+          "vy": -2.212599594239342,
+          "rot": 2.1242505549519235,
+          "spin": 0.5582291087740057,
+          "ci": 18,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.5988578554243829,
+          "y": 0.19718944178296216,
+          "vx": 0.04156046331923635,
+          "vy": -2.6419456365967617,
+          "rot": 1.4438653559189416,
+          "spin": 1.7792681304017748,
+          "ci": 19,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.61002770463004,
+          "y": 0.246781128959476,
+          "vx": 0.13098612166446078,
+          "vy": -2.237759166790841,
+          "rot": 6.029427466948301,
+          "spin": 0.7787924688254275,
+          "ci": 20,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.4442216300843159,
+          "y": 0.24502112814865826,
+          "vx": 0.6423436527665523,
+          "vy": -1.7134714696611293,
+          "rot": 1.434432651262777,
+          "spin": -2.3276576579742194,
+          "ci": 21,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.4876981537537614,
+          "y": 0.2838174954664082,
+          "vx": 0.17764702892088335,
+          "vy": -2.9299922473363136,
+          "rot": 4.118626556391973,
+          "spin": 1.4175042031663447,
+          "ci": 22,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.37284888514236714,
+          "y": 0.17903188867303152,
+          "vx": -0.3207423390988162,
+          "vy": -1.748310668393538,
+          "rot": 3.7877831181898407,
+          "spin": -2.7029709606835857,
+          "ci": 23,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.46142649297790606,
+          "y": 0.20778453512347336,
+          "vx": -0.8314780917306852,
+          "vy": -2.8015944017273986,
+          "rot": 1.1446562935017617,
+          "spin": 2.7384913676856586,
+          "ci": 24,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6191007148397039,
+          "y": 0.15488246521638574,
+          "vx": -0.4698749425170887,
+          "vy": -1.3632314944664956,
+          "rot": 3.7399430425893465,
+          "spin": -0.7954610837822707,
+          "ci": 25,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6875643525010398,
+          "y": 0.14066081832552782,
+          "vx": -0.5323518885447804,
+          "vy": -1.1506900903435135,
+          "rot": 3.239672101543091,
+          "spin": 1.981244545983814,
+          "ci": 26,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.36027932353703707,
+          "y": 0.19917933979955138,
+          "vx": 0.4640151533181922,
+          "vy": -1.6682220632900475,
+          "rot": 2.2918663681299605,
+          "spin": 1.025571683442191,
+          "ci": 27,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.34455307878156904,
+          "y": 0.1447307412046872,
+          "vx": 0.1768499478833918,
+          "vy": -1.0523706427261021,
+          "rot": 3.7864742057208156,
+          "spin": -2.776026634368225,
+          "ci": 28,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.40246711870137797,
+          "y": 0.2502668269262367,
+          "vx": -0.2768048958312388,
+          "vy": -2.9311239448555484,
+          "rot": 3.676565464803186,
+          "spin": 2.023991143389629,
+          "ci": 29,
+          "born": 1790892255630
+        }
+      ]
+    },
+    "completedMotion": {
+      "_activeTab": "explore",
+      "system": "skeletal",
+      "view": "anterior",
+      "complexity": 3,
+      "selectedStructure": "ribs",
+      "_bodyView3d": false,
+      "_startHereDismissed": true,
+      "_showSystemsMotion": true,
+      "_systemsMotionScenario": "exercise",
+      "_systemsMotionStep": 0,
+      "_systemsMotionPerturbation": true,
+      "_systemsMotionLearning": {
+        "exercise": {
+          "prediction": "less",
+          "explanation": "The local change reduces effective muscle force. I connect that change to oxygen delivery and the pathway consequence. شرح محفوظ للحركة.",
+          "transfer": 1,
+          "transferExplanation": "The shared chain still depends on delivery. The changed structure acts at a different point in the second situation. مقارنة محفوظة.",
+          "selfReview": true
+        },
+        "meal": {
+          "prediction": "same",
+          "explanation": "My other meal explanation stays saved.",
+          "transfer": 2,
+          "transferExplanation": "My other meal comparison.",
+          "selfReview": true
+        }
+      },
+      "_structureNotes": {
+        "ribs": "My structure note remains."
+      },
+      "_structureConfidence": {
+        "ribs": "learning"
+      },
+      "_confidenceAt": {
+        "ribs": 1790892253512
+      },
+      "_retrievalEvidence": {
+        "ribs": {
+          "attempts": 4,
+          "correct": 2
+        }
+      },
+      "quizIdx": 4,
+      "quizScore": 7,
+      "quizFeedback": null,
+      "_quizAttempts": 9,
+      "_flashcardScope": "review",
+      "_flashcardDeck": [
+        "ribs",
+        "skull"
+      ],
+      "_flashcardDeckContext": "skeletal:3:review:skull,mandible,clavicle,sternum,ribs,scapula,humerus,radius,ulna,carpals,vertebral,pelvis,femur,patella,tibia,fibula,tarsals,sacrum,hyoid,atlas_axis,metatarsals,metacarpals,scaphoid_bone",
+      "_flashcardRoundContext": "skeletal:3:review:skull,mandible,clavicle,sternum,ribs,scapula,humerus,radius,ulna,carpals,vertebral,pelvis,femur,patella,tibia,fibula,tarsals,sacrum,hyoid,atlas_axis,metatarsals,metacarpals,scaphoid_bone",
+      "_flashcardRoundRated": {
+        "ribs": true
+      },
+      "_flashcardIdx": 1,
+      "_flashcardFlipped": true,
+      "_flashcardRounds": {
+        "skeletal:3:review": {
+          "context": "skeletal:3:review:skull,mandible,clavicle,sternum,ribs,scapula,humerus,radius,ulna,carpals,vertebral,pelvis,femur,patella,tibia,fibula,tarsals,sacrum,hyoid,atlas_axis,metatarsals,metacarpals,scaphoid_bone",
+          "deckIds": [
+            "ribs",
+            "skull"
+          ],
+          "index": 1,
+          "rated": {
+            "ribs": true
+          }
+        }
+      },
+      "_aiInput": "My unrelated Tutor draft stays saved.",
+      "_aiDraftContext": {
+        "version": 1,
+        "systemId": "circulatory",
+        "structureId": "heart",
+        "band": "g912"
+      },
+      "_aiDraftRevision": 4,
+      "_aiConversationBand": "g912",
+      "_aiMessages": [
+        {
+          "role": "user",
+          "text": "My previous Tutor question.",
+          "systemId": "circulatory",
+          "structureId": "heart",
+          "band": "g912"
+        }
+      ],
+      "_feedbackExperiment": {
+        "direction": "warm",
+        "context": "temperature-feedback-v1|warm",
+        "token": "saved-warm-writing-attempt",
+        "prediction": "",
+        "revealed": false,
+        "explanation": "My saved warming explanation: feedback reduces the temperature disturbance. شرح محفوظ للتدفئة.",
+        "sessions": {
+          "cool": {
+            "prediction": "disabled",
+            "revealed": true,
+            "explanation": "My saved cooling explanation: the corrective response opposes the temperature drop. شرح محفوظ للتبريد."
+          }
+        }
+      },
+      "homeoHunt": {
+        "tempC": 37,
+        "pH": 7.4,
+        "glucose": 90,
+        "hypothesis": "Keep reference ranges separate from model comparison.",
+        "explanation": "My reference-range writing remains.",
+        "understood": true,
+        "log": []
+      },
+      "_systemsExplored": {
+        "skeletal": true
+      },
+      "_viewsUsed": {
+        "anterior": true
+      },
+      "_structuresViewed": {
+        "ribs": true
+      },
+      "_badges": {
+        "firstStructure": true
+      },
+      "_confettiParticles": [
+        {
+          "x": 0.6154292042534946,
+          "y": 0.15510275084509895,
+          "vx": 0.773295304378065,
+          "vy": -1.5966811926201185,
+          "rot": 1.307502330317269,
+          "spin": 0.9051445287929218,
+          "ci": 0,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6864401597248755,
+          "y": 0.20099058582591522,
+          "vx": 0.9283603565960343,
+          "vy": -1.8825326155753623,
+          "rot": 4.292652940949426,
+          "spin": 0.30309234280378883,
+          "ci": 1,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6361760691991099,
+          "y": 0.2236397530908656,
+          "vx": -0.5872329931973221,
+          "vy": -2.5844282696365175,
+          "rot": 4.5114201814611965,
+          "spin": -2.045022894374536,
+          "ci": 2,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6960481860506185,
+          "y": 0.2328697017012309,
+          "vx": -0.6914616777645199,
+          "vy": -1.117070806618295,
+          "rot": 4.3326540827515,
+          "spin": 0.4790368389780886,
+          "ci": 3,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6295940546267182,
+          "y": 0.15531036610030982,
+          "vx": 0.5661151650016187,
+          "vy": -2.8919690107052913,
+          "rot": 5.44683148135444,
+          "spin": -2.0278858678658054,
+          "ci": 4,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6786068789815691,
+          "y": 0.16332024254082617,
+          "vx": -0.6906920139831054,
+          "vy": -2.612424128540212,
+          "rot": 4.760767645927795,
+          "spin": -0.5761921067709947,
+          "ci": 5,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.37393872241949644,
+          "y": 0.17317944855769785,
+          "vx": 0.8576449763864653,
+          "vy": -2.9604186244954582,
+          "rot": 0.8810127664796583,
+          "spin": -1.1969049164063708,
+          "ci": 6,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.5998307389941407,
+          "y": 0.12951347352006698,
+          "vx": -0.5006406660828331,
+          "vy": -2.0576781209456945,
+          "rot": 4.6552620360494545,
+          "spin": -0.34386721153982114,
+          "ci": 7,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.48601130137942467,
+          "y": 0.19473334498985984,
+          "vx": -0.5122461800683809,
+          "vy": -1.7056721216892292,
+          "rot": 6.218411983206146,
+          "spin": 1.5796178859351808,
+          "ci": 8,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.4842482893013745,
+          "y": 0.1561418375548511,
+          "vx": -0.14307418118738258,
+          "vy": -2.9510152153390363,
+          "rot": 4.709262469050138,
+          "spin": -1.581248732678072,
+          "ci": 9,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.5796166290905534,
+          "y": 0.17799836086581794,
+          "vx": 0.5934960665957849,
+          "vy": -2.357228340895392,
+          "rot": 2.946428586323646,
+          "spin": -0.4192790790282188,
+          "ci": 10,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6189987208401426,
+          "y": 0.13789888222600527,
+          "vx": 0.6591051667761703,
+          "vy": -2.426080244408638,
+          "rot": 5.474916003531881,
+          "spin": -2.9780191924751405,
+          "ci": 11,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.5327634593287247,
+          "y": 0.10281406477369526,
+          "vx": 0.5823599510298612,
+          "vy": -2.0612618358962957,
+          "rot": 4.54117865890825,
+          "spin": -0.5368564950953774,
+          "ci": 12,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.4784284238003362,
+          "y": 0.29953501655762804,
+          "vx": 0.36439320684642174,
+          "vy": -2.646301302691291,
+          "rot": 0.5424069146592967,
+          "spin": -2.2702130494738295,
+          "ci": 13,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.4459081732608494,
+          "y": 0.119174865858359,
+          "vx": -0.14534922108843507,
+          "vy": -1.5241171882780935,
+          "rot": 3.807243518787641,
+          "spin": -0.18376126850819796,
+          "ci": 14,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.318005457796893,
+          "y": 0.242831489963973,
+          "vx": 0.36736632578252526,
+          "vy": -2.8557699734181297,
+          "rot": 1.521295456933737,
+          "spin": 1.2185716007503984,
+          "ci": 15,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.66532452482107,
+          "y": 0.26591020501697327,
+          "vx": 0.850741390512175,
+          "vy": -2.8454918896978354,
+          "rot": 3.6538083667974246,
+          "spin": -2.3489903571627693,
+          "ci": 16,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6688208969976335,
+          "y": 0.286444666390619,
+          "vx": 0.7732639018237855,
+          "vy": -2.0105355875677926,
+          "rot": 5.068264141167172,
+          "spin": 0.6851864305768347,
+          "ci": 17,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.398787465788495,
+          "y": 0.19735960093156257,
+          "vx": 0.3645964713864418,
+          "vy": -2.212599594239342,
+          "rot": 2.1242505549519235,
+          "spin": 0.5582291087740057,
+          "ci": 18,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.5988578554243829,
+          "y": 0.19718944178296216,
+          "vx": 0.04156046331923635,
+          "vy": -2.6419456365967617,
+          "rot": 1.4438653559189416,
+          "spin": 1.7792681304017748,
+          "ci": 19,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.61002770463004,
+          "y": 0.246781128959476,
+          "vx": 0.13098612166446078,
+          "vy": -2.237759166790841,
+          "rot": 6.029427466948301,
+          "spin": 0.7787924688254275,
+          "ci": 20,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.4442216300843159,
+          "y": 0.24502112814865826,
+          "vx": 0.6423436527665523,
+          "vy": -1.7134714696611293,
+          "rot": 1.434432651262777,
+          "spin": -2.3276576579742194,
+          "ci": 21,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.4876981537537614,
+          "y": 0.2838174954664082,
+          "vx": 0.17764702892088335,
+          "vy": -2.9299922473363136,
+          "rot": 4.118626556391973,
+          "spin": 1.4175042031663447,
+          "ci": 22,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.37284888514236714,
+          "y": 0.17903188867303152,
+          "vx": -0.3207423390988162,
+          "vy": -1.748310668393538,
+          "rot": 3.7877831181898407,
+          "spin": -2.7029709606835857,
+          "ci": 23,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.46142649297790606,
+          "y": 0.20778453512347336,
+          "vx": -0.8314780917306852,
+          "vy": -2.8015944017273986,
+          "rot": 1.1446562935017617,
+          "spin": 2.7384913676856586,
+          "ci": 24,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6191007148397039,
+          "y": 0.15488246521638574,
+          "vx": -0.4698749425170887,
+          "vy": -1.3632314944664956,
+          "rot": 3.7399430425893465,
+          "spin": -0.7954610837822707,
+          "ci": 25,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6875643525010398,
+          "y": 0.14066081832552782,
+          "vx": -0.5323518885447804,
+          "vy": -1.1506900903435135,
+          "rot": 3.239672101543091,
+          "spin": 1.981244545983814,
+          "ci": 26,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.36027932353703707,
+          "y": 0.19917933979955138,
+          "vx": 0.4640151533181922,
+          "vy": -1.6682220632900475,
+          "rot": 2.2918663681299605,
+          "spin": 1.025571683442191,
+          "ci": 27,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.34455307878156904,
+          "y": 0.1447307412046872,
+          "vx": 0.1768499478833918,
+          "vy": -1.0523706427261021,
+          "rot": 3.7864742057208156,
+          "spin": -2.776026634368225,
+          "ci": 28,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.40246711870137797,
+          "y": 0.2502668269262367,
+          "vx": -0.2768048958312388,
+          "vy": -2.9311239448555484,
+          "rot": 3.676565464803186,
+          "spin": 2.023991143389629,
+          "ci": 29,
+          "born": 1790892255630
+        }
+      ],
+      "_systemsMotionPredicting": null,
+      "_systemsMotionActionRevision": 10,
+      "_regionalAtlasClinical": false
+    },
+    "previewReadingFonts": [
+      {
+        "tag": "SUMMARY",
+        "text": "تفسيري المحفوظ",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "كتابتك السابقة محفوظة. ضع توقعًا وقارن النموذج قبل تعديلها.",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "My saved warming explanation: feedback reduces the temperatu",
+        "size": 17
+      }
+    ],
+    "predictionReadingFonts": [
+      {
+        "tag": "H4",
+        "text": "هدف التعلّم",
+        "size": 20
+      },
+      {
+        "tag": "P",
+        "text": "فسّر كيف تدعم قوة العضلات وحركة المفاصل وتدفق الدم وتبادل ال",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "✓ توقّع · ✓ فسّر · ✓ جرّب موقفًا جديدًا",
+        "size": 17
+      },
+      {
+        "tag": "LEGEND",
+        "text": "يزداد سمك الحاجز بين الهواء والدم. مع ثبات العوامل الأخرى، ه",
+        "size": 17
+      },
+      {
+        "tag": "LABEL",
+        "text": "يقل",
+        "size": 17
+      },
+      {
+        "tag": "LABEL",
+        "text": "يزيد",
+        "size": 17
+      },
+      {
+        "tag": "LABEL",
+        "text": "يبقى كما هو",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "يتفق توقّعك مع النموذج. فسّر السبب باستخدام التغيّر البنيوي ",
+        "size": 17
+      }
+    ],
+    "reflectionReadingFonts": [
+      {
+        "tag": "H4",
+        "text": "فسّر سلسلة التأثيرات ثم طبّقها في موقف آخر",
+        "size": 20
+      },
+      {
+        "tag": "LABEL",
+        "text": "بكلماتك، كيف يؤثر التغيّر البنيوي على جزء آخر من المسار؟The ",
+        "size": 17
+      },
+      {
+        "tag": "TEXTAREA",
+        "text": "The local change reduces effective muscle force. I connect t",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "عدد الأحرف: 136 من 1200",
+        "size": 17
+      },
+      {
+        "tag": "BUTTON",
+        "text": "مراجعة تفسيري",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "راجع: هل سمّيت التركيب المتغيّر ووصفت الأثر الموضعي وربطته ب",
+        "size": 17
+      },
+      {
+        "tag": "LEGEND",
+        "text": "تحمل حقيبة ثابتة ومرفقك مثني. أي تفسير يناسب عضلات الذراع ال",
+        "size": 17
+      },
+      {
+        "tag": "BUTTON",
+        "text": "عدم حركة المفصل يعني غياب الشد العضلي.",
+        "size": 17
+      },
+      {
+        "tag": "BUTTON",
+        "text": "يمكن للعضلات توليد الشد مع ثبات طولها.",
+        "size": 17
+      },
+      {
+        "tag": "BUTTON",
+        "text": "تدفع العضلات العظام لإبقاء الحقيبة ثابتة.",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "التفسير مناسب. يولد الانقباض متساوي الطول شدًّا دون حركة مفص",
+        "size": 17
+      },
+      {
+        "tag": "LABEL",
+        "text": "ما الذي بقي كما هو، وما الذي تغيّر في هذا الموقف الجديد؟The ",
+        "size": 17
+      },
+      {
+        "tag": "TEXTAREA",
+        "text": "The shared chain still depends on delivery. The changed stru",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "عدد الأحرف: 131 من 1200",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "تُحفظ كتابتك للمراجعة وتُدرج في ورقة الدراسة. يُصحَّح الاختي",
+        "size": 17
+      }
+    ],
+    "finalState": {
+      "_activeTab": "explore",
+      "system": "muscular",
+      "view": "anterior",
+      "complexity": 3,
+      "selectedStructure": "quads",
+      "_bodyView3d": false,
+      "_startHereDismissed": true,
+      "_showSystemsMotion": true,
+      "_systemsMotionScenario": "exercise",
+      "_systemsMotionStep": 0,
+      "_systemsMotionPerturbation": true,
+      "_systemsMotionLearning": {
+        "exercise": {
+          "prediction": "less",
+          "explanation": "The local change reduces effective muscle force. I connect that change to oxygen delivery and the pathway consequence. شرح محفوظ للحركة.",
+          "transfer": 1,
+          "transferExplanation": "The shared chain still depends on delivery. The changed structure acts at a different point in the second situation. مقارنة محفوظة.",
+          "selfReview": true
+        },
+        "meal": {
+          "prediction": "same",
+          "explanation": "My other meal explanation stays saved.",
+          "transfer": 2,
+          "transferExplanation": "My other meal comparison.",
+          "selfReview": true
+        }
+      },
+      "_structureNotes": {
+        "ribs": "My structure note remains."
+      },
+      "_structureConfidence": {
+        "ribs": "learning"
+      },
+      "_confidenceAt": {
+        "ribs": 1790892253512
+      },
+      "_retrievalEvidence": {
+        "ribs": {
+          "attempts": 4,
+          "correct": 2
+        }
+      },
+      "quizIdx": 4,
+      "quizScore": 7,
+      "quizFeedback": null,
+      "_quizAttempts": 9,
+      "_flashcardScope": "review",
+      "_flashcardDeck": [
+        "ribs",
+        "skull"
+      ],
+      "_flashcardDeckContext": "skeletal:3:review:skull,mandible,clavicle,sternum,ribs,scapula,humerus,radius,ulna,carpals,vertebral,pelvis,femur,patella,tibia,fibula,tarsals,sacrum,hyoid,atlas_axis,metatarsals,metacarpals,scaphoid_bone",
+      "_flashcardRoundContext": "skeletal:3:review:skull,mandible,clavicle,sternum,ribs,scapula,humerus,radius,ulna,carpals,vertebral,pelvis,femur,patella,tibia,fibula,tarsals,sacrum,hyoid,atlas_axis,metatarsals,metacarpals,scaphoid_bone",
+      "_flashcardRoundRated": {
+        "ribs": true
+      },
+      "_flashcardIdx": 1,
+      "_flashcardFlipped": true,
+      "_flashcardRounds": {
+        "skeletal:3:review": {
+          "context": "skeletal:3:review:skull,mandible,clavicle,sternum,ribs,scapula,humerus,radius,ulna,carpals,vertebral,pelvis,femur,patella,tibia,fibula,tarsals,sacrum,hyoid,atlas_axis,metatarsals,metacarpals,scaphoid_bone",
+          "deckIds": [
+            "ribs",
+            "skull"
+          ],
+          "index": 1,
+          "rated": {
+            "ribs": true
+          }
+        }
+      },
+      "_aiInput": "My unrelated Tutor draft stays saved.",
+      "_aiDraftContext": {
+        "version": 1,
+        "systemId": "circulatory",
+        "structureId": "heart",
+        "band": "g912"
+      },
+      "_aiDraftRevision": 4,
+      "_aiConversationBand": "g912",
+      "_aiMessages": [
+        {
+          "role": "user",
+          "text": "My previous Tutor question.",
+          "systemId": "circulatory",
+          "structureId": "heart",
+          "band": "g912"
+        }
+      ],
+      "_feedbackExperiment": {
+        "direction": "warm",
+        "context": "temperature-feedback-v1|warm",
+        "token": "muq30dnc-8avw8skhmcn",
+        "prediction": "",
+        "revealed": false,
+        "explanation": "My saved warming explanation: feedback reduces the temperature disturbance. شرح محفوظ للتدفئة.",
+        "sessions": {
+          "cool": {
+            "prediction": "disabled",
+            "revealed": true,
+            "explanation": "My saved cooling explanation: the corrective response opposes the temperature drop. شرح محفوظ للتبريد."
+          }
+        }
+      },
+      "homeoHunt": {
+        "tempC": 37,
+        "pH": 7.4,
+        "glucose": 90,
+        "hypothesis": "Keep reference ranges separate from model comparison.",
+        "explanation": "My reference-range writing remains.",
+        "understood": true,
+        "log": []
+      },
+      "_systemsExplored": {
+        "skeletal": true,
+        "muscular": true
+      },
+      "_viewsUsed": {
+        "anterior": true
+      },
+      "_structuresViewed": {
+        "ribs": true,
+        "quads": true
+      },
+      "_badges": {
+        "firstStructure": true
+      },
+      "_confettiParticles": [
+        {
+          "x": 0.6154292042534946,
+          "y": 0.15510275084509895,
+          "vx": 0.773295304378065,
+          "vy": -1.5966811926201185,
+          "rot": 1.307502330317269,
+          "spin": 0.9051445287929218,
+          "ci": 0,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6864401597248755,
+          "y": 0.20099058582591522,
+          "vx": 0.9283603565960343,
+          "vy": -1.8825326155753623,
+          "rot": 4.292652940949426,
+          "spin": 0.30309234280378883,
+          "ci": 1,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6361760691991099,
+          "y": 0.2236397530908656,
+          "vx": -0.5872329931973221,
+          "vy": -2.5844282696365175,
+          "rot": 4.5114201814611965,
+          "spin": -2.045022894374536,
+          "ci": 2,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6960481860506185,
+          "y": 0.2328697017012309,
+          "vx": -0.6914616777645199,
+          "vy": -1.117070806618295,
+          "rot": 4.3326540827515,
+          "spin": 0.4790368389780886,
+          "ci": 3,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6295940546267182,
+          "y": 0.15531036610030982,
+          "vx": 0.5661151650016187,
+          "vy": -2.8919690107052913,
+          "rot": 5.44683148135444,
+          "spin": -2.0278858678658054,
+          "ci": 4,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6786068789815691,
+          "y": 0.16332024254082617,
+          "vx": -0.6906920139831054,
+          "vy": -2.612424128540212,
+          "rot": 4.760767645927795,
+          "spin": -0.5761921067709947,
+          "ci": 5,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.37393872241949644,
+          "y": 0.17317944855769785,
+          "vx": 0.8576449763864653,
+          "vy": -2.9604186244954582,
+          "rot": 0.8810127664796583,
+          "spin": -1.1969049164063708,
+          "ci": 6,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.5998307389941407,
+          "y": 0.12951347352006698,
+          "vx": -0.5006406660828331,
+          "vy": -2.0576781209456945,
+          "rot": 4.6552620360494545,
+          "spin": -0.34386721153982114,
+          "ci": 7,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.48601130137942467,
+          "y": 0.19473334498985984,
+          "vx": -0.5122461800683809,
+          "vy": -1.7056721216892292,
+          "rot": 6.218411983206146,
+          "spin": 1.5796178859351808,
+          "ci": 8,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.4842482893013745,
+          "y": 0.1561418375548511,
+          "vx": -0.14307418118738258,
+          "vy": -2.9510152153390363,
+          "rot": 4.709262469050138,
+          "spin": -1.581248732678072,
+          "ci": 9,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.5796166290905534,
+          "y": 0.17799836086581794,
+          "vx": 0.5934960665957849,
+          "vy": -2.357228340895392,
+          "rot": 2.946428586323646,
+          "spin": -0.4192790790282188,
+          "ci": 10,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6189987208401426,
+          "y": 0.13789888222600527,
+          "vx": 0.6591051667761703,
+          "vy": -2.426080244408638,
+          "rot": 5.474916003531881,
+          "spin": -2.9780191924751405,
+          "ci": 11,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.5327634593287247,
+          "y": 0.10281406477369526,
+          "vx": 0.5823599510298612,
+          "vy": -2.0612618358962957,
+          "rot": 4.54117865890825,
+          "spin": -0.5368564950953774,
+          "ci": 12,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.4784284238003362,
+          "y": 0.29953501655762804,
+          "vx": 0.36439320684642174,
+          "vy": -2.646301302691291,
+          "rot": 0.5424069146592967,
+          "spin": -2.2702130494738295,
+          "ci": 13,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.4459081732608494,
+          "y": 0.119174865858359,
+          "vx": -0.14534922108843507,
+          "vy": -1.5241171882780935,
+          "rot": 3.807243518787641,
+          "spin": -0.18376126850819796,
+          "ci": 14,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.318005457796893,
+          "y": 0.242831489963973,
+          "vx": 0.36736632578252526,
+          "vy": -2.8557699734181297,
+          "rot": 1.521295456933737,
+          "spin": 1.2185716007503984,
+          "ci": 15,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.66532452482107,
+          "y": 0.26591020501697327,
+          "vx": 0.850741390512175,
+          "vy": -2.8454918896978354,
+          "rot": 3.6538083667974246,
+          "spin": -2.3489903571627693,
+          "ci": 16,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6688208969976335,
+          "y": 0.286444666390619,
+          "vx": 0.7732639018237855,
+          "vy": -2.0105355875677926,
+          "rot": 5.068264141167172,
+          "spin": 0.6851864305768347,
+          "ci": 17,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.398787465788495,
+          "y": 0.19735960093156257,
+          "vx": 0.3645964713864418,
+          "vy": -2.212599594239342,
+          "rot": 2.1242505549519235,
+          "spin": 0.5582291087740057,
+          "ci": 18,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.5988578554243829,
+          "y": 0.19718944178296216,
+          "vx": 0.04156046331923635,
+          "vy": -2.6419456365967617,
+          "rot": 1.4438653559189416,
+          "spin": 1.7792681304017748,
+          "ci": 19,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.61002770463004,
+          "y": 0.246781128959476,
+          "vx": 0.13098612166446078,
+          "vy": -2.237759166790841,
+          "rot": 6.029427466948301,
+          "spin": 0.7787924688254275,
+          "ci": 20,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.4442216300843159,
+          "y": 0.24502112814865826,
+          "vx": 0.6423436527665523,
+          "vy": -1.7134714696611293,
+          "rot": 1.434432651262777,
+          "spin": -2.3276576579742194,
+          "ci": 21,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.4876981537537614,
+          "y": 0.2838174954664082,
+          "vx": 0.17764702892088335,
+          "vy": -2.9299922473363136,
+          "rot": 4.118626556391973,
+          "spin": 1.4175042031663447,
+          "ci": 22,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.37284888514236714,
+          "y": 0.17903188867303152,
+          "vx": -0.3207423390988162,
+          "vy": -1.748310668393538,
+          "rot": 3.7877831181898407,
+          "spin": -2.7029709606835857,
+          "ci": 23,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.46142649297790606,
+          "y": 0.20778453512347336,
+          "vx": -0.8314780917306852,
+          "vy": -2.8015944017273986,
+          "rot": 1.1446562935017617,
+          "spin": 2.7384913676856586,
+          "ci": 24,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6191007148397039,
+          "y": 0.15488246521638574,
+          "vx": -0.4698749425170887,
+          "vy": -1.3632314944664956,
+          "rot": 3.7399430425893465,
+          "spin": -0.7954610837822707,
+          "ci": 25,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.6875643525010398,
+          "y": 0.14066081832552782,
+          "vx": -0.5323518885447804,
+          "vy": -1.1506900903435135,
+          "rot": 3.239672101543091,
+          "spin": 1.981244545983814,
+          "ci": 26,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.36027932353703707,
+          "y": 0.19917933979955138,
+          "vx": 0.4640151533181922,
+          "vy": -1.6682220632900475,
+          "rot": 2.2918663681299605,
+          "spin": 1.025571683442191,
+          "ci": 27,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.34455307878156904,
+          "y": 0.1447307412046872,
+          "vx": 0.1768499478833918,
+          "vy": -1.0523706427261021,
+          "rot": 3.7864742057208156,
+          "spin": -2.776026634368225,
+          "ci": 28,
+          "born": 1790892255630
+        },
+        {
+          "x": 0.40246711870137797,
+          "y": 0.2502668269262367,
+          "vx": -0.2768048958312388,
+          "vy": -2.9311239448555484,
+          "rot": 3.676565464803186,
+          "spin": 2.023991143389629,
+          "ci": 29,
+          "born": 1790892255630
+        }
+      ],
+      "_systemsMotionPredicting": null,
+      "_systemsMotionActionRevision": 10,
+      "_regionalAtlasClinical": false,
+      "quizMode": false,
+      "_studyCopyToken": null,
+      "_showStudySheet": false,
+      "_anatomyModelFocus": false,
+      "_guidanceRevision": 1,
+      "_studySheetRevision": 7,
+      "_studyImportReading": false,
+      "_studyImportToken": null,
+      "_showSystemsSynthesis": false,
+      "_showAnatomyLens": false,
+      "_regionalAtlasOpen": "quads",
+      "_regionalAtlasStep": 3,
+      "_regionalAtlasPlaying": true,
+      "_anatomyLensViewed": {},
+      "search": "",
+      "_readingMode": true
+    }
+  }
+}

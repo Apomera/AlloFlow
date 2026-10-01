@@ -1,0 +1,155 @@
+{
+  "uncommitted": true,
+  "unitChecks": 1283,
+  "unitSuites": 25,
+  "unitFiles": [
+    {
+      "file": "tests/anatomy_activity_writing_localization.test.js",
+      "checks": 15
+    },
+    {
+      "file": "tests/anatomy_card_flow.test.js",
+      "checks": 13
+    },
+    {
+      "file": "tests/anatomy_compact_study_controls.test.js",
+      "checks": 14
+    },
+    {
+      "file": "tests/anatomy_comparison_navigation.test.js",
+      "checks": 62
+    },
+    {
+      "file": "tests/anatomy_empty_view_escape.test.js",
+      "checks": 6
+    },
+    {
+      "file": "tests/anatomy_guidance_continuity.test.js",
+      "checks": 84
+    },
+    {
+      "file": "tests/anatomy_guidance_localization.test.js",
+      "checks": 21
+    },
+    {
+      "file": "tests/anatomy_heading_structure.test.js",
+      "checks": 6
+    },
+    {
+      "file": "tests/anatomy_homeostasis_flow.test.js",
+      "checks": 42
+    },
+    {
+      "file": "tests/anatomy_lab_science.test.js",
+      "checks": 155
+    },
+    {
+      "file": "tests/anatomy_learning_continuity.test.js",
+      "checks": 30
+    },
+    {
+      "file": "tests/anatomy_learning_reliability.test.js",
+      "checks": 36
+    },
+    {
+      "file": "tests/anatomy_mission_display_summary.test.js",
+      "checks": 8
+    },
+    {
+      "file": "tests/anatomy_motion_editor_continuity.test.js",
+      "checks": 106
+    },
+    {
+      "file": "tests/anatomy_reflection_continuity.test.js",
+      "checks": 144
+    },
+    {
+      "file": "tests/anatomy_reflection_localization.test.js",
+      "checks": 9
+    },
+    {
+      "file": "tests/anatomy_search_continuity.test.js",
+      "checks": 56
+    },
+    {
+      "file": "tests/anatomy_study_clarity.test.js",
+      "checks": 23
+    },
+    {
+      "file": "tests/anatomy_study_localization.test.js",
+      "checks": 9
+    },
+    {
+      "file": "tests/anatomy_study_portfolio.test.js",
+      "checks": 16
+    },
+    {
+      "file": "tests/anatomy_study_record_localization.test.js",
+      "checks": 75
+    },
+    {
+      "file": "tests/anatomy_study_record_refinements.test.js",
+      "checks": 72
+    },
+    {
+      "file": "tests/anatomy_study_return_continuity.test.js",
+      "checks": 152
+    },
+    {
+      "file": "tests/anatomy_study_return_localization.test.js",
+      "checks": 23
+    },
+    {
+      "file": "tests/anatomy_tutor_draft_continuity.test.js",
+      "checks": 106
+    }
+  ],
+  "finalUiChecks": 288,
+  "finalUiSuites": 6,
+  "unitSequence": "Full regression of 25 suites; four obsolete dashboard assertions updated and one malformed-state destination key fixed. Six affected UI and guidance suites repeated. Final icon sizing and Arabic score presentation checked in browser. Latest passing result for each suite is counted once.",
+  "newBehaviorChecks": 84,
+  "newLocalizationChecks": 21,
+  "browserJourneys": 5,
+  "accessibilityScans": 96,
+  "newAccessibilityScans": 24,
+  "accessibilityViolations": 0,
+  "browserErrors": [],
+  "accessibilityScanScope": "Guidance dashboard, study-sheet and activity components exercised by five browser journeys.",
+  "noHorizontalOverflow": true,
+  "allDashboardMetricsVisible": true,
+  "minimumGuidanceTargetPx": 44,
+  "minimumLargerTextPx": 17,
+  "printThemeChecks": 6,
+  "canonicalMirrorEqual": true,
+  "localeMirrorPairsEqual": [
+    "french",
+    "spanish_latin_america",
+    "arabic"
+  ],
+  "sourceSha256LF": "ed1cd299eb1d276e4464d1ca03e76b493fe0c67c19668f3a88228b3d2e9ac0a5",
+  "screenshots": [
+    {
+      "file": "dashboard-phone.png",
+      "width": 290,
+      "height": 1187
+    },
+    {
+      "file": "dashboard-dark.png",
+      "width": 481,
+      "height": 871
+    },
+    {
+      "file": "dashboard-arabic.png",
+      "width": 290,
+      "height": 1464
+    },
+    {
+      "file": "recovery-phone.png",
+      "width": 290,
+      "height": 1027
+    }
+  ],
+  "screenshotsReviewed": true,
+  "staged": false,
+  "committed": false
+}

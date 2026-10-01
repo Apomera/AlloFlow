@@ -36,11 +36,13 @@ function session(file,extra={}){
   };
 }
 
-let scrollDescriptor,audioDescriptor,sound;
+let scrollDescriptor,rectsDescriptor,audioDescriptor,sound;
 beforeEach(()=>{
   resetStemLab();vi.useFakeTimers();document.body.innerHTML='';sound=vi.fn();
   scrollDescriptor=Object.getOwnPropertyDescriptor(HTMLElement.prototype,'scrollIntoView');
   Object.defineProperty(HTMLElement.prototype,'scrollIntoView',{value:vi.fn(),configurable:true});
+  rectsDescriptor=Object.getOwnPropertyDescriptor(HTMLElement.prototype,'getClientRects');
+  Object.defineProperty(HTMLElement.prototype,'getClientRects',{value:()=>[{width:200,height:44}],configurable:true});
   audioDescriptor=Object.getOwnPropertyDescriptor(window,'AudioContext');
   Object.defineProperty(window,'AudioContext',{configurable:true,value:function(){
     this.currentTime=0;this.destination={};
@@ -51,6 +53,7 @@ beforeEach(()=>{
 afterEach(()=>{
   vi.clearAllTimers();vi.useRealTimers();vi.restoreAllMocks();document.body.innerHTML='';
   if(scrollDescriptor)Object.defineProperty(HTMLElement.prototype,'scrollIntoView',scrollDescriptor);else delete HTMLElement.prototype.scrollIntoView;
+  if(rectsDescriptor)Object.defineProperty(HTMLElement.prototype,'getClientRects',rectsDescriptor);else delete HTMLElement.prototype.getClientRects;
   if(audioDescriptor)Object.defineProperty(window,'AudioContext',audioDescriptor);else delete window.AudioContext;
 });
 

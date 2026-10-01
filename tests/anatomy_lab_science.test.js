@@ -1,9 +1,42 @@
 import fs from 'node:fs';
-import { beforeEach, describe, expect, it } from 'vitest';
-import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { loadTool, makeCtx, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 function renderAnatomy(state = {}) {
   return renderTool('anatomy', { anatomy: state });
+}
+
+function anatomyNode(node, predicate) {
+  if (!node || typeof node !== 'object') return null;
+  if (Array.isArray(node)) {
+    for (const child of node) { const found = anatomyNode(child, predicate); if (found) return found; }
+    return null;
+  }
+  return predicate(node) ? node : anatomyNode(node.props?.children, predicate);
+}
+
+function anatomySession(state = {}) {
+  const tool = window.StemLab._registry.anatomy;
+  let data = { anatomy: { system: 'skeletal', view: 'anterior', complexity: 3, _activeTab: 'explore', ...state } };
+  const updates = [], announce = vi.fn();
+  const setToolData = vi.fn(update => {
+    const before = data, next = typeof update === 'function' ? update(data) : update;
+    if (next && next !== before) { updates.push({ before: before.anatomy, after: next.anatomy }); data = next; }
+  });
+  const ctx = () => ({ toolData: data, gradeLevel: '9', setToolData, announceToSR: announce });
+  const render = () => tool.render(makeCtx(ctx()));
+  const node = predicate => { const found = anatomyNode(render(), predicate); expect(found).not.toBeNull(); return found; };
+  return {
+    data: () => data.anatomy, updates, announce, render, node,
+    patch: patch => { data = { ...data, anatomy: { ...data.anatomy, ...patch } }; },
+    tab: mode => node(element => element.props?.id === 'anatomy-mode-tab-' + mode).props.onClick(),
+    html: () => { const root = document.createElement('div'); root.innerHTML = renderTool('anatomy', data, ctx()); return root; }
+  };
+}
+
+function withAnatomyTimers(run) {
+  document.body.innerHTML = ''; vi.useFakeTimers();
+  try { run(); } finally { vi.clearAllTimers(); vi.useRealTimers(); document.body.innerHTML = ''; }
 }
 
 beforeEach(() => {
@@ -209,13 +242,16 @@ describe('Anatomy Lab quiz balance and tracking', () => {
   });
 
   it('consolidates render-derived progress into one deferred update', () => {
-    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain('var progressTrackingPatch = {};');
-    expect(source).toContain('updMulti(progressTrackingPatch);');
-    expect(source).toContain('window.__alloAnatomyTrackingPending');
-    expect(source).not.toContain("upd('_systemsExplored', newSE)");
-    expect(source).not.toContain("upd('_viewsUsed', newVU)");
-    expect(source).not.toContain("upd('_structuresViewed', newSV)");
+    withAnatomyTimers(() => {
+      const s = anatomySession({ selectedStructure: 'skull', _systemsExplored: {}, _viewsUsed: {}, _structuresViewed: {}, _badges: { firstStructure: true } });
+      s.render(); s.render();
+      expect(s.updates).toHaveLength(0);
+      s.patch({ _systemsExplored: { circulatory: true }, _viewsUsed: { posterior: true }, _structuresViewed: { ribs: true }, _structureNotes: { skull: 'My newest note' } });
+      vi.advanceTimersByTime(0);
+      const progressWrites = s.updates.filter(update => ['_systemsExplored', '_viewsUsed', '_structuresViewed'].some(key => update.before[key] !== update.after[key]));
+      expect(progressWrites).toHaveLength(1);
+      expect(s.data()).toMatchObject({ _systemsExplored: { circulatory: true, skeletal: true }, _viewsUsed: { posterior: true, anterior: true }, _structuresViewed: { ribs: true, skull: true }, _structureNotes: { skull: 'My newest note' } });
+    });
   });
 });
 describe('Anatomy Lab saved-state recovery', () => {
@@ -257,9 +293,18 @@ describe('Anatomy Lab saved-state recovery', () => {
   });
 
   it('resets quiz attempts atomically and clears ended Spotter rounds', () => {
-    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain("quizIdx:0,quizScore:0,quizFeedback:null,_quizAttempts:0,_quizSeed:seed");
-    expect(source).toContain("_spotterOpts: [], _spotterStartTime: 0, _spotterElapsed: 0");
+    withAnatomyTimers(() => {
+      const notes = { skull: 'My explanation stays saved' };
+      const quiz = anatomySession({ _activeTab: 'quiz', quizIdx: 3, quizScore: 2, _quizAttempts: 4, quizFeedback: { chosen: 'skull', correct: true }, _quizActivityReturn: { token: 'old' }, _structureNotes: notes });
+      quiz.node(node => node.type === 'button' && node.props?.['aria-label'] === 'Restart quiz').props.onClick();
+      expect(quiz.updates).toHaveLength(1);
+      expect(quiz.data()).toMatchObject({ quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0, _quizActivityReturn: null, _structureNotes: notes });
+      expect(quiz.data()._quizQuestion.token).toBeTruthy(); expect(quiz.data()._quizSeed).toBeTruthy();
+      const spotter = anatomySession({ _activeTab: 'spotter', _spotterActive: true, _spotterTarget: 'skull', _spotterFeedback: 'ribs', _spotterOpts: [{ id: 'skull' }, { id: 'ribs' }, { id: 'femur' }, { id: 'humerus' }], _spotterStartTime: 123, _spotterElapsed: 2, _spotterScore: 3, _spotterTotal: 4, _structureNotes: notes });
+      spotter.node(node => node.props?.['data-anatomy-spotter-end']).props.onClick();
+      expect(spotter.updates).toHaveLength(1);
+      expect(spotter.data()).toMatchObject({ _spotterActive: false, _spotterTarget: null, _spotterFeedback: null, _spotterOpts: [], _spotterStartTime: 0, _spotterElapsed: 0, _spotterScore: 3, _spotterTotal: 4, _structureNotes: notes });
+    });
   });
 
   it('exposes guided, pathway, and Spotter updates to assistive technology', () => {
@@ -341,13 +386,21 @@ describe('Anatomy Lab navigation recovery', () => {
   });
 
   it('uses one navigation helper and atomic guided-tour transitions', () => {
-    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain("activateAnatomyTab('connections')");
-    expect(source).toContain('var tourPatch = { _activeTab: tab, quizMode: false, _tourActive: true, _tourStepIdx: nextTourIndex, _tourSystem: tourActive ? tourSystemId : sysKey };');
-    expect(source).toContain('changeTab(tabTourStep ? structureFocusPatch(tabTourStep.structureId, tourPatch) : tourPatch, function() {');
-    // Completion also clears the end-of-tour recap state.
-    expect(source).toContain("updMulti({ _tourCompleted: true, _tourActive: false, _activeTab: 'explore', _tourRecap: null, _tourRecapReturn: null })");
-    expect(source).not.toContain("upd('_activeTab', 'tour'); if (!tourActive)");
+    withAnatomyTimers(() => {
+      const notes = { skull: 'Saved before entering the Tour' };
+      const s = anatomySession({ _tourActive: true, _tourSystem: 'circulatory', _tourStepIdx: 2, selectedStructure: 'skull', _structureNotes: notes });
+      s.tab('tour');
+      expect(s.updates).toHaveLength(1);
+      expect(s.data()).toMatchObject({ _activeTab: 'tour', quizMode: false, system: 'circulatory', selectedStructure: 'coronary', _tourActive: true, _tourSystem: 'circulatory', _tourStepIdx: 2, _structureNotes: notes });
+      s.tab('connections'); expect(s.data()._activeTab).toBe('connections'); expect(s.updates).toHaveLength(2);
+      s.tab('tour');
+      const lastStep = s.html().querySelector('#anatomy-tour-step-select').options.length - 1;
+      s.node(node => node.props?.id === 'anatomy-tour-step-select').props.onChange({ target: { value: String(lastStep) } });
+      s.node(node => node.props?.['data-anatomy-tour-recap-open']).props.onClick();
+      expect(s.data()._tourRecap.active).toBe(true);
+      s.node(node => node.type === 'button' && node.props?.['aria-label'] === 'Complete Tour!').props.onClick();
+      expect(s.data()).toMatchObject({ _tourCompleted: true, _tourActive: false, _activeTab: 'explore', _tourRecap: null, _tourRecapReturn: null, _structureNotes: notes });
+    });
   });
 });
 describe('Anatomy Lab assessment-state resilience', () => {
@@ -480,7 +533,9 @@ describe('Anatomy Lab progress-state integrity', () => {
     expect(() => renderAnatomy(state)).not.toThrow();
     const html = renderAnatomy(state);
     expect(html).toContain('0 RP - 0/6');
-    expect(html).toContain('0/20 badges');
+    const root = document.createElement('div'); root.innerHTML = html;
+    const badges = [...root.querySelectorAll('.anatomy-metric')].find(metric => metric.querySelector('span')?.textContent === 'Badges');
+    expect(badges).toBeDefined(); expect(badges.querySelector('strong').textContent).toBe('0/20');
     expect(html).toContain('<strong>0/10</strong>');
   });
 
@@ -493,7 +548,9 @@ describe('Anatomy Lab progress-state integrity', () => {
       _structuresViewed: { skull: true, heart: true, forged: true }
     });
     expect(html).toContain('15 RP - 1/6');
-    expect(html).toContain('1/20 badges');
+    const root = document.createElement('div'); root.innerHTML = html;
+    const badges = [...root.querySelectorAll('.anatomy-metric')].find(metric => metric.querySelector('span')?.textContent === 'Badges');
+    expect(badges).toBeDefined(); expect(badges.querySelector('strong').textContent).toBe('1/20');
     expect(html).toContain('<strong>1/10</strong>');
     expect(html).toContain('<strong>2</strong><span>Structures viewed</span>');
   });
@@ -679,14 +736,18 @@ describe('Anatomy Lab guided-mode continuity', () => {
   });
 
   it('focuses the current structure whenever a guided tab is entered or resumed', () => {
-    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain('changeTab(tabTourStep ? structureFocusPatch(tabTourStep.structureId, tourPatch) : tourPatch, function() {');
-    expect(source).toContain("changeTab(structureFocusPatch(tabPathwayStep.structure, { _activeTab: tab, _pathwayStep: pathwayStepIdx }), function() {");
-    expect(source).toContain('announceStructure(tabTourStep.structureId);');
-    expect(source).toContain('else focusTourStep();');
-    expect(source).toContain('announceStructure(tabPathwayStep.structure);');
-    expect(source).toContain('else focusPathwayStep(activePathway,pathwayStepIdx);');
-    expect(source).toContain("_flashcardIdx: 0, _flashcardFlipped: false");
+    withAnatomyTimers(() => {
+      const s = anatomySession({ _tourActive: true, _tourSystem: 'circulatory', _tourStepIdx: 2, selectedStructure: 'skull' });
+      s.tab('tour'); vi.advanceTimersByTime(10);
+      expect(s.data()).toMatchObject({ system: 'circulatory', selectedStructure: 'coronary', _tourStepIdx: 2 });
+      expect(s.announce).toHaveBeenCalledWith(expect.stringContaining('Coronary Arteries'));
+      s.tab('explore'); s.patch({ _tourStepIdx: 3 }); s.tab('tour'); vi.advanceTimersByTime(10);
+      expect(s.data()).toMatchObject({ system: 'circulatory', selectedStructure: 'carotid', _tourStepIdx: 3 });
+      expect(s.announce).toHaveBeenCalledWith(expect.stringContaining('Carotid Arteries'));
+      s.tab('explore'); s.patch({ _activePathway: 'path_air', _pathwayStep: 3 }); s.tab('pathways'); vi.advanceTimersByTime(10);
+      expect(s.data()).toMatchObject({ _activeTab: 'pathways', system: 'respiratory', selectedStructure: 'trachea', _pathwayStep: 3 });
+      expect(s.announce).toHaveBeenCalledWith(expect.stringContaining('Trachea'));
+    });
   });
 
   it('avoids returning the same random flashcard and announces guided completions', () => {
@@ -799,16 +860,23 @@ describe('Anatomy Lab adaptive study support', () => {
 
   it('recommends a next step from current progress and review needs', () => {
     const newLearner = renderAnatomy({ system: 'skeletal', complexity: 3 });
-    expect(newLearner).toContain('aria-label="Recommended next study step"');
-    expect(newLearner).toContain('Take the guided tour');
-    expect(newLearner).toContain('Start tour');
+    const newRoot = document.createElement('div'); newRoot.innerHTML = newLearner;
+    const tour = newRoot.querySelector('[data-anatomy-guidance="tour"]');
+    const tourHeading = tour.querySelector('[data-anatomy-guidance-title]');
+    expect(tourHeading.tagName).toBe('H3'); expect(tourHeading.textContent).toBe('Take the guided tour');
+    expect(tour.getAttribute('aria-labelledby').split(/\s+/)).toContain(tourHeading.id);
+    const tourAction = tour.querySelector('[data-anatomy-guidance-action="tour"]');
+    expect(tourAction.textContent).toBe('Open guided tour');
+    expect(tourAction.getAttribute('aria-describedby').split(/\s+/)).toContain(tour.querySelector('[data-anatomy-guidance-help]').id);
 
     const returningLearner = renderAnatomy({
       system: 'skeletal', complexity: 3, _tourCompleted: true,
       _structuresViewed: { skull: true }, _structureConfidence: { skull: 'practice' }
     });
-    expect(returningLearner).toContain('Review Skull (Cranium)');
-    expect(returningLearner).toContain('Review now');
+    const returningRoot = document.createElement('div'); returningRoot.innerHTML = returningLearner;
+    const review = returningRoot.querySelector('[data-anatomy-guidance="review"]');
+    expect(review.querySelector('[data-anatomy-guidance-title]').textContent).toBe('Review Skull (Cranium)');
+    expect(review.querySelector('[data-anatomy-guidance-action="review"]').textContent).toBe('Review structure');
   });
 
   it('adds confidence reflection only after a flashcard answer is revealed', () => {
@@ -1937,13 +2005,12 @@ describe('Anatomy Systems in Motion', () => {
       system: 'skeletal', view: 'anterior', complexity: 3,
       _structureConfidence: { skull: 'practice', ribs: 'learning', clavicle: 'practice', sternum: 'practice' }
     });
-    expect(html).toContain('data-anatomy-review-queue');
-    expect(html).toContain('Review queue');
-    expect(html).toContain('data-review-queue-id="skull"');
-
-
-    expect(html).toContain('data-review-queue-id="clavicle"');
-    expect(html).toContain('+1 more');
+    const root = document.createElement('div'); root.innerHTML = html;
+    const queue = root.querySelector('[data-anatomy-review-queue]');
+    expect(queue.getAttribute('role')).toBe('group');
+    expect(root.querySelector('#' + queue.getAttribute('aria-labelledby')).textContent).toBe('Revisit a structure');
+    expect([...queue.querySelectorAll('[data-review-queue-id]')].map(button => button.getAttribute('data-review-queue-id'))).toEqual(['skull', 'clavicle', 'sternum']);
+    expect(queue.querySelector('.anatomy-review-queue-more').textContent).toBe('+1 more in this view');
   });
 
   it('does not show an empty review queue', () => {

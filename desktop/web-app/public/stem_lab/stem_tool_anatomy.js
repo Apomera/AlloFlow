@@ -126,6 +126,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '.anatomy-tool-shell .anatomy-study-sheet :is(.anatomy-study-workbench,.anatomy-study-evidence-guide,.anatomy-study-import-preview,.anatomy-motion-learning){background:var(--sheet-soft);color:var(--sheet-ink);border:1px solid var(--sheet-border);border-radius:12px;min-width:0}.anatomy-tool-shell .anatomy-study-workbench{padding:16px}.anatomy-tool-shell .anatomy-study-import-preview{padding:14px;margin-block:12px;background:var(--sheet-panel)}.anatomy-tool-shell .anatomy-study-import-preview h4{margin-block:0 10px}.anatomy-tool-shell .anatomy-study-sheet [data-anatomy-study-record-notice]{padding:10px 12px;border-inline-start:4px solid var(--sheet-accent);background:var(--sheet-panel)}.anatomy-tool-shell .anatomy-study-sheet [data-anatomy-study-record-notice]:empty{display:none}.anatomy-tool-shell .anatomy-study-import-preview button{margin:4px;margin-inline-start:0}.anatomy-tool-shell .anatomy-study-evidence-guide summary{padding-block:12px}.anatomy-tool-shell .anatomy-study-evidence-guide p{font-size:14px;line-height:1.7}.anatomy-tool-shell[data-reading-mode=true] .anatomy-study-sheet :is(p,label,summary,button,input,select,span,bdi,strong){font-size:17px!important;line-height:1.7!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-study-sheet h3{font-size:24px}.anatomy-tool-shell[data-reading-mode=true] .anatomy-study-sheet h4{font-size:20px}.anatomy-tool-shell[data-reading-mode=true] .anatomy-study-sheet h5{font-size:18px}.anatomy-tool-shell[data-reading-mode=true] .anatomy-study-sheet-stats strong{font-size:28px!important}@media(max-width:680px){.anatomy-tool-shell .anatomy-study-sheet{padding:14px}.anatomy-tool-shell .anatomy-study-workbench{padding:12px}.anatomy-tool-shell .anatomy-study-sheet-system li{grid-template-columns:minmax(0,1fr);gap:8px}.anatomy-tool-shell .anatomy-study-sheet-name{justify-self:start}.anatomy-tool-shell .anatomy-study-sheet-actions button{flex:1 1 140px}}@media print{.anatomy-tool-shell .anatomy-study-sheet{background:#fff!important;color:#000!important;border:0;padding:0}.anatomy-tool-shell .anatomy-study-sheet-system li{break-inside:avoid;background:#fff!important;color:#000!important}.anatomy-tool-shell .anatomy-study-sheet-name{border:0;padding:0;min-height:0;color:#000!important}}',
       '.anatomy-tool-shell .anatomy-study-sheet .anatomy-kicker{color:var(--sheet-muted);font-size:13px;line-height:1.6}',
       '.anatomy-tool-shell :is([data-anatomy-study-round-position],[data-anatomy-study-round-rated],[data-anatomy-flashcards]) bdi[dir=ltr]{white-space:nowrap}',
+      '.anatomy-tool-shell .anatomy-study-dashboard{--guide-ink:#0f172a;--guide-muted:#475569;--guide-panel:#fff;--guide-soft:#f5f3ff;--guide-border:#94a3b8;--guide-accent:#5b21b6;--guide-on-accent:#fff;border:1px solid var(--guide-border);border-radius:12px;background:var(--guide-panel);color:var(--guide-ink);min-width:0;text-align:start}.theme-dark .anatomy-tool-shell .anatomy-study-dashboard{--guide-ink:#e2e8f0;--guide-muted:#cbd5e1;--guide-panel:#0f172a;--guide-soft:#1e293b;--guide-border:#94a3b8;--guide-accent:#ddd6fe;--guide-on-accent:#0f172a}.theme-contrast .anatomy-tool-shell .anatomy-study-dashboard{--guide-ink:#000;--guide-muted:#000;--guide-panel:#fff;--guide-soft:#fff;--guide-border:#000;--guide-accent:#000;--guide-on-accent:#fff}',
+      '.anatomy-tool-shell .anatomy-study-dashboard-summary{flex-wrap:wrap;gap:8px;padding:12px 14px;font-size:14px;line-height:1.6;color:var(--guide-accent);overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-study-dashboard-summary:after{margin-inline-start:auto;margin-left:0;color:var(--guide-accent);font-size:20px}.anatomy-tool-shell .anatomy-study-dashboard-summary>span:last-of-type{margin:0;flex:1 1 160px;text-align:end;font-size:13px;line-height:1.6;color:var(--guide-muted)}.anatomy-tool-shell .anatomy-study-dashboard-content{gap:14px;padding:16px;border-color:var(--guide-border)}.anatomy-tool-shell .anatomy-study-dashboard-content p{margin:0;font-size:14px;line-height:1.7;color:var(--guide-muted)}.anatomy-tool-shell .anatomy-study-dashboard .anatomy-metric-grid{display:grid;overflow:visible;scroll-snap-type:none;gap:8px;grid-template-columns:repeat(3,minmax(0,1fr))}.anatomy-tool-shell .anatomy-study-dashboard .anatomy-metric{min-width:0;padding:12px 10px;border:1px solid var(--guide-border);border-radius:8px;background:var(--guide-panel);text-align:start}.anatomy-tool-shell .anatomy-study-dashboard .anatomy-metric strong{display:block;font-size:24px;line-height:1.3;color:var(--guide-ink)}.anatomy-tool-shell .anatomy-study-dashboard .anatomy-metric span{display:block;font-size:13px;line-height:1.6;font-weight:600;text-transform:none;letter-spacing:0;color:var(--guide-muted);overflow-wrap:anywhere}',
+      '.anatomy-tool-shell .anatomy-coach{margin:0;padding:16px;border:1px solid var(--guide-border);border-inline-start:4px solid var(--guide-accent);border-radius:10px;background:var(--guide-soft);color:var(--guide-ink);min-width:0;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-coach h3{margin:6px 0 10px;font-size:20px;line-height:1.4;font-weight:900;color:var(--guide-ink)}.anatomy-tool-shell .anatomy-coach .anatomy-kicker{display:block;font-size:13px;line-height:1.6;color:var(--guide-accent);letter-spacing:0;text-transform:none}.anatomy-tool-shell .anatomy-coach p+p{margin-block-start:10px}.anatomy-tool-shell .anatomy-coach [data-anatomy-guidance-action]{margin-block:14px 0;min-height:44px;padding:10px 14px;border:1px solid var(--guide-accent);border-radius:8px;background:var(--guide-accent);color:var(--guide-on-accent);font-size:14px;line-height:1.6;font-weight:800;white-space:normal;text-align:start;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-study-dashboard :is(button,summary):focus-visible,.anatomy-tool-shell [data-anatomy-guidance-title]:focus{outline:3px solid #0284c7;outline-offset:3px}',
+      '.anatomy-tool-shell .anatomy-review-queue{display:flex;flex-direction:row;align-items:center;flex-wrap:wrap;gap:8px;padding-block-start:14px;margin-block-start:14px;border-color:var(--guide-border)}.anatomy-tool-shell .anatomy-review-queue-label{flex:1 1 100%;font-size:14px;line-height:1.6;color:var(--guide-ink)}.anatomy-tool-shell .anatomy-review-queue button{width:auto;min-width:44px;min-height:44px;padding:10px 12px;border:1px solid var(--guide-border);border-radius:8px;background:var(--guide-panel);color:var(--guide-accent);font-size:14px;line-height:1.6;font-weight:800;white-space:normal;overflow-wrap:anywhere;text-align:start}.anatomy-tool-shell .anatomy-review-queue-more{flex:1 1 100%;font-size:13px;line-height:1.6;color:var(--guide-muted)}.anatomy-tool-shell .anatomy-study-dashboard .anatomy-challenge-strip{flex-wrap:wrap;overflow:visible;scroll-snap-type:none;color:var(--guide-muted)}.anatomy-tool-shell .anatomy-study-dashboard .anatomy-challenge-strip>span:last-child{max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;color:var(--guide-muted)}',
+      '.anatomy-tool-shell .anatomy-study-dashboard .anatomy-challenge-chip{display:inline-flex;align-items:center;justify-content:center;height:auto;min-width:32px;min-height:32px;padding:4px;line-height:1.5;font-size:16px}',
+      '.anatomy-tool-shell[data-reading-mode=true] .anatomy-study-dashboard :is(p,span,button,summary,bdi){font-size:17px!important;line-height:1.7!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-coach h3{font-size:22px}.anatomy-tool-shell[data-reading-mode=true] .anatomy-study-dashboard .anatomy-metric strong{font-size:28px}@media(max-width:560px){.anatomy-tool-shell .anatomy-study-dashboard-summary>span:last-of-type{flex-basis:100%;text-align:start;order:1}.anatomy-tool-shell .anatomy-study-dashboard-content{padding:12px}.anatomy-tool-shell .anatomy-study-dashboard .anatomy-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.anatomy-tool-shell .anatomy-coach{padding:12px}.anatomy-tool-shell .anatomy-coach [data-anatomy-guidance-action]{width:100%}.anatomy-tool-shell .anatomy-review-queue button{flex:1 1 110px}}',
       '.anatomy-tool-shell .anatomy-study-rounds{margin-block:0 18px;padding-block-end:18px;border-block-end:1px solid var(--sheet-border)}.anatomy-tool-shell .anatomy-study-rounds h4{margin-block:0 8px;font-weight:900}.anatomy-tool-shell .anatomy-study-round-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:12px;margin-block-start:12px}.anatomy-tool-shell .anatomy-study-round-grid article{min-width:0;padding:14px;border:1px solid var(--sheet-border);border-radius:10px;background:var(--sheet-panel);color:var(--sheet-ink);overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-study-round-grid h5{font-weight:900;margin-block:0 8px}.anatomy-tool-shell .anatomy-study-round-actions{display:flex;flex-wrap:wrap;gap:8px;margin-block-start:12px}.anatomy-tool-shell .anatomy-study-sheet [data-anatomy-study-resume-round]{background:var(--sheet-accent)!important;color:var(--sheet-on-accent)!important;border-color:var(--sheet-accent)}.anatomy-tool-shell .anatomy-study-sheet [data-anatomy-study-copy]:disabled{cursor:wait;opacity:1;border-style:dashed}.anatomy-tool-shell .anatomy-study-sheet [data-anatomy-study-structures-title]{margin-block:20px 8px;font-weight:900}@media(max-width:560px){.anatomy-tool-shell .anatomy-study-round-actions button{flex:1 1 150px}}',
       '@media print{.anatomy-tool-shell .anatomy-study-sheet{--sheet-ink:#000!important;--sheet-muted:#000!important;--sheet-panel:#fff!important;--sheet-soft:#fff!important;--sheet-border:#000!important;--sheet-accent:#000!important;--sheet-on-accent:#fff!important}.anatomy-tool-shell .anatomy-study-sheet :is(.anatomy-study-sheet-stale,.anatomy-structure-status){background:#fff!important;color:#000!important;border-color:#000!important}}',
       '.anatomy-tool-shell :is([data-anatomy-motion-reflection],[data-anatomy-motion-learning]) h4{font-size:18px;line-height:1.5}.anatomy-tool-shell [data-anatomy-motion-reflection] h4:focus{outline:3px solid #0284c7;outline-offset:3px}.anatomy-tool-shell[data-reading-mode=true] :is([data-anatomy-motion-reflection],[data-anatomy-motion-learning]) :is(p,label,legend,button,textarea,a,strong,span){font-size:17px;line-height:1.7}.anatomy-tool-shell[data-reading-mode=true] :is([data-anatomy-motion-reflection],[data-anatomy-motion-learning]) h4{font-size:20px}.anatomy-tool-shell[data-reading-mode=true] #anatomy-feedback-explanation{font-size:17px;line-height:1.7}',
@@ -522,7 +528,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       ".anatomy-tool-shell[data-anatomy-tab=quiz][data-anatomy-study-controls-expanded=false]>:is(.anatomy-mission,.anatomy-mode-card,.anatomy-system-rail,.anatomy-display-panel,.anatomy-controls-bar){display:none!important}@media(min-width:721px){.anatomy-tool-shell[data-anatomy-tab=quiz]>.anatomy-study-controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;align-items:end}.anatomy-tool-shell[data-anatomy-tab=quiz]>.anatomy-study-controls button{grid-column:auto}.anatomy-tool-shell[data-anatomy-tab=quiz]>.anatomy-study-controls select{font-size:14px}}",
       ".anatomy-quiz-panel,.anatomy-quiz-return{--quiz-panel:#fff;--quiz-soft:#f1f7f5;--quiz-ink:#17253b;--quiz-muted:#475569;--quiz-border:#b6c9c4;--quiz-accent:#166534;--quiz-success:#166534;--quiz-success-bg:#edf8f0;--quiz-review:#92400e;--quiz-review-bg:#fff8eb}.anatomy-tool-shell .anatomy-quiz-panel{padding:20px;border:1px solid var(--quiz-border);border-radius:18px;background:var(--quiz-panel)!important;color:var(--quiz-ink)}.anatomy-quiz-heading,.anatomy-quiz-summary,.anatomy-quiz-meta{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 12px}.anatomy-quiz-heading h4{font-size:20px;line-height:1.4;font-weight:800;color:var(--quiz-ink)}.anatomy-quiz-number{font-size:12px;font-weight:700;padding:5px 9px;background:var(--quiz-soft);color:var(--quiz-ink);border:1px solid var(--quiz-border);border-radius:20px}.anatomy-quiz-summary{padding:10px 12px;border-radius:9px;background:var(--quiz-soft);font-size:13px;line-height:1.6;color:var(--quiz-muted)}.anatomy-quiz-summary strong{color:var(--quiz-ink);font-variant-numeric:tabular-nums}.anatomy-quiz-meta{font-size:12px;line-height:1.6;color:var(--quiz-muted)}.anatomy-quiz-meta>span:first-child{font-weight:700}.anatomy-quiz-audio{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;color:var(--quiz-muted)}.anatomy-tool-shell .anatomy-quiz-audio button{min-height:44px;min-width:44px;width:44px;flex:none}.anatomy-quiz-panel .anatomy-quiz-question>p{font-size:16px;line-height:1.65;color:var(--quiz-ink)}.anatomy-quiz-panel .anatomy-quiz-question>p:last-child{padding:14px;margin-top:10px;border:1px solid var(--quiz-border);border-inline-start:4px solid var(--quiz-accent);border-radius:10px;background:var(--quiz-soft);font-style:normal;font-size:15px;font-weight:400;line-height:1.75}.anatomy-quiz-panel .anatomy-quiz-answer-help{font-size:12px;line-height:1.6;color:var(--quiz-muted)}",
       ".anatomy-tool-shell .anatomy-quiz-options button{min-height:52px;padding:10px 12px;font-size:14px;line-height:1.5;text-align:start;background:var(--quiz-panel);color:var(--quiz-ink);border:1px solid var(--quiz-border);border-radius:10px;opacity:1}.anatomy-quiz-option-label{flex:1;min-width:0;overflow-wrap:anywhere}.anatomy-quiz-option-result{font-size:11px;font-weight:800;max-width:30%;line-height:1.5}.anatomy-quiz-panel .anatomy-quiz-key{width:26px;height:26px;flex:0 0 26px;border-color:var(--quiz-border);color:inherit;background:transparent}.anatomy-tool-shell .anatomy-quiz-options button:not(:disabled):hover{background:var(--quiz-soft);border-color:var(--quiz-accent)}.anatomy-tool-shell .anatomy-quiz-options button[data-result=correct]{color:var(--quiz-success);background:var(--quiz-success-bg);border:2px solid var(--quiz-success)}.anatomy-tool-shell .anatomy-quiz-options button[data-result=chosen]{color:var(--quiz-review);background:var(--quiz-review-bg);border:2px solid var(--quiz-review)}.anatomy-tool-shell .anatomy-quiz-options button[data-result=other]{color:var(--quiz-muted)}",
-      ".anatomy-quiz-panel .anatomy-quiz-feedback{padding:16px;background:var(--quiz-soft);border:1px solid var(--quiz-border);border-radius:12px;scroll-margin-block:80px}.anatomy-quiz-panel .anatomy-quiz-feedback>p{font-size:14px;line-height:1.75;color:var(--quiz-ink)}.anatomy-quiz-panel .anatomy-quiz-feedback .anatomy-quiz-feedback-title{font-size:17px;line-height:1.5;font-weight:800;color:var(--quiz-ink)}.anatomy-quiz-panel .anatomy-quiz-feedback [class*=text-green],.anatomy-quiz-panel .anatomy-quiz-feedback [class*=text-slate]{color:var(--quiz-ink)}.anatomy-quiz-panel .anatomy-quiz-feedback [class*=text-rose]{color:var(--quiz-review)}.anatomy-tool-shell .anatomy-quiz-panel>button{min-height:46px;font-size:14px;line-height:1.5;padding:10px 12px;border:1px solid var(--quiz-border);background:var(--quiz-panel);color:var(--quiz-ink)}.anatomy-tool-shell .anatomy-quiz-panel>[data-anatomy-quiz-next]{background:var(--quiz-accent);border-color:var(--quiz-accent);color:#fff}.anatomy-quiz-session{border-top:1px solid var(--quiz-border);padding-top:12px}.anatomy-quiz-session p{font-size:12px;line-height:1.7;margin:0 0 10px;color:var(--quiz-muted)}.anatomy-quiz-session>div{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}.anatomy-tool-shell .anatomy-quiz-session button,.anatomy-tool-shell .anatomy-quiz-return button{min-height:44px;padding:8px 12px;font-size:13px;font-weight:700;line-height:1.5;border:1px solid var(--quiz-border);border-radius:9px;background:var(--quiz-panel);color:var(--quiz-ink)}.anatomy-quiz-return{padding:14px;margin-bottom:12px;border:1px solid var(--quiz-border);border-radius:12px;background:var(--quiz-soft);color:var(--quiz-ink)}.anatomy-quiz-return p{font-size:13px;line-height:1.6;margin:0 0 10px}.anatomy-tool-shell .anatomy-quiz-return button{background:var(--quiz-accent);color:#fff;border-color:var(--quiz-accent)}.anatomy-quiz-panel :is(button,[data-anatomy-quiz-feedback]):focus-visible,.anatomy-quiz-return button:focus-visible{outline:3px solid #0284c7;outline-offset:3px}",
+      ".anatomy-quiz-panel .anatomy-quiz-feedback{padding:16px;background:var(--quiz-soft);border:1px solid var(--quiz-border);border-radius:12px;scroll-margin-block:80px}.anatomy-quiz-panel .anatomy-quiz-feedback>p{font-size:14px;line-height:1.75;color:var(--quiz-ink)}.anatomy-quiz-panel .anatomy-quiz-feedback .anatomy-quiz-feedback-title{font-size:17px;line-height:1.5;font-weight:800;color:var(--quiz-ink)}.anatomy-quiz-panel .anatomy-quiz-feedback [class*=text-green],.anatomy-quiz-panel .anatomy-quiz-feedback [class*=text-slate]{color:var(--quiz-ink)}.anatomy-quiz-panel .anatomy-quiz-feedback [class*=text-rose]{color:var(--quiz-review)}.anatomy-tool-shell .anatomy-quiz-panel>button{min-height:46px;font-size:14px;line-height:1.5;padding:10px 12px;border:1px solid var(--quiz-border);background:var(--quiz-panel);color:var(--quiz-ink)}.anatomy-tool-shell .anatomy-quiz-panel>[data-anatomy-quiz-next]{background:var(--quiz-accent);border-color:var(--quiz-accent);color:#fff}.anatomy-quiz-session{border-top:1px solid var(--quiz-border);padding-top:12px}.anatomy-quiz-session p{font-size:12px;line-height:1.7;margin:0 0 10px;color:var(--quiz-muted)}.anatomy-quiz-session>div{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}.anatomy-tool-shell .anatomy-quiz-session button,.anatomy-tool-shell .anatomy-quiz-return button{min-height:44px;padding:8px 12px;font-size:13px;font-weight:700;line-height:1.5;border:1px solid var(--quiz-border);border-radius:9px;background:var(--quiz-panel);color:var(--quiz-ink)}.anatomy-quiz-return{padding:14px;margin-bottom:12px;border:1px solid var(--quiz-border);border-radius:12px;background:var(--quiz-soft);color:var(--quiz-ink)}.anatomy-quiz-return p{font-size:13px;line-height:1.6;margin:0 0 10px}.anatomy-tool-shell .anatomy-quiz-return button{background:var(--quiz-accent);color:#fff;border-color:var(--quiz-accent)}.anatomy-quiz-panel :is(button,[data-anatomy-quiz-feedback]):focus-visible,.anatomy-quiz-return button:focus-visible{outline:3px solid #0284c7;outline-offset:3px}.anatomy-quiz-return{display:grid;gap:10px;min-width:0}.anatomy-quiz-return h3{font-size:16px;line-height:1.5;font-weight:800;margin:0;color:var(--quiz-ink);overflow-wrap:anywhere}.anatomy-quiz-return p{margin:0;overflow-wrap:anywhere}.anatomy-quiz-return button{justify-self:start;max-width:100%;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell[data-reading-mode=true] .anatomy-quiz-return :is(h3,p,button){font-size:17px;line-height:1.8}",
       ".theme-dark :is(.anatomy-quiz-panel,.anatomy-quiz-return){--quiz-panel:#17253b;--quiz-soft:#20364b;--quiz-ink:#f1f5f9;--quiz-muted:#cbd5e1;--quiz-border:#64748b;--quiz-accent:#166534;--quiz-success:#a7f3d0;--quiz-success-bg:#123d36;--quiz-review:#fde68a;--quiz-review-bg:#483718}.theme-contrast :is(.anatomy-quiz-panel,.anatomy-quiz-return){--quiz-panel:#fff;--quiz-soft:#fff;--quiz-ink:#000;--quiz-muted:#000;--quiz-border:#000;--quiz-accent:#000;--quiz-success:#000;--quiz-success-bg:#fff;--quiz-review:#000;--quiz-review-bg:#fff}.anatomy-tool-shell[data-reading-mode=true] .anatomy-quiz-panel :is(.anatomy-quiz-question>p,.anatomy-quiz-options button,.anatomy-quiz-feedback>p){font-size:17px;line-height:1.8}@media(max-width:600px){.anatomy-tool-shell .anatomy-quiz-panel{padding:14px}.anatomy-quiz-heading h4{font-size:18px}.anatomy-quiz-summary{align-items:flex-start}.anatomy-quiz-meta{gap:4px 10px}.anatomy-quiz-option-result{max-width:32%}.anatomy-quiz-session button{flex:1}}@media(forced-colors:active){.anatomy-quiz-options button[data-result=correct]{outline:2px solid Highlight;outline-offset:2px}.anatomy-quiz-panel [data-anatomy-quiz-feedback]:focus{outline:3px solid Highlight}}",
       ".anatomy-tool-shell:is([data-anatomy-tab=aiTutor],[data-anatomy-tab=tour])[data-anatomy-study-controls-expanded=false]>:is(.anatomy-mission,.anatomy-mode-card,.anatomy-system-rail,.anatomy-display-panel,.anatomy-controls-bar){display:none!important}@media(min-width:721px){.anatomy-tool-shell:is([data-anatomy-tab=aiTutor],[data-anatomy-tab=tour])>.anatomy-study-controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;align-items:end}.anatomy-tool-shell:is([data-anatomy-tab=aiTutor],[data-anatomy-tab=tour])>.anatomy-study-controls button{grid-column:auto}}",
       ".anatomy-tool-shell .anatomy-tutor-panel.anatomy-refinement{--tutor-panel:#fff;--tutor-soft:#f5f3ff;--tutor-ink:#17253b;--tutor-muted:#475569;--tutor-border:#b6bfd4;--tutor-accent:#6d28d9;--refinement-bg:var(--tutor-panel);--refinement-ink:var(--tutor-ink);padding:18px;margin:0;border:1px solid var(--tutor-border);border-radius:18px;background:var(--tutor-panel);color:var(--tutor-ink)}.anatomy-tool-shell .anatomy-tutor-panel h4{font-size:20px;line-height:1.4}.anatomy-tool-shell .anatomy-tutor-context{padding:10px 12px;border-radius:9px;border-inline-start:4px solid var(--tutor-accent);background:var(--tutor-soft);font-size:14px;line-height:1.6}.anatomy-tool-shell .anatomy-tutor-log{max-height:360px;margin-block:12px;padding:8px;background:var(--tutor-panel);border-color:var(--tutor-border);border-radius:10px}.anatomy-tool-shell .anatomy-tutor-message{background:var(--tutor-panel);border-color:var(--tutor-border);border-radius:10px;font-size:15px;line-height:1.65}.anatomy-tool-shell .anatomy-tutor-message p{font-size:15px;line-height:1.65}.anatomy-tool-shell .anatomy-tutor-message[data-role=user]{background:var(--tutor-soft)}.anatomy-tool-shell .anatomy-tutor-message .anatomy-tutor-message-context{font-size:12px;line-height:1.5;color:var(--tutor-muted);white-space:normal}.anatomy-tool-shell .anatomy-tutor-panel .anatomy-tutor-compose{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px}.anatomy-tool-shell .anatomy-tutor-compose-label{display:block;font-size:14px;font-weight:800;margin-block:14px 6px}.anatomy-tool-shell .anatomy-tutor-compose textarea{display:block;width:100%;min-width:0;min-height:86px;max-height:320px;resize:vertical;box-sizing:border-box;padding:10px;border:1px solid var(--tutor-border);border-radius:10px;background:var(--tutor-panel);color:var(--tutor-ink);font-size:16px;line-height:1.6}.anatomy-tool-shell .anatomy-tutor-compose [data-anatomy-tutor-send]{margin:0;padding:10px 16px;background:var(--tutor-accent);color:#fff;border-color:var(--tutor-accent);font-size:14px;font-weight:800}.anatomy-tool-shell .anatomy-tutor-hint{font-size:12px;line-height:1.6;color:var(--tutor-muted)}.anatomy-tool-shell .anatomy-tutor-panel :is(.anatomy-tutor-reference,.anatomy-tutor-starters){border:1px solid var(--tutor-border);border-radius:10px;padding:0 12px;margin-block:12px;background:var(--tutor-panel)}.anatomy-tool-shell .anatomy-tutor-panel summary{font-size:14px;line-height:1.5;padding-block:12px}.anatomy-tool-shell .anatomy-tutor-panel .anatomy-tutor-lesson{border:0;padding:0;background:transparent}.anatomy-tool-shell .anatomy-tutor-suggestions{grid-template-columns:minmax(0,1fr);margin:8px 0 12px}.anatomy-tool-shell .anatomy-tutor-suggestions button{margin:0;padding:10px 12px;font-size:14px;line-height:1.6;border-color:var(--tutor-border);background:var(--tutor-soft)}.anatomy-tool-shell .anatomy-tutor-latest{font-size:13px;line-height:1.5;border-color:var(--tutor-border);color:var(--tutor-accent);margin-block:4px}.anatomy-tool-shell .anatomy-tutor-recovery{padding:12px;border:1px solid var(--tutor-border);border-radius:10px;background:var(--tutor-soft)}.anatomy-tool-shell .anatomy-tutor-message:focus{outline:3px solid #0284c7;outline-offset:2px}.theme-dark .anatomy-tool-shell .anatomy-tutor-panel.anatomy-refinement{--tutor-panel:#17253b;--tutor-soft:#24334d;--tutor-ink:#f1f5f9;--tutor-muted:#cbd5e1;--tutor-border:#94a3b8}.theme-dark .anatomy-tool-shell .anatomy-tutor-latest{color:#ddd6fe}.theme-contrast .anatomy-tool-shell .anatomy-tutor-panel.anatomy-refinement{--tutor-panel:#fff;--tutor-soft:#fff;--tutor-ink:#000;--tutor-muted:#000;--tutor-border:#000;--tutor-accent:#000}.anatomy-tool-shell[data-reading-mode=true] .anatomy-tutor-panel :is(p,button,summary,label){font-size:16px;line-height:1.7}@media(max-width:600px){.anatomy-tool-shell .anatomy-tutor-panel.anatomy-refinement{padding:14px}.anatomy-tool-shell .anatomy-tutor-message{padding:10px}.anatomy-tool-shell .anatomy-tutor-message[data-role=user]{margin-inline-start:8px}}",
@@ -2958,6 +2964,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
   // Each mounted conversation reads its latest profile when a retained action runs.
   var anatomyTutorProfiles = new WeakMap();
+  var anatomyProgressTrackingPending = new WeakMap();
   // Only live clipboard requests can finish; persisted tokens never mean a copy is still running.
   var anatomyStudyCopies = new Map();
   window.StemLab.registerTool('anatomy', {
@@ -3117,45 +3124,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         // and left two independently controlled system selectors on phones.
         var anatomyCompactMode = anatomyStudyMode || activeTab === 'homeoHunt' || activeTab === 'aiTutor' || activeTab === 'tour' || activeTab === 'pathways' || activeTab === 'spotter';
         var studyControlsExpanded = d._studyControlsExpanded === true;
-        function activateAnatomyTab(tab, keepTabFocus, afterTabChange) {
-          function changeTab(patch, after) {
-            function finish(nextState) { if (after) after(nextState); if (afterTabChange) afterTabChange(nextState); }
-            if (activeTab === 'flashcards') {
-              updateFlashcardOwned(function(state, round) { return Object.assign(flashcardStatePatch({}, state, round), { _showSystemsMotion: false }, patch); }, finish);
-            } else { updMulti(Object.assign({ _showSystemsMotion: false }, patch)); finish(Object.assign({}, d, patch)); }
-          }
-          if (tab === 'quiz') {
-            changeTab({ _activeTab: 'quiz', quizMode: true, _quizQuestion: currentQuizQuestion }, function() {
-              if (!keepTabFocus) focusQuizQuestion();
-              if (typeof announceToSR === 'function') announceToSR(t('stem.anatomy.quiz_mode_opened', 'Quiz opened. Questions use the structures in the current diagram.'));
-            });
-            return;
-          }
-          if (tab === 'tour') {
-            var nextTourIndex = tourActive ? tourStepIdx : 0;
-            var tabTourStep = tourSteps && tourSteps[nextTourIndex];
-            var tourPatch = { _activeTab: tab, quizMode: false, _tourActive: true, _tourStepIdx: nextTourIndex, _tourSystem: tourActive ? tourSystemId : sysKey };
-            changeTab(tabTourStep ? structureFocusPatch(tabTourStep.structureId, tourPatch) : tourPatch, function() {
-              if (tabTourStep) announceStructure(tabTourStep.structureId);
-              if (!keepTabFocus) { if(tourRecapActive)focusTourRecap(rawTourRecap.focusIndex,true,rawTourRecap.token);else focusTourStep(); }
-            });
-            return;
-          }
-          if (tab === 'pathways' && activePathway && activePathway.steps[pathwayStepIdx]) {
-            var tabPathwayStep = activePathway.steps[pathwayStepIdx];
-            changeTab(structureFocusPatch(tabPathwayStep.structure, { _activeTab: tab, _pathwayStep: pathwayStepIdx }), function() {
-              announceStructure(tabPathwayStep.structure);
-              if (!keepTabFocus) { if (pathwayRecapActive) { var tabPathwayQuestion = focusedPathwayQuestion(currentPathwayRecap,activePathway); focusPathwayCheck(activePathway,tabPathwayQuestion && tabPathwayQuestion.id,true,currentPathwayRecap.token); }
-                else focusPathwayStep(activePathway,pathwayStepIdx); }
-            });
-            return;
-          }
-          if (tab === 'pathways') { changeTab({ _activeTab: tab, quizMode: false }, function() { if (!keepTabFocus) focusPathwayMenu(); }); return; }
-          if (tab === 'flashcards') {
-            openFlashcardRound(flashcardScope, sysKey, complexity, { _showSystemsMotion: false }, false, function(nextState,patch,origin) { if (!keepTabFocus) focusFlashcardState(nextState,null,origin); });
-            return;
-          }
-          changeTab({ _activeTab: tab, quizMode: false }, function() { if (tab === 'spotter' && !keepTabFocus) focusCurrentSpotter(); });
+        function activateAnatomyTab(tab, keepTabFocus) {
+          if (navigableAnatomyTabs.indexOf(tab) !== -1) runAnatomyActivity(tab, keepTabFocus);
         }
         function handleAnatomyTabKey(event) {
           if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(event.key) === -1) return;
@@ -3165,9 +3135,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           var current = Math.max(0, navigableAnatomyTabs.indexOf(activeTab));
           var next = event.key === 'Home' ? 0 : event.key === 'End' ? navigableAnatomyTabs.length - 1 :
             (current + ((event.key === 'ArrowRight') !== rightToLeft ? 1 : -1) + navigableAnatomyTabs.length) % navigableAnatomyTabs.length;
+          var tabFocusOrigin = document.activeElement;
           activateAnatomyTab(navigableAnatomyTabs[next], true);
           var tabButtons = event.currentTarget.querySelectorAll('[role="tab"]');
-          if (tabButtons[next]) setTimeout(function() { if (tabButtons[next].isConnected && tabButtons[next].getAttribute('aria-selected') === 'true') tabButtons[next].focus({preventScroll:true}); }, 0);
+          if (tabButtons[next]) setTimeout(function() {
+            var focusUnchanged = document.activeElement === tabFocusOrigin || document.activeElement === document.body && tabFocusOrigin && !tabFocusOrigin.isConnected;
+            if (focusUnchanged && tabButtons[next].isConnected && tabButtons[next].getAttribute('aria-selected') === 'true') tabButtons[next].focus({preventScroll:true});
+          }, 0);
         }
         function revealAnatomyModeTab(tabStrip) {
           if (!tabStrip || !tabStrip.isConnected || tabStrip._anatomyActiveTab !== activeTab) return;
@@ -4925,7 +4899,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           if (context.structure.v === 'a') patch.view = 'anterior';
           else if (context.structure.v === 'p') patch.view = 'posterior';
           if (patch.system !== sysKey || (patch.view && patch.view !== view)) {
-            patch.quizMode = false; patch.quizIdx = 0; patch.quizScore = 0; patch.quizFeedback = null; patch._quizAttempts = 0;
+            patch.quizMode = false; patch.quizIdx = 0; patch.quizScore = 0; patch.quizFeedback = null; patch._quizAttempts = 0; patch._quizActivityReturn = null;
             // Leaving the quiz for a structure in another diagram means the learner wants to read it.
             if (activeTab === 'quiz' && !('_activeTab' in patch)) patch._activeTab = 'explore';
           }
@@ -6020,7 +5994,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             var step = scenario.steps[index], context = findStructureContext(step.structureId,state.system), lens = ANATOMY_LENS_ITEMS.find(function(item) { return item.structureId === step.structureId; });
             var viewed = Object.assign({},state._anatomyLensViewed); if (lens) viewed[lens.id] = true;
             var patch = Object.assign({},progress,structureFocusPatch(step.structureId,{system:state.system,complexity:Math.max(tutorLevelOf(state),context ? anatomyStructureComplexity(context.structure) : 1),_activeTab:'explore',quizMode:false,_showStudySheet:false,_anatomyModelFocus:false,_showSystemsMotion:true,_systemsMotionScenario:row.id,_systemsMotionStep:index,_systemsMotionPerturbation:sameScenario && state._systemsMotionPerturbation === true,_systemsMotionPredicting:null,_systemsMotionAnswer:sameScenario ? state._systemsMotionAnswer : null,_showSystemsSynthesis:false,_showAnatomyLens:false,_regionalAtlasOpen:step.structureId,_regionalAtlasStep:step.atlasStep,_regionalAtlasPlaying:true,_regionalAtlasClinical:sameScenario && state._systemsMotionPerturbation === true && step.id === scenario.perturbation.affectedStepId,_anatomyLensViewed:viewed}));
-            ['quizIdx','quizScore','quizFeedback','_quizAttempts'].forEach(function(key) { delete patch[key]; });
+            ['quizIdx','quizScore','quizFeedback','_quizAttempts','_quizActivityReturn'].forEach(function(key) { delete patch[key]; });
             return mergeComparisonHistoryPatch(state,patch);
           },function(state) { focusStudyState(state,state._showStudySheet === true ? 'notice' : row.id === 'homeostasis' ? 'feedback' : 'motion',origin); });
         }
@@ -6125,7 +6099,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           updateStudySheetOwned(function(state) {
             var level=anatomyStructureComplexity(structure), progress=tutorModeOf(state)==='flashcards'?flashcardStatePatch({},state):{};
             var patch=Object.assign({},progress,structureFocusPatch(structure.id,{system:systemId,complexity:Math.max(tutorLevelOf(state),level),_activeTab:'explore',quizMode:false,_showStudySheet:false,_anatomyModelFocus:false}));
-            ['quizIdx','quizScore','quizFeedback','_quizAttempts'].forEach(function(key){delete patch[key];});
+            ['quizIdx','quizScore','quizFeedback','_quizAttempts','_quizActivityReturn'].forEach(function(key){delete patch[key];});
             return mergeComparisonHistoryPatch(state,patch);
           },function(state){announceStructure(structure.id);focusStudyState(state,'structure',origin);});
         }
@@ -6154,7 +6128,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             if(expectedRound && (!round || studyRoundIdentity(round)!==expectedRound))return null;
             var refresh=typeof restart==='boolean'?restart:!round || !round.deckIds.length || Object.keys(round.rated).length===round.deckIds.length;
             var patch=flashcardRoundPatch('review',systemId,tutorLevelOf(state),{_showStudySheet:false,_anatomyModelFocus:false},refresh,Object.assign({},state,{_flashcardRounds:rounds}));
-            ['quizIdx','quizScore','quizFeedback','_quizAttempts'].forEach(function(key){delete patch[key];});
+            ['quizIdx','quizScore','quizFeedback','_quizAttempts','_quizActivityReturn'].forEach(function(key){delete patch[key];});
             return mergeComparisonHistoryPatch(state,patch);
           },function(state){announceFlashcardRound(state);focusFlashcardState(state,null,origin);});
         }
@@ -6349,7 +6323,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           var targetSystemId = resolveClinicalAtlasPackSystemId(pack, preferredSystemId || sysKey);
           return {
             system: targetSystemId, view: pack.bodyView, selectedStructure: pack.focusStructureId,
-            quizMode: false, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0,
+            quizMode: false, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0, _quizActivityReturn: null,
             search: '', _anatomySearchIndex: 0, _flashcardIdx: 0, _flashcardFlipped: false,
             _bodyView3d: true, _body3dStyle: 'clinical', _clinicalAtlasPackId: pack.id,
             _clinicalAtlasConceptId: conceptId || pack.primaryOntologyId || '', _clinicalConceptSearch: '',
@@ -6360,7 +6334,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         function systemSelectionPatch(systemId) {
           if(activeTab==='tour' && GUIDED_TOURS[systemId] && GUIDED_TOURS[systemId].length){return Object.assign(structureFocusPatch(GUIDED_TOURS[systemId][0].structureId,{_tourActive:true,_tourSystem:systemId,_tourStepIdx:0,_tourRecap:null,_tourRecapReturn:null}),{system:systemId});}
           if (activeTab === 'flashcards') return systemId === sysKey ? {} : flashcardRoundPatch(flashcardScope, systemId, complexity);
-          var patch = { system: systemId, selectedStructure: null, quizMode: false, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0, search: '', _flashcardIdx: 0, _flashcardFlipped: false };
+          var patch = { system: systemId, selectedStructure: null, quizMode: false, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0, _quizActivityReturn: null, search: '', _flashcardIdx: 0, _flashcardFlipped: false };
           if (bodyView3d && body3dStyle === 'clinical') {
             var targetPack = registeredClinicalAtlasPacks.find(function(pack) { return !pack.systems.length || pack.systems.indexOf(systemId) !== -1; });
             if (targetPack) return Object.assign(patch, clinicalAtlasPackTransitionPatch(targetPack, 'system-selector', '', systemId));
@@ -6382,7 +6356,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         function selectAnatomyLevel(value) {
           var level = Number(value);
           if ([1, 2, 3].indexOf(level) === -1 || level === complexity) return;
-          var levelPatch = { complexity: level, selectedStructure: null, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0 };
+          var levelPatch = { complexity: level, selectedStructure: null, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0, _quizActivityReturn: null };
           if (level === 1 && (activeTab === 'imaging' || activeTab === 'procedure')) levelPatch._activeTab = 'explore';
           if (activeTab === 'flashcards') openFlashcardRound(flashcardScope,sysKey,level,levelPatch);
           else updMulti(levelPatch);
@@ -6629,10 +6603,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
         // Centralized SR announcement for organ selection (the #allo-live-anatomy region was dead).
         // Grade-aware: mirrors the panel (simplified desc for k2/g35, full fn otherwise).
-        function announceStructure(id) {
+        function announceStructure(id, preferredSystemId) {
           if (typeof announceToSR !== 'function' || !id) return;
-          var st = null;
-          for (var asi = 0; asi < allStructures.length; asi++) { if (allStructures[asi].id === id) { st = allStructures[asi]; break; } }
+          var context = findStructureContext(id, preferredSystemId || sysKey);
+          var st = context && context.structure;
           if (!st) return;
           var simple = (gradeBand === 'k2' || gradeBand === 'g35') && SIMPLE_DESC[st.id] && SIMPLE_DESC[st.id][gradeBand];
           var desc = simple || st.fn || '';
@@ -7242,17 +7216,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         // then unrated, Learning, and Got it. Each coverage cycle keeps this order;
         // restarting or beginning the next cycle refreshes the review priorities.
         // Reads the raw saved map: this block runs before `structureConfidence` is normalised.
-        var quizSharedRatings = anatomySharedRatings(d, knownStructureIds, Date.now());
-        var quizConfidenceRaw = quizSharedRatings.confidence;
-        var quizConfidenceAtRaw = quizSharedRatings.at;
         var QUIZ_CONFIDENCE_RANK = { practice: 0, learning: 3, mastered: 4 };
-        var quizNow = Date.now();
-        quizPool = quizPool.map(function(structure, index) {
-          var level = quizConfidenceRaw[structure.id];
-          var rank = QUIZ_CONFIDENCE_RANK.hasOwnProperty(level) ? QUIZ_CONFIDENCE_RANK[level] : 2;
-          if (level !== 'practice' && rank !== 2 && anatomyReviewDue(level, quizConfidenceAtRaw[structure.id], quizNow)) rank = 1;
-          return { structure: structure, index: index, rank: rank };
-        }).sort(function(a, b) { return a.rank - b.rank || a.index - b.index; }).map(function(entry) { return entry.structure; });
+        function rankedQuizStructures(state) {
+          var now=Date.now(),ratings=anatomySharedRatings(state,knownStructureIds,now);
+          return viewFiltered.filter(function(structure){return structure.fn;}).map(function(structure,index){
+            var level=ratings.confidence[structure.id];
+            var rank=Object.prototype.hasOwnProperty.call(QUIZ_CONFIDENCE_RANK,level)?QUIZ_CONFIDENCE_RANK[level]:2;
+            if(level!=='practice'&&rank!==2&&anatomyReviewDue(level,ratings.at[structure.id],now))rank=1;
+            return {structure:structure,index:index,rank:rank};
+          }).sort(function(a,b){return a.rank-b.rank||a.index-b.index;}).map(function(entry){return entry.structure;});
+        }
+        quizPool=rankedQuizStructures(d);
         var quizMode = activeTab === 'quiz';
         function normalizedQuizIndex(value) {
           var index = Number(value);
@@ -7267,16 +7241,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           if (schedule === 'legacy-v3') return { poolIndex: count ? (index + Math.floor(index / Math.max(count, 4))) % count : 0, type: index % 4 };
           return anatomyQuizPosition(index, count);
         }
-        function quizSnapshotPositionValid(snapshot) {
+        function quizSnapshotPositionValid(snapshot, index, baseIds) {
           // Older saved questions derived their target from their stored pool.
           if (snapshot.schedule == null) return snapshot.structureId == null && snapshot.type == null;
           if (snapshot.schedule !== 'coverage-v1' && snapshot.schedule !== 'legacy-v3') return false;
-          var position = quizPosition(quizRoundIdx, quizBaseIds.length, snapshot.schedule);
+          var position = quizPosition(index == null ? quizRoundIdx : index, (baseIds || quizBaseIds).length, snapshot.schedule);
           return snapshot.type === position.type && snapshot.structureId === (snapshot.poolIds.length ? snapshot.poolIds[position.poolIndex] : null);
         }
-        var storedQuizQuestionValid = !!storedQuizQuestion && storedQuizQuestion.context === quizQuestionContext && storedQuizQuestion.index === quizRoundIdx &&
-          Array.isArray(storedQuizQuestion.poolIds) && storedQuizQuestion.poolIds.length === quizBaseIds.length &&
-          storedQuizQuestion.poolIds.every(function(id, index, ids) { return typeof id === 'string' && quizBaseIds.indexOf(id) !== -1 && ids.indexOf(id) === index; }) && quizSnapshotPositionValid(storedQuizQuestion);
+        function validQuizSnapshot(snapshot, index, context, baseIds) {
+          var ids = baseIds || quizBaseIds;
+          return !!snapshot && snapshot.context === (context || quizQuestionContext) && snapshot.index === index &&
+            Array.isArray(snapshot.poolIds) && snapshot.poolIds.length === ids.length &&
+            snapshot.poolIds.every(function(id, position, pool) { return typeof id === 'string' && ids.indexOf(id) !== -1 && pool.indexOf(id) === position; }) && quizSnapshotPositionValid(snapshot, index, ids);
+        }
+        function savedQuizReturnContext(state) {
+          var saved = state._quizQuestion, checkpoint = state._quizActivityReturn;
+          if (!saved || typeof saved.context !== 'string' || !checkpoint || typeof checkpoint !== 'object' || Array.isArray(checkpoint)) return null;
+          var parts = saved.context.split('|'), index = normalizedQuizIndex(state.quizIdx), level = Number(parts[3]);
+          if (parts.length !== 6 || parts[0] !== 'science-v3' || ANATOMY_SYSTEM_IDS.indexOf(parts[1]) === -1 || ['anterior','posterior'].indexOf(parts[2]) === -1 ||
+            level !== complexity || parts[4] !== gradeBand || checkpoint.index !== index || checkpoint.score !== safeNonNegativeNumber(state.quizScore,0,true) ||
+            checkpoint.attempts !== safeNonNegativeNumber(state._quizAttempts,0,true) || typeof saved.token !== 'string' || !saved.token || saved.token.length > 128 ||
+            checkpoint.token !== saved.token || checkpoint.questionKey !== saved.context + '|' + index) return null;
+          var ids = SYSTEMS[parts[1]].structures.filter(function(structure) {
+            return structure.fn && passesAnatomyLevel(structure,level) && (structure.v === 'b' || structure.v === (parts[2] === 'posterior' ? 'p' : 'a'));
+          }).map(function(structure) { return structure.id; });
+          var context = ['science-v3',parts[1],parts[2],level,gradeBand,ids.join(',')].join('|');
+          return ids.length && validQuizSnapshot(saved,index,context,ids) ? {system:parts[1],view:parts[2],complexity:level} : null;
+        }
+        var storedQuizQuestionValid = validQuizSnapshot(storedQuizQuestion, quizRoundIdx);
         if (storedQuizQuestionValid) quizPool = storedQuizQuestion.poolIds.map(function(id) { return rankedQuizPool.find(function(structure) { return structure.id === id; }); });
         function quizBinaryTruth(index,seed) {
           var binaryIndex=Math.floor(index/4),block=Math.floor(binaryIndex/8);
@@ -7402,8 +7394,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         function focusQuizQuestion() {
           setTimeout(function(){var panel=document.querySelector('[data-anatomy-quiz-panel]');if(!panel)return;var feedback=panel.querySelector('[data-anatomy-quiz-feedback]');(feedback||panel).focus();var prompt=panel.querySelector('[data-anatomy-quiz-prompt]');if(!feedback&&prompt&&typeof announceToSR==='function')announceToSR(prompt.textContent);},0);
         }
-        var quizStudyReturnAvailable = activeTab === 'explore' && storedQuizQuestionValid && savedQuizFeedback && savedQuizFeedback.questionKey === quizQuestionKey &&
-          d._quizStudyReturn && d._quizStudyReturn.questionKey === quizQuestionKey && d._quizStudyReturn.token === storedQuizQuestion.token;
+        var quizStudyReturnAvailable = activeTab !== 'quiz' && (savedQuizReturnContext(d) || storedQuizQuestionValid && savedQuizFeedback && savedQuizFeedback.questionKey === quizQuestionKey &&
+          d._quizStudyReturn && d._quizStudyReturn.questionKey === quizQuestionKey && d._quizStudyReturn.token === storedQuizQuestion.token);
         function studyQuizStructure() {
           if (!quizQ || !quizFeedback) return;
           updMulti(structureFocusPatch(quizQ.id, { _activeTab: 'explore', quizMode: false, _quizQuestion: currentQuizQuestion,
@@ -7423,7 +7415,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         }
         function restartQuizPractice() {
           var seed=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
-          updMulti({quizIdx:0,quizScore:0,quizFeedback:null,_quizAttempts:0,_quizSeed:seed,_quizQuestion:quizQuestionSnapshot(0,rankedQuizPool,seed)});focusQuizQuestion();
+          updMulti({quizIdx:0,quizScore:0,quizFeedback:null,_quizAttempts:0,_quizActivityReturn:null,_quizSeed:seed,_quizQuestion:quizQuestionSnapshot(0,rankedQuizPool,seed)});focusQuizQuestion();
         }
         function advanceQuizQuestion() {
           var accepted=false;
@@ -7855,7 +7847,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             _flashcardScope: nextScope, _flashcardDeck: saved.deckIds, _flashcardDeckContext: context, _flashcardRoundContext: context,
             _flashcardRoundRated: saved.rated, _flashcardIdx: saved.index, _flashcardFlipped: sameCard && current.flipped,
             _flashcardRounds: rounds, _flashcardRevision: flashcardRevisionOf(state) + 1, _activeTab: 'flashcards', quizMode: false });
-          if (systemId !== current.systemId || level !== current.level) Object.assign(patch, { quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0 });
+          if (systemId !== current.systemId || level !== current.level) Object.assign(patch, { quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0, _quizActivityReturn: null });
           return saved.deckIds.length ? flashcardFocusPatch(saved.deckIds[saved.index], patch, state) : patch;
         }
         function openFlashcardRound(scope, systemId, level, extraPatch, restart, after) {
@@ -8090,8 +8082,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           if (spotterBestTime > 0 && spotterBestTime < 3 && !badges.speedDemon) awardBadge('speedDemon');
         }
 
-        // Consolidate derived progress tracking into one deferred state update. The old
-        // implementation issued up to three setState calls synchronously during render.
+        // Merge observed progress into the latest state after render. The old
+        // captured maps could overwrite newer observations or an imported record.
         var progressTrackingPatch = {};
         if (!systemsExplored[sysKey]) {
           var newSE = Object.assign({}, systemsExplored); newSE[sysKey] = true;
@@ -8107,12 +8099,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         }
         var progressTrackingKeys = Object.keys(progressTrackingPatch);
         if (progressTrackingKeys.length > 0) {
-          var progressTrackingFingerprint = sysKey + '|' + view + '|' + (sel ? sel.id : '') + '|' + progressTrackingKeys.join(',');
-          if (window.__alloAnatomyTrackingPending !== progressTrackingFingerprint) {
-            window.__alloAnatomyTrackingPending = progressTrackingFingerprint;
+          var progressTrackingFingerprint = [tutorStudyIdentity(d),activeTab,gradeBand,studyImportRevision,studySheetRevision,showStudySheet,progressTrackingKeys.join(',')].join('|');
+          if (anatomyProgressTrackingPending.get(setLabToolData) !== progressTrackingFingerprint) {
+            anatomyProgressTrackingPending.set(setLabToolData, progressTrackingFingerprint);
             var commitProgressTracking = function() {
-              if (window.__alloAnatomyTrackingPending === progressTrackingFingerprint) window.__alloAnatomyTrackingPending = null;
-              updMulti(progressTrackingPatch);
+              if (anatomyProgressTrackingPending.get(setLabToolData) === progressTrackingFingerprint) anatomyProgressTrackingPending.delete(setLabToolData);
+              setLabToolData(function(previous) {
+                var state = previous.anatomy || {}; if (!studySheetOwnedMatches(state,true)) return previous;
+                var patch = {}, observations = {_systemsExplored:sysKey,_viewsUsed:view,_structuresViewed:sel&&sel.id};
+                var allowed = {_systemsExplored:ANATOMY_SYSTEM_IDS,_viewsUsed:['anterior','posterior'],_structuresViewed:knownStructureIds};
+                progressTrackingKeys.forEach(function(key) {
+                  var id = observations[key], flags = safeFlagMap(state[key],allowed[key]);
+                  if (id && !flags[id]) { flags[id] = true; patch[key] = flags; }
+                });
+                if (!Object.keys(patch).length) return previous;
+                var next = Object.assign({},state,patch); anatomyTutorProfiles.set(next,tutorProfileOf(state));
+                return Object.assign({},previous,{anatomy:next});
+              });
             };
             if (typeof setTimeout === 'function') setTimeout(commitProgressTracking, 0);
             else commitProgressTracking();
@@ -13430,33 +13433,173 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           var review=viewFiltered.filter(function(structure){return ratings.confidence[structure.id]==='practice'||ratings.confidence[structure.id]==='learning';});
           var unseen=viewFiltered.filter(function(structure){return !viewed[structure.id];});
           var rated=viewFiltered.filter(function(structure){return !!ratings.confidence[structure.id];}).length;
-          if (state._tourCompleted!==true && explored<Math.min(3,viewFiltered.length))return { id:'tour',title:t('stem.anatomy.study_flow_next_tour_title','Take the guided tour'),detail:t('stem.anatomy.study_flow_next_tour_detail','Build a structure-to-function map before testing recall.'),action:'Start tour' };
-          if (review.length)return { id:'review',title:formatAnatomyStudyText(t('stem.anatomy.study_flow_next_review_title','Review {structure}'),{structure:review[0].name}),detail:formatAnatomyStudyText(t('stem.anatomy.study_flow_next_review_detail','Structures marked for review in this view: {count}.'),{count:review.length}),action:'Review now',structure:review[0] };
-          if (unseen.length)return { id:'unseen',title:formatAnatomyStudyText(t('stem.anatomy.study_flow_next_unseen_title','Discover {structure}'),{structure:unseen[0].name}),detail:formatAnatomyStudyText(t('stem.anatomy.study_flow_next_unseen_detail','Unexplored structures in this view: {count}.'),{count:unseen.length}),action:'Open structure',structure:unseen[0] };
-          if (rated<Math.min(3,viewFiltered.length))return { id:'cards',title:t('stem.anatomy.study_flow_next_cards_title','Check your recall'),detail:t('stem.anatomy.study_flow_next_cards_detail','Use flashcards and rate your confidence to build a focused review list.'),action:'Open cards' };
-          if (safeNonNegativeNumber(state._totalCorrect,0,true)<5)return { id:'quiz',title:t('stem.anatomy.study_flow_next_quiz_title','Test what you know'),detail:t('stem.anatomy.study_flow_next_quiz_detail','Mix function, system, true/false, and clinical recall questions.'),action:'Start quiz' };
-          return { id:'spotter',title:t('stem.anatomy.study_flow_next_spotter_title','Practice visual identification'),detail:t('stem.anatomy.study_flow_next_spotter_detail','Use the Spotter to transfer recall to the body diagram.'),action:'Open Spotter' };
+          if (!viewFiltered.length) {
+            var otherView=view==='anterior'?'posterior':'anterior';
+            if(otherViewMatchCount)return {id:'view',view:otherView,title:formatAnatomyStudyText(t('stem.anatomy.guidance_empty_view_title','See structures in the {view} view'),{view:otherView==='anterior'?t('stem.anatomy.quiz_flow_anterior','anterior'):t('stem.anatomy.quiz_flow_posterior','posterior')}),detail:t('stem.anatomy.guidance_empty_view_detail','This view has no structures at this level. Switch views to continue studying.'),action:t('stem.anatomy.guidance_action_view','Switch view')};
+            for(var nextLevel=complexity+1;nextLevel<=3;nextLevel++)if(allStructures.some(function(structure){return passesAnatomyLevel(structure,nextLevel)&&(structure.v==='b'||structure.v===(view==='posterior'?'p':'a'));}))return {id:'level',level:nextLevel,title:formatAnatomyStudyText(t('stem.anatomy.guidance_empty_level_title','Explore at {level}'),{level:nextLevel===2?t('stem.anatomy.middle','Middle'):t('stem.anatomy.advanced','Advanced')}),detail:t('stem.anatomy.guidance_empty_level_detail','Choose the next level with structures available in this view.'),action:t('stem.anatomy.guidance_action_level','Change level')};
+          }
+          if (state._tourCompleted!==true && explored<Math.min(3,viewFiltered.length))return { id:'tour',title:t('stem.anatomy.study_flow_next_tour_title','Take the guided tour'),detail:t('stem.anatomy.study_flow_next_tour_detail','Build a structure-to-function map before testing recall.'),action:t('stem.anatomy.guidance_action_tour','Open guided tour') };
+          if (review.length)return { id:'review',title:formatAnatomyStudyText(t('stem.anatomy.study_flow_next_review_title','Review {structure}'),{structure:review[0].name}),detail:formatAnatomyStudyText(t('stem.anatomy.study_flow_next_review_detail','Structures marked for review in this view: {count}.'),{count:review.length}),action:t('stem.anatomy.guidance_action_review','Review structure'),structure:review[0] };
+          if (unseen.length)return { id:'unseen',title:formatAnatomyStudyText(t('stem.anatomy.study_flow_next_unseen_title','Discover {structure}'),{structure:unseen[0].name}),detail:formatAnatomyStudyText(t('stem.anatomy.study_flow_next_unseen_detail','Unexplored structures in this view: {count}.'),{count:unseen.length}),action:t('stem.anatomy.guidance_action_unseen','Open structure'),structure:unseen[0] };
+          var cards={ id:'cards',title:t('stem.anatomy.study_flow_next_cards_title','Check your recall'),detail:t('stem.anatomy.study_flow_next_cards_detail','Use flashcards and rate your confidence to build a focused review list.'),action:t('stem.anatomy.guidance_action_cards','Open flashcards') };
+          if (rated<Math.min(3,viewFiltered.length))return cards;
+          if (safeNonNegativeNumber(state._totalCorrect,0,true)<5)return { id:'quiz',title:t('stem.anatomy.study_flow_next_quiz_title','Test what you know'),detail:t('stem.anatomy.study_flow_next_quiz_detail','Mix function, system, true/false, and clinical recall questions.'),action:t('stem.anatomy.guidance_action_quiz','Open quiz') };
+          var visualConcepts={};viewFiltered.forEach(function(structure){if(structure.fn)visualConcepts[anatomyEvidenceId(structure.id,knownStructureIds)]=true;});
+          if(Object.keys(visualConcepts).length<4)return cards;
+          return { id:'spotter',title:t('stem.anatomy.study_flow_next_spotter_title','Practice visual identification'),detail:t('stem.anatomy.study_flow_next_spotter_detail','Use the Spotter to transfer recall to the body diagram.'),action:t('stem.anatomy.guidance_action_spotter','Open Spotter') };
         }
         var recommendedNextStep=studyRecommendationForState(d);
-        function openReviewStructure(structure) {
-          if (!structure) return;
-          updMulti(structureFocusPatch(structure.id, { _activeTab: 'explore', quizMode: false }));
-          announceStructure(structure.id);
-          playSound('structureClick');
+        function guidanceRevisionOf(state) { return safeNonNegativeNumber(state._guidanceRevision,0,true); }
+        var guidanceRevision=guidanceRevisionOf(d);
+        function guidanceOwnedMatches(state) {
+          return studySheetOwnedMatches(state,true) && guidanceRevisionOf(state)===guidanceRevision &&
+            (state._anatomyModelFocus===true)===(d._anatomyModelFocus===true);
         }
-        function runRecommendedNextStep() {
-          if (recommendedNextStep.id === 'tour') { activateAnatomyTab('tour'); return; }
-          if (recommendedNextStep.id === 'review' || recommendedNextStep.id === 'unseen') {
-            openReviewStructure(recommendedNextStep.structure);
-            return;
-          }
-          if (recommendedNextStep.id === 'cards') { activateAnatomyTab('flashcards'); return; }
-          if (recommendedNextStep.id === 'quiz') {
-            updMulti({ _activeTab: 'quiz', quizMode: true, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0, _quizQuestion: quizQuestionSnapshot(0, rankedQuizPool) });
-            return;
-          }
-          activateAnatomyTab('spotter');
+        function guidanceDestinationKey(state) {
+          var mode=tutorModeOf(state);
+          function textKey(value){return typeof value==='string'?value.slice(0,280):'';}
+          if(mode==='quiz')return 'quiz|'+normalizedQuizIndex(state.quizIdx)+'|'+textKey(state._quizQuestion&&state._quizQuestion.token)+'|'+textKey(state.quizFeedback&&state.quizFeedback.chosen)+'|'+safeNonNegativeNumber(state._quizAttempts,0,true);
+          if(mode==='flashcards')return 'cards|'+flashcardRevisionOf(state)+'|'+textKey(state._flashcardDeckContext)+'|'+normalizedQuizIndex(state._flashcardIdx);
+          if(mode==='tour'){var recap=state._tourRecap||{};return 'tour|'+textKey(state._tourSystem)+'|'+normalizedQuizIndex(state._tourStepIdx)+'|'+textKey(recap.token)+'|'+normalizedQuizIndex(recap.focusIndex)+'|'+(recap.active===true)+'|'+(recap.done===true);}
+          if(mode==='pathways'){var recap=state._pathwayRecap||{};return 'pathways|'+textKey(state._activePathway)+'|'+normalizedQuizIndex(state._pathwayStep)+'|'+textKey(recap.token)+'|'+textKey(recap.focusQuestionId)+'|'+(recap.active===true);}
+          if(mode==='spotter')return 'spotter|'+spotterQuestionKey(state);
+          return mode+'|'+(typeof state.selectedStructure==='string'&&knownStructureIds.indexOf(state.selectedStructure)!==-1?state.selectedStructure:'');
         }
+        function finishGuidance(accepted,origin) {
+          var requireShell = !!document.querySelector('[data-anatomy-tool]');
+          finishStudyUpdate(accepted,function(result){
+            var state=result.state,step=result.step,expectedBand=result.band,expectedStudy=result.study,expectedDestination=result.destination;
+            setTimeout(function(){
+              var shell=document.querySelector('[data-anatomy-tool]');
+              if(requireShell && !shell)return;
+              if(shell && (shell.getAttribute('data-anatomy-guidance-revision')!==String(guidanceRevisionOf(state)) ||
+                shell.getAttribute('data-anatomy-guidance-destination')!==expectedDestination ||
+                shell.getAttribute('data-anatomy-guidance-import-revision')!==String(studyImportRevisionOf(state)) ||
+                shell.getAttribute('data-anatomy-tab')!==tutorModeOf(state) || shell.getAttribute('data-anatomy-tutor-study')!==expectedStudy ||
+                shell.getAttribute('data-anatomy-tutor-band')!==expectedBand || tutorBandOf(state)!==expectedBand ||
+                shell.getAttribute('data-anatomy-tutor-sheet')!=='false' || shell.getAttribute('data-anatomy-study-revision')!==String(studySheetRevisionOf(state))))return;
+              if(step.structure){announceStructure(step.structure.id,state.system);if(step.id==='review'||step.id==='unseen')playSound('structureClick');}
+              else if(step.id==='quiz' && typeof announceToSR==='function')announceToSR(t('stem.anatomy.guidance_quiz_opened','Quiz opened. Your saved place and answers are kept.'));
+              else if(step.id==='cards')announceFlashcardRound(state);
+              if(!shell || result.keepTabFocus)return;
+              var active=document.activeElement;if(origin && active!==origin && !(active===document.body && !origin.isConnected))return;
+              var target=step.id==='review'||step.id==='unseen'?shell.querySelector('[data-anatomy-structure-detail-heading]'):
+                step.id==='quiz'?shell.querySelector('[data-anatomy-quiz-feedback]')||shell.querySelector('[data-anatomy-quiz-panel]'):
+                step.id==='cards'?shell.querySelector('[data-anatomy-recall-card]')||shell.querySelector('#anatomy-flashcards-title'):
+                step.id==='tour'?activityTourFocusTarget(shell,state):
+                step.id==='spotter'?shell.querySelector('[data-anatomy-spotter-feedback]')||shell.querySelector('[data-anatomy-spotter-question]')||shell.querySelector('[data-anatomy-spotter-start]'):
+                step.id==='pathways'?activityPathwayFocusTarget(shell,state):
+                step.id==='explore'?(shell.querySelector('[data-anatomy-structure-detail-heading]')||shell.querySelector('#anatomy-structure-list-title')):
+                step.id==='view'||step.id==='level'?shell.querySelector('#anatomy-structure-list-title')||shell.querySelector('#anatomy-workspace'):
+                shell.querySelector('#anatomy-mode-panel');
+              if(!target||!target.getClientRects().length)return;
+              target.focus({preventScroll:true});if(target.scrollIntoView)target.scrollIntoView({block:'start',behavior:'auto'});
+            },0);
+          });
+        }
+        function activityTourFocusTarget(shell,state) {
+          var panel=shell.querySelector('[data-anatomy-recap="tour"]');
+          if(panel){
+            var question=panel.querySelector('[data-anatomy-recap-index="'+normalizedQuizIndex((state._tourRecap||{}).focusIndex)+'"]');
+            return question&&question.querySelector('[data-anatomy-tour-feedback]')||panel.querySelector('[data-anatomy-recap-heading]');
+          }
+          return shell.querySelector('[data-anatomy-tour-step]');
+        }
+        function activityPathwayFocusTarget(shell,state) {
+          var pathway = pathwayById(state._activePathway), recap = validPathwayRecap(state._pathwayRecap,pathway,true);
+          if (recap && recap.active) {
+            var question = focusedPathwayQuestion(recap,pathway), node = question && shell.querySelector('[data-anatomy-pathway-question="'+question.id+'"]');
+            return node && (node.querySelector('[data-anatomy-pathway-feedback]') || node) || shell.querySelector('#anatomy-pathway-check-title');
+          }
+          return shell.querySelector('[data-anatomy-pathway-step]') || shell.querySelector('#anatomy-pathway-menu-title');
+        }
+        function quizActivityEntryPatch(state) {
+          var index=normalizedQuizIndex(state.quizIdx),snapshot=state._quizQuestion,returnContext=savedQuizReturnContext(state);
+          var patch={_activeTab:'quiz',quizMode:true};
+          if(validQuizSnapshot(snapshot,index))patch._quizQuestion=snapshot;
+          else if(returnContext)Object.assign(patch,returnContext,{selectedStructure:null,search:'',_studyFilter:'all',_quizQuestion:snapshot});
+          else patch._quizQuestion=quizQuestionSnapshot(index,rankedQuizStructures(state),state._quizSeed,!state._quizQuestion&&state.quizFeedback&&state.quizFeedback.questionKey==null?'legacy-v3':'coverage-v1');
+          return patch;
+        }
+        function runAnatomyActivity(tab,keepTabFocus) {
+          var accepted = null, origin = document.activeElement;
+          setLabToolData(function(previous) {
+            var state = previous.anatomy || {}; if (!guidanceOwnedMatches(state)) return previous;
+            var patch = {_activeTab:tab,quizMode:tab==='quiz'}, step = {id:tab==='flashcards'?'cards':tab};
+            var index = normalizedQuizIndex(state.quizIdx), savedQuestion = state._quizQuestion;
+            if (tab === 'quiz') patch=quizActivityEntryPatch(state);
+            else if (tab === 'tour') {
+              var systemId = state._tourActive===true&&GUIDED_TOURS[state._tourSystem]?state._tourSystem:sysKey, steps = GUIDED_TOURS[systemId]||[];
+              var tourIndex = state._tourActive===true?Math.min(normalizedQuizIndex(state._tourStepIdx),Math.max(0,steps.length-1)):0;
+              Object.assign(patch,{_tourActive:true,_tourSystem:systemId,_tourStepIdx:tourIndex});
+              if (steps[tourIndex]) {
+                patch = structureFocusPatch(steps[tourIndex].structureId,patch);
+                var tourContext = findStructureContext(steps[tourIndex].structureId,systemId); if(tourContext)step.structure=tourContext.structure;
+              }
+            } else if (tab === 'pathways') {
+              var pathway = pathwayById(state._activePathway), pathwayIndex = normalizedPathwayStep(state,pathway);
+              if (pathway && pathway.steps[pathwayIndex]) {
+                patch = structureFocusPatch(pathway.steps[pathwayIndex].structure,Object.assign(patch,{_pathwayStep:pathwayIndex}));
+                var context = findStructureContext(pathway.steps[pathwayIndex].structure); if(context)step.structure=context.structure;
+              }
+            } else if (tab === 'flashcards') patch = flashcardRoundPatch(state._flashcardScope==='review'?'review':'all',sysKey,complexity,{},false,state);
+            // Changing activities preserves Quiz work even when a saved step opens another diagram.
+            ['quizIdx','quizScore','quizFeedback','_quizAttempts','_quizActivityReturn'].forEach(function(key){delete patch[key];});
+            if (activeTab === 'quiz' && tab !== 'quiz' && validQuizSnapshot(savedQuestion,index)) patch._quizActivityReturn = {
+              questionKey:savedQuestion.context+'|'+index,token:savedQuestion.token,index:index,
+              score:safeNonNegativeNumber(state.quizScore,0,true),attempts:safeNonNegativeNumber(state._quizAttempts,0,true)
+            };
+            if (activeTab === 'flashcards') patch = Object.assign(flashcardStatePatch({},state,readActiveFlashcardRound(state)),patch);
+            patch = Object.assign({},mergeComparisonHistoryPatch(state,patch),cancelStudyCopyPatch(state),{
+              _showStudySheet:false,_showSystemsMotion:false,_anatomyModelFocus:false,
+              _guidanceRevision:guidanceRevisionOf(state)+1,_studySheetRevision:studySheetRevisionOf(state)+1
+            });
+            var next = Object.assign({},state,patch); anatomyTutorProfiles.set(next,tutorProfileOf(state));
+            accepted = {state:next,step:step,keepTabFocus:keepTabFocus,band:tutorBandOf(next),study:tutorStudyIdentity(next),destination:guidanceDestinationKey(next)};
+            return Object.assign({},previous,{anatomy:next});
+          });
+          finishGuidance(function(){return accepted;},origin);
+        }
+        function runGuidance(reviewId) {
+          var accepted=null,origin=document.activeElement;
+          setLabToolData(function(previous){
+            var state=previous.anatomy||{};if(!guidanceOwnedMatches(state))return previous;
+            var step=studyRecommendationForState(state),patch;
+            if(reviewId){
+              var reviewTarget=viewFiltered.find(function(structure){return structure.id===reviewId;}),ratings=anatomySharedRatings(state,knownStructureIds,Date.now());
+              if(!reviewTarget || ['practice','learning'].indexOf(ratings.confidence[reviewId])===-1)return previous;
+              step={id:'review',structure:reviewTarget};
+            }
+            if(step.structure)patch=structureFocusPatch(step.structure.id,{_activeTab:'explore',quizMode:false,_explorerControlsExpanded:true,_studyFilter:'all'});
+            else if(step.id==='view'||step.id==='level')patch={_activeTab:'explore',quizMode:false,view:step.view||view,complexity:step.level||complexity,selectedStructure:null,search:'',_studyFilter:'all',_explorerControlsExpanded:true};
+            else if(step.id==='quiz')patch=quizActivityEntryPatch(state);
+            else if(step.id==='cards'){
+              patch=flashcardRoundPatch(state._flashcardScope==='review'?'review':'all',sysKey,complexity,{},false,state);
+              if(!patch._flashcardDeck.length)patch=flashcardRoundPatch('all',sysKey,complexity,{},false,state);
+            }
+            else if(step.id==='tour'){
+              var systemId=state._tourActive===true&&GUIDED_TOURS[state._tourSystem]?state._tourSystem:sysKey,steps=GUIDED_TOURS[systemId]||[];
+              var tourIndex=state._tourActive===true?Math.max(0,Math.min(normalizedQuizIndex(state._tourStepIdx),Math.max(0,steps.length-1))):0;
+              patch={_activeTab:'tour',quizMode:false,_tourActive:true,_tourSystem:systemId,_tourStepIdx:tourIndex};
+              if(steps[tourIndex])patch=structureFocusPatch(steps[tourIndex].structureId,patch);
+            }else patch={_activeTab:'spotter',quizMode:false,search:'',_studyFilter:'all'};
+            // Activity entry keeps Quiz work; only its explicit Restart control starts again.
+            ['quizIdx','quizScore','quizFeedback','_quizAttempts','_quizActivityReturn'].forEach(function(key){delete patch[key];});
+            if(activeTab==='quiz' && patch._activeTab!=='quiz' && validQuizSnapshot(state._quizQuestion,normalizedQuizIndex(state.quizIdx)))patch._quizActivityReturn={
+              questionKey:state._quizQuestion.context+'|'+normalizedQuizIndex(state.quizIdx),token:state._quizQuestion.token,index:normalizedQuizIndex(state.quizIdx),
+              score:safeNonNegativeNumber(state.quizScore,0,true),attempts:safeNonNegativeNumber(state._quizAttempts,0,true)
+            };
+            if(activeTab==='flashcards')patch=Object.assign(flashcardStatePatch({},state,readActiveFlashcardRound(state)),patch);
+            patch=Object.assign({},mergeComparisonHistoryPatch(state,patch),cancelStudyCopyPatch(state),{_showStudySheet:false,_showSystemsMotion:false,_anatomyModelFocus:false,
+              _guidanceRevision:guidanceRevisionOf(state)+1,_studySheetRevision:studySheetRevisionOf(state)+1});
+            var next=Object.assign({},state,patch);anatomyTutorProfiles.set(next,tutorProfileOf(state));
+            accepted={state:next,step:step,band:tutorBandOf(next),study:tutorStudyIdentity(next),destination:guidanceDestinationKey(next)};
+            return Object.assign({},previous,{anatomy:next});
+          });
+          finishGuidance(function(){return accepted;},origin);
+        }
+        function openReviewStructure(structure) { if(structure)runGuidance(structure.id); }
+        function runRecommendedNextStep() { runGuidance(); }
         function handleKeyNav(e) {
           if (activeTab !== 'explore') return;
           // Structure navigation belongs to the focused diagram only. The previous root-level
@@ -14683,7 +14826,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             h('div', { className: 'anatomy-card-completion-actions' },
               h('button', { type: 'button', 'data-anatomy-round-next': flashcardDueCount > 0 ? 'review' : 'quiz', onClick: function() { if (flashcardDueCount > 0) startFlashcardRound('review', true); else activateAnatomyTab('quiz'); } },
                 flashcardDueCount > 0 ? formatAnatomyStudyText(t('stem.anatomy.card_flow_review', 'Review due cards ({count})'), { count: flashcardDueCount }) : t('stem.anatomy.card_flow_quiz', 'Continue to Quiz')),
-              h('button', { type: 'button', onClick: function() { activateAnatomyTab('explore', false, function() { focusAnatomyStructureDetail(); }); } }, t('stem.anatomy.card_flow_explore', 'Back to Explore'))
+              h('button', { type: 'button', onClick: function() { activateAnatomyTab('explore'); } }, t('stem.anatomy.card_flow_explore', 'Back to Explore'))
             )
           );
         }
@@ -14764,10 +14907,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               ),
               h('details', { className: 'anatomy-study-dashboard', 'data-anatomy-study-dashboard': 'true', open: readingMode ? true : undefined },
                 h('summary', { className: 'anatomy-study-dashboard-summary', 'data-anatomy-study-dashboard-summary': 'true' },
-                  h('span', null, 'Study dashboard'),
-                  h('span', null, structuresViewedCount + ' viewed · ' + currentSystemReviewCount + ' to review · ' + researchPoints + ' RP · ' + badgesEarnedCount + '/' + BADGE_DEFS.length + ' badges')
+                  h('span', null, t('stem.anatomy.guidance_dashboard','Study dashboard')),
+                  h('span', null, formatAnatomyStudyText(t('stem.anatomy.guidance_dashboard_summary','{viewed} viewed · {review} to revisit'),{viewed:structuresViewedCount,review:currentSystemReviewCount}))
                 ),
                 h('div', { className: 'anatomy-study-dashboard-content', 'data-anatomy-study-dashboard-content': 'true' },
+                h('p', {'data-anatomy-guidance-scope-help':'true'},t('stem.anatomy.guidance_scope_help','Viewed, systems, quiz, and badges cover all saved work. Confidence counts and recommendations use this view.')),
                 h('div', { className: 'anatomy-metric-grid' },
                   h('div', { className: 'anatomy-metric' },
                     h('strong', null, String(structuresViewedCount)),
@@ -14787,13 +14931,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   ),
                   h('div', { className: 'anatomy-metric' },
                     h('strong', null, currentSystemMasteredCount + '/' + viewFiltered.length),
-                    h('span', null, 'Got it in this view')
+                    h('span', null, t('stem.anatomy.guidance_mastered_view','Got it in this view'))
                   ),
                   h('div', { className: 'anatomy-metric' },
                     h('strong', null, String(currentSystemReviewCount)),
-                    h('span', null, 'To review')
+                    h('span', null, t('stem.anatomy.guidance_revisit','To revisit'))
                   )
                 ),
+                h('p', {'data-anatomy-guidance-progress-help':'true'},t('stem.anatomy.guidance_progress_help','Viewed records what you opened. Confidence ratings guide your next practice.')),
                 h('div', { className: 'anatomy-challenge-strip', role: 'list', 'aria-label': t('stem.anatomy.challenge_progress', 'Challenge progress') },
                   ANAT_CHALLENGES.map(function(ch) {
                     var done = completedChallenges.indexOf(ch.id) !== -1;
@@ -14805,22 +14950,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       'data-done': done ? 'true' : 'false'
                     }, h('span', { 'aria-hidden': 'true' }, ch.icon));
                   }),
-                  h('span', { className: 'text-[0.6875rem] font-bold text-amber-700 self-center ml-1', role: 'listitem', 'aria-label': researchPoints + ' research points, ' + completedChallengeCount + ' of ' + ANAT_CHALLENGES.length + ' challenges completed' }, researchPoints + ' RP - ' + completedChallengeCount + '/' + ANAT_CHALLENGES.length)
+                  h('span', { className: 'text-[0.6875rem] font-bold text-amber-700 self-center ml-1', role: 'listitem', 'aria-label': researchPoints + ' research points, ' + completedChallengeCount + ' of ' + ANAT_CHALLENGES.length + ' challenges completed' }, h('bdi',{dir:'ltr'},researchPoints + ' RP - ' + completedChallengeCount + '/' + ANAT_CHALLENGES.length))
                 ),
-                h('section', { className: 'anatomy-coach', 'aria-label': __alloT('stem.anatomy.a11y_recommended_next_study_step', 'Recommended next study step') },
-                  h('span', { className: 'anatomy-kicker' }, 'Recommended next step'),
-                  h('strong', null, recommendedNextStep.title),
-                  h('p', null, recommendedNextStep.detail),
-                  h('button', { type: 'button', onClick: runRecommendedNextStep,
-                    className: 'px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-violet-700 text-white hover:bg-violet-800 active:scale-[0.97]'
+                h('section', { className: 'anatomy-coach', 'data-anatomy-guidance':recommendedNextStep.id,'aria-labelledby':'anatomy-guidance-title' },
+                  h('span', { className: 'anatomy-kicker' }, t('stem.anatomy.guidance_next','Recommended next step')),
+                  h('h3', {id:'anatomy-guidance-title',tabIndex:-1,'data-anatomy-guidance-title':'true'}, recommendedNextStep.title),
+                  h('p', {id:'anatomy-guidance-help','data-anatomy-guidance-help':'true','data-anatomy-guidance-detail':'true'}, recommendedNextStep.detail),
+                  h('p', {'data-anatomy-guidance-preserve-help':'true'},t('stem.anatomy.guidance_preserve_help','Opening an activity keeps your saved answers and ratings. Use its Restart control to begin again.')),
+                  h('button', { type: 'button', onClick: runRecommendedNextStep,'data-anatomy-guidance-action':recommendedNextStep.id,'aria-describedby':'anatomy-guidance-help'
                   }, recommendedNextStep.action),
+                  reviewInSystem.length>0?h('p',{'data-anatomy-guidance-review-help':'true',style:{marginBlockStart:'14px'}},t('stem.anatomy.guidance_review_help','Revisit structures marked Need practice or Learning. Due for review in Flashcards also includes older ratings.')):null,
                   reviewInSystem.length > 0 ? h('div', {
                     className: 'anatomy-review-queue',
-                    role: 'list',
-                    'aria-label': __alloT('stem.anatomy.a11y_review_queue', 'Review queue'),
+                    role: 'group',
+                    'aria-labelledby': 'anatomy-guidance-queue-title',
                     'data-anatomy-review-queue': 'true'
                   },
-                    h('span', { className: 'anatomy-review-queue-label' }, 'Review queue'),
+                    h('span', { id:'anatomy-guidance-queue-title',className: 'anatomy-review-queue-label' }, t('stem.anatomy.guidance_queue','Revisit a structure')),
                     reviewQueue.map(function(reviewStructure) {
                       return h('button', {
                         key: reviewStructure.id,
@@ -14830,7 +14976,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         onClick: function() { openReviewStructure(reviewStructure); }
                       }, reviewStructure.name);
                     }),
-                    reviewQueueRemaining > 0 ? h('span', { className: 'anatomy-review-queue-more' }, '+' + reviewQueueRemaining + ' more') : null
+                    reviewQueueRemaining > 0 ? h('span', { className: 'anatomy-review-queue-more' }, formatAnatomyStudyText(t('stem.anatomy.guidance_more','+{count} more in this view'),{count:reviewQueueRemaining})) : null
                   ) : null
                 )
                 )
@@ -14878,6 +15024,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           'data-anatomy-tool': 'true',
           'data-anatomy-tutor-revision': aiDraftRevision,
           'data-anatomy-study-revision': studySheetRevision,
+          'data-anatomy-guidance-revision': guidanceRevision,
+          'data-anatomy-guidance-destination': guidanceDestinationKey(d),
+          'data-anatomy-guidance-import-revision': studyImportRevision,
           'data-anatomy-tutor-band': gradeBand,
           'data-anatomy-tutor-study': tutorStudyIdentity(d),
           'data-anatomy-tutor-draft-key': tutorDraftContextIdentity(d),
@@ -15308,7 +15457,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               ['anterior', 'posterior'].map(function(v) {
                 return h('button', {
                   key: v,
-                  onClick: function() { updMulti({ view: v, selectedStructure: null, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0 }); playSound('viewSwitch'); },
+                  onClick: function() { updMulti({ view: v, selectedStructure: null, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0, _quizActivityReturn: null }); playSound('viewSwitch'); },
                   'aria-pressed': view === v,
                   className: 'px-3 py-1 text-xs font-bold transition-all border-2 ' + (view === v ? 'bg-slate-800 text-white border-slate-800' : 'transition-colors bg-white text-slate-600 hover:bg-slate-50 border-transparent active:scale-[0.97]')
                 }, v.charAt(0).toUpperCase() + v.slice(1));
@@ -15920,8 +16069,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             // Tab-specific Right Panel, followed by the per-system study aids (fun fact, mnemonics)
             h('div', { className: 'anatomy-side-column', 'data-anatomy-side-column': 'true' },
             h('div', { id: 'anatomy-mode-panel', tabIndex: -1, className: 'anatomy-side-panel', role: 'tabpanel', 'aria-labelledby': 'anatomy-mode-tab-' + activeTab, 'data-anatomy-panel': activeTab },
-              quizStudyReturnAvailable && h('div', { className: 'anatomy-quiz-return', 'data-anatomy-quiz-return': true },
-                h('p', null, t('stem.anatomy.quiz_flow_saved', 'Your question, answer, and score are saved while you explore.')),
+              quizStudyReturnAvailable && h('section', { className: 'anatomy-quiz-return', 'data-anatomy-quiz-return': true, 'aria-labelledby':'anatomy-quiz-return-title' },
+                h('h3', {id:'anatomy-quiz-return-title','data-anatomy-quiz-return-title':true},formatAnatomyStudyText(t('stem.anatomy.activity_switch_saved_quiz','Question {number} is saved'),{number:quizRoundIdx+1})),
+                h('p', {'data-anatomy-quiz-return-help':true}, t('stem.anatomy.activity_switch_saved_help','Your answer and score are kept while you use other activities. Return whenever you are ready.')),
                 h('button', { type: 'button', onClick: function() { activateAnatomyTab('quiz'); } }, formatAnatomyStudyText(t('stem.anatomy.quiz_flow_return', 'Return to Question {number}'), { number: quizRoundIdx + 1 }))
               ),
               activeTab === 'quiz' ? (
@@ -16208,7 +16358,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           }, 'Show all structures') : otherViewMatchCount > 0 ? h('button', {
                             type: 'button', 'data-anatomy-empty-action': 'view',
                             'aria-label': t('stem.anatomy.empty_view_action_aria_prefix', 'Show the ') + otherAnatomyView + t('stem.anatomy.empty_view_action_aria_suffix', ' view'),
-                            onClick: function() { updMulti({ view: otherAnatomyView, selectedStructure: null, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0 }); playSound('viewSwitch'); },
+                            onClick: function() { updMulti({ view: otherAnatomyView, selectedStructure: null, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0, _quizActivityReturn: null }); playSound('viewSwitch'); },
                             className: 'mt-3 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.97]'
                           }, t('stem.anatomy.empty_view_action_prefix', 'Show the ') + otherAnatomyView + t('stem.anatomy.empty_view_action_suffix', ' view')) : thisViewAtFullDetailCount > 0 ? h('button', {
                             type: 'button', 'data-anatomy-empty-action': 'complexity',

@@ -33,7 +33,15 @@ for(const file of paths)describe('Quiz study flow: '+file,()=>{
   const s=session(file);s.answer('humerus');s.node(n=>n.props?.['data-anatomy-quiz-study']).props.onClick();s.click('Return to Question 1');
   const before=s.data()._quizQuestion.token;s.click('Restart quiz');expect(s.data()._quizQuestion.token).not.toBe(before);
   expect(s.data().quizScore).toBe(0);expect(s.data()._quizAttempts).toBe(0);expect(s.data()._structureNotes.skull).toBe('Saved note');
-  s.click('End quiz and return to Explore');expect(s.html().querySelector('[data-anatomy-quiz-return]')).toBeNull();
+  expect(s.data()._quizActivityReturn).toBeNull();expect(s.data().quizFeedback).toBeNull();
+  const restarted=JSON.parse(JSON.stringify(s.data()._quizQuestion));
+  s.click('End quiz and return to Explore');
+  expect(s.data()._quizActivityReturn).toEqual({questionKey:restarted.context+'|0',token:restarted.token,index:0,score:0,attempts:0});
+  expect(s.data()._quizActivityReturn.token).not.toBe(before);expect(s.html().querySelector('[data-anatomy-quiz-return]')).not.toBeNull();
+  s.click('Return to Question 1');expect(s.data()._quizQuestion).toEqual(restarted);
+  expect(s.data()).toMatchObject({_activeTab:'quiz',quizIdx:0,quizScore:0,_quizAttempts:0,quizFeedback:null});
+  expect(s.html().querySelector('[data-anatomy-quiz-feedback]')).toBeNull();expect(s.html().querySelectorAll('[data-anatomy-quiz-option]:disabled')).toHaveLength(0);
+  expect(s.data()._structureNotes.skull).toBe('Saved note');
  });
  it('matches keyboard instructions to the actual answer count',()=>{
   const s=session(file,{quizIdx:1});expect(s.html().querySelectorAll('[data-anatomy-quiz-option]')).toHaveLength(2);
@@ -46,7 +54,9 @@ for(const file of paths)describe('Quiz study flow: '+file,()=>{
  });
 });
 describe('Quiz flow translation parity',()=>{for(const lang of ['french','spanish_latin_america','arabic'])it(lang+' covers new labels and placeholders',()=>{
- const source=fs.readFileSync(paths[0],'utf8'),strings=[...source.matchAll(/t\('stem\.anatomy\.(quiz_flow_[^']+)', '([^']*)'\)/g)],data=JSON.parse(fs.readFileSync('lang/'+lang+'.js','utf8')).stem.anatomy;
- expect(strings).toHaveLength(16);for(const [,key,fallback]of strings){expect(data[key],key).toBeTruthy();expect((data[key].match(/\{\w+\}/g)||[]).sort()).toEqual((fallback.match(/\{\w+\}/g)||[]).sort());}
+ const source=fs.readFileSync(paths[0],'utf8'),strings=[...source.matchAll(/t\('stem\.anatomy\.(quiz_flow_[^']+)',\s*'([^']*)'\)/g)],data=JSON.parse(fs.readFileSync('lang/'+lang+'.js','utf8')).stem.anatomy;
+ const keys=new Set(strings.map(([,key])=>key));
+ for(const key of ['quiz_flow_return','quiz_flow_number','quiz_flow_score','quiz_flow_keys','quiz_flow_chosen_option','quiz_flow_correct_option','quiz_flow_answer','quiz_flow_correct','quiz_flow_restart_help','quiz_flow_diagram','quiz_flow_anterior','quiz_flow_posterior'])expect(keys.has(key),key).toBe(true);
+ for(const [,key,fallback]of strings){expect(data[key],key).toBeTruthy();expect((data[key].match(/\{\w+\}/g)||[]).sort()).toEqual((fallback.match(/\{\w+\}/g)||[]).sort());}
  expect(fs.readFileSync('lang/'+lang+'.js','utf8')).toBe(fs.readFileSync('desktop/web-app/public/lang/'+lang+'.js','utf8'));
 });});
