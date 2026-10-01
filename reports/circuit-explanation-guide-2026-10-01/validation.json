@@ -1,0 +1,57 @@
+{
+  "passed": true,
+  "validatedAt": "2026-10-01T04:59:16.987Z",
+  "sourceSha256": "71dfecf576b594109e4bacf23df3d4449cb331b82d8f1dc34f27928bc42616f9",
+  "mirrored": true,
+  "sourceCompiles": true,
+  "regression": {
+    "passedTests": 449,
+    "files": 27,
+    "aggregate": true,
+    "startedAt": "2026-10-01T04:40:21.688Z",
+    "finishedAt": "2026-10-01T04:57:02.825Z"
+  },
+  "browser": {
+    "axeScans": 16,
+    "fullContrastScans": 14,
+    "forcedColorsScans": 2,
+    "focusChecks": 16,
+    "focusTransitions": 8,
+    "textResizeElements": 26,
+    "screenshots": 17,
+    "visualIssues": 0
+  },
+  "reportHashes": {
+    "README.md": "a71a8d7bd3e8e0c58717a8d3f284855b66c08d733b5bed0f185184927ef12710",
+    "run-regression.cjs": "61a7f71eff2cba64a4dee519d0bb77b2bca639d600c689abbd5f975b2e0470f3",
+    "browser-check.cjs": "81dd05e90e5a55e8f1217fdf94382e489fca284c5637c4e1ee6dc1f75241fa7e",
+    "validate.cjs": "dfe46a57854b9d8509936980d5f6504afbc0a7d48f1d1704b1aecf3e36c74d7e",
+    "regression.json": "e363eb4f3f5036165cb5d277681743a5de5ab6f58c60a993e25f09ce020020d9",
+    "regression-receipt.json": "f4e708d7b4581cfde7e58dd1f44d05db873a0b6aba07280b1dc21632e38584d3",
+    "regression-run.json": "970c4cd7ef8b7cf3506fc98c8d695ac9840da164144f9751e129f6f6d11ddf5f",
+    "regression-run-receipt.json": "5023d2757a123a0b7aaa664dd181c4c10a3cac8e410fa82c4356ab3b03a9ff60",
+    "browser-results.json": "035941729a2d1d0359ef4067df51c5669ce78c63d7130eb5b4d8b39a3f6bbb8b",
+    "forced-colors-diagnostic.json": "211de59d56f77fdc793293b7bf74730196b3c21d386fd35a6d95387022fbe8d5",
+    "regression-recovery.json": "ab41d417be42013bcdd6cca61f598f216aa9d216d7b6fc9ed77d627cd7b3e5af"
+  },
+  "screenshotHashes": {
+    "guide-closed-1280.png": "28ae729e6bb640701c925dc1c40dd984f08040d8cb648eb04d541bf75a2bb8a3",
+    "guide-closed-390.png": "bd1a28822e289938e6e07456c901505cf69df542ffa820913ce1baa887e6b94e",
+    "guide-closed-320.png": "930abfb5e0febfad5ebbe0a3f76efb26e75b8c76d61a3205df1fd76ca9bb9c51",
+    "guide-gain-1280.png": "9ee173eb4c683854fc05b4a804f71acc57bfc85d6f20f4993b26c3ad1e9498d5",
+    "guide-gain-390.png": "83809f94452c84122c75dd24884128661b35547e01f3ebddffc5cc425646ef16",
+    "guide-gain-320.png": "cd82ab42a39205f32327b58dfb232ca4267bd549d1f255f37aeaeda32614ac45",
+    "guide-limit-1280.png": "9448d86f9bf006c3acd5d351f60a3ef700b2c6f7d9b3fa46043d9d5fe4edebb5",
+    "guide-limit-390.png": "8d56f5b151c6229b64a3f3f2527631dd7d5debbc5dce4ee778b381e4c06df502",
+    "guide-limit-320.png": "aa84e37d6bda395f48c4f3b82cf8419822464e731aa4903bc70bd4038ee000bb",
+    "guide-sensor-1280.png": "c1f6d59a7ce0c26a9ceaa249a630f2a8eb1963a99960b5d3cfb69bd101212c04",
+    "guide-sensor-390.png": "d69b295127e9962220e9b51dcacbe05bc9db8e5026962500b70f9750fa79fc47",
+    "guide-sensor-320.png": "c8dbdf941fcc007b47a550d94ab6b3492e0b470d2944e0e19da1ab32f26abbdd",
+    "explanation-writing-context-320.png": "d5847309aa8e61b9758d0860c04d04728dc9eec0ee64dadd69d4e0603cf2efdd",
+    "guide-gain-200pct-text-320.png": "655d1f0a3224bb23e9d1ffebf8de3d3eef6bece023735589e21371e2da41adec",
+    "guide-sensor-200pct-text-320.png": "e481a0dcc2d93812be9bb87d128855b0508e185d00a7956f889edf5925a064f2",
+    "forced-colors-guide-gain-320.png": "5ae38817065a07b9a41d56d9e839cf0bffa7fa729e296deee1bb66f8f13d6d44",
+    "forced-colors-guide-sensor-320.png": "3893d583fba5b0392e861e059617dc4b92855d0b22d66213eb183d7aaa9429f3"
+  },
+  "whitespaceCheck": true
+}

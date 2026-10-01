@@ -3413,6 +3413,42 @@ function CircuitActiveLessonContinuation(props) {
                 : h('button', { type: 'button', className: 'circuit-continuation-action circuit-continuation-review-map', 'aria-controls': props.mapId, disabled: typeof props.onReviewMap !== 'function', onClick: function () { if (typeof props.onReviewMap === 'function') props.onReviewMap(); } }, t('stem.circuit.continuation_review_map', 'Review experiment map'))));
 }
 
+function CircuitActiveLessonExplanationGuide(props) {
+    if (!props.tested) return null;
+    var React = props.React, h = React.createElement, t = circuitToolT(props);
+    var lesson = circuitActiveLesson(props.lessonId);
+    var connections = {
+        gain: t('stem.circuit.explanation_guide_gain', 'How do the saved base current readings and operating regions help explain the lamp current change?'),
+        limit: t('stem.circuit.explanation_guide_limit', 'Compare the saved base current readings and operating regions. What do they tell you about the effect of extra input voltage?'),
+        sensor: t('stem.circuit.explanation_guide_sensor', 'Use the connected divider junction voltage and base current in Trace the change. How do these readings help explain the lamp current change?')
+    };
+    var steps = [
+        {
+            id: 'observe',
+            heading: t('stem.circuit.explanation_guide_observe_heading', 'Describe the change'),
+            prompt: t('stem.circuit.explanation_guide_observe', 'Use the saved Before and After lamp current readings, including units. What changed?')
+        },
+        {
+            id: 'connect',
+            heading: t('stem.circuit.explanation_guide_connect_heading', 'Explain the connection'),
+            prompt: connections[lesson.id]
+        },
+        {
+            id: 'reflect',
+            heading: t('stem.circuit.explanation_guide_reflect_heading', 'Revisit your prediction'),
+            prompt: t('stem.circuit.explanation_guide_reflect', 'Does this evidence support your prediction or suggest a revision? Explain your reasoning.')
+        }
+    ];
+    return h('details', { className: 'circuit-active-explanation-guide', 'data-guide-lesson': lesson.id },
+        h('summary', { className: 'circuit-explanation-guide-summary' }, t('stem.circuit.explanation_guide_title', 'Build an explanation')),
+        h('p', { className: 'circuit-explanation-guide-intro' }, t('stem.circuit.explanation_guide_intro', 'Use the saved experiment readings to plan your explanation. Include units with any readings you cite.')),
+        h('ol', { className: 'circuit-explanation-guide-steps' }, steps.map(function (step) {
+            return h('li', { key: step.id, 'data-guide-step': step.id },
+                h('strong', { className: 'circuit-explanation-guide-heading' }, step.heading),
+                h('p', { className: 'circuit-explanation-guide-prompt' }, step.prompt));
+        })));
+}
+
 // Lesson changes are owned by onAction(id, action, value).
 function CircuitActiveLessonLab(props) {
   var React=props.React,h=React.createElement,state=props.state||{},t=circuitToolT(props);
@@ -3485,6 +3521,7 @@ function CircuitActiveLessonLab(props) {
       h('label',{className:'circuit-active-lesson-explanation',htmlFor:uid+'-explanation'},t('stem.circuit.active_my_lesson_explanation','My explanation for this experiment')),
       h('p',{id:uid+'-explanation-help',className:'circuit-active-lesson-help'},t('stem.circuit.active_explanation_help','Use the lamp current and operating regions to explain the change. This response stays with this experiment; your investigation notebook has its own explanation.')),
       h('textarea',{id:uid+'-explanation',ref:explanationRef,'aria-label':t('stem.circuit.transistor_experiment_explanation','Transistor experiment explanation'),'aria-describedby':uid+'-explanation-help',maxLength:4000,rows:3,value:record.explanation||'',placeholder:t('stem.circuit.active_lesson_explanation_placeholder','I observed… The readings show…'),onChange:function(e){act(selected,'explain',e.target.value);}}),
+      h(CircuitActiveLessonExplanationGuide,{React:React,t:props.t,lessonId:selected,tested:tested}),
       tested&&h(CircuitActiveLessonContinuation,{React:React,t:props.t,row:map.find(function(row){return row.id===next;})||null,onSelect:select,mapId:uid+'-map',onReviewMap:function(){var element=mapRef.current;if(element){element.open=true;var summary=element.querySelector('summary');if(summary){summary.focus({preventScroll:true});if(typeof summary.scrollIntoView==='function')summary.scrollIntoView({block:'start',behavior:'instant'});}}}}),
       h('details',{className:'circuit-active-lesson-retry'},h('summary',null,t('stem.circuit.active_retry_disclosure','Start this experiment again')),h('div',{className:'circuit-active-lesson-retry-body'},h('p',{className:'circuit-active-lesson-help'},t('stem.circuit.active_retry_help','Starting again replaces this experiment’s saved prediction, result, and explanation, and loads its baseline. Your investigation notebook stays saved.')),h('button',{type:'button',onClick:function(){act(selected,'start',undefined,'question');}},t('stem.circuit.start_transistor_prediction','Start transistor prediction'))))));
 }
@@ -5506,6 +5543,104 @@ function CircuitActiveLessonLab(props) {
     .circuit-active-root button.circuit-continuation-action:focus-visible,
     .circuit-active-root details.circuit-active-lesson-retry > summary:focus-visible,
     .circuit-active-root .circuit-active-lesson-retry-body > button:focus-visible {
+        outline-color: Highlight;
+    }
+}
+.circuit-active-root details.circuit-active-explanation-guide {
+    min-width: 0;
+    margin: 12px 0 0;
+    padding: 0;
+    border: 1px solid #526e79;
+    border-radius: 9px;
+    background: #112b36;
+    color: #d4e4eb;
+}
+.circuit-active-root details.circuit-active-explanation-guide > .circuit-explanation-guide-summary {
+    min-height: 44px;
+    box-sizing: border-box;
+    padding: 12px;
+    color: #e0edf3;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+    transition: none;
+}
+.circuit-active-root .circuit-explanation-guide-summary:focus-visible {
+    outline: 3px solid #f6d894;
+    outline-offset: 3px;
+}
+.circuit-active-root p.circuit-explanation-guide-intro {
+    margin: 0;
+    padding: 0 12px 3px;
+    color: #c1d6e0;
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+.circuit-active-root ol.circuit-explanation-guide-steps {
+    min-width: 0;
+    margin: 0;
+    padding-block: 0 12px;
+    padding-inline: 32px 12px;
+    color: #bfd6df;
+    font-size: 13px;
+    line-height: 1.7;
+    list-style-type: decimal;
+}
+.circuit-active-root .circuit-explanation-guide-steps > li {
+    min-width: 0;
+    margin: 0;
+    padding-block: 10px;
+    padding-inline-start: 2px;
+    overflow-wrap: anywhere;
+}
+.circuit-active-root .circuit-explanation-guide-steps > li + li {
+    border-top: 1px solid #46616d;
+}
+.circuit-active-root .circuit-explanation-guide-steps > li:last-child {
+    padding-bottom: 0;
+}
+.circuit-active-root strong.circuit-explanation-guide-heading {
+    display: block;
+    color: #e0edf3;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+.circuit-active-root p.circuit-explanation-guide-prompt {
+    margin: 3px 0 0;
+    color: #cfdee7;
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+@media (prefers-reduced-motion: reduce) {
+    .circuit-active-root details.circuit-active-explanation-guide,
+    .circuit-active-root .circuit-explanation-guide-summary {
+        animation: none;
+        transition: none;
+    }
+}
+@media (forced-colors: active) {
+    .circuit-active-root details.circuit-active-explanation-guide {
+        border-color: CanvasText;
+        background: Canvas;
+        color: CanvasText;
+    }
+    .circuit-active-root details.circuit-active-explanation-guide > .circuit-explanation-guide-summary,
+    .circuit-active-root p.circuit-explanation-guide-intro,
+    .circuit-active-root ol.circuit-explanation-guide-steps,
+    .circuit-active-root strong.circuit-explanation-guide-heading,
+    .circuit-active-root p.circuit-explanation-guide-prompt {
+        color: CanvasText;
+    }
+    .circuit-active-root .circuit-explanation-guide-steps > li + li {
+        border-color: CanvasText;
+    }
+    .circuit-active-root .circuit-explanation-guide-summary:focus-visible {
         outline-color: Highlight;
     }
 }

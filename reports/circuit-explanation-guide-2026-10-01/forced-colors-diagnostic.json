@@ -1,0 +1,34 @@
+{
+  "reason": "Check whether axe contrast uses authored foreground colors in forced-colors media, including fresh pages.",
+  "cases": [
+    {
+      "freshPageWithForcedColorsBeforeAxe": false,
+      "forced": true,
+      "color": "rgb(0, 0, 0)",
+      "background": "rgb(255, 255, 255)",
+      "axeVersion": "4.12.1",
+      "contrast": [
+        [
+          "Fix any of the following:\n  Element has insufficient color contrast of 1.42 (foreground color: #c8ddd4, background color: #ffffff, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1"
+        ]
+      ]
+    },
+    {
+      "freshPageWithForcedColorsBeforeAxe": true,
+      "forced": true,
+      "color": "rgb(0, 0, 0)",
+      "background": "rgb(255, 255, 255)",
+      "axeVersion": "4.12.1",
+      "contrast": [
+        [
+          "Fix any of the following:\n  Element has insufficient color contrast of 1.42 (foreground color: #c8ddd4, background color: #ffffff, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1"
+        ]
+      ]
+    }
+  ],
+  "provenance": {
+    "path": "reports/circuit-guided-entry-2026-09-29/forced-colors-diagnostic.json",
+    "sha256": "fc110d980e2ff556e8ffcf8115322d10918238e416f411089e5d9026f52afb9e",
+    "note": "Reused axe4.12.1 diagnostic; not rerun for this update"
+  }
+}
