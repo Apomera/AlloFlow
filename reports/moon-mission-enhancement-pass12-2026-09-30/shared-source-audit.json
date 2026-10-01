@@ -1,0 +1,40 @@
+{
+  "sourceSha256": "5d189c793bf28701c1617850740b03b09bfa9b99aad22c672c85409679fd8625",
+  "testedCandidateSha256": "e391b576f9352351f7ad2b0a47dfd2e8895c22a9048e8fa7e114d293b44e8bd1",
+  "preservedMoonwalkHunks": 34,
+  "exactAdditionalReplacements": [
+    {
+      "from": "function mmRenderLunarEnvironmentCard(h,d,upd)",
+      "to": "function mmRenderLunarEnvironmentCard(h, d, upd, announceToSR)"
+    },
+    {
+      "from": "function mmRenderDepartureCard(h,d,upd)",
+      "to": "function mmRenderDepartureCard(h, d, upd, announceToSR)"
+    },
+    {
+      "from": "function mmRenderApproachCard(h,d,upd)",
+      "to": "function mmRenderApproachCard(h, d, upd, announceToSR)"
+    },
+    {
+      "from": "function mmRenderTliCard(h,d,upd)",
+      "to": "function mmRenderTliCard(h, d, upd, announceToSR)"
+    },
+    {
+      "from": "mmRenderLunarEnvironmentCard(h,d,upd)",
+      "to": "mmRenderLunarEnvironmentCard(h, d, upd, announceToSR)"
+    },
+    {
+      "from": "mmRenderDepartureCard(h,d,upd)",
+      "to": "mmRenderDepartureCard(h, d, upd, announceToSR)"
+    },
+    {
+      "from": "mmRenderApproachCard(h, d, upd)",
+      "to": "mmRenderApproachCard(h, d, upd, announceToSR)"
+    },
+    {
+      "from": "mmRenderTliCard(h, d, upd)",
+      "to": "mmRenderTliCard(h, d, upd, announceToSR)"
+    }
+  ],
+  "modelIdentical": true
+}

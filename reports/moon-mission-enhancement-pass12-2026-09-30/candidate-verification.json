@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "sourceSha256": "e391b576f9352351f7ad2b0a47dfd2e8895c22a9048e8fa7e114d293b44e8bd1",
+  "checks": 137,
+  "files": 17,
+  "reports": [
+    {
+      "path": "candidate-final.json",
+      "checks": 136,
+      "files": 16
+    },
+    {
+      "path": "candidate-syntax-final.json",
+      "checks": 1,
+      "files": 1,
+      "otherCasesSkipped": 29
+    }
+  ],
+  "review": "Independent read-only review found no actionable issue in thrust, mass flow, orbital geometry, saved evidence or mutually paused clocks."
+}
