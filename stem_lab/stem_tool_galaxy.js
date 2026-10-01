@@ -73,6 +73,60 @@ window.StemLab = window.StemLab || {
   }
   // END GALAXY ROTATION MODEL
 
+  // BEGIN GALAXY ROTATION INVESTIGATION
+  // Store only sampled radii. Rebuild all model values from the shared law.
+  var GALAXY_ROTATION_SAMPLE_LIMIT = 8;
+  function galaxyRotationSampleRadius(value) {
+    if (typeof value !== 'number' || !Number.isFinite(value) || value < 0.6 || value > GALAXY_DISK_RADIUS_KPC) return null;
+    return Math.round(value * 10) / 10;
+  }
+  function galaxyRotationSamples(value) {
+    if (!Array.isArray(value)) return [];
+    var samples = [], seen = {};
+    for (var i = 0; i < value.length && samples.length < GALAXY_ROTATION_SAMPLE_LIMIT; i++) {
+      var radius = galaxyRotationSampleRadius(value[i] && value[i].radiusKpc);
+      if (radius === null || seen[radius]) continue;
+      seen[radius] = true; samples.push({ radiusKpc: radius });
+    }
+    return samples.sort(function(a, b) { return a.radiusKpc - b.radiusKpc; });
+  }
+  function galaxyRotationSaveSample(value, radius) {
+    var samples = galaxyRotationSamples(value), rounded = galaxyRotationSampleRadius(radius);
+    if (rounded === null) return { samples: samples, result: 'invalid' };
+    if (samples.some(function(sample) { return sample.radiusKpc === rounded; })) return { samples: samples, result: 'duplicate' };
+    if (samples.length >= GALAXY_ROTATION_SAMPLE_LIMIT) return { samples: samples, result: 'full' };
+    return { samples: galaxyRotationSamples(samples.concat([{ radiusKpc: rounded }])), result: 'saved' };
+  }
+  function galaxyRotationSampleTrend(value, model) {
+    var samples = galaxyRotationSamples(value);
+    if (samples.length < 2) return null;
+    var name = model === 'keplerian' || model === 'rigid' ? model : 'flat';
+    var innerRadius = samples[0].radiusKpc, outerRadius = samples[samples.length - 1].radiusKpc;
+    var inner = orbitalMeasurementForModel(name, innerRadius), outer = orbitalMeasurementForModel(name, outerRadius);
+    return { model: name, innerRadius: innerRadius, outerRadius: outerRadius,
+      radiusRatio: outerRadius / innerRadius, speedRatio: outer.speed / inner.speed,
+      massRatio: outer.enclosedMassSolar / inner.enclosedMassSolar,
+      region: outerRadius <= GALAXY_ROTATION_CORE_KPC ? 'core' : innerRadius < GALAXY_ROTATION_CORE_KPC ? 'crossing' : 'outer' };
+  }
+  function galaxyRotationInvestigationNote(value) { return typeof value === 'string' ? value.slice(0, 600) : ''; }
+  function galaxyRotationInvestigationCSV(value, note) {
+    var rows = [['data_kind', 'model', 'radius_kpc', 'speed_km_s', 'period_myr', 'enclosed_mass_solar', 'evidence_note', 'assumptions']];
+    galaxyRotationSamples(value).forEach(function(sample) {
+      ['keplerian', 'flat', 'rigid'].forEach(function(model) {
+        var orbit = orbitalMeasurementForModel(model, sample.radiusKpc);
+        rows.push(['teaching_model', model, sample.radiusKpc.toFixed(1), orbit.speed.toFixed(6), orbit.periodMyr.toFixed(6), orbit.enclosedMassSolar.toFixed(3), galaxyRotationInvestigationNote(note), 'Circular orbits; spherical gravity; illustrative curves, not observed data']);
+      });
+    });
+    return '\ufeff' + rows.map(function(row) { return row.map(function(value) {
+      var cell = String(value);
+      // Quotes alone do not stop spreadsheet formula evaluation of user notes.
+      if (/^[\s\u0000-\u001f]*[=+@-]/.test(cell)) cell = "'" + cell;
+      return '"' + cell.replace(/"/g, '""') + '"';
+    }).join(','); }).join('\r\n') + '\r\n';
+  }
+  // END GALAXY ROTATION INVESTIGATION
+
+
   // BEGIN BLACK HOLE EXPERIMENT MODEL
   // Timelike Schwarzschild geodesics, r in Schwarzschild radii, c = 1.
   // d²r/dτ² = -1/(2r²) + L²/r³ - 3L²/(2r⁴); dφ/dτ = L/r².
@@ -3062,6 +3116,9 @@ if (!window._galaxyHasLoadedOnce) {
           var blackHoleLaunchCommit = React.useRef(null);
           blackHoleLaunchCommit.current = function(values){patchGalaxy(values);};
           var blackHoleSavedComparisonRef=React.useRef(null);blackHoleSavedComparisonRef.current=blackHoleComparison;
+          var rotationInvestigationUndoState = React.useState(null), rotationInvestigationUndo = rotationInvestigationUndoState[0], setRotationInvestigationUndo = rotationInvestigationUndoState[1];
+          var rotationInvestigationStatusState = React.useState(''), rotationInvestigationStatus = rotationInvestigationStatusState[0], setRotationInvestigationStatus = rotationInvestigationStatusState[1];
+          var rotationInvestigationLive = React.useRef(null);
           var blackHoleNotebookUndoState=React.useState(null),blackHoleNotebookUndo=blackHoleNotebookUndoState[0],setBlackHoleNotebookUndo=blackHoleNotebookUndoState[1];
           var blackHoleNotebookStatusState=React.useState(''),blackHoleNotebookStatus=blackHoleNotebookStatusState[0],setBlackHoleNotebookStatus=blackHoleNotebookStatusState[1];
           var blackHoleImportState=React.useState(null),blackHoleImport=blackHoleImportState[0],setBlackHoleImport=blackHoleImportState[1];
@@ -9377,6 +9434,57 @@ if (!window._galaxyHasLoadedOnce) {
           var rotationProbeFlat = rotationMeasurementRows[1], rotationProbeCompact = rotationMeasurementRows[0];
           var rotationProbeMassRatio = rotationProbeFlat.enclosedMassSolar / rotationProbeCompact.enclosedMassSolar;
           function setRotationProbeRadius(radius) { upd('rotationProbeRadius', galaxyRotationProbeRadius(Math.round(radius * 10) / 10)); }
+          var rotationSamples = galaxyRotationSamples(d.rotationSamples);
+          var rotationInvestigationNote = galaxyRotationInvestigationNote(d.rotationInvestigationNote);
+          var rotationSampleRadius = galaxyRotationSampleRadius(rotationProbeRadius);
+          var rotationProbeSaved = rotationSamples.some(function(sample) { return sample.radiusKpc === rotationSampleRadius; });
+          var rotationSampleTrend = galaxyRotationSampleTrend(rotationSamples, rotMode);
+          rotationInvestigationLive.current = { samples: rotationSamples, note: rotationInvestigationNote };
+          function rotationModelName(model) {
+            return model === 'flat' ? __alloT('stem.galaxy.comparison_flat', 'Flat model') : model === 'keplerian' ? __alloT('stem.galaxy.comparison_visible', 'Compact visible') : __alloT('stem.galaxy.comparison_rigid', 'Rigid toy');
+          }
+          function focusRotationControl(selector) {
+            setTimeout(function() { var control = document.querySelector(selector); if (control) control.focus(); }, 0);
+          }
+          function saveRotationSample() {
+            var saved = galaxyRotationSaveSample(rotationInvestigationLive.current.samples, rotationProbeRadius);
+            if (saved.result !== 'saved') return;
+            rotationInvestigationLive.current.samples = saved.samples;
+            upd('rotationSamples', saved.samples);
+            focusRotationControl('[data-galaxy-rotation-revisit="' + rotationSampleRadius + '"]');
+            setRotationInvestigationStatus(__alloT('stem.galaxy.rotation_book_saved', 'Saved {radius} kpc. {count} of {limit} radii.').replace('{radius}', rotationSampleRadius.toFixed(1)).replace('{count}', saved.samples.length).replace('{limit}', GALAXY_ROTATION_SAMPLE_LIMIT));
+          }
+          function removeRotationSample(radius) {
+            var live = rotationInvestigationLive.current.samples, removed = live.find(function(sample) { return sample.radiusKpc === radius; });
+            if (!removed) return;
+            var next = live.filter(function(sample) { return sample.radiusKpc !== radius; });
+            rotationInvestigationLive.current.samples = next; upd('rotationSamples', next); setRotationInvestigationUndo(removed);
+            focusRotationControl('[data-galaxy-rotation-undo]');
+            setRotationInvestigationStatus(__alloT('stem.galaxy.rotation_book_removed', 'Removed {radius} kpc. Undo is available.').replace('{radius}', radius.toFixed(1)));
+          }
+          function undoRotationSampleRemoval() {
+            if (!rotationInvestigationUndo) return;
+            var saved = galaxyRotationSaveSample(rotationInvestigationLive.current.samples, rotationInvestigationUndo.radiusKpc);
+            if (saved.result !== 'saved') return;
+            rotationInvestigationLive.current.samples = saved.samples; upd('rotationSamples', saved.samples); setRotationInvestigationUndo(null);
+            focusRotationControl('[data-galaxy-rotation-revisit="' + rotationInvestigationUndo.radiusKpc + '"]');
+            setRotationInvestigationStatus(__alloT('stem.galaxy.rotation_book_restored', 'Radius restored. Later measurements and your note are preserved.'));
+          }
+          function downloadRotationInvestigation() {
+            if (!rotationInvestigationLive.current.samples.length) return;
+            var url = null, link = null;
+            try {
+              var csv = galaxyRotationInvestigationCSV(rotationInvestigationLive.current.samples, rotationInvestigationLive.current.note);
+              url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+              link = document.createElement('a'); link.href = url; link.download = 'galaxy-rotation-investigation.csv'; document.body.appendChild(link); link.click();
+              setRotationInvestigationStatus(__alloT('stem.galaxy.rotation_book_downloaded', 'CSV downloaded with all three teaching models and your evidence note.'));
+            } catch (error) {
+              setRotationInvestigationStatus(__alloT('stem.galaxy.rotation_book_download_failed', 'The CSV could not be downloaded. Your saved radii and note are kept here.'));
+            } finally {
+              if (link) link.remove();
+              if (url) setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+            }
+          }
           function formatGalaxyMass(massSolar) {
             if (massSolar >= 1e12) return (massSolar / 1e12).toFixed(2) + ' trillion M☉';
             if (massSolar >= 1e9) return (massSolar / 1e9).toFixed(1) + ' billion M☉';
@@ -11545,7 +11653,7 @@ if (!window._galaxyHasLoadedOnce) {
                   for(var i=1;i<=60;i++) { var r=GALAXY_ROTATION_CORE_KPC+(GALAXY_DISK_RADIUS_KPC-GALAXY_ROTATION_CORE_KPC)*i/60; gap+='L'+px(r).toFixed(2)+' '+py(galaxyRotationSpeed('flat',r)).toFixed(2); }
                   for(var i=60;i>=0;i--) { var r=GALAXY_ROTATION_CORE_KPC+(GALAXY_DISK_RADIUS_KPC-GALAXY_ROTATION_CORE_KPC)*i/60; gap+='L'+px(r).toFixed(2)+' '+py(galaxyRotationSpeed('keplerian',r)).toFixed(2); } gap+='Z';
                   function pointerRadius(e) { var bounds=e.currentTarget.getBoundingClientRect(); if(bounds.width>0) setRotationProbeRadius((e.clientX-bounds.left)/bounds.width*CW/(CW-padL-padR)*GALAXY_DISK_RADIUS_KPC-padL/(CW-padL-padR)*GALAXY_DISK_RADIUS_KPC); }
-                  function rotationModelLabel(model) { return model==='flat'?__alloT('stem.galaxy.comparison_flat','Flat model'):model==='keplerian'?__alloT('stem.galaxy.comparison_visible','Compact visible'):__alloT('stem.galaxy.comparison_rigid','Rigid toy'); }
+                  var rotationModelLabel = rotationModelName;
                   var graphLabel=__alloT('stem.galaxy.rotation_probe_graph_aria', "Illustrative rotation models: radius in kiloparsecs and speed in kilometers per second.") + ' ' + __alloT('stem.galaxy.rotation_probe_radius', "Probe radius") + ': ' + rotationProbeRadius.toFixed(1) + ' kpc. ' + rotationMeasurementRows.map(function(row){return rotationModelLabel(row.model)+': '+Math.round(row.speed)+' km/s';}).join('; ');
                   return React.createElement('div', { 'data-galaxy-rotation-probe': true },
                     React.createElement("svg", { "data-galaxy-rotation-chart": true, viewBox: '0 0 '+CW+' '+CH, dir: "ltr", className: "w-full", style: { direction: 'ltr', display: 'block', height: 'auto', touchAction: 'pan-y', cursor: 'crosshair' }, role:'img', 'aria-label':graphLabel,
@@ -11577,20 +11685,31 @@ if (!window._galaxyHasLoadedOnce) {
                       React.createElement('text',{x:padL,y:16,fill:'#e2e8f0',fontSize:17},__alloT('stem.galaxy.rotation_probe_speed_axis', "Speed (km/s)")),
                       React.createElement('path',{d:gap,fill:'rgba(217,70,239,0.15)','data-galaxy-rotation-gap':true}),
                       ['keplerian','flat','rigid'].map(function(model){return React.createElement('path',{key:model,'data-galaxy-rotation-curve':model,d:paths[model],fill:'none',stroke:model==='flat'?'#22d3ee':model==='keplerian'?'#fbbf24':'#c4b5fd',strokeWidth:model===rotMode?3:1.8,strokeDasharray:model==='flat'?undefined:model==='keplerian'?'6 4':'2 4',opacity:model===rotMode?1:.7});}),
+                      rotationSamples.map(function(sample) {
+                        var speed = galaxyRotationSpeed(rotMode, sample.radiusKpc), x = px(sample.radiusKpc), y = py(speed);
+                        return React.createElement('path', { key: sample.radiusKpc, 'data-galaxy-rotation-saved-point': sample.radiusKpc, 'data-model': rotMode, 'data-speed': speed, d: 'M'+x+' '+(y-5)+'L'+(x+5)+' '+y+'L'+x+' '+(y+5)+'L'+(x-5)+' '+y+'Z', fill: '#0f172a', stroke: '#f8fafc', strokeWidth: 1.7 }, React.createElement('title', null, __alloT('stem.galaxy.rotation_book_saved_radius', 'Saved radius') + ': ' + sample.radiusKpc.toFixed(1) + ' kpc · ' + Math.round(speed) + ' km/s'));
+                      }),
                       selectedRadiusKpc>=.6&&selectedRadiusKpc<=15&&React.createElement('line',{'data-galaxy-rotation-selected':true,x1:px(selectedRadiusKpc),x2:px(selectedRadiusKpc),y1:padT,y2:CH-padB,stroke:'#fde047',strokeDasharray:'2 5',opacity:.7}),
                       React.createElement('line',{'data-galaxy-rotation-cursor':true,x1:px(rotationProbeRadius),x2:px(rotationProbeRadius),y1:padT,y2:CH-padB,stroke:'#f8fafc',strokeDasharray:'3 3',opacity:.9}),
                       rotationMeasurementRows.map(function(row){return React.createElement('circle',{key:row.model,'data-galaxy-rotation-point':row.model,'data-radius':rotationProbeRadius,'data-speed':row.speed,cx:px(rotationProbeRadius),cy:py(row.speed),r:row.model===rotMode?5:3.5,fill:row.model==='flat'?'#22d3ee':row.model==='keplerian'?'#fbbf24':'#c4b5fd',stroke:'#0f172a',strokeWidth:1.5});})
                     ),
                     React.createElement('div',{'data-galaxy-rotation-legend':true,className:'mt-2 flex flex-wrap gap-x-3 gap-y-1.5 text-[11px] text-slate-200'},
-                      ['keplerian','flat','rigid'].map(function(model){return React.createElement('span',{key:model,className:'inline-flex items-center gap-1.5'},React.createElement('span',{'aria-hidden':true,style:{display:'inline-block',width:20,borderTop:'2px '+(model==='flat'?'solid':model==='keplerian'?'dashed':'dotted')+' '+(model==='flat'?'#22d3ee':model==='keplerian'?'#fbbf24':'#c4b5fd')} }),rotationModelLabel(model));})
+                      ['keplerian','flat','rigid'].map(function(model){return React.createElement('span',{key:model,className:'inline-flex items-center gap-1.5'},React.createElement('span',{'aria-hidden':true,style:{display:'inline-block',width:20,borderTop:'2px '+(model==='flat'?'solid':model==='keplerian'?'dashed':'dotted')+' '+(model==='flat'?'#22d3ee':model==='keplerian'?'#fbbf24':'#c4b5fd')} }),rotationModelLabel(model));}),
+                      rotationSamples.length > 0 && React.createElement('span', { className: 'inline-flex items-center gap-1.5' }, React.createElement('span', { 'aria-hidden': true, style: { width: 9, height: 9, border: '1.5px solid #f8fafc', transform: 'rotate(45deg)', margin: '0 5px' } }), __alloT('stem.galaxy.rotation_book_markers', 'Saved radii on the active model'))
                     ),
                     React.createElement('p',{id:'galaxy-rotation-probe-help',className:'mt-1 text-[11px] leading-relaxed text-slate-300'},__alloT('stem.galaxy.rotation_probe_help', "Click or drag the chart, or use the radius slider. Hold one radius while switching models.")),
                     React.createElement('div',{className:'mt-2 flex flex-wrap items-center justify-between gap-2'},
                       React.createElement('label',{htmlFor:'galaxy-rotation-probe-radius',className:'text-xs font-bold text-white'},__alloT('stem.galaxy.rotation_probe_radius', "Probe radius")+' · '+rotationProbeRadius.toFixed(1)+' kpc'),
                       selectedRadiusKpc>=.6&&selectedRadiusKpc<=15&&React.createElement('button',{'data-galaxy-rotation-follow':true,type:'button','aria-pressed':rotationProbeFollowsStar,onClick:function(){upd('rotationProbeRadius',null);},className:'min-h-[44px] rounded-lg border border-yellow-200/40 bg-slate-800 px-3 py-2 text-[11px] font-bold text-yellow-100'},__alloT('stem.galaxy.rotation_probe_follow', "Follow selected star"))
                     ),
-                    React.createElement('input',{id:'galaxy-rotation-probe-radius',type:'range',min:.6,max:15,step:.1,value:rotationProbeRadius,'aria-describedby':'galaxy-rotation-probe-help','aria-valuetext':rotationProbeRadius.toFixed(1)+' kpc',onChange:function(e){setRotationProbeRadius(Number(e.target.value));},className:'w-full min-h-[44px] accent-cyan-300'}),
-                    React.createElement('p',{'data-galaxy-rotation-probe-status':true,role:'status','aria-live':'polite',className:'text-[11px] text-slate-300'},rotationProbeFollowsStar?__alloT('stem.galaxy.rotation_probe_following', "The probe follows the selected star.") : __alloT('stem.galaxy.rotation_probe_fixed', "The probe stays at this radius. Star selection and camera view are preserved."))
+                    React.createElement('input',{id:'galaxy-rotation-probe-radius',dir:'ltr',style:{direction:'ltr'},type:'range',min:.6,max:15,step:.1,value:rotationProbeRadius,'aria-describedby':'galaxy-rotation-probe-help','aria-valuetext':rotationProbeRadius.toFixed(1)+' kpc',onChange:function(e){setRotationProbeRadius(Number(e.target.value));},className:'w-full min-h-[44px] accent-cyan-300'}),
+                    React.createElement('p',{'data-galaxy-rotation-probe-status':true,role:'status','aria-live':'polite',className:'text-[11px] text-slate-300'},rotationProbeFollowsStar?__alloT('stem.galaxy.rotation_probe_following', "The probe follows the selected star.") : __alloT('stem.galaxy.rotation_probe_fixed', "The probe stays at this radius. Star selection and camera view are preserved.")),
+                    React.createElement('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
+                      React.createElement('button', { type: 'button', 'data-galaxy-rotation-save': true, disabled: rotationProbeSaved || rotationSamples.length >= GALAXY_ROTATION_SAMPLE_LIMIT, 'aria-describedby': 'galaxy-rotation-save-help', onClick: saveRotationSample, className: 'min-h-[44px] rounded-lg border border-cyan-300/50 bg-cyan-300/10 px-3 py-2 text-xs font-bold text-cyan-100 disabled:opacity-50' }, __alloT('stem.galaxy.rotation_book_save', 'Save this radius')),
+                      React.createElement('span', { className: 'text-[11px] tabular-nums text-slate-300' }, rotationSamples.length + ' / ' + GALAXY_ROTATION_SAMPLE_LIMIT)
+                    ),
+                    React.createElement('p', { id: 'galaxy-rotation-save-help', className: 'mt-1 text-[11px] leading-relaxed text-slate-300' }, rotationProbeSaved ? __alloT('stem.galaxy.rotation_book_duplicate', 'This radius is already saved. Move the probe to add another.') : rotationSamples.length >= GALAXY_ROTATION_SAMPLE_LIMIT ? __alloT('stem.galaxy.rotation_book_full', 'Eight radii are saved. Download the CSV or remove a radius to make room.') : __alloT('stem.galaxy.rotation_book_rounding', 'Save up to eight radii, rounded to 0.1 kpc. Each radius can be compared across all three models.'))
+
                   );
 
                 })(),
@@ -11656,6 +11775,47 @@ if (!window._galaxyHasLoadedOnce) {
                   React.createElement('p',{'data-galaxy-rotation-mass-ratio':rotationProbeMassRatio,className:'mt-2 font-bold text-fuchsia-100'},__alloT('stem.galaxy.rotation_probe_mass_ratio', "Mass ratio (flat / compact)")+': '+rotationProbeMassRatio.toFixed(2)+'×'),
                   React.createElement('p',{className:'mt-1 text-[11px] leading-relaxed text-slate-300'},rotationProbeRadius<=GALAXY_ROTATION_CORE_KPC?__alloT('stem.galaxy.rotation_probe_core_note', "Inside the 2.4 kpc core, these two models agree. Move outward to see why a flat speed needs more enclosed mass.") : __alloT('stem.galaxy.rotation_probe_outer_note', "Beyond the core, the compact model has a fixed mass. Keeping the speed flat requires enclosed mass to grow with radius.")),
                   React.createElement('p',{className:'mt-2 border-t border-white/10 pt-2 text-[11px] leading-relaxed text-slate-300'},__alloT('stem.galaxy.rotation_probe_scope', "M(<r) ≈ v²r/G assumes circular orbits and spherical gravity. These curves are teaching models, not measured data. The animation runs faster than real time."))
+                ),
+                isSpiralMorphology && React.createElement('section', { 'data-galaxy-rotation-investigation': true, 'aria-labelledby': 'galaxy-rotation-investigation-title', className: 'mt-3 rounded-xl border border-cyan-200/20 bg-slate-950/60 p-3 text-xs text-slate-200' },
+                  React.createElement('h5', { id: 'galaxy-rotation-investigation-title', className: 'font-black text-cyan-100' }, __alloT('stem.galaxy.rotation_book_title', 'Rotation investigation')),
+                  React.createElement('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-300' }, __alloT('stem.galaxy.rotation_book_help', 'Save inner and outer radii, then switch models to compare the same locations. Values below follow the active model. These are teaching predictions.')),
+                  React.createElement('p', { 'data-galaxy-rotation-sample-model': rotMode, className: 'mt-2 font-bold text-white' }, __alloT('stem.galaxy.rotation_book_active_model', 'Active model') + ': ' + rotationModelName(rotMode)),
+                  rotationSampleTrend && React.createElement('div', { 'data-galaxy-rotation-trend': true, 'data-radius-ratio': rotationSampleTrend.radiusRatio, 'data-speed-ratio': rotationSampleTrend.speedRatio, 'data-mass-ratio': rotationSampleTrend.massRatio, className: 'mt-2 rounded-lg border border-white/10 bg-white/[0.04] p-2.5' },
+                    React.createElement('h6', { className: 'font-bold text-white' }, __alloT('stem.galaxy.rotation_book_trend', 'Outermost / innermost') + ' · ' + rotationSampleTrend.innerRadius.toFixed(1) + ' → ' + rotationSampleTrend.outerRadius.toFixed(1) + ' kpc'),
+                    React.createElement('dl', { className: 'mt-2 grid grid-cols-3 gap-1 text-center text-[11px]' },
+                      [{ key: 'radius', label: __alloT('stem.galaxy.rotation_book_radius', 'Radius'), value: rotationSampleTrend.radiusRatio }, { key: 'speed', label: __alloT('stem.galaxy.comparison_speed', 'Speed'), value: rotationSampleTrend.speedRatio }, { key: 'mass', label: __alloT('stem.galaxy.rotation_book_mass', 'Enclosed mass'), value: rotationSampleTrend.massRatio }].map(function(item) { return React.createElement('div', { key: item.key }, React.createElement('dt', { className: 'text-slate-300' }, item.label), React.createElement('dd', { className: 'mt-1 font-black tabular-nums text-cyan-100' }, item.value.toFixed(2) + '×')); })
+                    ),
+                    React.createElement('p', { 'data-galaxy-rotation-trend-explanation': rotationSampleTrend.region, className: 'mt-2 text-[11px] leading-relaxed text-slate-300' },
+                      rotationSampleTrend.region === 'core' ? __alloT('stem.galaxy.rotation_book_core', 'Both radii lie inside the core. Speed rises with radius and enclosed mass rises as radius cubed. Save outer radii to test the outer rotation curve.') :
+                      rotMode !== 'rigid' && rotationSampleTrend.region === 'crossing' ? __alloT('stem.galaxy.rotation_book_crossing', 'These radii cross the core boundary. Save two radii at or beyond 2.4 kpc to compare the outer speed and mass trends.') :
+                      rotMode === 'flat' ? __alloT('stem.galaxy.rotation_book_flat', 'Outer speed stays constant. The mass needed inside the orbit grows in direct proportion to radius.') :
+                      rotMode === 'keplerian' ? __alloT('stem.galaxy.rotation_book_compact', 'Outer speed declines. The mass inside the orbit stays constant in this compact model.') :
+                      __alloT('stem.galaxy.rotation_book_rigid', 'Speed grows in direct proportion to radius. Inferred enclosed mass grows as radius cubed in this rigid toy model.')
+                    )
+                  ),
+                  rotationSamples.length === 0 && React.createElement('p', { className: 'mt-3 rounded-lg border border-dashed border-white/20 p-3 text-[11px] leading-relaxed' }, __alloT('stem.galaxy.rotation_book_empty', 'No radii saved yet. Start with 6 and 12 kpc: double the radius and compare what happens to speed and mass.')),
+                  rotationSamples.length === 1 && React.createElement('p', { className: 'mt-2 text-[11px] text-slate-300' }, __alloT('stem.galaxy.rotation_book_second', 'Save a second radius to reveal the inner-to-outer comparison.')),
+                  React.createElement('ul', { className: 'mt-2 space-y-2' }, rotationSamples.map(function(sample) {
+                    var orbit = orbitalMeasurementForModel(rotMode, sample.radiusKpc);
+                    return React.createElement('li', { key: sample.radiusKpc, 'data-galaxy-rotation-sample': sample.radiusKpc, 'data-speed': orbit.speed, 'data-period': orbit.periodMyr, 'data-mass': orbit.enclosedMassSolar, className: 'rounded-lg border border-white/10 bg-white/[0.04] p-2' },
+                      React.createElement('div', { className: 'flex items-center justify-between gap-2' },
+                        React.createElement('button', { type: 'button', 'data-galaxy-rotation-revisit': sample.radiusKpc, 'aria-label': __alloT('stem.galaxy.rotation_book_revisit', 'Probe {radius} kpc').replace('{radius}', sample.radiusKpc.toFixed(1)), 'aria-pressed': rotationSampleRadius === sample.radiusKpc, onClick: function() { setRotationProbeRadius(sample.radiusKpc); }, className: 'min-h-[44px] rounded-lg border border-cyan-300/30 px-2 py-2 font-bold tabular-nums text-cyan-100' }, sample.radiusKpc.toFixed(1) + ' kpc', React.createElement('span', { className: 'block text-[11px] text-slate-300' }, Math.round(orbit.speed) + ' km/s')),
+                        React.createElement('button', { type: 'button', 'data-galaxy-rotation-remove': sample.radiusKpc, 'aria-label': __alloT('stem.galaxy.rotation_book_remove_aria', 'Remove {radius} kpc').replace('{radius}', sample.radiusKpc.toFixed(1)), onClick: function() { removeRotationSample(sample.radiusKpc); }, className: 'min-h-[44px] rounded-lg border border-slate-500 px-2 py-2 text-[11px] font-bold text-slate-200' }, __alloT('stem.galaxy.rotation_book_remove', 'Remove'))
+                      ),
+                      React.createElement('dl', { className: 'mt-1.5 grid grid-cols-2 gap-2 text-[11px]' },
+                        React.createElement('div', null, React.createElement('dt', { className: 'text-slate-400' }, __alloT('stem.galaxy.comparison_period', 'Period')), React.createElement('dd', { className: 'font-bold tabular-nums' }, Math.round(orbit.periodMyr) + ' Myr')),
+                        React.createElement('div', null, React.createElement('dt', { className: 'text-slate-400' }, __alloT('stem.galaxy.rotation_book_mass', 'Enclosed mass')), React.createElement('dd', { className: 'font-bold tabular-nums' }, formatGalaxyMass(orbit.enclosedMassSolar)))
+                      )
+                    );
+                  })),
+                  React.createElement('label', { htmlFor: 'galaxy-rotation-investigation-note', className: 'mt-3 block text-[11px] font-bold text-white' }, __alloT('stem.galaxy.rotation_book_note', 'Evidence note: what changes as you move outward?')),
+                  React.createElement('textarea', { id: 'galaxy-rotation-investigation-note', rows: 3, maxLength: 600, value: rotationInvestigationNote, placeholder: __alloT('stem.galaxy.rotation_book_note_placeholder', 'At the same radii, I notice… This model needs… because…'), onChange: function(e) { var note = galaxyRotationInvestigationNote(e.target.value); rotationInvestigationLive.current.note = note; upd('rotationInvestigationNote', note); }, className: 'mt-1 w-full resize-y rounded-lg border border-slate-500 bg-slate-900 px-2.5 py-2 text-xs leading-relaxed text-white' }),
+                  React.createElement('p', { className: 'mt-1 text-[11px] tabular-nums text-slate-400' }, rotationInvestigationNote.length + ' / 600'),
+                  React.createElement('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                    React.createElement('button', { type: 'button', 'data-galaxy-rotation-download': true, disabled: rotationSamples.length === 0, onClick: downloadRotationInvestigation, className: 'min-h-[44px] rounded-lg border border-cyan-300/40 px-3 py-2 text-[11px] font-bold text-cyan-100 disabled:opacity-50' }, __alloT('stem.galaxy.rotation_book_download', 'Download CSV')),
+                    rotationInvestigationUndo && React.createElement('button', { type: 'button', 'data-galaxy-rotation-undo': true, disabled: rotationSamples.length >= GALAXY_ROTATION_SAMPLE_LIMIT || rotationSamples.some(function(sample) { return sample.radiusKpc === rotationInvestigationUndo.radiusKpc; }), onClick: undoRotationSampleRemoval, className: 'min-h-[44px] rounded-lg border border-slate-500 px-3 py-2 text-[11px] font-bold' }, __alloT('stem.galaxy.bh_lab_undo', 'Undo removal'))
+                  ),
+                  React.createElement('p', { 'data-galaxy-rotation-book-status': true, role: 'status', 'aria-live': 'polite', className: 'mt-2 text-[11px] leading-relaxed text-cyan-100' }, rotationInvestigationStatus)
                 ),
                 React.createElement("p", { className: "text-[11px] text-slate-500 mt-1.5 italic" }, "💡 " + (galaxyType === 'irregular' ? __alloT('stem.galaxy.rotation_irregular_note', 'The motion shown here illustrates the association; it does not model the full gravitational dynamics of an irregular galaxy.') : galaxyType === 'elliptical' ? __alloT('stem.galaxy.elliptical_motion_note', 'Notice that no single orbital plane dominates. The smooth shape is a statistical pattern made by many crossing stellar paths.') : __alloT('stem.galaxy.rotation_density_wave_note', 'Also notice: the glowing gas lanes hold still while stars stream through them — real spiral arms are density waves (cosmic traffic jams), not fixed pinwheels of stars.')))
 
