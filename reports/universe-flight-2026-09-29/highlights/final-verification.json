@@ -1,0 +1,82 @@
+{
+  "completed": true,
+  "sourceHash": "e644bd8f63703a63fa03414d223094bfbeb2ebe58a0bf3118995c0f4600e7f32",
+  "uiHash": "0779b5441bee28e306f17000366b2cd0d05e942492aa6c10d815103bdc8c9903",
+  "mirrorsMatch": true,
+  "syntaxFiles": [
+    "stem_lab/stem_tool_universe.js",
+    "stem_lab/universe_flight_scene.js",
+    "desktop/web-app/public/stem_lab/stem_tool_universe.js",
+    "desktop/web-app/public/stem_lab/universe_flight_scene.js",
+    "tests/universe_flight_navigation.test.js",
+    "dev-tools/universe_flight_encounter_check.cjs",
+    "dev-tools/universe_flight_flyby_check.cjs",
+    "dev-tools/universe_flight_nebula_check.cjs",
+    "dev-tools/universe_flight_cloud_detail_check.cjs",
+    "dev-tools/universe_flight_highlights_check.cjs",
+    "tests/universe_flight_physics.test.js",
+    "tests/universe_content_invariants.test.js",
+    "tests/universe_accessibility.test.js"
+  ],
+  "scopedWhitespacePassed": true,
+  "previewUrl": "http://127.0.0.1:3187/reports/universe-flight-2026-09-29/preview.html?enhanced=27#universe-flight",
+  "previewStatus": 200,
+  "served": [
+    {
+      "file": "stem_lab/universe_flight_scene.js",
+      "status": 200,
+      "hash": "e644bd8f63703a63fa03414d223094bfbeb2ebe58a0bf3118995c0f4600e7f32"
+    },
+    {
+      "file": "stem_lab/stem_tool_universe.js",
+      "status": 200,
+      "hash": "0779b5441bee28e306f17000366b2cd0d05e942492aa6c10d815103bdc8c9903"
+    },
+    {
+      "file": "reports/universe-flight-2026-09-29/preview.html",
+      "status": 200,
+      "hash": "72204bc985237de6848a410afedf9031740e0db2414aa33d26474531ecd31b94"
+    }
+  ],
+  "reportHash": "43e13b8c5d6d6f9ffa22ce22397333cbfd1d802a5f5cd95d6aec1ce2b75f645a",
+  "highlights": {
+    "workflowGroups": 6,
+    "accessibilityScopes": 12,
+    "actualCaptures": 15
+  },
+  "cloudRegression": {
+    "workflowGroups": 17,
+    "accessibilityScopes": 19,
+    "actualCaptures": 20,
+    "fixedVisualComparisons": 9
+  },
+  "focusedTests": 116,
+  "focusedFiles": 4,
+  "focusedTestLogHash": "249ba0da54835c3bcdba36dfb9151116102b4f8e3c591f3ba37032b5776b5953",
+  "geometryShadersAtlasesPhysicsUnchanged": true,
+  "authoredHighlightSeconds": {
+    "halo": [
+      12,
+      18,
+      32
+    ],
+    "nebula": [
+      8,
+      12,
+      36
+    ]
+  },
+  "commitScope": "Universe Tool, renderer mirrors, navigation tests, browser harnesses, required frozen baselines, selected verification evidence",
+  "haloRegression": {
+    "workflowGroups": 15,
+    "accessibilityScopes": 6,
+    "actualCaptures": 15,
+    "resultHash": "9834cc038ab0c7099699340403f5c93fa8c192deb365b035bdf19e3e0c1b4d01"
+  },
+  "haloHarnessHash": "b7f7ad14c31131c80ae122de5c42f098cf77ed8b6f258cd489c302dc888dc8a0",
+  "originalFocusedTestLogHash": "391301897ae04d5db954dad79da241fc803555b86e765df0a01ed948ed8fd144",
+  "whitespaceCheckExcludedFrozenBaselines": [
+    "cloud-detail/baseline-ui.js",
+    "nebula-baseline-ui.js"
+  ]
+}

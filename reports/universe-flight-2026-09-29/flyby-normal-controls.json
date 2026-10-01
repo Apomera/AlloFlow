@@ -1,0 +1,114 @@
+{
+  "sourceHash": "f0896bd0e971c962c4f5b6743b946cdedf13f8e78ca2d8ad24adf31a5b30c295",
+  "uiHash": "87b6b0e935e78cdede9ed36d2da59351c0efec28d8c573ff86e78e4c06cb34e3",
+  "completed": true,
+  "layouts": [
+    {
+      "name": "phone",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "controls": [
+        {
+          "x": 63,
+          "y": 378.390625,
+          "width": 194,
+          "height": 44
+        },
+        {
+          "x": 63,
+          "y": 430.390625,
+          "width": 194,
+          "height": 44
+        },
+        {
+          "x": 63,
+          "y": 480.390625,
+          "width": 194,
+          "height": 44
+        }
+      ],
+      "violations": [],
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            4094.0117805923364,
+            27198.69342150284,
+            -23871.62305445606
+          ],
+          "yaw": 1.4500811685857107,
+          "pitch": -0.9361294647962046,
+          "distanceLy": 274.5032334979122,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "halo-cluster-2"
+      }
+    },
+    {
+      "name": "landscape",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "controls": [
+        {
+          "x": 63,
+          "y": 149.265625,
+          "width": 442,
+          "height": 44
+        },
+        {
+          "x": 63,
+          "y": 201.265625,
+          "width": 442,
+          "height": 44
+        },
+        {
+          "x": 63,
+          "y": 251.265625,
+          "width": 442,
+          "height": 44
+        }
+      ],
+      "violations": [],
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            3957.866748837221,
+            27436.055502744104,
+            -23854.502850378438
+          ],
+          "yaw": 1.4513067867816067,
+          "pitch": -0.9368578929805055,
+          "distanceLy": 0.2979884978369904,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "halo-cluster-2"
+      }
+    }
+  ],
+  "errors": []
+}

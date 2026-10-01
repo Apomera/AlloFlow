@@ -1,0 +1,30 @@
+{
+  "completed": true,
+  "sourceHash": "98cae53df1df8739c159595a6bf893a1f37b9c89d89de76db08c6ce8201bc2cf",
+  "uiHash": "172ac3fd9afdece08ca6e6a75917dda1d08c7667598b253d8a90e1537b69d477",
+  "mirrorsMatch": true,
+  "syntaxFiles": [
+    "stem_lab/universe_flight_scene.js",
+    "stem_lab/stem_tool_universe.js",
+    "desktop/web-app/public/stem_lab/universe_flight_scene.js",
+    "desktop/web-app/public/stem_lab/stem_tool_universe.js",
+    "dev-tools/universe_flight_cloud_detail_check.cjs",
+    "tests/universe_flight_physics.test.js",
+    "tests/universe_flight_navigation.test.js",
+    "tests/universe_content_invariants.test.js",
+    "tests/universe_accessibility.test.js"
+  ],
+  "scopedWhitespacePassed": true,
+  "previewStatus": 200,
+  "servedHashes": {
+    "stem_lab/universe_flight_scene.js": "98cae53df1df8739c159595a6bf893a1f37b9c89d89de76db08c6ce8201bc2cf",
+    "stem_lab/stem_tool_universe.js": "172ac3fd9afdece08ca6e6a75917dda1d08c7667598b253d8a90e1537b69d477"
+  },
+  "reportHash": "10de1a98fff0fbfc622dfe8531a8fb11256e87fe4ee35877290d749d2d7c951e",
+  "workflowGroups": 17,
+  "accessibilityScopes": 19,
+  "actualCaptures": 20,
+  "fixedVisualComparisons": 9,
+  "focusedTests": 107,
+  "uncommitted": true
+}

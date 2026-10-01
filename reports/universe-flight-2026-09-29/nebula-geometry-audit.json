@@ -1,0 +1,168 @@
+{
+  "regions": {
+    "neighborhood": {
+      "points": 19203,
+      "hash": "d0cf0afc3644685236b1653a5f434f9c1a6b9435dcbbbc37aeb177a7b6b371f8",
+      "galaxies": 0
+    },
+    "galaxy": {
+      "points": 36400,
+      "hash": "f5dbc73e3ae0b2751dcf15f6fffce2753ae4994b089c62d020975e414889b2ab",
+      "galaxies": 1
+    },
+    "cosmic": {
+      "points": 41470,
+      "hash": "156c66d7c6805406f2d231fb18affab8e613952ec32b5fdf9e9e805104966b85",
+      "galaxies": 134
+    }
+  },
+  "shadersIdentical": true,
+  "mathIdentical": true,
+  "atlasesIdentical": true,
+  "haloIdentical": true,
+  "localCloudLightChanges": {
+    "count": 1000,
+    "factor": 1.7777777777777777,
+    "maximumRelativeError": 1.0341777122169216e-7,
+    "oldMinimum": 0.05449393019080162,
+    "oldMaximum": 0.17309854924678802,
+    "newMinimum": 0.09687809646129608,
+    "newMaximum": 0.3077307641506195,
+    "allOtherComponentsIdentical": true
+  },
+  "cloudEnvelopes": [
+    {
+      "center": [
+        9,
+        -2,
+        34
+      ],
+      "points": 570,
+      "maximumPointRadiusLy": 15.686603555522638,
+      "conservativeSpriteEnvelopeLy": 17.44610084041186
+    },
+    {
+      "center": [
+        -22,
+        11,
+        83
+      ],
+      "points": 430,
+      "maximumPointRadiusLy": 24.30903028979574,
+      "conservativeSpriteEnvelopeLy": 27.562692329293235
+    }
+  ],
+  "route": {
+    "durationSeconds": 40,
+    "lengthLy": 109.12428901563214,
+    "start": [
+      -14,
+      6,
+      3
+    ],
+    "end": [
+      -25,
+      29,
+      56
+    ],
+    "fov": 64,
+    "minimumBlueCenterDistanceLy": 7.607919729272211,
+    "minimumVioletCenterDistanceLy": 23.71619003616159,
+    "endVioletDistanceLy": 32.58834147360065,
+    "endVioletEnvelopeMarginLy": 5.025649144307415,
+    "maximumOriginDistanceLy": 67.83804242458652,
+    "maximumMillisecondStepLy": 0.007512445950466672,
+    "maximumMillisecondLookTurnDeg": 0.011699262039466734,
+    "minimumStarCenterDistanceLy": 0.48310090992606075,
+    "minimumStarSpriteClearanceLy": 0.45827071014798076,
+    "starDistanceSampleIntervalSeconds": 0.01,
+    "phases": [
+      {
+        "at": 0,
+        "name": "depart"
+      },
+      {
+        "at": 8,
+        "name": "filaments"
+      },
+      {
+        "at": 16,
+        "name": "passage"
+      },
+      {
+        "at": 24,
+        "name": "turn"
+      },
+      {
+        "at": 30,
+        "name": "reveal"
+      },
+      {
+        "at": 40,
+        "name": "complete"
+      }
+    ]
+  },
+  "landmarks": [
+    {
+      "id": "amber-star",
+      "name": "Amber star",
+      "kind": "Generated star",
+      "description": "A warm-colored model star close enough to show clear parallax as you move.",
+      "position": [
+        -3.1,
+        1,
+        8.5
+      ],
+      "arrivalRadiusLy": 0.6
+    },
+    {
+      "id": "blue-star",
+      "name": "Blue star",
+      "kind": "Generated star",
+      "description": "A blue-white model star. Compare its apparent direction and frequency shift at different traveler speeds.",
+      "position": [
+        4.3,
+        -2.2,
+        16
+      ],
+      "arrivalRadiusLy": 0.8
+    },
+    {
+      "id": "pale-star",
+      "name": "Pale star",
+      "kind": "Generated star",
+      "description": "A more distant model star for comparing perspective and changing lines of sight.",
+      "position": [
+        0.65,
+        2.4,
+        24
+      ],
+      "arrivalRadiusLy": 1
+    },
+    {
+      "id": "blue-nebula",
+      "name": "Blue emission region",
+      "kind": "Generated emission region",
+      "description": "A nearby model of layered glowing filaments. Its colors and brightness are illustrative; the gaps represent reduced emission, not measured dust extinction.",
+      "position": [
+        9,
+        -2,
+        34
+      ],
+      "arrivalRadiusLy": 20
+    },
+    {
+      "id": "violet-nebula",
+      "name": "Violet emission region",
+      "kind": "Generated emission region",
+      "description": "A larger generated cloud beyond the blue region. Move sideways to compare foreground filaments with the distant stellar background.",
+      "position": [
+        -22,
+        11,
+        83
+      ],
+      "arrivalRadiusLy": 32
+    }
+  ]
+}

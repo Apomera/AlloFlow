@@ -1,0 +1,23 @@
+{
+  "completed": true,
+  "sourceHash": "8318a5ade9020931b091cf8fd2489cf516a7c0212e2b66949af5fe45b7d33c7a",
+  "uiHash": "0bec0dfc54616640063b85b290458837e1ad1d3d7f62dfc0c5007cd7c8475c0c",
+  "mirrorsMatch": true,
+  "syntaxFiles": [
+    "stem_lab/universe_flight_scene.js",
+    "stem_lab/stem_tool_universe.js",
+    "desktop/web-app/public/stem_lab/universe_flight_scene.js",
+    "desktop/web-app/public/stem_lab/stem_tool_universe.js",
+    "tests/universe_flight_navigation.test.js",
+    "dev-tools/universe_flight_flyby_check.cjs",
+    "dev-tools/universe_flight_encounter_check.cjs",
+    "dev-tools/universe_flight_nebula_check.cjs"
+  ],
+  "scopedWhitespacePassed": true,
+  "previewStatus": 200,
+  "servedHashes": {
+    "stem_lab/universe_flight_scene.js": "8318a5ade9020931b091cf8fd2489cf516a7c0212e2b66949af5fe45b7d33c7a",
+    "stem_lab/stem_tool_universe.js": "0bec0dfc54616640063b85b290458837e1ad1d3d7f62dfc0c5007cd7c8475c0c"
+  },
+  "reportHash": "0b43f3e92096545189071e4f67c95f92b123551e63e06d48e7b99ca3ad6e6eb1"
+}

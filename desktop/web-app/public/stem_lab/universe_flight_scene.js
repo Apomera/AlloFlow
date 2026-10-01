@@ -20,7 +20,9 @@
     neighborhood: [
       { id: 'amber-star', name: 'Amber star', kind: 'Generated star', description: 'A warm-colored model star close enough to show clear parallax as you move.', position: [-3.1, 1, 8.5], arrivalRadiusLy: 0.6 },
       { id: 'blue-star', name: 'Blue star', kind: 'Generated star', description: 'A blue-white model star. Compare its apparent direction and frequency shift at different traveler speeds.', position: [4.3, -2.2, 16], arrivalRadiusLy: 0.8 },
-      { id: 'pale-star', name: 'Pale star', kind: 'Generated star', description: 'A more distant model star for comparing perspective and changing lines of sight.', position: [0.65, 2.4, 24], arrivalRadiusLy: 1 }
+      { id: 'pale-star', name: 'Pale star', kind: 'Generated star', description: 'A more distant model star for comparing perspective and changing lines of sight.', position: [0.65, 2.4, 24], arrivalRadiusLy: 1 },
+      { id: 'blue-nebula', name: 'Blue emission region', kind: 'Generated emission region', description: 'A nearby model of layered glowing filaments. Its colors and brightness are illustrative; the gaps represent reduced emission, not measured dust extinction.', position: [9, -2, 34], arrivalRadiusLy: 20 },
+      { id: 'violet-nebula', name: 'Violet emission region', kind: 'Generated emission region', description: 'A larger generated cloud beyond the blue region. Move sideways to compare foreground filaments with the distant stellar background.', position: [-22, 11, 83], arrivalRadiusLy: 32 }
     ],
     galaxy: [
       { id: 'galactic-center', name: 'Galactic center', kind: 'Generated galactic region', description: 'The central bulge of this spiral model. The approach stops outside the bright central region.', position: [0, 0, 0], arrivalRadiusLy: 18000 },
@@ -34,6 +36,157 @@
       { id: 'golden-elliptical', name: 'Golden elliptical', kind: 'Generated galaxy', description: 'A smooth, warm-colored galaxy model with a broad stellar halo. Compare its shape with the neighboring spirals.', position: [800000, 550000, 850000], arrivalRadiusLy: 250000 }
     ]
   };
+
+  // Metadata uses the same transform as the existing halo star generation.
+  // Keep the renderer's RNG stream and generated point bytes independent.
+  var HALO_CENTERS = [
+    [-18000, 9000, 8000], [23000, -13000, -18000], [-32000, -7000, -16000],
+    [12000, 19000, 16000], [27000, 10000, 24000], [-11000, -21000, 10000]
+  ].map(function (anchor) {
+    var tiltedY = anchor[1] * Math.cos(0.88) - anchor[2] * Math.sin(0.88);
+    var tiltedZ = anchor[1] * Math.sin(0.88) + anchor[2] * Math.cos(0.88);
+    return [anchor[0] * Math.cos(-0.22) - tiltedY * Math.sin(-0.22), anchor[0] * Math.sin(-0.22) + tiltedY * Math.cos(-0.22), tiltedZ];
+  });
+  HALO_CENTERS.forEach(function (position, index) {
+    LANDMARKS.galaxy.push({ id: 'halo-cluster-' + (index + 1), name: 'Halo cluster ' + (index + 1), kind: 'Generated stellar group',
+      description: 'A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.',
+      position: position.slice(), arrivalRadiusLy: 600 });
+  });
+
+  // An authored camera tour, sampled by arc length. This is a viewing path,
+  // not a gravitational trajectory or a relativistic spacecraft course.
+  var HALO_FLYBY = (function () {
+    var center = HALO_CENTERS[1], radius = Math.hypot(center[0], center[2]);
+    var radial = [center[0] / radius, 0, center[2] / radius], tangent = [-radial[2], 0, radial[0]];
+    function world(point) { return center.map(function (value, i) { return value + point[0] * radial[i] + point[1] * (i === 1 ? 1 : 0) + point[2] * tangent[i]; }); }
+    var nodes = [[-13000,27000,-15000],[-2200,3500,-5800],[900,180,-1600],[900,180,1600],[9000,4500,8500],[-17000,50000,95000]];
+    var tangents = [[10000,-21000,7000],[8500,-8000,9000],[0,0,3200],[0,0,3200],[15000,10000,12000],[-8000,35000,55000]];
+    var samples = [], joins = [0], length = 0, previous;
+    function curve(segment, u) {
+      var u2 = u * u, u3 = u2 * u;
+      return world(nodes[segment].map(function (value, i) {
+        return (2*u3-3*u2+1)*value + (u3-2*u2+u)*tangents[segment][i] +
+          (-2*u3+3*u2)*nodes[segment+1][i] + (u3-u2)*tangents[segment+1][i];
+      }));
+    }
+    for (var segment = 0; segment < nodes.length - 1; segment++) {
+      for (var step = segment ? 1 : 0; step <= 256; step++) {
+        var position = curve(segment, step / 256);
+        if (previous) length += Math.hypot(position[0]-previous[0],position[1]-previous[1],position[2]-previous[2]);
+        samples.push({ distance: length, parameter: segment + step / 256 }); previous = position;
+      }
+      joins.push(length);
+    }
+    // Monotone cubic distance timing keeps speed continuous through each
+    // curve join, slows beside the group, and starts and finishes at rest.
+    var times = [0,8,13,23,28,36], slopes = [0], rates = [];
+    for (var interval = 0; interval < times.length - 1; interval++) rates.push((joins[interval+1]-joins[interval])/(times[interval+1]-times[interval]));
+    for (var j = 1; j < times.length - 1; j++) {
+      var left = times[j]-times[j-1], right = times[j+1]-times[j];
+      var w1 = 2*right+left, w2 = right+2*left;
+      slopes.push((w1+w2)/(w1/rates[j-1]+w2/rates[j]));
+    }
+    slopes.push(0);
+    function atTime(seconds) {
+      var elapsed = clamp(finite(seconds, 0), 0, 36), interval = 0;
+      while (interval < times.length-2 && elapsed > times[interval+1]) interval++;
+      var width = times[interval+1]-times[interval], u = (elapsed-times[interval])/width, u2=u*u, u3=u2*u;
+      var distance = (2*u3-3*u2+1)*joins[interval] + (u3-2*u2+u)*width*slopes[interval] +
+        (-2*u3+3*u2)*joins[interval+1] + (u3-u2)*width*slopes[interval+1];
+      distance = clamp(distance, joins[interval], joins[interval+1]);
+      var low = 0, high = samples.length-1;
+      while (high-low>1) { var mid = Math.floor((low+high)/2); if (samples[mid].distance<distance) low=mid; else high=mid; }
+      var a=samples[low], b=samples[high], fraction=b.distance>a.distance?(distance-a.distance)/(b.distance-a.distance):0;
+      var parameter=a.parameter+(b.parameter-a.parameter)*fraction, part=Math.min(nodes.length-2,Math.floor(parameter));
+      var position = curve(part, parameter-part);
+      var blend = clamp((elapsed-22)/8,0,1); blend=blend*blend*(3-2*blend);
+      var aim = center.map(function(value) { return value*(1-blend); });
+      var direction = aim.map(function(value,i) { return value-position[i]; });
+      var yaw = Math.atan2(direction[0],direction[2]), pitch = Math.atan2(direction[1],Math.hypot(direction[0],direction[2]));
+      var pace = ((6*u2-6*u)*joins[interval] + (3*u2-4*u+1)*width*slopes[interval] +
+        (-6*u2+6*u)*joins[interval+1] + (3*u2-2*u)*width*slopes[interval+1])/width;
+      return { position:position, yaw:yaw, pitch:pitch, distance:distance, pace:Math.max(0,pace),
+        phase:elapsed>=36?'complete':elapsed>=28?'reveal':elapsed>=23?'turn':elapsed>=13?'cluster':elapsed>=8?'approach':'arm' };
+    }
+    return { id:'halo', name:'Halo flyby', region:'galaxy', durationSeconds:36, position:world(nodes[0]), aim:center.slice(), fov:60, targetId:'halo-cluster-2', atTime:atTime };
+  })();
+  // A second authored camera tour uses the existing emission regions without
+  // adding points, opacity layers, or physical fog. Their fixed 3D filaments
+  // give a sideways passage foreground and background parallax.
+  var NEBULA_FLYBY = (function () {
+    var blue = [9,-2,34], violet = [-22,11,83];
+    var nodes = [[-14,6,3],[0,3,22],[12,3,29],[17,6,38],[-8,15,61],[-25,29,56]];
+    var tangents = [[12,-2,20],[15,0,12],[10,2,12],[-3,5,18],[-24,14,9],[-10,15,-12]];
+    var times = [0,8,16,24,30,40], samples = [], joins = [0], length = 0, previous;
+    function curve(segment, u) {
+      var u2 = u*u, u3 = u2*u;
+      return nodes[segment].map(function (value, i) {
+        return (2*u3-3*u2+1)*value + (u3-2*u2+u)*tangents[segment][i] +
+          (-2*u3+3*u2)*nodes[segment+1][i] + (u3-u2)*tangents[segment+1][i];
+      });
+    }
+    for (var segment = 0; segment < nodes.length-1; segment++) {
+      for (var step = segment ? 1 : 0; step <= 256; step++) {
+        var position = curve(segment,step/256);
+        if (previous) length += Math.hypot(position[0]-previous[0],position[1]-previous[1],position[2]-previous[2]);
+        samples.push({distance:length,parameter:segment+step/256}); previous=position;
+      }
+      joins.push(length);
+    }
+    // Monotone distance timing starts and finishes at rest and keeps the
+    // passage slower beside nearby filaments than during the broad turn.
+    var slopes=[0], rates=[];
+    for (var interval=0;interval<times.length-1;interval++) rates.push((joins[interval+1]-joins[interval])/(times[interval+1]-times[interval]));
+    for (var j=1;j<times.length-1;j++) {
+      var left=times[j]-times[j-1],right=times[j+1]-times[j],w1=2*right+left,w2=right+2*left;
+      slopes.push((w1+w2)/(w1/rates[j-1]+w2/rates[j]));
+    }
+    slopes.push(0);
+    function atTime(seconds) {
+      var elapsed=clamp(finite(seconds,0),0,40),interval=0;
+      while (interval<times.length-2 && elapsed>times[interval+1]) interval++;
+      var width=times[interval+1]-times[interval],u=(elapsed-times[interval])/width,u2=u*u,u3=u2*u;
+      var distance=(2*u3-3*u2+1)*joins[interval]+(u3-2*u2+u)*width*slopes[interval]+
+        (-2*u3+3*u2)*joins[interval+1]+(u3-u2)*width*slopes[interval+1];
+      distance=clamp(distance,joins[interval],joins[interval+1]);
+      var low=0,high=samples.length-1;
+      while(high-low>1) {var mid=Math.floor((low+high)/2);if(samples[mid].distance<distance)low=mid;else high=mid;}
+      var a=samples[low],b=samples[high],fraction=b.distance>a.distance?(distance-a.distance)/(b.distance-a.distance):0;
+      var parameter=a.parameter+(b.parameter-a.parameter)*fraction,part=Math.min(nodes.length-2,Math.floor(parameter));
+      var position=curve(part,parameter-part);
+      var blend=clamp((elapsed-21)/12,0,1);blend=blend*blend*(3-2*blend);
+      var aim=blue.map(function(value,i){return value+(violet[i]-value)*blend;});
+      var direction=aim.map(function(value,i){return value-position[i];});
+      var yaw=Math.atan2(direction[0],direction[2]),pitch=Math.atan2(direction[1],Math.hypot(direction[0],direction[2]));
+      var pace=((6*u2-6*u)*joins[interval]+(3*u2-4*u+1)*width*slopes[interval]+
+        (-6*u2+6*u)*joins[interval+1]+(3*u2-2*u)*width*slopes[interval+1])/width;
+      return {position:position,yaw:yaw,pitch:pitch,distance:distance,pace:Math.max(0,pace),
+        phase:elapsed>=40?'complete':elapsed>=30?'reveal':elapsed>=24?'turn':elapsed>=16?'passage':elapsed>=8?'filaments':'depart'};
+    }
+    return {id:'nebula',name:'Nebula passage',region:'neighborhood',durationSeconds:40,position:nodes[0].slice(),aim:blue.slice(),fov:64,targetId:'blue-nebula',atTime:atTime};
+  })();
+  var FLYBY_ROUTES = {halo:HALO_FLYBY,nebula:NEBULA_FLYBY};
+  HALO_FLYBY.completionTargetId = 'galactic-center';
+  HALO_FLYBY.completionMessage = 'Halo flyby complete. Travel is paused beside the spiral; look around or explore another destination.';
+  NEBULA_FLYBY.completionTargetId = 'violet-nebula';
+  NEBULA_FLYBY.completionMessage = 'Nebula passage complete. Travel is paused outside the violet emission region; look around or explore another destination.';
+  HALO_FLYBY.highlights = [
+    {id:'arm',name:'Spiral arm',seconds:12,description:'Look across the tilted disk as the cluster comes into view.'},
+    {id:'cluster',name:'Cluster pass',seconds:18,description:'Compare the nearby warm stars with the distant spiral.'},
+    {id:'panorama',name:'Galaxy panorama',seconds:32,description:'Look back across the spiral from the halo.'}
+  ];
+  NEBULA_FLYBY.highlights = [
+    {id:'approach',name:'Blue cloud approach',seconds:8,description:'See the blue glow against the distant stellar field.'},
+    {id:'filaments',name:'Among the filaments',seconds:12,description:'Look around the layered blue emission region.'},
+    {id:'violet',name:'Violet cloud reveal',seconds:36,description:'Look toward the violet cloud after the curved passage.'}
+  ];
+  function flybyRoute(id) { return Object.prototype.hasOwnProperty.call(FLYBY_ROUTES,id) ? FLYBY_ROUTES[id] : null; }
+  function flybys(region) {
+    return Object.keys(FLYBY_ROUTES).map(function(id){return FLYBY_ROUTES[id];}).filter(function(item){return region===undefined || region===item.region;}).map(function(item){
+      return {id:item.id,name:item.name,region:item.region,durationSeconds:item.durationSeconds,position:item.position.slice(),aim:item.aim.slice(),fov:item.fov,targetId:item.targetId,
+        highlights:item.highlights.map(function(highlight){return {id:highlight.id,name:highlight.name,seconds:highlight.seconds,description:highlight.description};})};
+    });
+  }
 
   function landmarks(region) {
     var list = Object.prototype.hasOwnProperty.call(LANDMARKS, region) ? LANDMARKS[region] : [];
@@ -258,11 +411,14 @@
     var random = randomGenerator(REGIONS[name].seed);
     var points = [], galaxies = [];
     function normal() { return Math.sqrt(-2 * Math.log(Math.max(1e-8, random()))) * Math.cos(TAU * random()); }
-    function add(x, y, z, color, size, light, cloud) {
+    function add(x, y, z, color, size, light, cloud, localDetail) {
       // Pack a stable tile and rotation into the existing cloud float. This
       // consumes no scene RNG samples and keeps the nine-float point layout.
       var index = points.length / 9;
       var profile = cloud ? 1 + index % 4 + ((index * 0.61803398875) % 1) * 0.98 : 0;
+      // The next four tile indices opt nearby emission into resolved detail.
+      // Positions, light, and the RNG stream keep the same point budget.
+      if (localDetail) profile += 4;
       points.push(x, y, z, color[0], color[1], color[2], size, light, profile);
     }
     function starColor() {
@@ -355,8 +511,8 @@
           var size = nebula.extent * (knot ? 0.095 : 0.16) * (0.65 + random() * 0.7);
           // Compensate the opacity grain in these nearby emission regions;
           // distant band and galaxy light keep their restrained profiles.
-          var light = 1.35 * (knot ? 0.095 : 0.062) * (0.65 + random() * 0.7);
-          add(nebula.center[0] + x * ct - y * st, nebula.center[1] + x * st + y * ct, nebula.center[2] + z, color, size, light, 1);
+          var light = 2.4 * (knot ? 0.095 : 0.062) * (0.65 + random() * 0.7);
+          add(nebula.center[0] + x * ct - y * st, nebula.center[1] + x * st + y * ct, nebula.center[2] + z, color, size, light, 1, true);
         }
       });
       for (var b = 0; b < 8000; b++) {
@@ -519,8 +675,9 @@
   }
   function cloudPixels() {
     if (cloudAtlasBytes) return cloudAtlasBytes;
-    // Galaxy's correlated opacity grain and feathered lobes, in a compact alpha
-    // atlas. Uneven emission only: no obscuring dust, scattering, or animated gas.
+    // Alpha retains the diffuse profile. Red stores broad, bending filaments
+    // for resolved nearby emission, sharing the same atlas and texture sample.
+    // The shapes are illustrative emission, without extinction or gas motion.
     var size = CLOUD_TILE_SIZE, span = size - CLOUD_GUTTER * 2;
     var data = new Uint8Array(size * size * 4 * 4);
     for (var tile = 0; tile < 4; tile++) {
@@ -546,6 +703,59 @@
         data[offset] = data[offset + 1] = data[offset + 2] = 255;
         data[offset + 3] = Math.round(255 * light);
       }
+      // Inspired by Galaxy's filament strips: bending threads, compact knots,
+      // and diffuse light between them. Bake once; broad features survive the
+      // 60 CSS-pixel sprite cap and mip filtering as the camera travels.
+      var profiles = [], oldTotal = 0, detailTotal = 0;
+      for (var dy = CLOUD_GUTTER; dy < size - CLOUD_GUTTER; dy++) for (var dx = CLOUD_GUTTER; dx < size - CLOUD_GUTTER; dx++) {
+        var u = (dx - CLOUD_GUTTER) / (span - 1) * 2 - 1;
+        var v = (dy - CLOUD_GUTTER) / (span - 1) * 2 - 1;
+        var r2 = u * u + v * v;
+        var edge = clamp((0.97 - Math.sqrt(r2)) / 0.33, 0, 1);
+        edge = edge * edge * (3 - 2 * edge);
+        var warp = (emissionNoise(u * 3 + 23, v * 3 + 31, seed) - 0.5) * 0.27;
+        var threads = 0, knots = 0;
+        for (var thread = 0; thread < 3; thread++) {
+          var bend = Math.sin(u * (2.4 + tile * 0.25) + phase + thread * 1.9) * 0.22;
+          var center = (thread - 1) * 0.27 + bend + warp;
+          var separation = v - center;
+          var width = 0.13 + thread * 0.025;
+          threads += Math.exp(-Math.pow(separation / width, 2)) * (0.65 + 0.35 * Math.cos(u * 2.8 + thread + phase));
+          var along = u - [-0.48, 0.12, 0.56][thread];
+          knots += Math.exp(-Math.pow(along / 0.20, 2) - Math.pow(separation / 0.17, 2));
+        }
+        var coarse = emissionNoise(u * 7 + 3, v * 7 + 19, seed);
+        var grain = 0.72 + coarse * 0.22 + emissionNoise(u * 15 + 11, v * 15 + 7, seed) * 0.06;
+        var detail = Math.exp(-r2 * 2.8) * edge * (0.26 + threads * 0.72 + knots * 0.38) * grain;
+        var index = (dy * size * 4 + tile * size + dx) * 4;
+        // Account for the point fragment's outer feather when matching total
+        // emission. Soft saturation prevents hard clipped texture peaks.
+        var weight = clamp((1 - r2) / (1 - 0.72), 0, 1);
+        weight = weight * weight * (3 - 2 * weight);
+        var diffuse = data[index + 3] / 255;
+        oldTotal += diffuse * weight;
+        detailTotal += detail * weight;
+        profiles.push({ index: index, weight: weight, detail: detail, diffuse: diffuse });
+      }
+      function emissionTotal(gain) {
+        var total = 0;
+        profiles.forEach(function (profile) {
+          total += 0.96 * (1 - Math.exp(-profile.detail * gain / 0.96)) * profile.weight;
+        });
+        return total;
+      }
+      var low = 0, high = oldTotal / Math.max(0.00001, detailTotal);
+      while (emissionTotal(high) < oldTotal) high *= 2;
+      for (var iteration = 0; iteration < 24; iteration++) {
+        var middle = (low + high) * 0.5;
+        if (emissionTotal(middle) < oldTotal) low = middle;
+        else high = middle;
+      }
+      var gain = (low + high) * 0.5;
+      profiles.forEach(function (profile) {
+        var filament = 0.96 * (1 - Math.exp(-profile.detail * gain / 0.96));
+        data[profile.index] = Math.round(255 * (profile.diffuse * 0.35 + filament * 0.65));
+      });
     }
     cloudAtlasBytes = data;
     return data;
@@ -615,7 +825,10 @@
     '  float resolved = (1.0 - isCloud) * smoothstep(12.0, 26.0, gl_PointSize / u_dpr);',
     '  float seed = 0.0;',
     '  if (resolved > 0.0) seed = fract(sin(dot(a_position, vec3(0.173, 0.317, 0.619))) * 137.631);',
-    '  v_stellarDetail = vec3(resolved, seed, 2.0 / gl_PointSize);',
+    // Cloud sprites never enter the stellar surface branch, so their seed
+    // component carries a size-based detail blend without another varying.
+    '  float cloudDetail = step(5.0, a_cloud) * smoothstep(12.0, 30.0, gl_PointSize / u_dpr);',
+    '  v_stellarDetail = vec3(resolved, mix(seed, cloudDetail, isCloud), 2.0 / gl_PointSize);',
     '  float shift = clamp(log(max(D, 0.0001)) * 0.42, -0.85, 0.85);',
     '  vec3 tint = shift >= 0.0 ? vec3(0.51, 0.73, 1.0) : vec3(1.0, 0.35, 0.15);',
     '  v_color = mix(a_color, tint, abs(shift));',
@@ -627,7 +840,7 @@
     '  v_light = a_light * u_exposure * exposure * mix(1.0, coverage, isCloud);',
     '  v_cloud = isCloud;',
     '  float rotation = fract(a_cloud) * 6.28318530718;',
-    '  v_cloudProfile = vec3(max(0.0, floor(a_cloud) - 1.0), cos(rotation), sin(rotation));',
+    '  v_cloudProfile = vec3(mod(max(0.0, floor(a_cloud) - 1.0), 4.0), cos(rotation), sin(rotation));',
     '}'
   ].join('\n');
   var FRAGMENT = [
@@ -652,10 +865,11 @@
     '    vec2 q = vec2(p.x * v_cloudProfile.y - p.y * v_cloudProfile.z, p.x * v_cloudProfile.z + p.y * v_cloudProfile.y);',
     '    vec2 uv = (q * 0.5 + 0.5) * 111.0 + 8.5;',
     '    uv.x += v_cloudProfile.x * 128.0;',
-    '    cloud = texture2D(u_cloudTexture, uv / vec2(512.0, 128.0)).a * 0.55;',
+    '    vec4 emission = texture2D(u_cloudTexture, uv / vec2(512.0, 128.0));',
+    '    cloud = mix(emission.a, emission.r, v_stellarDetail.y) * 0.55;',
     '  }',
     '  float light = mix(star, cloud, v_cloud) * v_light * (1.0 - smoothstep(0.72, 1.0, radius2));',
-    // Preserve the existing cloud and unresolved-star calculations exactly.
+    // Clouds share the emission path; unresolved stars keep their original light.
     '  if (v_stellarDetail.x <= 0.0) { gl_FragColor = vec4(v_color * light, light); return; }',
     // Solar's granular photosphere and gentle limb darkening, adapted to an
     // illustrative stellar sprite. Source-position seeds remain still on pause;
@@ -692,7 +906,7 @@
 
   function create(canvas, options) {
     options = options || {};
-    var settings = { mode: 'explore', region: 'neighborhood', speed: 2, beta: 0.9, timeScale: 1, running: false, compareRest: false, fov: 70, exposure: 1, quality: 'auto', orbitRate: 3, orbitDirection: 1, smoothTravel: false };
+    var settings = { mode: 'explore', region: 'neighborhood', speed: 2, beta: 0.9, timeScale: 1, running: false, compareRest: false, fov: 70, exposure: 1, quality: 'auto', orbitRate: 3, orbitDirection: 1, smoothTravel: false, flybyRate: 1 };
     var state, gl, program, buffer, pointCount = 0, uniforms = {}, disposed = false, lost = false;
     var galaxyProgram, galaxyBuffer, galaxyTexture, cloudTexture, galaxyCount = 0, galaxyUniforms = {};
     var pointAttributes = [], galaxyAttributes = [];
@@ -701,6 +915,23 @@
     var resizeObserver, intersectionObserver, shaders = [];
     var targetId = null, navigation = { active: false, targetId: null };
     var orbitId = null;
+    var flyby = { active:false, completed:false, id:null, elapsedSeconds:0, autoLook:false };
+    var flybyPace = 0;
+    function clearFlyby() { flyby = { active:false, completed:false, id:null, elapsedSeconds:0, autoLook:false }; flybyPace = 0; }
+    function endFlyby(message) {
+      if (!flyby.active) return false;
+      clearFlyby();
+      pauseWithMessage(message || 'Flyby canceled. Travel is paused.'); requestDraw();
+      return true;
+    }
+    function manualFlybyLook() { if (flyby.active) flyby.autoLook = false; }
+    function flybyTelemetry() {
+      var route = flybyRoute(flyby.id);
+      var sample = route ? route.atTime(flyby.elapsedSeconds) : null;
+      return { active:flyby.active, completed:flyby.completed, id:flyby.id, name:route?route.name:null,
+        progress:route?flyby.elapsedSeconds/route.durationSeconds:0, elapsedSeconds:flyby.elapsedSeconds,
+        durationSeconds:route?route.durationSeconds:0, autoLook:flyby.autoLook, phase:sample?sample.phase:null, rate:settings.flybyRate };
+    }
     var freePace = 0;
     var trail = [];
     var cameraMoves = [];
@@ -761,10 +992,12 @@
         progress:navigation.completed?1:plan&&navigation.totalLy>0?clamp(1-plan.remainingLy/navigation.totalLy,0,1):0 };
     }
     function motionTelemetry() {
-      var kind = settings.mode === 'relativity' ? 'relativity' : orbitId ? 'orbit' : navigation.active ? 'approach' : 'free';
+      var kind = settings.mode === 'relativity' ? 'relativity' : flyby.active ? 'flyby' : orbitId ? 'orbit' : navigation.active ? 'approach' : 'free';
       var target = settings.mode === 'relativity' ? 0 : settings.speed;
       var item = getLandmark(orbitId || navigation.targetId);
-      if (kind === 'orbit' && item) {
+      if (kind === 'flyby') {
+        target = flybyRoute(flyby.id).atTime(flyby.elapsedSeconds).pace * settings.flybyRate;
+      } else if (kind === 'orbit' && item) {
         target = Math.hypot(state.position[0] - item.position[0], state.position[2] - item.position[2]) * settings.orbitRate * Math.PI / 180;
       } else if (kind === 'approach' && item) {
         var radius = navigation.arrivalRadiusLy || item.arrivalRadiusLy;
@@ -772,7 +1005,7 @@
         target = Math.min(settings.speed, Math.max(radius * 0.5, remaining * 1.2));
       }
       var moving = settings.running && isVisible() && !lost && !disposed && kind !== 'relativity';
-      return { smoothTravel: settings.smoothTravel, paceLyPerSecond: moving ? kind === 'free' && settings.smoothTravel ? freePace : target : 0, targetLyPerSecond: target, kind: kind };
+      return { smoothTravel: settings.smoothTravel, paceLyPerSecond: moving ? kind === 'flyby' ? flybyPace : kind === 'free' && settings.smoothTravel ? freePace : target : 0, targetLyPerSecond: target, kind: kind };
     }
     function pauseWithMessage(message, detail) {
       settings.running = false; lastFrame = 0; freePace = 0;
@@ -805,7 +1038,7 @@
       if (typeof options.onTelemetry === 'function') options.onTelemetry({
         distanceLy: state.distanceLy, universeYears: state.universeYears, travelerYears: state.travelerYears,
         position: state.position.slice(), yaw: state.yaw, pitch: state.pitch, running: settings.running,
-        target: targetTelemetry(), navigation: navigationTelemetry(), orbit: { active: !!orbitId, targetId: orbitId }, motion: motionTelemetry(), framing: framingTelemetry(), trail: trail.map(function(p) { return p.slice(); }), cameraMoves: cameraMoves.length
+        target: targetTelemetry(), navigation: navigationTelemetry(), flyby: flybyTelemetry(), orbit: { active: !!orbitId, targetId: orbitId }, motion: motionTelemetry(), framing: framingTelemetry(), trail: trail.map(function(p) { return p.slice(); }), cameraMoves: cameraMoves.length
       });
     }
     function initialState() {
@@ -904,6 +1137,7 @@
       });
       navigation.active = false;
       orbitId = null;
+      clearFlyby();
       var message = 'Reached the edge of this generated model. Reset position or look back to explore it.';
       pauseWithMessage(message, { kind: 'boundary', region: settings.region, mode: settings.mode, position: state.position.slice() });
     }
@@ -938,13 +1172,38 @@
       state = Object.assign({}, state, { position: [item.position[0] + x * Math.cos(angle) + z * Math.sin(angle), state.position[1], item.position[2] - x * Math.sin(angle) + z * Math.cos(angle)], distanceLy: state.distanceLy + Math.hypot(x, z) * Math.abs(angle) });
       faceTarget(item);
     }
+    function stepFlyby(dt) {
+      var seconds = clamp(finite(dt,0),0,0.5), route = flybyRoute(flyby.id);
+      var oldElapsed = flyby.elapsedSeconds, elapsed = Math.min(route.durationSeconds,oldElapsed+seconds*settings.flybyRate);
+      var oldSample = route.atTime(oldElapsed), sample = route.atTime(elapsed);
+      flyby.elapsedSeconds = elapsed;
+      // Camera displacement follows the sampled curve regardless of gaze.
+      // Keep path distance independent of RAF sampling and physical clocks.
+      flybyPace = seconds ? (sample.distance-oldSample.distance)/seconds : 0;
+      state = Object.assign({},state,{position:sample.position.slice(),distanceLy:sample.distance});
+      if (flyby.autoLook) {
+        var follow = 1-Math.exp(-seconds/0.35);
+        var yawDelta = ((sample.yaw-state.yaw+Math.PI)%TAU+TAU)%TAU-Math.PI;
+        state.yaw = ((state.yaw+yawDelta*follow)%TAU+TAU)%TAU;
+        state.pitch = clamp(state.pitch+(sample.pitch-state.pitch)*follow,-Math.PI/2+0.01,Math.PI/2-0.01);
+      }
+      if (elapsed >= route.durationSeconds) {
+        flyby.active = false; flyby.completed = true; flybyPace = 0;
+        targetId = route.completionTargetId; clearFraming();
+        var destination = getLandmark(targetId);
+        pauseWithMessage(route.completionMessage,
+          {kind:'flyby',region:settings.region,mode:settings.mode,position:state.position.slice(),targetId:targetId,targetName:destination?destination.name:null,routeId:route.id,routeName:route.name});
+      }
+    }
     function frame(now) {
       raf = 0;
       if (disposed || lost || !isVisible()) { lastFrame = 0; freePace = 0; return; }
       if (settings.running) {
         var previous = state;
-        var dt = clamp(finite(lastFrame ? (now - lastFrame) / 1000 : 0, 0), 0, 0.1);
-        if (orbitId && settings.mode === 'explore') { freePace = 0; stepOrbit(dt); }
+        var wallSeconds = Math.max(0,finite(lastFrame ? (now-lastFrame)/1000 : 0,0));
+        var dt = clamp(wallSeconds,0,0.1);
+        if (flyby.active && settings.mode === 'explore') { freePace = 0; stepFlyby(wallSeconds); }
+        else if (orbitId && settings.mode === 'explore') { freePace = 0; stepOrbit(dt); }
         else if (navigation.active && settings.mode === 'explore') { freePace = 0; stepNavigation(dt); }
         else if (settings.mode === 'explore' && settings.smoothTravel) {
           var eased = easePace(freePace, settings.speed, dt);
@@ -973,7 +1232,7 @@
     }
     function dispose() {
       if (disposed) return;
-      disposed = true; cancelFrame();
+      disposed = true; clearFlyby(); cancelFrame();
       if (resizeObserver) resizeObserver.disconnect();
       if (intersectionObserver) intersectionObserver.disconnect();
       global.removeEventListener('resize', resize);
@@ -1007,6 +1266,7 @@
       if (Math.hypot.apply(Math, savedState.position) > REGIONS[input.region].boundary * (1 + 1e-10)) return false;
       if (!['yaw', 'pitch', 'distanceLy', 'universeYears', 'travelerYears'].every(function (key) { return Number.isFinite(savedState[key]); })) return false;
       if (![input.beta, input.fov, input.exposure].every(Number.isFinite)) return false;
+      clearFlyby();
       var oldRegion = settings.region;
       settings.mode = input.mode; settings.region = input.region;
       settings.beta = safeBeta(input.beta); settings.compareRest = !!input.compareRest;
@@ -1045,6 +1305,7 @@
         if (Object.prototype.hasOwnProperty.call(REGIONS, next.region)) settings.region = next.region;
         if (next.speed !== undefined) settings.speed = clamp(finite(next.speed, 0), 0, 1e10);
         if (next.smoothTravel !== undefined) settings.smoothTravel = !!next.smoothTravel;
+        if (next.flybyRate !== undefined) settings.flybyRate = clamp(finite(next.flybyRate,1),0.25,4);
         if (next.orbitRate !== undefined) settings.orbitRate = clamp(finite(next.orbitRate, 3), 0.25, 12);
         if (next.orbitDirection === 1 || next.orbitDirection === -1) settings.orbitDirection = next.orbitDirection;
         if (next.beta !== undefined) settings.beta = safeBeta(next.beta);
@@ -1055,26 +1316,27 @@
         if (['auto', 'low', 'high'].indexOf(next.quality) >= 0) settings.quality = next.quality;
         if (next.running !== undefined) settings.running = !!next.running;
         if (next.running) cameraMoves = [];
+        if (next.running && flyby.completed) clearFlyby();
         if (next.running && navigation.completed) navigation = { active:false, targetId:null };
         if (previousRegion !== settings.region) { state = initialState(); targetId = null; uploadRegion(); }
         if (previousRegion !== settings.region || previousMode !== settings.mode) {
-          navigation = { active: false, targetId: null }; orbitId = null; trail = []; cameraMoves = []; settings.running = false;
+          navigation = { active: false, targetId: null }; orbitId = null; clearFlyby(); trail = []; cameraMoves = []; settings.running = false;
         }
         if (previousRegion !== settings.region || previousMode !== settings.mode || previousFov !== settings.fov || previousBeta !== displayBeta() || settings.running) clearFraming();
         var resetTravel = !settings.running || !wasRunning || !isVisible() || lost || previousRegion !== settings.region || previousMode !== settings.mode;
         if (resetTravel) { freePace = 0; lastFrame = 0; }
-        else if (settings.mode === 'explore' && !orbitId && !navigation.active) {
+        else if (settings.mode === 'explore' && !flyby.active && !orbitId && !navigation.active) {
           if (!settings.speed) freePace = 0;
           else if (!settings.smoothTravel) freePace = settings.speed;
           else if (!previousSmooth) freePace = previousSpeed;
         }
         if (previousQuality !== settings.quality) resize();
-        if (targetId || previousRegion !== settings.region || (wasRunning && !settings.running) || next.speed !== undefined || next.smoothTravel !== undefined || next.running !== undefined) emitTelemetry(true);
+        if (targetId || previousRegion !== settings.region || (wasRunning && !settings.running) || next.speed !== undefined || next.smoothTravel !== undefined || next.flybyRate !== undefined || next.running !== undefined) emitTelemetry(true);
         requestDraw();
       },
       look: function (yawDelta, pitchDelta) {
         if (disposed) return;
-        clearFraming();
+        clearFraming(); manualFlybyLook();
         endOrbit('Manual look ended the orbit. Travel is paused.');
         state.yaw = ((state.yaw + finite(yawDelta, 0)) % TAU + TAU) % TAU;
         state.pitch = clamp(state.pitch + finite(pitchDelta, 0), -Math.PI / 2 + 0.01, Math.PI / 2 - 0.01);
@@ -1084,7 +1346,7 @@
         if (disposed) return;
         var views = { forward: [0, 0], back: [Math.PI, 0], left: [-Math.PI / 2, 0], right: [Math.PI / 2, 0], up: [0, Math.PI / 2 - 0.01], down: [0, -Math.PI / 2 + 0.01] };
         if (!views[direction]) return;
-        clearFraming();
+        clearFraming(); manualFlybyLook();
         endOrbit('Manual look ended the orbit. Travel is paused.');
         state.yaw = views[direction][0]; state.pitch = views[direction][1];
         requestDraw(); emitTelemetry(true);
@@ -1097,6 +1359,7 @@
         var axes={forward:forward,back:forward.map(function(v){return -v;}),right:right,left:right.map(function(v){return -v;}),up:up,down:up.map(function(v){return -v;})};
         if (!axes[direction] || !amount) return false;
         clearFraming();
+        clearFlyby();
         var previous=state;
         var undo={position:state.position.slice(),distanceLy:state.distanceLy,trail:trail.map(function(p){return p.slice();})};
         settings.running=false;orbitId=null;navigation={active:false,targetId:null};lastFrame=0;freePace=0;
@@ -1110,6 +1373,7 @@
       undoNudge: function () {
         if (disposed || lost || settings.mode!=='explore' || !cameraMoves.length) return false;
         clearFraming();
+        clearFlyby();
         var undo=cameraMoves.pop();
         state=Object.assign({},state,{position:undo.position.slice(),distanceLy:undo.distanceLy});
         trail=undo.trail.map(function(p){return p.slice();});
@@ -1119,7 +1383,7 @@
       },
       selectTarget: function (id) {
         if (disposed || (id && !getLandmark(id))) return false;
-        if (targetId !== (id || null)) clearFraming();
+        if (targetId !== (id || null)) { clearFraming(); endFlyby('Target changed. Flyby canceled; travel is paused.'); }
         if (orbitId && orbitId !== id) endOrbit('Target changed. Orbit is paused and ended.');
         if (navigation.targetId && navigation.targetId !== id) {
           var guidedWasActive = navigation.active;
@@ -1134,6 +1398,8 @@
         var item = getLandmark(id || targetId);
         if (!item || !toLandmark(item).distance) return false;
         clearFraming();
+        if (targetId !== item.id) endFlyby('Target changed. Flyby canceled; travel is paused.');
+        manualFlybyLook();
         if (orbitId && orbitId !== item.id) endOrbit();
         targetId = item.id; faceTarget(item); emitTelemetry(true); requestDraw();
         return true;
@@ -1146,7 +1412,7 @@
         var yaw = Math.atan2(direction[0], direction[2]);
         var pitch = clamp(Math.atan2(direction[1], Math.hypot(direction[0], direction[2])), -Math.PI / 2 + 0.01, Math.PI / 2 - 0.01);
         if (!Number.isFinite(yaw) || !Number.isFinite(pitch)) return false;
-        clearFraming(); navigation = { active: false, targetId: null }; orbitId = null;
+        clearFraming(); manualFlybyLook(); navigation = { active: false, targetId: null }; orbitId = null;
         state.yaw = yaw; state.pitch = pitch;
         pauseWithMessage('Looking toward the center of this generated scene. Travel is paused.');
         requestDraw(); return true;
@@ -1155,6 +1421,8 @@
         var item = getLandmark(id || targetId);
         var pose = targetFraming(item, u);
         if (!pose) return false;
+        if (targetId !== item.id) endFlyby('Target changed. Flyby canceled; travel is paused.');
+        manualFlybyLook();
         frameUndo = { yaw: state.yaw, pitch: state.pitch };
         framePlacement = pose.screen[0] === 1 / 3 ? 'left' : pose.screen[0] === 0.5 ? 'center' : pose.screen[0] === 2 / 3 ? 'right' : null;
         if (navigation.targetId && navigation.targetId !== item.id) navigation = { active: false, targetId: null };
@@ -1166,6 +1434,7 @@
       undoFrame: function () {
         if (disposed || lost || !gl || !program || !frameUndo) return false;
         var pose = frameUndo;
+        manualFlybyLook();
         clearFraming(); state.yaw = pose.yaw; state.pitch = pose.pitch; orbitId = null;
         pauseWithMessage('Previous look direction restored. Travel is paused.');
         requestDraw(); return true;
@@ -1179,6 +1448,7 @@
         var item = getLandmark(id);
         if (!item) return false;
         clearFraming();
+        clearFlyby();
         cameraMoves = [];
         orbitId = null;
         freePace = 0;
@@ -1205,15 +1475,51 @@
         var item = getLandmark(id || targetId);
         if (!item) return false;
         if (Math.hypot(state.position[0] - item.position[0], state.position[2] - item.position[2]) < item.arrivalRadiusLy * 0.01) {
-          pauseWithMessage('Move away from the destination’s vertical axis before starting an orbit.'); return false;
+          if (!flyby.active) pauseWithMessage('Move away from the destination’s vertical axis before starting an orbit.'); return false;
         }
         clearFraming();
+        clearFlyby();
         targetId = item.id; orbitId = item.id; navigation = { active: false, targetId: null };
         cameraMoves = []; freePace = 0;
         faceTarget(item); settings.running = true; lastFrame = 0;
         emitTelemetry(true); requestDraw(); return true;
       },
       endOrbit: function () { if (disposed) return false; return endOrbit(); },
+      startFlyby: function (id) {
+        var route=flybyRoute(id);
+        if (disposed || lost || !gl || !program || settings.mode !== 'explore' || !route || settings.region !== route.region) return false;
+        var sample=route.atTime(0);
+        state={position:sample.position.slice(),yaw:sample.yaw,pitch:sample.pitch,distanceLy:0,universeYears:0,travelerYears:0};
+        targetId=route.targetId; navigation={active:false,targetId:null}; orbitId=null;
+        flyby={active:true,completed:false,id:route.id,elapsedSeconds:0,autoLook:true}; flybyPace=0;
+        trail=[]; cameraMoves=[]; clearFraming(); settings.running=true; lastFrame=0; freePace=0;
+        emitTelemetry(true); requestDraw(); return true;
+      },
+      seekFlybyHighlight: function (id) {
+        var route=flybyRoute(flyby.id);
+        if (disposed || lost || !gl || !program || settings.mode!=='explore' || !route || settings.region!==route.region || (!flyby.active&&!flyby.completed)) return false;
+        var highlight=route.highlights.filter(function(item){return item.id===id;})[0];
+        if (!highlight || !Number.isFinite(highlight.seconds) || highlight.seconds<0 || highlight.seconds>=route.durationSeconds) return false;
+        var sample=route.atTime(highlight.seconds);
+        if (!sample.position.every(Number.isFinite) || !Number.isFinite(sample.yaw) || !Number.isFinite(sample.pitch) || !Number.isFinite(sample.distance)) return false;
+        // This is an explicit camera jump to route progress, not elapsed travel.
+        // Resume uses the existing path and physical clocks remain at zero.
+        cancelFrame();
+        state={position:sample.position.slice(),yaw:sample.yaw,pitch:sample.pitch,distanceLy:sample.distance,universeYears:0,travelerYears:0};
+        flyby={active:true,completed:false,id:route.id,elapsedSeconds:highlight.seconds,autoLook:true}; flybyPace=0;
+        targetId=route.targetId; navigation={active:false,targetId:null}; orbitId=null;
+        trail=[]; cameraMoves=[]; clearFraming();
+        pauseWithMessage(highlight.name+'. Travel is paused; start travel to continue from this route moment.',
+          {kind:'flyby-highlight',routeId:route.id,routeName:route.name,highlightId:highlight.id,highlightName:highlight.name,seconds:highlight.seconds,position:state.position.slice(),targetId:targetId});
+        requestDraw(); return true;
+      },
+      cancelFlyby: function () { if (disposed || lost || !gl || !program) return false; return endFlyby(); },
+      followFlybyView: function () {
+        if (disposed || lost || !gl || !program || !flyby.active) return false;
+        flyby.autoLook=true; clearFraming();
+        if (!settings.running) { var sample=flybyRoute(flyby.id).atTime(flyby.elapsedSeconds); state.yaw=sample.yaw; state.pitch=sample.pitch; }
+        emitTelemetry(true); requestDraw(); return true;
+      },
       snapshot: snapshot,
       capture: function () {
         if (disposed || lost || !gl) return null;
@@ -1223,6 +1529,7 @@
       restore: restore,
       reset: function () {
         if (!disposed) {
+          clearFlyby();
           state = initialState(); targetId = null; navigation = { active: false, targetId: null };
           orbitId = null;
           trail = [];
@@ -1317,5 +1624,5 @@
     return api;
   }
 
-  global.UniverseFlight = { create: create, landmarks: landmarks, math: { gamma: gamma, aberrate: aberrate, doppler: doppler, stepFlight: stepFlight, viewSpectrum: viewSpectrum, lightClock: lightClock, chartView: chartView, approachPlan: approachPlan, targetView: targetView, targetFrame: targetFrame, easePace: easePace } };
+  global.UniverseFlight = { create: create, landmarks: landmarks, flybys: flybys, math: { gamma: gamma, aberrate: aberrate, doppler: doppler, stepFlight: stepFlight, viewSpectrum: viewSpectrum, lightClock: lightClock, chartView: chartView, approachPlan: approachPlan, targetView: targetView, targetFrame: targetFrame, easePace: easePace } };
 })(window);

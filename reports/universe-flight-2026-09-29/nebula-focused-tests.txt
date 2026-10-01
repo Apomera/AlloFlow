@@ -1,0 +1,13 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+
+ Test Files  4 passed (4)
+      Tests  107 passed (107)
+   Start at  12:52:52
+   Duration  8.64s (transform 120ms, setup 76ms, import 213ms, tests 3.96s, environment 3.47s)
+
+Runtime SHA256 guards matched before and after the run.
+Renderer SHA256: 8318A5ADE9020931B091CF8FD2489CF516A7C0212E2B66949AF5FE45B7D33C7A
+UI SHA256: 0BEC0DFC54616640063B85B290458837E1AD1D3D7F62DFC0C5007CD7C8475C0C
+Navigation test SHA256: 7CA9AF6B2141C67F0BABBC66BD738E74CB1AE5939045668865DA31E291A6868E

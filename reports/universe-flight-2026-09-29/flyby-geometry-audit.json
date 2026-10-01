@@ -1,0 +1,41 @@
+{
+  "regions": {
+    "neighborhood": {
+      "points": 19203,
+      "hash": "357c06122c25540fcbc1d87d29f3c8fc5c362c2257ff56bb3be61efe0709b448",
+      "galaxies": 0
+    },
+    "galaxy": {
+      "points": 36400,
+      "hash": "f5dbc73e3ae0b2751dcf15f6fffce2753ae4994b089c62d020975e414889b2ab",
+      "galaxies": 1
+    },
+    "cosmic": {
+      "points": 41470,
+      "hash": "156c66d7c6805406f2d231fb18affab8e613952ec32b5fdf9e9e805104966b85",
+      "galaxies": 134
+    }
+  },
+  "route": {
+    "minimumClusterDistanceLy": 917.8235149001899,
+    "maximumOriginDistanceLy": 108594.63837819558,
+    "maximumMillisecondStepLy": 18.189051346621696,
+    "maximumMillisecondLookTurnDeg": 0.023123179394760027,
+    "launchDistanceFromDiskPlaneLy": 775.537070003953,
+    "revealAngleFromDiskNormalDeg": 35.6570805040409,
+    "lengthLy": 150445.11865647536,
+    "start": [
+      3957.7186846376026,
+      27436.312283454703,
+      -23854.48402140951
+    ],
+    "end": [
+      74941.59615155982,
+      50436.3122834547,
+      60272.14160782259
+    ],
+    "durationSeconds": 36
+  },
+  "shadersIdentical": true,
+  "mathIdentical": true
+}
