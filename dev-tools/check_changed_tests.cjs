@@ -34,7 +34,8 @@ const baseArg = args.find((a) => a.startsWith('--base='));
 
 function git(argv) {
   const res = spawnSync('git', argv, { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
-  return res.status === 0 ? String(res.stdout || '').trim() : '';
+  if (res.status !== 0) throw new Error('Unable to determine test scope: git ' + argv.join(' ') + '\n' + String(res.stderr || res.error || 'Git failed'));
+  return String(res.stdout || '').trim();
 }
 
 // Pick what "changed" means. Pre-commit (deploy.sh's gate phase) the work is
@@ -74,8 +75,11 @@ const MAX_CHANGED_FILES = 120;
 function changedFileCount() {
   const staged = git(['diff', '--cached', '--name-only']);
   const unstaged = git(['diff', '--name-only']);
+  // On a clean tree Vitest compares against base, so the cap must include
+  // that same committed range rather than measuring only uncommitted files.
+  const committed = base ? git(['diff', '--name-only', base, 'HEAD']) : '';
   const set = new Set(
-    (staged + '\n' + unstaged).split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
+    (staged + '\n' + unstaged + '\n' + committed).split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
   );
   return set.size;
 }
