@@ -1,0 +1,44 @@
+Micro Lab · measurement notebook
+Evidence from calibrated teaching drawings; these are not measurements of biological samples or diagnostic results.
+The current checked estimate and any previous checked estimate are included for each slide. Working estimates remain saved in the lab.
+Slides with a checked estimate: 1/5
+
+1. E. coli
+Measured feature: Length of the rod-shaped cell, from end to end
+Current checked estimate
+Your estimate: 4 µm
+Estimate converted to micrometers: 4 µm
+Reference size: 2 µm
+Difference: 100% · above the drawing reference
+Practice band (±20%): 1.6 µm–2.4 µm · recheck the scale-bar comparison
+Scale-bar comparison: 1 × 2 µm = 2 µm
+Saved view: Light microscope · 1,000× · display zoom 20× · Scale bar 2 µm
+Model field width: 9 µm
+
+Previous checked estimate (available to restore)
+Your estimate: 2 µm
+Estimate converted to micrometers: 2 µm
+Reference size: 2 µm
+Difference: 0% · matches the drawing reference
+Practice band (±20%): 1.6 µm–2.4 µm · within the practice band
+Scale-bar comparison: 1 × 2 µm = 2 µm
+Saved view: Light microscope · 1,000× · display zoom 20× · Scale bar 2 µm
+Model field width: 9 µm
+
+2. Streptococcus
+Measured feature: Diameter of one spherical cell, not the chain
+No checked estimate yet.
+
+3. Paramecium
+Measured feature: Length of the cell body, excluding cilia
+No checked estimate yet.
+
+4. Plasmodium
+Measured feature: Diameter of the host red blood cell, not the parasite ring
+No checked estimate yet.
+
+5. T4 bacteriophage
+Measured feature: Full height, from the top of the head to the lowest tail-fiber tip
+No checked estimate yet.
+
+This band gives feedback for estimating the drawing; it does not describe uncertainty in a real laboratory measurement.

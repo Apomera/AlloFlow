@@ -1,0 +1,41 @@
+{
+  "date": "2026-09-30",
+  "sourceFile": "stem_lab/stem_tool_microbiology.js",
+  "sourceSha256": "66e2828bce7ba79b32ee72e0f097bf4ff99f5e5571a6a54a41b440957e331c0c",
+  "unit": {
+    "passed": 474,
+    "failed": 0,
+    "files": 13,
+    "report": "unit-results.json",
+    "priorRuns": [
+      "unit-initial-results.json",
+      "unit-recovery-results.json"
+    ],
+    "note": "The final consolidated focused regression run passes. Earlier attempt reports, if any, are retained."
+  },
+  "browser": {
+    "passed": 30,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "project": "chromium",
+    "report": "browser-results.json",
+    "priorRuns": [],
+    "scope": "Microscope unscored draft review and previous-view replay, Growth sweep history and exports, local download feedback, and retained notebook and navigation regressions, served from the local working tree."
+  },
+  "interface": {
+    "keys": 1687,
+    "missing": 0,
+    "changedFallbacks": 0,
+    "runtimeMirrored": true,
+    "microbiologyNamespacesMatch": true,
+    "syntaxChecksPassed": true
+  },
+  "visualReview": [
+    "microscope-draft-review-phone.png",
+    "microscope-previous-view-phone.png",
+    "growth-previous-sweep-phone.png",
+    "mystery-download-retry-phone.png"
+  ],
+  "scope": "Micro Lab source, desktop mirror, Micro Lab translation entries, focused tests, and validation artifacts."
+}

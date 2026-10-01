@@ -303,7 +303,7 @@ describe('Microbiology growth investigation workflow', { timeout: 20000 }, () =>
     expect(table.querySelectorAll('tbody tr')).toHaveLength(10);
     expect(table.querySelectorAll('thead th[scope="col"]')).toHaveLength(4);
     expect(table.querySelectorAll('tbody th[scope="row"]')).toHaveLength(10);
-    expect(table.caption.textContent).toBe('Saved sweep settings and model responses');
+    expect(table.caption.textContent).toBe('Current sweep: Saved sweep settings and model responses');
     const values = [...table.querySelectorAll('tbody tr')].map(row => row.cells[1].textContent);
     expect(values).toEqual(window.__MicrobiologyCore.growth.sweep(baseConditions, 'tempC').points.map(point => point.finalPopulation.toFixed(1)));
     expect(text()).toContain('Highest sampled population');
@@ -841,5 +841,292 @@ describe('Growth removal recovery workflow', { timeout: 20000 }, () => {
     write('#gl-explanation', 'Explicitly reviewed recovered text');
     expect(book().trials[0]).toMatchObject({ id: 2, explanation: 'Explicitly reviewed recovered text' });
     expect(book().trials[1].explanation).toBe('<b>Literal saved evidence</b> 1');
+  });
+});
+
+describe('Microbiology previous sweep review and guarded navigation', { timeout: 20000 }, () => {
+  function seed() {
+    const sweep = { variable: 'oxygen', conditions: { profile: 'thermus', tempC: 70, pH: 7.5, oxygen: 100 } };
+    const previousSweep = { variable: 'pH', conditions: baseConditions };
+    return {
+      growthLab: { ...baseConditions, tempC: 30, pH: 6, hypothesis: 'Earlier lab note', log: [{ kept: true }] }, growthReviewHour: 12,
+      growthInvestigation: { control: { ...baseConditions, tempC: 25 }, prediction: 'higher', hypothesis: 'Next hypothesis', explanation: 'Legacy draft',
+        trials: [3, 8, 11].map(id => ({ id, control: baseConditions, conditions: { ...baseConditions, oxygen: 0 }, prediction: 'lower', hypothesis: 'Original reasoning ' + id, explanation: id === 3 ? 'Original evidence' : '' })),
+        selectedId: 3, nextId: 20, sweepVariable: 'oxygen', sweep, previousSweep,
+        removed: { index: 1, trial: { id: 7, control: baseConditions, conditions: baseConditions, prediction: 'unsure', explanation: 'Removed evidence' } } },
+      quizAnswers: [1, 2], mysteryLab: { unrelated: 'keep' }
+    };
+  }
+  function preview() { return mounted.container.querySelector('[data-micro-growth-previous-sweep]'); }
+  function current() { return mounted.container.querySelector('[data-micro-growth-sweep]'); }
+  function historyStatus() { return mounted.container.querySelector('#gl-sweep-history-status'); }
+  function openSweeps() {
+    click(mounted.container.querySelector('.micro-growth-sweep > summary'));
+    click(mounted.container.querySelector('#gl-previous-sweep > summary'));
+  }
+  function reload() {
+    const saved = JSON.parse(JSON.stringify(mounted.state));
+    act(() => mounted.root.unmount());
+    mounted.container.remove();
+    mounted = null;
+    return mount(saved);
+  }
+
+  it('reviews the previous complete curve, fixed conditions and every table row without preparing a trial', () => {
+    mount(seed());
+    const before = JSON.stringify(mounted.state);
+    openSweeps();
+    const previous = preview();
+    expect(previous.querySelector('h4').textContent).toBe('Previous sweep');
+    expect(current().querySelector('h4').textContent).toBe('Current sweep');
+    expect(previous.textContent).toContain('Held constant: E. coli · Temperature: 37 °C · Oxygen availability: 100/100');
+    expect(previous.textContent).toContain('Every sample starts at 5 population units');
+    expect(previous.textContent).toContain('not measurements');
+    expect(previous.querySelector('svg[role="img"]')).not.toBeNull();
+    expect(previous.querySelectorAll('tbody tr')).toHaveLength(10);
+    expect(previous.querySelectorAll('thead th')).toHaveLength(3);
+    expect(previous.querySelectorAll('button,input,select,textarea')).toHaveLength(0);
+    expect(previous.querySelector('figcaption').textContent).toMatch(/^Previous sweep: Response to pH/);
+    expect(previous.querySelector('svg').getAttribute('aria-label')).toMatch(/^Previous sweep\. /);
+    expect(previous.querySelector('caption').textContent).toBe('Previous sweep: Saved sweep settings and model responses');
+    expect(previous.querySelector('[role="status"], [aria-live]')).toBeNull();
+    expect(current().querySelector('figcaption').textContent).toMatch(/^Current sweep: Response to Oxygen availability/);
+    expect(current().querySelector('svg').getAttribute('aria-label')).toMatch(/^Current sweep\. /);
+    expect(current().querySelector('caption').textContent).toBe('Current sweep: Saved sweep settings and model responses');
+    const model = window.__MicrobiologyCore.growth.sweep(baseConditions, 'pH');
+    expect([...previous.querySelectorAll('tbody tr')].map(row => row.cells[1].textContent)).toEqual(model.points.map(point => point.finalPopulation.toFixed(1)));
+    expect(current().querySelectorAll('tbody tr')).toHaveLength(9);
+    expect(current().querySelectorAll('tbody button')).toHaveLength(9);
+    expect(JSON.stringify(mounted.state)).toBe(before);
+  });
+
+  it('swaps saved sweeps repeatedly, announces each restore and preserves settings, drafts, records and recovery through reload', () => {
+    vi.useFakeTimers();
+    const awardXP = vi.fn();
+    mount(seed(), { awardXP });
+    const before = JSON.parse(JSON.stringify(mounted.state)), originalBook = book();
+    const originalCurve = current().querySelector('path').getAttribute('d');
+    const previousCurve = preview().querySelector('path').getAttribute('d');
+    const random = vi.spyOn(Math, 'random');
+    openSweeps();
+    click('Restore previous sweep');
+    act(() => vi.runOnlyPendingTimers());
+    expect(book()).toEqual({ ...originalBook, sweep: originalBook.previousSweep, previousSweep: originalBook.sweep });
+    for (const field of ['tab', 'growthLab', 'growthReviewHour', 'quizAnswers', 'mysteryLab']) {
+      expect(mounted.state[field], field).toEqual(before[field]);
+    }
+    expect(current().querySelector('path').getAttribute('d')).toBe(previousCurve);
+    expect(preview().querySelector('path').getAttribute('d')).toBe(originalCurve);
+    expect(document.activeElement).toBe(mounted.container.querySelector('#gl-current-sweep-heading'));
+    expect(historyStatus().getAttribute('role')).toBe('status');
+    expect(historyStatus().getAttribute('aria-live')).toBe('polite');
+    expect(historyStatus().textContent).toContain('Previous sweep restored as current.');
+    const announcement = historyStatus().firstChild;
+    click('Restore previous sweep');
+    act(() => vi.runOnlyPendingTimers());
+    expect(book()).toEqual(originalBook);
+    expect(historyStatus().firstChild).not.toBe(announcement);
+    expect(historyStatus().textContent).toContain('Previous sweep restored as current.');
+    expect(random).not.toHaveBeenCalled();
+    expect(awardXP).not.toHaveBeenCalled();
+    reload();
+    expect(book()).toEqual(originalBook);
+    expect(historyStatus().textContent).toBe('');
+    expect(preview().querySelectorAll('tbody tr')).toHaveLength(10);
+    expect(mounted.state.growthLab).toEqual(before.growthLab);
+  });
+
+  it('keeps history on identical saves, replaces the older descriptor on a distinct save and clears obsolete feedback', () => {
+    vi.useFakeTimers();
+    const initial = seed();
+    initial.growthLab = { ...initial.growthInvestigation.sweep.conditions };
+    mount(initial);
+    const original = book();
+    click('Run variable sweep');
+    expect(book()).toEqual(original);
+    openSweeps();
+    click('Restore previous sweep');
+    act(() => vi.runOnlyPendingTimers());
+    expect(historyStatus().textContent).toContain('Previous sweep restored as current.');
+    write('#gl-hypothesis', 'This is still my draft');
+    expect(historyStatus().textContent).toContain('Previous sweep restored as current.');
+    write('#gl-sweep-variable', 'tempC');
+    click('Run variable sweep');
+    expect(book().sweep).toEqual({ variable: 'tempC', conditions: initial.growthLab });
+    expect(book().previousSweep).toEqual(original.previousSweep);
+    expect(book().hypothesis).toBe('This is still my draft');
+    expect(book().trials).toEqual(original.trials);
+    expect(book().removed).toEqual(original.removed);
+    expect(historyStatus().textContent).toBe('');
+    click('Run variable sweep');
+    expect(book().previousSweep).toEqual(original.previousSweep);
+    expect(historyStatus().textContent).toBe('');
+  });
+
+  it('retains both original snapshots when only the swept starting value is changed before another run', () => {
+    const initial = seed();
+    initial.growthLab = { ...initial.growthInvestigation.sweep.conditions };
+    mount(initial);
+    const original = book(), originalPath = current().querySelector('path').getAttribute('d');
+    write('#gl-oxygen', '0');
+    click('Run variable sweep');
+    expect(book()).toEqual(original);
+    expect(book().sweep.conditions.oxygen).toBe(100);
+    expect(mounted.state.growthLab.oxygen).toBe(0);
+    expect(current().querySelector('path').getAttribute('d')).toBe(originalPath);
+    expect(preview().querySelectorAll('tbody tr')).toHaveLength(10);
+    reload();
+    expect(book()).toEqual(original);
+    expect(mounted.state.growthLab.oxygen).toBe(0);
+    expect(preview().querySelector('h4').textContent).toBe('Previous sweep');
+  });
+
+  it('does not display or export invented historical evidence from an incomplete previous-sweep import', () => {
+    vi.useFakeTimers();
+    const initial = seed();
+    initial.growthInvestigation.previousSweep = { variable: 'pH', conditions: {} };
+    mount(initial);
+    expect(preview()).toBeNull();
+    expect(mounted.container.querySelector('#gl-restore-previous-sweep')).toBeNull();
+    const blobs = [];
+    vi.stubGlobal('Blob', class { constructor(parts) { this.parts = parts; } });
+    vi.stubGlobal('URL', { createObjectURL: vi.fn(blob => { blobs.push(blob); return 'blob:growth-invalid-history'; }), revokeObjectURL: vi.fn() });
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    click('Download notebook');
+    const exported = blobs[0].parts.join('');
+    expect(exported).toContain('\nCurrent sweep\n');
+    expect(exported).not.toContain('\nPrevious sweep\n');
+    expect(exported).toContain('Variable to sweep: Oxygen availability');
+    act(() => vi.runOnlyPendingTimers());
+  });
+
+  it('exports both complete sweep sections under neutral labels while the trial CSV remains unchanged', () => {
+    vi.useFakeTimers();
+    mount(seed());
+    const before = JSON.stringify(mounted.state), original = book();
+    const blobs = [], downloads = [];
+    vi.stubGlobal('Blob', class { constructor(parts, options) { this.parts = parts; this.type = options.type; } });
+    vi.stubGlobal('URL', { createObjectURL: vi.fn(blob => { blobs.push(blob); return 'blob:growth-history-' + blobs.length; }), revokeObjectURL: vi.fn() });
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function() { downloads.push(this.download); });
+    click('Download notebook');
+    click('Download trial CSV');
+    expect(downloads).toEqual(['micro-lab-notebook.txt', 'micro-lab-trials.csv']);
+    const exported = blobs[0].parts.join('');
+    const [currentText, previousText] = exported.split('\nPrevious sweep\n');
+    expect(currentText).toContain('\nCurrent sweep\n');
+    expect(currentText).toContain('Variable to sweep: Oxygen availability');
+    expect(currentText).toContain('Held constant: T. aquaticus · Temperature: 70 °C · pH: 7.5');
+    expect(previousText).toContain('Variable to sweep: pH');
+    expect(previousText).toContain('Held constant: E. coli · Temperature: 37 °C · Oxygen availability: 100/100');
+    for (const [section, spec] of [[currentText, original.sweep], [previousText, original.previousSweep]]) {
+      expect(section).toContain('Every sample starts at 5 population units');
+      expect(section).toContain('not measurements');
+      for (const point of window.__MicrobiologyCore.growth.sweep(spec.conditions, spec.variable).points) {
+        const setting = String(point.value) + (spec.variable === 'oxygen' ? '/100' : spec.variable === 'tempC' ? ' °C' : '');
+        expect(section).toContain(setting + '\t' + point.finalPopulation.toFixed(1) + '\t' + point.lagHours.toFixed(1));
+      }
+    }
+    expect(exported).toContain('My reasoning before the run: Original reasoning 3');
+    expect(exported).toContain('My evidence and explanation: Original evidence');
+    expect(blobs[1].parts.join('')).toBe(window.__MicrobiologyCore.growth.csv({ ...original, previousSweep: undefined, sweep: null }));
+    expect(JSON.stringify(mounted.state)).toBe(before);
+    act(() => vi.runOnlyPendingTimers());
+    expect(URL.revokeObjectURL).toHaveBeenCalledTimes(2);
+    expect(document.querySelectorAll('a[download]')).toHaveLength(0);
+  });
+
+  it('keeps both snapshots and their rendered evidence when a notebook download fails', () => {
+    const addToast = vi.fn();
+    mount(seed(), { addToast });
+    const before = JSON.stringify(mounted.state), currentText = current().textContent, previousText = preview().textContent;
+    vi.stubGlobal('URL', { createObjectURL: vi.fn(() => { throw new Error('download unavailable'); }), revokeObjectURL: vi.fn() });
+    click('Download notebook');
+    expect(addToast).toHaveBeenCalledWith('The notebook could not download. Your saved trials are still here.', 'error');
+    expect(JSON.stringify(mounted.state)).toBe(before);
+    expect(current().textContent).toBe(currentText);
+    expect(preview().textContent).toBe(previousText);
+    expect(document.querySelectorAll('a[download]')).toHaveLength(0);
+  });
+
+  it('does not offer previous-sweep recovery for a duplicate or orphaned restored descriptor', () => {
+    const initial = seed();
+    initial.growthInvestigation.previousSweep = { ...initial.growthInvestigation.sweep, conditions: { ...initial.growthInvestigation.sweep.conditions, oxygen: 1000 } };
+    mount(initial);
+    expect(preview()).toBeNull();
+    expect(mounted.container.querySelector('#gl-restore-previous-sweep')).toBeNull();
+    const saved = JSON.parse(JSON.stringify(mounted.state));
+    saved.growthInvestigation.sweep = null;
+    act(() => mounted.root.unmount());
+    mounted.container.remove(); mounted = null;
+    mount(saved);
+    expect(preview()).toBeNull();
+    expect(current()).toBeNull();
+    expect(mounted.container.querySelector('#gl-restore-previous-sweep')).toBeNull();
+  });
+
+  it.each(['next explanation', 'restore sweep'].flatMap(action => ['focus only', 'draft edit', 'inspection hour', 'disclosure'].map(newer => [action, newer])))
+  ('cancels deferred %s focus after a newer %s action even when the requested evidence remains selected', (action, newer) => {
+    vi.useFakeTimers();
+    mount(seed());
+    openSweeps();
+    const trigger = action === 'next explanation' ? mounted.container.querySelector('[data-next-unexplained-trial]') : button('Restore previous sweep');
+    trigger.focus();
+    click(trigger);
+    if (newer === 'focus only') mounted.container.querySelector('#gl-hypothesis').focus();
+    if (newer === 'draft edit') write('#gl-hypothesis', 'My newer input');
+    if (newer === 'inspection hour') write('#gl-review-hour', '6');
+    if (newer === 'disclosure') click(mounted.container.querySelector('.micro-growth-review > summary'));
+    const newerFocus = document.activeElement;
+    act(() => vi.runOnlyPendingTimers());
+    expect(document.activeElement).toBe(newerFocus);
+    expect(book().selectedId).toBe(action === 'next explanation' ? 8 : 3);
+    if (newer === 'draft edit') expect(book().hypothesis).toBe('My newer input');
+    if (newer === 'inspection hour') expect(mounted.state.growthReviewHour).toBe(6);
+  });
+
+  it.each(['next explanation', 'restore sweep'].flatMap(action => ['#micro-tab-quiz', '.micro-library-toggle'].map(selector => [action, selector])))
+  ('cancels deferred %s focus when focus moves outside Growth to %s without activating it', (action, selector) => {
+    vi.useFakeTimers();
+    mount(seed());
+    openSweeps();
+    const trigger = action === 'next explanation' ? mounted.container.querySelector('[data-next-unexplained-trial]') : button('Restore previous sweep');
+    trigger.focus();
+    click(trigger);
+    const afterAction = JSON.parse(JSON.stringify(mounted.state));
+    const outside = mounted.container.querySelector(selector);
+    expect(outside).not.toBeNull();
+    expect(outside.closest('[data-micro-growth]')).toBeNull();
+    act(() => outside.focus());
+    expect(document.activeElement).toBe(outside);
+    act(() => vi.runOnlyPendingTimers());
+    expect(document.activeElement).toBe(outside);
+    expect(mounted.state).toEqual(afterAction);
+    expect(mounted.state.tab).toBe('growthLab');
+    expect(book().selectedId).toBe(action === 'next explanation' ? 8 : 3);
+    expect(mounted.container.querySelector('#micro-tab-growthLab').getAttribute('aria-selected')).toBe('true');
+    expect(mounted.container.querySelector('#micro-tab-quiz').getAttribute('aria-selected')).toBe('false');
+  });
+
+  it('does not revive a queued restore focus request after tab navigation or a JSON remount', () => {
+    vi.useFakeTimers();
+    mount(seed());
+    openSweeps();
+    click('Restore previous sweep');
+    click(mounted.container.querySelector('#micro-tab-home'));
+    click(mounted.container.querySelector('#micro-tab-growthLab'));
+    const tab = mounted.container.querySelector('#micro-tab-growthLab');
+    tab.focus();
+    act(() => vi.runOnlyPendingTimers());
+    expect(document.activeElement).toBe(tab);
+    expect(historyStatus().textContent).toBe('');
+    click('Restore previous sweep');
+    const saved = book();
+    reload();
+    const draft = mounted.container.querySelector('#gl-hypothesis');
+    draft.focus();
+    act(() => vi.runOnlyPendingTimers());
+    expect(document.activeElement).toBe(draft);
+    expect(book()).toEqual(saved);
+    expect(historyStatus().textContent).toBe('');
   });
 });

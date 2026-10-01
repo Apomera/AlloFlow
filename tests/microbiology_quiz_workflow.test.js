@@ -322,6 +322,21 @@ describe('Quiz evidence reports', { timeout: 20000 }, () => {
 });
 
 describe('Quiz correction reflections', { timeout: 20000 }, () => {
+  it.each([false, true])('does not resurrect an old export notice after reversed reflection edits (failure=%s)', failure => {
+    mount({ quizSubmitted: true, quizAnswers: wrongAt(0), quizPractice: { reflections: ['Original correction.'] } });
+    const download = captureQuizDownload(), trigger = button('Download quiz evidence');
+    if (failure) download.linkClick.mockImplementationOnce(() => { throw new Error('blocked'); });
+    const before = JSON.stringify(mounted.state); trigger.focus(); click(trigger);
+    const status = mounted.container.querySelector('#micro-quiz-download-status');
+    expect(status.textContent).toContain(failure ? 'could not start' : 'download has started');
+    expect(JSON.stringify(mounted.state)).toBe(before); expect(document.activeElement).toBe(trigger);
+    reflect(0, 'An edited correction.'); expect(status.textContent).toBe('');
+    reflect(0, 'Original correction.'); expect(status.textContent).toBe('');
+    click(trigger); expect(status.textContent).toContain('download has started');
+    expect(download.contents[1]).toBe(download.contents[0]); expect(mounted.awardXP).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(1000)); expect(download.revokeUrl).toHaveBeenCalledTimes(2);
+  });
+
   it('keeps bounded plain strings only for strict missed-question indices without mutating restored data', () => {
     const raw = { answers: correct(), checked: Array(15).fill(true), reflections: ['  First thought\nSecond thought  ', 'x'.repeat(650), 4, true, { note: 'bad' }, ['bad'], null] };
     const before = JSON.stringify(raw), result = core().practice(raw, [0, 1, 2, 3, 4, 5, 6]);

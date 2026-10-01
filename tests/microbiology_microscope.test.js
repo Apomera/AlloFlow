@@ -602,6 +602,260 @@ describe('Microscope notebook review and export', () => {
   });
 });
 
+describe('Unscored microscope draft review and previous views', () => {
+  const context = (id = 'ecoli', method = 'lightbright', mag = 1000, zoom = 20) => savedMeasurementContext(id, method, mag, zoom);
+  const draftEntry = (value = '225', unit = 'nm', view = context()) => ({ draft: { value, unit, context: view } });
+  const entryWithVersions = () => ({
+    ...draftEntry('3000', 'nm', context('ecoli', 'lightbright', 400, 50)),
+    result: { value: 2, unit: 'um', context: context() },
+    previousResult: { value: 1000, unit: 'nm', context: context('ecoli', 'em', 10000, 1) }
+  });
+
+  it('projects a copied, unscored draft conversion and viewing context without disclosing a reference', () => {
+    const raw = entryWithVersions(), before = JSON.stringify(raw);
+    const review = measurementsCore.draftReview('ecoli', raw);
+    expect(review).toEqual({ value: '3000', unit: 'nm', estimateUm: 3, numericStatus: 'valid', geometryStatus: 'suitable', focusStatus: 'unknown',
+      view: { method: 'lightbright', mag: 400, zoom: 50, fieldUm: 9, scaleUm: 2 } });
+    expect(JSON.stringify(review)).not.toMatch(/reference|error|band|grade|canCheck|ready/i);
+    expect(measurementsCore.draftReview('ecoli', JSON.parse(before))).toEqual(review);
+    review.view.mag = 40; review.value = 'changed';
+    expect(JSON.stringify(raw)).toBe(before);
+    const withoutChecked = { draft: raw.draft };
+    expect(measurementsCore.draftReview('ecoli', withoutChecked)).toEqual(measurementsCore.draftReview('ecoli', raw));
+  });
+
+  it('rejects missing, empty or malformed draft contexts and requires explicit supported units and string values', () => {
+    for (const id of [null, [], 0, '__proto__', 'unknown']) expect(measurementsCore.draftReview(id, draftEntry())).toBeNull();
+    for (const value of [null, [], true, 'bad', {}, { draft: null }, { draft: [] }, { draft: { value: '2' } },
+      draftEntry(''), draftEntry('  '), draftEntry(2), draftEntry(null), draftEntry('2', 'mm'),
+      draftEntry('2', 'um', { ...context(), fieldUm: 10 }), draftEntry('2', 'um', { ...context(), scaleUm: 3 }),
+      draftEntry('2', 'um', { ...context(), referenceUm: 2000 }), draftEntry('2', 'um', { ...context(), specimen: 'phage' }),
+      draftEntry('2', 'um', { ...context(), version: 2 })]) expect(measurementsCore.draftReview('ecoli', value)).toBeNull();
+    expect(measurementsCore.draftReview('ecoli', draftEntry('x'.repeat(50)))).toMatchObject({ value: 'x'.repeat(32), numericStatus: 'invalid', estimateUm: null });
+  });
+
+  it('distinguishes invalid decimal text from nanometer underflow and keeps positive finite conversions', () => {
+    for (const value of ['+2', ' 2 ', '2.', '0x2', '-2', '0', '1e-999', 'Infinity', '1e10', '=2+2']) {
+      expect(measurementsCore.draftReview('ecoli', draftEntry(value))).toMatchObject({ value, numericStatus: 'invalid', estimateUm: null, focusStatus: 'unknown' });
+    }
+    expect(measurementsCore.draftReview('ecoli', draftEntry('5e-324'))).toMatchObject({ numericStatus: 'underflow', estimateUm: null });
+    expect(measurementsCore.draftReview('ecoli', draftEntry('+5e-324'))).toMatchObject({ numericStatus: 'invalid', estimateUm: null });
+    for (const [value, unit, estimateUm] of [['2e3', 'nm', 2], ['.2', 'um', 0.2], ['5e-324', 'um', Number.MIN_VALUE], ['5e-321', 'nm', Number.MIN_VALUE], ['1e9', 'um', 1e9]]) {
+      expect(measurementsCore.draftReview('ecoli', draftEntry(value, unit))).toMatchObject({ value, unit, numericStatus: 'valid', estimateUm, focusStatus: 'unknown' });
+    }
+  });
+
+  it('reviews the saved geometry for every specimen independently of the value and current live view', () => {
+    const cases = [
+      ['ecoli', 'lightbright', 100, 50, 'unresolved'], ['ecoli', 'lightbright', 1000, 1, 'too_small'],
+      ['ecoli', 'lightbright', 1000, 20, 'suitable'], ['strep', 'lightbright', 1000, 20, 'suitable'],
+      ['parame', 'lightbright', 1000, 1, 'cropped'], ['parame', 'lightbright', 400, 1, 'suitable'],
+      ['plasmo', 'lightbright', 400, 4, 'unresolved'], ['plasmo', 'lightbright', 1000, 4, 'suitable'],
+      ['phage', 'lightbright', 1000, 20, 'unresolved'], ['phage', 'em', 100000, 1, 'suitable']
+    ];
+    for (const [id, method, mag, zoom, geometryStatus] of cases) {
+      const review = measurementsCore.draftReview(id, draftEntry('bad', 'um', context(id, method, mag, zoom)));
+      expect(review).toMatchObject({ geometryStatus, numericStatus: 'invalid', focusStatus: 'unknown', view: { method, mag, zoom } });
+      const reference = { value: measurementsCore.sizes[id], unit: 'um', context: context(id, method, mag, zoom) };
+      expect(Boolean(measurementsCore.normalize({ [id]: { result: reference } })[id]?.result)).toBe(geometryStatus === 'suitable');
+    }
+  });
+
+  it('shows unscored review on pending cards without changing or grading any slide, including blocked drafts', () => {
+    const microscopeMeasurements = {
+      ecoli: draftEntry('+2', 'um', context('ecoli', 'lightbright', 1000, 1)),
+      strep: draftEntry('1000', 'nm', context('strep', 'lightbright', 1000, 20)),
+      parame: draftEntry('250', 'um', context('parame', 'lightbright', 1000, 1)),
+      plasmo: draftEntry('7500', 'nm', context('plasmo', 'lightbright', 400, 4)),
+      phage: draftEntry('5e-324', 'nm', context('phage', 'lightbright', 1000, 20))
+    };
+    const awards = mount({ microscopeMeasurements });
+    const before = JSON.parse(JSON.stringify(latestState));
+    expect(container.querySelectorAll('[data-measurement-draft-review]')).toHaveLength(5);
+    for (const [id, numberStatus, viewStatus] of [['ecoli', 'invalid', 'too_small'], ['strep', 'valid', 'suitable'], ['parame', 'valid', 'cropped'], ['plasmo', 'valid', 'unresolved'], ['phage', 'underflow', 'unresolved']]) {
+      const card = container.querySelector('[data-measurement-draft-review="' + id + '"]');
+      expect(card.querySelector('[data-draft-number-status]').dataset.draftNumberStatus).toBe(numberStatus);
+      expect(card.querySelector('[data-draft-view-status]').dataset.draftViewStatus).toBe(viewStatus);
+      expect(card.querySelector('[data-draft-focus-status]').dataset.draftFocusStatus).toBe('unknown');
+      expect(card.textContent).toContain('Unscored draft review'); expect(card.textContent).toContain('Historical focus was not saved');
+      expect(card.textContent).not.toMatch(/Reference size|practice band|Difference:|within the practice band/);
+      expect(card.querySelector('input,select,button')).toBeNull();
+    }
+    expect(container.querySelector('[data-measurement-draft-review="strep"]').textContent).toContain('Converted to micrometers (not checked): 1 µm');
+    expect(container.querySelector('[data-measurement-draft-review="strep"]').textContent).toContain('Verify live focus and the whole feature before checking');
+    expect(button('Check and save estimate').disabled).toBe(true);
+    expect(latestState).toEqual(before); expect(awards).not.toHaveBeenCalled();
+    expect(measurementsCore.exportRows(microscopeMeasurements).every(row => row.record_kind === 'pending_draft' && row.reference_um === null && row.absolute_error_pct === null && row.within_practice_band === null)).toBe(true);
+  });
+
+  it('keeps a suitable draft unscored through JSON reload and confirms focus only in the live view', () => {
+    mount({ microscopeMeasurements: { ecoli: draftEntry('2000') } });
+    const reviewBefore = container.querySelector('[data-measurement-draft-review="ecoli"]').textContent;
+    expect(button('Check and save estimate').disabled).toBe(true);
+    const saved = JSON.parse(JSON.stringify(latestState));
+    act(() => root.unmount()); root = null; container.remove(); mount(saved);
+    expect(container.querySelector('[data-measurement-draft-review="ecoli"]').textContent).toBe(reviewBefore);
+    click('Resume working view · E. coli');
+    expect(button('Check and save estimate').disabled).toBe(false);
+    expect(container.querySelector('[data-measurement-draft-review="ecoli"]').textContent).toBe(reviewBefore);
+    expect(latestState.microscopeMeasurements).toEqual(saved.microscopeMeasurements);
+    expect(measurementsCore.draftReview('ecoli', latestState.microscopeMeasurements.ecoli).focusStatus).toBe('unknown');
+  });
+
+  it('reviews the previous calibration with focus assist while preserving all evidence, progress and awards', () => {
+    const entry = entryWithVersions();
+    const awards = mount({ scopeOrganism: 'phage', magnification: 1000, microscopeZoom: 50, microscopeFocus: 92, microscopeTargetFocus: 13,
+      microscopeLabels: false, microscopeSeenSlides: [], microscopeMeasurements: { ecoli: entry, phage: draftEntry('225', 'nm', context('phage', 'em', 50000, 1)) } });
+    const before = JSON.parse(JSON.stringify(latestState));
+    const trigger = button('Review previous view · E. coli');
+    expect(trigger.id).toBe('micro-measurement-review-previous-ecoli');
+    expect(document.getElementById(trigger.getAttribute('aria-describedby')).textContent).toContain('with focus assist');
+    click('Review previous view · E. coli');
+    expect(latestState).toEqual({ ...before, scopeOrganism: 'ecoli', selectedScope: 'em', magnification: 10000, microscopeZoom: 1, microscopeTargetFocus: 50, microscopeFocus: 50,
+      microscopeEvidenceView: { version: 1, context: entry.previousResult.context } });
+    expect(document.activeElement).toBe(container.querySelector('input[type="number"]'));
+    expect(container.querySelector('input[type="number"]').value).toBe('3000');
+    expect(container.querySelector('[data-measurement-previous-view-notice="ecoli"]').textContent).toContain('Previous checked viewing settings are displayed with focus assist');
+    expect(container.querySelector('[data-measurement-previous-view-notice="ecoli"]').getAttribute('aria-live')).toBe('polite');
+    expect(awards).not.toHaveBeenCalled(); expect(latestState.microscopeSeenSlides).toEqual([]);
+    expect(button('Check and save estimate').disabled).toBe(true);
+  });
+
+  it('keeps current review and restore separate and uses the new previous context after an explicit swap', () => {
+    const entry = entryWithVersions();
+    mount({ microscopeSeenSlides: ['ecoli'], microscopeMeasurements: { ecoli: entry } });
+    click('Review previous view · E. coli');
+    expect(latestState.microscopeMeasurements.ecoli).toEqual(entry);
+    click('Review saved view · E. coli');
+    expect(latestState).toMatchObject({ selectedScope: 'lightbright', magnification: 1000, microscopeZoom: 20 });
+    expect(latestState.microscopeMeasurements.ecoli).toEqual(entry);
+    expect(container.querySelector('[data-measurement-previous-view-notice]').textContent).toBe('');
+    click('Restore previous estimate · E. coli');
+    const swapped = { ...entry, result: entry.previousResult, previousResult: entry.result };
+    expect(latestState.microscopeMeasurements.ecoli).toEqual(swapped);
+    click('Review previous view · E. coli');
+    expect(latestState).toMatchObject({ selectedScope: 'lightbright', magnification: 1000, microscopeZoom: 20 });
+    expect(latestState.microscopeMeasurements.ecoli).toEqual(swapped);
+  });
+
+  it('cancels post-commit previous-view focus when a later notebook control is used before commit', () => {
+    mount({ microscopeMeasurements: { ecoli: entryWithVersions() } });
+    const trigger = button('Review previous view · E. coli'), notebookButton = button('Open measurement notebook · 1/5');
+    act(() => { trigger.click(); notebookButton.focus(); notebookButton.click(); });
+    const notebook = container.querySelector('#micro-measurement-notebook-ecoli').closest('details');
+    expect(document.activeElement).toBe(notebook.querySelector('summary'));
+    expect(latestState).toMatchObject({ selectedScope: 'em', magnification: 10000, microscopeZoom: 1 });
+    expect(latestState.microscopeMeasurements.ecoli).toEqual(entryWithVersions());
+  });
+
+  it('ignores a superseded outer update and an inactive tab when applying previous-view focus', () => {
+    vi.stubGlobal('__alloMBUpdateVersion', 7);
+    mount({ microscopeMeasurements: { ecoli: entryWithVersions() } });
+    const trigger = button('Review previous view · E. coli'), keepFocus = button('Download measurement CSV');
+    keepFocus.focus();
+    act(() => { trigger.click(); globalThis.__alloMBUpdateVersion = 8; });
+    expect(document.activeElement).toBe(keepFocus);
+    const tab = document.createElement('button'); tab.id = 'micro-tab-microscope'; tab.setAttribute('aria-selected', 'false'); document.body.appendChild(tab);
+    try {
+      tab.focus(); click('Review previous view · E. coli');
+      expect(document.activeElement).toBe(tab);
+    } finally { tab.remove(); }
+  });
+
+  it('drops local previous-view feedback and focus requests on a JSON remount without losing the notebook', () => {
+    mount({ microscopeSeenSlides: ['ecoli'], microscopeMeasurements: { ecoli: entryWithVersions() } });
+    click('Review previous view · E. coli');
+    const saved = JSON.parse(JSON.stringify(latestState));
+    act(() => root.unmount()); root = null; container.remove(); mount(saved);
+    expect(container.querySelector('[data-measurement-previous-view-notice]').textContent).toBe('');
+    expect(document.activeElement).not.toBe(container.querySelector('input[type="number"]'));
+    expect(latestState).toEqual(saved);
+    expect(latestState.microscopeMeasurements.ecoli).toEqual(entryWithVersions());
+  });
+
+  it('validates and copies the evidence-view context without depending on mutable result slots', () => {
+    const raw = { version: 1, context: entryWithVersions().previousResult.context, ignored: 'metadata' };
+    const before = JSON.stringify(raw);
+    const normalized = measurementsCore.normalizeEvidenceView(raw);
+    expect(normalized).toEqual({ version: 1, context: raw.context });
+    normalized.context.mag = 50000;
+    expect(JSON.stringify(raw)).toBe(before);
+    for (const value of [null, [], {}, { ...raw, version: '1' }, { ...raw, context: null },
+      { ...raw, context: { ...raw.context, specimen: '__proto__' } }, { ...raw, context: { ...raw.context, fieldUm: 999 } },
+      { ...raw, context: context('phage', 'lightbright', 1000, 20) }, { ...raw, context: context('ecoli', 'lightbright', 1000, 1) },
+      { ...raw, context: context('parame', 'lightbright', 1000, 1) }]) expect(measurementsCore.normalizeEvidenceView(value)).toBeNull();
+  });
+
+  it.each(['tab remount', 'JSON reload'])('keeps an unseen saved replay unobserved after %s and retains drafts and history', kind => {
+    const awards = mount({ microscopeSeenSlides: [], microscopeMeasurements: { ecoli: entryWithVersions() } });
+    click('Review previous view · E. coli');
+    const review = JSON.parse(JSON.stringify(latestState));
+    expect(container.querySelector('#micro-measurement-evidence-view').textContent).toContain('Observation progress and XP stay unchanged');
+    expect(button('Return to observation').getAttribute('aria-describedby')).toBe('micro-measurement-evidence-view');
+    click('Restore previous estimate · E. coli');
+    enterEstimate('3400');
+    const snapshot = kind === 'JSON reload' ? JSON.parse(JSON.stringify(latestState)) : latestState;
+    act(() => root.unmount()); root = null; container.remove(); mount(snapshot, awards);
+    expect(latestState).toEqual(snapshot);
+    expect(latestState.microscopeEvidenceView).toEqual(review.microscopeEvidenceView);
+    expect(latestState.microscopeSeenSlides).toEqual([]);
+    expect(awards).not.toHaveBeenCalled();
+    expect(container.querySelector('#micro-measurement-evidence-view')).not.toBeNull();
+    expect(container.querySelector('[data-measurement-previous-view-notice]').textContent).toBe('');
+    expect(document.activeElement).not.toBe(container.querySelector('input[type="number"]'));
+    expect(latestState.microscopeMeasurements.ecoli.draft.value).toBe('3400');
+    expect(latestState.microscopeMeasurements.ecoli.previousResult).toEqual(entryWithVersions().result);
+  });
+
+  it.each([[[], 1], [['strep', 'parame', 'plasmo', 'phage'], 2]])('permits the normal once-only observation award after explicitly leaving replay (seen %j)', (seen, xp) => {
+    const awards = mount({ microscopeSeenSlides: seen, microscopeMeasurements: { ecoli: entryWithVersions() } });
+    click('Review previous view · E. coli');
+    const before = JSON.parse(JSON.stringify(latestState));
+    expect(awards).not.toHaveBeenCalled();
+    click('Return to observation');
+    expect(latestState).toEqual({ ...before, microscopeEvidenceView: null, microscopeSeenSlides: [...seen, 'ecoli'] });
+    expect(container.querySelector('#micro-measurement-evidence-view')).toBeNull();
+    expect(container.querySelector('[data-measurement-previous-view-notice]').textContent).toBe('');
+    expect(document.activeElement).toBe(container.querySelector('input[type="number"]'));
+    expect(awards).toHaveBeenCalledExactlyOnceWith(xp);
+    const saved = JSON.parse(JSON.stringify(latestState));
+    act(() => root.unmount()); root = null; container.remove(); mount(saved, awards);
+    click('Review previous view · E. coli'); click('Return to observation');
+    expect(awards).toHaveBeenCalledTimes(1);
+    expect(latestState.microscopeMeasurements).toEqual(before.microscopeMeasurements);
+  });
+
+  it.each(['magnification', 'display zoom', 'focus', 'setup', 'current review', 'working resume', 'slide', 'method'])('clears saved-evidence mode after the learner uses %s without changing checked or draft evidence', action => {
+    const awards = mount({ microscopeSeenSlides: [], microscopeMeasurements: { ecoli: entryWithVersions() } });
+    click('Review previous view · E. coli');
+    const evidence = JSON.parse(JSON.stringify(latestState.microscopeMeasurements));
+    if (action === 'magnification') click('10,000×');
+    if (action === 'display zoom') zoomTo(1);
+    if (action === 'focus') act(() => Simulate.change(container.querySelector('input[type="range"]'), { target: { value: '49' } }));
+    if (action === 'setup') click('Use recommended setup');
+    if (action === 'current review') click('Review saved view · E. coli');
+    if (action === 'working resume') click('Resume working view · E. coli');
+    if (action === 'slide') chooseSlide('Streptococcus');
+    if (action === 'method') click('Light microscope');
+    expect(latestState.microscopeEvidenceView).toBeNull();
+    expect(container.querySelector('#micro-measurement-evidence-view')).toBeNull();
+    expect(latestState.microscopeMeasurements).toEqual(evidence);
+    if (action === 'slide') { expect(awards).not.toHaveBeenCalled(); expect(latestState.microscopeSeenSlides).toEqual([]); }
+    else { expect(awards).toHaveBeenCalledExactlyOnceWith(1); expect(latestState.microscopeSeenSlides).toEqual(['ecoli']); }
+  });
+
+  it('ignores malformed or nonmatching evidence-view modes instead of suppressing a normal observation', () => {
+    const modes = [{ version: 1, context: { ...context(), fieldUm: 99 } }, { version: 1, context: entryWithVersions().previousResult.context }];
+    for (const mode of modes) {
+      const awards = mount({ microscopeSeenSlides: [], microscopeFocus: 50, microscopeZoom: 20, microscopeEvidenceView: mode });
+      expect(container.querySelector('#micro-measurement-evidence-view')).toBeNull();
+      expect(latestState.microscopeSeenSlides).toEqual(['ecoli']);
+      expect(awards).toHaveBeenCalledExactlyOnceWith(1);
+      act(() => root.unmount()); root = null; container.remove();
+    }
+  });
+});
+
 describe('Microscope measurement CSV evidence', () => {
   const ecoliContext = () => savedMeasurementContext('ecoli', 'lightbright', 1000, 20);
   const checked = (value, unit = 'um', context = ecoliContext()) => ({ value, unit, context });

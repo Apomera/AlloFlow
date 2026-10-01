@@ -1,0 +1,29 @@
+Micro Lab resistance evidence notebook
+Random teaching model, not measured culture or treatment data. Each record is a saved snapshot; records may come from different rounds of the same run.
+Capacity: 80 cells. Shares are rounded to whole percentages. Extinction has an undefined resistant share.
+Later reflections are editable annotations; original snapshot notes stay unchanged.
+
+Evidence 3
+Status: in-progress
+Exposure strength: 30/100; planned rounds: 3; observed rounds: 1
+Requested initial resistance: 10%; actual resistant cells: 8/80 (10% rounded)
+Original prediction: increase
+Selected explanation: Not recorded
+My written evidence: My original saved counts.
+Later reflection: Already reflected.
+Round	Sensitive	Resistant	Total alive	Resistant share
+0	72	8	80	10%
+1	60	8	68	12%
+
+Evidence 7
+Status: in-progress
+Exposure strength: 30/100; planned rounds: 3; observed rounds: 1
+Requested initial resistance: 10%; actual resistant cells: 8/80 (10% rounded)
+Original prediction: increase
+Selected explanation: Not recorded
+My written evidence: My original saved counts.
+Later reflection: =SUM(1,2)
+I compared the living count with its resistant share.
+Round	Sensitive	Resistant	Total alive	Resistant share
+0	72	8	80	10%
+1	60	8	68	12%

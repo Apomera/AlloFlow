@@ -31,6 +31,28 @@ function open(id) { click(`[data-work-next="${id}"]`); flush(); }
 const record = { claim: 'protist', evidence: ['structure', 'behavior'], reasoning: 'Nuclei and cilia support this broad classification.', limitation: 'bounded' };
 
 describe('Micro Lab contextual Home navigation', { timeout: 20000 }, () => {
+  it.each([
+    ['working notes', '#micro-resistance-notes'],
+    ['a tab without selecting it', '#micro-tab-quiz'],
+    ['the topic library control', '.micro-library-toggle']
+  ])('keeps a newer focus-only action on %s after opening Resistance from Home', (_, selector) => {
+    mount({ resistanceNotebook: { records: [{ id: 7, evidence: { dose: 30, duration: 3, initRes: 10, prediction: 'increase',
+      history: [{ day: 0, sensitive: 72, resistant: 8 }, { day: 1, sensitive: 60, resistant: 8 }] } }], selectedId: 7 } });
+    click('[data-work-next="resistance"]');
+    const before = JSON.stringify(mounted.state), target = node(selector); target.focus(); flush();
+    expect(document.activeElement).toBe(target); expect(JSON.stringify(mounted.state)).toBe(before);
+    expect(mounted.awardXP).not.toHaveBeenCalled();
+  });
+
+  it('respects a newer native disclosure action without opening the queued saved-reflection target', () => {
+    mount({ resistanceNotebook: { records: [{ id: 7, evidence: { dose: 30, duration: 3, initRes: 10,
+      history: [{ day: 0, sensitive: 72, resistant: 8 }, { day: 1, sensitive: 60, resistant: 8 }] } }], selectedId: 7 } });
+    click('[data-work-next="resistance"]');
+    const summary = node('.micro-resistance-comparison > summary'); summary.focus(); act(() => summary.click()); flush();
+    expect(document.activeElement).toBe(summary); expect(summary.parentElement.open).toBe(true);
+    expect(node('.micro-resistance-saved').open).toBe(false);
+  });
+
   it('opens a pending Mystery revision in working view and preserves every evidence snapshot', () => {
     const prior = { ...record, reasoning: 'Earlier reasoning.' };
     const cases = { pond: { ...record, reasoning: 'A revised explanation.', revealed: ['context', 'structure', 'behavior'], collapsed: ['structure'], checked: true, reportView: 'recorded', record, previousRecord: prior } };

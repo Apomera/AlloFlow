@@ -1566,16 +1566,38 @@
     function copyContext(context) {
       return { version: 1, specimen: context.specimen, method: context.method, mag: context.mag, zoom: context.zoom, fieldUm: context.fieldUm, scaleUm: context.scaleUm, referenceUm: context.referenceUm };
     }
-    function validResultContext(context, id) {
-      if (!validContext(context, id)) return false;
+    function geometryStatus(context, id) {
       var model = geometry[id];
-      if (!model || (context.method !== 'em' && (id === 'phage' || context.mag < model.minMag))) return false;
+      if (context.method !== 'em' && (id === 'phage' || context.mag < model.minMag)) return 'unresolved';
       var field = (context.method === 'em' ? 40000 : 180000) / context.mag / context.zoom;
       var apparentSize = sizes[id] * 200 / field / model.extent;
       var specimenRadius = apparentSize * model.radiusFactor + model.padding;
-      // Match the view-dependent checks in VirtualMicroscope. Focus is checked
-      // when recording; historical focus was not stored in version-1 contexts.
-      return specimenRadius <= 100 && sizes[id] / field * 200 >= 8;
+      if (specimenRadius > 100) return 'cropped';
+      return sizes[id] / field * 200 < 8 ? 'too_small' : 'suitable';
+    }
+    function validResultContext(context, id) {
+      // Focus is checked when recording; historical focus is not stored.
+      return validContext(context, id) && geometryStatus(context, id) === 'suitable';
+    }
+    function normalizeEvidenceView(value) {
+      if (!value || typeof value !== 'object' || Array.isArray(value) || value.version !== 1) return null;
+      var context = value.context, id = context && context.specimen;
+      if (Object.keys(sizes).indexOf(id) < 0 || !validResultContext(context, id)) return null;
+      return { version: 1, context: copyContext(context) };
+    }
+    function draftReview(id, value) {
+      if (Object.keys(sizes).indexOf(id) < 0 || !value || typeof value !== 'object' || Array.isArray(value)) return null;
+      var draft = value.draft;
+      if (!draft || typeof draft !== 'object' || Array.isArray(draft) || typeof draft.value !== 'string' ||
+        (draft.unit !== 'um' && draft.unit !== 'nm') || !validContext(draft.context, id)) return null;
+      var text = draft.value.slice(0, 32);
+      if (!text.trim()) return null;
+      var parsed = parseEstimate(text, draft.unit), context = draft.context;
+      var underflow = parsed === null && draft.unit === 'nm' && parseEstimate(text, 'um') !== null && Number(text) / 1000 === 0;
+      return { value: text, unit: draft.unit, estimateUm: parsed === null ? null : draft.unit === 'nm' ? parsed / 1000 : parsed,
+        numericStatus: parsed !== null ? 'valid' : underflow ? 'underflow' : 'invalid',
+        geometryStatus: geometryStatus(context, id), focusStatus: 'unknown',
+        view: { method: context.method, mag: context.mag, zoom: context.zoom, fieldUm: context.fieldUm, scaleUm: context.scaleUm } };
     }
     function normalizeResult(value, id) {
       return value && typeof value.value === 'number' && parseEstimate(value.value, value.unit) !== null && validResultContext(value.context, id)
@@ -1647,7 +1669,7 @@
       }
       return [headers.map(cell).join(',')].concat(rows.map(function(row) { return headers.map(function(key) { return cell(row[key]); }).join(','); })).join('\r\n');
     }
-    return { sizes: sizes, normalize: normalize, finiteEstimate: finiteEstimate, parseEstimate: parseEstimate, pending: pending, sameResult: sameResult, exportRows: exportRows, exportCSV: exportCSV };
+    return { sizes: sizes, normalize: normalize, finiteEstimate: finiteEstimate, parseEstimate: parseEstimate, pending: pending, sameResult: sameResult, draftReview: draftReview, normalizeEvidenceView: normalizeEvidenceView, exportRows: exportRows, exportCSV: exportCSV };
   })();
   window.__MicrobiologyCore = window.__MicrobiologyCore || {};
   window.__MicrobiologyCore.measurements = MicroMeasurements;
@@ -1705,6 +1727,9 @@
     var measurementId = R.useId ? R.useId() : 'micro-measurement';
     var estimateInputRef = R.useRef(null);
     var notebookRef = R.useRef(null);
+    var microscopeOwnerRef = R.useRef(null);
+    var previousViewRequestRef = R.useRef(null);
+    var previousViewNoticeState = R.useState(null), previousViewNotice = previousViewNoticeState[0], setPreviousViewNotice = previousViewNoticeState[1];
     var notebookNoticeState = R.useState('');
     var notebookNotice = notebookNoticeState[0];
     var setNotebookNotice = notebookNoticeState[1];
@@ -1717,6 +1742,34 @@
     // Records contain their own calibration, so later view changes cannot relabel them.
     function finiteEstimate(value) { return MicroMeasurements.finiteEstimate(value); }
     var measurements = MicroMeasurements.normalize(d.microscopeMeasurements);
+    var evidenceView = MicroMeasurements.normalizeEvidenceView(d.microscopeEvidenceView);
+    var evidenceViewActive = !!(evidenceView && evidenceView.context.specimen === organism &&
+      evidenceView.context.method === (electronMode ? 'em' : 'lightbright') && evidenceView.context.mag === mag && evidenceView.context.zoom === displayZoom);
+    function updateObservationView(patch) {
+      previousViewRequestRef.current = null;
+      setPreviousViewNotice(null);
+      upd(d.microscopeEvidenceView == null ? patch : Object.assign({ microscopeEvidenceView: null }, patch));
+    }
+    function previousViewMatches(request) {
+      var entry = request && measurements[request.id], context = request && request.result.context;
+      return !!(evidenceViewActive && entry && MicroMeasurements.sameResult(entry.previousResult, request.result) && organism === request.id &&
+        (electronMode ? 'em' : 'lightbright') === context.method && mag === context.mag && displayZoom === context.zoom &&
+        focusVal === request.focus && targetFocus === request.focus);
+    }
+    function cancelPreviousViewFocus() { previousViewRequestRef.current = null; }
+    R.useEffect(function() {
+      var request = previousViewRequestRef.current;
+      previousViewRequestRef.current = null;
+      if (!request) return;
+      var owner = microscopeOwnerRef.current, input = estimateInputRef.current, tab = document.getElementById('micro-tab-microscope');
+      var version = typeof __alloMBUpdateVersion === 'undefined' ? null : __alloMBUpdateVersion;
+      if (request.version === version && owner === request.owner && input === request.input && owner && owner.isConnected &&
+        input && input.isConnected && owner.contains(input) && previousViewMatches(request) &&
+        (!tab || tab.getAttribute('aria-selected') === 'true')) input.focus();
+    });
+    R.useEffect(function() {
+      if (previousViewNotice && !previousViewMatches(previousViewNotice)) setPreviousViewNotice(null);
+    });
     var measurementCSV = MicroMeasurements.exportCSV(measurements);
     R.useEffect(function() { setCsvNotice(null); }, [measurementCSV]);
     var measurement = measurements[organism] || {};
@@ -1808,9 +1861,32 @@
             measurementResultRows(version[1]).map(function(row) { return hh('p', { key: row[0], 'data-measurement-field': row[0], style: { margin: '6px 0' } }, hh('strong', null, row[1] + ': '), row[2]); }));
         })),
         hh('p', null, __alloMBT('stem.microbiology.measure_band_caveat', 'This band gives feedback for estimating the drawing; it does not describe uncertainty in a real laboratory measurement.')),
-        hh('button', { type: 'button', 'aria-describedby': noteId, onClick: function() { restorePreviousMeasurement(specimen); }, style: buttonStyle }, __alloMBT('stem.microbiology.measure_restore_previous', 'Restore previous estimate') + ' · ' + specimen.name),
+        hh('p', { id: 'micro-measurement-review-previous-help-' + specimen.id }, __alloMBT('stem.microbiology.measure_previous_view_help', 'Review previous view restores that estimate’s viewing method, magnification, and display zoom with focus assist. Both checked estimates and your working draft stay as they are.')),
+        hh('button', { id: 'micro-measurement-review-previous-' + specimen.id, type: 'button', 'aria-describedby': 'micro-measurement-review-previous-help-' + specimen.id, onClick: function() { reviewPreviousMeasurement(specimen); }, style: buttonStyle }, __alloMBT('stem.microbiology.measure_previous_view', 'Review previous view') + ' · ' + specimen.name),
+        hh('button', { type: 'button', 'aria-describedby': noteId, onClick: function() { restorePreviousMeasurement(specimen); }, style: Object.assign({}, buttonStyle, { marginLeft: 6 }) }, __alloMBT('stem.microbiology.measure_restore_previous', 'Restore previous estimate') + ' · ' + specimen.name),
         hh('p', { role: 'status', 'aria-live': 'polite', 'data-measurement-history-notice': specimen.id, style: { margin: matchingHistoryNotice(specimen.id) ? '8px 0' : 0, color: microInk('#7dd3fc') } }, matchingHistoryNotice(specimen.id) ? __alloMBT('stem.microbiology.measure_previous_restored', 'Previous checked estimate restored. Your working estimate and microscope settings were kept. The replaced estimate remains available here.') : '')
       );
+    }
+    function draftReviewCard(specimen, entry) {
+      var review = MicroMeasurements.draftReview(specimen.id, entry);
+      if (!review) return null;
+      var numberNote = review.numericStatus === 'valid'
+        ? __alloMBT('stem.microbiology.measure_draft_conversion', 'Converted to micrometers (not checked)') + ': ' + String(review.estimateUm) + ' µm.'
+        : review.numericStatus === 'underflow'
+          ? __alloMBT('stem.microbiology.measure_draft_underflow', 'This nanometer value becomes zero when converted to micrometers. Enter a larger positive value before checking.')
+          : __alloMBT('stem.microbiology.measure_draft_invalid', 'This working value is not a valid positive decimal estimate. Review the original text and units before checking.');
+      var viewNote = review.geometryStatus === 'unresolved'
+        ? __alloMBT('stem.microbiology.measure_draft_unresolved', 'The saved viewing method or power cannot resolve the feature. Use the recommended setup before making a new estimate.')
+        : review.geometryStatus === 'cropped'
+          ? __alloMBT('stem.microbiology.measure_draft_cropped', 'The whole feature does not fit in the saved field. Reduce magnification or display zoom before making a new estimate.')
+          : review.geometryStatus === 'too_small'
+            ? __alloMBT('stem.microbiology.measure_draft_small', 'The feature is too small in the saved view to compare with the scale bar. Increase display zoom before making a new estimate.')
+            : __alloMBT('stem.microbiology.measure_draft_suitable', 'The saved viewing settings allow the feature to be resolved, large enough, and inside the field. Verify live focus and the whole feature before checking.');
+      return hh('div', { 'data-measurement-draft-review': specimen.id, style: { marginTop: 8 } },
+        hh('strong', null, __alloMBT('stem.microbiology.measure_draft_review_title', 'Unscored draft review')),
+        hh('p', { 'data-draft-number-status': review.numericStatus, style: { margin: '5px 0' } }, numberNote),
+        hh('p', { 'data-draft-view-status': review.geometryStatus, style: { margin: '5px 0' } }, viewNote),
+        hh('p', { 'data-draft-focus-status': review.focusStatus, style: { margin: '5px 0' } }, __alloMBT('stem.microbiology.measure_draft_focus_unknown', 'Historical focus was not saved. This review does not check the estimate or predict whether it is correct.')));
     }
     function focusEstimate() { if (estimateInputRef.current) estimateInputRef.current.focus(); }
     function openNotebook() {
@@ -1822,19 +1898,31 @@
     function reviewMeasurement(specimen) {
       var saved = measurements[specimen.id] && measurements[specimen.id].result;
       if (!saved) return;
-      upd({ scopeOrganism: specimen.id, selectedScope: saved.context.method, magnification: saved.context.mag, microscopeZoom: saved.context.zoom, microscopeTargetFocus: specimen.focus, microscopeFocus: specimen.focus });
+      updateObservationView({ scopeOrganism: specimen.id, selectedScope: saved.context.method, magnification: saved.context.mag, microscopeZoom: saved.context.zoom, microscopeTargetFocus: specimen.focus, microscopeFocus: specimen.focus });
       setNotebookNotice(specimen.name + ': ' + __alloMBT('stem.microbiology.measure_reviewed', 'saved viewing settings restored with focus assist. Your working estimate and checked result were kept.'));
       focusEstimate();
+    }
+    function reviewPreviousMeasurement(specimen) {
+      var saved = measurements[specimen.id] && measurements[specimen.id].previousResult;
+      if (!saved) return;
+      // Persist this viewing mode so reopening saved evidence never creates an observation.
+      var mode = MicroMeasurements.normalizeEvidenceView({ version: 1, context: saved.context });
+      var request = { id: specimen.id, result: saved, focus: specimen.focus, owner: microscopeOwnerRef.current, input: estimateInputRef.current };
+      upd({ scopeOrganism: specimen.id, selectedScope: saved.context.method, magnification: saved.context.mag, microscopeZoom: saved.context.zoom, microscopeTargetFocus: specimen.focus, microscopeFocus: specimen.focus, microscopeEvidenceView: mode });
+      request.version = typeof __alloMBUpdateVersion === 'undefined' ? null : __alloMBUpdateVersion;
+      previousViewRequestRef.current = request;
+      setNotebookNotice('');
+      setPreviousViewNotice(request);
     }
     function resumeMeasurement(specimen) {
       var working = measurements[specimen.id] && measurements[specimen.id].draft;
       if (!working || !working.value.trim()) return;
-      upd({ scopeOrganism: specimen.id, selectedScope: working.context.method, magnification: working.context.mag, microscopeZoom: working.context.zoom, microscopeTargetFocus: specimen.focus, microscopeFocus: specimen.focus });
+      updateObservationView({ scopeOrganism: specimen.id, selectedScope: working.context.method, magnification: working.context.mag, microscopeZoom: working.context.zoom, microscopeTargetFocus: specimen.focus, microscopeFocus: specimen.focus });
       setNotebookNotice(specimen.name + ': ' + __alloMBT('stem.microbiology.measure_resumed', 'working viewing settings restored with focus assist. Check the readiness guidance before saving; your estimate and checked result were kept.'));
       focusEstimate();
     }
     function prepareMeasurement(specimen) {
-      upd({ scopeOrganism: specimen.id, selectedScope: specimen.id === 'phage' ? 'em' : 'lightbright', magnification: specimen.bestMag, microscopeZoom: specimen.zoom, microscopeTargetFocus: specimen.focus, microscopeFocus: 10 });
+      updateObservationView({ scopeOrganism: specimen.id, selectedScope: specimen.id === 'phage' ? 'em' : 'lightbright', magnification: specimen.bestMag, microscopeZoom: specimen.zoom, microscopeTargetFocus: specimen.focus, microscopeFocus: 10 });
       setNotebookNotice(specimen.name + ': ' + __alloMBT('stem.microbiology.measure_prepared', 'recommended view prepared. Focus the specimen, then estimate its size.'));
       focusEstimate();
     }
@@ -1902,16 +1990,16 @@
     var observedRef = R.useRef('');
     R.useEffect(function() {
       var observationKey = organism + ':' + seen.join(',');
-      if (canSee && isFocused && !cropped && seen.indexOf(organism) < 0 && observedRef.current !== observationKey) {
+      if (!evidenceViewActive && canSee && isFocused && !cropped && seen.indexOf(organism) < 0 && observedRef.current !== observationKey) {
         observedRef.current = observationKey;
         var nextSeen = seen.concat([organism]);
         upd({ microscopeSeenSlides: nextSeen });
         if (awardXP && nextSeen.length === 1) awardXP(1);
         if (awardXP && nextSeen.length === ORGANISMS.length) awardXP(2);
       }
-    }, [organism, canSee, isFocused, cropped, seen.join(',')]);
+    }, [organism, canSee, isFocused, cropped, seen.join(','), evidenceViewActive]);
     function setupSlide() {
-      upd({ selectedScope: organism === 'phage' ? 'em' : 'lightbright', magnification: sel.bestMag, microscopeZoom: sel.zoom });
+      updateObservationView({ selectedScope: organism === 'phage' ? 'em' : 'lightbright', magnification: sel.bestMag, microscopeZoom: sel.zoom });
     }
     var buttonStyle = { minHeight: 36, padding: '7px 11px', borderRadius: 7, background: 'rgba(16,185,129,0.10)', color: microInk('#6ee7b7'), border: '1px solid #10b981', fontSize: 11, fontWeight: 700, cursor: 'pointer' };
 
@@ -1996,7 +2084,10 @@
       return null;
     }
 
-    return hh('section', { 'aria-label': __alloMBT('stem.microbiology.scope_lab_label', 'Virtual microscope investigation'), style: { background: 'var(--allo-stem-deeper, #020617)', borderRadius: 12, padding: 16, marginBottom: 14, border: '1px solid rgba(16,185,129,0.30)', borderLeft: '4px solid #10b981' } },
+    return hh('section', { ref: microscopeOwnerRef, 'data-microscope-workspace': true,
+      onClickCapture: cancelPreviousViewFocus, onPointerDownCapture: cancelPreviousViewFocus, onKeyDownCapture: cancelPreviousViewFocus,
+      onFocusCapture: cancelPreviousViewFocus, onInputCapture: cancelPreviousViewFocus, onChangeCapture: cancelPreviousViewFocus,
+      'aria-label': __alloMBT('stem.microbiology.scope_lab_label', 'Virtual microscope investigation'), style: { background: 'var(--allo-stem-deeper, #020617)', borderRadius: 12, padding: 16, marginBottom: 14, border: '1px solid rgba(16,185,129,0.30)', borderLeft: '4px solid #10b981' } },
       hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
         hh('div', { style: { flex: 1, minWidth: 180 } },
           hh('h3', { style: { margin: 0, fontSize: 15, color: microInk('#6ee7b7') } }, __alloMBT('stem.microbiology.scope_title', 'Virtual microscope · observe and measure')),
@@ -2009,10 +2100,14 @@
         hh('button', { type: 'button', onClick: openNotebook, style: buttonStyle }, __alloMBT('stem.microbiology.measure_open_notebook', 'Open measurement notebook') + ' · ' + notebookSlides.length + '/5'),
         hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.6 } }, __alloMBT('stem.microbiology.measure_start_note', 'Check an estimate to save evidence for that slide.'))
       ),
+      evidenceViewActive ? hh('div', { 'data-measurement-evidence-view': organism, style: { marginBottom: 12, padding: 10, borderLeft: '3px solid #7dd3fc' } },
+        hh('p', { id: 'micro-measurement-evidence-view', style: { margin: '0 0 8px', fontSize: 11, lineHeight: 1.6 } }, __alloMBT('stem.microbiology.measure_evidence_view_note', 'Reviewing saved evidence with focus assist. Observation progress and XP stay unchanged while this view is reopened. Return to observation, or adjust the viewing controls, to observe this slide normally. Your checked estimates and working draft will be kept.')),
+        hh('button', { id: 'micro-measurement-resume-observation', type: 'button', 'aria-describedby': 'micro-measurement-evidence-view', onClick: function() { updateObservationView({}); focusEstimate(); }, style: buttonStyle }, __alloMBT('stem.microbiology.measure_resume_observation', 'Return to observation'))
+      ) : null,
       hh('div', { role: 'group', 'aria-label': __alloMBT('stem.microbiology.a11y_organism_slides', 'Organism slides'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
         ORGANISMS.map(function(o) {
           var active = o.id === organism;
-          return hh('button', { key: o.id, type: 'button', 'aria-pressed': active, onClick: function() { if (!active) upd({ scopeOrganism: o.id, microscopeTargetFocus: o.focus, microscopeFocus: 10, microscopeZoom: o.zoom }); }, className: 'microscope-slide-btn' + (active ? ' active' : ''), style: { '--slide-color': o.color, minHeight: 54 } },
+          return hh('button', { key: o.id, type: 'button', 'aria-pressed': active, onClick: function() { if (!active) updateObservationView({ scopeOrganism: o.id, microscopeTargetFocus: o.focus, microscopeFocus: 10, microscopeZoom: o.zoom }); else if (evidenceViewActive) updateObservationView({}); }, className: 'microscope-slide-btn' + (active ? ' active' : ''), style: { '--slide-color': o.color, minHeight: 54 } },
             hh('span', { 'aria-hidden': 'true' }, o.icon + ' '), o.name,
             seen.indexOf(o.id) >= 0 ? hh('span', { 'aria-label': __alloMBT('stem.microbiology.scope_observed_slide', 'observed'), style: { marginLeft: 5 } }, '✓') : null
           );
@@ -2020,7 +2115,7 @@
       ),
       hh('div', { role: 'group', 'aria-label': __alloMBT('stem.microbiology.scope_method', 'Viewing method'), style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 } },
         [{ id: 'lightbright', label: __alloMBT('stem.microbiology.scope_light_view', 'Light microscope'), active: !electronMode, mag: Math.min(mag, 1000) }, { id: 'em', label: __alloMBT('stem.microbiology.scope_electron_view', 'Electron view'), active: electronMode, mag: 50000 }].map(function(mode) {
-          return hh('button', { key: mode.id, type: 'button', 'aria-pressed': mode.active, onClick: function() { if (!mode.active) upd({ selectedScope: mode.id, magnification: mode.mag, microscopeZoom: electronMode ? sel.zoom : 1 }); }, style: Object.assign({}, buttonStyle, mode.active ? { background: '#10b981', color: '#052e21' } : {}) }, mode.label);
+          return hh('button', { key: mode.id, type: 'button', 'aria-pressed': mode.active, onClick: function() { if (!mode.active) updateObservationView({ selectedScope: mode.id, magnification: mode.mag, microscopeZoom: electronMode ? sel.zoom : 1 }); else if (evidenceViewActive) updateObservationView({}); }, style: Object.assign({}, buttonStyle, mode.active ? { background: '#10b981', color: '#052e21' } : {}) }, mode.label);
         }),
         hh('button', { type: 'button', onClick: setupSlide, style: buttonStyle }, __alloMBT('stem.microbiology.scope_recommended_setup', 'Use recommended setup'))
       ),
@@ -2042,16 +2137,16 @@
         hh('div', { style: { flex: '1 1 230px', minWidth: 0 } },
           hh('div', { style: { fontSize: 11, fontWeight: 800, marginBottom: 6, color: 'var(--allo-stem-text, #e2e8f0)' } }, __alloMBT('stem.microbiology.scope_power', '1. Choose magnification')),
           hh('div', { role: 'group', 'aria-label': __alloMBT('stem.microbiology.a11y_magnification', 'Magnification'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } }, levels.map(function(level) {
-            return hh('button', { key: level, type: 'button', 'aria-pressed': mag === level, onClick: function() { upd({ magnification: level }); }, style: Object.assign({}, buttonStyle, mag === level ? { background: '#10b981', color: '#052e21' } : {}) }, level.toLocaleString() + '×');
+            return hh('button', { key: level, type: 'button', 'aria-pressed': mag === level, onClick: function() { updateObservationView({ magnification: level }); }, style: Object.assign({}, buttonStyle, mag === level ? { background: '#10b981', color: '#052e21' } : {}) }, level.toLocaleString() + '×');
           })),
           hh('p', { style: { fontSize: 11, lineHeight: 1.6, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '0 0 12px' } }, electronMode ? __alloMBT('stem.microbiology.scope_em_limits', 'Electron view: an illustrative prepared specimen. Real electron microscopy needs specialized sample preparation. Color and internal labels are teaching aids.') : __alloMBT('stem.microbiology.scope_light_limits', 'Light view: total magnification = 10× eyepiece × objective. The 1000× preset represents a 100× oil-immersion objective. Best conventional light resolution is about 0.2 µm.')),
           hh('label', { style: { display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, __alloMBT('stem.microbiology.scope_focus_step', '2. Bring the specimen into focus'),
-            hh('input', { type: 'range', min: 0, max: 100, step: 1, value: focusVal, 'aria-label': __alloMBT('stem.microbiology.a11y_fine_focus', 'Fine Focus'), 'aria-valuetext': focusVal + '. ' + focusHint, onChange: function(e) { upd({ microscopeFocus: Number(e.target.value) }); }, style: { width: '100%', margin: '10px 0', accentColor: '#10b981' } })
+            hh('input', { type: 'range', min: 0, max: 100, step: 1, value: focusVal, 'aria-label': __alloMBT('stem.microbiology.a11y_fine_focus', 'Fine Focus'), 'aria-valuetext': focusVal + '. ' + focusHint, onChange: function(e) { updateObservationView({ microscopeFocus: Number(e.target.value) }); }, style: { width: '100%', margin: '10px 0', accentColor: '#10b981' } })
           ),
           hh('div', { role: 'status', 'aria-live': 'polite', style: { fontSize: 11, lineHeight: 1.6, color: microInk(isFocused ? '#6ee7b7' : '#fbbf24'), marginBottom: 8 } }, focusHint),
-          hh('button', { type: 'button', disabled: isFocused, onClick: function() { upd({ microscopeFocus: targetFocus }); }, style: Object.assign({}, buttonStyle, { opacity: isFocused ? 0.65 : 1 }) }, __alloMBT('stem.microbiology.scope_focus_assist', 'Focus assist')),
+          hh('button', { type: 'button', disabled: isFocused, onClick: function() { updateObservationView({ microscopeFocus: targetFocus }); }, style: Object.assign({}, buttonStyle, { opacity: isFocused ? 0.65 : 1 }) }, __alloMBT('stem.microbiology.scope_focus_assist', 'Focus assist')),
           hh('label', { style: { display: 'block', marginTop: 14, fontSize: 11, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, __alloMBT('stem.microbiology.scope_display_zoom', '3. Enlarge the display to measure'),
-            hh('select', { 'aria-label': __alloMBT('stem.microbiology.scope_display_zoom', '3. Enlarge the display to measure'), value: displayZoom, onChange: function(e) { upd({ microscopeZoom: Number(e.target.value) }); }, style: { width: '100%', marginTop: 7, padding: 8, borderRadius: 7, background: '#0f172a', color: '#e2e8f0', border: '1px solid #64748b' } }, [1, 4, 20, 50].map(function(zoom) { return hh('option', { key: zoom, value: zoom }, zoom + '×'); }))
+            hh('select', { 'aria-label': __alloMBT('stem.microbiology.scope_display_zoom', '3. Enlarge the display to measure'), value: displayZoom, onChange: function(e) { updateObservationView({ microscopeZoom: Number(e.target.value) }); }, style: { width: '100%', marginTop: 7, padding: 8, borderRadius: 7, background: '#0f172a', color: '#e2e8f0', border: '1px solid #64748b' } }, [1, 4, 20, 50].map(function(zoom) { return hh('option', { key: zoom, value: zoom }, zoom + '×'); }))
           ),
           hh('p', { style: { fontSize: 11, lineHeight: 1.6, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 0 } }, __alloMBT('stem.microbiology.scope_zoom_limit', 'Display zoom enlarges the drawing; the scale bar updates with it. It adds no optical detail.'))
         )
@@ -2114,6 +2209,7 @@
             pending ? hh('div', { 'data-measurement-draft': specimen.id, style: { marginTop: 9, padding: 10, borderLeft: '3px solid #7dd3fc', background: 'rgba(56,189,248,0.06)', overflowWrap: 'anywhere' } },
               hh('strong', null, __alloMBT('stem.microbiology.measure_working_estimate', 'Working estimate (not yet checked)') + ': ' + entry.draft.value + (entry.draft.unit === 'nm' ? ' nm' : ' µm')),
               hh('div', null, __alloMBT('stem.microbiology.measure_working_view', 'Working view') + ': ' + measurementContextText(entry.draft.context)),
+              draftReviewCard(specimen, entry),
               hh('p', { style: { margin: '6px 0' } }, __alloMBT('stem.microbiology.measure_resume_note', 'Resume restores this viewing method, magnification, and display zoom with focus assist. The feature must still be visible, large enough, and fully in the field before checking.')),
               hh('button', { type: 'button', onClick: function() { resumeMeasurement(specimen); }, style: buttonStyle }, __alloMBT('stem.microbiology.measure_resume', 'Resume working view') + ' · ' + specimen.name)
             ) : null,
@@ -2127,6 +2223,8 @@
         hh('p', { id: 'micro-measurement-csv-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, style: { marginBottom: 0, color: microInk('#7dd3fc') } }, csvNotice && csvNotice.text === measurementCSV ? hh('span', { key: csvNotice.sequence }, csvNotice.message) : '')
       ),
       hh('p', { role: 'status', 'aria-live': 'polite', style: { margin: notebookNotice ? '10px 0 0' : 0, color: microInk('#7dd3fc'), fontSize: 11, lineHeight: 1.7 } }, notebookNotice),
+      hh('p', { 'data-measurement-previous-view-notice': previousViewNotice ? previousViewNotice.id : '', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, style: { margin: previousViewNotice ? '10px 0 0' : 0, fontSize: 11, lineHeight: 1.7 } },
+        previousViewNotice && previousViewMatches(previousViewNotice) ? __alloMBT('stem.microbiology.measure_previous_view_shown', 'Previous checked viewing settings are displayed with focus assist. Current and previous checked estimates, your working draft, and observation progress were kept.') : ''),
       hh('p', { style: { margin: '12px 0 0', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloMBT('stem.microbiology.scope_references', 'Learn more') + ': ',
         hh('a', { href: 'https://openstax.org/books/microbiology/pages/2-3-instruments-of-microscopy', target: '_blank', rel: 'noopener noreferrer', style: { color: microInk('#6ee7b7') } }, 'OpenStax · microscopy'), ' · ',
         hh('a', { href: 'https://www.cdc.gov/malaria/testing/', target: '_blank', rel: 'noopener noreferrer', style: { color: microInk('#6ee7b7') } }, 'CDC · blood smear microscopy')
@@ -2267,11 +2365,19 @@
         bestValues: Object.freeze(points.filter(function (point) { return Math.abs(point.finalPopulation - maximum) < 1e-9; }).map(function (point) { return point.value; }))
       });
     }
-    function normalizeSweep(value) {
+    function normalizeSweep(value, strict) {
       var raw = record(value);
       if (typeof raw.variable !== 'string' || !Object.prototype.hasOwnProperty.call(sweepSteps, raw.variable) ||
         !raw.conditions || typeof raw.conditions !== 'object' || Array.isArray(raw.conditions)) return null;
-      return Object.freeze({ variable: raw.variable, conditions: normalizeConditions(raw.conditions) });
+      var conditions = raw.conditions;
+      if (strict && (!Object.prototype.hasOwnProperty.call(conditions, 'profile') || typeof conditions.profile !== 'string' ||
+        !Object.prototype.hasOwnProperty.call(profiles, conditions.profile) || !['tempC', 'pH', 'oxygen'].every(function(key) {
+          return Object.prototype.hasOwnProperty.call(conditions, key) && typeof conditions[key] === 'number' && Number.isFinite(conditions[key]);
+        }))) return null;
+      return Object.freeze({ variable: raw.variable, conditions: normalizeConditions(conditions) });
+    }
+    function sameSweep(a, b) {
+      return !!a && !!b && a.variable === b.variable && conditionKeys.every(function(key) { return key === a.variable || a.conditions[key] === b.conditions[key]; });
     }
     function validId(value) { return typeof value === 'number' && Number.isInteger(value) && value > 0 && value <= MAX_ID; }
     function validTrial(value) { return value && typeof value === 'object' && !Array.isArray(value) && value.conditions && typeof value.conditions === 'object' && !Array.isArray(value.conditions); }
@@ -2308,6 +2414,8 @@
         sweepVariable: sweepVariable(raw.sweepVariable), sweep: normalizeSweep(raw.sweep)
       };
       if (removedId !== null) notebook.removed = Object.freeze({ trial: normalizeTrial(removed.trial, removedId), index: removed.index });
+      var previousSweep = normalizeSweep(raw.previousSweep, true);
+      if (notebook.sweep && previousSweep && !sameSweep(notebook.sweep, previousSweep)) notebook.previousSweep = previousSweep;
       return Object.freeze(notebook);
     }
     function removeTrial(value, id) {
@@ -2328,6 +2436,17 @@
     function keepRemoval(value) {
       var notebook = normalizeNotebook(value), removed = notebook.removed;
       return { notebook: normalizeNotebook(Object.assign({}, notebook, { removed: null })), status: removed ? 'kept' : 'missing', id: removed ? removed.trial.id : null };
+    }
+    function saveSweep(value, specification) {
+      var notebook = normalizeNotebook(value), next = normalizeSweep(specification, true);
+      if (!next) return { notebook: notebook, status: 'invalid' };
+      if (sameSweep(notebook.sweep, next)) return { notebook: notebook, status: 'unchanged' };
+      return { notebook: normalizeNotebook(Object.assign({}, notebook, { sweep: next, previousSweep: notebook.sweep })), status: 'saved' };
+    }
+    function restoreSweep(value) {
+      var notebook = normalizeNotebook(value);
+      if (!notebook.previousSweep) return { notebook: notebook, status: 'missing' };
+      return { notebook: normalizeNotebook(Object.assign({}, notebook, { sweep: notebook.previousSweep, previousSweep: notebook.sweep })), status: 'restored' };
     }
     function saveTrial(value, conditions) {
       var notebook = normalizeNotebook(value);
@@ -2416,12 +2535,62 @@
     return Object.freeze({
       profiles: profiles, normalizeConditions: normalizeConditions, simulate: simulate, compare: compare, sweep: sweep, sweepSteps: sweepSteps,
       normalizeNotebook: normalizeNotebook, removeTrial: removeTrial, restoreTrial: restoreTrial, keepRemoval: keepRemoval, saveTrial: saveTrial,
+      saveSweep: saveSweep, restoreSweep: restoreSweep,
       reviewNotebook: reviewNotebook, reviewCSV: reviewCSV, csv: csv, similarThreshold: SIMILAR_THRESHOLD, maxRecords: MAX_RECORDS
     });
   })();
 
   window.__MicrobiologyCore = window.__MicrobiologyCore || {};
   window.__MicrobiologyCore.growth = MicroGrowth;
+
+  function __alloMicroGrowthQueueFocus(owner, anchor, selector, matches) {
+    if (!owner || !anchor) return;
+    var request = {}, updateVersion = __alloMBUpdateVersion;
+    var originalTab = document.getElementById('micro-tab-growthLab');
+    owner.__microGrowthFocusRequest = request;
+    setTimeout(function() {
+      var tab = document.getElementById('micro-tab-growthLab');
+      if (updateVersion !== __alloMBUpdateVersion || !owner.isConnected || owner.__microGrowthFocusRequest !== request ||
+        !anchor.isConnected || !owner.contains(anchor) || tab !== originalTab || !tab || tab.getAttribute('aria-selected') !== 'true' ||
+        (matches && !matches(owner, anchor))) return;
+      owner.__microGrowthFocusRequest = null;
+      var target = owner.querySelector(selector);
+      if (target) { target.focus(); if (target.scrollIntoView) target.scrollIntoView({ block: 'nearest', behavior: 'auto' }); }
+    }, 0);
+  }
+
+  function MicroGrowthSweepHistory(props) {
+    var React = props.React, h = React.createElement, book = props.book, gt = props.translate;
+    var descriptorKey = JSON.stringify([book.sweep, book.previousSweep || null]);
+    var noticeState = React.useState(null), notice = noticeState[0], setNotice = noticeState[1];
+    React.useEffect(function() {
+      setNotice(function(current) { return current && current.key !== descriptorKey ? null : current; });
+    }, [descriptorKey]);
+    function restore(event) {
+      var result = MicroGrowth.restoreSweep(book);
+      if (result.status !== 'restored') return;
+      var owner = event.currentTarget.closest('[data-micro-growth]');
+      var anchor = owner && owner.querySelector('#gl-current-sweep-evidence');
+      var currentDescriptor = JSON.stringify(result.notebook.sweep);
+      var nextKey = JSON.stringify([result.notebook.sweep, result.notebook.previousSweep || null]);
+      setNotice(function(current) { return { key: nextKey, revision: current ? current.revision + 1 : 1,
+        text: gt('sweep_restored', 'Previous sweep restored as current. The other sweep remains available below. Your trial settings, saved trials, and draft responses are unchanged.') }; });
+      props.save(result.notebook);
+      __alloMicroGrowthQueueFocus(owner, anchor, '#gl-current-sweep-heading', function(workspace, current) {
+        return current.getAttribute('data-sweep-descriptor') === currentDescriptor;
+      });
+    }
+    return h('div', null,
+      h('p', { id: 'gl-sweep-history-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, className: 'micro-growth-muted' },
+        notice && notice.key === descriptorKey ? h('span', { key: notice.revision }, notice.text) : null),
+      book.previousSweep ? h('details', { id: 'gl-previous-sweep' },
+        h('summary', null, gt('sweep_previous_review', 'Review previous sweep')),
+        h('p', { id: 'gl-sweep-restore-note', className: 'micro-growth-muted' }, gt('sweep_restore_note', 'Restoring swaps the current and previous saved sweeps. It keeps your next trial settings, control, predictions, and saved trials.')),
+        props.renderEvidence(MicroGrowth.sweep(book.previousSweep.conditions, book.previousSweep.variable), true),
+        h('button', { type: 'button', id: 'gl-restore-previous-sweep', 'aria-describedby': 'gl-sweep-restore-note', onClick: restore }, gt('sweep_restore_previous', 'Restore previous sweep'))
+      ) : null
+    );
+  }
 
   // Keep transient announcements and action focus outside the persisted notebook.
   function MicroGrowthRecovery(props) {
@@ -2584,6 +2753,32 @@
   })();
   window.__MicrobiologyCore.mystery = MicroMystery;
 
+  function MicroMysteryDownload(props) {
+    var React = props.React, h = React.createElement;
+    var noticeState = React.useState(null), notice = noticeState[0], setNotice = noticeState[1];
+    var sequenceRef = React.useRef(0);
+    React.useEffect(function() { setNotice(null); }, [props.text]);
+    function download() {
+      if (props.disabled) return;
+      var url, link;
+      try {
+        url = URL.createObjectURL(new Blob([props.text], { type: 'text/plain;charset=utf-8' }));
+        link = document.createElement('a'); link.href = url; link.download = 'micro-lab-specimen-reports.txt';
+        document.body.appendChild(link); link.click();
+        setNotice({ text: props.text, message: props.started, sequence: ++sequenceRef.current });
+      } catch (error) {
+        setNotice({ text: props.text, message: props.failed, sequence: ++sequenceRef.current });
+      } finally {
+        if (link) link.remove();
+        if (url) setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+      }
+    }
+    return h('div', null,
+      h('button', { id: 'micro-mystery-download', type: 'button', disabled: props.disabled, onClick: download }, props.label),
+      h('p', { id: 'micro-mystery-download-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': true },
+        notice && notice.text === props.text ? h('span', { key: notice.sequence }, notice.message) : ''));
+  }
+
   // Conceptual Gram-stain investigation; saved reports are separate from drafts.
   var MicroGram = (function() {
     var predictions = ['thick', 'thin', 'both', 'neither'];
@@ -2658,6 +2853,8 @@
   function MicroGramDownload(props) {
     var React = props.React, h = React.createElement;
     var noticeState = React.useState(null), notice = noticeState[0], setNotice = noticeState[1];
+    var sequenceRef = React.useRef(0);
+    React.useEffect(function() { setNotice(null); }, [props.text]);
     function download() {
       if (props.disabled) return;
       var url, link;
@@ -2665,9 +2862,9 @@
         url = URL.createObjectURL(new Blob([props.text], { type: 'text/plain;charset=utf-8' }));
         link = document.createElement('a'); link.href = url; link.download = 'micro-lab-gram-evidence.txt';
         document.body.appendChild(link); link.click();
-        setNotice({ text: props.text, message: props.started });
+        setNotice({ text: props.text, message: props.started, sequence: ++sequenceRef.current });
       } catch (error) {
-        setNotice({ text: props.text, message: props.failed });
+        setNotice({ text: props.text, message: props.failed, sequence: ++sequenceRef.current });
       } finally {
         if (link) link.remove();
         if (url) setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
@@ -2676,7 +2873,7 @@
     return h('div', { className: 'micro-gram-export' },
       h('button', { type: 'button', disabled: props.disabled, onClick: download, 'aria-describedby': 'micro-gram-export-help' }, props.label),
       h('p', { id: 'micro-gram-download-status', className: 'micro-gram-notes', role: 'status', 'aria-live': 'polite', 'aria-atomic': true },
-        notice && notice.text === props.text ? notice.message : ''));
+        notice && notice.text === props.text ? h('span', { key: notice.sequence }, notice.message) : ''));
   }
 
   var MicroQuiz = (function() {
@@ -2760,6 +2957,7 @@
     var React = props.React, h = React.createElement;
     var noticeState = React.useState(null), notice = noticeState[0], setNotice = noticeState[1];
     var sequenceRef = React.useRef(0);
+    React.useEffect(function() { setNotice(null); }, [props.text]);
     function download() {
       if (props.disabled) return;
       var url, link;
@@ -3013,21 +3211,28 @@
       var showFullMicroNav = !!d.showMicroLibrary || MICRO_CORE_TABS.indexOf(d.tab) === -1;
       var visibleMicroTabs = showFullMicroNav ? TABS : TABS.filter(function(tab) { return MICRO_CORE_TABS.indexOf(tab.id) !== -1; });
       var currentMicroTab = TABS.find(function(tab) { return tab.id === d.tab; }) || TABS[0];
+      function cancelHomeFocus(event) {
+        event.currentTarget.__microHomeFocusRequest = null;
+        var growthOwner = event.currentTarget.querySelector('[data-micro-growth]');
+        if (growthOwner) growthOwner.__microGrowthFocusRequest = null;
+      }
       function renderWorkspaceHome() {
         function ht(key, fallback) { return __alloT('stem.microbiology.workspace_' + key, fallback); }
         var work = MicroWork.summarize(d);
         var nextActions = MicroWork.nextActions(d);
         function openActivity(tab, anchor, patch) {
           var originalTab = document.getElementById('micro-tab-' + tab);
+          var owner = originalTab && originalTab.closest('[data-microbiology-tool]'), request = {};
+          if (owner) owner.__microHomeFocusRequest = request;
           upd(Object.assign({}, patch, { tab: tab }));
           var updateVersion = __alloMBUpdateVersion;
           setTimeout(function() {
             var activeTab = document.getElementById('micro-tab-' + tab);
-            if (updateVersion !== __alloMBUpdateVersion || activeTab !== originalTab || !activeTab || activeTab.getAttribute('aria-selected') !== 'true') return;
-            var target = document.getElementById(anchor || 'micro-content') || document.getElementById('micro-content');
+            if (!owner || !owner.isConnected || owner.__microHomeFocusRequest !== request || updateVersion !== __alloMBUpdateVersion || activeTab !== originalTab || !activeTab || !owner.contains(activeTab) || activeTab.getAttribute('aria-selected') !== 'true') return;
+            var target = owner.querySelector('#' + (anchor || 'micro-content')) || owner.querySelector('#micro-content');
             var disclosure = target && target.closest('details');
             if (disclosure) disclosure.open = true;
-            if (target) { target.focus(); if (target.scrollIntoView) target.scrollIntoView({ block: 'start', behavior: 'auto' }); }
+            if (target) { owner.__microHomeFocusRequest = null; target.focus(); if (target.scrollIntoView) target.scrollIntoView({ block: 'start', behavior: 'auto' }); }
           }, 0);
         }
         function objectValue(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
@@ -6855,7 +7060,7 @@
           if (value === 'safe') return mt('safe_sample', 'Knowing the group proves this sample is safe to handle or eat.');
           return mt('no_limit', 'No conclusion yet');
         }
-        function download() {
+        function exportText() {
           var lines = [mt('title', 'Mystery specimens'), mt('fictional', 'Fictional teaching specimens. The observations support broad classifications, not species identification or safety decisions.'), ''];
           cases.forEach(function(item) {
             var data = state.cases[item.id];
@@ -6882,13 +7087,7 @@
             evidence.forEach(function(pair) { if (data.revealed.indexOf(pair[0]) >= 0) lines.push(pair[1] + ': ' + item[pair[0]]); });
             lines.push('');
           });
-          var url, link;
-          try {
-            url = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' }));
-            link = document.createElement('a'); link.href = url; link.download = 'micro-lab-specimen-reports.txt';
-            document.body.appendChild(link); link.click();
-          } catch (error) { upd({ mysteryLab: Object.assign({}, state, { notice: 'download_failed' }) }); }
-          finally { if (link) link.remove(); if (url) setTimeout(function() { URL.revokeObjectURL(url); }, 1000); }
+          return lines.join('\n');
         }
         var anyNotes = cases.some(function(item) { return hasWorkingNotes(state.cases[item.id]); });
         var feedback = {
@@ -7049,12 +7248,15 @@
               ),
               draft.previousRecord ? previousReport() : null
             )),
-          h('div', { role: 'status', 'aria-live': 'polite', 'data-mystery-notice': state.notice }, state.notice === 'saved' ? mt('saved', 'Specimen report recorded. Your working notes are also kept when you change cases or sections.') : state.notice === 'restored' ? mt('restored', 'Previous report restored. Your working notes and current view were kept. The replaced report is available under Review previous report.') : state.notice === 'download_failed' ? mt('download_failed', 'The download could not start. Your reports and working notes are still here.') : ''),
+          h('div', { role: 'status', 'aria-live': 'polite', 'data-mystery-notice': state.notice === 'download_failed' ? '' : state.notice }, state.notice === 'saved' ? mt('saved', 'Specimen report recorded. Your working notes are also kept when you change cases or sections.') : state.notice === 'restored' ? mt('restored', 'Previous report restored. Your working notes and current view were kept. The replaced report is available under Review previous report.') : ''),
           completed === cases.length ? h('p', { className: 'micro-mystery-review' }, pendingCount ? mt('complete_pending', 'All six reports are recorded. Some working notes still contain pending revisions; review them before replacing any recorded report.') : mt('complete', 'All six reports are recorded. You can review your evidence and download the reports.')) : draft.record && nextCase ? h('div', { className: 'micro-mystery-actions' },
             h('button', { type: 'button', onClick: function() { chooseCase(nextCase.id); } }, mt('next_case', 'Next unrecorded case') + ': ' + nextCase.code + ' · ' + nextCase.title)) : null,
           nextRevision ? h('div', { className: 'micro-mystery-actions' },
             h('button', { type: 'button', 'data-mystery-next-revision': nextRevision.id, onClick: function() { chooseRevision(nextRevision.id); } }, mt('next_revision', 'Next report with working revisions') + ': ' + nextRevision.code + ' · ' + nextRevision.title)) : null,
-          h('div', { className: 'micro-mystery-actions' }, h('button', { type: 'button', disabled: !anyNotes, onClick: download }, mt('download', 'Download specimen reports')),
+          h('div', { className: 'micro-mystery-actions' }, h(MicroMysteryDownload, { key: state.active, React: React, disabled: !anyNotes, text: exportText(),
+            label: mt('download', 'Download specimen reports'),
+            started: mt('download_started', 'The specimen report download has started. Your reports and working notes were kept.'),
+            failed: mt('download_failed_retry', 'The download could not start. Your reports and working notes are still here; try again.') }),
             h('button', { type: 'button', onClick: function() { upd({ tab: 'microscope' }); } }, mt('practice_scope', 'Practice with the microscope'))),
           h('footer', null, h('p', null, mt('fictional', 'Fictional teaching specimens. The observations support broad classifications, not species identification or safety decisions.')),
             h('details', null, h('summary', null, mt('guide', 'Group comparison guide')),
@@ -7078,6 +7280,7 @@
         var comparison = selected && selected.control ? G.compare(selected.control, selected.conditions) : null;
         var savedSweep = book.sweep ? G.sweep(book.sweep.conditions, book.sweep.variable) : null;
         function gt(key, fallback) { return __alloT('stem.microbiology.investigation_' + key, fallback); }
+        function cancelDeferredGrowthFocus(event) { event.currentTarget.__microGrowthFocusRequest = null; }
         function saveBook(patch) { upd({ growthInvestigation: Object.assign({}, book, patch) }); }
         function setConditions(patch) { upd({ growthLab: Object.assign({}, d.growthLab, conditions, patch) }); }
         function name(c) { return G.profiles[c.profile].short; }
@@ -7123,16 +7326,19 @@
             sim.points.forEach(function(p, i) { text.push(p.hour + '\t' + (result ? num(result.control.points[i].population) : '') + '\t' + num(p.population)); });
             text.push('');
           });
-          if (savedSweep) {
-            text.push(gt('sweep_title', 'Explore one variable across a range'),
-              gt('sweep_variable', 'Variable to sweep') + ': ' + labels[savedSweep.variable],
-              gt('sweep_held', 'Held constant') + ': ' + sweepFixed(savedSweep),
+          [{ label: gt('sweep_current', 'Current sweep'), result: savedSweep },
+            { label: gt('sweep_previous', 'Previous sweep'), result: book.previousSweep ? G.sweep(book.previousSweep.conditions, book.previousSweep.variable) : null }].forEach(function(entry) {
+            var result = entry.result;
+            if (!result) return;
+            text.push(entry.label, gt('sweep_title', 'Explore one variable across a range'),
+              gt('sweep_variable', 'Variable to sweep') + ': ' + labels[result.variable],
+              gt('sweep_held', 'Held constant') + ': ' + sweepFixed(result),
               gt('sweep_constants', 'Every sample starts at 5 population units, runs for 24 model hours, and shares capacity 100 and maximum modeled rate 0.4 per hour.'),
               gt('sweep_sample_note', 'These are sampled model responses, not measurements. Connecting lines guide the eye; unsampled settings may differ.'),
-              labels[savedSweep.variable] + '\t' + gt('sweep_final', 'Population at hour 24') + '\t' + gt('sweep_lag', 'Modeled lag (hours)'));
-            savedSweep.points.forEach(function(point) { text.push(settingText(savedSweep.variable, point.value) + '\t' + num(point.finalPopulation) + '\t' + num(point.lagHours)); });
+              labels[result.variable] + '\t' + gt('sweep_final', 'Population at hour 24') + '\t' + gt('sweep_lag', 'Modeled lag (hours)'));
+            result.points.forEach(function(point) { text.push(settingText(result.variable, point.value) + '\t' + num(point.finalPopulation) + '\t' + num(point.lagHours)); });
             text.push('');
-          }
+          });
           var link, url;
           try {
             var csv = format === 'csv';
@@ -7178,15 +7384,15 @@
             h('div', { className: 'micro-growth-legend' }, h('span', null, '┄ ' + gt('control', 'Control')), h('span', null, '━ ● ' + gt('trial', 'Trial')))
           );
         }
-        function sweepChart(result) {
+        function sweepChart(result, label) {
           var left = 50, top = 20, plotW = 586, plotH = 210;
           var values = G.sweepSteps[result.variable], min = values[0], max = values[values.length - 1];
           function x(value) { return left + (value - min) / (max - min) * plotW; }
           function y(population) { return top + plotH * (1 - population / 100); }
           var path = result.points.map(function(point, index) { return (index ? 'L' : 'M') + x(point.value).toFixed(2) + ',' + y(point.finalPopulation).toFixed(2); }).join(' ');
           return h('figure', { className: 'micro-growth-figure micro-growth-sweep-figure' },
-            h('figcaption', null, gt('sweep_response', 'Response to') + ' ' + labels[result.variable] + ' · ' + gt('sweep_final_units', 'Population at hour 24, arbitrary units')),
-            h('svg', { viewBox: '0 0 660 285', role: 'img', 'aria-label': gt('sweep_chart_alt', 'Sampled growth response across one environmental variable. The table below provides every setting and result.') },
+            h('figcaption', null, label + ': ' + gt('sweep_response', 'Response to') + ' ' + labels[result.variable] + ' · ' + gt('sweep_final_units', 'Population at hour 24, arbitrary units')),
+            h('svg', { viewBox: '0 0 660 285', role: 'img', 'aria-label': label + '. ' + gt('sweep_chart_alt', 'Sampled growth response across one environmental variable. The table below provides every setting and result.') },
               [0, 25, 50, 75, 100].map(function(tick) { return h('g', { key: tick }, h('line', { x1: left, y1: y(tick), x2: left + plotW, y2: y(tick), stroke: '#334155' }), h('text', { x: left - 9, y: y(tick) + 4, textAnchor: 'end', fill: '#cbd5e1', fontSize: 12 }, tick)); }),
               h('path', { d: path, fill: 'none', stroke: '#7dd3fc', strokeWidth: 2, strokeDasharray: '5 4' }),
               result.points.map(function(point) { return h('g', { key: point.value },
@@ -7195,6 +7401,34 @@
               h('text', { x: left + plotW / 2, y: 281, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 12 }, labels[result.variable] + (result.variable === 'tempC' ? ' (°C)' : result.variable === 'oxygen' ? ' (0–100)' : ''))
             ),
             h('div', { className: 'micro-growth-legend' }, h('span', null, '● ' + gt('sweep_increase', 'Population increases')), h('span', null, '■ ' + gt('sweep_flat', 'No modeled increase')))
+          );
+        }
+        function sweepEvidence(result, previous) {
+          var label = previous ? gt('sweep_previous', 'Previous sweep') : gt('sweep_current', 'Current sweep');
+          return h('div', { id: previous ? 'gl-previous-sweep-evidence' : 'gl-current-sweep-evidence',
+            'data-micro-growth-sweep': previous ? undefined : result.variable,
+            'data-micro-growth-previous-sweep': previous ? result.variable : undefined,
+            'data-sweep-descriptor': JSON.stringify({ variable: result.variable, conditions: result.conditions }) },
+            h('h4', { id: previous ? 'gl-previous-sweep-heading' : 'gl-current-sweep-heading', tabIndex: -1 }, label),
+              h('p', { role: previous ? undefined : 'status', 'aria-live': previous ? undefined : 'polite' }, gt('sweep_saved', 'Saved sweep') + ': ' + labels[result.variable] + ' · ' + result.points.length + ' ' + gt('sweep_samples', 'sampled settings')),
+              h('p', null, h('strong', null, gt('sweep_held', 'Held constant') + ': '), sweepFixed(result)),
+              h('p', { className: 'micro-growth-muted' }, gt('sweep_constants', 'Every sample starts at 5 population units, runs for 24 model hours, and shares capacity 100 and maximum modeled rate 0.4 per hour.')),
+              sweepChart(result, label),
+              h('p', null, result.maximum - result.minimum < 1e-9 ? gt('sweep_same', 'Every sampled setting gives the same final population. A different fixed condition may limit growth, or this profile may not respond to the variable.') :
+                gt('sweep_highest', 'Highest sampled population') + ': ' + num(result.maximum) + ' ' + gt('sweep_at', 'at') + ' ' + result.bestValues.map(function(value) { return settingText(result.variable, value); }).join(', ') + '. ' + gt('sweep_range', 'Sampled population range') + ': ' + num(result.minimum) + '–' + num(result.maximum) + '.'),
+              h('p', { className: 'micro-growth-muted' }, gt('sweep_sample_note', 'These are sampled model responses, not measurements. Connecting lines guide the eye; unsampled settings may differ.')),
+              h('p', { className: 'micro-growth-muted' }, gt('sweep_no_death', 'A square marks no modeled increase: the starting population remains 5. It does not establish whether cells survive outside their growth range.')),
+              h('div', { className: 'micro-growth-table-wrap' }, h('table', { className: 'micro-growth-sweep-table' },
+                h('caption', null, label + ': ' + gt('sweep_table', 'Saved sweep settings and model responses')),
+                h('thead', null, h('tr', null, h('th', { scope: 'col' }, labels[result.variable]), h('th', { scope: 'col' }, gt('sweep_final', 'Population at hour 24')), h('th', { scope: 'col' }, gt('sweep_response_label', 'Modeled response')), !previous ? h('th', { scope: 'col' }, gt('sweep_prepare', 'Prepare next trial')) : null)),
+                h('tbody', null, result.points.map(function(point) {
+                  var prepared = ['profile', 'tempC', 'pH', 'oxygen'].every(function(key) { return point.conditions[key] === conditions[key]; });
+                  return h('tr', { key: point.value }, h('th', { scope: 'row' }, settingText(result.variable, point.value)), h('td', null, num(point.finalPopulation)),
+                    h('td', null, point.score === 0 ? gt('sweep_flat', 'No modeled increase') : gt('sweep_increase', 'Population increases')),
+                    !previous ? h('td', null, h('button', { type: 'button', 'aria-pressed': prepared, 'aria-label': gt('sweep_use_setting', 'Use this setting as the next trial') + ': ' + labels[result.variable] + ' ' + settingText(result.variable, point.value), onClick: function() { setConditions(point.conditions); } }, prepared ? gt('sweep_prepared', 'Prepared as next trial') : gt('sweep_use', 'Use as next trial'))) : null);
+                }))
+              )),
+              !previous ? h('p', { className: 'micro-growth-muted' }, gt('sweep_trial_note', 'Choosing a setting fills the trial controls above. Your saved control, predictions, and previous comparisons stay intact. Review your prediction before running a comparison.')) : null
           );
         }
         function explanationEditor() {
@@ -7210,14 +7444,9 @@
               var owner = event.currentTarget.closest('[data-micro-growth]');
               var priorResult = owner && owner.querySelector('#gl-saved-result');
               saveBook({ selectedId: targetId });
-              setTimeout(function() {
-                var activeTab = document.getElementById('micro-tab-growthLab');
-                if (!owner || !owner.isConnected || !activeTab || activeTab.getAttribute('aria-selected') !== 'true') return;
-                var result = owner.querySelector('#gl-saved-result');
-                if (!result || result !== priorResult || (result.getAttribute('data-micro-growth-result') || result.getAttribute('data-micro-growth-recovered')) !== String(targetId)) return;
-                var input = result.querySelector('#gl-explanation');
-                if (input) { input.focus(); if (input.scrollIntoView) input.scrollIntoView({ block: 'nearest', behavior: 'auto' }); }
-              }, 0);
+              __alloMicroGrowthQueueFocus(owner, priorResult, '#gl-explanation', function(workspace, result) {
+                return (result.getAttribute('data-micro-growth-result') || result.getAttribute('data-micro-growth-recovered')) === String(targetId);
+              });
             } }, gt('next_unexplained', 'Next trial without an explanation') + ' · ' + gt('trial', 'Trial') + ' ' + nextUnexplained.id) : null
           );
         }
@@ -7271,7 +7500,9 @@
           );
         }
         function card(title, children, extraClass, headingId) { return h('section', { className: 'micro-growth-card ' + (extraClass || '') }, h('h4', headingId ? { id: headingId, tabIndex: -1 } : null, title), children); }
-        return h('div', { className: 'micro-growth-workspace', 'data-micro-growth': 'true' },
+        return h('div', { className: 'micro-growth-workspace', 'data-micro-growth': 'true',
+          onClickCapture: cancelDeferredGrowthFocus, onPointerDownCapture: cancelDeferredGrowthFocus, onKeyDownCapture: cancelDeferredGrowthFocus,
+          onFocusCapture: cancelDeferredGrowthFocus, onInputCapture: cancelDeferredGrowthFocus, onChangeCapture: cancelDeferredGrowthFocus },
           h('style', null, MICRO_GROWTH_CSS + '\n.micro-growth-sweep>summary{font-size:17px}.micro-growth-sweep-table button{min-width:130px}.micro-growth-sweep-table button[aria-pressed=true]{border-color:#6ee7b7;background:#064e3b}.micro-growth-sweep-figure .micro-growth-legend span:first-child{color:#6ee7b7}.micro-growth-sweep-figure .micro-growth-legend span:last-child{color:#fbbf24}.theme-contrast .micro-growth-sweep-figure .micro-growth-legend span{color:#ffff00}.theme-contrast .micro-growth-sweep-table button[aria-pressed=true]{background:#000;color:#ffff00;border-color:#ffff00}'),
           h('header', { className: 'micro-growth-intro' },
             h('p', { className: 'micro-growth-kicker' }, gt('kicker', 'INVESTIGATION BENCH')),
@@ -7371,29 +7602,15 @@
             h('select', { id: 'gl-sweep-variable', value: book.sweepVariable, onChange: function(e) { saveBook({ sweepVariable: e.target.value }); } },
               ['tempC', 'pH', 'oxygen'].map(function(key) { return h('option', { key: key, value: key }, labels[key]); })),
             h('p', { className: 'micro-growth-muted' }, gt('sweep_next_fixed', 'The next sweep will hold these settings constant') + ': ' + sweepFixed({ variable: book.sweepVariable, conditions: conditions })),
-            h('button', { type: 'button', className: 'micro-growth-primary', onClick: function() { saveBook({ sweep: { variable: book.sweepVariable, conditions: conditions } }); } }, gt('sweep_run', 'Run variable sweep')),
-            h('p', { className: 'micro-growth-muted' }, gt('sweep_saved_note', 'The latest sweep is saved separately from your trial notebook. Download the notebook before running another sweep if you want to keep both.')),
-            savedSweep ? h('div', { 'data-micro-growth-sweep': savedSweep.variable },
-              h('p', { role: 'status', 'aria-live': 'polite' }, gt('sweep_saved', 'Saved sweep') + ': ' + labels[savedSweep.variable] + ' · ' + savedSweep.points.length + ' ' + gt('sweep_samples', 'sampled settings')),
-              h('p', null, h('strong', null, gt('sweep_held', 'Held constant') + ': '), sweepFixed(savedSweep)),
-              h('p', { className: 'micro-growth-muted' }, gt('sweep_constants', 'Every sample starts at 5 population units, runs for 24 model hours, and shares capacity 100 and maximum modeled rate 0.4 per hour.')),
-              sweepChart(savedSweep),
-              h('p', null, savedSweep.maximum - savedSweep.minimum < 1e-9 ? gt('sweep_same', 'Every sampled setting gives the same final population. A different fixed condition may limit growth, or this profile may not respond to the variable.') :
-                gt('sweep_highest', 'Highest sampled population') + ': ' + num(savedSweep.maximum) + ' ' + gt('sweep_at', 'at') + ' ' + savedSweep.bestValues.map(function(value) { return settingText(savedSweep.variable, value); }).join(', ') + '. ' + gt('sweep_range', 'Sampled population range') + ': ' + num(savedSweep.minimum) + '–' + num(savedSweep.maximum) + '.'),
-              h('p', { className: 'micro-growth-muted' }, gt('sweep_sample_note', 'These are sampled model responses, not measurements. Connecting lines guide the eye; unsampled settings may differ.')),
-              h('p', { className: 'micro-growth-muted' }, gt('sweep_no_death', 'A square marks no modeled increase: the starting population remains 5. It does not establish whether cells survive outside their growth range.')),
-              h('div', { className: 'micro-growth-table-wrap' }, h('table', { className: 'micro-growth-sweep-table' },
-                h('caption', null, gt('sweep_table', 'Saved sweep settings and model responses')),
-                h('thead', null, h('tr', null, h('th', { scope: 'col' }, labels[savedSweep.variable]), h('th', { scope: 'col' }, gt('sweep_final', 'Population at hour 24')), h('th', { scope: 'col' }, gt('sweep_response_label', 'Modeled response')), h('th', { scope: 'col' }, gt('sweep_prepare', 'Prepare next trial')))),
-                h('tbody', null, savedSweep.points.map(function(point) {
-                  var prepared = ['profile', 'tempC', 'pH', 'oxygen'].every(function(key) { return point.conditions[key] === conditions[key]; });
-                  return h('tr', { key: point.value }, h('th', { scope: 'row' }, settingText(savedSweep.variable, point.value)), h('td', null, num(point.finalPopulation)),
-                    h('td', null, point.score === 0 ? gt('sweep_flat', 'No modeled increase') : gt('sweep_increase', 'Population increases')),
-                    h('td', null, h('button', { type: 'button', 'aria-pressed': prepared, 'aria-label': gt('sweep_use_setting', 'Use this setting as the next trial') + ': ' + labels[savedSweep.variable] + ' ' + settingText(savedSweep.variable, point.value), onClick: function() { setConditions(point.conditions); } }, prepared ? gt('sweep_prepared', 'Prepared as next trial') : gt('sweep_use', 'Use as next trial'))));
-                }))
-              )),
-              h('p', { className: 'micro-growth-muted' }, gt('sweep_trial_note', 'Choosing a setting fills the trial controls above. Your saved control, predictions, and previous comparisons stay intact. Review your prediction before running a comparison.'))
-            ) : h('p', { className: 'micro-growth-muted' }, gt('sweep_empty', 'Run a sweep to save its response curve and table. Changing the trial controls afterward will not rewrite that evidence.'))
+            h('button', { type: 'button', className: 'micro-growth-primary', onClick: function() {
+              var result = G.saveSweep(book, { variable: book.sweepVariable, conditions: conditions });
+              if (result.status === 'saved') upd({ growthInvestigation: result.notebook });
+            } }, gt('sweep_run', 'Run variable sweep')),
+            h('p', { className: 'micro-growth-muted' }, gt('sweep_history_note', 'The current sweep and one distinct previous sweep are saved separately from your trials. Another distinct sweep replaces the older history; download the notebook to keep more.')),
+            savedSweep ? sweepEvidence(savedSweep, false)
+            : h('p', { className: 'micro-growth-muted' }, gt('sweep_empty', 'Run a sweep to save its response curve and table. Changing the trial controls afterward will not rewrite that evidence.')),
+            h(MicroGrowthSweepHistory, { React: React, book: book, translate: gt, renderEvidence: sweepEvidence,
+              save: function(notebook) { upd({ growthInvestigation: notebook }); } })
           ),
           card(gt('notebook', 'Investigation notebook'), h('div', null,
             h('div', { className: 'micro-growth-notebook-head' }, h('p', null, book.trials.length + '/12 ' + gt('saved_trials', 'trials saved in this lab')),
@@ -7447,7 +7664,7 @@
         default:           body = renderHome();
       }
 
-      return h('div', { className: 'selh-microbiology', 'data-microbiology-tool': 'true', style: { display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto', background: BG, color: 'var(--allo-stem-text, #e2e8f0)' } },
+      return h('div', { className: 'selh-microbiology', 'data-microbiology-tool': 'true', onClickCapture: cancelHomeFocus, onPointerDownCapture: cancelHomeFocus, onKeyDownCapture: cancelHomeFocus, onFocusCapture: cancelHomeFocus, onInputCapture: cancelHomeFocus, onChangeCapture: cancelHomeFocus, style: { display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto', background: BG, color: 'var(--allo-stem-text, #e2e8f0)' } },
         h('style', null,
           '.micro-focus-panel { position: relative; overflow: hidden; margin: 12px 16px 10px; padding: 14px; border-radius: 8px; border: 1px solid rgba(16,185,129,0.30); background: linear-gradient(135deg, rgba(6,78,59,0.84), rgba(8,47,73,0.90) 55%, rgba(15,23,42,0.96)); box-shadow: 0 18px 42px rgba(2,8,23,0.28); }\n' +
           '.micro-focus-panel::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: linear-gradient(90deg, #10b981, #38bdf8, #f59e0b, #a78bfa); }\n' +

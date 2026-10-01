@@ -56,6 +56,30 @@ function captureDownload() {
 }
 
 describe('Gram-stain inquiry model', () => {
+  it.each([false, true])('does not resurrect an old export notice after reversed working-note edits (failure=%s)', failure => {
+    mount({ gramInvestigation: { prediction: 'thin', explanation: 'Original working note.' } });
+    const download = captureDownload(), trigger = button('Download Gram evidence report');
+    if (failure) download.clickSpy.mockImplementationOnce(() => { throw new Error('blocked'); });
+    const before = JSON.stringify(mounted.state); trigger.focus(); click(trigger);
+    const status = lab().querySelector('#micro-gram-download-status');
+    expect(status.textContent).toContain(failure ? 'could not start' : 'download has started');
+    expect(JSON.stringify(mounted.state)).toBe(before); expect(document.activeElement).toBe(trigger);
+    write('An edited working note.'); expect(status.textContent).toBe('');
+    write('Original working note.'); expect(status.textContent).toBe('');
+    click(trigger); expect(status.textContent).toContain('download has started');
+    expect(download.contents[1]).toBe(download.contents[0]); expect(mounted.awardXP).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(1000)); expect(download.revokeUrl).toHaveBeenCalledTimes(2);
+  });
+
+  it('announces repeated Gram evidence downloads through a fresh status node while preserving evidence', () => {
+    mount({ gramInvestigation: { prediction: 'thick', explanation: 'Unscored working notes.' } });
+    const download = captureDownload(), before = JSON.stringify(mounted.state), trigger = button('Download Gram evidence report');
+    click(trigger); const status = lab().querySelector('#micro-gram-download-status'), first = status.firstChild;
+    click(trigger); expect(status.firstChild).not.toBe(first); expect(download.contents[1]).toBe(download.contents[0]);
+    expect(JSON.stringify(mounted.state)).toBe(before); expect(mounted.awardXP).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(1000)); expect(download.revokeUrl).toHaveBeenCalledTimes(2);
+  });
+
   it('bounds malformed legacy and saved data without inventing a completed report', () => {
     for (const raw of [null, [], 7, 'bad']) expect(core().normalize(raw)).toEqual({ step: 0, maxStep: 0, prediction: '', interpretation: '', explanation: '', record: null });
     for (const step of [Infinity, NaN, {}, '3', -4, 99, 2.9]) expect(core().normalize(null, step)).toMatchObject({ step: 0, maxStep: 0 });

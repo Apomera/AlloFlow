@@ -1,0 +1,28 @@
+Micro Lab · Gram-stain evidence report
+This idealized illustration shows staining concepts, not a laboratory protocol or a view at a calibrated magnification.
+
+Last saved Gram-stain report
+Prediction: Only model A, with thick peptidoglycan
+Selected interpretation: Cell-envelope structure changes dye retention; shape alone does not explain the result.
+Written explanation: I observed when A and B separated, then explained their different envelopes.
+The saved report stores these written fields. It does not store a historical log of observed stages.
+
+Previous saved Gram-stain report (available to restore)
+Prediction: Only model B, with thin peptidoglycan and an outer membrane
+Selected interpretation: Cell-envelope structure changes dye retention; shape alone does not explain the result.
+Written explanation: My first explanation with an incorrect prediction.
+The saved report stores these written fields. It does not store a historical log of observed stages.
+
+Current working notes
+The current investigation has not replaced the saved report.
+Prediction: No prediction selected.
+Selected interpretation: No interpretation selected.
+Written explanation: No explanation written.
+
+Stages observed in the current investigation: 0/4
+No staining stages have been observed in the current investigation.
+
+A Gram result cannot identify a species or establish antibiotic susceptibility. Real samples may stain variably because of cell condition or technique; some cell envelopes need other staining methods.
+Concept sources:
+ASM: https://asm.org/protocols/gram-stain-protocols
+OpenStax Microbiology: https://openstax.org/books/microbiology/pages/2-4-staining-microscopic-specimens

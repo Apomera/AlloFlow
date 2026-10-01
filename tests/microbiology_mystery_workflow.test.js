@@ -67,7 +67,7 @@ function captureReportDownload(url) {
   vi.stubGlobal('URL', CapturedURL);
   const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
   vi.useFakeTimers();
-  return { contents, clickSpy, revokeUrl: CapturedURL.revokeObjectURL };
+  return { contents, clickSpy, createUrl: CapturedURL.createObjectURL, revokeUrl: CapturedURL.revokeObjectURL };
 }
 
 describe('Mystery specimen evidence reasoning', { timeout: 20000 }, () => {
@@ -192,6 +192,153 @@ describe('Mystery specimen evidence reasoning', { timeout: 20000 }, () => {
     expect(text).not.toContain('Recorded claim:');
     expect(text).not.toContain('The supplied cell map shows');
     expect(text).not.toContain('A growing neighbor');
+  });
+});
+
+describe('Mystery download feedback and retries', { timeout: 20000 }, () => {
+  const current = { claim: 'bacterium', evidence: ['size', 'structure'], reasoning: 'Current report.\n<script>Keep this literal.</script>', limitation: 'bounded' };
+  const previous = { claim: 'bacterium', evidence: ['structure', 'behavior'], reasoning: 'Previous report.\n<img src=x> stays text.', limitation: 'bounded' };
+  const working = 'Unfinished working notes.\nThe original reports stay separate.';
+  function seed(view = 'recorded') {
+    return { mysteryLab: { active: 'wall', notice: 'download_failed', restoredMetadata: { keep: true }, cases: {
+      wall: { revealed: ['context'], collapsed: ['context'], reportView: view, claim: 'archaeon', evidence: ['context'],
+        reasoning: working, limitation: 'species', checked: true, record: current, previousRecord: previous },
+      pond: { revealed: ['context'], reasoning: 'A separate unfinished case.' }
+    } }, growthReviewHour: 17, growthHypothesis: 'Keep this unrelated draft.' };
+  }
+  const status = () => mounted.container.querySelector('#micro-mystery-download-status');
+  const control = () => mounted.container.querySelector('#micro-mystery-download');
+
+  it.each(['create', 'click'])('announces repeated %s failures and a successful retry without changing any restored work', failure => {
+    mount(seed());
+    const before = JSON.stringify(mounted.state), download = captureReportDownload('blob:mystery-retry');
+    const buttonBefore = control();
+    expect(status().textContent).toBe('');
+    expect(mounted.container.querySelector('[data-mystery-notice="download_failed"]')).toBeNull();
+    expect(mounted.container.textContent).not.toContain('The download could not start.');
+    expect(core().normalize(data()).notice).toBe('download_failed');
+    const fail = () => {
+      const mock = failure === 'create' ? download.createUrl : download.clickSpy;
+      mock.mockImplementationOnce(() => { throw new Error('Download unavailable'); });
+    };
+    fail(); act(() => buttonBefore.focus()); click(buttonBefore);
+    const firstAnnouncement = status().firstElementChild;
+    expect(status().textContent).toContain('The download could not start.');
+    expect(status().getAttribute('role')).toBe('status');
+    expect(status().getAttribute('aria-live')).toBe('polite');
+    expect(status().getAttribute('aria-atomic')).toBe('true');
+    expect(document.activeElement).toBe(buttonBefore);
+    expect(JSON.stringify(mounted.state)).toBe(before);
+    expect(document.querySelector('a[download="micro-lab-specimen-reports.txt"]')).toBeNull();
+    fail(); click(buttonBefore);
+    expect(status().firstElementChild).not.toBe(firstAnnouncement);
+    expect(status().textContent).toContain('try again');
+    expect(JSON.stringify(mounted.state)).toBe(before);
+    click(buttonBefore);
+    expect(status().textContent).toContain('The specimen report download has started.');
+    expect(status().textContent).not.toContain('could not start');
+    expect(mounted.container.textContent).not.toContain('The download could not start.');
+    expect(control()).toBe(buttonBefore);
+    expect(document.activeElement).toBe(buttonBefore);
+    expect(JSON.stringify(mounted.state)).toBe(before);
+    expect(mounted.awardXP).not.toHaveBeenCalled();
+    expect(download.createUrl).toHaveBeenCalledTimes(3);
+    expect(document.querySelector('a[download="micro-lab-specimen-reports.txt"]')).toBeNull();
+    expect(download.revokeUrl).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(1000));
+    expect(download.revokeUrl).toHaveBeenCalledTimes(failure === 'create' ? 1 : 3);
+    expect(download.revokeUrl).toHaveBeenCalledWith('blob:mystery-retry');
+  });
+
+  it('announces each successful download while keeping the control, history and literal exported text stable', () => {
+    mount(seed());
+    const before = JSON.stringify(mounted.state), download = captureReportDownload('blob:mystery-repeat');
+    const buttonBefore = control();
+    act(() => buttonBefore.focus()); click(buttonBefore);
+    const firstAnnouncement = status().firstElementChild;
+    click(buttonBefore);
+    expect(status().firstElementChild).not.toBe(firstAnnouncement);
+    expect(status().textContent).toContain('download has started');
+    expect(control()).toBe(buttonBefore);
+    expect(document.activeElement).toBe(buttonBefore);
+    expect(download.contents).toHaveLength(2);
+    expect(download.contents[1]).toBe(download.contents[0]);
+    const [saved, rest] = download.contents[0].split('Previous recorded report (available to restore)');
+    const [prior, draft] = rest.split('Current working notes');
+    expect(saved).toContain(current.reasoning); expect(saved).not.toContain(previous.reasoning);
+    expect(prior).toContain(previous.reasoning); expect(prior).not.toContain(working);
+    expect(draft).toContain(working);
+    expect(draft).toContain('Revealed observations:\nSample context:');
+    expect(draft).not.toContain('The supplied cell map has no membrane-bound nucleus.');
+    expect(download.contents[0]).not.toContain('A dependent particle');
+    expect(JSON.stringify(mounted.state)).toBe(before);
+    expect(mounted.awardXP).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(1000));
+    expect(download.revokeUrl).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(['success', 'failure'])('clears %s feedback after an evidence edit and does not revive it when the text is restored', outcome => {
+    mount(seed('working'));
+    const download = captureReportDownload('blob:mystery-edits');
+    if (outcome === 'failure') download.clickSpy.mockImplementationOnce(() => { throw new Error('Blocked'); });
+    click(control());
+    expect(status().textContent).not.toBe('');
+    write('Changed working notes.');
+    expect(status().textContent).toBe('');
+    write(working);
+    expect(status().textContent).toBe('');
+    expect(data().cases.wall.record).toEqual(current);
+    expect(data().cases.wall.previousRecord).toEqual(previous);
+    const beforeRetry = JSON.stringify(mounted.state);
+    click(control());
+    expect(status().textContent).toContain('download has started');
+    expect(JSON.stringify(mounted.state)).toBe(beforeRetry);
+    act(() => vi.advanceTimersByTime(1000));
+    expect(download.revokeUrl).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(['case', 'section', 'JSON remount'])('keeps transient download feedback cleared after going away and back through %s', navigation => {
+    mount(seed());
+    const download = captureReportDownload('blob:mystery-navigation');
+    click(control());
+    expect(status().textContent).toContain('download has started');
+    if (navigation === 'case') {
+      openCase('pond'); expect(status().textContent).toBe(''); openCase('wall');
+    } else if (navigation === 'section') {
+      click(mounted.container.querySelector('#micro-tab-home'));
+      click(mounted.container.querySelector('#micro-tab-mystery'));
+    } else {
+      const restored = JSON.parse(JSON.stringify(mounted.state));
+      act(() => mounted.root.unmount()); mounted.container.remove(); mounted = null; mount(restored);
+    }
+    expect(status().textContent).toBe('');
+    expect(mounted.container.textContent).not.toContain('The download could not start.');
+    expect(data().cases.wall.record).toEqual(current);
+    expect(data().cases.wall.previousRecord).toEqual(previous);
+    expect(data().cases.wall.reasoning).toBe(working);
+    expect(data().cases.wall.reportView).toBe('recorded');
+    expect(data().cases.wall.revealed).toEqual(['context']);
+    expect(data().cases.wall.collapsed).toEqual(['context']);
+    expect(data().cases.wall.checked).toBe(true);
+    const beforeRetry = JSON.stringify(mounted.state);
+    click(control());
+    expect(status().textContent).toContain('download has started');
+    expect(JSON.stringify(mounted.state)).toBe(beforeRetry);
+    expect(mounted.awardXP).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(1000));
+    expect(download.revokeUrl).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps the report download unavailable for an untouched case without creating a URL or changing state', () => {
+    mount();
+    const before = JSON.stringify(mounted.state), download = captureReportDownload('blob:mystery-empty');
+    expect(control().disabled).toBe(true);
+    click(control());
+    expect(status().textContent).toBe('');
+    expect(download.createUrl).not.toHaveBeenCalled();
+    expect(download.clickSpy).not.toHaveBeenCalled();
+    expect(JSON.stringify(mounted.state)).toBe(before);
+    expect(mounted.awardXP).not.toHaveBeenCalled();
   });
 });
 

@@ -1,0 +1,4 @@
+"trial_id","control_profile","control_temperature_C","control_pH","control_oxygen_availability_0_100","trial_profile","trial_temperature_C","trial_pH","trial_oxygen_availability_0_100","changed_variables","design","prediction","modeled_outcome","control_population_at_24h","trial_population_at_24h","difference","hypothesis","explanation","model_note"
+"3","ecoli","37","7","100","ecoli","35","7","100","tempC","single","similar","similar","99.714","99.391","-0.324","'=1+1","Earlier counts differ, ""even when endpoints look similar.""
+These are model values.","Illustrative deterministic model; normalized population units; equal inoculum 5, capacity 100, maximum rate 0.4/hour; no death modeled."
+"9","","","","","ecoli","37","7","100","","","lower","","","99.714","","","Recovered without a control snapshot.","Illustrative deterministic model; normalized population units; equal inoculum 5, capacity 100, maximum rate 0.4/hour; no death modeled."

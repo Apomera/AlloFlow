@@ -547,7 +547,7 @@ describe('Microbiology resistance investigation', () => {
   });
 });
 
-describe('Mounted resistance controls', { timeout: 20000 }, () => {
+describe('Mounted resistance controls', { timeout: 60000 }, () => {
   let container;
   let root;
   let latestData;

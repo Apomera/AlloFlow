@@ -623,3 +623,151 @@ describe('Growth notebook removal recovery', () => {
     expect(restored.nextId).toBe(13);
   });
 });
+
+describe('Microbiology saved sweep history', () => {
+  function specification(variable = 'tempC', profile = 'ecoli') {
+    return { variable, conditions: optimum(profile) };
+  }
+  function freeze(value) {
+    if (value && typeof value === 'object') {
+      Object.values(value).forEach(freeze);
+      Object.freeze(value);
+    }
+    return value;
+  }
+  function evidenceBook() {
+    const control = optimum('ecoli');
+    return growth.normalizeNotebook({
+      control, selectedId: 9, nextId: 20, prediction: 'higher', hypothesis: 'Next reasoning', explanation: 'Legacy draft', sweepVariable: 'oxygen',
+      trials: [{ id: 9, control, conditions: optimum('ecoli', 0), prediction: 'lower', hypothesis: 'Original reasoning', explanation: 'Saved explanation' }],
+      removed: { index: 0, trial: { id: 7, control, conditions: optimum('thermus'), prediction: 'unsure', explanation: 'Recover this trial' } }
+    });
+  }
+
+  it('retains history only alongside a valid, distinct current descriptor and never adds an empty slot', () => {
+    const current = specification(), previous = specification('oxygen', 'thermus');
+    expect(growth.normalizeNotebook({ sweep: current, previousSweep: previous }).previousSweep).toEqual(previous);
+    expect(growth.normalizeNotebook({ sweep: current })).not.toHaveProperty('previousSweep');
+    for (const value of [null, [], {}, { variable: 'unknown', conditions: {} }, { variable: 'pH', conditions: [] }]) {
+      expect(growth.normalizeNotebook({ sweep: current, previousSweep: value })).not.toHaveProperty('previousSweep');
+      expect(growth.normalizeNotebook({ sweep: value, previousSweep: previous })).not.toHaveProperty('previousSweep');
+    }
+    expect(growth.normalizeNotebook({ previousSweep: previous })).not.toHaveProperty('previousSweep');
+    expect(growth.normalizeNotebook({ sweep: current, previousSweep: { ...current, conditions: { ...current.conditions, oxygen: 1000 }, fabricated: 'ignored' } })).not.toHaveProperty('previousSweep');
+    const normalized = growth.normalizeNotebook({ sweep: current, previousSweep: previous });
+    expect(Object.isFrozen(normalized.previousSweep)).toBe(true);
+    expect(Object.isFrozen(normalized.previousSweep.conditions)).toBe(true);
+  });
+
+  it('saves a copied descriptor while preserving every unrelated notebook field and the frozen input', () => {
+    const original = freeze(evidenceBook()), source = specification('pH', 'thermus');
+    const before = JSON.stringify(original);
+    const saved = growth.saveSweep(original, source);
+    expect(saved.status).toBe('saved');
+    expect(saved.notebook).toEqual({ ...original, sweep: source });
+    expect(saved.notebook).not.toHaveProperty('previousSweep');
+    source.conditions.tempC = 10;
+    expect(saved.notebook.sweep.conditions.tempC).toBe(70);
+    expect(JSON.stringify(original)).toBe(before);
+    expect(growth.normalizeNotebook(JSON.parse(JSON.stringify(saved.notebook)))).toEqual(saved.notebook);
+  });
+
+  it('keeps identical saves from consuming history and replaces only the older sweep on a distinct save', () => {
+    const first = specification(), second = specification('pH'), third = specification('oxygen', 'thermus');
+    const one = growth.saveSweep(evidenceBook(), first).notebook;
+    const two = growth.saveSweep(one, second).notebook;
+    expect(two).toEqual({ ...one, sweep: second, previousSweep: first });
+    const repeat = growth.saveSweep(freeze(two), { ...second, conditions: { ...second.conditions, oxygen: 500 } });
+    expect(repeat).toEqual({ status: 'unchanged', notebook: two });
+    const three = growth.saveSweep(two, third).notebook;
+    expect(three).toEqual({ ...two, sweep: third, previousSweep: second });
+    expect(one.sweep).toEqual(first);
+    expect(two.previousSweep).toEqual(first);
+    expect(growth.saveSweep(one, { ...first, conditions: { ...first.conditions, tempC: 30 } })).toEqual({ status: 'unchanged', notebook: one });
+  });
+
+  it('ignores the swept starting value while retaining the full original descriptor and meaningful history', () => {
+    for (const variable of ['tempC', 'pH', 'oxygen']) {
+      const current = specification(variable), previous = specification(variable, 'thermus');
+      const original = freeze(growth.normalizeNotebook({ ...evidenceBook(), sweep: current, previousSweep: previous }));
+      const changed = { ...current, conditions: { ...current.conditions, [variable]: variable === 'tempC' ? 20 : variable === 'pH' ? 4 : 0 } };
+      expect(growth.sweep(changed.conditions, variable).points).toEqual(growth.sweep(current.conditions, variable).points);
+      expect(growth.saveSweep(original, changed)).toEqual({ status: 'unchanged', notebook: original });
+      expect(growth.normalizeNotebook({ ...original, previousSweep: changed })).not.toHaveProperty('previousSweep');
+      const held = variable === 'tempC' ? 'pH' : 'tempC';
+      const distinct = { ...changed, conditions: { ...changed.conditions, [held]: held === 'pH' ? 5 : 25 } };
+      const result = growth.saveSweep(original, distinct);
+      expect(result.status).toBe('saved');
+      expect(result.notebook.previousSweep).toEqual(current);
+      expect(result.notebook.sweep).toEqual(distinct);
+    }
+  });
+
+  it('rejects incomplete or malformed historical and new sweep conditions without changing legacy current normalization', () => {
+    const current = specification(), previous = specification('oxygen', 'thermus');
+    const original = freeze(growth.normalizeNotebook({ ...evidenceBook(), sweep: current, previousSweep: previous }));
+    const complete = previous.conditions;
+    const incomplete = [
+      {}, { tempC: 70, pH: 7.5, oxygen: 100 }, { profile: 'thermus', pH: 7.5, oxygen: 100 },
+      { profile: 'thermus', tempC: 70, oxygen: 100 }, { profile: 'thermus', tempC: 70, pH: 7.5 },
+      { ...complete, profile: 'unrecorded-organism' }, { ...complete, profile: '__proto__' }, { ...complete, profile: null },
+      { ...complete, tempC: '70' }, { ...complete, tempC: Infinity }, { ...complete, pH: NaN },
+      { ...complete, pH: null }, { ...complete, oxygen: false }, Object.create(complete)
+    ];
+    for (const conditions of incomplete) {
+      const invalid = { variable: 'oxygen', conditions };
+      expect(growth.normalizeNotebook({ ...original, previousSweep: invalid })).not.toHaveProperty('previousSweep');
+      expect(growth.saveSweep(original, invalid)).toEqual({ status: 'invalid', notebook: original });
+    }
+    expect(growth.normalizeNotebook({ sweep: { variable: 'pH', conditions: {} } }).sweep).toEqual({ variable: 'pH', conditions: growth.normalizeConditions({}) });
+    const clamped = { variable: 'oxygen', conditions: { ...complete, tempC: -10, pH: 99, oxygen: 500 } };
+    expect(growth.normalizeNotebook({ sweep: current, previousSweep: clamped }).previousSweep.conditions).toEqual({ profile: 'thermus', tempC: 0, pH: 10, oxygen: 100 });
+    expect(growth.saveSweep(original, clamped).notebook.sweep.conditions).toEqual({ profile: 'thermus', tempC: 0, pH: 10, oxygen: 100 });
+  });
+
+  it('swaps complete descriptors across JSON reloads without changing trial, recovery or next-run evidence', () => {
+    const original = freeze(growth.saveSweep(growth.saveSweep(evidenceBook(), specification()).notebook, specification('oxygen', 'thermus')).notebook);
+    const before = JSON.stringify(original);
+    const restored = growth.restoreSweep(JSON.parse(before));
+    expect(restored.status).toBe('restored');
+    expect(restored.notebook).toEqual({ ...original, sweep: original.previousSweep, previousSweep: original.sweep });
+    expect(growth.sweep(restored.notebook.sweep.conditions, restored.notebook.sweep.variable)).toEqual(growth.sweep(original.previousSweep.conditions, original.previousSweep.variable));
+    expect(growth.restoreSweep(JSON.parse(JSON.stringify(restored.notebook))).notebook).toEqual(original);
+    expect(JSON.stringify(original)).toBe(before);
+  });
+
+  it('rejects invalid saves and unavailable restoration without inventing history or losing existing evidence', () => {
+    const original = growth.saveSweep(growth.saveSweep(evidenceBook(), specification()).notebook, specification('pH')).notebook;
+    for (const invalid of [undefined, null, [], {}, { variable: '__proto__', conditions: {} }, { variable: 'oxygen', conditions: [] }]) {
+      expect(growth.saveSweep(original, invalid)).toEqual({ status: 'invalid', notebook: original });
+    }
+    const single = growth.saveSweep(evidenceBook(), specification()).notebook;
+    expect(growth.restoreSweep(single)).toEqual({ status: 'missing', notebook: single });
+    expect(growth.restoreSweep({ ...single, previousSweep: single.sweep })).toEqual({ status: 'missing', notebook: single });
+  });
+
+  it('preserves strict selected-ID provenance through sweep saves and swaps', () => {
+    const raw = { trials: [{ id: 'bad', conditions: optimum('ecoli') }, { id: 1, conditions: optimum('thermus') }], selectedId: 2,
+      sweep: specification(), previousSweep: specification('pH') };
+    const before = JSON.stringify(raw);
+    for (const result of [growth.saveSweep(raw, specification('oxygen')), growth.restoreSweep(raw)]) {
+      expect(result.notebook.trials.map(trial => trial.id)).toEqual([2, 1]);
+      expect(result.notebook.selectedId).toBeNull();
+      expect(growth.normalizeNotebook(JSON.parse(JSON.stringify(result.notebook))).selectedId).toBeNull();
+    }
+    expect(JSON.stringify(raw)).toBe(before);
+  });
+
+  it('keeps both sweeps through trial edits and recovery while leaving existing CSV exports unchanged', () => {
+    const original = evidenceBook();
+    const history = growth.saveSweep(growth.saveSweep(original, specification()).notebook, specification('oxygen', 'thermus')).notebook;
+    expect(growth.csv(history)).toBe(growth.csv(original));
+    expect(growth.reviewCSV(history, 6)).toBe(growth.reviewCSV(original, 6));
+    for (const updated of [growth.saveTrial(history, optimum('ecoli', 0)).notebook,
+      growth.restoreTrial(history).notebook, growth.keepRemoval(history).notebook,
+      growth.removeTrial(history, 9).notebook]) {
+      expect(updated.sweep).toEqual(history.sweep);
+      expect(updated.previousSweep).toEqual(history.previousSweep);
+    }
+  });
+});

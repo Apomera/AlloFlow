@@ -1,0 +1,16 @@
+{
+  "mirrored": true,
+  "keys": 1687,
+  "registries": [
+    {
+      "file": "ui_strings.js",
+      "missing": [],
+      "changedFallbacks": []
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "missing": [],
+      "changedFallbacks": []
+    }
+  ]
+}
