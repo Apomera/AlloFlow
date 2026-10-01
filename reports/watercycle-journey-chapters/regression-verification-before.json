@@ -1,0 +1,56 @@
+{
+  "sourcePath": "stem_lab/stem_tool_watercycle.js",
+  "sourceSha256Before": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c",
+  "publicPath": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+  "publicSha256Before": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c",
+  "testFiles": [
+    {
+      "path": "tests/watercycle_check_investigations.test.js",
+      "sha256": "2dd862600b9c6a6cd31fbc712edb2a068fa3b1171e40ea7a88ea3358651a1a99"
+    },
+    {
+      "path": "tests/watercycle_controls_a11y.test.js",
+      "sha256": "8c7b2439aedb7df98a48c5aeaabe8b8bd1a4b968c31ec9c53cf1c4e8e0b6bf5c"
+    },
+    {
+      "path": "tests/watercycle_content_invariants.test.js",
+      "sha256": "1220022fa041c0e1908ca41271aee50b035b30f87565ad7517651ccb1f050c4b"
+    },
+    {
+      "path": "tests/watercycle_explore_notebook.test.js",
+      "sha256": "1141dd9331654f61ea7e5654542a93c1aac410425bdd93ad50af2f8abb4d483e"
+    },
+    {
+      "path": "tests/watercycle_notebook_clarity.test.js",
+      "sha256": "f403a842af6f9e4a2390740d43b7b70e95494b24caf193a711e1eb973db3701d"
+    },
+    {
+      "path": "tests/watercycle_process_compare.test.js",
+      "sha256": "6e1ca32d85dcb6b158c715906c8046058e5109d57428275b68e960252fa32c70"
+    },
+    {
+      "path": "tests/watercycle_next_experiment.test.js",
+      "sha256": "ddaef3e388deda56a177f2200007d8a7d2c6e847ffa13dca63ab518546ad4e89"
+    },
+    {
+      "path": "tests/watercycle_conditions_clarity.test.js",
+      "sha256": "95dd0f2f398b70b45c44eda4bbbac1522dd2cd306701ddca8b4cd0212f9618e6"
+    },
+    {
+      "path": "tests/watercycle_comparison_clarity.test.js",
+      "sha256": "de41ebf91f544824574a2c8a15fe749189d242c5566d569b25dac55c5803414c"
+    },
+    {
+      "path": "tests/watercycle_canvas_loop.test.js",
+      "sha256": "811d45c6730ebec5a72b7a2c3713f618938a19a44c277a990bedf3c18551a806"
+    },
+    {
+      "path": "tests/watercycle_replay_indicator.test.js",
+      "sha256": "06168ae19b96369998860e5eb607d58337b3df07f7eb323393f6d4a6d15c7aa7"
+    },
+    {
+      "path": "tests/watercycle_journey_completion_receipt.test.js",
+      "sha256": "dc02e0ea3f6d343c78c8f0e8837c738991f3d8da1d77104418d2a16345eb2e2c"
+    }
+  ]
+}

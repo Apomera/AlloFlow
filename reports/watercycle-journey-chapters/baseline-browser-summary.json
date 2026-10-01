@@ -1,0 +1,638 @@
+{
+  "sourceSha256": "8e43450261e9faff3de64bdd8d4778ac0495f19a75c1fbe48a91ed66d6279dbb",
+  "completed": true,
+  "successful": true,
+  "browserClosed": true,
+  "serverClosed": true,
+  "cases": 12,
+  "actions": 6,
+  "captures": 12,
+  "audits": [
+    {
+      "label": "320",
+      "violations": 0
+    },
+    {
+      "label": "1280",
+      "violations": 0
+    },
+    {
+      "label": "1280-host390",
+      "violations": 0
+    }
+  ],
+  "findings": [
+    {
+      "label": "idle-320",
+      "panelWidth": 274,
+      "panelHeight": 448.75,
+      "columns": null,
+      "actualState": "idle",
+      "controls": [
+        {
+          "text": "▶ Play the droplet journey (J)",
+          "id": "",
+          "width": 82.2,
+          "height": 96
+        }
+      ],
+      "meaningfulSmallText": [
+        {
+          "text": "FOLLOW ONE DROPLET",
+          "font": 11
+        }
+      ],
+      "overflow": [
+        {
+          "tag": "DIV",
+          "text": "💧\nJourney Mode\nFOLLOW ONE DROPLET\n▶ Play the droplet journey (J)",
+          "width": 240
+        }
+      ],
+      "pageOverflow": false
+    },
+    {
+      "label": "paused-aquifer-320",
+      "panelWidth": 274,
+      "panelHeight": 881.390625,
+      "columns": "77.3281px 77.3281px 77.3438px",
+      "actualState": "aquifer_flow",
+      "replayHeading": "Replay a droplet\n80% · Soil infiltration",
+      "controls": [
+        {
+          "text": "⏹ End Journey (J)",
+          "id": "",
+          "width": 79.8,
+          "height": 75
+        },
+        {
+          "text": "▶",
+          "id": "",
+          "width": 34,
+          "height": 34
+        },
+        {
+          "text": "↺ Reset",
+          "id": "",
+          "width": 34,
+          "height": 34
+        },
+        {
+          "text": "0.5×",
+          "id": "",
+          "width": 42,
+          "height": 28
+        },
+        {
+          "text": "1×",
+          "id": "",
+          "width": 42,
+          "height": 28
+        },
+        {
+          "text": "2×",
+          "id": "",
+          "width": 42,
+          "height": 28
+        },
+        {
+          "text": "Scrub through the water droplet journey",
+          "id": "wcJourneyReplayScrub",
+          "width": 218,
+          "height": 30
+        }
+      ],
+      "meaningfulSmallText": [
+        {
+          "text": "FOLLOW ONE DROPLET",
+          "font": 11
+        },
+        {
+          "text": "Replay a droplet",
+          "font": 11
+        },
+        {
+          "text": "80% · Soil infiltration",
+          "font": 10
+        },
+        {
+          "text": "Ocean",
+          "font": 9
+        },
+        {
+          "text": "Cloud",
+          "font": 9
+        },
+        {
+          "text": "Land choice",
+          "font": 9
+        },
+        {
+          "text": "Return",
+          "font": 9
+        },
+        {
+          "text": "PATH EXPLORER",
+          "font": 9
+        },
+        {
+          "text": "Try Plant uptake next to compare residence time and return route.",
+          "font": 10
+        },
+        {
+          "text": "River runoff",
+          "font": 10
+        },
+        {
+          "text": "1 loop",
+          "font": 9
+        },
+        {
+          "text": "Underground infiltration",
+          "font": 10
+        },
+        {
+          "text": "1 loop",
+          "font": 9
+        },
+        {
+          "text": "Plant uptake",
+          "font": 10
+        },
+        {
+          "text": "Next up",
+          "font": 9
+        },
+        {
+          "text": "🔄 Loops: 2",
+          "font": 11
+        },
+        {
+          "text": "🌊 Runoff: 1",
+          "font": 11
+        },
+        {
+          "text": "🪴 Underground: 1",
+          "font": 11
+        },
+        {
+          "text": "🌿 Plant: 0",
+          "font": 11
+        }
+      ],
+      "overflow": [
+        {
+          "tag": "DIV",
+          "text": "▶\n↺ Reset",
+          "width": 73
+        },
+        {
+          "tag": "BUTTON",
+          "text": "↺ Reset",
+          "width": 34
+        },
+        {
+          "tag": "DIV",
+          "text": "✓\n4. Precipitation",
+          "width": 77.3
+        },
+        {
+          "tag": "STRONG",
+          "text": "4. Precipitation",
+          "width": 69.3
+        }
+      ],
+      "pageOverflow": false
+    },
+    {
+      "label": "idle-1280",
+      "panelWidth": 1006,
+      "panelHeight": 166.75,
+      "columns": null,
+      "actualState": "idle",
+      "controls": [
+        {
+          "text": "▶ Play the droplet journey (J)",
+          "id": "",
+          "width": 227.7,
+          "height": 32
+        }
+      ],
+      "meaningfulSmallText": [
+        {
+          "text": "FOLLOW ONE DROPLET",
+          "font": 11
+        }
+      ],
+      "overflow": [],
+      "pageOverflow": false
+    },
+    {
+      "label": "paused-aquifer-1280",
+      "panelWidth": 1006,
+      "panelHeight": 512.234375,
+      "columns": "158.656px 158.672px 158.672px 158.656px 158.672px 158.672px",
+      "actualState": "aquifer_flow",
+      "replayHeading": "Replay a droplet\n80% · Soil infiltration",
+      "controls": [
+        {
+          "text": "⏹ End Journey (J)",
+          "id": "",
+          "width": 141.3,
+          "height": 33
+        },
+        {
+          "text": "▶",
+          "id": "",
+          "width": 34,
+          "height": 34
+        },
+        {
+          "text": "↺ Reset",
+          "id": "",
+          "width": 34,
+          "height": 34
+        },
+        {
+          "text": "0.5×",
+          "id": "",
+          "width": 42,
+          "height": 28
+        },
+        {
+          "text": "1×",
+          "id": "",
+          "width": 42,
+          "height": 28
+        },
+        {
+          "text": "2×",
+          "id": "",
+          "width": 42,
+          "height": 28
+        },
+        {
+          "text": "Scrub through the water droplet journey",
+          "id": "wcJourneyReplayScrub",
+          "width": 950,
+          "height": 30
+        }
+      ],
+      "meaningfulSmallText": [
+        {
+          "text": "FOLLOW ONE DROPLET",
+          "font": 11
+        },
+        {
+          "text": "Replay a droplet",
+          "font": 11
+        },
+        {
+          "text": "80% · Soil infiltration",
+          "font": 10
+        },
+        {
+          "text": "Ocean",
+          "font": 9
+        },
+        {
+          "text": "Cloud",
+          "font": 9
+        },
+        {
+          "text": "Land choice",
+          "font": 9
+        },
+        {
+          "text": "Return",
+          "font": 9
+        },
+        {
+          "text": "PATH EXPLORER",
+          "font": 9
+        },
+        {
+          "text": "Try Plant uptake next to compare residence time and return route.",
+          "font": 10
+        },
+        {
+          "text": "River runoff",
+          "font": 10
+        },
+        {
+          "text": "1 loop",
+          "font": 9
+        },
+        {
+          "text": "Underground infiltration",
+          "font": 10
+        },
+        {
+          "text": "1 loop",
+          "font": 9
+        },
+        {
+          "text": "Plant uptake",
+          "font": 10
+        },
+        {
+          "text": "Next up",
+          "font": 9
+        },
+        {
+          "text": "🔄 Loops: 2",
+          "font": 11
+        },
+        {
+          "text": "🌊 Runoff: 1",
+          "font": 11
+        },
+        {
+          "text": "🪴 Underground: 1",
+          "font": 11
+        },
+        {
+          "text": "🌿 Plant: 0",
+          "font": 11
+        }
+      ],
+      "overflow": [
+        {
+          "tag": "DIV",
+          "text": "▶\n↺ Reset",
+          "width": 73
+        },
+        {
+          "tag": "BUTTON",
+          "text": "↺ Reset",
+          "width": 34
+        }
+      ],
+      "pageOverflow": false
+    },
+    {
+      "label": "idle-1280-host390",
+      "panelWidth": 332,
+      "panelHeight": 378,
+      "columns": null,
+      "actualState": "idle",
+      "controls": [
+        {
+          "text": "▶ Play the droplet journey (J)",
+          "id": "",
+          "width": 137.8,
+          "height": 64
+        }
+      ],
+      "meaningfulSmallText": [
+        {
+          "text": "FOLLOW ONE DROPLET",
+          "font": 11
+        }
+      ],
+      "overflow": [],
+      "pageOverflow": false
+    },
+    {
+      "label": "paused-aquifer-1280-host390",
+      "panelWidth": 332,
+      "panelHeight": 895.125,
+      "columns": "46.3281px 46.3281px 46.3281px 46.3438px 46.3281px 46.3281px",
+      "actualState": "aquifer_flow",
+      "replayHeading": "Replay a droplet\n80% · Soil infiltration",
+      "controls": [
+        {
+          "text": "⏹ End Journey (J)",
+          "id": "",
+          "width": 101,
+          "height": 54
+        },
+        {
+          "text": "▶",
+          "id": "",
+          "width": 34,
+          "height": 34
+        },
+        {
+          "text": "↺ Reset",
+          "id": "",
+          "width": 34,
+          "height": 34
+        },
+        {
+          "text": "0.5×",
+          "id": "",
+          "width": 42,
+          "height": 28
+        },
+        {
+          "text": "1×",
+          "id": "",
+          "width": 42,
+          "height": 28
+        },
+        {
+          "text": "2×",
+          "id": "",
+          "width": 42,
+          "height": 28
+        },
+        {
+          "text": "Scrub through the water droplet journey",
+          "id": "wcJourneyReplayScrub",
+          "width": 276,
+          "height": 30
+        }
+      ],
+      "meaningfulSmallText": [
+        {
+          "text": "FOLLOW ONE DROPLET",
+          "font": 11
+        },
+        {
+          "text": "Replay a droplet",
+          "font": 11
+        },
+        {
+          "text": "80% · Soil infiltration",
+          "font": 10
+        },
+        {
+          "text": "Ocean",
+          "font": 9
+        },
+        {
+          "text": "Cloud",
+          "font": 9
+        },
+        {
+          "text": "Land choice",
+          "font": 9
+        },
+        {
+          "text": "Return",
+          "font": 9
+        },
+        {
+          "text": "PATH EXPLORER",
+          "font": 9
+        },
+        {
+          "text": "Try Plant uptake next to compare residence time and return route.",
+          "font": 10
+        },
+        {
+          "text": "River runoff",
+          "font": 10
+        },
+        {
+          "text": "1 loop",
+          "font": 9
+        },
+        {
+          "text": "Underground infiltration",
+          "font": 10
+        },
+        {
+          "text": "1 loop",
+          "font": 9
+        },
+        {
+          "text": "Plant uptake",
+          "font": 10
+        },
+        {
+          "text": "Next up",
+          "font": 9
+        },
+        {
+          "text": "🔄 Loops: 2",
+          "font": 11
+        },
+        {
+          "text": "🌊 Runoff: 1",
+          "font": 11
+        },
+        {
+          "text": "🪴 Underground: 1",
+          "font": 11
+        },
+        {
+          "text": "🌿 Plant: 0",
+          "font": 11
+        }
+      ],
+      "overflow": [
+        {
+          "tag": "DIV",
+          "text": "▶\n↺ Reset",
+          "width": 73
+        },
+        {
+          "tag": "BUTTON",
+          "text": "↺ Reset",
+          "width": 34
+        },
+        {
+          "tag": "DIV",
+          "text": "✓\n4. Precipitation",
+          "width": 46.3
+        },
+        {
+          "tag": "STRONG",
+          "text": "4. Precipitation",
+          "width": 38.3
+        },
+        {
+          "tag": "DIV",
+          "text": "●\n5. Land pathway",
+          "width": 46.3
+        },
+        {
+          "tag": "STRONG",
+          "text": "5. Land pathway",
+          "width": 38.3
+        },
+        {
+          "tag": "STRONG",
+          "text": "6. Return",
+          "width": 38.3
+        },
+        {
+          "tag": "SPAN",
+          "text": "River runoff\nRain, saturation, and slope · Usually fast surface return · River to ocean",
+          "width": 17.1
+        },
+        {
+          "tag": "SMALL",
+          "text": "Rain, saturation, and slope · Usually fast surface return · River to ocean",
+          "width": 17.1
+        },
+        {
+          "tag": "SPAN",
+          "text": "Underground infiltration\nPermeability and pore space · Often slow underground return · Aquifer to oc",
+          "width": 17.1
+        },
+        {
+          "tag": "SMALL",
+          "text": "Permeability and pore space · Often slow underground return · Aquifer to ocean",
+          "width": 17.1
+        },
+        {
+          "tag": "SPAN",
+          "text": "Plant uptake\nRoots, cover, and daytime energy · Responsive to daytime energy · Plant to vapor to clo",
+          "width": 6.8
+        },
+        {
+          "tag": "SMALL",
+          "text": "Roots, cover, and daytime energy · Responsive to daytime energy · Plant to vapor to cloud",
+          "width": 6.8
+        }
+      ],
+      "pageOverflow": false
+    }
+  ],
+  "preservation": [
+    {
+      "label": "native inert Cloud click 320",
+      "stateUnchanged": true,
+      "canvasUnchanged": true
+    },
+    {
+      "label": "native replay ArrowRight 320",
+      "localProgress": "0.07142857142857154",
+      "replay": 0.81,
+      "awardCount": 0
+    },
+    {
+      "label": "native inert Cloud click 1280",
+      "stateUnchanged": true,
+      "canvasUnchanged": true
+    },
+    {
+      "label": "native replay ArrowRight 1280",
+      "localProgress": "0.07142857142857154",
+      "replay": 0.81,
+      "awardCount": 0
+    },
+    {
+      "label": "native inert Cloud click 1280-host390",
+      "stateUnchanged": true,
+      "canvasUnchanged": true
+    },
+    {
+      "label": "native replay ArrowRight 1280-host390",
+      "localProgress": "0.07142857142857154",
+      "replay": 0.81,
+      "awardCount": 0
+    }
+  ],
+  "representativeCaptures": [
+    "baseline-idle-light-320.png",
+    "baseline-paused-aquifer-light-320.png",
+    "baseline-idle-light-1280.png",
+    "baseline-paused-aquifer-light-1280.png",
+    "baseline-idle-light-1280-host390.png",
+    "baseline-paused-aquifer-light-1280-host390.png"
+  ]
+}

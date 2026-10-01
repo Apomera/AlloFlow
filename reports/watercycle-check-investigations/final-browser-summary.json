@@ -1,0 +1,512 @@
+{
+  "title": "Final Check investigation browser findings",
+  "sourceSha256": "8e43450261e9faff3de64bdd8d4778ac0495f19a75c1fbe48a91ed66d6279dbb",
+  "publicSha256": "8e43450261e9faff3de64bdd8d4778ac0495f19a75c1fbe48a91ed66d6279dbb",
+  "testedRuntimeSha256": "8e43450261e9faff3de64bdd8d4778ac0495f19a75c1fbe48a91ed66d6279dbb",
+  "finalSourceSha256": "8e43450261e9faff3de64bdd8d4778ac0495f19a75c1fbe48a91ed66d6279dbb",
+  "finalPublicSha256": "8e43450261e9faff3de64bdd8d4778ac0495f19a75c1fbe48a91ed66d6279dbb",
+  "baselineRuntimeSha256": "384eca9416719d616d50623847aa6fdabec346106967153f678cd76ee508be6c",
+  "report": "results.json",
+  "preflightReport": "preflight.json",
+  "threeDCapturePreflightReport": "3d-capture-preflight.json",
+  "counts": {
+    "passed": 1666,
+    "failed": 0,
+    "snapshots": 294,
+    "recordedEnterActivations": 208,
+    "captures": 84,
+    "scopedAxeAudits": 22,
+    "axeViolations": 0,
+    "errors": [],
+    "completed": true,
+    "successful": true,
+    "browserClosed": true,
+    "serverClosed": true
+  },
+  "preflightCounts": {
+    "passed": 283,
+    "failed": 0,
+    "snapshots": 32,
+    "recordedEnterActivations": 17,
+    "captures": 22,
+    "scopedAxeAudits": 2,
+    "axeViolations": 0,
+    "errors": [],
+    "completed": true,
+    "successful": true,
+    "browserClosed": true,
+    "serverClosed": true
+  },
+  "threeDCapturePreflightCounts": {
+    "passed": 59,
+    "failed": 0,
+    "snapshots": 6,
+    "recordedEnterActivations": 4,
+    "captures": 3,
+    "scopedAxeAudits": 2,
+    "axeViolations": 0,
+    "errors": [],
+    "completed": true,
+    "successful": true,
+    "browserClosed": true,
+    "serverClosed": true
+  },
+  "configurations": [
+    "light320",
+    "light390",
+    "light768",
+    "light1280",
+    "dark1280",
+    "forced320",
+    "dark+forced1280",
+    "390px host at1280",
+    "paused3D aquifer1280"
+  ],
+  "catalog": {
+    "actualMythRoutes": 10,
+    "quizConceptRoutes": 14,
+    "totalRenderedRoutes": 24,
+    "limits": "Native temperature/wind targets use current clamped evaporation index; wind changes transport setting while index remains unchanged. Land compares independent indices. Static diagrams state their measurement boundaries."
+  },
+  "layout": {
+    "minEffectiveTargetHeight": 44,
+    "minVisibleTextPx": 12,
+    "minRadioLabelHeight": 48,
+    "nativeRadioHeight": 18,
+    "radioTargetNote": "Native18px radio is inside a larger clickable implicit label; effective target is measured on the label.",
+    "representative": [
+      {
+        "label": "light-320 answered",
+        "hostWidth": 320,
+        "panelWidth": 274,
+        "choiceColumns": "244px",
+        "minEffectiveTargetHeight": 44,
+        "minVisibleTextPx": 12,
+        "pageOverflow": false,
+        "panelOverflow": 0
+      },
+      {
+        "label": "light-390 answered",
+        "hostWidth": 390,
+        "panelWidth": 344,
+        "choiceColumns": "314px",
+        "minEffectiveTargetHeight": 44,
+        "minVisibleTextPx": 12,
+        "pageOverflow": false,
+        "panelOverflow": 0
+      },
+      {
+        "label": "light-768 answered",
+        "hostWidth": 768,
+        "panelWidth": 710,
+        "choiceColumns": "331px 331px",
+        "minEffectiveTargetHeight": 44,
+        "minVisibleTextPx": 12,
+        "pageOverflow": false,
+        "panelOverflow": 0
+      },
+      {
+        "label": "light-1280 answered",
+        "hostWidth": 1280,
+        "panelWidth": 1006,
+        "choiceColumns": "479px 479px",
+        "minEffectiveTargetHeight": 44,
+        "minVisibleTextPx": 12,
+        "pageOverflow": false,
+        "panelOverflow": 0
+      },
+      {
+        "label": "light-1280-host390 answered",
+        "hostWidth": 390,
+        "panelWidth": 332,
+        "choiceColumns": "302px",
+        "minEffectiveTargetHeight": 44,
+        "minVisibleTextPx": 12,
+        "pageOverflow": false,
+        "panelOverflow": 0
+      },
+      {
+        "label": "dark-forced-1280 answered",
+        "hostWidth": 1280,
+        "panelWidth": 1006,
+        "choiceColumns": "479px 479px",
+        "minEffectiveTargetHeight": 44,
+        "minVisibleTextPx": 12,
+        "pageOverflow": false,
+        "panelOverflow": 0
+      }
+    ],
+    "review": "Current review appears after the original question inside its feedback card. Native Tab reaches observation then revised radio. Question, feedback, save status, stale heading, close target, and AI pending/completed focus handoffs passed."
+  },
+  "plainDarkCTA": {
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(40, 124, 115)",
+    "fontPx": 14,
+    "targetHeight": 44,
+    "contrastRatio": 4.975307270626295,
+    "scopedAudit": "dark-1280 answered, no violations"
+  },
+  "nativeAnswerRewardEvidence": [
+    {
+      "label": "light-320 native correct myth",
+      "focus": {
+        "tag": "H4",
+        "id": "wcMythFeedbackTitle",
+        "text": "Your answer fits · False",
+        "focusVisible": true
+      },
+      "researchPoints": 10,
+      "studied": [],
+      "awards": [
+        [
+          "waterCycle",
+          5,
+          "Water myth busted"
+        ]
+      ],
+      "attempts": 5,
+      "score": 2,
+      "correctCount": 2,
+      "mythsDone": 4
+    },
+    {
+      "label": "light-320 native study term",
+      "focus": {
+        "tag": "H5",
+        "id": "wcQuizConceptTitle",
+        "text": "Concept focus: infiltration",
+        "focusVisible": true
+      },
+      "researchPoints": 15,
+      "studied": [
+        "infiltration"
+      ],
+      "awards": [
+        [
+          "waterCycle",
+          5,
+          "Water myth busted"
+        ]
+      ],
+      "attempts": 5,
+      "score": 2,
+      "correctCount": 2,
+      "mythsDone": 4
+    },
+    {
+      "label": "light-320 native correct quiz",
+      "focus": {
+        "tag": "H4",
+        "id": "wcQuizFeedbackTitle",
+        "text": "Your answer fits",
+        "focusVisible": true
+      },
+      "researchPoints": 15,
+      "studied": [
+        "infiltration"
+      ],
+      "awards": [
+        [
+          "waterCycle",
+          5,
+          "Water myth busted"
+        ],
+        [
+          "waterCycle",
+          5,
+          "Water Cycle quiz"
+        ]
+      ],
+      "attempts": 6,
+      "score": 3,
+      "correctCount": 3,
+      "mythsDone": 4
+    }
+  ],
+  "localDeferredAIEvidence": [
+    {
+      "label": "light-320 native AI pending",
+      "focus": {
+        "tag": "H4",
+        "id": "wcQuizTitle",
+        "text": "Water cycle quiz",
+        "focusVisible": true
+      },
+      "loading": true,
+      "ariaBusy": "true",
+      "localCallbackCount": 1,
+      "score": 2,
+      "attempts": 4,
+      "awardCalls": [],
+      "canvas": {
+        "sameNode": true,
+        "state": "infiltrating",
+        "stage": "infiltration",
+        "paused": "true",
+        "progress": "0.37"
+      }
+    },
+    {
+      "label": "light-320 native AI resolved",
+      "focus": {
+        "tag": "H4",
+        "id": "wcQuizQuestion",
+        "text": "Where does condensed water collect before precipitation?",
+        "focusVisible": true
+      },
+      "loading": false,
+      "ariaBusy": "false",
+      "localCallbackCount": 1,
+      "score": 2,
+      "attempts": 4,
+      "awardCalls": [],
+      "canvas": {
+        "sameNode": true,
+        "state": "infiltrating",
+        "stage": "infiltration",
+        "paused": "true",
+        "progress": "0.37"
+      }
+    },
+    {
+      "label": "dark-1280 native AI pending",
+      "focus": {
+        "tag": "H4",
+        "id": "wcQuizTitle",
+        "text": "Water cycle quiz",
+        "focusVisible": true
+      },
+      "loading": true,
+      "ariaBusy": "true",
+      "localCallbackCount": 1,
+      "score": 2,
+      "attempts": 4,
+      "awardCalls": [],
+      "canvas": {
+        "sameNode": true,
+        "state": "infiltrating",
+        "stage": "infiltration",
+        "paused": "true",
+        "progress": "0.37"
+      }
+    },
+    {
+      "label": "dark-1280 native AI resolved",
+      "focus": {
+        "tag": "H4",
+        "id": "wcQuizQuestion",
+        "text": "Where does condensed water collect before precipitation?",
+        "focusVisible": true
+      },
+      "loading": false,
+      "ariaBusy": "false",
+      "localCallbackCount": 1,
+      "score": 2,
+      "attempts": 4,
+      "awardCalls": [],
+      "canvas": {
+        "sameNode": true,
+        "state": "infiltrating",
+        "stage": "infiltration",
+        "paused": "true",
+        "progress": "0.37"
+      }
+    }
+  ],
+  "paused3DEvidence": [
+    {
+      "label": "3D aquifer paused42",
+      "canvas": {
+        "sameNode": true,
+        "state": "aquifer_flow",
+        "stage": "infiltration",
+        "paused": "true",
+        "progress": "0.42"
+      },
+      "scene3d": {
+        "sameNode": true,
+        "state": "aquifer_flow",
+        "stage": "infiltration",
+        "progress": "0.42"
+      },
+      "focus": {
+        "tag": "BODY",
+        "id": "",
+        "text": "🌊 Water Cycle\nExplore\nBe the Water\nStorm Lab\nSteward\nWater Worlds\nSTORM TO STRE",
+        "focusVisible": false
+      },
+      "section": "check"
+    },
+    {
+      "label": "3D-aquifer-light-1280 investigate",
+      "canvas": {
+        "sameNode": true,
+        "state": "aquifer_flow",
+        "stage": "infiltration",
+        "paused": "true",
+        "progress": "0.42"
+      },
+      "scene3d": {
+        "sameNode": true,
+        "state": "aquifer_flow",
+        "stage": "infiltration",
+        "progress": "0.42"
+      },
+      "focus": {
+        "tag": "H4",
+        "id": "wcCheckInvestigationTitle",
+        "text": "Water in soil and rock pores",
+        "focusVisible": true
+      },
+      "section": "check"
+    },
+    {
+      "label": "3D-aquifer-light-1280 return",
+      "canvas": {
+        "sameNode": true,
+        "state": "aquifer_flow",
+        "stage": "infiltration",
+        "paused": "true",
+        "progress": "0.42"
+      },
+      "scene3d": {
+        "sameNode": true,
+        "state": "aquifer_flow",
+        "stage": "infiltration",
+        "progress": "0.42"
+      },
+      "focus": {
+        "tag": "H4",
+        "id": "wcQuizQuestion",
+        "text": "How does most groundwater move through soil and rock?",
+        "focusVisible": true
+      },
+      "section": "check"
+    },
+    {
+      "label": "3D-aquifer-light-1280 drafted reflection",
+      "canvas": {
+        "sameNode": true,
+        "state": "aquifer_flow",
+        "stage": "infiltration",
+        "paused": "true",
+        "progress": "0.42"
+      },
+      "scene3d": {
+        "sameNode": true,
+        "state": "aquifer_flow",
+        "stage": "infiltration",
+        "progress": "0.42"
+      },
+      "focus": {
+        "tag": "INPUT",
+        "id": "",
+        "text": "",
+        "focusVisible": true
+      },
+      "section": "check"
+    },
+    {
+      "label": "3D-aquifer-light-1280 save reflection",
+      "canvas": {
+        "sameNode": true,
+        "state": "aquifer_flow",
+        "stage": "infiltration",
+        "paused": "true",
+        "progress": "0.42"
+      },
+      "scene3d": {
+        "sameNode": true,
+        "state": "aquifer_flow",
+        "stage": "infiltration",
+        "progress": "0.42"
+      },
+      "focus": {
+        "tag": "P",
+        "id": "wcCheckReflectionStatus",
+        "text": "Reflection saved with your original question and first answer.",
+        "focusVisible": true
+      },
+      "section": "check"
+    },
+    {
+      "label": "3D-aquifer-light-1280 close reflection",
+      "canvas": {
+        "sameNode": true,
+        "state": "aquifer_flow",
+        "stage": "infiltration",
+        "paused": "true",
+        "progress": "0.42"
+      },
+      "scene3d": {
+        "sameNode": true,
+        "state": "aquifer_flow",
+        "stage": "infiltration",
+        "progress": "0.42"
+      },
+      "focus": {
+        "tag": "BUTTON",
+        "id": "wcCheckInvestigateQuiz",
+        "text": "Explore a related model: Water in soil and rock pores",
+        "focusVisible": true
+      },
+      "section": "check"
+    }
+  ],
+  "learnerWork": "Investigate, Return, reflection typing/save/close and history disclosure preserve baseline, process writing, saved observation evidence, original answers/counters/XP, main stage, journey mode/state, and mounted paused engine. Native lab edits change only intended current input.",
+  "limitations": [
+    "Expanded natural-language labels are layout stress, not real locale testing.",
+    "Stale context is a restored-workspace fixture using the local state setter.",
+    "Existing eight achievements are pre-earned in this fixture to avoid unrelated delayed challenge awards; original native answer rewards are recorded through actual ctx.awardXP.",
+    "AI is a controlled local deferred Promise; no external request is sent."
+  ],
+  "preservedDiagnostics": [
+    "baseline-results.json",
+    "baseline-browser-summary.json",
+    "preflight-f0-raw.json",
+    "preflight-before-return-f0.json",
+    "return-focus-diagnostic.json",
+    "preflight-0ed8-crop-diagnostic-raw.json",
+    "preflight-0ed8-crop-diagnostic.json",
+    "preflight-0ed8-raw.json",
+    "preflight-before-final-0ed8.json",
+    "preflight-1017-raw.json",
+    "preflight-before-AI-1017.json",
+    "results-1017-diagnostic-raw.json",
+    "results-1017-diagnostic.json",
+    "results-8e-interrupted-raw.json",
+    "results-8e-interrupted.json"
+  ],
+  "diagnosticExplanation": "The1017 complete diagnostic used a global reward mock rather than the runtime ctx callback and left old achievement rewards unearned. The8e interrupted diagnostic had1655 passing checks,21 clean audits,0failed assertions, and an explicit screenshot stability exception; it completedfalse/successfulfalse and closed resources. Final3D captures use measured document clipping and verified PNG height.",
+  "representativeCaptures": [
+    "final-answered-light-320.png",
+    "final-reflection-quiz-light-320.png",
+    "final-reconsideration-quiz-light-320.png",
+    "final-history-light-320.png",
+    "final-answered-light-1280.png",
+    "final-reflection-quiz-light-1280-host390.png",
+    "final-reflection-quiz-dark-forced-1280.png",
+    "final-AI-pending-light-320.png",
+    "final-AI-resolved-dark-1280.png",
+    "final-investigate-3D-aquifer-light-1280.png",
+    "final-reconsideration-3D-aquifer-light-1280.png"
+  ],
+  "resultCaseFields": [
+    "label",
+    "host",
+    "section",
+    "controls[].rect",
+    "controls[].nativeRect",
+    "controls[].style",
+    "texts[].style",
+    "choiceColumns",
+    "overflow",
+    "active",
+    "reviewPlacement",
+    "investigation",
+    "histories",
+    "canvas",
+    "scene3d",
+    "state"
+  ]
+}

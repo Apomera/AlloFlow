@@ -1,0 +1,760 @@
+{
+  "recordedAt": "2026-10-01T16:07:30.925Z",
+  "sourceSha256": "8e43450261e9faff3de64bdd8d4778ac0495f19a75c1fbe48a91ed66d6279dbb",
+  "publicSha256": "8e43450261e9faff3de64bdd8d4778ac0495f19a75c1fbe48a91ed66d6279dbb",
+  "successful": true,
+  "browserChecks": 1666,
+  "failed": 0,
+  "snapshots": 294,
+  "nativeActions": 208,
+  "scopedAccessibilityAudits": 22,
+  "violations": 0,
+  "captures": [
+    {
+      "name": "final-answered-light-320.png",
+      "sha256": "793d0d84d5793aa3bd30a0991da4b48228a0396eb9f65ffab8e5fdcd53fe6e47",
+      "bytes": 97428,
+      "width": 274,
+      "height": 2475
+    },
+    {
+      "name": "final-investigate-quiz-light-320.png",
+      "sha256": "727240ca1adc5f7ca3bf57575919c0119d2f0aefeeb92227a180d9ebc61f9f55",
+      "bytes": 58085,
+      "width": 274,
+      "height": 1605
+    },
+    {
+      "name": "final-reflection-quiz-light-320.png",
+      "sha256": "bc712e86d997af1a35025c18b813b43fed04d234b38dc89afd25f66940e52554",
+      "bytes": 81701,
+      "width": 218,
+      "height": 2360
+    },
+    {
+      "name": "final-reconsideration-quiz-light-320.png",
+      "sha256": "2ec8ae83a1fd33f2c817238327927ea3e83bd607fe8b641caca5800ae5e8f740",
+      "bytes": 20709,
+      "width": 186,
+      "height": 617
+    },
+    {
+      "name": "final-investigate-myth-light-320.png",
+      "sha256": "eb3983ab881b281ae1765ce9affae0627757994fbdefb3be30b4526a7da9f1f6",
+      "bytes": 58125,
+      "width": 274,
+      "height": 1605
+    },
+    {
+      "name": "final-reflection-myth-light-320.png",
+      "sha256": "42173d31b22c9f4142b57de89ddd9b3ea07033353a16b2ade90a0bb722c3b42c",
+      "bytes": 73201,
+      "width": 218,
+      "height": 2187
+    },
+    {
+      "name": "final-reconsideration-myth-light-320.png",
+      "sha256": "82ca3ea86f7e72ec6d9099aeac2b6a42a95ec5ff801b29dde812da3147adf668",
+      "bytes": 12841,
+      "width": 186,
+      "height": 422
+    },
+    {
+      "name": "final-history-light-320.png",
+      "sha256": "d1650681f41f0e006d8adee216b4a58ec26e09f8c25fead81137e40fd3bb6db7",
+      "bytes": 128774,
+      "width": 274,
+      "height": 3247
+    },
+    {
+      "name": "final-AI-pending-light-320.png",
+      "sha256": "60e4c735e3652b4c02e87a545d6694cc000df08295b5f347323688b6b08b26d7",
+      "bytes": 65904,
+      "width": 274,
+      "height": 1673
+    },
+    {
+      "name": "final-AI-resolved-light-320.png",
+      "sha256": "ba082c1ee6694363c10c52c5f4996dc5d00306bae6370446031264cec6c31027",
+      "bytes": 64657,
+      "width": 274,
+      "height": 1659
+    },
+    {
+      "name": "final-empty-light-320.png",
+      "sha256": "b6025885e885b4e34342a6241c7a2cecfa95ad036b7d46f721d4f93119275540",
+      "bytes": 26251,
+      "width": 274,
+      "height": 696
+    },
+    {
+      "name": "final-expanded-text-light-320.png",
+      "sha256": "5b6834bae87c2cf369a06278f66bd17bb74e27e80e61042ba0c6873afd353d30",
+      "bytes": 113324,
+      "width": 274,
+      "height": 2792
+    },
+    {
+      "name": "final-investigate-expanded-text-light-320.png",
+      "sha256": "bfc694d1fc6e17d63aa91f8286100cda3decf0c596b53ac99d42210c45833ef2",
+      "bytes": 60153,
+      "width": 274,
+      "height": 1651
+    },
+    {
+      "name": "final-reflection-expanded-text-light-320.png",
+      "sha256": "7fa39cdfc93142463fa84282be7256738fecc92c514923cc60ae9bf8d21526d3",
+      "bytes": 96092,
+      "width": 218,
+      "height": 2772
+    },
+    {
+      "name": "final-reconsideration-expanded-text-light-320.png",
+      "sha256": "5b09da8cfc005e9303c54608915c3ba8d69ccbb600d5212adf5a0696545ebd6c",
+      "bytes": 32658,
+      "width": 186,
+      "height": 960
+    },
+    {
+      "name": "final-mapping-cool_evaporation-light-320.png",
+      "sha256": "5a732487f9669568f4c1bfa725cdb1390c7347245e987ba3df0e0907f4e4cc4a",
+      "bytes": 45699,
+      "width": 274,
+      "height": 1306
+    },
+    {
+      "name": "final-mapping-warming_related-light-320.png",
+      "sha256": "afd3069d474ae429a4365b4277fe22a2039d05119faa244d92fb33954a0c0eb8",
+      "bytes": 45385,
+      "width": 274,
+      "height": 1306
+    },
+    {
+      "name": "final-mapping-wind_transport-light-320.png",
+      "sha256": "900fe910094eb2f73c6313e08c3c9ae057d3e203cb2effc26a5e838e4442c8fc",
+      "bytes": 64644,
+      "width": 274,
+      "height": 1839
+    },
+    {
+      "name": "final-answered-light-390.png",
+      "sha256": "9ad1ab26c6383f4f4a9ef7ae6cd01796463e26031a8434e740eb176948b29a8c",
+      "bytes": 95907,
+      "width": 344,
+      "height": 2199
+    },
+    {
+      "name": "final-investigate-quiz-light-390.png",
+      "sha256": "cc245bd2bf4264b90844145ae22b151d9c31231170c4a70ad68f508f556e8380",
+      "bytes": 56397,
+      "width": 344,
+      "height": 1349
+    },
+    {
+      "name": "final-reflection-quiz-light-390.png",
+      "sha256": "fa71867a81caa31fbb6074225fae0097a8d154a5a367e7f08eeca2b545d7b28f",
+      "bytes": 84650,
+      "width": 288,
+      "height": 1926
+    },
+    {
+      "name": "final-reconsideration-quiz-light-390.png",
+      "sha256": "cd9b39d30714c168e616d364b3e0b5973a9e23cf72f2a09b245c2da0b4ca4fe6",
+      "bytes": 21192,
+      "width": 256,
+      "height": 535
+    },
+    {
+      "name": "final-investigate-myth-light-390.png",
+      "sha256": "cb6289b5f33b7617d54a2509a9c3fb218c92bf8b7fc584d3f1f02a0089aa44f8",
+      "bytes": 56279,
+      "width": 344,
+      "height": 1349
+    },
+    {
+      "name": "final-reflection-myth-light-390.png",
+      "sha256": "e900ccc5f69d62197182bd2346997a7d2329ded80a88a84243c5148b611e4bd7",
+      "bytes": 75845,
+      "width": 288,
+      "height": 1748
+    },
+    {
+      "name": "final-reconsideration-myth-light-390.png",
+      "sha256": "c7c2c462609a721e70b9e22ec663b0b53eaaddefe7d14179c11445b7ac521ba2",
+      "bytes": 13512,
+      "width": 256,
+      "height": 380
+    },
+    {
+      "name": "final-history-light-390.png",
+      "sha256": "d012eccb8256db5872a686746674889597339393da8ce89096921ed00822d808",
+      "bytes": 125580,
+      "width": 344,
+      "height": 2861
+    },
+    {
+      "name": "final-answered-light-768.png",
+      "sha256": "12279dc061b66884f1f39bd6e635232db98ddee967957dc4f28b759b10f62fc8",
+      "bytes": 98078,
+      "width": 710,
+      "height": 1502
+    },
+    {
+      "name": "final-investigate-quiz-light-768.png",
+      "sha256": "7d025386984922e7a4dede51b75e8c54790efff476e025b04310115a24e37437",
+      "bytes": 63716,
+      "width": 710,
+      "height": 1168
+    },
+    {
+      "name": "final-reflection-quiz-light-768.png",
+      "sha256": "3901405804a9f7613f6bfc7edc3ee3a57a17f4ccc71bb6c9a6e9e705770aacfb",
+      "bytes": 87926,
+      "width": 638,
+      "height": 1549
+    },
+    {
+      "name": "final-reconsideration-quiz-light-768.png",
+      "sha256": "911c8de45cb07c675b3553c78691cab6b950d42f406ba28bf0795f7228fb2d48",
+      "bytes": 21245,
+      "width": 594,
+      "height": 426
+    },
+    {
+      "name": "final-investigate-myth-light-768.png",
+      "sha256": "fac5df1b6d086d2059d2f57ccd74759411193069201d2f86cf1a1a9e71497763",
+      "bytes": 63808,
+      "width": 710,
+      "height": 1168
+    },
+    {
+      "name": "final-reflection-myth-light-768.png",
+      "sha256": "5a9fd99a028374df21d792379b718cfd95c31de74fd4430be1d3cc8f2b424521",
+      "bytes": 79829,
+      "width": 638,
+      "height": 1436
+    },
+    {
+      "name": "final-reconsideration-myth-light-768.png",
+      "sha256": "cb5f92c7b842ec883a7cfdb6d6c08e42287c27550705b6d65558754653334788",
+      "bytes": 13561,
+      "width": 594,
+      "height": 313
+    },
+    {
+      "name": "final-history-light-768.png",
+      "sha256": "0a3277df781929169e14c1c8442d4dc1b3f7a88a4f14de683e13c489e1cddae6",
+      "bytes": 130936,
+      "width": 710,
+      "height": 2005
+    },
+    {
+      "name": "final-answered-light-1280.png",
+      "sha256": "57e9cdb757c212b41236337b6566feed00bac8e3c0b31d0ad5762cdd79bf919c",
+      "bytes": 96883,
+      "width": 1006,
+      "height": 1432
+    },
+    {
+      "name": "final-investigate-quiz-light-1280.png",
+      "sha256": "d0d8e8595ae7d79672492da0ea67a62bec5d7fda2f64d826cf18bdb97c9ba6b4",
+      "bytes": 61237,
+      "width": 1006,
+      "height": 1043
+    },
+    {
+      "name": "final-reflection-quiz-light-1280.png",
+      "sha256": "6085eb2918be8477703b677b6a85c2f56f7027c27fbb730b6873d32964d68d20",
+      "bytes": 86457,
+      "width": 934,
+      "height": 1447
+    },
+    {
+      "name": "final-reconsideration-quiz-light-1280.png",
+      "sha256": "c9da798585dfba43d40fe9e823042242af36eb746fe921a624cf40383e34396b",
+      "bytes": 22216,
+      "width": 890,
+      "height": 425
+    },
+    {
+      "name": "final-investigate-myth-light-1280.png",
+      "sha256": "6be24e21e4bc344fa6e811c7c39184ca6b210e3d19386b934f152e0f526edfd6",
+      "bytes": 61330,
+      "width": 1006,
+      "height": 1043
+    },
+    {
+      "name": "final-reflection-myth-light-1280.png",
+      "sha256": "5d21d6c60e94916b03a8f55a2fbe083ca32577075825f9c9f5ceeb826940c08c",
+      "bytes": 78093,
+      "width": 934,
+      "height": 1335
+    },
+    {
+      "name": "final-reconsideration-myth-light-1280.png",
+      "sha256": "aea136fdc70fcb7578fc43ceddf9c274371ab8ccf0eeccfc193acba595486c64",
+      "bytes": 14185,
+      "width": 890,
+      "height": 314
+    },
+    {
+      "name": "final-history-light-1280.png",
+      "sha256": "f2ff51fdf1e420f0a7c98d092c28c8c99a3699a7aee9d1d8988c22842e1c3996",
+      "bytes": 129883,
+      "width": 1006,
+      "height": 1936
+    },
+    {
+      "name": "final-answered-dark-1280.png",
+      "sha256": "64aa8966c61153e63741bd7059446087dbfbaf8f6a9ba59d7bf12c962d213027",
+      "bytes": 96711,
+      "width": 1006,
+      "height": 1432
+    },
+    {
+      "name": "final-investigate-quiz-dark-1280.png",
+      "sha256": "20211d5f72f3fd8ba6e87aa7dafafeefd6e71f5206fadaf53d5604e84c88fc30",
+      "bytes": 60989,
+      "width": 1006,
+      "height": 1043
+    },
+    {
+      "name": "final-reflection-quiz-dark-1280.png",
+      "sha256": "32004cc101814735d1b6e73dd82b3e283d96327f0a79b9973754c7a53115c9c5",
+      "bytes": 86498,
+      "width": 934,
+      "height": 1447
+    },
+    {
+      "name": "final-reconsideration-quiz-dark-1280.png",
+      "sha256": "f161278fc33e2006400a10737fb87df310b4379e32f6c5e3998c187fa75f2ae7",
+      "bytes": 22848,
+      "width": 890,
+      "height": 425
+    },
+    {
+      "name": "final-investigate-myth-dark-1280.png",
+      "sha256": "9468c4cdbd8feb127a62309079c24163dbcc562eef4b4aa5506b393bf4a83d88",
+      "bytes": 60905,
+      "width": 1006,
+      "height": 1043
+    },
+    {
+      "name": "final-reflection-myth-dark-1280.png",
+      "sha256": "08a3374aec22be9d291d2e8536d362044c7e222f14d1139589bfbe1de1f425b1",
+      "bytes": 77776,
+      "width": 934,
+      "height": 1335
+    },
+    {
+      "name": "final-reconsideration-myth-dark-1280.png",
+      "sha256": "2984a5aa72195a62c02c483a01bf3bb323a2444c3f8a88189e6b9a84f7be27ef",
+      "bytes": 14577,
+      "width": 890,
+      "height": 314
+    },
+    {
+      "name": "final-history-dark-1280.png",
+      "sha256": "2877b7d06f10d9350f4b936fa48380371d66ae6cf8c0a80da5b534002acf7525",
+      "bytes": 130284,
+      "width": 1006,
+      "height": 1936
+    },
+    {
+      "name": "final-AI-pending-dark-1280.png",
+      "sha256": "68134fca2f2cbd6329c8e3a5b7da77e682f41606ec0b0e3548f29e5162c147ff",
+      "bytes": 63208,
+      "width": 1006,
+      "height": 933
+    },
+    {
+      "name": "final-AI-resolved-dark-1280.png",
+      "sha256": "26ab29fd1493fc1ca5cf7a154a9c45476ab58568da7b160fd1b2d076bd5a69b9",
+      "bytes": 62112,
+      "width": 1006,
+      "height": 953
+    },
+    {
+      "name": "final-answered-light-forced-320.png",
+      "sha256": "c5339acffd657db2b633fd6e8af39335650343c6adb1d5fe0494c48f49e584ae",
+      "bytes": 86825,
+      "width": 274,
+      "height": 2475
+    },
+    {
+      "name": "final-investigate-quiz-light-forced-320.png",
+      "sha256": "b5bf03c90f55aac0d48433872cbc02e1057ae9e12d24c69247c65b1878f80f21",
+      "bytes": 51515,
+      "width": 274,
+      "height": 1605
+    },
+    {
+      "name": "final-reflection-quiz-light-forced-320.png",
+      "sha256": "93de1e88057c186de7e811a5b0f36634cdb4cb629703a49711d6eb8e94a097ff",
+      "bytes": 71720,
+      "width": 218,
+      "height": 2360
+    },
+    {
+      "name": "final-reconsideration-quiz-light-forced-320.png",
+      "sha256": "7a603ac722a85e59e673b6d5b539527d66a10ff7916b4438429bdc0cc1a13614",
+      "bytes": 19124,
+      "width": 186,
+      "height": 617
+    },
+    {
+      "name": "final-investigate-myth-light-forced-320.png",
+      "sha256": "607ccabae8750688340e1b222d7d4b92a31a8e8394a4fcc7ed912febf1bb767f",
+      "bytes": 51568,
+      "width": 274,
+      "height": 1605
+    },
+    {
+      "name": "final-reflection-myth-light-forced-320.png",
+      "sha256": "d8a63ccb0a7e8cb61e96720e589086cb01f897795e7bf5782f0aaadb714522cc",
+      "bytes": 63990,
+      "width": 218,
+      "height": 2187
+    },
+    {
+      "name": "final-reconsideration-myth-light-forced-320.png",
+      "sha256": "b7ad87a29fa2b59d839b3b66364c885f99ff61b8b6b74a638ae195b488afa09b",
+      "bytes": 11883,
+      "width": 186,
+      "height": 422
+    },
+    {
+      "name": "final-history-light-forced-320.png",
+      "sha256": "1d696a9b5e6b19308764f1329114c40a91666d0d451eebd3cccda11a4c002d01",
+      "bytes": 114633,
+      "width": 274,
+      "height": 3247
+    },
+    {
+      "name": "final-answered-dark-forced-1280.png",
+      "sha256": "e12f0e7ffcf03a3d92df31cbd2cadf3f499beecc08c0ed99c292d160aaa3e6ca",
+      "bytes": 87858,
+      "width": 1006,
+      "height": 1432
+    },
+    {
+      "name": "final-investigate-quiz-dark-forced-1280.png",
+      "sha256": "e292bee30fd22f692b435f24b9bb8654dced4d660e269c68c8d6ef5dac075369",
+      "bytes": 56098,
+      "width": 1006,
+      "height": 1043
+    },
+    {
+      "name": "final-reflection-quiz-dark-forced-1280.png",
+      "sha256": "32601e5b2fcc71451f7a7ebf31abc4b41c359357aac13971c91544edb30d05c6",
+      "bytes": 78898,
+      "width": 934,
+      "height": 1447
+    },
+    {
+      "name": "final-reconsideration-quiz-dark-forced-1280.png",
+      "sha256": "2768e1fb7445992e197afeac7d94c9254a4a918a2221c4b61170f9e82528982c",
+      "bytes": 20810,
+      "width": 890,
+      "height": 425
+    },
+    {
+      "name": "final-investigate-myth-dark-forced-1280.png",
+      "sha256": "243ca25a7bce4f1c256ad1be06ac9eb731e77808abebe76ca5b3ab7e0743c230",
+      "bytes": 56006,
+      "width": 1006,
+      "height": 1043
+    },
+    {
+      "name": "final-reflection-myth-dark-forced-1280.png",
+      "sha256": "0dfaacd926759dfd551249397a46d759215036a67d77dc38abe73d45dba5e896",
+      "bytes": 70935,
+      "width": 934,
+      "height": 1335
+    },
+    {
+      "name": "final-reconsideration-myth-dark-forced-1280.png",
+      "sha256": "c7782781743c8d45d7e098b2111526a4345eda3473f913e020002a837a7fb817",
+      "bytes": 13193,
+      "width": 890,
+      "height": 314
+    },
+    {
+      "name": "final-history-dark-forced-1280.png",
+      "sha256": "87b419c3245158f25f7746012712ec8410da3d9f1b48c4fe504d87247da9e85d",
+      "bytes": 117846,
+      "width": 1006,
+      "height": 1936
+    },
+    {
+      "name": "final-answered-light-1280-host390.png",
+      "sha256": "ac29042b8ef39adac5e2c39a6c31f0c9406df48bc37ce29e92e5873a4a67cb28",
+      "bytes": 95625,
+      "width": 332,
+      "height": 2200
+    },
+    {
+      "name": "final-investigate-quiz-light-1280-host390.png",
+      "sha256": "1ffe5ffb63465df33ab988dc356054f94cea6745b363848a72f6b47eb2fab0e1",
+      "bytes": 59343,
+      "width": 332,
+      "height": 1367
+    },
+    {
+      "name": "final-reflection-quiz-light-1280-host390.png",
+      "sha256": "82969b4f4e92d625dcbc3eb18558677dbe88c2649fb017947d6504b24cc089f8",
+      "bytes": 84893,
+      "width": 276,
+      "height": 1963
+    },
+    {
+      "name": "final-reconsideration-quiz-light-1280-host390.png",
+      "sha256": "1fcea3e2c35cf4500c46c96ba6da1e1039bf08b76c0fbba55b2e7145fe13b42f",
+      "bytes": 21246,
+      "width": 244,
+      "height": 556
+    },
+    {
+      "name": "final-investigate-myth-light-1280-host390.png",
+      "sha256": "0614192bf4b0aff3783029b5e24dce908e100f409eb337f074d74750b614cdc1",
+      "bytes": 59224,
+      "width": 332,
+      "height": 1367
+    },
+    {
+      "name": "final-reflection-myth-light-1280-host390.png",
+      "sha256": "8b89bc7455af8fb3d5b1f0051c957b824b1e70e36c6a259d7008fedd8ab804d9",
+      "bytes": 75759,
+      "width": 276,
+      "height": 1764
+    },
+    {
+      "name": "final-reconsideration-myth-light-1280-host390.png",
+      "sha256": "003e066f0407c46c0c763a6bbabb2e5f10d7ebdf54faa2c71bbb58c8fbdff78d",
+      "bytes": 13247,
+      "width": 244,
+      "height": 380
+    },
+    {
+      "name": "final-history-light-1280-host390.png",
+      "sha256": "9964e96c2a59d7f798c602f14f7aafbc6f16d78201afd64776fc50f8dd8941ab",
+      "bytes": 125776,
+      "width": 332,
+      "height": 2861
+    },
+    {
+      "name": "final-empty-light-1280-host390.png",
+      "sha256": "89c165600d30362fc4fb51a6dbb096072bb5d094a053afd183e15a81d046e386",
+      "bytes": 25846,
+      "width": 332,
+      "height": 628
+    },
+    {
+      "name": "final-expanded-text-light-1280-host390.png",
+      "sha256": "c2e9883dfa8a2b658182e93a7d7ebf0161ac1a14a3d422d6f125fd62a98b8cfd",
+      "bytes": 110397,
+      "width": 332,
+      "height": 2453
+    },
+    {
+      "name": "final-investigate-expanded-text-light-1280-host390.png",
+      "sha256": "81002df1eb20a626244a3bc767db4f05cf593f27b384114a03b63cf2af53023b",
+      "bytes": 61320,
+      "width": 332,
+      "height": 1413
+    },
+    {
+      "name": "final-reflection-expanded-text-light-1280-host390.png",
+      "sha256": "1d374e1ff4b035f921a09afcea4c85c6f43264f8ade9d281fb9b28c56dfaf10b",
+      "bytes": 98825,
+      "width": 276,
+      "height": 2234
+    },
+    {
+      "name": "final-reconsideration-expanded-text-light-1280-host390.png",
+      "sha256": "37e9392e68af1cf72b5ca47b63afc7eb080712ce4a7305158a2cfe4f0163ee1b",
+      "bytes": 32942,
+      "width": 244,
+      "height": 781
+    },
+    {
+      "name": "final-investigate-3D-aquifer-light-1280.png",
+      "sha256": "71dc87d53e0cc5f8cff4c1dfa8e661a978df8b6ab8ab98c86509e7b6437c79e5",
+      "bytes": 61243,
+      "width": 1006,
+      "height": 1042
+    },
+    {
+      "name": "final-reflection-3D-aquifer-light-1280.png",
+      "sha256": "0eaa320f11f91f1cdd7da33a2b73fb04f5b185e503950b15687ab6c8f8a5a92f",
+      "bytes": 86323,
+      "width": 934,
+      "height": 1446
+    },
+    {
+      "name": "final-reconsideration-3D-aquifer-light-1280.png",
+      "sha256": "bf67bdc04d660d122fd7fcf8d8fdff976a6c2da8ca1fde0b5a4fee58cb9e8305",
+      "bytes": 22177,
+      "width": 890,
+      "height": 424
+    }
+  ],
+  "preflightCaptures": [
+    {
+      "name": "preflight-answered-light-320.png",
+      "sha256": "793d0d84d5793aa3bd30a0991da4b48228a0396eb9f65ffab8e5fdcd53fe6e47",
+      "bytes": 97428,
+      "width": 274,
+      "height": 2475
+    },
+    {
+      "name": "preflight-investigate-quiz-light-320.png",
+      "sha256": "727240ca1adc5f7ca3bf57575919c0119d2f0aefeeb92227a180d9ebc61f9f55",
+      "bytes": 58085,
+      "width": 274,
+      "height": 1605
+    },
+    {
+      "name": "preflight-reflection-quiz-light-320.png",
+      "sha256": "bc712e86d997af1a35025c18b813b43fed04d234b38dc89afd25f66940e52554",
+      "bytes": 81701,
+      "width": 218,
+      "height": 2360
+    },
+    {
+      "name": "preflight-reconsideration-quiz-light-320.png",
+      "sha256": "2ec8ae83a1fd33f2c817238327927ea3e83bd607fe8b641caca5800ae5e8f740",
+      "bytes": 20709,
+      "width": 186,
+      "height": 617
+    },
+    {
+      "name": "preflight-history-light-320.png",
+      "sha256": "67a0b02d488e51dcae9969f786af83d2a3cc6d0863b765f3c73b0f353d5b1d74",
+      "bytes": 115414,
+      "width": 274,
+      "height": 2912
+    },
+    {
+      "name": "preflight-AI-pending-light-320.png",
+      "sha256": "60e4c735e3652b4c02e87a545d6694cc000df08295b5f347323688b6b08b26d7",
+      "bytes": 65904,
+      "width": 274,
+      "height": 1673
+    },
+    {
+      "name": "preflight-AI-resolved-light-320.png",
+      "sha256": "a46ef9e3a2abe45dde399ec1a99984e12c483f3c9c5317c7136d5e496413e94d",
+      "bytes": 64654,
+      "width": 274,
+      "height": 1659
+    },
+    {
+      "name": "preflight-answered-light-1280-host540.png",
+      "sha256": "6768a09310ec8026a31a6c7a091a063fb2b5369f6f0fd6d406efcaa9fa7c26ba",
+      "bytes": 98202,
+      "width": 482,
+      "height": 1918
+    },
+    {
+      "name": "preflight-investigate-quiz-light-1280-host540.png",
+      "sha256": "b06a9100d6d987862ae0c9deb4df0e5cf3f2032112a2352445b7eae92c60d9e6",
+      "bytes": 58243,
+      "width": 482,
+      "height": 1176
+    },
+    {
+      "name": "preflight-reflection-quiz-light-1280-host540.png",
+      "sha256": "988db19489fcd656a732d5bfe8ed3d9dfe574b2c7b8c74bcabd582a7ea3b7640",
+      "bytes": 86539,
+      "width": 410,
+      "height": 1689
+    },
+    {
+      "name": "preflight-reconsideration-quiz-light-1280-host540.png",
+      "sha256": "9d6e096558f508b023572623b958ab8742a2927cc434289ffc703454a971de4e",
+      "bytes": 20460,
+      "width": 366,
+      "height": 446
+    },
+    {
+      "name": "preflight-history-light-1280-host540.png",
+      "sha256": "b74219ab6d9f5365aa2e906f88b1508d820f70bf09cb74fb588cc2ef4628ad14",
+      "bytes": 116284,
+      "width": 482,
+      "height": 2221
+    },
+    {
+      "name": "preflight-answered-dark-forced-1280.png",
+      "sha256": "e12f0e7ffcf03a3d92df31cbd2cadf3f499beecc08c0ed99c292d160aaa3e6ca",
+      "bytes": 87858,
+      "width": 1006,
+      "height": 1432
+    },
+    {
+      "name": "preflight-investigate-quiz-dark-forced-1280.png",
+      "sha256": "e292bee30fd22f692b435f24b9bb8654dced4d660e269c68c8d6ef5dac075369",
+      "bytes": 56098,
+      "width": 1006,
+      "height": 1043
+    },
+    {
+      "name": "preflight-reflection-quiz-dark-forced-1280.png",
+      "sha256": "32601e5b2fcc71451f7a7ebf31abc4b41c359357aac13971c91544edb30d05c6",
+      "bytes": 78898,
+      "width": 934,
+      "height": 1447
+    },
+    {
+      "name": "preflight-reconsideration-quiz-dark-forced-1280.png",
+      "sha256": "2768e1fb7445992e197afeac7d94c9254a4a918a2221c4b61170f9e82528982c",
+      "bytes": 20810,
+      "width": 890,
+      "height": 425
+    },
+    {
+      "name": "preflight-history-dark-forced-1280.png",
+      "sha256": "6f10f5b31188fb00e61f6738b0e214f46afc097ab71f58b8a24aac15fa7300e2",
+      "bytes": 104951,
+      "width": 1006,
+      "height": 1712
+    },
+    {
+      "name": "preflight-answered-dark-1280.png",
+      "sha256": "64aa8966c61153e63741bd7059446087dbfbaf8f6a9ba59d7bf12c962d213027",
+      "bytes": 96711,
+      "width": 1006,
+      "height": 1432
+    },
+    {
+      "name": "preflight-investigate-quiz-dark-1280.png",
+      "sha256": "20211d5f72f3fd8ba6e87aa7dafafeefd6e71f5206fadaf53d5604e84c88fc30",
+      "bytes": 60989,
+      "width": 1006,
+      "height": 1043
+    },
+    {
+      "name": "preflight-reflection-quiz-dark-1280.png",
+      "sha256": "32004cc101814735d1b6e73dd82b3e283d96327f0a79b9973754c7a53115c9c5",
+      "bytes": 86498,
+      "width": 934,
+      "height": 1447
+    },
+    {
+      "name": "preflight-reconsideration-quiz-dark-1280.png",
+      "sha256": "f161278fc33e2006400a10737fb87df310b4379e32f6c5e3998c187fa75f2ae7",
+      "bytes": 22848,
+      "width": 890,
+      "height": 425
+    },
+    {
+      "name": "preflight-history-dark-1280.png",
+      "sha256": "4f8723be967c58760a2cf353ccbf63d78d3b8b3f782699187d1c550c9de2aac5",
+      "bytes": 115823,
+      "width": 1006,
+      "height": 1712
+    }
+  ],
+  "browserClosed": true,
+  "serverClosed": true
+}

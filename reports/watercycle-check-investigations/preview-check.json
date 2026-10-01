@@ -1,0 +1,10 @@
+{
+  "recordedAt": "2026-10-01T15:23:35.591Z",
+  "url": "http://127.0.0.1:8770/",
+  "sourceSha256": "8e43450261e9faff3de64bdd8d4778ac0495f19a75c1fbe48a91ed66d6279dbb",
+  "publicSha256": "8e43450261e9faff3de64bdd8d4778ac0495f19a75c1fbe48a91ed66d6279dbb",
+  "rootStatus": 200,
+  "runtimeStatus": 200,
+  "servedRuntimeSha256": "8e43450261e9faff3de64bdd8d4778ac0495f19a75c1fbe48a91ed66d6279dbb",
+  "successful": true
+}

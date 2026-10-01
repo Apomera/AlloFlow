@@ -1,0 +1,1407 @@
+{
+  "title": "Water cycle journey chapter review",
+  "createdAt": "2026-10-01T22:56:04.811Z",
+  "sourcePath": "stem_lab/stem_tool_watercycle.js",
+  "publicPath": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+  "browserHarnessPath": "dev-tools/watercycle_journey_chapters_qa.cjs",
+  "sourceSha256": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c",
+  "baselinePath": "reports/watercycle-journey-chapters/baseline-runtime.js",
+  "baselineSha256": "8e43450261e9faff3de64bdd8d4778ac0495f19a75c1fbe48a91ed66d6279dbb",
+  "unitReportPath": "reports/watercycle-journey-chapters/unit-results.json",
+  "regressionReportPath": "reports/watercycle-journey-chapters/regression-results.json",
+  "browserReportPath": "reports/watercycle-journey-chapters/results.json",
+  "browserSummaryReportPath": "reports/watercycle-journey-chapters/final-browser-summary.json",
+  "preflightReportPath": "reports/watercycle-journey-chapters/preflight.json",
+  "tests": {
+    "total": 353,
+    "files": 14,
+    "unit": {
+      "tests": 47,
+      "files": 2
+    },
+    "regression": {
+      "tests": 306,
+      "files": 12
+    }
+  },
+  "browser": {
+    "checks": 1658,
+    "cases": 136,
+    "actions": 108,
+    "audits": 14,
+    "incompleteAuditItems": 15,
+    "captures": 36,
+    "browserClosed": true,
+    "serverClosed": true
+  },
+  "counterContrast": {
+    "checks": 71,
+    "measurements": 252,
+    "casesWithoutCounters": 8,
+    "minimumRatio": 4.803518915821808,
+    "methods": [
+      "Computed background layers composited to opaque surface; CSS gradient endpoint colors. Text and ancestor opacity recorded."
+    ]
+  },
+  "diagramContrast": {
+    "checks": 71,
+    "measurements": 213,
+    "minimumRatio": 5.911153142899078,
+    "methods": [
+      "Computed SVG/arrow color against actual composited card background endpoints; private shape opacity is not inferred."
+    ]
+  },
+  "preservation": [
+    {
+      "name": "WCExploreNotebook",
+      "sha256": "e305ea1ab08b92d12d237b88357bde5d81d91df2b04cd0af676a7373fe28ea91"
+    },
+    {
+      "name": "wcLandResponse",
+      "sha256": "3d65f4a6bddc6027d299351be3b39a0436bc60baddb748238ae63604f7257fcc"
+    },
+    {
+      "name": "estimateWcLandIndices",
+      "sha256": "20fb254221bdb3e39e6fa74da4d0acce195b62139e03390b01b13019b30796fb"
+    },
+    {
+      "name": "estimateWcRouteShares",
+      "sha256": "d8e4f27647d00ac6ee8149e44d0981518081ecd7ddc169ecd48c484ea85e8f6f"
+    },
+    {
+      "name": "evaporationIndex",
+      "sha256": "97de9da592f2f9b326e42a68ae6267355a4d2bd8593414ddc01317fa3e18e0b4"
+    },
+    {
+      "name": "wcBaselineEvaporationIndex",
+      "sha256": "02d5dcbdccd2886fbcc91d986100c85ba90934ebd18684ee715e681f40936304"
+    },
+    {
+      "name": "wcCurrentSnapshot",
+      "sha256": "884b54d4cfdc1afc11974a06a6e312cbd4b35b1465615154e8acd01e4e02bfb8"
+    },
+    {
+      "name": "wcComparisonDeltas",
+      "sha256": "0105361e54a1fdf0b231690f95546397cde368d4f9ab6508092806a1b9943e68"
+    },
+    {
+      "name": "formatWcDelta",
+      "sha256": "f8a03055b6ea918c98145bac6fadc21de69419385e3098966c7436c9c41e83eb"
+    },
+    {
+      "name": "WATER_CYCLE_PRESETS",
+      "sha256": "0d83add1268900e7e27e917c72000ebad2ba47d994302e1afed9b5257e838535"
+    },
+    {
+      "name": "WATER_CYCLE_PREDICTIONS",
+      "sha256": "994f4e302903bba49b0ac7970d7bc45645604e94d26252ac04e44b37c6de2530"
+    },
+    {
+      "name": "getWcInteractionBaseline",
+      "sha256": "d6eda54f37fe4823eb5437a2fe1f541eb51e6616967dcb03b0351dd7a7d493e5"
+    },
+    {
+      "name": "adjustClimate",
+      "sha256": "4646adf408658b8184db2479ebe64fd92c0ae9ad7e145335a5d04d8e1fe7bc7a"
+    },
+    {
+      "name": "adjustLand",
+      "sha256": "883586d669426ad4c1fe711373176b1d02d2c34ce5c006f57e8aec1a879e6ec7"
+    },
+    {
+      "name": "resetClimate",
+      "sha256": "72b10546d36596bf9e3951c5c69cfc40129e1635154b49ee9800a5211d24c037"
+    },
+    {
+      "name": "resetLandScenario",
+      "sha256": "c0e2f65dbfa4ba3d8ca39691b0071aee0b108f60ba6c1b8901022056fa11619a"
+    },
+    {
+      "name": "captureWcScenarioBaseline",
+      "sha256": "9e8d5cd3eee9dd3e0c9c913a0f4a1af91203ad3e9deb39007746f0209b82a141"
+    },
+    {
+      "name": "restoreWcScenarioBaseline",
+      "sha256": "89dbb35a678af4e9892fc4b3f2c38d73fc581c1ffe46f90ded82671699c7cc26"
+    },
+    {
+      "name": "clearWcScenarioBaseline",
+      "sha256": "829a5c077c74d885da5aa1ab1b658fdabcd6c0ab7023a401aa5f8e0902bc7c08"
+    },
+    {
+      "name": "isolateWcComparisonInput",
+      "sha256": "297c6937b6350532aaab452fd534f13894f65279f28b58c92a8ab72b2ba75d9d"
+    },
+    {
+      "name": "saveWcObservation",
+      "sha256": "8c8bdca8e642f6775c8caa370f12b773836499e09a2dae9384a33a8a824b36d2"
+    },
+    {
+      "name": "replayWcObservation",
+      "sha256": "eea48a6a39c2b5f267e178157cccf9436073d9fb60458ca3915ad761285f44c5"
+    },
+    {
+      "name": "recordWcPrediction",
+      "sha256": "b31f28cb32ffab8abb7e4bc100d9997ed568760fed5752fff0a9ad5cb06d1621"
+    },
+    {
+      "name": "resetWcPrediction",
+      "sha256": "3cd7a20092c784413b144bc6cfb028cfe9b8ffda15d24afb9753fea04d0d2a23"
+    },
+    {
+      "name": "collectWcRemovedEntries",
+      "sha256": "9c142faa5db52ec4e990ac5b3b6738abc81d139f59645d45108d3163cf95625e"
+    },
+    {
+      "name": "focusWcNotebookHeading",
+      "sha256": "680ff3ea43f32f2d9c1983d2dec3a590fef3ae6e5c60b621a03a5ee86f0d4215"
+    },
+    {
+      "name": "clearWcExperimentLog",
+      "sha256": "441c5db731f42675581b05bd21cac9184a1f9affbe6ba548f611917d4c2518ea"
+    },
+    {
+      "name": "removeWcObservation",
+      "sha256": "67ebf3111fb7cecef59169e128e5f9c3dca6b29d9c2a7edd982b932425f6440c"
+    },
+    {
+      "name": "undoWcObservationRemoval",
+      "sha256": "db4fc850b07c511c9f70c98fac3f21ce0267c17cbcd7b33ad111314111b1fe86"
+    },
+    {
+      "name": "updateWcObservationNote",
+      "sha256": "9d78e31fab6e9fb487afd9c8e2749ba2c8edced5f4ddf44705cfbf1fb9856de9"
+    },
+    {
+      "name": "downloadWcExperimentLog",
+      "sha256": "3dfca8c6c95665816cf713894e4123eca4da48e78877ebf2b6379825958ea477"
+    },
+    {
+      "name": "WCProcessCompare",
+      "sha256": "6b2869a0e86c41c8b86fc3c2722200b716210ebeba4e407ffc56a1c1f2051c46"
+    },
+    {
+      "name": "WCNextExperiment",
+      "sha256": "29b07f142b61062794810132b8ffb72d818979392cef96a92d35e653cb1cf6e1"
+    },
+    {
+      "name": "wcQuizBank",
+      "sha256": "5f6378b528d90eac9974fb003bedce3f4f9d76981dcca17ddfa7616d281dcf41"
+    },
+    {
+      "name": "wcQuizQuestion",
+      "sha256": "a4b6613b91b16ef64b10104906049fe8fb2cc156ead7e539cf7be0e3c5bee1c5"
+    },
+    {
+      "name": "checkWaterCycleChallenges",
+      "sha256": "5ebaedbdcfbff0f3e39e04ae1e39a41746c9b5081a9dbba0887ad2f6330a1a5f"
+    },
+    {
+      "name": "studyVocab",
+      "sha256": "b0f14f19adf959922940084fa469d5548e2b11146f4953eb234b4574067318fe"
+    },
+    {
+      "name": "selectStage",
+      "sha256": "e9706956b6549e605f0fcacc0f1788256d6a683a06868d831217857b2ec23fc7"
+    },
+    {
+      "name": "canvasRef",
+      "sha256": "1b33ed71c593daecfd3c852ec249e38daef6d3aaef976ed6388d7df8b17536a5"
+    },
+    {
+      "name": "journey3dRef",
+      "sha256": "3e0b1948cea51fef6137c1e760cdb286c163b2a17dd70e92ede98af46c7fb4aa"
+    },
+    {
+      "name": "onWcKey",
+      "sha256": "4b9662e6b29032ca30d6b052ad72a3ee715d3904d3c9c2658a3ae73b85510b09"
+    },
+    {
+      "name": "setJourneyReplayProgress",
+      "sha256": "c8a6f135c2911133ef74755baa88b9cf227cf0ddd480e41fce75bd8abb4992e9"
+    },
+    {
+      "name": "resumeLiveJourney",
+      "sha256": "d705797b062824ed70e919159125f00b57ebd43243fee5249b5b3796df94c34e"
+    },
+    {
+      "name": "chooseJourneyPath",
+      "sha256": "4a0f1b0a5eeb129fffc77a35d682a8269f3a17d79a91dd450f6a6939a651bf43"
+    },
+    {
+      "name": "journeyReplaySegmentAt",
+      "sha256": "c42250f745da6263738e2efa21c3d8196c03ee78545bdf6973b6da1d5cc982da"
+    },
+    {
+      "name": "syncWcWalkthroughStage",
+      "sha256": "53bb47c94f1008ff0eb50a3b09761339375126462ddc521e87fe610e63d30447"
+    },
+    {
+      "name": "toggleWcWalkthrough",
+      "sha256": "d24e8e854f788dc6808078dde622ff715f10befe184b9e4a2df9fe1d89d2854d"
+    },
+    {
+      "name": "stepWcWalkthrough",
+      "sha256": "fc220854b8037491864670a8c51c7166790f762dd35905e35d39906d380acbc3"
+    },
+    {
+      "name": "toggleWc2dPlayback",
+      "sha256": "5c5fbf04a2e569dbec24ec79d6aab376ceea6d0c70d847e1c7a1b61be1be6524"
+    },
+    {
+      "name": "handleWc2dKey",
+      "sha256": "d3f5ff3e51e0bc192ba46f47dc78673461b075ec382cda0cf647d43f735ee7eb"
+    },
+    {
+      "name": "handleJourney3dKey",
+      "sha256": "ab13ca3b15e7bbf30c6bba5179cbb6bc6ad980cf4f3e03964d18792743e5cffd"
+    },
+    {
+      "name": "handleJourney3dSceneClick",
+      "sha256": "9e3cf03fe2a542e412afb5027f7d653806b20338e9e706824ddd6732960ea561"
+    },
+    {
+      "name": "controlJourneyCamera",
+      "sha256": "015cdbe498220ed636de0a8350adf780c569c7f4ecfd5aa8fa6944cbdc225800"
+    },
+    {
+      "name": "beginWcQuickJourney",
+      "sha256": "6e6fb43f7d79de104e995f55ca1cb76ac688c92251a7b6700774c0aba20f3214"
+    },
+    {
+      "name": "MATTER_ENERGY_TRACE",
+      "sha256": "5b29d16aba2e615e7a40801745c9af2dbc4051fd27d2510360f05568314c96c2"
+    },
+    {
+      "name": "JOURNEY_MATTER_ENERGY_TRACE",
+      "sha256": "b1c153ec3df774de5d9a14c8a57f86c71f5342529d610eb9a49dda51377139cd"
+    },
+    {
+      "name": "STAGE_HYDROLOGIC_TIME_TRACE",
+      "sha256": "7d2bcf2dc30e8fe609417e486bb59b6f94f4adecafd59261baf2933f6274c17a"
+    },
+    {
+      "name": "JOURNEY_HYDROLOGIC_TIME_TRACE",
+      "sha256": "ada899581c4abcb415df59fbbe9caa1894603d3abaadef938fc8cdfc78234a7c"
+    },
+    {
+      "name": "WCCheckInvestigation",
+      "sha256": "69e47c9d4d859f88cef5b92b56454caf90738399c91c18f4863dfb0c7a242316"
+    },
+    {
+      "name": "startWcCheckInvestigation",
+      "sha256": "1524fe238f74220660a92c4118244193861b94b03af7e10c04b91ea6ca1f70c1"
+    },
+    {
+      "name": "returnWcCheckInvestigation",
+      "sha256": "ae556f85b2deb3a8a6cd7dbbd98c9c973740b5a74b8be52a2599af3a82985a29"
+    },
+    {
+      "name": "updateWcCheckReflection",
+      "sha256": "46a1eb09d38efd0231190fbcca450ab69dc1f0149d1284d2bcf405cb61bdbe80"
+    },
+    {
+      "name": "saveWcCheckReflection",
+      "sha256": "41bcf3e6c9e269f9de1528c55ae80d13aeada95743e55402365a3c7afd203d94"
+    },
+    {
+      "name": "closeWcCheckInvestigation",
+      "sha256": "b93ec41997813070ecaebbad8bb8b075511d8de2253eb8c123020f9eddcb975c"
+    },
+    {
+      "name": "renderWcCheckProcess",
+      "sha256": "fbafe2e62c8be43391a3088d7c89dbba690abe4a81fcb6bd746b4c2d0462adad"
+    },
+    {
+      "name": "renderWcCheckPores",
+      "sha256": "01c29df93cf3cbccb62e6f3190d079d2fb8b6ecd0697c3b9f84a98360f166fb5"
+    },
+    {
+      "name": "renderWcCheckAction",
+      "sha256": "4d5a3d13ac7eb329b379c220131b3321d717d0283fb5d646e8a861aa3e07a087"
+    },
+    {
+      "name": "renderWcCheckInvestigation",
+      "sha256": "9bc990fbcda2ff620135f98763754acebf77e56360e5e86130c212950c14cbe5"
+    },
+    {
+      "name": "renderWcCheckHistory",
+      "sha256": "35a883657e754c76250ea2989ec32108f4820123e41599635ff2805188b1b44d"
+    },
+    {
+      "name": "wcRunoffDelta:assignment",
+      "sha256": "79e25128760f8e6892fefe926ee25fd9e0c8491ef958dcfb6f3d1e1c27a193ae"
+    },
+    {
+      "name": "wcInfiltrationDelta:assignment",
+      "sha256": "4e8810ff5a7c4d7bfcaecf2fbdba2dab792df33c8cd7a41dd1c0fa2358ef496b"
+    },
+    {
+      "name": "wcEvaporationDelta:assignment",
+      "sha256": "20a82896578af7b47673ef7b794276d423212ca1986406bd554e61768c48a8c0"
+    }
+  ],
+  "scoreBlocks": {
+    "myth": "d62ec9d1e25b1f51a3e3df672121855b3a471f5fce9b421d22666c3340a33aa0",
+    "quiz": "bead9c9e4285cdf1f96692a5bcb695d2554a27b14c8d82948a0e08c46af746fb"
+  },
+  "derivationRanges": [
+    {
+      "label": "Complete scenario comparison derivation",
+      "start": "          var wcScenarioBaseline =",
+      "end": "          function setJourneyReplayProgress(value)",
+      "sha256": "987c64017f2fdf2d57588bf2674e21783b6a9dcd914d343d6138f76ab965fbc8",
+      "bytesLF": 15672
+    },
+    {
+      "label": "Complete signal and chart derivation",
+      "start": "          function clampWcSignal(value)",
+      "end": "          var wcClimateBaselineSolar =",
+      "sha256": "daba844d9155f2e2f2f37066f9442146c1057608926e2268ed92c308dc1eff86",
+      "bytesLF": 9814
+    }
+  ],
+  "testFiles": [
+    {
+      "path": "tests/watercycle_canvas_loop.test.js",
+      "bytes": 4791,
+      "sha256": "811d45c6730ebec5a72b7a2c3713f618938a19a44c277a990bedf3c18551a806",
+      "sha256LF": "2b279f67789b952ad23ec3d4f4ff2d05024f52254971a674ee63a28c737365c0"
+    },
+    {
+      "path": "tests/watercycle_check_investigations.test.js",
+      "bytes": 36329,
+      "sha256": "2dd862600b9c6a6cd31fbc712edb2a068fa3b1171e40ea7a88ea3358651a1a99",
+      "sha256LF": "2dd862600b9c6a6cd31fbc712edb2a068fa3b1171e40ea7a88ea3358651a1a99"
+    },
+    {
+      "path": "tests/watercycle_comparison_clarity.test.js",
+      "bytes": 17907,
+      "sha256": "de41ebf91f544824574a2c8a15fe749189d242c5566d569b25dac55c5803414c",
+      "sha256LF": "de41ebf91f544824574a2c8a15fe749189d242c5566d569b25dac55c5803414c"
+    },
+    {
+      "path": "tests/watercycle_conditions_clarity.test.js",
+      "bytes": 11900,
+      "sha256": "95dd0f2f398b70b45c44eda4bbbac1522dd2cd306701ddca8b4cd0212f9618e6",
+      "sha256LF": "95dd0f2f398b70b45c44eda4bbbac1522dd2cd306701ddca8b4cd0212f9618e6"
+    },
+    {
+      "path": "tests/watercycle_content_invariants.test.js",
+      "bytes": 6232,
+      "sha256": "1220022fa041c0e1908ca41271aee50b035b30f87565ad7517651ccb1f050c4b",
+      "sha256LF": "a22730e55cf91e2b33f2d5a1533552675a7d48c9a918595011715e509e624b8f"
+    },
+    {
+      "path": "tests/watercycle_controls_a11y.test.js",
+      "bytes": 8258,
+      "sha256": "8c7b2439aedb7df98a48c5aeaabe8b8bd1a4b968c31ec9c53cf1c4e8e0b6bf5c",
+      "sha256LF": "8c7b2439aedb7df98a48c5aeaabe8b8bd1a4b968c31ec9c53cf1c4e8e0b6bf5c"
+    },
+    {
+      "path": "tests/watercycle_explore_notebook.test.js",
+      "bytes": 12329,
+      "sha256": "1141dd9331654f61ea7e5654542a93c1aac410425bdd93ad50af2f8abb4d483e",
+      "sha256LF": "1141dd9331654f61ea7e5654542a93c1aac410425bdd93ad50af2f8abb4d483e"
+    },
+    {
+      "path": "tests/watercycle_journey_chapters.test.js",
+      "bytes": 24021,
+      "sha256": "31d9930b2d6bf7cd436aaae5d873117be527e86caad2b766a4618c4ef8e06c4d",
+      "sha256LF": "31d9930b2d6bf7cd436aaae5d873117be527e86caad2b766a4618c4ef8e06c4d"
+    },
+    {
+      "path": "tests/watercycle_journey_completion_receipt.test.js",
+      "bytes": 2384,
+      "sha256": "dc02e0ea3f6d343c78c8f0e8837c738991f3d8da1d77104418d2a16345eb2e2c",
+      "sha256LF": "dc02e0ea3f6d343c78c8f0e8837c738991f3d8da1d77104418d2a16345eb2e2c"
+    },
+    {
+      "path": "tests/watercycle_journey_controls.test.js",
+      "bytes": 7153,
+      "sha256": "2f7b78f4436f48e16107b07e54598f71a2d012995bd159a26fa8d49a3ecaa260",
+      "sha256LF": "2f7b78f4436f48e16107b07e54598f71a2d012995bd159a26fa8d49a3ecaa260"
+    },
+    {
+      "path": "tests/watercycle_next_experiment.test.js",
+      "bytes": 8733,
+      "sha256": "ddaef3e388deda56a177f2200007d8a7d2c6e847ffa13dca63ab518546ad4e89",
+      "sha256LF": "ddaef3e388deda56a177f2200007d8a7d2c6e847ffa13dca63ab518546ad4e89"
+    },
+    {
+      "path": "tests/watercycle_notebook_clarity.test.js",
+      "bytes": 21150,
+      "sha256": "f403a842af6f9e4a2390740d43b7b70e95494b24caf193a711e1eb973db3701d",
+      "sha256LF": "f403a842af6f9e4a2390740d43b7b70e95494b24caf193a711e1eb973db3701d"
+    },
+    {
+      "path": "tests/watercycle_process_compare.test.js",
+      "bytes": 15866,
+      "sha256": "6e1ca32d85dcb6b158c715906c8046058e5109d57428275b68e960252fa32c70",
+      "sha256LF": "6e1ca32d85dcb6b158c715906c8046058e5109d57428275b68e960252fa32c70"
+    },
+    {
+      "path": "tests/watercycle_replay_indicator.test.js",
+      "bytes": 1810,
+      "sha256": "06168ae19b96369998860e5eb607d58337b3df07f7eb323393f6d4a6d15c7aa7",
+      "sha256LF": "06168ae19b96369998860e5eb607d58337b3df07f7eb323393f6d4a6d15c7aa7"
+    }
+  ],
+  "evidenceMetadata": [
+    {
+      "path": "reports/watercycle-journey-chapters/unit-verification-before.json",
+      "runtimeHashFields": [
+        "sourceSha256Before",
+        "publicSha256Before"
+      ],
+      "testHashFields": [
+        {
+          "field": "testFiles.0.sha256",
+          "path": "tests/watercycle_journey_chapters.test.js"
+        },
+        {
+          "field": "testFiles.1.sha256",
+          "path": "tests/watercycle_journey_controls.test.js"
+        }
+      ]
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/unit-verification-after.json",
+      "runtimeHashFields": [
+        "sourceSha256Before",
+        "publicSha256Before",
+        "sourceSha256After",
+        "publicSha256",
+        "publicSha256After",
+        "loadedSourceSha256"
+      ],
+      "testHashFields": [
+        {
+          "field": "testFiles.0.sha256",
+          "path": "tests/watercycle_journey_chapters.test.js"
+        },
+        {
+          "field": "testFiles.0.sha256After",
+          "path": "tests/watercycle_journey_chapters.test.js"
+        },
+        {
+          "field": "testFiles.1.sha256",
+          "path": "tests/watercycle_journey_controls.test.js"
+        },
+        {
+          "field": "testFiles.1.sha256After",
+          "path": "tests/watercycle_journey_controls.test.js"
+        }
+      ]
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/regression-verification-before.json",
+      "runtimeHashFields": [
+        "sourceSha256Before",
+        "publicSha256Before"
+      ],
+      "testHashFields": [
+        {
+          "field": "testFiles.0.sha256",
+          "path": "tests/watercycle_check_investigations.test.js"
+        },
+        {
+          "field": "testFiles.1.sha256",
+          "path": "tests/watercycle_controls_a11y.test.js"
+        },
+        {
+          "field": "testFiles.2.sha256",
+          "path": "tests/watercycle_content_invariants.test.js"
+        },
+        {
+          "field": "testFiles.3.sha256",
+          "path": "tests/watercycle_explore_notebook.test.js"
+        },
+        {
+          "field": "testFiles.4.sha256",
+          "path": "tests/watercycle_notebook_clarity.test.js"
+        },
+        {
+          "field": "testFiles.5.sha256",
+          "path": "tests/watercycle_process_compare.test.js"
+        },
+        {
+          "field": "testFiles.6.sha256",
+          "path": "tests/watercycle_next_experiment.test.js"
+        },
+        {
+          "field": "testFiles.7.sha256",
+          "path": "tests/watercycle_conditions_clarity.test.js"
+        },
+        {
+          "field": "testFiles.8.sha256",
+          "path": "tests/watercycle_comparison_clarity.test.js"
+        },
+        {
+          "field": "testFiles.9.sha256",
+          "path": "tests/watercycle_canvas_loop.test.js"
+        },
+        {
+          "field": "testFiles.10.sha256",
+          "path": "tests/watercycle_replay_indicator.test.js"
+        },
+        {
+          "field": "testFiles.11.sha256",
+          "path": "tests/watercycle_journey_completion_receipt.test.js"
+        }
+      ]
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/regression-verification-after.json",
+      "runtimeHashFields": [
+        "sourceSha256Before",
+        "publicSha256Before",
+        "sourceSha256After",
+        "publicSha256",
+        "publicSha256After",
+        "loadedSourceSha256"
+      ],
+      "testHashFields": [
+        {
+          "field": "testFiles.0.sha256",
+          "path": "tests/watercycle_check_investigations.test.js"
+        },
+        {
+          "field": "testFiles.0.sha256After",
+          "path": "tests/watercycle_check_investigations.test.js"
+        },
+        {
+          "field": "testFiles.1.sha256",
+          "path": "tests/watercycle_controls_a11y.test.js"
+        },
+        {
+          "field": "testFiles.1.sha256After",
+          "path": "tests/watercycle_controls_a11y.test.js"
+        },
+        {
+          "field": "testFiles.2.sha256",
+          "path": "tests/watercycle_content_invariants.test.js"
+        },
+        {
+          "field": "testFiles.2.sha256After",
+          "path": "tests/watercycle_content_invariants.test.js"
+        },
+        {
+          "field": "testFiles.3.sha256",
+          "path": "tests/watercycle_explore_notebook.test.js"
+        },
+        {
+          "field": "testFiles.3.sha256After",
+          "path": "tests/watercycle_explore_notebook.test.js"
+        },
+        {
+          "field": "testFiles.4.sha256",
+          "path": "tests/watercycle_notebook_clarity.test.js"
+        },
+        {
+          "field": "testFiles.4.sha256After",
+          "path": "tests/watercycle_notebook_clarity.test.js"
+        },
+        {
+          "field": "testFiles.5.sha256",
+          "path": "tests/watercycle_process_compare.test.js"
+        },
+        {
+          "field": "testFiles.5.sha256After",
+          "path": "tests/watercycle_process_compare.test.js"
+        },
+        {
+          "field": "testFiles.6.sha256",
+          "path": "tests/watercycle_next_experiment.test.js"
+        },
+        {
+          "field": "testFiles.6.sha256After",
+          "path": "tests/watercycle_next_experiment.test.js"
+        },
+        {
+          "field": "testFiles.7.sha256",
+          "path": "tests/watercycle_conditions_clarity.test.js"
+        },
+        {
+          "field": "testFiles.7.sha256After",
+          "path": "tests/watercycle_conditions_clarity.test.js"
+        },
+        {
+          "field": "testFiles.8.sha256",
+          "path": "tests/watercycle_comparison_clarity.test.js"
+        },
+        {
+          "field": "testFiles.8.sha256After",
+          "path": "tests/watercycle_comparison_clarity.test.js"
+        },
+        {
+          "field": "testFiles.9.sha256",
+          "path": "tests/watercycle_canvas_loop.test.js"
+        },
+        {
+          "field": "testFiles.9.sha256After",
+          "path": "tests/watercycle_canvas_loop.test.js"
+        },
+        {
+          "field": "testFiles.10.sha256",
+          "path": "tests/watercycle_replay_indicator.test.js"
+        },
+        {
+          "field": "testFiles.10.sha256After",
+          "path": "tests/watercycle_replay_indicator.test.js"
+        },
+        {
+          "field": "testFiles.11.sha256",
+          "path": "tests/watercycle_journey_completion_receipt.test.js"
+        },
+        {
+          "field": "testFiles.11.sha256After",
+          "path": "tests/watercycle_journey_completion_receipt.test.js"
+        }
+      ]
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/preview-check.json",
+      "runtimeHashFields": [
+        "servedRuntimeSha256"
+      ],
+      "testHashFields": []
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "bytes": 2999560,
+      "sha256": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "bytes": 2999560,
+      "sha256": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c"
+    },
+    {
+      "path": "dev-tools/watercycle_journey_chapters_qa.cjs",
+      "bytes": 33323,
+      "sha256": "3a7a12f96f93d0af64a46e0a1a744364ff2b96e89c0f8fdae460972d6e4cfd24"
+    },
+    {
+      "path": "tests/watercycle_canvas_loop.test.js",
+      "bytes": 4791,
+      "sha256": "811d45c6730ebec5a72b7a2c3713f618938a19a44c277a990bedf3c18551a806",
+      "sha256LF": "2b279f67789b952ad23ec3d4f4ff2d05024f52254971a674ee63a28c737365c0"
+    },
+    {
+      "path": "tests/watercycle_check_investigations.test.js",
+      "bytes": 36329,
+      "sha256": "2dd862600b9c6a6cd31fbc712edb2a068fa3b1171e40ea7a88ea3358651a1a99",
+      "sha256LF": "2dd862600b9c6a6cd31fbc712edb2a068fa3b1171e40ea7a88ea3358651a1a99"
+    },
+    {
+      "path": "tests/watercycle_comparison_clarity.test.js",
+      "bytes": 17907,
+      "sha256": "de41ebf91f544824574a2c8a15fe749189d242c5566d569b25dac55c5803414c",
+      "sha256LF": "de41ebf91f544824574a2c8a15fe749189d242c5566d569b25dac55c5803414c"
+    },
+    {
+      "path": "tests/watercycle_conditions_clarity.test.js",
+      "bytes": 11900,
+      "sha256": "95dd0f2f398b70b45c44eda4bbbac1522dd2cd306701ddca8b4cd0212f9618e6",
+      "sha256LF": "95dd0f2f398b70b45c44eda4bbbac1522dd2cd306701ddca8b4cd0212f9618e6"
+    },
+    {
+      "path": "tests/watercycle_content_invariants.test.js",
+      "bytes": 6232,
+      "sha256": "1220022fa041c0e1908ca41271aee50b035b30f87565ad7517651ccb1f050c4b",
+      "sha256LF": "a22730e55cf91e2b33f2d5a1533552675a7d48c9a918595011715e509e624b8f"
+    },
+    {
+      "path": "tests/watercycle_controls_a11y.test.js",
+      "bytes": 8258,
+      "sha256": "8c7b2439aedb7df98a48c5aeaabe8b8bd1a4b968c31ec9c53cf1c4e8e0b6bf5c",
+      "sha256LF": "8c7b2439aedb7df98a48c5aeaabe8b8bd1a4b968c31ec9c53cf1c4e8e0b6bf5c"
+    },
+    {
+      "path": "tests/watercycle_explore_notebook.test.js",
+      "bytes": 12329,
+      "sha256": "1141dd9331654f61ea7e5654542a93c1aac410425bdd93ad50af2f8abb4d483e",
+      "sha256LF": "1141dd9331654f61ea7e5654542a93c1aac410425bdd93ad50af2f8abb4d483e"
+    },
+    {
+      "path": "tests/watercycle_journey_chapters.test.js",
+      "bytes": 24021,
+      "sha256": "31d9930b2d6bf7cd436aaae5d873117be527e86caad2b766a4618c4ef8e06c4d",
+      "sha256LF": "31d9930b2d6bf7cd436aaae5d873117be527e86caad2b766a4618c4ef8e06c4d"
+    },
+    {
+      "path": "tests/watercycle_journey_completion_receipt.test.js",
+      "bytes": 2384,
+      "sha256": "dc02e0ea3f6d343c78c8f0e8837c738991f3d8da1d77104418d2a16345eb2e2c",
+      "sha256LF": "dc02e0ea3f6d343c78c8f0e8837c738991f3d8da1d77104418d2a16345eb2e2c"
+    },
+    {
+      "path": "tests/watercycle_journey_controls.test.js",
+      "bytes": 7153,
+      "sha256": "2f7b78f4436f48e16107b07e54598f71a2d012995bd159a26fa8d49a3ecaa260",
+      "sha256LF": "2f7b78f4436f48e16107b07e54598f71a2d012995bd159a26fa8d49a3ecaa260"
+    },
+    {
+      "path": "tests/watercycle_next_experiment.test.js",
+      "bytes": 8733,
+      "sha256": "ddaef3e388deda56a177f2200007d8a7d2c6e847ffa13dca63ab518546ad4e89",
+      "sha256LF": "ddaef3e388deda56a177f2200007d8a7d2c6e847ffa13dca63ab518546ad4e89"
+    },
+    {
+      "path": "tests/watercycle_notebook_clarity.test.js",
+      "bytes": 21150,
+      "sha256": "f403a842af6f9e4a2390740d43b7b70e95494b24caf193a711e1eb973db3701d",
+      "sha256LF": "f403a842af6f9e4a2390740d43b7b70e95494b24caf193a711e1eb973db3701d"
+    },
+    {
+      "path": "tests/watercycle_process_compare.test.js",
+      "bytes": 15866,
+      "sha256": "6e1ca32d85dcb6b158c715906c8046058e5109d57428275b68e960252fa32c70",
+      "sha256LF": "6e1ca32d85dcb6b158c715906c8046058e5109d57428275b68e960252fa32c70"
+    },
+    {
+      "path": "tests/watercycle_replay_indicator.test.js",
+      "bytes": 1810,
+      "sha256": "06168ae19b96369998860e5eb607d58337b3df07f7eb323393f6d4a6d15c7aa7",
+      "sha256LF": "06168ae19b96369998860e5eb607d58337b3df07f7eb323393f6d4a6d15c7aa7"
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/README.md",
+      "bytes": 6963,
+      "sha256": "7fc92fb93f3aa58e8ce92cfd2fd45ee0c88af397c5e1524f9035effed656be06"
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/baseline-audit.cjs",
+      "bytes": 9017,
+      "sha256": "9ca0262b2dfcf374d526e559efebb10d8a6c88fb5355749be0774f9259215bae"
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/baseline-browser-summary.json",
+      "bytes": 14035,
+      "sha256": "87cae26bb1feeaacbb9f80daa31e39b6dc2a72df13e5db80fb412fcbd4e67779"
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/baseline-freeze.json",
+      "bytes": 217,
+      "sha256": "3af11cd8b51e00cf80b68cda56ac0be8462369ef4a5b2d4bef952085faec7f5f"
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/baseline-idle-light-1280-host390.png",
+      "bytes": 84149,
+      "sha256": "aa1db3167f98f377c7e33406e626bba7243d5ebf004a66dad6f366c04543858d",
+      "png": {
+        "width": 332,
+        "height": 379
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/baseline-idle-light-1280.png",
+      "bytes": 113779,
+      "sha256": "33601109b49fa8a9c215e8c8c1ef97a3af91d3ec28d7d624450816a99826be90",
+      "png": {
+        "width": 1006,
+        "height": 167
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/baseline-idle-light-320.png",
+      "bytes": 83015,
+      "sha256": "321ec974bdcc5a50b7b78ecf6076853e8601f365e709b148a4d3805be1a9313d",
+      "png": {
+        "width": 274,
+        "height": 449
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/baseline-paused-aquifer-light-1280-host390.png",
+      "bytes": 79714,
+      "sha256": "88c24e9b202b2216f5587371571d0514a85ce6e2398cdbfe67ac3fd847e30f99",
+      "png": {
+        "width": 332,
+        "height": 896
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/baseline-paused-aquifer-light-1280.png",
+      "bytes": 101201,
+      "sha256": "ea92920c19b18a3e359a42e6820fd2320e0e7bc1a48d0bc6736dd8400854e678",
+      "png": {
+        "width": 1006,
+        "height": 513
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/baseline-paused-aquifer-light-320.png",
+      "bytes": 76328,
+      "sha256": "0ee2374e5ad2c861a70cd898b0fed162a4969a6fe0693df86af88f4c4e6f316b",
+      "png": {
+        "width": 274,
+        "height": 882
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/baseline-replay81-light-1280-host390.png",
+      "bytes": 79064,
+      "sha256": "308421800b7d522d2f99ee9c67bc65d241c0467d99656b3098ce22b22acc32de",
+      "png": {
+        "width": 332,
+        "height": 919
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/baseline-replay81-light-1280.png",
+      "bytes": 104636,
+      "sha256": "641a32a54575f08a4fa039448822fb098dd20cb280242d4a3a4033763b2d25bb",
+      "png": {
+        "width": 1006,
+        "height": 553
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/baseline-replay81-light-320.png",
+      "bytes": 75394,
+      "sha256": "9ca8cb301db2e0e620336dbbd1bda25bcf037ee838f3005880f8d36bd42f969d",
+      "png": {
+        "width": 274,
+        "height": 905
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/baseline-results.json",
+      "bytes": 307643,
+      "sha256": "cc93512b1d02c5bae33c532d3ab2c7af8f0250551cf28eec4d765bf4f0fc09e7"
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/baseline-runtime.js",
+      "bytes": 2966310,
+      "sha256": "8e43450261e9faff3de64bdd8d4778ac0495f19a75c1fbe48a91ed66d6279dbb"
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/baseline-timeline-light-1280-host390.png",
+      "bytes": 10370,
+      "sha256": "2ddb41ee7cf4de30524982a2eedcad7e9e03624b6a6935e6758469858e238e56",
+      "png": {
+        "width": 298,
+        "height": 82
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/baseline-timeline-light-1280.png",
+      "bytes": 10163,
+      "sha256": "fc4689adae896bfa1005ff7de4ac609fbe458da423fc4256315d35c1aa248095",
+      "png": {
+        "width": 972,
+        "height": 50
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/baseline-timeline-light-320.png",
+      "bytes": 10014,
+      "sha256": "839b7f784c8b9deebec67f7c9a1cb9ed3aaf37d8e8e415b33d705ffeca7ff8e4",
+      "png": {
+        "width": 240,
+        "height": 120
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-3D-follow-light-1280.png",
+      "bytes": 41486,
+      "sha256": "581681ecb3c4d3230d1b2d9eaf6b963d6c1879d0db969624807974645947c3d4",
+      "png": {
+        "width": 972,
+        "height": 643
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-3D-paused-aquifer-light-1280.png",
+      "bytes": 206617,
+      "sha256": "73fe11457500f3640f5f0548f0674e9cf3e38a99b5d44beada49cba4889fc629",
+      "png": {
+        "width": 1006,
+        "height": 1611
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-browser-summary.json",
+      "bytes": 31769,
+      "sha256": "11712d794b5617db085c1bff139764badbeb02724c146f7641c6ac8ad7d986fb"
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-complete-light-320.png",
+      "bytes": 210639,
+      "sha256": "b5fc3a9b6d2ceba80a264c4acaabbb99a8b36fc19e7c520a667278f1df8df80c",
+      "png": {
+        "width": 274,
+        "height": 3446
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-ground-choice-dark-1280.png",
+      "bytes": 316777,
+      "sha256": "00099502382568a595b97dbcda7696c98640af263c545e6a569d9353acd2a4dd",
+      "png": {
+        "width": 1006,
+        "height": 1985
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-ground-choice-dark-forced-1280.png",
+      "bytes": 158523,
+      "sha256": "929271fdbc693aff4ab43846276c8f0c7ca7b993abbb09a7055ea6e927aa2c16",
+      "png": {
+        "width": 1006,
+        "height": 1985
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-ground-choice-light-320.png",
+      "bytes": 235656,
+      "sha256": "6b491bbdc601d2c7b255be1e9ea6f500a0090cb071a5386c02c09ae9ee60b952",
+      "png": {
+        "width": 274,
+        "height": 4569
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-ground-choice-light-forced-320.png",
+      "bytes": 150686,
+      "sha256": "8bef0ecb20e5c428e07d87813da7fbe5b780b82094b772b89ac63c87005a82e8",
+      "png": {
+        "width": 274,
+        "height": 4569
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-idle-dark-1280.png",
+      "bytes": 199570,
+      "sha256": "a635ef42a3f1d2aca0d253fac5f6b4671ca367c97aa66873cf3427e0329b87de",
+      "png": {
+        "width": 1006,
+        "height": 1064
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-idle-dark-forced-1280.png",
+      "bytes": 118170,
+      "sha256": "5b841cc89b37a4c115a1c7c1ecf051b5d0d2121ba376f45742c8d60c1a06aabf",
+      "png": {
+        "width": 1006,
+        "height": 1064
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-idle-light-1280-host390.png",
+      "bytes": 222929,
+      "sha256": "93da6e119f3fa08f240e1b1e85ab125a9b875d36835d25c55c2fe8ab4c982857",
+      "png": {
+        "width": 332,
+        "height": 2019
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-idle-light-1280.png",
+      "bytes": 253235,
+      "sha256": "bad0698b3e861235d89460ce498a6491aae316a2f1dbbf9a7b62ab5c290acea9",
+      "png": {
+        "width": 1006,
+        "height": 1064
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-idle-light-320.png",
+      "bytes": 220077,
+      "sha256": "f4d8a0a24e936ff4f9e8e479de85980cbb948e6b0fb2c340eecad8570b6427a5",
+      "png": {
+        "width": 274,
+        "height": 2262
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-idle-light-390.png",
+      "bytes": 223952,
+      "sha256": "6f1d037abb582503597ce6d832d0dafba1990a528687abf413f94eb98cf8135e",
+      "png": {
+        "width": 344,
+        "height": 1978
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-idle-light-768.png",
+      "bytes": 237657,
+      "sha256": "68d0ba39bd1e1585b72ba520ced1955c5f70cf2440183e6d8e9035d90575bbc7",
+      "png": {
+        "width": 710,
+        "height": 1149
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-idle-light-forced-320.png",
+      "bytes": 83166,
+      "sha256": "80ba33ed8e33fee1d61f8108c885d9ae0f11e26f3e0ee9836db562bb2426124c",
+      "png": {
+        "width": 274,
+        "height": 2262
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-invalid-persisted-chapter-light-320.png",
+      "bytes": 180795,
+      "sha256": "5ad8166befe7feea679e1110ffc6bb8cc40e91992228d53d406e4f6ac07d6ef7",
+      "png": {
+        "width": 274,
+        "height": 3427
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-land-3D-light-1280.png",
+      "bytes": 40482,
+      "sha256": "9666bc2b364120b849f74f08d14685d4245072414fd7734141c4b59e97fb4cb4",
+      "png": {
+        "width": 972,
+        "height": 643
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-land-dark-1280.png",
+      "bytes": 41585,
+      "sha256": "e2f49fc3a601a20cd41df07985cb98cb7bac50e4c8283c5c7ff3dd86fe01becc",
+      "png": {
+        "width": 972,
+        "height": 644
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-land-dark-forced-1280.png",
+      "bytes": 38406,
+      "sha256": "b97a87317eb2f91220577a5fcaceb50a741e5da601755f95a289654aba3d157b",
+      "png": {
+        "width": 972,
+        "height": 644
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-land-light-1280-host390.png",
+      "bytes": 39809,
+      "sha256": "e26cdefe8716a0349ca109ab8099844d97136878f95bfeb4a0c69065f6e67862",
+      "png": {
+        "width": 298,
+        "height": 1137
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-land-light-1280.png",
+      "bytes": 40531,
+      "sha256": "7735d4dfe3fb40e68165b6cbd9be6581d71752b2da1ab61762ef506437b8a8b4",
+      "png": {
+        "width": 972,
+        "height": 644
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-land-light-320.png",
+      "bytes": 40593,
+      "sha256": "fd0b731b0103999145d24cb81bc97c82834f6fdaa55867e1aad6c13a7ef2c119",
+      "png": {
+        "width": 240,
+        "height": 1250
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-land-light-390.png",
+      "bytes": 39933,
+      "sha256": "3a4216c81be922afd678969af7446c3727fa793f7e748f7c24efc796b6fb5347",
+      "png": {
+        "width": 310,
+        "height": 1115
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-land-light-768.png",
+      "bytes": 39627,
+      "sha256": "486ba3a56244bfead67aa484e253de9d34a2d5d1ffea47aa17bb39ce7005d62a",
+      "png": {
+        "width": 676,
+        "height": 710
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-land-light-forced-320.png",
+      "bytes": 34181,
+      "sha256": "ccd5684bc62cddcce04bffb8d2f7282b9044607021196392ad96c4caa6b03107",
+      "png": {
+        "width": 240,
+        "height": 1205
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-paused-aquifer-dark-1280.png",
+      "bytes": 240725,
+      "sha256": "cbe910667b51084d909506b4bb45332cbbfd1df6eedc56b195bf0a3342807bcb",
+      "png": {
+        "width": 1006,
+        "height": 1612
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-paused-aquifer-dark-forced-1280.png",
+      "bytes": 113621,
+      "sha256": "518d9fc60fa4e34f65e92b0475e82de7387fa2a4458b13cf7f9ceca5de6a307c",
+      "png": {
+        "width": 1006,
+        "height": 1612
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-paused-aquifer-light-1280-host390.png",
+      "bytes": 182604,
+      "sha256": "3930eb8ad20b985409d3af15d1d194ffc4a9f2e7b60cfe7a682c2a2c1a24e0a0",
+      "png": {
+        "width": 332,
+        "height": 3154
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-paused-aquifer-light-1280.png",
+      "bytes": 208138,
+      "sha256": "8ce87dba6f788015dd4876019f2079948a32142fdb36e64d6e11e9040db4125a",
+      "png": {
+        "width": 1006,
+        "height": 1612
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-paused-aquifer-light-320.png",
+      "bytes": 180204,
+      "sha256": "8c5ad6d7d7f8144f9dece6abd6a352140c6d1c085978e3198330febf0e99861c",
+      "png": {
+        "width": 274,
+        "height": 3427
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-paused-aquifer-light-390.png",
+      "bytes": 185399,
+      "sha256": "e83639843882731882091fa79208f91bda720b9d48d7108e8942908b24086e75",
+      "png": {
+        "width": 344,
+        "height": 3090
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-paused-aquifer-light-768.png",
+      "bytes": 190934,
+      "sha256": "9233148e72d532a34e2b571f012aa9c10623ddfa3f3ce2b51516b0fcef2b18f9",
+      "png": {
+        "width": 710,
+        "height": 1791
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-paused-aquifer-light-forced-320.png",
+      "bytes": 109317,
+      "sha256": "34f0b4e09de5c3ab01c5dca382e4c320e82fec7410363bddaf803a94e58b5470",
+      "png": {
+        "width": 274,
+        "height": 3427
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-plant-cloud-again-light-320.png",
+      "bytes": 164009,
+      "sha256": "8146fd2789730d0db9ab9d03ee88de8b0e555a4714447759901eebf649eac938",
+      "png": {
+        "width": 274,
+        "height": 2976
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-plant-rain-again-light-320.png",
+      "bytes": 163077,
+      "sha256": "a03ea16d5bfd98497ce97a70709cbd03b9af8f038a25c922b340282bed9abd61",
+      "png": {
+        "width": 274,
+        "height": 2934
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/final-replay-light-320.png",
+      "bytes": 165656,
+      "sha256": "79bcc4c2b6a4c35d11fe3c2c414008e41bc150d12f3eab02008a11a348f90998",
+      "png": {
+        "width": 274,
+        "height": 3058
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/preflight-idle-dark-1280.png",
+      "bytes": 199570,
+      "sha256": "a635ef42a3f1d2aca0d253fac5f6b4671ca367c97aa66873cf3427e0329b87de",
+      "png": {
+        "width": 1006,
+        "height": 1064
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/preflight-idle-light-1280-host390.png",
+      "bytes": 222970,
+      "sha256": "6e9c27861282964e3b2f94b434beceb5e9138a7bdcb796a0b7fe8acad3cf6d59",
+      "png": {
+        "width": 332,
+        "height": 2019
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/preflight-idle-light-1280.png",
+      "bytes": 253235,
+      "sha256": "bad0698b3e861235d89460ce498a6491aae316a2f1dbbf9a7b62ab5c290acea9",
+      "png": {
+        "width": 1006,
+        "height": 1064
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/preflight-idle-light-320.png",
+      "bytes": 220077,
+      "sha256": "f4d8a0a24e936ff4f9e8e479de85980cbb948e6b0fb2c340eecad8570b6427a5",
+      "png": {
+        "width": 274,
+        "height": 2262
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/preflight-land-dark-1280.png",
+      "bytes": 41585,
+      "sha256": "e2f49fc3a601a20cd41df07985cb98cb7bac50e4c8283c5c7ff3dd86fe01becc",
+      "png": {
+        "width": 972,
+        "height": 644
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/preflight-land-light-1280-host390.png",
+      "bytes": 39809,
+      "sha256": "e26cdefe8716a0349ca109ab8099844d97136878f95bfeb4a0c69065f6e67862",
+      "png": {
+        "width": 298,
+        "height": 1137
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/preflight-land-light-1280.png",
+      "bytes": 40531,
+      "sha256": "7735d4dfe3fb40e68165b6cbd9be6581d71752b2da1ab61762ef506437b8a8b4",
+      "png": {
+        "width": 972,
+        "height": 644
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/preflight-land-light-320.png",
+      "bytes": 40593,
+      "sha256": "fd0b731b0103999145d24cb81bc97c82834f6fdaa55867e1aad6c13a7ef2c119",
+      "png": {
+        "width": 240,
+        "height": 1250
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/preflight-paused-aquifer-dark-1280.png",
+      "bytes": 240725,
+      "sha256": "cbe910667b51084d909506b4bb45332cbbfd1df6eedc56b195bf0a3342807bcb",
+      "png": {
+        "width": 1006,
+        "height": 1612
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/preflight-paused-aquifer-light-1280-host390.png",
+      "bytes": 182604,
+      "sha256": "3930eb8ad20b985409d3af15d1d194ffc4a9f2e7b60cfe7a682c2a2c1a24e0a0",
+      "png": {
+        "width": 332,
+        "height": 3154
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/preflight-paused-aquifer-light-1280.png",
+      "bytes": 208138,
+      "sha256": "8ce87dba6f788015dd4876019f2079948a32142fdb36e64d6e11e9040db4125a",
+      "png": {
+        "width": 1006,
+        "height": 1612
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/preflight-paused-aquifer-light-320.png",
+      "bytes": 180204,
+      "sha256": "8c5ad6d7d7f8144f9dece6abd6a352140c6d1c085978e3198330febf0e99861c",
+      "png": {
+        "width": 274,
+        "height": 3427
+      }
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/preflight-runtime.js",
+      "bytes": 2999560,
+      "sha256": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c"
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/preflight.json",
+      "bytes": 4202400,
+      "sha256": "8b73309aa872fea3eaa8af393ca68def2fb3ee5214eed283e811089f45c4a487"
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/preview-check.json",
+      "bytes": 244,
+      "sha256": "c28b00797465ba5dbe0d1bc61ac02ca1a2aa66239e595069424bbe6d7fe2ea2f"
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/regression-results.json",
+      "bytes": 189372,
+      "sha256": "384d36cb9c787a5e72ddc436b60ea0fc69d92cf3976b3afb717b60ebcb5bbb8b"
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/regression-verification-after.json",
+      "bytes": 23238,
+      "sha256": "27ac745d8d205db6ef7dae6c5ed261e4d19bb37664b21c7e40d63f731b337ab6"
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/regression-verification-before.json",
+      "bytes": 2204,
+      "sha256": "838a8f9704b0b4630e6e7a3d043e91e48e85733c00e31647cd9d0a2bc0b17851"
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/results.json",
+      "bytes": 10633099,
+      "sha256": "b6586c816b42b0cb543f19df720197b38c52285288c558dd852944144acc4635"
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/tested-runtime.js",
+      "bytes": 2999560,
+      "sha256": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c"
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/unit-results.json",
+      "bytes": 47364,
+      "sha256": "bf183b41ff684be334b0b47ccba3254290ca378da7dee5f3448889ef73013cf1"
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/unit-verification-after.json",
+      "bytes": 20538,
+      "sha256": "636bdef1441b985aa52814f1f904d86aa42d205f41c4123f6a1ced9ef7045014"
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/unit-verification-before.json",
+      "bytes": 644,
+      "sha256": "e8510bd8e4ab17d81f5f7bbf8b87240762074a94fc969173b03f9aeefec889f3"
+    },
+    {
+      "path": "reports/watercycle-journey-chapters/verify.cjs",
+      "bytes": 18467,
+      "sha256": "67869ef8ff8b61053911a87ceb1b7cde7d8eefd892bef7542d64bf6b7b2f00cf"
+    }
+  ]
+}

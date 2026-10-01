@@ -1171,6 +1171,203 @@
   })();
   // End next experiment helpers.
 
+  // Read-only destinations and separate reflections for Check yourself.
+  var WCCheckInvestigation = (function() {
+    var specs = [
+      { key: 'cloud_rain', label: 'Cloud droplets and rainfall', processes: ['condensation', 'precipitation'], prompt: 'Trace vapor becoming droplets, then cloud water falling. Which step changes water state?', scope: 'These diagrams illustrate processes. They do not calculate droplet growth or predict a storm.' },
+      { key: 'water_return', label: 'Evaporation and water storage', processes: ['evaporation', 'collection'], prompt: 'Identify where liquid becomes vapor and where water can be stored. Explain why a drying puddle does not mean its water disappeared.', scope: 'The diagrams show possible transfers; they do not track a particular puddle or molecule.' },
+      { key: 'water_history', label: 'Water moving through the cycle', processes: ['collection', 'evaporation'], related: true, prompt: 'Trace water leaving a store and entering the atmosphere. How could repeated circulation connect water across long periods?', scope: 'This model cannot establish the history of a particular water molecule or whether it passed through a dinosaur.' },
+      { key: 'invisible_vapor', label: 'Vapor and visible droplets', processes: ['evaporation', 'condensation'], prompt: 'Compare the gas and liquid labels. Explain what makes a cloud visible and what the vapor marks represent.', scope: 'Water vapor is invisible. The drawn marks represent gas movement; visible clouds contain droplets or ice.' },
+      { key: 'cloud_particles', label: 'Cloud particles', processes: ['condensation', 'precipitation'], prompt: 'Identify liquid droplets and ice symbols. How are those different from water vapor?', scope: 'Symbols are enlarged teaching illustrations. Condensation here shows vapor becoming liquid; deposition can form ice directly from vapor.' },
+      { key: 'cool_evaporation', label: 'Temperature in the Climate Lab', processes: ['evaporation'], inputKey: 'climTemp', lab: 'climate', target: '#wc-climate-temperature', prompt: 'Compare the evaporation index at two temperatures below boiling. Keep sunlight and wind the same. Record what changed.', scope: 'This relative index is a teaching model with a positive floor. That floor is a model rule, not experimental proof of evaporation at every temperature.' },
+      { key: 'groundwater_pores', label: 'Water in soil and rock pores', processes: ['infiltration'], pores: true, related: true, prompt: 'Follow liquid entering soil, then moving through connected pore spaces. Explain how pore-space water differs from an underground river.', scope: 'This schematic shows a common groundwater pathway. It does not measure travel time or speed; caves and fractures can have different flow patterns.' },
+      { key: 'warming_related', label: 'Temperature in the Climate Lab', processes: ['evaporation'], inputKey: 'climTemp', lab: 'climate', target: '#wc-climate-temperature', related: true, prompt: 'Change only temperature and compare the relative evaporation index. Identify what this related model can show about warming.', scope: 'This model calculates an evaporation index. It does not calculate saturation vapor pressure or test the roughly 7% per degree relationship.' },
+      { key: 'wind_transport', label: 'Wind in the Climate Lab', processes: ['evaporation', 'precipitation'], inputKey: 'climWind', lab: 'climate', target: '#wc-climate-wind', related: true, prompt: 'Change only wind. Compare its transport setting with the evaporation index, then trace the atmospheric transfers in these diagrams.', scope: 'Wind changes modeled transport. This evaporation index uses sunlight and temperature; it does not measure transport distance or predict rainfall locations.' },
+      { key: 'plant_transfer', label: 'Water moving through plants', processes: ['transpiration'], related: true, prompt: 'Trace roots and xylem carrying liquid to leaves, then vapor leaving through stomata. Which part changes water state?', scope: 'The diagram shows the mechanism of transpiration. It does not measure its share of water movement in an ecosystem or worldwide.' },
+      { key: 'land_cover', label: 'Land cover in the Land Lab', processes: ['infiltration', 'collection'], inputKey: 'landCover', lab: 'land', target: '[data-wc-input="landCover"]', related: true, prompt: 'Change only land cover and compare the independent runoff and infiltration indices. Connect those possible pathways to water moving through a watershed.', scope: 'These are relative model responses. This tool does not delineate a real watershed or calculate its measured water budget.' },
+      { key: 'latent_heat', label: 'Water state and latent heat', processes: ['evaporation', 'condensation'], prompt: 'Compare liquid becoming vapor with vapor becoming liquid. Identify which process absorbs latent heat and which releases it.', scope: 'These descriptions show the direction of energy transfer. They do not calculate the amount of energy in the current scene.' },
+      { key: 'related_energy', label: 'Water state and energy', processes: ['evaporation', 'condensation'], related: true, prompt: 'Identify the energy transfer associated with evaporation. Explain what additional measurements an energy-budget question would need.', scope: 'This tool does not calculate sensible heat flux or the Bowen ratio. The diagrams illustrate related phase changes.' },
+      { key: 'sublimation', label: 'The sublimation concept', processes: [], related: true, prompt: 'Sublimation changes solid water directly into gas. Compare that definition with evaporation: what is the starting state in each?', scope: 'The six process diagrams in this tool do not simulate solid-to-gas transfer. Use the definition to identify this model limit.' },
+      { key: 'overview', label: 'Water state and movement', processes: ['evaporation', 'condensation'], related: true, prompt: 'Identify one water-state change in these diagrams. Explain whether it provides evidence for your question or whether more information is needed.', scope: 'This is a related process model. It does not establish every numerical fact or unfamiliar concept in a quiz question.' }
+    ];
+    var myths = [
+      ['Rain falls when clouds get holes in them, like a leaky bucket.', 'cloud_rain'],
+      ['When a puddle dries up, its water is gone forever.', 'water_return'],
+      ['The water you drank today may once have been drunk by a dinosaur.', 'water_history'],
+      ['You can see water vapor.', 'invisible_vapor'],
+      ['Clouds are made of water vapor.', 'cloud_particles'],
+      ['Water only evaporates when it is hot or boiling.', 'cool_evaporation'],
+      ['Groundwater flows in big underground rivers and lakes.', 'groundwater_pores'],
+      ['Saturation vapor pressure rises as air warms.', 'warming_related'],
+      ['Rain falls in the same place the water evaporated from.', 'wind_transport'],
+      ['Transpiration from plants barely matters to the cycle.', 'plant_transfer']
+    ];
+    var concepts = { evaporation: 'water_return', condensation: 'invisible_vapor', precipitation: 'cloud_rain', collection: 'water_return', transpiration: 'plant_transfer', infiltration: 'groundwater_pores', aquifer: 'groundwater_pores', watershed: 'land_cover', 'latent heat': 'latent_heat', 'darcy\'s law': 'groundwater_pores', 'clausius-clapeyron': 'warming_related', 'bowen ratio': 'related_energy', sublimation: 'sublimation' };
+    function get(destinationKey) {
+      var found = specs.find(function(spec) { return spec.key === destinationKey; });
+      return found ? Object.assign({}, found, { processes: found.processes.slice() }) : null;
+    }
+    function resolve(kind, question) {
+      if (!question || typeof question !== 'object') return get('overview');
+      if (kind === 'myth') {
+        var match = myths.find(function(item) { return item[0] === question.s; });
+        return get(match ? match[1] : 'overview');
+      }
+      var concept = typeof question.concept === 'string' ? question.concept.trim().toLowerCase() : '';
+      return get(Object.prototype.hasOwnProperty.call(concepts, concept) ? concepts[concept] : 'overview');
+    }
+    function key(kind, question) {
+      if (!question || question.answered !== true) return null;
+      if (kind === 'quiz' && typeof question.q === 'string' && typeof question.a === 'string' && Array.isArray(question.opts) && question.opts.length >= 2 && question.opts.every(function(value) { return typeof value === 'string'; }) && question.opts.indexOf(question.a) !== -1 && question.opts.indexOf(question.chosen) !== -1) return 'quiz:' + JSON.stringify([question.q, question.a, question.opts, question.chosen]);
+      if (kind === 'myth' && typeof question.s === 'string' && typeof question.t === 'boolean' && typeof question.chosen === 'boolean') return 'myth:' + JSON.stringify([question.s, question.t, question.chosen]);
+      return null;
+    }
+    function createSession(kind, question) {
+      var questionKey = key(kind, question);
+      if (!questionKey) return null;
+      return { kind: kind, key: questionKey, questionText: kind === 'quiz' ? question.q : question.s, originalAnswer: question.chosen, choices: kind === 'quiz' ? question.opts.slice() : [true, false], destinationKey: resolve(kind, question).key, phase: 'exploring' };
+    }
+    function navigation(destination) {
+      var spec = get(typeof destination === 'string' ? destination : destination && destination.key);
+      var patch = { wcSection: spec && spec.inputKey ? 'conditions' : 'check', wcFocusMode: false };
+      if (spec && spec.inputKey) patch[spec.lab === 'land' ? 'wcLandLabOpen' : 'wcClimateLabOpen'] = true;
+      return patch;
+    }
+    function normalizeSession(session) {
+      if (!session || (session.kind !== 'quiz' && session.kind !== 'myth') || typeof session.key !== 'string' || session.key.indexOf(session.kind + ':') !== 0 || typeof session.questionText !== 'string' || !get(session.destinationKey) || !Array.isArray(session.choices) || session.choices.length < 2 || !session.choices.every(function(value) { return typeof value === (session.kind === 'myth' ? 'boolean' : 'string'); }) || session.choices.indexOf(session.originalAnswer) === -1) return null;
+      var payload;
+      try { payload = JSON.parse(session.key.slice(session.kind.length + 1)); } catch (error) { return null; }
+      if (!Array.isArray(payload)) return null;
+      var question = session.kind === 'quiz' ? { q: payload[0], a: payload[1], opts: payload[2], chosen: payload[3], answered: true } : { s: payload[0], t: payload[1], chosen: payload[2], answered: true };
+      if (key(session.kind, question) !== session.key || payload[0] !== session.questionText || question.chosen !== session.originalAnswer || JSON.stringify(session.choices) !== JSON.stringify(session.kind === 'quiz' ? question.opts : [true, false])) return null;
+      return Object.assign({}, session, { choices: session.choices.slice(), phase: session.phase === 'review' || session.phase === 'stale' ? session.phase : 'exploring' });
+    }
+    function isCurrent(session, question) { return !!normalizeSession(session) && session.key === key(session.kind, question); }
+    function allowedAnswer(session, value) { return !!session && Array.isArray(session.choices) && session.choices.indexOf(value) !== -1; }
+    function updateReview(session, rawRecords, field, value) {
+      if (!normalizeSession(session) || (field !== 'observation' && field !== 'revisedAnswer')) return rawRecords || {};
+      if (field === 'observation' && typeof value !== 'string' || field === 'revisedAnswer' && !allowedAnswer(session, value)) return rawRecords || {};
+      var records = Object.assign({}, rawRecords && typeof rawRecords === 'object' && !Array.isArray(rawRecords) ? rawRecords : {});
+      var previous = Object.prototype.hasOwnProperty.call(records, session.key) ? records[session.key] : null;
+      var record = Object.assign({ observation: '', revisedAnswer: null }, previous || {}, { key: session.key, kind: session.kind, questionText: session.questionText, originalAnswer: session.originalAnswer, choices: session.choices.slice(), destinationKey: session.destinationKey, saved: false });
+      record[field] = field === 'observation' ? value.slice(0, 1200) : value;
+      records[session.key] = record;
+      return records;
+    }
+    function saveReview(session, rawRecords) {
+      var records = rawRecords && typeof rawRecords === 'object' ? rawRecords : {};
+      var record = normalizeSession(session) && Object.prototype.hasOwnProperty.call(records, session.key) ? records[session.key] : null;
+      if (!record || !allowedAnswer(session, record.revisedAnswer) || typeof record.observation !== 'string' || !record.observation.trim()) return records;
+      var next = Object.assign({}, records); next[session.key] = Object.assign({}, record, { saved: true }); return next;
+    }
+    function history(rawRecords) {
+      if (!rawRecords || typeof rawRecords !== 'object' || Array.isArray(rawRecords)) return [];
+      return Object.keys(rawRecords).reverse().map(function(recordKey) { return rawRecords[recordKey]; }).filter(function(record) {
+        return normalizeSession(record) && typeof record.observation === 'string' && (record.observation.length > 0 || allowedAnswer(record, record.revisedAnswer));
+      }).map(function(record) { return Object.assign({}, record, { choices: record.choices.slice(), revisedAnswer: allowedAnswer(record, record.revisedAnswer) ? record.revisedAnswer : null, saved: record.saved === true && allowedAnswer(record, record.revisedAnswer) && !!record.observation.trim() }); });
+    }
+    return { get: get, resolve: resolve, key: key, createSession: createSession, normalizeSession: normalizeSession, navigation: navigation, isCurrent: isCurrent, allowedAnswer: allowedAnswer, updateReview: updateReview, saveReview: saveReview, history: history };
+  })();
+
+  // Chapter inspection has its own state; it never moves the animated parcel.
+  var WCJourneyChapters = (function() {
+    var chapters = [
+      { id: 'ocean', label: 'Ocean storage', state: 'ocean', cue: 'Water in a store' },
+      { id: 'vapor', label: 'Evaporation', state: 'evaporating', cue: 'Liquid becomes vapor' },
+      { id: 'cloud', label: 'Condensation', state: 'condensing', cue: 'Vapor becomes droplets' },
+      { id: 'precipitation', label: 'Precipitation', state: 'precipitating', cue: 'Water falls under gravity' },
+      { id: 'land', label: 'Land pathways', state: 'ground_choice', cue: 'Surface, soil, or plant' },
+      { id: 'return', label: 'Return to storage', state: 'complete', cue: 'One illustrated return' }
+    ];
+    var land = [
+      { id: 'ground_choice', label: 'Path choice' },
+      { id: 'river_runoff', label: 'River runoff' },
+      { id: 'infiltrating', label: 'Soil infiltration' },
+      { id: 'aquifer_flow', label: 'Aquifer flow' },
+      { id: 'plant_absorb', label: 'Plant uptake' },
+      { id: 'transpiring', label: 'Transpiration' }
+    ];
+    function indexOf(items, value) {
+      if (typeof value !== 'string') return -1;
+      for (var i = 0; i < items.length; i++) if (items[i].id === value) return i;
+      return -1;
+    }
+    function ids() { return chapters.map(function(item) { return item.id; }); }
+    function landStates() { return land.map(function(item) { return item.id; }); }
+    function normalizeChapter(value) { return indexOf(chapters, value) >= 0 ? value : ''; }
+    function normalizeLandStep(value) { return indexOf(land, value) >= 0 ? value : 'ground_choice'; }
+    function resolve(data) {
+      var d = data && typeof data === 'object' ? data : {};
+      var chapter = normalizeChapter(d.wcJourneyChapter);
+      var following = !chapter;
+      var state = d.journeyActive === true && typeof d.journeyState === 'string' ? d.journeyState : 'ocean';
+      var index = indexOf(chapters, chapter);
+      if (following) {
+        index = indexOf(land, state) >= 0 ? 4 : chapters.findIndex(function(item) { return item.state === state; });
+        if (index < 0) { index = 0; state = 'ocean'; }
+      } else {
+        state = index === 4 ? normalizeLandStep(d.wcJourneyLandStep) : chapters[index].state;
+      }
+      var landIndex = indexOf(land, state);
+      return { id: chapters[index].id, index: index, state: state,
+        label: landIndex >= 0 ? land[landIndex].label : chapters[index].label,
+        following: following, showLandSteps: index === 4 };
+    }
+    function ownRecord(records, key) {
+      return records && typeof records === 'object' && Object.prototype.hasOwnProperty.call(records, key)
+        && records[key] && typeof records[key] === 'object' ? records[key] : {};
+    }
+    function text(record, key, fallback) { return typeof record[key] === 'string' ? record[key] : fallback; }
+    function describe(data, matterTrace, timeTrace) {
+      var result = resolve(data);
+      var matter = ownRecord(matterTrace, result.state);
+      var time = ownRecord(timeTrace, result.state);
+      var energy = text(matter, 'energyTransfer', 'none');
+      if (energy !== 'absorbed' && energy !== 'released') energy = 'none';
+      var prompts = {
+        ocean: 'How is water staying in a store different from water changing state?',
+        evaporating: 'Where does the energy for liquid water to become vapor come from?',
+        condensing: 'Where does latent heat go when vapor becomes liquid droplets?',
+        precipitating: 'Does falling water have to change its physical state?',
+        ground_choice: 'Which pathways move liquid water without a phase change?',
+        river_runoff: 'What moves this liquid water toward a lower surface store?',
+        infiltrating: 'Why does entering soil not establish that water reached an aquifer?',
+        aquifer_flow: 'Why can groundwater remain liquid while moving through an aquifer?',
+        plant_absorb: 'Where does liquid water move before it evaporates from a leaf?',
+        transpiring: 'How do plant uptake and transpiration differ in physical state?',
+        complete: 'Which other stores could water enter instead of returning straight to the ocean?'
+      };
+      var notes = {
+        ocean: 'Ocean water has many residence times. This illustration does not track a real molecule or predict its next transfer.',
+        evaporating: 'The diagram shows a phase change. The teaching indices do not measure the amount of water evaporated.',
+        condensing: 'Condensation forms liquid droplets. A direct vapor-to-ice change is deposition, a separate process.',
+        precipitating: 'Falling water can melt, freeze, or evaporate along its path; the fall itself requires no phase change.',
+        ground_choice: 'These are possible pathways. Conditions influence them; inspecting a diagram does not select the live droplet\'s route.',
+        river_runoff: 'Water can pause in surface stores along the route. This arrow does not give a measured speed or water volume.',
+        infiltrating: 'Water can remain in shallow soil or move onward. Infiltration does not guarantee aquifer recharge.',
+        aquifer_flow: 'Groundwater occupies connected pore spaces or fractures. The diagram does not measure this parcel\'s travel time.',
+        plant_absorb: 'Roots and xylem transport liquid water. The leaf-to-vapor step belongs to transpiration.',
+        transpiring: 'Liquid water evaporates at leaf surfaces before vapor leaves through stomata. The diagram does not estimate a global share.',
+        complete: 'This is one illustrated return. The water cycle has many routes and stores, rather than a required start or finish.'
+      };
+      return Object.assign({}, result, {
+        phaseFrom: text(matter, 'phaseFrom', 'Water'),
+        phaseTo: result.state === 'condensing' ? 'Liquid cloud droplets' : text(matter, 'phaseTo', 'Water'),
+        source: text(matter, 'source', 'Water store'),
+        destination: result.state === 'condensing' ? 'Cloud droplets' : text(matter, 'destination', 'Water store'),
+        driver: text(matter, 'driver', 'Explore the transfer'),
+        energyTransfer: energy, energyLabel: text(matter, 'energyLabel', 'No required phase change'),
+        timeLabel: text(time, 'label', 'Variable'), timeCaveat: text(time, 'caveat', 'Animation time is compressed.'),
+        question: prompts[result.state], note: notes[result.state]
+      });
+    }
+    function definitions() { return chapters.map(function(item) { return Object.assign({}, item); }); }
+    function landDefinitions() { return land.map(function(item) { return Object.assign({}, item); }); }
+    return { ids: ids, landStates: landStates, normalizeChapter: normalizeChapter,
+      normalizeLandStep: normalizeLandStep, resolve: resolve, describe: describe,
+      definitions: definitions, landDefinitions: landDefinitions };
+  })();
+
   var WCProcessCompare = (function() {
     var ids = ['evaporation', 'condensation', 'precipitation', 'collection', 'transpiration', 'infiltration'];
     var answers = ['first', 'second', 'both', 'neither'];
@@ -4393,6 +4590,27 @@
 
     wcFiveStyle.textContent += "\n/* Read saved evidence at the notebook's available width. */\n.wc-explorer-root [data-wc-notebook] { container: wc-evidence-notebook / inline-size; padding: 18px; gap: 16px; }\n.wc-explorer-root [data-wc-notebook] .wc-log-list { grid-template-columns: minmax(0,1fr)!important; align-items: start; gap: 14px; }\n.wc-explorer-root [data-wc-notebook] .wc-log-entry { container: wc-saved-observation / inline-size; padding: 16px; gap: 12px; border: 1px solid var(--wc-viz-line); border-top: 3px solid var(--wc-viz-accent); border-radius: 14px; background: var(--wc-viz-paper); color: var(--wc-viz-ink); align-self: start; }\n.wc-explorer-root [data-wc-notebook] .wc-experiment-log-kicker { font-size: 15px; line-height: 1.5; }\n.wc-explorer-root [data-wc-notebook] .wc-experiment-log-copy > strong { font-size: 17px; line-height: 1.5; }\n.wc-explorer-root [data-wc-notebook] .wc-experiment-log-copy > span { font-size: 13px; line-height: 1.6; color: var(--wc-viz-muted); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-guide { grid-column: 1/-1; margin: 0; padding: 12px 14px; border: 1px solid var(--wc-viz-line); border-radius: 10px; background: var(--wc-viz-paper); color: var(--wc-viz-muted); font-size: 13px; line-height: 1.6; }\n.wc-explorer-root [data-wc-notebook] .wc-log-entry-index { display: grid; place-items: center; width: 24px; height: 28px; border: 1px solid var(--wc-viz-line); border-radius: 7px; background: var(--wc-viz-tint); color: var(--wc-viz-ink); font-size: 12px; font-weight: 800; }\n.wc-explorer-root [data-wc-notebook] .wc-log-entry-copy { min-width: 0; display: grid; gap: 8px; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-record-title { margin: 0; font-size: 17px; line-height: 1.45; font-weight: 800; color: var(--wc-viz-ink); overflow-wrap: anywhere; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-record-method { justify-self: start; margin: 0; padding: 4px 8px; border: 1px solid var(--wc-viz-line); border-radius: 7px; background: var(--wc-viz-tint); font-size: 12px; line-height: 1.5; color: var(--wc-viz-ink); font-weight: 750; }\n.wc-explorer-root [data-wc-notebook] :is(.wc-notebook-record-claim,.wc-log-entry-evidence) { font-size: 13px; line-height: 1.6; color: var(--wc-viz-muted); font-weight: 450; overflow-wrap: anywhere; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-changes { grid-column: 1/-1; min-width: 0; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-changes h6 { margin: 0; font-size: 14px; line-height: 1.5; font-weight: 800; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-changes p { margin: 4px 0 9px; font-size: 12px; line-height: 1.6; color: var(--wc-viz-muted); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-changes dl { display: grid; grid-template-columns: minmax(0,1fr); gap: 6px; margin: 0; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-changes dl > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 5px 12px; min-width: 0; padding: 8px 10px; border: 1px solid var(--wc-viz-line); border-radius: 8px; background: var(--wc-viz-card); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-changes dt { flex: 1 1 100px; font-size: 13px; line-height: 1.5; color: var(--wc-viz-muted); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-changes dd { margin: 0; font-size: 15px; line-height: 1.5; font-weight: 800; color: var(--wc-viz-ink); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }\n.wc-explorer-root [data-wc-notebook] .wc-log-entry-actions { display: grid; grid-template-columns: minmax(0,1fr); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection { margin-top: 0; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection > summary { display: flex; align-items: center; gap: 12px; padding: 11px 0; list-style: none; font-size: 14px; line-height: 1.5; color: var(--wc-viz-ink); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection > summary::-webkit-details-marker { display: none; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection > summary::after { content: '+'; display: grid; place-items: center; flex: 0 0 26px; height: 26px; margin-left: auto; border: 1px solid var(--wc-viz-line); border-radius: 6px; background: var(--wc-viz-tint); color: var(--wc-viz-ink); font-size: 18px; font-weight: 800; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection[open] > summary::after { content: '−'; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection :is(p,li) { font-size: 13px; line-height: 1.6; color: var(--wc-viz-muted); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-values { overflow-x: visible; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-values table { table-layout: fixed; font-size: 12px; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-values :is(th,td) { font-size: 12px!important; line-height: 1.5; padding: 9px 4px; width: 31%; white-space: normal!important; word-break: normal; overflow-wrap: anywhere; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-values th:first-child { width: 38%; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-values caption { font-size: 14px; line-height: 1.5; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-values thead { background: var(--wc-viz-tint); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-saved-scope { padding: 10px 12px; border-left: 3px solid var(--wc-viz-accent); background: var(--wc-viz-tint); border-radius: 0 8px 8px 0; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-note { margin-top: 16px; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-note label { font-size: 14px; line-height: 1.5; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-note textarea { font-size: 14px; line-height: 1.6; }\n@container wc-saved-observation (min-width: 300px) { .wc-explorer-root [data-wc-notebook] .wc-log-entry-actions { grid-template-columns: repeat(2,minmax(0,1fr)); } }\n@container wc-saved-observation (min-width: 480px) { .wc-explorer-root [data-wc-notebook] .wc-notebook-changes dl { grid-template-columns: repeat(3,minmax(0,1fr)); } .wc-explorer-root [data-wc-notebook] .wc-notebook-changes dl > div { display: block; } .wc-explorer-root [data-wc-notebook] .wc-notebook-changes dd { margin-top: 4px; } }\n@container wc-evidence-notebook (min-width: 900px) { .wc-explorer-root [data-wc-notebook] .wc-log-list { grid-template-columns: repeat(2,minmax(0,1fr))!important; } }\n@media (forced-colors: active) {\n .wc-explorer-root [data-wc-notebook], .wc-explorer-root [data-wc-notebook] :is(.wc-log-entry,.wc-notebook-guide,.wc-log-entry-index,.wc-notebook-record-method,.wc-notebook-changes dl > div,.wc-notebook-values thead,.wc-notebook-saved-scope,.wc-notebook-note textarea,.wc-notebook-capacity,.wc-notebook-undo,.wc-experiment-log-replay-badge) { background: Canvas!important; border-color: CanvasText!important; box-shadow: none!important; }\n .wc-explorer-root [data-wc-notebook] :is(h4,h5,h6,p,span,dt,dd,th,td,caption,label,summary,textarea,strong) { color: CanvasText!important; border-color: CanvasText!important; }\n .wc-explorer-root [data-wc-notebook] button { background: ButtonFace!important; color: ButtonText!important; border-color: ButtonText!important; }\n .wc-explorer-root [data-wc-notebook] .wc-notebook-reflection > summary::after { forced-color-adjust: none; background: Canvas!important; color: CanvasText!important; border-color: CanvasText!important; }\n .wc-explorer-root [data-wc-notebook] :is(button,summary,textarea):focus-visible { outline-color: Highlight!important; }\n}\n";
     wcFiveStyle.textContent += "\n/* Keep card actions consistent and the folded evidence concise. */\n.wc-explorer-root [data-wc-notebook] .wc-log-entry-actions button { width: 100%; min-width: 0; margin: 0; justify-self: stretch; white-space: normal; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-record-claim { font-weight: 750; color: var(--wc-viz-ink); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection :is(.wc-notebook-recorded-claim,.wc-log-entry-evidence) { margin: 10px 0; font-size: 13px; line-height: 1.6; font-weight: 450; color: var(--wc-viz-muted); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection :is(.wc-notebook-recorded-claim,.wc-log-entry-evidence) strong { color: var(--wc-viz-ink); }\n@container wc-saved-observation (min-width: 200px) { .wc-explorer-root [data-wc-notebook] .wc-log-entry-actions { grid-template-columns: repeat(2,minmax(0,1fr)); } }\n@media (forced-colors: active) { .wc-explorer-root [data-wc-notebook] :is(.wc-notebook-record-claim,.wc-notebook-recorded-claim,.wc-log-entry-evidence,.wc-notebook-recorded-claim strong,.wc-log-entry-evidence strong) { color: CanvasText!important; } }\n";
+    wcFiveStyle.textContent += "/* Check yourself: readable tasks and a separate investigation notebook. */\n.wc-explorer-root :is(.wc-check,.wc-check-investigation){container:wc-check / inline-size;color:var(--wc-viz-ink);font-size:14px;line-height:1.65;min-width:0}\n.wc-explorer-root :is(.wc-check,.wc-check-investigation) *{box-sizing:border-box}\n.wc-explorer-root :is(.wc-check,.wc-check-investigation) :is(h3,h4,h5,p,figure){margin:0}\n.wc-explorer-root :is(.wc-check,.wc-check-investigation) :is(h3,h4,h5){color:var(--wc-viz-ink);line-height:1.4;overflow-wrap:anywhere}\n.wc-explorer-root .wc-check-intro{padding:6px 0 18px;display:grid;gap:8px}\n.wc-explorer-root .wc-check-intro h3{font-size:22px;font-weight:800}\n.wc-explorer-root .wc-check-eyebrow{color:var(--wc-viz-muted);font-size:12px;font-weight:700;letter-spacing:.035em}\n.wc-explorer-root .wc-check-card{padding:18px;margin-bottom:18px;border:1px solid var(--wc-viz-line);border-radius:20px;background:var(--wc-viz-card);box-shadow:0 4px 16px #10273508}\n.wc-explorer-root :is(.wc-check-task-header,.wc-check-panel-header){display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px}\n.wc-explorer-root .wc-check-task-header h4{font-size:16px;font-weight:800;margin-top:3px}\n.wc-explorer-root .wc-check-actions{display:flex;flex-wrap:wrap;gap:8px}\n.wc-explorer-root :is(.wc-check,.wc-check-investigation) button{appearance:none;display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;padding:10px 14px;border:1px solid var(--wc-viz-line);border-radius:12px;background:var(--wc-viz-paper);color:var(--wc-viz-ink);font:inherit;font-size:14px;font-weight:700;line-height:1.5;white-space:normal;overflow-wrap:anywhere;cursor:pointer;box-shadow:none}\n.wc-explorer-root :is(.wc-check,.wc-check-investigation) button:hover:not(:disabled){border-color:var(--wc-viz-accent);background:var(--wc-viz-tint)}\n.wc-explorer-root :is(.wc-check,.wc-check-investigation) :is(button,textarea,input,summary):focus-visible{outline:3px solid var(--wc-viz-accent);outline-offset:3px}\n.wc-explorer-root :is(.wc-check,.wc-check-investigation) :is(h3,h4,h5,p)[tabindex='-1']:focus{outline:2px solid var(--wc-viz-accent);outline-offset:4px;border-radius:3px}\n.wc-explorer-root :is(.wc-check,.wc-check-investigation) button:disabled{cursor:default;color:var(--wc-viz-muted);opacity:1}\n.wc-explorer-root :is(.wc-check-progress,.wc-check-detail){font-size:13px;line-height:1.6;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-check-progress{border-bottom:1px solid var(--wc-viz-line);padding-bottom:12px;margin-bottom:16px}\n.wc-explorer-root .wc-check-question{font-size:18px;font-weight:800;margin:0 0 8px;line-height:1.5}\n.wc-explorer-root .wc-check-choices{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin:16px 0}\n.wc-explorer-root .wc-check-choices button{justify-content:flex-start;text-align:left;display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:54px;padding:12px 15px}\n.wc-explorer-root .wc-check-choices small{font-size:12px;font-weight:700;line-height:1.5}\n.wc-explorer-root .wc-check-choices button[data-answer-state='other']{color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-check-choices button[data-answer-state='correct']{color:var(--wc-viz-ink);border:2px solid var(--wc-viz-accent);background:var(--wc-viz-tint)}\n.wc-explorer-root .wc-check-choices button[data-answer-state='chosen']{color:var(--wc-viz-ink);border:2px dashed var(--wc-viz-accent)}\n.wc-explorer-root .wc-check-feedback{display:grid;gap:10px;padding:16px;border:1px solid var(--wc-viz-line);border-radius:15px;background:var(--wc-viz-paper)}\n.wc-explorer-root .wc-check-feedback>h4{font-size:17px;font-weight:800}\n.wc-explorer-root :is(.wc-check-concept,.wc-check-next){display:grid;gap:10px;padding-top:15px;margin-top:4px;border-top:1px solid var(--wc-viz-line)}\n.wc-explorer-root :is(.wc-check-concept,.wc-check-next) h5{font-size:14px;font-weight:800}\n.wc-explorer-root .wc-check-next button{justify-self:start;background:var(--wc-viz-accent);color:var(--wc-viz-accent-ink,#fff);border-color:var(--wc-viz-accent)}\n.wc-explorer-root .wc-check-next button:hover:not(:disabled){background:var(--wc-viz-accent);color:var(--wc-viz-accent-ink,#fff);filter:brightness(.94)}\n.wc-explorer-root .wc-check-empty{padding:14px;border-radius:12px;background:var(--wc-viz-paper);color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-check-investigation{margin:18px 0;padding:20px;border:2px solid var(--wc-viz-accent);border-radius:20px;background:var(--wc-viz-card);display:grid;gap:14px;box-shadow:0 8px 26px #1027350d}\n.wc-explorer-root .wc-check-panel-header{margin:0}.wc-explorer-root .wc-check-panel-header h4{font-size:19px;font-weight:800;margin-top:4px}\n.wc-explorer-root .wc-check-context{padding-left:12px;border-left:3px solid var(--wc-viz-accent);overflow-wrap:anywhere}\n.wc-explorer-root .wc-check-boundary{padding:12px 14px;border:1px solid var(--wc-viz-line);border-radius:12px;background:var(--wc-viz-paper);font-size:13px;line-height:1.65}\n.wc-explorer-root .wc-check-processes{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}\n.wc-explorer-root .wc-check-process{padding:16px;border:1px solid var(--wc-viz-line);border-radius:16px;background:var(--wc-viz-paper);min-width:0}\n.wc-explorer-root .wc-check-process h5{font-size:15px;font-weight:800}\n.wc-explorer-root .wc-check-state-flow{display:grid;grid-template-columns:minmax(0,1fr) 20px minmax(0,1fr);align-items:center;gap:8px;margin:12px 0}\n.wc-explorer-root .wc-check-state-flow>div{display:grid;justify-items:center;gap:5px;text-align:center;min-width:0}\n.wc-explorer-root .wc-check-state-flow small{font-size:12px;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-check-state-flow svg{height:54px;width:54px;color:var(--wc-viz-accent)}\n.wc-explorer-root .wc-check-state-flow strong{font-size:13px;overflow-wrap:anywhere;line-height:1.5}\n.wc-explorer-root .wc-check-process dl{display:grid;gap:8px;margin:12px 0}\n.wc-explorer-root .wc-check-process dl>div{display:grid;grid-template-columns:72px minmax(0,1fr);gap:8px;font-size:13px;line-height:1.55}\n.wc-explorer-root .wc-check-process dt{color:var(--wc-viz-muted)}.wc-explorer-root .wc-check-process dd{margin:0;overflow-wrap:anywhere}\n.wc-explorer-root .wc-check-pores{padding:14px;border-radius:16px;background:var(--wc-viz-paper);border:1px solid var(--wc-viz-line);color:var(--wc-viz-accent)}\n.wc-explorer-root .wc-check-pores svg{width:100%;max-height:120px}.wc-explorer-root .wc-check-pores figcaption{color:var(--wc-viz-muted);font-size:13px;line-height:1.6}\n.wc-explorer-root .wc-check-field-label{font-size:14px;font-weight:800}\n.wc-explorer-root .wc-check-investigation textarea{width:100%;max-width:100%;min-height:108px;resize:vertical;border:1px solid var(--wc-viz-line);border-radius:12px;padding:12px;background:var(--wc-viz-paper);color:var(--wc-viz-ink);font:inherit;font-size:14px;line-height:1.65}\n.wc-explorer-root .wc-check-investigation>button{justify-self:start}\n.wc-explorer-root .wc-check-review{display:grid;gap:12px;border-top:1px solid var(--wc-viz-line);padding-top:16px}\n.wc-explorer-root .wc-check-review fieldset{border:0;padding:0;margin:0;display:grid;gap:8px;min-width:0}\n.wc-explorer-root .wc-check-review legend{font-size:15px;font-weight:800;margin-bottom:10px}\n.wc-explorer-root .wc-check-revised-choice{display:flex;align-items:center;gap:12px;min-height:48px;padding:10px 12px;border:1px solid var(--wc-viz-line);border-radius:12px;background:var(--wc-viz-paper);cursor:pointer;overflow-wrap:anywhere}\n.wc-explorer-root .wc-check-revised-choice input{width:18px;height:18px;margin:0;flex-shrink:0;accent-color:var(--wc-viz-accent)}\n.wc-explorer-root .wc-check-review>button{justify-self:start}\n.wc-explorer-root .wc-check-history{border:1px solid var(--wc-viz-line);border-radius:15px;background:var(--wc-viz-card);margin-top:16px}\n.wc-explorer-root .wc-check-history summary{min-height:52px;padding:14px 16px;font-size:14px;font-weight:800;cursor:pointer;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-check-history>div{padding:0 16px 16px;display:grid;gap:14px}\n.wc-explorer-root .wc-check-history article{display:grid;gap:8px;padding-top:14px;border-top:1px solid var(--wc-viz-line)}\n.wc-explorer-root .wc-check-history h4{font-size:15px;font-weight:800}\n.wc-explorer-root .wc-check-history-note{white-space:pre-wrap;overflow-wrap:anywhere}\n@container wc-check (min-width:560px){.wc-explorer-root .wc-check-choices,.wc-explorer-root .wc-check-processes{grid-template-columns:repeat(2,minmax(0,1fr))}}\n@container wc-check (max-width:360px){.wc-explorer-root .wc-check-card,.wc-explorer-root .wc-check-investigation{padding:14px}.wc-explorer-root .wc-check-task-header>button,.wc-explorer-root .wc-check-actions,.wc-explorer-root .wc-check-actions button{width:100%}.wc-explorer-root .wc-check-feedback{padding:12px}.wc-explorer-root .wc-check-next button{width:100%}}\n@media(forced-colors:active){\n .wc-explorer-root :is([data-wc-check],[data-wc-check-investigation]){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}\n .wc-explorer-root :is([data-wc-check],[data-wc-check-investigation]) :is(section,article,header,fieldset,details,figure,textarea,.wc-check-feedback,.wc-check-concept,.wc-check-next,.wc-check-boundary,.wc-check-empty,.wc-check-revised-choice){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}\n .wc-explorer-root :is([data-wc-check],[data-wc-check-investigation]) :is(h3,h4,h5,p,span,strong,small,dl,dt,dd,label,legend,summary,figcaption,svg){color:CanvasText!important;border-color:CanvasText!important}\n .wc-explorer-root :is([data-wc-check],[data-wc-check-investigation]) button{forced-color-adjust:none;background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;filter:none!important}\n .wc-explorer-root :is([data-wc-check],[data-wc-check-investigation]) :is(button,input,textarea,summary):focus-visible{outline-color:Highlight!important}\n .wc-explorer-root :is([data-wc-check],[data-wc-check-investigation]) [tabindex='-1']:focus{outline-color:Highlight!important}\n}\n";
+  }
+  if (typeof document !== 'undefined') {
+    var wcChapterStyle = document.getElementById('wc-five-mode-style');
+    if (wcChapterStyle) wcChapterStyle.textContent += "/* Read a chapter without moving the parcel. */\n.wc-explorer-root .wc-journey-panel{container:wc-journey / inline-size}\n.wc-explorer-root .wc-journey-panel>div:first-child{flex-wrap:wrap;gap:12px}\n.wc-explorer-root .wc-journey-panel>div:first-child>div:first-child{flex-wrap:wrap}\n.wc-explorer-root .wc-journey-chapters{margin:16px 0;min-width:0;color:var(--wc-viz-ink);font-size:14px;line-height:1.6}\n.wc-explorer-root .wc-journey-chapters *{box-sizing:border-box;min-width:0}\n.wc-explorer-root .wc-journey-chapters :is(h4,h5,p,dl,dd){margin:0}\n.wc-explorer-root .wc-chapters-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}\n.wc-explorer-root .wc-chapters-head h4{font-size:20px;font-weight:800;line-height:1.4;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-chapters-kicker{display:block;font-size:12px!important;line-height:1.5;color:var(--wc-viz-muted);font-weight:700;letter-spacing:.025em}\n.wc-explorer-root .wc-journey-chapters button{appearance:none;min-height:44px;min-width:44px;padding:10px 12px;border:1px solid var(--wc-viz-line);border-radius:12px;background:var(--wc-viz-card);color:var(--wc-viz-ink);font:inherit;font-size:14px;font-weight:700;line-height:1.5;white-space:normal;overflow-wrap:anywhere;cursor:pointer;box-shadow:none}\n.wc-explorer-root .wc-journey-chapters button:hover{background:var(--wc-viz-tint);border-color:var(--wc-viz-accent)}\n.wc-explorer-root .wc-journey-chapters button[aria-pressed=true]{background:var(--wc-viz-tint);border:2px solid var(--wc-viz-accent)}\n.wc-explorer-root .wc-journey-chapters button:focus-visible{outline:3px solid var(--wc-viz-accent);outline-offset:3px}\n.wc-explorer-root #wcJourneyChapterTitle:focus{outline:2px solid var(--wc-viz-accent);outline-offset:5px;border-radius:3px}\n.wc-explorer-root .wc-journey-chapters .wc-chapters-help{margin-top:10px;color:var(--wc-viz-muted);font-size:13px;line-height:1.65}\n.wc-explorer-root .wc-chapters-parcel{margin:12px 0!important;padding:10px 12px;border-left:3px solid var(--wc-viz-accent);background:var(--wc-viz-paper);border-radius:0 10px 10px 0;overflow-wrap:anywhere}\n.wc-explorer-root .wc-journey-chapters .wc-journey-timeline{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}\n.wc-explorer-root .wc-journey-chapters .wc-timeline-step{padding:0;border:0;color:inherit;background:none;text-align:left;box-shadow:none}\n.wc-explorer-root .wc-timeline-step>button{display:flex;align-items:flex-start;gap:8px;text-align:left;width:100%;height:100%;min-height:98px;padding:12px 10px}\n.wc-explorer-root .wc-chapter-number{display:grid;place-items:center;flex:0 0 24px;width:24px;height:24px;border:1px solid var(--wc-viz-line);border-radius:8px;background:var(--wc-viz-paper);font-size:13px;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-chapter-label{display:grid;align-content:start;gap:4px}\n.wc-explorer-root .wc-journey-chapters .wc-timeline-step strong{font-size:14px;line-height:1.4;color:var(--wc-viz-ink);font-weight:800;white-space:normal;overflow-wrap:anywhere}\n.wc-explorer-root .wc-chapter-label small{font-size:12px;line-height:1.5;color:var(--wc-viz-muted);font-weight:500}\n.wc-explorer-root .wc-chapter-current{display:block;font-size:12px;font-weight:800;color:var(--wc-viz-ink);text-decoration:underline;text-underline-offset:3px}\n.wc-explorer-root .wc-chapter-card{display:grid;gap:14px;padding:18px;border:1px solid var(--wc-viz-line);border-top:3px solid var(--wc-viz-accent);border-radius:17px;background:var(--wc-viz-card);box-shadow:0 4px 18px #10273508}\n.wc-explorer-root .wc-chapter-card h5{color:var(--wc-viz-ink);font-size:19px;font-weight:800;line-height:1.45;overflow-wrap:anywhere}\n.wc-explorer-root .wc-chapter-land{display:grid;gap:8px}\n.wc-explorer-root .wc-chapter-land>p{font-weight:800;font-size:14px}\n.wc-explorer-root .wc-chapter-land-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}\n.wc-explorer-root .wc-chapter-land-options button{font-size:13px}\n.wc-explorer-root .wc-chapter-flow{display:grid;grid-template-columns:minmax(0,1fr) 20px minmax(0,1fr);align-items:stretch;gap:7px}\n.wc-explorer-root .wc-chapter-water{display:grid;align-content:start;justify-items:center;gap:7px;text-align:center;padding:12px 8px;border:1px solid var(--wc-viz-line);border-radius:13px;background:var(--wc-viz-paper);overflow-wrap:anywhere}\n.wc-explorer-root .wc-chapter-water small{font-size:12px;line-height:1.5;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-chapter-water strong{font-size:14px;line-height:1.45;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-chapter-water>span{font-size:13px;line-height:1.5;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-chapter-water svg{width:62px;height:62px;color:var(--wc-viz-accent)}\n.wc-explorer-root .wc-chapter-direction{display:grid;place-items:center;color:var(--wc-viz-accent);font-size:25px;font-weight:700}\n.wc-explorer-root .wc-chapter-facts{display:grid;gap:10px}\n.wc-explorer-root .wc-chapter-facts>div{padding:11px 13px;border:1px solid var(--wc-viz-line);border-radius:12px;background:var(--wc-viz-paper)}\n.wc-explorer-root .wc-chapter-facts dt{font-size:12px;font-weight:800;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-chapter-facts dd{margin-top:4px;font-size:14px;line-height:1.6;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-chapter-facts dd small{display:block;margin-top:4px;font-size:13px;line-height:1.6;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-chapter-energy{border-left:4px solid var(--wc-viz-accent)!important}\n.wc-explorer-root .wc-chapter-energy[data-energy-transfer=absorbed]{border-left-style:double!important;border-left-width:6px!important}\n.wc-explorer-root .wc-chapter-energy[data-energy-transfer=released]{border-left-style:dashed!important}\n.wc-explorer-root .wc-chapter-question{padding-top:12px;border-top:1px solid var(--wc-viz-line);font-size:14px}\n.wc-explorer-root .wc-chapter-question strong{display:block;margin-bottom:5px;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-journey-chapters .wc-chapter-note{padding:12px;border-radius:12px;background:var(--wc-viz-tint);color:var(--wc-viz-ink);font-size:13px;line-height:1.65}\n.wc-explorer-root .wc-journey-panel .wc-journey-icon-btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;width:auto;min-width:44px;padding:9px 13px;font-size:14px;line-height:1.5;border-radius:10px}\n.wc-explorer-root .wc-journey-panel .wc-speed-segments button{min-height:44px;min-width:48px;font-size:14px}\n.wc-explorer-root .wc-journey-panel .wc-replay-controls{padding:14px;border-radius:14px}\n.wc-explorer-root .wc-journey-panel .wc-replay-head strong{font-size:15px}\n.wc-explorer-root .wc-journey-panel .wc-replay-head span{font-size:13px;line-height:1.5}\n.wc-explorer-root .wc-journey-panel .wc-journey-scrub{min-height:44px;margin:8px 0;accent-color:var(--wc-viz-accent)}\n.wc-explorer-root .wc-journey-panel .wc-replay-scale{font-size:12px;line-height:1.5;flex-wrap:wrap}\n.wc-explorer-root .wc-journey-panel .wc-replay-resume{min-height:44px;padding:10px 12px;font-size:14px}\n.wc-explorer-root .wc-journey-panel .wc-journey-choice-receipt{grid-template-columns:minmax(0,1fr);gap:12px;padding:14px}\n.wc-explorer-root .wc-journey-panel .wc-journey-choice-receipt>div{min-width:0}\n.wc-explorer-root .wc-journey-panel .wc-journey-choice-receipt-kicker{font-size:12px;line-height:1.5}\n.wc-explorer-root .wc-journey-panel .wc-journey-choice-receipt strong{font-size:16px;line-height:1.45;overflow-wrap:normal;word-break:normal}\n.wc-explorer-root .wc-journey-panel .wc-journey-choice-receipt-copy{font-size:13px;line-height:1.65;overflow-wrap:normal;word-break:normal}\n.wc-explorer-root .wc-journey-panel .wc-journey-choice-signal{font-size:12px;line-height:1.6}\n.wc-explorer-root .wc-journey-panel .wc-journey-choice-count{font-size:13px;line-height:1.5}\n.wc-explorer-root .wc-journey-panel>div:first-child button{min-height:44px;min-width:44px;font-size:14px;line-height:1.5;white-space:normal}\n@container wc-journey (min-width:640px){.wc-explorer-root .wc-journey-panel .wc-journey-choice-receipt{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) auto}}\n@container wc-journey (min-width:640px){.wc-explorer-root .wc-journey-chapters .wc-journey-timeline{grid-template-columns:repeat(3,minmax(0,1fr))}.wc-explorer-root .wc-chapter-card{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px 20px}.wc-explorer-root .wc-chapter-card>:is(p,h5,.wc-chapter-land,.wc-chapter-question){grid-column:1/-1}.wc-explorer-root .wc-chapter-land-options{grid-template-columns:repeat(3,minmax(0,1fr))}.wc-explorer-root .wc-chapter-flow{align-self:start}.wc-explorer-root .wc-chapter-water{min-height:218px}.wc-explorer-root .wc-chapter-note{grid-column:1/-1}}\n@container wc-journey (max-width:360px){.wc-explorer-root .wc-chapter-card{padding:14px}.wc-explorer-root .wc-chapters-head>button{width:100%}.wc-explorer-root .wc-timeline-step>button{display:grid;gap:6px;padding:10px}.wc-explorer-root .wc-chapter-flow{gap:4px;grid-template-columns:minmax(0,1fr) 16px minmax(0,1fr)}.wc-explorer-root .wc-chapter-water{padding:10px 5px}.wc-explorer-root .wc-chapter-water strong{font-size:13px}.wc-explorer-root .wc-chapter-water svg{width:48px;height:48px}}\n@media(forced-colors:active){.wc-explorer-root .wc-journey-chapters,.wc-explorer-root .wc-journey-chapters :is(article,div,span,p,small,strong,h4,h5,dl,dt,dd,svg){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}.wc-explorer-root .wc-journey-chapters button{forced-color-adjust:none;background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}.wc-explorer-root .wc-journey-chapters button[aria-pressed=true]{border-color:Highlight!important;border-width:3px!important}.wc-explorer-root .wc-journey-chapters button>span,.wc-explorer-root .wc-journey-chapters button :is(strong,small,span){forced-color-adjust:none;background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}.wc-explorer-root .wc-journey-chapters button:focus-visible,.wc-explorer-root #wcJourneyChapterTitle:focus{outline-color:Highlight!important}.wc-explorer-root .wc-journey-chapters .wc-timeline-step[data-replay-focus=true]{outline:none}}\n";
+  }
+  if (typeof document !== 'undefined') {
+    var wcChapterLayoutStyle = document.getElementById('wc-five-mode-style');
+    if (wcChapterLayoutStyle) wcChapterLayoutStyle.textContent += "\n.wc-explorer-root .wc-journey-panel .wc-route-ledger-list{grid-template-columns:minmax(0,1fr);gap:10px}\n.wc-explorer-root .wc-journey-panel .wc-route-ledger-item{grid-template-columns:18px minmax(0,1fr) auto;gap:10px;padding:10px}\n.wc-explorer-root .wc-journey-panel .wc-route-ledger-item strong{font-size:14px;line-height:1.45;overflow-wrap:normal;word-break:normal}\n.wc-explorer-root .wc-journey-panel .wc-route-ledger-item small{font-size:12px;line-height:1.5}\n.wc-explorer-root .wc-journey-panel .wc-route-ledger-count{font-size:12px;line-height:1.5}\n.wc-explorer-root .wc-journey-panel .wc-route-ledger-kicker{font-size:12px;line-height:1.5}\n.wc-explorer-root .wc-journey-panel .wc-route-ledger-head strong{font-size:16px;line-height:1.45}\n.wc-explorer-root .wc-journey-panel .wc-route-ledger-head span:last-child{font-size:13px;line-height:1.6}\n.wc-explorer-root .wc-journey-panel .wc-route-ledger-progress{font-size:13px}\n@container wc-journey (min-width:640px){.wc-explorer-root .wc-journey-panel .wc-route-ledger-list{grid-template-columns:repeat(3,minmax(0,1fr))}.wc-explorer-root .wc-journey-panel .wc-journey-choice-receipt{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}}\n";
+  }
+  if (typeof document !== 'undefined') {
+    var wcChapterReadabilityStyle = document.getElementById('wc-five-mode-style');
+    if (wcChapterReadabilityStyle) wcChapterReadabilityStyle.textContent += "\n.wc-explorer-root .wc-journey-panel>div:first-child>div:first-child>span:last-child{font-size:12px;line-height:1.5}\n.wc-explorer-root .wc-journey-panel div[role=status]{font-size:13px;line-height:1.6}\n.wc-explorer-root .wc-journey-chapters .wc-chapter-direction{font-size:22px}\n";
+  }
+  if (typeof document !== 'undefined') {
+    var wcChapterPhoneStyle = document.getElementById('wc-five-mode-style');
+    if (wcChapterPhoneStyle) wcChapterPhoneStyle.textContent += "\n@container wc-journey (max-width:480px){.wc-explorer-root .wc-journey-panel .wc-route-ledger-item{grid-template-columns:18px minmax(0,1fr);row-gap:5px}.wc-explorer-root .wc-journey-panel .wc-route-ledger-count{grid-column:2;white-space:normal}}\n";
+  }
+  if (typeof document !== 'undefined') {
+    var wcChapterFinalStyle = document.getElementById('wc-five-mode-style');
+    if (wcChapterFinalStyle) wcChapterFinalStyle.textContent += "\n/* Keep playback within reach and long process names whole. */\n.wc-explorer-root .wc-journey-panel button{min-height:44px;min-width:44px}\n.wc-explorer-root .wc-journey-panel .wc-speed-segments button[aria-pressed=true]{background:#0369a1;color:#fff}\n.wc-explorer-root .wc-journey-panel .wc-route-leader-badge{font-size:12px!important;line-height:1.5!important}\n.wc-explorer-root .wc-journey-panel .wc-route-choice-card :is(p,.wc-2d-route-share){opacity:1;color:#334155}\n.dark .wc-explorer-root .wc-journey-panel .wc-route-choice-card :is(p,.wc-2d-route-share){color:#e2e8f0}\n.wc-explorer-root .wc-journey-panel .wc-journey-stats{font-size:13px;line-height:1.6}\n.wc-explorer-root .wc-journey-panel .wc-journey-counter-loops{color:#0e7490}.wc-explorer-root .wc-journey-panel .wc-journey-counter-runoff{color:#1d4ed8}.wc-explorer-root .wc-journey-panel .wc-journey-counter-infiltrate{color:#92400e}.wc-explorer-root .wc-journey-panel .wc-journey-counter-plant{color:#047857}\n.dark .wc-explorer-root .wc-journey-panel .wc-journey-counter-loops{color:#67e8f9}.dark .wc-explorer-root .wc-journey-panel .wc-journey-counter-runoff{color:#93c5fd}.dark .wc-explorer-root .wc-journey-panel .wc-journey-counter-infiltrate{color:#fcd34d}.dark .wc-explorer-root .wc-journey-panel .wc-journey-counter-plant{color:#6ee7b7}\n.dark .wc-explorer-root .wc-journey-chapters :is(.wc-chapter-water svg,.wc-chapter-direction){color:#5eead4}\n@container wc-journey (max-width:360px){.wc-explorer-root .wc-journey-chapters .wc-journey-timeline,.wc-explorer-root .wc-journey-chapters .wc-chapter-land-options{grid-template-columns:minmax(0,1fr)}.wc-explorer-root .wc-journey-chapters .wc-timeline-step>button{display:flex;align-items:center;gap:10px;min-height:68px;padding:10px 12px}.wc-explorer-root .wc-journey-chapters .wc-timeline-step strong{overflow-wrap:normal;word-break:normal}.wc-explorer-root .wc-chapter-number{flex-shrink:0}}\n@media(forced-colors:active){\n .wc-explorer-root .wc-journey-panel{forced-color-adjust:none;background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}\n .wc-explorer-root .wc-journey-panel :is(div,p,span,strong,small,h4,h5,dl,dt,dd,svg){forced-color-adjust:none;background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}\n .wc-explorer-root .wc-journey-panel :is(button,input,select){forced-color-adjust:none;background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;filter:none!important}\n .wc-explorer-root .wc-journey-panel button :is(span,strong,small){forced-color-adjust:none;background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}\n .wc-explorer-root .wc-journey-panel button[aria-pressed=true]{border:2px solid Highlight!important}\n .wc-explorer-root .wc-journey-panel :is(button,input,select):focus-visible,.wc-explorer-root #wcJourneyChapterTitle:focus{outline:3px solid Highlight!important;outline-offset:3px}\n .wc-explorer-root .wc-journey-panel .wc-journey-scrub{accent-color:Highlight}\n}\n";
   }
   var wcWorldsLoading = null;
   function loadWaterWorlds() {
@@ -30628,6 +30846,139 @@ const d = labToolData.waterCycle || {};
             }
             return React.createElement('svg', { viewBox: '0 0 48 48', 'aria-hidden': 'true', focusable: 'false', 'data-process-diagram': kind }, React.createElement('circle', { cx: 24, cy: 24, r: 23, fill: 'currentColor', opacity: 0.07 }), lines);
           }
+          var wcJourneyChapter = WCJourneyChapters.describe(d, JOURNEY_MATTER_ENERGY_TRACE, JOURNEY_HYDROLOGIC_TIME_TRACE);
+          function focusWcJourneyChapter() {
+            requestAnimationFrame(function() {
+              var heading = document.getElementById('wcJourneyChapterTitle');
+              if (!heading) return;
+              heading.focus({ preventScroll: true });
+              heading.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+            });
+          }
+          function inspectWcJourneyChapter(id) {
+            if (WCJourneyChapters.ids().indexOf(id) < 0) return;
+            upd('wcJourneyChapter', id);
+            focusWcJourneyChapter();
+          }
+          function inspectWcJourneyLandStep(state) {
+            if (WCJourneyChapters.landStates().indexOf(state) < 0) return;
+            updMulti({ wcJourneyChapter: 'land', wcJourneyLandStep: state });
+            focusWcJourneyChapter();
+          }
+          function followWcJourneyParcel() {
+            upd('wcJourneyChapter', '');
+            focusWcJourneyChapter();
+          }
+          function wcJourneyChapterDiagram(state, after) {
+            var process = { evaporating: 'evaporation', condensing: 'condensation', precipitating: 'precipitation',
+              infiltrating: 'infiltration', transpiring: 'transpiration' }[state];
+            if (process) return wcProcessDiagram(process, after);
+            var strokes = { fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' };
+            function path(key, drawing, extra) { return React.createElement('path', Object.assign({ key: key, d: drawing }, strokes, extra || {})); }
+            var shapes;
+            if (state === 'plant_absorb') {
+              shapes = after ? [path('stem', 'M24 39V9M24 18c-8 0-11-5-10-10 7 0 11 4 10 10M24 25c8 0 11-5 10-10-7 0-11 4-10 10'),
+                path('liquid', 'M21 35V20m-3 3 3-3 3 3', { 'data-water-symbol': 'liquid' })] :
+                [path('soil', 'M7 16h34M24 8v16l-10 10M24 24l10 10M24 24v16'), path('liquid', 'M10 24h5M33 24h5M16 39h4M29 39h4', { 'data-water-symbol': 'liquid' })];
+            } else if (state === 'aquifer_flow' && !after) {
+              shapes = [path('rock', 'M7 8h34v32H7ZM10 14l8 4 7-4 9 4 4-4M10 26l8 4 7-4 9 4 4-4'),
+                path('pore', 'M10 22h27m-4-3 4 3-4 3', { strokeDasharray: '3 3', 'data-water-symbol': 'liquid' })];
+            } else if (state === 'river_runoff' && !after) {
+              shapes = [path('land', 'M7 12l13 7 10 13h11'), path('flow', 'M8 19l11 7 9 12m-5-1 5 1 0-5', { 'data-water-symbol': 'liquid' })];
+            } else if (state === 'ground_choice' && after) {
+              shapes = [path('choice', 'M24 8v14M24 22L10 37m0-5v5h5M24 22v17m-3-3 3 3 3-3M24 22l14 15m-5 0h5v-5')];
+            } else {
+              shapes = [path('store', 'M7 20v17a4 4 0 0 0 4 4h26a4 4 0 0 0 4-4V20'),
+                path('water', 'M8 27c5-4 10 4 16 0s11 4 16 0M8 34c5-4 10 4 16 0s11 4 16 0', { 'data-water-symbol': 'liquid' })];
+            }
+            return React.createElement('svg', { viewBox: '0 0 48 48', 'aria-hidden': 'true', focusable: 'false',
+              'data-chapter-diagram': state, 'data-chapter-side': after ? 'after' : 'before' }, shapes);
+          }
+          function renderWcJourneyChapters() {
+            var chapter = wcJourneyChapter;
+            var storage = chapter.state === 'ocean' || chapter.state === 'complete';
+            var current = WCJourneyChapters.resolve({ journeyActive: d.journeyActive, journeyState: d.journeyState });
+            return React.createElement('section', { className: 'wc-journey-chapters', 'data-wc-journey-chapters': 'true',
+              'aria-labelledby': 'wcJourneyChaptersHeading', 'aria-describedby': 'wcJourneyChaptersHelp' },
+              React.createElement('header', { className: 'wc-chapters-head' },
+                React.createElement('div', null,
+                  React.createElement('span', { className: 'wc-chapters-kicker' }, 'A closer look'),
+                  React.createElement('h4', { id: 'wcJourneyChaptersHeading' }, 'Inspect the journey')
+                ),
+                React.createElement('button', { id: 'wcJourneyFollowParcel', type: 'button', 'aria-pressed': chapter.following,
+                  'aria-controls': 'wcJourneyChapterCard', onClick: followWcJourneyParcel }, 'Follow current parcel')
+              ),
+              React.createElement('p', { id: 'wcJourneyChaptersHelp', className: 'wc-chapters-help' },
+                'Choose a chapter to inspect its water and energy story. Playback and route controls move the live parcel.'),
+              React.createElement('p', { className: 'wc-chapters-parcel', 'data-wc-chapter-parcel': 'true' },
+                React.createElement('strong', null, d.journeyActive ? (journeyReplayIsScrubbed ? 'Replay parcel: ' : 'Current parcel: ') : 'Journey ready: '),
+                d.journeyActive ? journeyStateLabel + ' · ' + journeyStatusLabel : 'Start Journey to follow one droplet.'
+              ),
+              React.createElement('div', { className: 'wc-journey-timeline', role: 'list',
+                'aria-label': __alloT('stem.watercycle.a11y_water_journey_timeline', 'Water journey timeline') },
+                WCJourneyChapters.definitions().map(function(step, index) {
+                  var isCurrent = !!d.journeyActive && index === current.index;
+                  var timelineStepState = isCurrent ? 'is-current' : 'is-other';
+                  var timelineStepLabel = isCurrent ? (journeyReplayIsScrubbed ? 'replay parcel' : 'current parcel') : 'other chapter';
+                  return React.createElement('div', { key: step.id, role: 'listitem', className: 'wc-timeline-step ' + timelineStepState,
+                    'data-replay-focus': journeyReplayIsScrubbed && isCurrent ? 'true' : undefined,
+                    'data-current-parcel': String(isCurrent) },
+                    React.createElement('button', { id: 'wcJourneyChapter-' + step.id, type: 'button',
+                      'aria-pressed': chapter.id === step.id, 'aria-current': isCurrent ? 'step' : undefined, 'aria-controls': 'wcJourneyChapterCard',
+                      'aria-label': 'Inspect chapter ' + (index + 1) + ': ' + step.label + '. ' + step.cue + '. ' + timelineStepLabel + '.',
+                      onClick: function() { inspectWcJourneyChapter(step.id); } },
+                      React.createElement('span', { className: 'wc-chapter-number', 'aria-hidden': 'true' }, index + 1),
+                      React.createElement('span', { className: 'wc-chapter-label' },
+                        React.createElement('strong', null, step.label), React.createElement('small', null, step.cue),
+                        isCurrent && React.createElement('span', { className: 'wc-chapter-current' }, journeyReplayIsScrubbed ? 'Replay parcel' : 'Current parcel')
+                      )
+                    )
+                  );
+                })
+              ),
+              React.createElement('article', { id: 'wcJourneyChapterCard', className: 'wc-chapter-card',
+                'data-chapter-id': chapter.id, 'data-chapter-state': chapter.state, 'data-following-parcel': String(chapter.following) },
+                React.createElement('p', { className: 'wc-chapters-kicker' }, chapter.following ? (d.journeyActive ? 'Following the parcel' : 'Ready to explore') : 'Selected chapter diagram'),
+                React.createElement('h5', { id: 'wcJourneyChapterTitle', tabIndex: -1 }, 'Chapter ' + (chapter.index + 1) + ' · ' + chapter.label),
+                chapter.showLandSteps && React.createElement('div', { className: 'wc-chapter-land' },
+                  React.createElement('p', { id: 'wcJourneyLandStepLabel' }, 'Inspect a land step'),
+                  React.createElement('div', { className: 'wc-chapter-land-options', role: 'group', 'aria-labelledby': 'wcJourneyLandStepLabel' },
+                    WCJourneyChapters.landDefinitions().map(function(step) {
+                      return React.createElement('button', { id: 'wcJourneyLandStep-' + step.id, key: step.id, type: 'button',
+                        'aria-pressed': chapter.state === step.id, 'aria-controls': 'wcJourneyChapterCard',
+                        onClick: function() { inspectWcJourneyLandStep(step.id); } }, step.label);
+                    })
+                  )
+                ),
+                React.createElement('div', { className: 'wc-chapter-flow' },
+                  React.createElement('div', { className: 'wc-chapter-water' },
+                    React.createElement('small', null, storage ? 'Water store' : 'Starting store'),
+                    wcJourneyChapterDiagram(chapter.state, false),
+                    React.createElement('strong', { 'data-chapter-source': 'true' }, chapter.source),
+                    React.createElement('span', { 'data-chapter-phase-from': 'true' }, chapter.phaseFrom)
+                  ),
+                  React.createElement('div', { className: 'wc-chapter-direction', 'aria-hidden': 'true' }, storage ? '≈' : '→'),
+                  React.createElement('div', { className: 'wc-chapter-water' },
+                    React.createElement('small', null, storage ? 'Water remains in storage' : 'Destination'),
+                    wcJourneyChapterDiagram(chapter.state, true),
+                    React.createElement('strong', { 'data-chapter-destination': 'true' }, chapter.destination),
+                    React.createElement('span', { 'data-chapter-phase-to': 'true' }, chapter.phaseTo)
+                  )
+                ),
+                React.createElement('dl', { className: 'wc-chapter-facts' },
+                  React.createElement('div', { className: 'wc-chapter-energy', 'data-energy-transfer': chapter.energyTransfer },
+                    React.createElement('dt', null, 'Phase and latent heat'), React.createElement('dd', null, chapter.energyLabel)),
+                  React.createElement('div', null, React.createElement('dt', null, 'Driver'), React.createElement('dd', null, chapter.driver)),
+                  React.createElement('div', null, React.createElement('dt', null, 'Physical time'),
+                    React.createElement('dd', null, chapter.timeLabel, React.createElement('small', null, chapter.timeCaveat)))
+                ),
+                React.createElement('div', { className: 'wc-chapter-question' }, React.createElement('strong', null, 'Trace and explain'),
+                  React.createElement('p', null, chapter.question)),
+                React.createElement('p', { className: 'wc-chapter-note', 'data-chapter-note': 'true' }, chapter.note)
+              ),
+              React.createElement('p', { className: 'wc-chapters-help wc-chapters-scope' }, 'One illustrated route through a branching cycle. Diagrams are not to scale, and animation time is compressed.')
+            );
+          }
           function wcProcessCaveat(id) {
             var notes = {
               evaporation: __alloT('stem.watercycle.process_compare_vapor_note', 'Water vapor is an invisible gas. Diagram marks represent its movement.'),
@@ -30663,6 +31014,142 @@ const d = labToolData.waterCycle || {};
               React.createElement('small', { className: 'wc-process-caveat' }, wcProcessCaveat(id))
             );
           }
+          function wcCheckAnswerLabel(value) { return typeof value === 'boolean' ? (value ? 'True' : 'False') : String(value == null ? 'Not chosen' : value); }
+          function wcCheckCurrentQuestion(session) { return session && session.kind === 'myth' ? d.wcMyth : d.wcQuiz; }
+          function startWcCheckInvestigation(kind) {
+            if (d.aiQuizLoading) return;
+            var session = WCCheckInvestigation.createSession(kind, kind === 'myth' ? d.wcMyth : d.wcQuiz);
+            if (!session) return;
+            var spec = WCCheckInvestigation.get(session.destinationKey);
+            updMulti(Object.assign(WCCheckInvestigation.navigation(spec), { wcCheckInvestigation: session }));
+            requestAnimationFrame(function() {
+              var panel = document.getElementById('wcCheckInvestigationTitle');
+              var lab = spec.inputKey && document.querySelector(spec.lab === 'land' ? '.wc-land-lab' : '.wc-climate-lab');
+              if (lab) lab.open = true;
+              var control = spec.target && document.querySelector(spec.target);
+              if (control && control.tagName !== 'INPUT') control = control.querySelector('[aria-pressed="true"]') || control.querySelector('button') || control;
+              var target = control || panel;
+              if (target) {
+                target.focus({ preventScroll: true });
+                var reduced = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' });
+              }
+            });
+          }
+          function returnWcCheckInvestigation() {
+            var session = d.wcCheckInvestigation;
+            if (!session) return;
+            var current = WCCheckInvestigation.isCurrent(session, wcCheckCurrentQuestion(session));
+            updMulti({ wcSection: 'check', wcCheckInvestigation: Object.assign({}, session, { phase: current ? 'review' : 'stale' }) });
+            focusWcComparisonTarget(current ? (session.kind === 'myth' ? 'wcMythQuestion' : 'wcQuizQuestion') : 'wcCheckTitle');
+          }
+          function updateWcCheckReflection(field, value) {
+            var session = d.wcCheckInvestigation;
+            if (!session || field === 'revisedAnswer' && !WCCheckInvestigation.isCurrent(session, wcCheckCurrentQuestion(session))) return;
+            upd('wcCheckReflections', WCCheckInvestigation.updateReview(session, d.wcCheckReflections, field, value));
+          }
+          function saveWcCheckReflection() {
+            var session = d.wcCheckInvestigation;
+            if (!session || !WCCheckInvestigation.isCurrent(session, wcCheckCurrentQuestion(session))) return;
+            var records = WCCheckInvestigation.saveReview(session, d.wcCheckReflections);
+            upd('wcCheckReflections', records);
+            focusWcComparisonTarget('wcCheckReflectionStatus');
+          }
+          function closeWcCheckInvestigation() {
+            var session = d.wcCheckInvestigation;
+            updMulti({ wcSection: 'check', wcCheckInvestigation: null });
+            focusWcComparisonTarget(session && WCCheckInvestigation.isCurrent(session, wcCheckCurrentQuestion(session)) ? (session.kind === 'myth' ? 'wcCheckInvestigateMyth' : 'wcCheckInvestigateQuiz') : 'wcCheckTitle');
+          }
+          function renderWcCheckProcess(id) {
+            var process = WCProcessCompare.descriptor(id, MATTER_ENERGY_TRACE);
+            if (!process) return null;
+            return React.createElement('article', { key: id, className: 'wc-check-process', 'data-wc-check-process': id },
+              React.createElement('h5', null, wcComparedProcessLabel(id)),
+              React.createElement('div', { className: 'wc-check-state-flow' },
+                React.createElement('div', null, React.createElement('small', null, 'Before'), wcProcessDiagram(id, false), React.createElement('strong', null, process.phaseFrom)),
+                React.createElement('span', { 'aria-hidden': 'true' }, '→'),
+                React.createElement('span', { className: 'sr-only' }, 'to'),
+                React.createElement('div', null, React.createElement('small', null, 'After'), wcProcessDiagram(id, true), React.createElement('strong', null, process.phaseTo))
+              ),
+              React.createElement('dl', null,
+                React.createElement('div', null, React.createElement('dt', null, 'From'), React.createElement('dd', null, process.source)),
+                React.createElement('div', null, React.createElement('dt', null, 'To'), React.createElement('dd', null, process.destination)),
+                React.createElement('div', null, React.createElement('dt', null, 'Driver'), React.createElement('dd', null, process.driver)),
+                React.createElement('div', null, React.createElement('dt', null, 'Latent heat'), React.createElement('dd', null, process.energyTransfer === 'none' ? 'No latent heat transfer is required by this process.' : process.energyLabel))
+              ), React.createElement('p', { className: 'wc-check-detail' }, wcProcessCaveat(id))
+            );
+          }
+          function renderWcCheckPores() {
+            return React.createElement('figure', { className: 'wc-check-pores' },
+              React.createElement('svg', { viewBox: '0 0 300 100', 'aria-hidden': 'true', focusable: 'false' },
+                React.createElement('rect', { x: 2, y: 2, width: 296, height: 96, rx: 16, fill: 'currentColor', opacity: 0.06 }),
+                React.createElement('path', { d: 'M25 30L70 55L115 30L160 55L205 30L250 55', fill: 'none', stroke: 'currentColor', strokeWidth: 9, opacity: 0.18 }),
+                [25,70,115,160,205,250].map(function(x, i) { return React.createElement('circle', { key: x, cx: x, cy: i % 2 ? 55 : 30, r: 16, fill: 'none', stroke: 'currentColor', strokeWidth: 2 }); }),
+                [25,70,115,160,205,250].map(function(x, i) { return React.createElement('circle', { key: x, cx: x, cy: i % 2 ? 55 : 30, r: 5, fill: 'currentColor' }); }),
+                React.createElement('path', { d: 'M38 82H270m-8-6 8 6-8 6', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })
+              ), React.createElement('figcaption', null, 'Liquid water occupies connected spaces between soil or rock particles. The arrow shows a possible flow direction, not measured speed.')
+            );
+          }
+          function renderWcCheckAction(kind, question) {
+            var spec = WCCheckInvestigation.resolve(kind, question);
+            return React.createElement('div', { className: 'wc-check-next' },
+              React.createElement('h5', null, 'Investigate, then reconsider'),
+              React.createElement('p', null, spec.prompt),
+              React.createElement('button', { id: kind === 'myth' ? 'wcCheckInvestigateMyth' : 'wcCheckInvestigateQuiz', type: 'button', 'data-wc-check-action': 'investigate', 'data-kind': kind, disabled: !!d.aiQuizLoading || !WCCheckInvestigation.key(kind, question), onClick: function() { startWcCheckInvestigation(kind); } }, (spec.related ? 'Explore a related model: ' : 'Investigate: ') + spec.label),
+              React.createElement('p', { className: 'wc-check-detail' }, React.createElement('strong', null, 'Model limit: '), spec.scope)
+            );
+          }
+          function renderWcCheckInvestigation(kind) {
+            var session = WCCheckInvestigation.normalizeSession(d.wcCheckInvestigation);
+            var spec = session && WCCheckInvestigation.get(session.destinationKey);
+            if (!spec) return null;
+            var current = WCCheckInvestigation.isCurrent(session, wcCheckCurrentQuestion(session));
+            if (session.phase === 'review' && current ? kind !== session.kind : !!kind) return null;
+            var record = WCCheckInvestigation.history(d.wcCheckReflections).find(function(item) { return item.key === session.key; }) || null;
+            var ready = current && record && WCCheckInvestigation.allowedAnswer(session, record.revisedAnswer) && typeof record.observation === 'string' && !!record.observation.trim();
+            return React.createElement('section', { className: 'wc-check-investigation', 'data-wc-check-investigation': 'true', 'data-kind': session.kind, 'data-destination': spec.key, 'data-phase': current ? session.phase : 'stale', 'aria-labelledby': 'wcCheckInvestigationTitle' },
+              React.createElement('header', { className: 'wc-check-panel-header' },
+                React.createElement('div', null, React.createElement('p', { className: 'wc-check-eyebrow' }, session.phase === 'review' && current ? '3 · Reconsider' : '2 · Investigate'), React.createElement('h4', { id: 'wcCheckInvestigationTitle', tabIndex: -1 }, spec.label)),
+                React.createElement('button', { type: 'button', 'data-wc-check-action': 'close', onClick: closeWcCheckInvestigation }, 'Close investigation')
+              ),
+              React.createElement('p', { className: 'wc-check-context' }, React.createElement('strong', null, 'Your question: '), session.questionText),
+              React.createElement('p', null, React.createElement('strong', null, 'Look for: '), spec.prompt),
+              React.createElement('p', { className: 'wc-check-boundary' }, React.createElement('strong', null, 'Model limit: '), spec.scope),
+              React.createElement('div', { className: 'wc-check-processes' }, spec.processes.map(renderWcCheckProcess)),
+              spec.pores && renderWcCheckPores(),
+              spec.key === 'sublimation' && React.createElement('p', { className: 'wc-check-concept-definition' }, React.createElement('strong', null, 'Sublimation: '), waterCycleVocab().sublimation || 'Solid water changes directly into water vapor.'),
+              React.createElement('label', { htmlFor: 'wcCheckObservation', className: 'wc-check-field-label' }, 'What did you notice?'),
+              React.createElement('p', { id: 'wcCheckObservationHint', className: 'wc-check-detail' }, 'Record an observation or explain what this model cannot establish. Your writing is kept as you type.'),
+              React.createElement('textarea', { id: 'wcCheckObservation', maxLength: 1200, rows: 3, value: record && typeof record.observation === 'string' ? record.observation : '', 'aria-describedby': 'wcCheckObservationHint', onChange: function(e) { updateWcCheckReflection('observation', e.target.value); } }),
+              !current && React.createElement('p', { className: 'wc-check-boundary' }, 'The question has changed. This investigation and its notes belong to the earlier question; close it to work with the current question.'),
+              session.phase !== 'review' && React.createElement('button', { type: 'button', 'data-wc-check-action': 'return', onClick: returnWcCheckInvestigation }, 'Return to question and reconsider'),
+              session.phase === 'review' && current && React.createElement('div', { className: 'wc-check-review' },
+                React.createElement('p', null, React.createElement('strong', null, 'Your first answer: '), wcCheckAnswerLabel(session.originalAnswer)),
+                React.createElement('fieldset', null, React.createElement('legend', null, 'After investigating, what is your answer?'),
+                  session.choices.map(function(value, index) { return React.createElement('label', { key: index, className: 'wc-check-revised-choice' }, React.createElement('input', { type: 'radio', name: 'wcCheckRevisedAnswer', value: String(value), checked: !!record && record.revisedAnswer === value, onChange: function() { updateWcCheckReflection('revisedAnswer', value); } }), React.createElement('span', null, wcCheckAnswerLabel(value))); })
+                ),
+                React.createElement('p', { className: 'wc-check-detail' }, 'Your first answer remains in the result. This reflection is not scored.'),
+                React.createElement('button', { type: 'button', 'data-wc-check-action': 'save-reflection', disabled: !ready || !!(record && record.saved), onClick: saveWcCheckReflection }, record && record.saved ? 'Reflection saved' : 'Save reflection'),
+                React.createElement('p', { id: 'wcCheckReflectionStatus', tabIndex: -1, role: 'status', 'aria-live': 'polite', className: 'wc-check-detail' }, record && record.saved ? 'Reflection saved with your original question and first answer.' : 'Choose an answer and add an observation or model limit to save your reflection.')
+              )
+            );
+          }
+          function renderWcCheckHistory() {
+            var records = WCCheckInvestigation.history(d.wcCheckReflections);
+            if (!records.length) return null;
+            return React.createElement('details', { className: 'wc-check-history', 'data-wc-check-history': 'true' },
+              React.createElement('summary', null, 'Your reflections (' + records.length + ')'),
+              React.createElement('div', null, records.map(function(record) { return React.createElement('article', { key: record.key },
+                React.createElement('h4', null, record.questionText),
+                React.createElement('p', { className: 'wc-check-detail' }, record.saved ? 'Saved reflection' : 'Draft · kept as you typed'),
+                React.createElement('p', null, React.createElement('strong', null, 'First answer: '), wcCheckAnswerLabel(record.originalAnswer)),
+                React.createElement('p', null, React.createElement('strong', null, 'After investigating: '), wcCheckAnswerLabel(record.revisedAnswer)),
+                React.createElement('p', { className: 'wc-check-history-note' }, React.createElement('strong', null, 'Observation or model limit: '), record.observation || 'No observation recorded yet.'),
+                React.createElement('p', { className: 'wc-check-detail' }, 'Model explored: ' + WCCheckInvestigation.get(record.destinationKey).label)
+              ); }))
+            );
+          }
+
           function renderWcProcessComparison() {
             var state = wcProcessComparison;
             var evaluation = WCProcessCompare.evaluate(state.first, state.second, state.question, MATTER_ENERGY_TRACE);
@@ -30737,6 +31224,7 @@ const d = labToolData.waterCycle || {};
           var journeySpeed = d.journeySpeed || 1;
           var journeyStatusLabel = !d.journeyActive ? 'Previewing the selected process' :
             d.journeyState === 'ground_choice' ? 'Waiting for a land pathway choice' :
+            d.journeyState === 'complete' ? 'At ocean storage' :
             journeyPaused ? 'Journey paused' :
             'Moving at ' + journeySpeed + 'x speed';
           var journeyStateLabels = {
@@ -30826,7 +31314,7 @@ const d = labToolData.waterCycle || {};
           var journeyReplaySegment = journeyReplaySegmentAt(journeyReplayProgress);
           var journeyReplayStatus = journeyReplayIsScrubbed
             ? 'Replay position ' + Math.round(journeyReplayProgress * 100) + ' percent: ' + journeyReplaySegment.label + '.'
-            : 'Live position follows the animated droplet. Drag the scrubber to pause and inspect a phase.';
+            : 'Move the replay slider to move and pause the parcel at an illustrated position. Replay percentages describe this route, not elapsed physical time.';
           var journeyReplayTimelineIndex = {
             ocean: 0, evaporating: 1, condensing: 2, precipitating: 3,
             ground_choice: 4, river_runoff: 4, infiltrating: 4, aquifer_flow: 4,
@@ -32917,6 +33405,8 @@ React.createElement("div", {
 
             renderWcSectionTabs(),
 
+            renderWcCheckInvestigation(),
+
             wcSection === 'conditions' && React.createElement("div", { className: "wc-section-body", role: "region", "aria-label": __alloT('stem.watercycle.a11y_change_the_conditions', 'Change the conditions') },
             React.createElement("details", {
               className: "wc-climate-lab wc-control-panel rounded-xl p-3 mb-3 shadow-md border-2 " + (isDark ? "bg-slate-950/60 border-amber-900/40 backdrop-blur-md" : "bg-gradient-to-r from-amber-50 via-sky-50 to-emerald-50 border-amber-200"),
@@ -33658,6 +34148,7 @@ React.createElement("div", {
                 "aria-live": "polite",
                 "aria-atomic": "true"
               }, journeyTransitionStatus),
+              !d.journeyActive && renderWcJourneyChapters(),
               !d.journeyActive && React.createElement("div", {
                 role: "note",
                 style: {
@@ -33695,7 +34186,7 @@ React.createElement("div", {
                         if (journeyCanvas) journeyCanvas.dataset.journeyPaused = String(nextPaused);
                         if (typeof announceToSR === 'function') announceToSR(nextPaused ? 'Water journey paused.' : 'Water journey resumed.');
                       }
-                    }, journeyPaused ? "\u25B6" : "\u23F8"),
+                    }, journeyPaused ? "\u25B6 Resume" : "\u23F8 Pause"),
                     React.createElement("button", {
                       type: "button",
                       className: "wc-journey-icon-btn",
@@ -33727,27 +34218,11 @@ React.createElement("div", {
                     })
                   )
                 ),
-                React.createElement("div", { className: "wc-journey-timeline", role: "list", "aria-label": __alloT('stem.watercycle.a11y_water_journey_timeline', 'Water journey timeline') },
-                  journeyTimelineSteps.map(function(step, index) {
-                    var timelineStepState = index < journeyTimelineIndex ? "is-complete" : index === journeyTimelineIndex ? "is-current" : "is-upcoming";
-                    var timelineStepLabel = index < journeyTimelineIndex ? "completed" : index === journeyTimelineIndex ? "current" : "upcoming";
-                    return React.createElement("div", {
-                      key: step,
-                      role: "listitem",
-                      className: "wc-timeline-step " + timelineStepState,
-                      "data-replay-focus": journeyReplayIsScrubbed && index === journeyReplayTimelineIndex ? "true" : undefined,
-                      "aria-current": index === journeyTimelineIndex ? "step" : undefined,
-                      "aria-label": step + ": " + timelineStepLabel + (journeyReplayIsScrubbed && index === journeyReplayTimelineIndex ? ". Replay focus." : "")
-                    },
-                      React.createElement("span", { className: "wc-timeline-marker", "aria-hidden": "true" }, index < journeyTimelineIndex ? "\u2713" : index === journeyTimelineIndex ? "\u25CF" : "\u25CB"),
-                      React.createElement("strong", null, (index + 1) + ". " + step)
-                    );
-                  })
-                ),
+                renderWcJourneyChapters(),
                 React.createElement("div", { className: "wc-replay-controls", "data-watercycle-replay": "true", role: "group", "aria-labelledby": "wcJourneyReplayLabel" },
                   React.createElement("div", { className: "wc-replay-head" },
                     React.createElement("strong", { id: "wcJourneyReplayLabel" }, "Replay a droplet"),
-                    React.createElement("span", null, Math.round(journeyReplayProgress * 100) + "% · " + journeyReplaySegment.label)
+                    React.createElement("span", null, journeyReplayIsScrubbed ? Math.round(journeyReplayProgress * 100) + "% · " + journeyReplaySegment.label : "Live parcel · " + journeyStateLabel)
                   ),
                   React.createElement("input", {
                     id: "wcJourneyReplayScrub",
@@ -33758,7 +34233,7 @@ React.createElement("div", {
                     step: 1,
                     value: Math.round(journeyReplayProgress * 100),
                     "aria-label": __alloT('stem.watercycle.a11y_scrub_through_the_water_droplet_journey', 'Scrub through the water droplet journey'),
-                    "aria-valuetext": Math.round(journeyReplayProgress * 100) + " percent: " + journeyReplaySegment.label,
+                    "aria-valuetext": journeyReplayIsScrubbed ? Math.round(journeyReplayProgress * 100) + " percent replay: " + journeyReplaySegment.label : "Replay control at " + Math.round(journeyReplayProgress * 100) + " percent of the illustrated route. Current parcel: " + journeyStateLabel + ". Move the slider to choose a replay position.",
                     "aria-describedby": "wcJourneyReplayStatus",
                     onChange: function(e) { setJourneyReplayProgress(Number(e.target.value) / 100); }
                   }),
@@ -33781,10 +34256,10 @@ React.createElement("div", {
                   React.createElement("p", { className: "text-xs font-bold mb-1 " + (isDark ? "text-cyan-400" : "text-cyan-700") },
                     (d.journeyState === 'ground_choice') ? (journeyView === '3d'
                       ? "\uD83E\uDEA8 Choose your path in the viewport above or use the buttons here:" : "\uD83E\uDEA8 Choose your path on the map or use the buttons here:") :
-                    (d.journeyState === 'complete') ? "\u2705 You completed the water cycle! Loop " + (d.journeyLoops || 1) + " recorded \u00B7 +25 XP" :
+                    (d.journeyState === 'complete') ? (journeyReplayIsScrubbed ? "Replay: return to ocean storage. Inspecting this frame records no new loop." : "\u2705 You completed the water cycle! Loop " + (d.journeyLoops || 1) + " recorded \u00B7 +25 XP") :
                     "\uD83D\uDCA7 Current: " + journeyStateLabel
                   ),
-                  d.journeyState === 'complete' && React.createElement("p", { className: "text-[0.6875rem] leading-snug mt-1 " + (isDark ? "text-emerald-300" : "text-emerald-700") }, t('stem.watercycle.you_rode_the_same_water_molecule_the_w', "You rode the SAME water molecule the whole way around \u2014 it changed form (liquid \u2192 vapor \u2192 liquid) but was never created or destroyed. Every drop you drink has been cycling for billions of years.")),
+                  d.journeyState === 'complete' && !journeyReplayIsScrubbed && React.createElement("p", { className: "text-[0.6875rem] leading-snug mt-1 " + (isDark ? "text-emerald-300" : "text-emerald-700") }, t('stem.watercycle.you_rode_the_same_water_molecule_the_w', "You rode the SAME water molecule the whole way around \u2014 it changed form (liquid \u2192 vapor \u2192 liquid) but was never created or destroyed. Every drop you drink has been cycling for billions of years.")),
                   journeyChosenRoute && React.createElement("div", {
                     className: "wc-journey-choice-receipt" + (d.journeyState === 'complete' ? " is-complete" : ""),
                     role: "region",
@@ -33845,7 +34320,7 @@ React.createElement("div", {
                             React.createElement("strong", null, path.label),
                             React.createElement("small", null, path.detail)
                           ),
-                          React.createElement("span", { className: "wc-route-ledger-count" }, explored ? path.count + (path.count === 1 ? " loop" : " loops") : isNext ? "Next up" : "Try next")
+                          React.createElement("span", { className: "wc-route-ledger-count" }, explored ? path.count + (path.count === 1 ? " choice" : " choices") : isNext ? "Next up" : "Try next")
                         );
                       })
                     )
@@ -33895,7 +34370,7 @@ React.createElement("div", {
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF3F"),
                       React.createElement("p", { className: "text-[0.6875rem] font-bold" }, t('stem.watercycle.enter_plant_p', "Enter Plant (P)")),
-                      React.createElement("p", { className: "text-[0.6875rem] opacity-70" }, "Transpiration!"),
+                      React.createElement("p", { className: "text-[0.6875rem] opacity-70" }, "Liquid enters roots"),
                       React.createElement("p", { className: "wc-route-driver-copy text-[0.6875rem] opacity-70" }, "Driver: " + journeyPathDriverByKey.plant),
                       React.createElement("p", { className: "wc-route-pace-copy text-[0.6875rem] opacity-70" }, "Residence pace: " + journeyPathPaceByKey.plant),
                       React.createElement("p", { className: "wc-route-return-copy text-[0.6875rem] opacity-70" }, "Return path: " + journeyPathReturnByKey.plant),
@@ -33918,11 +34393,11 @@ React.createElement("div", {
                 ),
 
                 // Stats bar
-                (d.journeyLoops > 0 || (d.journeyPaths && (d.journeyPaths.runoff || d.journeyPaths.infiltrate || d.journeyPaths.plant))) && React.createElement("div", { className: "flex flex-wrap items-center gap-3 text-[0.6875rem] font-bold", role: "status", "aria-label": __alloT('stem.watercycle.a11y_journey_progress_summary', 'Journey progress summary'), "aria-live": "polite", "aria-atomic": "true" },
-                  React.createElement("span", { className: "text-cyan-400" }, "\uD83D\uDD04 Loops: " + (d.journeyLoops || 0)),
-                  React.createElement("span", { className: "text-blue-500 text-blue-400" }, "\uD83C\uDF0A Runoff: " + ((d.journeyPaths && d.journeyPaths.runoff) || 0)),
-                  React.createElement("span", { className: "text-amber-500 text-amber-400" }, "\uD83E\uDEB4 Underground: " + ((d.journeyPaths && d.journeyPaths.infiltrate) || 0)),
-                  React.createElement("span", { className: "text-emerald-500 text-emerald-400" }, "\uD83C\uDF3F Plant: " + ((d.journeyPaths && d.journeyPaths.plant) || 0))
+                (d.journeyLoops > 0 || (d.journeyPaths && (d.journeyPaths.runoff || d.journeyPaths.infiltrate || d.journeyPaths.plant))) && React.createElement("div", { className: "wc-journey-stats flex flex-wrap items-center gap-3 text-[0.6875rem] font-bold", role: "status", "aria-label": __alloT('stem.watercycle.a11y_journey_progress_summary', 'Journey progress summary'), "aria-live": "polite", "aria-atomic": "true" },
+                  React.createElement("span", { className: "wc-journey-counter-loops text-cyan-400" }, "\uD83D\uDD04 Loops: " + (d.journeyLoops || 0)),
+                  React.createElement("span", { className: "wc-journey-counter-runoff text-blue-500 text-blue-400" }, "\uD83C\uDF0A Runoff: " + ((d.journeyPaths && d.journeyPaths.runoff) || 0)),
+                  React.createElement("span", { className: "wc-journey-counter-infiltrate text-amber-500 text-amber-400" }, "\uD83E\uDEB4 Underground: " + ((d.journeyPaths && d.journeyPaths.infiltrate) || 0)),
+                  React.createElement("span", { className: "wc-journey-counter-plant text-emerald-500 text-emerald-400" }, "\uD83C\uDF3F Plant: " + ((d.journeyPaths && d.journeyPaths.plant) || 0))
                 )
               ),
 
@@ -34191,16 +34666,17 @@ React.createElement("div", {
 
             ),
 
-            wcSection === 'check' && React.createElement("div", { className: "wc-section-body", role: "region", "aria-label": __alloT('stem.watercycle.a11y_check_yourself', 'Check yourself') },
-            React.createElement("div", {
-              className: "wc-focus-secondary flex items-center gap-2 mb-2 flex-wrap",
-              role: "region",
-              "aria-label": __alloT('stem.watercycle.a11y_water_cycle_quiz', 'Water Cycle quiz'),
-              "aria-busy": !!d.aiQuizLoading
-            },
-
-              React.createElement("button", { type: "button", "aria-label": t('stem.watercycle.start_water_cycle_quiz', "Start water cycle quiz"),
-                onClick: function () {
+            wcSection === 'check' && React.createElement('section', { className: 'wc-section-body wc-check', 'data-wc-check': 'true', 'aria-labelledby': 'wcCheckTitle' },
+              React.createElement('header', { className: 'wc-check-intro' },
+                React.createElement('p', { className: 'wc-check-eyebrow' }, 'Answer · Investigate · Reconsider'),
+                React.createElement('h3', { id: 'wcCheckTitle', tabIndex: -1 }, 'Check yourself'),
+                React.createElement('p', null, 'Make a choice, review the explanation, then use a model to build or question your reasoning.')
+              ),
+              React.createElement('section', { className: 'wc-check-card', 'data-wc-check-quiz': 'true', 'aria-labelledby': 'wcQuizTitle', 'aria-busy': !!d.aiQuizLoading },
+                React.createElement('header', { className: 'wc-check-task-header' },
+                  React.createElement('div', null, React.createElement('p', { className: 'wc-check-eyebrow' }, '1 · Choose an answer'), React.createElement('h4', { id: 'wcQuizTitle', tabIndex: -1 }, 'Water cycle quiz')),
+                  React.createElement('div', { className: 'wc-check-actions' },
+                    React.createElement('button', { type: 'button', 'data-wc-check-action': 'new-quiz', disabled: !!d.aiQuizLoading, onClick: function() {
                   var pool = waterCycleQuizzes()[gradeBand] || waterCycleQuizzes()['3-5'];
                   var q = pool[Math.floor(Math.random() * pool.length)];
                   upd('wcQuiz', {
@@ -34212,13 +34688,14 @@ React.createElement("div", {
                     concept: q.concept,
                     wrongFeedback: q.wrongFeedback
                   });
-                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (d.wcQuiz ? (isDark ? 'bg-slate-800 text-sky-400 border border-slate-700' : 'bg-sky-100 text-sky-700') : 'bg-sky-700 text-white')
-              }, d.wcQuiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz (" + gradeBand + ")"),
 
-              // ═══ AI GENERATED QUIZ BUTTON ═══
-              callGemini && React.createElement("button", { type: "button", "aria-label": t('stem.watercycle.generate_ai_quiz_question', "Generate AI quiz question"),
-                onClick: function() {
+                      upd('wcCheckInvestigation', null);
+                      focusWcComparisonTarget('wcQuizQuestion');
+                    } }, d.wcQuiz ? 'New question' : 'Start quiz (' + gradeBand + ')'),
+                    callGemini && React.createElement('button', { type: 'button', 'data-wc-check-action': 'new-ai', disabled: !!d.aiQuizLoading, onClick: function() {
                   if (d.aiQuizLoading) return;
+                  upd('wcCheckInvestigation', null);
+                  focusWcComparisonTarget('wcQuizTitle');
                   upd('aiQuizLoading', true);
                   var stageCtx = sel ? sel.id : 'evaporation';
                   var climCtx = 'Solar=' + (((typeof d.climSolar === 'number' && isFinite(d.climSolar)) ? d.climSolar : 1) * 100).toFixed(0) + '%, Temp=' + ((typeof d.climTemp === 'number' && isFinite(d.climTemp)) ? d.climTemp : 15) + '\u00B0C, Wind=' + (((typeof d.climWind === 'number' && isFinite(d.climWind)) ? d.climWind : 1)).toFixed(1) + 'x';
@@ -34255,10 +34732,12 @@ React.createElement("div", {
                           wrongFeedback: parsed.wrongFeedback || {}
                         });
                         upd('aiQuizLoading', false);
+                        focusWcComparisonTarget('wcQuizQuestion');
                       } else { throw new Error('bad format'); }
                     } catch(e) {
                       addToast('\u26A0\uFE0F AI quiz failed, using static question', 'error');
                       upd('aiQuizLoading', false);
+                        focusWcComparisonTarget('wcQuizQuestion');
                       // Fallback to static
                       var fb = [{ q: 'What percentage of Earth is covered by water?', a: '71%', opts: ['50%', '60%', '71%', '85%'], concept: 'collection', wrongFeedback: { '50%': 'Too low. Earth is 71% water.', '60%': 'Too low. Earth is 71% water.', '85%': 'Too high. Earth is 71% water.' } }];
                       var q2 = fb[0];
@@ -34267,73 +34746,28 @@ React.createElement("div", {
                   }).catch(function() {
                     addToast('\u26A0\uFE0F AI unavailable, using static question', 'error');
                     upd('aiQuizLoading', false);
+                        focusWcComparisonTarget('wcQuizQuestion');
                     var fb = [{ q: 'How much of Earth\'s water is freshwater?', a: '3%', opts: ['3%', '10%', '25%', '50%'], concept: 'collection', wrongFeedback: { '10%': 'Too high. Only 3% is fresh.', '25%': 'Too high. Only 3% is fresh.', '50%': 'Too high. Only 3% is fresh.' } }];
                     var q2 = fb[0];
                     upd('wcQuiz', { q: q2.q, a: q2.a, opts: wcShuffleOpts(q2.opts), answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0, concept: q2.concept, wrongFeedback: q2.wrongFeedback });
                   });
-                },
-                disabled: d.aiQuizLoading,
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (d.aiQuizLoading ? 'bg-purple-700 text-white cursor-wait' : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-600 hover:to-indigo-600 shadow-md')
-              }, d.aiQuizLoading ? '\u23F3 Generating...' : '\u2728 AI Question'),
 
-              d.wcQuiz && d.wcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "\u2B50 " + d.wcQuiz.score + " correct"),
-              d.wcQuiz && d.wcQuiz.isAI && React.createElement("span", { className: "px-1.5 py-0.5 text-[0.6875rem] font-bold rounded-full " + (isDark ? "bg-purple-900/60 text-purple-200" : "bg-purple-100 text-purple-600") }, t('stem.watercycle.ai_generated', "\uD83E\uDDE0 AI-GENERATED")),
-              (d.wcStreak || 0) >= 3 && React.createElement("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-700 to-red-600 text-white text-[0.6875rem] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.wcStreak + " streak!"),
-              (d.wcAttempts || 0) > 0 && React.createElement("span", { className: "px-1.5 py-0.5 text-[0.6875rem] font-bold rounded-full " + (isDark ? "bg-slate-800 text-slate-300" : "bg-slate-100 text-slate-600") }, (d.wcQuiz && d.wcQuiz.score || 0) + "/" + d.wcAttempts + " (" + Math.round(((d.wcQuiz && d.wcQuiz.score || 0) / d.wcAttempts) * 100) + "%)"),
-
-              d.wcQuiz && React.createElement("div", {
-                className: "wc-focus-secondary mt-2 rounded-xl p-3 border shadow-sm " + (isDark ? "bg-slate-950/60 border-sky-900/40 backdrop-blur-md" : "bg-gradient-to-br from-sky-50 to-indigo-50 border-sky-200"),
-                role: "region",
-                "aria-labelledby": "wcQuizQuestion",
-                "aria-describedby": "wcQuizInstructions wcQuizStatus"
-              },
-
-                React.createElement("p", {
-                  id: "wcQuizStatus",
-                  className: "sr-only",
-                  role: "status",
-                  "aria-live": "polite",
-                  "aria-atomic": "true"
-                }, d.aiQuizLoading
-                  ? "Generating an AI quiz question."
-                  : d.wcQuiz.answered
-                    ? "Answer submitted. " + ((d.wcQuiz.score || 0)) + " correct across " + (d.wcAttempts || 0) + " attempts."
-                    : "Question ready for " + gradeBand + ". Select one answer."),
-                React.createElement("p", {
-                  id: "wcQuizQuestion",
-                  role: "status",
-                  "aria-live": "polite",
-                  "aria-atomic": "true",
-                  className: "text-sm font-bold mb-2 " + (isDark ? "text-sky-400" : "text-sky-800")
-                }, d.wcQuiz.q),
-                React.createElement("p", { id: "wcQuizInstructions", className: "sr-only" }, "Choose one answer. After you answer, review the feedback and concept focus."),
-
-                React.createElement("div", { className: "grid grid-cols-2 gap-2", role: "group", "aria-label": __alloT('stem.watercycle.a11y_quiz_answer_choices', 'Quiz answer choices') },
-
-                  d.wcQuiz.opts.map(function (opt) {
-
-                    var isCorrect = opt === d.wcQuiz.a;
-
-                    var wasChosen = d.wcQuiz.chosen === opt;
-
-                    var cls = !d.wcQuiz.answered
-                      ? (isDark
-                         ? 'transition-colors bg-slate-900 border-slate-800 text-slate-300 hover:border-sky-500 hover:bg-sky-950/40 hover:shadow-sm active:scale-[0.97]'
-                         : 'transition-colors bg-white border-slate-200 hover:border-sky-400 hover:bg-sky-50 hover:shadow-sm text-slate-800 active:scale-[0.97]')
-                      : isCorrect
-                        ? (isDark ? 'bg-emerald-950/60 border-emerald-800 text-emerald-400 shadow-sm' : 'bg-emerald-100 border-emerald-400 shadow-sm text-emerald-900')
-                        : wasChosen
-                          ? (isDark ? 'bg-red-950/60 border-red-800 text-red-400' : 'bg-red-100 border-red-400 text-red-900')
-                          : (isDark ? 'bg-slate-950/40 border-slate-900 opacity-40 text-slate-500' : 'bg-slate-50 border-slate-200 opacity-40 text-slate-500');
-
-                    return React.createElement("button", {
-                      type: "button",
-                      "aria-label": d.wcQuiz.answered
-                        ? opt + (isCorrect ? " (correct answer)" : wasChosen ? " (your answer)" : " (not selected)")
-                        : "Select answer: " + opt,
-
-                      key: opt, disabled: d.wcQuiz.answered, onClick: function () {
-
+                    } }, d.aiQuizLoading ? 'Generating question…' : 'Generate AI question')
+                  )
+                ),
+                React.createElement('p', { className: 'wc-check-progress' }, (d.wcQuiz && d.wcQuiz.score || 0) + ' correct across ' + (d.wcAttempts || 0) + ' attempts' + ((d.wcStreak || 0) > 0 ? ' · Current streak: ' + d.wcStreak : '')),
+                React.createElement('p', { id: 'wcQuizStatus', className: 'sr-only', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, d.aiQuizLoading ? 'Generating an AI quiz question.' : d.wcQuiz ? (d.wcQuiz.answered ? 'Answer submitted. Review the explanation and investigate.' : 'Question ready. Select one answer.') : 'Start a quiz to choose an answer.'),
+                !d.wcQuiz && React.createElement('p', { className: 'wc-check-empty' }, 'Start with a question for grade band ' + gradeBand + '.'),
+                d.wcQuiz && React.createElement('div', { role: 'group', 'aria-labelledby': 'wcQuizQuestion', 'aria-describedby': 'wcQuizInstructions' },
+                  d.wcQuiz.isAI && React.createElement('p', { className: 'wc-check-detail' }, 'AI-generated question'),
+                  React.createElement('h4', { id: 'wcQuizQuestion', tabIndex: -1, className: 'wc-check-question' }, d.wcQuiz.q),
+                  React.createElement('p', { id: 'wcQuizInstructions', className: 'wc-check-detail' }, d.aiQuizLoading ? 'A new question is being generated. Answer choices will be available when it is ready.' : d.wcQuiz.answered ? 'Your first answer is recorded below. Use the explanation to guide an investigation.' : 'Choose one answer. Then review the explanation and investigate.'),
+                  React.createElement('div', { className: 'wc-check-choices', role: 'group', 'aria-label': 'Quiz answer choices' },
+                    d.wcQuiz.opts.map(function(opt) {
+                      var isCorrect = opt === d.wcQuiz.a;
+                      var wasChosen = d.wcQuiz.chosen === opt;
+                      var answerState = !d.wcQuiz.answered ? 'ready' : isCorrect ? 'correct' : wasChosen ? 'chosen' : 'other';
+                      return React.createElement('button', { type: 'button', key: opt, disabled: !!d.wcQuiz.answered || !!d.aiQuizLoading, 'data-answer-state': answerState, onClick: function() {
                         var correct = opt === d.wcQuiz.a;
                         var newStreak = correct ? (d.wcStreak || 0) + 1 : 0;
                         var newAttempts = (d.wcAttempts || 0) + 1;
@@ -34368,67 +34802,33 @@ React.createElement("div", {
                         });
                         setTimeout(function() { checkWaterCycleChallenges(nextState); }, 50);
 
-                      }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none " + cls
 
-                    }, opt);
-
-                  })
-
-                ),
-
-                // Inline wrong-option explanations and vocabulary study cards
-                d.wcQuiz.answered && React.createElement("div", {
-                  className: "mt-3 space-y-2 animate-in fade-in",
-                  role: "status",
-                  "aria-live": "polite",
-                  "aria-atomic": "true"
-                },
-                  React.createElement("div", {
-                    className: "p-3 rounded-lg text-sm " + (isDark
-                      ? (d.wcQuiz.chosen === d.wcQuiz.a ? "bg-emerald-950/40 text-emerald-400 border border-emerald-900/50" : "bg-red-950/40 text-red-400 border border-red-900/50")
-                      : (d.wcQuiz.chosen === d.wcQuiz.a ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"))
-                  },
-                    React.createElement("p", { className: "font-black text-xs" }, d.wcQuiz.chosen === d.wcQuiz.a ? "✅ Correct answer!" : "❌ Incorrect answer"),
-                    React.createElement("p", { className: "text-xs mt-1 font-bold" }, "Correct answer: " + d.wcQuiz.a),
-                    React.createElement("p", { className: "text-xs mt-1 leading-relaxed font-medium " + (isDark ? "text-slate-300" : "text-slate-700") },
-                      d.wcQuiz.chosen === d.wcQuiz.a
-                        ? "Great job! That is correct."
-                        : (d.wcQuiz.wrongFeedback && d.wcQuiz.wrongFeedback[d.wcQuiz.chosen])
-                          ? d.wcQuiz.wrongFeedback[d.wcQuiz.chosen]
-                          : "That choice is not correct. Study the concept to learn more."
-                    )
+                        focusWcComparisonTarget('wcQuizFeedbackTitle');
+                      } }, React.createElement('span', null, opt), d.wcQuiz.answered && (isCorrect || wasChosen) && React.createElement('small', null, isCorrect ? (wasChosen ? 'Correct · your first answer' : 'Correct answer') : 'Your first answer'));
+                    })
                   ),
-
-                  // Concept study card
-                  d.wcQuiz.concept && waterCycleVocab()[d.wcQuiz.concept] && (function() {
-                    var concept = d.wcQuiz.concept;
-                    var definition = waterCycleVocab()[concept];
-                    var studied = (d.vocabWordsStudied || []).indexOf(concept) !== -1;
-                    return React.createElement("div", { className: "p-3 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in " + (isDark ? "bg-indigo-950/40 border border-indigo-900/50" : "bg-indigo-50 border border-indigo-200") },
-                      React.createElement("div", { className: "flex-1" },
-                        React.createElement("p", { className: "text-xs font-bold " + (isDark ? "text-indigo-400" : "text-indigo-800") }, "🔍 Concept Focus: " + concept),
-                        React.createElement("p", { className: "text-[0.6875rem] mt-0.5 leading-relaxed font-medium " + (isDark ? "text-slate-300" : "text-slate-600") }, definition)
-                      ),
-                      !studied && React.createElement("button", {
-                        onClick: function() {
-                          studyVocab(concept);
-                        },
-                        className: "px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-[0.625rem] shrink-0 self-start sm:self-center transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none active:scale-[0.97]"
-                      }, t('stem.watercycle.study_term_5_rp', "📖 Study Term (+5 RP)"))
-                    );
-                  })()
+                  d.wcQuiz.answered && React.createElement('section', { className: 'wc-check-feedback', 'data-result': d.wcQuiz.chosen === d.wcQuiz.a ? 'correct' : 'revisit', 'aria-labelledby': 'wcQuizFeedbackTitle' },
+                    React.createElement('h4', { id: 'wcQuizFeedbackTitle', tabIndex: -1 }, d.wcQuiz.chosen === d.wcQuiz.a ? 'Your answer fits' : 'Revisit your reasoning'),
+                    React.createElement('p', null, React.createElement('strong', null, 'Your first answer: '), d.wcQuiz.chosen),
+                    React.createElement('p', null, React.createElement('strong', null, 'Correct answer: '), d.wcQuiz.a),
+                    d.wcQuiz.chosen !== d.wcQuiz.a && React.createElement('p', null, d.wcQuiz.wrongFeedback && Object.prototype.hasOwnProperty.call(d.wcQuiz.wrongFeedback, d.wcQuiz.chosen) && typeof d.wcQuiz.wrongFeedback[d.wcQuiz.chosen] === 'string' ? d.wcQuiz.wrongFeedback[d.wcQuiz.chosen] : 'Use the concept and investigation below to explain why this answer fits.'),
+                    typeof d.wcQuiz.concept === 'string' && Object.prototype.hasOwnProperty.call(waterCycleVocab(), d.wcQuiz.concept) && typeof waterCycleVocab()[d.wcQuiz.concept] === 'string' && (function() {
+                      var concept = d.wcQuiz.concept;
+                      var definition = waterCycleVocab()[concept];
+                      var studied = (d.vocabWordsStudied || []).indexOf(concept) !== -1;
+                      return React.createElement('div', { className: 'wc-check-concept' },
+                        React.createElement('h5', { id: 'wcQuizConceptTitle', tabIndex: -1 }, 'Concept focus: ' + concept),
+                        React.createElement('p', null, definition),
+                        !studied && React.createElement('button', { type: 'button', 'data-wc-check-action': 'study-term', onClick: function() { studyVocab(concept); focusWcComparisonTarget('wcQuizConceptTitle'); } }, t('stem.watercycle.study_term_5_rp', 'Study term (+5 RP)')),
+                        studied && React.createElement('p', { className: 'wc-check-detail' }, 'Term studied · saved in your vocabulary progress')
+                      );
+                    })(),
+                    renderWcCheckAction('quiz', d.wcQuiz),
+                    renderWcCheckInvestigation('quiz')
+                  )
                 )
-
-              )
-
-            ),
-
-            // \u2550\u2550\u2550 \uD83D\uDCA7 WATER MYTHS \u2014 grade-banded misconceptions, each falsifiable IN the tool \u2550\u2550\u2550
-            // Every myth is a documented water-cycle misconception (clouds-as-containers,
-            // vapor-is-visible, disappearing puddles, underground rivers...), and every
-            // verdict ends with a "Try it" pointing at the Journey Mode path, Climate Lab
-            // slider, or stage view that lets the student SEE the truth for themselves.
-            (function () {
+              ),
+              (function() {
               var MYTHS_35 = [
                 { s: 'Rain falls when clouds get holes in them, like a leaky bucket.', t: false, why: 'Clouds are not containers \u2014 they are billions of tiny floating droplets. Rain begins when droplets bump together and grow too heavy to float.', tryIt: 'Watch the Condensation stage, then Precipitation: droplets grow until gravity wins.' },
                 { s: 'When a puddle dries up, its water is gone forever.', t: false, why: 'The water turned into invisible vapor and floated into the sky. Later it condenses into clouds and rains back down \u2014 water is never used up, it only changes form.', tryIt: 'Start Journey Mode and ride one droplet from the ocean to a cloud and back again.' },
@@ -34451,28 +34851,22 @@ React.createElement("div", {
                 var mi = Math.floor(Math.random() * mythBank.length);
                 if (myth && mi === myth.idx) mi = (mi + 1) % mythBank.length;
                 var m = mythBank[mi];
+                upd('wcCheckInvestigation', null);
+                focusWcComparisonTarget('wcMythQuestion');
                 upd('wcMyth', { idx: mi, s: m.s, t: m.t, why: m.why, tryIt: m.tryIt, answered: false, chosen: null });
               }
-              return React.createElement("div", { className: "wc-focus-secondary rounded-xl p-3 mb-2 shadow-md border-2 " + (isDark ? "bg-slate-950/60 border-violet-900/40 backdrop-blur-md" : "bg-gradient-to-r from-violet-50 to-indigo-50 border-violet-200"), role: "region", "aria-labelledby": "wcMythTitle" },
-                React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                  React.createElement("p", { id: "wcMythTitle", className: "text-[0.6875rem] font-bold uppercase tracking-wider " + (isDark ? "text-violet-400" : "text-violet-700") }, t('stem.watercycle.water_myths', "\uD83E\uDDE0 Water Myths \u2014 true or false?")),
-                  React.createElement("button", {
-                  type: "button",
-                  "aria-label": t('stem.watercycle.start_water_myth', "Start a water myth question"),
-                    onClick: startMyth,
-                    className: "px-3 py-1 bg-violet-600 text-white text-[0.6875rem] font-bold rounded-lg hover:bg-violet-700 transition-all focus:ring-2 focus:ring-yellow-400 focus:outline-none"
-                  }, myth ? "\uD83D\uDD04 New Myth" : "\u25B6 Start")
-                ),
-                myth && React.createElement("div", { className: "space-y-2", role: "group", "aria-labelledby": "wcMythQuestion", "aria-describedby": "wcMythInstructions" },
-                  React.createElement("p", { id: "wcMythQuestion", role: "status", "aria-live": "polite", "aria-atomic": "true", className: "text-xs font-bold " + (isDark ? "text-slate-300" : "text-slate-700") }, "\u201C" + myth.s + "\u201D"),
-                  React.createElement("p", { id: "wcMythInstructions", className: "sr-only" }, "Decide whether the statement is true or false. After answering, review the explanation and Try it prompt."),
-                  !myth.answered && React.createElement("div", { className: "grid grid-cols-2 gap-2", role: "group", "aria-label": __alloT('stem.watercycle.a11y_true_or_false_answers', 'True or false answers') },
-                    [true, false].map(function (val) {
-                      return React.createElement("button", {
-                        type: "button",
-                        key: String(val),
-                        "aria-label": "Answer " + (val ? 'true' : 'false'),
-                        onClick: function () {
+
+                return React.createElement('section', { className: 'wc-check-card', 'data-wc-check-myth': 'true', 'aria-labelledby': 'wcMythTitle' },
+                  React.createElement('header', { className: 'wc-check-task-header' },
+                    React.createElement('div', null, React.createElement('p', { className: 'wc-check-eyebrow' }, '1 · Test a statement'), React.createElement('h4', { id: 'wcMythTitle' }, t('stem.watercycle.water_myths', 'Water myths · true or false?'))),
+                    React.createElement('button', { type: 'button', 'data-wc-check-action': 'new-myth', onClick: startMyth }, myth ? 'New myth' : 'Start a myth')
+                  ),
+                  !myth && React.createElement('p', { className: 'wc-check-empty' }, 'Start with a statement. Decide whether it is true or false, then examine the explanation.'),
+                  myth && React.createElement('div', { role: 'group', 'aria-labelledby': 'wcMythQuestion', 'aria-describedby': 'wcMythInstructions' },
+                    React.createElement('h4', { id: 'wcMythQuestion', tabIndex: -1, className: 'wc-check-question' }, myth.s),
+                    React.createElement('p', { id: 'wcMythInstructions', className: 'wc-check-detail' }, myth.answered ? 'Your first answer is recorded below. Examine the explanation, then investigate.' : 'Decide whether the statement is true or false.'),
+                    !myth.answered && React.createElement('div', { className: 'wc-check-choices', role: 'group', 'aria-label': 'True or false answers' }, [true, false].map(function(val) {
+                      return React.createElement('button', { type: 'button', key: String(val), onClick: function() {
                           var right = val === myth.t;
                           var nextMythsDone = (d.wcMythsDone || 0) + 1;
                           if (right) {
@@ -34488,23 +34882,21 @@ React.createElement("div", {
                           });
                           if (typeof announceToSR === 'function') announceToSR((right ? 'Correct. ' : 'Not quite. ') + (myth.t ? 'True. ' : 'False. ') + myth.why);
                           setTimeout(function () { checkWaterCycleChallenges(nextState); }, 50);
-                        },
-                        className: "px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-900/60 text-slate-300 border-violet-900/50 hover:border-violet-600" : "bg-white text-slate-700 border-violet-200 hover:border-violet-400 hover:bg-violet-50")
-                      }, val ? '\u2705 True' : '\u274C False');
-                    })
-                  ),
-                  myth.answered && React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "p-2.5 rounded-lg border " + (myth.chosen === myth.t
-                    ? (isDark ? "bg-emerald-950/40 border-emerald-900/50" : "bg-emerald-50 border-emerald-200")
-                    : (isDark ? "bg-red-950/40 border-red-900/50" : "bg-red-50 border-red-200")) },
-                    React.createElement("p", { className: "text-xs font-bold mb-1 " + (myth.chosen === myth.t ? (isDark ? "text-emerald-400" : "text-emerald-700") : (isDark ? "text-red-400" : "text-red-700")) },
-                      (myth.chosen === myth.t ? '\u2705 Correct \u2014 ' : '\u274C Not quite \u2014 ') + (myth.t ? 'TRUE.' : 'FALSE.')),
-                    React.createElement("p", { className: "text-xs leading-relaxed mb-1 " + (isDark ? "text-slate-300" : "text-slate-700") }, myth.why),
-                    React.createElement("p", { className: "text-[0.6875rem] leading-relaxed font-bold " + (isDark ? "text-indigo-400" : "text-indigo-700") }, "\uD83D\uDD2C Try it: " + myth.tryIt)
-                  )
-                )
-              );
-            })(),
 
+                        focusWcComparisonTarget('wcMythFeedbackTitle');
+                      } }, val ? 'True' : 'False');
+                    })),
+                    myth.answered && React.createElement('section', { className: 'wc-check-feedback', 'data-result': myth.chosen === myth.t ? 'correct' : 'revisit', 'aria-labelledby': 'wcMythFeedbackTitle' },
+                      React.createElement('h4', { id: 'wcMythFeedbackTitle', tabIndex: -1 }, (myth.chosen === myth.t ? 'Your answer fits · ' : 'Revisit your reasoning · ') + (myth.t ? 'True' : 'False')),
+                      React.createElement('p', null, React.createElement('strong', null, 'Your first answer: '), wcCheckAnswerLabel(myth.chosen)),
+                      React.createElement('p', null, myth.why),
+                      renderWcCheckAction('myth', myth),
+                      renderWcCheckInvestigation('myth')
+                    )
+                  )
+                );
+              })(),
+              renderWcCheckHistory()
             ),
 
             React.createElement("button", { "aria-label": t('stem.watercycle.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : t('stem.tools_menu.water_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "wc-focus-secondary mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none" }, t('stem.watercycle.snapshot_2', "\uD83D\uDCF8 Snapshot"))

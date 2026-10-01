@@ -93,39 +93,33 @@ expect(source).toContain('"data-tooltip": t(\'stem.watercycle.reset_climate_sett
       expect(source).toContain('role: "alert", "aria-live": "assertive", id: "wcHydrologistError"');
     });
   });
-  it('announces quiz questions, choices, and outcome feedback', () => {
+  // Check now uses focusable question/feedback headings, with one concise
+  // status announcement. The full native flow is exercised in
+  // watercycle_check_investigations.test.js; do not require the former live
+  // paragraph or duplicate every answer announcement here.
+  it('labels quiz choices and hands focus to the submitted-answer feedback', () => {
     WATER_CYCLE_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
-
-      expect(source).toContain('id: "wcQuizQuestion"');
-      expect(source).toContain('role: "region",');
-      expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_water_cycle_quiz', 'Water Cycle quiz')`);
-      expect(source).toContain('"aria-busy": !!d.aiQuizLoading');
-      expect(source).toContain('id: "wcQuizStatus"');
-      expect(source).toContain('Generating an AI quiz question.');
-      expect(source).toContain('Answer submitted. " + ((d.wcQuiz.score || 0))');
-      expect(source).toContain('"aria-labelledby": "wcQuizQuestion"');
-      expect(source).toContain('"aria-describedby": "wcQuizInstructions wcQuizStatus"');
-      expect(source).toContain('id: "wcQuizInstructions"');
-      expect(source).toContain(`role: "group", "aria-label": __alloT('stem.watercycle.a11y_quiz_answer_choices', 'Quiz answer choices')`);
-      expect(source).toContain('aria-label": d.wcQuiz.answered');
-      expect(source).toContain('Correct answer: " + d.wcQuiz.a');
-      expect(source).toContain('"aria-atomic": "true"');
+      for (const fragment of [
+        "id: 'wcQuizQuestion', tabIndex: -1", "'data-wc-check-quiz': 'true'", "'aria-labelledby': 'wcQuizTitle'",
+        "'aria-busy': !!d.aiQuizLoading", "id: 'wcQuizStatus'", "role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'",
+        'Generating an AI quiz question.', 'Answer submitted. Review the explanation and investigate.',
+        "'aria-labelledby': 'wcQuizQuestion'", "'aria-describedby': 'wcQuizInstructions'", "id: 'wcQuizInstructions'",
+        "role: 'group', 'aria-label': 'Quiz answer choices'", "id: 'wcQuizFeedbackTitle', tabIndex: -1",
+        "focusWcComparisonTarget('wcQuizFeedbackTitle')", "React.createElement('strong', null, 'Correct answer: ')",
+      ]) expect(source.includes(fragment), fragment).toBe(true);
     });
   });
-  it('labels and announces Water Myths feedback', () => {
+  it('labels myth answers and hands focus to its explanatory feedback', () => {
     WATER_CYCLE_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
-
-      expect(source).toContain('role: "region", "aria-labelledby": "wcMythTitle"');
-      expect(source).toContain('id: "wcMythTitle"');
-      expect(source).toContain('"aria-labelledby": "wcMythQuestion"');
-      expect(source).toContain('"aria-describedby": "wcMythInstructions"');
-      expect(source).toContain('id: "wcMythQuestion", role: "status", "aria-live": "polite"');
-      expect(source).toContain('id: "wcMythInstructions"');
-      expect(source).toContain(`role: "group", "aria-label": __alloT('stem.watercycle.a11y_true_or_false_answers', 'True or false answers')`);
-      expect(source).toContain('type: "button",');
-      expect(source).toContain('role: "status", "aria-live": "polite", "aria-atomic": "true", className: "p-2.5 rounded-lg border "');
+      for (const fragment of [
+        "'data-wc-check-myth': 'true'", "'aria-labelledby': 'wcMythTitle'", "id: 'wcMythTitle'",
+        "'aria-labelledby': 'wcMythQuestion'", "'aria-describedby': 'wcMythInstructions'",
+        "id: 'wcMythQuestion', tabIndex: -1", "id: 'wcMythInstructions'",
+        "role: 'group', 'aria-label': 'True or false answers'", "id: 'wcMythFeedbackTitle', tabIndex: -1",
+        "focusWcComparisonTarget('wcMythFeedbackTitle')", "'aria-labelledby': 'wcMythFeedbackTitle'",
+      ]) expect(source.includes(fragment), fragment).toBe(true);
     });
   });
   it('exposes Tutor busy state while awaiting a response', () => {

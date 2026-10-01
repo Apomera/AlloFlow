@@ -1,0 +1,535 @@
+{
+  "sourcePath": "stem_lab/stem_tool_watercycle.js",
+  "sourceSha256Before": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c",
+  "publicPath": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+  "publicSha256Before": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c",
+  "testFiles": [
+    {
+      "path": "tests/watercycle_check_investigations.test.js",
+      "sha256": "2dd862600b9c6a6cd31fbc712edb2a068fa3b1171e40ea7a88ea3358651a1a99",
+      "sha256After": "2dd862600b9c6a6cd31fbc712edb2a068fa3b1171e40ea7a88ea3358651a1a99",
+      "unchanged": true
+    },
+    {
+      "path": "tests/watercycle_controls_a11y.test.js",
+      "sha256": "8c7b2439aedb7df98a48c5aeaabe8b8bd1a4b968c31ec9c53cf1c4e8e0b6bf5c",
+      "sha256After": "8c7b2439aedb7df98a48c5aeaabe8b8bd1a4b968c31ec9c53cf1c4e8e0b6bf5c",
+      "unchanged": true
+    },
+    {
+      "path": "tests/watercycle_content_invariants.test.js",
+      "sha256": "1220022fa041c0e1908ca41271aee50b035b30f87565ad7517651ccb1f050c4b",
+      "sha256After": "1220022fa041c0e1908ca41271aee50b035b30f87565ad7517651ccb1f050c4b",
+      "unchanged": true
+    },
+    {
+      "path": "tests/watercycle_explore_notebook.test.js",
+      "sha256": "1141dd9331654f61ea7e5654542a93c1aac410425bdd93ad50af2f8abb4d483e",
+      "sha256After": "1141dd9331654f61ea7e5654542a93c1aac410425bdd93ad50af2f8abb4d483e",
+      "unchanged": true
+    },
+    {
+      "path": "tests/watercycle_notebook_clarity.test.js",
+      "sha256": "f403a842af6f9e4a2390740d43b7b70e95494b24caf193a711e1eb973db3701d",
+      "sha256After": "f403a842af6f9e4a2390740d43b7b70e95494b24caf193a711e1eb973db3701d",
+      "unchanged": true
+    },
+    {
+      "path": "tests/watercycle_process_compare.test.js",
+      "sha256": "6e1ca32d85dcb6b158c715906c8046058e5109d57428275b68e960252fa32c70",
+      "sha256After": "6e1ca32d85dcb6b158c715906c8046058e5109d57428275b68e960252fa32c70",
+      "unchanged": true
+    },
+    {
+      "path": "tests/watercycle_next_experiment.test.js",
+      "sha256": "ddaef3e388deda56a177f2200007d8a7d2c6e847ffa13dca63ab518546ad4e89",
+      "sha256After": "ddaef3e388deda56a177f2200007d8a7d2c6e847ffa13dca63ab518546ad4e89",
+      "unchanged": true
+    },
+    {
+      "path": "tests/watercycle_conditions_clarity.test.js",
+      "sha256": "95dd0f2f398b70b45c44eda4bbbac1522dd2cd306701ddca8b4cd0212f9618e6",
+      "sha256After": "95dd0f2f398b70b45c44eda4bbbac1522dd2cd306701ddca8b4cd0212f9618e6",
+      "unchanged": true
+    },
+    {
+      "path": "tests/watercycle_comparison_clarity.test.js",
+      "sha256": "de41ebf91f544824574a2c8a15fe749189d242c5566d569b25dac55c5803414c",
+      "sha256After": "de41ebf91f544824574a2c8a15fe749189d242c5566d569b25dac55c5803414c",
+      "unchanged": true
+    },
+    {
+      "path": "tests/watercycle_canvas_loop.test.js",
+      "sha256": "811d45c6730ebec5a72b7a2c3713f618938a19a44c277a990bedf3c18551a806",
+      "sha256After": "811d45c6730ebec5a72b7a2c3713f618938a19a44c277a990bedf3c18551a806",
+      "unchanged": true
+    },
+    {
+      "path": "tests/watercycle_replay_indicator.test.js",
+      "sha256": "06168ae19b96369998860e5eb607d58337b3df07f7eb323393f6d4a6d15c7aa7",
+      "sha256After": "06168ae19b96369998860e5eb607d58337b3df07f7eb323393f6d4a6d15c7aa7",
+      "unchanged": true
+    },
+    {
+      "path": "tests/watercycle_journey_completion_receipt.test.js",
+      "sha256": "dc02e0ea3f6d343c78c8f0e8837c738991f3d8da1d77104418d2a16345eb2e2c",
+      "sha256After": "dc02e0ea3f6d343c78c8f0e8837c738991f3d8da1d77104418d2a16345eb2e2c",
+      "unchanged": true
+    }
+  ],
+  "baselinePath": "reports/watercycle-journey-chapters/baseline-runtime.js",
+  "baselineSha256": "8e43450261e9faff3de64bdd8d4778ac0495f19a75c1fbe48a91ed66d6279dbb",
+  "sourceSha256After": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c",
+  "publicSha256": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c",
+  "publicSha256After": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c",
+  "loadedSourceSha256": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c",
+  "baselinePreservation": [
+    {
+      "name": "WCExploreNotebook",
+      "baselineSha256": "e305ea1ab08b92d12d237b88357bde5d81d91df2b04cd0af676a7373fe28ea91",
+      "currentSha256": "e305ea1ab08b92d12d237b88357bde5d81d91df2b04cd0af676a7373fe28ea91",
+      "unchanged": true
+    },
+    {
+      "name": "wcLandResponse",
+      "baselineSha256": "3d65f4a6bddc6027d299351be3b39a0436bc60baddb748238ae63604f7257fcc",
+      "currentSha256": "3d65f4a6bddc6027d299351be3b39a0436bc60baddb748238ae63604f7257fcc",
+      "unchanged": true
+    },
+    {
+      "name": "estimateWcLandIndices",
+      "baselineSha256": "20fb254221bdb3e39e6fa74da4d0acce195b62139e03390b01b13019b30796fb",
+      "currentSha256": "20fb254221bdb3e39e6fa74da4d0acce195b62139e03390b01b13019b30796fb",
+      "unchanged": true
+    },
+    {
+      "name": "estimateWcRouteShares",
+      "baselineSha256": "d8e4f27647d00ac6ee8149e44d0981518081ecd7ddc169ecd48c484ea85e8f6f",
+      "currentSha256": "d8e4f27647d00ac6ee8149e44d0981518081ecd7ddc169ecd48c484ea85e8f6f",
+      "unchanged": true
+    },
+    {
+      "name": "evaporationIndex",
+      "baselineSha256": "97de9da592f2f9b326e42a68ae6267355a4d2bd8593414ddc01317fa3e18e0b4",
+      "currentSha256": "97de9da592f2f9b326e42a68ae6267355a4d2bd8593414ddc01317fa3e18e0b4",
+      "unchanged": true
+    },
+    {
+      "name": "wcBaselineEvaporationIndex",
+      "baselineSha256": "02d5dcbdccd2886fbcc91d986100c85ba90934ebd18684ee715e681f40936304",
+      "currentSha256": "02d5dcbdccd2886fbcc91d986100c85ba90934ebd18684ee715e681f40936304",
+      "unchanged": true
+    },
+    {
+      "name": "wcCurrentSnapshot",
+      "baselineSha256": "884b54d4cfdc1afc11974a06a6e312cbd4b35b1465615154e8acd01e4e02bfb8",
+      "currentSha256": "884b54d4cfdc1afc11974a06a6e312cbd4b35b1465615154e8acd01e4e02bfb8",
+      "unchanged": true
+    },
+    {
+      "name": "wcComparisonDeltas",
+      "baselineSha256": "0105361e54a1fdf0b231690f95546397cde368d4f9ab6508092806a1b9943e68",
+      "currentSha256": "0105361e54a1fdf0b231690f95546397cde368d4f9ab6508092806a1b9943e68",
+      "unchanged": true
+    },
+    {
+      "name": "formatWcDelta",
+      "baselineSha256": "f8a03055b6ea918c98145bac6fadc21de69419385e3098966c7436c9c41e83eb",
+      "currentSha256": "f8a03055b6ea918c98145bac6fadc21de69419385e3098966c7436c9c41e83eb",
+      "unchanged": true
+    },
+    {
+      "name": "WATER_CYCLE_PRESETS",
+      "baselineSha256": "0d83add1268900e7e27e917c72000ebad2ba47d994302e1afed9b5257e838535",
+      "currentSha256": "0d83add1268900e7e27e917c72000ebad2ba47d994302e1afed9b5257e838535",
+      "unchanged": true
+    },
+    {
+      "name": "WATER_CYCLE_PREDICTIONS",
+      "baselineSha256": "994f4e302903bba49b0ac7970d7bc45645604e94d26252ac04e44b37c6de2530",
+      "currentSha256": "994f4e302903bba49b0ac7970d7bc45645604e94d26252ac04e44b37c6de2530",
+      "unchanged": true
+    },
+    {
+      "name": "getWcInteractionBaseline",
+      "baselineSha256": "d6eda54f37fe4823eb5437a2fe1f541eb51e6616967dcb03b0351dd7a7d493e5",
+      "currentSha256": "d6eda54f37fe4823eb5437a2fe1f541eb51e6616967dcb03b0351dd7a7d493e5",
+      "unchanged": true
+    },
+    {
+      "name": "adjustClimate",
+      "baselineSha256": "4646adf408658b8184db2479ebe64fd92c0ae9ad7e145335a5d04d8e1fe7bc7a",
+      "currentSha256": "4646adf408658b8184db2479ebe64fd92c0ae9ad7e145335a5d04d8e1fe7bc7a",
+      "unchanged": true
+    },
+    {
+      "name": "adjustLand",
+      "baselineSha256": "883586d669426ad4c1fe711373176b1d02d2c34ce5c006f57e8aec1a879e6ec7",
+      "currentSha256": "883586d669426ad4c1fe711373176b1d02d2c34ce5c006f57e8aec1a879e6ec7",
+      "unchanged": true
+    },
+    {
+      "name": "resetClimate",
+      "baselineSha256": "72b10546d36596bf9e3951c5c69cfc40129e1635154b49ee9800a5211d24c037",
+      "currentSha256": "72b10546d36596bf9e3951c5c69cfc40129e1635154b49ee9800a5211d24c037",
+      "unchanged": true
+    },
+    {
+      "name": "resetLandScenario",
+      "baselineSha256": "c0e2f65dbfa4ba3d8ca39691b0071aee0b108f60ba6c1b8901022056fa11619a",
+      "currentSha256": "c0e2f65dbfa4ba3d8ca39691b0071aee0b108f60ba6c1b8901022056fa11619a",
+      "unchanged": true
+    },
+    {
+      "name": "captureWcScenarioBaseline",
+      "baselineSha256": "9e8d5cd3eee9dd3e0c9c913a0f4a1af91203ad3e9deb39007746f0209b82a141",
+      "currentSha256": "9e8d5cd3eee9dd3e0c9c913a0f4a1af91203ad3e9deb39007746f0209b82a141",
+      "unchanged": true
+    },
+    {
+      "name": "restoreWcScenarioBaseline",
+      "baselineSha256": "89dbb35a678af4e9892fc4b3f2c38d73fc581c1ffe46f90ded82671699c7cc26",
+      "currentSha256": "89dbb35a678af4e9892fc4b3f2c38d73fc581c1ffe46f90ded82671699c7cc26",
+      "unchanged": true
+    },
+    {
+      "name": "clearWcScenarioBaseline",
+      "baselineSha256": "829a5c077c74d885da5aa1ab1b658fdabcd6c0ab7023a401aa5f8e0902bc7c08",
+      "currentSha256": "829a5c077c74d885da5aa1ab1b658fdabcd6c0ab7023a401aa5f8e0902bc7c08",
+      "unchanged": true
+    },
+    {
+      "name": "isolateWcComparisonInput",
+      "baselineSha256": "297c6937b6350532aaab452fd534f13894f65279f28b58c92a8ab72b2ba75d9d",
+      "currentSha256": "297c6937b6350532aaab452fd534f13894f65279f28b58c92a8ab72b2ba75d9d",
+      "unchanged": true
+    },
+    {
+      "name": "saveWcObservation",
+      "baselineSha256": "8c8bdca8e642f6775c8caa370f12b773836499e09a2dae9384a33a8a824b36d2",
+      "currentSha256": "8c8bdca8e642f6775c8caa370f12b773836499e09a2dae9384a33a8a824b36d2",
+      "unchanged": true
+    },
+    {
+      "name": "replayWcObservation",
+      "baselineSha256": "eea48a6a39c2b5f267e178157cccf9436073d9fb60458ca3915ad761285f44c5",
+      "currentSha256": "eea48a6a39c2b5f267e178157cccf9436073d9fb60458ca3915ad761285f44c5",
+      "unchanged": true
+    },
+    {
+      "name": "recordWcPrediction",
+      "baselineSha256": "b31f28cb32ffab8abb7e4bc100d9997ed568760fed5752fff0a9ad5cb06d1621",
+      "currentSha256": "b31f28cb32ffab8abb7e4bc100d9997ed568760fed5752fff0a9ad5cb06d1621",
+      "unchanged": true
+    },
+    {
+      "name": "resetWcPrediction",
+      "baselineSha256": "3cd7a20092c784413b144bc6cfb028cfe9b8ffda15d24afb9753fea04d0d2a23",
+      "currentSha256": "3cd7a20092c784413b144bc6cfb028cfe9b8ffda15d24afb9753fea04d0d2a23",
+      "unchanged": true
+    },
+    {
+      "name": "collectWcRemovedEntries",
+      "baselineSha256": "9c142faa5db52ec4e990ac5b3b6738abc81d139f59645d45108d3163cf95625e",
+      "currentSha256": "9c142faa5db52ec4e990ac5b3b6738abc81d139f59645d45108d3163cf95625e",
+      "unchanged": true
+    },
+    {
+      "name": "focusWcNotebookHeading",
+      "baselineSha256": "680ff3ea43f32f2d9c1983d2dec3a590fef3ae6e5c60b621a03a5ee86f0d4215",
+      "currentSha256": "680ff3ea43f32f2d9c1983d2dec3a590fef3ae6e5c60b621a03a5ee86f0d4215",
+      "unchanged": true
+    },
+    {
+      "name": "clearWcExperimentLog",
+      "baselineSha256": "441c5db731f42675581b05bd21cac9184a1f9affbe6ba548f611917d4c2518ea",
+      "currentSha256": "441c5db731f42675581b05bd21cac9184a1f9affbe6ba548f611917d4c2518ea",
+      "unchanged": true
+    },
+    {
+      "name": "removeWcObservation",
+      "baselineSha256": "67ebf3111fb7cecef59169e128e5f9c3dca6b29d9c2a7edd982b932425f6440c",
+      "currentSha256": "67ebf3111fb7cecef59169e128e5f9c3dca6b29d9c2a7edd982b932425f6440c",
+      "unchanged": true
+    },
+    {
+      "name": "undoWcObservationRemoval",
+      "baselineSha256": "db4fc850b07c511c9f70c98fac3f21ce0267c17cbcd7b33ad111314111b1fe86",
+      "currentSha256": "db4fc850b07c511c9f70c98fac3f21ce0267c17cbcd7b33ad111314111b1fe86",
+      "unchanged": true
+    },
+    {
+      "name": "updateWcObservationNote",
+      "baselineSha256": "9d78e31fab6e9fb487afd9c8e2749ba2c8edced5f4ddf44705cfbf1fb9856de9",
+      "currentSha256": "9d78e31fab6e9fb487afd9c8e2749ba2c8edced5f4ddf44705cfbf1fb9856de9",
+      "unchanged": true
+    },
+    {
+      "name": "downloadWcExperimentLog",
+      "baselineSha256": "3dfca8c6c95665816cf713894e4123eca4da48e78877ebf2b6379825958ea477",
+      "currentSha256": "3dfca8c6c95665816cf713894e4123eca4da48e78877ebf2b6379825958ea477",
+      "unchanged": true
+    },
+    {
+      "name": "WCProcessCompare",
+      "baselineSha256": "6b2869a0e86c41c8b86fc3c2722200b716210ebeba4e407ffc56a1c1f2051c46",
+      "currentSha256": "6b2869a0e86c41c8b86fc3c2722200b716210ebeba4e407ffc56a1c1f2051c46",
+      "unchanged": true
+    },
+    {
+      "name": "WCNextExperiment",
+      "baselineSha256": "29b07f142b61062794810132b8ffb72d818979392cef96a92d35e653cb1cf6e1",
+      "currentSha256": "29b07f142b61062794810132b8ffb72d818979392cef96a92d35e653cb1cf6e1",
+      "unchanged": true
+    },
+    {
+      "name": "wcQuizBank",
+      "baselineSha256": "5f6378b528d90eac9974fb003bedce3f4f9d76981dcca17ddfa7616d281dcf41",
+      "currentSha256": "5f6378b528d90eac9974fb003bedce3f4f9d76981dcca17ddfa7616d281dcf41",
+      "unchanged": true
+    },
+    {
+      "name": "wcQuizQuestion",
+      "baselineSha256": "a4b6613b91b16ef64b10104906049fe8fb2cc156ead7e539cf7be0e3c5bee1c5",
+      "currentSha256": "a4b6613b91b16ef64b10104906049fe8fb2cc156ead7e539cf7be0e3c5bee1c5",
+      "unchanged": true
+    },
+    {
+      "name": "checkWaterCycleChallenges",
+      "baselineSha256": "5ebaedbdcfbff0f3e39e04ae1e39a41746c9b5081a9dbba0887ad2f6330a1a5f",
+      "currentSha256": "5ebaedbdcfbff0f3e39e04ae1e39a41746c9b5081a9dbba0887ad2f6330a1a5f",
+      "unchanged": true
+    },
+    {
+      "name": "studyVocab",
+      "baselineSha256": "b0f14f19adf959922940084fa469d5548e2b11146f4953eb234b4574067318fe",
+      "currentSha256": "b0f14f19adf959922940084fa469d5548e2b11146f4953eb234b4574067318fe",
+      "unchanged": true
+    },
+    {
+      "name": "selectStage",
+      "baselineSha256": "e9706956b6549e605f0fcacc0f1788256d6a683a06868d831217857b2ec23fc7",
+      "currentSha256": "e9706956b6549e605f0fcacc0f1788256d6a683a06868d831217857b2ec23fc7",
+      "unchanged": true
+    },
+    {
+      "name": "canvasRef",
+      "baselineSha256": "1b33ed71c593daecfd3c852ec249e38daef6d3aaef976ed6388d7df8b17536a5",
+      "currentSha256": "1b33ed71c593daecfd3c852ec249e38daef6d3aaef976ed6388d7df8b17536a5",
+      "unchanged": true
+    },
+    {
+      "name": "journey3dRef",
+      "baselineSha256": "3e0b1948cea51fef6137c1e760cdb286c163b2a17dd70e92ede98af46c7fb4aa",
+      "currentSha256": "3e0b1948cea51fef6137c1e760cdb286c163b2a17dd70e92ede98af46c7fb4aa",
+      "unchanged": true
+    },
+    {
+      "name": "onWcKey",
+      "baselineSha256": "4b9662e6b29032ca30d6b052ad72a3ee715d3904d3c9c2658a3ae73b85510b09",
+      "currentSha256": "4b9662e6b29032ca30d6b052ad72a3ee715d3904d3c9c2658a3ae73b85510b09",
+      "unchanged": true
+    },
+    {
+      "name": "setJourneyReplayProgress",
+      "baselineSha256": "c8a6f135c2911133ef74755baa88b9cf227cf0ddd480e41fce75bd8abb4992e9",
+      "currentSha256": "c8a6f135c2911133ef74755baa88b9cf227cf0ddd480e41fce75bd8abb4992e9",
+      "unchanged": true
+    },
+    {
+      "name": "resumeLiveJourney",
+      "baselineSha256": "d705797b062824ed70e919159125f00b57ebd43243fee5249b5b3796df94c34e",
+      "currentSha256": "d705797b062824ed70e919159125f00b57ebd43243fee5249b5b3796df94c34e",
+      "unchanged": true
+    },
+    {
+      "name": "chooseJourneyPath",
+      "baselineSha256": "4a0f1b0a5eeb129fffc77a35d682a8269f3a17d79a91dd450f6a6939a651bf43",
+      "currentSha256": "4a0f1b0a5eeb129fffc77a35d682a8269f3a17d79a91dd450f6a6939a651bf43",
+      "unchanged": true
+    },
+    {
+      "name": "journeyReplaySegmentAt",
+      "baselineSha256": "c42250f745da6263738e2efa21c3d8196c03ee78545bdf6973b6da1d5cc982da",
+      "currentSha256": "c42250f745da6263738e2efa21c3d8196c03ee78545bdf6973b6da1d5cc982da",
+      "unchanged": true
+    },
+    {
+      "name": "syncWcWalkthroughStage",
+      "baselineSha256": "53bb47c94f1008ff0eb50a3b09761339375126462ddc521e87fe610e63d30447",
+      "currentSha256": "53bb47c94f1008ff0eb50a3b09761339375126462ddc521e87fe610e63d30447",
+      "unchanged": true
+    },
+    {
+      "name": "toggleWcWalkthrough",
+      "baselineSha256": "d24e8e854f788dc6808078dde622ff715f10befe184b9e4a2df9fe1d89d2854d",
+      "currentSha256": "d24e8e854f788dc6808078dde622ff715f10befe184b9e4a2df9fe1d89d2854d",
+      "unchanged": true
+    },
+    {
+      "name": "stepWcWalkthrough",
+      "baselineSha256": "fc220854b8037491864670a8c51c7166790f762dd35905e35d39906d380acbc3",
+      "currentSha256": "fc220854b8037491864670a8c51c7166790f762dd35905e35d39906d380acbc3",
+      "unchanged": true
+    },
+    {
+      "name": "toggleWc2dPlayback",
+      "baselineSha256": "5c5fbf04a2e569dbec24ec79d6aab376ceea6d0c70d847e1c7a1b61be1be6524",
+      "currentSha256": "5c5fbf04a2e569dbec24ec79d6aab376ceea6d0c70d847e1c7a1b61be1be6524",
+      "unchanged": true
+    },
+    {
+      "name": "handleWc2dKey",
+      "baselineSha256": "d3f5ff3e51e0bc192ba46f47dc78673461b075ec382cda0cf647d43f735ee7eb",
+      "currentSha256": "d3f5ff3e51e0bc192ba46f47dc78673461b075ec382cda0cf647d43f735ee7eb",
+      "unchanged": true
+    },
+    {
+      "name": "handleJourney3dKey",
+      "baselineSha256": "ab13ca3b15e7bbf30c6bba5179cbb6bc6ad980cf4f3e03964d18792743e5cffd",
+      "currentSha256": "ab13ca3b15e7bbf30c6bba5179cbb6bc6ad980cf4f3e03964d18792743e5cffd",
+      "unchanged": true
+    },
+    {
+      "name": "handleJourney3dSceneClick",
+      "baselineSha256": "9e3cf03fe2a542e412afb5027f7d653806b20338e9e706824ddd6732960ea561",
+      "currentSha256": "9e3cf03fe2a542e412afb5027f7d653806b20338e9e706824ddd6732960ea561",
+      "unchanged": true
+    },
+    {
+      "name": "controlJourneyCamera",
+      "baselineSha256": "015cdbe498220ed636de0a8350adf780c569c7f4ecfd5aa8fa6944cbdc225800",
+      "currentSha256": "015cdbe498220ed636de0a8350adf780c569c7f4ecfd5aa8fa6944cbdc225800",
+      "unchanged": true
+    },
+    {
+      "name": "beginWcQuickJourney",
+      "baselineSha256": "6e6fb43f7d79de104e995f55ca1cb76ac688c92251a7b6700774c0aba20f3214",
+      "currentSha256": "6e6fb43f7d79de104e995f55ca1cb76ac688c92251a7b6700774c0aba20f3214",
+      "unchanged": true
+    },
+    {
+      "name": "MATTER_ENERGY_TRACE",
+      "baselineSha256": "5b29d16aba2e615e7a40801745c9af2dbc4051fd27d2510360f05568314c96c2",
+      "currentSha256": "5b29d16aba2e615e7a40801745c9af2dbc4051fd27d2510360f05568314c96c2",
+      "unchanged": true
+    },
+    {
+      "name": "JOURNEY_MATTER_ENERGY_TRACE",
+      "baselineSha256": "b1c153ec3df774de5d9a14c8a57f86c71f5342529d610eb9a49dda51377139cd",
+      "currentSha256": "b1c153ec3df774de5d9a14c8a57f86c71f5342529d610eb9a49dda51377139cd",
+      "unchanged": true
+    },
+    {
+      "name": "STAGE_HYDROLOGIC_TIME_TRACE",
+      "baselineSha256": "7d2bcf2dc30e8fe609417e486bb59b6f94f4adecafd59261baf2933f6274c17a",
+      "currentSha256": "7d2bcf2dc30e8fe609417e486bb59b6f94f4adecafd59261baf2933f6274c17a",
+      "unchanged": true
+    },
+    {
+      "name": "JOURNEY_HYDROLOGIC_TIME_TRACE",
+      "baselineSha256": "ada899581c4abcb415df59fbbe9caa1894603d3abaadef938fc8cdfc78234a7c",
+      "currentSha256": "ada899581c4abcb415df59fbbe9caa1894603d3abaadef938fc8cdfc78234a7c",
+      "unchanged": true
+    },
+    {
+      "name": "WCCheckInvestigation",
+      "baselineSha256": "69e47c9d4d859f88cef5b92b56454caf90738399c91c18f4863dfb0c7a242316",
+      "currentSha256": "69e47c9d4d859f88cef5b92b56454caf90738399c91c18f4863dfb0c7a242316",
+      "unchanged": true
+    },
+    {
+      "name": "startWcCheckInvestigation",
+      "baselineSha256": "1524fe238f74220660a92c4118244193861b94b03af7e10c04b91ea6ca1f70c1",
+      "currentSha256": "1524fe238f74220660a92c4118244193861b94b03af7e10c04b91ea6ca1f70c1",
+      "unchanged": true
+    },
+    {
+      "name": "returnWcCheckInvestigation",
+      "baselineSha256": "ae556f85b2deb3a8a6cd7dbbd98c9c973740b5a74b8be52a2599af3a82985a29",
+      "currentSha256": "ae556f85b2deb3a8a6cd7dbbd98c9c973740b5a74b8be52a2599af3a82985a29",
+      "unchanged": true
+    },
+    {
+      "name": "updateWcCheckReflection",
+      "baselineSha256": "46a1eb09d38efd0231190fbcca450ab69dc1f0149d1284d2bcf405cb61bdbe80",
+      "currentSha256": "46a1eb09d38efd0231190fbcca450ab69dc1f0149d1284d2bcf405cb61bdbe80",
+      "unchanged": true
+    },
+    {
+      "name": "saveWcCheckReflection",
+      "baselineSha256": "41bcf3e6c9e269f9de1528c55ae80d13aeada95743e55402365a3c7afd203d94",
+      "currentSha256": "41bcf3e6c9e269f9de1528c55ae80d13aeada95743e55402365a3c7afd203d94",
+      "unchanged": true
+    },
+    {
+      "name": "closeWcCheckInvestigation",
+      "baselineSha256": "b93ec41997813070ecaebbad8bb8b075511d8de2253eb8c123020f9eddcb975c",
+      "currentSha256": "b93ec41997813070ecaebbad8bb8b075511d8de2253eb8c123020f9eddcb975c",
+      "unchanged": true
+    },
+    {
+      "name": "renderWcCheckProcess",
+      "baselineSha256": "fbafe2e62c8be43391a3088d7c89dbba690abe4a81fcb6bd746b4c2d0462adad",
+      "currentSha256": "fbafe2e62c8be43391a3088d7c89dbba690abe4a81fcb6bd746b4c2d0462adad",
+      "unchanged": true
+    },
+    {
+      "name": "renderWcCheckPores",
+      "baselineSha256": "01c29df93cf3cbccb62e6f3190d079d2fb8b6ecd0697c3b9f84a98360f166fb5",
+      "currentSha256": "01c29df93cf3cbccb62e6f3190d079d2fb8b6ecd0697c3b9f84a98360f166fb5",
+      "unchanged": true
+    },
+    {
+      "name": "renderWcCheckAction",
+      "baselineSha256": "4d5a3d13ac7eb329b379c220131b3321d717d0283fb5d646e8a861aa3e07a087",
+      "currentSha256": "4d5a3d13ac7eb329b379c220131b3321d717d0283fb5d646e8a861aa3e07a087",
+      "unchanged": true
+    },
+    {
+      "name": "renderWcCheckInvestigation",
+      "baselineSha256": "9bc990fbcda2ff620135f98763754acebf77e56360e5e86130c212950c14cbe5",
+      "currentSha256": "9bc990fbcda2ff620135f98763754acebf77e56360e5e86130c212950c14cbe5",
+      "unchanged": true
+    },
+    {
+      "name": "renderWcCheckHistory",
+      "baselineSha256": "35a883657e754c76250ea2989ec32108f4820123e41599635ff2805188b1b44d",
+      "currentSha256": "35a883657e754c76250ea2989ec32108f4820123e41599635ff2805188b1b44d",
+      "unchanged": true
+    },
+    {
+      "name": "wcRunoffDelta:assignment",
+      "baselineSha256": "79e25128760f8e6892fefe926ee25fd9e0c8491ef958dcfb6f3d1e1c27a193ae",
+      "currentSha256": "79e25128760f8e6892fefe926ee25fd9e0c8491ef958dcfb6f3d1e1c27a193ae",
+      "unchanged": true
+    },
+    {
+      "name": "wcInfiltrationDelta:assignment",
+      "baselineSha256": "4e8810ff5a7c4d7bfcaecf2fbdba2dab792df33c8cd7a41dd1c0fa2358ef496b",
+      "currentSha256": "4e8810ff5a7c4d7bfcaecf2fbdba2dab792df33c8cd7a41dd1c0fa2358ef496b",
+      "unchanged": true
+    },
+    {
+      "name": "wcEvaporationDelta:assignment",
+      "baselineSha256": "20a82896578af7b47673ef7b794276d423212ca1986406bd554e61768c48a8c0",
+      "currentSha256": "20a82896578af7b47673ef7b794276d423212ca1986406bd554e61768c48a8c0",
+      "unchanged": true
+    }
+  ],
+  "scoredPreservation": [
+    {
+      "name": "quiz",
+      "baselineSha256": "bead9c9e4285cdf1f96692a5bcb695d2554a27b14c8d82948a0e08c46af746fb",
+      "currentSha256": "bead9c9e4285cdf1f96692a5bcb695d2554a27b14c8d82948a0e08c46af746fb",
+      "unchanged": true
+    },
+    {
+      "name": "myth",
+      "baselineSha256": "d62ec9d1e25b1f51a3e3df672121855b3a471f5fce9b421d22666c3340a33aa0",
+      "currentSha256": "d62ec9d1e25b1f51a3e3df672121855b3a471f5fce9b421d22666c3340a33aa0",
+      "unchanged": true
+    }
+  ],
+  "recordedAtUtc": "2026-10-01T22:53:40.704Z"
+}

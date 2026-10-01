@@ -1,0 +1,840 @@
+{
+  "title": "Water Cycle Check investigations: final verification",
+  "recordedAt": "2026-10-01T16:08:00.093Z",
+  "successful": true,
+  "sourceSha256": "8e43450261e9faff3de64bdd8d4778ac0495f19a75c1fbe48a91ed66d6279dbb",
+  "publicSha256": "8e43450261e9faff3de64bdd8d4778ac0495f19a75c1fbe48a91ed66d6279dbb",
+  "baselineSha256": "384eca9416719d616d50623847aa6fdabec346106967153f678cd76ee508be6c",
+  "reportSha256": {
+    "baseline-results.json": "9fd2d3544bd393589c868ab8e4b674e8def22616dcc6a09d822b8676b9bfa7d9",
+    "preflight.json": "e776d3c7c18a3baad4fb045b0d7b713a603d7e0648a89d29208d8b23f14986a7",
+    "results.json": "8996e56299ab83a4bd641a63f3b20208920e8b84618c4d237c333a4d1945f5df",
+    "final-browser-summary.json": "fdf50c780c683ef431e4676244ca5ab50cd964de28260067f87f7006b16d6176",
+    "artifact-summary.json": "be235948a483034e222d09c62de647cef14b2ad708c57192506ae2abf13c8cfd",
+    "unit-results.json": "0cddb6f0bff46c529dc39ac8af86a101dd87fbc5ba1ba92fb9fdf7bc49decd75",
+    "regression-results.json": "b066760b0b675d481d4df0057186e5eb8bc2b0dfef44b38541b06e86deb51bd7",
+    "preview-check.json": "4fb21cb05512b40f78310e35927d1fa456112f0a8d30246ebec3d4d3b211e1bd"
+  },
+  "tests": {
+    "total": 311,
+    "passed": 311,
+    "focused": 55,
+    "existingAccessibilityAndContent": 16,
+    "regression": 240,
+    "distinctFiles": 12,
+    "skipped": 0
+  },
+  "browser": {
+    "passed": 1666,
+    "failed": 0,
+    "snapshots": 294,
+    "scopedAccessibilityAudits": 22,
+    "violations": 0,
+    "browserClosed": true,
+    "serverClosed": true
+  },
+  "unchangedModelStateAndBankAnchors": 44,
+  "unchangedFirstAnswerScoringCallbacks": 2,
+  "derivations": [
+    {
+      "start": "var wcScenarioBaseline = d.wcScenarioBaseline || null;",
+      "end": "var wcRouteBaselineActive",
+      "sha256": "12e3f9595438a0ad4bd2326ef4e2553c337d6bbae798cfe1e656dab3a4700507",
+      "unchanged": true
+    },
+    {
+      "start": "var wcCausalStageIds = [];",
+      "end": "var wcDataTrailStatus",
+      "sha256": "9716c3180a30c1e21957919d1901b19cb2121a17992eed6c6caa1cfee88a9baf",
+      "unchanged": true
+    }
+  ],
+  "preview": {
+    "recordedAt": "2026-10-01T15:23:35.591Z",
+    "url": "http://127.0.0.1:8770/",
+    "sourceSha256": "8e43450261e9faff3de64bdd8d4778ac0495f19a75c1fbe48a91ed66d6279dbb",
+    "publicSha256": "8e43450261e9faff3de64bdd8d4778ac0495f19a75c1fbe48a91ed66d6279dbb",
+    "rootStatus": 200,
+    "runtimeStatus": 200,
+    "servedRuntimeSha256": "8e43450261e9faff3de64bdd8d4778ac0495f19a75c1fbe48a91ed66d6279dbb",
+    "successful": true
+  },
+  "git": {
+    "scopedWhitespaceCheckPassed": true,
+    "stagedEnhancementFiles": []
+  },
+  "checks": [
+    {
+      "label": "Final runtime stem_lab/stem_tool_watercycle.js",
+      "passed": true
+    },
+    {
+      "label": "Final runtime desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "passed": true
+    },
+    {
+      "label": "Final runtime reports/watercycle-check-investigations/tested-runtime.js",
+      "passed": true
+    },
+    {
+      "label": "Frozen baseline hash",
+      "passed": true
+    },
+    {
+      "label": "Report pin baseline-results.json",
+      "passed": true
+    },
+    {
+      "label": "Report pin preflight.json",
+      "passed": true
+    },
+    {
+      "label": "Report pin results.json",
+      "passed": true
+    },
+    {
+      "label": "Report pin final-browser-summary.json",
+      "passed": true
+    },
+    {
+      "label": "Report pin artifact-summary.json",
+      "passed": true
+    },
+    {
+      "label": "Report pin unit-results.json",
+      "passed": true
+    },
+    {
+      "label": "Report pin regression-results.json",
+      "passed": true
+    },
+    {
+      "label": "Report pin preview-check.json",
+      "passed": true
+    },
+    {
+      "label": "All 71 tests passed",
+      "passed": true
+    },
+    {
+      "label": "Test runtime pins",
+      "passed": true
+    },
+    {
+      "label": "Test file pins",
+      "passed": true
+    },
+    {
+      "label": "All 240 tests passed",
+      "passed": true
+    },
+    {
+      "label": "Test runtime pins",
+      "passed": true
+    },
+    {
+      "label": "Test file pins",
+      "passed": true
+    },
+    {
+      "label": "311 distinct assertions",
+      "passed": true
+    },
+    {
+      "label": "Test extractor bounds",
+      "passed": true
+    },
+    {
+      "label": "Extractor baseline pin",
+      "passed": true
+    },
+    {
+      "label": "44 model/state/bank anchors",
+      "passed": true
+    },
+    {
+      "label": "Unchanged MYTHS_912",
+      "passed": true
+    },
+    {
+      "label": "Unchanged MYTHS_68",
+      "passed": true
+    },
+    {
+      "label": "Unchanged MYTHS_35",
+      "passed": true
+    },
+    {
+      "label": "Unchanged clearWcScenarioBaseline",
+      "passed": true
+    },
+    {
+      "label": "Unchanged restoreWcScenarioBaseline",
+      "passed": true
+    },
+    {
+      "label": "Unchanged captureWcScenarioBaseline",
+      "passed": true
+    },
+    {
+      "label": "Unchanged wcComparisonDeltas",
+      "passed": true
+    },
+    {
+      "label": "Unchanged formatWcDelta",
+      "passed": true
+    },
+    {
+      "label": "Unchanged wcCurrentSnapshot",
+      "passed": true
+    },
+    {
+      "label": "Unchanged wcEvaporationDelta:assignment",
+      "passed": true
+    },
+    {
+      "label": "Unchanged wcInfiltrationDelta:assignment",
+      "passed": true
+    },
+    {
+      "label": "Unchanged wcRunoffDelta:assignment",
+      "passed": true
+    },
+    {
+      "label": "Unchanged wcBaselineEvaporationIndex",
+      "passed": true
+    },
+    {
+      "label": "Unchanged estimateWcLandIndices",
+      "passed": true
+    },
+    {
+      "label": "Unchanged estimateWcRouteShares",
+      "passed": true
+    },
+    {
+      "label": "Unchanged evaporationIndex",
+      "passed": true
+    },
+    {
+      "label": "Unchanged replayWcObservation",
+      "passed": true
+    },
+    {
+      "label": "Unchanged isolateWcComparisonInput",
+      "passed": true
+    },
+    {
+      "label": "Unchanged downloadWcExperimentLog",
+      "passed": true
+    },
+    {
+      "label": "Unchanged updateWcObservationNote",
+      "passed": true
+    },
+    {
+      "label": "Unchanged undoWcObservationRemoval",
+      "passed": true
+    },
+    {
+      "label": "Unchanged removeWcObservation",
+      "passed": true
+    },
+    {
+      "label": "Unchanged clearWcExperimentLog",
+      "passed": true
+    },
+    {
+      "label": "Unchanged focusWcNotebookHeading",
+      "passed": true
+    },
+    {
+      "label": "Unchanged collectWcRemovedEntries",
+      "passed": true
+    },
+    {
+      "label": "Unchanged saveWcObservation",
+      "passed": true
+    },
+    {
+      "label": "Unchanged resetWcPrediction",
+      "passed": true
+    },
+    {
+      "label": "Unchanged recordWcPrediction",
+      "passed": true
+    },
+    {
+      "label": "Unchanged resetLandScenario",
+      "passed": true
+    },
+    {
+      "label": "Unchanged adjustLand",
+      "passed": true
+    },
+    {
+      "label": "Unchanged adjustClimate",
+      "passed": true
+    },
+    {
+      "label": "Unchanged resetClimate",
+      "passed": true
+    },
+    {
+      "label": "Unchanged getWcInteractionBaseline",
+      "passed": true
+    },
+    {
+      "label": "Unchanged selectStage",
+      "passed": true
+    },
+    {
+      "label": "Unchanged studyVocab",
+      "passed": true
+    },
+    {
+      "label": "Unchanged checkWaterCycleChallenges",
+      "passed": true
+    },
+    {
+      "label": "Unchanged wcLandResponse",
+      "passed": true
+    },
+    {
+      "label": "Unchanged wcQuizBank",
+      "passed": true
+    },
+    {
+      "label": "Unchanged wcQuizQuestion",
+      "passed": true
+    },
+    {
+      "label": "Unchanged WCExploreNotebook",
+      "passed": true
+    },
+    {
+      "label": "Unchanged WCProcessCompare",
+      "passed": true
+    },
+    {
+      "label": "Unchanged WCNextExperiment",
+      "passed": true
+    },
+    {
+      "label": "Unchanged WATER_CYCLE_PREDICTIONS",
+      "passed": true
+    },
+    {
+      "label": "Unchanged WATER_CYCLE_PRESETS",
+      "passed": true
+    },
+    {
+      "label": "Two scored callback sets",
+      "passed": true
+    },
+    {
+      "label": "Unchanged scoring quiz",
+      "passed": true
+    },
+    {
+      "label": "Unchanged scoring myth",
+      "passed": true
+    },
+    {
+      "label": "41 reported preservation pins",
+      "passed": true
+    },
+    {
+      "label": "Two reported scoring pins",
+      "passed": true
+    },
+    {
+      "label": "Unique derivation var wcScenarioBaseline = d.wcScenarioBaseline || null;",
+      "passed": true
+    },
+    {
+      "label": "Derivation end var wcRouteBaselineActive",
+      "passed": true
+    },
+    {
+      "label": "Unique derivation var wcScenarioBaseline = d.wcScenarioBaseline || null;",
+      "passed": true
+    },
+    {
+      "label": "Derivation end var wcRouteBaselineActive",
+      "passed": true
+    },
+    {
+      "label": "Full derivation unchanged var wcScenarioBaseline = d.wcScenarioBaseline || null;",
+      "passed": true
+    },
+    {
+      "label": "Unique derivation var wcCausalStageIds = [];",
+      "passed": true
+    },
+    {
+      "label": "Derivation end var wcDataTrailStatus",
+      "passed": true
+    },
+    {
+      "label": "Unique derivation var wcCausalStageIds = [];",
+      "passed": true
+    },
+    {
+      "label": "Derivation end var wcDataTrailStatus",
+      "passed": true
+    },
+    {
+      "label": "Full derivation unchanged var wcCausalStageIds = [];",
+      "passed": true
+    },
+    {
+      "label": "Baseline inspection closed",
+      "passed": true
+    },
+    {
+      "label": "Final preflight closed",
+      "passed": true
+    },
+    {
+      "label": "Final browser runtime pins",
+      "passed": true
+    },
+    {
+      "label": "All browser checks pass",
+      "passed": true
+    },
+    {
+      "label": "Scoped accessibility audits clean",
+      "passed": true
+    },
+    {
+      "label": "QA resources closed",
+      "passed": true
+    },
+    {
+      "label": "Final capture hashes",
+      "passed": true
+    },
+    {
+      "label": "Preview serves final runtime",
+      "passed": true
+    },
+    {
+      "label": "JavaScript syntax stem_lab/stem_tool_watercycle.js",
+      "passed": true
+    },
+    {
+      "label": "JavaScript syntax desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "passed": true
+    },
+    {
+      "label": "JavaScript syntax dev-tools/watercycle_check_investigations_qa.cjs",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists baseline-answered-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-answered-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-investigate-quiz-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reconsideration-quiz-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-history-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-answered-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-investigate-quiz-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reflection-quiz-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reconsideration-quiz-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-investigate-myth-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reflection-myth-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reconsideration-myth-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-history-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-AI-pending-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-AI-resolved-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-empty-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-expanded-text-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-investigate-expanded-text-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reflection-expanded-text-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reconsideration-expanded-text-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-mapping-cool_evaporation-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-mapping-warming_related-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-mapping-wind_transport-light-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-answered-light-390.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-investigate-quiz-light-390.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reflection-quiz-light-390.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reconsideration-quiz-light-390.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-investigate-myth-light-390.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reflection-myth-light-390.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reconsideration-myth-light-390.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-history-light-390.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-answered-light-768.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-investigate-quiz-light-768.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reflection-quiz-light-768.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reconsideration-quiz-light-768.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-investigate-myth-light-768.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reflection-myth-light-768.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reconsideration-myth-light-768.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-history-light-768.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-answered-light-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-investigate-quiz-light-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reflection-quiz-light-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reconsideration-quiz-light-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-investigate-myth-light-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reflection-myth-light-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reconsideration-myth-light-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-history-light-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-answered-dark-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-investigate-quiz-dark-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reflection-quiz-dark-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reconsideration-quiz-dark-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-investigate-myth-dark-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reflection-myth-dark-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reconsideration-myth-dark-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-history-dark-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-AI-pending-dark-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-AI-resolved-dark-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-answered-light-forced-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-investigate-quiz-light-forced-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reflection-quiz-light-forced-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reconsideration-quiz-light-forced-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-investigate-myth-light-forced-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reflection-myth-light-forced-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reconsideration-myth-light-forced-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-history-light-forced-320.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-answered-dark-forced-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-investigate-quiz-dark-forced-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reflection-quiz-dark-forced-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reconsideration-quiz-dark-forced-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-investigate-myth-dark-forced-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reflection-myth-dark-forced-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reconsideration-myth-dark-forced-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-history-dark-forced-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-answered-light-1280-host390.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-investigate-quiz-light-1280-host390.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reflection-quiz-light-1280-host390.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reconsideration-quiz-light-1280-host390.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-investigate-myth-light-1280-host390.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reflection-myth-light-1280-host390.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reconsideration-myth-light-1280-host390.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-history-light-1280-host390.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-empty-light-1280-host390.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-expanded-text-light-1280-host390.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-investigate-expanded-text-light-1280-host390.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reflection-expanded-text-light-1280-host390.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reconsideration-expanded-text-light-1280-host390.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-investigate-3D-aquifer-light-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reflection-3D-aquifer-light-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-reconsideration-3D-aquifer-light-1280.png",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists baseline-results.json",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists preflight.json",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists results.json",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists final-browser-summary.json",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists artifact-summary.json",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists unit-results.json",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists regression-results.json",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists preview-check.json",
+      "passed": true
+    },
+    {
+      "label": "Artifact exists tested-runtime.js",
+      "passed": true
+    },
+    {
+      "label": "git diff --check -- stem_lab/stem_tool_watercycle.js desktop/web-app/public/stem_lab/stem_tool_watercycle.js tests/watercycle_check_investigations.test.js tests/watercycle_controls_a11y.test.js dev-tools/watercycle_check_investigations_qa.cjs docs/water-cycle-visual-design.md reports/watercycle-check-investigations",
+      "passed": true
+    },
+    {
+      "label": "git diff --cached --name-only -- stem_lab/stem_tool_watercycle.js desktop/web-app/public/stem_lab/stem_tool_watercycle.js tests/watercycle_check_investigations.test.js tests/watercycle_controls_a11y.test.js dev-tools/watercycle_check_investigations_qa.cjs docs/water-cycle-visual-design.md reports/watercycle-check-investigations",
+      "passed": true
+    },
+    {
+      "label": "No enhancement files staged",
+      "passed": true
+    }
+  ]
+}

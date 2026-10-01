@@ -40,17 +40,18 @@ describe('Water Cycle journey playback controls', () => {
       expect(source).toContain('"aria-label": journeyPaused ? "Resume water journey" : "Pause water journey"');
       expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_restart_water_journey_from_the_ocean', 'Restart water journey from the ocean')`);
       expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_journey_animation_speed', 'Journey animation speed')`);
-      expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_water_journey_timeline', 'Water journey timeline')`);
-      expect(source).toContain('"aria-current": index === journeyTimelineIndex ? "step" : undefined');
-      expect(source).toContain('var timelineStepState = index < journeyTimelineIndex');
-      expect(source).toContain('var timelineStepLabel = index < journeyTimelineIndex');
-      expect(source).toContain('className: "wc-timeline-step " + timelineStepState');
-      expect(source).toContain('"aria-label": step + ": " + timelineStepLabel');
-      expect(source).toContain('className: "wc-timeline-marker"');
-      expect(source).toContain('.wc-timeline-step.is-complete');
+      [
+        "'aria-label': __alloT('stem.watercycle.a11y_water_journey_timeline', 'Water journey timeline')",
+        "'aria-current': isCurrent ? 'step' : undefined", "'aria-pressed': chapter.id === step.id",
+        "var timelineStepState = isCurrent ? 'is-current' : 'is-other'",
+        "var timelineStepLabel = isCurrent ? (journeyReplayIsScrubbed ? 'replay parcel' : 'current parcel') : 'other chapter'",
+        "className: 'wc-timeline-step ' + timelineStepState", "id: 'wcJourneyChapter-' + step.id",
+        "'aria-controls': 'wcJourneyChapterCard'", "onClick: function() { inspectWcJourneyChapter(step.id); }",
+        "id: 'wcJourneyChapterTitle', tabIndex: -1", "id: 'wcJourneyFollowParcel'"
+      ].forEach(fragment => expect(source.includes(fragment), fragment).toBe(true));
       expect(source).toContain("var journeyTimelineSteps = ['Ocean', 'Vapor', 'Cloud', 'Precipitation', 'Land pathway', 'Return'];");
       expect(source).toContain("d.journeyState === 'ground_choice' || d.journeyState === 'complete'");
-      expect(source).toContain('className: "flex flex-wrap items-center gap-3 text-[0.6875rem] font-bold", role: "status"');
+      expect(/role:\s*"status",\s*"aria-label":\s*__alloT\('stem\.watercycle\.a11y_journey_progress_summary'/.test(source), 'Named journey progress summary is a live status').toBe(true);
       expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_journey_progress_summary', 'Journey progress summary')`);
       expect(source).toContain('"aria-live": "polite"');
       expect(source).toContain('"aria-atomic": "true"');

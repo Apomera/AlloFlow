@@ -170,3 +170,32 @@ Cards respond to the notebook's available width. Narrow embedded tools use one c
 The final review passed 80 distinct tests, 653 browser checks and 18 scoped accessibility audits. Thirty-four calculation and state anchors and the full comparison and signal derivation ranges remain unchanged. Native flows preserve recorded evidence, learner writing and the paused parcel. Source and public runtime copies match, and the local preview serves the tested version.
 
 See [notebook clarity review](../reports/watercycle-notebook-clarity/README.md) for matched captures, legacy-record checks, preservation evidence, and the saved verification command.
+
+## Investigate an answer, then reconsider
+
+**Check yourself** presents the question, choices, explanation and concept in a clear reading order. Submitted choices stay readable and identify the correct answer and the learner's first answer in text. Native actions have at least 44px targets, and choice layouts respond to the tool's available width. Answering focuses the feedback heading; studying a term focuses the persistent concept heading.
+
+Each answered quiz or myth offers a relevant investigation with an observation prompt and a visible model limit. Process diagrams show water state, source, destination, driver and latent heat. The groundwater schematic illustrates connected pore spaces. Temperature, wind and land-cover investigations open their existing native controls without changing the inputs. Wind changes modeled transport; the displayed evaporation index uses sunlight and temperature.
+
+**Return to question and reconsider** focuses the original question and places the reflection beside its feedback. The learner records an observation or model limit and chooses an answer after investigating. This reflection is unscored, and the first answer remains in the result. Writing is kept as it is typed; a native **Your reflections** disclosure retains saved reflections and drafts when new questions begin.
+
+Question identity includes the authored choices and first answer. A changed question cannot receive the previous question's reflection. Imported sessions must match their canonical identity; malformed answers and saved markers are normalized for display. Unknown generated concepts open a bounded related model, and sublimation explicitly identifies the absence of a solid-to-gas simulation. The tool does not claim to establish saturation vapor pressure, a molecule's history, measured groundwater travel time or a global transpiration share from these diagrams.
+
+The existing banks, first-answer rewards and progress rules remain unchanged. Investigation navigation preserves the mounted scene, paused parcel, comparison baseline, notebook evidence and prior writing. Forced colors use system text, borders and focus outlines.
+
+See [Check investigation review](../reports/watercycle-check-investigations/README.md) for captures, native interaction coverage, model and reward preservation checks, and the saved verification command.
+
+
+## Inspect journey chapters
+
+**Inspect the journey** offers six native chapter buttons before or during a journey. The selected diagram and the current parcel have separate labels. **Follow current parcel** returns the inspector to the parcel's actual process. Browsing a chapter retains the mounted scene, paused progress, replay position, condition settings, saved evidence and rewards.
+
+The land chapter distinguishes path choice, river runoff, soil infiltration, aquifer flow, plant uptake and transpiration. Store and physical-state cards make each transfer explicit. Heat, drivers, broad physical-time bands, explanation prompts and model limits accompany the figures. Condensation shows vapor becoming liquid droplets and names direct vapor-to-ice deposition separately. Root and xylem transport remain liquid; the leaf-to-vapor step belongs to transpiration.
+
+Chapter choices inspect diagrams. The existing playback and route controls move the parcel. Current-parcel markers identify its actual location without claiming that other chapters have been completed. A replay control's percentage describes an illustrated position, rather than elapsed physical time. Live labels name the actual process, and the replayed return frame identifies that inspection records no new loop.
+
+Chapter cards and route records respond to the available panel width. Narrow embedded tools stack route information, and long process names stay whole on phones. Playback controls remain above the inspector. Buttons and the replay slider have at least 44px targets. Keyboard inspection focuses the selected chapter heading.
+
+Progress counters use explicit light and dark ink. Dark diagram symbols and direction arrows use a brighter accent. Forced colors retain system text, borders and focus outlines. Contrast measurements complement the scoped accessibility scans because gradients can prevent a scanner from determining the background. The plant-choice cue identifies liquid entering roots before the separate transpiration step.
+
+See [journey chapter review](../reports/watercycle-journey-chapters/README.md) for matched captures, native interactions, preserved state and model checks, and the saved verification command.

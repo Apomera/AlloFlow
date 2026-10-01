@@ -1,0 +1,265 @@
+{
+  "sourceSha256": "384eca9416719d616d50623847aa6fdabec346106967153f678cd76ee508be6c",
+  "snapshots": 17,
+  "nativeActions": 4,
+  "captures": 15,
+  "audits": 7,
+  "auditViolations": [
+    {
+      "label": "light-320",
+      "ids": [
+        "color-contrast"
+      ],
+      "nodeCount": 1
+    },
+    {
+      "label": "light-390",
+      "ids": [
+        "color-contrast"
+      ],
+      "nodeCount": 1
+    },
+    {
+      "label": "light-1280",
+      "ids": [
+        "color-contrast"
+      ],
+      "nodeCount": 1
+    },
+    {
+      "label": "light-1280-host390",
+      "ids": [
+        "color-contrast"
+      ],
+      "nodeCount": 1
+    },
+    {
+      "label": "dark-1280",
+      "ids": [
+        "color-contrast"
+      ],
+      "nodeCount": 1
+    },
+    {
+      "label": "light-forced-320",
+      "ids": [
+        "color-contrast"
+      ],
+      "nodeCount": 1
+    },
+    {
+      "label": "dark-forced-1280",
+      "ids": [
+        "color-contrast"
+      ],
+      "nodeCount": 14
+    }
+  ],
+  "answerFocus": [
+    {
+      "label": "light-320 answer quiz Enter",
+      "active": {
+        "tag": "BODY",
+        "id": "",
+        "text": "🌊 Water Cycle\nExplore\nBe the Water\nStorm Lab\nSteward\nWater Worlds\nSTORM TO STRE",
+        "focusVisible": false
+      }
+    },
+    {
+      "label": "light-320 answer myth Enter",
+      "active": {
+        "tag": "BODY",
+        "id": "",
+        "text": "🌊 Water Cycle\nExplore\nBe the Water\nStorm Lab\nSteward\nWater Worlds\nSTORM TO STRE",
+        "focusVisible": false
+      }
+    },
+    {
+      "label": "light-1280 answer quiz Enter",
+      "active": {
+        "tag": "BODY",
+        "id": "",
+        "text": "🌊 Water Cycle\nExplore\nBe the Water\nStorm Lab\nSteward\nWater Worlds\nSTORM TO STRE",
+        "focusVisible": false
+      }
+    },
+    {
+      "label": "light-1280 answer myth Enter",
+      "active": {
+        "tag": "BODY",
+        "id": "",
+        "text": "🌊 Water Cycle\nExplore\nBe the Water\nStorm Lab\nSteward\nWater Worlds\nSTORM TO STRE",
+        "focusVisible": false
+      }
+    }
+  ],
+  "layout": [
+    {
+      "label": "light-320 answered",
+      "sectionWidth": 274,
+      "choiceColumns": "120px 120px",
+      "overflow": 0,
+      "targets": [
+        {
+          "text": "🔄 Next Question",
+          "h": 28,
+          "font": 12
+        },
+        {
+          "text": "📖 Study Term (+5 RP)",
+          "h": 27,
+          "font": 10
+        },
+        {
+          "text": "🔄 New Myth",
+          "h": 41,
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "light-390 answered",
+      "sectionWidth": 344,
+      "choiceColumns": "155px 155px",
+      "overflow": 0,
+      "targets": [
+        {
+          "text": "🔄 Next Question",
+          "h": 28,
+          "font": 12
+        },
+        {
+          "text": "📖 Study Term (+5 RP)",
+          "h": 27,
+          "font": 10
+        },
+        {
+          "text": "🔄 New Myth",
+          "h": 24.5,
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "light-1280 answered",
+      "sectionWidth": 1006,
+      "choiceColumns": "417.609px 417.625px",
+      "overflow": 0,
+      "targets": [
+        {
+          "text": "🔄 Next Question",
+          "h": 28,
+          "font": 12
+        },
+        {
+          "text": "📖 Study Term (+5 RP)",
+          "h": 27,
+          "font": 10
+        },
+        {
+          "text": "🔄 New Myth",
+          "h": 24.5,
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "light-1280-host390 answered",
+      "sectionWidth": 332,
+      "choiceColumns": "149px 149px",
+      "overflow": 0,
+      "targets": [
+        {
+          "text": "🔄 Next Question",
+          "h": 28,
+          "font": 12
+        },
+        {
+          "text": "📖 Study Term (+5 RP)",
+          "h": 27,
+          "font": 10
+        },
+        {
+          "text": "🔄 New Myth",
+          "h": 41,
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "dark-1280 answered",
+      "sectionWidth": 1006,
+      "choiceColumns": "417.609px 417.625px",
+      "overflow": 0,
+      "targets": [
+        {
+          "text": "🔄 Next Question",
+          "h": 30,
+          "font": 12
+        },
+        {
+          "text": "📖 Study Term (+5 RP)",
+          "h": 27,
+          "font": 10
+        },
+        {
+          "text": "🔄 New Myth",
+          "h": 24.5,
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "light-forced-320 answered",
+      "sectionWidth": 274,
+      "choiceColumns": "120px 120px",
+      "overflow": 0,
+      "targets": [
+        {
+          "text": "🔄 Next Question",
+          "h": 28,
+          "font": 12
+        },
+        {
+          "text": "📖 Study Term (+5 RP)",
+          "h": 27,
+          "font": 10
+        },
+        {
+          "text": "🔄 New Myth",
+          "h": 41,
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "dark-forced-1280 answered",
+      "sectionWidth": 1006,
+      "choiceColumns": "415.75px 415.75px",
+      "overflow": 0,
+      "targets": [
+        {
+          "text": "🔄 Next Question",
+          "h": 30,
+          "font": 12
+        },
+        {
+          "text": "📖 Study Term (+5 RP)",
+          "h": 27,
+          "font": 10
+        },
+        {
+          "text": "🔄 New Myth",
+          "h": 24.5,
+          "font": 11
+        }
+      ]
+    }
+  ],
+  "completed": true,
+  "successful": true,
+  "errors": [],
+  "browserClosed": true,
+  "serverClosed": true,
+  "note": "Successful means baseline inspection completed without exceptions; existing contrast findings are retained and are not candidate passes. Expanded-text captures are layout stress, not real locale QA."
+}
