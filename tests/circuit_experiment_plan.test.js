@@ -131,10 +131,11 @@ describe('Experiment setup in the learner workflow', () => {
     await click(button('Undo active edit')); expect(api.circuitActiveDesign(latest._circuitActive)).toEqual(previous); expect(lab().querySelector('.circuit-active-lesson-bench-note').textContent).toContain('live bench differs');
   });
 
-  it('retains only the existing replay note for tested evidence', async () => {
+  it('shows the single tested bench note beside saved evidence', async () => {
     await mount({ lessonId: 'sensor', lessonRecords: { sensor: record() } });
     expect(lab().querySelectorAll('.circuit-active-lesson-bench-note')).toHaveLength(1);
-    expect(lab().querySelector('.circuit-active-lesson-replay .circuit-active-lesson-bench-note')).not.toBeNull();
+    expect(lab().querySelector('.circuit-active-lesson-evidence .circuit-active-lesson-bench-note')).not.toBeNull();
+    expect(lab().querySelector('.circuit-active-lesson-replay .circuit-active-lesson-bench-note')).toBeNull();
     expect(plan().querySelector('[role="status"],[aria-live]')).toBeNull();
   });
 

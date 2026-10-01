@@ -1,0 +1,33 @@
+{
+  "passed": true,
+  "sourceSha256": "2e346c972087af0e115941f2fccb4aa6040625e5f951c5a69a2d80daf37f5f76",
+  "rootInspected": [
+    "saved-result-gain-1280.png",
+    "saved-result-sensor-320.png",
+    "saved-result-limit-200pct-text-320.png",
+    "forced-colors-saved-result-sensor-320.png",
+    "rtl-saved-result-sensor-320.png"
+  ],
+  "observations": [
+    "Desktop input settings sit above their current values, with comparable bars and a distinct saved-context notice.",
+    "Phone cards stack in Before/After order and the context, reasoning, shared scale and Trace control remain readable.",
+    "The 200% current-limit view keeps both 21.82 magnitudes intact, without clipping or overlapping labels.",
+    "Forced colors retain visible notice and card outlines, text, bar boundaries and the Trace control.",
+    "The RTL fixture reverses surrounding alignment while preserving left-to-right magnitude and unit order."
+  ],
+  "screenshotsReviewedByCircuitUI": 14,
+  "repeatAudit": {
+    "reason": "Measure RTL numeric order at a verified phone viewport after the original audit reset to desktop.",
+    "actualViewportWidth": 320,
+    "screenshotBytesUnchanged": true,
+    "preliminaryScriptSha256": "6b98013e4284666f7425458afccdedc38422aec743afadac69b1decb54a46031",
+    "preliminaryReceiptSha256": "9567e8a395c44c170b13e80b0d212518add78e5b1456842b360499552819e54f",
+    "excludedFromFinalCounts": true
+  },
+  "independentSourceReview": {
+    "reviewer": "circuit_journey",
+    "passed": true,
+    "scope": "Saved-context placement, fixed reading/settings associations, formatter preservation, result focus and descriptions, pre-test behavior and scoped CSS.",
+    "materialIssues": []
+  }
+}
