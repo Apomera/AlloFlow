@@ -39,6 +39,15 @@ function complete(h, source = 'button') {
   h.station('Travel'); h.act('choose_bus', source); h.act('depart', source);
 }
 
+function completeOutingVariant(h, clothes = 'wear_ready', route = 'bus') {
+  h.station('Wardrobe');h.act(clothes);h.station('Kitchen');h.act('fill_water');h.act('pack_water');
+  h.station('Doorway');h.act('pack_document');h.act('pack_raincoat');h.station('Travel');h.act('choose_'+route);h.act('depart');
+}
+
+function exploreReview(h, revision) {
+  h.$('#reviewButton').click();chooseReview(h,revision);h.$('#retryExplore').open=true;
+}
+
 function chooseReview(h, revision) {
   h.$('#reviewChoice').value=String(revision);
   h.$('#reviewChoice').dispatchEvent(new h.w.Event('change'));
@@ -62,6 +71,310 @@ async function openBackup(h, source) {
 }
 
 describe('Life Skills outing interaction', () => {
+  it.each(['rain','warm','bus-delay'])('uses only the information received before the reviewed %s step and keeps previews untimed', async variation => {
+    const provider=vi.fn(),h=mount({provider});h.$('#scenarioSelect').value=variation;h.$('#contextSelect').value='work';h.$('#supportSelect').value='independent';h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
+    h.station('Wardrobe');h.act('wear_ready');h.station('Kitchen');h.act('fill_water');h.act('pack_water');h.station('Doorway');h.act('pack_document');h.act(variation==='warm'?'pack_hat':'pack_raincoat');h.station('Travel');h.act(variation==='bus-delay'?'choose_ride':'choose_bus');h.act('depart');
+    const saved=h.save(),evidence=h.E.view(h.run()).observations;exploreReview(h,3);
+    expect(h.$('#retryStartContext').textContent).toContain('09:03');expect(h.$('#retryStartContext').textContent).toContain('2 earlier actions');expect(h.$('#retryStartFacts').textContent).toContain('Cloudy');expect(h.$('#retryStartFacts').textContent).toContain('Empty');
+    expect(h.$('[data-review-action="fill_water"]').disabled).toBe(true);expect(h.$('[data-review-action="pack_water"]').textContent).toContain('Original choice');h.$('[data-review-action="pack_water"]').click();
+    expect(h.w.document.activeElement.id).toBe('retryPreviewTitle');expect(h.$('#retryPreviewChanges').textContent).toContain('09:0309:04');expect(h.$('#retryPreviewFeedback').textContent).toContain('filled bottle is in your bag');
+    expect(h.$('#retryStartFacts').textContent+h.$('#retryPreview').textContent).not.toMatch(/\bRain\b|Warm sunshine|09:45/);expect(h.$('#retryPreviewKnowledge').textContent).toContain('only the information received');
+    expect(h.save()).toEqual(saved);expect(h.E.view(h.run()).observations).toEqual(evidence);expect(h.run().commands.some(c=>c.actionId==='hint')).toBe(false);await flush();expect(provider).not.toHaveBeenCalled();
+  });
+  it('starts a retry at the explored prefix, preserves the original and plan, and waits for outfit confirmation', () => {
+    const h=mount();addPlan(h,'wear_ready');complete(h);const original=h.run();exploreReview(h,1);h.$('[data-review-action="prepare_clothes"]').click();const before=h.save();
+    expect(h.$('#retryPreviewChanges').textContent).toContain('09:0009:08');expect(h.save()).toEqual(before);h.$('#retryReviewedOption').click();
+    expect(h.run().commands).toHaveLength(0);expect(h.run().runId).not.toBe(original.runId);expect(h.$('#clock').textContent).toBe('09:00');expect(h.$('#wardrobeWorkbench').open).toBe(true);expect(h.w.document.activeElement.dataset.outfit).toBe('prepare_clothes');
+    expect(h.$('#prepareOutfit').disabled).toBe(true);expect(h.$('#planSteps').textContent).toContain('clean, dry');expect(h.$('#retryExplore').open).toBe(false);expect(h.$('#retryPreview').hidden).toBe(true);
+    expect(h.E.readRun(h.w.localStorage,h.E.saveKey(original))).toEqual(original);h.$('[data-outfit="prepare_clothes"]').click();expect(h.run().commands).toHaveLength(0);h.$('#prepareOutfit').click();expect(h.run().commands).toHaveLength(1);expect(h.$('#clock').textContent).toBe('09:08');expect(h.$('#revisedChoice').textContent).toContain('8 minutes');
+  });
+  it('opens the selected travel option from the recorded starting point without choosing the route', () => {
+    const h=mount();complete(h);const original=h.run();exploreReview(h,6);h.$('[data-review-action="choose_ride"]').click();h.$('#retryReviewedOption').click();
+    expect(h.run().commands).toEqual(original.commands.slice(0,5));expect(h.$('#clock').textContent).toBe('09:06');expect(h.$('#routeWorkbench').open).toBe(true);expect(h.w.document.activeElement.dataset.routeOption).toBe('ride');expect(h.E.view(h.run()).travel).toBeNull();expect(h.$('#confirmRoute').disabled).toBe(true);
+    h.$('[data-route-option="ride"]').click();expect(h.run().commands).toHaveLength(5);h.$('#confirmRoute').click();expect(h.E.view(h.run()).travel.id).toBe('ride');expect(h.$('#clock').textContent).toBe('09:06');
+  });
+  it('uses the received forecast and delay when reviewing a step after the actual update', () => {
+    const h=mount();h.$('#scenarioSelect').value='bus-delay';h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));h.station('Travel');h.act('choose_bus');h.station('Wardrobe');h.act('wear_ready');h.station('Kitchen');h.act('fill_water');h.act('pack_water');h.station('Doorway');h.act('pack_document');h.act('pack_raincoat');h.station('Travel');h.act('choose_ride');h.act('depart');
+    exploreReview(h,7);const saved=h.save();expect(h.$('#retryStartFacts').textContent).toContain('Rain');expect(h.$('#retryStartFacts').textContent).toContain('09:45');expect(h.$('#retryStartFacts').textContent).toContain('Raincoat');expect(h.$('[data-review-action="depart"]').disabled).toBe(true);
+    h.$('[data-review-action="choose_walk"]').click();expect(h.$('#retryPreviewChanges').textContent).toContain('09:24');expect(h.$('#retryPreviewKnowledge').textContent).toContain('already received');expect(h.save()).toEqual(saved);
+  });
+  it('rejects a stale reviewed idea after step, run or disclosure changes', () => {
+    const h=mount();complete(h);exploreReview(h,1);h.$('[data-review-action="prepare_clothes"]').click();const saved=h.save(),old=h.$('[data-review-action="prepare_clothes"]');
+    h.$('#reviewChoice').value='2';h.$('#retryReviewedOption').dispatchEvent(new h.w.MouseEvent('click'));expect(h.save()).toEqual(saved);chooseReview(h,2);expect(h.$('#retryPreview').hidden).toBe(true);old.dispatchEvent(new h.w.MouseEvent('click'));expect(h.$('#retryPreview').hidden).toBe(true);
+    h.$('[data-review-action="fill_water"]').click();h.$('#retryExplore').open=false;h.$('#retryReviewedOption').dispatchEvent(new h.w.MouseEvent('click'));expect(h.save()).toEqual(saved);
+    h.$('#retryExplore').open=true;h.$('#sameReplayButton').click();const fresh=h.save();h.$('#retryReviewedOption').dispatchEvent(new h.w.MouseEvent('click'));expect(h.save()).toEqual(fresh);expect(h.$('#retryStartFacts').children).toHaveLength(0);
+  });
+  it('reads the historical starting point and preview without private writing, and stops on history changes or collapse', () => {
+    const voice=speechStub(),h=mount({voice});complete(h);h.$('#reflection').value='PRIVATE reflection';h.$('#prediction').value='PRIVATE prediction';h.$('#readReview').click();expect(voice.spoken).toHaveLength(0);exploreReview(h,1);const saved=h.save();h.$('[data-review-action="prepare_clothes"]').click();h.$('#readReview').click();
+    expect(voice.spoken.at(-1).text).toContain('Before step 1. Practice clock: 09:00');expect(voice.spoken.at(-1).text).toContain('Forecast received. Cloudy');expect(voice.spoken.at(-1).text).toContain('After this choice: 09:08');expect(voice.spoken.at(-1).text).not.toMatch(/PRIVATE|Rain|09:45/);
+    h.$('#stopReadAloud').focus();h.$('#stopReadAloud').click();expect(h.w.document.activeElement.id).toBe('readReview');expect(voice.cancelled).toBe(1);
+    h.$('#readReview').click();chooseReview(h,2);expect(voice.cancelled).toBe(2);h.$('#readReview').click();h.$('#retryExplore').open=false;h.$('#retryExplore').dispatchEvent(new h.w.Event('toggle'));expect(voice.cancelled).toBe(3);
+    h.$('#retryExplore').open=true;h.$('#readReview').click();h.$('#choiceHistory').open=false;h.$('#choiceHistory').dispatchEvent(new h.w.Event('toggle'));expect(voice.cancelled).toBe(4);expect(h.save()).toEqual(saved);expect(h.$('#readReview').textContent).toBe('Read this starting point aloud');
+  });
+  it('reconstructs review facts on resume without persisting a preview or an open exploration', () => {
+    const h=mount();complete(h);exploreReview(h,1);h.$('[data-review-action="prepare_clothes"]').click();const resumed=mount({saved:h.save()});expect(resumed.$('#retryExplore').open).toBe(false);expect(resumed.$('#retryPreview').hidden).toBe(true);
+    exploreReview(resumed,3);expect(resumed.$('#retryStartContext').textContent).toContain('09:03');expect(resumed.$('#retryStartFacts').textContent).toContain('Cloudy');expect(resumed.$('#retryPreviewTitle').textContent).toBe('');
+  });
+  it('keeps requested-clue history distinct from authored action previews', () => {
+    const h=mount();h.$('#hintButton').click();complete(h);exploreReview(h,1);const saved=h.save();expect(h.$('#retryOptions').children).toHaveLength(0);expect(h.$('#retryOptionsNote').textContent).toContain('requested a clue');h.$('#retryReviewedOption').dispatchEvent(new h.w.MouseEvent('click'));expect(h.save()).toEqual(saved);
+    h.$('#retryChoiceButton').click();expect(h.run().commands).toHaveLength(0);expect(h.E.materialize(h.run()).hints).toBe(0);expect(h.w.document.activeElement.id).toBe('stationActions');
+  });
+  it('supports historical previews and explicit retry navigation without 3D, speech or storage', () => {
+    const h=mount({noScene:true,noStorage:true,reducedMotion:true});complete(h);exploreReview(h,1);expect(h.$('#readReview').disabled).toBe(true);h.$('[data-review-action="prepare_clothes"]').click();expect(h.$('#retryPreviewFeedback').textContent).toContain('8 minutes');h.$('#retryReviewedOption').click();expect(h.$('#clock').textContent).toBe('09:00');expect(h.$('#wardrobeWorkbench').hidden).toBe(false);expect(h.$('#prepareOutfit').disabled).toBe(true);
+  });
+  it('previews departure while keeping the actual retry at the door until a fresh check and explicit departure', () => {
+    const h=mount();complete(h);const original=h.run();exploreReview(h,7);h.$('[data-review-action="depart"]').click();expect(h.$('#retryPreviewChanges').textContent).toContain('09:30');h.$('#retryReviewedOption').click();
+    expect(h.run().commands).toEqual(original.commands.slice(0,6));expect(h.$('#clock').textContent).toBe('09:06');expect(h.$('#departureWorkbench').hidden).toBe(false);expect(h.$('#departFromCheck').disabled).toBe(true);expect(h.E.view(h.run()).completed).toBe(false);
+  });
+  it('guards empty history and unavailable review controls before a learner has made a choice', () => {
+    const voice=speechStub(),h=mount({voice}),saved=h.save();h.$('#retryExplore').open=true;h.$('#readReview').click();h.$('#retryReviewedOption').dispatchEvent(new h.w.MouseEvent('click'));expect(voice.spoken).toHaveLength(0);expect(h.$('#retryExplore').hidden).toBe(true);expect(h.$('#retryOptions').children).toHaveLength(0);expect(h.save()).toEqual(saved);
+  });
+
+
+  it.each([
+    ['wear_ready','bus','prepare_clothes','ride','6 more','3 minutes earlier'],
+    ['wear_ready','ride','prepare_clothes','bus','6 more','9 minutes later'],
+    ['prepare_clothes','bus','wear_ready','ride','6 fewer','9 minutes earlier'],
+    ['wear_ready','bus','wear_ready','bus','same','same']
+  ])('compares actual journey phases for %s/%s and %s/%s without ranking the learner', (originalClothes,originalRoute,newClothes,newRoute,prep,arrival) => {
+    const h=mount();completeOutingVariant(h,originalClothes,originalRoute);const original=h.run();chooseReview(h,1);h.$('#retryChoiceButton').click();
+    expect(h.$('#comparisonJourneys').children).toHaveLength(0);expect(h.$('#outcomeComparison').hidden).toBe(true);h.$('[data-comparison-topic="timing"]').click();expect(h.$('#comparisonDetail').hidden).toBe(true);
+    completeOutingVariant(h,newClothes,newRoute);expect(h.$('#comparisonJourneys').children).toHaveLength(2);expect(h.$('#comparisonDetails').open).toBe(false);expect(h.$('#comparisonDetail').hidden).toBe(true);
+    const cards=h.$('#comparisonJourneys').children, originalTiming=h.E.travelAt(original), newTiming=h.E.travelAt(h.run());
+    [originalTiming,newTiming].forEach((timing,i)=>{
+      const route=timing.routes.find(r=>r.selected), phases=[timing.departureMinute,route.waitingMinutes,route.travelMinutes,route.minutesBeforeStart].filter(Boolean);
+      expect([...cards[i].querySelectorAll('[data-minutes]')].map(e=>Number(e.dataset.minutes))).toEqual(phases);
+      expect([...cards[i].querySelectorAll('[data-minutes]')].reduce((sum,e)=>sum+parseFloat(e.style.width),0)).toBeCloseTo(100,8);
+      expect(cards[i].querySelector('dd').textContent).toBe(timing.departure);expect(cards[i].textContent).toContain(route.arrival);
+    });
+    const saved=h.save();h.$('[data-comparison-topic="timing"]').click();expect(h.w.document.activeElement.id).toBe('comparisonTopicTitle');
+    expect(h.$('#comparisonFacts').textContent).toContain(prep==='same'?'Both practices used':prep+' minutes preparing');
+    expect(h.$('#comparisonFacts').textContent).toContain(arrival==='same'?'Both practices arrived':arrival);
+    expect(h.$('#comparisonFacts').textContent).toContain('every choice after the retry');expect(h.$('#comparisonFacts').textContent).not.toMatch(/winner|better|mastery|independent now/i);
+    h.$('[data-comparison-topic="bag"]').click();expect(h.$('#comparisonFacts').textContent).toContain('same packed items');expect(h.$('#comparisonFacts').textContent).toContain('Raincoat');expect(h.save()).toEqual(saved);
+    expect(h.E.readRun(h.w.localStorage,h.E.saveKey(original))).toEqual(original);
+  });
+  it('opens the comparison from the simpler recap without revealing all optional tools or changing either practice', () => {
+    const h=mount();complete(h);chooseReview(h,1);h.$('#retryChoiceButton').click();completeOutingVariant(h,'prepare_clothes','ride');h.$('#simpleViewToggle').click();
+    const saved=h.save();expect(h.$('#showComparison').hidden).toBe(false);expect(h.$('#moreToolsToggle').getAttribute('aria-expanded')).toBe('false');h.$('#showComparison').click();
+    expect(h.w.document.body.classList.contains('comparison-shown')).toBe(true);expect(h.w.document.activeElement.id).toBe('comparisonTitle');expect(h.$('#moreToolsToggle').getAttribute('aria-expanded')).toBe('false');
+    h.$('[data-comparison-topic="timing"]').click();h.$('#returnToRecap').click();expect(h.w.document.body.classList.contains('comparison-shown')).toBe(false);expect(h.w.document.activeElement.id).toBe('debriefTitle');
+    h.$('[data-comparison-topic="support"]').dispatchEvent(new h.w.MouseEvent('click'));expect(h.$('#comparisonTopicTitle').textContent).toBe('Time and arrival');expect(h.save()).toEqual(saved);
+    h.$('#showComparison').click();expect(h.$('#comparisonTopicTitle').textContent).toBe('Time and arrival');h.$('#sameReplayButton').click();expect(h.$('#comparisonCard').hidden).toBe(true);expect(h.$('#showComparison').hidden).toBe(true);expect(h.$('#comparisonJourneys').children).toHaveLength(0);expect(h.$('#comparisonFacts').children).toHaveLength(0);expect(h.w.document.body.classList.contains('comparison-shown')).toBe(false);
+  });
+  it('compares requested coaching separately from exploration, voice and learner-made plans', async () => {
+    const provider=vi.fn(),h=mount({provider});h.$('#supportSelect').value='independent';h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));addPlan(h,'prepare_clothes');complete(h);chooseReview(h,1);h.$('#retryChoiceButton').click();h.$('#hintButton').click();completeOutingVariant(h,'prepare_clothes','ride');
+    const saved=h.save(),evidence=h.E.view(h.run()).observations;h.$('[data-comparison-topic="support"]').click();expect(h.$('#comparisonFacts').textContent).toContain('Coaching setting in both practices: Independent');
+    expect(h.$('#comparisonFacts').textContent).toContain('original: 0');expect(h.$('#comparisonFacts').textContent).toContain('new practice: 1');expect(h.$('#comparisonTopicPrompt').textContent).toContain('Which support');
+    h.$('[data-comparison-topic="bag"]').click();h.$('[data-comparison-topic="timing"]').click();expect(h.save()).toEqual(saved);expect(h.E.view(h.run()).observations).toEqual(evidence);expect(h.$('#planSteps').textContent).toContain('Finish drying');await flush();expect(provider).not.toHaveBeenCalled();
+  });
+  it('reads only the visible comparison and cancels its owned voice on topic changes, return and replay', () => {
+    const voice=speechStub(),h=mount({voice});h.$('#readComparison').click();expect(voice.spoken).toHaveLength(0);complete(h);chooseReview(h,1);h.$('#retryChoiceButton').click();completeOutingVariant(h,'prepare_clothes','ride');
+    h.$('#reflection').value='PRIVATE reflection';h.$('#prediction').value='PRIVATE prediction';h.$('#simpleViewToggle').click();h.$('#readComparison').click();expect(voice.spoken).toHaveLength(0);h.$('#showComparison').click();h.$('[data-comparison-topic="timing"]').click();const saved=h.save();
+    h.$('#readComparison').click();expect(voice.spoken.at(-1).text).toContain('Original practice');expect(voice.spoken.at(-1).text).toContain('Leave home at 09:06. Arrive at 09:30.');expect(voice.spoken.at(-1).text).toContain('Leave home at 09:12. Arrive at 09:27.');expect(voice.spoken.at(-1).text).toContain('14 min waiting for the bus');expect(voice.spoken.at(-1).text).toContain('3 minutes earlier');expect(voice.spoken.at(-1).text).not.toContain('PRIVATE');expect(h.$('#readComparison').textContent).toBe('Stop reading this comparison');
+    h.$('#stopReadAloud').focus();h.$('#stopReadAloud').click();expect(h.w.document.activeElement.id).toBe('readComparison');expect(voice.cancelled).toBe(1);
+    h.$('#readComparison').click();h.$('[data-comparison-topic="support"]').click();expect(voice.cancelled).toBe(2);h.$('#readComparison').click();h.$('#returnToRecap').click();expect(voice.cancelled).toBe(3);expect(h.save()).toEqual(saved);
+    h.$('#readComparison').click();expect(voice.spoken).toHaveLength(3);h.$('#showComparison').click();h.$('#readComparison').click();h.$('#sameReplayButton').click();expect(voice.cancelled).toBe(4);expect(h.$('#readComparison').textContent).toBe('Read this comparison aloud');expect(h.$('#originalChoice').textContent).toBe('');
+  });
+  it('reconstructs completed comparison journeys on resume and backup without restoring an old topic or disclosure', async () => {
+    const h=mount();complete(h);chooseReview(h,1);h.$('#retryChoiceButton').click();completeOutingVariant(h,'prepare_clothes','ride');h.$('[data-comparison-topic="timing"]').click();h.$('#comparisonDetails').open=true;
+    const resumed=mount({saved:h.save()});expect(resumed.$('#comparisonJourneys').textContent).toBe(h.$('#comparisonJourneys').textContent);expect(resumed.$('#comparisonDetail').hidden).toBe(true);expect(resumed.$('#comparisonFacts').textContent).toBe('');expect(resumed.$('#comparisonDetails').open).toBe(false);
+    const run=resumed.run(),raw=resumed.w.localStorage.getItem('alloflow-life-outing-comparison:v1:'+run.runId);const backup=resumed.E.createBackup(run,'PRIVATE backup reflection',JSON.parse(raw));
+    await openBackup(resumed,JSON.stringify(backup));expect(resumed.$('#comparisonJourneys').children).toHaveLength(2);expect(resumed.$('#comparisonFacts').textContent).toBe('');resumed.$('[data-comparison-topic="timing"]').click();expect(resumed.$('#comparisonFacts').textContent).toContain('3 minutes earlier');
+  },15000);
+  it('keeps comparison journeys and explicit retries usable without 3D, speech or storage', () => {
+    const h=mount({noScene:true,noStorage:true,reducedMotion:true});complete(h);chooseReview(h,1);h.$('#retryChoiceButton').click();completeOutingVariant(h,'prepare_clothes','ride');
+    expect(h.$('#comparisonJourneys').children).toHaveLength(2);expect(h.$('#readComparison').disabled).toBe(true);h.$('[data-comparison-topic="timing"]').click();expect(h.$('#comparisonFacts').textContent).toContain('3 minutes earlier');h.$('#returnToRecap').click();expect(h.w.document.activeElement.id).toBe('debriefTitle');
+  });
+  it('keeps unfinished originals out of the final journey comparison', () => {
+    const h=mount();h.station('Wardrobe');h.act('wear_ready');chooseReview(h,1);h.$('#retryChoiceButton').click();completeOutingVariant(h,'prepare_clothes','ride');
+    expect(h.$('#comparisonSummary').textContent).toContain('original practice ended before departure');expect(h.$('#outcomeComparison').hidden).toBe(true);expect(h.$('#comparisonJourneys').children).toHaveLength(0);expect(h.$('[data-comparison-topic="timing"]').disabled).toBe(true);
+    const saved=h.save();h.$('[data-comparison-topic="timing"]').dispatchEvent(new h.w.MouseEvent('click'));expect(h.$('#comparisonFacts').textContent).toBe('');expect(h.save()).toEqual(saved);
+  });
+
+
+  it('recaps clothes prepared last without attributing earlier time to later choices or changing coaching evidence', () => {
+    const h=mount();h.$('#supportSelect').value='independent';h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));h.$('#hintButton').click();
+    h.station('Kitchen');h.act('fill_water');h.act('pack_water');h.station('Doorway');h.act('pack_document');h.act('pack_raincoat');h.station('Wardrobe');h.act('wear_ready');h.station('Travel');h.act('choose_bus');h.act('depart');
+    const saved=h.save(), evidence=h.E.view(h.run()).observations;h.$('[data-outcome-topic="clothes"]').click();expect(h.$('#outcomeFacts').textContent).toContain('All preparation took 6 minutes.');expect(h.$('#outcomeFacts').textContent).toContain('This total includes every preparation action.');
+    expect(h.$('#outcomeFacts').textContent).not.toContain('later choices');h.$('#outcomeReviewButton').click();expect(h.$('#reviewChoice').value).toBe('6');expect(h.save()).toEqual(saved);expect(h.E.view(h.run()).observations).toEqual(evidence);expect(h.E.materialize(h.run()).hints).toBe(1);
+  });
+
+
+  it.each([['bus','09:30','5','14 min waiting for the bus · 10 min travelling'],['walk','09:24','11','18 min travelling'],['ride','09:21','14','15 min travelling']])('recaps the actual completed %s journey and keeps exploration out of time and evidence', async (route,arrival,before,timing) => {
+    const provider=vi.fn(), h=mount({provider}); h.$('#supportSelect').value='independent';h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
+    const fresh=h.save(); h.$('[data-outcome-topic="travel"]').dispatchEvent(new h.w.MouseEvent('click'));h.$('#outcomeReviewButton').click();h.$('#readOutcome').click();
+    expect(h.$('#outcomeRecap').hidden).toBe(true);expect(h.$('#outcomeTiming').textContent).toBe('');expect(h.save()).toEqual(fresh);
+    h.station('Wardrobe');h.act('wear_ready');h.station('Kitchen');h.act('fill_water');h.act('pack_water');h.station('Doorway');h.act('pack_document');h.act('pack_raincoat');h.station('Travel');h.act('choose_'+route);h.act('depart');
+    const saved=h.save(), evidence=h.E.view(h.run()).observations;
+    expect(h.$('#outcomeRecap').hidden).toBe(false);expect(h.$('#outcomeDetail').hidden).toBe(true);expect(h.w.document.activeElement.id).toBe('debriefTitle');
+    expect(h.$('#outcomeDeparture').textContent).toBe('09:06');expect(h.$('#outcomeArrival').textContent).toBe(arrival);expect(h.$('#outcomeTiming').textContent).toContain('6 min preparing');expect(h.$('#outcomeTiming').textContent).toContain(timing);
+    if(route!=='bus')expect(h.$('#outcomeTiming').textContent).not.toContain('waiting');
+    h.$('[data-outcome-topic="travel"]').click();expect(h.w.document.activeElement.id).toBe('outcomeTopicTitle');expect(h.$('#outcomeFacts').textContent).toContain(before+' minutes before the start.');
+    expect(h.$('[data-outcome-topic="travel"]').getAttribute('aria-pressed')).toBe('true');
+    h.$('[data-outcome-topic="clothes"]').click();expect(h.$('#outcomeFacts').textContent).toContain('2 minutes. All preparation took 6 minutes.');expect(h.$('#outcomePrompt').textContent).toContain('time and support');
+    h.$('[data-outcome-topic="bag"]').click();expect(h.$('#outcomeFacts').textContent).toContain('Filled water bottle');expect(h.$('#outcomeFacts').textContent).toContain('At 09:04');expect(h.$('#outcomeFacts').textContent).toContain('from cloudy to rain');
+    expect(h.$('#outcomeClothesIcon svg')).not.toBeNull();expect(h.$('#outcomeBagIcon svg')).not.toBeNull();expect(h.$('#outcomeTravelIcon svg')).not.toBeNull();
+    expect(h.save()).toEqual(saved);expect(h.E.view(h.run()).observations).toEqual(evidence);expect(h.run().commands.some(c=>c.actionId==='hint')).toBe(false);await flush();expect(provider).not.toHaveBeenCalled();
+  });
+  it('reconstructs slower preparation, warm weather and a bus change from each completed run', () => {
+    const h=mount();h.$('#contextSelect').value='work';h.$('#scenarioSelect').value='warm';h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
+    h.station('Wardrobe');h.act('prepare_clothes');h.station('Kitchen');h.act('fill_water');h.act('pack_water');h.station('Doorway');h.act('pack_document');h.act('pack_hat');h.station('Travel');h.act('choose_walk');h.act('depart');
+    expect(h.$('#outcomeDeparture').textContent).toBe('09:12');expect(h.$('#outcomeArrival').textContent).toBe('09:30');h.$('[data-outcome-topic="clothes"]').click();expect(h.$('#outcomeFacts').textContent).toContain('8 minutes. All preparation took 12 minutes.');
+    h.$('[data-outcome-topic="bag"]').click();expect(h.$('#outcomeFacts').textContent).toContain('orientation card');expect(h.$('#outcomeFacts').textContent).toContain('Sun hat');expect(h.$('#outcomeFacts').textContent).toContain('At 09:10');expect(h.$('#outcomeFacts').textContent).toContain('warm sunshine');
+    const resumed=mount({saved:h.save()});expect(resumed.$('#outcomeDeparture').textContent).toBe('09:12');expect(resumed.$('#outcomeDetail').hidden).toBe(true);
+    h.$('#delayReplayButton').click();expect(h.$('#outcomeRecap').hidden).toBe(true);expect(h.$('#outcomeFacts').children).toHaveLength(0);expect(h.$('#outcomeDeparture').textContent).toBe('');
+    h.station('Wardrobe');h.act('wear_ready');h.station('Kitchen');h.act('fill_water');h.act('pack_water');h.station('Doorway');h.act('pack_document');h.act('pack_raincoat');h.station('Travel');h.act('choose_ride');h.act('depart');h.$('[data-outcome-topic="travel"]').click();
+    expect(h.$('#outcomeFacts').textContent).toContain('from 09:30 to 09:45');expect(h.$('#outcomeFacts').textContent).toContain('Arranged ride');expect(h.$('#outcomeFacts').textContent).not.toContain('warm sunshine');
+  });
+  it.each([['clothes',1],['bag',5],['travel',6]])('links the %s recap to its real choice and waits for an explicit retry', (topic,revision) => {
+    const h=mount();h.$('#simpleViewToggle').click();complete(h);const original=h.run(),saved=h.save();h.$('[data-outcome-topic="'+topic+'"]').click();h.$('#outcomeReviewButton').click();
+    expect(h.$('#choiceHistory').open).toBe(true);expect(h.$('#moreToolsToggle').getAttribute('aria-expanded')).toBe('true');expect(h.w.document.activeElement.id).toBe('reviewChoice');
+    expect(h.$('#reviewChoice').value).toBe(String(revision));expect(h.$('#reviewConsequence').textContent).toContain(h.E.history(original)[revision-1].consequence);expect(h.save()).toEqual(saved);
+    h.$('#retryChoiceButton').click();expect(h.run().commands).toEqual(original.commands.slice(0,revision-1));expect(h.$('#outcomeRecap').hidden).toBe(true);expect(h.$('#outcomeDetail').hidden).toBe(true);expect(h.$('#outcomeTopicTitle').textContent).toBe('');
+    expect(h.E.readRun(h.w.localStorage,h.E.saveKey(original))).toEqual(original);expect(h.$('#comparisonCard').hidden).toBe(false);
+  });
+  it('reads completed facts and the selected topic without learner writing, and stops on topic changes, review and replay', () => {
+    const voice=speechStub(),h=mount({voice});h.$('#readOutcome').click();expect(voice.spoken).toHaveLength(0);complete(h);h.$('#reflection').value='PRIVATE reflection';h.$('#prediction').value='PRIVATE prediction';const saved=h.save();
+    h.$('#readOutcome').click();expect(voice.spoken.at(-1).text).toContain('Left home at 09:06. Arrived at 09:30.');expect(voice.spoken.at(-1).text).toContain('14 min waiting');expect(voice.spoken.at(-1).text).not.toContain('PRIVATE');expect(h.$('#readOutcome').textContent).toBe('Stop reading this recap');
+    h.$('#stopReadAloud').focus();h.$('#stopReadAloud').click();expect(h.w.document.activeElement.id).toBe('readOutcome');expect(voice.cancelled).toBe(1);
+    h.$('[data-outcome-topic="bag"]').click();h.$('#readOutcome').click();expect(voice.spoken.at(-1).text).toContain('forecast changed from cloudy to rain');expect(voice.spoken.at(-1).text).not.toContain('PRIVATE');
+    h.$('[data-outcome-topic="travel"]').click();expect(voice.cancelled).toBe(2);expect(h.$('#stopReadAloud').hidden).toBe(true);h.$('#readOutcome').click();h.$('#outcomeReviewButton').click();expect(voice.cancelled).toBe(3);expect(h.save()).toEqual(saved);
+    h.$('#readOutcome').click();h.$('#sameReplayButton').click();expect(voice.cancelled).toBe(4);expect(h.$('#readOutcome').textContent).toBe('Read this recap aloud');expect(h.$('#outcomeTiming').textContent).toBe('');h.$('#readOutcome').click();expect(voice.spoken).toHaveLength(4);
+  });
+  it('keeps the completed recap available without 3D, speech or local storage', () => {
+    const h=mount({noScene:true,noStorage:true,reducedMotion:true});complete(h);expect(h.$('#outcomeRecap').hidden).toBe(false);expect(h.$('#readOutcome').disabled).toBe(true);
+    h.$('[data-outcome-topic="bag"]').click();expect(h.$('#outcomeFacts').textContent).toContain('Raincoat');h.$('#outcomeReviewButton').click();expect(h.$('#reviewChoice').value).toBe('5');h.$('#retryChoiceButton').click();expect(h.$('#outcomeRecap').hidden).toBe(true);expect(h.$('#comparisonCard').hidden).toBe(false);
+  });
+
+
+  it.each([['rain','Rain','09:30','Unchanged'],['warm','Warm sunshine','09:30','Unchanged'],['bus-delay','Rain','09:45','Changed']])('shows only received %s facts in the change comparison and retains its original time', (variation,weather,bus,change) => {
+    const h=mount(); h.$('#supportSelect').value='independent'; h.$('#scenarioSelect').value=variation; h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true})); h.$('#simpleViewToggle').click();
+    const original=h.save(); h.$('#openReceivedChange').click(); h.$('#receivedWeatherReview').click();
+    expect(h.$('#receivedChange').hidden).toBe(true); expect(h.$('#receivedNotice').hidden).toBe(true); expect(h.$('#receivedNoticeCopy').textContent).toBe(''); expect(h.save()).toEqual(original);
+    h.$('[data-preparation="clothing"]').click(); h.$('[data-outfit="prepare_clothes"]').click();
+    expect(h.$('#receivedChange').hidden).toBe(true); h.$('[data-outfit="wear_ready"]').click(); h.$('#prepareOutfit').click();
+    h.$('[data-preparation="water"]').click(); h.$('#fillAtTap').click(); expect(h.$('#receivedChange').hidden).toBe(true); h.$('#packAtTap').click();
+    expect(h.w.document.activeElement.id).toBe('waterReadyTitle'); expect(h.$('#receivedNotice').hidden).toBe(false); expect(h.$('#receivedChange').hidden).toBe(false);
+    expect(h.$('#receivedChangeClock').textContent).toBe('At 09:04'); expect(h.$('#receivedWeatherBefore').textContent).toBe('Cloudy'); expect(h.$('#receivedWeatherAfter').textContent).toBe(weather);
+    expect(h.$('#receivedBusBefore').textContent).toBe('09:30'); expect(h.$('#receivedBusAfter').textContent).toBe(bus); expect(h.$('#receivedBusChange').textContent).toBe(change);
+    expect(h.$('#receivedBusChange').classList.contains('received-unchanged')).toBe(change==='Unchanged'); expect(h.$('#receivedFixedStart').textContent).toContain('09:35');
+    h.station('Doorway'); h.act('pack_document'); expect(h.$('#clock').textContent).toBe('09:05'); expect(h.$('#receivedChangeClock').textContent).toBe('At 09:04');
+  });
+  it('opens the received comparison and its topics without changing a learner-made plan, readiness evidence, time or narration', async () => {
+    const provider=vi.fn(), h=mount({provider}); h.$('#supportSelect').value='independent'; h.$('#scenarioSelect').value='bus-delay'; h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
+    addPlan(h,'choose_late_bus'); h.station('Travel'); h.act('choose_bus'); h.station('Doorway'); h.act('pack_raincoat'); h.station('Wardrobe'); h.act('wear_ready'); h.station('Kitchen'); h.act('fill_water');
+    const saved=h.save(), evidence=h.E.view(h.run()).observations; h.$('#preparationBoard').open=false; h.$('#openReceivedChange').click();
+    expect(h.$('#preparationBoard').open).toBe(true); expect(h.$('#receivedChange').open).toBe(true); expect(h.w.document.activeElement.id).toBe('receivedChangeTitle');
+    h.$('#receivedWeatherReview').click(); expect(h.w.document.activeElement.id).toBe('updateTopicTitle'); expect(h.$('#updateTopicTitle').textContent).toContain('Weather');
+    h.$('#openReceivedChange').click(); h.$('#receivedTravelReview').click(); expect(h.$('#updateTopicTitle').textContent).toContain('Travel');
+    expect(h.$('#nextGuideSource').textContent).toBe('Your plan'); expect(h.$('#nextGuideInstruction').textContent).toContain('09:40 bus'); expect(h.save()).toEqual(saved);
+    expect(h.E.view(h.run()).observations).toEqual(evidence); expect(h.run().commands.some(c=>c.actionId==='hint')).toBe(false); await flush(); expect(provider).not.toHaveBeenCalled();
+    h.$('#receivedChange').open=false; h.$('#receivedWeatherReview').dispatchEvent(new h.w.MouseEvent('click')); expect(h.$('#updateTopicTitle').textContent).toContain('Travel'); expect(h.save()).toEqual(saved);
+  });
+  it('reads only the received facts and cancels the owned reading on collapse, navigation and replay', () => {
+    const voice=speechStub(), h=mount({voice}); h.station('Wardrobe'); h.act('wear_ready'); h.station('Kitchen'); h.act('fill_water'); h.act('pack_water');
+    h.$('#reflection').value='PRIVATE reflection'; h.$('#rehearsalPrediction').textContent='PRIVATE prediction'; const saved=h.save();
+    h.$('#readReceivedChange').click(); expect(voice.spoken).toHaveLength(0); h.$('#openReceivedChange').click(); h.$('#readReceivedChange').click();
+    expect(voice.spoken.at(-1).text).toContain('Update received at 09:04. Weather changed from cloudy to rain. The 09:20 bus still arrives at 09:30.');
+    expect(voice.spoken.at(-1).text).not.toMatch(/PRIVATE|raincoat|hint|next-step/i); expect(h.$('#readReceivedChange').textContent).toBe('Stop reading this update');
+    h.$('#stopReadAloud').focus(); h.$('#stopReadAloud').click(); expect(h.w.document.activeElement.id).toBe('readReceivedChange'); expect(voice.cancelled).toBe(1);
+    h.$('#readReceivedChange').click(); h.$('#receivedChange').open=false; h.$('#receivedChange').dispatchEvent(new h.w.Event('toggle')); expect(voice.cancelled).toBe(2); expect(h.$('#stopReadAloud').hidden).toBe(true);
+    h.$('#openReceivedChange').click(); h.$('#readReceivedChange').click(); h.$('#preparationBoard').open=false; h.$('#preparationBoard').dispatchEvent(new h.w.Event('toggle')); expect(voice.cancelled).toBe(3);
+    h.$('#openReceivedChange').click(); h.$('#readReceivedChange').click(); h.$('#receivedWeatherReview').click(); expect(voice.cancelled).toBe(4);
+    expect(h.save()).toEqual(saved); h.$('#openReceivedChange').click(); h.$('#readReceivedChange').click(); h.$('#sameReplayButton').click(); expect(voice.cancelled).toBe(5); expect(h.$('#receivedChange').hidden).toBe(true);
+    expect(h.$('#readReceivedChange').textContent).toBe('Read this update aloud'); expect(h.$('#receivedWeatherAfter').textContent).toBe(''); expect(h.$('#receivedWeatherAfterIcon').children).toHaveLength(0);
+  });
+  it('reconstructs the received comparison on resume and removes it when branching before the update', () => {
+    const h=mount(); h.$('#scenarioSelect').value='warm'; h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
+    h.station('Wardrobe'); h.act('wear_ready'); h.station('Kitchen'); h.act('fill_water'); h.act('pack_water'); h.station('Doorway'); h.act('pack_document'); h.$('#openReceivedChange').click();
+    const resumed=mount({saved:h.save()}); expect(resumed.$('#receivedChange').hidden).toBe(false); expect(resumed.$('#receivedChange').open).toBe(false); expect(resumed.$('#receivedWeatherAfter').textContent).toBe('Warm sunshine');
+    expect(resumed.$('#clock').textContent).toBe('09:05'); expect(resumed.$('#receivedChangeClock').textContent).toBe('At 09:04');
+    chooseReview(resumed,3); resumed.$('#retryChoiceButton').click(); expect(resumed.$('#receivedChange').hidden).toBe(true); expect(resumed.$('#receivedNotice').hidden).toBe(true);
+    expect(resumed.$('#receivedWeatherAfter').textContent).toBe(''); expect(resumed.$('#receivedBusAfter').textContent).toBe(''); expect(resumed.$('#receivedChange').open).toBe(false);
+    resumed.station('Kitchen'); resumed.act('pack_water'); expect(resumed.$('#receivedWeatherAfter').textContent).toBe('Warm sunshine'); expect(resumed.$('#receivedChangeClock').textContent).toBe('At 09:04');
+  });
+  it('retains readable received facts after completion and rejects navigation from finished or hidden notice controls', () => {
+    const voice=speechStub(), h=mount({voice}); complete(h); const saved=h.save(); expect(h.$('#receivedNotice').hidden).toBe(true); expect(h.$('#receivedChange').hidden).toBe(false);
+    expect(h.$('#receivedWeatherReview').hidden).toBe(true); expect(h.$('#receivedTravelReview').hidden).toBe(true);
+    h.$('#openReceivedChange').dispatchEvent(new h.w.MouseEvent('click')); expect(h.$('#receivedChange').open).toBe(false); h.$('#receivedChange').open=true;
+    h.$('#receivedWeatherReview').dispatchEvent(new h.w.MouseEvent('click')); h.$('#receivedTravelReview').dispatchEvent(new h.w.MouseEvent('click')); expect(h.$('#updateWorkbench').hidden).toBe(true);
+    h.$('#readReceivedChange').click(); expect(voice.spoken.at(-1).text).toContain('Update received at 09:04'); expect(h.save()).toEqual(saved);
+  });
+  it('keeps received comparisons usable without storage, speech or a 3D scene', () => {
+    const h=mount({noScene:true,noStorage:true}); h.$('#simpleViewToggle').click(); h.$('[data-preparation="clothing"]').click(); h.$('[data-outfit="wear_ready"]').click(); h.$('#prepareOutfit').click();
+    h.$('[data-preparation="water"]').click(); h.$('#fillAtTap').click(); h.$('#packAtTap').click(); h.$('#openReceivedChange').click();
+    expect(h.w.document.activeElement.id).toBe('receivedChangeTitle'); expect(h.$('#receivedWeatherAfter').textContent).toBe('Rain'); expect(h.$('#readReceivedChange').disabled).toBe(true);
+    h.$('#receivedTravelReview').click(); expect(h.$('#updateTopicTitle').textContent).toContain('Travel'); expect(h.$('#clock').textContent).toBe('09:04');
+  });
+  it.each(['try','independent'])('opens preparation pictures with %s coaching without choosing, saving or requesting a clue', async support => {
+    const provider=vi.fn(), h=mount({provider}); h.$('#supportSelect').value=support; h.$('#scenarioSelect').value='bus-delay'; h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
+    h.$('#simpleViewToggle').click(); addPlan(h,'pack_water'); const saved=h.save();
+    expect(h.w.document.querySelectorAll('#preparationTiles button')).toHaveLength(6);
+    expect(h.$('#preparationCount').textContent).toBe('0 of 5 ready'); expect(h.$('#preparationTiles').textContent).not.toMatch(/rain|09:45|delay/i);
+    const destinations=[['clothing','wardrobeOptions'],['water','fillAtTap'],['document','packingItems'],['weather','packingItems'],['travel','routeOptions'],['depart','departureGuesses']];
+    for (const [id,owner] of destinations) {
+      h.$('[data-preparation="'+id+'"]').click();
+      expect(h.$('#'+owner).contains(h.w.document.activeElement)).toBe(true);
+      expect(h.$('#preparationTiles').textContent).not.toMatch(/rain|09:45|delay/i);
+    }
+    expect(h.$('#departureResult').hidden).toBe(true); expect(h.$('#routePreviewResult').hidden).toBe(true);
+    expect(h.$('#packingPreviewResult').hidden).toBe(true); expect(h.$('#wardrobePreviewResult').hidden).toBe(true);
+    expect(h.$('#nextGuideSource').textContent).toBe('Your plan'); expect(h.save()).toEqual(saved); await flush(); expect(provider).not.toHaveBeenCalled();
+  });
+  it('keeps preparation tiles stable and shows actual readiness, including a received delay and a weather swap', () => {
+    const h=mount(); h.$('#scenarioSelect').value='bus-delay'; h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
+    const tile=id=>h.$('[data-preparation="'+id+'"]'), state=id=>tile(id).querySelector('.preparation-state').textContent;
+    const travel=tile('travel'); h.$('#preparationBoard').open=false;
+    h.station('Travel'); h.act('choose_bus'); expect(state('travel')).toBe('Ready'); expect(travel.textContent).toContain('09:30');
+    h.station('Doorway'); h.act('pack_raincoat'); expect(state('weather')).toBe('Update expected');
+    h.station('Wardrobe'); h.act('wear_ready'); h.station('Kitchen'); h.act('fill_water');
+    expect(h.$('#preparationBoard').open).toBe(false); expect(tile('travel')).toBe(travel);
+    expect(state('travel')).toBe('Recheck'); expect(travel.classList.contains('preparation-ready')).toBe(false); expect(travel.textContent).toContain('09:45');
+    expect(state('water')).toBe('To pack'); expect(state('weather')).toBe('Ready'); expect(state('clothing')).toBe('Ready');
+    const before=h.save(); tile('weather').click(); expect(h.$('#updateTopicTitle').textContent).toMatch(/weather/i); expect(h.save()).toEqual(before);
+    h.station('Doorway'); h.act('pack_hat'); expect(state('weather')).toBe('Recheck'); expect(tile('weather').textContent).toContain('Sun hat packed · rain');
+    h.act('pack_raincoat'); expect(state('weather')).toBe('Ready');
+    const checks=h.E.view(h.run()).objectives.filter(c=>c.id!=='depart'); expect(h.$('#preparationCount').textContent).toBe(checks.filter(c=>c.complete).length+' of 5 ready');
+  });
+  it('distinguishes exploring an outfit and filling water from finishing those preparation checks', () => {
+    const h=mount(); h.$('#simpleViewToggle').click(); h.$('[data-preparation="clothing"]').click();
+    h.$('[data-outfit="wear_ready"]').click(); expect(h.$('#activityContinuationTitle').textContent).toBe('Clothes · to prepare');
+    expect(h.$('[data-preparation="clothing"]').classList.contains('preparation-ready')).toBe(false); expect(h.$('#preparationCount').textContent).toBe('0 of 5 ready');
+    h.$('#prepareOutfit').click(); expect(h.$('#activityContinuationTitle').textContent).toBe('Clothes check ready'); expect(h.$('#continueGuide').textContent).toBe('Go to the tap');
+    h.$('#continueGuide').click(); h.$('#fillAtTap').click(); expect(h.$('#activityContinuationTitle').textContent).toBe('Water · to pack');
+    expect(h.$('#activityContinuationCopy').textContent).toContain('Filled · on the counter'); expect(h.$('#continueGuide').hidden).toBe(true);
+    h.$('#packAtTap').click(); expect(h.$('#activityContinuationTitle').textContent).toBe('Water check ready'); expect(h.$('#activityNext').textContent).toContain('received update');
+    expect(h.$('#continueGuide').hidden).toBe(false); expect(h.$('#preparationCount').textContent).toBe('2 of 5 ready');
+    h.$('[data-preparation="document"]').click(); h.$('[data-pack-item="card"]').click(); h.$('#packingPlace').click(); const saved=h.save();
+    h.$('[data-preparation="document"]').click(); expect(h.w.document.activeElement.id).toBe('packingBagTitle'); expect(h.$('#packingPreviewResult').hidden).toBe(true); expect(h.save()).toEqual(saved);
+  });
+  it('returns independent exploration to the preparation board without adding a cue or losing a learner-made plan', () => {
+    const h=mount(); h.$('#supportSelect').value='independent'; h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true})); h.$('#simpleViewToggle').click();
+    h.$('[data-preparation="water"]').click(); h.$('#preparationBoard').open=false; const saved=h.save(); h.$('#continueGuide').click();
+    expect(h.$('#reviewPreparation').hidden).toBe(true);
+    expect(h.$('#preparationBoard').open).toBe(true); expect(h.w.document.activeElement.id).toBe('preparationBoardTitle'); expect(h.save()).toEqual(saved);
+    addPlan(h,'pack_water'); h.$('[data-preparation="water"]').click(); expect(h.$('#continueGuide').hidden).toBe(true);
+    h.$('#fillAtTap').click(); expect(h.$('#nextGuideSource').textContent).toBe('Your plan'); expect(h.$('#continueGuide').hidden).toBe(true);
+    const planned=h.save(); h.$('#reviewPreparation').click(); expect(h.w.document.activeElement.id).toBe('preparationBoardTitle'); expect(h.save()).toEqual(planned);
+    h.$('[data-preparation="water"]').click(); expect(h.w.document.activeElement.id).toBe('packAtTap'); h.$('#packAtTap').click();
+    expect(h.$('#nextGuide').dataset.target).toBe('explore'); expect(h.run().commands.map(c=>c.actionId)).toEqual(['fill_water','pack_water']);
+  });
+  it('rebuilds preparation from saved decisions and replay, and prevents finished-board navigation from changing the outcome', () => {
+    const h=mount(); complete(h); expect(h.$('#preparationCount').textContent).toBe('5 of 5 ready'); expect(h.$('#activityContinuation').hidden).toBe(true);
+    const saved=h.save(), finished=h.$('[data-preparation="water"]'); expect([...h.w.document.querySelectorAll('#preparationTiles button')].every(b=>b.disabled)).toBe(true);
+    finished.dispatchEvent(new h.w.MouseEvent('click')); expect(h.save()).toEqual(saved); expect(h.$('#preparationFooter').textContent).toContain('Practice complete');
+    const resumed=mount({saved}); expect(resumed.$('#preparationCount').textContent).toBe('5 of 5 ready');
+    resumed.$('#replayButton').click(); expect(resumed.$('#preparationCount').textContent).toBe('0 of 5 ready'); expect(resumed.$('[data-preparation="water"]').disabled).toBe(false);
+    expect(resumed.$('[data-preparation="water"]').textContent).toContain('Empty · on the counter');
+    const fresh=mount({noScene:true,noStorage:true}); fresh.$('#simpleViewToggle').click(); fresh.$('[data-preparation="water"]').click(); fresh.$('#fillAtTap').click(); fresh.$('#packAtTap').click();
+    expect(fresh.$('[data-preparation="water"]').classList.contains('preparation-ready')).toBe(true); expect(fresh.$('#preparationCount').textContent).toBe('1 of 5 ready');
+  });
+  it('reads the displayed transition and stops that reading when the learner returns to the preparation board', () => {
+    const voice=speechStub(), h=mount({voice}); h.$('#supportSelect').value='independent'; h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true})); h.$('#simpleViewToggle').click(); h.$('[data-preparation="water"]').click(); h.$('#fillAtTap').click(); h.$('#readActivity').click();
+    expect(voice.spoken.at(-1).text).toContain('Water · to pack'); expect(voice.spoken.at(-1).text).not.toContain('Next-step cue:');
+    const saved=h.save(); h.$('#continueGuide').click(); expect(voice.cancelled).toBe(1); expect(h.$('#stopReadAloud').hidden).toBe(true); expect(h.save()).toEqual(saved);
+  });
   it.each([['rain','raincoat','bus','09:30'],['warm','hat','bus','09:30'],['bus-delay','raincoat','walk','09:25']])('follows the %s next-step flow through real workbenches and completes without extra decisions', (variation,weather,route,arrival) => {
     const h=mount(); h.$('#scenarioSelect').value=variation; h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
     h.$('#simpleViewToggle').click(); const initial=h.save();

@@ -107,6 +107,7 @@
     clearPacking(true);
     clearWardrobe(true);
     clearUpdate(true); updateSnapshot = null;
+    byId('receivedChange').open = false; outcomeTopic = null; comparisonTopic = null; comparisonOpen = false; byId('comparisonDetails').open = false;
     clearDeparture(true); departureVisited = false;
     exploredDeparture = null;
     byId('travelLab').open = false;
@@ -135,7 +136,7 @@
     plan = savedNotes.plan || null;
     text('planStatus', '');
     byId('planner').open = !!plan && plan.steps.length > 0 && !E.view(run).completed;
-    reviewRevision = null;
+    reviewRevision = null; reviewSnapshot = null; reviewPreview = null; byId('retryExplore').open = false;
     activeStation = 'kitchen';
     selectedObject = null; hoveredObject = null;
     shownHint = false;
@@ -348,6 +349,135 @@
     text('nextGuideProgress',checks.filter(function (objective) { return objective.complete; }).length + ' of ' + checks.length + ' preparation checks ready · practice clock ' + latestView.clock);
     byId('nextGuidePicture').replaceChildren(guidePicture(step));
     byId('nextGuideCue').hidden = step.target !== 'explore';
+    renderPreparationBoard();
+  }
+  function preparationFacts() {
+    var v = latestView, packedWeather = v.inventory.find(function (item) { return item.id === 'raincoat' || item.id === 'hat'; });
+    var labels = {clothing:'Clothes',water:'Water',document:'Outing card',weather:'Weather item',travel:'Travel plan',depart:'At the door'};
+    var checks = v.objectives.filter(function (check) { return check.id !== 'depart'; });
+    var count = checks.filter(function (check) { return check.complete; }).length;
+    return v.objectives.map(function (check) {
+      var detail, state = check.complete ? 'Ready' : 'To prepare', picture;
+      if (check.id === 'clothing') {
+        detail = v.objects.find(function (object) { return object.id === 'outfit'; }).status; picture = wardrobeIcon(false);
+      } else if (check.id === 'water') {
+        detail = v.objects.find(function (object) { return object.id === 'bottle'; }).status; picture = packingIcon('bottle');
+        if (!check.complete && v.scene.bottleFilled) state = 'To pack';
+      } else if (check.id === 'document') {
+        detail = v.objects.find(function (object) { return object.id === 'card'; }).status; picture = packingIcon('card');
+        if (!check.complete) state = 'To pack';
+      } else if (check.id === 'weather') {
+        detail = (packedWeather ? packedWeather.label + ' packed' : 'No weather item packed') + ' · ' + v.scene.weather;
+        picture = packedWeather ? packingIcon(packedWeather.id) : updateWeatherIcon(v.scene.weather);
+        if (!v.event) state = 'Update expected';
+        else if (!check.complete) state = packedWeather ? 'Recheck' : 'To choose';
+      } else if (check.id === 'travel') {
+        detail = v.travel ? v.travel.label + ' · ' + (v.travel.arrival === 'Unavailable' ? 'unavailable' : 'arrive ' + v.travel.arrival + (v.travel.onTime ? ' · by 09:35' : ' · after 09:35')) : 'No route chosen · start 09:35';
+        state = check.complete ? 'Ready' : v.travel ? 'Recheck' : 'To choose'; picture = routeIcon(v.travel ? v.travel.id : 'bus');
+      } else {
+        state = v.completed ? 'Complete' : 'Review before leaving'; detail = v.completed ? 'This outing is finished' : count + ' of ' + checks.length + ' preparation checks ready';
+        picture = guidePicture({target:'departure'});
+      }
+      return {id:check.id,label:labels[check.id],complete:check.complete,state:state,detail:detail,picture:picture};
+    });
+  }
+  function renderPreparationBoard() {
+    renderReceivedChange();
+    var facts = preparationFacts(), list = byId('preparationTiles');
+    var count = facts.filter(function (fact) { return fact.id !== 'depart' && fact.complete; }).length;
+    text('preparationCount',count + ' of 5 ready');
+    text('preparationFooter',latestView.completed ? 'Practice complete. Look back at your choices below.' : 'Opening an activity takes no practice time. Make each choice inside the activity.');
+    facts.forEach(function (fact) {
+      var button = list.querySelector('[data-preparation="' + fact.id + '"]');
+      if (!button) {
+        var row = node('li'); button = node('button','preparation-tile'); button.type = 'button'; button.dataset.preparation = fact.id;
+        var picture = node('span','preparation-picture'); picture.setAttribute('aria-hidden','true');
+        var copy = node('span','preparation-copy'); copy.append(node('strong','preparation-label'),node('span','preparation-state'),node('span','preparation-detail'));
+        button.append(picture,copy); button.addEventListener('click',function(){openPreparationActivity(this.dataset.preparation);}); row.appendChild(button); list.appendChild(row);
+      }
+      button.disabled = latestView.completed; button.classList.toggle('preparation-ready',fact.complete); button.classList.toggle('preparation-recheck',fact.state === 'Recheck');
+      button.setAttribute('aria-controls',{clothing:'wardrobeWorkbench',water:'waterWorkbench',document:'packingWorkbench',weather:latestView.event ? 'updateWorkbench' : 'packingWorkbench',travel:'routeWorkbench',depart:'departureWorkbench'}[fact.id]);
+      button.querySelector('.preparation-label').textContent = fact.label;
+      button.querySelector('.preparation-state').textContent = fact.state;
+      button.querySelector('.preparation-detail').textContent = fact.detail;
+      button.querySelector('.preparation-picture').replaceChildren(fact.picture,departureMark(fact.complete));
+    });
+  }
+  function openPreparationBoard() {
+    stopReading(); byId('preparationBoard').open = true; byId('preparationBoardTitle').focus();
+  }
+  function receivedChangeText(received) {
+    if (!received) return '';
+    var weatherNames = {cloudy:'cloudy',rain:'rain',warm:'warm sunshine'};
+    return 'Weather changed from ' + weatherNames[received.beforeWeather] + ' to ' + weatherNames[received.afterWeather] + '. ' + (received.beforeBus === received.afterBus ? 'The 09:20 bus still arrives at ' + received.afterBus + '.' : 'The 09:20 bus arrival changed from ' + received.beforeBus + ' to ' + received.afterBus + '.');
+  }
+  function renderReceivedChange() {
+    var received = receivedUpdate(), panel = byId('receivedChange');
+    panel.hidden = !received; byId('receivedNotice').hidden = !received || latestView.completed;
+    byId('receivedWeatherReview').hidden = latestView.completed; byId('receivedTravelReview').hidden = latestView.completed;
+    if (!received) {
+      ['receivedChangeClock','receivedWeatherBefore','receivedWeatherAfter','receivedBusBefore','receivedBusAfter','receivedBusChange','receivedNoticeTitle','receivedNoticeCopy'].forEach(function (id) { text(id,''); });
+      byId('receivedWeatherBeforeIcon').replaceChildren(); byId('receivedWeatherAfterIcon').replaceChildren(); return;
+    }
+    var weatherNames = {cloudy:'Cloudy',rain:'Rain',warm:'Warm sunshine'};
+    text('receivedChangeClock','At ' + received.clock); text('receivedNoticeTitle','Update received at ' + received.clock);
+    text('receivedNoticeCopy',receivedChangeText(received));
+    text('receivedWeatherBefore',weatherNames[received.beforeWeather]); text('receivedWeatherAfter',weatherNames[received.afterWeather]);
+    byId('receivedWeatherBeforeIcon').replaceChildren(updateWeatherIcon(received.beforeWeather)); byId('receivedWeatherAfterIcon').replaceChildren(updateWeatherIcon(received.afterWeather));
+    text('receivedBusBefore',received.beforeBus); text('receivedBusAfter',received.afterBus);
+    text('receivedBusChange',received.beforeBus === received.afterBus ? 'Unchanged' : 'Changed');
+    byId('receivedBusChange').classList.toggle('received-unchanged',received.beforeBus === received.afterBus);
+  }
+  function openReceivedChange() {
+    if (!latestView.event || latestView.completed || byId('receivedNotice').hidden) return;
+    stopReading(); byId('preparationBoard').open = true; byId('receivedChange').open = true; byId('receivedChangeTitle').focus();
+  }
+  function reviewReceivedTopic(topic) {
+    if (!latestView.event || latestView.completed || byId('receivedChange').hidden || !byId('receivedChange').open || !byId('preparationBoard').open) return;
+    openUpdateWorkbench(); chooseUpdateTopic(topic); renderPresentation(); refreshReading();
+  }
+  function openPreparationActivity(id) {
+    if (latestView.completed) return;
+    if (id === 'clothing') openWardrobeWorkbench();
+    else if (id === 'water') openWaterWorkbench();
+    else if (id === 'document') { if (latestView.scene.documentPacked) { openPackingWorkbench(); byId('packingBagTitle').focus(); } else openGuideAction('pack_document'); }
+    else if (id === 'weather') { if (latestView.event) { openUpdateWorkbench(); chooseUpdateTopic('weather'); } else { openPackingWorkbench(); byId('packingItems').querySelector('[data-pack-item="raincoat"]').focus(); } }
+    else if (id === 'travel') openRouteWorkbench();
+    else if (id === 'depart') openDepartureWorkbench();
+    renderPresentation(); refreshReading();
+  }
+  function guidePanel(step) {
+    if (step.target === 'plan') {
+      var action = step.actionId;
+      return /water/.test(action) ? 'waterWorkbench' : /clothes|wear_ready/.test(action) ? 'wardrobeWorkbench' : /document|raincoat|hat/.test(action) ? 'packingWorkbench' : /forecast/.test(action) ? (latestView.event ? 'updateWorkbench' : null) : action === 'depart' ? 'departureWorkbench' : 'routeWorkbench';
+    }
+    return {bottle:'waterWorkbench',outfit:'wardrobeWorkbench',card:'packingWorkbench',bag:'packingWorkbench',weather:'updateWorkbench',update:'updateWorkbench',route:'routeWorkbench',departure:'departureWorkbench'}[step.target];
+  }
+  function renderActivityContinuation(panel) {
+    var section = byId('activityContinuation'), step = guideStep();
+    section.hidden = !panel || latestView.completed;
+    var continueButton = byId('continueGuide'); continueButton.hidden = section.hidden || panel.id === guidePanel(step);
+    byId('reviewPreparation').hidden = step.target === 'explore' && !continueButton.hidden;
+    byId('activityNext').hidden = continueButton.hidden;
+    if (section.hidden) return;
+    var facts = preparationFacts(), checkId = {waterWorkbench:'water',wardrobeWorkbench:'clothing',routeWorkbench:'travel'}[panel.id];
+    var fact = facts.find(function (item) { return item.id === checkId; }), title, detail, picture;
+    if (fact) {
+      title = fact.complete ? fact.label + ' check ready' : fact.label + ' · ' + fact.state.toLowerCase(); detail = fact.detail + '.'; picture = fact.picture;
+    } else if (panel.id === 'packingWorkbench') {
+      var packedCount = latestView.inventory.filter(function (item) { return ['water','document','raincoat','hat'].indexOf(item.id) >= 0; }).length;
+      title = packedCount + ' of 3 items packed'; detail = facts.filter(function (item) { return ['water','document','weather'].indexOf(item.id) >= 0; }).map(function (item) { return item.label + ': ' + item.state.toLowerCase(); }).join(' · ') + '.';
+      picture = packingBagPicture(packingPictureItems());
+    } else if (panel.id === 'updateWorkbench') {
+      title = 'Received forecast: ' + latestView.scene.weather;
+      detail = facts.find(function (item) { return item.id === 'weather'; }).detail + '. ' + facts.find(function (item) { return item.id === 'travel'; }).detail + '.'; picture = updateWeatherIcon(latestView.scene.weather);
+    } else {
+      title = facts.filter(function (item) { return item.id !== 'depart' && item.complete; }).length + ' of 5 preparation checks ready';
+      detail = 'Review the current checks before choosing to leave.'; picture = guidePicture({target:'departure'});
+    }
+    text('activityContinuationTitle',title); text('activityContinuationCopy',detail); byId('activityContinuationPicture').replaceChildren(picture);
+    text('activityNext',step.target === 'explore' ? 'Choose another activity from your preparation board.' : step.target === 'plan' ? step.instruction : 'Next-step cue: ' + step.title + '.');
+    text('continueGuide',step.target === 'explore' ? 'Choose another activity' : step.button);
   }
   function openGuideAction(action) {
     if (/water/.test(action)) openWaterWorkbench();
@@ -380,28 +510,37 @@
   function activeWorkbench() { return workbenchIds.map(byId).find(function (panel) { return !panel.hidden && panel.open; }); }
   function renderPresentation() {
     if (presentationDisposed) return;
-    document.body.classList.toggle('simple-view',simpleView); document.body.classList.toggle('tools-expanded',extraTools);
+    document.body.classList.toggle('simple-view',simpleView); document.body.classList.toggle('tools-expanded',extraTools); document.body.classList.toggle('comparison-shown',!!comparison && comparisonOpen);
     byId('simpleViewToggle').setAttribute('aria-pressed',String(simpleView)); byId('moreToolsToggle').hidden = !simpleView;
     byId('moreToolsToggle').setAttribute('aria-expanded',String(extraTools)); text('moreToolsToggle',extraTools ? 'Hide extra tools' : 'Show more tools');
     var panel = activeWorkbench(); byId('stationActions').classList.toggle('has-workbench',!!panel);
     byId('stationActions').classList.toggle('simple-raw-actions',!!selectedObject && !panel && !latestView.completed);
     byId('sceneActionButtons').setAttribute('visible',!closeView && !(simpleView && !extraTools));
-    byId('readNextStep').disabled = !readService; byId('readActivity').disabled = !readService;
+    byId('readNextStep').disabled = !readService; byId('readActivity').disabled = !readService; byId('readReceivedChange').disabled = !readService; byId('readOutcome').disabled = !readService; byId('readComparison').disabled = !readService; byId('readReview').disabled = !readService;
     if (!readService) text('readAloudStatus','Read aloud is unavailable in this browser. You can use the pictures and text.');
-    var step = guideStep(), targetPanel = {bottle:'waterWorkbench',outfit:'wardrobeWorkbench',card:'packingWorkbench',bag:'packingWorkbench',weather:'updateWorkbench',update:'updateWorkbench',route:'routeWorkbench',departure:'departureWorkbench'}[step.target];
-    byId('continueGuide').hidden = !panel || latestView.completed || panel.id === targetPanel;
-    text('continueGuide',step.target === 'explore' ? 'Choose another station' : 'Go to the next step');
+    renderActivityContinuation(panel);
   }
   function revealExtraTools() { if (simpleView) { extraTools = true; renderPresentation(); } }
   function guideReadingText() { return [byId('nextGuideTitle').textContent,byId('nextGuideInstruction').textContent,byId('nextGuideProgress').textContent].join('. '); }
+  function receivedReadingText() {
+    if (byId('receivedChange').hidden || !byId('receivedChange').open || !byId('preparationBoard').open) return '';
+    var received = receivedUpdate(); return received ? 'Update received at ' + received.clock + '. ' + receivedChangeText(received) + ' The outing still starts at 09:35.' : '';
+  }
+  function readingText(scope) { return scope === 'guide' ? guideReadingText() : scope === 'change' ? receivedReadingText() : scope === 'outcome' ? outcomeReadingText() : scope === 'comparison' ? comparisonReadingText() : scope === 'review' ? reviewReadingText() : activityReadingText(); }
   function activityReadingText() {
     var panel = activeWorkbench();
-    if (!panel) { var object = latestView.objects.find(function (item) { return item.id === selectedObject; }); return object ? object.label + '. ' + object.status + '. ' + object.description : byId('stationTitle').textContent + '. ' + byId('stationDescription').textContent; }
+    if (!panel) {
+      var object = latestView.objects.find(function (item) { return item.id === selectedObject; });
+      var instructions = object ? object.label + '. ' + object.status + '. ' + object.description : byId('stationTitle').textContent + '. ' + byId('stationDescription').textContent;
+      return instructions + (byId('receivedNotice').hidden ? '' : '. ' + byId('receivedNoticeTitle').textContent + '. ' + byId('receivedNoticeCopy').textContent);
+    }
     var values = [];
     panel.querySelectorAll('h4,h5,p,figcaption,dt,dd,.water-steps strong,.water-steps div>span').forEach(function (el) {
       if (el.closest('[hidden],.sr-only,[role="status"]')) return;
       var content = el.textContent.trim(); if (content && values.indexOf(content) === -1) values.push(content);
     });
+    if (!byId('activityContinuation').hidden) ['activityContinuationTitle','activityContinuationCopy','activityNext'].forEach(function (id) { var el = byId(id); if (!el.hidden && el.textContent) values.push(el.textContent); });
+    if (!byId('receivedNotice').hidden) values.push(byId('receivedNoticeTitle').textContent + '. ' + byId('receivedNoticeCopy').textContent);
     // Read displayed instructions and facts, never optional learner writing or other panels.
     return values.join('. ').slice(0,3000);
   }
@@ -415,16 +554,20 @@
     if (restoreFocus && stopFocused && button) byId(button).focus();
   }
   function refreshReading() {
-    if (readUtterance && readText !== (readScope === 'guide' ? guideReadingText() : activityReadingText())) stopReading('The instructions changed. Choose read aloud to hear the current step.');
+    if (readUtterance && readText !== readingText(readScope)) stopReading('The instructions changed. Choose read aloud to hear the current step.');
   }
   function renderReadingControls() {
     text('readNextStep',readUtterance && readScope === 'guide' ? 'Stop reading this step' : 'Read this step aloud');
     text('readActivity',readUtterance && readScope === 'activity' ? 'Stop reading activity instructions' : 'Read activity instructions');
+    text('readReceivedChange',readUtterance && readScope === 'change' ? 'Stop reading this update' : 'Read this update aloud');
+    text('readOutcome',readUtterance && readScope === 'outcome' ? 'Stop reading this recap' : 'Read this recap aloud');
+    text('readComparison',readUtterance && readScope === 'comparison' ? 'Stop reading this comparison' : 'Read this comparison aloud');
+    text('readReview',readUtterance && readScope === 'review' ? 'Stop reading this starting point' : 'Read this starting point aloud');
   }
   function readAloud(scope) {
     if (!readService) return;
     if (readUtterance && readScope === scope) { stopReading('Reading stopped.'); return; }
-    stopReading(); var content = scope === 'guide' ? guideReadingText() : activityReadingText();
+    stopReading(); var content = readingText(scope);
     if (!content) return;
     if (readService.speaking || readService.pending) { text('readAloudStatus','Another voice is reading. Try again when it finishes.'); return; }
     try {
@@ -432,10 +575,10 @@
       utterance.lang = 'en'; utterance.rate = .95;
       var voices = readService.getVoices ? readService.getVoices() : [], voice = voices.find(function (item) { return /^en(?:-|$)/i.test(item.lang) && item.localService; });
       if (voice) utterance.voice = voice;
-      readUtterance = utterance; readScope = scope; readText = content; readButtonId = scope === 'guide' ? 'readNextStep' : 'readActivity';
+      readUtterance = utterance; readScope = scope; readText = content; readButtonId = {guide:'readNextStep',activity:'readActivity',change:'readReceivedChange',outcome:'readOutcome',comparison:'readComparison',review:'readReview'}[scope];
       renderReadingControls();
       byId('stopReadAloud').hidden = false; text('readAloudStatus','Starting read aloud. You can stop at any time.');
-      utterance.onstart = function () { if (serial !== readSerial) return; window.clearTimeout(readStartTimer); readStartTimer = null; text('readAloudStatus','Reading ' + (scope === 'guide' ? 'the next step.' : 'the activity instructions.')); };
+      utterance.onstart = function () { if (serial !== readSerial) return; window.clearTimeout(readStartTimer); readStartTimer = null; text('readAloudStatus','Reading ' + ({guide:'the next step.',activity:'the activity instructions.',change:'the received update.',outcome:'the completed outing.',comparison:'the practice comparison.',review:'the starting point and preview.'})[scope]); };
       utterance.onend = function () { if (serial === readSerial) stopReading('Reading finished.',true,true); };
       utterance.onerror = function () { if (serial === readSerial) stopReading('Read aloud could not continue. Try again, or use the text.',true,true); };
       readStartTimer = window.setTimeout(function () { if (serial === readSerial) stopReading('Read aloud could not start. Try again, or use the text.',true); },15000);
@@ -1164,6 +1307,168 @@
     byId('previewActionButton').disabled=!available;
     if(rehearsalPreview&&!visibleActions.some(function(action){return action.id===rehearsalPreview.actionId&&!action.disabled;}))clearRehearsal(false);
   }
+  var outcomeTopic = null;
+  function completedOuting() {
+    if (!latestView.completed) return null;
+    var timing = E.travelAt(current), entries = E.history(current);
+    var route = timing.routes.find(function (item) { return item.selected; });
+    var clothes = entries.find(function (entry) { return entry.actionId === 'wear_ready' || entry.actionId === 'prepare_clothes'; });
+    return {state:E.materialize(current), timing:timing, route:route, entries:entries, clothes:clothes};
+  }
+  function outcomeFacts(topic, outing) {
+    var s = outing.state, received = receivedUpdate(), choices, title, facts, prompt;
+    if (topic === 'clothes') {
+      choices = outing.entries.filter(function (entry) { return entry.actionId === 'wear_ready' || entry.actionId === 'prepare_clothes'; });
+      title = 'Your clothes and preparation time';
+      facts = ['Your choice: ' + outing.clothes.label + '.', 'Getting your outfit ready took ' + outing.clothes.minutes + ' minutes. All preparation took ' + s.minutes + ' minutes.', 'You left home at ' + outing.timing.departure + '. This total includes every preparation action.'];
+      prompt = 'For another outing, what time and support would you allow for getting dressed?';
+    } else if (topic === 'bag') {
+      choices = outing.entries.filter(function (entry) { return /^(fill_water|pack_water|pack_document|pack_raincoat|pack_hat|inspect_forecast)$/.test(entry.actionId); });
+      title = 'Your bag and the received forecast';
+      facts = ['You filled the water bottle before packing it.', 'You left with ' + latestView.inventory.map(function (item) { return item.label; }).join(', ') + '.',
+        'At ' + received.clock + ', the forecast changed from ' + received.beforeWeather + ' to ' + (received.afterWeather === 'warm' ? 'warm sunshine' : received.afterWeather) + '. Your final weather item matched that received forecast.'];
+      prompt = 'For a real outing, what information would you check, and what might you pack differently?';
+    } else if (topic === 'travel') {
+      choices = outing.entries.filter(function (entry) { return /^choose_/.test(entry.actionId); });
+      title = 'Your travel plan and arrival';
+      facts = ['Your final route: ' + outing.route.label + '.',
+        'You left home at ' + outing.timing.departure + ' and arrived at ' + outing.route.arrival + '.' + (outing.route.waitingMinutes ? ' This included ' + outing.route.waitingMinutes + ' minutes waiting for the bus and ' + outing.route.travelMinutes + ' minutes travelling.' : ' Travelling took ' + outing.route.travelMinutes + ' minutes.'),
+        'The outing started at ' + outing.timing.deadline + '. You arrived ' + outing.route.minutesBeforeStart + ' minutes before the start.'];
+      if (received.beforeBus !== received.afterBus) facts.push('The received update changed the 09:20 bus arrival from ' + received.beforeBus + ' to ' + received.afterBus + '.');
+      prompt = 'For another outing, how would you check timing, comfort, access and available support?';
+    } else return null;
+    return {title:title, facts:facts, prompt:prompt, choice:choices[choices.length - 1]};
+  }
+  function renderOutcomeRecap() {
+    var outing = completedOuting(); byId('outcomeRecap').hidden = !outing;
+    document.querySelectorAll('[data-outcome-topic]').forEach(function (button) {
+      button.disabled = !outing; button.setAttribute('aria-pressed',String(!!outing && button.dataset.outcomeTopic === outcomeTopic));
+    });
+    byId('outcomeDetail').hidden = !outing || !outcomeTopic;
+    if (!outing) {
+      ['outcomeDeparture','outcomeArrival','outcomeTiming','outcomeClothesValue','outcomeBagValue','outcomeTravelValue','outcomeTopicTitle','outcomePrompt','outcomeReviewContext'].forEach(function (id) { text(id,''); });
+      ['outcomeClothesIcon','outcomeBagIcon','outcomeTravelIcon','outcomeFacts'].forEach(function (id) { byId(id).replaceChildren(); });
+      return;
+    }
+    text('outcomeDeparture',outing.timing.departure); text('outcomeArrival',outing.route.arrival);
+    text('outcomeTiming',outing.state.minutes + ' min preparing · ' + (outing.route.waitingMinutes ? outing.route.waitingMinutes + ' min waiting for the bus · ' : '') + outing.route.travelMinutes + ' min travelling · ' + outing.route.minutesBeforeStart + ' min before the start.');
+    byId('outcomeClothesIcon').replaceChildren(wardrobeIcon(false));
+    byId('outcomeBagIcon').replaceChildren(packingBagPicture(packingPictureItems()));
+    byId('outcomeTravelIcon').replaceChildren(routeIcon(outing.route.id));
+    text('outcomeClothesValue',outing.clothes.minutes + ' min to get ready');
+    text('outcomeBagValue',latestView.inventory.length + ' items packed');
+    text('outcomeTravelValue',outing.route.label + ' · ' + outing.route.minutesBeforeStart + ' min before start');
+    var detail = outcomeTopic && outcomeFacts(outcomeTopic,outing);
+    if (!detail) { ['outcomeTopicTitle','outcomePrompt','outcomeReviewContext'].forEach(function (id) { text(id,''); }); byId('outcomeFacts').replaceChildren(); return; }
+    text('outcomeTopicTitle',detail.title); text('outcomePrompt',detail.prompt);
+    var list = byId('outcomeFacts'); list.replaceChildren();
+    detail.facts.forEach(function (fact) { list.appendChild(node('li','',fact)); });
+    text('outcomeReviewContext','Review starts with step ' + detail.choice.revision + ': ' + detail.choice.label + '. You can choose any step there.');
+  }
+  function chooseOutcomeTopic(topic) {
+    if (!completedOuting() || ['clothes','bag','travel'].indexOf(topic) < 0) return;
+    stopReading(); outcomeTopic = topic; renderOutcomeRecap(); byId('outcomeTopicTitle').focus();
+  }
+  function reviewOutcomeChoice() {
+    var outing = completedOuting(), detail = outing && outcomeTopic && outcomeFacts(outcomeTopic,outing);
+    if (!detail || byId('outcomeDetail').hidden) return;
+    stopReading(); reviewRevision = detail.choice.revision; renderReview(); revealExtraTools();
+    byId('choiceHistory').open = true; byId('reviewChoice').focus();
+  }
+  function outcomeReadingText() {
+    if (!latestView.completed || byId('outcomeRecap').hidden) return '';
+    var values = ['Your completed practice. Started preparing at 09:00. Left home at ' + byId('outcomeDeparture').textContent + '. Arrived at ' + byId('outcomeArrival').textContent + '. The outing started at 09:35.',byId('outcomeTiming').textContent];
+    if (!byId('outcomeDetail').hidden) {
+      values.push(byId('outcomeTopicTitle').textContent);
+      byId('outcomeFacts').querySelectorAll('li').forEach(function (item) { values.push(item.textContent); });
+      values.push(byId('outcomePrompt').textContent);
+    } else values.push('You can explore your clothes, bag and forecast, or travel choices.');
+    return values.join('. ');
+  }
+  var reviewSnapshot = null, reviewPreview = null;
+  function reviewContextKey(entry) { return current.runId + ':' + current.commands.length + ':' + entry.revision; }
+  function reviewIsOpen() {
+    return !!reviewSnapshot && reviewSnapshot.key === current.runId + ':' + current.commands.length + ':' + Number(byId('reviewChoice').value) && byId('choiceHistory').open && byId('retryExplore').open && (!simpleView || extraTools);
+  }
+  function reviewOptionPicture(id, view) {
+    if (/water/.test(id)) return packingIcon('bottle');
+    if (/clothes|wear_ready/.test(id)) return wardrobeIcon(false);
+    if (id === 'pack_document') return packingIcon('card');
+    if (id === 'pack_raincoat' || id === 'pack_hat') return packingIcon(id === 'pack_hat' ? 'hat' : 'raincoat');
+    if (id === 'inspect_forecast') return updateWeatherIcon(view.scene.weather);
+    if (id === 'depart') return departureMark(true);
+    return routeIcon(id.slice(7));
+  }
+  function renderRetryExplore(entry) {
+    var panel = byId('retryExplore'); panel.hidden = !entry;
+    if (!entry) {
+      reviewSnapshot = null; reviewPreview = null; panel.open = false;
+      ['retryStartTitle','retryStartContext','retryOptionsNote'].forEach(function (id) { text(id,''); });
+      ['retryStartFacts','retryOptions'].forEach(function (id) { byId(id).replaceChildren(); }); renderReviewPreview(); return;
+    }
+    var key = reviewContextKey(entry); if (reviewSnapshot && reviewSnapshot.key === key) return;
+    var prefix = Object.assign({},current,{commands:current.commands.slice(0,entry.revision-1),content:[]}), view = E.view(prefix);
+    var station = view.stations.find(function (item) { return item.id === entry.station; });
+    reviewSnapshot = {key:key, entry:entry, prefix:prefix, view:view, actions:station ? station.actions.filter(function (action) { return action.id !== 'hint'; }) : []};
+    reviewPreview = null; renderReviewPreview();
+    text('retryStartTitle','Before step ' + entry.revision);
+    text('retryStartContext','Practice clock: ' + view.clock + '. ' + (entry.revision-1) + ' earlier actions would be kept.');
+    var bagItems = view.inventory.map(function (item) { return {id:item.id === 'water' ? 'bottle' : item.id === 'document' ? 'card' : item.id}; });
+    var facts = [
+      {label:'Clothes',value:view.scene.clothingReady ? 'Ready' : 'To prepare',picture:wardrobeIcon(false)},
+      {label:'Bag',value:view.inventory.length ? view.inventory.map(function (item) { return item.label; }).join(', ') : 'Empty',picture:packingBagPicture(bagItems)},
+      {label:'Forecast received',value:view.scene.weather === 'warm' ? 'Warm sunshine' : view.scene.weather === 'rain' ? 'Rain' : 'Cloudy',picture:updateWeatherIcon(view.scene.weather)},
+      {label:'Travel plan',value:view.travel ? view.travel.label + ' · arrival ' + view.travel.arrival : 'No route chosen',picture:view.travel ? routeIcon(view.travel.id) : guidePicture({target:'explore'})}
+    ];
+    var list = byId('retryStartFacts'); list.replaceChildren();
+    facts.forEach(function (fact) { var item=node('div'), label=node('dt','',fact.label), detail=node('dd'), picture=node('span','retry-fact-picture');picture.setAttribute('aria-hidden','true');picture.appendChild(fact.picture);detail.append(picture,node('span','',fact.value));item.append(label,detail);list.appendChild(item); });
+    var options = byId('retryOptions'); options.replaceChildren();
+    reviewSnapshot.actions.forEach(function (action) {
+      var button=node('button','retry-option'), picture=node('span','retry-option-picture'), copy=node('span','retry-option-copy');button.type='button';button.dataset.reviewAction=action.id;button.disabled=action.disabled;button.setAttribute('aria-pressed','false');button.setAttribute('aria-controls','retryPreview');picture.setAttribute('aria-hidden','true');picture.appendChild(reviewOptionPicture(action.id,view));
+      copy.appendChild(node('strong','',action.label));if(action.id===entry.actionId)copy.appendChild(node('span','retry-original','Original choice'));if(action.reason)copy.appendChild(node('span','retry-option-reason',action.reason));button.append(picture,copy);button.addEventListener('click',function(){chooseReviewedAction(action.id);});options.appendChild(button);
+    });
+    text('retryOptionsNote',reviewSnapshot.actions.length ? 'Previews use the information received by this step. Updates can appear again as you prepare in the retry.' : 'This step requested a clue. You can start a retry before it to choose the support you want.');
+  }
+  function renderReviewPreview() {
+    var preview = reviewPreview && reviewSnapshot && reviewPreview.key === reviewSnapshot.key ? reviewPreview.value : null;
+    byId('retryPreview').hidden = !preview; byId('retryReviewedOption').disabled = !preview;
+    document.querySelectorAll('[data-review-action]').forEach(function (button) { button.setAttribute('aria-pressed',String(!!preview && button.dataset.reviewAction === preview.actionId)); });
+    ['retryPreviewTitle','retryPreviewFeedback','retryPreviewKnowledge'].forEach(function (id) { text(id,''); });var rows=byId('retryPreviewChanges');rows.replaceChildren();
+    if (!preview) return;
+    text('retryPreviewTitle','Preview: ' + preview.label);text('retryPreviewFeedback',preview.feedback);
+    preview.changes.forEach(function (change) {var row=node('tr'),label=node('th','',change.label);label.scope='row';row.append(label,node('td','',change.before),node('td','',change.after));rows.appendChild(row);});
+    if (!preview.changes.length) {var row=node('tr'),cell=node('td','','The room and timing would stay the same.');cell.colSpan=3;row.appendChild(cell);rows.appendChild(row);}
+    text('retryPreviewKnowledge',preview.forecastMayChange ? 'An update could arrive as you prepare. This preview uses only the information received at the starting point.' : 'This preview uses the forecast and travel information already received at the starting point.');
+  }
+  function chooseReviewedAction(id) {
+    if (!reviewIsOpen()) return;
+    var action = reviewSnapshot.actions.find(function (item) { return item.id === id; }); if (!action || action.disabled) return;
+    stopReading();reviewPreview={key:reviewSnapshot.key,value:E.previewAction(reviewSnapshot.prefix,id)};renderReviewPreview();byId('retryPreviewTitle').focus();
+  }
+  function reviewReadingText() {
+    if (!reviewIsOpen()) return '';
+    var values = [byId('retryStartTitle').textContent,byId('retryStartContext').textContent];
+    byId('retryStartFacts').querySelectorAll('div').forEach(function (item) {values.push(item.querySelector('dt').textContent + '. ' + item.querySelector('dd').textContent);});
+    if (!byId('retryPreview').hidden) {
+      values.push(byId('retryPreviewTitle').textContent);
+      byId('retryPreviewChanges').querySelectorAll('tr').forEach(function (row) { values.push(Array.from(row.children).map(function (cell,index) {return (index===1?'Before: ':index===2?'After this choice: ':'')+cell.textContent;}).join('. ')); });
+      values.push(byId('retryPreviewFeedback').textContent,byId('retryPreviewKnowledge').textContent);
+    } else values.push('Choose an option to preview what it would do.');
+    return values.join('. ').slice(0,3000);
+  }
+  function startReviewRetry(actionId) {
+    try {
+      var original=current, revision=Number(byId('reviewChoice').value)-1, choice=E.history(original)[revision];
+      if(actionId && (!reviewIsOpen() || !reviewPreview || reviewPreview.key!==reviewSnapshot.key || reviewPreview.value.actionId!==actionId))return;
+      var retry=E.branchRun(original,revision);
+      var retryPlan=plan?E.validatePlan(retry,{version:1,steps:plan.steps.filter(function(step){return step.addedAt<=revision;}),checkedAt:plan.checkedAt!==null&&plan.checkedAt<=revision?plan.checkedAt:null}):null;
+      changeRun(retry,{reflection:'',comparison:E.validateComparison(retry,{original:original,revision:revision}),plan:retryPlan});
+      byId('choiceHistory').open=false;
+      if(actionId){openGuideAction(actionId);var outfit=byId('wardrobeWorkbench').querySelector('[data-outfit="'+actionId+'"]');if(outfit&&!outfit.disabled)outfit.focus();renderPresentation();refreshReading();}
+      else {selectStation(choice.station==='support'?'kitchen':choice.station,true);byId('stationActions').focus();}
+      announce('New practice started before step '+(revision+1)+'. Your earlier actions are kept. '+(actionId?'Confirm your choice in the activity when you are ready.':'Try your next choice, then compare below.'));
+    } catch(error){text('feedback',error.message);}
+  }
   function renderReview() {
     var entries = E.history(current), select = byId('reviewChoice');
     select.replaceChildren();
@@ -1179,10 +1484,112 @@
     var entry = entries[selectedRevision - 1];
     byId('decisionReview').hidden = !entry;
     if (entry) text('reviewConsequence', entry.label + '\n' + entry.consequence + '\nPractice clock after this choice: ' + entry.clock + '.');
+    renderRetryExplore(entry);
+  }
+  var comparisonTopic = null, comparisonOpen = false;
+  function comparisonIsVisible() {
+    return !!comparison && !byId('comparisonCard').hidden && (!simpleView || extraTools || comparisonOpen);
+  }
+  function comparisonOuting(raw) {
+    var state = E.materialize(raw);
+    if (!state.departed) return null;
+    var timing = E.travelAt(raw), route = timing.routes.find(function (item) { return item.selected; });
+    return {state:state, timing:timing, route:route, inventory:E.view(raw).inventory};
+  }
+  function comparisonTopicFacts(topic, a, b) {
+    var title, facts, prompt;
+    if (topic === 'timing') {
+      var prep = b.state.minutes - a.state.minutes, arrival = b.state.arrival - a.state.arrival;
+      title = 'Time and arrival';
+      facts = [prep === 0 ? 'Both practices used ' + a.state.minutes + ' minutes preparing.' : 'The new practice used ' + Math.abs(prep) + (prep > 0 ? ' more' : ' fewer') + ' minutes preparing.',
+        arrival === 0 ? 'Both practices arrived at ' + a.route.arrival + '.' : 'The new practice arrived ' + Math.abs(arrival) + ' minutes ' + (arrival < 0 ? 'earlier' : 'later') + '.',
+        'Original route: ' + a.route.label + '. New route: ' + b.route.label + '.',
+        'Both arrived before the 09:35 start. These totals include every choice after the retry.'];
+      prompt = 'What contributed to these times? Which timing and travel plan would work for you?';
+    } else if (topic === 'bag') {
+      title = 'Bag and forecast';
+      var same = a.inventory.map(function (item) { return item.id; }).sort().join(',') === b.inventory.map(function (item) { return item.id; }).sort().join(',');
+      facts = [same ? 'Both practices ended with the same packed items.' : 'The packed items differed between the two practices.',
+        'Original bag: ' + a.inventory.map(function (item) { return item.label; }).join(', ') + '.',
+        'New bag: ' + b.inventory.map(function (item) { return item.label; }).join(', ') + '.',
+        'Both final weather items matched the received ' + (b.state.weather === 'warm' ? 'warm sunshine' : b.state.weather) + ' forecast.'];
+      prompt = 'What stayed the same even when your choices changed? What would you check for a different outing?';
+    } else if (topic === 'support') {
+      title = 'Coaching and clues';
+      facts = ['Coaching setting in both practices: ' + supportNames[current.config.support] + '.',
+        'Clues requested in the original: ' + a.state.hints + '. Clues requested in the new practice: ' + b.state.hints + '.',
+        'Pictures, the simpler view and read-aloud controls do not add requested clues.'];
+      prompt = 'Which support would help you prepare for your next outing?';
+    } else return null;
+    return {title:title, facts:facts, prompt:prompt};
+  }
+  function journeyComparisonCard(label, outing) {
+    var card = node('section','comparison-journey'), heading = node('h4','',label);
+    var milestones = node('dl','comparison-milestones');
+    [['Leave home',outing.timing.departure],['Arrive',outing.route.arrival],['Outing starts',outing.timing.deadline]].forEach(function (pair) {
+      var item = node('div'); item.append(node('dt','',pair[0]),node('dd','',pair[1])); milestones.appendChild(item);
+    });
+    var bar = node('div','comparison-timebar'); bar.setAttribute('aria-hidden','true');
+    [['preparation',outing.state.minutes],['waiting',outing.route.waitingMinutes],['travel',outing.route.travelMinutes],['spare',outing.route.minutesBeforeStart]].forEach(function (part) {
+      if (!part[1]) return;
+      var segment = node('span','journey-segment journey-'+part[0]); segment.style.width = (part[1] / outing.state.deadline * 100) + '%'; segment.dataset.minutes = String(part[1]); bar.appendChild(segment);
+    });
+    var timing = outing.state.minutes + ' min preparing · ' + (outing.route.waitingMinutes ? outing.route.waitingMinutes + ' min waiting for the bus · ' : '') + outing.route.travelMinutes + ' min travelling · ' + outing.route.minutesBeforeStart + ' min before the start.';
+    card.append(heading,node('p','comparison-journey-route',outing.route.label),milestones,bar,node('p','comparison-journey-timing',timing)); return card;
+  }
+  function renderComparisonExplore(a, b) {
+    var complete = !!a && !!b, journeys = byId('comparisonJourneys'); journeys.replaceChildren();
+    document.querySelectorAll('[data-comparison-topic]').forEach(function (button) {
+      button.disabled = !complete; button.setAttribute('aria-pressed',String(complete && button.dataset.comparisonTopic === comparisonTopic));
+    });
+    byId('comparisonDetail').hidden = !complete || !comparisonTopic;
+    if (complete) journeys.append(journeyComparisonCard('Original practice',a),journeyComparisonCard('New practice',b));
+    var detail = complete && comparisonTopic && comparisonTopicFacts(comparisonTopic,a,b);
+    ['comparisonTopicTitle','comparisonTopicPrompt'].forEach(function (id) { text(id,''); }); byId('comparisonFacts').replaceChildren();
+    if (!detail) return;
+    text('comparisonTopicTitle',detail.title); text('comparisonTopicPrompt',detail.prompt);
+    detail.facts.forEach(function (fact) { byId('comparisonFacts').appendChild(node('li','',fact)); });
+  }
+  function chooseComparisonTopic(topic) {
+    if (!comparisonIsVisible() || ['timing','bag','support'].indexOf(topic) < 0) return;
+    var a = comparisonOuting(comparison.original), b = comparisonOuting(current); if (!a || !b) return;
+    stopReading(); comparisonTopic = topic; renderComparisonExplore(a,b); byId('comparisonTopicTitle').focus();
+  }
+  function showPracticeComparison() {
+    if (!comparison || !latestView.completed) return;
+    stopReading(); comparisonOpen = true; renderPresentation();
+    byId('comparisonTitle').setAttribute('tabindex','-1'); byId('comparisonTitle').focus();
+  }
+  function returnToRecap() {
+    if (!comparison || !latestView.completed) return;
+    stopReading(); comparisonOpen = false; renderPresentation();
+    byId('debriefTitle').setAttribute('tabindex','-1'); byId('debriefTitle').focus();
+  }
+  function comparisonReadingText() {
+    if (!comparisonIsVisible()) return '';
+    var values = [byId('comparisonTitle').textContent,byId('comparisonContext').textContent,
+      'Original choice. ' + byId('originalChoice').textContent,'New choice. ' + byId('revisedChoice').textContent,byId('comparisonSummary').textContent];
+    if (!byId('outcomeComparison').hidden) {
+      byId('comparisonJourneys').querySelectorAll('.comparison-journey').forEach(function (card) {
+        values.push(card.querySelector('h4').textContent,card.querySelector('.comparison-journey-route').textContent);
+        card.querySelectorAll('.comparison-milestones>div').forEach(function (item) { values.push(item.querySelector('dt').textContent + ' at ' + item.querySelector('dd').textContent); });
+        values.push(card.querySelector('.comparison-journey-timing').textContent);
+      });
+      if (!byId('comparisonDetail').hidden) {
+        values.push(byId('comparisonTopicTitle').textContent);
+        byId('comparisonFacts').querySelectorAll('li').forEach(function (el) { values.push(el.textContent); });
+        values.push(byId('comparisonTopicPrompt').textContent);
+      }
+    }
+    return values.join('. ').slice(0,3000);
   }
   function renderComparison() {
     byId('comparisonCard').hidden = !comparison;
-    if (!comparison) return;
+    byId('showComparison').hidden = !comparison || !latestView.completed; byId('returnToRecap').hidden = !comparison || !latestView.completed;
+    if (!comparison) {
+      byId('outcomeComparison').hidden = true; byId('comparisonRows').replaceChildren(); renderComparisonExplore(null,null);
+      ['comparisonContext','originalChoice','revisedChoice','comparisonSummary'].forEach(function (id) { text(id,''); }); return;
+    }
     var original = comparison.original, at = comparison.revision;
     var oldChoice = E.history(original)[at], newChoice = E.history(current)[at];
     text('comparisonContext', 'Restarted before step ' + (at + 1) + '. The situation, coaching and earlier actions are the same.');
@@ -1192,6 +1599,7 @@
     text('comparisonSummary', !newChoice ? 'Pause to predict what might change, then try your idea.' : bothComplete ? 'Compare your choices and outcomes below. Earlier arrival is one part of a plan; comfort, access and support matter too.' : newChoice.actionId === oldChoice.actionId ? 'You repeated the original choice. You can still make a different choice later.' : 'You tried a different choice from the same starting point. Notice its effect, then continue your plan.');
     if (!a.departed) text('comparisonSummary', byId('comparisonSummary').textContent + ' The original practice ended before departure, so a final arrival comparison is not available.');
     byId('outcomeComparison').hidden = !bothComplete;
+    renderComparisonExplore(comparisonOuting(original),comparisonOuting(current));
     var rows = byId('comparisonRows'); rows.replaceChildren();
     if (bothComplete) {
       var av = E.view(original), bv = latestView;
@@ -1202,7 +1610,7 @@
     }
   }
   function focusOutcome() {
-    var target = byId(comparison && (!simpleView || extraTools) && !byId('outcomeComparison').hidden ? 'comparisonTitle' : 'debriefTitle');
+    var target = byId(comparison && (!simpleView || extraTools || comparisonOpen) && !byId('outcomeComparison').hidden ? 'comparisonTitle' : 'debriefTitle');
     target.setAttribute('tabindex', '-1'); target.focus();
   }
   function editPlan(steps, focusId, operation, message) {
@@ -1356,6 +1764,7 @@
     text('hintConnect', v.hint && v.hint.connect);
     text('hintTry', v.hint && v.hint.try);
     byId('debrief').hidden = !v.completed;
+    renderOutcomeRecap();
     text('debriefSummary', v.summary + ' Optional story moments saved: ' + (current.content || []).length + '.');
     var observations = byId('observations');
     observations.replaceChildren();
@@ -1674,7 +2083,13 @@
   byId('moreToolsToggle').addEventListener('click',function(){stopReading();extraTools=!extraTools;renderPresentation();this.focus();});
   byId('nextGuideOpen').addEventListener('click',openNextGuide);
   byId('nextGuideCue').addEventListener('click',function(){if(guideStep().target==='explore')act('hint','guide');});
-  byId('continueGuide').addEventListener('click',function(){if(latestView.completed||this.hidden)return;if(guideStep().target==='explore')byId('stationNavigation').querySelector('button').focus();else openNextGuide();});
+  byId('continueGuide').addEventListener('click',function(){if(latestView.completed||this.hidden||byId('activityContinuation').hidden)return;if(guideStep().target==='explore')openPreparationBoard();else openNextGuide();});
+  byId('reviewPreparation').addEventListener('click',function(){if(!this.hidden&&!byId('activityContinuation').hidden)openPreparationBoard();});
+  byId('openReceivedChange').addEventListener('click',openReceivedChange);
+  byId('receivedWeatherReview').addEventListener('click',function(){reviewReceivedTopic('weather');});
+  byId('receivedTravelReview').addEventListener('click',function(){reviewReceivedTopic('travel');});
+  byId('readReceivedChange').addEventListener('click',function(){readAloud('change');});
+  ['receivedChange','preparationBoard'].forEach(function(id){byId(id).addEventListener('toggle',function(){if(latestView&&!presentationDisposed)refreshReading();});});
   byId('readNextStep').addEventListener('click',function(){readAloud('guide');});
   byId('readActivity').addEventListener('click',function(){readAloud('activity');});
   byId('stopReadAloud').addEventListener('click',function(){stopReading('Reading stopped.',true);});
@@ -1802,8 +2217,18 @@
   byId('replayButton').addEventListener('click',function(){changeRun(E.forkRun(current,{variation:current.config.variation==='rain'?'warm':'rain'}));byId('stationActions').focus();});
   byId('sameReplayButton').addEventListener('click',function(){changeRun(E.forkRun(current,{}));byId('stationActions').focus();});
   byId('delayReplayButton').addEventListener('click',function(){changeRun(E.forkRun(current,{variation:'bus-delay'}));byId('stationActions').focus();});
-  byId('reviewChoice').addEventListener('change',function(){reviewRevision=Number(this.value);renderReview();});
-  byId('reviewButton').addEventListener('click',function(){revealExtraTools();byId('choiceHistory').open=true;byId('reviewChoice').focus();});
+  byId('reviewChoice').addEventListener('change',function(){stopReading();reviewRevision=Number(this.value);renderReview();});
+  byId('readReview').addEventListener('click',function(){readAloud('review');});
+  ['choiceHistory','retryExplore'].forEach(function(id){byId(id).addEventListener('toggle',function(){if(latestView&&!presentationDisposed)refreshReading();});});
+  byId('retryReviewedOption').addEventListener('click',function(){if(reviewPreview)startReviewRetry(reviewPreview.value.actionId);});
+  document.querySelectorAll('[data-outcome-topic]').forEach(function(button){button.addEventListener('click',function(){chooseOutcomeTopic(button.dataset.outcomeTopic);});});
+  byId('outcomeReviewButton').addEventListener('click',reviewOutcomeChoice);
+  byId('readOutcome').addEventListener('click',function(){readAloud('outcome');});
+  document.querySelectorAll('[data-comparison-topic]').forEach(function(button){button.addEventListener('click',function(){chooseComparisonTopic(button.dataset.comparisonTopic);});});
+  byId('showComparison').addEventListener('click',showPracticeComparison);
+  byId('returnToRecap').addEventListener('click',returnToRecap);
+  byId('readComparison').addEventListener('click',function(){readAloud('comparison');});
+  byId('reviewButton').addEventListener('click',function(){stopReading();revealExtraTools();byId('choiceHistory').open=true;byId('reviewChoice').focus();});
   byId('planForm').addEventListener('submit',function(event){
     event.preventDefault();if(latestView.completed)return;
     var steps=plan?plan.steps.slice():[];
@@ -1826,18 +2251,7 @@
   byId('nextPlanButton').addEventListener('click',goToPlannedStep);
   byId('followPlanButton').addEventListener('click',goToPlannedStep);
   byId('editPlanButton').addEventListener('click',function(){revealExtraTools();byId('planner').open=true;byId('planner').querySelector('summary').focus();});
-  byId('retryChoiceButton').addEventListener('click',function(){
-    try {
-      var original=current, revision=Number(byId('reviewChoice').value)-1, choice=E.history(original)[revision];
-      var retry=E.branchRun(original,revision);
-      var retryPlan=plan?E.validatePlan(retry,{version:1,steps:plan.steps.filter(function(step){return step.addedAt<=revision;}),checkedAt:plan.checkedAt!==null&&plan.checkedAt<=revision?plan.checkedAt:null}):null;
-      changeRun(retry,{reflection:'',comparison:E.validateComparison(retry,{original:original,revision:revision}),plan:retryPlan});
-      byId('choiceHistory').open=false;
-      selectStation(choice.station==='support'?'kitchen':choice.station,true);
-      byId('stationActions').focus();
-      announce('New practice started before step '+(revision+1)+'. Your earlier actions are kept. Try your next choice, then compare below.');
-    } catch (error) { text('feedback',error.message); }
-  });
+  byId('retryChoiceButton').addEventListener('click',function(){startReviewRetry(null);});
   function saveReflection() {
     notes[current.runId]={reflection:byId('reflection').value.slice(0,600),comparison:comparison,plan:plan};
     try{if(!storage||!lastSaveOk)throw new Error('unavailable');storage.setItem(REFLECTION_PREFIX+current.runId,notes[current.runId].reflection);text('reflectionStatus','Your optional reflection is saved on this device.');}
