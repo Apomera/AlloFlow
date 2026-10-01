@@ -17,7 +17,7 @@ afterEach(() => {
   host.remove();
   vi.restoreAllMocks();
 });
-function mount(state = {}, overrides = {}) {
+function mount(state = { nkStudio: { mission: 'decay' } }, overrides = {}) {
   function Panel() {
     const [toolData, setToolData] = React.useState({ _nuclearLab: state, otherTool: { kept: true } });
     latest = toolData;
@@ -53,12 +53,12 @@ describe('Nuclear Lab experiment studio', () => {
     host.innerHTML = renderTool('nuclearLab', {});
     expect(host.querySelector('[data-nk-studio]')).toBeTruthy();
     expect(host.querySelectorAll('[data-nk-sec]')).toHaveLength(0);
-    expect(host.querySelectorAll('.ns-atom')).toHaveLength(64);
-    expect(host.querySelectorAll('.ns-atom[data-decayed="true"]')).toHaveLength(0);
-    expect(host.querySelector('.ns-chooser').open).toBe(false);
-    expect(host.querySelectorAll('[data-ns-mission]')).toHaveLength(6);
-    expect(host.querySelector('.ns-progress').textContent).toContain('0 / 6');
-    expect(named('Advance one half-life →').disabled).toBe(true);
+    expect(host.querySelector('[data-ns-first-discovery]').dataset.nsFirstDiscovery).toBe('predict');
+    expect(host.querySelectorAll('.ns-atom')).toHaveLength(0);
+    expect(host.querySelectorAll('[data-ns-first-run]')).toHaveLength(0);
+    expect(host.querySelectorAll('[data-ns-mission]')).toHaveLength(0);
+    expect(host.querySelectorAll('.ns-first-progress li')).toHaveLength(4);
+    expect(named('Half as much').disabled).toBe(false);
   });
   it('requires a prediction, records each interval, and supports revising an explanation', () => {
     mount();
@@ -121,7 +121,7 @@ describe('Nuclear Lab experiment studio', () => {
     expect(host.querySelector('[data-ns-explain]')).toBeNull();
   });
   it('retains both experiments and other saved lab work when changing views', () => {
-    mount({ evidenceMastered: ['short-count'], nkReflections: { know: { idea: 'Saved idea' } } });
+    mount({ nkStudio: { mission: 'decay' }, evidenceMastered: ['short-count'], nkReflections: { know: { idea: 'Saved idea' } } });
     click('16'); click('Advance one half-life →'); mission('shield');
     expect(document.activeElement).toBe(host.querySelector('.ns-heading h4'));
     predictShield('Concrete'); click('Test this shield →');
@@ -294,12 +294,13 @@ describe('Nuclear Lab experiment studio', () => {
   });
   it('offers optional hints that follow the current step without changing progress', () => {
     mount();
+    const saved = structuredClone(latest._nuclearLab.nkStudio);
     const hint = host.querySelector('.ns-hint');
     expect(hint.open).toBe(false);
     React.act(() => hint.querySelector('summary').click());
     expect(hint.open).toBe(true);
     expect(hint.textContent).toContain('Choose the prediction');
-    expect(latest._nuclearLab.nkStudio).toBeUndefined();
+    expect(latest._nuclearLab.nkStudio).toEqual(saved);
     click('16');
     expect(hint.textContent).toContain('Advance until');
     click('Advance one half-life →'); click('Advance one half-life →');
@@ -1373,8 +1374,265 @@ describe('Nuclear Lab experiment studio', () => {
     expect(host.querySelector('[data-ns-pair-check]').open).toBe(true);
     expect(host.querySelector('[data-ns-pair-feedback]').dataset.nsPairFeedback).toBe('waiting');
   });
+  it('starts a first discovery without writing progress or taking focus on mount', () => {
+    mount({});
+    expect(host.querySelector('[data-ns-first-discovery]').dataset.nsFirstDiscovery).toBe('predict');
+    expect(latest._nuclearLab.nkStudio).toBeUndefined();
+    expect(host.querySelector('[data-ns-first-run]')).toBeNull();
+    expect(host.querySelector('[data-ns-explain]')).toBeNull();
+    expect(host.querySelector('[aria-current="step"]').textContent).toContain('Predict');
+    expect(document.activeElement).not.toBe(host.querySelector('[data-ns-first-heading]'));
+  });
+  it.each(['Half as much', 'One quarter', 'No change'])('accepts a first prediction without manufacturing evidence (%s)', label => {
+    mount({}); click(label);
+    expect(host.querySelector('[data-ns-first-discovery]').dataset.nsFirstDiscovery).toBe('near');
+    expect(latest._nuclearLab.nkStudio.firstDiscovery).toBe('guided');
+    expect(latest._nuclearLab.nkStudio.distance.runs).toBeUndefined();
+    expect(latest._nuclearLab.nkStudio.completed).toBeUndefined();
+    expect(document.activeElement).toBe(host.querySelector('[data-ns-first-heading]'));
+    expect(host.querySelector('[data-ns-reading]').textContent).toBe('—');
+  });
+  it('records both real first-discovery readings before allowing an explanation', () => {
+    mount({}); click('Half as much'); click('Take a reading at 1 m →');
+    expect(latest._nuclearLab.nkStudio.distance.runs).toEqual([1]);
+    expect(host.querySelector('[data-ns-first-discovery]').dataset.nsFirstDiscovery).toBe('far');
+    expect(host.querySelector('[data-ns-reading]').textContent).toBe('100%');
+    expect(host.querySelector('[data-ns-first-chart]')).toBeNull();
+    expect(host.querySelector('[data-ns-explain]')).toBeNull();
+    click('Move detector to 2 m →');
+    click('Take a reading at 2 m →');
+    expect(latest._nuclearLab.nkStudio.distance).toMatchObject({ setting: 2, runs: [1, 2], prediction: 'half' });
+    expect([...host.querySelectorAll('[data-ns-first-bar] > strong')].map(node => node.textContent)).toEqual(['100%', '25%']);
+    expect([...host.querySelectorAll('[data-ns-first-bar] .ns-case-fill')].map(node => node.style.width)).toEqual(['100%', '25%']);
+    expect(host.querySelector('[data-ns-first-chart]').getAttribute('aria-label')).toContain('1 m, 100%; 2 m, 25%');
+    named('Moving the detector makes the source emit less.').focus();
+    click('Moving the detector makes the source emit less.');
+    expect(latest._nuclearLab.nkStudio.completed || []).toEqual([]);
+    expect(host.querySelector('[data-ns-first-discovery]').dataset.nsFirstDiscovery).toBe('explain');
+    expect(document.activeElement).not.toBe(host.querySelector('[data-ns-first-heading]'));
+    expect(host.textContent).toContain('The source stayed fixed. Compare 100%');
+    click('The same output spreads over a larger area.');
+    expect(latest._nuclearLab.nkStudio.completed).toEqual(['distance']);
+    expect(host.querySelector('[data-ns-first-discovery]').dataset.nsFirstDiscovery).toBe('done');
+    expect(document.activeElement).toBe(host.querySelector('[data-ns-first-heading]'));
+    click('Continue: What can paper stop? →');
+    expect(latest._nuclearLab.nkStudio.mission).toBe('rays');
+    expect(latest._nuclearLab.nkStudio.firstDiscovery).toBe('explore');
+    expect(latest._nuclearLab.nkStudio.distance.runs).toEqual([1, 2]);
+  });
+  it('keeps the first-discovery state on revisit and shares readings with free exploration', () => {
+    mount({ evidenceMastered: ['short-count'] });
+    click('One quarter'); click('Take a reading at 1 m →');
+    const saved = structuredClone(latest._nuclearLab.nkStudio);
+    click('All topics & routes'); click('Experiment studio');
+    expect(host.querySelector('[data-ns-first-discovery]').dataset.nsFirstDiscovery).toBe('far');
+    expect(latest._nuclearLab.nkStudio).toEqual(saved);
+    click('Explore distance freely');
+    expect(host.querySelector('[data-ns-first-discovery]')).toBeNull();
+    expect(host.querySelector('[data-ns-intro]').dataset.nsIntro).toBe('distance');
+    expect(latest._nuclearLab.nkStudio.distance).toEqual(saved.distance);
+    expect(latest._nuclearLab.nkStudio.completed).toBeUndefined();
+    expect(latest._nuclearLab.evidenceMastered).toEqual(['short-count']);
+    expect(latest.otherTool).toEqual({ kept: true });
+    expect(document.activeElement).toBe(host.querySelector('.ns-heading h4'));
+  });
+  it('browses other experiments without recording a first-discovery reading', () => {
+    mount({}); click('No change');
+    const distance = structuredClone(latest._nuclearLab.nkStudio.distance);
+    click('Choose another experiment');
+    expect(host.querySelector('.ns-chooser').open).toBe(true);
+    expect(document.activeElement).toBe(host.querySelector('.ns-chooser > summary'));
+    expect(latest._nuclearLab.nkStudio.distance).toEqual(distance);
+    expect(latest._nuclearLab.nkStudio.distance.runs).toBeUndefined();
+    mission('chain');
+    expect(host.querySelector('[data-ns-intro]').dataset.nsIntro).toBe('chain');
+  });
+  it.each([
+    { mission: 'shield' },
+    { completed: ['decay'] },
+    { decay: { prediction: 16, step: 2 } },
+    { distance: { reflection: 'Keep my note.' } },
+    { nucleus: { prediction: 'same' } },
+    { investigation: { prediction: 'both' } }
+  ])('preserves an existing learner route when no guide was requested (%j)', nkStudio => {
+    mount({ nkStudio });
+    expect(host.querySelector('[data-ns-first-discovery]')).toBeNull();
+    expect(latest._nuclearLab.nkStudio).toEqual(nkStudio);
+  });
+  it('opens the guide with existing evidence and retains notes, other experiments, and earned completion on restart', () => {
+    const distance = { prediction: 'quarter', setting: 4, runs: [4, 1], reflection: 'Keep the source fixed.' };
+    mount({ nkStudio: { mission: 'counting', completed: ['decay', 'distance'], distance, counting: { prediction: 'vary', runs: [1, 4] } } });
+    click('Open the distance guide →');
+    expect(host.querySelector('[data-ns-first-discovery]').dataset.nsFirstDiscovery).toBe('far');
+    expect(latest._nuclearLab.nkStudio.distance).toEqual(distance);
+    click('Move detector to 2 m →');
+    click('Take a reading at 2 m →');
+    expect(latest._nuclearLab.nkStudio.distance.runs).toEqual([4, 1, 2]);
+    click('The same output spreads over a larger area.');
+    expect(latest._nuclearLab.nkStudio.completed).toEqual(['decay', 'distance']);
+    click('Start again');
+    expect(host.querySelector('[data-ns-first-discovery]').dataset.nsFirstDiscovery).toBe('predict');
+    expect(latest._nuclearLab.nkStudio.distance).toMatchObject({ runs: [], prediction: null, setting: 1, explanation: null, reflection: 'Keep the source fixed.' });
+    expect(latest._nuclearLab.nkStudio.completed).toEqual(['decay', 'distance']);
+    expect(latest._nuclearLab.nkStudio.counting).toEqual({ prediction: 'vary', runs: [1, 4] });
+    expect(document.activeElement).toBe(host.querySelector('[data-ns-first-heading]'));
+  });
+  it.each([null, [], { prediction: {}, runs: [1, 2], explanation: 'correct' }, { prediction: 'quarter', runs: [1, 1, null, '2', -1, Infinity], explanation: 'correct' }])('recovers malformed first-discovery data without awarding completion (%j)', distance => {
+    mount({ nkStudio: { mission: 'distance', firstDiscovery: 'guided', distance } });
+    const stage = host.querySelector('[data-ns-first-discovery]').dataset.nsFirstDiscovery;
+    expect(stage).toBe(distance && distance.prediction === 'quarter' ? 'far' : 'predict');
+    expect(host.querySelector('[data-ns-explain]')).toBeNull();
+    expect(host.querySelector('[data-ns-first-chart]')).toBeNull();
+    expect(latest._nuclearLab.nkStudio.completed).toBeUndefined();
+    expect(latest._nuclearLab.nkStudio.distance).toEqual(distance);
+  });
+  it('translates the first-discovery entry and progress without changing saved data', () => {
+    mount({}, { t: (key, fallback) => key === 'stem.nuclearlab.studio_first_title' ? 'Mi primer descubrimiento' : fallback });
+    expect(host.querySelector('h3').textContent).toBe('Mi primer descubrimiento');
+    expect(host.querySelectorAll('.ns-first-progress li')).toHaveLength(4);
+    expect(latest._nuclearLab.nkStudio).toBeUndefined();
+  });
+
+  it('moves the detector while preserving its saved reading, evidence, notes, and completion', () => {
+    mount({ nkView: 'studio', nkStudio: { mission: 'distance', firstDiscovery: 'guided', lastWorked: 'distance', completed: ['decay'], distance: { prediction: 'quarter', setting: 1, runs: [1], reflection: 'Keep the source fixed.' }, counting: { prediction: 'vary', runs: [1, 4] } }, evidenceMastered: ['short-count'] });
+    const saved = structuredClone(latest);
+    expect(host.querySelector('[data-ns-first-run]')).toBeNull();
+    click('Move detector to 2 m →');
+    expect(latest).toEqual({ ...saved, _nuclearLab: { ...saved._nuclearLab, nkStudio: { ...saved._nuclearLab.nkStudio, distance: { ...saved._nuclearLab.nkStudio.distance, setting: 2 } } } });
+    expect(host.querySelector('[data-ns-first-discovery]').dataset.nsFirstDiscovery).toBe('far');
+    expect(host.querySelector('[data-ns-reading]').textContent).toBe('100%');
+    expect(host.querySelector('[data-ns-first-chart]')).toBeNull();
+    expect(host.querySelector('[data-ns-first-position]').textContent).toBe('Detector: 2 m');
+    expect(host.querySelector('[data-ns-first-heading]').textContent).toBe('Read at 2 m');
+    expect(host.querySelector('[data-ns-first-detector="current"]').getAttribute('x')).toBe('195');
+    expect(host.querySelector('[data-ns-first-detector="saved"]').getAttribute('x')).toBe('120');
+    expect(host.querySelector('[data-ns-first-detector="saved"]').getAttribute('stroke-dasharray')).toBe('5 5');
+    expect(host.querySelector('[data-ns-first-position-image]').getAttribute('aria-label')).toBe('Source output fixed. Detector at 2 m. Saved reading at 1 m: 100%.');
+    expect(document.activeElement).toBe(named('Take a reading at 2 m →'));
+    click('Take a reading at 2 m →');
+    expect(latest._nuclearLab.nkStudio.distance.runs).toEqual([1, 2]);
+    expect(host.querySelector('[data-ns-first-bar="2"] > strong').textContent).toBe('25%');
+    expect(latest._nuclearLab.nkStudio.completed).toEqual(['decay']);
+    expect(latest._nuclearLab.nkStudio.distance.reflection).toBe('Keep the source fixed.');
+  });
+  it.each([2, '2', Infinity])('resumes only a valid prepared position without recording another reading (%j)', setting => {
+    const distance = { prediction: 'half', setting, runs: [1] };
+    mount({ nkStudio: { mission: 'distance', firstDiscovery: 'guided', distance } });
+    expect(latest._nuclearLab.nkStudio.distance).toEqual(distance);
+    expect(host.querySelector('[data-ns-reading]').textContent).toBe('100%');
+    if (setting === 2) {
+      expect(host.querySelector('[data-ns-first-move]')).toBeNull();
+      expect(named('Take a reading at 2 m →')).toBeTruthy();
+      expect(document.activeElement).not.toBe(named('Take a reading at 2 m →'));
+    } else {
+      expect(host.querySelector('[data-ns-first-run]')).toBeNull();
+      click('Move detector to 2 m →');
+      expect(latest._nuclearLab.nkStudio.distance.runs).toEqual([1]);
+    }
+    click('Take a reading at 2 m →');
+    expect(latest._nuclearLab.nkStudio.distance.runs).toEqual([1, 2]);
+    expect(latest._nuclearLab.nkStudio.completed).toBeUndefined();
+  });
+  it('shows a saved 4 m setup honestly and records the missing 1 m reading through an explicit action', () => {
+    mount({ nkStudio: { mission: 'distance', firstDiscovery: 'guided', distance: { prediction: 'quarter', setting: 4, runs: [4], reflection: 'Saved from free exploration.' } } });
+    expect(host.querySelector('[data-ns-first-discovery]').dataset.nsFirstDiscovery).toBe('near');
+    expect(host.querySelector('[data-ns-first-position]').textContent).toBe('Detector: 4 m');
+    expect(host.querySelector('[data-ns-reading]').textContent).toBe('6.25%');
+    expect(host.querySelector('[data-ns-first-position-image]').getAttribute('aria-label')).toContain('Detector at 4 m. Saved reading at 4 m: 6.25%');
+    click('Move to 1 m and take a reading →');
+    expect(latest._nuclearLab.nkStudio.distance).toMatchObject({ setting: 1, runs: [4, 1], reflection: 'Saved from free exploration.' });
+    expect(host.querySelector('[data-ns-first-position]').textContent).toBe('Detector: 1 m');
+    expect(host.querySelector('[data-ns-reading]').textContent).toBe('100%');
+  });
+  it('retains a moved detector on revisit without automatically focusing or taking a reading', () => {
+    mount({ nkStudio: { mission: 'distance', firstDiscovery: 'guided', distance: { prediction: 'quarter', setting: 1, runs: [1] } } });
+    click('Move detector to 2 m →');
+    const saved = structuredClone(latest._nuclearLab.nkStudio);
+    click('All topics & routes'); click('Experiment studio');
+    expect(latest._nuclearLab.nkStudio).toEqual(saved);
+    expect(host.querySelector('[data-ns-first-position]').textContent).toBe('Detector: 2 m');
+    expect(host.querySelector('[data-ns-reading]').textContent).toBe('100%');
+    expect(document.activeElement.getAttribute('aria-label')).toBe('Experiment studio');
+    expect(host.querySelector('[data-ns-first-chart]')).toBeNull();
+  });
+  it('shares a prepared position with free exploration while preserving its last measured value', () => {
+    mount({ nkStudio: { mission: 'distance', firstDiscovery: 'guided', completed: ['decay'], distance: { prediction: 'quarter', setting: 1, runs: [1], reflection: 'Keep my note.' } } });
+    click('Move detector to 2 m →'); click('Explore distance freely');
+    expect(latest._nuclearLab.nkStudio.distance).toMatchObject({ setting: 2, runs: [1], reflection: 'Keep my note.' });
+    expect(host.querySelector('[data-ns-reading]').textContent).toBe('100%');
+    expect(host.textContent).toContain('Distance changed. Take a reading to update the detector.');
+    click('Take a reading →');
+    expect(host.querySelector('[data-ns-reading]').textContent).toBe('25%');
+    expect(latest._nuclearLab.nkStudio.completed).toEqual(['decay']);
+  });
+  it('clears the prepared position on restart while keeping an earned discovery and note', () => {
+    mount({ nkStudio: { mission: 'distance', firstDiscovery: 'guided', completed: ['distance'], distance: { prediction: 'quarter', setting: 1, runs: [1], reflection: 'Distance matters.' } } });
+    click('Move detector to 2 m →'); click('Start again');
+    expect(latest._nuclearLab.nkStudio.distance).toMatchObject({ setting: 1, runs: [], prediction: null, reflection: 'Distance matters.' });
+    expect(latest._nuclearLab.nkStudio.completed).toEqual(['distance']);
+    expect(host.querySelector('[data-ns-first-detector="current"]').dataset.distance).toBe('1');
+    expect(host.querySelector('[data-ns-first-detector="saved"]')).toBeNull();
+    expect(host.querySelector('[data-ns-reading]').textContent).toBe('—');
+  });
+
+  it.each([['half', '50%', 'different'], ['quarter', '25%', 'matched'], ['same', '100%', 'different']])('compares the original prediction with measured evidence without changing saved work (%s)', (prediction, percent, result) => {
+    mount({ nkStudio: { mission: 'distance', firstDiscovery: 'guided', completed: ['decay'], distance: { prediction, setting: 2, runs: [1, 2], reflection: 'Keep my note.' }, counting: { runs: [1, 4] } } });
+    const saved = structuredClone(latest);
+    named('My prediction').focus(); click('My prediction');
+    expect(document.activeElement).toBe(named('My prediction'));
+    expect(host.querySelector('[data-ns-prediction-bar="predicted"] > strong').textContent).toBe(percent);
+    expect(host.querySelector('[data-ns-prediction-bar="measured"] > strong').textContent).toBe('25%');
+    expect(host.querySelector('[data-ns-prediction-bar="predicted"] .ns-case-fill').style.width).toBe(percent);
+    expect(host.querySelector('[data-ns-first-prediction-result]').dataset.nsFirstPredictionResult).toBe(result);
+    expect(host.querySelector('[data-ns-first-chart]').getAttribute('aria-label')).toContain('your prediction, ' + percent + '; saved reading, 25%');
+    expect(latest).toEqual(saved);
+    click('Saved readings');
+    expect([...host.querySelectorAll('[data-ns-first-bar] > strong')].map(node => node.textContent)).toEqual(['100%', '25%']);
+    expect(host.querySelector('[data-ns-first-prediction-result]')).toBeNull();
+    expect(latest).toEqual(saved);
+  });
+  it.each([{ prediction: 'half', runs: [1] }, { prediction: {}, runs: [1, 2] }, { prediction: 'quarter', runs: [1, '2', 1] }])('keeps prediction review unavailable without two valid saved readings (%j)', distance => {
+    mount({ nkStudio: { mission: 'distance', firstDiscovery: 'guided', distance } });
+    expect(host.querySelector('[data-ns-first-compare]')).toBeNull();
+    expect(host.querySelector('[data-ns-prediction-bar]')).toBeNull();
+    expect(latest._nuclearLab.nkStudio.distance).toEqual(distance);
+  });
+  it('resets the comparison view with a new prediction while keeping earned notes and progress', () => {
+    mount({ nkStudio: { mission: 'distance', firstDiscovery: 'guided', completed: ['distance'], distance: { prediction: 'half', setting: 2, runs: [1, 2], reflection: 'Keep this.' } } });
+    click('My prediction'); click('Start again'); click('One quarter'); click('Take a reading at 1 m →'); click('Move detector to 2 m →'); click('Take a reading at 2 m →');
+    expect(named('Saved readings').getAttribute('aria-pressed')).toBe('true');
+    expect(host.querySelector('[data-ns-prediction-bar]')).toBeNull();
+    click('My prediction');
+    expect(host.querySelector('[data-ns-first-prediction-result]').dataset.nsFirstPredictionResult).toBe('matched');
+    expect(latest._nuclearLab.nkStudio.completed).toEqual(['distance']);
+    expect(latest._nuclearLab.nkStudio.distance.reflection).toBe('Keep this.');
+  });
+  it('allows the prediction review after completion without changing an earned discovery', () => {
+    mount({ nkStudio: { mission: 'distance', firstDiscovery: 'guided', completed: ['distance'], distance: { prediction: 'same', setting: 2, runs: [1, 2], explanation: 'correct', reflection: 'The source stays fixed.' } } });
+    const saved = structuredClone(latest);
+    click('My prediction');
+    expect(host.querySelector('[data-ns-first-discovery]').dataset.nsFirstDiscovery).toBe('done');
+    expect(host.querySelector('[data-ns-first-prediction-result]').textContent).toContain('Saved reading: 25%');
+    expect(latest).toEqual(saved);
+  });
+  it('revisits saved readings without persisting a display choice or stealing focus', () => {
+    mount({ nkStudio: { mission: 'distance', firstDiscovery: 'guided', distance: { prediction: 'quarter', setting: 2, runs: [1, 2] } } });
+    click('My prediction');
+    const saved = structuredClone(latest._nuclearLab.nkStudio);
+    click('All topics & routes'); click('Experiment studio');
+    expect(named('Saved readings').getAttribute('aria-pressed')).toBe('true');
+    expect(document.activeElement.getAttribute('aria-label')).toBe('Experiment studio');
+    expect(latest._nuclearLab.nkStudio).toEqual(saved);
+  });
+  it('ignores a forged saved comparison view and translates the prediction review', () => {
+    mount({ nkStudio: { mission: 'distance', firstDiscovery: 'guided', distance: { prediction: 'half', setting: 2, runs: [1, 2], comparison: 'prediction' } } }, { t: (key, fallback) => key === 'stem.nuclearlab.studio_first_compare_prediction' ? 'Mi predicción' : fallback });
+    expect(named('Saved readings').getAttribute('aria-pressed')).toBe('true');
+    click('Mi predicción');
+    expect(host.querySelector('[data-ns-prediction-bar="predicted"] > strong').textContent).toBe('50%');
+  });
+
   it('uses translated prompts and keeps every new English key synchronized', () => {
-    host.innerHTML = renderTool('nuclearLab', {}, { t: (key, fallback) => key === 'stem.nuclearlab.studio_title' ? 'Experimentos pequeños' : fallback });
+    host.innerHTML = renderTool('nuclearLab', { _nuclearLab: { nkStudio: { mission: 'decay' } } }, { t: (key, fallback) => key === 'stem.nuclearlab.studio_title' ? 'Experimentos pequeños' : fallback });
     expect(host.querySelector('h3').textContent).toBe('Experimentos pequeños');
     const source = readFileSync('stem_lab/stem_tool_nuclearlab.js', 'utf8');
     const keys = [...new Set([...source.matchAll(/\bnt\('([^']+)'/g)].map(match => 'studio_' + match[1]))];

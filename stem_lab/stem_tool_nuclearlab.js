@@ -1780,6 +1780,158 @@
         h('div', { className: 'ns-case-help' }, h('button', { type: 'button', className: 'ns-secondary', onClick: function () { props.onIntro('distance'); } }, nt('case_review_distance', 'Review distance')), h('button', { type: 'button', className: 'ns-secondary', onClick: function () { props.onIntro('shield'); } }, nt('case_review_shield', 'Review shielding')))));
   }
 
+  function nkStudioDistanceIntensity(metres) { return 100 / (metres * metres); }
+
+  function NuclearFirstDiscovery(props) {
+    var React = props.ctx.React, h = React.createElement, nt = nkStudioTranslate(props.ctx);
+    var data = props.data && typeof props.data === 'object' && !Array.isArray(props.data) ? props.data : {};
+    var predictions = [
+      { id: 'half', label: nt('distance_half', 'Half as much') },
+      { id: 'quarter', label: nt('distance_quarter', 'One quarter') },
+      { id: 'same', label: nt('distance_same', 'No change') }
+    ];
+    var prediction = predictions.filter(function (item) { return item.id === data.prediction; })[0];
+    var runs = (Array.isArray(data.runs) ? data.runs : []).filter(function (value, i, all) { return [1, 2, 4].indexOf(value) >= 0 && all.indexOf(value) === i; }).slice(-3);
+    var near = !!prediction && runs.indexOf(1) >= 0, far = !!prediction && runs.indexOf(2) >= 0;
+    var eligible = near && far;
+    var done = eligible && data.explanation === 'correct';
+    var comparisonState = React.useState(false), showPrediction = eligible && comparisonState[0], setComparison = comparisonState[1];
+    var predictedPercent = prediction ? { half: 50, quarter: 25, same: 100 }[prediction.id] : null;
+    var stage = !prediction ? 'predict' : !near ? 'near' : !far ? 'far' : done ? 'done' : 'explain';
+    var number = stage === 'predict' ? 1 : stage === 'near' ? 2 : stage === 'far' ? 3 : 4;
+    var last = prediction && runs.length ? runs[runs.length - 1] : null;
+    var position = [1, 2, 4].indexOf(data.setting) >= 0 ? data.setting : 1;
+    var prepared = stage === 'far' && position === 2;
+    var differentPosition = last !== null && last !== position;
+    var statusState = React.useState(''), status = statusState[0], setStatus = statusState[1];
+    var headingRef = React.useRef(null), pendingFocus = React.useRef(false), readingRef = React.useRef(null), pendingMoveFocus = React.useRef(false);
+    React.useEffect(function () {
+      var target = pendingMoveFocus.current && prepared ? readingRef.current : pendingFocus.current ? headingRef.current : null;
+      if (target) {
+        target.focus();
+        var section = headingRef.current && headingRef.current.parentElement;
+        if (section && typeof section.scrollIntoView === 'function') section.scrollIntoView({ block: 'start', behavior: 'auto' });
+      }
+      pendingFocus.current = false;
+      pendingMoveFocus.current = false;
+    }, [stage, position]);
+    function predict(id) {
+      if (stage !== 'predict' || !predictions.some(function (item) { return item.id === id; })) return;
+      pendingFocus.current = true;
+      props.onChange({ prediction: id });
+      setStatus(nt('first_prediction_kept', 'Prediction kept. Take your first reading at 1 m.'));
+    }
+    function move() {
+      if (stage !== 'far' || prepared) return;
+      pendingMoveFocus.current = true;
+      props.onChange({ setting: 2 });
+      setStatus(nt('first_move_status', 'Detector moved to 2 m. The saved reading stays at {distance} m. Take a new reading when you are ready.', { distance: last }));
+    }
+    function read() {
+      if (!prediction || (stage !== 'near' && stage !== 'far') || (stage === 'far' && !prepared)) return;
+      var target = stage === 'near' ? 1 : 2;
+      pendingFocus.current = true;
+      props.onChange({ setting: target, step: 0, runs: runs.filter(function (value) { return value !== target; }).concat([target]) });
+      setStatus(nt('distance_result', 'At {distance}, the intensity is {percent}% of the 1 m reading.', { distance: target + ' m', percent: nkStudioDistanceIntensity(target) }));
+    }
+    function explain(correct) {
+      if (!eligible || stage !== 'explain') return;
+      pendingFocus.current = !!correct;
+      props.onExplain(correct);
+      setStatus(correct ? nt('discovery_saved', 'Discovery recorded. Your evidence supports that explanation.') : nt('first_retry', 'The source stayed fixed. Compare 100% at 1 m with 25% at 2 m, then try again.'));
+    }
+    function restart() {
+      if (stage === 'predict') return;
+      pendingFocus.current = true;
+      setComparison(false);
+      props.onChange({ prediction: null, setting: 1, step: 0, runs: [], explanation: null });
+      setStatus(nt('intro_reset', 'Comparison reset. Make a new prediction.'));
+    }
+    var titles = {
+      predict: nt('first_predict_heading', 'What will happen at twice the distance?'),
+      near: nt('first_near_heading', 'First, read at 1 m'),
+      far: prepared ? nt('first_prepared_heading', 'Read at 2 m') : nt('first_far_heading', 'Now, move to 2 m'),
+      explain: nt('first_explain_heading', 'What did these readings show?'),
+      done: nt('first_done_heading', 'You made your first comparison')
+    };
+    var scene = eligible ? h('div', { className: 'ns-scene ns-first-evidence', 'data-ns-scene': 'distance' },
+      h('p', { className: 'ns-scene-note' }, nt('first_same_source', 'Same source. Only distance changed.')),
+      h('div', { className: 'ns-first-compare', role: 'group', 'aria-label': nt('first_compare_group', 'Compare saved readings or your prediction') },
+        h('button', { type: 'button', className: 'ns-choice', 'aria-pressed': !showPrediction, 'data-ns-first-compare': 'readings', onClick: function () { setComparison(false); } }, nt('first_compare_readings', 'Saved readings')),
+        h('button', { type: 'button', className: 'ns-choice', 'aria-pressed': showPrediction, 'data-ns-first-compare': 'prediction', onClick: function () { setComparison(true); } }, nt('first_compare_prediction', 'My prediction'))),
+      h('div', { className: 'ns-case-chart', role: 'img', 'data-ns-first-chart': 'true', 'aria-label': showPrediction
+        ? nt('first_prediction_chart', 'At 2 m: your prediction, {predicted}%; saved reading, {measured}%. Both bars use a 0 to 100% scale. The source output stayed fixed.', { predicted: predictedPercent, measured: nkStudioDistanceIntensity(2) })
+        : nt('first_chart_label', 'Saved readings on a shared 0 to 100% scale: 1 m, {near}%; 2 m, {far}%. The source output stayed fixed.', { near: nkStudioDistanceIntensity(1), far: nkStudioDistanceIntensity(2) }) },
+        (showPrediction ? [
+          { id: 'predicted', label: nt('first_predicted_at_two', 'Your prediction at 2 m'), percent: predictedPercent },
+          { id: 'measured', label: nt('first_measured_at_two', 'Saved reading at 2 m'), percent: nkStudioDistanceIntensity(2) }
+        ] : [1, 2].map(function (value) { return { id: value, label: value + ' m', percent: nkStudioDistanceIntensity(value) }; })).map(function (row) {
+          return h('div', { key: row.id, className: 'ns-case-chart-row', 'data-ns-first-bar': showPrediction ? undefined : row.id, 'data-ns-prediction-bar': showPrediction ? row.id : undefined },
+            h('span', null, row.label), h('strong', null, row.percent + '%'),
+            h('div', { className: 'ns-case-track' }, h('div', { className: 'ns-case-fill', style: { width: row.percent + '%' } })));
+        }), h('p', { className: 'ns-case-scale' }, nt('case_shared_scale', 'Both bars use the same scale: 0–100%.'))),
+      showPrediction ? h('p', { className: 'ns-scene-note', role: 'status', 'data-ns-first-prediction-result': predictedPercent === nkStudioDistanceIntensity(2) ? 'matched' : 'different' }, predictedPercent === nkStudioDistanceIntensity(2)
+        ? nt('first_prediction_matched', 'Your prediction matched the saved reading at 2 m: {percent}%.', { percent: nkStudioDistanceIntensity(2) })
+        : nt('first_prediction_different', 'Your prediction: {predicted}%. Saved reading: {measured}%.', { predicted: predictedPercent, measured: nkStudioDistanceIntensity(2) })) : null)
+      : h('div', { className: 'ns-scene', 'data-ns-scene': 'distance' },
+        h('div', { className: 'ns-scene-top' }, h('span', null, nt('point_source', 'Point source • fixed output')), h('span', { 'data-ns-first-position': position }, nt('first_detector_position', 'Detector: {distance} m', { distance: position }))),
+        h('svg', { className: 'ns-beam', viewBox: position === 4 || last === 4 ? '0 0 440 185' : '0 0 300 185', role: 'img', 'data-ns-first-position-image': 'true',
+          'aria-label': last === null ? nt('first_position_empty', 'Source output fixed. Detector at {position} m. No reading recorded yet.', { position: position }) : nt('first_position_saved', 'Source output fixed. Detector at {position} m. Saved reading at {saved} m: {percent}%.', { position: position, saved: last, percent: nkStudioDistanceIntensity(last) }) },
+          [75, 150, 300].map(function (radius) { return h('circle', { key: radius, cx: 55, cy: 80, r: radius, fill: 'none', stroke: '#719cbd', strokeWidth: 1.5, strokeDasharray: '5 5' }); }),
+          h('circle', { cx: 55, cy: 80, r: 23, fill: '#a78bfa', stroke: '#e9ddff', strokeWidth: 2 }),
+          h('text', { x: 55, y: 88, fill: '#171131', fontSize: 24, textAnchor: 'middle' }, 'γ'),
+          h('path', { d: position === 4 || last === 4 ? 'M55 138 H400' : 'M55 138 H260', stroke: '#bed4eb', strokeWidth: 2 }),
+          (position === 4 || last === 4 ? [1, 2, 4] : [1, 2]).map(function (value) { return h('g', { key: value }, h('path', { d: 'M' + (55 + value * 75) + ' 132 V145', stroke: '#bed4eb', strokeWidth: 2 }), h('text', { x: 55 + value * 75, y: 172, textAnchor: 'middle', fill: '#edf5ff', fontSize: 17 }, value + ' m')); }),
+          differentPosition ? h('g', null,
+            h('rect', { 'data-ns-first-detector': 'saved', 'data-distance': last, x: 45 + last * 75, y: 51, width: 20, height: 58, rx: 5, fill: 'none', stroke: '#bed4eb', strokeWidth: 2, strokeDasharray: '5 5' }),
+            h('text', { x: 55 + last * 75, y: 45, textAnchor: 'middle', fill: '#edf5ff', fontSize: 17 }, nt('first_marker_saved', 'Saved'))) : null,
+          prepared && differentPosition ? h('path', { 'data-ns-first-movement': 'true', d: 'M' + (55 + last * 75) + ' 24 H' + (55 + position * 75) + ' m' + (position > last ? -6 : 6) + ' -5 l' + (position > last ? 6 : -6) + ' 5 l' + (position > last ? -6 : 6) + ' 5', fill: 'none', stroke: '#fbbf24', strokeWidth: 3 }) : null,
+          h('rect', { 'data-ns-first-detector': 'current', 'data-distance': position, x: 45 + position * 75, y: 51, width: 20, height: 58, rx: 5, fill: '#65e2ce', stroke: '#b8fff2', strokeWidth: 2 }),
+          differentPosition ? h('text', { x: 55 + position * 75, y: 45, textAnchor: 'middle', fill: '#edf5ff', fontSize: 17 }, nt('first_marker_now', 'Now')) : null),
+        h('div', { className: 'ns-readout' }, h('strong', { 'data-ns-reading': 'true' }, last ? nkStudioDistanceIntensity(last) + '%' : '—'), h('span', null, nt('distance_relative', 'of the intensity at 1 m'))),
+        h('p', { className: 'ns-scene-note' }, last ? nt('first_saved_reading', 'Saved reading at {distance} m', { distance: last }) : nt('first_position_no_reading', 'No reading saved yet.')));
+    var steps = [
+      { id: 'predict', label: nt('first_step_predict', 'Predict'), checked: !!prediction },
+      { id: 'near', label: nt('first_step_near', 'Read at 1 m'), checked: near },
+      { id: 'far', label: nt('first_step_far', 'Read at 2 m'), checked: far },
+      { id: 'explain', label: nt('first_step_explain', 'Explain'), checked: done }
+    ];
+    return h('div', { className: 'ns-first', 'data-ns-first-discovery': stage },
+      h('ol', { className: 'ns-first-progress', 'aria-label': nt('first_progress', 'Your first discovery: completed, current, and next steps') }, steps.map(function (item, index) {
+        var current = !done && item.id === stage;
+        return h('li', { key: item.id, 'data-state': item.checked ? 'done' : current ? 'current' : 'next', 'aria-current': current ? 'step' : undefined },
+          h('strong', null, (index + 1) + '. ' + item.label), h('span', null, item.checked ? nt('first_step_done', '✓ Done') : current ? nt('first_step_now', 'Now') : nt('first_step_next', 'Next')));
+      })),
+      h('section', { className: 'ns-controls ns-first-stage', 'data-ns-first-stage': stage, 'aria-labelledby': 'ns-first-heading' },
+        h('p', { className: 'ns-step' }, done ? nt('first_complete', 'Comparison complete') : nt('first_position', 'Step {number} of 4', { number: number })),
+        h('h4', { id: 'ns-first-heading', ref: headingRef, tabIndex: -1, 'data-ns-first-heading': 'true' }, titles[stage]),
+        prediction ? h('p', { className: 'ns-note ns-first-prediction' }, nt('prediction_summary', 'Your prediction: {choice}', { choice: prediction.label })) : null,
+        stage !== 'predict' ? scene : null,
+        stage === 'predict' ? h(React.Fragment, null,
+          h('p', null, nt('distance_prediction', 'Move from 1 m to 2 m. How much intensity will the detector read?')),
+          h('div', { className: 'ns-choices', role: 'group', 'aria-label': nt('intro_prediction_group', 'Make your prediction') }, predictions.map(function (item) { return h('button', { key: item.id, type: 'button', className: 'ns-choice', onClick: function () { predict(item.id); } }, item.label); })),
+          h('p', { className: 'ns-note' }, nt('first_predict_hint', 'Choose what seems likely. The readings will help you check it.')), scene)
+          : stage === 'near' || stage === 'far' ? h(React.Fragment, null,
+            h('p', null, stage === 'near' ? nt('first_near_prompt', 'Record the starting reading before moving the detector.') : prepared ? nt('first_position_ready', 'The detector is at 2 m. Take a new reading to compare with your saved 1 m result.') : nt('first_far_prompt', 'Keep the source fixed. Move the detector to twice the distance and record a new reading.')),
+            stage === 'far' && !prepared ? h('button', { type: 'button', className: 'ns-primary', onClick: move, 'data-ns-first-move': '2' }, nt('first_move_far', 'Move detector to 2 m →'))
+              : h('button', { key: stage, ref: readingRef, type: 'button', className: 'ns-primary', onClick: read, 'data-ns-first-run': stage }, stage === 'near' ? position === 1 ? nt('first_read_near', 'Take a reading at 1 m →') : nt('first_near_move', 'Move to 1 m and take a reading →') : nt('first_read_prepared', 'Take a reading at 2 m →')))
+            : stage === 'explain' ? h('div', { className: 'ns-explain', 'data-ns-explain': 'distance' },
+              h('button', { type: 'button', className: 'ns-choice', 'aria-pressed': data.explanation === 'retry', onClick: function () { explain(false); } }, nt('distance_explain_no', 'Moving the detector makes the source emit less.')),
+              h('button', { type: 'button', className: 'ns-choice', onClick: function () { explain(true); } }, nt('distance_explain_yes', 'The same output spreads over a larger area.')),
+              data.explanation === 'retry' ? h('p', { className: 'ns-feedback', 'data-kind': 'retry' }, nt('first_retry', 'The source stayed fixed. Compare 100% at 1 m with 25% at 2 m, then try again.')) : null)
+              : h('div', null,
+                h('p', { className: 'ns-complete' }, nt('recorded', '✓ Discovery recorded')),
+                h('p', null, nt('distance_discovery', 'Doubling the distance gave 25% of the original intensity.')),
+                h('button', { type: 'button', className: 'ns-primary', onClick: props.onNext }, props.nextLabel)),
+        h('p', { className: 'ns-first-status ns-note', role: 'status' }, status)),
+      h('div', { className: 'ns-first-exits' },
+        h('button', { type: 'button', className: 'ns-secondary', onClick: props.onExplore }, nt('first_explore', 'Explore distance freely')),
+        stage !== 'predict' ? h('button', { type: 'button', className: 'ns-secondary', onClick: restart }, nt('intro_restart', 'Start again')) : null),
+      h('details', { className: 'ns-notebook' }, h('summary', null, nt('model_notes', 'How this model works')),
+        h('p', { className: 'ns-note' }, nt('distance_model', 'For an ideal point source, intensity follows 1 / distance². The reference reading at 1 m is 100%. The model leaves out absorption, scattering, background, and detector noise; a real measurement can differ.')),
+        h('a', { href: 'https://www.nrc.gov/sites/default/files/doc_library/cdn/legacy/reading-rm/basic-ref/students/for-educators/08.pdf', target: '_blank', rel: 'noopener noreferrer' }, nt('distance_source', 'Source: NRC radiation protection guide'))));
+  }
+
   function nkStudioTranslate(ctx) {
     return function (key, fallback, values) {
       var text;
@@ -1841,6 +1993,13 @@
     .nk-workspace *{box-sizing:border-box}.nk-workspace button,.nk-workspace input,.nk-workspace textarea{font:inherit}.nk-workspace button{cursor:pointer;min-height:44px}.nk-workspace button:disabled{cursor:default;opacity:.55}
     .nk-workspace :is(button,input,textarea,a,summary):focus-visible,.nk-workspace [tabindex='-1']:focus{outline:3px solid #f59e0b;outline-offset:4px}
     .nk-workspace button,.nk-workspace a{touch-action:manipulation}.nk-workspace p,.nk-workspace h3,.nk-workspace h4,.nk-workspace h5{margin-top:0}
+    .ns-first{max-width:760px;margin:0 auto}.ns-first-header{max-width:760px;margin:0 auto 18px}.ns-first-header button{margin-bottom:4px}
+    .ns-first-progress{list-style:none;padding:0;margin:0 0 14px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.ns-first-progress li{border:1px solid var(--ns-line);border-radius:10px;padding:9px 10px;min-width:0}.ns-first-progress strong,.ns-first-progress span{display:block;font-size:13px}.ns-first-progress span{color:var(--ns-muted);margin-top:3px}.ns-first-progress li[data-state=current]{border:2px solid var(--ns-accent);padding:8px 9px}.ns-first-progress li[data-state=done] span{color:var(--ns-accent)}
+    .ns-first-stage h4{font-size:22px;line-height:1.3;margin:0 0 10px}.ns-first-stage .ns-scene{margin:12px 0;padding:16px}.ns-first-stage .ns-beam{margin:10px 0;max-height:150px}.ns-first-stage .ns-scene-note{margin:8px 0 0}.ns-first-stage .ns-case-chart{margin:10px 0 0}.ns-first-stage .ns-explain{border:0;margin:0;padding:0}.ns-first-stage .ns-first-prediction{margin-bottom:8px}.ns-first-stage .ns-first-status{margin:12px 0 0}.ns-first-stage .ns-first-status:empty{margin:0}.ns-first-exits{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.ns-first-exits button{flex:1}
+    .ns-first-compare{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.ns-first-compare button{flex:1;min-width:110px}.ns-first [data-ns-prediction-bar=predicted] .ns-case-fill{background:#a7bdd5}
+    .nk-workspace[data-ns-large=true] .ns-first-progress :is(strong,span){font-size:16px}
+    @container (max-width:600px){.ns-first-progress{grid-template-columns:repeat(2,minmax(0,1fr))}.ns-first-stage{padding:16px}}
+    @media (forced-colors:active){.ns-first-progress li[data-state=current]{border-color:Highlight}.ns-first-progress span,.ns-first-progress li[data-state=done] span,.ns-first .ns-scene-note{color:CanvasText}.ns-first .ns-beam path{stroke:CanvasText}.ns-first .ns-beam text{fill:CanvasText}.ns-first .ns-beam circle{stroke:CanvasText;fill:none}.ns-first .ns-beam circle:last-of-type{fill:Canvas}.ns-first .ns-beam rect{fill:Highlight;stroke:CanvasText}.ns-first .ns-beam [data-ns-first-detector=saved]{fill:Canvas;stroke:CanvasText}.ns-first [data-ns-prediction-bar=predicted] .ns-case-fill{background:Highlight;forced-color-adjust:none}}
     .ns-nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}.ns-nav button,.ns-choice,.ns-secondary{border:1px solid var(--ns-line);border-radius:10px;padding:9px 14px;background:var(--ns-panel);color:var(--ns-ink);font-weight:700}
     .ns-nav button[aria-pressed=true],.ns-choice[aria-pressed=true]{border:2px solid var(--ns-accent);padding:8px 13px;background:var(--ns-accent);color:var(--ns-on)}
     .ns-hero{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px}.ns-eyebrow{color:var(--ns-accent);font-size:12px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;margin-bottom:6px}.ns-hero h3{font-size:clamp(23px,3vw,34px);line-height:1.2;letter-spacing:-.025em;margin:0 0 8px}.ns-hero p{color:var(--ns-muted);max-width:50ch;margin-bottom:0}
@@ -1912,7 +2071,7 @@
     if (!distance && step > 0 && step < 4 && runs.indexOf(setting) < 0) nextSetting = setting;
     var needsSetup = nextSetting !== setting || (!distance && step >= 4);
     function expected(factor, generation) { return 20 * Math.pow(factor, generation); }
-    function intensity(metres) { return 100 / (metres * metres); }
+    function intensity(metres) { return nkStudioDistanceIntensity(metres); }
     function metres(value) { return nt('distance_metres', '{value} m', { value: value }); }
     function factorName(value) {
       return value === 1 ? nt('factor_same', '1 · Same') : value < 1 ? nt('factor_fewer', '0.8 · Fewer') : nt('factor_more', '1.2 · More');
@@ -2149,7 +2308,11 @@
       { id: 'counting', icon: '▂▅▃', title: nt('counting_title', 'One count, or a pattern?'), sub: nt('counting_sub', 'Repeat a reading. Look for variation.') },
       { id: 'chain', icon: '⇢', title: nt('chain_title', 'Keep the chain going'), sub: nt('chain_sub', 'Explore what steady really means.') }
     ];
-    var mission = journey.some(function (item) { return item.id === raw.mission; }) ? raw.mission : 'decay';
+    var hasMission = journey.some(function (item) { return item.id === raw.mission; });
+    var savedWork = journey.some(function (item) { return nkStudioHasWork(item.id, raw[item.id]) || Array.isArray(raw.completed) && raw.completed.indexOf(item.id) >= 0 || raw[item.id] && typeof raw[item.id].reflection === 'string' && raw[item.id].reflection.length > 0; })
+      || ['nucleus', 'investigation'].some(function (id) { return raw[id] && typeof raw[id] === 'object' && !Array.isArray(raw[id]) && Object.keys(raw[id]).length > 0; });
+    var guided = raw.firstDiscovery === 'guided' ? !hasMission || raw.mission === 'distance' : !hasMission && !savedWork && raw.firstDiscovery !== 'explore';
+    var mission = guided ? 'distance' : hasMission ? raw.mission : 'decay';
     var missionIndex = journey.findIndex(function (item) { return item.id === mission; });
     var decay = raw.decay && typeof raw.decay === 'object' ? raw.decay : {};
     var shield = raw.shield && typeof raw.shield === 'object' ? raw.shield : {};
@@ -2187,9 +2350,23 @@
       chain: nt('recap_chain', 'A steady chain keeps producing new reactions in each generation.')
     };
     var statusState = React.useState(''), status = statusState[0], setStatus = statusState[1];
-    var titleRef = React.useRef(null), focusNext = React.useRef(false), chooserRef = React.useRef(null);
+    var titleRef = React.useRef(null), focusNext = React.useRef(false), chooserRef = React.useRef(null), focusChooser = React.useRef(false);
     var shieldRunRef = React.useRef(null), focusShieldRun = React.useRef(false);
-    React.useEffect(function () { if (focusNext.current && titleRef.current) { titleRef.current.focus(); focusNext.current = false; } }, [mission]);
+    React.useEffect(function () {
+      if (focusChooser.current && chooserRef.current) {
+        chooserRef.current.open = true;
+        var summary = chooserRef.current.querySelector('summary');
+        if (summary) summary.focus();
+        if (typeof chooserRef.current.scrollIntoView === 'function') chooserRef.current.scrollIntoView({ block: 'start', behavior: 'auto' });
+        focusChooser.current = false;
+        focusNext.current = false;
+      } else if (focusNext.current && titleRef.current) {
+        titleRef.current.focus();
+        var section = titleRef.current.parentElement;
+        if (section && typeof section.scrollIntoView === 'function') section.scrollIntoView({ block: 'start', behavior: 'auto' });
+        focusNext.current = false;
+      }
+    }, [mission, guided]);
     React.useEffect(function () { if (focusShieldRun.current && shieldRunRef.current && !shieldRunRef.current.disabled) { shieldRunRef.current.focus(); focusShieldRun.current = false; } }, [material.id, thickness]);
     function update(part, patch, extra) {
       props.onChange(function (current) {
@@ -2203,11 +2380,19 @@
       return h('p', { role: 'status', className: 'ns-note', style: { minHeight: 24, margin: '12px 0' }, 'data-ns-status': 'true' }, status);
     }
     function selectMission(id) {
-      focusNext.current = id !== mission;
+      focusNext.current = id !== mission || guided;
       if (chooserRef.current) chooserRef.current.open = false;
-      if (id === mission && titleRef.current) titleRef.current.focus();
+      if (id === mission && !guided && titleRef.current) titleRef.current.focus();
       setStatus('');
-      props.onChange(function (current) { return Object.assign({}, current, { mission: id }); });
+      props.onChange(function (current) { return Object.assign({}, current, { mission: id, firstDiscovery: 'explore' }); });
+    }
+    function startGuide() {
+      focusNext.current = true;
+      props.onChange(function (current) { return Object.assign({}, current, { mission: 'distance', firstDiscovery: 'guided' }); });
+    }
+    function browseGuide() {
+      focusChooser.current = true;
+      selectMission('distance');
     }
     function goNext() {
       if (missionIndex < journey.length - 1) selectMission(journey[missionIndex + 1].id);
@@ -2308,10 +2493,24 @@
       h('button', { type: 'button', className: 'ns-secondary', style: { marginTop: 12 }, onClick: function () { update('shield', { prediction: null, trials: [], explanation: null }); say(nt('shield_reset', 'Trials cleared. Make a new prediction.')); } }, nt('new_shield_trial', 'Start a new comparison')),
       nkStudioHint(h, nt, !shieldPrediction ? nt('hint_predict', 'Choose the prediction that seems most likely. A different result can help you discover something.') : nt('hint_shield', 'Test one material at 2 cm. Keep 2 cm selected, choose another material, and test again. Compare how much of the beam passes through.'), 'shield'),
       fairPair ? explanation('shield', nt('shield_explain_yes', 'At the same thickness, different materials transmit different amounts.'), nt('shield_explain_no', 'Any material blocks all gamma radiation.')) : null);
+    if (guided) return h('div', { 'data-nk-studio': 'distance' },
+      h('div', { className: 'ns-heading ns-first-header' },
+        h('p', { className: 'ns-eyebrow' }, nt('first_start_here', 'Start here')),
+        h('h3', { ref: titleRef, tabIndex: -1 }, nt('first_title', 'Move a detector. Make a discovery.')),
+        h('p', null, nt('first_goal', 'Keep the source fixed. Compare two readings.')),
+        h('button', { type: 'button', className: 'ns-secondary', onClick: browseGuide }, nt('first_browse', 'Choose another experiment'))),
+      h(NuclearFirstDiscovery, { ctx: props.ctx, data: raw.distance, nextLabel: nextLabel,
+        onNext: goNext, onExplore: function () { selectMission('distance'); },
+        onChange: function (patch) { update('distance', patch, { mission: 'distance', firstDiscovery: 'guided' }); },
+        onExplain: function (correct) { update('distance', { explanation: correct ? 'correct' : 'retry' }, correct ? { mission: 'distance', firstDiscovery: 'guided', completed: completed.indexOf('distance') < 0 ? completed.concat(['distance']) : completed } : { mission: 'distance', firstDiscovery: 'guided' }); }
+      }));
     return h('div', { 'data-nk-studio': mission },
       h('div', { className: 'ns-hero' },
         h('div', null, h('p', { className: 'ns-eyebrow' }, nt('eyebrow', 'Nuclear & Radiation Lab')), h('h3', null, nt('title', 'Small experiments. Big discoveries.')), h('p', null, nt('intro', 'Make a prediction, change one thing, and see what the evidence says.'))),
         h('div', { className: 'ns-progress', 'aria-label': nt('progress_total', '{count} of {total} discoveries recorded', { count: completed.length, total: journey.length }) }, h('strong', null, completed.length + ' / ' + journey.length), h('span', null, nt('discoveries', 'discoveries recorded')))),
+      h('details', { className: 'ns-notebook ns-first-invite' }, h('summary', null, nt('first_invite', 'Try a guided first discovery')),
+        h('p', { className: 'ns-note' }, nt('first_invite_note', 'Compare 1 m and 2 m, with one action at each step. Your saved readings stay with you.')),
+        h('button', { type: 'button', className: 'ns-primary', onClick: startGuide }, nt('first_open', 'Open the distance guide →'))),
       h('details', { className: 'ns-notebook ns-warmup-entry' }, h('summary', null, nt('nucleus_invite', 'New to nuclei? Try the nucleus builder')),
         h('p', { className: 'ns-note' }, nt('nucleus_entry', 'Meet protons, neutrons, and isotopes by building three small comparisons.')),
         h('button', { type: 'button', className: 'ns-primary', onClick: function () { props.onView('nucleus'); } }, raw.nucleus && raw.nucleus.solved === true ? nt('nucleus_revisit', 'Revisit the nucleus builder →') : raw.nucleus && ['same', 'changes'].indexOf(raw.nucleus.prediction) >= 0 ? nt('nucleus_resume', 'Resume the nucleus builder →') : nt('nucleus_start', 'Start the nucleus builder →'))),
@@ -2379,7 +2578,7 @@
           });
         }, onDecay: function () {
           pendingFocus.current = true;
-          saveStudio(function (current) { return Object.assign({}, current, { mission: 'decay' }); }, 'studio');
+          saveStudio(function (current) { return Object.assign({}, current, { mission: 'decay', firstDiscovery: 'explore' }); }, 'studio');
         } }) : mode === 'investigate' ? h(NuclearSignalInvestigation, { ctx: ctx, data: d.nkStudio && d.nkStudio.investigation, onView: changeView, onChange: function (patch) {
           saveStudio(function (current) {
             var saved = current.investigation;
@@ -2388,7 +2587,7 @@
           });
         }, onIntro: function (id) {
           pendingFocus.current = true;
-          saveStudio(function (current) { return Object.assign({}, current, { mission: id }); }, 'studio');
+          saveStudio(function (current) { return Object.assign({}, current, { mission: id, firstDiscovery: 'explore' }); }, 'studio');
         } }) : h(props.Reference, { key: mode, ctx: ctx })),
       mode === 'studio' && typeof ctx.setStemLabTool === 'function' ? h('button', { type: 'button', className: 'ns-secondary', style: { marginTop: 12 }, onClick: function () { ctx.setStemLabTool(null); } }, nt('back_tools', '← Back to tools')) : null);
   }
